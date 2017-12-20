@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`profile-activity.vue should render ol#activity 1`] = `
+<ol
+  id="activity"
+  itemprop="activity"
+/>
+`;
+
+exports[`profile-activity.vue should render some activity 1`] = `
+<ol
+  id="activity"
+  itemprop="activity"
+>
+  <li
+    itemscope="itemscope"
+    itemtype="/activity"
+  >
+    <a
+      href="/posts/1"
+      itemprop="where"
+    >
+      <b
+        itemprop="what"
+      >
+        Created a post
+      </b>
+    </a>
+     
+    <time
+      datetime="2017-12-20T23:01:14.310Z"
+      itemprop="when"
+    />
+  </li>
+</ol>
+`;
