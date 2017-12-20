@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
+    "unit-watch": "jest --config test/unit/jest.conf.js --watch", 
     "unit": "jest --config test/unit/jest.conf.js --coverage --watch",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
