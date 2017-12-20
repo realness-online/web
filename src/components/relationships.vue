@@ -1,0 +1,11 @@
+<template id="profile-relationships">
+  <section id="relationships">
+    <nav v-for="profile in following" itemprop="following" >
+      <profile-as-uid></profile-as-uid>
+    </nav>
+
+    <nav v-for="profile in blocked" itemprop="blocked">
+      <profile-as-uid></profile-as-uid>
+    </nav>
+  </section>
+</template>

@@ -1,0 +1,93 @@
+@require variables
+// Tie the layout of the page together via a fluid font-size
+// this design invests in the certainty of infinite device sizes over time.
+
+// Goals
+//   font-size that matches any device width
+//
+//   Line length supports readability
+//
+//   Heading size based on a modular scale
+//
+//   Vertical rhytym with a common baseline
+//
+// implementation from:
+//   https://www.smashingmagazine.com/2016/05/fluid-typography/
+
+
+// ***************** fluid-typography *****************************************
+html
+  font-family: 'Lato', sans-serif
+  between: font-size, min-font, max-font, min-screen, max-screen
+  font-smoothing: antialiased
+  text-rendering: optimizeLegibility
+  color:black
+  background-color: white-fill
+
+p, textarea, input, main, blockquote
+  between: max-width, round(base-line * 25, 3), round(base-line * 25, 3)
+
+
+// ***************** modular-scale ********************************************
+$h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
+$h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
+
+$h2-max = round(max-modular ** 3 * 1rem, 3) // 1.953
+$h2-min = round(min-modular ** 3 * 1rem, 3) // 1.424
+
+$h3-max = round(max-modular ** 2 * 1rem, 3) // 1.563
+$h3-min = round(min-modular ** 2 * 1rem, 3) // 1.266
+
+$h4-max = round(max-modular * 1rem, 3) // 1.25
+$h4-min = round(min-modular * 1rem, 3) // 1.125
+
+$h5-min= 1rem
+$h5-max= 1rem
+
+$h6-max= round(1rem / max-modular, 3) //.8
+$h6-min= round(1rem / min-modular, 3) //.888
+
+h1
+  between: font-size, $h1-min, $h1-max
+h2
+  between: font-size, $h2-min, $h2-max
+h3,summary
+  between: font-size, $h3-min, $h3-max
+h4
+  between: font-size, $h4-min, $h4-max
+h5
+  between: font-size, $h5-min, $h5-max
+h6
+  between: font-size, $h6-min, $h6-max
+
+// ***************** vertical-rhythm ******************************************
+
+// At least 1 baselines high
+html
+  line-height: base-line
+
+// At least 2 baselines high
+p,blockquote
+  line-height: base-line
+  margin-bottom: base-line
+
+h1,h2,h3,h4,h5,h6
+  letter-spacing: -.04em
+  font-weight: 500
+  margin-bottom: base-line
+  line-height: 1em
+  // text-transform: capitalize
+h3,h4,h5,h6
+  text-shadow: -1px 1px 0 darken(white, 15%)
+
+// Four baselines high
+h1,h2,h3
+  margin-top: s('calc( (%s - %s) + %s * 2)', base-line, 1em, base-line)
+
+// Three baselines high
+h4,h5
+  margin-top: s('calc( (%s - %s) + %s * 1)', base-line, 1em, base-line)
+
+// Two baselines high
+h6
+  margin-top: s('calc( (%s - %s) )', base-line, 1em)

@@ -1,0 +1,56 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMax meet">
+
+  <symbol id="branch"  preserveAspectRatio="xMinYMin meet">
+    <path d="M132,88 C131,82 127,76 123,72 C86,46 129,77 112,65 C110,64 109,63 108,62 C100,57 93,52 84,49 L82,49"></path>
+    <path d="M132,88 C132,84 129,80 127,77 C120,69 111,64 102,58"></path>
+    <path d="M132,88 C131,81 122,72 117,68"></path>
+    <path d="M132,88 C133,83 125,77 121,74 C106,62 112,63 95,51 C77,38 75,36 65,30"></path>
+    <path d="M132,88 C131,81 125,71 121,65"></path>
+    <path d="M132,88 C133,85 129,80 128,79 C120,69 111,60 99,52"></path>
+    <path d="M132,88 C123,66 98,54 76,41 C68,37 27,19 25,21"></path>
+    <path d="M132,88 C133,81 128,75 125,70 C121,64 119,59 115,52"></path>
+    <path d="M132,88 C131,73 120,51 111,40 C107,35 103,31 98,26 C95,24 73,11 70,10"></path>
+    <path d="M132,88 C132,86 132,84 131,82 C130,73 117,61 108,54 C91,40 71,28 50,16 C39,11 29,5 15,2 C11,1 1,1 0,1"></path>
+    <path d="M132,88 C135,76 121,57 115,48"></path>
+    <path d="M132,88 C131,82 127,76 123,72 C86,46 129,77 112,65 C110,64 109,63 108,62 C100,57 93,52 84,49 L82,49"></path>
+    <path d="M132,88 C132,84 129,80 126,77 C120,69 111,64 102,58"></path>
+    <path d="M132,88 C131,81 122,72 117,68"></path>
+    <path d="M132,88 C132,83 125,77 121,74 C106,62 112,63 95,51 C77,38 75,36 65,30"></path>
+    <path d="M132,88 C132,81 125,71 121,65"></path>
+    <path d="M132,88 C133,85 129,80 128,79 C120,69 110,60 99,52"></path>
+    <path d="M132,88 C132,66 98,54 76,41 C68,37 27,19 25,21"></path>
+    <path d="M132,88 C133,81 128,75 125,70 C121,64 119,59 115,53"></path>
+    <path d="M132,88 C132,84 132,86 128,78 C127,75 124,70 122,67 C117,59 118,60 111,51 C109,47 104,43 101,40 C96,37 91,32 85,29 C84,28 77,23 71,20 C55,9 36,0 32,0"></path>
+    <path d="M132,88 C131,73 120,51 111,40 C107,35 103,31 98,26 C95,24 74,11 70,10"></path>
+  </symbol>
+
+  <symbol id="logo" viewBox="0 0 266 149" preserveAspectRatio="xMinYMid meet">
+    <g class='forward'>
+      <use xlink:href='#branch' opacity="0.83"  transform="translate(0, 61)" />
+      <use xlink:href='#branch' opacity="0.90" transform="translate(200, 103) scale(-1, 0.90) translate(-200, -103) translate(135.5, 66)" />
+    </g>
+
+    <g class='mid'>
+      <use xlink:href='#branch' opacity="0.50" transform="translate(79, 91) scale(0.95, 0.90) rotate(12) translate(-79, -91) translate(15, 53)" />
+      <use xlink:href='#branch' opacity="0.35"  transform="rotate(28) scale(1, 0.50) translate(25, 5)" />
+      <use xlink:href='#branch' opacity="0.65" transform="translate(188.194930, 91.864622) scale(-1, 0.95) rotate(12.000000) translate(-188.194930, -91.864622) translate(121.694930, 47.864622)" fill-rule="nonzero"/>
+    </g>
+
+    <g class="back">
+      <use xlink:href='#branch' opacity="0.45" transform="translate(165, 73) scale(-1, 0.90) rotate(32) translate(-165, -73) translate(99, 29)" />
+      <use xlink:href='#branch' opacity="0.45" transform="translate(100, 76) rotate(32) translate(-100, -76) translate(33, 32)" fill-rule="nonzero"/>
+      <use xlink:href='#branch' opacity="0.30" transform="translate(165, 73) scale(-1, 0.75) rotate(53) translate(-165, -73) translate(115, 5)" />
+    </g>
+
+  </symbol>
+
+  <symbol id="leaf" viewBox="0 0 133 88" preserveAspectRatio="xMinYMin slice">
+    <use xlink:href='#branch'/>
+  </symbol>
+
+  <g fill="hsla(136, 0%, 0%, 0.5)" stroke="hsla(136, 0%, 0%, 0.2)">
+    <use xlink:href='#leaf' height="50%" width="50%"/>
+    <use xlink:href='#logo'  height="50%" width="50%" />
+  </g>
+
+</svg>

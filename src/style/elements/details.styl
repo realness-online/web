@@ -1,0 +1,26 @@
+@require "../variables"
+details
+  display: flex
+  flex-direction:column
+  align-content: flex-start
+  align-items: center
+  overflow: hidden
+
+  & > summary
+    text-align: center
+    margin-bottom: base-line
+    cursor: pointer
+    &:focus
+      outline:none
+    &::-webkit-details-marker
+      display:none
+
+  &[open]
+    min-height: 100vh
+    & > summary
+      border-bottom:0.125rem solid blue
+      text-align: right
+      text-decoration: none
+
+    & > *:not(summary)
+      animation-name: fadeInDown

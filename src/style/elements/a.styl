@@ -1,0 +1,26 @@
+a
+  display: inline-flex
+  color: blue
+  text-decoration: none
+  text-shadow: 0.2px 0px darken(blue, 50%)
+
+p > a
+  transition-property: all
+  transition-duration: 0.8s
+  transition-timing-function: ease-in-out;
+  transition-delay: 0.1s
+  border-bottom: 1px solid blue-fill
+  border-bottom-right-radius: 1px
+  border-bottom-left-radius: 1px
+  &:hover
+    transition-property: all
+    border-bottom: 1.35px solid blue
+    border-bottom-right-radius: 2px
+    border-bottom-left-radius: 2px
+
+nav > a
+  color: red
+  text-shadow: none
+  &:hover
+    color: green
+    

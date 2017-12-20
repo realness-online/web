@@ -1,0 +1,32 @@
+<template id="profile-feed">
+  <section id='feed'>
+    <template id="feed-entry">
+      <article>
+        <header>
+          <profile-as-figure></profile-as-figure>
+        </header>
+        <footer>
+          <pump-it></pump-it>
+          <comment-on></comment-on>
+        </footer>
+      </article>
+    </template>
+
+    <template id="assertions">
+      Aggregate the activity from the profiles relationships and sort it chronologically.
+    </template>
+
+    <template id="pump-it">
+      <menu>
+        <a on-click="pump_feed_item">pump</a>
+        <svg id="logo" role="img" title="@kristin pumps"><use xlink:href="/application.svg#pump"/></svg>
+      </menu>
+    </template>
+
+    <template id="comment-on">
+      <ol itemscope itemtype="comment" itemid="/post/${id}/comments">
+        <li></li>
+      </ol>
+    </template>
+  </section>
+</template>
