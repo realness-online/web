@@ -2,16 +2,16 @@
 <template>
   <main id="social_network">
     <header>
-      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" v-on:focusout="addPost"></textarea>
+      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" @:focusout="addPost"></textarea>
     </header>
     <details>
       <summary>Posts</summary>
-      <posts v-bind:posts="posts">
+      <posts :posts="posts">
       </posts>
     </details>
     <details>
       <summary>Activity</summary>
-      <activity v-bind:activity="activity"></activity>
+      <activity :activity="activity"></activity>
     </details>
   </main>
 </template>
@@ -22,7 +22,6 @@
   import './modules/timeago'
 
   export default {
-    name: 'social-app',
     components: {
       posts,
       activity
