@@ -1,19 +1,22 @@
 import Vue from 'vue'
-import ProfileActivity from '@/app'
+import { shallow } from 'vue-test-utils'
+import App from '@/App'
 
-describe('profile-activity.vue', () => {
-  let Constructor
+describe('App.vue', () => {
+  let vm
 
   beforeEach(() => {
-    Constructor = Vue.extend(ProfileActivity)
+    vm = shallow(App)
   })
 
   it('should accept input for posts', () => {
-    const vm = new Constructor().$mount()
-    expect(vm.$el).toMatchSnapshot()
+    expect(vm.element).toMatchSnapshot()
   })
 
-  it('should list activity')
-  it('should list posts')
+  it('should contain a social network', () => {
+    expect(vm.element.querySelector('#social_network')).toBeTruthy()
+  })
+
+  // it('should list posts')
 
 })

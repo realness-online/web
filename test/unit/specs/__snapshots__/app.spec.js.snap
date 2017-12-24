@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`profile-activity.vue should accept input for posts 1`] = `
+exports[`App.vue should accept input for posts 1`] = `
 <main
   id="social_network"
 >
@@ -16,12 +16,7 @@ exports[`profile-activity.vue should accept input for posts 1`] = `
       Posts
     </summary>
      
-    <section
-      id="posts"
-      itemprop="posts"
-      itemscope="itemscope"
-      itemtype="http://schema.org/blog"
-    />
+    <!---->
   </details>
    
   <details>
@@ -29,10 +24,7 @@ exports[`profile-activity.vue should accept input for posts 1`] = `
       Activity
     </summary>
      
-    <ol
-      id="activity"
-      itemprop="activity"
-    />
+    <!---->
   </details>
 </main>
 `;

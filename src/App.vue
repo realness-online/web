@@ -38,7 +38,6 @@
       addPost() {
         let created = new Date().toISOString()
         let value = this.new_post && this.new_post.trim()
-
         if (!value) { return }
         this.new_post = ''
         this.posts.push({
@@ -52,7 +51,6 @@
           when: created,
           where: `/posts/1`
         })
-        console.log('create post activity', activity)
       }
     }
   }
