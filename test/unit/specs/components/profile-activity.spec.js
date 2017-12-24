@@ -8,13 +8,13 @@ describe('profile-activity.vue', () => {
     Constructor = Vue.extend(ProfileActivity)
   })
 
-  it('should render ol#activity', () => {
+  it('should render an activity wrapper (ol#activity)', () => {
     const vm = new Constructor().$mount()
     expect(vm.$el).toMatchSnapshot()
   })
 
   it('should render some activity', () => {
-    let event = {
+    const event = {
       who: '/users/uid',
       what: 'Created a post',
       why: 'unknown',
@@ -27,7 +27,6 @@ describe('profile-activity.vue', () => {
       }
 
     }).$mount()
-    // expect(cmp.element).toMatchSnapshot()
     expect(vm.$el).toMatchSnapshot()
   })
 

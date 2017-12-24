@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`profile-activity.vue should render ol#activity 1`] = `
+exports[`profile-activity.vue should render an activity wrapper (ol#activity) 1`] = `
 <ol
   id="activity"
   itemprop="activity"
