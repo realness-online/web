@@ -13,10 +13,4 @@ describe('App.vue', () => {
     expect(vm.element).toMatchSnapshot()
   })
 
-  it('should contain a social network', () => {
-    expect(vm.element.querySelector('#social_network')).toBeTruthy()
-  })
-
-  // it('should list posts')
-
 })
