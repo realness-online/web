@@ -9,8 +9,13 @@ describe('App.vue', () => {
     vm = shallow(App)
   })
 
-  it('should accept input for posts', () => {
+  it('renders layout for the application', () => {
     expect(vm.element).toMatchSnapshot()
   })
 
+  it('creates a new post', () => {
+    expect(typeof App.methods.addPost).toBe('function')
+  })
+
+  it('creates a new activity')
 })
