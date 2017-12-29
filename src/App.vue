@@ -2,7 +2,7 @@
 <template>
   <main id="social_network">
     <header>
-      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" @:focusout="addPost"></textarea>
+      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" @:focusout="add_post"></textarea>
     </header>
     <details>
       <summary>Posts</summary>
@@ -34,7 +34,7 @@
       }
     },
     methods: {
-      addPost() {
+      add_post() {
         let created = new Date().toISOString()
         let value = this.new_post && this.new_post.trim()
         if (!value) { return }

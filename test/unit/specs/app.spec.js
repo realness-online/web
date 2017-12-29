@@ -3,19 +3,45 @@ import { shallow } from 'vue-test-utils'
 import App from '@/App'
 
 describe('App.vue', () => {
-  let vm
-
-  beforeEach(() => {
-    vm = shallow(App)
-  })
 
   it('renders layout for the application', () => {
-    expect(vm.element).toMatchSnapshot()
+    let app = shallow(App)
+    expect(app.element).toMatchSnapshot()
   })
 
-  it('creates a new post', () => {
-    expect(typeof App.methods.addPost).toBe('function')
+  it('add_post() exists', () => {
+    expect(typeof App.methods.add_post).toBe('function')
   })
 
-  it('creates a new activity')
+  it('add_post creates a post', () => {
+
+    let app = shallow(App, {
+      data: {
+        activity:[],
+        posts:[],
+        new_post:'I like to move it.'
+      }
+    })
+    expect(app.vm.activity.length).toBe(0)
+    expect(app.vm.posts.length).toBe(0)
+    app.vm.add_post()
+    expect(app.vm.posts.length).toBe(1)
+    expect(app.vm.activity.length).toBe(1)
+  })
+
+  it('add_post only adds a post when there is text',() => {
+    let app = shallow(App, {
+      data: {
+        activity:[],
+        posts:[],
+        new_post:''
+      }
+    })
+    expect(app.vm.posts.length).toBe(0)
+    expect(app.vm.activity.length).toBe(0)
+    app.vm.add_post()
+    expect(app.vm.posts.length).toBe(0)
+    expect(app.vm.activity.length).toBe(0)
+  })
+
 })
