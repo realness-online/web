@@ -36,7 +36,9 @@ For a detailed explanation on how things work, check out the [ for vue-loader]()
   <a href='https://forum.vuejs.org' target='_blank'>Forum</a>
   <a href='https://chat.vuejs.org' target='_blank'>Community Chat</a>
   <a href='https://twitter.com/vuejs' target='_blank'>Twitter</a>
-  <a href='http://vuejs-templates.github.io/webpack/' target='_blank'>Docs for This Template</a>
+  <a href='http://vuejs-templates.github.io/webpack/' target='_blank'>
+    Docs for This Template
+  </a>
 </nav>
 
 ## Ecosystem
@@ -44,8 +46,11 @@ For a detailed explanation on how things work, check out the [ for vue-loader]()
    <a href='http://router.vuejs.org/' target='_blank'>vue-router</a>
    <a href='http://vuex.vuejs.org/' target='_blank'>vuex</a>
    <a href='http://vue-loader.vuejs.org/' target='_blank'>vue-loader</a>
-   <a href='https://github.com/vuejs/awesome-vue' target='_blank'>awesome-vue</a>
-   http://vuejs.github.io/vue-loader
+   <a href='https://github.com/vuejs/awesome-vue' target='_blank'>
+    awesome-vue
+   </a>
+   <a href='http://vuejs.github.io/vue-loader' target='_blank'>vue-loader</a>
+   <a href='https://vue-test-utils.vuejs.org/en/' target='_blank'>test-utils</a>
  </nav>
 
 
