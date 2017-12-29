@@ -1,16 +1,16 @@
 import Vue from 'vue'
+import { shallow } from 'vue-test-utils'
 import ProfileActivity from '@/components/profile-activity'
 
 describe('profile-activity.vue', () => {
-  let Constructor
+  let wrapper
 
   beforeEach(() => {
-    Constructor = Vue.extend(ProfileActivity)
+    wrapper = shallow(ProfileActivity)
   })
 
   it('should render an activity wrapper (ol#activity)', () => {
-    const vm = new Constructor().$mount()
-    expect(vm.$el).toMatchSnapshot()
+    expect(wrapper.element).toMatchSnapshot()
   })
 
   it('should render some activity', () => {
@@ -21,13 +21,13 @@ describe('profile-activity.vue', () => {
       when: '2017-12-20T23:01:14.310Z',
       where: '/posts/1'
     }
-    const vm = new Constructor({
+
+    wrapper = shallow(ProfileActivity, {
       propsData: {
         activity: [event]
       }
-
-    }).$mount()
-    expect(vm.$el).toMatchSnapshot()
+    })
+    expect(wrapper.element).toMatchSnapshot()
   })
 
 })

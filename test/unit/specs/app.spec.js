@@ -6,7 +6,7 @@ describe('App.vue', () => {
 
   it('renders layout for the application', () => {
     let app = shallow(App)
-    expect(app.element).toMatchSnapshot()
+    expect(app.vm.$el).toMatchSnapshot()
   })
 
   it('add_post() exists', () => {
