@@ -14,7 +14,6 @@ describe('App.vue', () => {
   })
 
   it('add_post creates a post', () => {
-
     let app = shallow(App, {
       data: {
         activity:[],
