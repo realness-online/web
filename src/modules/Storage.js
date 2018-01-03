@@ -1,4 +1,4 @@
-import Item from './Item'
+import Item from '@/modules/Item'
 
 class Storage {
   constructor(item_prop, item_type) {
@@ -8,11 +8,9 @@ class Storage {
 
   save() {
     let items = document.querySelector(`[itemprop="${this.itemprop}"]`)
-
-    if (items) {
-      items = items.innerHTML
-      localStorage.setItem(this.itemprop, items)
-    }
+    if (!items) { return }
+    items = items.innerHTML
+    localStorage.setItem(this.itemprop, items)
   }
 
   load() {
