@@ -7,8 +7,12 @@ class Storage {
   }
 
   save() {
-    let items = document.querySelector(`[itemprop="${this.itemprop}"]`).innerHTML
-    localStorage.setItem(this.itemprop, items)
+    let items = document.querySelector(`[itemprop="${this.itemprop}"]`)
+
+    if (items) {
+      items = items.innerHTML
+      localStorage.setItem(this.itemprop, items)
+    }
   }
 
   load() {
@@ -17,6 +21,7 @@ class Storage {
     let items = Storage.hydrate(storage_string)
     return items.getItems(this.itemtype)
   }
+
   static hydrate(item_as_string) {
     let items = document.createRange().createContextualFragment(item_as_string)
     items.getItems = Item.get_items
