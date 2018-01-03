@@ -29,7 +29,6 @@ npm test
 
 For a detailed explanation on how things work, check out the [ for vue-loader]().
 
-
 # vue links
 <nav>
   <a href='https://vuejs.org' target='_blank'>Core Docs</a>
@@ -52,7 +51,6 @@ For a detailed explanation on how things work, check out the [ for vue-loader]()
    <a href='http://vuejs.github.io/vue-loader' target='_blank'>vue-loader</a>
    <a href='https://vue-test-utils.vuejs.org/en/' target='_blank'>test-utils</a>
  </nav>
-
 
 <style>
   a {
