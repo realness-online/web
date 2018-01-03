@@ -5,29 +5,21 @@ class Item {
     if (type) {
       query += `[itemtype="${type}"]`
     }
-
-    let items = Array.from(this.querySelectorAll(query))
-
+    let items = Array.from(document.querySelectorAll(query))
     items.forEach(item => {
-      // let meta = {
-      //   type: item.getAttribute('itemtype'),
-      //   id:   item.getAttribute('itemid'),
-      //   element_id: item.getAttribute('id')
-      // }
-      // let properties = Item.get_item_properties(item)
-      //
-      // items_as_data.push( { ...meta, ...properties } )
-
+      let meta = {
+        type: item.getAttribute('itemtype'),
+        id: item.getAttribute('itemid'),
+        element_id: item.getAttribute('id')
+      }
       let properties = Item.get_item_properties(item)
-      properties['type'] = item.getAttribute('itemtype')
-      items_as_data.push(properties)
+      items_as_data.push({ ...meta, ...properties })
     })
     return items_as_data
   }
   static get_item_properties(item) {
     let props = {}
     let properties = Array.from(item.querySelectorAll('[itemprop]'))
-
     properties.forEach(prop => {
       let name = prop.getAttribute('itemprop')
       let value = Item.property_value(prop)
@@ -36,15 +28,25 @@ class Item {
     return props
   }
   static property_value(element) {
-    if (element.dataset.value) {
-      return element.dataset.value
+    if (element.getAttribute('data-value')) {
+      return element.getAttribute('data-value')
     }
     switch (element.tagName.toLowerCase()) {
-      case 'link' || 'a': return element.getAttribute('href')
-      case 'img' || 'object' || 'embed': return element.getAttribute('src')
-      case 'meta': return element.getAttribute('content')
-      case 'time': return element.getAttribute('datetime')
-      case 'input' || 'textarea' || 'select': return element.value
+      case 'a':
+      case 'link':
+        return element.getAttribute('href')
+      case 'img':
+      case 'object':
+      case 'embed':
+        return element.getAttribute('src')
+      case 'input':
+      case 'textarea':
+      case 'select':
+          return element.value
+      case 'meta':
+        return element.getAttribute('content')
+      case 'time':
+        return element.getAttribute('datetime')
       default: return element.textContent.trim()
     }
   }
