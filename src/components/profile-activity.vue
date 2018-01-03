@@ -11,7 +11,7 @@
 
 <script>
   import Vue from 'vue'
-  import {activity_storage} from '../modules/Storage'
+  import {activity_storage} from '@/modules/Storage'
   export default {
     name: 'profile-activity',
     props: ['activity'],
