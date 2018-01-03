@@ -47,7 +47,6 @@ describe('Item.js', () => {
     })
 
     it('gets the properties of an item', () => {
-      console.log(item)
       expect(item.name).toBe('Scott Fryxell')
       expect(item.nickname).toBe('scoot')
       expect(item.url).toBe('/people/scott')
