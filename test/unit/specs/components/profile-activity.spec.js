@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { shallow } from 'vue-test-utils'
+import {shallow} from 'vue-test-utils'
 import ProfileActivity from '@/components/profile-activity'
 
 describe('profile-activity.vue', () => {
@@ -21,12 +21,7 @@ describe('profile-activity.vue', () => {
       when: '2017-12-20T23:01:14.310Z',
       where: '/posts/1'
     }
-
-    wrapper = shallow(ProfileActivity, {
-      propsData: {
-        activity: [event]
-      }
-    })
+    wrapper.setProps({activity: [event]}) // you can test watchers by setting props
     expect(wrapper.element).toMatchSnapshot()
   })
 
