@@ -42,7 +42,7 @@ class Item {
       case 'input':
       case 'textarea':
       case 'select':
-          return element.value
+        return element.value
       case 'meta':
         return element.getAttribute('content')
       case 'time':
