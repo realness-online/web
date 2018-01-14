@@ -15,18 +15,18 @@ describe('Storage.js', () => {
 
   it('hydrate()', () => {
     expect(Storage.hydrate(item_as_string)).toBeDefined()
-    // Storage.hydrate(item_as_string)
   })
 
   describe('load()', () =>{
-    it('extracts an object from html', () => {
-      // let person = new Storage('person', '/person')
-      // person.save()
-      // let items = person.load()
-      // console.log(localStorage.getItem('person'))
-      // expect(items.length).toBe(1)
+    it('writes html to localStorage', () => {
+      let storage = new Storage('person', '/person')
+      expect(storage.load()).toBeDefined()
     })
   })
-  it('save()')
+
+  it('save()', () => {
+    let storage = new Storage('person', '/person')
+    expect(storage.save()).toBeDefined()
+  })
 
 })

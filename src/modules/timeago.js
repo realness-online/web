@@ -1,3 +1,4 @@
+/* istanbul ignore next */
 /* eslint-disable */
 // https://coderwall.com/p/uub3pw/javascript-timeago-func-e-g-8-hours-ago
 function timeAgo() {
@@ -57,10 +58,7 @@ function timeAgo() {
     // console.log(time, timer(when),  when)
     time.textContent = timer(time.getAttribute('datetime'))
   })
-
-  // update time every minute
-  // setTimeout(timeAgo, 60000)
   setTimeout(timeAgo, 1000)
 }
-
+/* istanbul ignore next */
 export default timeAgo()

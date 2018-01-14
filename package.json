@@ -1,6 +1,6 @@
 {
-  "name": "bruce",
-  "version": "1.0.0",
+  "name": "social_network",
+  "version": "0.0.1",
   "description": "A Vue.js project",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "private": true,
