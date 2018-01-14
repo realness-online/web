@@ -20,13 +20,13 @@ describe('Storage.js', () => {
   describe('load()', () =>{
     it('writes html to localStorage', () => {
       let storage = new Storage('person', '/person')
-      expect(storage.load()).toBeDefined()
+      expect(storage.load).toBeDefined()
     })
   })
 
   it('save()', () => {
     let storage = new Storage('person', '/person')
-    expect(storage.save()).toBeDefined()
+    expect(storage.save).toBeDefined()
   })
 
 })
