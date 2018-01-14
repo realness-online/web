@@ -1,7 +1,7 @@
 import Storage from '@/modules/Storage'
-
+import Item from '@/modules/Item'
 describe('Storage.js', () => {
-  let item_as_string
+  let item_as_string, storage
   beforeEach(() => {
     item_as_string = `
      <main id="profile" itemscope itemtype="/person" itemid='/person/666'>
@@ -11,22 +11,36 @@ describe('Storage.js', () => {
        </section>
      </main>`
      document.body.innerHTML = item_as_string
+     storage = new Storage('/person')
   })
 
-  it('hydrate()', () => {
-    expect(Storage.hydrate(item_as_string)).toBeDefined()
+  describe('hydrate()', ()=>{
+    it('exists', () => {
+      expect(Storage.hydrate(item_as_string)).toBeDefined()
+    })
+    it('will create an html fragmend from a string', () => {
+      expect(Storage.hydrate(item_as_string).getItems().length).toBe(1)
+    })
   })
+
 
   describe('load()', () =>{
-    it('writes html to localStorage', () => {
-      let storage = new Storage('person', '/person')
+    it('exists', () => {
       expect(storage.load).toBeDefined()
     })
   })
 
-  it('save()', () => {
-    let storage = new Storage('person', '/person')
-    expect(storage.save).toBeDefined()
+  describe('save()', () => {
+    it('exists', () => {
+      expect(storage.save).toBeDefined()
+    })
+
+    it('saves an item type to local storage', () => {
+
+      storage.save()
+      const items = storage.load()
+      expect(items.length).toBe(1)
+    })
   })
 
 })
