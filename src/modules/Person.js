@@ -17,3 +17,18 @@
 //     auth.signInAnonymously()
 //   }
 // })
+
+class Person {
+  firebase_config = {
+    apiKey: "AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus",
+    authDomain: "littleman-8f289.firebaseapp.com",
+    databaseURL: "https://littleman-8f289.firebaseio.com",
+    storageBucket: "littleman-8f289.appspot.com",
+    messagingSenderId: "363642054727"
+  }
+
+  constructor() {
+    // firebase.initializeApp(this.firebase_config)
+  }
+}
+export default Person

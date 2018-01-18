@@ -2,7 +2,7 @@
 <template>
   <main id="social_network">
     <header>
-      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" @:focusout="add_post"></textarea>
+      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" v-on:focusout="add_post"></textarea>
     </header>
     <details>
       <summary>Posts</summary>
@@ -16,10 +16,11 @@
   </main>
 </template>
 <script>
-  import posts from './components/profile-posts'
-  import activity from './components/profile-activity'
-  import {posts_storage, activity_storage} from './modules/Storage'
-  import './modules/timeago'
+  import posts from '@/components/profile-posts'
+  import activity from '@/components/profile-activity'
+  import Item from '@/modules/Item'
+  import {posts_storage, activity_storage} from '@/modules/Storage'
+  import '@/modules/timeago'
 
   export default {
     components: {
@@ -28,8 +29,8 @@
     },
     data() {
       return {
-        posts: posts_storage.load(),
-        activity: activity_storage.load(),
+        posts: Item.get_items(posts_storage.from_storage()),
+        activity: Item.get_items(activity_storage.from_storage()),
         new_post: ''
       }
     },

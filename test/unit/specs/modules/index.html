@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <main id="profile" itemscope itemtype="/person" itemid='/person/666'>
+      <section>
+        <h1 itemprop="name">Scott Fryxell</h1>
+        <h2 itemprop="nickname" data-value="scoot">lame</h2>
+      </section>
+      <section>
+        <a itemprop="url" href="/people/scott">homepage</a>
+        <link itemprop="style" rel="stylesheet" href="/people/666/style.css">
+      </section>
+      <section>
+        <img itemprop="profile_pic" src="/people/666/profile.svg">
+        <object itemprop="logo_pic" src="/people/666/logo.svg" >
+        <embed type="video/quicktime" src="/people/666/movie.mp4" width="300" height="300">
+      </section>
+      <form>
+        <input type="text" itemprop="quicky" value="text input value">
+        <textarea itemprop="description" name="description" rows="8" cols="80">textarea value</textarea>
+        <select itemprop="gender">
+          <option selected value="male">male</option>
+          <option value="female">female</optipon>
+        </select>
+      </form>
+      <section>
+        <time itemprop="created_at" datetime="2017-12-20T23:01:14.310Z"></time>
+        <meta itemprop="social_media" name="facebook:" content="facebook.dom/scott-fryxell">
+      </section>
+
+      <details itemprop="posts">
+        <summary>posts</summary>
+        <article itemscope itemtype="http://schema.org/SocialMediaPosting">
+          <header>
+            <time itemprop="created_at" datetime="2017-12-15T00:45:07.827Z"></time>
+          </header>
+          <blockquote itemprop="articleBody">starting all over again</blockquote>
+        </article>
+        <article itemscope itemtype="http://schema.org/SocialMediaPosting">
+          <header>
+            <time itemprop="created_at" datetime="2017-12-15T00:47:45.599Z"></time>
+          </header>
+          <blockquote itemprop="articleBody">Just had to get the right query.</blockquote>
+        </article>
+        <article itemscope itemtype="http://schema.org/SocialMediaPosting">
+          <header>
+            <time itemprop="created_at" datetime="2017-12-15T01:04:58.460Z"></time>
+          </header>
+          <blockquote itemprop="articleBody">what the hell</blockquote></article>
+        <article itemscope itemtype="http://schema.org/SocialMediaPosting">
+          <header>
+            <time itemprop="created_at" datetime="2017-12-15T01:06:08.840Z"></time>
+          </header>
+          <blockquote itemprop="articleBody">how crazy is this shit</blockquote>
+        </article>
+      </details>
+    </main>
+  </body>
+</html>

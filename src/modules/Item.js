@@ -1,11 +1,10 @@
 class Item {
-  static get_items(type) {
+  static get_items(elements, type) {
+    if (!elements) { return [] }
     let items_as_data = []
     let query = '[itemscope]'
-    if (type) {
-      query += `[itemtype="${type}"]`
-    }
-    let items = Array.from(document.querySelectorAll(query))
+    if (type) { query += `[itemtype="${type}"]` }
+    let items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
       let meta = {
         type: item.getAttribute('itemtype'),
@@ -17,6 +16,7 @@ class Item {
     })
     return items_as_data
   }
+
   static get_item_properties(item) {
     let props = {}
     let properties = Array.from(item.querySelectorAll('[itemprop]'))
@@ -27,6 +27,7 @@ class Item {
     })
     return props
   }
+
   static property_value(element) {
     if (element.getAttribute('data-value')) {
       return element.getAttribute('data-value')
