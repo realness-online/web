@@ -4,12 +4,11 @@ body
   min-height:100vh
   border:none
   display:flex
-  flex-direction: column
-  align-items: center
-  justify-content: flex-start
+  flex-direction: row
+  align-items:stretch; 
+  justify-content: space-evenly
+  align-content:space-between;
   border: 0rem solid editor-on-color
-  padding: base-line
-  padding-top:0
   line-height: remove-unit(base-line)
   // user-select: none
 
@@ -22,22 +21,11 @@ body
     padding-right: 0
 
   & > header
-  & > main
   & > footer
     display:flex
     flex-direction: column
     align-items: center
     justify-content: space-around
-
-  & > main
-    align-items: stretch
-
-  & > footer
-    flex-direction: column
-    width: 100%
-    position: fixed
-    bottom:0
-    left:0
 
   & > header
     flex-direction: row
@@ -58,18 +46,3 @@ body
         position: fixed
         top:base-line
         left:0
-
-    & nav
-      display:flex
-      flex-direction:row
-      align-items: center
-      justify-content: space-between
-      &: > a:first-child
-        display: inline
-      & > a
-        margin-right:base-line
-      & > a[href$='$ScottFryxell']
-        color:green
-
-  & > main > aside > h1
-    animation: hue 1s infinite linear

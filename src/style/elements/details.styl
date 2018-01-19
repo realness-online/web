@@ -1,14 +1,23 @@
-@require "../variables"
-details
-  display: flex
-  flex-direction:column
-  align-content: flex-start
-  align-items: center
-  overflow: hidden
+ @require "../variables"
 
+main
+  display: flex
+  flex-direction:row
+  flex-wrap:wrap
+  align-content: space-evenly
+  justify-content:space-evenly
+  align-items: flex-start
+
+details[open] ~ details
+  display: none
+details
+  width: 46vw
+  border: 2px solid red
+  border-radius: 1rem
   & > summary
+    height: 30vh
     text-align: center
-    margin-bottom: base-line
+    padding-top: base-line
     cursor: pointer
     &:focus
       outline:none
@@ -16,10 +25,15 @@ details
       display:none
 
   &[open]
+    width: 100vw
     min-height: 100vh
+    border: none
     & > summary
+      padding:0
+      height: auto
+      line-height:inherit
       border-bottom:0.125rem solid blue
-      text-align: right
+      // text-align: right
       text-decoration: none
 
     & > *:not(summary)

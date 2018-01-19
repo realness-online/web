@@ -1,17 +1,28 @@
 <style src="./application.styl" lang="stylus"></style>
 <template>
   <main id="social_network">
-    <header>
-      <textarea tabindex="1" placeholder="Wat?" v-model="new_post" v-on:focusout="add_post"></textarea>
-    </header>
-    <details>
-      <summary>Posts</summary>
-      <posts :posts="posts">
-      </posts>
-    </details>
+
     <details>
       <summary>Activity</summary>
       <activity :activity="activity"></activity>
+    </details>
+    <details>
+      <summary>Feed</summary>
+    </details>
+    <details>
+      <summary>Friends</summary>
+    </details>
+    <details>
+      <summary>Groups</summary>
+    </details>
+    <details>
+      <summary>Events</summary>
+    </details>
+    <details>
+      <summary>Wat</summary>
+      <textarea id="wat" tabindex="1" placeholder="Wat?" v-model="new_post" v-on:focusout="add_post"></textarea>
+      <posts :posts="posts">
+      </posts>
     </details>
   </main>
 </template>

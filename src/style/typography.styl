@@ -24,9 +24,8 @@ html
   color:black
   background-color: white-fill
 
-p, textarea, input, main, blockquote
+p, textarea, input,  blockquote
   between: max-width, round(base-line * 25, 3), round(base-line * 25, 3)
-
 
 // ***************** modular-scale ********************************************
 $h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
@@ -51,7 +50,7 @@ h1
   between: font-size, $h1-min, $h1-max
 h2
   between: font-size, $h2-min, $h2-max
-h3,summary
+h3
   between: font-size, $h3-min, $h3-max
 h4
   between: font-size, $h4-min, $h4-max
