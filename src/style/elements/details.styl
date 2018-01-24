@@ -1,23 +1,12 @@
  @require "../variables"
 
-main
-  display: flex
-  flex-direction:row
-  flex-wrap:wrap
-  align-content: space-evenly
-  justify-content:space-evenly
-  align-items: flex-start
-
-details[open] ~ details
-  display: none
 details
-  width: 46vw
-  border: 2px solid red
-  border-radius: 1rem
+  width: 100vw
   & > summary
-    height: 30vh
-    text-align: center
-    padding-top: base-line
+    text-align: right
+    color:blue
+    font-size: 3em
+    padding: (base-line / 2)
     cursor: pointer
     &:focus
       outline:none
@@ -25,16 +14,9 @@ details
       display:none
 
   &[open]
-    width: 100vw
     min-height: 100vh
     border: none
     & > summary
-      padding:0
-      height: auto
-      line-height:inherit
-      border-bottom:0.125rem solid blue
-      // text-align: right
-      text-decoration: none
-
+      color: red
     & > *:not(summary)
-      animation-name: fadeInDown
+      animation-name: slideInDown

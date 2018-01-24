@@ -9,11 +9,17 @@
 
 @keyframes slideInDown
   from
-    transform: translate3d(0, -100%, 0);
-    visibility: visible;
-
+    transform: translate3d(0, -100%, 0)
+    visibility: visible
   to
     transform: translate3d(0, 0, 0)
+
+@keyframes slideOutUp
+  from
+    transform: translate3d(0, 0, 0)
+  to
+    visibility: hidden
+    transform: translate3d(0, -100%, 0)
 
 @keyframes hue
   0%

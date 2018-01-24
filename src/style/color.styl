@@ -1,20 +1,31 @@
 black             = hsla(300,  1%, 35%, 0.95)
-black-fill        = hsla(262, 16%, 23%, 0.9)
-
-white             = hsla( 57, 41%, 69%, 0.2)
-white-fill        = hsla( 57, 41%, 69%, 0.1)
-white-white       = hsla( 51, 41%, 97%, 0.9)
-
+white             = hsla( 51, 41%, 97%, 0.7)
+white-background  = hsla( 57, 41%, 69%, 0.2)
 blue              = hsla(203, 58%, 57%, 0.69)
-blue-fill         = hsla(203, 58%, 57%, 0.39)
-
-green             = hsla(136, 47%, 53%, 1)
-green-fill        = hsla(136, 47%, 53%, 0.5)
-
+green             = hsla(136, 47%, 53%, 0.8)
 red               = hsla(353, 83%, 57%, 0.73)
 
-editor-on-color   = red
-published-color   = green
+.red
+  background-color:red
+  border-color:red
+  color:lighten(red, 70%)
 
-highlight         = -webkit-linear-gradient( top left, transparent, white  )
-reverse-highlight = -webkit-linear-gradient( top left, transparent, black  )
+.green
+  background-color:green
+  border-color:green
+  color:lighten(green, 70%)
+
+.blue
+  background-color:blue
+  border-color:blue
+  color:lighten(blue, 80%)
+  -webkit-tap-highlight-color: blue
+
+.black
+  background-color:black
+  border-color: black
+  color:lighten(black, 40%)
+  -webkit-tap-highlight-color: black
+
+html
+  background-color:white-background

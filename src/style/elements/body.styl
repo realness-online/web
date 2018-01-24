@@ -1,20 +1,10 @@
 @require "../variables"
 
 body
-  min-height:100vh
-  border:none
-  display:flex
-  flex-direction: row
-  align-items:stretch; 
-  justify-content: space-evenly
-  align-content:space-between;
-  border: 0rem solid editor-on-color
-  line-height: remove-unit(base-line)
-  // user-select: none
-
+  background-color: transparent
   &[contenteditable]
     // user-select: auto
-    border: base-line solid editor-on-color
+    border: base-line solid red
     border-top: none
     border-bottom:none
     padding-left: 0
@@ -39,7 +29,7 @@ body
       width:base-line * 3
       margin-left: base-line
       stroke:blue
-      fill:green-fill
+      fill:green
       opacity:0.4
       stroke-width:5
       @media screen and (min-width: max-screen + 10rem)

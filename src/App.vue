@@ -1,29 +1,24 @@
 <style src="./application.styl" lang="stylus"></style>
 <template>
   <main id="social_network">
-
-    <details>
-      <summary>Activity</summary>
+    <nav id="main_nav">
+      <a href="#profile" id="profile" class="black">Profile</a>
+      <a href="#friends" id="friends" class="green">Friends</a>
+      <a href="#groups"  id="groups"  class="green">Groups</a>
+      <a href="#events"  id="events"  class="blue">Events</a>
+      <a href="#feed"    id="feed"    class="blue">Feed</a>
+      <a href="#post"    id="post"    class="red">Post</a>
+    </nav>
+    <section style="display:none">
+      <textarea id="wat"
+        tabindex="1"
+        placeholder="Wat?"
+        v-model="new_post"
+        v-on:focusout="add_post">
+      </textarea>
       <activity :activity="activity"></activity>
-    </details>
-    <details>
-      <summary>Feed</summary>
-    </details>
-    <details>
-      <summary>Friends</summary>
-    </details>
-    <details>
-      <summary>Groups</summary>
-    </details>
-    <details>
-      <summary>Events</summary>
-    </details>
-    <details>
-      <summary>Wat</summary>
-      <textarea id="wat" tabindex="1" placeholder="Wat?" v-model="new_post" v-on:focusout="add_post"></textarea>
-      <posts :posts="posts">
-      </posts>
-    </details>
+      <posts :posts="posts"></posts>
+    </section>
   </main>
 </template>
 <script>
