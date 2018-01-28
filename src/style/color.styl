@@ -9,23 +9,33 @@ red               = hsla(353, 83%, 57%, 0.73)
   background-color:red
   border-color:red
   color:lighten(red, 70%)
+  -webkit-tap-highlight-color: red
+  &::placeholder
+    color:lighten(red, 70%)
 
 .green
   background-color:green
   border-color:green
   color:lighten(green, 70%)
+  -webkit-tap-highlight-color: green
+  &::placeholder
+    color:lighten(green, 70%)
 
 .blue
   background-color:blue
   border-color:blue
   color:lighten(blue, 80%)
   -webkit-tap-highlight-color: blue
+  &::placeholder
+    color:lighten(blue, 80%)
 
 .black
   background-color:black
   border-color: black
   color:lighten(black, 40%)
   -webkit-tap-highlight-color: black
+  &::placeholder
+    color:lighten(black, 40%)
 
 html
   background-color:white-background

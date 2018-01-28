@@ -1,16 +1,21 @@
 textarea#wat
+  padding-top: base-line
+  width:50vw
+  -webkit-appearance: none
   line-height: 1
-  between: font-size, min-font, max-font, min-screen, max-screen
-  background-color: transparent
-  color:black
+  between: font-size
   transition-property: all
   outline: none
-  overflow: auto
   box-shadow: none
   resize: none
-  -webkit-appearance: none
+  border-radius:1vw
+
+  &::placeholder
+    between: font-size
+    text-align: center
 
   &:focus
+    padding: base-line
     outline:0
     border-width:0
     transition-duration: .4s
@@ -18,16 +23,6 @@ textarea#wat
     width: 100%
     line-height: base-line
     user-select: text
-    padding:0
     height: 100vh
-
     &::placeholder
       text-align: left
-      color: blue
-
-  &::placeholder
-    padding:0
-    vertical-align: middle
-    between: font-size, min-font, max-font, min-screen, max-screen
-    text-align: center
-    color: green

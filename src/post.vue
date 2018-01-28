@@ -2,18 +2,17 @@
   <section>
     <header>
       <textarea id="wat"
+        class="black"
         tabindex="1"
         placeholder="Wat?"
         v-model="new_post"
         v-on:focusout="add_post">
       </textarea>
     </header>
-    
     <posts-list :posts="posts"></posts-list>
-    <activity-list :posts="activity"></activity-list>
+    <activity-list :activity="activity"></activity-list>
   </section>
 </template>
-
 <script>
   import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
