@@ -9,11 +9,11 @@
 <script>
   import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
-  import ActivityList from '@/components/activity-list'
+  import activity_list from '@/components/activity-list'
   import '@/modules/timeago'
   export default {
     components: {
-      ActivityList
+      'activity-list': activity_list
     },
     data() {
       return {
