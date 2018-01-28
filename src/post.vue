@@ -1,5 +1,5 @@
-<template lang="html">
-  <section id="posts">
+<template>
+  <section>
     <header>
       <textarea id="wat"
         tabindex="1"
@@ -8,16 +8,21 @@
         v-on:focusout="add_post">
       </textarea>
     </header>
+    
     <posts-list :posts="posts"></posts-list>
+    <activity-list :posts="activity"></activity-list>
   </section>
 </template>
+
 <script>
   import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
-  import PostsList from '@/components/posts-list'
+  import posts_list from '@/components/posts-list'
+  import activity_list from '@/components/activity-list'
   export default {
     components: {
-      PostsList
+      'posts-list': posts_list,
+      'activity-list': activity_list
     },
     data() {
       return {
@@ -49,5 +54,4 @@
 </script>
 
 <style lang="stylus">
-
 </style>

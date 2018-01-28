@@ -1,18 +1,14 @@
  @require "../variables"
 
 details
-  width: 100vw
   & > summary
-    text-align: right
     color:blue
     font-size: 3em
-    padding: (base-line / 2)
     cursor: pointer
     &:focus
       outline:none
     &::-webkit-details-marker
       display:none
-
   &[open]
     min-height: 100vh
     border: none

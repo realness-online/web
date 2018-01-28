@@ -26,7 +26,6 @@ class Person {
     storageBucket: "littleman-8f289.appspot.com",
     messagingSenderId: "363642054727"
   }
-
   constructor() {
     // firebase.initializeApp(this.firebase_config)
   }

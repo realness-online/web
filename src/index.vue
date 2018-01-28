@@ -9,6 +9,3 @@
     <router-link to="/post" class="red">Post</router-link>
   </nav>
 </template>
-<script>
-  export default {}
-</script>
