@@ -1,13 +1,16 @@
 <template lang="html">
-  <textarea id="wat"
-    autofocus
-    tabindex="1"
-    placeholder="Wat?"
-    v-model="new_post"
-    v-on:focusout="add_post">
-  </textarea>
+  <section id="posts">
+    <header>
+      <textarea id="wat"
+        tabindex="1"
+        placeholder="Wat?"
+        v-model="new_post"
+        v-on:focusout="add_post">
+      </textarea>
+    </header>
+    <posts :posts="posts"></posts>
+  </section>
 </template>
-
 <script>
   import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'

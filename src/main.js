@@ -1,6 +1,7 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
+import VueRouter from 'vue-router'
 import App from '@/App'
 import events from '@/events'
 import feed from '@/feed'
@@ -9,7 +10,6 @@ import index from '@/index'
 import post from '@/post'
 import profile from '@/profile'
 import relationships from '@/relationships'
-import VueRouter from 'vue-router'
 
 Vue.use(VueRouter)
 Vue.config.productionTip = false
@@ -24,16 +24,16 @@ const routes = [
   { path: '/relationships', component: relationships }
 ]
 const router = new VueRouter({
-  mode: 'history',
-  routes
+  routes,
+  mode: 'history'
 })
 
 /* eslint-disable no-new */
 new Vue({
-    el: '#social_network',
-    router,
-    render: h => h(App)
-});
+  el: '#social_network',
+  router,
+  render: h => h(App)
+})
 
 // new Vue({
 //   el: '#social_network',

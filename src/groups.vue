@@ -1,11 +1,19 @@
 <template lang="html">
-  <h1>Groups</h1>
+  <section id="groups">
+    <header>
+      <h1>Groups</h1>
+    </header>
+  </section>
 </template>
 
-<script>
-export default {
-}
-</script>
-
-<style lang="css" scoped>
+<style lang="stylus">
 </style>
+
+<script>
+  export default {
+    data () {
+      return {
+      }
+    }
+  }
+</script>

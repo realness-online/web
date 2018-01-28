@@ -1,8 +1,10 @@
 <template lang="html">
-  <main>
+  <section id="profile">
+    <header>
+      <h1>Profile</h1>
+    </header>
     <activity :activity="activity"></activity>
-    <posts :posts="posts"></posts>
-  </main>
+  </section>
 </template>
 <script>
   import Item from '@/modules/Item'
@@ -17,7 +19,6 @@
     }
   }
 </script>
-
-<style lang="stylus" scoped>
+<style lang="stylus">
   @require 'style/variables'
 </style>

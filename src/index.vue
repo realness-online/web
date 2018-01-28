@@ -1,15 +1,13 @@
 <style src="./application.styl" lang="stylus"></style>
 <template>
-  <main id="social_network">
-    <nav id="main_nav">
-      <a href="/profile" class="black">Profile</a>
-      <a href="/relationships" class="green">Relationships</a>
-      <a href="/groups" class="green">Groups</a>
-      <a href="/events" class="blue">Events</a>
-      <a href="/feed" class="blue">Feed</a>
-      <a href="/post" class="red">Post</a>
-    </nav>
-  </main>
+  <nav id="main_nav">
+    <router-link to="/profile" class="black">Profile</router-link>
+    <router-link to="/relationships" class="green">Relationships</router-link>
+    <router-link to="/groups" class="green">Groups</router-link>
+    <router-link to="/events" class="blue">Events</router-link>
+    <router-link to="/feed" class="blue">Feed</router-link>
+    <router-link to="/post" class="red">Post</router-link>
+  </nav>
 </template>
 <script>
   export default {}
