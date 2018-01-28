@@ -8,13 +8,17 @@
         v-on:focusout="add_post">
       </textarea>
     </header>
-    <posts :posts="posts"></posts>
+    <posts-list :posts="posts"></posts-list>
   </section>
 </template>
 <script>
   import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
+  import PostsList from '@/components/posts-list'
   export default {
+    components: {
+      PostsList
+    },
     data() {
       return {
         posts: Item.get_items(posts_storage.from_storage()),

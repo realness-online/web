@@ -10,7 +10,6 @@
 <script>
   import Vue from 'vue'
   import {posts_storage} from '@/modules/Storage'
-
   export default {
     props: ['posts'],
     watch: {
