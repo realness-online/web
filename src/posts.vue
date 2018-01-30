@@ -67,10 +67,6 @@
   import posts_list from '@/components/posts-list'
   import activity_list from '@/components/activity-list'
   export default {
-    mounted() {
-      this.$nextTick(() => this.$refs.wat.focus())
-      // this.$refs.wat.focus()
-    },
     components: {
       'posts-list': posts_list,
       'activity-list': activity_list
