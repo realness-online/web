@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`index.vue renders navigation for the application 1`] = `
+<nav
+  id="main_nav"
+>
+  <router-link
+    class="black"
+    to="/profile"
+  >
+    Profile
+  </router-link>
+   
+  <router-link
+    class="green"
+    to="/relationships"
+  >
+    Relationships
+  </router-link>
+   
+  <router-link
+    class="green"
+    to="/groups"
+  >
+    Groups
+  </router-link>
+   
+  <router-link
+    class="blue"
+    to="/events"
+  >
+    Events
+  </router-link>
+   
+  <router-link
+    class="blue"
+    to="/feed"
+  >
+    Feed
+  </router-link>
+   
+  <router-link
+    class="red"
+    to="/posts"
+  >
+    Wat?
+  </router-link>
+</nav>
+`;

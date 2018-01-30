@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`index.vue render layour for who you know 1`] = `
+<section
+  id="profile"
+>
+  <header>
+    <h1>
+      Profile
+    </h1>
+  </header>
+   
+  <details>
+    <summary>
+      <h2>
+        Activity list
+      </h2>
+    </summary>
+     
+    <!---->
+  </details>
+   
+  <details>
+    <summary>
+      Posts
+    </summary>
+     
+    <!---->
+  </details>
+</section>
+`;

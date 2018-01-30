@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`index.vue renders event information 1`] = `
+<section
+  id="events"
+>
+  <header>
+    <h1>
+      Events
+    </h1>
+  </header>
+</section>
+`;
