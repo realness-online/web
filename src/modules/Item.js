@@ -52,5 +52,5 @@ class Item {
     }
   }
 }
-document.getItems = Item.get_items
+// document.getItems = Item.get_items
 export default Item

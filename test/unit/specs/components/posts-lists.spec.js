@@ -1,12 +1,12 @@
 import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
-import ProfileActivity from '@/components/profile-posts'
+import post_list from '@/components/posts-list'
 
-describe('profile-posts.vue', () => {
+describe('posts-list.vue', () => {
   let wrapper
 
   beforeEach(() => {
-    wrapper = shallow(ProfileActivity)
+    wrapper = shallow(post_list)
   })
 
   it('should render an activity wrapper (ol#activity)', () => {

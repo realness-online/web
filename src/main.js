@@ -7,7 +7,7 @@ import events from '@/events'
 import feed from '@/feed'
 import groups from '@/groups'
 import index from '@/index'
-import post from '@/post'
+import posts from '@/posts'
 import profile from '@/profile'
 import relationships from '@/relationships'
 
@@ -19,7 +19,7 @@ const routes = [
   { path: '/events', component: events },
   { path: '/feed', component: feed },
   { path: '/groups', component: groups },
-  { path: '/post', component: post },
+  { path: '/posts', component: posts },
   { path: '/profile', component: profile },
   { path: '/relationships', component: relationships }
 ]

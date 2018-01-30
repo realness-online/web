@@ -15,7 +15,6 @@
     props: ['activity'],
     watch: {
       activity() {
-        console.log('inside watch for activity()')
         Vue.nextTick(() => {
           activity_storage.save()
         })

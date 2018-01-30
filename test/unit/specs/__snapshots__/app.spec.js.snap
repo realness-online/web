@@ -4,27 +4,6 @@ exports[`App.vue renders layout for the application 1`] = `
 <main
   id="social_network"
 >
-  <header>
-    <textarea
-      placeholder="Wat?"
-      tabindex="1"
-    />
-  </header>
-   
-  <details>
-    <summary>
-      Posts
-    </summary>
-     
-    <!---->
-  </details>
-   
-  <details>
-    <summary>
-      Activity
-    </summary>
-     
-    <!---->
-  </details>
+  <router-view />
 </main>
 `;

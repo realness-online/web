@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`profile-posts.vue should render an activity wrapper (ol#activity) 1`] = `
-<section
+exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
+<div
   id="posts"
   itemprop="posts"
   itemscope="itemscope"
@@ -9,8 +9,8 @@ exports[`profile-posts.vue should render an activity wrapper (ol#activity) 1`] =
 />
 `;
 
-exports[`profile-posts.vue should render some posts 1`] = `
-<section
+exports[`posts-list.vue should render some posts 1`] = `
+<div
   id="posts"
   itemprop="posts"
   itemscope="itemscope"
@@ -33,5 +33,5 @@ exports[`profile-posts.vue should render some posts 1`] = `
       I like to move it
     </blockquote>
   </article>
-</section>
+</div>
 `;
