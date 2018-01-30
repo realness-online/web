@@ -12,9 +12,7 @@ exports[`index.vue render layour for who you know 1`] = `
    
   <details>
     <summary>
-      <h2>
-        Activity list
-      </h2>
+       Activity list 
     </summary>
      
     <!---->
