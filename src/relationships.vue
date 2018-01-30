@@ -5,15 +5,8 @@
     </header>
   </section>
 </template>
-
-<style lang="stylus">
+<style lang='stylus'>
+  @require 'style/variables'
+  section#relationships
+    padding: 0 base-line
 </style>
-
-<script>
-  export default {
-    data () {
-      return {
-      }
-    }
-  }
-</script>

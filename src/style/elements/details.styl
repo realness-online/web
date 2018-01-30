@@ -1,18 +1,18 @@
  @require "../variables"
 
 details
+  position: relative
   & > summary
+    margin-bottom: base-line
     color:blue
-    font-size: 3em
     cursor: pointer
     &:focus
       outline:none
     &::-webkit-details-marker
       display:none
   &[open]
-    min-height: 100vh
     border: none
     & > summary
       color: red
     & > *:not(summary)
-      animation-name: slideInDown
+      animation-name: fadeInDown

@@ -4,9 +4,7 @@
       <h1>Profile</h1>
     </header>
     <details>
-      <summary>
-        <h2>Activity list</h2>
-      </summary>
+      <summary> Activity list </summary>
       <activity-list :activity="activity"></activity-list>
     </details>
     <details>
@@ -36,4 +34,10 @@
   }
 </script>
 
-<style lang="stylus"></style>
+<style lang='stylus'>
+  @require 'style/variables'
+  section#profile
+    padding: 0 base-line
+    & > details
+      margin: base-line 0
+</style>

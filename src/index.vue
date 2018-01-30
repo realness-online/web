@@ -20,8 +20,10 @@
     justify-content:space-evenly
     align-items: flex-start
     padding-top:3vh
-
+    & > [href='/posts']
+      opacity:1
     & > *
+      opacity:0.5
       -webkit-tap-highlight-color: transparent
       animation-duration: 0
       transition-duration: 0.06s
@@ -52,5 +54,4 @@
         width: 43vw
         height: 23vh
         outline: none
-</style><script>
-</script>
+</style>

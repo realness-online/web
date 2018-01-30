@@ -1,8 +1,48 @@
+<template>
+  <form id="create_post">
+    <textarea id="wat"
+      ref='wat'
+      tabindex="1"
+      placeholder="Wat?"
+      v-model="new_post"
+      v-on:focusout="add_post">
+    </textarea>
+    <menu>
+      <input type="file" class="blue" name="photo" value="photo">
+      <input type="file" class="green" name="" value="upload">
+      <button>Done</button>
+    </menu>
+  </form>
+</template>
+
 <style lang="stylus">
   @require './application'
-  section#postworld
+  form#create_post
     padding: base-line
-
+    & > menu
+      position: absolute;
+      bottom: base-line
+      padding: base-line
+      resize: none
+      display:flex
+      justify-content: space-between;
+      align-content: space-between
+      & > input
+        between: font-size
+        border-radius:5vmax
+        border-width: 2vh
+        appearance: none
+        display: inline-block
+        width:33vw
+        vertical-align: middle
+        line-height: 1.33
+        between: font-size
+        transition-property: all
+        outline: none
+        box-shadow: none
+        &::placeholder
+          between: font-size
+          text-align: center
   textarea#wat
     between: font-size
     user-select: text
@@ -19,57 +59,7 @@
       user-select: text
       &::placeholder
         text-align: left
-
-  menu#secondary
-    position: absolute;
-    bottom: base-line
-    padding: base-line
-    display:flex
-    justify-content: space-between;
-    align-content: space-between
-    & > input
-      between: font-size
-      border-radius:5vmax
-      appearance: none
-      display: inline-block
-      width:33vw
-      vertical-align: middle
-      line-height: 1.33
-      between: font-size
-      transition-property: all
-      outline: none
-      box-shadow: none
-      resize: none
-      border-radius:3vw
-
-      border-width: 2vh
-      &::placeholder
-        between: font-size
-        text-align: center
-
 </style>
-
-<template>
-  <section id="postworld">
-    <header>
-    </header>
-    <textarea id="wat"
-      ref='wat'
-      tabindex="1"
-      placeholder="Wat?"
-      v-model="new_post"
-      v-on:focusout="add_post">
-    </textarea>
-    <footer>
-      <menu id='secondary'>
-        <input type="file" class="blue" name="photo" value="photo">
-        <input type="file" class="green" name="" value="upload">
-        <button>Done</button>
-      </menu>
-    </footer>
-  </section>
-</template>
-
 
 <script>
   import Item from '@/modules/Item'

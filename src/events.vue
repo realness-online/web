@@ -7,13 +7,7 @@
 </template>
 
 <style lang="stylus">
+  @require 'style/variables'
+  section#events
+    padding: 0 base-line
 </style>
-
-<script>
-  export default {
-    data () {
-      return {
-      }
-    }
-  }
-</script>
