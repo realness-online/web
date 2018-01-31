@@ -10,9 +10,13 @@ import index from '@/index'
 import posts from '@/posts'
 import profile from '@/profile'
 import relationships from '@/relationships'
+import Person from '@/modules/Person'
 
 Vue.use(VueRouter)
 Vue.config.productionTip = false
+
+const person = new Person()
+person.authorize()
 
 const routes = [
   { path: '/', component: index },

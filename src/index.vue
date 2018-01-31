@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav">
+  <nav id="main_nav" class='stage_one'>
     <router-link to="/profile" class="black">Profile</router-link>
     <router-link to="/relationships" class="green">Relationships</router-link>
     <router-link to="/groups" class="green">Groups</router-link>
@@ -20,10 +20,7 @@
     justify-content:space-evenly
     align-items: flex-start
     padding-top:3vh
-    & > [href='/posts']
-      opacity:1
     & > *
-      opacity:0.5
       -webkit-tap-highlight-color: transparent
       animation-duration: 0
       transition-duration: 0.06s
@@ -35,6 +32,7 @@
       border-style: solid
       border-radius: 3vw
       padding:base-line
+      animation-name: hue
       &:nth-child(even)
         text-align: right
         padding-right:base-line
@@ -42,9 +40,8 @@
         border-width: 1.33vh
         width: 42vw
         height: 22vh
-        margin: 0.5vh 0.75vw
+        margin: 1vh 1vw
         color:transparent
-        transition-property: all
       &:focus
         color:yellow
         transition-duration: 1.6s
@@ -54,4 +51,15 @@
         width: 43vw
         height: 23vh
         outline: none
+      // &:hover
+
+      nav.stage_one
+        & > [href='/feed']
+        & > [href='/profile']
+        & > [href='/relationships']
+        & > [href='/events']
+        & > [href='/groups']
+          visibility: hidden
+
+
 </style>
