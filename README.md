@@ -1,48 +1,56 @@
 # social_network
 
-- what you get
-  - your data
-    - stored as html
-    - stored on github
-    - quantified self
-    - distributed social_network
-    - this data has value and it's yours
-  - your activity
+## What you get.
+- your activity
     - what you have liked
     - what you have posted
     - what you have said to others
-  - your friends activity
+- your friends activity
     - what your friends have liked
     - what your friends have said to others
     - what your friends have posted
   - you can follow people
       - see what they have posted
+## What you don't get.
+- messaging
+- list of followers
+- commenting on what you post
+- list of who liked your shit
 
-- what you don't get
-  - messaging
-  - list of followers
-  - commenting on what you post
-  - list of who liked your shit
+## your data
+- stored as html
+- public information stored on github
+- quantified self
+- distributed social_network
+- this data has value and it's yours to spend
 
-## on-boadring states
+# on-boadring states
 
 - guest
     - they can post
     - they can sign up
-
 - they_post
     - they can view feed
+    - you can go live with katie
 
-- Person
-    - they have signed up
-    - they can look for friends
-    - they can post on friends timeline
-
+- person
+      - they have signed up
+      - they can look for friends
+      - they can post on friends timeline
+      - they can like friends posts
+      - you have a link to cash app
+      - you have a link to facebook
+      - you can add a SVG profile pic from an uploaded jpg
+      - we store an SVG history of your pics
+      - you can add katie and kristin
 - has_ten_relationships
-    - can create an event
-    - can Join a group
+      - can create an event
+      - can Join a group
 - has_fifty_relationships
-    - can create a group
+      - can create a group
+- has_github_integration
+      - all data is offloaded to github from firebase
+      - this is the quantified self
 
 ## Build Setup
 
