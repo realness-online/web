@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav" class='stage_one'>
+  <nav id="main_nav" class='person'>
     <router-link to="/profile" class="black">Sign up</router-link>
     <router-link to="/relationships" class="green">Relationships</router-link>
     <router-link to="/groups" class="green">Groups</router-link>
@@ -55,29 +55,30 @@
         height: 23vh
         outline: none
 
-  nav.stage_one
+  nav.guest
     & > [href='/feed']
     & > [href='/relationships']
     & > [href='/events']
     & > [href='/groups']
-      animation-name: slideInUp
       visibility: hidden
 
-   nav.stage_two
+   nav.they_post
      & > [href='/profile']
      & > [href='/relationships']
      & > [href='/events']
      & > [href='/groups']
-       animation-name: slideInDown
        visibility: hidden
 
-  nav.stage_three
-    & > [href=profile]
-      display: inlin
-      animation-name: slideInleft
-    & > [href='/relationships']
+  nav.person
     & > [href='/events']
     & > [href='/groups']
       visibility: hidden
+
+  nav.has_ten_friends
+    & > [href='/groups']
+      visibility: hidden
+
+   nav.has_25_friends
+     //
 
 </style>
