@@ -1,6 +1,6 @@
 <template>
   <nav id="main_nav" class='stage_one'>
-    <router-link to="/profile" class="black">Profile</router-link>
+    <router-link to="/profile" class="black">Sign up</router-link>
     <router-link to="/relationships" class="green">Relationships</router-link>
     <router-link to="/groups" class="green">Groups</router-link>
     <router-link to="/events" class="blue">Events</router-link>
@@ -22,8 +22,11 @@
     padding-top:3vh
     & > *
       -webkit-tap-highlight-color: transparent
-      animation-duration: 0
-      transition-duration: 0.06s
+      animation-name: shimer
+      animation-delay: 0.10s
+      animation-duration: 0.25s
+
+      transition-duration: 0
       transition-timing-function:ease-out
       text-align: left
       width: 44vw
@@ -32,7 +35,7 @@
       border-style: solid
       border-radius: 3vw
       padding:base-line
-      animation-name: hue
+
       &:nth-child(even)
         text-align: right
         padding-right:base-line
@@ -44,22 +47,37 @@
         color:transparent
       &:focus
         color:yellow
-        transition-duration: 1.6s
+        transition-duration: 0.6s
         opacity:1
         transition: all
         margin:0.5vh 0.5vw
         width: 43vw
         height: 23vh
         outline: none
-      // &:hover
 
-      nav.stage_one
-        & > [href='/feed']
-        & > [href='/profile']
-        & > [href='/relationships']
-        & > [href='/events']
-        & > [href='/groups']
-          visibility: hidden
+  nav.stage_one
+    & > [href='/feed']
+    & > [href='/relationships']
+    & > [href='/events']
+    & > [href='/groups']
+      animation-name: slideInUp
+      visibility: hidden
 
+   nav.stage_two
+     & > [href='/profile']
+     & > [href='/relationships']
+     & > [href='/events']
+     & > [href='/groups']
+       animation-name: slideInDown
+       visibility: hidden
+
+  nav.stage_three
+    & > [href=profile]
+      display: inlin
+      animation-name: slideInleft
+    & > [href='/relationships']
+    & > [href='/events']
+    & > [href='/groups']
+      visibility: hidden
 
 </style>
