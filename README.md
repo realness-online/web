@@ -1,6 +1,48 @@
-# bruce
+# social_network
 
-> A Vue.js project
+- what you get
+  - your data
+    - stored as html
+    - stored on github
+    - quantified self
+    - distributed social_network
+    - this data has value and it's yours
+  - your activity
+    - what you have liked
+    - what you have posted
+    - what you have said to others
+  - your friends activity
+    - what your friends have liked
+    - what your friends have said to others
+    - what your friends have posted
+  - you can follow people
+      - see what they have posted
+
+- what you don't get
+  - messaging
+  - list of followers
+  - commenting on what you post
+  - list of who liked your shit
+
+## on-boadring states
+
+- guest
+    - they can post
+    - they can sign up
+
+- they_post
+    - they can view feed
+
+- Person
+    - they have signed up
+    - they can look for friends
+    - they can post on friends timeline
+
+- has_ten_relationships
+    - can create an event
+    - can Join a group
+- has_fifty_relationships
+    - can create a group
 
 ## Build Setup
 
@@ -58,44 +100,3 @@ For a detailed explanation on how things work, check out the [ for vue-loader]()
     margin-right: 1rem;
   }
 </style>
-
-
-# social_network
-
-what you get
-  your activity
-    what you have liked
-    what you have posted
-    what you have said to others
-  your friends activity
-    what your friends have liked
-    what your friends have said to others
-    what your friends have posted
-  you can follow people
-    see what they post
-
-what you don't get
-  list of followers
-  comments on posts
-  list of who liked your shit
-
-**on-boadring states**
-
-guest
-    they can post.
-    they can sign up.
-
-they_post
-    they can view feed
-
-Person
-    they_signed_up
-    they can look for friends
-    they can post on friends timeline
-
-has_ten_relationships
-    Can create an event
-    can Join a group
-
-has_fifty_relationships
-    can create a group
