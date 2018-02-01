@@ -1,16 +1,7 @@
+
 a
   color: blue
   text-decoration: none
-  &:link
-    // color:black
-  &:visited
-    //
-  &:hover
-    //
-  &:active
-    //
-  // display: inline-flex
-  // text-shadow: 0.2px 0px darken(blue, 50%)
 
 summary
 p > a
@@ -19,11 +10,14 @@ p > a
   transition-duration: 0.8s
   transition-timing-function: ease-in-out
   transition-delay: 0.1s
-  border-bottom: 1px solid blue
-  border-bottom-right-radius: 1px
-  border-bottom-left-radius: 1px
+  border-bottom: .18vmin solid blue
+  border-bottom-right-radius: 0.5vmin
+  border-bottom-left-radius: 0.5vmin
+  &:link
+    color:blue
+  &:visited
+    border-color:yellow
   &:hover
-    transition-property: all
-    border-bottom: 1.35px solid blue
-    border-bottom-right-radius: 2px
-    border-bottom-left-radius: 2px
+    color:red
+  &:active
+    color:green

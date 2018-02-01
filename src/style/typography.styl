@@ -22,7 +22,7 @@ html
   font-smoothing: antialiased
   text-rendering: optimizeLegibility
   color:black
-  background-color: white-white
+  background-color: white-background
 
 p, textarea, input,  blockquote
   between: max-width, round(base-line * 25, 3), round(base-line * 25, 3)
@@ -72,12 +72,13 @@ p,blockquote
 
 h1,h2,h3,h4,h5,h6
   letter-spacing: -.04em
-  font-weight: 500
+  font-weight: normal
   margin-bottom: base-line
   line-height: 1em
   // text-transform: capitalize
 h3,h4,h5,h6
-  text-shadow: -1px 1px 0 darken(white, 15%)
+  letter-spacing: -.01em
+
 
 // Four baselines high
 h1,h2,h3
