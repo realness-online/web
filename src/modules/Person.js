@@ -1,14 +1,6 @@
 import firebase from 'firebase'
 class Person {
   constructor() {
-    this.config = {
-      apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',
-      authDomain: 'littleman-8f289.firebaseapp.com',
-      databaseURL: 'https://littleman-8f289.firebaseio.com',
-      storageBucket: 'littleman-8f289.appspot.com',
-      messagingSenderId: '363642054727'
-    }
-    firebase.initializeApp(this.config)
     this.storage_ref = firebase.storage().ref()
     this.auth = firebase.auth()
   }
