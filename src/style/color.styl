@@ -5,6 +5,15 @@ blue              = hsla(203, 58%, 57%, 0.69)
 green             = hsla(136, 47%, 53%, 0.8)
 red               = hsla(353, 83%, 57%, 0.73)
 yellow            = rgba(248, 231,  28, 0.65)
+orange            = rgba(245, 166,  35, 0.80)
+
+.orange
+  background-color:orange
+  border-color:orange
+  color:lighten(orange, 70%)
+  -webkit-tap-highlight-color: orange
+  &::placeholder
+    color:lighten(orange, 90%)
 
 .yellow
   background-color:yellow
@@ -12,7 +21,7 @@ yellow            = rgba(248, 231,  28, 0.65)
   color:darken(yellow, 25%)
   -webkit-tap-highlight-color: yellow
   &::placeholder
-    color:lighten(yellow, 70%)
+    color:darken(yellow, 25%)
 
 .red
   background-color:red
