@@ -2,7 +2,12 @@
   <section id="feed">
     <details>
       <summary><h3>Feed</h3></summary>
-      <p>so sad</p>
+      <p>
+        So sad.
+
+        <a href="/groups"> So very very sad</a>
+
+      </p>
     </details>
     <details>
       <summary><h3>Activity</h3> </summary>
