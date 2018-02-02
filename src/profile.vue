@@ -3,10 +3,8 @@
     <header>
       <h1>Profile</h1>
     </header>
-
   </section>
 </template>
-
 
 <style lang='stylus'>
   @require 'style/variables'

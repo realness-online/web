@@ -4,10 +4,44 @@ exports[`index.vue render feed info 1`] = `
 <section
   id="feed"
 >
-  <header>
-    <h1>
-      Feed
-    </h1>
-  </header>
+  <details>
+    <summary>
+      <h3>
+        Feed
+      </h3>
+    </summary>
+     
+    <p>
+      
+      So sad.
+
+      
+      <a
+        href="/groups"
+      >
+         So very very sad
+      </a>
+    </p>
+  </details>
+   
+  <details>
+    <summary>
+      <h3>
+        Activity
+      </h3>
+    </summary>
+     
+    <!---->
+  </details>
+   
+  <details>
+    <summary>
+      <h3>
+        Posts
+      </h3>
+    </summary>
+     
+    <!---->
+  </details>
 </section>
 `;

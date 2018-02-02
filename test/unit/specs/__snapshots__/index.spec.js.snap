@@ -2,13 +2,14 @@
 
 exports[`index.vue renders navigation for the application 1`] = `
 <nav
+  class="person"
   id="main_nav"
 >
   <router-link
     class="black"
     to="/profile"
   >
-    Profile
+    Sign up
   </router-link>
    
   <router-link
@@ -39,11 +40,14 @@ exports[`index.vue renders navigation for the application 1`] = `
     Feed
   </router-link>
    
-  <router-link
+  <textarea
     class="red"
-    to="/posts"
+    id="wat"
+    placeholder="Wat?"
+    tabindex="1"
   >
-    Wat?
-  </router-link>
+    &gt;
+  
+  </textarea>
 </nav>
 `;

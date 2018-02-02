@@ -9,21 +9,5 @@ exports[`index.vue render layour for who you know 1`] = `
       Profile
     </h1>
   </header>
-   
-  <details>
-    <summary>
-       Activity list 
-    </summary>
-     
-    <!---->
-  </details>
-   
-  <details>
-    <summary>
-      Posts
-    </summary>
-     
-    <!---->
-  </details>
 </section>
 `;
