@@ -1,19 +1,11 @@
 <template>
   <nav id="main_nav" class='person focus_on_post'>
-    <router-link to="/profile" class="black">Sign up</router-link>
-    <router-link to="/relationships" class="green">Relationships</router-link>
-    <router-link to="/groups" class="green">Groups</router-link>
-    <router-link to="/events" class="blue">Events</router-link>
-    <router-link to="/feed" class="blue">Feed</router-link>
-    <textarea id="wat"
-      class="red"
-      tabindex="1"
-      placeholder="Wat?"
-      v-model="new_post"
-      v-on:focusout="add_post"
-      v-on:focusin="on_focus_in">>
-    </textarea>
-    </form>
+    <router-link v-if="show" to="/profile" class="black">Sign up</router-link>
+    <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
+    <router-link v-if="show" to="/groups" class="green">Groups</router-link>
+    <router-link v-if="show" to="/events" class="blue">Events</router-link>
+    <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
+    <wat-textarea class="red" tabindex="1"></wat-textarea>
   </nav>
 </template>
 
@@ -21,14 +13,14 @@
   @require "./application"
   nav#main_nav
     width: 100vw
-    min-height: 80vh
+    min-height: 83vh
     display: flex
     flex-direction:row
     flex-wrap:wrap
     align-content: space-evenly
     justify-content:space-evenly
     align-items: flex-start
-    padding-top:3vh
+    // padding-top:3vh
     & > *
       -webkit-tap-highlight-color: transparent
       animation-name: shimer
@@ -39,7 +31,7 @@
       text-align: left
       width: 44vw
       height: 24vh
-      border-width: 1vmin
+      border-width: 1vmax
       border-style: solid
       border-radius: 3vw
       padding:base-line
@@ -89,33 +81,6 @@
 
      &.has_25_friends
        //
-
-  nav.focus_on_post a
-    display: none
-
-  textarea#wat
-    transition-duration: 0.3s
-    transition-property: all
-    text-align:left
-    color:black
-    font-family: lato
-    between: font-size
-    user-select: text
-    border-style: solid
-
-    &:focus
-      width:100vw
-      height:50vh
-      border-width:0
-      border-color:red
-      background-color: transparent
-      outline:0
-      transition-duration: .3s
-      transition-property: border-width border-color background-color
-
-      line-height: base-line
-      &::placeholder
-        text-align: left
 </style>
 
 <script>
@@ -123,24 +88,26 @@
   import {posts_storage, activity_storage} from '@/modules/Storage'
   import posts_list from '@/components/posts-list'
   import activity_list from '@/components/activity-list'
+  import wat_textarea from '@/components/wat-textarea'
   export default {
     components: {
       'posts-list': posts_list,
-      'activity-list': activity_list
+      'activity-list': activity_list,
+      'wat-textarea': wat_textarea
     },
     data() {
       return {
         posts: Item.get_items(posts_storage.from_storage()),
         activity: Item.get_items(activity_storage.from_storage()),
         new_post: '',
-        focus_textarea: ''
+        focus_textarea: '',
+        show: true
       }
     },
     methods: {
-      focus_ui() {
-
-      },
       add_post() {
+        this.show = true
+        window.location.hash = ''
         let created = new Date().toISOString()
         let value = this.new_post && this.new_post.trim()
         if (!value) { return }
@@ -157,7 +124,9 @@
           where: `/posts/1`
         })
       },
-      on_focus_in() {
+      enter_post_view() {
+        this.show = false
+        window.location.hash = 'wat'
         console.log('inside on focus in')
       }
     }
