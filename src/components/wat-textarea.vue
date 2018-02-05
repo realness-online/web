@@ -49,7 +49,6 @@ export default {
       this.$emit('toggling')
       this.show = false
       window.location.hash = 'wat'
-      console.log('inside on focus in')
     }
   }
 }
