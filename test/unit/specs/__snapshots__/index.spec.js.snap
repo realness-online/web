@@ -2,7 +2,7 @@
 
 exports[`index.vue renders navigation for the application 1`] = `
 <nav
-  class="person"
+  class="person focus_on_post"
   id="main_nav"
 >
   <router-link
@@ -16,7 +16,7 @@ exports[`index.vue renders navigation for the application 1`] = `
     class="green"
     to="/relationships"
   >
-    Relationships
+    Relations
   </router-link>
    
   <router-link
@@ -40,14 +40,6 @@ exports[`index.vue renders navigation for the application 1`] = `
     Feed
   </router-link>
    
-  <textarea
-    class="red"
-    id="wat"
-    placeholder="Wat?"
-    tabindex="1"
-  >
-    &gt;
-  
-  </textarea>
+  <!---->
 </nav>
 `;

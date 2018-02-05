@@ -3,8 +3,7 @@
     v-model="new_post"
     v-on:focusout="add_post"
     v-on:focusin="enter_post_view"
-    placeholder="Wat?"
-    >{{ value }}</textarea>
+    placeholder="Wat?">{{ value }}</textarea>
 </template>
 
 <script>
@@ -13,7 +12,7 @@ import {posts_storage, activity_storage} from '@/modules/Storage'
 import autosize from 'autosize'
 
 export default {
-  props: ['handle-change', 'value'],
+  props: ['value'],
   ready() {
     autosize(this.$el)
   },
@@ -27,6 +26,7 @@ export default {
   },
   methods: {
     add_post() {
+      this.$emit('toggling')
       this.show = true
       window.location.hash = ''
       let created = new Date().toISOString()
@@ -46,6 +46,7 @@ export default {
       })
     },
     enter_post_view() {
+      this.$emit('toggling')
       this.show = false
       window.location.hash = 'wat'
       console.log('inside on focus in')
@@ -53,9 +54,6 @@ export default {
   }
 }
 </script>
-
-
-
 
 <style lang="stylus">
   @require '../application'

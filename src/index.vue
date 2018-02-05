@@ -5,7 +5,7 @@
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
     <router-link v-if="show" to="/events" class="blue">Events</router-link>
     <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
-    <wat-textarea class="red" tabindex="1"></wat-textarea>
+    <wat-textarea class="red" v-on:toggling="show = !show" tabindex="1"></wat-textarea>
   </nav>
 </template>
 
@@ -84,50 +84,14 @@
 </style>
 
 <script>
-  import Item from '@/modules/Item'
-  import {posts_storage, activity_storage} from '@/modules/Storage'
-  import posts_list from '@/components/posts-list'
-  import activity_list from '@/components/activity-list'
   import wat_textarea from '@/components/wat-textarea'
   export default {
     components: {
-      'posts-list': posts_list,
-      'activity-list': activity_list,
       'wat-textarea': wat_textarea
     },
     data() {
       return {
-        posts: Item.get_items(posts_storage.from_storage()),
-        activity: Item.get_items(activity_storage.from_storage()),
-        new_post: '',
-        focus_textarea: '',
         show: true
-      }
-    },
-    methods: {
-      add_post() {
-        this.show = true
-        window.location.hash = ''
-        let created = new Date().toISOString()
-        let value = this.new_post && this.new_post.trim()
-        if (!value) { return }
-        this.new_post = ''
-        this.posts.push({
-          articleBody: value,
-          created_at: created
-        })
-        this.activity.push({
-          who: `/users/uid`,
-          what: 'Created a post',
-          why: 'unknown',
-          when: created,
-          where: `/posts/1`
-        })
-      },
-      enter_post_view() {
-        this.show = false
-        window.location.hash = 'wat'
-        console.log('inside on focus in')
       }
     }
   }
