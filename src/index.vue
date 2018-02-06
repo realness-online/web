@@ -1,12 +1,18 @@
 <template>
-  <nav id="main_nav" class='person focus_on_post'>
-    <router-link v-if="show" to="/profile" class="black">Sign up</router-link>
-    <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
-    <router-link v-if="show" to="/groups" class="green">Groups</router-link>
-    <router-link v-if="show" to="/events" class="blue">Events</router-link>
-    <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
-    <wat-textarea class="red" v-on:toggling="show = !show" tabindex="1"></wat-textarea>
-  </nav>
+  <section>
+    <header>
+      <nav id="main_nav" class='person focus_on_post'>
+        <router-link v-if="show" to="/profile" class="black">Sign up</router-link>
+        <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
+        <router-link v-if="show" to="/groups" class="green">Groups</router-link>
+        <router-link v-if="show" to="/events" class="blue">Events</router-link>
+        <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
+        <wat-textarea class="red" v-on:toggle-keyboard="show = !show" tabindex="1"></wat-textarea>
+      </nav>
+    </header>
+    <activity-list  :activity="activity"></activity-list>
+    <posts-list   :posts="posts"></posts-list>
+  </section>
 </template>
 
 <style lang="stylus">
@@ -85,12 +91,19 @@
 
 <script>
   import wat_textarea from '@/components/wat-textarea'
+  import {posts_storage, activity_storage} from '@/modules/Storage'
+  import posts_list from '@/components/posts-list'
+  import activity_list from '@/components/activity-list'
   export default {
     components: {
-      'wat-textarea': wat_textarea
+      'wat-textarea': wat_textarea,
+      'activity-list': activity_list,
+      'posts-list': posts_list
     },
     data() {
       return {
+        activity: activity_storage.get_items(),
+        posts: posts_storage.get_items(),
         show: true
       }
     }
