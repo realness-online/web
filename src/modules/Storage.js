@@ -1,3 +1,4 @@
+import Item from '@/modules/Item'
 class Storage {
   // Always retrieve from document or localstorage.
     // do not track state. state is document.
@@ -11,6 +12,10 @@ class Storage {
   from_storage() {
     let storage_string = localStorage.getItem(this.item_type)
     return Storage.hydrate(storage_string)
+  }
+
+  get_items() {
+    return Item.get_items(this.from_storage())
   }
 
   save() {

@@ -14,7 +14,6 @@ exports[`index.vue render feed info 1`] = `
     <p>
       
       So sad.
-
       
       <a
         href="/groups"

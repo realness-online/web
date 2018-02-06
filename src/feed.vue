@@ -4,9 +4,7 @@
       <summary><h3>Feed</h3></summary>
       <p>
         So sad.
-
         <a href="/groups"> So very very sad</a>
-
       </p>
     </details>
     <details>
@@ -31,7 +29,6 @@
 </style>
 
 <script>
-  import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
   import posts_list from '@/components/posts-list'
   import activity_list from '@/components/activity-list'
@@ -43,8 +40,8 @@
     },
     data() {
       return {
-        activity: Item.get_items(activity_storage.from_storage()),
-        posts: Item.get_items(posts_storage.from_storage())
+        activity: activity_storage.get_items(),
+        posts: posts_storage.get_items()
       }
     }
   }
