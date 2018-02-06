@@ -21,6 +21,7 @@ module.exports = {
   setupFiles: ['<rootDir>/test/unit/setup', "<rootDir>/test/polyfill/createRange.js", "jest-localstorage-mock"],
   mapCoverage: true,
   coverageDirectory: '<rootDir>/test/unit/coverage',
+  cacheDirectory: '<rootDir>/test/unit/cache',
   collectCoverageFrom: [
     'src/**/*.{js,vue}',
     '!src/main.js',
