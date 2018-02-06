@@ -59,7 +59,7 @@
   @require '../application'
   textarea#wat
     transition-property: all
-    transition-duration: 0.5s
+    transition-duration: 0.45s
     cursor:pointer
     transition-property: border-width, border-radius, text-align, background-color
     text-align:right
