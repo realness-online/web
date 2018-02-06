@@ -3,33 +3,24 @@
     v-model="new_post"
     v-on:focusout="add_post"
     v-on:focusin="enter_post_view"
-    placeholder="Wat?"
-    v-on:keyup.enter.prevent>
+    placeholder="Wat?">
     {{ value }}</textarea>
 </template>
 
 <script>
-  import Item from '@/modules/Item'
   import {posts_storage, activity_storage} from '@/modules/Storage'
-  import autosize from 'autosize'
   export default {
     props: ['value'],
-    ready() {
-      autosize(this.$el)
-    },
     data() {
       return {
-        posts: Item.get_items(posts_storage.from_storage()),
-        activity: Item.get_items(activity_storage.from_storage()),
-        new_post: '',
-        show: true
+        posts: posts_storage.get_items(),
+        activity: activity_storage.get_items(),
+        new_post: ''
       }
     },
     methods: {
       add_post() {
-        this.$emit('toggling')
-        this.show = true
-        window.location.hash = ''
+        this.$emit('toggle-keyboard')
         let created = new Date().toISOString()
         let value = this.new_post && this.new_post.trim()
         if (!value) { return }
@@ -47,9 +38,7 @@
         })
       },
       enter_post_view() {
-        this.$emit('toggling')
-        this.show = false
-        window.location.hash = 'wat'
+        this.$emit('toggle-keyboard')
       }
     }
   }
@@ -74,10 +63,9 @@
       cursor: auto
       text-align: left
       width:100vw
-      // min-height:100vh
+      border-top: none
       border-width:0
       border-radius: 0
-      border-color:red
       background-color: transparent
       outline:0
       transition-duration: .3s
