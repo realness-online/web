@@ -2,9 +2,20 @@
   <section id="events">
     <header>
       <h1>Events</h1>
+      <nav>
+        <router-link to="/">home</router-link>
+      </nav>
     </header>
   </section>
 </template>
+
+<script>
+  export default {
+    data() {
+      return {}
+    }
+  }
+</script>
 
 <style lang="stylus">
   @require 'style/variables'

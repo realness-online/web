@@ -13,7 +13,7 @@
   import wat_textarea from '@/components/wat-textarea'
   export default {
     components: {
-      'wat-textarea': wat_textarea,
+      'wat-textarea': wat_textarea
     },
     data() {
       return {

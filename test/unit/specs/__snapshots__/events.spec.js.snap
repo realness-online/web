@@ -8,6 +8,14 @@ exports[`index.vue renders event information 1`] = `
     <h1>
       Events
     </h1>
+     
+    <nav>
+      <router-link
+        to="/"
+      >
+        home
+      </router-link>
+    </nav>
   </header>
 </section>
 `;

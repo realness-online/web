@@ -64,7 +64,6 @@
       text-align: left
       width:100vw
       border-top: none
-      border-width:0
       border-radius: 0
       background-color: transparent
       outline:0

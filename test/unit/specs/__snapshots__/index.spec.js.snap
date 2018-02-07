@@ -2,49 +2,7 @@
 
 exports[`index.vue renders navigation for the application 1`] = `
 <section>
-  <header>
-    <nav
-      class="person focus_on_post"
-      id="main_nav"
-    >
-      <router-link
-        class="black"
-        to="/profile"
-      >
-        Sign up
-      </router-link>
-       
-      <router-link
-        class="green"
-        to="/relationships"
-      >
-        Relations
-      </router-link>
-       
-      <router-link
-        class="green"
-        to="/groups"
-      >
-        Groups
-      </router-link>
-       
-      <router-link
-        class="blue"
-        to="/events"
-      >
-        Events
-      </router-link>
-       
-      <router-link
-        class="blue"
-        to="/feed"
-      >
-        Feed
-      </router-link>
-       
-      <!---->
-    </nav>
-  </header>
+  <!---->
    
   <!---->
    

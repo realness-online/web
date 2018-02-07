@@ -1,5 +1,6 @@
 <template lang="html">
   <section id="feed">
+
     <details>
       <summary><h3>Feed</h3></summary>
       <p>

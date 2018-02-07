@@ -5,6 +5,13 @@
     </header>
   </section>
 </template>
+<script>
+  export default {
+    data() {
+      return {}
+    }
+  }
+</script>
 <style lang='stylus'>
   @require 'style/variables'
   section#relationships

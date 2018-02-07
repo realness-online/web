@@ -10,18 +10,12 @@ import index from '@/index'
 import profile from '@/profile'
 import relationships from '@/relationships'
 import firebase from 'firebase'
+import Person from '@/modules/Person'
+
+Person.initializeApp()
 
 Vue.use(VueRouter)
 Vue.config.productionTip = false
-
-firebase.initializeApp({
-  apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',
-  authDomain: 'littleman-8f289.firebaseapp.com',
-  databaseURL: 'https://littleman-8f289.firebaseio.com',
-  storageBucket: 'littleman-8f289.appspot.com',
-  messagingSenderId: '363642054727'
-})
-
 const routes = [
   { path: '/', component: index },
   { path: '/events', component: events },

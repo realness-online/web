@@ -11,8 +11,7 @@
   import {posts_storage, activity_storage} from '@/modules/Storage'
   import posts_list from '@/components/posts-list'
   import activity_list from '@/components/activity-list'
-  import Person from '@/modules/Person'
-
+  
   export default {
     components: {
       'main-nav': main_nav,
