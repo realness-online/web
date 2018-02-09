@@ -6,8 +6,77 @@ exports[`index.vue render layour for who you know 1`] = `
 >
   <header>
     <h1>
-      Profile
+      Who are you?
     </h1>
   </header>
+   
+  <form
+    action="index.html"
+    id="profile-form"
+    method="post"
+  >
+    <fieldset>
+      <input
+        id="name"
+        itemprop="name"
+        placeholder="Name"
+        type="text"
+      />
+    </fieldset>
+     
+    <fieldset
+      id="profile-url"
+    >
+      <label
+        for="url"
+      >
+        /
+      </label>
+       
+      <input
+        id="url"
+        itemprop="url"
+        placeholder="profile-name"
+        type="url"
+        value=""
+      />
+    </fieldset>
+     
+    <fieldset
+      id="profile-image"
+      style="display: none;"
+    >
+      <label
+        for="profile-image"
+      >
+        Profile picture
+      </label>
+       
+      <input
+        id="profile-image"
+        itemprop="profile-image"
+        type="file"
+      />
+       
+      <figure>
+        <img
+          alt=""
+          itemprop="image-url"
+          src=""
+        />
+         
+        <figcaption>
+          <a
+            href="url"
+            itemprop="url"
+          />
+           
+          <span
+            itemprop=""
+          />
+        </figcaption>
+      </figure>
+    </fieldset>
+  </form>
 </section>
 `;

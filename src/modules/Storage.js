@@ -1,12 +1,16 @@
 import Item from '@/modules/Item'
+
 class Storage {
   // Always retrieve from document or localstorage.
     // do not track state. state is document.
       // if no document then localStorage
       // if not localstorage then network
-  constructor(item_type, selector = `[itemtype="${item_type}"]`) {
+  constructor(item_type,
+              location = `/${item_type}.html`,
+              selector = `[itemtype="${item_type}"]`) {
     this.item_type = item_type
     this.selector = selector
+    this.location = location
   }
 
   from_storage() {

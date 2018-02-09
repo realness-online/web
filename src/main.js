@@ -10,9 +10,25 @@ import index from '@/index'
 import profile from '@/profile'
 import relationships from '@/relationships'
 import firebase from 'firebase'
-import Person from '@/modules/Person'
 
-Person.initializeApp()
+firebase.initializeApp({
+  apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',
+  authDomain: 'littleman-8f289.firebaseapp.com',
+  databaseURL: 'https://littleman-8f289.firebaseio.com',
+  storageBucket: 'littleman-8f289.appspot.com',
+  messagingSenderId: '363642054727'
+})
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const url = `users/${firebase.auth().currentUser.uid}.html`
+   // create profile. on server.
+    console.log('User is signed in.', firebase.auth(), url)
+  } else {
+    console.log('User is signed out.')
+    firebase.auth().signInAnonymously()
+  }
+})
 
 Vue.use(VueRouter)
 Vue.config.productionTip = false

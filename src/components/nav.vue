@@ -1,6 +1,6 @@
 <template>
   <nav id="main_nav" class='person focus_on_post'>
-    <router-link v-if="show" to="/profile" class="black">Sign up</router-link>
+    <router-link v-if="show" to="/profile" class="black">Name</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
     <router-link v-if="show" to="/events" class="blue">Events</router-link>
