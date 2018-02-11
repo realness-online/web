@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav" class='person focus_on_post'>
+  <nav id="main_nav" class='guest'>
     <router-link v-if="show" to="/profile" class="black">Name</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
@@ -34,7 +34,6 @@
     align-content: space-evenly
     justify-content:space-evenly
     align-items: flex-start
-    // padding-top:3vh
     & > *
       -webkit-tap-highlight-color: transparent
       animation-name: shimer
@@ -70,19 +69,18 @@
         outline: none
 
     &.guest
-      & > [href='/profile']
       & > [href='/feed']
       & > [href='/relationships']
       & > [href='/events']
       & > [href='/groups']
         visibility: hidden
 
-     nav.they_post
-       & > [href='/profile']
-       & > [href='/relationships']
-       & > [href='/events']
-       & > [href='/groups']
-         visibility: hidden
+    &.guest_posts
+      & > [href='/profile']
+      & > [href='/relationships']
+      & > [href='/events']
+      & > [href='/groups']
+        visibility: hidden
 
     &.person
       & > [href='/events']
