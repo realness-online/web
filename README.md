@@ -19,7 +19,7 @@
 
 ## your data
 - stored as html
-- public information stored on github
+- public information stored on github or third party
 - quantified self
 - distributed social_network
 - this data has value and it's yours to spend
