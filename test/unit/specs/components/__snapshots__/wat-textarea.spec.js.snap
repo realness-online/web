@@ -5,6 +5,6 @@ exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
   id="wat"
   placeholder="Wat?"
 >
-    
+  
 </textarea>
 `;
