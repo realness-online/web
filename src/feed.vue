@@ -20,7 +20,7 @@
 </template>
 
 <style lang='stylus'>
-  @require 'style/variables'
+  @require 'application'
   section#feed
     display:flex
     flex-direction: column
