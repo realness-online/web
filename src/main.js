@@ -21,14 +21,13 @@ firebase.initializeApp({
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
-    const url = `users/${firebase.auth().currentUser.uid}.html`
    // create profile. on server.
-    console.log('User is signed in.', firebase.auth(), url)
   } else {
-    console.log('User is signed out.')
     firebase.auth().signInAnonymously()
   }
 })
+
+Vue.prototype.$bus = new Vue({})
 
 Vue.use(VueRouter)
 Vue.config.productionTip = false
