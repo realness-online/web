@@ -26,7 +26,6 @@
 <style lang="stylus">
   @require '../application'
   nav#main_nav
-    width: 100vw
     min-height: 83vh
     display: flex
     flex-direction:row
