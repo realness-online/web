@@ -7,6 +7,4 @@ describe('index.vue', () => {
     let wrapper = shallow(index)
     expect(wrapper.element).toMatchSnapshot()
   })
-
-  
 })
