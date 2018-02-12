@@ -1,8 +1,10 @@
 <template>
   <section id="app">
     <main-nav></main-nav>
-    <activity-list></activity-list>
-    <posts-list></posts-list>
+    <aside>
+      <activity-list></activity-list>
+      <posts-list></posts-list>
+    </aside>
   </section>
 </template>
 
@@ -18,9 +20,3 @@
     }
   }
 </script>
-
-<style lang="stylus">
-  @require 'application'
-  section#app
-    padding:0 base-line
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <ol itemprop="activity">
+  <ol itemprop="activity" itemref="profile">
     <li v-for="event in activity" itemscope itemtype="/activity">
       <a itemprop="where" :href="event.where">
         <b itemprop="what">{{event.what}}</b>
@@ -40,3 +40,9 @@
     }
   }
 </script>
+
+<style lang="stylus">
+  ol[itemprop="activity"]
+    display:flex
+    flex-direction: column-reverse
+</style>

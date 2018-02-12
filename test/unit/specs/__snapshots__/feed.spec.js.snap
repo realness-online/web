@@ -6,9 +6,7 @@ exports[`index.vue render feed info 1`] = `
 >
   <details>
     <summary>
-      <h3>
-        Feed
-      </h3>
+      Feed
     </summary>
      
     <p>
@@ -25,9 +23,7 @@ exports[`index.vue render feed info 1`] = `
    
   <details>
     <summary>
-      <h3>
-        Activity
-      </h3>
+      Activity
     </summary>
      
     <!---->
@@ -35,9 +31,7 @@ exports[`index.vue render feed info 1`] = `
    
   <details>
     <summary>
-      <h3>
-        Posts
-      </h3>
+      Posts
     </summary>
      
     <!---->

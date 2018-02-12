@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav" class='guest'>
+  <nav id="main_nav" class='guest-posts'>
     <router-link v-if="show" to="/profile" class="black">Name</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
@@ -74,7 +74,7 @@
       & > [href='/groups']
         visibility: hidden
 
-    &.guest_posts
+    &.guest-posts
       & > [href='/profile']
       & > [href='/relationships']
       & > [href='/events']
@@ -86,10 +86,10 @@
       & > [href='/groups']
         visibility: hidden
 
-    &.has_ten_friends
+    &.has-ten-friends
       & > [href='/groups']
         visibility: hidden
 
-     &.has_25_friends
+     &.has-25-friends
        //
 </style>
