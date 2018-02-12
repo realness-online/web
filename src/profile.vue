@@ -3,6 +3,7 @@
     <header>
       <h1>Who are you?</h1>
     </header>
+    <profile-as-figure></profile-as-figure>
     <form id="profile-form" action="index.html" method="post">
       <fieldset>
         <input type='text' id="name" itemprop="name" placeholder="Name">
@@ -26,25 +27,27 @@
   </section>
 </template>
 <script>
+  import profile_as_figure from '@/components/profile-as-figure'
   export default {
+    components: {
+      'profile-as-figure': profile_as_figure
+    },
     data() {
       return {}
-    },
-    methods: {
-      set_name() {
-        console.log('set the name')
-      }
     }
   }
 </script>
 <style lang='stylus'>
   @require 'application'
-
   section#profile
     padding: 0 base-line
   form#profile-form
     input
       color: red
+      &:focus
+        outline:0
+        &::placeholder
+          color:lighten(black, 40%)
       &::placeholder
         color: orange
     label[for=url]
@@ -56,7 +59,7 @@
       visibility: hidden
     & > fieldset
       padding: base-line
-      border:0.15vmin solid black
+      border:0.37vmin solid black
       margin-bottom: base-line
       &:last-of-type
         margin-bottom:0
