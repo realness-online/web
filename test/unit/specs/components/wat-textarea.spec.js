@@ -2,45 +2,79 @@ import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import wat from '@/components/wat-textarea'
 
-describe('posts-list.vue', () => {
+describe('wat-textarea.vue', () => {
 
-  it('should render an activity wrapper (ol#activity)', () => {
+  it('renders a textarea', () => {
     let wrapper = shallow(wat)
     expect(wrapper.element).toMatchSnapshot()
   })
 
-  it('add_post() exists', () => {
-    expect(typeof wat.methods.add_post).toBe('function')
+  it('prepare_post() exists', () => {
+    expect(typeof wat.methods.prepare_post).toBe('function')
   })
 
-  it('add_post creates a post', () => {
+  it('emits an event when focused', () => {
+    let wrapper = shallow(wat)
+    const textarea = wrapper.find('#wat')
+    const spy = jest.fn()
+    wrapper.vm.$on('toggle-keyboard', spy)
+
+    textarea.trigger('focusin')
+    expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('emits an event when it looses focus', () => {
+    let wrapper = shallow(wat)
+    const textarea = wrapper.find('#wat')
+    const spy = jest.fn()
+    wrapper.vm.$on('toggle-keyboard', spy)
+
+    textarea.trigger('focusout')
+    expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+
+  it('emits an post-added event when there is text', () => {
     let wrapper = shallow(wat, {
       data: {
-        activity:[],
-        posts:[],
         new_post:'I like to move it.'
       }
     })
-    expect(wrapper.vm.activity.length).toBe(0)
-    expect(wrapper.vm.posts.length).toBe(0)
-    wrapper.vm.add_post()
-    expect(wrapper.vm.posts.length).toBe(1)
-    expect(wrapper.vm.activity.length).toBe(1)
+    const textarea = wrapper.find('#wat')
+    const spy = jest.fn()
+    wrapper.vm.$on('post-added', spy)
+
+    textarea.trigger('focusout')
+    expect(spy).toHaveBeenCalledTimes(1)
   })
 
-  it('add_post() only adds a post when there is text', () => {
-    let wrapper = shallow(wat, {
-      data: {
-        activity:[],
-        postss:[],
-        new_post:''
-      }
-    })
-    expect(wrapper.vm.posts.length).toBe(0)
-    expect(wrapper.vm.activity.length).toBe(0)
-    wrapper.vm.add_post()
-    expect(wrapper.vm.posts.length).toBe(0)
-    expect(wrapper.vm.activity.length).toBe(0)
+  it('does not emit post-added when there is not text', () => {
+
+    let wrapper = shallow(wat)
+    const textarea = wrapper.find('#wat')
+    const spy = jest.fn()
+    wrapper.vm.$on('post-added', spy)
+
+    textarea.trigger('focusout')
+    expect(spy).toHaveBeenCalledTimes(0)
+
   })
+
+
+
+  // it('add_post() only adds a post when there is text', () => {
+  //   let wrapper = shallow(wat, {
+  //     data: {
+  //       activity:[],
+  //       postss:[],
+  //       new_post:''
+  //     }
+  //   })
+  //   expect(wrapper.vm.posts.length).toBe(0)
+  //   expect(wrapper.vm.activity.length).toBe(0)
+  //   wrapper.vm.add_post()
+  //   expect(wrapper.vm.posts.length).toBe(0)
+  //   expect(wrapper.vm.activity.length).toBe(0)
+  // })
 
 })

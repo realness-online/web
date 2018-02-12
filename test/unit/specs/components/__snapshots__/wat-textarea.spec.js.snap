@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
+exports[`wat-textarea.vue renders a textarea 1`] = `
 <textarea
   id="wat"
   placeholder="Wat?"

@@ -1,43 +1,32 @@
 <template lang="html">
   <textarea id="wat"
     v-model="new_post"
-    v-on:focusout="add_post"
-    v-on:focusin="enter_post_view"
-    placeholder="Wat?">
-    {{ value }}</textarea>
+    v-on:focusout="prepare_post"
+    v-on:focusin="wat_focused"
+    placeholder="Wat?">{{value}}</textarea>
 </template>
 
 <script>
-  import {posts_storage, activity_storage} from '@/modules/Storage'
   export default {
     props: ['value'],
     data() {
       return {
-        posts: posts_storage.get_items(),
-        activity: activity_storage.get_items(),
         new_post: ''
       }
     },
     methods: {
-      add_post() {
+      prepare_post() {
         this.$emit('toggle-keyboard')
-        let created = new Date().toISOString()
-        let value = this.new_post && this.new_post.trim()
-        if (!value) { return }
+
+        let post = {}
+        post.articleBody = this.new_post && this.new_post.trim()
+        if (!post.articleBody) { return }
         this.new_post = ''
-        this.posts.push({
-          articleBody: value,
-          created_at: created
-        })
-        this.activity.push({
-          who: `/users/uid`,
-          what: 'Created a post',
-          why: 'unknown',
-          when: created,
-          where: `/posts/1`
-        })
+        post.created = new Date().toISOString()
+
+        this.$emit('post-added', post)
       },
-      enter_post_view() {
+      wat_focused() {
         this.$emit('toggle-keyboard')
       }
     }
@@ -65,6 +54,7 @@
       width:100vw
       border-top: none
       border-radius: 0
+      border-width:0
       background-color: transparent
       outline:0
       transition-duration: .3s
