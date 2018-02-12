@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`index.vue renders navigation for the application 1`] = `
-<section>
+<section
+  id="app"
+>
   <!---->
    
   <!---->

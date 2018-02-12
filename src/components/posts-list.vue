@@ -9,7 +9,6 @@
 <script>
   import Vue from 'vue'
   import {posts_storage} from '@/modules/Storage'
-  // import person from '@/modules/Person'
   export default {
     data() {
       return {
@@ -24,7 +23,6 @@
     watch: {
       posts() {
         Vue.nextTick(() => {
-          console.log('saving')
           posts_storage.save()
         })
       }
