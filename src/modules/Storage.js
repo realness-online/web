@@ -6,8 +6,8 @@ class Storage {
       // if no document then localStorage
       // if not localstorage then network
   constructor(item_type,
-              location = `/${item_type}.html`,
-              selector = `[itemtype="${item_type}"]`) {
+              selector = `[itemtype="${item_type}"]`,
+              location = `/${item_type}.html`) {
     this.item_type = item_type
     this.selector = selector
     this.location = location
@@ -19,15 +19,18 @@ class Storage {
   }
 
   get_items() {
-    return Item.get_items(this.from_storage())
+    let items = Item.get_items(this.from_storage())
+    // console.log('get_items().length', items.length, items)
+    return items
   }
 
   save() {
     // save assumes that vue has created components on the page that represent
     // the entirtiy of the data to be saved
     let items = document.querySelector(this.selector)
+    // console.log('storage.save() items', items)
     if (!items) { return false }
-    items = items.outerHTML // use outer html to capture metadata about item
+    items = items.outerHTML
     localStorage.setItem(this.item_type, items)
     return true
   }
