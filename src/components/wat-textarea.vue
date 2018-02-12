@@ -22,9 +22,9 @@
         post.articleBody = this.new_post && this.new_post.trim()
         if (!post.articleBody) { return }
         this.new_post = ''
-        post.created = new Date().toISOString()
 
-        this.$emit('post-added', post)
+        post.created_at = new Date().toISOString()
+        this.$bus.$emit('post-added', post)
       },
       wat_focused() {
         this.$emit('toggle-keyboard')
@@ -49,6 +49,7 @@
     resize: none
     caret-color: red
     &:focus
+      padding:base-line 0
       cursor: auto
       text-align: left
       width:100vw
