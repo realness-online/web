@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import post_list from '@/components/posts-list'
 

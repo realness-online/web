@@ -4,8 +4,7 @@ exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
 <div
   id="posts"
   itemprop="posts"
-  itemscope="itemscope"
-  itemtype="http://schema.org/blog"
+  itemref="profile"
 />
 `;
 
@@ -13,8 +12,7 @@ exports[`posts-list.vue should render some posts 1`] = `
 <div
   id="posts"
   itemprop="posts"
-  itemscope="itemscope"
-  itemtype="http://schema.org/blog"
+  itemref="profile"
 >
   <article
     itemscope="itemscope"
@@ -24,7 +22,9 @@ exports[`posts-list.vue should render some posts 1`] = `
       <time
         datetime="2017-12-20T23:01:14.310Z"
         itemprop="created_at"
-      />
+      >
+        calculating...
+      </time>
     </header>
      
     <blockquote
