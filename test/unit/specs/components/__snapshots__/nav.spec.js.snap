@@ -2,7 +2,7 @@
 
 exports[`posts-list.vue should render the application navigation 1`] = `
 <nav
-  class="guest_posts"
+  class="guest"
   id="main_nav"
 >
   <router-link
