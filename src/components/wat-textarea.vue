@@ -17,7 +17,7 @@
     methods: {
       prepare_post() {
         this.$emit('toggle-keyboard')
-        window.location.hash=''
+        window.location.hash = ''
         let post = {}
         post.articleBody = this.new_post && this.new_post.trim()
         if (!post.articleBody) { return }
@@ -27,7 +27,7 @@
         this.$bus.$emit('post-added', post)
       },
       wat_focused() {
-        window.location.hash='wat'
+        window.location.hash = 'wat'
         this.$emit('toggle-keyboard')
       }
     }
