@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import wat from '@/components/wat-textarea'
 
@@ -42,7 +41,7 @@ describe('wat-textarea.vue', () => {
     })
     const textarea = wrapper.find('#wat')
     const spy = jest.fn()
-    wrapper.vm.$on('post-added', spy)
+    wrapper.vm.$bus.$on('post-added', spy)
 
     textarea.trigger('focusout')
     expect(spy).toHaveBeenCalledTimes(1)
