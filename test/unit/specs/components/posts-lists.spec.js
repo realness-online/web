@@ -3,7 +3,10 @@ import post_list from '@/components/posts-list'
 
 describe('posts-list.vue', () => {
   let wrapper
-
+  const post = {
+    created_at: '2017-12-20T23:01:14.310Z',
+    articleBody: 'I like to move it'
+  }
   beforeEach(() => {
     wrapper = shallow(post_list)
   })
@@ -17,8 +20,16 @@ describe('posts-list.vue', () => {
       created_at: '2017-12-20T23:01:14.310Z',
       articleBody: 'I like to move it'
     }
-    wrapper.setProps({posts: [post]}) // you can test watchers by setting props
+    wrapper.setData({posts: [post]})
     expect(wrapper.element).toMatchSnapshot()
   })
+
+  it('should add an activity when post-added is emited', () => {
+    expect(wrapper.vm.posts.length).toBe(0)
+    wrapper.vm.$bus.$emit('post-added', post)
+    expect(wrapper.vm.posts.length).toBe(1)
+    expect(wrapper.find('li')).toBeTruthy()
+  })
+
 
 })
