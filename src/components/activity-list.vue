@@ -19,15 +19,13 @@
     },
     created: function() {
       this.$bus.$on('post-added', post => {
-        console.log('adding a post to the activity list')
-        let event = {
+        this.activity.push({
           who: 'person/id',
           what: 'created a post',
           why: 'unknown',
           when: post.created_at,
           where: post.location
-        }
-        this.activity.push(event)
+        })
       })
     },
     watch: {
