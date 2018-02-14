@@ -31,9 +31,6 @@
   export default {
     components: {
       'profile-as-figure': profile_as_figure
-    },
-    data() {
-      return {}
     }
   }
 </script>

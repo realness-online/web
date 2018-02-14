@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav" class='guest'>
+  <nav id="main_nav" v-bind:class="onboarding">
     <router-link v-if="show" to="/profile" class="black">Name</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
@@ -15,9 +15,29 @@
     components: {
       'wat-textarea': wat_textarea
     },
+    created: function() {
+      this.$bus.$on('post-added', () => {
+        this.posts = true
+      })
+    },
     data() {
       return {
-        show: true
+        show: true,
+        posts: localStorage.getItem('posts-count') > 0,
+        person: false,
+        events: false,
+        groups: false
+      }
+    },
+    computed: {
+      onboarding() {
+        console.log('onboarding', this.posts, this.person, this.events, this.groups)
+        return {
+          posts: this.posts > 0,
+          person: this.person,
+          events: this.events,
+          groups: this.groups
+        }
       }
     }
   }
@@ -48,6 +68,7 @@
       border-radius: 3vw
       padding:base-line
     & > a
+      visibility: hidden
       &:nth-child(even)
         text-align: right
         padding-right:base-line
@@ -66,30 +87,19 @@
         width: 43vw
         height: 23vh
         outline: none
-
-    &.guest
+  nav#main_nav
+    &.posts
       & > [href='/profile']
       & > [href='/feed']
-      & > [href='/relationships']
-      & > [href='/events']
-      & > [href='/groups']
-        visibility: hidden
-
-    &.guest-posts
-      & > [href='/relationships']
-      & > [href='/events']
-      & > [href='/groups']
-        visibility: hidden
-
+        visibility: visible
     &.person
+      & > [href='/profile']
+      & > [href='/relationships']
+        visibility: visible
+    &.events
       & > [href='/events']
-      & > [href='/groups']
-        visibility: hidden
-
-    &.has-ten-friends
-      & > [href='/groups']
-        visibility: hidden
-
-     &.has-25-friends
-       //
+        visibility: visible
+     &.groups
+       & > [href='/groups']
+         visibility: visible
 </style>

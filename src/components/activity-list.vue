@@ -26,7 +26,6 @@
           when: post.created_at,
           where: post.location
         })
-        localStorage.setItem('posts-count', this.activity.length)
       })
     },
     watch: {

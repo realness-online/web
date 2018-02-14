@@ -16,8 +16,10 @@
       }
     },
     created: function() {
+      localStorage.setItem('posts-count', this.posts.length)
       this.$bus.$on('post-added', post => {
         this.posts.push(post)
+        localStorage.setItem('posts-count', this.posts.length)
       })
     },
     watch: {
