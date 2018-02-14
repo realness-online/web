@@ -1,7 +1,7 @@
 <template lang="html">
   <section id="feed">
     <header>
-      <h2>Posts</h2>
+      <h2>Feed</h2>
     </header>
     <posts-list></posts-list>
   </section>

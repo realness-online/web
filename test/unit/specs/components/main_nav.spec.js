@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
-import nav from '@/components/nav'
+import main_nav from '@/components/main-nav'
 
 describe('posts-list.vue', () => {
 
   it('should render the application navigation', () => {
-    let wrapper = shallow(nav)
+    let wrapper = shallow(main_nav)
     expect(wrapper.element).toMatchSnapshot()
   })
 

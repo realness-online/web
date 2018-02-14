@@ -38,7 +38,7 @@ class Storage {
     return document.createRange().createContextualFragment(item_as_string)
   }
 }
-
 export default Storage
-export const posts_storage = new Storage('http://schema.org/SocialMediaPosting', '[itemprop=posts]')
-export const activity_storage = new Storage('/activity', '[itemprop=activity]')
+export const posts_storage = new Storage('posts', '[itemprop=posts]')
+export const person_storage = new Storage('person', '[itemprop=activity]')
+export const activity_storage = new Storage('activity', '[itemprop=activity]')

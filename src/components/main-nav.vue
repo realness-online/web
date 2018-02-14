@@ -31,7 +31,6 @@
     },
     computed: {
       onboarding() {
-        console.log('onboarding', this.posts, this.person, this.events, this.groups)
         return {
           posts: this.posts > 0,
           person: this.person,
@@ -90,11 +89,11 @@
   nav#main_nav
     &.posts
       & > [href='/profile']
-      & > [href='/feed']
         visibility: visible
     &.person
       & > [href='/profile']
       & > [href='/relationships']
+      & > [href='/feed']
         visibility: visible
     &.events
       & > [href='/events']
