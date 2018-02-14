@@ -25,8 +25,9 @@
         post.created_at = new Date().toISOString()
         this.$bus.$emit('post-added', post)
       },
-      wat_focused() {
+      wat_focused($event) {
         this.$emit('toggle-keyboard')
+        $event.target.scrollIntoView()
       }
     }
   }
