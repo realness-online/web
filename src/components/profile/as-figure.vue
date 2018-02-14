@@ -1,5 +1,5 @@
 <template>
-  <figure id="profile" itemscope itemtype='/profile'>
+  <figure id="profile" itemscope itemtype='/person'>
     <img  itemprop="profile_vector" :src="person.profile_vector">
     <figcaption>
       <a itemprop="url" :href="person.profile_name">
@@ -12,6 +12,8 @@
 </template>
 
 <script>
+  import Vue from 'vue'
+  import {person_storage} from '@/modules/Storage'
   export default {
     props: ['person'],
     computed: {
@@ -21,6 +23,14 @@
         } else {
           return ''
         }
+      }
+    },
+    watch: {
+      person() {
+        Vue.nextTick(() => {
+          console.log('save the person')
+          person_storage.save()
+        })
       }
     }
   }
