@@ -17,7 +17,6 @@
     methods: {
       prepare_post() {
         this.$emit('toggle-keyboard')
-        window.location.hash = ''
         let post = {}
         post.articleBody = this.new_post && this.new_post.trim()
         if (!post.articleBody) { return }
@@ -27,7 +26,6 @@
         this.$bus.$emit('post-added', post)
       },
       wat_focused() {
-        window.location.hash = 'wat'
         this.$emit('toggle-keyboard')
       }
     }
@@ -35,7 +33,8 @@
 </script>
 
 <style lang="stylus">
-  @require '../application'
+  @require '../style/variables'
+
   textarea#wat
     transition-property: all
     transition-duration: 0.45s
@@ -50,7 +49,8 @@
     resize: none
     caret-color: red
     &:focus
-      padding:base-line
+
+      // padding:base-line
       cursor: auto
       text-align: left
       width:100vw

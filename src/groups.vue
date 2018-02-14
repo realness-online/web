@@ -15,7 +15,7 @@
 </script>
 
 <style lang="stylus">
-  @require 'style/variables'
+  @require '/style/variables'
   section#groups
     padding: 0 base-line
 </style>

@@ -31,12 +31,9 @@
 </script>
 
 <style lang="stylus">
-  @require '../application'
   div[itemprop="posts"]
     display:flex
     flex-direction: column-reverse
     & > article > blockquote
       white-space: pre-wrap
-
-
 </style>

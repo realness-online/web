@@ -24,15 +24,15 @@
 </script>
 
 <style lang="stylus">
-  @require '../application'
+  @require '../style/variables'
   nav#main_nav
-    min-height: 83vh
+    // min-height: 83vh
     display: flex
     flex-direction:row
     flex-wrap:wrap
     align-content: space-evenly
     justify-content:space-evenly
-    align-items: flex-start
+    align-items: flex-end
     & > *
       -webkit-tap-highlight-color: transparent
       animation-name: shimer

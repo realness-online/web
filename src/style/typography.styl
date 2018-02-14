@@ -1,4 +1,5 @@
-@require variables
+@require 'variables'
+
 // Tie the layout of the page together via a fluid font-size
 // this design invests in the certainty of infinite device sizes over time.
 
@@ -26,7 +27,6 @@ html
 
 p, textarea, input,  blockquote
   between: max-width, round(base-line * 25, 3), round(base-line * 25, 3)
-
 
 // ***************** modular-scale ********************************************
 $h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441

@@ -26,6 +26,7 @@
           when: post.created_at,
           where: post.location
         })
+        localStorage.setItem('posts-count', this.activity.length)
       })
     },
     watch: {
@@ -40,7 +41,11 @@
 </script>
 
 <style lang="stylus">
+  @require '../style/variables'
   ol[itemprop="activity"]
     display:flex
     flex-direction: column-reverse
+    & > li
+      list-style: none
+      margin-bottom: base-line
 </style>

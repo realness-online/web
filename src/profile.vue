@@ -38,7 +38,7 @@
   }
 </script>
 <style lang='stylus'>
-  @require 'application'
+  @require '/style/variables'
   section#profile
     padding: 0 base-line
   form#profile-form

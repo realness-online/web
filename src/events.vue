@@ -18,7 +18,7 @@
 </script>
 
 <style lang="stylus">
-  @require 'style/variables'
+  @require '/style/variables'
   section#events
     padding: 0 base-line
 </style>
