@@ -50,8 +50,7 @@
     resize: none
     caret-color: red
     &:focus
-
-      // padding:base-line
+      height:100vh
       cursor: auto
       text-align: left
       width:100vw
