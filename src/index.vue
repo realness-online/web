@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import main_nav from '@/components/nav'
+  import main_nav from '@/components/main-nav'
   import posts_list from '@/components/posts-list'
   import activity_list from '@/components/activity-list'
   export default {
