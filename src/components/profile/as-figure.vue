@@ -6,14 +6,23 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </a>
-      <a :href="person.profile_name">@{{person.profile_name}}</a>
+      <a :href="person.profile_name">{{at_profile}}</a>
     </figcaption>
   </figure>
 </template>
 
 <script>
   export default {
-    props: ['person']
+    props: ['person'],
+    computed: {
+      at_profile: function() {
+        if (this.person.profile_name && this.person.profile_name.length > 3) {
+          return '@' + this.person.profile_name
+        } else {
+          return ''
+        }
+      }
+    }
   }
 </script>
 
@@ -23,11 +32,14 @@
     margin:base-line 0
     display:flex
     & > img
+      outline:none
+      padding:0
       vertical-align: middle
-      height: (2 * base-line)
-      width: (2 * base-line)
+      height: (3 * base-line)
+      width: (3 * base-line)
+      background-color: black
       margin-right: (base-line / 2)
-      background-color:black
+      border: 1vmin solid black
       border-radius: base-line
     & > figcaption
       vertical-align: middle

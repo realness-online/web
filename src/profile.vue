@@ -43,7 +43,7 @@
       margin-bottom: base-line
       & > details
         position: absolute;
-        top: (base-line - 2 )
+        top: (base-line - 1.5 )
         right:base-line
         &[open]
           position: static
