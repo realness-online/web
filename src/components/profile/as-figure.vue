@@ -2,11 +2,11 @@
   <figure id="profile" itemscope itemtype='/person'>
     <img  itemprop="profile_vector" :src="person.profile_vector">
     <figcaption>
-      <a itemprop="profile_name" :data-value="person.profile_name" :href="profile_url">
+      <p>
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
-      </a>
-      <a :href="profile_url">{{prefix_at}}</a>
+      </p>
+      <a itemprop="profile_name" :data-value="person.profile_name" :href="profile_url">{{prefix_at}}</a>
     </figcaption>
   </figure>
 </template>
@@ -47,6 +47,8 @@
     & > figcaption
       vertical-align: middle
       line-height: (base-line * 2)
+      & > p
+        margin:0
       & > a
         display:block
 

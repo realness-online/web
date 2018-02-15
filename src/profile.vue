@@ -1,9 +1,8 @@
 <template lang="html">
   <section id="profile">
     <header>
-      <profile-as-figure :person='person'></profile-as-figure>
       <details>
-        <summary>Edit</summary>
+        <summary><profile-as-figure :person='person'></profile-as-figure></summary>
         <profile-as-form :person='person'></profile-as-form>
       </details>
     </header>
@@ -41,17 +40,4 @@
     padding: 0 base-line
     & > header
       margin-bottom: base-line
-      & > details
-        position: absolute;
-        top: (base-line - 1.5 )
-        right:base-line
-        &[open]
-          position: static
-          summary
-            display: none
-        summary
-          padding: base-line 0
-    & > details > summary
-      color:black
-      margin-bottom: (base-line / 2 )
 </style>
