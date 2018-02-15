@@ -29,7 +29,7 @@
     },
     data() {
       return {
-        person: person_storage.get_items()
+        person: person_storage.get_item()
       }
     }
   }

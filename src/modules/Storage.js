@@ -11,6 +11,11 @@ class Storage {
     this.item_type = item_type
     this.selector = selector
     this.location = location
+
+    // a cohort of users is a managable unit of users
+      // user history.
+      // a global setting
+    this.cohort = 1
   }
 
   from_storage() {
@@ -20,8 +25,18 @@ class Storage {
 
   get_items() {
     let items = Item.get_items(this.from_storage())
-    // console.log('get_items().length', items.length, items)
+    console.log('get_items().length', items.length, items)
     return items
+  }
+
+  get_item() {
+    let item = Item.get_items(this.from_storage())[0]
+    console.log('get_items()', item)
+    if (item) {
+      return item
+    } else {
+      return {}
+    }
   }
 
   save() {

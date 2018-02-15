@@ -5,81 +5,21 @@ exports[`index.vue render layour for who you know 1`] = `
   id="profile"
 >
   <header>
-    <h1>
-      Who are you?
-    </h1>
+    <!---->
+     
+    <details>
+      <summary>
+        Edit
+      </summary>
+       
+      <!---->
+    </details>
   </header>
    
-  <!---->
+  <h4>
+    Posts
+  </h4>
    
-  <form
-    id="profile-form"
-  >
-    <fieldset>
-      <input
-        id="first-name"
-        placeholder="First name"
-        type="text"
-      />
-       
-      <input
-        id="last-name"
-        placeholder="Last name"
-        type="text"
-      />
-    </fieldset>
-     
-    <fieldset
-      id="profile-url"
-    >
-      <label
-        for="url"
-      >
-        /
-      </label>
-       
-      <input
-        id="url"
-        placeholder="profile-name"
-        type="url"
-      />
-    </fieldset>
-     
-    <fieldset
-      id="profile-image"
-      style="display: none;"
-    >
-      <label
-        for="profile-image"
-      >
-        Profile picture
-      </label>
-       
-      <input
-        id="profile-image"
-        itemprop="profile-image"
-        type="file"
-      />
-       
-      <figure>
-        <img
-          alt=""
-          itemprop="image-url"
-          src=""
-        />
-         
-        <figcaption>
-          <a
-            href="url"
-            itemprop="url"
-          />
-           
-          <span
-            itemprop=""
-          />
-        </figcaption>
-      </figure>
-    </fieldset>
-  </form>
+  <!---->
 </section>
 `;

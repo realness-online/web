@@ -2,35 +2,28 @@
   <figure id="profile" itemscope itemtype='/person'>
     <img  itemprop="profile_vector" :src="person.profile_vector">
     <figcaption>
-      <a itemprop="url" :href="person.profile_name">
+      <a itemprop="profile_name" :data-value="person.profile_name" :href="profile_url">
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </a>
-      <a :href="person.profile_name">{{at_profile}}</a>
+      <a :href="profile_url">{{prefix_at}}</a>
     </figcaption>
   </figure>
 </template>
 
 <script>
-  import Vue from 'vue'
-  import {person_storage} from '@/modules/Storage'
   export default {
     props: ['person'],
     computed: {
-      at_profile: function() {
+      prefix_at: function() {
         if (this.person.profile_name && this.person.profile_name.length > 3) {
-          return '@' + this.person.profile_name
+          return `@${this.person.profile_name}`
         } else {
           return ''
         }
-      }
-    },
-    watch: {
-      person() {
-        Vue.nextTick(() => {
-          console.log('save the person')
-          person_storage.save()
-        })
+      },
+      profile_url: function() {
+        return `/${this.person.profile_name}`
       }
     }
   }

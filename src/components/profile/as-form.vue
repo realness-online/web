@@ -1,20 +1,37 @@
 <template lang="html">
-  <form id="profile-form">
-    <fieldset id="profile-name">
-      <input type='text' id="first-name" v-model="person.first_name" placeholder="First name">
-      <input type='text' id="last-name"  v-model="person.last_name" placeholder="Last name">
-    </fieldset>
-    <fieldset id="profile-url">
-      <label for="url">/</label>
-      <input id='url' type="url" v-model="person.profile_name" placeholder="profile-name">
-    </fieldset>
-    <button class="red">Close</button>
-  </form>
+  <transition name="fade">
+    <form id="profile-form">
+      <fieldset>
+        <input id="first-name" type='text' placeholder="First name"
+               v-model="person.first_name"
+               v-on:blur="save_person"
+               debounce="500">
+        <input id="last-name" type='text' placeholder="Last name"
+               v-model="person.last_name"
+               v-on:blur="save_person"
+               debounce="500">
+      </fieldset>
+      <fieldset>
+        <label for="profile-name">/</label>
+        <input id='profile-name' type="text" placeholder="profile-name"
+               v-model="person.profile_name"
+               v-on:blur="save_person"
+               debounce="500">
+      </fieldset>
+      <button class="red">Close</button>
+    </form>
+  </transition>
 </template>
 
 <script>
+  import {person_storage} from '@/modules/Storage'
   export default {
-    props: ['person']
+    props: ['person'],
+    methods: {
+      save_person: function() {
+        person_storage.save()
+      }
+    }
   }
 </script>
 
@@ -35,12 +52,11 @@
           color:lighten(black, 30%)
       &::placeholder
         color: orange
-    label[for=url]
+    label[for=profile-name]
       margin-right:-0.3em
-    input[type=text]
+    input#first-name
       display:block
-      &:first-of-type
-        margin-bottom: (base-line / 2 )
+      margin-bottom: (base-line / 2 )
     button
       margin-top:base-line
       width:25vw

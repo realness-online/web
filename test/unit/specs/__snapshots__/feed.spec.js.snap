@@ -6,7 +6,7 @@ exports[`index.vue render feed info 1`] = `
 >
   <header>
     <h2>
-      Posts
+      Feed
     </h2>
   </header>
    
