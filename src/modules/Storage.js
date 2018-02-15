@@ -23,36 +23,29 @@ class Storage {
     return Storage.hydrate(storage_string)
   }
 
-  get_items() {
-    let items = Item.get_items(this.from_storage())
-    console.log('get_items().length', items.length, items)
-    return items
+  as_list() {
+    return Item.get_items(this.from_storage())
   }
 
-  get_item() {
-    let item = Item.get_items(this.from_storage())[0]
-    console.log('get_items()', item)
-    if (item) {
-      return item
-    } else {
-      return {}
-    }
+  as_object() {
+    return Item.get_first_item(this.from_storage())
   }
 
   save() {
     // save assumes that vue has created components on the page that represent
     // the entirtiy of the data to be saved
     let items = document.querySelector(this.selector)
-    console.log('storage.save() items', items, this.selector)
     if (!items) { return false }
     items = items.outerHTML
     localStorage.setItem(this.item_type, items)
     return true
   }
+
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }
 }
+
 export default Storage
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')

@@ -10,7 +10,7 @@ describe('Storage.js', () => {
        </section>
      </main>`
      document.body.innerHTML = item_as_string
-     person = new Storage('/person')
+     person = new Storage('person')
   })
   describe('hydrate()', ()=>{
     it('exists', () => {
@@ -31,10 +31,22 @@ describe('Storage.js', () => {
       expect(person.save).toBeDefined()
     })
   })
-  describe('to_data()', () => {
-    // takes from 
-  })
+  describe('retrieving objects from html', () => {
+    describe('as_list()', () => {
+      it('exists', () => {
+        expect(person.as_list).toBeDefined()
+      })
+      it('will return a list of items')
+    })
 
+    describe('as_object()', () => {
+      it('exists', () => {
+        expect(person.as_object).toBeDefined()
+      })
+
+      it('will return the first item it finds')
+    })
+  })
 
   it('saves and loads an item from local storage', () => {
     expect(person.save()).toBe(true)

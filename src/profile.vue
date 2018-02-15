@@ -28,7 +28,7 @@
     },
     data() {
       return {
-        person: person_storage.get_item()
+        person: person_storage.as_object()
       }
     }
   }

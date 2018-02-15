@@ -3,14 +3,12 @@
 exports[`profile-activity.vue should render an activity wrapper (ol#activity) 1`] = `
 <ol
   itemprop="activity"
-  itemref="profile"
 />
 `;
 
 exports[`profile-activity.vue should render some activity 1`] = `
 <ol
   itemprop="activity"
-  itemref="profile"
 >
   <li
     itemscope="itemscope"

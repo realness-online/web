@@ -12,7 +12,7 @@
   export default {
     data() {
       return {
-        posts: posts_storage.get_items()
+        posts: posts_storage.as_list()
       }
     },
     created: function() {

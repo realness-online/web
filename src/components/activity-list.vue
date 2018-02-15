@@ -1,5 +1,5 @@
 <template>
-  <ol itemprop="activity" itemref="profile">
+  <ol itemprop="activity">
     <li v-for="event in activity" itemscope itemtype="/activity">
       <a itemprop="where" :href="event.where">
         <b itemprop="what">{{event.what}}</b>
@@ -14,7 +14,7 @@
   export default {
     data() {
       return {
-        activity: activity_storage.get_items()
+        activity: activity_storage.as_list()
       }
     },
     created: function() {

@@ -17,6 +17,11 @@ class Item {
     return items_as_data
   }
 
+  static get_first_item(elements, type) {
+    let item = Item.get_items(elements, type)[0]
+    return item || {}
+  }
+
   static get_item_properties(item) {
     let props = {}
     let properties = Array.from(item.querySelectorAll('[itemprop]'))
