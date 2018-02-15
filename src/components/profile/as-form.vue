@@ -18,7 +18,6 @@
                v-on:blur="save_person"
                debounce="500">
       </fieldset>
-      <button class="red">Close</button>
     </form>
   </transition>
 </template>

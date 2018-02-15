@@ -1,6 +1,6 @@
  details
+
   & > summary
-    color:blue
     cursor: pointer
     &:focus
       outline:none
@@ -8,7 +8,6 @@
       display:none
   &[open]
     border: none
-    & > summary
-      color: red
     & > *:not(summary)
       animation-name: fadeInDown
+      // animation-name: slideInDown

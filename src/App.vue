@@ -1,4 +1,4 @@
-<template>
+<template lang="html">
   <main id="social_network">
     <router-view></router-view>
   </main>

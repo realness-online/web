@@ -5,11 +5,9 @@ exports[`index.vue render layour for who you know 1`] = `
   id="profile"
 >
   <header>
-    <!---->
-     
     <details>
       <summary>
-        Edit
+        <!---->
       </summary>
        
       <!---->

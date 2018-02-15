@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="feed">
     <header>
       <h2>Feed</h2>

@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="events">
     <header>
       <h1>Events</h1>

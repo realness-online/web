@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="groups">
     <header>
       <h1>Groups</h1>
