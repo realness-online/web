@@ -78,7 +78,7 @@
         margin: 1vh 1vw
         color:transparent
       &:focus
-        color:yellow
+        color:orange
         transition-duration: 0.6s
         opacity:1
         transition: all

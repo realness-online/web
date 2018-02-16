@@ -34,11 +34,12 @@
   form#profile-form
     & > fieldset
       padding: (base-line / 2 )
-      border:0.2vmin solid black
+      border:1vmin solid black
       margin-bottom: base-line
       &:last-of-type
         margin-bottom:0
     input
+      width:30vw
       color: red
       &:focus
         outline:0
@@ -49,6 +50,7 @@
     label[for=profile-name]
       margin-right:-0.3em
     input#first-name
-      display:block
-      margin-bottom: (base-line / 2 )
+      margin-right:base-line
+    input#profile-name
+      width:auto
 </style>
