@@ -13,7 +13,7 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
     "build": "node build/build.js",
     "start": "node server.js",
-    "heroku-postbuild":"npm run build"
+    "postinstall":"npm run build"
   },
   "dependencies": {
     "express": "^4.16.2",
