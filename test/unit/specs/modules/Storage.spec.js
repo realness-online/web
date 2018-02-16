@@ -12,7 +12,7 @@ describe('Storage.js', () => {
      document.body.innerHTML = item_as_string
      person = new Storage('person')
   })
-  describe('hydrate()', ()=>{
+  describe('hydrate()', () => {
     it('exists', () => {
       expect(Storage.hydrate).toBeDefined()
     })
@@ -21,7 +21,7 @@ describe('Storage.js', () => {
       expect(person.querySelectorAll('h1').length).toBe(1)
     })
   })
-  describe('from_storage()', () =>{
+  describe('from_storage()', () => {
     it('exists', () => {
       expect(person.from_storage).toBeDefined()
     })
