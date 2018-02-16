@@ -1,21 +1,22 @@
 {
   "name": "social_network",
-  "version": "0.0.1",
-  "description": "A Vue.js project",
+  "version": "0.0.2",
+  "description": "A social netowk for events",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
-    "start": "npm run dev",
     "unit": "jest --config test/unit/jest.conf.js",
     "unit:watch": "jest --config test/unit/jest.conf.js --coverage --watch",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "autosize": "^4.0.0",
+    "express": "^4.16.2",
     "firebase": "^4.8.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
