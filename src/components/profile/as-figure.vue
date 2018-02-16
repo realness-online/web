@@ -41,10 +41,11 @@
       height: (3 * base-line)
       width: (3 * base-line)
       background-color: black
-      margin-right: (base-line / 2)
+
       border: 1vmin solid black
       border-radius: base-line
     & > figcaption
+      padding-left: (base-line / 2)
       vertical-align: middle
       line-height: (base-line * 2)
       & > p

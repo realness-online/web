@@ -18,6 +18,8 @@
       }
     },
     created: function() {
+      // TODO: add event for profile created.
+      // TODO: add event for profile updated.
       this.$bus.$on('post-added', post => {
         this.activity.push({
           who: 'person/id',
