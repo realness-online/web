@@ -1,21 +1,12 @@
 import Item from '@/modules/Item'
 import firebase from 'firebase'
 class Storage {
-  // Always retrieve from document or localstorage.
-    // do not track state. state is document.
-      // if no document then localStorage
-      // if not localstorage then network
   constructor(item_type,
-              selector = `[itemtype="/${item_type}"]`,
-              location = `${item_type}.html`) {
+    selector = `[itemtype="/${item_type}"]`, location = `${item_type}.html`) {
     this.item_type = item_type
     this.selector = selector
     this.location = location
     this.metadata = {'contentType': 'text/html'}
-    // a cohort of users is a managable unit of users
-      // user history.
-      // a global setting
-    this.cohort = 1
   }
 
   from_storage() {
@@ -45,9 +36,9 @@ class Storage {
       if (user) {
         const file = new File([doc_u_ment], this.location)
         firebase.storage().ref()
-        .child(`people/${user.uid}/${this.location}`)
-        .put(file, this.metadata)
-        .catch(console.log.bind(console))
+          .child(`people/${user.uid}/${this.location}`)
+          .put(file, this.metadata)
+          .catch(console.log.bind(console))
       }
     })
   }

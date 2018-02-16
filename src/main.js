@@ -21,7 +21,7 @@ firebase.initializeApp({
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
-   // create profile. on server.
+    // create profile. on server.
   } else {
     firebase.auth().signInAnonymously()
   }
