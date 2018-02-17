@@ -35,10 +35,14 @@ class Storage {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         const file = new File([doc_u_ment], this.location)
-        firebase.storage().ref()
-          .child(`people/${user.uid}/${this.location}`)
-          .put(file, this.metadata)
-          .catch(console.log.bind(console))
+        if (navigator.online) {
+          firebase.storage().ref()
+            .child(`people/${user.uid}/${this.location}`)
+            .put(file, this.metadata)
+            .catch(console.log.bind(console))
+        } else {
+          console.log(`You are offline. ${this.location} saved to localStorage`)
+        }
       }
     })
   }
