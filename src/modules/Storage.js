@@ -37,11 +37,11 @@ class Storage {
         const file = new File([doc_u_ment], this.location)
         if (navigator.online) {
           firebase.storage().ref()
-            .child(`people/${user.uid}/${this.location}`)
+            .child(`/cohorts/1/people/${user.uid}/${this.location}`)
             .put(file, this.metadata)
             .catch(console.log.bind(console))
         } else {
-          console.log(`You are offline. ${this.location} saved to localStorage`)
+          console.log(`You are offline. ${this.item_type} saved to localStorage`)
         }
       }
     })
