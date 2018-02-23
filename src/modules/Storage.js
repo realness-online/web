@@ -35,7 +35,7 @@ class Storage {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         const file = new File([doc_u_ment], this.location)
-        if (navigator.online) {
+        if (navigator.onLine) {
           firebase.storage().ref()
             .child(`/cohorts/1/people/${user.uid}/${this.location}`)
             .put(file, this.metadata)
