@@ -1,3 +1,4 @@
+// https://github.com/facebook/jest/blob/master/docs/Configuration.md
 const path = require('path')
 
 module.exports = {
@@ -18,8 +19,14 @@ module.exports = {
     '<rootDir>/test/e2e'
   ],
   snapshotSerializers: ['<rootDir>/node_modules/jest-serializer-vue'],
-  setupFiles: ['<rootDir>/test/unit/setup', "<rootDir>/test/polyfill/createRange.js", "jest-localstorage-mock"],
+  setupFiles: [
+    '<rootDir>/test/unit/setup',
+    '<rootDir>/test/polyfill/createRange.js',
+    '<rootDir>/test/polyfill/scrollIntoView.js',
+    'jest-localstorage-mock'
+  ],
   mapCoverage: true,
+  collectCoverage: true,
   coverageDirectory: '<rootDir>/test/unit/coverage',
   cacheDirectory: '<rootDir>/test/unit/cache',
   collectCoverageFrom: [

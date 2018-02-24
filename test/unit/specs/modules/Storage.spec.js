@@ -1,3 +1,4 @@
+jest.mock('firebase')
 import Storage from '@/modules/Storage'
 describe('Storage.js', () => {
   let item_as_string, person
@@ -49,6 +50,7 @@ describe('Storage.js', () => {
   })
 
   it('saves and loads an item from local storage', () => {
+    person.persist = () => {return true} // mock persistence
     expect(person.save()).toBe(true)
     const items = person.from_storage()
     expect(items.querySelectorAll('h1').length).toBe(1)

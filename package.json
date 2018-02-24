@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
     "unit": "jest --config test/unit/jest.conf.js",
-    "unit:watch": "jest --config test/unit/jest.conf.js --coverage --watch",
+    "unit:watch": "jest --config test/unit/jest.conf.js --watch",
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
