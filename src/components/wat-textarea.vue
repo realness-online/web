@@ -44,7 +44,7 @@
     text-align:right
     color:black
     font-family: lato
-    between: font-size
+    font-size: inherit
     user-select: text
     border-style: solid
     resize: none
