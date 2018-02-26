@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`as-form.vue should render form to set user profile info 1`] = `
+<form
+  id="profile-form"
+>
+  <fieldset>
+    <input
+      id="first-name"
+      placeholder="First name"
+      type="text"
+    />
+     
+    <input
+      id="last-name"
+      placeholder="Last name"
+      type="text"
+    />
+  </fieldset>
+   
+  <fieldset>
+    <label
+      for="profile-name"
+    >
+      /
+    </label>
+     
+    <input
+      id="profile-name"
+      placeholder="profile-name"
+      type="text"
+    />
+  </fieldset>
+</form>
+`;

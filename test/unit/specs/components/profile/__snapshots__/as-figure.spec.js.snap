@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`as-figure.vue should render user profile info 1`] = `
+<figure
+  id="profile"
+  itemscope="itemscope"
+  itemtype="/person"
+>
+  <img
+    itemprop="profile_vector"
+    src="/people/scott-fryxell/profile.svg"
+  />
+   
+  <figcaption>
+    <p>
+      <span
+        itemprop="first_name"
+      >
+        scott
+      </span>
+       
+      <span
+        itemprop="last_name"
+      >
+        fryxell
+      </span>
+    </p>
+     
+    <a
+      data-value="oingo"
+      href="/oingo"
+      itemprop="profile_name"
+    >
+      @oingo
+    </a>
+  </figcaption>
+</figure>
+`;
