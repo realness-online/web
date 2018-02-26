@@ -19,7 +19,7 @@
       'main-nav': main_nav,
       'activity-list': activity_list,
       'posts-list': posts_list,
-      'developer-tools':developer_tools
+      'developer-tools': developer_tools
     }
   }
 </script>
