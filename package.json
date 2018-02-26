@@ -20,7 +20,8 @@
     "express": "^4.16.2",
     "firebase": "4.10.0",
     "vue": "^2.5.2",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "webpack-visualizer-plugin": "0.1.11"
   },
   "devDependencies": {
     "babel-jest": "^22",
