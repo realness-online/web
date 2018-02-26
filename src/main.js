@@ -9,7 +9,7 @@ import groups from '@/groups'
 import index from '@/index'
 import profile from '@/profile'
 import relationships from '@/relationships'
-import firebase from 'firebase'
+import * as firebase from 'firebase/app'
 
 firebase.initializeApp({
   apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',

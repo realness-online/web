@@ -1,5 +1,8 @@
 import Item from '@/modules/Item'
-import firebase from 'firebase'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+import 'firebase/storage'
+
 class Storage {
   constructor(item_type,
     selector = `[itemtype="/${item_type}"]`, location = `${item_type}.html`) {
