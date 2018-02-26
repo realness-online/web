@@ -11,9 +11,11 @@ describe('posts-list.vue', () => {
     wrapper = shallow(post_list)
   })
 
-  it('should render an activity wrapper (ol#activity)', () => {
+  it('should render (ol#activity)', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
+
+  it('sets posts_count to the correct local storage')
 
   it('should render some posts', () => {
     const post = {

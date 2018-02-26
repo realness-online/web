@@ -1,16 +1,17 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
-    <router-link v-if="show" to="/profile" class="black">Name</router-link>
+    <router-link v-if="show" to="/profile" class="black">{{user_name}}</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
     <router-link v-if="show" to="/events" class="blue">Events</router-link>
     <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
-    <wat-textarea class="red" v-on:toggle-keyboard="show = !show" tabindex="1"></wat-textarea>
+    <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="show = !show" ></wat-textarea>
   </nav>
 </template>
 
 <script>
   import wat_textarea from '@/components/wat-textarea'
+  import {person_storage} from '@/modules/Storage'
   export default {
     components: {
       'wat-textarea': wat_textarea
@@ -23,8 +24,8 @@
     data() {
       return {
         show: true,
+        person: person_storage.as_object(),
         posts: localStorage.getItem('posts-count') > 0,
-        person: false,
         events: false,
         groups: false
       }
@@ -32,11 +33,16 @@
     computed: {
       onboarding() {
         return {
-          posts: this.posts > 0,
+          posts: this.posts,
           person: this.person,
           events: this.events,
           groups: this.groups
         }
+      },
+      user_name() {
+        let display = 'Profile'
+        if (this.person.first_name) { display = this.person.first_name }
+        return display
       }
     }
   }

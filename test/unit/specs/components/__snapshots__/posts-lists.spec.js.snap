@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`posts-list.vue should render (ol#activity) 1`] = `
+<div
+  id="posts"
+  itemprop="posts"
+  itemref="profile"
+/>
+`;
+
 exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
 <div
   id="posts"
