@@ -2,5 +2,14 @@
 <template lang="html">
   <main id="social_network">
     <router-view></router-view>
+    <developer-tools></developer-tools>
   </main>
 </template>
+<script>
+  import developer_tools from '@/components/developer'
+  export default {
+    components: {
+      'developer-tools': developer_tools
+    }
+  }
+</script>
