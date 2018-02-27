@@ -8,14 +8,6 @@ exports[`posts-list.vue should render (ol#activity) 1`] = `
 />
 `;
 
-exports[`posts-list.vue should render an activity wrapper (ol#activity) 1`] = `
-<div
-  id="posts"
-  itemprop="posts"
-  itemref="profile"
-/>
-`;
-
 exports[`posts-list.vue should render some posts 1`] = `
 <div
   id="posts"

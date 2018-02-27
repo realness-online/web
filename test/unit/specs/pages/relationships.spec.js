@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import { shallow } from 'vue-test-utils'
-import events from '@/events'
+import relationships from '@/pages/relationships'
 
 describe('index.vue', () => {
-  it('renders event information', () => {
-    let wrapper = shallow(events)
+  it('render layour for who you know', () => {
+    let wrapper = shallow(relationships)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

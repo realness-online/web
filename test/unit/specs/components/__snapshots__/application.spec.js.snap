@@ -5,5 +5,7 @@ exports[`App.vue renders layout for the application 1`] = `
   id="social_network"
 >
   <router-view />
+   
+  <!---->
 </main>
 `;

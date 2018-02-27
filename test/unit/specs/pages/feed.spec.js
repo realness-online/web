@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import { shallow } from 'vue-test-utils'
-import profile from '@/profile'
+import feed from '@/pages/feed'
 
 describe('index.vue', () => {
-  it('render layour for who you know', () => {
-    let wrapper = shallow(profile)
+  it('render feed info', () => {
+    let wrapper = shallow(feed)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import { shallow } from 'vue-test-utils'
-import App from '@/App'
+import application from '@/components/application'
 
 describe('App.vue', () => {
   it('renders layout for the application', () => {
-    let wrapper = shallow(App)
+    let wrapper = shallow(application)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

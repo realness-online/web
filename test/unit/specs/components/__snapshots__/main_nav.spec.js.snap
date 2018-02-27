@@ -2,14 +2,14 @@
 
 exports[`posts-list.vue should render the application navigation 1`] = `
 <nav
-  class=""
+  class="person"
   id="main_nav"
 >
   <router-link
     class="black"
     to="/profile"
   >
-    Name
+    Profile
   </router-link>
    
   <router-link

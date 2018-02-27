@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import { shallow } from 'vue-test-utils'
-import groups from '@/groups'
+import events from '@/pages/events'
 
 describe('index.vue', () => {
-  it('renders group layout', () => {
-    let wrapper = shallow(groups)
+  it('renders event information', () => {
+    let wrapper = shallow(events)
     expect(wrapper.element).toMatchSnapshot()
   })
 })
