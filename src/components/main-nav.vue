@@ -84,9 +84,8 @@
         margin: 1vh 1vw
         color:transparent
       &:focus
-        color:orange
+        color:transparent
         transition-duration: 0.6s
-        opacity:1
         transition: all
         margin:0.5vh 0.5vw
         width: 43vw
