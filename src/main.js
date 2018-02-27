@@ -2,14 +2,15 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import App from '@/App'
-import events from '@/events'
-import feed from '@/feed'
-import groups from '@/groups'
-import index from '@/index'
-import profile from '@/profile'
-import relationships from '@/relationships'
 import * as firebase from 'firebase/app'
+
+import app from '@/components/application'
+import events from '@/pages/events'
+import feed from '@/pages/feed'
+import groups from '@/pages/groups'
+import index from '@/pages/index'
+import profile from '@/pages/profile'
+import relationships from '@/pages/relationships'
 
 firebase.initializeApp({
   apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',
@@ -48,5 +49,5 @@ const router = new VueRouter({
 new Vue({
   el: '#social_network',
   router,
-  render: h => h(App)
+  render: h => h(app)
 })

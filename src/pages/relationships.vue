@@ -6,7 +6,7 @@
   </section>
 </template>
 <style lang='stylus'>
-  @require 'style/variables'
+  @require '../style/variables'
   section#relationships
     padding: 0 base-line
 </style>

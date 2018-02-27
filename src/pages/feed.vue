@@ -8,7 +8,7 @@
 </template>
 
 <style lang="stylus">
-  @require '/style/variables'
+  @require '../style/variables'
   section#feed
     margin: 0 base-line
     display:flex

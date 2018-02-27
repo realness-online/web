@@ -34,7 +34,7 @@
   }
 </script>
 <style lang='stylus'>
-  @require '/style/variables'
+  @require '../style/variables'
   section#profile
     position: relative
     padding: 0 base-line
