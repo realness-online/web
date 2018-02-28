@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import ActivityList from '@/components/activity-list'
 
-describe('profile-activity.vue', () => {
+describe('activity-list.vue', () => {
   let wrapper
 
   beforeEach(() => {

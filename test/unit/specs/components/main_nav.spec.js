@@ -2,7 +2,7 @@ import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 
-describe('posts-list.vue', () => {
+describe('main-nav.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(main_nav)
@@ -14,7 +14,7 @@ describe('posts-list.vue', () => {
 
   it('should only display textarea when user first visits')
   it('should display feed link after user has created a post')
-
+  it()
   describe('nav > a[href=profile]', () => {
     it ("should render a person's first name", () => {
 

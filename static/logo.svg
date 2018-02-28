@@ -24,7 +24,7 @@
     <path d="M132,88 C131,73 120,51 111,40 C107,35 103,31 98,26 C95,24 74,11 70,10"></path>
   </symbol>
 
-  <symbol id="logo" viewBox="0 0 266 149" preserveAspectRatio="xMinYMid meet">
+  <symbol id="logo" viewBox="0 0 266 149" preserveAspectRatio="xMinYMin meet">
     <g class='forward'>
       <use xlink:href='#branch' opacity="0.83"  transform="translate(0, 61)" />
       <use xlink:href='#branch' opacity="0.90" transform="translate(200, 103) scale(-1, 0.90) translate(-200, -103) translate(135.5, 66)" />
@@ -44,13 +44,12 @@
 
   </symbol>
 
-  <symbol id="leaf" viewBox="0 0 133 88" preserveAspectRatio="xMinYMin slice">
+  <symbol id="leaf" viewBox="0 0 133 88" >
     <use xlink:href='#branch'/>
   </symbol>
 
   <g fill="hsla(136, 0%, 0%, 0.5)" stroke="hsla(136, 0%, 0%, 0.2)">
-    <use xlink:href='#leaf' height="50%" width="50%"/>
-    <use xlink:href='#logo'  height="50%" width="50%" />
+    <use xlink:href='#logo'  height="100vh" width="100vw" />
   </g>
 
 </svg>

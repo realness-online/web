@@ -1,5 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`@/pages/relationships.vue render relationship information 1`] = `
+<section
+  id="relationships"
+>
+  <header>
+    <h1>
+      Relationships
+    </h1>
+  </header>
+</section>
+`;
+
+exports[`@pages/relationships.vue render relationship information 1`] = `
+<section
+  id="relationships"
+>
+  <header>
+    <h1>
+      Relationships
+    </h1>
+  </header>
+</section>
+`;
+
 exports[`pages/relationships.vue render relationship information 1`] = `
 <section
   id="relationships"
