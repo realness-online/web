@@ -2,51 +2,7 @@
 
 exports[`main-nav.vue should render the application navigation 1`] = `
 <nav
-  class="person"
-  id="main_nav"
->
-  <router-link
-    class="black"
-    to="/profile"
-  >
-    Profile
-  </router-link>
-   
-  <router-link
-    class="green"
-    to="/relationships"
-  >
-    Relations
-  </router-link>
-   
-  <router-link
-    class="green"
-    to="/groups"
-  >
-    Groups
-  </router-link>
-   
-  <router-link
-    class="blue"
-    to="/events"
-  >
-    Events
-  </router-link>
-   
-  <router-link
-    class="blue"
-    to="/feed"
-  >
-    Feed
-  </router-link>
-   
-  <!---->
-</nav>
-`;
-
-exports[`posts-list.vue should render the application navigation 1`] = `
-<nav
-  class="person"
+  class=""
   id="main_nav"
 >
   <router-link

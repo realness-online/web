@@ -19,23 +19,3 @@ exports[`@/pages/events.vue renders event information 1`] = `
   </header>
 </section>
 `;
-
-exports[`pages/events.vue renders event information 1`] = `
-<section
-  id="events"
->
-  <header>
-    <h1>
-      Events
-    </h1>
-     
-    <nav>
-      <router-link
-        to="/"
-      >
-        home
-      </router-link>
-    </nav>
-  </header>
-</section>
-`;

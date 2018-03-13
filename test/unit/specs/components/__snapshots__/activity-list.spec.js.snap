@@ -32,36 +32,3 @@ exports[`activity-list.vue should render some activity 1`] = `
   </li>
 </ol>
 `;
-
-exports[`profile-activity.vue should render an activity wrapper (ol#activity) 1`] = `
-<ol
-  itemprop="activity"
-/>
-`;
-
-exports[`profile-activity.vue should render some activity 1`] = `
-<ol
-  itemprop="activity"
->
-  <li
-    itemscope="itemscope"
-    itemtype="/activity"
-  >
-    <a
-      href="/posts/1"
-      itemprop="where"
-    >
-      <b
-        itemprop="what"
-      >
-        Created a post
-      </b>
-    </a>
-     
-    <time
-      datetime="2017-12-20T23:01:14.310Z"
-      itemprop="when"
-    />
-  </li>
-</ol>
-`;

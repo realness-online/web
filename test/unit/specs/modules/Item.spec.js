@@ -52,7 +52,19 @@ describe('Item.js', () => {
       expect(item.url).toBe('/people/scott')
       expect(item.style).toBe('/people/666/style.css')
     })
+  })
 
-    it('stores the information of sub objects')
+  describe('get_first_item()', () => {
+    it('returns the first of an object found', () => {
+      const person = Item.get_first_item(document.body, '/person')
+      expect(person.name).toBe('Scott Fryxell')
+      expect(person.nickname).toBe('scoot')
+      expect(person.url).toBe('/people/scott')
+      expect(person.style).toBe('/people/666/style.css')
+    })
+    it('returns false if no object is found', () => {
+      const dodo = Item.get_first_item(document.body, '/dodo')
+      expect(dodo).toBe(false)
+    })
   })
 })
