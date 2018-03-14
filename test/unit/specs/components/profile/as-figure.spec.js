@@ -17,11 +17,8 @@ describe('as-figure.vue', () => {
       }
     })
     expect(wrapper.element).toMatchSnapshot()
-
-    person.profile_name = ""
-    wrapper.setProps({person:person})
   })
 
-  
+
 
 })
