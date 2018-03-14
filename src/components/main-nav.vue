@@ -26,23 +26,23 @@
         show: true,
         person: person_storage.as_object(),
         posts: localStorage.getItem('posts-count') > 0,
-        events: false,
-        groups: false
+        friends: localStorage.getItem('friends-count') > 0,
+        events: localStorage.getItem('friends-count') >= 5,
+        groups: localStorage.getItem('friends-count') >= 25
       }
     },
     computed: {
       onboarding() {
         return {
           posts: this.posts,
-          person: this.person,
+          person: this.person ? true : false,
+          friends: this.friends,
           events: this.events,
           groups: this.groups
         }
       },
       user_name() {
-        let display = 'Profile'
-        if (this.person.first_name) { display = this.person.first_name }
-        return display
+        return this.person.first_name || 'Profile'
       }
     }
   }
@@ -98,6 +98,8 @@
     &.person
       & > [href='/profile']
       & > [href='/relationships']
+        visibility: visible
+    &.friends
       & > [href='/feed']
         visibility: visible
     &.events
