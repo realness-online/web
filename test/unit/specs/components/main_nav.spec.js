@@ -4,12 +4,19 @@ import main_nav from '@/components/main-nav'
 
 describe('main-nav.vue', () => {
 
-  it('should render the application navigation', () => {
-    const wrapper = shallow(main_nav)
-    expect(wrapper.element).toMatchSnapshot()
+  describe('nav#main_nav', () => {
+    let wrapper
+    beforeEach(() => {
+      wrapper = shallow(main_nav)
+    })
+    it('#show:true should render the application navigation', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('#show:false should Hide navigation', () => {
+      wrapper.setData({ show: false })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
-
-  // describe('show')
 
   describe('onBoarding()', () => {
     it('all onboarding is off at first', () => {
@@ -20,7 +27,6 @@ describe('main-nav.vue', () => {
       expect(wrapper.vm.onboarding.events).toBe(false)
       expect(wrapper.vm.onboarding.groups).toBe(false)
     })
-
     it('#person is true when person has profile info', () => {
       const wrapper = shallow(main_nav)
       wrapper.setData({ person: {first_name:'Scott'} })
@@ -49,12 +55,15 @@ describe('main-nav.vue', () => {
   })
 
   describe('user_name()', () => {
+    let wrapper
+    beforeEach(() => {
+      wrapper = shallow(main_nav)
+    })
+
     it('returns profile by default', () => {
-      const wrapper = shallow(main_nav)
       expect(wrapper.vm.user_name).toBe('Profile')
     })
     it('returns the users first name if set', () => {
-      const wrapper = shallow(main_nav)
       wrapper.setData({ person: {first_name:'Scott'} })
       expect(wrapper.vm.user_name).toBe('Scott')
     })
