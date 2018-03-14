@@ -59,7 +59,6 @@ describe('main-nav.vue', () => {
     beforeEach(() => {
       wrapper = shallow(main_nav)
     })
-
     it('returns profile by default', () => {
       expect(wrapper.vm.user_name).toBe('Profile')
     })
