@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/pages/relationships.vue render relationship information 1`] = `
+exports[`@/pages/relations.vue render relationship information 1`] = `
 <section
-  id="relationships"
+  id="relations"
 >
   <header>
     <h1>
