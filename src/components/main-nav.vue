@@ -24,21 +24,17 @@
     data() {
       return {
         show: true,
-        person: person_storage.as_object(),
-        posts: localStorage.getItem('posts-count') > 0,
-        friends: localStorage.getItem('friends-count') > 0,
-        events: localStorage.getItem('friends-count') >= 5,
-        groups: localStorage.getItem('friends-count') >= 25
+        person: person_storage.as_object()
       }
     },
     computed: {
       onboarding() {
         return {
-          posts: this.posts,
-          person: this.person ? true : false,
-          friends: this.friends,
-          events: this.events,
-          groups: this.groups
+          has_posts: localStorage.getItem('posts-count') > 0,
+          is_person: !!this.person,
+          has_friends: localStorage.getItem('friends-count') > 0,
+          can_event: localStorage.getItem('friends-count') >= 5,
+          can_group: localStorage.getItem('friends-count') >= 25
         }
       },
       user_name() {
@@ -92,20 +88,20 @@
         height: 23vh
         outline: none
   nav#main_nav
-    &.posts
+    &.has_posts
       & > [href='/profile']
         visibility: visible
-    &.person
+    &.is_person
       & > [href='/profile']
       & > [href='/relationships']
         visibility: visible
-    &.friends
+    &.has_friends
       & > [href='/feed']
         visibility: visible
-    &.events
+    &.can_event
       & > [href='/events']
         visibility: visible
-     &.groups
+     &.can_group
        & > [href='/groups']
          visibility: visible
 </style>
