@@ -4,16 +4,18 @@ exports[`as-form.vue should render form to set user profile info 1`] = `
 <form
   id="profile-form"
 >
-  <fieldset>
+  <fieldset
+    id="name"
+  >
     <input
       id="first-name"
-      placeholder="First name"
+      placeholder="First"
       type="text"
     />
      
     <input
       id="last-name"
-      placeholder="Last name"
+      placeholder="Last"
       type="text"
     />
   </fieldset>
@@ -29,6 +31,20 @@ exports[`as-form.vue should render form to set user profile info 1`] = `
       id="profile-name"
       placeholder="profile-name"
       type="text"
+    />
+  </fieldset>
+   
+  <fieldset>
+    <label
+      for="mobile"
+    >
+      1+
+    </label>
+     
+    <input
+      id="mobile"
+      placeholder="(555) 555-5555"
+      type="tel"
     />
   </fieldset>
 </form>
