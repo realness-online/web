@@ -41,8 +41,7 @@
       height: (3 * base-line)
       width: (3 * base-line)
       background-color: black
-
-      border: 1vmin solid black
+      border: 0.66vmin solid black
       border-radius: base-line
     & > figcaption
       padding-left: (base-line / 2)
