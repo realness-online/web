@@ -6,7 +6,7 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <a itemprop="profile_name" :data-value="person.profile_name" :href="profile_url">{{prefix_at}}</a>
+      <a itemprop="profile_name" :data-value="person.profile_name" :href="mobile_link">{{person.mobile}}</a>
     </figcaption>
   </figure>
 </template>
@@ -15,15 +15,8 @@
   export default {
     props: ['person'],
     computed: {
-      prefix_at: function() {
-        if (this.person.profile_name && this.person.profile_name.length > 3) {
-          return `@${this.person.profile_name}`
-        } else {
-          return ''
-        }
-      },
-      profile_url: function() {
-        return `/${this.person.profile_name}`
+      mobile_link: function() {
+        return `1+${this.person.mobile}`
       }
     }
   }

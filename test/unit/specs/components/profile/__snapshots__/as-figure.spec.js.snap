@@ -27,11 +27,10 @@ exports[`as-figure.vue should render user profile info 1`] = `
     </p>
      
     <a
-      data-value="oingo"
-      href="/oingo"
+      href="1+4151234567"
       itemprop="profile_name"
     >
-      @oingo
+      4151234567
     </a>
   </figcaption>
 </figure>

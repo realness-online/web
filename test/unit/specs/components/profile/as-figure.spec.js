@@ -8,7 +8,7 @@ describe('as-figure.vue', () => {
       profile_vector: '/people/scott-fryxell/profile.svg',
       first_name: 'scott',
       last_name: 'fryxell',
-      profile_name: 'oingo'
+      mobile: '4151234567'
     }
 
     let wrapper = shallow(as_figure, {
