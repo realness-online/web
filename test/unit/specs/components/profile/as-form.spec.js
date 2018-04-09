@@ -28,15 +28,36 @@ describe('as-form.vue', () => {
       })
       expect(stub).not.toBeCalled()
     })
-    it('should only allow number to be pasted in', () => {
+    it('should stop an letter from being added', () => {
       input.trigger('keypress', {
         key: 'a',
         preventDefault: stub
       })
       expect(stub).toBeCalled()
     })
+    it('should validate a phone number when pasted in', () => {
+      input.trigger('paste', {
+        clipboardData: {
+          getData: function(){ return '4151234567'}
+        },
+        preventDefault: stub
 
-    it('should show the authorize button when valid number is entered', () => {
+      })
+      expect(stub).not.toBeCalled()
+    })
+    it('should invalidate non phone number when pasted in', () => {
+      input.trigger('paste', {
+        clipboardData: {
+          getData: function(){ return 'abc-123-1234'}
+        },
+        preventDefault: stub
+      })
+      expect(stub).toBeCalled()
+      // expect(stub).toBeCalled()
+    })
+
+    it('should show the authorize button when valid mobile number is entered', () => {
+
       // <a href="tel:+13174562564">
     })
     it('authorize an account via the mobile number')

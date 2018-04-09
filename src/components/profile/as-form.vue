@@ -35,7 +35,7 @@
         }
       },
       validate_mobile_paste(event) {
-        let paste = (event.clipboardData || window.clipboardData).getData('text')
+        let paste = (event.clipboardData).getData('text')
         if (!paste.match(valid_mobile)) { event.preventDefault() }
       }
     }
