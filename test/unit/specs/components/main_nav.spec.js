@@ -16,9 +16,14 @@ describe('main-nav.vue', () => {
       wrapper.setData({ show: false })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it("post-added event should set posts to true", () => {
+      wrapper.vm.$bus.$emit('post-added')
+      expect(wrapper.vm.posts).toBe(true)
+    })
   })
 
   describe('onBoarding()', () => {
+
     it('all onboarding is off at first', () => {
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.has_posts).toBe(false)
