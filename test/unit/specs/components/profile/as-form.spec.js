@@ -26,7 +26,7 @@ describe('as-form.vue', () => {
     input.trigger('blur')
     expect(stub).toBeCalled()
   })
-  describe("#mobile", () =>{
+  describe("input#mobile", () =>{
     let input, stub
     beforeEach(() => {
       const person = { mobile: null }
@@ -68,7 +68,7 @@ describe('as-form.vue', () => {
       expect(stub).toBeCalled()
     })
   })
-  describe('authrization process', () => {
+  describe('input#mobile ~ button', () => {
     it('authorize button appears with valid mobile number', () => {
       const person = { mobile: '4151234567' }
       let wrapper = shallow(as_form, { propsData: { person: person } })
