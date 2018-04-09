@@ -15,19 +15,35 @@
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="validate_mobile_paste"
              v-on:blur="save_person">
-      <button class="green">Sync</button>
+      <button v-if='valid_mobile_number' class="green">Sync</button>
     </fieldset>
   </form>
 </template>
 
 <script>
   import {person_storage} from '@/modules/Storage'
-  const valid_mobile = /^[0-9]+$/
+  const valid_mobile_digit = /^\d$/
+  // ^ begining of test, \d is a digit, $ end of text
+  const valid_mobile_number = /^\d{10}$/
   export default {
     props: ['person'],
     data() {
       return {
         storage: person_storage
+
+      }
+
+    },
+    computed: {
+      valid_mobile_number() {
+
+        if(!this.person.mobile){
+          return false
+        }
+        if(this.person.mobile.match(valid_mobile_number)) {
+          console.log(this.person.mobile)
+          return true
+        }
       }
     },
     methods: {
@@ -35,13 +51,13 @@
         this.storage.save()
       },
       validate_mobile_keypress(event) {
-        if (!event.key.match(valid_mobile)) {
+        if (!event.key.match(valid_mobile_digit)) {
           event.preventDefault()
         }
       },
       validate_mobile_paste(event) {
         let paste = (event.clipboardData).getData('text')
-        if (!paste.match(valid_mobile)) { event.preventDefault() }
+        if (!paste.match(valid_mobile_number)) { event.preventDefault() }
       }
     }
   }

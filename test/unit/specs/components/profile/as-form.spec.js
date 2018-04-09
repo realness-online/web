@@ -3,7 +3,6 @@ import as_form from '@/components/profile/as-form'
 
 // jest.mock('Storage');
 describe('as-form.vue', () => {
-
   it('should render form to set user profile info', () => {
     const person = {
       first_name: 'Scott',
@@ -13,8 +12,7 @@ describe('as-form.vue', () => {
     let wrapper = shallow(as_form, { propsData: { person: person } })
     expect(wrapper.element).toMatchSnapshot()
   })
-
-  it('onBlur should save person', () => {
+  it('input blur should save person', () => {
 
     const person = {
       first_name: 'Scott',
@@ -28,7 +26,6 @@ describe('as-form.vue', () => {
     input.trigger('blur')
     expect(stub).toBeCalled()
   })
-
   describe("#mobile", () =>{
     let input, stub
     beforeEach(() => {
@@ -37,14 +34,14 @@ describe('as-form.vue', () => {
       input = wrapper.find('#mobile')
       stub = jest.fn()
     })
-    it('should allow number to be entered', () => {
+    it('should allow valid mobile digits', () => {
       input.trigger('keypress', {
         key: '2',
         preventDefault: stub
       })
       expect(stub).not.toBeCalled()
     })
-    it('should stop an letter from being added', () => {
+    it('should only accept numbers', () => {
       input.trigger('keypress', {
         key: 'a',
         preventDefault: stub
@@ -61,7 +58,7 @@ describe('as-form.vue', () => {
       })
       expect(stub).not.toBeCalled()
     })
-    it('should invalidate non phone number when pasted in', () => {
+    it('should only accept numbers pasted in', () => {
       input.trigger('paste', {
         clipboardData: {
           getData: function(){ return 'abc-123-1234'}
@@ -69,13 +66,22 @@ describe('as-form.vue', () => {
         preventDefault: stub
       })
       expect(stub).toBeCalled()
-      // expect(stub).toBeCalled()
     })
-
-    it('should show the authorize button when valid mobile number is entered', () => {
-
-      // <a href="tel:+13174562564">
+  })
+  describe('authrization process', () => {
+    it('authorize button appears with valid mobile number', () => {
+      const person = { mobile: '4151234567' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#mobile ~ button')
+      expect(button.exists()).toBe(true)
     })
-    it('authorize an account via the mobile number')
+    it('authorize button diappears until valid mobile number', () => {
+      // const person = { mobile: 'aaaaaaaaaa' }
+      const person = { mobile: '415123456a' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#mobile ~ button')
+      expect(button.exists()).not.toBe(true)
+    })
+    it('authorize an account with mobile phone number')
   })
 })
