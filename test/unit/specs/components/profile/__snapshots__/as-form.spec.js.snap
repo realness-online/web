@@ -32,20 +32,12 @@ exports[`as-form.vue should render form to set user profile info 1`] = `
       placeholder="(555) 555-5555"
       type="tel"
     />
-  </fieldset>
-   
-  <fieldset>
-    <label
-      for="profile-name"
-    >
-      /
-    </label>
      
-    <input
-      id="profile-name"
-      placeholder="profile-name"
-      type="text"
-    />
+    <button
+      class="green"
+    >
+      Go
+    </button>
   </fieldset>
 </form>
 `;

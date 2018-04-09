@@ -19,6 +19,8 @@ describe('as-figure.vue', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
 
+  it("")
+
 
 
 })
