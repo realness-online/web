@@ -52,15 +52,23 @@ describe('Item.js', () => {
       expect(item.url).toBe('/people/scott')
       expect(item.style).toBe('/people/666/style.css')
     })
+
   })
 
   describe('get_first_item()', () => {
-    it('returns the first of an object found', () => {
+    it('returns the first of an object type', () => {
       const person = Item.get_first_item(document.body, '/person')
       expect(person.name).toBe('Scott Fryxell')
       expect(person.nickname).toBe('scoot')
       expect(person.url).toBe('/people/scott')
       expect(person.style).toBe('/people/666/style.css')
+    })
+    it('gets first item of any type', () => {
+      let item = Item.get_first_item(document.body)
+      expect(item.name).toBe('Scott Fryxell')
+      expect(item.nickname).toBe('scoot')
+      expect(item.url).toBe('/people/scott')
+      expect(item.style).toBe('/people/666/style.css')
     })
     it('returns false if no object is found', () => {
       const dodo = Item.get_first_item(document.body, '/dodo')
