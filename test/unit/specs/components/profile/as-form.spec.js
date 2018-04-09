@@ -3,28 +3,31 @@ import as_form from '@/components/profile/as-form'
 
 // jest.mock('Storage');
 describe('as-form.vue', () => {
-  it('should render form to set user profile info', () => {
-    const person = {
-      first_name: 'Scott',
-      last_name: 'Fryxell',
-      mobile: '4151234356'
-    }
-    let wrapper = shallow(as_form, { propsData: { person: person } })
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  it('input blur should save person', () => {
+  describe('form', () => {
+    it('should render form to set user profile info', () => {
+      const person = {
+        first_name: 'Scott',
+        last_name: 'Fryxell',
+        mobile: '4151234356'
+      }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('input onblur should save person', () => {
 
-    const person = {
-      first_name: 'Scott',
-      last_name: 'Fryxell',
-      mobile: '4151234356'
-    }
-    let wrapper = shallow(as_form, { propsData: { person: person } })
-    let stub = jest.fn()
-    let input = wrapper.find('#mobile')
-    wrapper.vm.storage.save = stub
-    input.trigger('blur')
-    expect(stub).toBeCalled()
+      const person = {
+        first_name: 'Scott',
+        last_name: 'Fryxell',
+        mobile: '4151234356'
+      }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let stub = jest.fn()
+      let input = wrapper.find('#mobile')
+      wrapper.vm.storage.save = stub
+      input.trigger('blur')
+      expect(stub).toBeCalled()
+    })
+      
   })
   describe("input#mobile", () =>{
     let input, stub

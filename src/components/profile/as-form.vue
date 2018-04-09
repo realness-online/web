@@ -22,28 +22,18 @@
 
 <script>
   import {person_storage} from '@/modules/Storage'
-  const valid_mobile_digit = /^\d$/
-  // ^ begining of test, \d is a digit, $ end of text
-  const valid_mobile_number = /^\d{10}$/
+  const valid_mobile_digit = /^\d$/ // ^ begining, \d is a digit, $ end
+  const valid_mobile_number = /^\d{10}$/ // ^ begining, \d is a digit, {10} ten characters long, $ end
   export default {
     props: ['person'],
     data() {
       return {
         storage: person_storage
-
       }
-
     },
     computed: {
       valid_mobile_number() {
-
-        if(!this.person.mobile){
-          return false
-        }
-        if(this.person.mobile.match(valid_mobile_number)) {
-          console.log(this.person.mobile)
-          return true
-        }
+        return this.person.mobile && this.person.mobile.match(valid_mobile_number)
       }
     },
     methods: {
