@@ -25,9 +25,14 @@
   const valid_mobile = /^[0-9]+$/
   export default {
     props: ['person'],
+    data() {
+      return {
+        storage: person_storage
+      }
+    },
     methods: {
       save_person() {
-        person_storage.save()
+        this.storage.save()
       },
       validate_mobile_keypress(event) {
         if (!event.key.match(valid_mobile)) {
