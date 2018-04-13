@@ -1,6 +1,9 @@
 <template lang="html">
-  <section id="profile">
+  <section id="profile" >
     <header>
+      <a id="logo" href="/">
+        <img src="/static/icons/logo.svg" alt="">
+      </a>
       <details>
         <summary><profile-as-figure :person='person'></profile-as-figure></summary>
         <profile-as-form :person='person'></profile-as-form>
@@ -35,6 +38,19 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
+  section#profile > header > details
+    margin-right: base-line * 2
+    &[open]
+      margin-right: inherit;
+  #logo
+    position:fixed
+    top: -(2 * base-line)
+    right: 0
+    padding:base-line
+    & >  img
+      margin-top:base-line
+      width:(base-line)
+      height:(base-line)
   section#profile
     position: relative
     padding: 0 base-line

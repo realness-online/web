@@ -78,7 +78,7 @@
   form#profile-form
     & > fieldset
       padding: (base-line / 2 )
-      border:0.66vmin solid black
+      border:0.33vmin solid black
       margin-bottom: base-line
       &:last-of-type
         margin-bottom:0

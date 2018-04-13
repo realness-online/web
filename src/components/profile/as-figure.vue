@@ -31,11 +31,11 @@
       outline:none
       padding:0
       vertical-align: middle
-      height: (3 * base-line)
-      width: (3 * base-line)
+      height: (2 * base-line)
+      width: (2 * base-line)
       background-color: black
-      border: 0.66vmin solid black
-      border-radius: base-line
+      border: 0.33vmin solid black
+      border-radius: (base-line / 2)
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle

@@ -47,7 +47,7 @@
 <style lang="stylus">
   @require '../style/variables'
   nav#main_nav
-    min-height: 83vh
+    min-height: 100vh
     display: flex
     flex-direction:row
     flex-wrap:wrap
