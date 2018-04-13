@@ -15,7 +15,9 @@
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="validate_mobile_paste"
              v-on:blur="save_person">
-      <button v-if='valid_mobile_number' class="green">Sync</button>
+      <button id="authorize" class="green"
+              v-if='valid_mobile_number'
+              v-on:click='authorize'>Sync</button>
     </fieldset>
   </form>
 </template>
@@ -37,6 +39,24 @@
       }
     },
     methods: {
+      authorize() {
+        // let recaptcha = new firebase.auth.RecaptchaVerifier('authorize', {
+        //   'size': 'invisible',
+        //   'callback': (response) => {
+        //     onSignInSubmit() // reCAPTCHA solved, allow signInWithPhoneNumber.
+        //   }
+        // })
+        //
+        // firebase.auth().signInWithPhoneNumber(this.person.mobile, recaptcha)
+        //   .then(function (confirmationResult) {
+        //     // SMS sent. Prompt user to type the code from the message, then sign the
+        //     // user in with confirmationResult.confirm(code).
+        //     window.confirmationResult = confirmationResult;
+        //   }).catch(function (error) {
+        //     // Error; SMS not sent
+        //     // ...
+        //   });
+      },
       save_person() {
         this.storage.save()
       },
