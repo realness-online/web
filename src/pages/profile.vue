@@ -1,9 +1,9 @@
 <template lang="html">
   <section id="profile" >
     <header>
-      <a id="logo" href="/">
+      <router-link id="logo" to="/">
         <img src="/static/icons/logo.svg" alt="">
-      </a>
+      </router-link>
       <details>
         <summary><profile-as-figure :person='person'></profile-as-figure></summary>
         <profile-as-form :person='person'></profile-as-form>
