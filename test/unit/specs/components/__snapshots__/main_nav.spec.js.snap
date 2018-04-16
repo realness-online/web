@@ -24,6 +24,8 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
   class=""
   id="main_nav"
 >
+  <!---->
+   
   <router-link
     class="black"
     to="/profile"
@@ -58,7 +60,5 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
   >
     Feed
   </router-link>
-   
-  <!---->
 </nav>
 `;

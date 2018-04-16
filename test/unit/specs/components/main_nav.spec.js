@@ -18,7 +18,7 @@ describe('main-nav.vue', () => {
     })
     it("post-added event should set posts to true", () => {
       wrapper.vm.$bus.$emit('post-added')
-      expect(wrapper.vm.posts).toBe(true)
+      expect(wrapper.vm.has_posts).toBe(true)
     })
   })
 
