@@ -7,6 +7,8 @@
 </template>
 
 <script>
+  // TODO: add support for desktops. (need a submit button)
+  // TODO: add support for images and video
   export default {
     props: ['value'],
     data() {
