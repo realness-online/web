@@ -41,7 +41,6 @@
     transition-duration: 0.45s
     cursor:pointer
     transition-property: border-width, border-radius, text-align, background-color
-    text-align:right
     color:black
     font-family: lato
     font-size: inherit
