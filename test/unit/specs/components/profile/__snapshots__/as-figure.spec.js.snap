@@ -27,7 +27,7 @@ exports[`as-figure.vue should render user profile info 1`] = `
     </p>
      
     <a
-      href="1+4151234567"
+      href="sms:14151234567"
       itemprop="profile_name"
     >
       4151234567
