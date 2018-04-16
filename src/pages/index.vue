@@ -20,3 +20,9 @@
     }
   }
 </script>
+
+<style lang="stylus" >
+  section#app
+    animation-name: slideInRight
+
+</style>

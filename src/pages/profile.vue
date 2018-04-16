@@ -38,6 +38,8 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
+  section#profile
+    animation-name: slideInRight
   section#profile > header > details
     margin-right: base-line * 2
     &[open]
