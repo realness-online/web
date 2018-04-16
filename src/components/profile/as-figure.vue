@@ -15,8 +15,11 @@
   export default {
     props: ['person'],
     computed: {
-      mobile_link: function() {
-        return `1+${this.person.mobile}`
+      mobile_link() {
+        return `sms:1${this.person.mobile}`
+      },
+      formated_mobile() {
+        this.person.mobile
       }
     }
   }
