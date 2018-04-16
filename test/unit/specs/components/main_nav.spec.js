@@ -3,7 +3,7 @@ import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 
 describe('main-nav.vue', () => {
-
+  // TODO: add test to confirm that buttons show up after user posts
   describe('nav#main_nav', () => {
     let wrapper
     beforeEach(() => {
