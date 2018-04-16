@@ -5,6 +5,16 @@ exports[`@/pages/profile.vue shows the users profile information 1`] = `
   id="profile"
 >
   <header>
+    <router-link
+      id="logo"
+      to="/"
+    >
+      <img
+        alt=""
+        src="/static/icons/logo.svg"
+      />
+    </router-link>
+     
     <details>
       <summary>
         <!---->

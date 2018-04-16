@@ -35,6 +35,7 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
      
     <button
       class="green"
+      id="authorize"
     >
       Sync
     </button>
