@@ -13,7 +13,8 @@
              v-model="person.mobile"
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="parse_mobile_paste"
-             v-on:blur="save_person">
+             v-on:blur="save_person"
+             v-on:focus='scroll_into_view'>
       <button id="authorize" class="red"
               v-if='valid_mobile_number'
               v-on:click='authorize'>Sync</button>
@@ -68,6 +69,9 @@
         let paste = (event.clipboardData).getData('text')
         this.person.mobile = parseNumber(paste, 'US').phone
         event.preventDefault()
+      },
+      scroll_into_view(event) {
+        event.target.scrollIntoView(false)
       }
     }
   }
