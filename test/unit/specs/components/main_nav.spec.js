@@ -34,7 +34,7 @@ describe('main-nav.vue', () => {
     })
     it('#person is true when person has profile info', () => {
       const wrapper = shallow(main_nav)
-      wrapper.setData({ person: {first_name:'Scott'} })
+      wrapper.setData({ person: {mobile:'4252691938'} })
       expect(wrapper.vm.onboarding.is_person).toBe(true)
     })
     it('#posts will be true when person posts', () => {
