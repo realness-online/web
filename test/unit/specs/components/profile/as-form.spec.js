@@ -12,7 +12,6 @@ describe('as-form.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('input onblur should save person', () => {
-
       const person = {
         first_name: 'Scott',
         last_name: 'Fryxell',
@@ -28,9 +27,8 @@ describe('as-form.vue', () => {
   })
   describe("input#mobile.onKeypress()", () => {
     let input, stub, wrapper
-    beforeEach(() => {
-      const person = { mobile: null }
-      wrapper = shallow(as_form, { propsData: { person: person } })
+    beforeEach( () => {
+      wrapper = shallow(as_form, { propsData: { person: {} } })
       input = wrapper.find('#mobile')
       stub = jest.fn()
     })
@@ -51,9 +49,8 @@ describe('as-form.vue', () => {
   })
   describe("input#mobile.onPaste()", () => {
     let input, wrapper
-    beforeEach(() => {
-      const person = { mobile: null }
-      wrapper = shallow(as_form, { propsData: { person: person } })
+    beforeEach( () => {
+      wrapper = shallow(as_form, { propsData: { person: {} } })
       input = wrapper.find('#mobile')
     })
     it('should not accept invalid mobile number', () => {

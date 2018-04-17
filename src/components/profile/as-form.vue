@@ -1,12 +1,11 @@
 <template lang="html">
   <form id="profile-form">
     <fieldset id="name">
-      <input id="first-name" type='text' placeholder="First"
+      <input id="first-name" type='text' placeholder="First" required
              v-model="person.first_name"
              v-on:blur="save_person">
-      <input id="last-name" type='text' placeholder="Last"
-             v-model="person.last_name"
-             v-on:blur="save_person">
+      <input id="last-name" type='text' placeholder="Last" required
+             v-model="person.last_name">
     </fieldset>
     <fieldset>
       <label for="mobile">1+</label>
@@ -15,7 +14,7 @@
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="parse_mobile_paste"
              v-on:blur="save_person">
-      <button id="authorize" class="green"
+      <button id="authorize" class="red"
               v-if='valid_mobile_number'
               v-on:click='authorize'>Sync</button>
     </fieldset>
@@ -99,7 +98,7 @@
     input#last-name
       width:40%
     input#mobile
-      width: (base-line * 6 )
+      width: (40% - base-line * 2)
       margin-right: base-line
     button
       padding: (base-line / 11) (base-line / 2 )

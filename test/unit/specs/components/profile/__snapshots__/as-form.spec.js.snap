@@ -10,12 +10,14 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
     <input
       id="first-name"
       placeholder="First"
+      required="required"
       type="text"
     />
      
     <input
       id="last-name"
       placeholder="Last"
+      required="required"
       type="text"
     />
   </fieldset>
@@ -34,7 +36,7 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
     />
      
     <button
-      class="green"
+      class="red"
       id="authorize"
     >
       Sync
