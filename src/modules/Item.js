@@ -19,7 +19,7 @@ class Item {
 
   static get_first_item(elements, type) {
     let item = Item.get_items(elements, type)[0]
-    return item || false
+    return item || {}
   }
 
   static get_item_properties(item) {

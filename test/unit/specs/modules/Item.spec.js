@@ -39,7 +39,6 @@ describe('Item.js', () => {
       let items = Item.get_items(document.body, '/person')
       item = items[0]
     })
-
     it('has meta data about the item', () => {
       expect(item.type).toBe('/person')
       expect(item.element_id).toBe('profile')
@@ -52,7 +51,6 @@ describe('Item.js', () => {
       expect(item.url).toBe('/people/scott')
       expect(item.style).toBe('/people/666/style.css')
     })
-
   })
 
   describe('get_first_item()', () => {
@@ -70,9 +68,9 @@ describe('Item.js', () => {
       expect(item.url).toBe('/people/scott')
       expect(item.style).toBe('/people/666/style.css')
     })
-    it('returns false if no object is found', () => {
+    it('returns an empty object if no item is found', () => {
       const dodo = Item.get_first_item(document.body, '/dodo')
-      expect(dodo).toBe(false)
+      expect(dodo).toEqual({})
     })
   })
 })
