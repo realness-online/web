@@ -26,7 +26,6 @@
   import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
   const valid_mobile_digit = /^\d$/ // ^ begining, \d is a digit, $ end
-  // const valid_mobile_number = /^\d{10}$/ // ^ begining, \d is a digit, {10} ten characters long, $ end
   export default {
     props: ['person'],
     data() {
@@ -68,12 +67,8 @@
       },
       parse_mobile_paste(event) {
         let paste = (event.clipboardData).getData('text')
-        paste = parseNumber(paste, 'US').phone
-        if (paste) {
-          this.person.mobile = paste
-        } else {
-          event.preventDefault()
-        }
+        this.person.mobile = parseNumber(paste, 'US').phone
+        event.preventDefault()
       }
     }
   }

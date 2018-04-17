@@ -26,7 +26,7 @@ describe('as-form.vue', () => {
       expect(stub).toBeCalled()
     })
   })
-  describe("input#mobile", () =>{
+  describe("input#mobile.onKeypress()", () => {
     let input, stub, wrapper
     beforeEach(() => {
       const person = { mobile: null }
@@ -48,54 +48,52 @@ describe('as-form.vue', () => {
       })
       expect(stub).toBeCalled()
     })
-    it('should validate a phone number when pasted in', () => {
-      input.trigger('paste', {
-        clipboardData: {
-          getData: function(){ return '4151234567'}
-        },
-        preventDefault: stub
-      })
-      expect(stub).not.toBeCalled()
-      expect(wrapper.vm.person.mobile).toBe('4151234567')
+  })
+  describe("input#mobile.onPaste()", () => {
+    let input, wrapper
+    beforeEach(() => {
+      const person = { mobile: null }
+      wrapper = shallow(as_form, { propsData: { person: person } })
+      input = wrapper.find('#mobile')
     })
-    it('should only accept numbers pasted in', () => {
+    it('should not accept invalid mobile number', () => {
       input.trigger('paste', {
         clipboardData: {
           getData: function(){ return 'abc-123-1234'}
-        },
-        preventDefault: stub
+        }
       })
-      expect(stub).toBeCalled()
-      expect(wrapper.vm.person.mobile).toBe(null)
+      expect(wrapper.vm.person.mobile).toBeFalsy()
     })
-    it('should convert (628) 228-1824‬ on paste', () => {
+    it('should accept 6282281824', () => {
       input.trigger('paste', {
         clipboardData: {
-          getData: function(){ return '(628) 228-1824‬'}
-        },
-        preventDefault: stub
+          getData(){ return '4151234567'}
+        }
       })
-      expect(stub).not.toBeCalled()
+      expect(wrapper.vm.person.mobile).toBe('4151234567')
+    })
+    it('should accept (628) 228-1824', () => {
+      input.trigger('paste', {
+        clipboardData: {
+          getData(){ return '(628) 228-1824‬'}
+        }
+      })
       expect(wrapper.vm.person.mobile).toBe('6282281824')
     })
-    it('should convert 628.228.1824 on paste', () => {
+    it('should accept 628.228.1824', () => {
       input.trigger('paste', {
         clipboardData: {
-          getData: function(){ return '628.228.1824'}
-        },
-        preventDefault: stub
+          getData(){ return '628.228.1824'}
+        }
       })
-      expect(stub).not.toBeCalled()
       expect(wrapper.vm.person.mobile).toBe('6282281824')
     })
-    it('should convert 628-228-1824 on paste', () => {
+    it('should accept 628-228-1824', () => {
       input.trigger('paste', {
         clipboardData: {
-          getData: function(){ return '628-228-1824'}
-        },
-        preventDefault: stub
+          getData(){ return '628-228-1824'}
+        }
       })
-      expect(stub).not.toBeCalled()
       expect(wrapper.vm.person.mobile).toBe('6282281824')
     })
   })
