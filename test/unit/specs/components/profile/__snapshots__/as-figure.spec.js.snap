@@ -27,10 +27,11 @@ exports[`as-figure.vue should render user profile info 1`] = `
     </p>
      
     <a
-      href="sms:14151234567"
-      itemprop="profile_name"
+      data-value="6282281824"
+      href="sms:+16282281824"
+      itemprop="mobile"
     >
-      4151234567
+      (628) 228-1824
     </a>
   </figcaption>
 </figure>

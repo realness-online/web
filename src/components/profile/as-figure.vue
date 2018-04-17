@@ -6,20 +6,21 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <a itemprop="profile_name" :data-value="person.profile_name" :href="mobile_link">{{person.mobile}}</a>
+      <a itemprop="mobile" :data-value="person.mobile" :href="mobile_link">{{formated_mobile}}</a>
     </figcaption>
   </figure>
 </template>
 
 <script>
+  import { AsYouType } from 'libphonenumber-js'
   export default {
     props: ['person'],
     computed: {
       mobile_link() {
-        return `sms:1${this.person.mobile}`
+        return `sms:+1${this.person.mobile}`
       },
       formated_mobile() {
-        this.person.mobile
+        return new AsYouType('US').input(this.person.mobile)
       }
     }
   }

@@ -13,7 +13,7 @@
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="validate_mobile_keypress"
-             v-on:paste="validate_mobile_paste"
+             v-on:paste="parse_mobile_paste"
              v-on:blur="save_person">
       <button id="authorize" class="green"
               v-if='valid_mobile_number'
@@ -23,9 +23,10 @@
 </template>
 
 <script>
+  import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
   const valid_mobile_digit = /^\d$/ // ^ begining, \d is a digit, $ end
-  const valid_mobile_number = /^\d{10}$/ // ^ begining, \d is a digit, {10} ten characters long, $ end
+  // const valid_mobile_number = /^\d{10}$/ // ^ begining, \d is a digit, {10} ten characters long, $ end
   export default {
     props: ['person'],
     data() {
@@ -35,7 +36,7 @@
     },
     computed: {
       valid_mobile_number() {
-        return this.person.mobile && this.person.mobile.match(valid_mobile_number)
+        return !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
       }
     },
     methods: {
@@ -65,9 +66,14 @@
           event.preventDefault()
         }
       },
-      validate_mobile_paste(event) {
+      parse_mobile_paste(event) {
         let paste = (event.clipboardData).getData('text')
-        if (!paste.match(valid_mobile_number)) { event.preventDefault() }
+        paste = parseNumber(paste, 'US').phone
+        if (paste) {
+          this.person.mobile = paste
+        } else {
+          event.preventDefault()
+        }
       }
     }
   }
