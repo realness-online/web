@@ -51,8 +51,8 @@
     padding:base-line
     & >  img
       margin-top:base-line
-      width:(base-line)
-      height:(base-line)
+      width:(base-line * 2)
+      height:(base-line * 2)
   section#profile
     position: relative
     padding: 0 base-line
