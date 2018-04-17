@@ -98,8 +98,9 @@
     input#last-name
       width:40%
     input#mobile
-      width: (40% - base-line * 2)
+      min-width: (40% - base-line * 2)
       margin-right: base-line
     button
+      margin-top:base-line
       padding: (base-line / 11) (base-line / 2 )
 </style>
