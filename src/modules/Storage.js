@@ -34,7 +34,6 @@ class Storage {
     return true
   }
 
-  /* istanbul ignore next */
   persist(doc_u_ment) {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
