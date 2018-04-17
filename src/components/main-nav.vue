@@ -1,11 +1,11 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
     <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="show = !show" ></wat-textarea>
-    <router-link v-if="show" to="/profile" class="black">{{user_name}}</router-link>
     <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
-    <router-link v-if="show" to="/groups" class="green">Groups</router-link>
+    <router-link v-if="show" to="/feed" class="green">Feed</router-link>
     <router-link v-if="show" to="/events" class="blue">Events</router-link>
-    <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
+    <router-link v-if="show" to="/groups" class="blue">Groups</router-link>
+    <router-link v-if="show" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
 
@@ -31,7 +31,7 @@
     computed: {
       onboarding() {
         return {
-          is_person: !!this.person,
+          is_person: !!this.person.mobile,
           has_posts: this.has_posts,
           has_friends: localStorage.getItem('friends-count') > 0,
           can_event: localStorage.getItem('friends-count') >= 5,

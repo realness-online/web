@@ -27,13 +27,6 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
   <!---->
    
   <router-link
-    class="black"
-    to="/profile"
-  >
-    Profile
-  </router-link>
-   
-  <router-link
     class="green"
     to="/relationships"
   >
@@ -42,9 +35,9 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
    
   <router-link
     class="green"
-    to="/groups"
+    to="/feed"
   >
-    Groups
+    Feed
   </router-link>
    
   <router-link
@@ -56,9 +49,16 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
    
   <router-link
     class="blue"
-    to="/feed"
+    to="/groups"
   >
-    Feed
+    Groups
+  </router-link>
+   
+  <router-link
+    class="black"
+    to="/profile"
+  >
+    Profile
   </router-link>
 </nav>
 `;
