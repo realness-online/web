@@ -15,14 +15,23 @@
              v-on:paste="parse_mobile_paste"
              v-on:blur="save_person"
              v-on:focus='scroll_into_view'>
-      <button id="authorize" class="red"
-              v-if='valid_mobile_number'
-              v-on:click='authorize'>Sync</button>
     </fieldset>
+    <fieldset v-if='show_captcha' >
+      <div id="captcha"></div>
+    </fieldset>
+    <fieldset v-if="show_code">
+      <label for="phone-code">confirmation code</label>
+      <input type="text" v-model="confirmation_code">
+    </fieldset>
+    <menu v-if="valid_mobile_number">
+      <button id="authorize" v-if="show_button" v-on:click='authorize'>Join Network</button>
+    </menu>
   </form>
 </template>
 
 <script>
+  import Vue from 'vue'
+  import * as firebase from 'firebase/app'
   import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
   const valid_mobile_digit = /^\d$/ // ^ begining, \d is a digit, $ end
@@ -30,7 +39,11 @@
     props: ['person'],
     data() {
       return {
-        storage: person_storage
+        storage: person_storage,
+        show_button: true,
+        show_captcha: false,
+        show_code: false,
+        confirmation_code: null
       }
     },
     computed: {
@@ -39,23 +52,23 @@
       }
     },
     methods: {
-      authorize() {
-        // let recaptcha = new firebase.auth.RecaptchaVerifier('authorize', {
-        //   'size': 'invisible',
-        //   'callback': (response) => {
-        //     onSignInSubmit() // reCAPTCHA solved, allow signInWithPhoneNumber.
-        //   }
-        // })
-        //
-        // firebase.auth().signInWithPhoneNumber(this.person.mobile, recaptcha)
-        //   .then(function (confirmationResult) {
-        //     // SMS sent. Prompt user to type the code from the message, then sign the
-        //     // user in with confirmationResult.confirm(code).
-        //     window.confirmationResult = confirmationResult;
-        //   }).catch(function (error) {
-        //     // Error; SMS not sent
-        //     // ...
-        //   });
+      authorize(event) {
+        this.show_button = false
+        this.show_captcha = true
+        event.preventDefault()
+        console.log('authorize')
+        Vue.nextTick( () => {
+          let human = new firebase.auth.RecaptchaVerifier('captcha', {
+            'size': 'invisible',
+            'badge': 'inline',
+            'callback': (response) => {
+              console.log('reCAPTCHA solved')
+              this.show_captcha = false
+              this.show_code = true
+            }
+          })
+          human.verify()
+        })
       },
       save_person() {
         this.storage.save()
@@ -82,10 +95,8 @@
   form#profile-form
     & > fieldset
       padding: (base-line / 2 )
-      border:0.33vmin solid black
+      border: 0.33vmin solid black
       margin-bottom: base-line
-      &:last-of-type
-        margin-bottom:0
     input
       color: red
       &:focus
@@ -95,16 +106,16 @@
       &::placeholder
         color: orange
     label[for=mobile]
-      margin-right:-0.3em
+      margin-right: -0.3em
     input#first-name
       width:40%
-      margin-right:base-line
+      margin-right: base-line
     input#last-name
       width:40%
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
     button
-      margin-top:base-line
-      padding: (base-line / 11) (base-line / 2 )
+      border: 0.33vmin solid black
+      padding: (base-line / 2) (base-line / 2 )
 </style>

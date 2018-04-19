@@ -1,5 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
+
+jest.mock('firebase')
 describe('as-form.vue', () => {
   describe('form', () => {
     it('should render form to set user profile info', () => {
@@ -109,11 +111,11 @@ describe('as-form.vue', () => {
       expect(button.exists()).not.toBe(true)
     })
     it('authorize an account with mobile phone number', () => {
-      // const person = { mobile: '4151234567' }
-      // let wrapper = shallow(as_form, { propsData: { person: person } })
-      // let button = wrapper.find('#mobile ~ button')
-      // button.trigger('click')
-      // expect(person.authorized).toBe(true)
+      const person = { mobile: '4151234567' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#mobile ~ button')
+      button.trigger('click')
+      expect(person.authorized).toBe(true)
     })
   })
 })
