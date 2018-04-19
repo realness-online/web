@@ -51,6 +51,7 @@
     resize: none
     caret-color: red
     &:focus
+      font-weight: normal
       height:100vh
       cursor: auto
       text-align: left
