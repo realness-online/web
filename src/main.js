@@ -11,11 +11,12 @@ import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyDpRbQe67nfP2HTxkThxhY2Fk-ru0x2aus',
-  authDomain: 'littleman-8f289.firebaseapp.com',
-  databaseURL: 'https://littleman-8f289.firebaseio.com',
-  storageBucket: 'littleman-8f289.appspot.com',
-  messagingSenderId: '363642054727'
+  apiKey: 'AIzaSyAq__BJhue1yWE0zmufmW_k6AxwseQkTjQ',
+  authDomain: 'realness-online.firebaseapp.com',
+  databaseURL: 'https://realness-online.firebaseio.com',
+  projectId: 'realness-online',
+  storageBucket: 'realness-online.appspot.com',
+  messagingSenderId: '276668807926'
 })
 
 firebase.auth().onAuthStateChanged(user => {

@@ -1,10 +1,10 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
     <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="show = !show" ></wat-textarea>
-    <router-link v-if="show" to="/relationships" class="green">Relations</router-link>
-    <router-link v-if="show" to="/feed" class="green">Feed</router-link>
-    <router-link v-if="show" to="/events" class="blue">Events</router-link>
-    <router-link v-if="show" to="/groups" class="blue">Groups</router-link>
+    <router-link v-if="show" to="/relationships" class="blue">Relations</router-link>
+    <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
+    <router-link v-if="show" to="/events" class="green">Events</router-link>
+    <router-link v-if="show" to="/groups" class="green">Groups</router-link>
     <router-link v-if="show" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
@@ -56,6 +56,7 @@
     justify-content:space-evenly
     align-items: flex-start
     & > *
+      font-weight: bold
       -webkit-tap-highlight-color: transparent
       animation-name: shimer
       animation-delay: 0.10s

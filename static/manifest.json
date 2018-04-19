@@ -1,11 +1,11 @@
 {
-  "name":"fuckum social_network",
-  "short_name":"fuckum",
+  "name":"Realness online",
+  "short_name":"Realness",
   "start_url":"/",
   "scope":"/",
   "orientation":"portrait",
   "display":"standalone",
-  "description":"What's going on with the people you actually know and trust.",
+  "description":"A social network for the realness in all of us",
   "background_color":"#FCF5EA",
   "theme_color":"#FCF5EA",
   "icons": [{

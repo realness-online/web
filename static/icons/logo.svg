@@ -1,10 +1,10 @@
 <svg viewBox="0 0 192 192" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <g id="logo">
-    <rect id="profile" fill-opacity="0.8" fill="#5A585A" x="103.384615" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="feed" fill-opacity="0.69" fill="#52A0D1" x="0" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="events" fill-opacity="0.69" fill="#52A0D1" x="103.384615" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="groups" fill-opacity="0.8" fill="#4FBF6D" x="0" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="relationships" fill-opacity="0.8" fill="#4FBF6D" x="103.384615" y="0" width="88.6153846" height="53.76" rx="8"></rect>
     <rect id="wat?" fill-opacity="0.73" fill="#EC364C" x="0" y="0" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="relationships" fill-opacity="0.69" fill="#52A0D1" x="103.384615" y="0" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="feeds" fill-opacity="0.69" fill="#52A0D1" x="0" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="events" fill-opacity="0.8" fill="#4FBF6D" x="103.384615" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="groups" fill-opacity="0.8" fill="#4FBF6D" x="0" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="profile" fill-opacity="0.8" fill="#5A585A" x="103.384615" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
   </g>
 </svg>
