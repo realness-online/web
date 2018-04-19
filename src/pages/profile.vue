@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="profile" >
+  <section id="profile">
     <header>
       <router-link id="logo" to="/">
         <img src="/static/icons/logo.svg" alt="">
@@ -46,9 +46,8 @@
       margin-right: inherit;
   #logo
     position:fixed
-    top: -(2 * base-line)
-    right: 0
-    padding:base-line
+    top: -(1 * base-line)
+    right: base-line
     & >  img
       margin-top:base-line
       width:(base-line * 2)
