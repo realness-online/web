@@ -57,7 +57,7 @@
         this.show_captcha = true
         event.preventDefault()
         console.log('authorize')
-        Vue.nextTick( () => {
+        Vue.nextTick(() => {
           let human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
