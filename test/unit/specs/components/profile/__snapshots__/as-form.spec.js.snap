@@ -34,13 +34,18 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
       placeholder="(555) 555-5555"
       type="tel"
     />
-     
+  </fieldset>
+   
+  <!---->
+   
+  <!---->
+   
+  <menu>
     <button
-      class="red"
       id="authorize"
     >
-      Sync
+      Join Network
     </button>
-  </fieldset>
+  </menu>
 </form>
 `;

@@ -40,6 +40,9 @@
   @require '../style/variables'
   section#profile
     animation-name: slideInRight
+  section#profile > header
+    position: relative
+    z-index: 2
   section#profile > header > details
     margin-right: base-line * 2
     &[open]

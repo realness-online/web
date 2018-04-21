@@ -20,11 +20,12 @@
       <div id="captcha"></div>
     </fieldset>
     <fieldset v-if="show_code">
-      <label for="phone-code">confirmation code</label>
-      <input type="text" v-model="confirmation_code">
+      <input id="verification-code" type="tel" placeholder="666666"
+             v-model="verification_code" >
     </fieldset>
     <menu v-if="valid_mobile_number">
-      <button id="authorize" v-if="show_button" v-on:click='authorize'>Join Network</button>
+      <button id="authorize" v-if="show_button" v-on:click='validate_is_human'>join realness </button>
+      <button id="enter" v-if="show_code">Enter</button>
     </menu>
   </form>
 </template>
@@ -43,32 +44,51 @@
         show_button: true,
         show_captcha: false,
         show_code: false,
-        confirmation_code: null
+        verification_code: null,
+        human_verifier: null
       }
     },
     computed: {
       valid_mobile_number() {
         return !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
+      },
+      mobile_as_e164() {
+        return `+1${this.person.mobile}`
       }
     },
     methods: {
-      authorize(event) {
+      validate_is_human(event) {
+        event.preventDefault()
         this.show_button = false
         this.show_captcha = true
-        event.preventDefault()
         console.log('authorize')
         Vue.nextTick(() => {
-          let human = new firebase.auth.RecaptchaVerifier('captcha', {
+          this.human_verifier = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
-            'callback': (response) => {
-              console.log('reCAPTCHA solved')
-              this.show_captcha = false
-              this.show_code = true
-            }
+            'callback': this.send_verification_code
           })
-          human.verify()
+          this.human_verifier.verify()
         })
+      },
+      send_verification_code(response) {
+        console.log('reCAPTCHA solved')
+        this.show_captcha = false
+        this.show_code = true
+        firebase.auth()
+          .signInWithPhoneNumber(this.mobile_as_e164, this.human_verifier)
+          .then(confirmationResult => {
+            console.log('SMS sent.', confirmationResult)
+            this.sign_in_with_code(confirmationResult)
+            this.human_verifier.clear()
+            this.$el.querySelector('verification-code').focus()
+          })
+          .catch(error => {
+            console.log('Error; SMS not sent', error)
+          })
+      },
+      sign_in_with_code() {
+        console.log('sign_in_with_code')
       },
       save_person() {
         this.storage.save()
@@ -118,4 +138,5 @@
     button
       border: 0.33vmin solid black
       padding: (base-line / 2) (base-line / 2 )
+      text-transform:capitalize
 </style>

@@ -27,28 +27,28 @@ exports[`main-nav.vue nav#main_nav #show:true should render the application navi
   <!---->
    
   <router-link
-    class="green"
+    class="blue"
     to="/relationships"
   >
     Relations
   </router-link>
    
   <router-link
-    class="green"
+    class="blue"
     to="/feed"
   >
     Feed
   </router-link>
    
   <router-link
-    class="blue"
+    class="green"
     to="/events"
   >
     Events
   </router-link>
    
   <router-link
-    class="blue"
+    class="green"
     to="/groups"
   >
     Groups

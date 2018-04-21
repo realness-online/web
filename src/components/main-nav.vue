@@ -55,6 +55,16 @@
     align-content: space-evenly
     justify-content:space-evenly
     align-items: flex-start
+    & > a
+      visibility: hidden
+      &:focus
+        color:transparent
+        transition-duration: 0.6s
+        transition: all
+        margin:0.5vh 0.5vw
+        width: 43vw
+        height: 23vh
+        outline: none
     & > *
       font-weight: bold
       -webkit-tap-highlight-color: transparent
@@ -70,8 +80,6 @@
       border-style: solid
       border-radius: 3vw
       padding:base-line
-    & > a
-      visibility: hidden
       &:nth-child(even)
         text-align: right
         padding-right:base-line
@@ -81,21 +89,14 @@
         height: 22vh
         margin: 1vh 1vw
         color:transparent
-      &:focus
-        color:transparent
-        transition-duration: 0.6s
-        transition: all
-        margin:0.5vh 0.5vw
-        width: 43vw
-        height: 23vh
-        outline: none
+
   nav#main_nav
     &.has_posts
       & > [href='/profile']
         visibility: visible
     &.is_person
       & > [href='/profile']
-      & > [href='/relationships']
+      // & > [href='/relationships']
         visibility: visible
     &.has_friends
       & > [href='/feed']

@@ -46,6 +46,9 @@
       line-height: (base-line * 2)
       & > p
         margin:0
+        & > span
+          text-transform: capitalize
+
       & > a
         display:block
 
