@@ -39,7 +39,7 @@ const router = new VueRouter({
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#realness',
+  el: '#loading-realness',
   router,
   render: h => h(app)
 })
