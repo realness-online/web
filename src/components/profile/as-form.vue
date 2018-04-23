@@ -16,16 +16,17 @@
              v-on:blur="save_person"
              v-on:focus='scroll_into_view'>
     </fieldset>
-    <fieldset v-if='show_captcha' >
+    <fieldset v-if='show_captcha' v-bind:class="{hide_captcha}">
       <div id="captcha"></div>
     </fieldset>
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" placeholder="696969"
-             v-model="code" >
+            v-model="code" v-on:keypress="validate_code_keypress" >
     </fieldset>
     <menu v-if="valid_mobile_number">
-      <button id="authorize" v-if="show_button" v-on:click='validate_is_human'>join realness</button>
-      <button id="enter" v-if="show_code" v-on:click="sign_in_with_code">Enter</button>
+      <button v-if="show_authorize" v-on:click='validate_is_human'>sign on to realness</button>
+      <button id='code' v-if="show_code" disabled v-on:click="sign_in_with_code">enter code</button>
+      <button v-if="show_sign_out" v-on:click="sign_out">sign out</button>
     </menu>
   </form>
 </template>
@@ -35,20 +36,30 @@
   import * as firebase from 'firebase/app'
   import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
-  const valid_mobile_digit = /^\d$/ // ^ begining, \d is a digit, $ end
   export default {
     props: ['person'],
     data() {
       return {
         storage: person_storage,
-        show_button: true,
-        show_captcha: false,
-        show_code: false,
         code: null,
         human: null,
         authorizer: null,
-        user: null
+        show_sign_out: false,
+        show_authorize: false,
+        show_captcha: false,
+        hide_captcha: false,
+        show_code: false
       }
+    },
+    created() {
+      window.firebase = firebase
+      firebase.auth().onAuthStateChanged(user => {
+        if (user && user.isAnonymous) {
+          this.show_authorize = true
+        } else {
+          this.show_sign_out = true
+        }
+      })
     },
     computed: {
       valid_mobile_number() {
@@ -59,21 +70,12 @@
       }
     },
     methods: {
-      send_phone_and_captcha(response) {
-        this.show_captcha = false
-        this.show_code = true
-        firebase.auth().signInWithPhoneNumber(this.mobile_as_e164, this.human)
-          .then(result => {
-            this.authorizer = result
-            this.$el.querySelector('#verification-code').focus()
-          }).catch(error => { console.log(error) })
-      },
       save_person() {
         this.storage.save()
       },
       validate_is_human(event) {
         event.preventDefault()
-        this.show_button = false
+        this.show_authorize = false
         this.show_captcha = true
         Vue.nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
@@ -84,15 +86,41 @@
           this.human.verify()
         })
       },
+      send_phone_and_captcha(response) {
+        this.show_code = true
+        this.hide_captcha = true
+        firebase.auth().currentUser
+          .linkWithPhoneNumber(this.mobile_as_e164, this.human)
+          .then(result => {
+            this.authorizer = result
+            this.$el.querySelector('#verification-code').focus()
+          }).catch(error => { console.log(error) })
+      },
       sign_in_with_code(event) {
         event.preventDefault()
+        this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
-          this.user = result.user
+          this.signed_in = true
         }).catch(error => { console.error(error) })
       },
+      sign_out(event) {
+        event.preventDefault()
+        this.show_sign_out = false
+        firebase.auth().signOut()
+      },
       validate_mobile_keypress(event) {
-        if (!event.key.match(valid_mobile_digit)) {
+        if (!event.key.match(/^\d$/)) {
           event.preventDefault()
+        }
+      },
+      validate_code_keypress(event) {
+        if (!event.key.match(/^\d$/)) {
+          event.preventDefault()
+        }
+        let button = this.$el.querySelector('#code')
+        let input = this.$el.querySelector('#verification-code')
+        if (input.value.length === 5) { // after this keypress it will be 6
+          button.disabled = false
         }
       },
       parse_mobile_paste(event) {
@@ -114,6 +142,8 @@
       padding: (base-line / 2 )
       border: 0.33vmin solid black
       margin-bottom: base-line
+      &.hide_captcha
+        display: none
     input
       color: red
       &:focus
@@ -136,4 +166,7 @@
       border: 0.33vmin solid black
       padding: (base-line / 2) (base-line / 2 )
       text-transform:capitalize
+    button[disabled]
+      border: 0.33vmin solid lighten(black, 50%)
+      color: lighten(black, 50%)
 </style>
