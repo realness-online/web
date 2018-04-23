@@ -75,7 +75,6 @@
         event.preventDefault()
         this.show_button = false
         this.show_captcha = true
-        console.log('authorize')
         Vue.nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
@@ -87,13 +86,9 @@
       },
       sign_in_with_code(event) {
         event.preventDefault()
-        console.log('sign_in_with_code')
         this.authorizer.confirm(this.code).then(result => {
           this.user = result.user
-          console.log('one ring to rule them all', this.user)
-        }).catch(error => {
-          console.error('User couldn\'t sign in (bad verification code?)', error)
-        })
+        }).catch(error => { console.error(error) })
       },
       validate_mobile_keypress(event) {
         if (!event.key.match(valid_mobile_digit)) {

@@ -1,7 +1,7 @@
 {
-  "name": "social_network",
-  "version": "0.0.2",
-  "description": "A social netowk for events",
+  "name": "Realness",
+  "version": "0.0.1",
+  "description": "A webapp for realness.online",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "private": true,
   "scripts": {

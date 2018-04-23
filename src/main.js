@@ -48,7 +48,7 @@ const router = new VueRouter({
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#social_network',
+  el: '#realness',
   router,
   render: h => h(app)
 })

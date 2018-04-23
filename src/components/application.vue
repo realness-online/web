@@ -1,6 +1,6 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
-  <main id="social_network">
+  <main id="realness">
     <router-view></router-view>
     <developer-tools></developer-tools>
   </main>

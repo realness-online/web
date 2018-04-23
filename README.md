@@ -1,4 +1,4 @@
-# social_network
+# realness.online
 
 ## What you get.
 - your activity
@@ -19,10 +19,11 @@
 
 ## your data
 - stored as html
+- stored on device
 - public information stored on github or third party
 - quantified self
-- distributed social_network
-- this data has value and it's yours to spend
+- distributed social network
+- data has value and it's yours to spend
 
 # on-boadring states
 
