@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import * as firebase from 'firebase/app'
-
 import app from '@/components/application'
 import events from '@/pages/events'
 import feed from '@/pages/feed'
@@ -10,18 +9,10 @@ import index from '@/pages/index'
 import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 
-firebase.initializeApp({
-  apiKey: 'AIzaSyAq__BJhue1yWE0zmufmW_k6AxwseQkTjQ',
-  authDomain: 'realness-online.firebaseapp.com',
-  databaseURL: 'https://realness-online.firebaseio.com',
-  projectId: 'realness-online',
-  storageBucket: 'realness-online.appspot.com',
-  messagingSenderId: '276668807926'
-})
-
+firebase.initializeApp(process.env.FIREBASE_CONFIG)
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
-    // create profile. on server.
+    // yay! you've been here before
   } else {
     firebase.auth().useDeviceLanguage()
     firebase.auth().signInAnonymously()
