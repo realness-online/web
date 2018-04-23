@@ -21,7 +21,7 @@
     </fieldset>
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" placeholder="696969"
-             v-model="verification_code" >
+             v-model="code" >
     </fieldset>
     <menu v-if="valid_mobile_number">
       <button id="authorize" v-if="show_button" v-on:click='validate_is_human'>join realness</button>
@@ -44,8 +44,10 @@
         show_button: true,
         show_captcha: false,
         show_code: false,
-        verification_code: null,
-        human_verifier: null
+        code: null,
+        human: null,
+        authorizer: null,
+        user: null
       }
     },
     computed: {
@@ -57,46 +59,41 @@
       }
     },
     methods: {
+      send_phone_and_captcha(response) {
+        this.show_captcha = false
+        this.show_code = true
+        firebase.auth().signInWithPhoneNumber(this.mobile_as_e164, this.human)
+          .then(result => {
+            this.authorizer = result
+            this.$el.querySelector('#verification-code').focus()
+          }).catch(error => { console.log(error) })
+      },
+      save_person() {
+        this.storage.save()
+      },
       validate_is_human(event) {
         event.preventDefault()
         this.show_button = false
         this.show_captcha = true
         console.log('authorize')
         Vue.nextTick(() => {
-          this.human_verifier = new firebase.auth.RecaptchaVerifier('captcha', {
+          this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
-            'callback': this.send_verification_code
+            'callback': this.send_phone_and_captcha
           })
-          this.human_verifier.verify()
+          this.human.verify()
         })
-      },
-      send_verification_code(response) {
-        console.log('reCAPTCHA solved')
-        this.show_captcha = false
-        this.show_code = true
-        firebase.auth()
-          .signInWithPhoneNumber(this.mobile_as_e164, this.human_verifier)
-          .then(confirmationResult => {
-            console.log('SMS sent.', confirmationResult)
-            this.sign_in_with_code(confirmationResult)
-            this.human_verifier.clear()
-            this.$el.querySelector('verification-code').focus()
-          })
-          .catch(error => {
-            console.log('Error; SMS not sent', error)
-          })``
       },
       sign_in_with_code(event) {
-        firebase.auth()
-        .signInWithPhoneNumber(this.verification_code, this.human_verifier)
-        .then(confirmationResult => {
-          console.log(confirmationResult)
+        event.preventDefault()
+        console.log('sign_in_with_code')
+        this.authorizer.confirm(this.code).then(result => {
+          this.user = result.user
+          console.log('one ring to rule them all', this.user)
+        }).catch(error => {
+          console.error('User couldn\'t sign in (bad verification code?)', error)
         })
-        .catch(error => {})
-      },
-      save_person() {
-        this.storage.save()
       },
       validate_mobile_keypress(event) {
         if (!event.key.match(valid_mobile_digit)) {

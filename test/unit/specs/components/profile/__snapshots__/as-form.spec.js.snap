@@ -44,8 +44,10 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
     <button
       id="authorize"
     >
-      Join Network
+      join realness
     </button>
+     
+    <!---->
   </menu>
 </form>
 `;
