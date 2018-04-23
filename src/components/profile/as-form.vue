@@ -20,7 +20,7 @@
       <div id="captcha"></div>
     </fieldset>
     <fieldset v-if="show_code">
-      <input id="verification-code" type="tel" placeholder="666666"
+      <input id="verification-code" type="tel" placeholder="696969"
              v-model="verification_code" >
     </fieldset>
     <menu v-if="valid_mobile_number">
@@ -124,7 +124,7 @@
         &::placeholder
           color:lighten(black, 30%)
       &::placeholder
-        color: orange
+        color: lighten(black, 30%)
     label[for=mobile]
       margin-right: -0.3em
     input#first-name
