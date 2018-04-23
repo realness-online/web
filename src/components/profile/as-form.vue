@@ -24,8 +24,8 @@
              v-model="verification_code" >
     </fieldset>
     <menu v-if="valid_mobile_number">
-      <button id="authorize" v-if="show_button" v-on:click='validate_is_human'>join realness </button>
-      <button id="enter" v-if="show_code">Enter</button>
+      <button id="authorize" v-if="show_button" v-on:click='validate_is_human'>join realness</button>
+      <button id="enter" v-if="show_code" v-on:click="sign_in_with_code">Enter</button>
     </menu>
   </form>
 </template>
@@ -85,10 +85,15 @@
           })
           .catch(error => {
             console.log('Error; SMS not sent', error)
-          })
+          })``
       },
-      sign_in_with_code() {
-        console.log('sign_in_with_code')
+      sign_in_with_code(event) {
+        firebase.auth()
+        .signInWithPhoneNumber(this.verification_code, this.human_verifier)
+        .then(confirmationResult => {
+          console.log(confirmationResult)
+        })
+        .catch(error => {})
       },
       save_person() {
         this.storage.save()
