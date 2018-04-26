@@ -2,6 +2,7 @@ import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 
 jest.mock('firebase')
+
 describe('as-form.vue', () => {
   describe('form', () => {
     it('should render form to set user profile info', () => {
