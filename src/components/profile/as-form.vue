@@ -5,7 +5,8 @@
              v-model="person.first_name"
              v-on:blur="save_person">
       <input id="last-name" type='text' placeholder="Last" required
-             v-model="person.last_name">
+             v-model="person.last_name"
+             v-on:blur="save_person">
     </fieldset>
     <fieldset>
       <label for="mobile">1+</label>
@@ -13,18 +14,17 @@
              v-model="person.mobile"
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="parse_mobile_paste"
-             v-on:blur="save_person"
-             v-on:focus='scroll_into_view'>
+             v-on:blur="save_person">
     </fieldset>
     <fieldset v-if='show_captcha' v-bind:class="{hide_captcha}">
       <div id="captcha"></div>
     </fieldset>
     <fieldset v-if="show_code">
-      <input id="verification-code" type="tel" placeholder="696969"
+      <input id="code-input" type="tel" placeholder="696969"
             v-model="code" v-on:keypress="validate_code_keypress" >
     </fieldset>
     <menu v-if="valid_mobile_number">
-      <button v-if="show_authorize" v-on:click='validate_is_human'>sign on to realness</button>
+      <button v-if="show_authorize" v-on:click='validate_is_human'>enter realness</button>
       <button id='code' v-if="show_code" disabled v-on:click="sign_in_with_code">enter code</button>
       <button v-if="show_sign_out" v-on:click="sign_out">sign out</button>
     </menu>
@@ -52,12 +52,12 @@
       }
     },
     created() {
-      window.firebase = firebase
       firebase.auth().onAuthStateChanged(user => {
-        if (user && user.isAnonymous) {
-          this.show_authorize = true
-        } else {
+        console.log(user)
+        if (user) {
           this.show_sign_out = true
+        } else {
+          this.show_authorize = true
         }
       })
     },
@@ -89,11 +89,12 @@
       send_phone_and_captcha(response) {
         this.show_code = true
         this.hide_captcha = true
-        firebase.auth().currentUser
-          .linkWithPhoneNumber(this.mobile_as_e164, this.human)
+        firebase.auth()
+          .signInWithPhoneNumber(this.mobile_as_e164, this.human)
           .then(result => {
             this.authorizer = result
-            this.$el.querySelector('#verification-code').focus()
+            this.$el.querySelector('#code-input').scrollIntoView(false)
+            this.$el.querySelector('#code-input').focus()
           }).catch(error => { console.log(error) })
       },
       sign_in_with_code(event) {
@@ -107,6 +108,7 @@
         event.preventDefault()
         this.show_sign_out = false
         firebase.auth().signOut()
+        this.show_authorize = true
       },
       validate_mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
@@ -118,7 +120,7 @@
           event.preventDefault()
         }
         let button = this.$el.querySelector('#code')
-        let input = this.$el.querySelector('#verification-code')
+        let input = this.$el.querySelector('#code-input')
         if (input.value.length === 5) { // after this keypress it will be 6
           button.disabled = false
         }
@@ -127,9 +129,6 @@
         let paste = (event.clipboardData).getData('text')
         this.person.mobile = parseNumber(paste, 'US').phone
         event.preventDefault()
-      },
-      scroll_into_view(event) {
-        event.target.scrollIntoView(false)
       }
     }
   }

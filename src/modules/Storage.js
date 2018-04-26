@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import * as firebase from 'firebase/app'
+// import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 
@@ -30,25 +30,25 @@ class Storage {
     if (!items) { return false }
     items = items.outerHTML
     localStorage.setItem(this.item_type, items)
-    this.persist(items)
+    // this.persist(items)
     return true
   }
 
-  persist(doc_u_ment) {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        const file = new File([doc_u_ment], this.location)
-        if (navigator.onLine) {
-          firebase.storage().ref()
-            .child(`/cohorts/1/people/${user.uid}/${this.location}`)
-            .put(file, this.metadata)
-            .catch(console.log.bind(console))
-        } else {
-          console.log(`You are offline. ${this.item_type} saved to localStorage`)
-        }
-      }
-    })
-  }
+  // persist(doc_u_ment) {
+  //   firebase.auth().onAuthStateChanged(user => {
+  //     if (user) {
+  //       const file = new File([doc_u_ment], this.location)
+  //       if (navigator.onLine) {
+  //         firebase.storage().ref()
+  //           .child(`/cohorts/1/people/${user.uid}/${this.location}`)
+  //           .put(file, this.metadata)
+  //           .catch(console.log.bind(console))
+  //       } else {
+  //         console.log(`You are offline. ${this.item_type} saved to localStorage`)
+  //       }
+  //     }
+  //   })
+  // }
 
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)

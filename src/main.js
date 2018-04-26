@@ -10,15 +10,6 @@ import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 
 firebase.initializeApp(process.env.FIREBASE_CONFIG)
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    // yay! you've been here before
-  } else {
-    firebase.auth().useDeviceLanguage()
-    firebase.auth().signInAnonymously()
-  }
-})
-
 Vue.prototype.$bus = new Vue({})
 Vue.use(VueRouter)
 Vue.config.productionTip = false
