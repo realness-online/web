@@ -40,13 +40,17 @@
   @require '../style/variables'
   section#profile
     animation-name: slideInRight
-  section#profile > header
     position: relative
-    z-index: 2
-  section#profile > header > details
-    margin-right: base-line * 2
-    &[open]
-      margin-right: inherit;
+    padding: 0 base-line
+
+    & > header
+      margin-bottom: base-line
+      position: relative
+      z-index: 2
+      & > details
+        margin-right: base-line * 2
+        &[open]
+          margin-right: inherit;
   #logo
     position:fixed
     top: -(1 * base-line)
@@ -55,9 +59,5 @@
       margin-top:base-line
       width:(base-line * 2)
       height:(base-line * 2)
-  section#profile
-    position: relative
-    padding: 0 base-line
-    & > header
-      margin-bottom: base-line
+
 </style>

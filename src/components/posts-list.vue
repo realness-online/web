@@ -1,8 +1,8 @@
 <template>
   <div itemprop="posts" id="posts" itemref="profile">
     <article v-for="post in posts" itemscope itemtype="http://schema.org/SocialMediaPosting">
-      <header><time itemprop="created_at" :datetime="post.created_at">calculating...</time></header>
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
+      <footer><time itemprop="created_at" :datetime="post.created_at">calculating...</time></footer>
     </article>
   </div>
 </template>
@@ -33,9 +33,20 @@
 </script>
 
 <style lang="stylus">
+  @require '../style/variables'
   div[itemprop="posts"]
     display:flex
     flex-direction: column-reverse
-    & > article > blockquote
-      white-space: pre-wrap
+    & > article
+      margin-bottom: base-line
+      & > footer > time
+        cursor: default;
+        transition: opacity 0.25s
+        opacity: 0.5
+        &:active
+          transition: opacity 0.24s
+          opacity: 1
+      & > blockquote
+        cursor: default
+        white-space: pre-wrap
 </style>
