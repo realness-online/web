@@ -34,8 +34,8 @@
     margin:base-line 0
     display:flex
     & > svg
-      border: 0.33vmin solid currentColor
-      border-radius: 1vmin
+      border: 0.44vmin solid currentColor
+      border-radius: .44vmin
       outline:none
       padding:0
       vertical-align: middle
