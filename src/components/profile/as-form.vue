@@ -139,7 +139,7 @@
   form#profile-form
     & > fieldset
       padding: (base-line / 2 )
-      border: 0.33vmin solid black
+      border: 0.33vmin solid currentColor
       margin-bottom: base-line
       &.hide_captcha
         display: none
@@ -162,7 +162,7 @@
       min-width: (40% - base-line * 2)
       margin-right: base-line
     button
-      border: 0.33vmin solid black
+      border: 0.33vmin solid currentColor
       padding: (base-line / 2) (base-line / 2 )
       text-transform:capitalize
     button[disabled]

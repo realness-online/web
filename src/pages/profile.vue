@@ -2,7 +2,7 @@
   <section id="profile">
     <header>
       <router-link id="logo" to="/">
-        <img src="/static/icons/logo.svg" alt="">
+        <svg><use xlink:href="/static/icons.svg#realness"/></svg>
       </router-link>
       <details>
         <summary><profile-as-figure :person='person'></profile-as-figure></summary>
@@ -55,7 +55,7 @@
     position:fixed
     top: -(1 * base-line)
     right: base-line
-    & >  img
+    & > svg
       margin-top:base-line
       width:(base-line * 2)
       height:(base-line * 2)

@@ -1,6 +1,8 @@
 <template>
   <figure id="profile" itemscope itemtype='/person'>
-    <img  itemprop="profile_vector" :src="person.profile_vector">
+    <svg itemprop="profile_vector" :src="person.profile_vector" >
+      <use xlink:href="/static/icons.svg#silhouette"/>
+    </svg>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
@@ -31,15 +33,15 @@
   figure#profile
     margin:base-line 0
     display:flex
-    & > img
+    & > svg
+      border: 0.33vmin solid currentColor
+      border-radius: 1vmin
       outline:none
       padding:0
       vertical-align: middle
       height: (2 * base-line)
       width: (2 * base-line)
-      background-color: black
-      border: 0.33vmin solid black
-      border-radius: (base-line / 2)
+
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
@@ -48,7 +50,6 @@
         margin:0
         & > span
           text-transform: capitalize
-
       & > a
         display:block
 
