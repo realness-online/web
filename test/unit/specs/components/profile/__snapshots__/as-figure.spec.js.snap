@@ -6,10 +6,14 @@ exports[`as-figure.vue should render user profile info 1`] = `
   itemscope="itemscope"
   itemtype="/person"
 >
-  <img
+  <svg
     itemprop="profile_vector"
     src="/people/scott-fryxell/profile.svg"
-  />
+  >
+    <use
+      xlink:href="/static/icons.svg#silhouette"
+    />
+  </svg>
    
   <figcaption>
     <p>

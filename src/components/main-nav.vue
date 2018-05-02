@@ -78,8 +78,8 @@
       height: 24vh
       border-width: 1vmax
       border-style: solid
-      border-radius: 3vw
-      padding:base-line
+      border-radius: base-line
+      padding: base-line
       &:nth-child(even)
         text-align: right
         padding-right:base-line

@@ -18,20 +18,20 @@ exports[`posts-list.vue should render some posts 1`] = `
     itemscope="itemscope"
     itemtype="http://schema.org/SocialMediaPosting"
   >
-    <header>
+    <blockquote
+      itemprop="articleBody"
+    >
+      I like to move it
+    </blockquote>
+     
+    <footer>
       <time
         datetime="2017-12-20T23:01:14.310Z"
         itemprop="created_at"
       >
         calculating...
       </time>
-    </header>
-     
-    <blockquote
-      itemprop="articleBody"
-    >
-      I like to move it
-    </blockquote>
+    </footer>
   </article>
 </div>
 `;

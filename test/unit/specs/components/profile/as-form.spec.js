@@ -1,9 +1,84 @@
 import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
+import * as firebase from 'firebase'
 
-jest.mock('firebase')
+const onAuthStateChanged = jest.fn((callback) => {
+  callback()
+  // callback({
+  //   user: {
+  //     displayName: 'redirectResultTestDisplayName',
+  //     email: 'redirectTest@test.com',
+  //     emailVerified: true
+  //   }
+  // })
+})
+
+
+const getRedirectResult = jest.fn(() => {
+  return Promise.resolve({
+    user: {
+      displayName: 'redirectResultTestDisplayName',
+      email: 'redirectTest@test.com',
+      emailVerified: true
+    }
+  })
+})
+
+const sendEmailVerification = jest.fn(() => {
+  return Promise.resolve('result of sendEmailVerification')
+})
+
+const sendPasswordResetEmail = jest.fn(() => Promise.resolve())
+
+const createUserWithEmailAndPassword = jest.fn(() => {
+  return Promise.resolve('result of createUserWithEmailAndPassword')
+})
+
+const signInWithEmailAndPassword = jest.fn(() => {
+  return Promise.resolve('result of signInWithEmailAndPassword')
+})
+
+const signInWithRedirect = jest.fn(() => {
+  return Promise.resolve('result of signInWithRedirect')
+})
+
+const initializeApp = jest
+  .spyOn(firebase, 'initializeApp')
+  .mockImplementation(() => {
+    return {
+      auth: () => {
+        return {
+          createUserWithEmailAndPassword,
+          signInWithEmailAndPassword,
+          currentUser: {
+            sendEmailVerification
+          },
+          signInWithRedirect
+        }
+      }
+    }
+  })
+
+jest.spyOn(firebase, 'auth').mockImplementation(() => {
+  return {
+    onAuthStateChanged,
+    currentUser: {
+      displayName: 'testDisplayName',
+      email: 'test@test.com',
+      emailVerified: true
+    },
+    getRedirectResult,
+    sendPasswordResetEmail
+  }
+})
+
+firebase.auth.FacebookAuthProvider = jest.fn(() => {})
+firebase.auth.GoogleAuthProvider = jest.fn(() => {})
 
 describe('as-form.vue', () => {
+  beforeEach(() => {
+  })
+
   describe('form', () => {
     it('should render form to set user profile info', () => {
       const person = {
@@ -97,26 +172,28 @@ describe('as-form.vue', () => {
       expect(wrapper.vm.person.mobile).toBe('6282281824')
     })
   })
-  describe('input#mobile ~ button', () => {
-    it('authorize button appears with valid mobile number', () => {
+  describe('authorization', () => {
+    it('authorize button appears with valid mobile number', async () => {
       const person = { mobile: '4151234567' }
-      let wrapper = shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#mobile ~ button')
+      let wrapper = await shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#authorize')
+      expect(firebase.auth).toHaveBeenCalled()
+      expect(onAuthStateChanged).toHaveBeenCalled()
       expect(button.exists()).toBe(true)
     })
-    it('authorize button diappears until valid mobile number', () => {
-      // const person = { mobile: 'aaaaaaaaaa' }
-      const person = { mobile: '415123456a' }
-      let wrapper = shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#mobile ~ button')
-      expect(button.exists()).not.toBe(true)
-    })
-    it('authorize an account with mobile phone number', () => {
-      const person = { mobile: '4151234567' }
-      let wrapper = shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#mobile ~ button')
-      button.trigger('click')
-      expect(person.authorized).toBe(true)
-    })
+    // it('authorize button diappears until valid mobile number', () => {
+    //   // const person = { mobile: 'aaaaaaaaaa' }
+    //   const person = { mobile: '415123456a' }
+    //   let wrapper = shallow(as_form, { propsData: { person: person } })
+    //   let button = wrapper.find('#authorize')
+    //   expect(button.exists()).not.toBe(true)
+    // })
+    // it('authorize an account with mobile phone number', () => {
+    //   const person = { mobile: '4151234567' }
+    //   let wrapper = shallow(as_form, { propsData: { person: person } })
+    //   let button = wrapper.find('#authorize')
+    //   button.trigger('click')
+    //   expect(person.authorized).toBe(true)
+    // })
   })
 })
