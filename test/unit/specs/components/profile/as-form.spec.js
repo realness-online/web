@@ -2,20 +2,8 @@ import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase'
 
-const onAuthStateChanged = jest.fn((callback) => {
-  callback()
-  // callback({
-  //   user: {
-  //     displayName: 'redirectResultTestDisplayName',
-  //     email: 'redirectTest@test.com',
-  //     emailVerified: true
-  //   }
-  // })
-})
-
-
-const getRedirectResult = jest.fn(() => {
-  return Promise.resolve({
+const is_signed_in = jest.fn((callback) => {
+  callback({
     user: {
       displayName: 'redirectResultTestDisplayName',
       email: 'redirectTest@test.com',
@@ -24,61 +12,21 @@ const getRedirectResult = jest.fn(() => {
   })
 })
 
-const sendEmailVerification = jest.fn(() => {
-  return Promise.resolve('result of sendEmailVerification')
+const is_signed_out = jest.fn((callback) => callback())
+
+jest
+.spyOn(firebase, 'initializeApp')
+.mockImplementation(() => {
+  return { auth: () => {} }
 })
 
-const sendPasswordResetEmail = jest.fn(() => Promise.resolve())
-
-const createUserWithEmailAndPassword = jest.fn(() => {
-  return Promise.resolve('result of createUserWithEmailAndPassword')
+jest
+.spyOn(firebase, 'auth')
+.mockImplementation(() => {
+  return { onAuthStateChanged: is_signed_out }
 })
-
-const signInWithEmailAndPassword = jest.fn(() => {
-  return Promise.resolve('result of signInWithEmailAndPassword')
-})
-
-const signInWithRedirect = jest.fn(() => {
-  return Promise.resolve('result of signInWithRedirect')
-})
-
-const initializeApp = jest
-  .spyOn(firebase, 'initializeApp')
-  .mockImplementation(() => {
-    return {
-      auth: () => {
-        return {
-          createUserWithEmailAndPassword,
-          signInWithEmailAndPassword,
-          currentUser: {
-            sendEmailVerification
-          },
-          signInWithRedirect
-        }
-      }
-    }
-  })
-
-jest.spyOn(firebase, 'auth').mockImplementation(() => {
-  return {
-    onAuthStateChanged,
-    currentUser: {
-      displayName: 'testDisplayName',
-      email: 'test@test.com',
-      emailVerified: true
-    },
-    getRedirectResult,
-    sendPasswordResetEmail
-  }
-})
-
-firebase.auth.FacebookAuthProvider = jest.fn(() => {})
-firebase.auth.GoogleAuthProvider = jest.fn(() => {})
 
 describe('as-form.vue', () => {
-  beforeEach(() => {
-  })
-
   describe('form', () => {
     it('should render form to set user profile info', () => {
       const person = {
@@ -127,7 +75,7 @@ describe('as-form.vue', () => {
   })
   describe("input#mobile.onPaste()", () => {
     let input, wrapper
-    beforeEach( () => {
+    beforeEach(() => {
       wrapper = shallow(as_form, { propsData: { person: {} } })
       input = wrapper.find('#mobile')
     })
@@ -173,27 +121,51 @@ describe('as-form.vue', () => {
     })
   })
   describe('authorization', () => {
-    it('authorize button appears with valid mobile number', async () => {
+    it('authorize button with valid mobile number', () => {
       const person = { mobile: '4151234567' }
-      let wrapper = await shallow(as_form, { propsData: { person: person } })
+      let wrapper = shallow(as_form, { propsData: { person: person } })
       let button = wrapper.find('#authorize')
       expect(firebase.auth).toHaveBeenCalled()
-      expect(onAuthStateChanged).toHaveBeenCalled()
+      expect(is_signed_out).toHaveBeenCalled()
       expect(button.exists()).toBe(true)
     })
-    // it('authorize button diappears until valid mobile number', () => {
-    //   // const person = { mobile: 'aaaaaaaaaa' }
-    //   const person = { mobile: '415123456a' }
-    //   let wrapper = shallow(as_form, { propsData: { person: person } })
-    //   let button = wrapper.find('#authorize')
-    //   expect(button.exists()).not.toBe(true)
-    // })
-    // it('authorize an account with mobile phone number', () => {
-    //   const person = { mobile: '4151234567' }
-    //   let wrapper = shallow(as_form, { propsData: { person: person } })
-    //   let button = wrapper.find('#authorize')
-    //   button.trigger('click')
-    //   expect(person.authorized).toBe(true)
-    // })
+    it('authorize button diappears until valid mobile number', () => {
+      const person = { mobile: '415123456a' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#authorize')
+      expect(button.exists()).not.toBe(true)
+    })
+    it('Sign out button when signed in', () => {
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_signed_in }
+      })
+      const person = { mobile: '4151234567' }
+      let wrapper =  shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#sign-out')
+      expect(firebase.auth).toHaveBeenCalled()
+      expect(is_signed_in).toHaveBeenCalled()
+      expect(button.exists()).toBe(true)
+    })
+  })
+  describe('#validate_is_human', () => {
+    let wrapper, button
+    const person = { mobile: '4151234356' }
+    beforeEach(() => {
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_signed_out }
+      })
+      wrapper = shallow(as_form, { propsData: { person: person } })
+      button = wrapper.find('#authorize')
+      button.trigger('click')
+    })
+    it('hides authorize button after clicked', () => {
+      expect(wrapper.vm.show_authorize).toBe(false)
+    })
+    it('displays captcha information', () => {
+      expect(wrapper.vm.show_captcha).toBe(true)
+      expect(wrapper.find('#captcha').is('div')).toBe(true)
+    })
+    it('verifys the user is a human')
+
   })
 })

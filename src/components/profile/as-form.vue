@@ -25,7 +25,7 @@
     </fieldset>
     <menu v-if="valid_mobile_number">
       <button id="authorize" v-if="show_authorize" v-on:click='validate_is_human'>enter realness</button>
-      <button id='enter-code' v-if="show_code" disabled v-on:click="sign_in_with_code">enter code</button>
+      <button id='submit-code' v-if="show_code" disabled v-on:click="sign_in_with_code">submit</button>
       <button id="sign-out" v-if="show_sign_out" v-on:click="sign_out">sign out</button>
     </menu>
   </form>
@@ -52,9 +52,7 @@
       }
     },
     created() {
-      console.log('calling');
       firebase.auth().onAuthStateChanged(user => {
-        console.log('responding', user)
         if (user) {
           this.show_sign_out = true
         } else {
@@ -79,6 +77,8 @@
         this.show_authorize = false
         this.show_captcha = true
         Vue.nextTick(() => {
+
+          console.log('lame')
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
@@ -120,7 +120,7 @@
         if (!event.key.match(/^\d$/)) {
           event.preventDefault()
         }
-        let button = this.$el.querySelector('#enter-code')
+        let button = this.$el.querySelector('#submit-code')
         let input = this.$el.querySelector('#code-input')
         if (input.value.length === 5) { // after this keypress it will be 6
           button.disabled = false
