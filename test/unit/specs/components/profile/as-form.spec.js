@@ -125,8 +125,8 @@ describe('as-form.vue', () => {
       const person = { mobile: '4151234567' }
       let wrapper = shallow(as_form, { propsData: { person: person } })
       let button = wrapper.find('#authorize')
-      expect(firebase.auth).toHaveBeenCalled()
-      expect(is_signed_out).toHaveBeenCalled()
+      expect(firebase.auth).toBeCalled()
+      expect(is_signed_out).toBeCalled()
       expect(button.exists()).toBe(true)
     })
     it('authorize button diappears until valid mobile number', () => {
@@ -142,8 +142,8 @@ describe('as-form.vue', () => {
       const person = { mobile: '4151234567' }
       let wrapper =  shallow(as_form, { propsData: { person: person } })
       let button = wrapper.find('#sign-out')
-      expect(firebase.auth).toHaveBeenCalled()
-      expect(is_signed_in).toHaveBeenCalled()
+      expect(firebase.auth).toBeCalled()
+      expect(is_signed_in).toBeCalled()
       expect(button.exists()).toBe(true)
     })
   })
@@ -156,16 +156,32 @@ describe('as-form.vue', () => {
       })
       wrapper = shallow(as_form, { propsData: { person: person } })
       button = wrapper.find('#authorize')
-      button.trigger('click')
+
     })
     it('hides authorize button after clicked', () => {
+      button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(false)
     })
     it('displays captcha information', () => {
+      button.trigger('click')
       expect(wrapper.vm.show_captcha).toBe(true)
       expect(wrapper.find('#captcha').is('div')).toBe(true)
     })
-    it('verifys the user is a human')
+    it('verify the user is a human', () => {
+      button.trigger('click')
+      wrapper.vm.$nextTick(() => {
+
+        done()
+      })
+      expect(verify_stub).toBeCalled()
+    })
+
+
+  })
+  describe('#sign_in_with_code', () => {
+
+  })
+  describe('#sign_out', () => {
 
   })
 })
