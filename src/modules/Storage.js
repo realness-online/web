@@ -1,7 +1,7 @@
 import Item from '@/modules/Item'
-// import * as firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+// // import * as firebase from 'firebase/app'
+// import 'firebase/auth'
+// import 'firebase/storage'
 
 class Storage {
   constructor(item_type,

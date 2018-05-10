@@ -167,19 +167,25 @@ describe('as-form.vue', () => {
       expect(wrapper.vm.show_captcha).toBe(true)
       expect(wrapper.find('#captcha').is('div')).toBe(true)
     })
-    // it('verify the user is a human', () => {
-    //   button.trigger('click')
-    //   wrapper.vm.$nextTick(() => {
-    //
-    //     done()
-    //   })
-    //   expect(verify_stub).toBeCalled()
-    // })
+    it('verify the user is a human', (done) => {
+      // jest.mock(firebase.auth.RecaptchaVerifier)
+
+      button.trigger('click')
+      wrapper.vm.$nextTick(() => {
+        done()
+      })
+      // expect(verify_stub).toBeCalled()
+    })
   })
-  describe('#sign_in_with_code', () => {
+  describe('send_phone_and_captcha()', () => {
 
   })
-  describe('#sign_out', () => {
+  describe('sign_in_with_code()', () => {
 
+  })
+  describe('sign_out()', () => {
+    it('logs the user out', () => {
+
+    })
   })
 })

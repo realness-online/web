@@ -34,6 +34,7 @@
 <script>
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
   export default {
@@ -77,7 +78,7 @@
         this.show_authorize = false
         this.show_captcha = true
         Vue.nextTick(() => {
-          console.log('lameness')
+          console.log('inside nextTick');
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
