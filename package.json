@@ -13,7 +13,7 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs",
     "build": "node build/build.js",
     "build:stats": "webpack-bundle-analyzer dist/stats.json",
-    "start": "node server.js"
+    "deploy": "firebase deploy"
   },
   "dependencies": {
     "express": "^4.16.2",
