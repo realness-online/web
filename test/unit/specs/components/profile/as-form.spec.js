@@ -1,7 +1,6 @@
 import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase'
-
 const is_signed_in = jest.fn((callback) => {
   callback({
     user: {
@@ -11,21 +10,13 @@ const is_signed_in = jest.fn((callback) => {
     }
   })
 })
-
 const is_signed_out = jest.fn((callback) => callback())
-
-jest
-.spyOn(firebase, 'initializeApp')
-.mockImplementation(() => {
+jest.spyOn(firebase, 'initializeApp').mockImplementation(() => {
   return { auth: () => {} }
 })
-
-jest
-.spyOn(firebase, 'auth')
-.mockImplementation(() => {
+jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return { onAuthStateChanged: is_signed_out }
 })
-
 describe('as-form.vue', () => {
   describe('form', () => {
     it('should render form to set user profile info', () => {
@@ -50,6 +41,34 @@ describe('as-form.vue', () => {
       input.trigger('blur')
       expect(stub).toBeCalled()
     })
+  })
+  describe('authorization', () => {
+    it('button renders with valid mobile number', () => {
+      const person = { mobile: '4151234567' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#authorize')
+      expect(firebase.auth).toBeCalled()
+      expect(is_signed_out).toBeCalled()
+      expect(button.exists()).toBe(true)
+    })
+    it('button is gone valid invalid mobile number', () => {
+      const person = { mobile: '415123456a' }
+      let wrapper = shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#authorize')
+      expect(button.exists()).not.toBe(true)
+    })
+    it('Sign out button when signed in', () => {
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_signed_in }
+      })
+      const person = { mobile: '4151234567' }
+      let wrapper =  shallow(as_form, { propsData: { person: person } })
+      let button = wrapper.find('#sign-out')
+      expect(firebase.auth).toBeCalled()
+      expect(is_signed_in).toBeCalled()
+      expect(button.exists()).toBe(true)
+    })
+    it('signs the user out if they change their phone number')
   })
   describe("input#mobile.onKeypress()", () => {
     let input, stub, wrapper
@@ -120,34 +139,7 @@ describe('as-form.vue', () => {
       expect(wrapper.vm.person.mobile).toBe('6282281824')
     })
   })
-  describe('authorization', () => {
-    it('authorize button with valid mobile number', () => {
-      const person = { mobile: '4151234567' }
-      let wrapper = shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#authorize')
-      expect(firebase.auth).toBeCalled()
-      expect(is_signed_out).toBeCalled()
-      expect(button.exists()).toBe(true)
-    })
-    it('authorize button diappears until valid mobile number', () => {
-      const person = { mobile: '415123456a' }
-      let wrapper = shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#authorize')
-      expect(button.exists()).not.toBe(true)
-    })
-    it('Sign out button when signed in', () => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
-      })
-      const person = { mobile: '4151234567' }
-      let wrapper =  shallow(as_form, { propsData: { person: person } })
-      let button = wrapper.find('#sign-out')
-      expect(firebase.auth).toBeCalled()
-      expect(is_signed_in).toBeCalled()
-      expect(button.exists()).toBe(true)
-    })
-  })
-  describe('#validate_is_human', () => {
+  describe('button#authorize.validate_is_human()', () => {
     let wrapper, button
     const person = { mobile: '4151234356' }
     beforeEach(() => {
@@ -168,8 +160,7 @@ describe('as-form.vue', () => {
       expect(wrapper.find('#captcha').is('div')).toBe(true)
     })
     it('verify the user is a human', (done) => {
-      // jest.mock(firebase.auth.RecaptchaVerifier)
-
+      let spy = jest.mock('firebase.auth.RecaptchaVerifier')
       button.trigger('click')
       wrapper.vm.$nextTick(() => {
         done()

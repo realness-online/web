@@ -12,13 +12,13 @@
       <label for="mobile">1+</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
-             v-on:keypress="validate_mobile_keypress"
-             v-on:paste="parse_mobile_paste"
+             v-on:keypress="mobile_keypress"
+             v-on:paste="mobile_paste"
              v-on:blur="save_person">
       <input id="code-input" type="tel" placeholder="Verification code"
              v-if="show_code"
              v-model="code"
-             v-on:keypress="validate_code_keypress" >
+             v-on:keypress="code_keypress" >
       <div id="captcha"
            v-if='show_captcha'
            v-bind:class="{hide_captcha}">
@@ -117,12 +117,17 @@
         firebase.auth().signOut()
         this.show_authorize = true
       },
-      validate_mobile_keypress(event) {
+      mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
           event.preventDefault()
         }
       },
-      validate_code_keypress(event) {
+      mobile_paste(event) {
+        event.preventDefault()
+        let paste = (event.clipboardData).getData('text')
+        this.person.mobile = parseNumber(paste, 'US').phone
+      },
+      code_keypress(event) {
         if (!event.key.match(/^\d$/)) {
           event.preventDefault()
         }
@@ -131,11 +136,6 @@
         if (input.value.length === 5) { // after this keypress it will be 6
           button.disabled = false
         }
-      },
-      parse_mobile_paste(event) {
-        let paste = (event.clipboardData).getData('text')
-        this.person.mobile = parseNumber(paste, 'US').phone
-        event.preventDefault()
       }
     }
   }
@@ -143,8 +143,10 @@
 <style lang="stylus">
   @require '../../style/variables'
   form#profile-form
-    div#captcha.hide_captcha
-      display: none
+    div#captcha
+      margin-top: base-line
+      &.hide_captcha
+        display: none
     & > fieldset
       padding: (base-line / 2 )
       border: 0.33vmin solid currentColor

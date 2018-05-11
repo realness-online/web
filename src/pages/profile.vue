@@ -9,7 +9,7 @@
         <profile-as-form :person='person'></profile-as-form>
       </details>
     </header>
-    <h4>wats</h4>
+    <h4>Wats</h4>
     <posts-list></posts-list>
   </section>
 </template>
