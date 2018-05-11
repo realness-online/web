@@ -8,29 +8,35 @@
              v-model="person.last_name"
              v-on:blur="save_person">
     </fieldset>
-    <fieldset>
+    <fieldset id="phone">
       <label for="mobile">1+</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="validate_mobile_keypress"
              v-on:paste="parse_mobile_paste"
              v-on:blur="save_person">
-    </fieldset>
-    <fieldset v-if='show_captcha' v-bind:class="{hide_captcha}">
-      <div id="captcha"></div>
-    </fieldset>
-    <fieldset v-if="show_code">
-      <input id="code-input" type="tel" placeholder="696969"
-            v-model="code" v-on:keypress="validate_code_keypress" >
+      <input id="code-input" type="tel" placeholder="Verification code"
+             v-if="show_code"
+             v-model="code"
+             v-on:keypress="validate_code_keypress" >
+      <div id="captcha"
+           v-if='show_captcha'
+           v-bind:class="{hide_captcha}">
+      </div>
     </fieldset>
     <menu v-if="valid_mobile_number">
-      <button id="authorize" v-if="show_authorize" v-on:click='validate_is_human'>enter realness</button>
-      <button id='submit-code' v-if="show_code" disabled v-on:click="sign_in_with_code">submit</button>
-      <button id="sign-out" v-if="show_sign_out" v-on:click="sign_out">sign out</button>
+      <button id="authorize"
+              v-if="show_authorize"
+              v-on:click='validate_is_human'>enter realness</button>
+      <button id='submit-code' disabled
+              v-if="show_code"
+              v-on:click="sign_in_with_code">sign in</button>
+      <button id="sign-out"
+              v-if="show_sign_out"
+              v-on:click="sign_out">sign out</button>
     </menu>
   </form>
 </template>
-
 <script>
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
@@ -134,16 +140,15 @@
     }
   }
 </script>
-
 <style lang="stylus">
   @require '../../style/variables'
   form#profile-form
+    div#captcha.hide_captcha
+      display: none
     & > fieldset
       padding: (base-line / 2 )
       border: 0.33vmin solid currentColor
       margin-bottom: base-line
-      &.hide_captcha
-        display: none
     input
       color: red
       &:focus

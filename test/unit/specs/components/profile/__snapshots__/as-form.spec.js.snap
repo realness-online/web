@@ -22,7 +22,9 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
     />
   </fieldset>
    
-  <fieldset>
+  <fieldset
+    id="phone"
+  >
     <label
       for="mobile"
     >
@@ -34,11 +36,11 @@ exports[`as-form.vue form should render form to set user profile info 1`] = `
       placeholder="(555) 555-5555"
       type="tel"
     />
+     
+    <!---->
+     
+    <!---->
   </fieldset>
-   
-  <!---->
-   
-  <!---->
    
   <menu>
     <button
