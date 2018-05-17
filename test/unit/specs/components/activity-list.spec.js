@@ -3,15 +3,12 @@ import ActivityList from '@/components/activity-list'
 
 describe('@/components/activity-list.vue', () => {
   let wrapper
-
   beforeEach(() => {
     wrapper = shallow(ActivityList)
   })
-
   it('should render an activity wrapper (ol#activity)', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-
   it('should render some activity', () => {
     const event = {
       who: '/users/uid',
@@ -23,7 +20,6 @@ describe('@/components/activity-list.vue', () => {
     wrapper.setData({activity: [event]})
     expect(wrapper.element).toMatchSnapshot()
   })
-
   it('should add an activity when post-added is emited', () => {
     const post = {
       created_at: '2017-12-20T23:01:14.310Z',
@@ -34,5 +30,4 @@ describe('@/components/activity-list.vue', () => {
     expect(wrapper.vm.activity.length).toBe(1)
     expect(wrapper.find('li')).toBeTruthy()
   })
-
 })

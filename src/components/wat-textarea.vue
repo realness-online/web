@@ -23,7 +23,6 @@
         post.articleBody = this.new_post && this.new_post.trim()
         if (!post.articleBody) { return }
         this.new_post = ''
-
         post.created_at = new Date().toISOString()
         this.$bus.$emit('post-added', post)
       },

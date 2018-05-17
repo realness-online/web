@@ -33,9 +33,9 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
   })
   describe('input#mobile', () => {
-    describe("keypress", () => {
+    describe('keypress', () => {
       let input, stub, wrapper
-      beforeEach( () => {
+      beforeEach(() => {
         wrapper = shallow(as_form, { propsData: { person: {} } })
         input = wrapper.find('#mobile')
         stub = jest.fn()
@@ -55,7 +55,7 @@ describe('@/compontent/profile/as-form.vue', () => {
         expect(stub).toBeCalled()
       })
     })
-    describe("paste", () => {
+    describe('paste', () => {
       let input, wrapper
       beforeEach(() => {
         wrapper = shallow(as_form, { propsData: { person: {} } })
@@ -64,7 +64,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('should not accept invalid mobile number', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData: function(){ return 'abc-123-1234'}
+            getData: function() { return 'abc-123-1234' }
           }
         })
         expect(wrapper.vm.person.mobile).toBeFalsy()
@@ -72,7 +72,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('should accept 6282281824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData(){ return '4151234567'}
+            getData() { return '4151234567' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('4151234567')
@@ -80,7 +80,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('should accept (628) 228-1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData(){ return '(628) 228-1824‬'}
+            getData() { return '(628) 228-1824‬' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')
@@ -88,7 +88,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('should accept 628.228.1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData(){ return '628.228.1824'}
+            getData() { return '628.228.1824' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')
@@ -96,7 +96,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('should accept 628-228-1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData(){ return '628-228-1824'}
+            getData() { return '628-228-1824' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')
@@ -136,7 +136,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
     })
-
     it('sets up callback for validated human')
     describe('text_human_verify_code()', () => {
       let wrapper, button, signInWithPhoneNumber
@@ -217,10 +216,9 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
   })
   describe('button#submit-code', () => {
-    let wrapper, button, confirm_spy, signOut
+    let wrapper, button, confirm_spy
     beforeEach(() => {
-      signOut = jest.fn()
-      confirm_spy =  jest.fn(() => {
+      confirm_spy = jest.fn(() => {
         return Promise.resolve('result of confirm_spy')
       })
       wrapper = shallow(as_form, {
@@ -249,7 +247,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     it('shows the sign out button when clicked', () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
-      wrapper.vm.$nextTick( () => {
+      wrapper.vm.$nextTick(() => {
         expect(wrapper.vm.show_sign_out).toBe(true)
       })
     })
@@ -266,7 +264,7 @@ describe('@/compontent/profile/as-form.vue', () => {
           signOut,
           onAuthStateChanged: is_signed_in }
       })
-      wrapper =  shallow(as_form, { propsData: { person: person } })
+      wrapper = shallow(as_form, { propsData: { person: person } })
       button = wrapper.find('#sign-out')
     })
     it('is displayed when user is signed in', () => {

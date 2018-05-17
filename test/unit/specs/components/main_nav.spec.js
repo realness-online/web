@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 
@@ -16,14 +15,12 @@ describe('@/components/main-nav.vue', () => {
       wrapper.setData({ show: false })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it("post-added event should set posts to true", () => {
+    it('post-added event should set posts to true', () => {
       wrapper.vm.$bus.$emit('post-added')
       expect(wrapper.vm.has_posts).toBe(true)
     })
   })
-
   describe('onBoarding()', () => {
-
     it('application nav initializes witn posting action', () => {
       expect(wrapper.vm.onboarding.has_posts).toBe(false)
       expect(wrapper.vm.onboarding.is_person).toBe(false)
@@ -33,7 +30,7 @@ describe('@/components/main-nav.vue', () => {
     })
     it('#relations is true if user is signed in')
     it('#person is true when person has profile info', () => {
-      wrapper.setData({ person: {mobile:'4252691938'} })
+      wrapper.setData({ person: {mobile: '4252691938'} })
       expect(wrapper.vm.onboarding.is_person).toBe(true)
     })
     it('#posts will be true when person posts', () => {
@@ -57,15 +54,13 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.onboarding.can_group).toBe(true)
     })
   })
-
   describe('user_name()', () => {
     it('returns profile by default', () => {
       expect(wrapper.vm.user_name).toBe('Profile')
     })
     it('returns the users first name if set', () => {
-      wrapper.setData({ person: {first_name:'Scott'} })
+      wrapper.setData({ person: {first_name: 'Scott'} })
       expect(wrapper.vm.user_name).toBe('Scott')
     })
   })
-
 })

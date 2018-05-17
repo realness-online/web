@@ -3,7 +3,7 @@ import Item from '@/modules/Item'
 describe('@/modules/Item.js', () => {
   let item
   beforeEach(() => {
-    const html_item  = `
+    const html_item = `
     <main id="profile" itemscope itemtype="/person" itemid='/person/666'>
       <section>
         <h1 itemprop="name">Scott Fryxell</h1>
