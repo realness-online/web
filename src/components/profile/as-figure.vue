@@ -19,7 +19,7 @@
     props: ['person'],
     computed: {
       mobile_link() {
-        return `sms:+1${this.person.mobile}`
+        return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       formated_mobile() {
         return new AsYouType('US').input(this.person.mobile)
