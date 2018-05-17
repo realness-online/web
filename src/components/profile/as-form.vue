@@ -27,7 +27,7 @@
     <menu v-if="valid_mobile_number">
       <button id="authorize"
               v-if="show_authorize"
-              v-on:click='validate_is_human'>enter realness</button>
+              v-on:click='begin_authorization'>enter realness</button>
       <button id='submit-code' disabled
               v-if="show_code"
               v-on:click="sign_in_with_code">sign in</button>
@@ -79,37 +79,41 @@
       save_person() {
         this.storage.save()
       },
-      validate_is_human(event) {
+      begin_authorization(event) {
         event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
         Vue.nextTick(() => {
-          console.log('inside nextTick');
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',
-            'callback': this.send_phone_and_captcha
+            'callback': this.text_human_verify_code
           })
           this.human.verify()
         })
       },
-      send_phone_and_captcha(response) {
+      text_human_verify_code(response) {
         this.show_code = true
         this.hide_captcha = true
+
         firebase.auth()
           .signInWithPhoneNumber(this.mobile_as_e164, this.human)
           .then(result => {
             this.authorizer = result
             this.$el.querySelector('#code-input').scrollIntoView(false)
             this.$el.querySelector('#code-input').focus()
-          }).catch(error => { console.log(error) })
+          }).catch(error => {
+             console.log(error)
+          })
       },
       sign_in_with_code(event) {
         event.preventDefault()
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
-          this.signed_in = true
-        }).catch(error => { console.error(error) })
+          this.show_sign_out = true
+        }).catch(error => {
+          console.error(error)
+        })
       },
       sign_out(event) {
         event.preventDefault()
