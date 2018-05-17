@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`as-form.vue form should render form to set user profile info 1`] = `
+exports[`as-form.vue profile form should render profile form 1`] = `
 <form
   id="profile-form"
 >
