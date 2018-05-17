@@ -4,11 +4,11 @@ import main_nav from '@/components/main-nav'
 
 describe('@/components/main-nav.vue', () => {
   // TODO: add test to confirm that buttons show up after user posts
+  let wrapper
+  beforeEach(() => {
+    wrapper = shallow(main_nav)
+  })
   describe('nav#main_nav', () => {
-    let wrapper
-    beforeEach(() => {
-      wrapper = shallow(main_nav)
-    })
     it('#show:true should render the application navigation', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -24,8 +24,7 @@ describe('@/components/main-nav.vue', () => {
 
   describe('onBoarding()', () => {
 
-    it('all onboarding is off at first', () => {
-      const wrapper = shallow(main_nav)
+    it('application nav initializes witn posting action', () => {
       expect(wrapper.vm.onboarding.has_posts).toBe(false)
       expect(wrapper.vm.onboarding.is_person).toBe(false)
       expect(wrapper.vm.onboarding.has_friends).toBe(false)
@@ -34,7 +33,6 @@ describe('@/components/main-nav.vue', () => {
     })
     it('#relations is true if user is signed in')
     it('#person is true when person has profile info', () => {
-      const wrapper = shallow(main_nav)
       wrapper.setData({ person: {mobile:'4252691938'} })
       expect(wrapper.vm.onboarding.is_person).toBe(true)
     })
@@ -43,7 +41,7 @@ describe('@/components/main-nav.vue', () => {
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.has_posts).toBe(true)
     })
-    it('#friends will be true when person adds a friend', () => {
+    it('#relations will be true when person adds a friend', () => {
       localStorage.setItem('friends-count', 1)
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.has_friends).toBe(true)
@@ -61,10 +59,6 @@ describe('@/components/main-nav.vue', () => {
   })
 
   describe('user_name()', () => {
-    let wrapper
-    beforeEach(() => {
-      wrapper = shallow(main_nav)
-    })
     it('returns profile by default', () => {
       expect(wrapper.vm.user_name).toBe('Profile')
     })
