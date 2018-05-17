@@ -136,20 +136,47 @@ describe('@/compontent/profile/as-form.vue', () => {
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
     })
-    // it('initiates verify()', () => {
-    //   const mock_verify = jest.fn()
-    //   jest.mock(firebase.auth.RecaptchaVerifier, () => {
-    //     return jest.fn().mockImplementation(() => {
-    //       return {verify: mock_verify}
-    //     })
-    //   })
-    //   button.trigger('click')
-    //   wrapper.vm.$nextTick(done => {
-    //     expect(mock_verify).toBeCalled()
-    //     done()
-    //   })
-    // })
+
     it('sets up callback for validated human')
+    describe('text_human_verify_code()', () => {
+      let wrapper, button, signInWithPhoneNumber
+      beforeEach(() => {
+        signInWithPhoneNumber = jest.fn(() => {
+          return Promise.resolve('result of signInWithPhoneNumber')
+        })
+        jest.spyOn(firebase, 'auth').mockImplementation(() => {
+          return {
+            signInWithPhoneNumber,
+            onAuthStateChanged
+          }
+        })
+        wrapper = shallow(as_form, {
+          propsData: { person: person },
+          data: {
+            show_code: true
+          }
+
+        })
+        button = wrapper.find('#authorize')
+      })
+      it('initiates verify()', async (done) => {
+        const mock_verify = jest.fn()
+        jest.mock('RecaptchaVerifier', () => {
+          return jest.fn().mockImplementation(() => {
+            return {verify: mock_verify}
+          })
+        })
+        button.trigger('click')
+        wrapper.vm.$nextTick(() => {
+          expect(mock_verify).toBeCalled()
+        })
+      })
+      it('hides capcha and shows code input', () => {
+        wrapper.vm.text_human_verify_code()
+        expect(wrapper.vm.show_code).toBe(true)
+        expect(wrapper.vm.hide_captcha).toBe(true)
+      })
+    })
   })
   describe('input#code-input', () => {
     let input, stub, wrapper
@@ -187,36 +214,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       expect(stub).not.toBeCalled()
       expect(button.attributes().disabled).toBe(undefined)
-    })
-  })
-  describe('text_human_verify_code()', () => {
-    let wrapper, button, signInWithPhoneNumber
-    beforeEach(() => {
-      signInWithPhoneNumber = jest.fn(() => {
-        return Promise.resolve('result of signInWithPhoneNumber')
-      })
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return {
-          signInWithPhoneNumber,
-          onAuthStateChanged
-        }
-      })
-      wrapper = shallow(as_form, {
-        propsData: { person: person },
-        data: {
-          show_code: true
-        }
-
-      })
-      button = wrapper.find('#authorize')
-    })
-    it('is the callback for the recaptcha')
-    it('hides capcha and shows code input', () => {
-      // button.trigger('click')
-      wrapper.vm.text_human_verify_code()
-
-      expect(wrapper.vm.show_code).toBe(true)
-      expect(wrapper.vm.hide_captcha).toBe(true)
     })
   })
   describe('button#submit-code', () => {
