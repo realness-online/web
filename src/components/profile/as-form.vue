@@ -103,7 +103,7 @@
             this.$el.querySelector('#code-input').scrollIntoView(false)
             this.$el.querySelector('#code-input').focus()
           }).catch(error => {
-             console.log(error)
+            console.log(error)
           })
       },
       sign_in_with_code(event) {
