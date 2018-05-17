@@ -29,7 +29,6 @@
       },
       wat_focused($event) {
         this.$emit('toggle-keyboard')
-        $event.target.scrollIntoView(false)
       }
     }
   }
