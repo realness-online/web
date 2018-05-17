@@ -2,8 +2,9 @@ import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import 'firebase/auth'
 import * as firebase from 'firebase'
+
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
-describe('as-form.vue', () => {
+describe('@/compontent/profile/as-form.vue', () => {
   const person = {
     first_name: 'Scott',
     last_name: 'Fryxell',
