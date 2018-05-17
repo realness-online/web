@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import as_figure from '@/components/profile/as-figure'
 
-describe('as-figure.vue', () => {
+describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     person = {

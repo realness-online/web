@@ -1,6 +1,6 @@
 jest.mock('firebase')
 import Storage from '@/modules/Storage'
-describe('Storage.js', () => {
+describe('@/modules/Storage.js', () => {
   let item_as_string, person
   beforeEach(() => {
     item_as_string = `

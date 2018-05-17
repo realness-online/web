@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`as-figure.vue should render user profile info 1`] = `
+exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
 <figure
   id="profile"
   itemscope="itemscope"

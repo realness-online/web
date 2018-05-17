@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`wat-textarea.vue renders a textarea 1`] = `
+exports[`@/components/wat-textarea.vue renders a textarea 1`] = `
 <textarea
   id="wat"
   placeholder="Wat?"

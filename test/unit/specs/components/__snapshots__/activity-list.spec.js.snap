@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`activity-list.vue should render an activity wrapper (ol#activity) 1`] = `
+exports[`@/components/activity-list.vue should render an activity wrapper (ol#activity) 1`] = `
 <ol
   itemprop="activity"
 />
 `;
 
-exports[`activity-list.vue should render some activity 1`] = `
+exports[`@/components/activity-list.vue should render some activity 1`] = `
 <ol
   itemprop="activity"
 >

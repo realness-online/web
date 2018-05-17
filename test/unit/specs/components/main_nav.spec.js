@@ -2,7 +2,7 @@ import Vue from 'vue'
 import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 
-describe('main-nav.vue', () => {
+describe('@/components/main-nav.vue', () => {
   // TODO: add test to confirm that buttons show up after user posts
   describe('nav#main_nav', () => {
     let wrapper
@@ -32,6 +32,7 @@ describe('main-nav.vue', () => {
       expect(wrapper.vm.onboarding.can_event).toBe(false)
       expect(wrapper.vm.onboarding.can_group).toBe(false)
     })
+    it('#relations is true if user is signed in')
     it('#person is true when person has profile info', () => {
       const wrapper = shallow(main_nav)
       wrapper.setData({ person: {mobile:'4252691938'} })

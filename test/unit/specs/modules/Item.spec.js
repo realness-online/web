@@ -1,6 +1,6 @@
 import Item from '@/modules/Item'
 
-describe('Item.js', () => {
+describe('@/modules/Item.js', () => {
   let item
   beforeEach(() => {
     const html_item  = `

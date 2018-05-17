@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import post_list from '@/components/posts-list'
 
-describe('posts-list.vue', () => {
+describe('@/components/posts-list.vue', () => {
   let wrapper
   const post = {
     created_at: '2017-12-20T23:01:14.310Z',

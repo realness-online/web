@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`main-nav.vue nav#main_nav #show:false should Hide navigation 1`] = `
+exports[`@/components/main-nav.vue nav#main_nav #show:false should Hide navigation 1`] = `
 <nav
   class=""
   id="main_nav"
@@ -19,7 +19,7 @@ exports[`main-nav.vue nav#main_nav #show:false should Hide navigation 1`] = `
 </nav>
 `;
 
-exports[`main-nav.vue nav#main_nav #show:true should render the application navigation 1`] = `
+exports[`@/components/main-nav.vue nav#main_nav #show:true should render the application navigation 1`] = `
 <nav
   class=""
   id="main_nav"

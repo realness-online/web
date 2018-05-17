@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import wat from '@/components/wat-textarea'
 
-describe('wat-textarea.vue', () => {
+describe('@/components/wat-textarea.vue', () => {
 
   it('renders a textarea', () => {
     let wrapper = shallow(wat)

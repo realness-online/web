@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`posts-list.vue should render (ol#activity) 1`] = `
+exports[`@/components/posts-list.vue should render (ol#activity) 1`] = `
 <div
   id="posts"
   itemprop="posts"
@@ -8,7 +8,7 @@ exports[`posts-list.vue should render (ol#activity) 1`] = `
 />
 `;
 
-exports[`posts-list.vue should render some posts 1`] = `
+exports[`@/components/posts-list.vue should render some posts 1`] = `
 <div
   id="posts"
   itemprop="posts"
