@@ -83,6 +83,7 @@
         event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
+        /* istanbul ignore next */
         Vue.nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
