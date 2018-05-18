@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
+import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import * as firebase from 'firebase'
 
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form.vue', () => {
@@ -136,18 +136,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
     })
-    it('calls verify()', async (done) => {
-      const mock_verify = jest.fn()
-      jest.mock('RecaptchaVerifier', () => {
-        return jest.fn().mockImplementation(() => {
-          return {verify: mock_verify}
-        })
-      })
-      button.trigger('click')
-      wrapper.vm.$nextTick(() => {
-        expect(mock_verify).toBeCalled()
-      })
-    })
   })
   describe('callback#text_human_verify_code', () => {
     let wrapper, signInWithPhoneNumber
@@ -172,7 +160,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       wrapper.vm.text_human_verify_code()
       expect(wrapper.vm.hide_captcha).toBe(true)
     })
-
     it('renders verification-code input', () => {
       wrapper.vm.text_human_verify_code()
       expect(wrapper.vm.show_code).toBe(true)
@@ -235,7 +222,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       button = wrapper.find('#submit-verification')
     })
-    it('signs the user in with valid code when clicked', () => {
+    it('signs the user in with verification code when clicked', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
