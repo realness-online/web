@@ -117,7 +117,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(onAuthStateChanged).toBeCalled()
       expect(button.exists()).toBe(true)
     })
-    it('dissapears whith invalid mobile number', () => {
+    it('removed whith invalid mobile number', () => {
       const invalid_person = { mobile: '415123456a' }
       wrapper = shallow(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
@@ -136,48 +136,49 @@ describe('@/compontent/profile/as-form.vue', () => {
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
     })
-    it('sets up callback for validated human')
-    describe('text_human_verify_code()', () => {
-      let wrapper, button, signInWithPhoneNumber
-      beforeEach(() => {
-        signInWithPhoneNumber = jest.fn(() => {
-          return Promise.resolve('result of signInWithPhoneNumber')
-        })
-        jest.spyOn(firebase, 'auth').mockImplementation(() => {
-          return {
-            signInWithPhoneNumber,
-            onAuthStateChanged
-          }
-        })
-        wrapper = shallow(as_form, {
-          propsData: { person: person },
-          data: {
-            show_code: true
-          }
-
-        })
-        button = wrapper.find('#authorize')
-      })
-      it('initiates verify()', async (done) => {
-        const mock_verify = jest.fn()
-        jest.mock('RecaptchaVerifier', () => {
-          return jest.fn().mockImplementation(() => {
-            return {verify: mock_verify}
-          })
-        })
-        button.trigger('click')
-        wrapper.vm.$nextTick(() => {
-          expect(mock_verify).toBeCalled()
+    it('calls verify()', async (done) => {
+      const mock_verify = jest.fn()
+      jest.mock('RecaptchaVerifier', () => {
+        return jest.fn().mockImplementation(() => {
+          return {verify: mock_verify}
         })
       })
-      it('hides capcha and shows code input', () => {
-        wrapper.vm.text_human_verify_code()
-        expect(wrapper.vm.show_code).toBe(true)
-        expect(wrapper.vm.hide_captcha).toBe(true)
+      button.trigger('click')
+      wrapper.vm.$nextTick(() => {
+        expect(mock_verify).toBeCalled()
       })
     })
   })
-  describe('input#code-input', () => {
+  describe('callback#text_human_verify_code', () => {
+    let wrapper, signInWithPhoneNumber
+    beforeEach(() => {
+      signInWithPhoneNumber = jest.fn(() => {
+        return Promise.resolve('result of signInWithPhoneNumber')
+      })
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return {
+          signInWithPhoneNumber,
+          onAuthStateChanged
+        }
+      })
+      wrapper = shallow(as_form, {
+        propsData: { person: person },
+        data: {
+          show_code: true
+        }
+      })
+    })
+    it('hides captcha div', () => {
+      wrapper.vm.text_human_verify_code()
+      expect(wrapper.vm.hide_captcha).toBe(true)
+    })
+
+    it('renders verification-code input', () => {
+      wrapper.vm.text_human_verify_code()
+      expect(wrapper.vm.show_code).toBe(true)
+    })
+  })
+  describe('input#verification-code', () => {
     let input, stub, wrapper
     beforeEach(() => {
       wrapper = shallow(as_form, {
@@ -187,7 +188,7 @@ describe('@/compontent/profile/as-form.vue', () => {
           code: '12345'
         }
       })
-      input = wrapper.find('#code-input')
+      input = wrapper.find('#verification-code')
       stub = jest.fn()
     })
     it('should allow valid digits', () => {
@@ -204,8 +205,8 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       expect(stub).toBeCalled()
     })
-    it('enables sign in button when valid input', () => {
-      let button = wrapper.find('#submit-code')
+    it('renders sign in button with valid input', () => {
+      let button = wrapper.find('#submit-verification')
       expect(button.attributes().disabled).toBe('disabled')
       input.trigger('keypress', {
         key: '6',
@@ -215,7 +216,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.attributes().disabled).toBe(undefined)
     })
   })
-  describe('button#submit-code', () => {
+  describe('button#submit-verification', () => {
     let wrapper, button, confirm_spy
     beforeEach(() => {
       confirm_spy = jest.fn(() => {
@@ -232,19 +233,19 @@ describe('@/compontent/profile/as-form.vue', () => {
           }
         }
       })
-      button = wrapper.find('#submit-code')
+      button = wrapper.find('#submit-verification')
     })
     it('signs the user in with valid code when clicked', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
-    it('hides input#code-input when clicked', () => {
-      expect(wrapper.find('#code-input').exists()).toBe(true)
+    it('hides input#verification-code when clicked', () => {
+      expect(wrapper.find('#verification-code').exists()).toBe(true)
       button.trigger('click')
-      expect(wrapper.find('#code-input').exists()).toBe(false)
+      expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
     })
-    it('shows the sign out button when clicked', () => {
+    it('renders the sign out button when clicked', () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
       wrapper.vm.$nextTick(() => {
@@ -282,7 +283,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.exists()).toBe(false)
       expect(wrapper.vm.show_sign_out).toBe(false)
     })
-    it('shows the authorize button when clicked', () => {
+    it('renders the authorize button when clicked', () => {
       button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(true)
     })

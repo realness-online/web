@@ -15,7 +15,7 @@
              v-on:keypress="mobile_keypress"
              v-on:paste="mobile_paste"
              v-on:blur="save_person">
-      <input id="code-input" type="tel" placeholder="Verification code"
+      <input id="verification-code" type="tel" placeholder="Verification code"
              v-if="show_code"
              v-model="code"
              v-on:keypress="code_keypress" >
@@ -28,7 +28,7 @@
       <button id="authorize"
               v-if="show_authorize"
               v-on:click='begin_authorization'>enter realness</button>
-      <button id='submit-code' disabled
+      <button id='submit-verification' disabled
               v-if="show_code"
               v-on:click="sign_in_with_code">sign in</button>
       <button id="sign-out"
@@ -95,13 +95,12 @@
       text_human_verify_code(response) {
         this.show_code = true
         this.hide_captcha = true
-
         firebase.auth()
           .signInWithPhoneNumber(this.mobile_as_e164, this.human)
           .then(result => {
             this.authorizer = result
-            this.$el.querySelector('#code-input').scrollIntoView(false)
-            this.$el.querySelector('#code-input').focus()
+            this.$el.querySelector('#verification-code').scrollIntoView(false)
+            this.$el.querySelector('#verification-code').focus()
           }).catch(error => {
             console.log(error)
           })
@@ -135,8 +134,8 @@
         if (!event.key.match(/^\d$/)) {
           event.preventDefault()
         }
-        let button = this.$el.querySelector('#submit-code')
-        let input = this.$el.querySelector('#code-input')
+        let button = this.$el.querySelector('#submit-verification')
+        let input = this.$el.querySelector('#verification-code')
         if (input.value.length === 5) { // after this keypress it will be 6
           button.disabled = false
         }
