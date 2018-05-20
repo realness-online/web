@@ -1,5 +1,5 @@
 <template>
-  <section id="app">
+  <section id="home">
     <main-nav></main-nav>
     <aside>
       <activity-list></activity-list>
@@ -22,7 +22,6 @@
 </script>
 
 <style lang="stylus" >
-  section#app
+  section#home
     animation-name: slideInRight
-
 </style>

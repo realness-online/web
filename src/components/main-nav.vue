@@ -1,7 +1,7 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
     <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="show = !show" ></wat-textarea>
-    <router-link v-if="show" to="/relationships" class="blue">Relations</router-link>
+    <router-link v-if="show" to="/relations" class="blue">Relations</router-link>
     <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="show" to="/events" class="green">Events</router-link>
     <router-link v-if="show" to="/groups" class="green">Groups</router-link>
@@ -10,6 +10,8 @@
 </template>
 
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import wat_textarea from '@/components/wat-textarea'
   import {person_storage} from '@/modules/Storage'
   export default {
@@ -20,18 +22,26 @@
       this.$bus.$on('post-added', () => {
         this.has_posts = true
       })
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          this.is_person = true
+        } else {
+          this.is_person = false
+        }
+      })
     },
     data() {
       return {
         show: true,
         person: person_storage.as_object(),
-        has_posts: localStorage.getItem('posts-count') > 0
+        has_posts: localStorage.getItem('posts-count') > 0,
+        is_person: true
       }
     },
     computed: {
       onboarding() {
         return {
-          is_person: !!this.person.mobile,
+          is_person: this.is_person,
           has_posts: this.has_posts,
           has_friends: localStorage.getItem('friends-count') > 0,
           can_event: localStorage.getItem('friends-count') >= 5,
@@ -44,7 +54,6 @@
     }
   }
 </script>
-
 <style lang="stylus">
   @require '../style/variables'
   nav#main_nav
@@ -62,6 +71,7 @@
     align-items: flex-start
     & > a
       visibility: hidden
+      text-transform: capitalize
       &:focus
         color:transparent
         transition-duration: 0.6s
@@ -101,7 +111,7 @@
         visibility: visible
     &.is_person
       & > [href='/profile']
-      // & > [href='/relationships']
+      & > [href='/relations']
         visibility: visible
     &.has_friends
       & > [href='/feed']

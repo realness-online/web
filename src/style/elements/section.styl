@@ -1,0 +1,17 @@
+@require '../variables'
+
+section.page
+  animation-name: slideInRight
+  padding: base-line
+  & > header
+    display:flex
+    justify-content: space-between
+    z-index: 2
+    & > details
+      &[open]
+        margin-right: inherit;
+        & > summary
+          margin-bottom: base-line
+      & > summary > svg
+        height: (base-line * 2)
+        width: (base-line * 2)

@@ -28,7 +28,7 @@ exports[`@/components/main-nav.vue nav#main_nav #show:true should render the app
    
   <router-link
     class="blue"
-    to="/relationships"
+    to="/relations"
   >
     Relations
   </router-link>

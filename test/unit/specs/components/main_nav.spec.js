@@ -1,11 +1,19 @@
 import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
-
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+const onAuthStateChanged = jest.fn(state_changed => state_changed())
+jest.spyOn(firebase, 'auth').mockImplementation(() => {
+  return { onAuthStateChanged }
+})
 describe('@/components/main-nav.vue', () => {
   // TODO: add test to confirm that buttons show up after user posts
   let wrapper
   beforeEach(() => {
     wrapper = shallow(main_nav)
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      return { onAuthStateChanged }
+    })
   })
   describe('nav#main_nav', () => {
     it('#show:true should render the application navigation', () => {
@@ -63,4 +71,5 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.user_name).toBe('Scott')
     })
   })
+  it('should only show relations, feed events and groups if user is signed in')
 })

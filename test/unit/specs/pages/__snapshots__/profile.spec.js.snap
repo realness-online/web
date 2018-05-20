@@ -2,20 +2,10 @@
 
 exports[`@/pages/profile.vue shows the users profile information 1`] = `
 <section
+  class="page"
   id="profile"
 >
   <header>
-    <router-link
-      id="logo"
-      to="/"
-    >
-      <svg>
-        <use
-          xlink:href="/static/icons.svg#realness"
-        />
-      </svg>
-    </router-link>
-     
     <details>
       <summary>
         <!---->
@@ -23,6 +13,8 @@ exports[`@/pages/profile.vue shows the users profile information 1`] = `
        
       <!---->
     </details>
+     
+    <!---->
   </header>
    
   <h4>

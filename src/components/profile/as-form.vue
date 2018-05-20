@@ -173,6 +173,8 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
+    input#verification-code
+      margin-top: (base-line / 2)
     button
       border: 0.33vmin solid currentColor
       padding: (base-line / 2) (base-line / 2 )

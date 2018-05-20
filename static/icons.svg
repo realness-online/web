@@ -1,4 +1,4 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMax meet">
+ <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMax meet">
   <symbol id="leaf"  preserveAspectRatio="xMinYMin meet">
     <path d="M132,88 C131,82 127,76 123,72 C86,46 129,77 112,65 C110,64 109,63 108,62 C100,57 93,52 84,49 L82,49"></path>
     <path d="M132,88 C132,84 129,80 127,77 C120,69 111,64 102,58"></path>
@@ -27,10 +27,10 @@
       <use xlink:href='#leaf' opacity="0.83"  transform="translate(0, 61)" />
       <use xlink:href='#leaf' opacity="0.90" transform="translate(200, 103) scale(-1, 0.90) translate(-200, -103) translate(135.5, 66)" />
     </g>
-    <g class='mid'>
-      <use xlink:href='#leaf' opacity="0.50" transform="translate(79, 91) scale(0.95, 0.90) rotate(12) translate(-79, -91) translate(15, 53)" />
-      <use xlink:href='#leaf' opacity="0.35"  transform="rotate(28) scale(1, 0.50) translate(25, 5)" />
-      <use xlink:href='#leaf' opacity="0.65" transform="translate(188.194930, 91.864622) scale(-1, 0.95) rotate(12.000000) translate(-188.194930, -91.864622) translate(121.694930, 47.864622)" fill-rule="nonzero"/>
+    <g class="mid">
+      <use xlink:href="#leaf" opacity=".5" transform="scale(.95 .9) rotate(12 -226.652 160.693)"/>
+      <use xlink:href="#leaf" opacity=".35" transform="rotate(28 -17.513 48.885) scale(1 .5)"/>
+      <use xlink:href="#leaf" opacity=".65" transform="scale(-1 .95) rotate(12 -311.55 -1141.28)"/>
     </g>
     <g class="back">
       <use xlink:href='#leaf' opacity="0.45" transform="translate(165, 73) scale(-1, 0.90) rotate(32) translate(-165, -73) translate(99, 29)" />
@@ -44,17 +44,21 @@
          c-2,0.9-2,1.9-2,1.9V16l16,0v-1.6C16,14.3,16,13.4,14,12.5z"/>
   </symbol>
   <symbol id="realness" viewBox="0 0 192 192">
-    <rect id="wat?" fill-opacity="0.73" fill="#EC364C" x="0" y="0" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="relationships" fill-opacity="0.69" fill="#52A0D1" x="103.384615" y="0" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="feeds" fill-opacity="0.69" fill="#52A0D1" x="0" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="events" fill-opacity="0.8" fill="#4FBF6D" x="103.384615" y="69.12" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="groups" fill-opacity="0.8" fill="#4FBF6D" x="0" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
-    <rect id="profile" fill-opacity="0.8" fill="#5A585A" x="103.384615" y="138.24" width="88.6153846" height="53.76" rx="8"></rect>
+    <rect id="wat" fill-opacity=".73" fill="#EC364C" width="88.615" height="53.76" rx="8"/>
+    <rect id="relations" fill-opacity=".69" fill="#52A0D1" x="103.385" width="88.615" height="53.76" rx="8"/>
+    <rect id="feed" fill-opacity=".69" fill="#52A0D1" y="69.12" width="88.615" height="53.76" rx="8"/>
+    <rect id="events" fill-opacity=".8" fill="#4FBF6D" x="103.385" y="69.12" width="88.615" height="53.76" rx="8"/>
+    <rect id="groups" fill-opacity=".8" fill="#4FBF6D" y="138.24" width="88.615" height="53.76" rx="8"/>
+    <rect id="profile" fill-opacity=".8" fill="#5A585A" x="103.385" y="138.24" width="88.615" height="53.76" rx="8"/>
+  </symbol>
+  <symbol id="search" viewBox="0 0 192 192">
+    <path d="M74.764.21C33.67.21.21 33.668.21 74.763s33.46 74.555 74.555 74.555c17.98 0 34.55-6.51 47.444-17.156h.212l59.305 59.305 9.743-9.743-59.305-59.305v-.212c10.646-12.894 17.156-29.465 17.156-47.444C149.319 33.67 115.859.21 74.764.21zm0 13.555c33.77 0 61 27.23 61 61 0 33.768-27.23 60.998-61 60.998-33.77 0-61-27.23-61-60.999 0-33.77 27.23-61 61-61z"/>
   </symbol>
   <g fill="hsla(136, 0%, 0%, 0.9)" stroke="hsla(136, 0%, 0%, 0.2)">
     <use xlink:href='#plant' height="100vh"/>
     <use xlink:href='#leaf' width="100vw"/>
     <use xlink:href='#silhouette' height="100vh"/>
     <use xlink:href='#realness' height="100vh"/>
+    <use xlink:href='#search' height="100vh"/>
   </g>
 </svg>

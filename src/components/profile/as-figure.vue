@@ -31,7 +31,6 @@
 <style lang="stylus">
   @require '../../style/variables'
   figure#profile
-    margin:base-line 0
     display:flex
     & > svg
       border: 0.44vmin solid currentColor
@@ -41,7 +40,6 @@
       vertical-align: middle
       height: (2 * base-line)
       width: (2 * base-line)
-
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
