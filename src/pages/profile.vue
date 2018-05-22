@@ -38,5 +38,9 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-
+  section#profile header
+    details[open] ~ a
+      position: fixed
+      top: base-line
+      right: base-line
 </style>

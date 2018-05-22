@@ -35,7 +35,6 @@
 
 <style lang="stylus">
   @require '../style/variables'
-
   textarea#wat
     transition-property: all
     transition-duration: 0.45s
@@ -49,6 +48,7 @@
     resize: none
     caret-color: red
     &:focus
+      animation-name: slideInLeft
       font-weight: normal
       height:100vh
       cursor: auto
