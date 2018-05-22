@@ -1,4 +1,5 @@
  details
+   // background-color: red
   & > summary
     cursor: pointer
     &:focus
@@ -7,6 +8,7 @@
       display:none
   &[open]
     border: none
+    border-color: transparent
     & > *:not(summary)
-      animation-name: fadeInDown
-      // animation-name: slideInDown
+      // animation-delay: 0.15s
+      animation-name: zoomIn

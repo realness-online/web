@@ -1,14 +1,14 @@
 <template>
-  <section id="relations" class="page">
+  <section id="relations" class="page" >
     <header >
       <label for="search">
         <input id="search" type="search" placeholder="Search"
           v-model="query"
-          v-on:focusout="friends_mode"
+          v-on:focusout="view_friends_mode"
           v-on:focusin="search_mode">
         <svg><use xlink:href="/static/icons.svg#search"/></svg>
       </label>
-      <h1 v-if="!searching">Relations</h1>
+      <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
   </section>
@@ -21,18 +21,14 @@
     },
     data() {
       return {
-        searching: false,
         query: ''
       }
     },
     methods: {
       search_mode(event) {
-        this.searching = true
-        // this.$el.querySelector("#search").setAttribute('placeholder', 'search')
+        // search focused
       },
-      friends_mode(event) {
-        // this.$el.querySelector("#search").setAttribute('placeholder', '')
-        this.searching = false
+      view_friends_mode(event) {
         this.query = ''
       }
     }
@@ -43,26 +39,32 @@
   section#relations
     position: relative
     & > header
+      &:focus-within > h1
+        transition-property: all
+        overflow: hidden
+        width:0
       & > h1
         vertical-align: top
-        line-height: 1.66
         margin: 0
+        line-height: 1.33
+        @media (min-width: max-screen)
+          line-height: .66
+
       & > a
         outline: none
   label[for=search]
-    position: relative;
+    position: relative
     & > *
       height: (2 * base-line)
       width: (2 * base-line)
       vertical-align: middle
     svg
       position: absolute
-      top:0
-      left:0
+      top: 0
+      left: 0
       z-index: -2
       outline:none
     input#search
-      position: relative
       border-width: 0
       border-radius: (base-line / 2)
       position: relative
@@ -70,17 +72,17 @@
       transition-delay: 0.15s
       transition-property: all
       &::placeholder
-        color:transparent
-
+        color: transparent
       &:focus
         transition-delay: 0.15s
-        border: 2px solid black
+        border: 0.33vmin solid black
         padding: (base-line / 2 )
         width: inherit
         &::placeholder
           color:red
+          transition-duration: 0.75
           transition-property: all
-          transition-delay: 0.15s
+          transition-delay: 0.25s
       &:focus ~ svg
         transition-property: all
         height:0
