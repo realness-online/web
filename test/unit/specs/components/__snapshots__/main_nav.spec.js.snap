@@ -1,25 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/main-nav.vue nav#main_nav #show:false should Hide navigation 1`] = `
-<nav
-  class=""
-  id="main_nav"
->
-  <!---->
-   
-  <!---->
-   
-  <!---->
-   
-  <!---->
-   
-  <!---->
-   
-  <!---->
-</nav>
-`;
-
-exports[`@/components/main-nav.vue nav#main_nav #show:true should render the application navigation 1`] = `
+exports[`@/components/main-nav.vue handling post events posting:false should render the main navigation 1`] = `
 <nav
   class=""
   id="main_nav"
@@ -60,5 +41,24 @@ exports[`@/components/main-nav.vue nav#main_nav #show:true should render the app
   >
     Profile
   </router-link>
+</nav>
+`;
+
+exports[`@/components/main-nav.vue handling post events posting:true should hide main navigation 1`] = `
+<nav
+  class=""
+  id="main_nav"
+>
+  <!---->
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
 </nav>
 `;

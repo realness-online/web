@@ -1,11 +1,11 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
-    <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="show = !show" ></wat-textarea>
-    <router-link v-if="show" to="/relations" class="blue">Relations</router-link>
-    <router-link v-if="show" to="/feed" class="blue">Feed</router-link>
-    <router-link v-if="show" to="/events" class="green">Events</router-link>
-    <router-link v-if="show" to="/groups" class="green">Groups</router-link>
-    <router-link v-if="show" to="/profile" class="black">{{user_name}}</router-link>
+    <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="posting = !posting" ></wat-textarea>
+    <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
+    <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
+    <router-link v-if="!posting" to="/events" class="green">Events</router-link>
+    <router-link v-if="!posting" to="/groups" class="green">Groups</router-link>
+    <router-link v-if="!posting" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
 
@@ -18,30 +18,30 @@
     components: {
       'wat-textarea': wat_textarea
     },
-    created: function() {
+    created() {
       this.$bus.$on('post-added', () => {
         this.has_posts = true
       })
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          this.is_person = true
+          this.signed_in = true
         } else {
-          this.is_person = false
+          this.signed_in = false
         }
       })
     },
     data() {
       return {
-        show: true,
+        posting: false,
+        signed_in: false,
         person: person_storage.as_object(),
-        has_posts: localStorage.getItem('posts-count') > 0,
-        is_person: true
+        has_posts: localStorage.getItem('posts-count') > 0
       }
     },
     computed: {
       onboarding() {
         return {
-          is_person: this.is_person,
+          is_person: this.signed_in,
           has_posts: this.has_posts,
           has_friends: localStorage.getItem('friends-count') > 0,
           can_event: localStorage.getItem('friends-count') >= 5,
