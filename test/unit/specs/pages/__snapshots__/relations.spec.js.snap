@@ -11,7 +11,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
     >
       <input
         id="search"
-        placeholder="search"
+        placeholder="Search"
         type="search"
       />
        
@@ -28,7 +28,5 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
      
     <!---->
   </header>
-   
-  <div />
 </section>
 `;
