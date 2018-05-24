@@ -10,10 +10,10 @@ describe('@/components/main-nav.vue', () => {
   // TODO: add test to confirm that buttons show up after user posts
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(main_nav)
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { onAuthStateChanged }
     })
+    wrapper = shallow(main_nav)
   })
   describe('nav#main_nav', () => {
     it('#show:true should render the application navigation', () => {
@@ -37,8 +37,21 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.onboarding.can_group).toBe(false)
     })
     it('#relations is true if user is signed in')
-    it('#person is true when person has profile info', () => {
-      wrapper.setData({ person: {mobile: '4252691938'} })
+    it('#person is true when person is signed in', () => {
+      const person = {
+        first_name: 'Scott',
+        last_name: 'Fryxell',
+        mobile: '4151234356'
+      }
+      const is_signed_in = jest.fn((state_changed) => {
+        state_changed({user: person})
+      })
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_signed_in }
+      })
+      wrapper = shallow(main_nav, {
+        data: { person: person}
+      })
       expect(wrapper.vm.onboarding.is_person).toBe(true)
     })
     it('#posts will be true when person posts', () => {
