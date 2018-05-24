@@ -25,7 +25,7 @@ module.exports = {
     '<rootDir>/test/polyfill/scrollIntoView.js',
     'jest-localstorage-mock'
   ],
-  verbose:false,
+  verbose:true,
   collectCoverage: true,
   "coverageThreshold": {
     "global": {
