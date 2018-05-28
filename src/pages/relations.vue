@@ -11,16 +11,61 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <nav itemprop="relations" >
+      <li v-for="person in relations">
+        <profile-as-figure :person='person'></profile-as-figure>
+        <menu>
+          <a><svg><use xlink:href="/static/icons.svg#hamburger"/></svg></a>
+        </menu>
+      </li>
+    </nav>
   </section>
 </template>
 <script>
   import logo_as_link from '@/components/logo-as-link'
+  import as_figure from '@/components/profile/as-figure'
   export default {
     components: {
-      'logo-as-link': logo_as_link
+      'logo-as-link': logo_as_link,
+      'profile-as-figure': as_figure
     },
     data() {
       return {
+        relations: [{
+          first_name: 'scott',
+          last_name: 'fryxell',
+          mobile: '6282281824'
+        },
+        {
+          first_name: 'katie',
+          last_name: 'caffey',
+          mobile: '2403800385‬'
+        },
+        {
+          first_name: 'joe',
+          last_name: 'buenous',
+          mobile: '3154476717'
+        },{
+          first_name: 'scottMcMansionalotMcMansionalot',
+          last_name: 'fryxell',
+          mobile: '6282281824'
+        },
+        {
+          first_name: 'katie',
+          last_name: 'caffey',
+          mobile: '2403800385‬'
+        },
+        {
+          first_name: 'Josephelious',
+          last_name: 'McMansionalotMcMansionalot',
+          mobile: '7073134462'
+        },
+        {
+          first_name: 'joe',
+          last_name: 'buenous',
+          mobile: '3154476717'
+        }
+        ],
         query: ''
       }
     },
@@ -49,7 +94,6 @@
         line-height: 1.33
         @media (min-width: max-screen)
           line-height: .66
-
       & > a
         outline: none
   label[for=search]
@@ -87,5 +131,37 @@
         transition-property: all
         height:0
         width:0
+  nav[itemprop=relations]
+    & > li
+      margin-top: base-line
+      list-style: none
+      display: flex
+      justify-content: space-between
+      & > figure
+        & > figcaption a
+          color:blue
+        & svg
+          fill:blue
+      & > menu
+        display: inline-flex
+        align-items: center;
+        margin-left:  (base-line / 2)
+        svg
+          fill:black
+          width: (base-line / 1.66)
+          height: (base-line / 1.66)
+    @media (min-width: min-screen)
+      display: flex
+      flex-direction: row
+      flex-wrap: wrap
+      justify-content: space-between
+      & > li
+        padding: (base-line / 2)
+        border: 0.33vmin solid black
+        border-radius: (base-line / 3)
+        width:49%
+    @media (min-width: max-screen)
+      & > li
+        width:32%
 
 </style>

@@ -54,11 +54,17 @@
   <symbol id="search" viewBox="0 0 192 192">
     <path d="M74.764.21C33.67.21.21 33.668.21 74.763s33.46 74.555 74.555 74.555c17.98 0 34.55-6.51 47.444-17.156h.212l59.305 59.305 9.743-9.743-59.305-59.305v-.212c10.646-12.894 17.156-29.465 17.156-47.444C149.319 33.67 115.859.21 74.764.21zm0 13.555c33.77 0 61 27.23 61 61 0 33.768-27.23 60.998-61 60.998-33.77 0-61-27.23-61-60.999 0-33.77 27.23-61 61-61z"/>
   </symbol>
+  <symbol id="hamburger" viewBox="0 0 192 192">
+    <rect id="top-bun" x="0" y="0" width="192" height="32" rx="8"></rect>
+    <rect id="patty" x="0" y="80" width="192" height="32" rx="8"></rect>
+    <rect id="bottom-bun" x="0" y="160" width="192" height="32" rx="8"></rect>
+  </symbol>
   <g fill="hsla(136, 0%, 0%, 0.9)" stroke="hsla(136, 0%, 0%, 0.2)">
     <use xlink:href='#plant' height="100vh"/>
     <use xlink:href='#leaf' width="100vw"/>
     <use xlink:href='#silhouette' height="100vh"/>
     <use xlink:href='#realness' height="100vh"/>
     <use xlink:href='#search' height="100vh"/>
+    <use xlink:href='#hamburger' height="100vh"/>
   </g>
 </svg>

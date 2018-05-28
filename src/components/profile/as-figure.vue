@@ -1,10 +1,12 @@
 <template>
-  <figure id="profile" itemscope itemtype='/person'>
+  <figure class="profile" itemscope itemtype='/person'>
+    <a itemprop="mobile" :href="person.mobile">
     <svg itemprop="profile_vector" :src="person.profile_vector" >
       <use xlink:href="/static/icons.svg#silhouette"/>
     </svg>
+  </a>
     <figcaption>
-      <p>
+      <p itemprop="mobile" :href="person.mobile">
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
@@ -12,7 +14,6 @@
     </figcaption>
   </figure>
 </template>
-
 <script>
   import { AsYouType } from 'libphonenumber-js'
   export default {
@@ -27,12 +28,14 @@
     }
   }
 </script>
-
 <style lang="stylus">
   @require '../../style/variables'
-  figure#profile
+  figure.profile
+    white-space: nowrap
+    overflow: hidden
+    // text-overflow: ellipsis
     display:flex
-    & > svg
+    & > a > svg
       border: 0.44vmin solid currentColor
       border-radius: (base-line / 3)
       outline:none
@@ -46,9 +49,9 @@
       line-height: (base-line * 2)
       & > p
         margin:0
+        // margin-right: base-line * 2
         & > span
           text-transform: capitalize
       & > a
         display:block
-
 </style>
