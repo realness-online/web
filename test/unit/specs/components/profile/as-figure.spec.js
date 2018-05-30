@@ -5,7 +5,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     person = {
-      profile_vector: '/people/scott-fryxell/profile.svg',
+      image: '/people/6282281824/profile.svg',
       first_name: 'scott',
       last_name: 'fryxell',
       mobile: '6282281824'
