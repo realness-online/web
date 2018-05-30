@@ -16,7 +16,7 @@ exports[`@/components/posts-list.vue should render some posts 1`] = `
 >
   <article
     itemscope="itemscope"
-    itemtype="http://schema.org/SocialMediaPosting"
+    itemtype="/post"
   >
     <blockquote
       itemprop="articleBody"
@@ -24,14 +24,12 @@ exports[`@/components/posts-list.vue should render some posts 1`] = `
       I like to move it
     </blockquote>
      
-    <footer>
-      <time
-        datetime="2017-12-20T23:01:14.310Z"
-        itemprop="created_at"
-      >
-        calculating...
-      </time>
-    </footer>
+    <time
+      datetime="2017-12-20T23:01:14.310Z"
+      itemprop="created_at"
+    >
+      calculating...
+    </time>
   </article>
 </div>
 `;

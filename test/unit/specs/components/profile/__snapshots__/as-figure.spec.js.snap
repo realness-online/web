@@ -2,18 +2,20 @@
 
 exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
 <figure
-  id="profile"
+  class="profile"
   itemscope="itemscope"
   itemtype="/person"
 >
-  <svg
-    itemprop="profile_vector"
-    src="/people/scott-fryxell/profile.svg"
+  <a
+    href="/profiles/6282281824"
   >
-    <use
-      xlink:href="/static/icons.svg#silhouette"
-    />
-  </svg>
+    <svg>
+      <use
+        itemprop="image"
+        xlink:href="/people/6282281824/profile.svg"
+      />
+    </svg>
+  </a>
    
   <figcaption>
     <p>

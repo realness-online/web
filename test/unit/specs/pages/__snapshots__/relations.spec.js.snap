@@ -28,5 +28,101 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
      
     <!---->
   </header>
+   
+  <nav
+    itemprop="relations"
+  >
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <!---->
+       
+      <menu>
+        <a>
+          <svg>
+            <use
+              xlink:href="/static/icons.svg#hamburger"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+  </nav>
 </section>
 `;
