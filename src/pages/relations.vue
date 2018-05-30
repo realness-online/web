@@ -45,7 +45,8 @@
           first_name: 'joe',
           last_name: 'buenous',
           mobile: '3154476717'
-        },{
+        },
+        {
           first_name: 'scottMcMansionalotMcMansionalot',
           last_name: 'fryxell',
           mobile: '6282281824'
@@ -147,6 +148,7 @@
         align-items: center;
         margin-left:  (base-line / 2)
         svg
+          cursor: pointer;
           fill:black
           width: (base-line / 1.66)
           height: (base-line / 1.66)
