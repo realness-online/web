@@ -24,6 +24,7 @@
       })
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
+          // console.log("firbase user: ", user)
           this.signed_in = true
         } else {
           this.signed_in = false

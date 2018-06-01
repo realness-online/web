@@ -7,7 +7,7 @@
       </details>
       <logo-as-link></logo-as-link>
     </header>
-    <h4>Wats</h4>
+    <h4>Posts</h4>
     <posts-list></posts-list>
   </section>
 </template>
