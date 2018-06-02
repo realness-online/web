@@ -34,7 +34,7 @@
     data() {
       return {
         posting: false,
-        signed_in: false,
+        signed_in: localStorage.getItem('posts-count') > 0,
         person: person_storage.as_object(),
         has_posts: localStorage.getItem('posts-count') > 0
       }
