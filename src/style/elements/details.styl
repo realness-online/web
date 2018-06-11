@@ -1,11 +1,12 @@
  details
-   // background-color: red
   & > summary
     cursor: pointer
     &:focus
       outline:none
     &::-webkit-details-marker
       display:none
+  & > *:not(summary)
+    animation-name: slideOutLeft    
   &[open]
     border: none
     border-color: transparent
