@@ -7,7 +7,6 @@
       </details>
       <logo-as-link></logo-as-link>
     </header>
-    <h4>Posts</h4>
     <posts-list></posts-list>
   </section>
 </template>
