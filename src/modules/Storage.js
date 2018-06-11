@@ -1,55 +1,55 @@
 import Item from '@/modules/Item'
-// // import * as firebase from 'firebase/app'
-// import 'firebase/auth'
-// import 'firebase/storage'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+import 'firebase/storage'
 
 class Storage {
-  constructor(item_type,
-    selector = `[itemtype="/${item_type}"]`, location = `${item_type}.html`) {
+  constructor(
+    item_type,
+    selector = `[itemtype="/${item_type}"]`,
+    location = `${item_type}.html`
+  ) {
     this.item_type = item_type
     this.selector = selector
     this.location = location
     this.metadata = {'contentType': 'text/html'}
   }
-
   from_storage() {
     let storage_string = localStorage.getItem(this.item_type)
     return Storage.hydrate(storage_string)
   }
-
   as_list() {
     return Item.get_items(this.from_storage())
   }
-
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
-
   save() {
     let items = document.querySelector(this.selector)
     if (!items) { return false }
     items = items.outerHTML
     localStorage.setItem(this.item_type, items)
-    // this.persist(items)
+    if(this.item_type === 'person' || this.item_type === 'posts') {
+      this.persist(items)
+    }
+
     return true
   }
-
-  // persist(doc_u_ment) {
-  //   firebase.auth().onAuthStateChanged(user => {
-  //     if (user) {
-  //       const file = new File([doc_u_ment], this.location)
-  //       if (navigator.onLine) {
-  //         firebase.storage().ref()
-  //           .child(`/cohorts/1/people/${user.uid}/${this.location}`)
-  //           .put(file, this.metadata)
-  //           .catch(console.log.bind(console))
-  //       } else {
-  //         console.log(`You are offline. ${this.item_type} saved to localStorage`)
-  //       }
-  //     }
-  //   })
-  // }
-
+  persist(doc_u_ment) {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        const file = new File([doc_u_ment], this.location)
+        if (navigator.onLine) {
+          firebase.storage().ref()
+            .child(`/people/${user.phoneNumber}/${this.location}`)
+            .put(file, this.metadata)
+            .catch(console.log.bind(console))
+        } else {
+          console.log(`You are offline. ${this.item_type} saved to localStorage`)
+        }
+      }
+    })
+  }
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }

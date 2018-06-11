@@ -26,6 +26,7 @@ describe('@/modules/Storage.js', () => {
       expect(person.from_storage).toBeDefined()
     })
   })
+
   describe('save()', () => {
     it('exists', () => {
       expect(person.save).toBeDefined()
@@ -51,4 +52,23 @@ describe('@/modules/Storage.js', () => {
     const items = person.from_storage()
     expect(items.querySelectorAll('h1').length).toBe(1)
   })
+
+  describe('service worker', () => {
+    it('loads locally first'
+    it('checks the network for updates')
+    it('saves to the server via eventing')
+  })
+
+  describe('syncing', () => {
+    it('syncs when the user signs in')
+    it('only saves posts, profile, profile_image')
+    it('does not save activity to the server')
+  })
+
+  describe('indexing', () => {
+    it('creates an index page for posts')
+    it('creates an global index page of users to search')
+    it('updates a search index of users when they are saved')
+  })
+
 })
