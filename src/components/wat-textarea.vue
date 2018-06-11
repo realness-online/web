@@ -48,15 +48,16 @@
     resize: none
     caret-color: red
     &:focus
+      margin-top: base-line
       animation-name: slideInLeft
       font-weight: normal
       height:100vh
-      cursor: auto
+      // cursor:alias;
       text-align: left
       width:100vw
       border-top: none
       border-radius: 0
-      border-width:0
+      border-width: 0
       background-color: transparent
       outline:0
       transition-duration: .3s
