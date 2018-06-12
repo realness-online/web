@@ -38,6 +38,8 @@
 <style lang='stylus'>
   @require '../style/variables'
   section#profile header
+    figure.profile > a
+      color:black
     details[open] ~ a
       position: fixed
       top: base-line
