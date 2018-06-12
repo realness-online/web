@@ -9,6 +9,10 @@ import index from '@/pages/index'
 import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/cache-controller.js')
+}
+
 firebase.initializeApp(process.env.FIREBASE_CONFIG)
 Vue.prototype.$bus = new Vue({})
 Vue.use(VueRouter)
