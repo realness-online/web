@@ -1,6 +1,6 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
-    <wat-textarea class="red" tabindex="1" v-on:toggle-keyboard="posting = !posting" ></wat-textarea>
+    <wat-textarea class="red" v-on:toggle-keyboard="posting = !posting" ></wat-textarea>
     <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
