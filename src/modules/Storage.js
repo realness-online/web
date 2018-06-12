@@ -29,10 +29,9 @@ class Storage {
     if (!items) { return false }
     items = items.outerHTML
     localStorage.setItem(this.item_type, items)
-    if(this.item_type === 'person' || this.item_type === 'posts') {
+    if (this.item_type === 'person' || this.item_type === 'posts') {
       this.persist(items)
     }
-
     return true
   }
   persist(doc_u_ment) {
