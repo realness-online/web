@@ -39,9 +39,9 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     // service worker caching
     new SWPrecacheWebpackPlugin({
-      cacheId: 'my-vue-app',
-      filename: 'controller.js',
-      staticFileGlobs: ['dist/**/*.{js,html,css}'],
+      cacheId: 'realness.online.cache',
+      filename: 'cache-controller.js',
+      staticFileGlobs: ['dist/**/*.{js,html,css,svg}'],
       minify: false,
       stripPrefix: 'dist/',
       runtimeCaching: [
