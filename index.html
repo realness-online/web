@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
     <link rel="icon" sizes="192x192" href="/static/logo.png">
     <link rel="apple-touch-icon" sizes="192x192" href="/static/logo.png">
-    <link rel="favicon" href="/static/logo.png">  
+    <link rel="favicon" href="/static/logo.png">
     <meta name="theme-color" content="#FCF5EA" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
   </head>
@@ -23,5 +23,12 @@
         <rect x="3.38em" y="1.05em" width="1em" height="1em" rx="1em"></rect>
       </svg>
     </main>
+    <script type="text/javascript">
+      (function() {
+        if('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/controller.js');
+        }
+      })();
+    </script>
   </body>
 </html>

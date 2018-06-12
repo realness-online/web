@@ -9,6 +9,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
+const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
 const Visualizer = require('webpack-visualizer-plugin')
 const env = process.env.NODE_ENV === 'testing'
   ? require('../config/test.env')
@@ -35,6 +36,23 @@ const webpackConfig = merge(baseWebpackConfig, {
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
       'process.env': env
+    }),
+    // service worker caching
+    new SWPrecacheWebpackPlugin({
+      cacheId: 'my-vue-app',
+      filename: 'controller.js',
+      staticFileGlobs: ['dist/**/*.{js,html,css}'],
+      minify: false,
+      stripPrefix: 'dist/',
+      runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+        handler: 'cacheFirst'
+      },
+      {
+        urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+        handler: 'cacheFirst'
+      }]
     }),
     // UglifyJs do not support ES6+, you can also use babel-minify for better treeshaking: https://github.com/babel/minify
     new webpack.optimize.UglifyJsPlugin({
