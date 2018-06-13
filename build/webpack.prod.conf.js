@@ -40,6 +40,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     new WorkboxPlugin.InjectManifest({
       swSrc: './src/cache-controller.js',
+      globDirectory: path.resolve(__dirname, '../static'),
+      globPatterns: ['**/*.{js,css,svg}']
     }),
     // UglifyJs do not support ES6+, you can also use babel-minify for better treeshaking: https://github.com/babel/minify
     new webpack.optimize.UglifyJsPlugin({
