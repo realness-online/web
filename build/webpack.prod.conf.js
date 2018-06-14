@@ -38,11 +38,16 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': env
     }),
-    new WorkboxPlugin.InjectManifest({
-      swSrc: './src/cache-controller.js',
-      globDirectory: path.resolve(__dirname, '../static'),
-      globPatterns: ['**/*.{js,css,svg}']
+
+    new WorkboxPlugin.GenerateSW({
+      swDest: 'controller.js',
+      navigateFallback: '/',
+      precacheManifestFilename: 'manifest.[manifestHash].js'
     }),
+
+    // new WorkboxPlugin.InjectManifest({
+    //   swSrc: './src/controller.js'
+    // }),
     // UglifyJs do not support ES6+, you can also use babel-minify for better treeshaking: https://github.com/babel/minify
     new webpack.optimize.UglifyJsPlugin({
       compress: {
@@ -77,7 +82,7 @@ const webpackConfig = merge(baseWebpackConfig, {
       inject: true,
       minify: {
         removeComments: true,
-        collapseWhitespace: true,
+        collapseWhitespace: false,
         removeAttributeQuotes: true
         // more options:
         // https://github.com/kangax/html-minifier#options-quick-reference
