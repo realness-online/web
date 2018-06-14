@@ -9,8 +9,12 @@ import index from '@/pages/index'
 import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/cache-controller.js')
+if (process.env.NODE_ENV === 'production') {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/controller.js').then(registration => {
+      console.log('Service Worker registed!', registration)
+    })
+  }
 }
 
 firebase.initializeApp(process.env.FIREBASE_CONFIG)
