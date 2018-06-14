@@ -6,7 +6,7 @@
           v-model="query"
           v-on:focusout="view_friends_mode"
           v-on:focusin="search_mode">
-        <svg><use xlink:href="/static/icons.svg#search"/></svg>
+        <svg><use :xlink:href="search"/></svg>
       </label>
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
@@ -15,7 +15,7 @@
       <li v-for="person in relations">
         <profile-as-figure :person='person'></profile-as-figure>
         <menu>
-          <a><svg><use xlink:href="/static/icons.svg#hamburger"/></svg></a>
+          <a><svg><use :xlink:href="hamburger"/></svg></a>
         </menu>
       </li>
     </nav>
@@ -24,6 +24,7 @@
 <script>
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/profile/as-figure'
+  import icons from '@/icons.svg'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -76,6 +77,14 @@
       },
       view_friends_mode(event) {
         this.query = ''
+      }
+    },
+    computed: {
+      hamburger() {
+        return `${icons}#hamburger`
+      },
+      search() {
+        return `${icons}#search`
       }
     }
   }

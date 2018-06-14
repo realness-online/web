@@ -14,6 +14,7 @@
 </template>
 <script>
   import { AsYouType } from 'libphonenumber-js'
+  import icons from '@/icons.svg'
   export default {
     props: ['person'],
     computed: {
@@ -28,7 +29,7 @@
       },
       guaranteed_image() {
         if (!this.person.image) {
-          return '/static/icons.svg#silhouette'
+          return `${icons}#silhouette`
         } else {
           return this.person.image
         }
