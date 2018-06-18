@@ -54,11 +54,6 @@ describe('@/modules/Storage.js', () => {
     })
 
   })
-  describe('service worker', () => {
-    it('loads first on the client')
-    it('checks the network for updates')
-    it('saves to the server via eventing')
-  })
   describe('syncing', () => {
     it('syncs when the user signs in')
     it('only saves posts, profile, profile_image')
