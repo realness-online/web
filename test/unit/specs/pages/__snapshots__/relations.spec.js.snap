@@ -17,7 +17,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
        
       <svg>
         <use
-          xlink:href="/static/icons.svg#search"
+          xlink:href="#search"
         />
       </svg>
     </label>
@@ -39,7 +39,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -52,7 +52,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -65,7 +65,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -78,7 +78,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -91,7 +91,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -104,7 +104,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>
@@ -117,7 +117,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
         <a>
           <svg>
             <use
-              xlink:href="/static/icons.svg#hamburger"
+              xlink:href="#hamburger"
             />
           </svg>
         </a>

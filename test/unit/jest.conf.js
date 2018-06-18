@@ -9,6 +9,7 @@ module.exports = {
     'vue'
   ],
   moduleNameMapper: {
+    "\\.(svg|jpg|png)$": "<rootDir>/test/empty-module.js",
     '^@/(.*)$': '<rootDir>/src/$1'
   },
   transform: {
