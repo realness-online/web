@@ -4,11 +4,8 @@ import 'firebase/auth'
 import 'firebase/storage'
 
 class Storage {
-  constructor(
-    item_type,
-    selector = `[itemtype="/${item_type}"]`,
-    location = `${item_type}.html`
-  ) {
+  constructor(item_type, selector = `[itemtype="/${item_type}"]`,
+    location = `${item_type}.html`) {
     this.item_type = item_type
     this.selector = selector
     this.location = location
@@ -25,27 +22,28 @@ class Storage {
     return Item.get_first_item(this.from_storage())
   }
   save() {
+    // save the information to local storage and if appropriate to the server
+    // under the currrent users profile.
     let items = document.querySelector(this.selector)
     if (!items) { return false }
     items = items.outerHTML
     localStorage.setItem(this.item_type, items)
-    if (this.item_type === 'person' || this.item_type === 'posts') {
+    if (['person', 'posts'].includes(this.item_type)) {
       this.persist(items)
     }
     return true
   }
-  persist(doc_u_ment) {
+  persist(doc_u_ment, doc_u_path) {
     firebase.auth().onAuthStateChanged(user => {
-      if (user) {
+      if (user && navigator.onLine) {
         const file = new File([doc_u_ment], this.location)
-        if (navigator.onLine) {
-          firebase.storage().ref()
-            .child(`/people/${user.phoneNumber}/${this.location}`)
-            .put(file, this.metadata)
-            .catch(console.log.bind(console))
-        } else {
-          console.log(`You are offline. ${this.item_type} saved to localStorage`)
+        if (!doc_u_path) {
+          doc_u_path = `/people/${user.phoneNumber}/${this.location}`
         }
+        firebase.storage().ref()
+          .child(doc_u_path)
+          .put(file, this.metadata)
+          .catch(console.log.bind(console))
       }
     })
   }
@@ -58,6 +56,8 @@ export default Storage
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
+export const relations = new Storage('relations', '[itemprop=relations]')
+export const phonebook = new Storage('phonebook')
 
 //  use this for firebase logging
 // .then( snapshot => {
