@@ -1,21 +1,15 @@
 <template lang="html">
-  <router-link id="logo" to="/">
-    <svg><use :xlink:href="realness"/></svg>
-  </router-link>
+  <router-link id="logo" to="/"><icon id="realness"></icon></router-link>
 </template>
 <script>
-  import icons from '@/icons.svg'
+  import icon from '@/components/icon'
   export default {
-    computed: {
-      realness() {
-        return `${icons}#realness`
-      }
-    }
+    components: {icon}
   }
 </script>
 <style lang="stylus">
   @require '../style/variables'
-  a#logo > svg
+  svg.realness
     width:(base-line * 2)
     height:(base-line * 2)
 </style>
