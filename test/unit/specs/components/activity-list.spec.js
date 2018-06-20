@@ -30,4 +30,11 @@ describe('@/components/activity-list.vue', () => {
     expect(wrapper.vm.activity.length).toBe(1)
     expect(wrapper.find('li')).toBeTruthy()
   })
+
+  it('should add an event when a profile is created')
+  it('should add an event when a profile is updated')
+  it('should add an event when a person signs in')
+  it('should add an event when a person signs out')
+  it('should add an event when a person creates a relationship')
+  it('should add an event when a person ends a relationship')
 })
