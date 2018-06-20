@@ -1,5 +1,5 @@
 <template>
-  <div itemprop="posts" id="posts" itemref="profile">
+  <div itemprop="posts" itemref="profile">
     <article v-for="post in posts" itemscope itemtype="/post">
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
       <time itemprop="created_at" :datetime="post.created_at">calculating...</time>

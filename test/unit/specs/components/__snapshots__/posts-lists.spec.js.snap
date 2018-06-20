@@ -2,7 +2,6 @@
 
 exports[`@/components/posts-list.vue should render (ol#activity) 1`] = `
 <div
-  id="posts"
   itemprop="posts"
   itemref="profile"
 />
@@ -10,7 +9,6 @@ exports[`@/components/posts-list.vue should render (ol#activity) 1`] = `
 
 exports[`@/components/posts-list.vue should render some posts 1`] = `
 <div
-  id="posts"
   itemprop="posts"
   itemref="profile"
 >
