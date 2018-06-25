@@ -13,6 +13,9 @@ describe('@/compontent/profile/as-form.vue', () => {
   beforeEach(() => {
     jest.resetModules()
   })
+  afterEach(() => {
+    // jest.resetAllMocks()
+  })
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
@@ -137,7 +140,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.exists()).toBe(false)
     })
   })
-  describe('callback#text_human_verify_code', () => {
+  describe('#text_human_verify_code', () => {
     let wrapper, signInWithPhoneNumber
     beforeEach(() => {
       signInWithPhoneNumber = jest.fn(() => {
@@ -203,17 +206,21 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.attributes().disabled).toBe(undefined)
     })
   })
-  describe('button#submit-verification', () => {
-    let wrapper, button, confirm_spy
+  describe('button#submit-verification success', () => {
+    let wrapper, button, confirm_spy, sync_spy
     beforeEach(() => {
       confirm_spy = jest.fn(() => {
         return Promise.resolve('result of confirm_spy')
       })
+
+      sync_spy = jest.fn()
+
       wrapper = shallow(as_form, {
         propsData: {
           person: person
         },
         data: {
+          storage: {sync:sync_spy},
           show_code: true,
           authorizer: {
             confirm: confirm_spy
@@ -226,6 +233,32 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
+    it.only('syncs the persons\'s posts', () => {
+      let is_signed_in = jest.fn((state_changed) => {
+        state_changed({user: person})
+      })
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return {
+          onAuthStateChanged: is_signed_in }
+      })
+      expect(sync_spy).toBeCalled()
+      expect(wrapper.vm.sync_posts).toBeDefined()
+      let sync_posts_spy = jest.fn()
+      wrapper.vm.sync_posts = sync_posts_spy
+      button.trigger('click')
+      expect(sync_posts_spy).toBeCalled()
+      // expect(wrapper.vm.sync_posts()).toBe(true)
+      // check if post.html already exist for this user.
+        // If so merge it's content whith what's stored locally
+
+      // called when loading page and called when signing in
+      // wrap a spy and make sure this method is called when user logs in
+      // sign_in_with_code
+    })
+    it('updates the search index', () => {
+      expect(wrapper.vm.sync_search_index).toBeDefined()
+    })
+
     it('hides input#verification-code when clicked', () => {
       expect(wrapper.find('#verification-code').exists()).toBe(true)
       button.trigger('click')

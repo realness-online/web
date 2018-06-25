@@ -33,6 +33,21 @@ class Storage {
     }
     return true
   }
+  sync() {
+    // if (['person', 'posts'].includes(this.item_type) && navigator.onLine) {
+      // firebase.auth().onAuthStateChanged(user => {
+      //   if (user) {
+      //     const doc_u_path = `/people/${user.phoneNumber}/${this.location}`
+      //     firebase.storage().ref()
+      //       .child(doc_u_path)
+      //       .getDownloadURL()
+      //       .catch(console.log.bind(console))
+      //     local_item = this.from_storage()
+      //
+      //   }
+      // })
+    // }
+  }
   persist(doc_u_ment, doc_u_path) {
     firebase.auth().onAuthStateChanged(user => {
       if (user && navigator.onLine) {

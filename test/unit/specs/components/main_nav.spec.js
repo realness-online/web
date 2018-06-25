@@ -17,7 +17,7 @@ describe('@/components/main-nav.vue', () => {
   })
   describe('handling post events', () => {
     it('posting:false should render the main navigation', () => {
-        expect(wrapper.vm.posting).toBe(false)
+      expect(wrapper.vm.posting).toBe(false)
       expect(wrapper.element).toMatchSnapshot()
     })
     it('posting:true should hide main navigation', () => {

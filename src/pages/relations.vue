@@ -6,7 +6,7 @@
           v-model="query"
           v-on:focusout="view_friends_mode"
           v-on:focusin="search_mode">
-        <icon id="search"></icon>
+        <icon name="search"></icon>
       </label>
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>

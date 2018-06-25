@@ -2,6 +2,10 @@ import { shallow } from 'vue-test-utils'
 import relations from '@/pages/relations'
 
 describe('@/pages/relations.vue', () => {
+  it('render relationship information', () => {
+    let wrapper = shallow(relations)
+    expect(wrapper.element).toMatchSnapshot()
+  })
   describe('searchibg', () => {
     it('renders a search icon and input')
     describe('query', () => {
@@ -13,10 +17,6 @@ describe('@/pages/relations.vue', () => {
       it('a person can declare a relationship')
       it('a person can block a relationship')
     })
-  })
-  it('render relationship information', () => {
-    let wrapper = shallow(relations)
-    expect(wrapper.element).toMatchSnapshot()
   })
   describe('reltionships', () => {
     it('are in a list')

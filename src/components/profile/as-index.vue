@@ -3,8 +3,8 @@
     <li v-for="person in people">
       <profile-as-figure :person="person"></profile-as-figure>
       <menu>
-        <a v-if='person.is_relation'><icon :id="following"></icon></a>
-        <a v-if='!person.is_relation'><icon :id="follow"></icon></a>
+        <a v-if='person.is_relation'><icon :name="following"></icon></a>
+        <a v-if='!person.is_relation'><icon :name="follow"></icon></a>
       </menu>
     </li>
   </nav>
