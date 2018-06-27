@@ -16,16 +16,15 @@
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
-    "express": "^4.16.2",
     "firebase": "^5.0.4",
     "libphonenumber-js": "^1.2.15",
-    "sw-precache-webpack-plugin": "^0.11.5",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
-    "webpack-visualizer-plugin": "0.1.11",
     "workbox-webpack-plugin": "^3.3.0"
   },
   "devDependencies": {
+    "express": "^4.16.2",
+    "webpack-visualizer-plugin": "0.1.11",
     "@vue/test-utils": "^1.0.0-beta.19",
     "autoprefixer": "^8.6.3",
     "babel-core": "^6.26.3",
