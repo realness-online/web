@@ -10,18 +10,18 @@ describe('@/compontent/profile/as-form.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
+  let firebase_mock
   beforeEach(() => {
-    jest.resetModules()
+    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      return { onAuthStateChanged }
+    })
   })
   afterEach(() => {
-    // jest.resetAllMocks()
+    firebase_mock.mockReset()
   })
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged }
-      })
       wrapper = shallow(as_form, { propsData: { person: person } })
     })
     it('should render profile form', () => {
@@ -109,9 +109,6 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('button#authorize', () => {
     let wrapper, button
     beforeEach(() => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged }
-      })
       wrapper = shallow(as_form, { propsData: { person: person } })
       button = wrapper.find('#authorize')
     })
@@ -120,7 +117,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(onAuthStateChanged).toBeCalled()
       expect(button.exists()).toBe(true)
     })
-    it('removed whith invalid mobile number', () => {
+    it('removed with invalid mobile number', () => {
       const invalid_person = { mobile: '415123456a' }
       wrapper = shallow(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
@@ -143,9 +140,7 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('#text_human_verify_code', () => {
     let wrapper, signInWithPhoneNumber
     beforeEach(() => {
-      signInWithPhoneNumber = jest.fn(() => {
-        return Promise.resolve('result of signInWithPhoneNumber')
-      })
+      signInWithPhoneNumber = jest.fn(() => Promise.resolve('success') )
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return {
           signInWithPhoneNumber,
@@ -206,107 +201,5 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.attributes().disabled).toBe(undefined)
     })
   })
-  describe('button#submit-verification success', () => {
-    let wrapper, button, confirm_spy, sync_spy
-    beforeEach(() => {
-      confirm_spy = jest.fn(() => {
-        return Promise.resolve('result of confirm_spy')
-      })
-
-      sync_spy = jest.fn()
-
-      wrapper = shallow(as_form, {
-        propsData: {
-          person: person
-        },
-        data: {
-          storage: {sync:sync_spy},
-          show_code: true,
-          authorizer: {
-            confirm: confirm_spy
-          }
-        }
-      })
-      button = wrapper.find('#submit-verification')
-    })
-    it('signs the user in with verification code when clicked', () => {
-      button.trigger('click')
-      expect(confirm_spy).toBeCalled()
-    })
-    it.only('syncs the persons\'s posts', () => {
-      let is_signed_in = jest.fn((state_changed) => {
-        state_changed({user: person})
-      })
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return {
-          onAuthStateChanged: is_signed_in }
-      })
-      expect(sync_spy).toBeCalled()
-      expect(wrapper.vm.sync_posts).toBeDefined()
-      let sync_posts_spy = jest.fn()
-      wrapper.vm.sync_posts = sync_posts_spy
-      button.trigger('click')
-      expect(sync_posts_spy).toBeCalled()
-      // expect(wrapper.vm.sync_posts()).toBe(true)
-      // check if post.html already exist for this user.
-        // If so merge it's content whith what's stored locally
-
-      // called when loading page and called when signing in
-      // wrap a spy and make sure this method is called when user logs in
-      // sign_in_with_code
-    })
-    it('updates the search index', () => {
-      expect(wrapper.vm.sync_search_index).toBeDefined()
-    })
-
-    it('hides input#verification-code when clicked', () => {
-      expect(wrapper.find('#verification-code').exists()).toBe(true)
-      button.trigger('click')
-      expect(wrapper.find('#verification-code').exists()).toBe(false)
-      expect(wrapper.vm.show_code).toBe(false)
-    })
-    it('renders the sign out button when clicked', () => {
-      expect(wrapper.vm.show_sign_out).toBe(false)
-      button.trigger('click')
-      wrapper.vm.$nextTick(() => {
-        expect(wrapper.vm.show_sign_out).toBe(true)
-      })
-    })
-  })
-  describe('button#sign-out', () => {
-    let wrapper, button, is_signed_in, signOut
-    beforeEach(() => {
-      is_signed_in = jest.fn((state_changed) => {
-        state_changed({user: person})
-      })
-      signOut = jest.fn()
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return {
-          signOut,
-          onAuthStateChanged: is_signed_in }
-      })
-      wrapper = shallow(as_form, { propsData: { person: person } })
-      button = wrapper.find('#sign-out')
-    })
-    it('is displayed when user is signed in', () => {
-      expect(firebase.auth).toBeCalled()
-      expect(is_signed_in).toBeCalled()
-      expect(button.exists()).toBe(true)
-    })
-    it('logs the user out when clicked', () => {
-      button.trigger('click')
-      expect(signOut).toBeCalled()
-    })
-    it('removes itself when clicked', () => {
-      button.trigger('click')
-      button = wrapper.find('#sign-out')
-      expect(button.exists()).toBe(false)
-      expect(wrapper.vm.show_sign_out).toBe(false)
-    })
-    it('renders the authorize button when clicked', () => {
-      button.trigger('click')
-      expect(wrapper.vm.show_authorize).toBe(true)
-    })
-    it('logs the user out if they change their phone number')
-  })
+  
 })
