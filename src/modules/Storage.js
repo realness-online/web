@@ -34,6 +34,9 @@ class Storage {
     return true
   }
   sync() {
+    // check if post.html already exist for this user.
+      // If so merge it's content whith what's stored locally
+      console.log('It\'s a log!')
     // if (['person', 'posts'].includes(this.item_type) && navigator.onLine) {
       // firebase.auth().onAuthStateChanged(user => {
       //   if (user) {

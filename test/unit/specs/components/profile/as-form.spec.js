@@ -201,5 +201,4 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.attributes().disabled).toBe(undefined)
     })
   })
-  
 })
