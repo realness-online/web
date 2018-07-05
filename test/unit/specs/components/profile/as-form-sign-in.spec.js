@@ -49,7 +49,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
-    it.only('calls person_storage.sync', () => {
+    it('calls person_storage.sync', () => {
       let is_signed_in = jest.fn((state_changed) => {
         state_changed({user: person})
       })
