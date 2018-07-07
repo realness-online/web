@@ -25,6 +25,7 @@ class Storage {
     return Item.get_first_item(this.from_storage())
   }
   save() {
+    
     // save the information to local storage and if appropriate to the server
     let items = document.querySelector(this.selector)
     if (!items) { return false }
@@ -35,32 +36,18 @@ class Storage {
     }
     return true
   }
-  sync() {
-    // check if an 'item_type'.html already exist for this user.
-    // If so merge it's content whith what's stored locally
-    const url = this.get_server_file_url()
-    if (['person', 'posts'].includes(this.item_type) && navigator.onLine) {
+
+  get_download_url() {
+    return new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-          firebase.storage().ref().child(doc_u_path).getDownloadURL().then((url) => {
-            fetch(url).then(response => {
-              response.text().then(server_text => {
-                const server_as_fragment = Storage.hydrate(server_text)
-                let server_as_list = Item.get_items(server_as_fragment)
-                console.log(server_as_list)
-              })
-              let items = [...this.from_storage, ...from_server]
-              // console.log(items)
-            })
-          })
+          firebase.storage().ref().child(doc_u_path)
+            .getDownloadURL().then(url => resolve(url))
+            .catch(error => reject(error))
         }
       })
-    }
-  }
-
-  get_server_file_url() {
-
+    })
   }
 
   persist(doc_u_ment, doc_u_path) {

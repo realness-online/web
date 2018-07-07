@@ -7,9 +7,7 @@ class Item {
     let items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
       let meta = {
-        type: item.getAttribute('itemtype'),
-        id: item.getAttribute('itemid'),
-        element_id: item.getAttribute('id')
+        type: item.getAttribute('itemtype')
       }
       let properties = Item.get_item_properties(item)
       items_as_data.push({ ...meta, ...properties })

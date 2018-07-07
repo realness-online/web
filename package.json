@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "firebase": "^5.0.4",
+    "jest-fetch-mock": "^1.6.5",
     "libphonenumber-js": "^1.2.15",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",

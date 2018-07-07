@@ -42,7 +42,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import {parseNumber} from 'libphonenumber-js'
-  import {person_storage} from '@/modules/Storage'
+  import {person_storage, posts_storage} from '@/modules/Storage'
   export default {
     props: ['person'],
     data() {
@@ -62,8 +62,7 @@
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           this.show_sign_out = true
-          this.sync_posts()
-          this.sync_search_index()
+          this.$bus.$emit('signed-in', user)
         } else {
           this.show_authorize = true
         }
@@ -144,14 +143,6 @@
         if (input.value.length === 5) { // after this keypress it will be 6
           button.disabled = false
         }
-      },
-      sync_posts() {
-        console.log('oh my god sync posts')
-        this.storage.sync()
-        return false
-      },
-      sync_search_index() {
-        return false
       }
     }
   }
