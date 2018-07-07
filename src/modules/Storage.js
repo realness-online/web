@@ -4,11 +4,14 @@ import 'firebase/auth'
 import 'firebase/storage'
 
 class Storage {
+  static hydrate(item_as_string) {
+    return document.createRange().createContextualFragment(item_as_string)
+  }
   constructor(item_type, selector = `[itemtype="/${item_type}"]`,
-    location = `${item_type}.html`) {
+    filename = `${item_type}.html`) {
     this.item_type = item_type
     this.selector = selector
-    this.location = location
+    this.filename = filename
     this.metadata = {'contentType': 'text/html'}
   }
   from_storage() {
@@ -23,7 +26,6 @@ class Storage {
   }
   save() {
     // save the information to local storage and if appropriate to the server
-    // under the currrent users profile.
     let items = document.querySelector(this.selector)
     if (!items) { return false }
     items = items.outerHTML
@@ -34,29 +36,39 @@ class Storage {
     return true
   }
   sync() {
-    // check if post.html already exist for this user.
-      // If so merge it's content whith what's stored locally
-      console.log('It\'s a log!')
-    // if (['person', 'posts'].includes(this.item_type) && navigator.onLine) {
-      // firebase.auth().onAuthStateChanged(user => {
-      //   if (user) {
-      //     const doc_u_path = `/people/${user.phoneNumber}/${this.location}`
-      //     firebase.storage().ref()
-      //       .child(doc_u_path)
-      //       .getDownloadURL()
-      //       .catch(console.log.bind(console))
-      //     local_item = this.from_storage()
-      //
-      //   }
-      // })
-    // }
+    // check if an 'item_type'.html already exist for this user.
+    // If so merge it's content whith what's stored locally
+    const url = this.get_server_file_url()
+    if (['person', 'posts'].includes(this.item_type) && navigator.onLine) {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+          firebase.storage().ref().child(doc_u_path).getDownloadURL().then((url) => {
+            fetch(url).then(response => {
+              response.text().then(server_text => {
+                const server_as_fragment = Storage.hydrate(server_text)
+                let server_as_list = Item.get_items(server_as_fragment)
+                console.log(server_as_list)
+              })
+              let items = [...this.from_storage, ...from_server]
+              // console.log(items)
+            })
+          })
+        }
+      })
+    }
   }
+
+  get_server_file_url() {
+
+  }
+
   persist(doc_u_ment, doc_u_path) {
     firebase.auth().onAuthStateChanged(user => {
       if (user && navigator.onLine) {
-        const file = new File([doc_u_ment], this.location)
+        const file = new File([doc_u_ment], this.filename)
         if (!doc_u_path) {
-          doc_u_path = `/people/${user.phoneNumber}/${this.location}`
+          doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
         }
         firebase.storage().ref()
           .child(doc_u_path)
@@ -64,9 +76,6 @@ class Storage {
           .catch(console.log.bind(console))
       }
     })
-  }
-  static hydrate(item_as_string) {
-    return document.createRange().createContextualFragment(item_as_string)
   }
 }
 
