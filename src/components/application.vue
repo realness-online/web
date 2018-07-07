@@ -26,6 +26,6 @@
           this.storage.sync()
         }
       })
-    },
+    }
   }
 </script>
