@@ -1,5 +1,7 @@
 <template lang="html">
-
+  <aside id='developer_tools'>
+    
+  </aside>
 </template>
 
 <script>
