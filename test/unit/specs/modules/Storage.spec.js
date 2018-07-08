@@ -16,13 +16,24 @@ describe.only('@/modules/Storage.js', () => {
     document.body.innerHTML = item_as_string
     person = new Storage('person')
   })
-  describe('#hydrate', () => {
-    it('exists', () => {
-      expect(Storage.hydrate).toBeDefined()
+  describe('static methods', () => {
+    describe('#hydrate', () => {
+      it('exists', () => {
+        expect(Storage.hydrate).toBeDefined()
+      })
+      it('will create an html fragmend from a string', () => {
+        person = Storage.hydrate(item_as_string)
+        expect(person.querySelectorAll('h1').length).toBe(1)
+      })
     })
-    it('will create an html fragmend from a string', () => {
-      person = Storage.hydrate(item_as_string)
-      expect(person.querySelectorAll('h1').length).toBe(1)
+    describe('#persist', () => {
+      it('exists', () => {
+        expect(Storage.persist).toBeDefined()
+      })
+
+      it('saves a set of items to the server')
+      it('resolves a promise when successfull')
+      it('rejects a promise when when it fails')
     })
   })
   describe('#from_storage', () => {
@@ -43,13 +54,6 @@ describe.only('@/modules/Storage.js', () => {
       const items = person.from_storage()
       expect(items.querySelectorAll('h1').length).toBe(1)
     })
-  })
-  describe('#persist', () => {
-    it('exists', () => {
-      expect(person.persist).toBeDefined()
-    })
-    it('does not save activity to the server')
-    it('only saves posts, profile, profile_image')
   })
   describe('retrieving objects from html', () => {
     describe('as_list()', () => {

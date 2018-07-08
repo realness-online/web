@@ -7,6 +7,20 @@ class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }
+  static persist(doc_u_ment, doc_u_path) {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user && navigator.onLine) {
+        const file = new File([doc_u_ment], this.filename)
+        if (!doc_u_path) {
+          doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+        }
+        firebase.storage().ref()
+          .child(doc_u_path)
+          .put(file, this.metadata)
+          .catch(console.log.bind(console))
+      }
+    })
+  }
   constructor(item_type, selector = `[itemtype="/${item_type}"]`,
     filename = `${item_type}.html`) {
     this.item_type = item_type
@@ -25,15 +39,18 @@ class Storage {
     return Item.get_first_item(this.from_storage())
   }
   save() {
+    return new Promise((resolve, reject) => {
+      let items = document.querySelector(this.selector)
+      if (!items) { return false }
+      items = items.outerHTML
+      localStorage.setItem(this.item_type, items)
+      if (['person', 'posts'].includes(this.item_type)) {
+        Storage.persist(items).then(url => resolve(url))
+      }
+      return true
+    })
     // save the information to local storage and if appropriate to the server
-    let items = document.querySelector(this.selector)
-    if (!items) { return false }
-    items = items.outerHTML
-    localStorage.setItem(this.item_type, items)
-    if (['person', 'posts'].includes(this.item_type)) {
-      this.persist(items)
-    }
-    return true
+
   }
   get_download_url() {
     return new Promise((resolve, reject) => {
@@ -47,20 +64,7 @@ class Storage {
       })
     })
   }
-  persist(doc_u_ment, doc_u_path) {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user && navigator.onLine) {
-        const file = new File([doc_u_ment], this.filename)
-        if (!doc_u_path) {
-          doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-        }
-        firebase.storage().ref()
-          .child(doc_u_path)
-          .put(file, this.metadata)
-          .catch(console.log.bind(console))
-      }
-    })
-  }
+
 }
 
 export default Storage
