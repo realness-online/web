@@ -12,7 +12,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import wat_textarea from '@/components/wat-textarea'
+  import wat_textarea from '@/components/posts/wat-textarea'
   import {person_storage} from '@/modules/Storage'
   export default {
     components: {
