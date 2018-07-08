@@ -1,12 +1,9 @@
-<template lang="html">
-  <aside id='developer_tools'>
-    
-  </aside>
-</template>
-
 <script>
-export default {
-}
+  export default {
+    render(){
+      return null
+    }
+  }
 </script>
 
 <style lang="stylus" >
