@@ -25,7 +25,6 @@ class Storage {
     return Item.get_first_item(this.from_storage())
   }
   save() {
-    
     // save the information to local storage and if appropriate to the server
     let items = document.querySelector(this.selector)
     if (!items) { return false }
@@ -36,7 +35,6 @@ class Storage {
     }
     return true
   }
-
   get_download_url() {
     return new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -49,7 +47,6 @@ class Storage {
       })
     })
   }
-
   persist(doc_u_ment, doc_u_path) {
     firebase.auth().onAuthStateChanged(user => {
       if (user && navigator.onLine) {

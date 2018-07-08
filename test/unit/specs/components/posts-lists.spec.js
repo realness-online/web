@@ -27,4 +27,37 @@ describe('@/components/posts-list.vue', () => {
     expect(wrapper.vm.posts.length).toBe(1)
     expect(wrapper.find('li')).toBeTruthy()
   })
-})
+  describe('#sync', () => {
+    beforeEach(() => {
+      // const onAuthStateChanged = jest.fn(state_changed => state_changed())
+      const onAuthStateChanged = jest.fn(state_changed => {
+        state_changed({user: person})
+      })
+
+      let auth_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged }
+      })
+
+      let storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
+        return {
+          ref: jest.fn(() => {
+            return {
+              child: jest.fn(() => {
+                return {
+                  getDownloadURL: jest.fn(() => Promise.resolve('http://example.com/file.html'))
+                }
+              })
+            }
+          })
+        }
+      })
+
+    })
+    it('exists', () => {
+      expect(person.sync).toBeDefined()
+    })
+    it('syncs posts from server to local storage', () => {
+      person.sync()
+    })
+  })
+  })
