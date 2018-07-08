@@ -41,9 +41,7 @@
               })
               let items = [...filtered_local, ...from_server]
               items.sort((a,b) => {
-                let a_date = Date.parse(a.created_at)
-                let b_date = Date.parse(b.created_at)
-                return a_date - b_date
+                return Date.parse(a.created_at) - Date.parse(b.created_at)
               })
               this.posts = items
             })
