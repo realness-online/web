@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posts-list.vue should render (ol#activity) 1`] = `
+exports[`@/components/posts/as-list.vue should render (ol#activity) 1`] = `
 <div
   itemprop="posts"
   itemref="profile"
 />
 `;
 
-exports[`@/components/posts-list.vue should render some posts 1`] = `
+exports[`@/components/posts/as-list.vue should render some posts 1`] = `
 <div
   itemprop="posts"
   itemref="profile"

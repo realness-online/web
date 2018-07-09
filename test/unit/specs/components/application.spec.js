@@ -19,21 +19,6 @@ describe('@/components/application.vue', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
 
-  it('syncs person\'s data with the server on application start', () => {
-    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged:signed_in }
-    })
-    let sync_spy = jest.fn()
-    let wrapper = shallow(application, {
-      data: {
-        storage: {
-          sync: sync_spy
-        }
-      }
-    })
-    expect(sync_spy).toBeCalled()
-  })
-
   it('only syncs data for people who are signed in', () => {
     let sync_spy = jest.fn()
     let wrapper = shallow(application, {

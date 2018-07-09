@@ -21,23 +21,18 @@ describe('@/compontent/profile/as-form.vue', () => {
   })
 
   describe('button#submit-verification success', () => {
-    let wrapper, button, confirm_spy, sync_spy
+    let wrapper, button, confirm_spy
     afterEach(() => {
       confirm_spy.mockReset()
-      sync_spy.mockReset()
     })
     beforeEach(() => {
       confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy') )
-      sync_spy = jest.fn()
       wrapper = shallow(as_form, {
         propsData: {
           person: person
         },
         data: {
           show_code: true,
-          storage: {
-            sync: sync_spy
-          },
           authorizer: {
             confirm: confirm_spy
           }
@@ -49,39 +44,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
-    it('calls person_storage.sync', () => {
-      let is_signed_in = jest.fn((state_changed) => {
-        state_changed({user: person})
-      })
-      firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return {
-          onAuthStateChanged: is_signed_in }
-      })
-      wrapper = shallow(as_form, {
-        propsData: {
-          person: person
-        },
-        data: {
-          show_code: true,
-          storage: {
-            sync: sync_spy
-          }
-        }
-      })
-      // wrapper.setData({storage: {sync_spy}})
-      button.trigger('click')
-      wrapper.vm.storage.sync()
-      expect(wrapper.vm.sync_posts).toBeDefined()
-      expect(sync_spy).toBeCalled()
-    })
-    it('updates the search index', () => {
-      // let sync_posts_spy = jest.fn()
-      // wrapper.vm.sync_posts = sync_posts_spy
-      // expect(sync_posts_spy).toBeCalled()
-      // expect(wrapper.vm.sync_posts()).toBe(true)
-      expect(wrapper.vm.sync_search_index).toBeDefined()
-    })
-
     it('hides input#verification-code when clicked', () => {
       expect(wrapper.find('#verification-code').exists()).toBe(true)
       button.trigger('click')
@@ -134,5 +96,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(wrapper.vm.show_authorize).toBe(true)
     })
     it('logs the user out if they change their phone number')
+    it('deletes the local storage of posts and relations')
   })
 })

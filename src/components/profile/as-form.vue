@@ -111,8 +111,6 @@
         event.preventDefault()
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
-          this.sync_posts()
-          this.sync_search_index()
           this.show_sign_out = true
         }).catch(error => {
           console.error(error)

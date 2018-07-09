@@ -41,8 +41,6 @@ describe('@/modules/Item.js', () => {
     })
     it('has meta data about the item', () => {
       expect(item.type).toBe('/person')
-      expect(item.element_id).toBe('profile')
-      expect(item.id).toBe('/person/666')
     })
 
     it('gets the properties of an item', () => {

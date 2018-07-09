@@ -7,23 +7,6 @@ class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }
-  static persist(doc_u_ment, doc_u_path) {
-    return new Promise((resolve, reject) => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user && navigator.onLine) {
-          const file = new File([doc_u_ment], this.filename)
-          if (!doc_u_path) {
-            doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-          }
-          firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
-            .then(() => resolve('persisted to network'))
-            .catch(e => reject(e))
-        } else {
-          resolve('no need to persist')
-        }
-      })
-    })
-  }
   constructor(type, query = `[itemtype="/${type}"]`, file = `${type}.html`) {
     this.item_type = type
     this.selector = query
@@ -47,12 +30,29 @@ class Storage {
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
       if (['person', 'posts'].includes(this.item_type)) {
-        Storage.persist(items)
+        this.persist(items)
           .then(resolve('saved local & network'))
           .catch(e => reject(e))
       } else {
         resolve('saved local')
       }
+    })
+  }
+  persist(doc_u_ment, doc_u_path) {
+    return new Promise((resolve, reject) => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user && navigator.onLine) {
+          const file = new File([doc_u_ment], this.filename)
+          if (!doc_u_path) {
+            doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+          }
+          firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
+            .then(() => resolve(doc_u_path))
+            .catch(e => reject(e))
+        } else {
+          resolve('no need to persist')
+        }
+      })
     })
   }
   get_download_url() {
