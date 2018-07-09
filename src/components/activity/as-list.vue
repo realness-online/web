@@ -37,9 +37,8 @@
     }
   }
 </script>
-
 <style lang="stylus">
-  @require '../style/variables'
+  @require '../../style/variables'
   ol[itemprop="activity"]
     display:flex
     flex-direction: column-reverse

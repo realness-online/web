@@ -1,10 +1,10 @@
 import {shallow} from 'vue-test-utils'
-import ActivityList from '@/components/activity-list'
+import activity_as_list from '@/components/activity/as-list'
 
 describe('@/components/activity-list.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(ActivityList)
+    wrapper = shallow(activity_as_list)
   })
   it('should render an activity wrapper (ol#activity)', () => {
     expect(wrapper.element).toMatchSnapshot()

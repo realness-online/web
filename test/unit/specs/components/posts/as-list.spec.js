@@ -1,5 +1,5 @@
 import {shallow} from 'vue-test-utils'
-import post_list from '@/components/posts-list'
+import post_list from '@/components/posts/as-list'
 
 describe('@/components/posts-list.vue', () => {
   let wrapper

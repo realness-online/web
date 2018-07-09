@@ -9,8 +9,7 @@
 <script>
   import Vue from 'vue'
   import Item from '@/modules/Item'
-  import Storage from '@/modules/Storage'
-  import {posts_storage} from '@/modules/Storage'
+  import Storage, {posts_storage} from '@/modules/Storage'
   export default {
     data() {
       return {
@@ -40,7 +39,7 @@
                 })
               })
               let items = [...filtered_local, ...from_server]
-              items.sort((a,b) => {
+              items.sort((a, b) => {
                 return Date.parse(a.created_at) - Date.parse(b.created_at)
               })
               this.posts = items
@@ -59,7 +58,7 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
+  @require '../../style/variables'
   div[itemprop="posts"]
     margin-top: base-line
     display:flex

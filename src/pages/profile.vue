@@ -7,25 +7,23 @@
       </details>
       <logo-as-link></logo-as-link>
     </header>
-    <posts-list></posts-list>
+    <posts-index></posts-index>
   </section>
 </template>
 
 <script>
   import '@/modules/timeago'
+  import {person_storage} from '@/modules/Storage'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
   import logo_as_link from '@/components/logo-as-link'
-  import posts_list from '@/components/posts-list'
-  import activity_list from '@/components/activity-list'
-  import {person_storage} from '@/modules/Storage'
+  import posts_index from '@/components/posts/as-list'
 
   export default {
     components: {
       'profile-as-figure': as_figure,
       'profile-as-form': as_form,
-      'posts-list': posts_list,
-      'activity-list': activity_list,
+      'posts-index': posts_index,
       'logo-as-link': logo_as_link
     },
     data() {

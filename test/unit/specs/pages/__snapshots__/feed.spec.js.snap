@@ -9,7 +9,5 @@ exports[`@/pages/feed.vue render feed info 1`] = `
       Feed
     </h2>
   </header>
-   
-  <!---->
 </section>
 `;

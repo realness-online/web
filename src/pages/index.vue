@@ -2,26 +2,26 @@
   <section id="home">
     <main-nav></main-nav>
     <aside>
-      <activity-list></activity-list>
-      <posts-list></posts-list>
+      <post-index></post-index>
+      <activity-index></activity-index>
     </aside>
   </section>
 </template>
 
 <script>
   import main_nav from '@/components/main-nav'
-  import posts_list from '@/components/posts-list'
-  import activity_list from '@/components/activity-list'
+  import post_index from '@/components/posts/as-list'
+  import activity_index from '@/components/activity/as-list'
   export default {
     components: {
       'main-nav': main_nav,
-      'activity-list': activity_list,
-      'posts-list': posts_list
+      'activity-index': activity_index,
+      'post-index': post_index
     }
   }
 </script>
 
-<style lang="stylus" >
+<style lang="stylus">
   section#home
     animation-name: slideInRight
 </style>

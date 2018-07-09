@@ -1,6 +1,6 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
-    <wat-textarea class="red" v-on:toggle-keyboard="posting = !posting" ></wat-textarea>
+    <post-as-textarea class="red" v-on:toggle-keyboard="posting = !posting" ></post-as-textarea>
     <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
@@ -12,11 +12,12 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import wat_textarea from '@/components/posts/wat-textarea'
+  import as_textarea from '@/components/posts/as-textarea'
   import {person_storage} from '@/modules/Storage'
+  
   export default {
     components: {
-      'wat-textarea': wat_textarea
+      'post-as-textarea': as_textarea
     },
     created() {
       this.$bus.$on('post-added', () => {

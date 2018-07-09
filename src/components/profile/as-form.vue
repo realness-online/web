@@ -42,7 +42,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import {parseNumber} from 'libphonenumber-js'
-  import {person_storage, posts_storage} from '@/modules/Storage'
+  import {person_storage} from '@/modules/Storage'
   export default {
     props: ['person'],
     data() {

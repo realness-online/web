@@ -1,5 +1,5 @@
 import {shallow} from 'vue-test-utils'
-import wat from '@/components/wat-textarea'
+import wat from '@/components/posts/as-textarea'
 
 describe('@/components/wat-textarea.vue', () => {
   it('renders a textarea', () => {

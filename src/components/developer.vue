@@ -1,11 +1,10 @@
 <script>
   export default {
-    render(){
+    render() {
       return null
     }
   }
 </script>
-
 <style lang="stylus" >
   @require '../style/variables'
   [outline]

@@ -11,19 +11,19 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-index itemprop="relations" :people='relations'></profile-as-index>
-    <profile-as-index id="phonebook" :people='phonebook'></profile-as-index>
+    <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
+    <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
   </section>
 </template>
 <script>
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
-  import as_index from '@/components/profile/as-index'
+  import profile_as_list from '@/components/profile/as-list'
   import {relations, phonebook} from '@/modules/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
-      'profile-as-index': as_index,
+      'profile-as-list': profile_as_list,
       icon
     },
     data() {

@@ -45,12 +45,12 @@ class Storage {
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
       if (['person', 'posts'].includes(this.item_type)) {
-        Storage.persist(items).then(url => resolve(url))
+        Storage.persist(items).then(resolve('to network')).catch(e => reject(e))
       }
-      return true
+      else {
+        resolve('to localStorage')
+      }
     })
-    // save the information to local storage and if appropriate to the server
-
   }
   get_download_url() {
     return new Promise((resolve, reject) => {
@@ -64,7 +64,6 @@ class Storage {
       })
     })
   }
-
 }
 
 export default Storage
