@@ -7,12 +7,9 @@ describe.only('@/modules/Storage.js', () => {
   let item_as_string, person
   beforeEach(() => {
     item_as_string = `
-    <main id="profile" itemscope itemtype="/person" itemid='/person/666'>
-      <section>
-        <h1 itemprop="name">Scott Fryxell</h1>
-        <h2 itemprop="nickname" data-value="scoot">lame</h2>
-      </section>
-    </main>`
+    <section itemscope itemtype="/person">
+      <h1 itemprop="name">Scott Fryxell</h1>
+    </section>`
     document.body.innerHTML = item_as_string
     person = new Storage('person')
   })
@@ -30,48 +27,61 @@ describe.only('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(Storage.persist).toBeDefined()
       })
+      it('saves a set of items to the server', () => {
 
-      it('saves a set of items to the server')
+      })
       it('resolves a promise when successfull')
       it('rejects a promise when when it fails')
     })
   })
-  describe('#from_storage', () => {
-    it('exists', () => {
-      expect(person.from_storage).toBeDefined()
+  describe('instance methods', () => {
+    describe('#from_storage', () => {
+      beforeEach(() => {
+        person.save()
+      })
+      it('exists', () => {
+        expect(person.from_storage).toBeDefined()
+      })
+      it('loads an item from local storage', () => {
+        const items = person.from_storage()
+        expect(items.querySelectorAll('h1').length).toBe(1)
+        expect(items.querySelectorAll('[itemprop="name"]').length).toBe(1)
+      })
     })
-  })
-  describe('#save()', () => {
-    beforeEach(() => {
-      // turn off persistence for this test
-      person.persist = () => { return true }
+    describe('#save', () => {
+      it('exists', () => {
+        expect(person.save).toBeDefined()
+      })
+      it('saves an item to local storage', () => {
+        expect.assertions(1)
+        person.save().then(result => expect(result).toBe('saved local & network'))
+      })
     })
-    it('exists', () => {
-      expect(person.save).toBeDefined()
+    describe('#get_download_url', () => {
+      it('exists')
+      it('resolves a promise with a download url')
+      it('rejects a promise if user is not logged in')
     })
-    it('saves and loads an item from local storage', () => {
-      expect(person.save()).toBe(true)
-      const items = person.from_storage()
-      expect(items.querySelectorAll('h1').length).toBe(1)
-    })
-  })
-  describe('retrieving objects from html', () => {
-    describe('as_list()', () => {
+    describe('#as_list', () => {
+      beforeEach(() => {
+        person.save()
+      })
       it('exists', () => {
         expect(person.as_list).toBeDefined()
       })
-      it('will return a list of items')
+      it('creates list of objects', () => {
+        expect.assertions(1)
+        expect(person.as_list().length).toBe(1)
+      })
     })
-    describe('as_object()', () => {
+    describe('#as_object', () => {
       it('exists', () => {
         expect(person.as_object).toBeDefined()
       })
-      it('will return the first item it finds')
+      it('will return the first item it finds', () => {
+        expect.assertions(1)
+        expect(person.as_object().name).toBe('Scott Fryxell')
+      })
     })
-  })
-  describe('indexing', () => {
-    it('creates an index page for posts')
-    it('creates an global index page of users to search')
-    it('updates a search index of users when they are saved')
   })
 })
