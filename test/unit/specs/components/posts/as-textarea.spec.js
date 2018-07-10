@@ -1,7 +1,7 @@
 import {shallow} from 'vue-test-utils'
 import wat from '@/components/posts/as-textarea'
 
-describe('@/components/wat-textarea.vue', () => {
+describe('@/components/posts/as-textarea.vue', () => {
   it('renders a textarea', () => {
     let wrapper = shallow(wat)
     expect(wrapper.element).toMatchSnapshot()
