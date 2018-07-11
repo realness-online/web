@@ -121,6 +121,7 @@
         this.show_sign_out = false
         firebase.auth().signOut()
         this.show_authorize = true
+        localStorage.removeItem('posts')
       },
       mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
