@@ -55,6 +55,7 @@ class Storage {
       })
     })
   }
+
   get_download_url() {
     return new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -70,6 +71,31 @@ class Storage {
       })
     })
   }
+  sync_list(){
+    return new Promise((resolve, reject) => {
+      this.get_download_url().then(url => {
+        fetch(url).then(response => {
+          response.text().then(server_text => {
+            const server_as_fragment = Storage.hydrate(server_text)
+            let from_server = Item.get_items(server_as_fragment)
+            // console.log('from_server', from_server.length)
+            // console.log('local_storage', posts_storage.as_list().length)
+            let filtered_local = this.as_list().filter(local_item => {
+              return !from_server.some(server_item => {
+                return local_item.created_at === server_item.created_at
+              })
+            })
+            let items = [...filtered_local, ...from_server]
+            items.sort((a, b) => {
+              return Date.parse(a.created_at) - Date.parse(b.created_at)
+            })
+            // console.log(items.length)
+            resolve(items)
+          })
+        })
+      })
+    })
+   }
 }
 
 export default Storage
