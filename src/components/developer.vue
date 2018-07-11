@@ -1,4 +1,5 @@
 <script>
+  /* istanbul ignore next */
   export default {
     render() {
       return null
