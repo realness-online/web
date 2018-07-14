@@ -55,7 +55,6 @@ class Storage {
       })
     })
   }
-
   get_download_url() {
     return new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -95,12 +94,33 @@ class Storage {
   }
 }
 
+
+class PhoneBook extends Storage {
+  constructor() {
+    super('phonebook', '#phonebook')
+  }
+  get_download_url() {
+    return new Promise((resolve, reject) => {
+      firebase.storage().ref().child('/people/index.html')
+        .getDownloadURL()
+        .then(url => resolve(url))
+        .catch(e => reject(e))
+    })
+  }
+  update(person) {
+    // see if person is in phonebook if not add them
+
+    // if they are in phonebook see if their info needs updating
+
+    // if you ended up changng the phonebook save it to the server.
+  }
+}
 export default Storage
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
 export const relations = new Storage('relations', '[itemprop=relations]')
-export const phonebook = new Storage('phonebook')
+export const phonebook = new PhoneBook('phonebook')
 
 //  use this for firebase logging
 // .then( snapshot => {

@@ -1,0 +1,150 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/phone-book render a phonebook with people 1`] = `
+<section
+  class="page"
+  id="phonebook"
+>
+  <header>
+    <h1>
+      Phone book
+    </h1>
+  </header>
+   
+  <nav
+    class="profile-index"
+  >
+    <li>
+      <figure
+        class="profile"
+        itemscope="itemscope"
+        itemtype="/person"
+      >
+        <meta
+          itemprop="created_at"
+        />
+         
+        <a
+          href="/profiles/+16282281824"
+        >
+          <svg>
+            <use
+              itemprop="image"
+              xlink:href="#silhouette"
+            />
+          </svg>
+        </a>
+         
+        <figcaption>
+          <p>
+            <span
+              itemprop="first_name"
+            >
+              Scott
+            </span>
+             
+            <span
+              itemprop="last_name"
+            >
+              Fryxell
+            </span>
+          </p>
+           
+          <a
+            data-value="+16282281824"
+            href="sms:+1+16282281824"
+            itemprop="mobile"
+          >
+            +1 628 228 1824
+          </a>
+        </figcaption>
+      </figure>
+       
+      <menu>
+        <!---->
+         
+        <a>
+          <svg>
+            <use
+              xlink:href="#undefined"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+    <li>
+      <figure
+        class="profile"
+        itemscope="itemscope"
+        itemtype="/person"
+      >
+        <meta
+          itemprop="created_at"
+        />
+         
+        <a
+          href="/profiles/+12403800385‬"
+        >
+          <svg>
+            <use
+              itemprop="image"
+              xlink:href="#silhouette"
+            />
+          </svg>
+        </a>
+         
+        <figcaption>
+          <p>
+            <span
+              itemprop="first_name"
+            >
+              Katie
+            </span>
+             
+            <span
+              itemprop="last_name"
+            >
+              Caffey
+            </span>
+          </p>
+           
+          <a
+            data-value="+12403800385‬"
+            href="sms:+1+12403800385‬"
+            itemprop="mobile"
+          >
+            +1 240 380 0385
+          </a>
+        </figcaption>
+      </figure>
+       
+      <menu>
+        <!---->
+         
+        <a>
+          <svg>
+            <use
+              xlink:href="#undefined"
+            />
+          </svg>
+        </a>
+      </menu>
+    </li>
+  </nav>
+</section>
+`;
+
+exports[`@/components/phone-book render an empty phonebook 1`] = `
+<section
+  class="page"
+  id="phonebook"
+>
+  <header>
+    <h1>
+      Phone book
+    </h1>
+  </header>
+   
+  <!---->
+</section>
+`;

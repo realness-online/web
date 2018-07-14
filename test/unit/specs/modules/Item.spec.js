@@ -4,7 +4,7 @@ describe('@/modules/Item.js', () => {
   let item
   beforeEach(() => {
     const html_item = `
-    <main id="profile" itemscope itemtype="/person" itemid='/person/666'>
+    <main id="profile" itemscope itemtype="/person" itemid='/people/666'>
       <section>
         <h1 itemprop="name">Scott Fryxell</h1>
         <h2 itemprop="nickname" data-value="scoot">lame</h2>
@@ -41,6 +41,7 @@ describe('@/modules/Item.js', () => {
     })
     it('has meta data about the item', () => {
       expect(item.type).toBe('/person')
+      expect(item.id).toBe('/people/666')
     })
 
     it('gets the properties of an item', () => {

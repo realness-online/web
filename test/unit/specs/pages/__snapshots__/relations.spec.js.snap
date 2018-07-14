@@ -10,6 +10,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
       for="search"
     >
       <input
+        autocomplete="off"
         id="search"
         placeholder="Search"
         type="search"

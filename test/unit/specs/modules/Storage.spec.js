@@ -65,7 +65,6 @@ describe('@/modules/Storage.js', () => {
     })
   })
   describe('#persist', () => {
-
     it('exists', () => {
       expect(storage.persist).toBeDefined()
     })

@@ -62,7 +62,7 @@
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           this.show_sign_out = true
-          this.$bus.$emit('signed-in', user)
+          this.$bus.$emit('signed-in', this.storage.as_object())
         } else {
           this.show_authorize = true
         }

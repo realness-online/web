@@ -1,8 +1,8 @@
 <template>
-  <section id="relations" class="page" >
+  <section id="relations" class="page">
     <header >
       <label for="search">
-        <input id="search" type="search" placeholder="Search"
+        <input id="search" type="search" placeholder="Search" autocomplete="off"
           v-model="query"
           v-on:focusout="view_friends_mode"
           v-on:focusin="search_mode">
@@ -11,34 +11,49 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
-    <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
+    <profile-as-list v-if="!searching" itemprop="relations" :people='relations'></profile-as-list>
+    <phone-book v-if="searching"></phone-book>
   </section>
 </template>
 <script>
+  import Vue from 'vue'
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
-  import {relations, phonebook} from '@/modules/Storage'
+  import phone_book from '@/components/phone-book'
+  import {relations} from '@/modules/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
       'profile-as-list': profile_as_list,
+      'phone-book': phone_book,
       icon
     },
     data() {
       return {
         relations: relations.as_list(),
-        phonebook: phonebook.as_list(),
+        searching: false,
         query: ''
       }
     },
+    created: function() {
+      localStorage.setItem('relations-count', this.relations.length)
+    },
     methods: {
       search_mode(event) {
+        this.searching = true
         // search focused
       },
       view_friends_mode(event) {
         this.query = ''
+        this.searching = false
+      }
+    },
+    watch: {
+      relations() {
+        Vue.nextTick(() => {
+          relations.save()
+        })
       }
     }
   }
