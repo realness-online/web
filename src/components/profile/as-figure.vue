@@ -1,6 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person'>
     <meta itemprop="created_at" :content="person.created_at">
+    <meta itemprop="updated_at" :content="person.updated_at">
     <a :href="profile_link">
       <svg><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
     </a>

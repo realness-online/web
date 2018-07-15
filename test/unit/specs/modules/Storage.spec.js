@@ -1,4 +1,5 @@
-import Storage, {posts_storage} from '@/modules/Storage'
+import Item from '@/modules/Item'
+import Storage, {posts_storage, phonebook} from '@/modules/Storage'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -17,14 +18,13 @@ const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
         child: jest.fn(() => {
           return {
             put: jest.fn((path) => Promise.resolve(path)),
-            getDownloadURL: jest.fn((path) => Promise.resolve('/example/path/file.html'))
+            getDownloadURL: jest.fn((path) => Promise.resolve('http://some.google.com/example/path/file.html'))
           }
         })
       }
     })
   }
 })
-
 const server_text = `
   <div itemprop="posts" itemref="profile">
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
@@ -32,8 +32,7 @@ const server_text = `
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">I am writing some words right now testing some magical magic out</blockquote> <time itemprop="created_at" datetime="2018-07-07T20:13:42.760Z">2 days ago</time></article>
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">zipper faced monkey</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:11:51.460Z"></time></article>
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">from the bottom of the zero's</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:44:05.363Z"></time></article>
-  </div>
-  `
+  </div>`
 const local_text = `
   <div itemprop="posts" itemref="profile">
   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">zipper faced monkey</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:11:51.460Z"></time></article>
@@ -43,7 +42,6 @@ const local_text = `
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">oh my god words!</blockquote> <time itemprop="created_at" datetime="2018-07-08T00:41:28.585Z"></time></article>
   </div>
   `
-
 describe('@/modules/Storage.js', () => {
   let item_as_string, storage
   beforeEach(() => {
@@ -54,7 +52,6 @@ describe('@/modules/Storage.js', () => {
     document.body.innerHTML = item_as_string
     storage = new Storage('person')
   })
-
   describe('#hydrate', () => {
     it('exists', () => {
       expect(Storage.hydrate).toBeDefined()
@@ -116,14 +113,16 @@ describe('@/modules/Storage.js', () => {
   })
   describe('#get_download_url', () => {
     it('exists', () => {
-      expect(storage.save).toBeDefined()
+      expect(storage.get_download_url).toBeDefined()
     })
     it('resolves a promise with a download url', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { onAuthStateChanged: is_signed_in }
       })
       expect.assertions(1)
-      storage.get_download_url().then(url => expect(url).toBe('/example/path/file.html'))
+      storage.get_download_url().then(url => {
+        expect(url).toBe('http://some.google.com/example/path/file.html')
+      })
     })
     it('rejects a promise if user is not logged in', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -171,6 +170,96 @@ describe('@/modules/Storage.js', () => {
       })
       storage.sync_list().then((list) => {
         expect(list.length).toBe(8)
+      })
+    })
+  })
+})
+describe('@/modules/PhoneBook', () => {
+  const phonebook_as_text = `
+    <div id="phonebook">
+      <figure itemscope itemtype="/person" itemid='+16282281824'>
+        <meta itemprop="created_at" content="2018-07-15T18:11:31.018Z">
+        <meta itemprop="updated_at" content="2018-07-15T18:11:31.018Z">
+        <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
+        <figcaption>
+          <p><span itemprop="first_name">Scott</span><span itemprop="last_name">Fryxell</span></p>
+          <a itemprop="mobile" data-value="+16282281824">+1 (628) 228-1824</a>
+        </figcaption>
+      </figure>
+      <figure itemscope itemtype="/person" itemid='+12403800385‬'>
+        <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
+        <figcaption>
+          <p><span itemprop="first_name">Katie</span><span itemprop="last_name">Caffey</span></p>
+          <a itemprop="mobile" data-value="+12403800385‬">+1 (240) 380-0385‬</a>
+        </figcaption>
+      </figure>
+    <div>`
+  const person_as_text = `
+    <figure itemscope itemtype="/person" itemid='+16336661624'>
+      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
+      <figcaption>
+        <p><span itemprop="first_name">Mary</span><span itemprop="last_name">Neubon</span></p>
+        <a itemprop="mobile" data-value="+16336661624">+1 (633) 666-1624</a>
+      </figcaption>
+    </figure>`
+
+  const me = Item.get_first_item(Storage.hydrate(person_as_text))
+  const phone_list = Item.get_items(Storage.hydrate(phonebook_as_text))
+  describe('#get_download_url', () => {
+    it('exists', () => {
+      expect(phonebook.get_download_url).toBeDefined()
+    })
+    it('resolves a promise with a download url', () => {
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_signed_in }
+      })
+      expect.assertions(1)
+      phonebook.get_download_url().then(url => {
+        expect(url).toBe('http://some.google.com/example/path/file.html')
+      })
+    })
+  })
+  describe('#as_list', () => {
+    it('should exist', () => {
+      expect(phonebook.as_list).toBeDefined()
+    })
+    it('should download the most recent version of the phonebook', () => {
+      fetch.mockResponseOnce(phonebook_as_text)
+      phonebook.as_list().then(people => {
+        expect(fetch).toBeCalled()
+        expect(people.length).toBe(2)
+      })
+    })
+  })
+  describe('#update(person)', () => {
+    beforeEach(() => {
+      fetch.mockResponseOnce(phonebook_as_text)
+      expect(phone_list.length).toBe(2)
+    })
+    it('should exist', () => {
+      expect(phonebook.update).toBeDefined()
+    })
+    it('should add new person to phone book', () => {
+      phonebook.update(me).then(people => {
+        expect(fetch).toBeCalled()
+        expect(people.length).toBe(3)
+      })
+    })
+    it('should update phone book when my info changes', () => {
+      let updated_me = phone_list[0]
+      updated_me.updated_at = '2018-07-15T18:12:21.552Z'
+      phonebook.update(updated_me).then(people => {
+        expect(fetch).toBeCalled()
+        expect(people.length).toBe(2)
+        expect(people[0].updated_at).toBe(updated_me.updated_at)
+      })
+    })
+    it('should leave the phone book alone when my info is the same', () => {
+      let same_me = phone_list[0]
+      phonebook.update(same_me).then(people => {
+        expect(fetch).toBeCalled()
+        expect(people.length).toBe(2)
+        expect(people[0].updated_at).toBe(same_me.updated_at)
       })
     })
   })

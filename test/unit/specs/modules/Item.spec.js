@@ -5,6 +5,7 @@ describe('@/modules/Item.js', () => {
   beforeEach(() => {
     const html_item = `
     <main id="profile" itemscope itemtype="/person" itemid='/people/666'>
+    
       <section>
         <h1 itemprop="name">Scott Fryxell</h1>
         <h2 itemprop="nickname" data-value="scoot">lame</h2>
@@ -14,6 +15,7 @@ describe('@/modules/Item.js', () => {
         <link itemprop="style" rel="stylesheet" href="/people/666/style.css">
       </section>
       <section>
+        <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
         <img itemprop="profile_pic" src="/people/666/profile.svg">
         <object itemprop="logo_pic" src="/people/666/logo.svg" >
         <embed type="video/quicktime" src="/people/666/movie.mp4" width="300" height="300">

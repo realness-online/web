@@ -9,7 +9,7 @@
 <script>
   import Vue from 'vue'
   import profile_as_list from '@/components/profile/as-list'
-  import Storage, {phonebook} from '@/modules/Storage'
+  import {phonebook} from '@/modules/Storage'
 
   export default {
     components: {
@@ -24,7 +24,10 @@
     created: function() {
       this.$bus.$on(['signed-in', 'person-saved'], (person) => {
         this.phonebook_storage.update(person)
-          .then(people => this.phonebook = people)
+          .then(people => {
+            this.phonebook = people
+            return true
+          })
       })
     },
     watch: {

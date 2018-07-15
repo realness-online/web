@@ -10,6 +10,10 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
     itemprop="created_at"
   />
    
+  <meta
+    itemprop="updated_at"
+  />
+   
   <a
     href="/profiles/6282281824"
   >

@@ -24,6 +24,10 @@ exports[`@/components/phone-book render a phonebook with people 1`] = `
           itemprop="created_at"
         />
          
+        <meta
+          itemprop="updated_at"
+        />
+         
         <a
           href="/profiles/+16282281824"
         >
@@ -80,6 +84,10 @@ exports[`@/components/phone-book render a phonebook with people 1`] = `
       >
         <meta
           itemprop="created_at"
+        />
+         
+        <meta
+          itemprop="updated_at"
         />
          
         <a

@@ -94,7 +94,6 @@ class Storage {
   }
 }
 
-
 class PhoneBook extends Storage {
   constructor() {
     super('phonebook', '#phonebook')
@@ -107,12 +106,37 @@ class PhoneBook extends Storage {
         .catch(e => reject(e))
     })
   }
-  update(person) {
-    // see if person is in phonebook if not add them
-
-    // if they are in phonebook see if their info needs updating
-
-    // if you ended up changng the phonebook save it to the server.
+  as_list() {
+    return new Promise((resolve, reject) => {
+      this.get_download_url().then(url => {
+        fetch(url).then(response => {
+          response.text().then(server_text => {
+            const server_as_fragment = Storage.hydrate(server_text)
+            resolve(Item.get_items(server_as_fragment))
+          })
+        })
+      })
+    })
+  }
+  update(me) {
+    return new Promise((resolve, reject) => {
+      this.as_list().then(people => {
+        let index = people.findIndex(contact => me.mobile === contact.mobile)
+        let same = people[index]
+        if (same) {
+          console.log('found me in the phonebook')
+          if (same.updated_at < me.updated_at) {
+            console.log('updating phonebook with new info', same, me)
+            people[index] = me
+          }
+          resolve(people)
+        } else {
+          console.log(`adding ${me.mobile} to phonebook`)
+          people.push(me)
+        }
+        resolve(people)
+      })
+    })
   }
 }
 export default Storage
@@ -120,7 +144,7 @@ export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
 export const relations = new Storage('relations', '[itemprop=relations]')
-export const phonebook = new PhoneBook('phonebook')
+export const phonebook = new PhoneBook()
 
 //  use this for firebase logging
 // .then( snapshot => {
