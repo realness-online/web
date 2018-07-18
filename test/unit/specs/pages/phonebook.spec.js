@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import {mount, shallow} from 'vue-test-utils'
-import phonebook from '@/components/phone-book'
+import phonebook from '@/pages/phonebook'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
 

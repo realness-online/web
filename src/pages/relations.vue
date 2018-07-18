@@ -13,39 +13,27 @@
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
-  import phone_book from '@/components/phone-book'
-  import {relations} from '@/modules/Storage'
+  import {relations_storage} from '@/modules/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
       'profile-as-list': profile_as_list,
-      'phone-book': phone_book,
       icon
     },
     data() {
       return {
-        relations: relations.as_list(),
+        relations: relations_storage.as_list(),
         searching: false,
         query: ''
       }
     },
-    created: function() {
+    created() {
       localStorage.setItem('relations-count', this.relations.length)
-    },
-    methods: {
-      search_mode(event) {
-        this.searching = true
-        // search focused
-      },
-      view_friends_mode(event) {
-        this.query = ''
-        this.searching = false
-      }
     },
     watch: {
       relations() {
         Vue.nextTick(() => {
-          relations.save()
+          relations_storage.save()
         })
       }
     }
@@ -61,6 +49,7 @@
         overflow: hidden
         width:0
       & > h1
+        color:blue
         vertical-align: top
         margin: 0
         line-height: 1.33

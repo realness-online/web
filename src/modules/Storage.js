@@ -143,8 +143,8 @@ export default Storage
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
-export const relations = new Storage('relations', '[itemprop=relations]')
-export const phonebook = new PhoneBook()
+export const relations_storage = new Storage('relations', '[itemprop=relations]')
+export const phonebook_storage = new PhoneBook()
 
 //  use this for firebase logging
 // .then( snapshot => {

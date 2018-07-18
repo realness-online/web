@@ -11,7 +11,7 @@
       <h1>Phonebook</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
+    <profile-as-list :people='phonebook'></profile-as-list>
     <footer>
       <menu>
         <router-link to="/relations">Done</router-link>
@@ -24,7 +24,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
-  import {relations} from '@/modules/Storage'
+  import {phonebook_storage} from '@/modules/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -33,13 +33,22 @@
     },
     data() {
       return {
-        relations: relations.as_list(),
+        phonebook: [],
+        phonebook_storage: phonebook_storage,
         searching: false,
         query: ''
       }
     },
-    created: function() {
-      localStorage.setItem('relations-count', this.relations.length)
+    created() {
+      console.log('phone book created')
+      this.$bus.$on(['signed-in', 'person-saved'], (person) => {
+        console.log('updating phonebook')
+        this.phonebook_storage.update(person)
+          .then(people => {
+            this.phonebook = people
+            return true
+          })
+      })
     },
     methods: {
       search_mode(event) {
@@ -52,9 +61,9 @@
       }
     },
     watch: {
-      relations() {
+      phonebook() {
         Vue.nextTick(() => {
-          relations.save()
+          phonebook_storage.save()
         })
       }
     }
@@ -63,6 +72,7 @@
 <style lang='stylus'>
   @require '../style/variables'
   section#phonebook
+    animation-name: slideInLeft
     position: relative
     min-height: 100vh
     & > header
@@ -71,6 +81,7 @@
         overflow: hidden
         width:0
       & > h1
+        color:blue
         vertical-align: top
         margin: 0
         line-height: 1.66
@@ -78,6 +89,7 @@
           line-height: .66
       & > a
         outline: none
+
     & > footer
       color:red
       position: fixed
@@ -86,6 +98,7 @@
   label[for=search]
     position: relative
     & > *
+      fill: blue
       height: (2 * base-line)
       width: (2 * base-line)
       vertical-align: middle
@@ -106,11 +119,11 @@
         color: transparent
       &:focus
         transition-delay: 0.15s
-        border: 0.33vmin solid black
+        border: 0.33vmin solid blue
         padding: (base-line / 2 )
         width: inherit
         &::placeholder
-          color:red
+          color:blue
           transition-duration: 0.75
           transition-property: all
           transition-delay: 0.25s
