@@ -8,6 +8,7 @@ import groups from '@/pages/groups'
 import index from '@/pages/index'
 import profile from '@/pages/profile'
 import relations from '@/pages/relations'
+import phonebook from '@/pages/phonebook'
 
 if (process.env.NODE_ENV === 'production') {
   if ('serviceWorker' in navigator) {
@@ -28,7 +29,8 @@ const routes = [
   { path: '/feed', component: feed },
   { path: '/groups', component: groups },
   { path: '/profile', component: profile },
-  { path: '/relations', component: relations }
+  { path: '/relations', component: relations },
+  { path: '/phonebook', component: phonebook }
 ]
 
 const router = new VueRouter({
