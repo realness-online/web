@@ -93,8 +93,7 @@
       bottom: base-line
       right: base-line
       & menu > a
-        padding: base-line
-        color: red
+        standard-button: red
 
   label[for=search]
     position: relative

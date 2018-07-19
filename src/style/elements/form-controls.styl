@@ -1,3 +1,7 @@
+form
+  display: flex
+  flex-direction: column
+  justify-content: space-around
 
 input
 textarea
@@ -22,37 +26,17 @@ textarea
   font-size: inherit
   font-weight: inherit
   color: inherit
-  border-style: solid
 
 input:focus
   transition-property: all
 
-fieldset
 button
-  border-color: currentColor
-
-button
-  standard-border()
-  border-radius: base-line
-  padding: (base-line / 2) (base-line / 2 )
-  cursor: pointer
-  appearance: none
+  standard-button()
   background-color: inherit
   vertical-align: middle
-  text-align: center
 
 fieldset
   standard-border()
   padding: (base-line / 2 )
   border-radius: (base-line / 2 )
   overflow: hidden
-
-input[type=file]
-  appearance: none
-  font: inherit
-  color: inherit
-
-form
-  display: flex
-  flex-direction: column
-  justify-content: space-around
