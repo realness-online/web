@@ -14,6 +14,7 @@ input
 textarea
   appearance:none
   -webkit-tap-highlight-color: inherit
+  tap-highlight-color: inherit
   outline: inherit
   text-rendering: inherit
   font: inherit
@@ -31,24 +32,25 @@ button
   border-color: currentColor
 
 button
-  border:inherit
-  border-width: .5vmin
+  standard-border()
   border-radius: base-line
+  padding: (base-line / 2) (base-line / 2 )
   cursor: pointer
-  appearance:none
+  appearance: none
   background-color: inherit
   vertical-align: middle
   text-align: center
 
 fieldset
+  standard-border()
+  padding: (base-line / 2 )
   border-radius: (base-line / 2 )
   overflow: hidden
-  border:inherit
 
 input[type=file]
-  appearance:none
-  font:inherit
-  color:inherit
+  appearance: none
+  font: inherit
+  color: inherit
 
 form
   display: flex
