@@ -231,7 +231,7 @@ describe('@/modules/PhoneBook', () => {
       })
     })
   })
-  describe('#update(person)', () => {
+  describe('#sync_list', () => {
     beforeEach(() => {
       fetch.mockResponseOnce(phonebook_as_text)
       expect(phone_list.length).toBe(2)
@@ -240,7 +240,7 @@ describe('@/modules/PhoneBook', () => {
       expect(phonebook.update).toBeDefined()
     })
     it('should add new person to phone book', () => {
-      phonebook.update(me).then(people => {
+      phonebook.sync_list().then(people => {
         expect(fetch).toBeCalled()
         expect(people.length).toBe(3)
       })
@@ -248,7 +248,7 @@ describe('@/modules/PhoneBook', () => {
     it('should update phone book when my info changes', () => {
       let updated_me = phone_list[0]
       updated_me.updated_at = '2018-07-15T18:12:21.552Z'
-      phonebook.update(updated_me).then(people => {
+      phonebook.sync_list(updated_me).then(people => {
         expect(fetch).toBeCalled()
         expect(people.length).toBe(2)
         expect(people[0].updated_at).toBe(updated_me.updated_at)
@@ -256,7 +256,7 @@ describe('@/modules/PhoneBook', () => {
     })
     it('should leave the phone book alone when my info is the same', () => {
       let same_me = phone_list[0]
-      phonebook.update(same_me).then(people => {
+      phonebook.sync_list(same_me).then(people => {
         expect(fetch).toBeCalled()
         expect(people.length).toBe(2)
         expect(people[0].updated_at).toBe(same_me.updated_at)

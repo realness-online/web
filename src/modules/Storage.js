@@ -108,19 +108,22 @@ class PhoneBook extends Storage {
   }
   as_list() {
     return new Promise((resolve, reject) => {
+      console.log('phonebook as_list')
       this.get_download_url().then(url => {
+        console.log('fetch')
         fetch(url).then(response => {
           response.text().then(server_text => {
             const server_as_fragment = Storage.hydrate(server_text)
             resolve(Item.get_items(server_as_fragment))
           })
         })
-      })
+      }).catch(e => resolve([]))
     })
   }
-  update(me) {
+  sync_list() {
     return new Promise((resolve, reject) => {
       this.as_list().then(people => {
+        let me = person_storage.as_object()
         let index = people.findIndex(contact => me.mobile === contact.mobile)
         let same = people[index]
         if (same) {
