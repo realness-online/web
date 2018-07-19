@@ -84,30 +84,29 @@
         color:blue
         vertical-align: top
         margin: 0
-        line-height: 1.66
+
+        line-height: 1.33
         @media (min-width: max-screen)
           line-height: .66
-      & > a
-        outline: none
-
     & > footer
-      color:red
       position: fixed
       bottom: base-line
       right: base-line
+      & menu > a
+        padding: base-line
+        color: red
+
   label[for=search]
     position: relative
     & > *
       fill: blue
       height: (2 * base-line)
       width: (2 * base-line)
-      vertical-align: middle
     svg
       position: absolute
       top: 0
       left: 0
       z-index: -2
-      outline:none
     input#search
       border-width: 0
       border-radius: (base-line / 2)
@@ -119,7 +118,7 @@
         color: transparent
       &:focus
         transition-delay: 0.15s
-        border: 0.33vmin solid blue
+        standard-border: blue
         padding: (base-line / 2 )
         width: inherit
         &::placeholder

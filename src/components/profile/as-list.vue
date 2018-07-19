@@ -39,9 +39,12 @@
         margin-left:  (base-line / 2)
         svg
           cursor: pointer;
-          fill:black
-          width: (base-line / 1.66)
-          height: (base-line / 1.66)
+          fill:blue
+          width: (base-line * 2)
+          height: (base-line * 2)
+          &:active
+            width: (base-line * 1.66)
+            height: (base-line * 1.66)
     @media (min-width: min-screen)
       display: flex
       flex-direction: row
@@ -49,11 +52,10 @@
       justify-content: space-between
       & > li
         padding: (base-line / 2)
-        border: 0.33vmin solid black
+        standard-border: blue
         border-radius: (base-line / 3)
         width:49%
     @media (min-width: max-screen)
       & > li
         width:32%
-
 </style>

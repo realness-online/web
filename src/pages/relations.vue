@@ -55,14 +55,8 @@
         line-height: 1.33
         @media (min-width: max-screen)
           line-height: .66
-      & > a
-        outline: none
     svg.heart
       fill:blue
-      height: (2 * base-line)
-      width: (2 * base-line)
-      vertical-align: middle
-
-      outline:none
-
+      height: (base-line * 2)
+      width: (base-line * 2)
 </style>

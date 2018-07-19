@@ -154,8 +154,6 @@
       &.hide_captcha
         display: none
     & > fieldset
-      padding: (base-line / 2 )
-      border: 0.33vmin solid currentColor
       margin-bottom: base-line
     input
       color: red
@@ -178,10 +176,8 @@
     input#verification-code
       margin-top: (base-line / 2)
     button
-      border: 0.33vmin solid currentColor
-      padding: (base-line / 2) (base-line / 2 )
       text-transform:capitalize
     button[disabled]
-      border: 0.33vmin solid lighten(black, 50%)
+      standard-border: lighten(black, 50%)
       color: lighten(black, 50%)
 </style>

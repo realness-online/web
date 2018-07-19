@@ -47,7 +47,7 @@
     text-overflow: ellipsis
     display:flex
     & > a > svg
-      border: 0.44vmin solid currentColor
+      standard-border()
       border-radius: (base-line / 3)
       outline:none
       padding:0
@@ -64,6 +64,5 @@
         & > span
           text-transform: capitalize
       & > a
-
         display:block
 </style>
