@@ -1,5 +1,5 @@
 <template>
-  <section id="phonebook" class="page">
+  <section id="directory" class="page">
     <header>
       <label for="search">
         <input id="search" type="search" placeholder="Search" autocomplete="off"
@@ -11,7 +11,7 @@
       <h1>Phonebook</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list :people='phonebook'></profile-as-list>
+    <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
     <footer>
       <menu>
         <router-link to="/relations">Done</router-link>
@@ -71,7 +71,7 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#phonebook
+  section#directory
     animation-name: slideInLeft
     position: relative
     min-height: 100vh
