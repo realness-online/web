@@ -22,9 +22,7 @@
         localStorage.setItem('posts-count', this.posts.length)
       })
       this.$bus.$on('signed-in', user => {
-        posts_storage.sync_list().then((items) => {
-          this.posts = items
-        })
+        posts_storage.sync_list().then((items) => (this.posts = items))
       })
     },
     watch: {
