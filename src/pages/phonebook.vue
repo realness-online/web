@@ -34,26 +34,17 @@
     data() {
       return {
         phonebook: [],
-        phonebook_storage: phonebook_storage,
+        storage: phonebook_storage,
         searching: false,
         query: ''
       }
     },
     created() {
-      console.log('phone book created')
-      this.$bus.$on(['signed-in', 'person-saved'], (person) => {
-        console.log('updating phonebook')
-        this.phonebook_storage.update(person)
-          .then(people => {
-            this.phonebook = people
-            return true
-          })
-      })
+      this.storage.sync_list().then(people => (this.phonebook = people))
     },
     methods: {
       search_mode(event) {
         this.searching = true
-        // search focused
       },
       view_friends_mode(event) {
         this.query = ''
@@ -63,7 +54,7 @@
     watch: {
       phonebook() {
         Vue.nextTick(() => {
-          phonebook_storage.save()
+          this.storage.save()
         })
       }
     }
@@ -84,7 +75,6 @@
         color:blue
         vertical-align: top
         margin: 0
-
         line-height: 1.33
         @media (min-width: max-screen)
           line-height: .66
