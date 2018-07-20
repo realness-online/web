@@ -1,26 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
+exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
 <figure
   class="profile"
   itemscope="itemscope"
   itemtype="/person"
 >
   <meta
+    content="2018-07-15T18:11:31.018Z"
     itemprop="created_at"
   />
    
   <meta
+    content="2018-07-16T18:12:21.552Z"
     itemprop="updated_at"
   />
    
   <a
-    href="/profiles/6282281824"
+    href="/profiles/+16282281824"
   >
     <svg>
       <use
         itemprop="image"
-        xlink:href="/people/6282281824/profile.svg"
+        xlink:href="#silhouette"
       />
     </svg>
   </a>
@@ -30,13 +32,66 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
       <span
         itemprop="first_name"
       >
-        scott
+        Scott
       </span>
        
       <span
         itemprop="last_name"
       >
-        fryxell
+        Fryxell
+      </span>
+    </p>
+     
+    <a
+      data-value="6282281824"
+      href="sms:+16282281824"
+      itemprop="mobile"
+    >
+      (628) 228-1824
+    </a>
+  </figcaption>
+</figure>
+`;
+
+exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
+<figure
+  class="profile"
+  itemscope="itemscope"
+  itemtype="/person"
+>
+  <meta
+    content="2018-07-15T18:11:31.018Z"
+    itemprop="created_at"
+  />
+   
+  <meta
+    content="2018-07-16T18:12:21.552Z"
+    itemprop="updated_at"
+  />
+   
+  <a
+    href="/profiles/+16282281824"
+  >
+    <svg>
+      <use
+        itemprop="image"
+        xlink:href="/people/+16282281824/profile.svg"
+      />
+    </svg>
+  </a>
+   
+  <figcaption>
+    <p>
+      <span
+        itemprop="first_name"
+      >
+        Scott
+      </span>
+       
+      <span
+        itemprop="last_name"
+      >
+        Fryxell
       </span>
     </p>
      
