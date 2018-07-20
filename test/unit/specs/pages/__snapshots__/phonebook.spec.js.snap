@@ -88,11 +88,11 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           </p>
            
           <a
-            data-value="+16282281824"
-            href="sms:+1+16282281824"
+            data-value="6282281824"
+            href="sms:+16282281824"
             itemprop="mobile"
           >
-            +1 628 228 1824
+            (628) 228-1824
           </a>
         </figcaption>
       </figure>
@@ -152,11 +152,11 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           </p>
            
           <a
-            data-value="+12403800385‬"
-            href="sms:+1+12403800385‬"
+            data-value="2403800385‬"
+            href="sms:+12403800385‬"
             itemprop="mobile"
           >
-            +1 240 380 0385
+            (240) 380-0385
           </a>
         </figcaption>
       </figure>

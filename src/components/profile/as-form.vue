@@ -77,7 +77,11 @@
       }
     },
     methods: {
-      save_person() {
+      save_person(event) {
+        console.log(event)
+        if (!this.person.created_at){
+          this.person.created_at = new Date().toISOString()
+        }
         this.storage.save()
       },
       begin_authorization(event) {
