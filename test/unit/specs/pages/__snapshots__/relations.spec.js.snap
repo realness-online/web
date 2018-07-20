@@ -6,18 +6,11 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
   id="relations"
 >
   <header>
-    <label
-      for="search"
+    <router-link
+      to="/phonebook"
     >
-      <input
-        autocomplete="off"
-        id="search"
-        placeholder="Search"
-        type="search"
-      />
-       
       <!---->
-    </label>
+    </router-link>
      
     <h1>
       Relations
@@ -25,8 +18,6 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
      
     <!---->
   </header>
-   
-  <!---->
    
   <!---->
 </section>
