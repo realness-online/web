@@ -78,14 +78,14 @@
     },
     methods: {
       save_person() {
-        if (!this.person.created_at){
+        if (!this.person.created_at) {
           this.person.created_at = new Date().toISOString()
           this.person.updated_at = this.person.created_at
           this.storage.save()
         } else {
           const old = this.storage.as_object()
-          if (old.first_name != this.person.first_name ||
-              old.last_name != this.person.last_name) {
+          if (old.first_name !== this.person.first_name ||
+              old.last_name !== this.person.last_name) {
             this.person.updated_at = new Date().toISOString()
             this.storage.save()
           }
