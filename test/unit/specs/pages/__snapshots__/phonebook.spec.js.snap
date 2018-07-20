@@ -12,7 +12,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
       <input
         autocomplete="off"
         id="search"
-        placeholder="Search"
+        placeholder="Search phonebook"
         type="search"
       />
        
@@ -201,7 +201,7 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
       <input
         autocomplete="off"
         id="search"
-        placeholder="Search"
+        placeholder="Search phonebook"
         type="search"
       />
        
