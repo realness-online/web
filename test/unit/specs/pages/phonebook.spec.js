@@ -39,5 +39,5 @@ describe('@/pages/phonebook', () => {
     wrapper.setData({phonebook: people})
     expect(wrapper.element).toMatchSnapshot()
   })
-
+  
 })
