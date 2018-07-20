@@ -1,18 +1,51 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/phone-book render a phonebook with people 1`] = `
+exports[`@/pages/phonebook render a phonebook with people 1`] = `
 <section
   class="page"
-  id="phonebook"
+  id="directory"
 >
   <header>
+    <label
+      for="search"
+    >
+      <input
+        autocomplete="off"
+        id="search"
+        placeholder="Search"
+        type="search"
+      />
+       
+      <svg
+        class="search"
+      >
+        <use
+          xlink:href="#search"
+        />
+      </svg>
+    </label>
+     
     <h1>
-      Phone book
+      Phonebook
     </h1>
+     
+    <router-link
+      id="logo"
+      to="/"
+    >
+      <svg
+        class="realness"
+      >
+        <use
+          xlink:href="#realness"
+        />
+      </svg>
+    </router-link>
   </header>
    
   <nav
     class="profile-index"
+    id="phonebook"
   >
     <li>
       <figure
@@ -68,9 +101,11 @@ exports[`@/components/phone-book render a phonebook with people 1`] = `
         <!---->
          
         <a>
-          <svg>
+          <svg
+            class="add"
+          >
             <use
-              xlink:href="#undefined"
+              xlink:href="#add"
             />
           </svg>
         </a>
@@ -130,29 +165,66 @@ exports[`@/components/phone-book render a phonebook with people 1`] = `
         <!---->
          
         <a>
-          <svg>
+          <svg
+            class="add"
+          >
             <use
-              xlink:href="#undefined"
+              xlink:href="#add"
             />
           </svg>
         </a>
       </menu>
     </li>
   </nav>
+   
+  <footer>
+    <menu>
+      <router-link
+        to="/relations"
+      >
+        Done
+      </router-link>
+    </menu>
+  </footer>
 </section>
 `;
 
-exports[`@/components/phone-book render an empty phonebook 1`] = `
+exports[`@/pages/phonebook render an empty phonebook 1`] = `
 <section
   class="page"
-  id="phonebook"
+  id="directory"
 >
   <header>
+    <label
+      for="search"
+    >
+      <input
+        autocomplete="off"
+        id="search"
+        placeholder="Search"
+        type="search"
+      />
+       
+      <!---->
+    </label>
+     
     <h1>
-      Phone book
+      Phonebook
     </h1>
+     
+    <!---->
   </header>
    
   <!---->
+   
+  <footer>
+    <menu>
+      <router-link
+        to="/relations"
+      >
+        Done
+      </router-link>
+    </menu>
+  </footer>
 </section>
 `;

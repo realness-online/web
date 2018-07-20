@@ -93,66 +93,8 @@ class Storage {
     })
   }
 }
-
-class PhoneBook extends Storage {
-  constructor() {
-    super('phonebook', '#phonebook')
-  }
-  get_download_url() {
-    return new Promise((resolve, reject) => {
-      firebase.storage().ref().child('/people/index.html')
-        .getDownloadURL()
-        .then(url => resolve(url))
-        .catch(e => reject(e))
-    })
-  }
-  as_list() {
-    return new Promise((resolve, reject) => {
-      console.log('phonebook as_list')
-      this.get_download_url().then(url => {
-        console.log('fetch')
-        fetch(url).then(response => {
-          response.text().then(server_text => {
-            const server_as_fragment = Storage.hydrate(server_text)
-            resolve(Item.get_items(server_as_fragment))
-          })
-        })
-      }).catch(e => resolve([]))
-    })
-  }
-  sync_list() {
-    return new Promise((resolve, reject) => {
-      this.as_list().then(people => {
-        let me = person_storage.as_object()
-        let index = people.findIndex(contact => me.mobile === contact.mobile)
-        let same = people[index]
-        if (same) {
-          console.log('found me in the phonebook')
-          if (same.updated_at < me.updated_at) {
-            console.log('updating phonebook with new info', same, me)
-            people[index] = me
-          }
-          resolve(people)
-        } else {
-          console.log(`adding ${me.mobile} to phonebook`)
-          people.push(me)
-        }
-        resolve(people)
-      })
-    })
-  }
-}
 export default Storage
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
 export const relations_storage = new Storage('relations', '[itemprop=relations]')
-export const phonebook_storage = new PhoneBook()
-
-//  use this for firebase logging
-// .then( snapshot => {
-//   console.log('Uploaded', snapshot.totalBytes, 'bytes.')
-//   console.log(snapshot.metadata)
-//   console.log(snapshot.fullPath)
-//   console.log('File available at', snapshot.downloadURL)
-// })

@@ -24,7 +24,7 @@ const phonebook_as_text = `
 const save_spy = jest.fn(() => Promise.resolve('save_spy'))
 const update_spy = jest.fn((person) => Promise.resolve(people))
 const people = Item.get_items(Storage.hydrate(phonebook_as_text))
-describe('@/components/phone-book', () => {
+describe('@/pages/phonebook', () => {
   let wrapper
   afterEach(() => {
     save_spy.mockClear()
@@ -39,25 +39,5 @@ describe('@/components/phone-book', () => {
     wrapper.setData({phonebook: people})
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('events', () => {
-    let storage_info = {
-      phonebook_storage: {
-        update: update_spy,
-        save: save_spy
-      }
-    }
-    beforeEach(() => {
-      Vue.prototype.$bus = new Vue({})
-      wrapper = shallow(phonebook)
-      wrapper.setData(storage_info)
-    })
-    it('updates the phonebook when a user signs in', () => {
-      wrapper.vm.$bus.$emit('signed-in', people[0])
-      expect(update_spy).toBeCalled()
-    })
-    it('updates the phonebook when a user is saved', () => {
-      wrapper.vm.$bus.$emit('person-saved', people[0])
-      expect(update_spy).toBeCalled()
-    })
-  })
+  
 })

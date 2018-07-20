@@ -2,7 +2,7 @@
   <section id="directory" class="page">
     <header>
       <label for="search">
-        <input id="search" type="search" placeholder="Search" autocomplete="off"
+        <input id="search" type="search" placeholder="Search phonebook" autocomplete="off"
           v-model="query"
           v-on:focusout="view_friends_mode"
           v-on:focusin="search_mode">
@@ -54,6 +54,7 @@
     watch: {
       phonebook() {
         Vue.nextTick(() => {
+          console.log('saving phonebook')
           this.storage.save()
         })
       }
@@ -80,7 +81,7 @@
           line-height: .66
     & > footer
       position: fixed
-      bottom: base-line
+      bottom: (base-line * 1.5)
       right: base-line
       & menu > a
         standard-button: red
