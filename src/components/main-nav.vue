@@ -14,7 +14,7 @@
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
   import {person_storage} from '@/modules/Storage'
-  
+
   export default {
     components: {
       'post-as-textarea': as_textarea
@@ -25,7 +25,6 @@
       })
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          // console.log("firbase user: ", user)
           this.signed_in = true
         } else {
           this.signed_in = false
