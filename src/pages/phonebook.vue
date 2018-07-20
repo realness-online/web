@@ -24,7 +24,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
-  import {phonebook_storage} from '@/modules/Storage'
+  import {phonebook_storage} from '@/modules/PhoneBook'
   export default {
     components: {
       'logo-as-link': logo_as_link,
