@@ -24,7 +24,7 @@
         return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       profile_link() {
-        return !!this.person.mobile && `/profiles/${this.person.mobile}`
+        return !!this.person.mobile && `/profiles/+1${this.person.mobile}`
       },
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
