@@ -98,4 +98,5 @@ describe('@/compontent/profile/as-form.vue', () => {
     it('logs the user out if they change their phone number')
     it('deletes the local storage of posts and relations')
   })
+  it('can not change phone number while signed in')
 })

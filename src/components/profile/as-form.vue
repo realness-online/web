@@ -62,7 +62,7 @@
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           this.show_sign_out = true
-          this.$bus.$emit('signed-in', this.storage.as_object())
+          this.$bus.$emit('signed-in')
         } else {
           this.show_authorize = true
         }
@@ -112,6 +112,7 @@
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
           this.show_sign_out = true
+          this.$el.querySelector('#mobile').disabled = true
         }).catch(error => {
           console.error(error)
         })
@@ -121,7 +122,8 @@
         this.show_sign_out = false
         firebase.auth().signOut()
         this.show_authorize = true
-        localStorage.removeItem('posts')
+        this.$el.querySelector('#mobile').disabled = false
+        // localStorage.removeItem('posts')
       },
       mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
