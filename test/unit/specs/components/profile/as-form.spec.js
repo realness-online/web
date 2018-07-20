@@ -35,6 +35,48 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(storage_stub).toBeCalled()
     })
   })
+  describe('#save_person', () => {
+    let wrapper, storage_save
+    beforeEach(() => {
+      wrapper = shallow(as_form, { propsData: { person: person } })
+      storage_save = jest.fn()
+      wrapper.vm.storage.save = storage_save
+    })
+    afterEach(() => {
+      storage_save.mockReset()
+    })
+    it('should set created_at when new', () => {
+      wrapper.vm.save_person()
+      expect(wrapper.vm.person.created_at).toBeDefined()
+      expect(wrapper.vm.person.updated_at).toBeDefined()
+      expect(storage_save).toBeCalled()
+    })
+    describe('updating', () => {
+      let last_update
+      beforeEach(() => {
+        wrapper.vm.person.created_at = '2018-07-20T03:35:45.289Z'
+        wrapper.vm.person.updated_at = wrapper.vm.person.created_at
+        wrapper.vm.storage.as_object = () => {
+          return {
+            first_name: 'Scott',
+            last_name: 'Fryxell',
+            mobile: '4151234356'
+          }
+        }
+        last_update = wrapper.vm.person.updated_at
+      })
+      it('should change updated_at if first name has changed', () => {
+        wrapper.vm.person.first_name = 'Joe'
+        wrapper.vm.save_person()
+        expect(wrapper.vm.person.updated_at).not.toBe(last_update)
+      })
+      it('should change updated_at if last name has changed', () => {
+        wrapper.vm.person.last_name = 'Malarky'
+        wrapper.vm.save_person()
+        expect(wrapper.vm.person.updated_at).not.toBe(last_update)
+      })
+    })
+  })
   describe('input#mobile', () => {
     describe('keypress', () => {
       let input, stub, wrapper
