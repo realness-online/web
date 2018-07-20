@@ -92,14 +92,14 @@ describe('@/modules/PhoneBook', () => {
         {
           first_name: 'Scott',
           last_name: 'Fryxell',
-          mobile: '+16282281824',
+          mobile: '6282281824',
           created_at: '2018-07-15T18:11:31.018Z',
           updated_at: '2018-07-16T18:12:21.552Z'
         },
         {
           first_name: 'Katie',
           last_name: 'Caffey',
-          mobile: '+16336661624',
+          mobile: '6336661624',
           created_at: '2018-07-19T22:26:21.872Z',
           updated_at: '2018-07-18T22:27:09.086Z'
         }
@@ -107,7 +107,7 @@ describe('@/modules/PhoneBook', () => {
       me = {
         first_name: 'Scott',
         last_name: 'Fryxell',
-        mobile: '+16282281824',
+        mobile: '6282281824',
         created_at: '2018-07-15T18:11:31.018Z',
         updated_at: '2018-07-16T18:12:21.552Z'
       }
@@ -118,7 +118,7 @@ describe('@/modules/PhoneBook', () => {
       jest.restoreAllMocks()
     })
     it('should add new person to phone book', () => {
-      me.mobile = '+14151234567'
+      me.mobile = '4151234567'
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       expect(phone_list.length).toBe(2)
 
