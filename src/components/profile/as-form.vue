@@ -126,7 +126,7 @@
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
           this.show_sign_out = true
-          this.$el.querySelector('#mobile').disabled = true
+          // this.$el.querySelector('#mobile').disabled = true
         }).catch(error => {
           console.error(error)
         })
@@ -136,7 +136,7 @@
         this.show_sign_out = false
         firebase.auth().signOut()
         this.show_authorize = true
-        this.$el.querySelector('#mobile').disabled = false
+        // this.$el.querySelector('#mobile').disabled = false
         // localStorage.removeItem('posts')
       },
       mobile_keypress(event) {
