@@ -32,9 +32,7 @@
     },
     watch: {
       relations() {
-        Vue.nextTick(() => {
-          relations_storage.save()
-        })
+        Vue.nextTick(() => relations_storage.save())
       }
     }
   }

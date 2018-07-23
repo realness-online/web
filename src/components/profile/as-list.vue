@@ -3,8 +3,7 @@
     <li v-for="person in people">
       <profile-as-figure :person="person"></profile-as-figure>
       <menu>
-        <a v-if='person.is_relation'><icon name="remove"></icon></a>
-        <a v-if='!person.is_relation'><icon name="add"></icon></a>
+        <a v-on:click="update_relationship(person)"><icon :name="what_icon(person)"></icon></a>
       </menu>
     </li>
   </nav>
@@ -12,11 +11,33 @@
 <script>
   import as_figure from '@/components/profile/as-figure'
   import icon from '@/components/icon'
+  import {relations_storage} from '@/modules/Storage'
   export default {
     props: ['people'],
     components: {
       'profile-as-figure': as_figure,
       icon
+    },
+    methods: {
+      update_relationship(person) {
+        if (this.is_relation(person)) {
+          this.$bus.$emit('remove-relationship', person)
+        } else {
+          this.$bus.$emit('add-relationship', person)
+        }
+      },
+      what_icon(candidate) {
+        if (this.is_relation(candidate)) {
+          return 'remove'
+        } else {
+          return 'add'
+        }
+      },
+      is_relation(person) {
+        return relations_storage.as_list().some((relation) => {
+          return (relation.mobile === person.mobile)
+        })
+      }
     }
   }
 </script>

@@ -17,6 +17,9 @@
         <router-link to="/relations">Done</router-link>
       </menu>
     </footer>
+    <aside>
+      <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
+    </aside>
   </section>
 </template>
 <script>
@@ -24,7 +27,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
-
+  import {relations_storage} from '@/modules/Storage'
   import {phonebook_storage} from '@/modules/PhoneBook'
   export default {
     components: {
@@ -35,6 +38,7 @@
     data() {
       return {
         phonebook: [],
+        relations: relations_storage.as_list(),
         storage: phonebook_storage,
         searching: false,
         query: ''
@@ -42,6 +46,18 @@
     },
     created() {
       this.storage.sync_list().then(people => (this.phonebook = people))
+      this.$bus.$on('add-relationship', (person) => {
+        console.log('add-relationship', person)
+        this.relations.push(person)
+      })
+      this.$bus.$on('remove-relationship', (person) => {
+        console.log('remove-relationship', person)
+        const index = this.relations.indexOf(person)
+        console.log('index', index)
+        if (index > -1 ) {
+          this.relations.slice(index, 1)
+        }
+      })
     },
     methods: {
       search_mode(event) {
@@ -59,6 +75,9 @@
             this.storage.save()
           }
         })
+      },
+      relations() {
+        relations_storage.save()
       }
     }
   }
@@ -87,7 +106,8 @@
       right: base-line
       & menu > a
         standard-button: red
-
+    & > aside
+      display: none
   label[for=search]
     position: relative
     & > *
