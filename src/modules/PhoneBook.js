@@ -34,21 +34,15 @@ class PhoneBook extends Storage {
     return new Promise((resolve, reject) => {
       this.as_list().then(people => {
         let me = person_storage.as_object()
-        console.log('me to start', me.updated_at, me.first_name)
         let index = people.findIndex(contact => (contact.mobile === me.mobile))
         let phonebook_me = people[index]
         if (phonebook_me) {
-          console.log('found me in the phonebook')
-          console.log(me.updated_at, me.first_name)
-          console.log(phonebook_me.updated_at, phonebook_me.first_name)
           if (phonebook_me.updated_at < me.updated_at) {
             localStorage.setItem('save-phonebook', 'true')
-            console.log('updating me in the phonebook')
             people[index] = me
           }
         } else {
           localStorage.setItem('save-phonebook', 'true')
-          console.log(`adding ${me.mobile} to phonebook`)
           people.push(me)
         }
         resolve(people)

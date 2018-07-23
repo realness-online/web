@@ -55,10 +55,8 @@
     watch: {
       phonebook() {
         Vue.nextTick(() => {
-          console.log('next tick')
           if (localStorage.getItem('save-phonebook')) {
-            console.log('save-phonebook')
-            this.storage.save().then(message => console.log(message))
+            this.storage.save()
           }
         })
       }
