@@ -49,10 +49,6 @@
     & > a > svg
       standard-border()
       border-radius: (base-line / 3)
-      outline:none
-      padding:0
-      vertical-align: middle
-      fill:black
       height: (2 * base-line)
       width: (2 * base-line)
     & > figcaption
