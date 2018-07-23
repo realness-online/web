@@ -45,6 +45,9 @@
       }
     },
     created() {
+      this.$bus.$off('remove-relationship')
+      this.$bus.$off('add-relationship')
+      console.log('relations created())')
       this.storage.sync_list().then(people => (this.phonebook = people))
       this.$bus.$on('add-relationship', (person) => {
         console.log('add-relationship', person)
@@ -52,16 +55,19 @@
       })
       this.$bus.$on('remove-relationship', (person) => {
         console.log('remove-relationship', person)
-        const index = this.relations.indexOf(person)
+        const index = this.relations.findIndex(contact => (contact.mobile === person.mobile))
         console.log('index', index)
         if (index > -1) {
+          console.log('clear it out', this.relations.length)
           this.relations.slice(index, 1)
+          console.log('tried to clear it out', this.relations.length)
         }
       })
     },
-    destroyed() {
-      this.$bus.$off('remove-relationship')
-      this.$bus.$off('add-relationship')
+    beforeDestroy() {
+      // console.log('relations beforeDestroy')
+      // this.$bus.$off('remove-relationship')
+      // this.$bus.$off('add-relationship')
     },
     methods: {
       search_mode(event) {
@@ -81,7 +87,8 @@
         })
       },
       relations() {
-        relations_storage.save()
+        console.log('change in relations')
+        Vue.nextTick(() => relations_storage.save())
       }
     }
   }

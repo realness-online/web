@@ -30,9 +30,7 @@
     },
     watch: {
       activity() {
-        Vue.nextTick(() => {
-          activity_storage.save()
-        })
+        Vue.nextTick(() => activity_storage.save())
       }
     }
   }

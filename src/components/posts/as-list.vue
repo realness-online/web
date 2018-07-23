@@ -27,9 +27,7 @@
     },
     watch: {
       posts() {
-        Vue.nextTick(() => {
-          posts_storage.save()
-        })
+        Vue.nextTick(() => posts_storage.save())
       }
     }
   }

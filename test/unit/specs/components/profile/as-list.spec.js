@@ -8,5 +8,4 @@ describe('@/compontent/profile/as-list.vue', () => {
   it('should render a list of people', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  
 })

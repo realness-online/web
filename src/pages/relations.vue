@@ -28,7 +28,27 @@
       }
     },
     created() {
+      this.$bus.$off('remove-relationship')
+      this.$bus.$off('add-relationship')
+      console.log('relations created())')
       localStorage.setItem('relations-count', this.relations.length)
+      this.$bus.$on('add-relationship', (person) => {
+        console.log('add-relationship', person)
+        this.relations.push(person)
+      })
+      this.$bus.$on('remove-relationship', (person) => {
+        console.log('remove-relationship', person)
+        const index = this.relations.findIndex(contact => (contact.mobile === person.mobile))
+        console.log('index', index)
+        if (index > -1) {
+          this.relations.splice(index, 1)
+        }
+      })
+    },
+    beforeDestroy() {
+      // console.log('relations beforeDestroy')
+      // this.$bus.$off('remove-relationship')
+      // this.$bus.$off('add-relationship')
     },
     watch: {
       relations() {
