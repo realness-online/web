@@ -59,7 +59,7 @@
         console.log('index', index)
         if (index > -1) {
           console.log('clear it out', this.relations.length)
-          this.relations.slice(index, 1)
+          this.relations.splice(index, 1)
           console.log('tried to clear it out', this.relations.length)
         }
       })
