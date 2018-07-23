@@ -54,10 +54,14 @@
         console.log('remove-relationship', person)
         const index = this.relations.indexOf(person)
         console.log('index', index)
-        if (index > -1 ) {
+        if (index > -1) {
           this.relations.slice(index, 1)
         }
       })
+    },
+    destroyed() {
+      this.$bus.$off('remove-relationship')
+      this.$bus.$off('add-relationship')
     },
     methods: {
       search_mode(event) {
