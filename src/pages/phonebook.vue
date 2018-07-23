@@ -92,8 +92,8 @@
     position: relative
     & > *
       fill: blue
-      height: (2 * base-line)
-      width: (2 * base-line)
+      height: (base-line * 2)
+      width: (base-line * 2)
     svg
       position: absolute
       top: 0
