@@ -71,15 +71,4 @@
         standard-button: red
     & > aside
       display: none
-  label[for=search]
-    position: relative
-    & > *
-      fill: blue
-      height: (base-line * 2)
-      width: (base-line * 2)
-    svg
-      position: absolute
-      top: 0
-      left: 0
-      z-index: -2
 </style>
