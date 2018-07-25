@@ -26,9 +26,7 @@ var relationship_mixin = {
     this.$bus.$on('add-relationship', person => this.relations.push(person))
     this.$bus.$on('remove-relationship', (person) => {
       const index = this.relations.findIndex(p => (p.mobile === person.mobile))
-      if (index > -1) {
-        this.relations.splice(index, 1)
-      }
+      if (index > -1) this.relations.splice(index, 1)
     })
   }
 }
