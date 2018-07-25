@@ -9,41 +9,9 @@
   </section>
 </template>
 <script>
-  import Vue from 'vue'
-  import logo_as_link from '@/components/logo-as-link'
-  import icon from '@/components/icon'
-  import profile_as_list from '@/components/profile/as-list'
-  import {relations_storage} from '@/modules/Storage'
+  import relationship_mixin from '@/pages/relationship-mixin'
   export default {
-    components: {
-      'logo-as-link': logo_as_link,
-      'profile-as-list': profile_as_list,
-      icon
-    },
-    data() {
-      return {
-        relations: relations_storage.as_list()
-      }
-    },
-    created() {
-      this.$bus.$off('remove-relationship')
-      this.$bus.$off('add-relationship')
-      localStorage.setItem('relations-count', this.relations.length)
-      this.$bus.$on('add-relationship', (person) => {
-        this.relations.push(person)
-      })
-      this.$bus.$on('remove-relationship', (person) => {
-        const index = this.relations.findIndex(contact => (contact.mobile === person.mobile))
-        if (index > -1) {
-          this.relations.splice(index, 1)
-        }
-      })
-    },
-    watch: {
-      relations() {
-        Vue.nextTick(() => relations_storage.save())
-      }
-    }
+    mixins: [relationship_mixin]
   }
 </script>
 <style lang='stylus'>
