@@ -18,7 +18,6 @@
   import as_form from '@/components/profile/as-form'
   import logo_as_link from '@/components/logo-as-link'
   import posts_index from '@/components/posts/as-list'
-
   export default {
     components: {
       'profile-as-figure': as_figure,

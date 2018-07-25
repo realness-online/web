@@ -3,7 +3,6 @@ import {relations_storage} from '@/modules/Storage'
 import logo_as_link from '@/components/logo-as-link'
 import icon from '@/components/icon'
 import profile_as_list from '@/components/profile/as-list'
-
 var relationship_mixin = {
   components: {
     'logo-as-link': logo_as_link,
@@ -25,11 +24,11 @@ var relationship_mixin = {
     this.$bus.$off('remove-relationship')
     this.$bus.$off('add-relationship')
     localStorage.setItem('relations-count', this.relations.length)
-    this.$bus.$on('add-relationship', (person) => {
-      this.relations.push(person)
-    })
+    this.$bus.$on('add-relationship', person => this.relations.push(person))
     this.$bus.$on('remove-relationship', (person) => {
-      const index = this.relations.findIndex(contact => (contact.mobile === person.mobile))
+      const index = this.relations.findIndex( (contact) => {
+        (contact.mobile === person.mobile)
+      })
       if (index > -1) {
         this.relations.splice(index, 1)
       }

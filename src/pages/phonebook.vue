@@ -1,7 +1,7 @@
 <template>
   <section id="directory" class="page">
     <header>
-      <profile-search></profile-search>  
+      <profile-search></profile-search>
       <h1>Phonebook</h1>
       <logo-as-link></logo-as-link>
     </header>
