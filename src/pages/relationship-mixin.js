@@ -20,7 +20,6 @@ var relationship_mixin = {
     }
   },
   created() {
-    console.log('created')
     this.$bus.$off('remove-relationship')
     this.$bus.$off('add-relationship')
     localStorage.setItem('relations-count', this.relations.length)
