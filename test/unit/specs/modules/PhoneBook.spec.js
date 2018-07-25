@@ -121,7 +121,6 @@ describe('@/modules/PhoneBook', () => {
       me.mobile = '4151234567'
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       expect(phone_list.length).toBe(2)
-
       phonebook_storage.sync_list().then(people => {
         expect(people.length).toBe(3)
       })

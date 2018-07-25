@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import {mount, shallow} from 'vue-test-utils'
 import phonebook from '@/pages/phonebook'
+import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
 
@@ -21,23 +22,40 @@ const phonebook_as_text = `
       </figcaption>
     </figure>
   <div>`
-const save_spy = jest.fn(() => Promise.resolve('save_spy'))
-const update_spy = jest.fn((person) => Promise.resolve(people))
 const people = Item.get_items(Storage.hydrate(phonebook_as_text))
+const save_spy = jest.fn(() => Promise.resolve('save_spy'))
+jest.spyOn(PhoneBook.prototype, 'sync_list').mockImplementation(() => {
+  return Promise.resolve(people)
+})
+jest.spyOn(PhoneBook.prototype, 'save').mockImplementation(save_spy)
+
+const person = {
+  first_name: 'Scott',
+  last_name: 'Fryxell',
+  mobile: '4151234356'
+}
 describe('@/pages/phonebook', () => {
-  let wrapper
-  afterEach(() => {
-    save_spy.mockClear()
-    update_spy.mockClear()
-  })
   it('render an empty phonebook', () => {
-    wrapper = shallow(phonebook)
+    let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('render a phonebook with people', () => {
-    wrapper = mount(phonebook)
+    const update_spy = jest.fn((person) => Promise.resolve(people))
+    let wrapper = mount(phonebook)
     wrapper.setData({phonebook: people})
     expect(wrapper.element).toMatchSnapshot()
   })
-  
+  it('saves the phone book when save-phonebook is set on localStorage', async () => {
+    let wrapper = shallow(phonebook)
+    wrapper.vm.phonebook.push(person)
+    expect(wrapper.vm.phonebook.length).toBe(1)
+    expect(save_spy).not.toBeCalled()
+    localStorage.setItem('save-phonebook', 'true')
+    await wrapper.vm.phonebook.push(person)
+    expect(wrapper.vm.phonebook.length).toBe(2)
+    wrapper.vm.$nextTick(() => {
+      expect(save_spy).toBeCalled()
+    })
+    save_spy.mockClear()
+  })
 })
