@@ -1,16 +1,14 @@
 <template>
   <section id="directory" class="page">
     <header>
-      <profile-search></profile-search>
+      <router-link to="/relations">
+        <icon name="finished"></icon>
+      </router-link>
       <h1>Phonebook</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-show="loading" name="working"></icon>
     <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
-    <footer>
-      <menu>
-        <router-link to="/relations">Done</router-link>
-      </menu>
-    </footer>
     <aside>
       <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
     </aside>
@@ -21,17 +19,23 @@
   import profile_as_search from '@/components/profile/as-search'
   import {phonebook_storage} from '@/modules/PhoneBook'
   import relationship_mixin from '@/pages/relationship-mixin'
+  import icon from '@/components/icon'
   export default {
     mixins: [relationship_mixin],
     components: {
-      'profile-search': profile_as_search
+      'profile-search': profile_as_search,
+      icon
     },
     created() {
-      phonebook_storage.sync_list().then(people => (this.phonebook = people))
+      phonebook_storage.sync_list().then((people) => {
+        this.phonebook = people
+        this.loading = false
+      })
     },
     data() {
       return {
-        phonebook: []
+        phonebook: [],
+        loading: true
       }
     },
     watch: {
@@ -47,7 +51,23 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
+  svg.finished
+    width: (base-line * 2)
+    height: (base-line * 2)
+    fill:blue
+  svg.working
+    fill: blue
+    animation-name: working
+    animation-duration: 1.33s
+    animation-delay: 0
+    animation-iteration-count: infinite
+    margin-top: base-line
+    text-align: center
+    width: (base-line * 3.3)
+    height: (base-line)
+
   section#directory
+    position: relative
     animation-name: slideInLeft
     position: relative
     min-height: 100vh
