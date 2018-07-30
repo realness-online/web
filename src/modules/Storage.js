@@ -29,7 +29,7 @@ class Storage {
       if (!items) { resolve('nothing to save') }
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
-      if (['person', 'posts'].includes(this.item_type)) {
+      if (['person', 'posts', 'relations'].includes(this.item_type)) {
         this.persist(items)
           .then(resolve('saved local & network'))
           .catch(e => reject(e))
