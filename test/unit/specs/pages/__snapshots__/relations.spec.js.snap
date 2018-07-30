@@ -37,7 +37,7 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
   </header>
    
   <nav
-    class="profile-index"
+    class="profile-list"
     itemprop="relations"
   />
 </section>

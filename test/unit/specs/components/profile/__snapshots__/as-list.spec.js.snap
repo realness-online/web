@@ -2,6 +2,6 @@
 
 exports[`@/compontent/profile/as-list.vue should render a list of people 1`] = `
 <nav
-  class="profile-index"
+  class="profile-list"
 />
 `;

@@ -1,21 +1,21 @@
 <template lang="html">
-  <nav class="profile-index">
+  <nav class="profile-list">
     <li v-for="person in people">
-      <profile-as-figure :person="person"></profile-as-figure>
-      <menu>
-        <a v-on:click="update_relationship(person)"><icon :name="what_icon(person)"></icon></a>
-      </menu>
+      <as-figure :person="person"></as-figure>
+      <as-relationship-options :person="person"></as-relationship-options>
     </li>
   </nav>
 </template>
 <script>
   import as_figure from '@/components/profile/as-figure'
+  import as_options from '@/components/profile/as-relationship-options'
   import icon from '@/components/icon'
   import {relations_storage} from '@/modules/Storage'
   export default {
     props: ['people'],
     components: {
-      'profile-as-figure': as_figure,
+      'as-figure': as_figure,
+      'as-relationship-options': as_options,
       icon
     },
     methods: {
@@ -43,7 +43,7 @@
 </script>
 <style lang="stylus">
   @require '../../style/variables'
-  nav.profile-index
+  nav.profile-list
     & > li
       margin-top: base-line
       list-style: none
@@ -54,18 +54,6 @@
           color:blue
         & svg
           fill:blue
-      & > menu
-        display: inline-flex
-        align-items: center;
-        margin-left:  (base-line / 2)
-        svg
-          cursor: pointer;
-          fill:blue
-          width: (base-line * 2)
-          height: (base-line * 2)
-          &:active
-            width: (base-line * 1.66)
-            height: (base-line * 1.66)
     @media (min-width: min-screen)
       display: flex
       flex-direction: row

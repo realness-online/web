@@ -44,7 +44,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
   </header>
    
   <nav
-    class="profile-index"
+    class="profile-list"
     id="phonebook"
   >
     <li>
@@ -98,12 +98,22 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
       </figure>
        
       <menu>
-        <a>
+        <a
+          class=""
+        >
           <svg
             class="add"
           >
             <use
               xlink:href="#add"
+            />
+          </svg>
+           
+          <svg
+            class="remove"
+          >
+            <use
+              xlink:href="#remove"
             />
           </svg>
         </a>
@@ -160,12 +170,22 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
       </figure>
        
       <menu>
-        <a>
+        <a
+          class=""
+        >
           <svg
             class="add"
           >
             <use
               xlink:href="#add"
+            />
+          </svg>
+           
+          <svg
+            class="remove"
+          >
+            <use
+              xlink:href="#remove"
             />
           </svg>
         </a>
@@ -185,7 +205,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
    
   <aside>
     <nav
-      class="profile-index"
+      class="profile-list"
       itemprop="relations"
     />
   </aside>
@@ -219,7 +239,7 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
   </header>
    
   <nav
-    class="profile-index"
+    class="profile-list"
     id="phonebook"
   />
    
@@ -235,7 +255,7 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
    
   <aside>
     <nav
-      class="profile-index"
+      class="profile-list"
       itemprop="relations"
     />
   </aside>
