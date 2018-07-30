@@ -44,19 +44,34 @@
     align-items: center;
     margin-left:  (base-line / 2)
     & > a
-      svg.remove
-        display: none 
-    & > a.relation
-      svg.remove
-        display: block
-      svg.add
-        display: none
-    svg
-      cursor: pointer;
-      fill:blue
       width: (base-line * 2)
       height: (base-line * 2)
-      &:active
-        width: (base-line * 1.66)
-        height: (base-line * 1.66)
+      svg
+        transition: fill
+        transition-duration: 0.5s
+        cursor: pointer;
+        fill:blue
+        width: (base-line * 2)
+        height: (base-line * 2)
+        // &:active
+        //   width: (base-line * 1.66)
+        //   height: (base-line * 1.66)
+        // &.add
+        //   display:block
+        &.remove
+          fill:red
+          height: 0
+          width: 0
+      &.relation
+        // &:active
+        //   width: (base-line * 1.66)
+        //   height: (base-line * 1.66)
+        svg.add
+          fill:red
+          height: 0
+          width: 0
+        svg.remove
+          fill:blue
+          width: (base-line * 2)
+          height: (base-line * 2)
 </style>
