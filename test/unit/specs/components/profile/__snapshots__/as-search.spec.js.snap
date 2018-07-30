@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-list.vue should render an input for search 1`] = `
+<label
+  for="search"
+>
+  <input
+    autocomplete="off"
+    id="search"
+    placeholder="Search phonebook"
+    type="search"
+  />
+   
+  <!---->
+</label>
+`;
