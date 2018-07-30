@@ -1,4 +1,5 @@
 import {shallow} from 'vue-test-utils'
+import Storage from '@/modules/Storage'
 import post_list from '@/components/posts/as-list'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -27,6 +28,14 @@ describe('@/components/posts/as-list.vue', () => {
     wrapper.vm.$bus.$emit('post-added', post)
     expect(wrapper.vm.posts.length).toBe(1)
     expect(wrapper.find('li')).toBeTruthy()
+  })
+  it('should sync with the server when person signs in', () => {
+    // posts_storage.sync_list().then(items => (this.posts = items))
+    let spy = jest.spyOn(Storage.prototype, 'sync_list').mockImplementation(() => {
+      return Promise.resolve()
+    })
+    wrapper.vm.$bus.$emit('signed-in')
+    expect(spy).toBeCalled()
   })
 
 })
