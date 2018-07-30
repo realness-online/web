@@ -6,24 +6,17 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
   id="directory"
 >
   <header>
-    <label
-      for="search"
+    <router-link
+      to="/relations"
     >
-      <input
-        autocomplete="off"
-        id="search"
-        placeholder="Search phonebook"
-        type="search"
-      />
-       
       <svg
-        class="search"
+        class="finished"
       >
         <use
-          xlink:href="#search"
+          xlink:href="#finished"
         />
       </svg>
-    </label>
+    </router-link>
      
     <h1>
       Phonebook
@@ -42,6 +35,14 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
       </svg>
     </router-link>
   </header>
+   
+  <svg
+    class="working"
+  >
+    <use
+      xlink:href="#working"
+    />
+  </svg>
    
   <nav
     class="profile-list"
@@ -193,16 +194,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
     </li>
   </nav>
    
-  <footer>
-    <menu>
-      <router-link
-        to="/relations"
-      >
-        Done
-      </router-link>
-    </menu>
-  </footer>
-   
   <aside>
     <nav
       class="profile-list"
@@ -218,7 +209,11 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
   id="directory"
 >
   <header>
-    <!---->
+    <router-link
+      to="/relations"
+    >
+      <!---->
+    </router-link>
      
     <h1>
       Phonebook
@@ -238,20 +233,12 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
     </router-link>
   </header>
    
+  <!---->
+   
   <nav
     class="profile-list"
     id="phonebook"
   />
-   
-  <footer>
-    <menu>
-      <router-link
-        to="/relations"
-      >
-        Done
-      </router-link>
-    </menu>
-  </footer>
    
   <aside>
     <nav
