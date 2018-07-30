@@ -53,19 +53,11 @@
         fill:blue
         width: (base-line * 2)
         height: (base-line * 2)
-        // &:active
-        //   width: (base-line * 1.66)
-        //   height: (base-line * 1.66)
-        // &.add
-        //   display:block
         &.remove
           fill:red
           height: 0
           width: 0
       &.relation
-        // &:active
-        //   width: (base-line * 1.66)
-        //   height: (base-line * 1.66)
         svg.add
           fill:red
           height: 0
