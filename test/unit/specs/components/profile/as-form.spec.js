@@ -29,10 +29,13 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
     it('input blur should save person', () => {
       let storage_stub = jest.fn()
+      wrapper.vm.person.first_name = 'changed'
       let mobile = wrapper.find('#mobile')
       wrapper.vm.storage.save = storage_stub
       mobile.trigger('blur')
-      expect(storage_stub).toBeCalled()
+      wrapper.vm.$nextTick(() => {
+        expect(storage_stub).toBeCalled()
+      })
     })
   })
   describe('#save_person', () => {
@@ -49,7 +52,10 @@ describe('@/compontent/profile/as-form.vue', () => {
       wrapper.vm.save_person()
       expect(wrapper.vm.person.created_at).toBeDefined()
       expect(wrapper.vm.person.updated_at).toBeDefined()
-      expect(storage_save).toBeCalled()
+      wrapper.vm.$nextTick(() => {
+        expect(storage_save).toBeCalled()
+      })
+
     })
     describe('updating', () => {
       let last_update
