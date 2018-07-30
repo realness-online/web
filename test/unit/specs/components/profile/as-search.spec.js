@@ -1,6 +1,6 @@
 import {shallow} from 'vue-test-utils'
 import as_search from '@/components/profile/as-search'
-describe('@/compontent/profile/as-list.vue', () => {
+describe('@/compontent/profile/as-search.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(as_search)
