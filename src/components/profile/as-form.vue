@@ -79,7 +79,6 @@
     methods: {
       save_person() {
         if (!this.person.created_at) {
-
           this.person.created_at = new Date().toISOString()
           this.person.updated_at = this.person.created_at
           Vue.nextTick(() => {
