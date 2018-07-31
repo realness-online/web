@@ -23,10 +23,16 @@ var relationship_mixin = {
     this.$bus.$off('remove-relationship')
     this.$bus.$off('add-relationship')
     localStorage.setItem('relations-count', this.relations.length)
-    this.$bus.$on('add-relationship', person => this.relations.push(person))
+    this.$bus.$on('add-relationship', person => {
+      this.relations.push(person)
+      localStorage.setItem('relations-count', this.relations.length)
+    })
     this.$bus.$on('remove-relationship', (person) => {
       const index = this.relations.findIndex(p => (p.mobile === person.mobile))
-      if (index > -1) this.relations.splice(index, 1)
+      if (index > -1) {
+        this.relations.splice(index, 1)
+        localStorage.setItem('relations-count', this.relations.length)
+      }
     })
   }
 }
