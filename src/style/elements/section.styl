@@ -1,5 +1,4 @@
 @require '../variables'
-
 section.page
   animation-name: slideInRight
   padding: base-line
@@ -7,7 +6,18 @@ section.page
     display:flex
     justify-content: space-between
     z-index: 2
-    & > details
+    svg
+      fill:blue
+      height: (base-line * 2)
+      width: (base-line * 2)
+    h1
+      color:blue
+      vertical-align: top
+      margin: 0
+      line-height: 1.33
+      @media (min-width: max-screen)
+        line-height: .66
+    details
       &[open]
         margin-right: inherit;
         & > summary
