@@ -1,18 +1,26 @@
 <template>
-  <section id="feed">
+  <section id="feed" class="page">
     <header>
-      <h2>Feed</h2>
+      <icon name="hamburger"></icon>
+      <h1>Feed</h1>
+      <logo-as-link></logo-as-link>
     </header>
   </section>
 </template>
 <script>
+  import logo_as_link from '@/components/logo-as-link'
+  import icon from '@/components/icon'
   export default {
+    components: {
+      'logo-as-link': logo_as_link,
+      icon
+    }
   }
 </script>
 <style lang="stylus">
   @require '../style/variables'
   section#feed
-    margin: 0 base-line
-    display:flex
-    flex-direction: column
+    animation-name: slideInLeft
+    header svg
+      fill: transparent
 </style>
