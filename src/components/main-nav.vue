@@ -8,13 +8,11 @@
     <router-link v-if="!posting" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
-
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
   import {person_storage} from '@/modules/Storage'
-
   export default {
     components: {
       'post-as-textarea': as_textarea

@@ -61,17 +61,17 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.onboarding.has_posts).toBe(true)
     })
     it('feed is be visible when person has added a friend', () => {
-      localStorage.setItem('friends-count', 1)
+      localStorage.setItem('relations-count', 1)
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.has_friends).toBe(true)
     })
     it('events will be visible when person has 5 friends', () => {
-      localStorage.setItem('friends-count', 5)
+      localStorage.setItem('relations-count', 5)
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.can_event).toBe(true)
     })
     it('groups will be visible when person has 25 friends', () => {
-      localStorage.setItem('friends-count', 25)
+      localStorage.setItem('relations-count', 25)
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.can_group).toBe(true)
     })
