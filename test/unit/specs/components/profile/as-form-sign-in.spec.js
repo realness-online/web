@@ -19,7 +19,6 @@ describe('@/compontent/profile/as-form.vue', () => {
   afterEach(() => {
     firebase_mock.mockReset()
   })
-
   describe('button#submit-verification success', () => {
     let wrapper, button, confirm_spy
     afterEach(() => {
@@ -95,8 +94,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(true)
     })
-    it('logs the user out if they change their phone number')
-    it('deletes the local storage of posts and relations')
   })
   it('can not change phone number while signed in')
 })
