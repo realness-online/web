@@ -1,5 +1,5 @@
 <template>
-  <section id="home" v-bind:class="slide_direction">
+  <section id="home" v-bind:class="slide_direction" class="page">
     <main-nav></main-nav>
     <aside>
       <post-index></post-index>
@@ -27,8 +27,3 @@
     }
   }
 </script>
-
-<style lang="stylus">
-  section#home
-    animation-name: slideInRight
-</style>
