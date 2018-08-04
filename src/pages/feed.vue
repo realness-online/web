@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" class="page">
+  <section id="feed" class="page left">
     <header>
       <icon name="hamburger"></icon>
       <h1>Feed</h1>
@@ -18,9 +18,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
-  section#feed
-    animation-name: slideInLeft
-    header svg
-      fill: transparent
+  section#feed > header > svg
+    fill: transparent
 </style>
