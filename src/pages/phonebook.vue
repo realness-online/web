@@ -51,21 +51,6 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  svg.finished
-    width: (base-line * 2)
-    height: (base-line * 2)
-    fill:blue
-  svg.working
-    fill: blue
-    animation-name: working
-    animation-duration: 1.33s
-    animation-delay: 0
-    animation-iteration-count: infinite
-    margin-top: base-line
-    text-align: center
-    width: base-line * 3.3
-    height: base-line
-
   section#directory
     position: relative
     animation-name: slideInLeft
@@ -83,6 +68,8 @@
         line-height: 1.33
         @media (min-width: max-screen)
           line-height: .66
+      & > a > svg.finished
+        fill:blue
     & > footer
       position: fixed
       bottom: (base-line * 1.5)

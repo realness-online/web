@@ -47,10 +47,9 @@
     text-overflow: ellipsis
     display:flex
     & > a > svg
+      fill: black
       standard-border()
       border-radius: (base-line / 3)
-      height: (2 * base-line)
-      width: (2 * base-line)
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle

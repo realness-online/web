@@ -18,6 +18,4 @@
   @require '../style/variables'
   section#relations svg.heart
     fill:blue
-    height: (base-line * 2)
-    width: (base-line * 2)
 </style>

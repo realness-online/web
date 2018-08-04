@@ -51,8 +51,6 @@
         transition-duration: 0.5s
         cursor: pointer;
         fill:blue
-        width: (base-line * 2)
-        height: (base-line * 2)
         &.remove
           fill:red
           height: 0
