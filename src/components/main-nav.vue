@@ -103,7 +103,6 @@
         height: 22vh
         margin: 1vh 1vw
         color:transparent
-
   nav#main_nav
     &.has_posts
       & > [href='/profile']
