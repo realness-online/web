@@ -1,11 +1,11 @@
 <template>
   <section id="directory" class="page">
     <header>
+      <a></a>
+      <h1>Phonebook</h1>
       <router-link to="/relations">
         <icon name="finished"></icon>
       </router-link>
-      <h1>Phonebook</h1>
-      <logo-as-link></logo-as-link>
     </header>
     <icon v-show="loading" name="working"></icon>
     <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
@@ -63,8 +63,8 @@
     animation-iteration-count: infinite
     margin-top: base-line
     text-align: center
-    width: (base-line * 3.3)
-    height: (base-line)
+    width: base-line * 3.3
+    height: base-line
 
   section#directory
     position: relative
