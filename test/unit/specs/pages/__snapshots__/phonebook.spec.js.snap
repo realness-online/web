@@ -6,6 +6,12 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
   id="directory"
 >
   <header>
+    <a />
+     
+    <h1>
+      Phonebook
+    </h1>
+     
     <router-link
       to="/relations"
     >
@@ -14,23 +20,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
       >
         <use
           xlink:href="#finished"
-        />
-      </svg>
-    </router-link>
-     
-    <h1>
-      Phonebook
-    </h1>
-     
-    <router-link
-      id="logo"
-      to="/"
-    >
-      <svg
-        class="realness"
-      >
-        <use
-          xlink:href="#realness"
         />
       </svg>
     </router-link>
@@ -209,27 +198,16 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
   id="directory"
 >
   <header>
-    <router-link
-      to="/relations"
-    >
-      <!---->
-    </router-link>
+    <a />
      
     <h1>
       Phonebook
     </h1>
      
     <router-link
-      id="logo"
-      to="/"
+      to="/relations"
     >
-      <svg
-        class="realness"
-      >
-        <use
-          xlink:href="#realness"
-        />
-      </svg>
+      <!---->
     </router-link>
   </header>
    

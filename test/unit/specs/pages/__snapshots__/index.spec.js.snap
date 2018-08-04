@@ -2,6 +2,7 @@
 
 exports[`@/pages/index.vue renders navigation for the application 1`] = `
 <section
+  class="page"
   id="home"
 >
   <!---->
