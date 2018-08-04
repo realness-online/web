@@ -8,6 +8,11 @@
 <script>
   import developer_tools from '@/components/developer'
   export default {
+    watch: {
+      '$route' (to, from) {
+        sessionStorage.previous = from.path
+      }
+    },
     components: {
       'developer-tools': developer_tools
     }

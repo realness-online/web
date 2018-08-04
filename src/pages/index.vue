@@ -1,5 +1,5 @@
 <template>
-  <section id="home">
+  <section id="home" v-bind:class="slide_direction">
     <main-nav></main-nav>
     <aside>
       <post-index></post-index>
@@ -17,6 +17,13 @@
       'main-nav': main_nav,
       'activity-index': activity_index,
       'post-index': post_index
+    },
+    computed: {
+      slide_direction() {
+        return {
+          left: ['/relations', '/profile'].includes(sessionStorage.previous)
+        }
+      }
     }
   }
 </script>
