@@ -44,8 +44,8 @@
       left: 0
       z-index: -2
     input#search
+      standard-border: blue
       border-width: 0
-      border-radius: (base-line / 2)
       position: relative
       z-index: 2
       transition-delay: 0.15s

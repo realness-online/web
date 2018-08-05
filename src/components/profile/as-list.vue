@@ -38,7 +38,6 @@
       & > li
         padding: (base-line / 2)
         standard-border: blue
-        border-radius: (base-line / 3)
         width:49%
     @media (min-width: max-screen)
       & > li
