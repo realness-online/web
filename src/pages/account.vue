@@ -1,27 +1,24 @@
 <template lang="html">
-  <section id="profile" class="page">
+  <section id="account" class="page left">
     <header>
-      <router-link to="/account">
-        <profile-as-figure :person='person' :nav="false"></profile-as-figure>
+      <profile-as-figure :person='person' :nav="false"></profile-as-figure>
+      <router-link to="/profile">
+        <icon name="finished"></icon>
       </router-link>
-      <logo-as-link></logo-as-link>
     </header>
-    <posts-index></posts-index>
+    <profile-as-form :person='person'></profile-as-form>
   </section>
 </template>
 <script>
-  import '@/modules/timeago'
   import {person_storage} from '@/modules/Storage'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
-  import logo_as_link from '@/components/logo-as-link'
-  import posts_index from '@/components/posts/as-list'
+  import icon from '@/components/icon'
   export default {
     components: {
       'profile-as-figure': as_figure,
       'profile-as-form': as_form,
-      'posts-index': posts_index,
-      'logo-as-link': logo_as_link
+      icon
     },
     data() {
       return {
@@ -32,7 +29,9 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#profile figure.profile svg
-    standard-button(black)
-    padding:0
+  section#account header
+    margin-bottom: base-line
+    figure.profile  svg
+      color:black
+      standard-border(black)
 </style>
