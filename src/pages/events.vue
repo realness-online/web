@@ -1,5 +1,5 @@
 <template>
-  <section id="events">
+  <section id="events" class="page">
     <header>
       <h1>Events</h1>
       <nav>
