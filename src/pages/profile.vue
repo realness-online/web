@@ -33,6 +33,6 @@
 <style lang='stylus'>
   @require '../style/variables'
   section#profile figure.profile svg
-    standard-button(black)
+    standard-button: black
     padding:0
 </style>
