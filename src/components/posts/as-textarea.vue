@@ -51,7 +51,6 @@
       animation-name: slideInLeft
       font-weight: normal
       height:100vh
-      // cursor:alias;
       text-align: left
       width:100vw
       border-top: none
