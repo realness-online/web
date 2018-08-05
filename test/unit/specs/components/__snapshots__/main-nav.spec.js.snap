@@ -30,7 +30,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
    
   <router-link
     class="green"
-    to="/groups"
+    to="/where"
   >
     Groups
   </router-link>

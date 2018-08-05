@@ -17,7 +17,7 @@ exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
   />
    
   <a
-    href="/profiles/+16282281824"
+    href="/+16282281824"
   >
     <svg>
       <use
@@ -70,7 +70,7 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
   />
    
   <a
-    href="/profiles/+16282281824"
+    href="/+16282281824"
   >
     <svg>
       <use

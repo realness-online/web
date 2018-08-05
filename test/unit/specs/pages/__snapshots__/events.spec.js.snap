@@ -2,6 +2,7 @@
 
 exports[`@/pages/events.vue renders event information 1`] = `
 <section
+  class="page"
   id="events"
 >
   <header>

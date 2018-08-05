@@ -52,7 +52,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         />
          
         <a
-          href="/profiles/+16282281824"
+          href="/+16282281824"
         >
           <svg>
             <use
@@ -124,7 +124,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         />
          
         <a
-          href="/profiles/+12403800385‬"
+          href="/+12403800385‬"
         >
           <svg>
             <use
