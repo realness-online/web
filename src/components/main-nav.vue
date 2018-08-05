@@ -4,7 +4,7 @@
     <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
-    <router-link v-if="!posting" to="/groups" class="green">Groups</router-link>
+    <router-link v-if="!posting" to="/where" class="green">Groups</router-link>
     <router-link v-if="!posting" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
