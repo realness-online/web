@@ -1,7 +1,7 @@
 <template>
   <section id="groups">
     <header>
-      <h1>Groups</h1>
+      <h1>Where</h1>
     </header>
   </section>
 </template>

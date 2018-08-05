@@ -4,7 +4,8 @@ import * as firebase from 'firebase/app'
 import app from '@/components/application'
 import events from '@/pages/events'
 import feed from '@/pages/feed'
-import groups from '@/pages/groups'
+import where from '@/pages/where'
+import account from '@/pages/account'
 import index from '@/pages/index'
 import profile from '@/pages/profile'
 import relations from '@/pages/relations'
@@ -27,8 +28,9 @@ const routes = [
   { path: '/', component: index },
   { path: '/events', component: events },
   { path: '/feed', component: feed },
-  { path: '/groups', component: groups },
+  { path: '/where', component: where },
   { path: '/profile', component: profile },
+  { path: '/account', component: account },
   { path: '/relations', component: relations },
   { path: '/phonebook', component: phonebook }
 ]
