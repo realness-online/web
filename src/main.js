@@ -11,7 +11,7 @@ import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 import phonebook from '@/pages/phonebook'
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'staging') {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/controller.js').then(registration => {
       console.log('Service Worker registed!', registration)
@@ -29,10 +29,11 @@ const routes = [
   { path: '/events', component: events },
   { path: '/feed', component: feed },
   { path: '/where', component: where },
-  { path: '/profile', component: profile },
   { path: '/account', component: account },
   { path: '/relations', component: relations },
-  { path: '/phonebook', component: phonebook }
+  { path: '/phonebook', component: phonebook },
+  { path: '/profile', component: profile },
+  { path: '/+1:mobile', component: profile }
 ]
 
 const router = new VueRouter({
