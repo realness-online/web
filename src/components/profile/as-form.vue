@@ -2,19 +2,16 @@
   <form id="profile-form">
     <fieldset id="name">
       <input id="first-name" type='text' placeholder="First" required
-             v-model="person.first_name"
-             v-on:blur="save_person">
+             v-model="person.first_name">
       <input id="last-name" type='text' placeholder="Last" required
-             v-model="person.last_name"
-             v-on:blur="save_person">
+             v-model="person.last_name">
     </fieldset>
     <fieldset id="phone">
       <label for="mobile">1+</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
-             v-on:paste="mobile_paste"
-             v-on:blur="save_person">
+             v-on:paste="mobile_paste">
       <input id="verification-code" type="tel" placeholder="Verification code"
              v-if="show_code"
              v-model="code"
@@ -24,6 +21,7 @@
            v-bind:class="{hide_captcha}">
       </div>
     </fieldset>
+    <icon v-show="working" name="working"></icon>
     <menu v-if="valid_mobile_number">
       <button id="authorize"
               v-if="show_authorize"
@@ -43,10 +41,15 @@
   import 'firebase/auth'
   import {parseNumber} from 'libphonenumber-js'
   import {person_storage} from '@/modules/Storage'
+  import icon from '@/components/icon'
   export default {
     props: ['person'],
+    components: {
+      icon
+    },
     data() {
       return {
+        working: true,
         storage: person_storage,
         code: null,
         human: null,
@@ -60,9 +63,11 @@
     },
     created() {
       firebase.auth().onAuthStateChanged(user => {
+        this.working = false
         if (user) {
           this.show_sign_out = true
           this.$bus.$emit('signed-in')
+          this.disable_input()
         } else {
           this.show_authorize = true
         }
@@ -77,24 +82,25 @@
       }
     },
     methods: {
+      disable_input() {
+        this.$el.querySelector('#mobile').disabled = true
+        this.$el.querySelector('#first-name').disabled = true
+        this.$el.querySelector('#last-name').disabled = true
+      },
       save_person() {
         if (!this.person.created_at) {
           this.person.created_at = new Date().toISOString()
           this.person.updated_at = this.person.created_at
-          Vue.nextTick(() => {
-            this.storage.save()
-          })
         } else {
-          const old = this.storage.as_object()
-          if (old.first_name !== this.person.first_name || old.last_name !== this.person.last_name) {
-            this.person.updated_at = new Date().toISOString()
-            Vue.nextTick(() => {
-              this.storage.save()
-            })
-          }
+          this.person.updated_at = new Date().toISOString()
         }
+        Vue.nextTick(() => {
+          this.storage.save()
+        })
       },
       begin_authorization(event) {
+        this.working = true
+        this.disable_input()
         event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
@@ -109,6 +115,7 @@
         })
       },
       text_human_verify_code(response) {
+        this.working = false
         this.show_code = true
         this.hide_captcha = true
         firebase.auth()
@@ -117,18 +124,17 @@
             this.authorizer = result
             this.$el.querySelector('#verification-code').scrollIntoView(false)
             this.$el.querySelector('#verification-code').focus()
-          }).catch(error => {
-            console.log(error)
           })
       },
       sign_in_with_code(event) {
+        this.working = true
         event.preventDefault()
+        this.disable_input()
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
+          this.working = false
           this.show_sign_out = true
-          // this.$el.querySelector('#mobile').disabled = true
-        }).catch(error => {
-          console.error(error)
+          Vue.nextTick(() => this.storage.save())
         })
       },
       sign_out(event) {
@@ -136,8 +142,9 @@
         this.show_sign_out = false
         firebase.auth().signOut()
         this.show_authorize = true
-        // this.$el.querySelector('#mobile').disabled = false
-        // localStorage.removeItem('posts')
+        this.$el.querySelector('#mobile').disabled = false
+        this.$el.querySelector('#first-name').disabled = false
+        this.$el.querySelector('#last-name').disabled = false
       },
       mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
@@ -189,6 +196,9 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
+    input[disabled]
+      user-select: none
+      color:black
     input#verification-code
       margin-top: (base-line / 2)
     button

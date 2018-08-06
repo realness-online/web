@@ -24,6 +24,7 @@
         if (!post.articleBody) { return }
         this.new_post = ''
         post.created_at = new Date().toISOString()
+        post.updated_at = post.created_at
         this.$bus.$emit('post-added', post)
       },
       wat_focused($event) {

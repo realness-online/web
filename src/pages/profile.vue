@@ -1,38 +1,81 @@
 <template lang="html">
-  <section id="profile" class="page">
+  <section id="profile" class="page" v-bind:class="{me}">
     <header>
-      <router-link to="/account">
+      <router-link v-if="me" to="/account">
         <profile-as-figure :person='person' :nav="false"></profile-as-figure>
       </router-link>
+      <profile-as-figure v-else :person='person'></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
-    <posts-index></posts-index>
+    <my-posts v-if="me"></my-posts>
+    <posts-list v-else :posts='posts'></posts-list>
   </section>
 </template>
 <script>
   import '@/modules/timeago'
-  import {person_storage} from '@/modules/Storage'
-  import as_figure from '@/components/profile/as-figure'
-  import as_form from '@/components/profile/as-form'
-  import logo_as_link from '@/components/logo-as-link'
-  import posts_index from '@/components/posts/as-list'
+  import Item from '@/modules/Item'
+  import Storage, {person_storage} from '@/modules/Storage'
+  import profileAsFigure from '@/components/profile/as-figure'
+  import logoAsLink from '@/components/logo-as-link'
+  import postsList from '@/components/posts/as-list'
+  import myPosts from '@/components/posts/my-list'
+  import * as firebase from 'firebase/app'
+  import 'firebase/storage'
+
   export default {
     components: {
-      'profile-as-figure': as_figure,
-      'profile-as-form': as_form,
-      'posts-index': posts_index,
-      'logo-as-link': logo_as_link
+      profileAsFigure,
+      myPosts,
+      postsList,
+      logoAsLink
+    },
+    created() {
+      const mobile = this.$route.params.mobile
+      if (mobile) {
+        this.get_items(mobile, 'posts').then(items => (this.posts = items))
+        this.get_items(mobile, 'person').then(items => {
+          console.log(items[0])
+          this.person = items[0]
+        })
+      } else {
+        this.me = true
+        this.person = person_storage.as_object()
+      }
     },
     data() {
       return {
-        person: person_storage.as_object()
+        me: false,
+        person: {},
+        posts: {}
+      }
+    },
+    methods: {
+      get_url(mobile, type) {
+        const path = `/people/+1${mobile}/${type}.html`
+        return firebase.storage().ref().child(path).getDownloadURL()
+      },
+      get_items(mobile, type) {
+        return new Promise((resolve, reject) => {
+          this.get_url(mobile, type).then((url) => {
+            fetch(url).then(response => {
+              response.text().then((server_text) => {
+                const server_as_fragment = Storage.hydrate(server_text)
+                resolve(Item.get_items(server_as_fragment))
+              })
+            })
+          })
+        })
       }
     }
   }
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#profile figure.profile svg
-    standard-button: black
-    padding:0
+  section#profile
+    figure.profile svg
+      standard-border: black
+    &.me
+      figure.profile svg
+        standard-button: black
+        padding:0
 </style>

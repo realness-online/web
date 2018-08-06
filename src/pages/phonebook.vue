@@ -56,6 +56,9 @@
     animation-name: slideInLeft
     position: relative
     min-height: 100vh
+    svg.working
+      fill: blue
+      margin-top: base-line
     & > header
       &:focus-within > h1
         transition-property: all
