@@ -39,12 +39,14 @@
     },
     computed: {
       onboarding() {
+
+
         return {
           is_person: this.signed_in,
           has_posts: this.has_posts,
-          has_friends: localStorage.getItem('relations-count') > 0,
-          can_event: localStorage.getItem('relations-count') >= 5,
-          can_group: localStorage.getItem('relations-count') >= 25
+          has_friends: (this.signed_in && localStorage.getItem('relations-count') > 0),
+          can_event: (this.signed_in && localStorage.getItem('relations-count') >= 5),
+          can_group: (this.signed_in && localStorage.getItem('relations-count') >= 25)
         }
       },
       user_name() {
