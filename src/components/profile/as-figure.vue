@@ -2,17 +2,16 @@
   <figure class="profile" itemscope itemtype='/person'>
     <meta itemprop="created_at" :content="person.created_at">
     <meta itemprop="updated_at" :content="person.updated_at">
-    <router-link v-if="nav" :to="profile_link">
+    <router-link :to="profile_link">
       <svg><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
     </router-link>
-    <svg v-else><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <a v-if="nav" itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
-      <p v-else itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
+      <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
+      <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
     </figcaption>
   </figure>
 </template>
@@ -40,7 +39,6 @@
         return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       profile_link() {
-        // return !!this.person.mobile && `/+1${this.person.mobile}`
         let route = {
           path: `/+1${this.person.mobile}`
         }

@@ -1,13 +1,10 @@
 <template lang="html">
   <section id="profile" class="page" v-bind:class="{me}">
     <header>
-      <router-link v-if="me" to="/account">
-        <profile-as-figure :person='person' :nav="false"></profile-as-figure>
-      </router-link>
-      <profile-as-figure v-else :person='person' :previous="true"></profile-as-figure>
+      <profile-as-figure :person='person' :me="me" :previous="true"></profile-as-figure>
+      <icon v-show="working" name="working"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <icon v-show="working" name="working"></icon>
     <my-posts v-if="me"></my-posts>
     <posts-list v-else :posts='posts'></posts-list>
   </section>
@@ -42,6 +39,7 @@
         this.get_items(mobile, 'posts').then(items => (this.posts = items))
       } else {
         this.me = true
+        this.working = false
         this.person = person_storage.as_object()
       }
     },
