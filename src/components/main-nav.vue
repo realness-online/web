@@ -4,7 +4,7 @@
     <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
-    <router-link v-if="!posting" to="/where" class="green">Groups</router-link>
+    <router-link v-if="!posting" to="/where" class="green">Where</router-link>
     <router-link v-if="!posting" to="/profile" class="black">{{user_name}}</router-link>
   </nav>
 </template>
@@ -39,14 +39,12 @@
     },
     computed: {
       onboarding() {
-
-
         return {
           is_person: this.signed_in,
           has_posts: this.has_posts,
           has_friends: (this.signed_in && localStorage.getItem('relations-count') > 0),
           can_event: (this.signed_in && localStorage.getItem('relations-count') >= 5),
-          can_group: (this.signed_in && localStorage.getItem('relations-count') >= 25)
+          can_where: (this.signed_in && localStorage.getItem('relations-count') >= 25)
         }
       },
       user_name() {
@@ -119,7 +117,7 @@
     &.can_event
       & > [href='/events']
         visibility: visible
-     &.can_group
-       & > [href='/groups']
+     &.can_where
+       & > [href='/where']
          visibility: visible
 </style>
