@@ -12,7 +12,11 @@ input
 textarea
   border-color: transparent
   background-color: transparent
-
+  &:disabled
+    opacity:1
+    user-select: none
+    -webkit-text-fill-color: black
+    color:black
 button
 input
 textarea
@@ -34,6 +38,9 @@ button
   standard-button: black
   background-color: inherit
   vertical-align: middle
+  text-transform:capitalize
+  &:disabled
+    standard-button: lighten(black, 30%)
 
 fieldset
   standard-border: black

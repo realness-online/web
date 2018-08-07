@@ -196,14 +196,7 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
-    input[disabled]
-      user-select: none
-      color:black
     input#verification-code
       margin-top: (base-line / 2)
-    button
-      text-transform:capitalize
-    button[disabled]
-      standard-border: lighten(black, 50%)
-      color: lighten(black, 50%)
+    
 </style>
