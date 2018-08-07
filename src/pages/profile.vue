@@ -4,9 +4,10 @@
       <router-link v-if="me" to="/account">
         <profile-as-figure :person='person' :nav="false"></profile-as-figure>
       </router-link>
-      <profile-as-figure v-else :person='person'></profile-as-figure>
+      <profile-as-figure v-else :person='person' :previous="true"></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-show="working" name="working"></icon>
     <my-posts v-if="me"></my-posts>
     <posts-list v-else :posts='posts'></posts-list>
   </section>
@@ -19,6 +20,7 @@
   import logoAsLink from '@/components/logo-as-link'
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
+  import icon from '@/components/icon'
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
 
@@ -27,16 +29,17 @@
       profileAsFigure,
       myPosts,
       postsList,
-      logoAsLink
+      logoAsLink,
+      icon
     },
     created() {
       const mobile = this.$route.params.mobile
       if (mobile) {
-        this.get_items(mobile, 'posts').then(items => (this.posts = items))
         this.get_items(mobile, 'person').then(items => {
-          console.log(items[0])
+          this.working = false
           this.person = items[0]
         })
+        this.get_items(mobile, 'posts').then(items => (this.posts = items))
       } else {
         this.me = true
         this.person = person_storage.as_object()
@@ -45,6 +48,7 @@
     data() {
       return {
         me: false,
+        working: true,
         person: {},
         posts: {}
       }
@@ -78,4 +82,6 @@
       figure.profile svg
         standard-button: black
         padding:0
+    & > svg.working
+      margin-top: base-line
 </style>

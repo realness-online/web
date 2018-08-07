@@ -2,9 +2,9 @@
   <figure class="profile" itemscope itemtype='/person'>
     <meta itemprop="created_at" :content="person.created_at">
     <meta itemprop="updated_at" :content="person.updated_at">
-    <a v-if="nav" :href="profile_link">
+    <router-link v-if="nav" :to="profile_link">
       <svg><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
-    </a>
+    </router-link>
     <svg v-else><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
     <figcaption>
       <p>
@@ -22,14 +22,17 @@
   export default {
     props: {
       person: Object,
+      previous: {
+        type: Boolean,
+        default: false
+      },
+      me: {
+        type: Boolean,
+        default: false
+      },
       nav: {
         type: Boolean,
         default: true
-      }
-    },
-    data() {
-      return {
-        me: true
       }
     },
     computed: {
@@ -37,7 +40,17 @@
         return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       profile_link() {
-        return !!this.person.mobile && `/+1${this.person.mobile}`
+        // return !!this.person.mobile && `/+1${this.person.mobile}`
+        let route = {
+          path: `/+1${this.person.mobile}`
+        }
+        if (this.previous) {
+          route.path = sessionStorage.previous
+        }
+        if (this.me) {
+          route.path = '/account'
+        }
+        return route
       },
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
