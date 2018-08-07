@@ -26,3 +26,7 @@
     }
   }
 </script>
+<style lang="stylus">
+  section#home.page
+    padding: 0
+</style>

@@ -56,11 +56,11 @@
 <style lang="stylus">
   @require '../style/variables'
   nav#main_nav
-    position: fixed
-    top:0
-    left:0
-    bottom:0
-    right:0
+    // position: fixed
+    // top:0
+    // left:0
+    // bottom:0
+    // right:0
     min-height: 100vh
     display: flex
     flex-direction:row
