@@ -198,5 +198,5 @@
       margin-right: base-line
     input#verification-code
       margin-top: (base-line / 2)
-    
+
 </style>
