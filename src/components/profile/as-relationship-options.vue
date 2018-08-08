@@ -1,6 +1,6 @@
 <template>
   <menu>
-    <a v-bind:class="{relation}" v-on:click="update_relationship">
+    <a v-if="!is_me" v-bind:class="{relation}" v-on:click="update_relationship">
       <icon name="add"></icon>
       <icon name="remove"></icon>
     </a>
@@ -8,15 +8,26 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import {relations_storage} from '@/modules/Storage'
+  import {relations_storage, person_storage} from '@/modules/Storage'
   export default {
-    props: ['person'],
+    props: {
+      person: Object,
+      me: {
+        type: Boolean,
+        default: false
+      }
+    },
     components: {
       icon
     },
     data() {
       return {
         relation: this.is_relation()
+      }
+    },
+    computed: {
+      is_me() {
+        return person_storage.as_object().mobile === this.person.mobile
       }
     },
     methods: {
