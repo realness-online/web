@@ -16,8 +16,8 @@ exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
     itemprop="updated_at"
   />
    
-  <a
-    href="/+16282281824"
+  <router-link
+    to="[object Object]"
   >
     <svg>
       <use
@@ -25,7 +25,7 @@ exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
         xlink:href="#silhouette"
       />
     </svg>
-  </a>
+  </router-link>
    
   <figcaption>
     <p>
@@ -69,8 +69,8 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
     itemprop="updated_at"
   />
    
-  <a
-    href="/+16282281824"
+  <router-link
+    to="[object Object]"
   >
     <svg>
       <use
@@ -78,7 +78,7 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
         xlink:href="/people/+16282281824/profile.svg"
       />
     </svg>
-  </a>
+  </router-link>
    
   <figcaption>
     <p>

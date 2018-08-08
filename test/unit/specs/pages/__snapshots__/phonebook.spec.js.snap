@@ -51,8 +51,8 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           itemprop="updated_at"
         />
          
-        <a
-          href="/+16282281824"
+        <router-link
+          to="[object Object]"
         >
           <svg>
             <use
@@ -60,7 +60,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
               xlink:href="#silhouette"
             />
           </svg>
-        </a>
+        </router-link>
          
         <figcaption>
           <p>
@@ -123,8 +123,8 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           itemprop="updated_at"
         />
          
-        <a
-          href="/+12403800385‬"
+        <router-link
+          to="[object Object]"
         >
           <svg>
             <use
@@ -132,7 +132,7 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
               xlink:href="#silhouette"
             />
           </svg>
-        </a>
+        </router-link>
          
         <figcaption>
           <p>

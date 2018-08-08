@@ -42,6 +42,8 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
     <!---->
   </fieldset>
    
+  <!---->
+   
   <menu>
     <button
       id="authorize"
