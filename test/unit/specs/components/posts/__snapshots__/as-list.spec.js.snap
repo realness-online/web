@@ -1,33 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posts/as-list.vue should render (ol#activity) 1`] = `
+exports[`@/components/posts/as-list.vue should render proper microdata for posts 1`] = `
 <div
   itemprop="posts"
   itemref="profile"
 />
-`;
-
-exports[`@/components/posts/as-list.vue should render some posts 1`] = `
-<div
-  itemprop="posts"
-  itemref="profile"
->
-  <article
-    itemscope="itemscope"
-    itemtype="/post"
-  >
-    <blockquote
-      itemprop="articleBody"
-    >
-      I like to move it
-    </blockquote>
-     
-    <time
-      datetime="2017-12-20T23:01:14.310Z"
-      itemprop="created_at"
-    >
-      calculating...
-    </time>
-  </article>
-</div>
 `;

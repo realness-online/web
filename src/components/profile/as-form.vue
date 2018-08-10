@@ -67,6 +67,7 @@
         if (user) {
           this.show_sign_out = true
           this.$bus.$emit('signed-in')
+          sessionStorage.removeItem('posts_synced')
           this.disable_input()
         } else {
           this.show_authorize = true
@@ -83,7 +84,7 @@
     },
     methods: {
       disable_input() {
-        this.$el.querySelector('#mobile').disabled = true
+        // this.$el.querySelector('#mobile').disabled = true
         this.$el.querySelector('#first-name').disabled = true
         this.$el.querySelector('#last-name').disabled = true
       },

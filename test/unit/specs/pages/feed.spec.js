@@ -6,4 +6,7 @@ describe('@/pages/feed.vue', () => {
     let wrapper = shallow(feed)
     expect(wrapper.element).toMatchSnapshot()
   })
+  it('should create feef from my relationships', () => {
+    expect.assertions(1)
+  })
 })

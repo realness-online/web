@@ -19,7 +19,7 @@ describe('@/compontent/profile/as-form.vue', () => {
   afterEach(() => {
     firebase_mock.mockReset()
   })
-  describe('button#submit-verification success', () => {
+  describe('user sign', () => {
     let wrapper, button, confirm_spy
     afterEach(() => {
       confirm_spy.mockReset()
@@ -39,7 +39,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       button = wrapper.find('#submit-verification')
     })
-    it('signs the user in with verification code when clicked', () => {
+    it('button#submit-verification signs the user in', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
@@ -48,6 +48,11 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
+    })
+    it('sets posts to be resynced', () => {
+      sessionStorage.setItem('posts_synced', true)
+      button.trigger('click')
+      expect(sessionStorage.getItem('posts_synced')).toBe(false)
     })
     it('renders the sign out button when clicked', () => {
       expect(wrapper.vm.show_sign_out).toBe(false)

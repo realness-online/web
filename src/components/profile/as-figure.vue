@@ -1,9 +1,7 @@
 <template>
-  <figure class="profile" itemscope itemtype='/person'>
-    <meta itemprop="created_at" :content="person.created_at">
-    <meta itemprop="updated_at" :content="person.updated_at">
+  <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <router-link :to="profile_link">
-      <svg><use itemprop="image" :xlink:href="guaranteed_image"/></svg>
+      <icon name="silhouette"></icon>
     </router-link>
     <figcaption>
       <p>
@@ -13,12 +11,17 @@
       <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
     </figcaption>
+    <meta itemprop="created_at" :content="person.created_at">
+    <meta itemprop="updated_at" :content="person.updated_at">
   </figure>
 </template>
 <script>
   import { AsYouType } from 'libphonenumber-js'
-  import icons from '@/icons.svg'
+  import icon from '@/components/icon'
   export default {
+    components: {
+      icon
+    },
     props: {
       person: Object,
       previous: {
@@ -35,13 +38,14 @@
       }
     },
     computed: {
+      item_id() {
+        return `/+1${this.person.mobile}`
+      },
       sms_link() {
         return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       profile_link() {
-        let route = {
-          path: `/+1${this.person.mobile}`
-        }
+        let route = { path: `/+1${this.person.mobile}` }
         if (this.previous) {
           route.path = sessionStorage.previous
         }
@@ -52,13 +56,6 @@
       },
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
-      },
-      guaranteed_image() {
-        if (!this.person.image) {
-          return `${icons}#silhouette`
-        } else {
-          return this.person.image
-        }
       }
     }
   }

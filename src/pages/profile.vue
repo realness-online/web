@@ -20,7 +20,6 @@
   import icon from '@/components/icon'
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
-
   export default {
     components: {
       profileAsFigure,
