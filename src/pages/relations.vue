@@ -17,5 +17,5 @@
 <style lang='stylus'>
   @require '../style/variables'
   section#relations svg.heart
-    fill:blue
+    fill: blue
 </style>

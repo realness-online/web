@@ -69,7 +69,10 @@
     display:flex
     & > a > svg
       fill: black
-      standard-border()
+      stroke: lighten(black, 20%)
+      stroke-width: (base-line / 36)
+      border-radius: base-line
+
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle

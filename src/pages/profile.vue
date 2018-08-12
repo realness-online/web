@@ -72,13 +72,6 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#profile
-    figure.profile svg
-      standard-border: black
-    &.me
-      figure.profile svg
-        standard-button: black
-        padding:0
-    & > svg.working
-      margin-top: base-line
+  section#profile > svg.working
+    margin-top: base-line
 </style>

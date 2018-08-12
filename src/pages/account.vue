@@ -31,7 +31,5 @@
   @require '../style/variables'
   section#account header
     margin-bottom: base-line
-    figure.profile  svg
-      color:black
-      standard-border(black)
+
 </style>

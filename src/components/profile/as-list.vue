@@ -29,7 +29,8 @@
         & > figcaption a
           color:blue
         & svg
-          fill:blue
+          fill: blue
+          stroke: lighten(blue, 33%)
     @media (min-width: min-screen)
       display: flex
       flex-direction: row

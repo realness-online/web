@@ -74,20 +74,24 @@
 <style lang="stylus">
   @require '../style/variables'
   section#feed
+    display: flex
+    flex-direction: column-reverse
     & > header
+      order: 2
       margin-bottom: base-line
       & > svg
         fill: transparent
+    & > svg.working
+      order: 1
+      margin-bottom: base-line
     & > article
       margin-bottom: base-line
-      & > blockquote
-        margin-bottom: (base-line / 2)
-      & > time
-        text-align: right
       & > header
         margin-bottom: (base-line / 2)
         & > figure a svg
           fill: blue
-          border-color: blue
+          stroke: lighten(blue, 33%)
           border-radius: base-line
+      & > blockquote
+        margin-bottom: (base-line / 2)
 </style>
