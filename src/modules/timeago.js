@@ -5,16 +5,16 @@ function timeAgo() {
   let templates = {
     prefix: '',
     suffix: ' ago',
-    seconds: 'seconds',
-    minute: 'a minute',
+    seconds: 'Seconds',
+    minute: 'A minute',
     minutes: '%d minutes',
-    hour: 'about an hour',
-    hours: 'about %d hours',
-    day: 'a day',
+    hour: 'About an hour',
+    hours: 'About %d hours',
+    day: 'A day',
     days: '%d days',
-    month: 'about a month',
+    month: 'About a month',
     months: '%d months',
-    year: 'about a year',
+    year: 'About a year',
     years: '%d years'
   }
   let template = (t, n) => {
