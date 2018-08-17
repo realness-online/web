@@ -131,7 +131,4 @@
         & > figure a svg
           fill: blue
           stroke: lighten(blue, 33%)
-          border-radius: base-line
-      & > blockquote
-        margin-bottom: (base-line / 2)
 </style>

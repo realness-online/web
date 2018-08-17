@@ -24,14 +24,6 @@
     flex-direction: column-reverse
     & > article
       margin-bottom: base-line
-      & > time
-        display: block
-        cursor: default;
-        transition: opacity 0.25s
-        opacity: 0.5
-        &:active
-          transition: opacity 0.24s
-          opacity: 1
       & > blockquote
         cursor: default
         white-space: pre-wrap
