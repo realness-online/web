@@ -17,14 +17,14 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
-  div[itemprop="posts"]
-    margin-top: base-line
-    display:flex
-    flex-direction: column-reverse
-    & > article
-      margin-bottom: base-line
-      & > blockquote
-        cursor: default
-        white-space: pre-wrap
+  // @require '../../style/variables'
+  // div[itemprop="posts"]
+  //   margin-top: base-line
+  //   display:flex
+  //   flex-direction: column-reverse
+  //   & > article
+  //     margin-bottom: base-line
+  //     & > blockquote
+  //       cursor: default
+  //       white-space: pre-wrap
 </style>
