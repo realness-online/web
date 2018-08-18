@@ -3,28 +3,14 @@
 exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
 <figure
   class="profile"
+  itemid="/+16282281824"
   itemscope="itemscope"
   itemtype="/person"
 >
-  <meta
-    content="2018-07-15T18:11:31.018Z"
-    itemprop="created_at"
-  />
-   
-  <meta
-    content="2018-07-16T18:12:21.552Z"
-    itemprop="updated_at"
-  />
-   
   <router-link
     to="[object Object]"
   >
-    <svg>
-      <use
-        itemprop="image"
-        xlink:href="#silhouette"
-      />
-    </svg>
+    <!---->
   </router-link>
    
   <figcaption>
@@ -50,34 +36,30 @@ exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
       (628) 228-1824
     </a>
   </figcaption>
+   
+  <meta
+    content="2018-07-15T18:11:31.018Z"
+    itemprop="created_at"
+  />
+   
+  <meta
+    content="2018-07-16T18:12:21.552Z"
+    itemprop="updated_at"
+  />
 </figure>
 `;
 
 exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
 <figure
   class="profile"
+  itemid="/+16282281824"
   itemscope="itemscope"
   itemtype="/person"
 >
-  <meta
-    content="2018-07-15T18:11:31.018Z"
-    itemprop="created_at"
-  />
-   
-  <meta
-    content="2018-07-16T18:12:21.552Z"
-    itemprop="updated_at"
-  />
-   
   <router-link
     to="[object Object]"
   >
-    <svg>
-      <use
-        itemprop="image"
-        xlink:href="/people/+16282281824/profile.svg"
-      />
-    </svg>
+    <!---->
   </router-link>
    
   <figcaption>
@@ -103,5 +85,15 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
       (628) 228-1824
     </a>
   </figcaption>
+   
+  <meta
+    content="2018-07-15T18:11:31.018Z"
+    itemprop="created_at"
+  />
+   
+  <meta
+    content="2018-07-16T18:12:21.552Z"
+    itemprop="updated_at"
+  />
 </figure>
 `;

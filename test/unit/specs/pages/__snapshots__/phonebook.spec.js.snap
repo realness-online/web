@@ -40,23 +40,17 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
     <li>
       <figure
         class="profile"
+        itemid="/+16282281824"
         itemscope="itemscope"
         itemtype="/person"
       >
-        <meta
-          itemprop="created_at"
-        />
-         
-        <meta
-          itemprop="updated_at"
-        />
-         
         <router-link
           to="[object Object]"
         >
-          <svg>
+          <svg
+            class="silhouette"
+          >
             <use
-              itemprop="image"
               xlink:href="#silhouette"
             />
           </svg>
@@ -85,6 +79,14 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
             (628) 228-1824
           </a>
         </figcaption>
+         
+        <meta
+          itemprop="created_at"
+        />
+         
+        <meta
+          itemprop="updated_at"
+        />
       </figure>
        
       <menu>
@@ -112,23 +114,17 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
     <li>
       <figure
         class="profile"
+        itemid="/+12403800385‬"
         itemscope="itemscope"
         itemtype="/person"
       >
-        <meta
-          itemprop="created_at"
-        />
-         
-        <meta
-          itemprop="updated_at"
-        />
-         
         <router-link
           to="[object Object]"
         >
-          <svg>
+          <svg
+            class="silhouette"
+          >
             <use
-              itemprop="image"
               xlink:href="#silhouette"
             />
           </svg>
@@ -157,6 +153,14 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
             (240) 380-0385
           </a>
         </figcaption>
+         
+        <meta
+          itemprop="created_at"
+        />
+         
+        <meta
+          itemprop="updated_at"
+        />
       </figure>
        
       <menu>
