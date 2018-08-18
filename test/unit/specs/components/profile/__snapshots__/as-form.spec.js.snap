@@ -48,7 +48,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
     <button
       id="authorize"
     >
-      enter realness
+      Enter realness
     </button>
      
     <!---->

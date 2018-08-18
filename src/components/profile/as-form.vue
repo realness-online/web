@@ -25,13 +25,13 @@
     <menu v-if="valid_mobile_number">
       <button id="authorize"
               v-if="show_authorize"
-              v-on:click='begin_authorization'>enter realness</button>
-      <button id='submit-verification' disabled
+              v-on:click='begin_authorization'>Enter realness</button>
+      <button id='submit-verification'
               v-if="show_code"
-              v-on:click="sign_in_with_code">sign in</button>
+              v-on:click="sign_in_with_code">Sign in</button>
       <button id="sign-out"
               v-if="show_sign_out"
-              v-on:click="sign_out">sign out</button>
+              v-on:click="sign_out">Sxign out</button>
     </menu>
   </form>
 </template>
@@ -66,11 +66,15 @@
         this.working = false
         if (user) {
           this.show_sign_out = true
-          this.$bus.$emit('signed-in')
-          sessionStorage.removeItem('posts_synced')
-          this.disable_input()
         } else {
           this.show_authorize = true
+        }
+      })
+    },
+    mounted() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          this.disable_input()
         }
       })
     },
@@ -84,7 +88,7 @@
     },
     methods: {
       disable_input() {
-        // this.$el.querySelector('#mobile').disabled = true
+        this.$el.querySelector('#mobile').disabled = true
         this.$el.querySelector('#first-name').disabled = true
         this.$el.querySelector('#last-name').disabled = true
       },
@@ -128,8 +132,9 @@
           })
       },
       sign_in_with_code(event) {
-        this.working = true
         event.preventDefault()
+        sessionStorage.removeItem('posts_synced')
+        this.working = true
         this.disable_input()
         this.show_code = false
         this.authorizer.confirm(this.code).then(result => {
@@ -140,8 +145,8 @@
       },
       sign_out(event) {
         event.preventDefault()
-        this.show_sign_out = false
         firebase.auth().signOut()
+        this.show_sign_out = false
         this.show_authorize = true
         this.$el.querySelector('#mobile').disabled = false
         this.$el.querySelector('#first-name').disabled = false

@@ -16,25 +16,19 @@ describe('@/compontent/profile/as-form.vue', () => {
       return { onAuthStateChanged }
     })
   })
-  afterEach(() => {
-    firebase_mock.mockReset()
-  })
-  describe('user sign', () => {
+  describe('Sign in', () => {
     let wrapper, button, confirm_spy
-    afterEach(() => {
-      confirm_spy.mockReset()
-    })
     beforeEach(() => {
       confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy') )
       wrapper = shallow(as_form, {
         propsData: {
           person: person
-        },
-        data: {
-          show_code: true,
-          authorizer: {
-            confirm: confirm_spy
-          }
+        }
+      })
+      wrapper.setData({
+        show_code: true,
+        authorizer: {
+          confirm: confirm_spy
         }
       })
       button = wrapper.find('#submit-verification')
@@ -52,7 +46,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     it('sets posts to be resynced', () => {
       sessionStorage.setItem('posts_synced', true)
       button.trigger('click')
-      expect(sessionStorage.getItem('posts_synced')).toBe(false)
+      expect(sessionStorage.getItem('posts_synced')).toBeFalsy()
     })
     it('renders the sign out button when clicked', () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
@@ -62,11 +56,8 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
     })
   })
-  describe('button#sign-out', () => {
+  describe('Sign out', () => {
     let wrapper, button, is_signed_in, signOut
-    afterEach(() => {
-      is_signed_in.mockReset()
-    })
     beforeEach(() => {
       is_signed_in = jest.fn((state_changed) => {
         state_changed({user: person})
@@ -77,28 +68,30 @@ describe('@/compontent/profile/as-form.vue', () => {
           signOut,
           onAuthStateChanged: is_signed_in }
       })
-      wrapper = shallow(as_form, { propsData: { person: person } })
+      wrapper = shallow(as_form, {
+        propsData: { person: person }
+      })
       button = wrapper.find('#sign-out')
     })
-    it('is displayed when user is signed in', () => {
+    it('button#sign-out is displayed when user is signed in', () => {
       expect(firebase.auth).toBeCalled()
       expect(is_signed_in).toBeCalled()
+      expect(wrapper.vm.show_sign_out).toBe(true)
       expect(button.exists()).toBe(true)
     })
-    it('logs the user out when clicked', () => {
+    it('button#sign-out logs the user out when clicked', () => {
       button.trigger('click')
       expect(signOut).toBeCalled()
     })
-    it('removes itself when clicked', () => {
+    it('button#sign-out is removed when clicked', () => {
       button.trigger('click')
       button = wrapper.find('#sign-out')
       expect(button.exists()).toBe(false)
       expect(wrapper.vm.show_sign_out).toBe(false)
     })
-    it('renders the authorize button when clicked', () => {
+    it('renders the authorize button after sign out', () => {
       button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(true)
     })
   })
-  it('can not change phone number while signed in')
 })

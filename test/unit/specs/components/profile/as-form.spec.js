@@ -2,7 +2,6 @@ import {shallow} from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form.vue', () => {
   const person = {
@@ -16,9 +15,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       return { onAuthStateChanged }
     })
   })
-  afterEach(() => {
-    firebase_mock.mockReset()
-  })
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
@@ -26,16 +22,6 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
     it('should render profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
-    })
-    it('input blur should save person', () => {
-      let storage_stub = jest.fn()
-      wrapper.vm.person.first_name = 'changed'
-      let mobile = wrapper.find('#mobile')
-      wrapper.vm.storage.save = storage_stub
-      mobile.trigger('blur')
-      wrapper.vm.$nextTick(() => {
-        expect(storage_stub).toBeCalled()
-      })
     })
   })
   describe('#save_person', () => {
@@ -45,9 +31,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       storage_save = jest.fn()
       wrapper.vm.storage.save = storage_save
     })
-    afterEach(() => {
-      storage_save.mockReset()
-    })
     it('should set created_at when new', () => {
       wrapper.vm.save_person()
       expect(wrapper.vm.person.created_at).toBeDefined()
@@ -55,7 +38,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       wrapper.vm.$nextTick(() => {
         expect(storage_save).toBeCalled()
       })
-
     })
     describe('updating', () => {
       let last_update
@@ -196,10 +178,10 @@ describe('@/compontent/profile/as-form.vue', () => {
         }
       })
       wrapper = shallow(as_form, {
-        propsData: { person: person },
-        data: {
-          show_code: true
-        }
+        propsData: { person: person }
+      })
+      wrapper.setData({
+        show_code: true
       })
     })
     it('hides captcha div', () => {
@@ -215,11 +197,11 @@ describe('@/compontent/profile/as-form.vue', () => {
     let input, stub, wrapper
     beforeEach(() => {
       wrapper = shallow(as_form, {
-        propsData: { person: person },
-        data: {
-          show_code: true,
-          code: '12345'
-        }
+        propsData: { person: person }
+      })
+      wrapper.setData({
+        show_code: true,
+        code: '12345'
       })
       input = wrapper.find('#verification-code')
       stub = jest.fn()
@@ -240,7 +222,6 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
     it('renders sign in button with valid input', () => {
       let button = wrapper.find('#submit-verification')
-      expect(button.attributes().disabled).toBe('disabled')
       input.trigger('keypress', {
         key: '6',
         preventDefault: stub
