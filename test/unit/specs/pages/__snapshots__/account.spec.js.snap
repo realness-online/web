@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/pages/account.vue renders event information 1`] = `
+<section
+  class="page left"
+  id="account"
+>
+  <header>
+    <!---->
+     
+    <router-link
+      to="/profile"
+    >
+      <!---->
+    </router-link>
+  </header>
+   
+  <!---->
+</section>
+`;
+
+exports[`@/pages/events.vue renders event information 1`] = `
+<section
+  class="page"
+  id="events"
+>
+  <header>
+    <h1>
+      Events
+    </h1>
+     
+    <nav>
+      <router-link
+        to="/"
+      >
+        home
+      </router-link>
+    </nav>
+  </header>
+</section>
+`;
