@@ -47,7 +47,7 @@ class Storage {
             doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
           }
           firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
-            .then(() => resolve(doc_u_path))
+            .then((upload_task) => resolve(upload_task))
             .catch(e => reject(e))
         } else {
           resolve('no need to persist')
