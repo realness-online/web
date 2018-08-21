@@ -35,7 +35,9 @@
           this.working = false
           this.person = items[0]
         })
-        this.get_items(mobile, 'posts').then(items => (this.posts = items))
+        this.get_items(mobile, 'posts').then(items => {
+          this.posts = items
+        })
       } else {
         this.me = true
         this.working = false
