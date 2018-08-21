@@ -9,20 +9,20 @@ const is_signed_in = jest.fn((state_changed) => {
     phoneNumber: "6282281824"
   })
 })
-const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
-  return {
-    ref: jest.fn(() => {
-      return {
-        child: jest.fn(() => {
-          return {
-            put: jest.fn((path) => Promise.resolve(path)),
-            getDownloadURL: jest.fn((path) => Promise.resolve('http://some.google.com/example/path/file.html'))
-          }
-        })
-      }
-    })
-  }
-})
+// const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
+//   return {
+//     ref: jest.fn(() => {
+//       return {
+//         child: jest.fn(() => {
+//           return {
+//             put: jest.fn((path) => Promise.resolve(path)),
+//             getDownloadURL: jest.fn((path) => Promise.resolve('http://some.google.com/example/path/file.html'))
+//           }
+//         })
+//       }
+//     })
+//   }
+// })
 const phonebook_as_text = `
   <div id="phonebook">
     <figure itemscope itemtype="/person" itemid='+16282281824'>
@@ -69,7 +69,7 @@ describe('@/modules/PhoneBook', () => {
       })
       expect.assertions(1)
       phonebook_storage.get_download_url().then(url => {
-        expect(url).toBe('http://some.google.com/example/path/file.html')
+        expect(url).toBe('https://download_url/people/index.html')
       })
     })
   })

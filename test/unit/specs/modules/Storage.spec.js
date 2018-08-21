@@ -8,22 +8,8 @@ import 'firebase/storage'
 const not_signed_in = jest.fn(state_changed => state_changed())
 const is_signed_in = jest.fn((state_changed) => {
   state_changed({
-    phoneNumber: "6282281824"
+    phoneNumber: "+16282281824"
   })
-})
-const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
-  return {
-    ref: jest.fn(() => {
-      return {
-        child: jest.fn(() => {
-          return {
-            put: jest.fn((path) => Promise.resolve(path)),
-            getDownloadURL: jest.fn((path) => Promise.resolve('http://some.google.com/example/path/file.html'))
-          }
-        })
-      }
-    })
-  }
 })
 const server_text = `
   <div itemprop="posts" itemref="profile">
@@ -71,7 +57,7 @@ describe('@/modules/Storage.js', () => {
         return { onAuthStateChanged: is_signed_in }
       })
       storage.persist(item_as_string)
-        .then(result => expect(result).toBe('/people/6282281824/person.html'))
+        .then(result => expect(result).toBe('/people/+16282281824/person.html'))
     })
     it('does nothing unless user is signed in', () => {
       expect.assertions(1)
@@ -121,7 +107,7 @@ describe('@/modules/Storage.js', () => {
       })
       expect.assertions(1)
       storage.get_download_url().then(url => {
-        expect(url).toBe('http://some.google.com/example/path/file.html')
+        expect(url).toBe('https://download_url/people/+16282281824/person.html')
       })
     })
     it('rejects a promise if user is not logged in', () => {
