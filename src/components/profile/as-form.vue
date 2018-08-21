@@ -31,7 +31,7 @@
               v-on:click="sign_in_with_code">Sign in</button>
       <button id="sign-out"
               v-if="show_sign_out"
-              v-on:click="sign_out">Sxign out</button>
+              v-on:click="sign_out">Sign out</button>
     </menu>
   </form>
 </template>
