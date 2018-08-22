@@ -20,11 +20,10 @@
         this.posts.push(post)
         localStorage.setItem('posts-count', this.posts.length)
       })
-
       if (!sessionStorage.getItem('posts_synced')) {
         posts_storage.sync_list().then((items) => {
           this.posts = items
-          sessionStorage.setItem('posts_synced|', 'true')
+          sessionStorage.setItem('posts_synced', 'true')
           console.log('posts synced')
         })
       }
