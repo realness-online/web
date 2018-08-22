@@ -1,18 +1,9 @@
 import { shallow } from 'vue-test-utils'
 import application from '@/components/application'
-import as_form from '@/components/profile/as-form'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
 
 const signed_out = jest.fn(state_changed => state_changed())
 const signed_in = jest.fn((state_changed) => { state_changed({user: {} }) })
 describe('@/components/application.vue', () => {
-  let firebase_mock
-  beforeEach(() => {
-    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged:signed_out }
-    })
-  })
 
   it('renders layout for the application', () => {
     let wrapper = shallow(application)
@@ -20,14 +11,15 @@ describe('@/components/application.vue', () => {
   })
 
   it('only syncs data for people who are signed in', () => {
-    let sync_spy = jest.fn()
+    const $route = {
+      path: '/relations'
+    }
     let wrapper = shallow(application, {
-      data: {
-        storage: {
-          sync: sync_spy
-        }
+      mocks: {
+        $route
       }
     })
-    expect(sync_spy).not.toBeCalled()
+    wrapper.setData({ $route: { path: '/magic' } })
+    expect(sessionStorage.previous).toBe('/relations')
   })
 })
