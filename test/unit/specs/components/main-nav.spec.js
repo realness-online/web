@@ -8,7 +8,6 @@ jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return { onAuthStateChanged }
 })
 describe('@/components/main-nav.vue', () => {
-  // TODO: add test to confirm that buttons show up after user posts
   let wrapper
   beforeEach(() => {
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -52,7 +51,6 @@ describe('@/components/main-nav.vue', () => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {
           return { onAuthStateChanged: is_signed_in }
         })
-
       })
       it('relations is visible', () => {
         wrapper = shallow(main_nav, {
@@ -65,7 +63,6 @@ describe('@/components/main-nav.vue', () => {
         wrapper = shallow(main_nav, {
           data: { person: person}
         })
-
         expect(wrapper.vm.onboarding.has_friends).toBe(true)
       })
       it('events will be visible when person has 5 friends', () => {
@@ -73,7 +70,6 @@ describe('@/components/main-nav.vue', () => {
         wrapper = shallow(main_nav, {
           data: { person: person}
         })
-
         expect(wrapper.vm.onboarding.can_event).toBe(true)
       })
       it('where will be visible when person has 25 friends', () => {
@@ -81,18 +77,14 @@ describe('@/components/main-nav.vue', () => {
         wrapper = shallow(main_nav, {
           data: { person: person}
         })
-        
         expect(wrapper.vm.onboarding.can_where).toBe(true)
       })
     })
-
     it('profile is be visible when person has posted', () => {
       localStorage.setItem('posts-count', 1)
       const wrapper = shallow(main_nav)
       expect(wrapper.vm.onboarding.has_posts).toBe(true)
     })
-
-
   })
   describe('user_name()', () => {
     it('returns \'Profile\' by default', () => {
@@ -103,5 +95,4 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.user_name).toBe('Scott')
     })
   })
-
 })
