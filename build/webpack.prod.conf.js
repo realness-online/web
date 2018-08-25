@@ -37,13 +37,13 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': env
     }),
-
     new WorkboxPlugin.GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
       swDest: 'controller.js',
       navigateFallback: '/',
       precacheManifestFilename: 'manifest.[manifestHash].js'
     }),
-
     // new WorkboxPlugin.InjectManifest({
     //   swSrc: './src/controller.js'
     // }),

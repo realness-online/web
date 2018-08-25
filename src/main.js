@@ -11,10 +11,14 @@ import profile from '@/pages/profile'
 import relations from '@/pages/relations'
 import phonebook from '@/pages/phonebook'
 
-if (process.env.NODE_ENV === 'staging') {
+if (process.env.NODE_ENV === 'production') {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/controller.js').then(registration => {
+    navigator.serviceWorker.register('/controller.js', {
+      updateViaCache: 'all'
+    }).then(registration => {
       console.log('Service Worker registed!', registration)
+    }).catch(registrationError => {
+      console.log('ServiceWorker registration failed: ', registrationError)
     })
   }
 }
