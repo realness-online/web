@@ -3,18 +3,15 @@
     <main-nav></main-nav>
     <aside>
       <my-posts></my-posts>
-      <activity-index></activity-index>
     </aside>
   </section>
 </template>
 <script>
   import mainNav from '@/components/main-nav'
   import myPosts from '@/components/posts/my-list'
-  import activityIndex from '@/components/activity/as-list'
   export default {
     components: {
       mainNav,
-      activityIndex,
       myPosts
     },
     computed: {
