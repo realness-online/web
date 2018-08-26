@@ -52,7 +52,7 @@
         this.feed.push(...my_posts)
       },
       add_posts_to_feed(person, their_posts_as_text) {
-        console.log(person.first_name)
+        console.log(person.last_name)
         let posts = Item.get_items(Storage.hydrate(their_posts_as_text))
         posts.forEach(post => {
           post.person = person
@@ -62,6 +62,7 @@
       add_relations_to_feed() {
         return new Promise((resolve, reject) => {
           relations_storage.as_list().forEach((person) => {
+            console.log(person.first_name)
             this.posts_url(person).then((url) => {
               fetch(url).then((response) => {
                 response.text().then(text => {
@@ -79,6 +80,7 @@
     created() {
       this.add_relations_to_feed()
       this.insert_me_into_my_posts()
+      this.sort_feed()
     }
   }
 </script>
