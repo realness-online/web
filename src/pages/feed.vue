@@ -68,7 +68,7 @@
                   this.add_posts_to_feed(person, text)
                   this.sort_feed()
                   this.working = false
-                  resolve(this.working)
+                  resolve()
                 })
               })
             })
@@ -77,8 +77,8 @@
       }
     },
     created() {
-      this.insert_me_into_my_posts()
       this.add_relations_to_feed()
+      this.insert_me_into_my_posts()
     }
   }
 </script>
