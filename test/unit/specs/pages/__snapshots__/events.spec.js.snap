@@ -6,17 +6,17 @@ exports[`@/pages/events.vue renders event information 1`] = `
   id="events"
 >
   <header>
+    <!---->
+     
     <h1>
       Events
     </h1>
      
-    <nav>
-      <router-link
-        to="/"
-      >
-        home
-      </router-link>
-    </nav>
+    <!---->
   </header>
+   
+  <h2>
+    It's gonna be a minute
+  </h2>
 </section>
 `;
