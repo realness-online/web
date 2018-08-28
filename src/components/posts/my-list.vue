@@ -5,6 +5,8 @@
   import Vue from 'vue'
   import {posts_storage} from '@/modules/Storage'
   import postsList from '@/components/posts/as-list'
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   export default {
     components: {
       postsList
@@ -21,10 +23,14 @@
         localStorage.setItem('posts-count', this.posts.length)
       })
       if (!sessionStorage.getItem('posts_synced')) {
-        posts_storage.sync_list().then((items) => {
-          this.posts = items
-          sessionStorage.setItem('posts_synced', 'true')
-          console.log('posts synced')
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            posts_storage.sync_list().then((items) => {
+              this.posts = items
+              sessionStorage.setItem('posts_synced', 'true')
+              console.log('posts synced')
+            })
+          }
         })
       }
     },
