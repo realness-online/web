@@ -13,7 +13,9 @@ import phonebook from '@/pages/phonebook'
 
 if (process.env.NODE_ENV === 'production') {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/controller.js').then(registration => {
+    navigator.serviceWorker.register('/controller.js', {
+      updateViaCache: 'all'
+    }).then(registration => {
       registration.update()
       console.log('ServiceWorker registed!', registration)
     }).catch(registrationError => {
