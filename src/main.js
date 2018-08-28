@@ -16,7 +16,8 @@ if (process.env.NODE_ENV === 'production') {
     navigator.serviceWorker.register('/controller.js', {
       updateViaCache: 'all'
     }).then(registration => {
-      console.log('Service Worker registed!', registration)
+      registration.update()
+      console.log('ServiceWorker registed!', registration)
     }).catch(registrationError => {
       console.log('ServiceWorker registration failed: ', registrationError)
     })
