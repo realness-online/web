@@ -21,12 +21,10 @@ if (process.env.NODE_ENV === 'production') {
     })
   }
 }
-
 firebase.initializeApp(process.env.FIREBASE_CONFIG)
 Vue.prototype.$bus = new Vue({})
 Vue.use(VueRouter)
 Vue.config.productionTip = false
-
 const routes = [
   { path: '/', component: index },
   { path: '/events', component: events },
@@ -38,12 +36,10 @@ const routes = [
   { path: '/profile', component: profile },
   { path: '/+1:mobile', component: profile }
 ]
-
 const router = new VueRouter({
   routes,
   mode: 'history'
 })
-
 /* eslint-disable no-new */
 new Vue({
   el: '#loading-realness',
