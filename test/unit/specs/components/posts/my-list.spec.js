@@ -1,14 +1,27 @@
 import {shallow} from 'vue-test-utils'
 import Storage from '@/modules/Storage'
 import post_list from '@/components/posts/my-list'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+const person = {
+  first_name: 'Scott',
+  last_name: 'Fryxell',
+  mobile: '4151234356'
+}
+const onAuthStateChanged = jest.fn((state_changed) => {
+  state_changed({user: person})
+})
 describe('@/components/posts/my-list.vue', () => {
-  let wrapper
+  let wrapper, firebase_mock
   const post = {
     created_at: '2017-12-20T23:01:14.310Z',
     articleBody: 'I like to move it'
   }
   beforeEach(() => {
     sessionStorage.setItem('posts_synced', 'true')
+    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      return { onAuthStateChanged }
+    })
   })
   afterEach(() => {
     sessionStorage.removeItem('posts_synced')
