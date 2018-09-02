@@ -1,0 +1,36 @@
+as-figure
+<figure>
+  <a href="/account" class="router-link-exact-active router-link-active">
+    <svg class="silhouette">
+      <use xlink:href="/static/graphics/icons.4bfbc5c.svg#silhouette"></use>
+    </svg>
+  </a>
+  <figcaption>
+    <as-hgroup person="me"></as-hgroup>
+  </figcaption>
+</figure>
+
+as-hgroup
+<hgroup itemscope="itemscope" itemtype="/person" itemid="/+12403800385">
+  <p itemprop="first_name"></p>
+  <p itemprop="last_name"></p>
+  <p itemprop="mobile"></p>
+  <time itemprop="created_at">2018-07-31T02:15:19.847Z</time>
+  <time itemprop="updated_at">2018-07-31T02:15:19.847Z</time>
+ </hgroup>
+
+as-list-item
+<li itemscope="itemscope" itemtype="/person" itemid="/+12403800385">
+  <as-hgroup person="some-person"></as-hgroup>
+</li>
+
+as-lookup
+<nav itemid="/people" itemscope itemtype="/people">
+  <a itemprop="person" href="/+16282281824"></a>
+</nav>
+
+<nav itemid="/people" itemscope itemtype="/people">
+  <li itemprop="person">
+    <as-hgroup person="some-person"></as-hgroup>
+  </li>
+</nav>
