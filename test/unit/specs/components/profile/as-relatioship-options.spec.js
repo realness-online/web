@@ -1,7 +1,6 @@
 import {shallow} from 'vue-test-utils'
 import as_options from '@/components/profile/as-relationship-options'
 import Storage from '@/modules/Storage'
-
 describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
   let relations = [
@@ -27,7 +26,6 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     created_at: '2018-07-15T18:11:31.018Z',
     updated_at: '2018-07-16T18:12:21.552Z'
   }
-
   beforeEach(() => {
     jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
     wrapper = shallow(as_options, { propsData: { person: me } })
@@ -62,6 +60,5 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       wrapper.vm.update_relationship()
       expect(spy).toHaveBeenCalledTimes(1)
     })
-
   })
 })

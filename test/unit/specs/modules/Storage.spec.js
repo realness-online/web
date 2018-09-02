@@ -1,6 +1,4 @@
-import Item from '@/modules/Item'
-import Storage, {posts_storage, phonebook_storage} from '@/modules/Storage'
-import as_form from '@/components/profile/as-form'
+import Storage, {posts_storage} from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -8,7 +6,7 @@ import 'firebase/storage'
 const not_signed_in = jest.fn(state_changed => state_changed())
 const is_signed_in = jest.fn((state_changed) => {
   state_changed({
-    phoneNumber: "+16282281824"
+    phoneNumber: '+16282281824'
   })
 })
 const server_text = `

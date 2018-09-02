@@ -49,7 +49,7 @@ describe('@/pages/feed.vue', () => {
       return [{}]
     })
     jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => {
-      return {first_name:'scott'}
+      return {first_name: 'scott'}
     })
     wrapper.vm.insert_me_into_my_posts()
     expect(wrapper.vm.feed.length).toBe(1)

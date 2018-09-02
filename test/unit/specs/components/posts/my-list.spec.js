@@ -12,14 +12,14 @@ const onAuthStateChanged = jest.fn((state_changed) => {
   state_changed({user: person})
 })
 describe('@/components/posts/my-list.vue', () => {
-  let wrapper, firebase_mock
+  let wrapper
   const post = {
     created_at: '2017-12-20T23:01:14.310Z',
     articleBody: 'I like to move it'
   }
   beforeEach(() => {
     sessionStorage.setItem('posts_synced', 'true')
-    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { onAuthStateChanged }
     })
   })
@@ -59,5 +59,4 @@ describe('@/components/posts/my-list.vue', () => {
     wrapper.setProps({posts: []})
     expect(sync_list_spy).toBeCalled()
   })
-
 })

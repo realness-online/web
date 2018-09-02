@@ -10,16 +10,15 @@ describe('@/compontent/profile/as-form.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  let firebase_mock
   beforeEach(() => {
-    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { onAuthStateChanged }
     })
   })
   describe('Sign in', () => {
     let wrapper, button, confirm_spy
     beforeEach(() => {
-      confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy') )
+      confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
       wrapper = shallow(as_form, {
         propsData: {
           person: person

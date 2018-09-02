@@ -1,10 +1,8 @@
-import Vue from 'vue'
 import {mount, shallow} from 'vue-test-utils'
 import phonebook from '@/pages/phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
-
 const phonebook_as_text = `
   <div id="phonebook">
     <figure itemscope itemtype="/person" itemid='6282281824'>
@@ -28,7 +26,6 @@ jest.spyOn(PhoneBook.prototype, 'sync_list').mockImplementation(() => {
   return Promise.resolve(people)
 })
 jest.spyOn(PhoneBook.prototype, 'save').mockImplementation(save_spy)
-
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
@@ -40,7 +37,6 @@ describe('@/pages/phonebook', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   it('render a phonebook with people', () => {
-    const update_spy = jest.fn((person) => Promise.resolve(people))
     let wrapper = mount(phonebook)
     wrapper.setData({phonebook: people})
     expect(wrapper.element).toMatchSnapshot()

@@ -1,12 +1,11 @@
-import Item from '@/modules/Item'
-import PhoneBook, {phonebook_storage} from '@/modules/PhoneBook'
+import {phonebook_storage} from '@/modules/PhoneBook'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 const is_signed_in = jest.fn((state_changed) => {
   state_changed({
-    phoneNumber: "6282281824"
+    phoneNumber: '6282281824'
   })
 })
 const phonebook_as_text = `
@@ -30,20 +29,6 @@ const phonebook_as_text = `
       </figcaption>
     </figure>
   <div>`
-const person_as_text = `
-  <figure itemscope itemtype="/person" itemid='+16336661624'>
-    <meta itemprop="created_at" content="2018-07-15T18:11:31.018Z">
-    <meta itemprop="updated_at" content="2018-07-15T18:11:31.018Z">
-    <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
-    <figcaption>
-      <p>
-        <span itemprop="first_name">Mary</span>
-        <span itemprop="last_name">Neubon</span>
-      </p>
-      <a itemprop="mobile" data-value="+16336661624">+1 (633) 666-1624</a>
-    </figcaption>
-  </figure>`
-
 describe('@/modules/PhoneBook', () => {
   describe('#get_download_url', () => {
     it('exists', () => {
@@ -98,7 +83,7 @@ describe('@/modules/PhoneBook', () => {
         updated_at: '2018-07-16T18:12:21.552Z'
       }
       jest.spyOn(phonebook_storage, 'as_list')
-        .mockImplementation(() =>  Promise.resolve(phone_list))
+        .mockImplementation(() => Promise.resolve(phone_list))
     })
     afterEach(() => {
       jest.restoreAllMocks()
@@ -139,12 +124,11 @@ describe('@/modules/PhoneBook', () => {
     ))
     it('should save the phonebook', () => {
       expect.assertions(1)
-      jest.spyOn(phonebook_storage, 'persist').mockImplementation(() =>  Promise.resolve())
+      jest.spyOn(phonebook_storage, 'persist').mockImplementation(() => Promise.resolve())
       document.body.innerHTML = phonebook_as_text
       phonebook_storage.save().then((message) => {
         expect(message).toBe('saved phonebook to server')
       })
     })
-
   })
 })

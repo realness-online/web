@@ -20,7 +20,7 @@ describe('@/pages/relations.vue', () => {
     expect(wrapper.vm.relations.length).toBe(1)
   })
   it('should respond to a remove-relationship event', () => {
-    wrapper.setData({relations:[person]})
+    wrapper.setData({relations: [person]})
     expect(wrapper.vm.relations.length).toBe(1)
     wrapper.vm.$bus.$emit('remove-relationship', person)
     expect(wrapper.vm.relations.length).toBe(0)
@@ -32,7 +32,7 @@ describe('@/pages/relations.vue', () => {
       last_name: 'Caffey',
       mobile: '2223334444'
     }
-    wrapper.setData({relations:[person]})
+    wrapper.setData({relations: [person]})
     expect(wrapper.vm.relations.length).toBe(1)
     wrapper.vm.$bus.$emit('remove-relationship', other_person)
     expect(wrapper.vm.relations.length).toBe(1)

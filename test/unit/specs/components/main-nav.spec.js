@@ -2,7 +2,6 @@ import {shallow} from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return { onAuthStateChanged }
@@ -54,28 +53,28 @@ describe('@/components/main-nav.vue', () => {
       })
       it('relations is visible', () => {
         wrapper = shallow(main_nav, {
-          data: { person: person}
+          data: { person: person }
         })
         expect(wrapper.vm.onboarding.is_person).toBe(true)
       })
       it('feed is be visible when person has added a friend', () => {
         localStorage.setItem('relations-count', 1)
         wrapper = shallow(main_nav, {
-          data: { person: person}
+          data: { person: person }
         })
         expect(wrapper.vm.onboarding.has_friends).toBe(true)
       })
       it('events will be visible when person has 5 friends', () => {
         localStorage.setItem('relations-count', 5)
         wrapper = shallow(main_nav, {
-          data: { person: person}
+          data: { person: person }
         })
         expect(wrapper.vm.onboarding.can_event).toBe(true)
       })
       it('where will be visible when person has 25 friends', () => {
         localStorage.setItem('relations-count', 25)
         wrapper = shallow(main_nav, {
-          data: { person: person}
+          data: { person: person }
         })
         expect(wrapper.vm.onboarding.can_where).toBe(true)
       })

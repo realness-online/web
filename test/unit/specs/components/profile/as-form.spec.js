@@ -9,9 +9,8 @@ describe('@/compontent/profile/as-form.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  let firebase_mock
   beforeEach(() => {
-    firebase_mock = jest.spyOn(firebase, 'auth').mockImplementation(() => {
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { onAuthStateChanged }
     })
   })
@@ -170,7 +169,7 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('#text_human_verify_code', () => {
     let wrapper, signInWithPhoneNumber
     beforeEach(() => {
-      signInWithPhoneNumber = jest.fn(() => Promise.resolve('success') )
+      signInWithPhoneNumber = jest.fn(() => Promise.resolve('success'))
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return {
           signInWithPhoneNumber,
