@@ -7,7 +7,7 @@
              v-model="person.last_name">
     </fieldset>
     <fieldset id="phone">
-      <label for="mobile">1+</label>
+      <label for="mobile">1</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
