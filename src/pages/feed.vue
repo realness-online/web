@@ -101,7 +101,8 @@
       margin-bottom: base-line
       & > header
         margin-bottom: (base-line / 2)
-        & > figure a svg
+        & > figure > svg
+          border-color: blue
           fill: blue
           stroke: lighten(blue, 33%)
 </style>

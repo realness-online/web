@@ -1,8 +1,6 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
-    <router-link :to="profile_link">
-      <svg class='avatar'><use :xlink:href="avatar"/></svg>
-    </router-link>
+    <svg v-on:click="avatar_click" class='avatar'><use :xlink:href="avatar"/></svg>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
@@ -38,17 +36,9 @@
         default: true
       }
     },
-    computed: {
-      avatar(){
-        return `${icons}#silhouette`
-      },
-      item_id() {
-        return `/+1${this.person.mobile}`
-      },
-      sms_link() {
-        return !!this.person.mobile && `sms:+1${this.person.mobile}`
-      },
-      profile_link() {
+    methods: {
+      avatar_click(event) {
+        console.log("HIIIIII")
         let route = { path: `/+1${this.person.mobile}` }
         if (this.previous) {
           route.path = sessionStorage.previous
@@ -56,7 +46,22 @@
         if (this.me) {
           route.path = '/account'
         }
-        return route
+        if (this.edit_avatar) {
+          this.file_upload.click()
+        } else {
+          this.$router.push(route)
+        }
+      }
+    },
+    computed: {
+      avatar() {
+        return `${icons}#silhouette`
+      },
+      item_id() {
+        return `/+1${this.person.mobile}`
+      },
+      sms_link() {
+        return !!this.person.mobile && `sms:+1${this.person.mobile}`
       },
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
@@ -71,12 +76,11 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
-    & > a > svg
+    & > svg
       fill: black
       stroke: lighten(black, 20%)
       stroke-width: (base-line / 36)
       border-radius: base-line
-
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
