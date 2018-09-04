@@ -49,4 +49,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
     mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-18')
   })
+
+  describe('edit_avatar', {
+    it('should be able to edit their avatar')
+  })
 })

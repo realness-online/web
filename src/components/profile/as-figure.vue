@@ -1,7 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <router-link :to="profile_link">
-      <icon name="silhouette"></icon>
+      <svg class='avatar'><use :xlink:href="avatar"/></svg>
     </router-link>
     <figcaption>
       <p>
@@ -17,11 +17,8 @@
 </template>
 <script>
   import { AsYouType } from 'libphonenumber-js'
-  import icon from '@/components/icon'
+  import icons from '@/icons.svg'
   export default {
-    components: {
-      icon
-    },
     props: {
       person: Object,
       previous: {
@@ -32,12 +29,19 @@
         type: Boolean,
         default: false
       },
+      edit_avatar: {
+        type: Boolean,
+        default: false
+      },
       nav: {
         type: Boolean,
         default: true
       }
     },
     computed: {
+      avatar(){
+        return `${icons}#silhouette`
+      },
       item_id() {
         return `/+1${this.person.mobile}`
       },
