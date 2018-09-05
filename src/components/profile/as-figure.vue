@@ -1,6 +1,8 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
-    <svg v-on:click="avatar_click" class='avatar'><use :xlink:href="avatar"/></svg>
+    <svg @click="avatar_click" class='avatar'>
+      <use :xlink:href="avatar"/>
+    </svg>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
@@ -8,9 +10,11 @@
       </p>
       <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
+      <meta itemprop="created_at" :content="person.created_at">
+      <meta itemprop="updated_at" :content="person.updated_at">
     </figcaption>
-    <meta itemprop="created_at" :content="person.created_at">
-    <meta itemprop="updated_at" :content="person.updated_at">
+    <input id="avatar_picker" type="file" accept="image/*" style="display:none"
+            v-if="edit_avatar" ref="file_upload" v-uploader>
   </figure>
 </template>
 <script>
@@ -27,27 +31,48 @@
         type: Boolean,
         default: false
       },
-      edit_avatar: {
-        type: Boolean,
-        default: false
-      },
       nav: {
         type: Boolean,
         default: true
       }
     },
+    directives: {
+      uploader: {
+        bind(el, binding, vnode) {
+          el.addEventListener('change', e => {
+            if (e.target.files[0] !== undefined) {
+              // vnode.context.file is directive talk for this.file
+              console.log(e.target.files[0])
+              vnode.context.file = e.target.files[0]
+            }
+          })
+        }
+      }
+    },
+    data() {
+      return {
+        edit_avatar: false,
+        file: ''
+      }
+    },
+    created() {
+      if (this.$router.currentRoute.path === '/account') {
+        this.edit_avatar = true
+      }
+    },
     methods: {
       avatar_click(event) {
-        console.log("HIIIIII")
-        let route = { path: `/+1${this.person.mobile}` }
+        let route = {
+          path: `/+1${this.person.mobile}`
+        }
         if (this.previous) {
           route.path = sessionStorage.previous
         }
         if (this.me) {
           route.path = '/account'
         }
-        if (this.edit_avatar) {
-          this.file_upload.click()
+        if (this.$router.currentRoute.path === '/account') {
+          this.$refs.file_upload.click()
         } else {
           this.$router.push(route)
         }
@@ -77,6 +102,7 @@
     text-overflow: ellipsis
     display:flex
     & > svg
+      cursor: pointer
       fill: black
       stroke: lighten(black, 20%)
       stroke-width: (base-line / 36)

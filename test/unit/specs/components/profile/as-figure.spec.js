@@ -7,7 +7,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
       updated_at: '2018-07-16T18:12:21.552Z',
-      image: '/people/+16282281824/profile.svg',
+      image: '/people/+16282281824/avatar.svg',
       first_name: 'Scott',
       last_name: 'Fryxell',
       mobile: '6282281824'
@@ -30,7 +30,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
     expect(wrapper.element).toMatchSnapshot()
   })
-
   it('should format the mobile number for display', () => {
     let mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-1824')
@@ -49,8 +48,10 @@ describe('@/compontent/profile/as-figure.vue', () => {
     mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-18')
   })
-
-  describe('edit_avatar', {
-    it('should be able to edit their avatar')
+  describe('figure.profile > svg@click', {
+    it('should go to the mobile number when clicked')
+    it('should go to the profile page when me is true')
+    it('should go to the account page when clicked from the profile page')
+    it('should execute file upload when clicked from account page')
   })
 })
