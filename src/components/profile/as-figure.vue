@@ -68,7 +68,7 @@
         if (this.me) {
           route.path = '/account'
         }
-        if (this.$router.currentRoute.path === '/account') {
+        if (this.edit_avatar) {
           this.$refs.file_upload.click()
         } else {
           this.$router.push(route)
