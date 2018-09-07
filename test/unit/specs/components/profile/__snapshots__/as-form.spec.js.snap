@@ -28,7 +28,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
     <label
       for="mobile"
     >
-      1+
+      1
     </label>
      
     <input

@@ -44,17 +44,13 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         itemscope="itemscope"
         itemtype="/person"
       >
-        <router-link
-          to="[object Object]"
+        <svg
+          class="avatar"
         >
-          <svg
-            class="silhouette"
-          >
-            <use
-              xlink:href="#silhouette"
-            />
-          </svg>
-        </router-link>
+          <use
+            xlink:href="#silhouette"
+          />
+        </svg>
          
         <figcaption>
           <p>
@@ -78,15 +74,17 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           >
             (628) 228-1824
           </a>
+           
+          <meta
+            itemprop="created_at"
+          />
+           
+          <meta
+            itemprop="updated_at"
+          />
         </figcaption>
          
-        <meta
-          itemprop="created_at"
-        />
-         
-        <meta
-          itemprop="updated_at"
-        />
+        <!---->
       </figure>
        
       <menu>
@@ -118,17 +116,13 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         itemscope="itemscope"
         itemtype="/person"
       >
-        <router-link
-          to="[object Object]"
+        <svg
+          class="avatar"
         >
-          <svg
-            class="silhouette"
-          >
-            <use
-              xlink:href="#silhouette"
-            />
-          </svg>
-        </router-link>
+          <use
+            xlink:href="#silhouette"
+          />
+        </svg>
          
         <figcaption>
           <p>
@@ -152,15 +146,17 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
           >
             (240) 380-0385
           </a>
+           
+          <meta
+            itemprop="created_at"
+          />
+           
+          <meta
+            itemprop="updated_at"
+          />
         </figcaption>
          
-        <meta
-          itemprop="created_at"
-        />
-         
-        <meta
-          itemprop="updated_at"
-        />
+        <!---->
       </figure>
        
       <menu>

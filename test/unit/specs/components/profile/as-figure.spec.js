@@ -2,8 +2,14 @@ import {shallow} from 'vue-test-utils'
 import as_figure from '@/components/profile/as-figure'
 
 describe('@/compontent/profile/as-figure.vue', () => {
-  let person, wrapper
+  let person, wrapper, $route
+  // this.$router.currentRoute.path
   beforeEach(() => {
+    $route = {
+      currentRoute: {
+        path: '/profile'
+      }
+    }
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
       updated_at: '2018-07-16T18:12:21.552Z',
@@ -13,6 +19,9 @@ describe('@/compontent/profile/as-figure.vue', () => {
       mobile: '6282281824'
     }
     wrapper = shallow(as_figure, {
+      mocks: {
+        $route
+      },
       propsData: {
         person: person
       }
@@ -48,7 +57,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-18')
   })
-  describe('figure.profile > svg@click', {
+  describe('figure.profile > svg@click', () => {
     it('should go to the mobile number when clicked')
     it('should go to the profile page when me is true')
     it('should go to the account page when clicked from the profile page')

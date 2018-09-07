@@ -31,6 +31,10 @@
         type: Boolean,
         default: false
       },
+      edit_avatar: {
+        type: Boolean,
+        default: false
+      },
       nav: {
         type: Boolean,
         default: true
@@ -42,7 +46,6 @@
           el.addEventListener('change', e => {
             if (e.target.files[0] !== undefined) {
               // vnode.context.file is directive talk for this.file
-              console.log(e.target.files[0])
               vnode.context.file = e.target.files[0]
             }
           })
@@ -51,13 +54,7 @@
     },
     data() {
       return {
-        edit_avatar: false,
         file: ''
-      }
-    },
-    created() {
-      if (this.$router.currentRoute.path === '/account') {
-        this.edit_avatar = true
       }
     },
     methods: {
