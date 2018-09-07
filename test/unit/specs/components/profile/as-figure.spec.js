@@ -1,15 +1,12 @@
-import {shallow} from 'vue-test-utils'
+import {shallow, createLocalVue} from 'vue-test-utils'
+import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
+
 
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper, $route
-  // this.$router.currentRoute.path
   beforeEach(() => {
-    $route = {
-      currentRoute: {
-        path: '/profile'
-      }
-    }
+
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
       updated_at: '2018-07-16T18:12:21.552Z',
@@ -19,9 +16,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
       mobile: '6282281824'
     }
     wrapper = shallow(as_figure, {
-      mocks: {
-        $route
-      },
       propsData: {
         person: person
       }
@@ -57,10 +51,43 @@ describe('@/compontent/profile/as-figure.vue', () => {
     mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-18')
   })
-  describe('figure.profile > svg@click', () => {
-    it('should go to the mobile number when clicked')
-    it('should go to the profile page when me is true')
-    it('should go to the account page when clicked from the profile page')
-    it('should execute file upload when clicked from account page')
+  describe('#avatar_click', () => {
+    beforeEach(() => {
+      const localVue = createLocalVue()
+      localVue.use(VueRouter)
+      const router = new VueRouter()
+      wrapper = shallow(as_figure, {
+        localVue,
+        router,
+        propsData: {
+          person: person
+        }
+      })
+    })
+
+    it.only('should go to the mobile number when clicked', () => {
+      wrapper.vm.avatar_click()
+      expect(wrapper.vm.$route.path).toBe('/+16282281824')
+    })
+    it.only('should go to the account page when me is true', () => {
+      wrapper.setProps({me: true})
+      wrapper.vm.avatar_click()
+      expect(wrapper.vm.$route.path).toBe('/account')
+    })
+    it.only('should go to the previous page when previous is true', () => {
+      sessionStorage.setItem('previous', '/test-route')
+      wrapper.setProps({previous: true})
+      wrapper.vm.avatar_click()
+      expect(wrapper.vm.$route.path).toBe('/test-route')
+    })
+    it.only('should execute file upload when clicked from account page', () => {
+      wrapper.setProps({edit_avatar: true})
+      const input = wrapper.find('#avatar_picker')
+      let mock_click = jest.fn()
+      wrapper.vm.$refs.file_upload.click = mock_click
+      console.log(wrapper.vm.$refs.file_upload);
+      wrapper.vm.avatar_click()
+      expect(mock_click).toBeCalled()
+    })
   })
 })
