@@ -44,8 +44,8 @@
       uploader: {
         bind(el, binding, vnode) {
           el.addEventListener('change', e => {
+            /* istanbul ignore next */
             if (e.target.files[0] !== undefined) {
-              // vnode.context.file is directive talk for this.file
               vnode.context.file = e.target.files[0]
             }
           })

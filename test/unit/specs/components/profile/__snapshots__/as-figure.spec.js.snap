@@ -1,58 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-figure.vue should render default icon 1`] = `
-<figure
-  class="profile"
-  itemid="/+16282281824"
-  itemscope="itemscope"
-  itemtype="/person"
->
-  <svg
-    class="avatar"
-  >
-    <use
-      xlink:href="#silhouette"
-    />
-  </svg>
-   
-  <figcaption>
-    <p>
-      <span
-        itemprop="first_name"
-      >
-        Scott
-      </span>
-       
-      <span
-        itemprop="last_name"
-      >
-        Fryxell
-      </span>
-    </p>
-     
-    <a
-      data-value="6282281824"
-      href="sms:+16282281824"
-      itemprop="mobile"
-    >
-      (628) 228-1824
-    </a>
-     
-    <meta
-      content="2018-07-15T18:11:31.018Z"
-      itemprop="created_at"
-    />
-     
-    <meta
-      content="2018-07-16T18:12:21.552Z"
-      itemprop="updated_at"
-    />
-  </figcaption>
-   
-  <!---->
-</figure>
-`;
-
 exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
 <figure
   class="profile"

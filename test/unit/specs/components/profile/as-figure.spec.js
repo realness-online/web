@@ -21,32 +21,26 @@ describe('@/compontent/profile/as-figure.vue', () => {
   it('should render user profile info', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('should render default icon', () => {
-    person.image = null
-    wrapper = shallow(as_figure, {
-      propsData: {
-        person: person
-      }
+  describe('mobile number', () => {
+    it('should format the mobile number for display', () => {
+      let mobile = wrapper.find('[itemprop=mobile]')
+      expect(mobile.text()).toBe('(628) 228-1824')
     })
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  it('should format the mobile number for display', () => {
-    let mobile = wrapper.find('[itemprop=mobile]')
-    expect(mobile.text()).toBe('(628) 228-1824')
-  })
-  it('should parse mobile number as it\'s typed in', () => {
-    person.mobile = '628'
-    wrapper = shallow(as_figure, {propsData: {person: person}})
-    let mobile = wrapper.find('[itemprop=mobile]')
-    expect(mobile.text()).toBe('(628)')
-    person.mobile = '628228'
-    wrapper = shallow(as_figure, {propsData: {person: person}})
-    mobile = wrapper.find('[itemprop=mobile]')
-    expect(mobile.text()).toBe('(628) 228')
-    person.mobile = '62822818'
-    wrapper = shallow(as_figure, {propsData: {person: person}})
-    mobile = wrapper.find('[itemprop=mobile]')
-    expect(mobile.text()).toBe('(628) 228-18')
+    it('should parse mobile number as it\'s typed in', () => {
+      person.mobile = '628'
+      wrapper = shallow(as_figure, {propsData: {person: person}})
+      let mobile = wrapper.find('[itemprop=mobile]')
+      expect(mobile.text()).toBe('(628)')
+      person.mobile = '628228'
+      wrapper = shallow(as_figure, {propsData: {person: person}})
+      mobile = wrapper.find('[itemprop=mobile]')
+      expect(mobile.text()).toBe('(628) 228')
+      person.mobile = '62822818'
+      wrapper = shallow(as_figure, {propsData: {person: person}})
+      mobile = wrapper.find('[itemprop=mobile]')
+      expect(mobile.text()).toBe('(628) 228-18')
+    })
+
   })
   describe('svg.avatar@click', () => {
     beforeEach(() => {
@@ -82,6 +76,16 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.$refs.file_upload.click = mock_click
       wrapper.vm.avatar_click()
       expect(mock_click).toBeCalled()
+    })
+  })
+  describe('#avatar_picker', () => {
+    it('change event should get input file', () => {
+      wrapper.setProps({edit_avatar: true})
+      let input =  wrapper.find('#avatar_picker')
+      expect(input.exists()).toBe(true)
+      input.element.value = ''
+      input.trigger('change')
+      // currently no way to test file inputs. let's run the event anyway
     })
   })
 })
