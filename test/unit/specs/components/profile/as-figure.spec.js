@@ -1,12 +1,9 @@
 import {shallow, createLocalVue} from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
-
-
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper, $route
   beforeEach(() => {
-
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
       updated_at: '2018-07-16T18:12:21.552Z',
@@ -51,7 +48,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     mobile = wrapper.find('[itemprop=mobile]')
     expect(mobile.text()).toBe('(628) 228-18')
   })
-  describe('#avatar_click', () => {
+  describe('svg.avatar@click', () => {
     beforeEach(() => {
       const localVue = createLocalVue()
       localVue.use(VueRouter)
@@ -64,28 +61,25 @@ describe('@/compontent/profile/as-figure.vue', () => {
         }
       })
     })
-
-    it.only('should go to the mobile number when clicked', () => {
+    it('should go to the mobile number when clicked', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
-    it.only('should go to the account page when me is true', () => {
+    it('when me is true should go to the account page', () => {
       wrapper.setProps({me: true})
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
-    it.only('should go to the previous page when previous is true', () => {
+    it('when previous is true should go to the previous page', () => {
       sessionStorage.setItem('previous', '/test-route')
       wrapper.setProps({previous: true})
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/test-route')
     })
-    it.only('should execute file upload when clicked from account page', () => {
+    it('when edit_avatar is true should execute file upload dialog', () => {
       wrapper.setProps({edit_avatar: true})
-      const input = wrapper.find('#avatar_picker')
       let mock_click = jest.fn()
       wrapper.vm.$refs.file_upload.click = mock_click
-      console.log(wrapper.vm.$refs.file_upload);
       wrapper.vm.avatar_click()
       expect(mock_click).toBeCalled()
     })
