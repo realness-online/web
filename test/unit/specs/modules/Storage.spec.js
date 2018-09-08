@@ -40,7 +40,7 @@ describe('@/modules/Storage.js', () => {
     it('exists', () => {
       expect(Storage.hydrate).toBeDefined()
     })
-    it('will create an html fragmend from a string', () => {
+    it('will create an html fragment from a string', () => {
       storage = Storage.hydrate(item_as_string)
       expect(storage.querySelectorAll('h1').length).toBe(1)
     })
