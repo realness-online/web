@@ -1,5 +1,3 @@
-// You can run these unit tests by running "npm run testWithJest" inside the thumbnails/functions directory.
-
 // Mock the Firebase configuration
 require('firebase-functions').config = jest.fn(() => {
   console.log('Jest firebase functions.config being called');
