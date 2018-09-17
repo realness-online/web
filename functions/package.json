@@ -14,7 +14,7 @@
     "jest": "^20.0.0"
   },
   "scripts": {
-    "testWithJest": "jest '.*spec.js'"
+    "unit": "jest --watch '.*spec.js'"
   },
   "jest": {
     "moduleNameMapper": {
