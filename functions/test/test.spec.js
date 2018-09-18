@@ -1,36 +1,28 @@
 // Mock the Firebase configuration
 require('firebase-functions').config = jest.fn(() => {
-  console.log('Jest firebase functions.config being called');
+  console.log('Jest firebase functions.config being called')
   return {
     firebase: {
       databaseURL: 'https://not-a-project.firebaseio.com',
       storageBucket: 'not-a-project.appspot.com'
     }
-  };
-});
-
-// NOTE: @google-cloud/storage is auto-mocked via manual mock file
-
-// Mock child-process-promise spawn
+  }
+})
 const cpp = require('child-process-promise');
-
 cpp.spawn = jest.fn((path, object) => {
-  console.log('Inside child-process-promise.spawn', path);
-  return Promise.resolve();
-});
-
-const myFunctions = require('../index');
-
-let storageObjectEvent = null;
-
+  console.log('Inside child-process-promise.spawn', path)
+  return Promise.resolve()
+})
+const myFunctions = require('../index')
+let storageObjectEvent = null
 describe('Short circuit thumbnail generation', () => {
   beforeAll(() => {
-    global.origConsole = global.console;
+    global.origConsole = global.console
   });
   beforeEach(() => {
     global.console = {
-      log: jest.fn(msg => { global.origConsole.log(msg); }),
-      warn: jest.fn(msg => { global.origConsole.warn(msg); })
+      log: jest.fn(msg => global.origConsole.log(msg)),
+      warn: jest.fn(msg => global.origConsole.warn(msg))
     };
     storageObjectEvent = {
       data: {
