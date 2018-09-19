@@ -10,3 +10,11 @@ module.exports = {
     messagingSenderId: '276668807926'
   }`
 }
+
+// staging
+// apiKey: "AIzaSyCzVtxfwUPcf9WZZa2hdJk8xf56Orforto",
+// authDomain: "realness-staging.firebaseapp.com",
+// databaseURL: "https://realness-staging.firebaseio.com",
+// projectId: "realness-staging",
+// storageBucket: "realness-staging.appspot.com",
+// messagingSenderId: "412986481355"
