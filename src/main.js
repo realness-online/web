@@ -11,16 +11,17 @@ import profile from '@/pages/profile'
 import avatar from '@/pages/avatar'
 import relations from '@/pages/relations'
 import phonebook from '@/pages/phonebook'
-// if (process.env.NODE_ENV === 'production') {
-//   if ('serviceWorker' in navigator) {
-//     navigator.serviceWorker.register('/controller.js').then(registration => {
-//       registration.update()
-//       console.log('ServiceWorker registed!', registration)
-//     }).catch(registrationError => {
-//       console.log('ServiceWorker registration failed: ', registrationError)
-//     })
-//   }
-// }
+
+if (process.env.NODE_ENV === 'production') {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/controller.js').then(registration => {
+      registration.update()
+      console.log('ServiceWorker registed!', registration)
+    }).catch(registrationError => {
+      console.log('ServiceWorker registration failed: ', registrationError)
+    })
+  }
+}
 firebase.initializeApp(process.env.FIREBASE_CONFIG)
 Vue.prototype.$bus = new Vue({})
 Vue.use(VueRouter)
