@@ -1,6 +1,6 @@
 {
-  "name": "generate-thumbnail-functions",
-  "description": "Generate Thumbnail Firebase Functions sample",
+  "name": "realness.online.functions",
+  "description": "Jobs for realness.online",
   "dependencies": {
     "@google-cloud/storage": "^2.0.3",
     "child-process-promise": "^2.2.0",

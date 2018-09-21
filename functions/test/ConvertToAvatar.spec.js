@@ -1,4 +1,22 @@
 import ConvertToAvatar from '../ConvertToAvatar'
+// const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
+//   return {
+//     ref: jest.fn(() => {
+//       return {
+//         child: jest.fn(path => {
+//           let reference_path = path
+//           return {
+//             put: jest.fn(path => Promise.resolve(reference_path)),
+//             getDownloadURL: jest.fn(path => {
+//               // console.log('reference_path', reference_path)
+//               return Promise.resolve(`https://download_url${reference_path}`)
+//             })
+//           }
+//         })
+//       }
+//     })
+//   }
+// })
 describe('../ConvertToAvatar', () => {
   let convert_to_avatar
   let image = {
