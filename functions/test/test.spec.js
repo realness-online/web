@@ -64,15 +64,6 @@ describe('Short circuit thumbnail generation', () => {
     });
   });
 
-  test('Don\'t convert for moves or deletes', () => {
-    storageObjectEvent.data.resourceState = 'not_exists';
-    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
-    return convert_promise.then(data => {
-      expect(data).toBeUndefined();
-      expect(console.log).toHaveBeenCalledWith('This is a deletion event.');
-    });
-  });
-
   test('Don\'t convert for metadata changes', () => {
     storageObjectEvent.data.metageneration = 2;
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
@@ -83,22 +74,22 @@ describe('Short circuit thumbnail generation', () => {
   });
 });
 
-describe('Successful thumbnail generation', () => {
-  beforeEach(() => {
-    storageObjectEvent = {
-      data: {
-        contentType: 'image/jpeg',
-        mediaLink: '',
-        name: '/some/path/to/an/existingimage.jpg',
-      }
-    };
-  });
-  test('Converts a thumbnail', () => {
-    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
-    return convert_promise.then(data => {
-      expect(data).not.toBeNull();
-      const thumbFileName = data.split('/').pop();
-      expect(thumbFileName).toMatch(/thumb_existingimage/);
-    });
-  });
-});
+// describe('Successful thumbnail generation', () => {
+//   beforeEach(() => {
+//     storageObjectEvent = {
+//       data: {
+//         contentType: 'image/jpeg',
+//         mediaLink: '',
+//         name: '/some/path/to/an/existingimage.jpg',
+//       }
+//     };
+//   });
+//   test('Converts a thumbnail', () => {
+//     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+//     return convert_promise.then(data => {
+//       expect(data).not.toBeNull();
+//       const thumbFileName = data.split('/').pop();
+//       expect(thumbFileName).toMatch(/thumb_existingimage/);
+//     });
+//   });
+// });
