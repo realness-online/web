@@ -25,8 +25,12 @@ describe('Short circuit thumbnail generation', () => {
   });
   beforeEach(() => {
     global.console = {
-      log: jest.fn(msg => { global.origConsole.log(msg); }),
-      warn: jest.fn(msg => { global.origConsole.warn(msg); })
+      log: jest.fn(msg => {
+        // global.origConsole.log(msg);
+      }),
+      warn: jest.fn(msg => {
+        // global.origConsole.warn(msg); 
+      })
     };
     storageObjectEvent = {
       data: {
