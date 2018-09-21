@@ -1,6 +1,3 @@
-// You can run these unit tests by running "npm run testWithJest" inside the thumbnails/functions directory.
-
-// Mock the Firebase configuration
 require('firebase-functions').config = jest.fn(() => {
   console.log('Jest firebase functions.config being called');
   return {
@@ -10,8 +7,6 @@ require('firebase-functions').config = jest.fn(() => {
     }
   };
 });
-// NOTE: @google-cloud/storage is auto-mocked via manual mock file
-// Mock child-process-promise spawn
 const cpp = require('child-process-promise');
 cpp.spawn = jest.fn((path, object) => {
   console.log('Inside child-process-promise.spawn', path);
@@ -19,7 +14,7 @@ cpp.spawn = jest.fn((path, object) => {
 });
 const myFunctions = require('../index');
 let storageObjectEvent = null;
-describe('Short circuit thumbnail generation', () => {
+describe('convert_to_avatar checks', () => {
   beforeAll(() => {
     global.origConsole = global.console;
   });
@@ -29,7 +24,7 @@ describe('Short circuit thumbnail generation', () => {
         // global.origConsole.log(msg);
       }),
       warn: jest.fn(msg => {
-        // global.origConsole.warn(msg); 
+        // global.origConsole.warn(msg);
       })
     };
     storageObjectEvent = {
@@ -73,23 +68,3 @@ describe('Short circuit thumbnail generation', () => {
     });
   });
 });
-
-// describe('Successful thumbnail generation', () => {
-//   beforeEach(() => {
-//     storageObjectEvent = {
-//       data: {
-//         contentType: 'image/jpeg',
-//         mediaLink: '',
-//         name: '/some/path/to/an/existingimage.jpg',
-//       }
-//     };
-//   });
-//   test('Converts a thumbnail', () => {
-//     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
-//     return convert_promise.then(data => {
-//       expect(data).not.toBeNull();
-//       const thumbFileName = data.split('/').pop();
-//       expect(thumbFileName).toMatch(/thumb_existingimage/);
-//     });
-//   });
-// });
