@@ -23,7 +23,7 @@ const spawn = require('child-process-promise').spawn;
  * When an image is uploaded in the Storage bucket We generate a thumbnail automatically using
  * ImageMagick.
  */
-exports.generateThumbnail = functions.storage.bucket('people').object().onFinalize(image => {
+exports.convert_to_avatar = functions.storage.bucket('/people').object().onFinalize(image => {
 
 
   const fileBucket = image.bucket; // The Storage bucket that contains the file.
