@@ -44,8 +44,8 @@ describe('Short circuit thumbnail generation', () => {
 
   test('Don\'t try to convert non-images', () => {
     storageObjectEvent.data.contentType = 'someNonImageType';
-    const thumbnailPromise = myFunctions.generateThumbnail(storageObjectEvent);
-    return thumbnailPromise.then(data => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
       expect(data).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('This is not an image.');
     });
@@ -53,8 +53,8 @@ describe('Short circuit thumbnail generation', () => {
 
   test('Don\'t try to convert a thumbnail', () => {
     storageObjectEvent.data.name = '/some/path/to/an/thumb_existingimage.jpg';
-    const thumbnailPromise = myFunctions.generateThumbnail(storageObjectEvent);
-    return thumbnailPromise.then(data => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
       expect(data).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('Already a Thumbnail.');
     });
@@ -62,8 +62,8 @@ describe('Short circuit thumbnail generation', () => {
 
   test('Don\'t convert for moves or deletes', () => {
     storageObjectEvent.data.resourceState = 'not_exists';
-    const thumbnailPromise = myFunctions.generateThumbnail(storageObjectEvent);
-    return thumbnailPromise.then(data => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
       expect(data).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('This is a deletion event.');
     });
@@ -71,8 +71,8 @@ describe('Short circuit thumbnail generation', () => {
 
   test('Don\'t convert for metadata changes', () => {
     storageObjectEvent.data.metageneration = 2;
-    const thumbnailPromise = myFunctions.generateThumbnail(storageObjectEvent);
-    return thumbnailPromise.then(data => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
       expect(data).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('This is a metadata change event.');
     });
@@ -90,8 +90,8 @@ describe('Successful thumbnail generation', () => {
     };
   });
   test('Converts a thumbnail', () => {
-    const thumbnailPromise = myFunctions.generateThumbnail(storageObjectEvent);
-    return thumbnailPromise.then(data => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
       expect(data).not.toBeNull();
       const thumbFileName = data.split('/').pop();
       expect(thumbFileName).toMatch(/thumb_existingimage/);
