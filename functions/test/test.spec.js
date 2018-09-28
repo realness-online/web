@@ -51,11 +51,12 @@ describe('convert_to_avatar checks', () => {
   });
 
   test('Don\'t try to convert a thumbnail', () => {
-    storageObjectEvent.data.name = '/some/path/to/an/thumb_existingimage.jpg';
+    storageObjectEvent.data.contentType = 'image/svg';
+    storageObjectEvent.data.name = '/some/path/to/an/thumb_existingimage.svg';
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
     return convert_promise.then(data => {
       expect(data).toBeUndefined();
-      expect(console.log).toHaveBeenCalledWith('Already a Thumbnail.');
+      expect(console.log).toHaveBeenCalledWith('Already an SVG');
     });
   });
 
