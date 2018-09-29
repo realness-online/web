@@ -12,8 +12,13 @@ cpp.spawn = jest.fn((path, object) => {
   console.log('Inside child-process-promise.spawn', path);
   return Promise.resolve();
 });
+
 const myFunctions = require('../index');
 let storageObjectEvent = null;
+
+let convert = require('../ConvertToAvatar');
+jest.mock("../ConvertToAvatar.js");
+
 describe('convert_to_avatar checks', () => {
   beforeAll(() => {
     global.origConsole = global.console;
@@ -68,4 +73,13 @@ describe('convert_to_avatar checks', () => {
       expect(console.log).toHaveBeenCalledWith('This is a metadata change event.');
     });
   });
+
+  test('calls all the right methods', () => {
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    return convert_promise.then(data => {
+      expect(data).toBeUndefined();
+      expect(convert.download).toHaveBeenCalled();
+      // expect(convert.resize).toHaveBeenCalled();
+    });
+  })
 });

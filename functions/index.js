@@ -1,6 +1,6 @@
 'use strict';
 const functions = require('firebase-functions')
-const convert_to_avatar = require('./ConvertToAvatar')
+const {download, resize, trace} = require('./ConvertToAvatar')
 exports.convert_to_avatar = functions.storage.bucket('/people').object()
 .onFinalize(image => {
   if (!image.contentType.startsWith('image/')) {
@@ -19,5 +19,12 @@ exports.convert_to_avatar = functions.storage.bucket('/people').object()
     console.log('This is a metadata change event.')
     return
   }
-  convert_to_avatar(image)
+  // convert_to_avatar(image)
+  download(image)
+    // .then(square)
+    // .then(resize)
+    // .then(trace)
+    // .then(optimize)
+    // .then(upload)
+    // .then(cleanup)
 });

@@ -1,32 +1,54 @@
 const path = require('path')
 const os = require('os')
 const Storage = require('@google-cloud/storage')
-// const functions = require('firebase-functions');
 const spawn = require('child-process-promise').spawn;
+const potrace = require('potrace')
+const fs = require('fs')
 
-module.exports = function(image) {
-  download(image)
-    // .then(square)
-    .then(resize)
-    .then(trace)
-    .then(optimize)
-    .then(upload)
-    .then(cleanup)
-  // this.local_image = path.join(os.tmpdir(), path.basename(image.name))
-  // this.as_file = this.local_image.replace(/\.[^/.]+$/, "")
-  // this.server_image  = image.name
-}
+// download(image)
+// .then(square)
+// .then(resize)
+// .then(trace)
+// .then(optimize)
+// .then(upload)
+// .then(cleanup)
 
-const download = function(image) {
-  const storage = new Storage()
-  const local_image = path.join(os.tmpdir(), path.basename(image.name))
-  return storage.bucket('/people').file(local_image).download({
-    destination: local_image
+exports.download = (image) => {
+  return new Promise((resolve, reject) => {
+    const storage = new Storage()
+    const local_image = path.join(os.tmpdir(), path.basename(image.name))
+    storage.bucket('/people').file(image.name).download({
+      destination: local_image
+    }).then(() => {
+      console.log(local_image)
+      resolve(local_image)
+    }).catch(error => {
+      reject(error)
+    })
   })
 }
 
-const resize = function(local_image) {
-  return spawn('convert', [local_image, '-resize', '200x200>', local_image])
+exports.resize = (local_image) => {
+  return new Promise((resolve, reject) => {
+    spawn('convert', [local_image, '-resize', '200x200>', local_image]).then(() => {
+      resolve(local_image)
+    }).catch(error => {
+      reject(error)
+    })
+  })
+}
+
+exports.trace = (local_image) => {
+  return new Promise((resolve, reject) => {
+    const local_avatar = local_image.replace(/\.[^/.]+$/, ".svg")
+    potrace.trace(local_image, function(err, svg) {
+      if (err) {
+        reject(err)
+      }
+      fs.writeFileSync(local_avatar, svg);
+      resolve(local_avatar)
+    })
+  })
 }
 
 // reference links:
@@ -35,6 +57,9 @@ const resize = function(local_image) {
 // removing file extension
 //  https://stackoverflow.com/questions/39007908/filename-without-extension-terminology
 
+// this.local_image = path.join(os.tmpdir(), path.basename(image.name))
+// this.as_file = this.local_image.replace(/\.[^/.]+$/, "")
+// this.server_image  = image.name
 
 // const fileBucket = image.bucket; // The Storage bucket that contains the file.
 // const filePath = image.name; // File path in the bucket.

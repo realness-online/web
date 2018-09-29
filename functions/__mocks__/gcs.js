@@ -10,8 +10,8 @@ function bucketFn(bucketName) {
       // console.log(`Jest @google-cloud/storage.bucket.file() called with ${name}`);
       return {
         download: jest.fn(config => {
-          // console.log(`Jest @google-cloud/storage.bucket.file().download() called with ${config}`);
-          return Promise.resolve();
+          // console.log(`download() called with ${config}`);
+          return Promise.resolve(name);
         })
       };
     })
@@ -23,8 +23,6 @@ module.exports = options => {
     bucket: bucketFn
   };
 };
-
-
 
 
 // const storage_mock = jest.spyOn(firebase, 'storage').mockImplementation(() => {
