@@ -1,20 +1,20 @@
 const {download} = require('../ConvertToAvatar')
-const Storage = require('@google-cloud/storage')
+const {download_mock} = require('@google-cloud/storage')()
+
 describe('../ConvertToAvatar', () => {
-  let gcs_download_mock
   let image = {
     // https://firebase.google.com/docs/reference/functions/functions.storage.ObjectMetadata#name
     bucket: '/people',
     contentType: 'image/jpg',
     name: '/people/+15556667777/profile.jpg'
   }
-  beforeEach(() => {
-    // convert_to_avatar(image)
-    // const storage = new Storage()
+  afterEach(() => {
+    download_mock.mockClear()
   })
   it('Should #download the image to a temporary directory', () => {
     expect.assertions(1)
-    expect(download(image)).toBe('somethi')
+    download(image)
+    expect(download_mock).toHaveBeenCalled()
   })
   // it('Should #square the image')
   // it('Should #resize the image to 128x128px')

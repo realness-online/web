@@ -1,7 +1,7 @@
 const path = require('path')
 const os = require('os')
-const Storage = require('@google-cloud/storage')
-const spawn = require('child-process-promise').spawn;
+const storage = require('@google-cloud/storage')()
+const spawn = require('child-process-promise').spawn
 const potrace = require('potrace')
 const fs = require('fs')
 
@@ -15,7 +15,6 @@ const fs = require('fs')
 
 exports.download = (image) => {
   return new Promise((resolve, reject) => {
-    const storage = new Storage()
     const local_image = path.join(os.tmpdir(), path.basename(image.name))
     storage.bucket('/people').file(image.name).download({
       destination: local_image
