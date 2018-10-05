@@ -15,7 +15,8 @@
     "jest": "^23.6.0"
   },
   "scripts": {
-    "unit": "jest --watch '.*spec.js'"
+    "unit": "jest '.*spec.js'",
+    "unit:watch": "jest --watchAll --coverage"
   },
   "jest": {
     "moduleNameMapper": {
