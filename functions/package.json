@@ -19,7 +19,8 @@
   },
   "jest": {
     "moduleNameMapper": {
-      "@google-cloud/storage": "<rootDir>/__mocks__/gcs.js"
+      "@google-cloud/storage": "<rootDir>/__mocks__/google_cloud_storage.js",
+      "child-process-promise": "<rootDir>/__mocks__/child_process_promise.js"
     }
   }
 }
