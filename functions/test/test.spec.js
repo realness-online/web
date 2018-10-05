@@ -7,11 +7,7 @@ require('firebase-functions').config = jest.fn(() => {
     }
   };
 });
-const cpp = require('child-process-promise')
-cpp.spawn = jest.fn((path, object) => {
-  console.log('Inside child-process-promise.spawn', path);
-  return Promise.resolve();
-});
+
 const myFunctions = require('../index');
 let storageObjectEvent = null;
 let convert = require('../ConvertToAvatar');
