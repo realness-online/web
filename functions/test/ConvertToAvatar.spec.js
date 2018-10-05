@@ -1,5 +1,6 @@
-const {download} = require('../ConvertToAvatar')
+const {download, resize} = require('../ConvertToAvatar')
 const {download_mock} = require('@google-cloud/storage')()
+const {spawn_mock} = require('child-process-promise')
 
 describe('../ConvertToAvatar', () => {
   let image = {
@@ -12,12 +13,17 @@ describe('../ConvertToAvatar', () => {
     download_mock.mockClear()
   })
   it('Should #download the image to a temporary directory', () => {
-    expect.assertions(1)
     download(image)
     expect(download_mock).toHaveBeenCalled()
   })
   // it('Should #square the image')
-  // it('Should #resize the image to 128x128px')
+
+  it('Should #resize the image to 128x128px', () => {
+    resize('/path/to/local/profile.jpg')
+    expect(spawn_mock).toHaveBeenCalled()
+  })
+
+
   // it('Should #trace the imgage into an avatar')
   // it('Should #optimize svg inside the avatar')
   // it('Should #upload the file to /people/:mobile/profile.svg')
