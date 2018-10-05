@@ -9,17 +9,17 @@ exports.config = jest.fn(() => {
 })
 
 // [START imports and mocks]
-const admin = require('firebase-admin');
-
+// const admin = require('firebase-admin');
+//
 const functions = require('firebase-functions');
-
-functions.config = jest.fn(() => ({
-  firebase: {
-    credential: admin.credential.applicationDefault(),
-    databaseURL: 'https://not-a-project.firebaseio.com',
-    storageBucket: 'not-a-project.appspot.com'
-  }
-}));
+//
+// functions.config = jest.fn(() => ({
+//   firebase: {
+//     credential: admin.credential.applicationDefault(),
+//     databaseURL: 'https://not-a-project.firebaseio.com',
+//     storageBucket: 'not-a-project.appspot.com'
+//   }
+// }));
 
 
 // exports.storage = {
