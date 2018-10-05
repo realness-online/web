@@ -1,18 +1,9 @@
-require('firebase-functions').config = jest.fn(() => {
-  console.log('Jest firebase functions.config being called');
-  return {
-    firebase: {
-      databaseURL: 'https://not-a-project.firebaseio.com',
-      storageBucket: 'not-a-project.appspot.com'
-    }
-  };
-});
-
 const myFunctions = require('../index');
-let storageObjectEvent = null;
-let convert = require('../ConvertToAvatar');
+const convert = require('../ConvertToAvatar');
 jest.mock("../ConvertToAvatar.js");
-describe('convert_to_avatar checks', () => {
+
+  describe('convert_to_avatar checks', () => {
+  let storageObjectEvent = null;
   beforeAll(() => {
     global.origConsole = global.console;
   });
