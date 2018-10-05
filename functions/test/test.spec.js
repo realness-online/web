@@ -1,8 +1,7 @@
-const myFunctions = require('../index');
-const convert = require('../ConvertToAvatar');
-jest.mock("../ConvertToAvatar.js");
-
-  describe('convert_to_avatar checks', () => {
+const myFunctions = require('../index')
+const convert = require('../ConvertToAvatar')
+jest.mock("../ConvertToAvatar.js")
+describe('convert_to_avatar checks', () => {
   let storageObjectEvent = null;
   beforeAll(() => {
     global.origConsole = global.console;
@@ -28,7 +27,7 @@ jest.mock("../ConvertToAvatar.js");
   });
   afterAll(() => {
     global.console = global.origConsole;
-  });
+  })
 
   test('Don\'t try to convert non-images', () => {
     storageObjectEvent.data.contentType = 'someNonImageType';
@@ -46,24 +45,24 @@ jest.mock("../ConvertToAvatar.js");
     return convert_promise.then(data => {
       expect(data).toBeUndefined();
       expect(console.log).toHaveBeenCalledWith('Already an SVG');
-    });
-  });
+    })
+  })
 
   test('Don\'t convert for metadata changes', () => {
-    storageObjectEvent.data.metageneration = 2;
-    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    storageObjectEvent.data.metageneration = 2
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined();
-      expect(console.log).toHaveBeenCalledWith('This is a metadata change event.');
+      expect(data).toBeUndefined()
+      expect(console.log).toHaveBeenCalledWith('This is a metadata change event.')
     });
   });
 
   test('calls all the right methods', () => {
-    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent);
+    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined();
-      expect(convert.download).toHaveBeenCalled();
-      // expect(convert.resize).toHaveBeenCalled();
+      expect(data).toBeUndefined()
+      expect(convert.download).toHaveBeenCalled()
+      // expect(convert.resize).toHaveBeenCalled()
     });
   })
 });
