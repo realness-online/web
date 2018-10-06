@@ -41,13 +41,13 @@ describe('../ConvertToAvatar', () => {
     })
     expect(trace_mock).toHaveBeenCalled()
   })
-  // it('Should #optimize svg inside the avatar', () => {
-  //   expect.assertions(2)
-  //   optimize('/path/to/local/profile.svg').then(file_location => {
-  //     expect(file_location).toBe('/path/to/local/profile.svg')
-  //   })
-  //   expect(optimize_mock).toHaveBeenCalled()
-  // })
+  it('Should #optimize svg inside the avatar', () => {
+    expect.assertions(2)
+    optimize('/path/to/local/profile.svg').then(file_location => {
+      expect(file_location).toBe('/path/to/local/profile.svg')
+    })
+    expect(spawn_mock).toHaveBeenCalled()
+  })
   // it('Should #upload the file to /people/:mobile/profile.svg')
   // it('should #cleanup any local files')
 })

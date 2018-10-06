@@ -52,6 +52,18 @@ exports.trace = (local_image) => {
   })
 }
 
+exports.optimize = (local_image) => {
+  // console.log(local_image)
+  const properties = [local_image, '--enable=removeDimensions']
+  return new Promise((resolve, reject) => {
+    spawn('svgo', properties).then(() => {
+      resolve(local_image)
+    }).catch(error => {
+      reject(error)
+    })
+  })
+}
+
 // reference links:
 // for croping to a square
 //  https://www.imagemagick.org/discourse-server/viewtopic.php?t=28283
