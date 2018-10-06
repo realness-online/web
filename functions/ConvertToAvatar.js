@@ -19,7 +19,7 @@ exports.download = (image) => {
     storage.bucket('/people').file(image.name).download({
       destination: local_image
     }).then(() => {
-      console.log(local_image)
+      // console.log(local_image)
       resolve(local_image)
     }).catch(error => {
       reject(error)
@@ -28,8 +28,10 @@ exports.download = (image) => {
 }
 
 exports.resize = (local_image) => {
+  // console.log(local_image)
+  const properties = [local_image, '-resize', '200x200>', local_image]
   return new Promise((resolve, reject) => {
-    spawn('convert', [local_image, '-resize', '200x200>', local_image]).then(() => {
+    spawn('convert', properties).then(() => {
       resolve(local_image)
     }).catch(error => {
       reject(error)
