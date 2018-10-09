@@ -1,6 +1,6 @@
 const path = require('path')
-const {download, resize, trace, optimize} = require('../ConvertToAvatar')
-const {download_mock} = require('@google-cloud/storage')()
+const {create_locals, download, resize, trace, optimize, upload} = require('../ConvertToAvatar')
+const {download_mock, upload_mock} = require('@google-cloud/storage')()
 const {spawn_mock} = require('child-process-promise')
 const {trace_mock} = require('potrace')
 jest.mock("fs")
@@ -12,42 +12,53 @@ describe('../ConvertToAvatar', () => {
     contentType: 'image/jpg',
     name: '/people/+15556667777/profile.jpg'
   }
+  let locals
+  beforeEach(() => {
+    locals = create_locals(image)
+  })
   afterEach(() => {
     download_mock.mockClear()
     spawn_mock.mockClear()
     trace_mock.mockClear()
   })
-  it('Should #download the image to a temporary directory', () => {
-    expect.assertions(2)
-    download(image).then(file_location => {
-      const file_name = path.basename(file_location)
-      expect(file_name).toBe('profile.jpg')
-    })
-    expect(download_mock).toHaveBeenCalled()
-  })
-  // it('Should #square the image')
 
-  it('Should #resize the image to 128x128px', () => {
-    expect.assertions(2)
-    resize('/path/to/local/profile.jpg').then(file_location => {
-      expect(file_location).toBe('/path/to/local/profile.jpg')
+  it('#create_locals should contain a referenco to local files', () => {
+    expect(locals.name).toBe('/people/+15556667777/profile.jpg')
+    expect(path.basename(locals.image)).toBe('profile.jpg')
+    expect(path.basename(locals.bitmap)).toBe('profile.pnm')
+    expect(path.basename(locals.avatar)).toBe('profile.svg')
+  })
+
+  it('Should #download the image to a temporary directory', () => {
+    expect.assertions(1)
+    download(locals).then(locals => {
+      expect(download_mock).toHaveBeenCalled()
     })
-    expect(spawn_mock).toHaveBeenCalled()
+  })
+  it('Should #resize the image to 128x128px', () => {
+    expect.assertions(1)
+    resize(locals).then(locals => {
+      expect(spawn_mock).toHaveBeenCalled()
+    })
   })
   it('Should #trace the imgage into an avatar', () => {
-    expect.assertions(2)
-    trace('/path/to/local/profile.jpg').then(file_location => {
-      expect(file_location).toBe('/path/to/local/profile.svg')
+    expect.assertions(1)
+    trace(locals).then(locals => {
+      expect(trace_mock).toHaveBeenCalled()
     })
-    expect(trace_mock).toHaveBeenCalled()
   })
   it('Should #optimize svg inside the avatar', () => {
-    expect.assertions(2)
-    optimize('/path/to/local/profile.svg').then(file_location => {
-      expect(file_location).toBe('/path/to/local/profile.svg')
+    expect.assertions(1)
+    optimize(locals).then(locals => {
+      expect(spawn_mock).toHaveBeenCalled()
     })
-    expect(spawn_mock).toHaveBeenCalled()
   })
-  // it('Should #upload the file to /people/:mobile/profile.svg')
-  // it('should #cleanup any local files')
+  it('Should #upload the file to /people/:mobile/profile.svg', () => {
+    expect.assertions(1)
+    upload(locals).then(locals => {
+      expect(upload_mock).toHaveBeenCalled()
+    })
+  })
+  it.skip('should #cleanup any local files', () => {})
+  it.skip('Should #square the image', () => {})
 })

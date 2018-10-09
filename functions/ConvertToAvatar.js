@@ -4,60 +4,71 @@ const storage = require('@google-cloud/storage')()
 const spawn = require('child-process-promise').spawn
 const potrace = require('potrace')
 const fs = require('fs')
+function replace_type(path, extension){
+  return path.replace(/\.[^/.]+$/, extension)
+}
 
-// download(image)
-// .then(square)
-// .then(resize)
-// .then(trace)
-// .then(optimize)
-// .then(upload)
-// .then(cleanup)
-
-exports.download = (image) => {
+// TODO: delete
+//   local_image
+//   local_bitmap
+//   local_avatar
+exports.create_locals = (image) => {
+  let locals = {}
+  locals.name = image.name
+  locals.image = path.join(os.tmpdir(), path.basename(locals.name))
+  locals.bitmap = replace_type(locals.image, ".pnm")
+  locals.avatar = replace_type(locals.image, ".svg")
+  return locals
+}
+exports.download = (locals) => {
   return new Promise((resolve, reject) => {
-    const local_image = path.join(os.tmpdir(), path.basename(image.name))
-    storage.bucket('/people').file(image.name).download({
-      destination: local_image
+    storage.bucket('/people').file(locals.name).download({
+      destination: locals.image
     }).then(() => {
-      // console.log(local_image)
-      resolve(local_image)
+      resolve(locals)
     }).catch(error => {
       reject(error)
     })
   })
 }
-
-exports.resize = (local_image) => {
-  // console.log(local_image)
-  const properties = [local_image, '-resize', '200x200>', local_image]
+exports.resize = (locals) => {
+  const properties = [locals.image, '-resize', '200x200>', locals.bitmap]
   return new Promise((resolve, reject) => {
     spawn('convert', properties).then(() => {
-      resolve(local_image)
+      resolve(locals)
     }).catch(error => {
       reject(error)
     })
   })
 }
-
-exports.trace = (local_image) => {
+exports.trace = (locals) => {
   return new Promise((resolve, reject) => {
-    const local_avatar = local_image.replace(/\.[^/.]+$/, ".svg")
-    potrace.trace(local_image, function(err, svg) {
+    potrace.trace(locals.bitmap, function(err, svg) {
       if (err) {
         reject(err)
       }
-      fs.writeFileSync(local_avatar, svg);
-      resolve(local_avatar)
+      fs.writeFileSync(locals.avatar, svg);
+      resolve(locals)
     })
   })
 }
-
-exports.optimize = (local_image) => {
-  // console.log(local_image)
-  const properties = [local_image, '--enable=removeDimensions']
+exports.optimize = (locals) => {
+  const properties = [locals.avatar, '--enable=removeDimensions']
   return new Promise((resolve, reject) => {
     spawn('svgo', properties).then(() => {
-      resolve(local_image)
+      resolve(locals)
+    }).catch(error => {
+      reject(error)
+    })
+  })
+}
+exports.upload = (locals) => {
+  return new Promise((resolve, reject) => {
+    const destination_avatar = replace_type(locals.name, 'svg')
+    storage.bucket('/people').upload(locals.avatar, {
+      destination: destination_avatar
+    }).then((results) => {
+      resolve(locals)
     }).catch(error => {
       reject(error)
     })

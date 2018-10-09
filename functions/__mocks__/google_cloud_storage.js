@@ -5,7 +5,7 @@ const download_mock = jest.fn(config => {
 
 const upload_mock = jest.fn((tempFilePath, config) => {
   // console.log(`Jest @google-cloud/storage.bucket.upload called with ${tempFilePath} and config`, config);
-  return config.destination
+  return Promise.resolve(config.destination)
 })
 
 const file_mock = jest.fn(name => {
