@@ -3,11 +3,6 @@ const functions = require('firebase-functions')
 const {create_locals, download, resize,
   trace, optimize, upload, cleanup} = require('./ConvertToAvatar')
 exports.convert_to_avatar = functions.storage.bucket().object().onFinalize(image => {
-  // // only run this .
-  // if (!image.name.startsWith('/people/')) {
-  //   console.log('This is not in the images directory.')
-  //   return
-  // }
   if (!image.contentType.startsWith('image/')) {
     // Exit if this is triggered on a file that is not an image.
     console.log('This is not an image.')
