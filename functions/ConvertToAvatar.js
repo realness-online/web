@@ -1,6 +1,6 @@
 const path = require('path')
 const os = require('os')
-const {Storage} = require('@google-cloud/storage')
+const storage = require('@google-cloud/storage')()
 const spawn = require('child-process-promise').spawn
 const mkdirp = require('mkdirp-promise')
 const potrace = require('potrace')
@@ -10,13 +10,14 @@ function replace_type(path, extension) {
 }
 exports.create_locals = (image) => {
   return new Promise((resolve, reject) => {
-    console.log('create_locals...', image)
+    // console.log('create_locals...', image)
     let locals = {}
     locals.bucket = image.bucket
     locals.name = image.name
     locals.image = path.join(os.tmpdir(), path.basename(locals.name))
     locals.bitmap = replace_type(locals.image, '.pnm')
     locals.avatar = replace_type(locals.image, '.svg')
+    // console.log(path.dirname(locals.image))
     mkdirp(path.dirname(locals.image)).then(() => {
       resolve(locals)
     }).catch(error => {
@@ -27,7 +28,6 @@ exports.create_locals = (image) => {
 exports.download = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('download...')
-    const storage = new Storage()
     const bucket = storage.bucket(locals.bucket)
     bucket.file(locals.name).download({
       destination: locals.image
@@ -76,7 +76,6 @@ exports.upload = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('upload...')
     const destination_avatar = replace_type(locals.name, 'svg')
-    const storage = new Storage()
     const bucket = storage.bucket(locals.bucket)
     bucket.upload(locals.avatar, {
       destination: destination_avatar
@@ -93,7 +92,6 @@ exports.cleanup = (locals) => {
     fs.unlinkSync(locals.avatar)
     fs.unlinkSync(locals.bitmap)
     fs.unlinkSync(locals.image)
-    const storage = new Storage()
     const bucket = storage.bucket(locals.bucket)
     bucket.file(locals.name).delete().then((results) => {
       resolve(locals)
