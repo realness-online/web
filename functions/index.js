@@ -1,16 +1,20 @@
-'use strict';
+'use strict'
 const functions = require('firebase-functions')
 const {create_locals, download, resize,
-      trace, optimize, upload, cleanup} = require('./ConvertToAvatar')
-exports.convert_to_avatar = functions.storage.bucket('/people').object()
-.onFinalize(image => {
+  trace, optimize, upload, cleanup} = require('./ConvertToAvatar')
+exports.convert_to_avatar = functions.storage.bucket().object().onFinalize(image => {
+  // // only run this .
+  // if (!image.name.startsWith('/people/')) {
+  //   console.log('This is not in the images directory.')
+  //   return
+  // }
   if (!image.contentType.startsWith('image/')) {
     // Exit if this is triggered on a file that is not an image.
     console.log('This is not an image.')
     return
   }
   if (image.contentType.startsWith('image/svg')) {
-    // Exit if this is triggered on a file that is not an image.
+    // Exit if file is already an SVG
     console.log('Already an SVG')
     return
   }
@@ -20,11 +24,11 @@ exports.convert_to_avatar = functions.storage.bucket('/people').object()
     console.log('This is a metadata change event.')
     return
   }
-  const locals = create_locals(image)
-  download(locals)
+  create_locals(image)
+    .then(download)
     .then(resize)
     .then(trace)
     .then(optimize)
     .then(upload)
     .then(cleanup)
-});
+})

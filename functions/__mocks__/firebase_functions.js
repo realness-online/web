@@ -8,9 +8,6 @@ exports.config = jest.fn(() => {
   }
 })
 
-// [START imports and mocks]
-// const admin = require('firebase-admin');
-//
 const functions = require('firebase-functions');
 //
 // functions.config = jest.fn(() => ({

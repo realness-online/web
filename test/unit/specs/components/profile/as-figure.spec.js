@@ -2,7 +2,7 @@ import {shallow, createLocalVue} from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 describe('@/compontent/profile/as-figure.vue', () => {
-  let person, wrapper, $route
+  let person, wrapper
   beforeEach(() => {
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
@@ -40,7 +40,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
       mobile = wrapper.find('[itemprop=mobile]')
       expect(mobile.text()).toBe('(628) 228-18')
     })
-
   })
   describe('svg.avatar@click', () => {
     beforeEach(() => {
@@ -81,7 +80,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   describe('#avatar_picker', () => {
     it('change event should get input file', () => {
       wrapper.setProps({edit_avatar: true})
-      let input =  wrapper.find('#avatar_picker')
+      let input = wrapper.find('#avatar_picker')
       expect(input.exists()).toBe(true)
       input.element.value = ''
       input.trigger('change')
