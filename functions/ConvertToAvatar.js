@@ -75,6 +75,19 @@ exports.upload = (locals) => {
   })
 }
 
+exports.cleanup = (locals) => {
+  return new Promise((resolve, reject) => {
+    fs.unlinkSync(locals.avatar)
+    fs.unlinkSync(locals.bitmap)
+    fs.unlinkSync(locals.image)
+    storage.bucket('/people').file(locals.name).delete().then((results) => {
+      resolve(locals)
+    }).catch(error => {
+      reject(error)
+    })
+  })
+}
+
 // reference links:
 // for croping to a square
 //  https://www.imagemagick.org/discourse-server/viewtopic.php?t=28283

@@ -1,6 +1,11 @@
 const download_mock = jest.fn(config => {
   // console.log(`download() called with ${config}`);
-  return Promise.resolve(name)
+  return Promise.resolve(config.name)
+})
+
+const delete_mock = jest.fn(config => {
+  // console.log(`delete() called with ${config}`);
+  return Promise.resolve()
 })
 
 const upload_mock = jest.fn((tempFilePath, config) => {
@@ -11,7 +16,8 @@ const upload_mock = jest.fn((tempFilePath, config) => {
 const file_mock = jest.fn(name => {
   // console.log(`Jest @google-cloud/storage.bucket.file() called with ${name}`);
   return {
-    download: download_mock
+    download: download_mock,
+    delete: delete_mock
   }
 })
 
@@ -25,6 +31,7 @@ function bucketFn(bucketName) {
 module.exports = options => {
   return {
     download_mock,
+    delete_mock,
     upload_mock,
     file_mock,
     bucket: bucketFn

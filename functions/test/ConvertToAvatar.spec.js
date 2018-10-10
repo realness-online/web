@@ -1,10 +1,11 @@
 const path = require('path')
-const {create_locals, download, resize, trace, optimize, upload} = require('../ConvertToAvatar')
-const {download_mock, upload_mock} = require('@google-cloud/storage')()
+const {
+  create_locals, download, resize,
+  trace, optimize, upload, cleanup } = require('../ConvertToAvatar')
+const {download_mock, upload_mock, delete_mock} = require('@google-cloud/storage')()
 const {spawn_mock} = require('child-process-promise')
 const {trace_mock} = require('potrace')
 jest.mock("fs")
-
 describe('../ConvertToAvatar', () => {
   let image = {
     // https://firebase.google.com/docs/reference/functions/functions.storage.ObjectMetadata#name
@@ -21,14 +22,12 @@ describe('../ConvertToAvatar', () => {
     spawn_mock.mockClear()
     trace_mock.mockClear()
   })
-
   it('#create_locals should contain a referenco to local files', () => {
     expect(locals.name).toBe('/people/+15556667777/profile.jpg')
     expect(path.basename(locals.image)).toBe('profile.jpg')
     expect(path.basename(locals.bitmap)).toBe('profile.pnm')
     expect(path.basename(locals.avatar)).toBe('profile.svg')
   })
-
   it('Should #download the image to a temporary directory', () => {
     expect.assertions(1)
     download(locals).then(locals => {
@@ -59,6 +58,12 @@ describe('../ConvertToAvatar', () => {
       expect(upload_mock).toHaveBeenCalled()
     })
   })
-  it.skip('should #cleanup any local files', () => {})
+  it('should #cleanup any local files', () => {
+    cleanup(locals).then(locals => {
+      let fs = require('fs')
+      expect(delete_mock).toHaveBeenCalled()
+      expect(fs.unlinkSync).toBeCalledTimes(3)
+    })
+  })
   it.skip('Should #square the image', () => {})
 })
