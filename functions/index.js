@@ -1,6 +1,7 @@
 'use strict';
 const functions = require('firebase-functions')
-const {create_locals, download, resize, trace} = require('./ConvertToAvatar')
+const {create_locals, download, resize,
+      trace, optimize, upload, cleanup} = require('./ConvertToAvatar')
 exports.convert_to_avatar = functions.storage.bucket('/people').object()
 .onFinalize(image => {
   if (!image.contentType.startsWith('image/')) {
@@ -21,10 +22,9 @@ exports.convert_to_avatar = functions.storage.bucket('/people').object()
   }
   const locals = create_locals(image)
   download(locals)
-    // .then(square)
-    // .then(resize)
-    // .then(trace)
-    // .then(optimize)
-    // .then(upload)
-    // .then(cleanup)
+    .then(resize)
+    .then(trace)
+    .then(optimize)
+    .then(upload)
+    .then(cleanup)
 });
