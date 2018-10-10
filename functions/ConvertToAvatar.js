@@ -101,47 +101,5 @@ exports.cleanup = (locals) => {
   })
 }
 
-// service firebase.storage {
-//   match /b/{bucket}/o {
-//     // Files look like: "people/<mobile>/path/to/file.txt"
-//     match /people/{mobile}/{allPaths=**}{
-//       allow read: if request.auth != null
-//       allow write: if request.auth.token.phone_number == mobile
-//     }
-//   }
-// }
-
-// reference links:
-// for croping to a square
+// example of croping image to a square:
 //  https://www.imagemagick.org/discourse-server/viewtopic.php?t=28283
-// removing file extension
-//  https://stackoverflow.com/questions/39007908/filename-without-extension-terminology
-
-// this.local_image = path.join(os.tmpdir(), path.basename(image.name))
-// this.as_file = this.local_image.replace(/\.[^/.]+$/, "")
-// this.server_image  = image.name
-
-// const fileBucket = image.bucket // The Storage bucket that contains the file.
-// const filePath = image.name // File path in the bucket.
-// // const contentType = image.contentType // File content type.
-// const resourceState = image.resourceState // The resourceState is 'exists' or 'not_exists' (for file/folder deletions).
-// const metageneration = image.metageneration // Number of times metadata has been generated. New objects have a value of 1.
-
-// // Download file from bucket.
-// const bucket = gcs.bucket(fileBucket)
-// const tempFilePath = `/tmp/${fileName}`
-// return bucket.file(filePath).download({
-//   destination: tempFilePath
-// }).then(() => {
-//   console.log('Image downloaded locally to', tempFilePath)
-//   // Generate a thumbnail using ImageMagick.
-//   return spawn('convert', [tempFilePath, '-thumbnail', '200x200>', tempFilePath]).then(() => {
-//     console.log('Thumbnail created at', tempFilePath)
-//     // We add a 'thumb_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
-//     const thumbFilePath = filePath.replace(/(\/)?([^\/]*)$/, '$1thumb_$2')
-//     // Uploading the thumbnail.
-//     return bucket.upload(tempFilePath, {
-//       destination: thumbFilePath
-//     })
-//   })
-// })
