@@ -2,11 +2,12 @@ const path = require('path')
 const {
   create_locals, download, resize,
   trace, optimize, upload, cleanup } = require('../ConvertToAvatar')
-const {download_mock, upload_mock, delete_mock} = require('@google-cloud/storage')()
+const {download_mock, upload_mock, delete_mock} = require('firebase-admin')
 const {spawn_mock} = require('child-process-promise')
 const {trace_mock} = require('potrace')
 jest.mock("fs")
 jest.mock("mkdirp-promise")
+jest.mock("firebase-admin")
 describe('../ConvertToAvatar', () => {
   let image = {
     // https://firebase.google.com/docs/reference/functions/functions.storage.ObjectMetadata#name
@@ -20,6 +21,7 @@ describe('../ConvertToAvatar', () => {
   })
   afterEach(() => {
     download_mock.mockClear()
+    upload_mock.mockClear()
     spawn_mock.mockClear()
     trace_mock.mockClear()
   })
@@ -32,7 +34,6 @@ describe('../ConvertToAvatar', () => {
       expect(path.basename(locals.bitmap)).toBe('profile.pnm')
       expect(path.basename(locals.avatar)).toBe('profile.svg')
     })
-
   })
   it('Should #download the image to a temporary directory', () => {
     expect.assertions(1)

@@ -1,23 +1,22 @@
 const path = require('path')
 const os = require('os')
-const storage = require('@google-cloud/storage')()
 const spawn = require('child-process-promise').spawn
+const admin = require('firebase-admin')
 const mkdirp = require('mkdirp-promise')
 const potrace = require('potrace')
 const fs = require('fs')
 function replace_type(path, extension) {
   return path.replace(/\.[^/.]+$/, extension)
 }
+admin.initializeApp()
 exports.create_locals = (image) => {
   return new Promise((resolve, reject) => {
-    // console.log('create_locals...', image)
     let locals = {}
     locals.bucket = image.bucket
     locals.name = image.name
     locals.image = path.join(os.tmpdir(), path.basename(locals.name))
     locals.bitmap = replace_type(locals.image, '.pnm')
     locals.avatar = replace_type(locals.image, '.svg')
-    // console.log(path.dirname(locals.image))
     mkdirp(path.dirname(locals.image)).then(() => {
       resolve(locals)
     }).catch(error => {
@@ -28,7 +27,7 @@ exports.create_locals = (image) => {
 exports.download = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('download...')
-    const bucket = storage.bucket(locals.bucket)
+    const bucket = admin.storage().bucket()
     bucket.file(locals.name).download({
       destination: locals.image
     }).then(() => {
@@ -76,7 +75,7 @@ exports.upload = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('upload...')
     const destination_avatar = replace_type(locals.name, 'svg')
-    const bucket = storage.bucket(locals.bucket)
+    const bucket = admin.storage().bucket()
     bucket.upload(locals.avatar, {
       destination: destination_avatar
     }).then((results) => {
@@ -92,7 +91,7 @@ exports.cleanup = (locals) => {
     fs.unlinkSync(locals.avatar)
     fs.unlinkSync(locals.bitmap)
     fs.unlinkSync(locals.image)
-    const bucket = storage.bucket(locals.bucket)
+    const bucket = admin.storage().bucket()
     bucket.file(locals.name).delete().then((results) => {
       resolve(locals)
     }).catch(error => {
@@ -100,6 +99,5 @@ exports.cleanup = (locals) => {
     })
   })
 }
-
 // example of croping image to a square:
 //  https://www.imagemagick.org/discourse-server/viewtopic.php?t=28283
