@@ -17,7 +17,7 @@ const file_mock = jest.fn(name => {
     delete: delete_mock
   }
 })
-function bucketFn(bucketName) {
+function bucket(bucketName) {
   // console.log(`Jest @google-cloud/storage.bucket called with ${bucketName}`);
   return {
     upload: upload_mock,
@@ -27,7 +27,7 @@ function bucketFn(bucketName) {
 function storage() {
   // console.log(`Jest @google-cloud/storage.bucket called with ${bucketName}`);
   return {
-    bucket: bucketFn
+    bucket
   }
 }
 function initializeApp(bucketName) {
