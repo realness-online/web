@@ -23,7 +23,7 @@ exports.convert_to_avatar = functions.storage.bucket().object().onFinalize(image
     .then(download)
     .then(resize)
     .then(trace)
-    .then(optimize)
+    // .then(optimize)
     .then(upload)
     .then(cleanup)
 })
