@@ -14,7 +14,7 @@ exports.create_locals = (image) => {
     let locals = {}
     locals.bucket = image.bucket
     locals.name = image.name
-    locals.image = path.join(os.tmpdir(), path.basename(locals.name))
+    locals.image = path.join(os.tmpdir(), locals.name)
     locals.bitmap = replace_type(locals.image, '.pnm')
     locals.avatar = replace_type(locals.image, '.svg')
     mkdirp(path.dirname(locals.image)).then(() => {
@@ -27,6 +27,7 @@ exports.create_locals = (image) => {
 exports.download = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('download...')
+    console.log(locals.image)
     const bucket = admin.storage().bucket()
     bucket.file(locals.name).download({
       destination: locals.image
@@ -40,7 +41,7 @@ exports.download = (locals) => {
 exports.resize = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('resize...')
-    const properties = [locals.image, '-resize', '200x200>', locals.bitmap]
+    const properties = [locals.image, '-resize', '200x200>', locals.image]
     spawn('convert', properties).then(() => {
       resolve(locals)
     }).catch(error => {
@@ -51,7 +52,7 @@ exports.resize = (locals) => {
 exports.trace = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('trace...')
-    potrace.trace(locals.bitmap, function(err, svg) {
+    potrace.trace(locals.image, function(err, svg) {
       if (err) {
         reject(err)
       }
