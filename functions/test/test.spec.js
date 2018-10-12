@@ -46,13 +46,6 @@ describe('convert_to_avatar checks', () => {
       expect(data).toBe(false)
     })
   })
-  test('leave metadata changes alone', () => {
-    storageObjectEvent.data.metageneration = 2
-    const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
-    return convert_promise.then(data => {
-      expect(data).toBe(false)
-    })
-  })
   test('convert profile images to avatars', () => {
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
