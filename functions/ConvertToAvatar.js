@@ -5,6 +5,17 @@ const admin = require('firebase-admin')
 const mkdirp = require('mkdirp-promise')
 const potrace = require('potrace')
 const fs = require('fs')
+const SVGO = require('svgo')
+const svgo = new SVGO({
+  plugins: [
+    {
+      removeViewBox: false
+    },
+    {
+      removeDimensions: true
+    }
+  ]
+})
 function replace_type(path, extension) {
   const new_type = path.replace(/\.[^/.]+$/, extension)
   // console.log(path, new_type)
@@ -46,7 +57,7 @@ exports.download = (locals) => {
 exports.resize = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('resize...')
-    const properties = [locals.image, '-resize', '200x200>', locals.image]
+    const properties = [locals.image, '-resize', '128x128>', locals.image]
     spawn('convert', properties).then(() => {
       resolve(locals)
     }).catch(error => {
@@ -58,9 +69,7 @@ exports.trace = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     potrace.trace(locals.image, function(err, svg) {
-      if (err) {
-        reject(err)
-      }
+      if (err) { reject(err) }
       fs.writeFileSync(locals.avatar, svg)
       resolve(locals)
     })
@@ -69,11 +78,12 @@ exports.trace = (locals) => {
 exports.optimize = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('optimize...')
-    const properties = [locals.avatar, '--enable=removeDimensions']
-    spawn('svgo', properties).then(() => {
-      resolve(locals)
-    }).catch(error => {
-      reject(error)
+    fs.readFile(locals.avatar, 'utf8', (err, data) => {
+      if (err) { reject(err) }
+      svgo.optimize(data).then(result => {
+        fs.writeFileSync(locals.avatar, result.data)
+        resolve(locals)
+      }).catch(error => reject(error))
     })
   })
 }

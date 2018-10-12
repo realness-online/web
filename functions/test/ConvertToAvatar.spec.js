@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 const {
   create_locals, download, resize,
   trace, optimize, upload, cleanup } = require('../ConvertToAvatar')
@@ -55,7 +56,7 @@ describe('../ConvertToAvatar', () => {
   it('Should #optimize svg inside the avatar', () => {
     expect.assertions(1)
     optimize(locals).then(locals => {
-      expect(spawn_mock).toHaveBeenCalled()
+      expect(fs.readFile).toHaveBeenCalled()
     })
   })
   it('Should #upload the file to /people/:mobile/profile.svg', () => {

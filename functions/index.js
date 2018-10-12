@@ -1,7 +1,7 @@
 'use strict'
 const functions = require('firebase-functions')
 const {create_locals, download, resize,
-  trace, upload, cleanup} = require('./ConvertToAvatar')
+  trace, optimize, upload, cleanup} = require('./ConvertToAvatar')
 exports.convert_to_avatar = functions.storage.object().onFinalize(image => {
   if (!image.contentType.startsWith('image/')) {
     return false
@@ -14,7 +14,7 @@ exports.convert_to_avatar = functions.storage.object().onFinalize(image => {
     .then(download)
     .then(resize)
     .then(trace)
-    // .then(optimize)
+    .then(optimize)
     .then(upload)
     .then(cleanup)
 })
