@@ -26,12 +26,11 @@ describe('../ConvertToAvatar', () => {
     trace_mock.mockClear()
   })
   it('#create_locals should contain a referenco to local files', () => {
-    expect.assertions(5)
+    expect.assertions(4)
     create_locals(image).then(locals => {
       expect(locals.bucket).toBe('realness.app.firebase.com')
       expect(locals.name).toBe('/people/+15556667777/profile.jpg')
       expect(path.basename(locals.image)).toBe('profile.jpg')
-      expect(path.basename(locals.bitmap)).toBe('profile.pnm')
       expect(path.basename(locals.avatar)).toBe('profile.svg')
     })
   })

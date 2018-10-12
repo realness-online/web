@@ -1,11 +1,21 @@
 const myFunctions = require('../index')
 const {download} = require('../ConvertToAvatar')
+jest.mock("fs")
 describe('convert_to_avatar checks', () => {
   let storageObjectEvent = null
+  let image_data = null
   beforeAll(() => {
     global.origConsole = global.console
   })
   beforeEach(() => {
+    image_data = {
+      bucket: 'realness.app.firebase.com',
+      contentType: 'image/jpeg',
+      mediaLink: '',
+      name: '/people/+16667778888/profile.jpg',
+      resourceState: 'exists',
+      metageneration: 1,
+    }
     global.console = {
       log: jest.fn(msg => {
         // global.origConsole.log(msg)
@@ -15,14 +25,7 @@ describe('convert_to_avatar checks', () => {
       })
     }
     storageObjectEvent = {
-      data: {
-        bucket: 'realness.app.firebase.com',
-        contentType: 'image/jpeg',
-        mediaLink: '',
-        name: '/people/+16667778888/profile.jpg',
-        resourceState: 'exists',
-        metageneration: 1,
-      }
+      data: image_data
     }
   })
   afterAll(() => {
@@ -32,8 +35,7 @@ describe('convert_to_avatar checks', () => {
     storageObjectEvent.data.contentType = 'someNonImageType'
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined()
-      expect(console.log).toHaveBeenCalledWith('This is not an image.')
+      expect(data).toBe(false)
     })
   })
   test('Don\'t try to convert a thumbnail', () => {
@@ -41,22 +43,20 @@ describe('convert_to_avatar checks', () => {
     storageObjectEvent.data.name = '/some/path/to/an/thumb_existingimage.svg'
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined()
-      expect(console.log).toHaveBeenCalledWith('Already an SVG')
+      expect(data).toBe(false)
     })
   })
   test('Don\'t convert for metadata changes', () => {
     storageObjectEvent.data.metageneration = 2
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined()
-      expect(console.log).toHaveBeenCalledWith('This is a metadata change event.')
+      expect(data).toBe(false)
     })
   })
   test('calls all the right methods', () => {
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
-      expect(data).toBeUndefined()
+      expect(data.name).toBe(image_data.name)
     })
   })
 })

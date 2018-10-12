@@ -6,7 +6,13 @@ const mkdirp = require('mkdirp-promise')
 const potrace = require('potrace')
 const fs = require('fs')
 function replace_type(path, extension) {
-  return path.replace(/\.[^/.]+$/, extension)
+  const new_type = path.replace(/\.[^/.]+$/, extension)
+  // console.log(path, new_type)
+  return new_type
+}
+function delete_locals(locals) {
+  fs.unlinkSync(locals.avatar)
+  fs.unlinkSync(locals.image)
 }
 admin.initializeApp()
 exports.create_locals = (image) => {
@@ -15,7 +21,6 @@ exports.create_locals = (image) => {
     locals.bucket = image.bucket
     locals.name = image.name
     locals.image = path.join(os.tmpdir(), locals.name)
-    locals.bitmap = replace_type(locals.image, '.pnm')
     locals.avatar = replace_type(locals.image, '.svg')
     mkdirp(path.dirname(locals.image)).then(() => {
       resolve(locals)
@@ -26,8 +31,8 @@ exports.create_locals = (image) => {
 }
 exports.download = (locals) => {
   return new Promise((resolve, reject) => {
+    console.log(locals.name)
     console.log('download...')
-    console.log(locals.image)
     const bucket = admin.storage().bucket()
     bucket.file(locals.name).download({
       destination: locals.image
@@ -75,7 +80,7 @@ exports.optimize = (locals) => {
 exports.upload = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('upload...')
-    const destination_avatar = replace_type(locals.name, 'svg')
+    const destination_avatar = replace_type(locals.name, '.svg')
     const bucket = admin.storage().bucket()
     bucket.upload(locals.avatar, {
       destination: destination_avatar
@@ -89,9 +94,7 @@ exports.upload = (locals) => {
 exports.cleanup = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('cleanup...')
-    fs.unlinkSync(locals.avatar)
-    fs.unlinkSync(locals.bitmap)
-    fs.unlinkSync(locals.image)
+    delete_locals(locals)
     const bucket = admin.storage().bucket()
     bucket.file(locals.name).delete().then((results) => {
       resolve(locals)
