@@ -31,14 +31,14 @@ describe('convert_to_avatar checks', () => {
   afterAll(() => {
     global.console = global.origConsole
   })
-  test('Don\'t try to convert non-images', () => {
+  test('leave standard files alone', () => {
     storageObjectEvent.data.contentType = 'someNonImageType'
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
       expect(data).toBe(false)
     })
   })
-  test('Don\'t try to convert a thumbnail', () => {
+  test('leave svg files alone', () => {
     storageObjectEvent.data.contentType = 'image/svg'
     storageObjectEvent.data.name = '/some/path/to/an/thumb_existingimage.svg'
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
@@ -46,14 +46,14 @@ describe('convert_to_avatar checks', () => {
       expect(data).toBe(false)
     })
   })
-  test('Don\'t convert for metadata changes', () => {
+  test('leave metadata changes alone', () => {
     storageObjectEvent.data.metageneration = 2
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
       expect(data).toBe(false)
     })
   })
-  test('calls all the right methods', () => {
+  test('convert profile images to avatars', () => {
     const convert_promise = myFunctions.convert_to_avatar(storageObjectEvent)
     return convert_promise.then(data => {
       expect(data.name).toBe(image_data.name)
