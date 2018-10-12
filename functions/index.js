@@ -12,7 +12,8 @@ exports.convert_to_avatar = functions.storage.object().onFinalize(image => {
   }
   if (image.resourceState === 'exists' && image.metageneration > 1) {
     // Exit if file exists but is not new and is only being triggered
-    // because of a metadata change.
+    // because of a metadata change. don't need this because a jpg
+    // won't stick around
     return false
   }
   return create_locals(image)
