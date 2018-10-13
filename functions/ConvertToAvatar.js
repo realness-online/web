@@ -17,9 +17,7 @@ const svgo = new SVGO({
   ]
 })
 function replace_type(path, extension) {
-  const new_type = path.replace(/\.[^/.]+$/, extension)
-  // console.log(path, new_type)
-  return new_type
+  return path.replace(/\.[^/.]+$/, extension)
 }
 function delete_locals(locals) {
   fs.unlinkSync(locals.avatar)
