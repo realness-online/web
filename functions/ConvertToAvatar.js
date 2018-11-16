@@ -40,8 +40,7 @@ exports.create_locals = (image) => {
 }
 exports.download = (locals) => {
   return new Promise((resolve, reject) => {
-    console.log(locals.name)
-    console.log('download...')
+    console.log('download...', locals.name)
     const bucket = admin.storage().bucket()
     bucket.file(locals.name).download({
       destination: locals.image

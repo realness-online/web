@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs')
+const SVGO = require('svgo')
 const {
   create_locals, download, resize,
   trace, optimize, upload, cleanup } = require('../ConvertToAvatar')
@@ -7,6 +8,7 @@ const {download_mock, upload_mock, delete_mock} = require('firebase-admin')
 const {spawn_mock} = require('child-process-promise')
 const {trace_mock} = require('potrace')
 jest.mock("fs")
+// jest.mock("svgo")
 jest.mock("mkdirp-promise")
 jest.mock("firebase-admin")
 describe('../ConvertToAvatar', () => {
@@ -53,10 +55,12 @@ describe('../ConvertToAvatar', () => {
       expect(trace_mock).toHaveBeenCalled()
     })
   })
-  it('Should #optimize svg inside the avatar', () => {
-    expect.assertions(1)
-    optimize(locals).then(locals => {
+  it('Should #optimize svg', () => {
+    expect.assertions(3)
+    optimize(locals).then(() => {
       expect(fs.readFile).toHaveBeenCalled()
+      expect(SVGO.svgo_mock).toHaveBeenCalled()
+      expect(fs.writeFileSync).toHaveBeenCalled()
     })
   })
   it('Should #upload the file to /people/:mobile/profile.svg', () => {
