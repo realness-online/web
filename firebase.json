@@ -14,35 +14,46 @@
     ],
     "headers": [
       {
-        "source":"**",
+        "source": "**",
         "headers": [
           {
-            "key":"Content-Security-Policy",
+            "key": "Content-Security-Policy",
             "value": "script-src 'unsafe-inline' 'self' https://www.google.com https://apis.google.com https://www.gstatic.com https://storage.googleapis.com/"
           }
         ]
       },
       {
-        "source" : "**",
-        "headers" : [{
-          "key" : "Cache-Control",
-          "value" : "max-age=31536000"
-        }]
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
       },
       {
-        "source" : "*.svg",
-        "headers" : [{
-          "key" : "Cache-Control",
-          "value" : "max-age=31536000"
-        }]
+        "source": "*.svg",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
       },
       {
-        "source" : "/controller.js",
-        "headers" : [{
-          "key" : "Cache-Control",
-          "value" : "no-cache"
-        }]
+        "source": "/controller.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
+    ]
+  },
+  "functions": {
+    "predeploy": [
+      "npm run lint"
     ]
   }
 }

@@ -13,7 +13,7 @@ describe('@/compontent/profile/as-search.vue', () => {
     search.trigger('focusin')
     expect(wrapper.vm.searching).toBe(true)
   })
-  it('should go reset the Query when no longer focused', () => {
+  it('should go reset the input when focus is lost', () => {
     let search = wrapper.find('#search')
     search.trigger('focusin')
     expect(wrapper.vm.searching).toBe(true)

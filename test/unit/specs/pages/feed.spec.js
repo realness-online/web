@@ -45,10 +45,10 @@ describe('@/pages/feed.vue', () => {
   it('#insert_me_into_my_posts', () => {
     expect.assertions(2)
     let wrapper = shallow(feed)
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
+    jest.spyOn(Storage.prototype, 'as_list').mockImplementationOnce(() => {
       return [{}]
     })
-    jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => {
+    jest.spyOn(Storage.prototype, 'as_object').mockImplementationOnce(() => {
       return {first_name: 'scott'}
     })
     wrapper.vm.insert_me_into_my_posts()
@@ -64,7 +64,8 @@ describe('@/pages/feed.vue', () => {
       mobile: '2134445566'
     }
     let wrapper = shallow(feed)
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
+    // expect(wrapper.vm.feed.length).toBe(0)
+    jest.spyOn(Storage.prototype, 'as_list').mockImplementationOnce(() => {
       return [relation]
     })
     wrapper.vm.add_relations_to_feed().then(() => {

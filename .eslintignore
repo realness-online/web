@@ -4,3 +4,7 @@
 /*.js
 /test/unit/coverage/
 /test/unit/cache/
+/functions/node_modules
+/functions/coverage
+/functions/__mocks__
+/functions/test

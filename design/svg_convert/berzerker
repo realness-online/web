@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# ./xposure -s=2 "scott.jpg" "./output/xosure.jpg" #http://www.fmwconcepts.com/imagemagick/xposure/index.php
+# ./2colorthresh "scott.jpg" "./output/2colorthresh.gif" # http://www.fmwconcepts.com/imagemagick/2colorthresh/index.php
+# ./sharp -m 1 "scott.jpg" "./output/sharp.gif"
+
+# ./2colorthresh "./output/resize.gif" "./output/2colorthresh.gif" # http://www.fmwconcepts.com/imagemagick/2colorthresh/index.php
+
+convert "./scott.jpg" -resize 128x128 "./output/profile.pnm"
+potrace -s -o "./output/profile.svg" "./output/profile.pnm"
+svgo "./output/profile.svg" -o "./output/profile.svg"  --enable removeDimensions
+rm "./output/profile.pnm"
+
+# convert "./scott.jpg" -resize 128x128 "./output/profile.pnm"
+# potrace -s -o "./output/final.svg" "./output/profile.pnm"
+# svgo "./output/final.svg" -o "./output/final.svg"
+
+# if [ "$1" == "" ]; then
+#   echo Usage: $0 pngfile
+#   exit 0;
+# fi
+
+# FILE=`basename $1 .png`
+
+# if [ ! -e $FILE.png ]; then
+#   echo $FILE.png does not exist
+#   exit 1;
+# fi
+
+# convert $FILE.png $FILE.pnm
+# potrace -s -o $FILE.svg $FILE.pnm
+# rm $FILE.pnm

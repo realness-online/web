@@ -5,7 +5,7 @@ describe('@/components/application.vue', () => {
     let wrapper = shallow(application)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('only syncs data for people who are signed in', () => {
+  it('sets previously visited page in sessionStorage', () => {
     const $route = {
       path: '/relations'
     }

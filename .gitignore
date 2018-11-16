@@ -10,7 +10,9 @@ yarn-error.log*
 /test/unit/coverage/
 /test/unit/cache/
 /test/e2e/reports/
+/functions/coverage
 selenium-debug.log
+firebase-debug.log
 
 # Editor directories and files
 .idea
