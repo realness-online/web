@@ -1,18 +1,21 @@
-<template lang="html">
+ <template lang="html">
   <form id="profile-form">
     <fieldset id="name">
       <input id="first-name" type='text' placeholder="First" required
-             v-model="person.first_name">
+             v-model="person.first_name"
+             v-on:blur="save_person">
       <input id="last-name" type='text' placeholder="Last" required
-             v-model="person.last_name">
+             v-model="person.last_name"
+             v-on:blur="save_person">
     </fieldset>
     <fieldset id="phone">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
-             v-on:paste="mobile_paste">
-      <input id="verification-code" type="tel" placeholder="Verification code"
+             v-on:paste="mobile_paste"
+             v-on:blur="save_person">
+      <input id="verification-code" type="tel" placeholder="Code"
              v-if="show_code"
              v-model="code"
              v-on:keypress="code_keypress" >
@@ -192,8 +195,8 @@
           color:lighten(black, 30%)
       &::placeholder
         color: lighten(black, 30%)
-    label[for=mobile]
-      margin-right: -0.3em
+    // label[for=mobile]
+    //   margin-right: -0.3em
     input#first-name
       width:40%
       margin-right: base-line
