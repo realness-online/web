@@ -7,11 +7,14 @@ class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }
-  constructor(type, query = `[itemtype="/${type}"]`, file = `${type}.html`) {
+  constructor(type,
+    query = `[itemtype="/${type}"]`,
+    file = `${type}.html`,
+    content_type = 'text/html') {
     this.item_type = type
     this.selector = query
     this.filename = file
-    this.metadata = {'contentType': 'text/html'}
+    this.metadata = {'contentType': content_type}
   }
   from_storage() {
     let storage_string = localStorage.getItem(this.item_type)
@@ -94,6 +97,7 @@ class Storage {
   }
 }
 export default Storage
+
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
 export const activity_storage = new Storage('activity', '[itemprop=activity]')
