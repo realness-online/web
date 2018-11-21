@@ -10,6 +10,7 @@
       </p>
       <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
+      <meta itemprop="has_avatar" :content="person.has_avatar">
       <meta itemprop="created_at" :content="person.created_at">
       <meta itemprop="updated_at" :content="person.updated_at">
     </figcaption>
@@ -20,6 +21,7 @@
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
+  import Storage from '@/modules/Storage'
   export default {
     props: {
       person: Object,
@@ -44,9 +46,17 @@
       uploader: {
         bind(el, binding, vnode) {
           el.addEventListener('change', e => {
-            /* istanbul ignore next */
-            if (e.target.files[0] !== undefined) {
-              vnode.context.file = e.target.files[0]
+            const avatar_image = e.target.files[0]
+            console.log(avatar_image)
+            if (avatar_image !== undefined) {
+              if (avatar_image.type === 'image/jpeg') {
+                const avatar = new Storage('avatar', null, 'avatar.jpg', 'image/jpeg')
+                avatar.persist(avatar_image).then(result => {
+                  this.person.has_avatar = true
+                  // console.log('persisted', result)
+                })
+              }
+              vnode.context.file = avatar_image
             }
           })
         }
@@ -77,6 +87,9 @@
     },
     computed: {
       avatar() {
+        if (this.person.has_avatar) {
+          return `/people/+1${this.person.mobile}/avatar.svg`
+        }
         return `${icons}#silhouette`
       },
       item_id() {
