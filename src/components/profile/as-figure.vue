@@ -129,7 +129,7 @@
     & > img
       border-radius: base-line
       width: base-line * 2
-      height: 100%
+      height: base-line * 2
     & > svg
       cursor: pointer
       fill: black
