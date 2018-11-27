@@ -16,7 +16,7 @@
         posts: posts_storage.as_list()
       }
     },
-    created: function() {
+    created() {
       localStorage.setItem('posts-count', this.posts.length)
       this.$bus.$on('post-added', post => {
         this.posts.push(post)

@@ -1,6 +1,9 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
-    <svg @click="avatar_click" class='avatar'>
+    <input id="avatar_picker" type="file" accept="image/*" style="display:none"
+            v-if="edit_avatar" ref="file_upload" v-uploader>
+    <img v-if="has_upload" :src="avatar" >
+    <svg v-else @click="avatar_click" class='avatar'>
       <use :xlink:href="avatar"/>
     </svg>
     <figcaption>
@@ -14,14 +17,15 @@
       <meta itemprop="created_at" :content="person.created_at">
       <meta itemprop="updated_at" :content="person.updated_at">
     </figcaption>
-    <input id="avatar_picker" type="file" accept="image/*" style="display:none"
-            v-if="edit_avatar" ref="file_upload" v-uploader>
   </figure>
 </template>
 <script>
+  import Vue from 'vue'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
-  import Storage from '@/modules/Storage'
+  import {person_storage, avatar_storage} from '@/modules/Storage'
+  import * as firebase from 'firebase/app'
+  import 'firebase/storage'
   export default {
     props: {
       person: Object,
@@ -42,30 +46,29 @@
         default: true
       }
     },
-    directives: {
-      uploader: {
-        bind(el, binding, vnode) {
-          el.addEventListener('change', e => {
-            const avatar_image = e.target.files[0]
-            console.log(avatar_image)
-            if (avatar_image !== undefined) {
-              if (avatar_image.type === 'image/jpeg') {
-                const avatar = new Storage('avatar', null, 'avatar.jpg', 'image/jpeg')
-                avatar.persist(avatar_image).then(result => {
-                  this.person.has_avatar = true
-                  // console.log('persisted', result)
-                })
-              }
-              vnode.context.file = avatar_image
-            }
-          })
-        }
-      }
-    },
     data() {
       return {
-        file: ''
+        avatar: `${icons}#silhouette`,
+        has_upload: false
       }
+    },
+    created() {
+      console.log('inside me')
+      const storage = firebase.storage().ref()
+      const svg = storage.child(`/people/+1${this.person.mobile}/avatar.svg`)
+      svg.getDownloadURL().then(url => {
+        console.log('Found svg', url)
+        this.has_upload = true
+        this.avatar = url
+      }).catch(error => {
+        const jpg = storage.child(`/people/+1${this.person.mobile}/avatar.jpg`)
+        console.log(error.message, 'attempting jpg')
+        jpg.getDownloadURL().then(url => {
+          console.log('Found jpg')
+          this.has_upload = true
+          this.avatar = url
+        })
+      })
     },
     methods: {
       avatar_click(event) {
@@ -86,12 +89,6 @@
       }
     },
     computed: {
-      avatar() {
-        if (this.person.has_avatar) {
-          return `/people/+1${this.person.mobile}/avatar.svg`
-        }
-        return `${icons}#silhouette`
-      },
       item_id() {
         return `/+1${this.person.mobile}`
       },
@@ -100,6 +97,24 @@
       },
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
+      }
+    },
+    directives: {
+      uploader: {
+        bind(input, binding, vnode) {
+          input.addEventListener('change', event => {
+            const avatar_image = event.target.files[0]
+            if (avatar_image !== undefined) {
+              if (avatar_image.type === 'image/jpeg') {
+                avatar_storage.persist(avatar_image).then(result => {
+                  vnode.context.person.has_avatar = true
+                  Vue.nextTick(() => person_storage.save())
+                })
+              }
+              vnode.context.file = avatar_image
+            }
+          })
+        }
       }
     }
   }
@@ -111,6 +126,10 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
+    & > img
+      border-radius: base-line
+      width: base-line * 2
+      height: 100%
     & > svg
       cursor: pointer
       fill: black

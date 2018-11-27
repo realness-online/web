@@ -17,7 +17,7 @@
         activity: activity_storage.as_list()
       }
     },
-    created: function() {
+    created() {
       this.$bus.$on('post-added', post => {
         this.activity.push({
           who: 'person/id',
