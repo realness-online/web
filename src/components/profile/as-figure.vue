@@ -127,9 +127,13 @@
     text-overflow: ellipsis
     display:flex
     & > img
-      border-radius: base-line
       width: base-line * 2
       height: base-line * 2
+      color: black
+      fill: black
+      stroke: lighten(black, 20%)
+      stroke-width: (base-line / 36)
+      border-radius: base-line
     & > svg
       cursor: pointer
       fill: black
