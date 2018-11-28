@@ -78,7 +78,6 @@
     input[type=file]
       display: none
     svg.working
-      margin-top: 50%
       flex-grow: 1
       padding: base-line
       width:100vw
