@@ -1,8 +1,8 @@
 <template>
   <section id="upload">
     <input id="avatar_picker" type="file" accept="image/*" ref="file_upload" v-uploader>
-    <icon name="working"></icon>
-    <profile-as-figure :person='person' :me="true"></profile-as-figure>
+    <icon v-if="working" name="working"></icon>
+    <profile-as-figure  v-else :person='person' :me="true"></profile-as-figure>
     <footer>
       <icon name="remove"></icon>
       <a @click="camera_click">
@@ -24,11 +24,13 @@
     },
     data() {
       return {
-        person: person_storage.as_object()
+        person: person_storage.as_object(),
+        working: false
       }
     },
     methods: {
       camera_click(event) {
+        this.working = true
         this.$refs.file_upload.click()
       }
     },
@@ -76,9 +78,11 @@
     input[type=file]
       display: none
     svg.working
-      display:none
-      width:(100vw - base-line)
-      height:100vh
+      margin-top: 50%
+      flex-grow: 1
+      padding: base-line
+      width:100vw
+      height:50vh
     & > footer
       padding: base-line
       display: flex
