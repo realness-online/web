@@ -5,7 +5,9 @@
     <profile-as-figure :person='person' :me="true"></profile-as-figure>
     <footer>
       <icon name="remove"></icon>
-      <icon name="add"></icon>
+      <a @click="camera_click">
+        <icon name="add"></icon>
+      </a>
       <router-link to="/account">
         <icon name="finished"></icon>
       </router-link>
@@ -23,6 +25,11 @@
     data() {
       return {
         person: person_storage.as_object()
+      }
+    },
+    methods: {
+      camera_click(event) {
+        this.$refs.file_upload.click()
       }
     },
     directives: {
@@ -76,6 +83,6 @@
       padding: base-line
       display: flex
       justify-content: space-between
-      & > svg
+      & > svg.remove
         opacity: 0.5
 </style>
