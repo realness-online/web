@@ -17,12 +17,8 @@
   </figure>
 </template>
 <script>
-  import Vue from 'vue'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
-  import {person_storage, avatar_storage} from '@/modules/Storage'
-  import * as firebase from 'firebase/app'
-  import 'firebase/storage'
   export default {
     props: {
       person: Object,
@@ -49,23 +45,6 @@
         has_upload: false
       }
     },
-    created() {
-      // const storage = firebase.storage().ref()
-      // const svg = storage.child(`/people/+1${this.person.mobile}/avatar.svg`)
-      // svg.getDownloadURL().then(url => {
-      //   // console.log('Found svg', url)
-      //   this.has_upload = true
-      //   this.avatar = url
-      // }).catch(error => {
-      //   const jpg = storage.child(`/people/+1${this.person.mobile}/avatar.jpg`)
-      //   // console.log(error.message, 'attempting jpg')
-      //   jpg.getDownloadURL().then(url => {
-      //     // console.log('Found jpg')
-      //     this.has_upload = true
-      //     this.avatar = url
-      //   })
-      // })
-    },
     methods: {
       avatar_click(event) {
         let route = {
@@ -78,7 +57,6 @@
           route.path = '/account'
         }
         if (this.edit_avatar) {
-          console.log('upload');
           route.path = '/upload'
         }
         this.$router.push(route)
@@ -94,8 +72,7 @@
       mobile_display() {
         return new AsYouType('US').input(this.person.mobile)
       }
-    },
-
+    }
   }
 </script>
 <style lang="stylus">
