@@ -2,7 +2,7 @@
   <section id="upload">
     <input id="avatar_picker" type="file" accept="image/*" ref="file_upload" v-uploader>
     <icon v-if="working" name="working"></icon>
-    <profile-as-figure  v-else :person='person' :me="true"></profile-as-figure>
+    <profile-as-figure v-else :person='person' :me="true"></profile-as-figure>
     <footer>
       <icon name="remove"></icon>
       <a @click="camera_click">
@@ -18,6 +18,8 @@
   import icon from '@/components/icon'
   import profileAsFigure from '@/components/profile/as-figure'
   import {person_storage} from '@/modules/Storage'
+  import convert_to_avatar from '@/modules/ConvertToAvatar'
+
   export default {
     components: {
       icon, profileAsFigure
@@ -41,12 +43,11 @@
             const avatar_image = event.target.files[0]
             if (avatar_image !== undefined) {
               if (avatar_image.type === 'image/jpeg') {
-                // convert_to_avatar.trace().then(file)
-                // avatar_storage.persist(avatar_image).then(result => {
-                //   Vue.nextTick(() => person_storage.save())
-                // })
+                convert_to_avatar.trace(avatar_image).then(avatar => {
+                  vnode.context.working = false
+                  vnode.context.person.avatar = avatar
+                })
               }
-              vnode.context.file = avatar_image
             }
           })
         }

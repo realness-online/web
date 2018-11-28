@@ -18,7 +18,9 @@
   "dependencies": {
     "firebase": "^5.5.3",
     "jest-fetch-mock": "^1.6.5",
+    "jimp": "^0.5.6",
     "libphonenumber-js": "^1.2.15",
+    "potrace": "^2.1.1",
     "vue": "^2.5.16",
     "vue-router": "^3.0.1",
     "workbox-webpack-plugin": "^3.5.0"
