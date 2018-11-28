@@ -1,9 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
-    <input id="avatar_picker" type="file" accept="image/*" style="display:none"
-            v-if="edit_avatar" ref="file_upload" v-uploader>
-    <img v-if="has_upload" @click="avatar_click" :src="avatar" >
-    <svg v-else @click="avatar_click" class='avatar'>
+    <svg class='avatar' @click="avatar_click">
+      <g itemprop="avatar"></g>
       <use :xlink:href="avatar"/>
     </svg>
     <figcaption>
@@ -52,22 +50,21 @@
       }
     },
     created() {
-      console.log('inside me')
-      const storage = firebase.storage().ref()
-      const svg = storage.child(`/people/+1${this.person.mobile}/avatar.svg`)
-      svg.getDownloadURL().then(url => {
-        console.log('Found svg', url)
-        this.has_upload = true
-        this.avatar = url
-      }).catch(error => {
-        const jpg = storage.child(`/people/+1${this.person.mobile}/avatar.jpg`)
-        console.log(error.message, 'attempting jpg')
-        jpg.getDownloadURL().then(url => {
-          console.log('Found jpg')
-          this.has_upload = true
-          this.avatar = url
-        })
-      })
+      // const storage = firebase.storage().ref()
+      // const svg = storage.child(`/people/+1${this.person.mobile}/avatar.svg`)
+      // svg.getDownloadURL().then(url => {
+      //   // console.log('Found svg', url)
+      //   this.has_upload = true
+      //   this.avatar = url
+      // }).catch(error => {
+      //   const jpg = storage.child(`/people/+1${this.person.mobile}/avatar.jpg`)
+      //   // console.log(error.message, 'attempting jpg')
+      //   jpg.getDownloadURL().then(url => {
+      //     // console.log('Found jpg')
+      //     this.has_upload = true
+      //     this.avatar = url
+      //   })
+      // })
     },
     methods: {
       avatar_click(event) {
@@ -81,10 +78,10 @@
           route.path = '/account'
         }
         if (this.edit_avatar) {
-          this.$refs.file_upload.click()
-        } else {
-          this.$router.push(route)
+          console.log('upload');
+          route.path = '/upload'
         }
+        this.$router.push(route)
       }
     },
     computed: {
@@ -98,23 +95,7 @@
         return new AsYouType('US').input(this.person.mobile)
       }
     },
-    directives: {
-      uploader: {
-        bind(input, binding, vnode) {
-          input.addEventListener('change', event => {
-            const avatar_image = event.target.files[0]
-            if (avatar_image !== undefined) {
-              if (avatar_image.type === 'image/jpeg') {
-                avatar_storage.persist(avatar_image).then(result => {
-                  Vue.nextTick(() => person_storage.save())
-                })
-              }
-              vnode.context.file = avatar_image
-            }
-          })
-        }
-      }
-    }
+
   }
 </script>
 <style lang="stylus">

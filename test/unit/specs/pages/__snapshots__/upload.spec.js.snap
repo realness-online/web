@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/pages/upload.vue displays and uploads profile pictue  1`] = `<!--function (a, b, c, d) { return createElement(vm, a, b, c, d, true); }-->`;
