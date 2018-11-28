@@ -2,7 +2,7 @@
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <input id="avatar_picker" type="file" accept="image/*" style="display:none"
             v-if="edit_avatar" ref="file_upload" v-uploader>
-    <img v-if="has_upload" :src="avatar" >
+    <img v-if="has_upload" @click="avatar_click" :src="avatar" >
     <svg v-else @click="avatar_click" class='avatar'>
       <use :xlink:href="avatar"/>
     </svg>
@@ -13,7 +13,6 @@
       </p>
       <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
-      <meta itemprop="has_avatar" :content="person.has_avatar">
       <meta itemprop="created_at" :content="person.created_at">
       <meta itemprop="updated_at" :content="person.updated_at">
     </figcaption>
@@ -107,7 +106,6 @@
             if (avatar_image !== undefined) {
               if (avatar_image.type === 'image/jpeg') {
                 avatar_storage.persist(avatar_image).then(result => {
-                  vnode.context.person.has_avatar = true
                   Vue.nextTick(() => person_storage.save())
                 })
               }
