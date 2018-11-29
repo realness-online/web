@@ -74,8 +74,7 @@
     justify-content: flex-start
     align-content: stretch
     figure.profile
-      padding: base-line
-      padding-top: base-line * 4
+      padding: 0
       flex-grow: 1
       display: flex
       flex-direction: column
@@ -83,8 +82,9 @@
       align-content: stretch
       & > svg
         border-radius: 100vw
-        width: s('calc( 100vw - %s * 2)', base-line)
-        height: s('calc( 100vw - %s * 2)', base-line)
+        width: 100vw
+        height:100vw
+        max-height: 90vh
       & > figcaption
         display:none
     input[type=file]
