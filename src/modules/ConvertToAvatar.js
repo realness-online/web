@@ -1,15 +1,20 @@
+// import 'jimp/browser/lib/jimp'
+// import jimp from 'jimp'
+// import potrace from 'potrace'
+// const jimp = require('jimp')
 // window.Buffer = require('buffer/').Buffer // note: the trailing slash is important!
-require('jimp/browser/lib/jimp')
+// window.Jimp = jimp
 const potrace = require('potrace')
 function trace(avatar_image) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
-    // let avatar_buffer = null
     var reader = new FileReader()
     reader.readAsArrayBuffer(avatar_image)
     reader.onload = function() {
+      console.log('onload')
       var trace = new potrace.Potrace()
       trace.loadImage(this.result, err => {
+        console.log('loadImage')
         if (err) throw err
         // console.log(this)
         resolve(trace.getSymbol('avatar'))
