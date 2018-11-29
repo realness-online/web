@@ -74,7 +74,7 @@
     justify-content: flex-start
     align-content: stretch
     figure.profile
-      padding: 0 base-line
+      padding: base-line
       padding-top: base-line * 4
       flex-grow: 1
       display: flex
@@ -83,7 +83,7 @@
       align-content: stretch
       & > svg
         standard-border: black
-        border-radius: base-line * 8
+        border-radius: 100vw
         width: s('calc( 100vw - %s * 2)', base-line)
         height: s('calc( 100vw - %s * 2)', base-line)
       & > figcaption
