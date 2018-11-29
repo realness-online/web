@@ -2,7 +2,7 @@
   <section id="upload">
     <input id="avatar_picker" type="file" accept="image/jpeg" ref="file_upload" v-uploader>
     <icon v-if="working" name="working"></icon>
-    <profile-as-figure v-else :person='person' :me="true"></profile-as-figure>
+    <profile-as-figure v-else :person='person' :chill='true'></profile-as-figure>
     <footer>
       <button disabled>
         <icon name="remove"></icon>
@@ -82,11 +82,7 @@
       justify-content: flex-start
       align-content: stretch
       & > svg
-        animation-name: working
-        animation-timing-function: linear
-        animation-duration: 3.33s
-        animation-delay: 0
-        animation-iteration-count: infinite
+        animation-name: slideInDown
         border-radius: 100vw
         width: 100vw
         height:100vw
