@@ -7,10 +7,9 @@ function trace(avatar_image) {
     reader.onload = function() {
       console.log('onload')
       var trace = new potrace.Potrace()
-      trace.loadImage(this.result, err => {
+      trace.loadImage(this.result, error => {
         console.log('loadImage')
-        if (err) throw err
-        // console.log(this)
+        if (error) throw error
         resolve(trace.getSymbol('avatar'))
       })
     }
