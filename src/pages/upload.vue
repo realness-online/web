@@ -4,9 +4,9 @@
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person' :me="true"></profile-as-figure>
     <footer>
-      <router-link to="/account">
+      <button disabled>
         <icon name="remove"></icon>
-      </router-link>
+      </button>
       <a @click="camera_click">
         <icon name="add"></icon>
       </a>
@@ -105,6 +105,10 @@
       padding: base-line
       display: flex
       justify-content: space-between
-      svg.remove
-        opacity: 0.5
+      button
+        border: none
+        padding: 0
+        margin:0
+        &[disabled]
+          opacity:0.5
 </style>
