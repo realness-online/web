@@ -63,6 +63,7 @@
     },
     computed: {
       avatar() {
+        console.log('computing avatar location')
         if (this.person.avatar) {
           return '#avatar'
         }

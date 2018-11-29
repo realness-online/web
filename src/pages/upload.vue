@@ -4,13 +4,15 @@
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person' :me="true"></profile-as-figure>
     <footer>
-      <icon name="remove"></icon>
+      <router-link to="/account">
+        <icon name="remove"></icon>
+      </router-link>
       <a @click="camera_click">
         <icon name="add"></icon>
       </a>
-      <router-link to="/account">
+      <a @click="finished_click">
         <icon name="finished"></icon>
-      </router-link>
+      </a>
     </footer>
   </section>
 </template>
@@ -34,6 +36,14 @@
       camera_click(event) {
         this.working = true
         this.$refs.file_upload.click()
+      },
+      finished_click(event) {
+        let route = {
+          path: `/account`
+        }
+        person_storage.save().then(() => {
+          this.$router.push(route)
+        })
       }
     },
     directives: {
@@ -87,6 +97,6 @@
       padding: base-line
       display: flex
       justify-content: space-between
-      & > svg.remove
+      svg.remove
         opacity: 0.5
 </style>
