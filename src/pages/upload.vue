@@ -21,7 +21,6 @@
   import profileAsFigure from '@/components/profile/as-figure'
   import {person_storage} from '@/modules/Storage'
   import convert_to_avatar from '@/modules/ConvertToAvatar'
-
   export default {
     components: {
       icon, profileAsFigure
@@ -76,14 +75,17 @@
     align-content: stretch
     figure.profile
       padding: 0 base-line
+      padding-top: base-line
       flex-grow: 1
       display: flex
       flex-direction: column
       justify-content: flex-start
       align-content: stretch
       & > svg
+        standard-border: black
         flex-grow: 1
         width: 100%
+        height: 100vh
       & > figcaption
         display:none
     input[type=file]
