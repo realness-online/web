@@ -82,7 +82,6 @@
       justify-content: flex-start
       align-content: stretch
       & > svg
-        standard-border: black
         border-radius: 100vw
         width: s('calc( 100vw - %s * 2)', base-line)
         height: s('calc( 100vw - %s * 2)', base-line)
