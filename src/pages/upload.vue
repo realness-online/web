@@ -75,7 +75,7 @@
     align-content: stretch
     figure.profile
       padding: 0 base-line
-      padding-top: base-line
+      padding-top: base-line * 4
       flex-grow: 1
       display: flex
       flex-direction: column
@@ -83,9 +83,9 @@
       align-content: stretch
       & > svg
         standard-border: black
-        flex-grow: 1
-        width: 100%
-        height: 100vh
+        border-radius: base-line * 8
+        width: s('calc( 100vw - %s * 2)', base-line)
+        height: s('calc( 100vw - %s * 2)', base-line)
       & > figcaption
         display:none
     input[type=file]
@@ -93,6 +93,7 @@
     svg.working
       flex-grow: 1
       padding: base-line
+      padding-top: base-line * 6
       width:100vw
       height:50vh
     & > footer
