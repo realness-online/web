@@ -41,6 +41,7 @@
           path: `/account`
         }
         person_storage.save().then(() => {
+          console.log('person saved')
           this.$router.push(route)
         })
       }
@@ -81,6 +82,11 @@
       justify-content: flex-start
       align-content: stretch
       & > svg
+        animation-name: working
+        animation-timing-function: linear
+        animation-duration: 3.33s
+        animation-delay: 0
+        animation-iteration-count: infinite
         border-radius: 100vw
         width: 100vw
         height:100vw

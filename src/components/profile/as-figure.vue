@@ -1,6 +1,6 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
-    <svg class='avatar' @click="avatar_click">
+    <svg @click="avatar_click">
       <g itemprop="avatar" v-html="person.avatar"></g>
       <use :xlink:href="avatar"/>
     </svg>
@@ -67,6 +67,7 @@
         if (this.person.avatar) {
           return '#avatar'
         }
+        // return '#avatar'
         return `${icons}#silhouette`
       },
       item_id() {

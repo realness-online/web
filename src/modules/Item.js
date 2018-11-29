@@ -52,7 +52,9 @@ class Item {
         return element.getAttribute('content')
       case 'time':
         return element.getAttribute('datetime')
-      default: return element.textContent.trim()
+      default:
+        console.log(element.textContent.trim())
+        return element.textContent.trim()
     }
   }
 }
