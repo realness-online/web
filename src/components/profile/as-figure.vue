@@ -70,11 +70,9 @@
     },
     computed: {
       avatar() {
-        console.log('computing avatar location')
         if (this.person.avatar) {
           return '#avatar'
         }
-        // return '#avatar'
         return `${icons}#silhouette`
       },
       item_id() {
