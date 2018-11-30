@@ -1,27 +1,39 @@
 const potrace = require('potrace')
 const Jimp = require('jimp')
 const EXIF = require('exif-js')
-function orient(image) {}
+const phone_is = {
+  portate: 6
+}
+function orient(avatar) {
+  EXIF.getData(avatar, () => {
+    let orientation = avatar.exifdata.Orientation
+    console.log(orientation, phone_is, avatar.exifdata)
+    return orientation
+  })
+}
 function resize(image) {}
-function trace(avatar_image) {
+function trace(avatar) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     let trace = new potrace.Potrace()
     trace.setParameters({threshold: 100})
     let reader = new FileReader()
-    reader.readAsArrayBuffer(avatar_image)
+    reader.readAsArrayBuffer(avatar)
     reader.onload = function() {
-      console.log('onload')
+      console.log('buffered')
       let buffer = this.result
-      EXIF.getData(avatar_image, function () {
-        console.log(avatar_image.exifdata, avatar_image.exifdata.Orientation)
-      })
       Jimp.read(buffer).then(image => {
-        const resized = image.resize(200, Jimp.AUTO)
-        trace.loadImage(resized, error => {
-          console.log('loadImage')
-          if (error) { reject(error) }
-          resolve(trace.getSymbol('avatar'))
+        EXIF.getData(avatar, () => {
+          image = image.resize(200, Jimp.AUTO)
+          if (avatar.exifdata.Orientation === 6) {
+            console.log('rotate', '4')
+            image = image.rotate(-90)
+          }
+          trace.loadImage(image, error => {
+            console.log('loadImage')
+            if (error) { reject(error) }
+            resolve(trace.getSymbol('avatar'))
+          })
         })
       })
     }
