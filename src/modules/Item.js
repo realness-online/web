@@ -52,6 +52,12 @@ class Item {
         return element.getAttribute('content')
       case 'time':
         return element.getAttribute('datetime')
+      case 'svg':
+        return element.outerHtml
+      case 'g':
+        return element.innerHTML
+      case 'use':
+        return element.getAttribute('href')
       default:
         console.log(element.textContent.trim())
         return element.textContent.trim()
