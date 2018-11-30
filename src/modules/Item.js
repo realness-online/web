@@ -15,12 +15,10 @@ class Item {
     })
     return items_as_data
   }
-
   static get_first_item(elements, type) {
     let item = Item.get_items(elements, type)[0]
     return item || {}
   }
-
   static get_item_properties(item) {
     let props = {}
     let properties = Array.from(item.querySelectorAll('[itemprop]'))
@@ -31,7 +29,6 @@ class Item {
     })
     return props
   }
-
   static property_value(element) {
     if (element.getAttribute('data-value')) {
       return element.getAttribute('data-value')
@@ -59,10 +56,8 @@ class Item {
       case 'use':
         return element.getAttribute('href')
       default:
-        console.log(element.textContent.trim())
         return element.textContent.trim()
     }
   }
 }
-// document.getItems = Item.get_items
 export default Item
