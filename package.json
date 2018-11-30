@@ -13,7 +13,9 @@
     "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs functions",
     "build": "node build/build.js",
     "build:stats": "webpack-bundle-analyzer dist/stats.json",
-    "deploy": "npm run build && firebase deploy --only hosting"
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:functions": "npm run build && firebase deploy --only functions"
   },
   "dependencies": {
     "exif-js": "^2.3.0",
