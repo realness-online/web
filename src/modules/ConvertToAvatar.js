@@ -7,6 +7,9 @@ function trace(avatar_image) {
     reader.onload = function() {
       console.log('onload')
       let trace = new potrace.Potrace()
+      trace.setParameters({
+        threshold: 100
+      });
       trace.loadImage(this.result, error => {
         console.log('loadImage')
         if (error) { reject(error) }
