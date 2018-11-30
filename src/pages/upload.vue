@@ -1,6 +1,6 @@
 <template>
   <section id="upload">
-    <input id="avatar_picker" type="file" accept="image/jpeg" ref="file_upload" v-uploader>
+    <input id="avatar_picker" type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person' :chill='true'></profile-as-figure>
     <footer>
