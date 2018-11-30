@@ -1,6 +1,8 @@
 const potrace = require('potrace')
 const Jimp = require('jimp')
-
+const EXIF = require('exif-js')
+function orient(image) {}
+function resize(image) {}
 function trace(avatar_image) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
@@ -11,6 +13,9 @@ function trace(avatar_image) {
     reader.onload = function() {
       console.log('onload')
       let buffer = this.result
+      EXIF.getData(avatar_image, function () {
+        console.log(avatar_image.exifdata, avatar_image.exifdata.Orientation)
+      })
       Jimp.read(buffer).then(image => {
         const resized = image.resize(200, Jimp.AUTO)
         trace.loadImage(resized, error => {
@@ -36,9 +41,9 @@ function posterize(poster) {
     })
   })
 }
-function resize(image) {}
 function bannerize(banner) {}
 export default {
+  orient,
   resize,
   trace,
   posterize,
