@@ -18,20 +18,21 @@ function trace(avatar_image) {
     }
   })
 }
-function posterize(avatar_image) {
+function posterize(poster) {
   return new Promise((resolve, reject) => {
     console.log('posterize...')
     var posterizer = new potrace.Posterize()
-    posterizer.loadImage(avatar_image, function(error) {
+    posterizer.loadImage(poster, function(error) {
       if (error) { reject(error) }
       posterizer.setParameter({
         steps: 2,
-        threshold: 200,
-        fillStrategy: potrace.Posterize.FILL_MEAN
+        threshold: 200
       })
-      resolve(posterizer.getSymbol('posterized-image'))
+      resolve(posterizer.getSymbol('poster'))
     })
   })
+}
+function bannerize(banner) {
 }
 export default {
   trace,
