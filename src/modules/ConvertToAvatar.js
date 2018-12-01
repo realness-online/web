@@ -12,7 +12,7 @@ function orient(avatar) {
   })
 }
 function resize(image) {}
-function trace(avatar) {
+function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     let trace = new potrace.Potrace()
@@ -32,7 +32,7 @@ function trace(avatar) {
           trace.loadImage(image, error => {
             console.log('loadImage')
             if (error) { reject(error) }
-            resolve(trace.getSymbol('avatar'))
+            resolve(trace.getSymbol(identifier))
           })
         })
       })
