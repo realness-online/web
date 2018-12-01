@@ -26,7 +26,7 @@ function trace(avatar) {
         EXIF.getData(avatar, () => {
           image = image.resize(200, Jimp.AUTO)
           if (avatar.exifdata.Orientation === 6) {
-            console.log('rotate', '4')
+            console.log('rotate')
             image = image.rotate(-90)
           }
           trace.loadImage(image, error => {
