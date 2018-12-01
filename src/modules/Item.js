@@ -52,6 +52,7 @@ class Item {
       case 'svg':
         return element.outerHtml
       case 'g':
+      case 'defs':
         return element.innerHTML
       case 'use':
         return element.getAttribute('href')

@@ -1,7 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <svg @click="avatar_click">
-      <g itemprop="avatar" v-html="person.avatar"></g>
+      <defs itemprop="avatar" v-html="person.avatar"></defs>
       <use :xlink:href="avatar"/>
     </svg>
     <figcaption>
