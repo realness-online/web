@@ -53,7 +53,7 @@
             const avatar_image = event.target.files[0]
             if (avatar_image !== undefined) {
               if (avatar_image.type === 'image/jpeg') {
-                const identifier = `${vnode.context.person.mobile}_avatar`
+                const identifier = `+1${this.context.person.mobile}_avatar`
                 convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
                   vnode.context.working = false
                   vnode.context.person.avatar = avatar

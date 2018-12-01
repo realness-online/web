@@ -71,7 +71,7 @@
     computed: {
       avatar() {
         if (this.person.avatar) {
-          return `#${this.person.mobile}_avatar`
+          return `#+1${this.person.mobile}_avatar`
         }
         return `${icons}#silhouette`
       },
