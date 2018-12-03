@@ -2,9 +2,9 @@
   <section id="profile" class="page" v-bind:class="{me}">
     <header>
       <profile-as-figure :person='person' :me="me" :previous="true"></profile-as-figure>
-      <icon v-show="working" name="working"></icon>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-show="working" name="working"></icon>
     <my-posts v-if="me"></my-posts>
     <posts-list v-else :posts='posts'></posts-list>
   </section>
