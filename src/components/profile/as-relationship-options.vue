@@ -37,10 +37,13 @@
         })
       },
       update_relationship() {
+        console.log('update_relationship')
         if (this.relation) {
+          console.log('remove_relationship')
           this.relation = false
           this.$bus.$emit('remove-relationship', this.person)
         } else {
+          console.log('add_relationship')
           this.relation = true
           this.$bus.$emit('add-relationship', this.person)
         }

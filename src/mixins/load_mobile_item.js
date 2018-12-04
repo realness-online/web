@@ -8,12 +8,11 @@ function get_url(mobile, type) {
   return firebase.storage().ref().child(path).getDownloadURL()
 }
 export default {
-  computed: {
-    item_id() {
-      return `/+1${this.person.mobile}`
-    }
-  },
   methods: {
+    get_item_id(person) {
+      console.log(person)
+      return `/+1${person.mobile}`
+    },
     get_items_from_mobile(mobile, type) {
       return new Promise((resolve, reject) => {
         get_url(mobile, type).then((url) => {

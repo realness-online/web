@@ -28,17 +28,17 @@
       profileAsLinks,
       icon
     },
-    created() {
-      phonebook_storage.sync_list().then((people) => {
-        this.working = false
-        this.phonebook = people
-      })
-    },
     data() {
       return {
         phonebook: [],
         working: true
       }
+    },
+    created() {
+      phonebook_storage.sync_list().then((people) => {
+        this.working = false
+        this.phonebook = people
+      })
     },
     watch: {
       phonebook() {
