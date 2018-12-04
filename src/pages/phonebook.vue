@@ -7,35 +7,37 @@
         <icon name="finished"></icon>
       </router-link>
     </header>
-    <icon v-show="loading" name="working"></icon>
+    <icon v-show="working" name="working"></icon>
     <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
     <aside>
-      <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
+      <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
     </aside>
   </section>
 </template>
 <script>
   import Vue from 'vue'
-  import profile_as_search from '@/components/profile/as-search'
-  import {phonebook_storage} from '@/modules/PhoneBook'
-  import relationship_mixin from '@/pages/relationship-mixin'
   import icon from '@/components/icon'
+  import profileAsList from '@/components/profile/as-list'
+  import profileAsLinks from '@/components/profile/as-links'
+  import {phonebook_storage} from '@/modules/PhoneBook'
+  import relationship_status from '@/mixins/relationship_status'
   export default {
-    mixins: [relationship_mixin],
+    mixins: [relationship_status],
     components: {
-      'profile-search': profile_as_search,
+      profileAsList,
+      profileAsLinks,
       icon
     },
     created() {
       phonebook_storage.sync_list().then((people) => {
+        this.working = false
         this.phonebook = people
-        this.loading = false
       })
     },
     data() {
       return {
         phonebook: [],
-        loading: true
+        working: true
       }
     },
     watch: {

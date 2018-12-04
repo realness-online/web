@@ -9,36 +9,20 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
     <router-link
       to="/phonebook"
     >
-      <svg
-        class="heart"
-      >
-        <use
-          xlink:href="#heart"
-        />
-      </svg>
+      <!---->
     </router-link>
      
     <h1>
       Relations
     </h1>
      
-    <router-link
-      id="logo"
-      to="/"
-    >
-      <svg
-        class="realness"
-      >
-        <use
-          xlink:href="#realness"
-        />
-      </svg>
-    </router-link>
+    <!---->
   </header>
    
-  <nav
-    class="profile-list"
-    itemprop="relations"
-  />
+  <!---->
+   
+  <aside>
+    <!---->
+  </aside>
 </section>
 `;

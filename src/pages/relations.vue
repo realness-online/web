@@ -5,13 +5,26 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list itemprop="relations" :people='relations'></profile-as-list>
+    <profile-as-list :people='relations'></profile-as-list>
+    <aside class="">
+      <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
+    </aside>
   </section>
 </template>
 <script>
-  import relationship_mixin from '@/pages/relationship-mixin'
+  import relationship_status from '@/mixins/relationship_status'
+  import logoAsLink from '@/components/logo-as-link'
+  import icon from '@/components/icon'
+  import profileAsList from '@/components/profile/as-list'
+  import profileAsLinks from '@/components/profile/as-links'
   export default {
-    mixins: [relationship_mixin]
+    components: {
+      icon,
+      profileAsList,
+      profileAsLinks,
+      logoAsLink
+    },
+    mixins: [relationship_status]
   }
 </script>
 <style lang='stylus'>

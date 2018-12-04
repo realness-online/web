@@ -12,7 +12,6 @@
       <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
       <meta itemprop="created_at" :content="person.created_at">
-      <meta itemprop="updated_at" :content="person.updated_at">
     </figcaption>
   </figure>
 </template>

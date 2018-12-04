@@ -11,16 +11,15 @@
 </template>
 <script>
   import '@/modules/timeago'
-  import Item from '@/modules/Item'
-  import Storage, {person_storage} from '@/modules/Storage'
+  import {person_storage} from '@/modules/Storage'
   import profileAsFigure from '@/components/profile/as-figure'
   import logoAsLink from '@/components/logo-as-link'
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
-  import * as firebase from 'firebase/app'
-  import 'firebase/storage'
+  import load_mobile_item from '@/mixins/load_mobile_item'
   export default {
+    mixins: [load_mobile_item],
     components: {
       profileAsFigure,
       myPosts,
@@ -31,11 +30,11 @@
     created() {
       const mobile = this.$route.params.mobile
       if (mobile) {
-        this.get_items(mobile, 'person').then(items => {
+        this.get_items_from_mobile(mobile, 'person').then(items => {
           this.working = false
           this.person = items[0]
         })
-        this.get_items(mobile, 'posts').then(items => {
+        this.get_items_from_mobile(mobile, 'posts').then(items => {
           this.posts = items
         })
       } else {
@@ -50,24 +49,6 @@
         working: true,
         person: {},
         posts: {}
-      }
-    },
-    methods: {
-      get_url(mobile, type) {
-        const path = `/people/+1${mobile}/${type}.html`
-        return firebase.storage().ref().child(path).getDownloadURL()
-      },
-      get_items(mobile, type) {
-        return new Promise((resolve, reject) => {
-          this.get_url(mobile, type).then((url) => {
-            fetch(url).then(response => {
-              response.text().then((server_text) => {
-                const server_as_fragment = Storage.hydrate(server_text)
-                resolve(Item.get_items(server_as_fragment))
-              })
-            })
-          })
-        })
       }
     }
   }

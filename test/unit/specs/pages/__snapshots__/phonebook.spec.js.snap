@@ -221,16 +221,10 @@ exports[`@/pages/phonebook render an empty phonebook 1`] = `
    
   <!---->
    
-  <nav
-    class="profile-list"
-    id="phonebook"
-  />
+  <!---->
    
   <aside>
-    <nav
-      class="profile-list"
-      itemprop="relations"
-    />
+    <!---->
   </aside>
 </section>
 `;

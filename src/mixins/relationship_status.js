@@ -1,14 +1,6 @@
 import Vue from 'vue'
 import {relations_storage} from '@/modules/Storage'
-import logo_as_link from '@/components/logo-as-link'
-import icon from '@/components/icon'
-import profile_as_list from '@/components/profile/as-list'
-var relationship_mixin = {
-  components: {
-    'logo-as-link': logo_as_link,
-    'profile-as-list': profile_as_list,
-    icon
-  },
+export default {
   watch: {
     relations() {
       Vue.nextTick(() => relations_storage.save())
@@ -20,8 +12,6 @@ var relationship_mixin = {
     }
   },
   created() {
-    this.$bus.$off('remove-relationship')
-    this.$bus.$off('add-relationship')
     localStorage.setItem('relations-count', this.relations.length)
     this.$bus.$on('add-relationship', person => {
       this.relations.push(person)
@@ -34,6 +24,9 @@ var relationship_mixin = {
         localStorage.setItem('relations-count', this.relations.length)
       }
     })
+  },
+  beforeDestroy() {
+    this.$bus.$off('remove-relationship')
+    this.$bus.$off('add-relationship')
   }
 }
-export default relationship_mixin

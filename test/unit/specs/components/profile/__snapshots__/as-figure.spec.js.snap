@@ -7,19 +7,15 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
   itemscope="itemscope"
   itemtype="/person"
 >
-  <svg
-    class="avatar"
-  >
-    <g
+  <svg>
+    <defs
       itemprop="avatar"
     />
      
     <use
-      xlink:href="https://download_url/people/+16282281824/avatar.svg"
+      xlink:href="#silhouette"
     />
   </svg>
-   
-  <!---->
    
   <figcaption>
     <p>
@@ -47,11 +43,6 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
     <meta
       content="2018-07-15T18:11:31.018Z"
       itemprop="created_at"
-    />
-     
-    <meta
-      content="2018-07-16T18:12:21.552Z"
-      itemprop="updated_at"
     />
   </figcaption>
 </figure>
