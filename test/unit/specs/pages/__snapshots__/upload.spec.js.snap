@@ -30,3 +30,33 @@ exports[`@/pages/upload.vue displays and uploads profile pictue  1`] = `
   </footer>
 </section>
 `;
+
+exports[`@/pages/upload.vue displays the profile pictue  1`] = `
+<section
+  id="upload"
+>
+  <input
+    accept="image/jpeg"
+    capture=""
+    type="file"
+  />
+   
+  <!---->
+   
+  <footer>
+    <button
+      disabled="disabled"
+    >
+      <!---->
+    </button>
+     
+    <a>
+      <!---->
+    </a>
+     
+    <a>
+      <!---->
+    </a>
+  </footer>
+</section>
+`;

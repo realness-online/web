@@ -1,13 +1,13 @@
 <template>
   <section id="upload">
-    <input id="avatar_picker" type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
+    <input type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person' :chill='true'></profile-as-figure>
     <footer>
       <button disabled>
         <icon name="remove"></icon>
       </button>
-      <a @click="camera_click">
+      <a @click="open_camera">
         <icon name="add"></icon>
       </a>
       <a @click="finished_click">
@@ -32,7 +32,7 @@
       }
     },
     methods: {
-      camera_click(event) {
+      open_camera(event) {
         this.working = true
         this.$refs.file_upload.click()
       },
