@@ -3,7 +3,7 @@
     v-model="new_post"
     v-on:focusout="prepare_post"
     v-on:focusin="wat_focused"
-    placeholder="What?">{{value}}</textarea>
+    placeholder="...">{{value}}</textarea>
 </template>
 
 <script>
@@ -41,12 +41,17 @@
     cursor:pointer
     transition-property: border-width, border-radius, text-align, background-color
     color:black
-    font-family: lato
+    font-family: 'Lato'
     font-size: inherit
     user-select: text
     border-style: solid
     resize: none
     caret-color: red
+    padding-top: 0
+    &::placeholder
+      transition-property:all
+      font-family: 'Lato'
+      font-size: 4.66rem
     &:focus
       margin-top: base-line
       animation-name: slideInLeft
@@ -64,6 +69,5 @@
       line-height: base-line
       &::placeholder
         color:red
-        transition-property:all
         text-align: left
 </style>
