@@ -69,22 +69,5 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/test-route')
     })
-    it('when edit_avatar is true should execute file upload dialog', () => {
-      wrapper.setProps({edit_avatar: true})
-      let mock_click = jest.fn()
-      wrapper.vm.$refs.file_upload.click = mock_click
-      wrapper.vm.avatar_click()
-      expect(mock_click).toBeCalled()
-    })
-  })
-  describe('#avatar_picker', () => {
-    it('change event should get input file', () => {
-      wrapper.setProps({edit_avatar: true})
-      let input = wrapper.find('#avatar_picker')
-      expect(input.exists()).toBe(true)
-      input.element.value = ''
-      input.trigger('change')
-      // currently no way to test file inputs. let's run the event anyway
-    })
   })
 })
