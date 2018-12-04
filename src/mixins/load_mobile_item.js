@@ -2,7 +2,6 @@ import * as firebase from 'firebase/app'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
 import 'firebase/storage'
-
 function get_url(mobile, type) {
   const path = `/people/+1${mobile}/${type}.html`
   return firebase.storage().ref().child(path).getDownloadURL()
@@ -10,7 +9,6 @@ function get_url(mobile, type) {
 export default {
   methods: {
     get_item_id(person) {
-      console.log(person)
       return `/+1${person.mobile}`
     },
     get_items_from_mobile(mobile, type) {

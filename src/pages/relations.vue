@@ -6,7 +6,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <profile-as-list :people='relations'></profile-as-list>
-    <aside class="">
+    <aside>
       <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
     </aside>
   </section>
@@ -24,7 +24,10 @@
       profileAsLinks,
       logoAsLink
     },
-    mixins: [relationship_status]
+    mixins: [relationship_status],
+    created() {
+      console.log('get relations')
+    }
   }
 </script>
 <style lang='stylus'>

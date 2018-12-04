@@ -26,7 +26,6 @@ export default {
     })
   },
   beforeDestroy() {
-    console.log('destroy a plate')
     this.$bus.$off('remove-relationship')
     this.$bus.$off('add-relationship')
   }

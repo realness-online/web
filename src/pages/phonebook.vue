@@ -35,6 +35,7 @@
       }
     },
     created() {
+      console.log('get relations')
       phonebook_storage.sync_list().then((people) => {
         this.working = false
         this.phonebook = people
@@ -45,6 +46,7 @@
         Vue.nextTick(() => {
           if (localStorage.getItem('save-phonebook')) {
             phonebook_storage.save()
+            console.log('phoebook saved to server')
           }
         })
       }
