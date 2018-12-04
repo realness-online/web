@@ -2,7 +2,6 @@ import Item from '@/modules/Item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-
 class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
@@ -42,6 +41,21 @@ class Storage {
       }
     })
   }
+  get_download_url() {
+    return new Promise((resolve, reject) => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+          firebase.storage().ref().child(doc_u_path)
+            .getDownloadURL()
+            .then(url => resolve(url))
+            .catch(e => reject(e))
+        } else {
+          reject(new Error('you must be signed in to get a download url'))
+        }
+      })
+    })
+  }
   persist(doc_u_ment, doc_u_path) {
     return new Promise((resolve, reject) => {
       firebase.auth().onAuthStateChanged(user => {
@@ -55,21 +69,6 @@ class Storage {
             .catch(e => reject(e))
         } else {
           resolve('no need to persist')
-        }
-      })
-    })
-  }
-  get_download_url() {
-    return new Promise((resolve, reject) => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-          firebase.storage().ref().child(doc_u_path)
-            .getDownloadURL()
-            .then(url => resolve(url))
-            .catch(e => reject(e))
-        } else {
-          reject(new Error('you must be signed in to get a download url'))
         }
       })
     })
@@ -98,9 +97,6 @@ class Storage {
   }
 }
 export default Storage
-
 export const person_storage = new Storage('person')
 export const posts_storage = new Storage('posts', '[itemprop=posts]')
-export const activity_storage = new Storage('activity', '[itemprop=activity]')
 export const relations_storage = new Storage('relations', '[itemprop=relations]')
-export const avatar_storage = new Storage('avatar', null, 'avatar.jpg', 'image/jpeg')
