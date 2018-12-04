@@ -82,10 +82,6 @@
     & > *
       font-weight: bold
       -webkit-tap-highlight-color: transparent
-      animation-name: shimer
-      animation-delay: 0.10s
-      animation-duration: 0.25s
-      transition-duration: 0
       transition-timing-function:ease-out
       text-align: left
       width: 44vw
