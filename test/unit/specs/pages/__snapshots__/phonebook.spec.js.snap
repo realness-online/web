@@ -44,10 +44,8 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         itemscope="itemscope"
         itemtype="/person"
       >
-        <svg
-          class="avatar"
-        >
-          <g
+        <svg>
+          <defs
             itemprop="avatar"
           />
            
@@ -55,8 +53,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
             xlink:href="#silhouette"
           />
         </svg>
-         
-        <!---->
          
         <figcaption>
           <p>
@@ -83,10 +79,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
            
           <meta
             itemprop="created_at"
-          />
-           
-          <meta
-            itemprop="updated_at"
           />
         </figcaption>
       </figure>
@@ -120,10 +112,8 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
         itemscope="itemscope"
         itemtype="/person"
       >
-        <svg
-          class="avatar"
-        >
-          <g
+        <svg>
+          <defs
             itemprop="avatar"
           />
            
@@ -131,8 +121,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
             xlink:href="#silhouette"
           />
         </svg>
-         
-        <!---->
          
         <figcaption>
           <p>
@@ -159,10 +147,6 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
            
           <meta
             itemprop="created_at"
-          />
-           
-          <meta
-            itemprop="updated_at"
           />
         </figcaption>
       </figure>
@@ -193,8 +177,10 @@ exports[`@/pages/phonebook render a phonebook with people 1`] = `
    
   <aside>
     <nav
-      class="profile-list"
       itemprop="relations"
+      itemscope="itemscope"
+      itemtype="people"
+      style="display: none;"
     />
   </aside>
 </section>
