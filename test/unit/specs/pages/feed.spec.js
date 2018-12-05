@@ -56,7 +56,6 @@ describe('@/pages/feed.vue', () => {
     expect(wrapper.vm.feed[0].person.first_name).toBe('scott')
   })
   it('#add_relations_to_feed', () => {
-    expect.assertions(1)
     fetch.mockResponseOnce(server_text)
     let relation = {
       first_name: 'katie',
