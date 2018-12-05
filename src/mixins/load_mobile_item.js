@@ -6,6 +6,7 @@ function get_url(mobile, type) {
   const path = `/people/+1${mobile}/${type}.html`
   return firebase.storage().ref().child(path).getDownloadURL()
 }
+
 export default {
   methods: {
     get_item_id(person) {
