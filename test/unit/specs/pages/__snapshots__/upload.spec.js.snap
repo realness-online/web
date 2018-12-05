@@ -1,36 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/pages/upload.vue displays and uploads profile pictue  1`] = `
-<section
-  id="upload"
->
-  <input
-    accept="image/jpeg"
-    capture=""
-    id="avatar_picker"
-    type="file"
-  />
-   
-  <!---->
-   
-  <footer>
-    <button
-      disabled="disabled"
-    >
-      <!---->
-    </button>
-     
-    <a>
-      <!---->
-    </a>
-     
-    <a>
-      <!---->
-    </a>
-  </footer>
-</section>
-`;
-
 exports[`@/pages/upload.vue displays the profile pictue  1`] = `
 <section
   id="upload"
