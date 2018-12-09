@@ -1,19 +1,49 @@
 <template lang="html">
   <nav class="profile-list">
-    <li v-for="person in people">
-      <as-figure :person="person"></as-figure>
-      <as-relationship-options :person="person"></as-relationship-options>
+    <li v-for="person in people_as_item">
+      <as-figure person="person"></as-figure>
+      <as-relationship-options person="person"></as-relationship-options>
     </li>
   </nav>
 </template>
 <script>
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
+  import phone_number from '@/modules/phone_number'
   export default {
-    props: ['people'],
     components: {
       'as-figure': as_figure,
       'as-relationship-options': as_options
+    },
+    watch: {
+      people() {
+        console.log('created')
+        this.people.forEach(phone => {
+          console.log(phone.id)
+          const person = phone_number.profile(phone.id)
+          this.people_as_item.push(person)
+        })
+        // console.log('people watcher')
+      }
+    },
+    props: {
+      people: {
+        type: Array,
+        default: []
+      }
+    },
+    data() {
+      return {
+        people_as_item: []
+      }
+    },
+    created() {
+      console.log('created')
+      this.people.forEach(phone => {
+        console.log(phone.id)
+        const person = phone_number.profile(phone.id)
+        this.people_as_item.push(person)
+      })
     }
   }
 </script>

@@ -36,11 +36,6 @@ describe('@/pages/phonebook', () => {
     let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('render a phonebook with people', () => {
-    let wrapper = mount(phonebook)
-    wrapper.setData({phonebook: people})
-    expect(wrapper.element).toMatchSnapshot()
-  })
   it('saves the phone book when save-phonebook is set on localStorage', async () => {
     let wrapper = shallow(phonebook)
     wrapper.vm.phonebook.push(person)

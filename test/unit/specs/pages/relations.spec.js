@@ -25,7 +25,6 @@ describe('@/pages/relations.vue', () => {
     wrapper.vm.$bus.$emit('remove-relationship', person)
     expect(wrapper.vm.relations.length).toBe(0)
   })
-
   it('remove-relationship should only remove the person provided', () => {
     const other_person = {
       first_name: 'Katie',

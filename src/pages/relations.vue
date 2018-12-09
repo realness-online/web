@@ -5,7 +5,7 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list :people='relations'></profile-as-list>
+    <profile-as-list :relations='relations'></profile-as-list>
     <aside>
       <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
     </aside>
@@ -18,15 +18,12 @@
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
   export default {
+    mixins: [relationship_status],
     components: {
       icon,
       profileAsList,
       profileAsLinks,
       logoAsLink
-    },
-    mixins: [relationship_status],
-    created() {
-      console.log('get relations')
     }
   }
 </script>

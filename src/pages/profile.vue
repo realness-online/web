@@ -17,9 +17,8 @@
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
-  import load_mobile_item from '@/mixins/load_mobile_item'
+  import phone_number from '@/modules/phone_number'
   export default {
-    mixins: [load_mobile_item],
     components: {
       profileAsFigure,
       myPosts,
@@ -30,11 +29,11 @@
     created() {
       const mobile = this.$route.params.mobile
       if (mobile) {
-        this.get_items_from_mobile(mobile, 'person').then(items => {
+        phone_number.profile(mobile).then(items => {
           this.working = false
           this.person = items[0]
         })
-        this.get_items_from_mobile(mobile, 'posts').then(items => {
+        phone_number.profile_items(mobile, 'posts').then(items => {
           this.posts = items
         })
       } else {

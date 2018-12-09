@@ -8,10 +8,9 @@
       </router-link>
     </header>
     <icon v-show="working" name="working"></icon>
-    <profile-as-list id="phonebook" :people='phonebook'></profile-as-list>
-    <aside>
-      <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
-    </aside>
+    <profile-as-list :people='phonebook'></profile-as-list>
+    <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
+    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
 <script>
@@ -39,14 +38,16 @@
       phonebook_storage.sync_list().then((people) => {
         this.working = false
         this.phonebook = people
+      }).catch(error => {
+        console.log(error.message)
       })
     },
     watch: {
       phonebook() {
         Vue.nextTick(() => {
           if (localStorage.getItem('save-phonebook')) {
-            phonebook_storage.save()
-            console.log('phoebook saved to server')
+            // phonebook_storage.save()
+            // console.log('phoebook saved to server')
           }
         })
       }
