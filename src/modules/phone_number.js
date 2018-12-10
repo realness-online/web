@@ -11,9 +11,9 @@ export default {
     return `/+1${person.mobile}`
   },
   profile(phone_number) {
-    console.log(phone_number)
+    // console.log(phone_number)
     return new Promise((resolve, reject) => {
-      this.profile_items(phone_number, 'profile').then(items => {
+      this.profile_items(phone_number, 'person').then(items => {
         resolve(items[0])
       })
     })
@@ -21,11 +21,11 @@ export default {
   profile_items(mobile, type) {
     return new Promise((resolve, reject) => {
       get_url(mobile, type).then((url) => {
-        console.log(url)
         fetch(url).then(response => {
           response.text().then((server_text) => {
             const server_as_fragment = Storage.hydrate(server_text)
-            resolve(Item.get_items(server_as_fragment))
+            let items = Item.get_items(server_as_fragment)
+            resolve(items)
           })
         })
       })
