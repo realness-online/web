@@ -36,10 +36,6 @@
       nav: {
         type: Boolean,
         default: true
-      },
-      chill: {
-        type: Boolean,
-        default: false
       }
     },
     data() {
@@ -49,9 +45,6 @@
     },
     methods: {
       avatar_click(event) {
-        if (this.chill) {
-          return
-        }
         let route = {
           path: `/+1${this.person.mobile}`
         }
