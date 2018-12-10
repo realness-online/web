@@ -27,13 +27,13 @@
     },
     computed: {
       is_me() {
-        return person_storage.as_object().mobile === this.person.mobile
+        return person_storage.as_object().id === this.person.id
       }
     },
     methods: {
       is_relation() {
         return relations_storage.as_list().some((relation) => {
-          return (relation.mobile === this.person.mobile)
+          return (relation.id === this.person.id)
         })
       },
       update_relationship() {

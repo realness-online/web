@@ -25,9 +25,8 @@ export default {
       }
     })
     relations_storage.as_list().forEach(item => {
-      console.log('item', item)
-      phone_number.profile(item.item_id).then(items => {
-        this.relations.push(items[0])
+      phone_number.profile(item.id).then(person => {
+        this.relations.push(person)
       })
     })
   },

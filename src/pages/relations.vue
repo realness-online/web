@@ -5,10 +5,8 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-list :relations='relations'></profile-as-list>
-    <aside>
-      <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
-    </aside>
+    <profile-as-list :people='relations'></profile-as-list>
+    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
 <script>

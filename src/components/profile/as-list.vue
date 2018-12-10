@@ -17,11 +17,8 @@
     },
     watch: {
       people() {
-        console.log('watch')
         this.people.forEach(phone => {
-          // console.log(phone.id)
           phone_number.profile(phone.id).then(item => {
-            console.log(item)
             this.people_as_item.push(item)
           })
         })
