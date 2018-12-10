@@ -1,8 +1,8 @@
 <template lang="html">
   <nav class="profile-list">
     <li v-for="person in people_as_item">
-      <as-figure person="person"></as-figure>
-      <as-relationship-options person="person"></as-relationship-options>
+      <as-figure :person="person"></as-figure>
+      <as-relationship-options :person="person"></as-relationship-options>
     </li>
   </nav>
 </template>
@@ -21,7 +21,7 @@
         this.people.forEach(phone => {
           // console.log(phone.id)
           phone_number.profile(phone.id).then(item => {
-            // console.log('halp', item)
+            console.log(item)
             this.people_as_item.push(item)
           })
         })
@@ -29,8 +29,7 @@
     },
     props: {
       people: {
-        type: Array,
-        default: []
+        type: Array
       }
     },
     data() {
