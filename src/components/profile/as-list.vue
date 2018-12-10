@@ -17,13 +17,14 @@
     },
     watch: {
       people() {
-        console.log('created')
+        console.log('watch')
         this.people.forEach(phone => {
-          console.log(phone.id)
-          const person = phone_number.profile(phone.id)
-          this.people_as_item.push(person)
+          // console.log(phone.id)
+          phone_number.profile(phone.id).then(item => {
+            // console.log('halp', item)
+            this.people_as_item.push(item)
+          })
         })
-        // console.log('people watcher')
       }
     },
     props: {
@@ -36,14 +37,6 @@
       return {
         people_as_item: []
       }
-    },
-    created() {
-      console.log('created')
-      this.people.forEach(phone => {
-        console.log(phone.id)
-        const person = phone_number.profile(phone.id)
-        this.people_as_item.push(person)
-      })
     }
   }
 </script>
