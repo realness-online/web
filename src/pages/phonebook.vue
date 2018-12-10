@@ -46,8 +46,7 @@
       phonebook() {
         Vue.nextTick(() => {
           if (localStorage.getItem('save-phonebook')) {
-            // phonebook_storage.save()
-            // console.log('phoebook saved to server')
+            phonebook_storage.save()
           }
         })
       }
