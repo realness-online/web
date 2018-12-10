@@ -7,9 +7,6 @@ function get_url(mobile, type) {
   return firebase.storage().ref().child(path).getDownloadURL()
 }
 export default {
-  profile_item_id(person) {
-    return `/+1${person.mobile}`
-  },
   profile(phone_number) {
     // console.log(phone_number)
     return new Promise((resolve, reject) => {
