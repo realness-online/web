@@ -21,8 +21,6 @@ exports[`@/pages/relations.vue render relationship information 1`] = `
    
   <!---->
    
-  <aside>
-    <!---->
-  </aside>
+  <!---->
 </section>
 `;
