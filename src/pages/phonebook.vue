@@ -34,12 +34,9 @@
       }
     },
     created() {
-      // console.log('get relations')
       phonebook_storage.sync_list().then((people) => {
         this.working = false
         this.phonebook = people
-      }).catch(error => {
-        console.log(error.message)
       })
     },
     watch: {

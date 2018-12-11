@@ -34,7 +34,6 @@ class PhoneBook extends Storage {
     return new Promise((resolve, reject) => {
       this.as_list().then(people => {
         let me = person_storage.as_object()
-        console.log(me.mobile)
         let index = people.findIndex(contact => (contact.id === me.id))
         if (index === -1) {
           localStorage.setItem('save-phonebook', 'true')
