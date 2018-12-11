@@ -18,7 +18,7 @@ export default {
       localStorage.setItem('relations-count', this.relations.length)
     })
     this.$bus.$on('remove-relationship', person => {
-      const index = this.relations.findIndex(p => (p.mobile === person.mobile))
+      const index = this.relations.findIndex(p => (p.id === person.id))
       if (index > -1) {
         this.relations.splice(index, 1)
         localStorage.setItem('relations-count', this.relations.length)
