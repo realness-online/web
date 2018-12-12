@@ -1,6 +1,6 @@
 <template lang="html">
   <nav class="profile-list">
-    <li v-for="person in people_as_item">
+    <li v-for="person in people">
       <as-figure :person="person"></as-figure>
       <as-relationship-options :person="person"></as-relationship-options>
     </li>
@@ -9,29 +9,14 @@
 <script>
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
-  import phone_number from '@/modules/phone_number'
   export default {
     components: {
       'as-figure': as_figure,
       'as-relationship-options': as_options
     },
-    watch: {
-      people() {
-        this.people.forEach(phone => {
-          phone_number.profile(phone.id).then(item => {
-            this.people_as_item.push(item)
-          })
-        })
-      }
-    },
     props: {
       people: {
         type: Array
-      }
-    },
-    data() {
-      return {
-        people_as_item: []
       }
     }
   }
