@@ -52,11 +52,6 @@
           Vue.nextTick(() => relations_storage.save())
         }
       })
-    },
-    watch: {
-      relations() {
-        console.log('relations watch')
-      }
     }
   }
 </script>
