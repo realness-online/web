@@ -5,6 +5,7 @@
       <h1>Relations</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-show="working" name="working"></icon>
     <profile-as-list :people='relations'></profile-as-list>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
@@ -26,13 +27,15 @@
     },
     data() {
       return {
-        relations: relations_storage.as_list()
+        relations: relations_storage.as_list(),
+        working: true
       }
     },
     created() {
       this.relations.forEach((relation, index) => {
         profile.load(relation.id).then(profile => {
           this.relations.splice(index, 1, profile)
+          this.working = false
         })
       })
       this.$bus.$off('remove-relationship')
@@ -57,6 +60,6 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#relations svg.heart
+  section#relations svg
     fill: blue
 </style>
