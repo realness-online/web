@@ -36,7 +36,7 @@ const routes = [
   { path: '/phonebook', component: phonebook },
   { path: '/profile', component: profile },
   { path: '/upload', component: upload },
-  { path: '/+1:mobile', component: profile }
+  { path: '/:phone_number', component: profile }
 ]
 const router = new VueRouter({
   routes,

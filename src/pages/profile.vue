@@ -26,29 +26,29 @@
       logoAsLink,
       icon
     },
-    created() {
-      const mobile = this.$route.params.mobile
-      if (mobile) {
-        console.log(mobile)
-        profile.load(mobile).then(items => {
-          this.working = false
-          this.person = items[0]
-        })
-        profile.profile_items(mobile, 'posts').then(items => {
-          this.posts = items
-        })
-      } else {
-        this.me = true
-        this.working = false
-        this.person = person_storage.as_object()
-      }
-    },
     data() {
       return {
         me: false,
         working: true,
         person: {},
-        posts: {}
+        posts: []
+      }
+    },
+    created() {
+      const phone_number = this.$route.params.phone_number
+      if (phone_number) {
+        const profile_id = `/${phone_number}`
+        profile.load(profile_id).then(profile => {
+          this.person = profile
+        })
+        profile.items(profile_id, 'posts').then(items => {
+          this.posts = items
+          this.working = false
+        })
+      } else {
+        this.person = person_storage.as_object()
+        this.me = true
+        this.working = false
       }
     }
   }
