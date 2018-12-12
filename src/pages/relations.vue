@@ -10,7 +10,6 @@
   </section>
 </template>
 <script>
-  // import relationship_status from '@/mixins/relationship_status'
   import logoAsLink from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
@@ -32,8 +31,8 @@
     },
     created() {
       this.relations.forEach((relation, index) => {
-        phone_number.profile(relation.id).then(item => {
-          this.relations.splice(index, 1, item)
+        phone_number.profile(relation.id).then(profile => {
+          this.relations.splice(index, 1, profile)
         })
       })
       this.$bus.$off('remove-relationship')
