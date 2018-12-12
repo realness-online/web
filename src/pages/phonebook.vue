@@ -9,8 +9,8 @@
     </header>
     <icon v-show="working" name="working"></icon>
     <profile-as-list :people='phonebook'></profile-as-list>
-    <profile-as-links id="phonebook" :people='phonebook_links'></profile-as-links>
-    <profile-as-links itemprop="relations" :people='relation_links'></profile-as-links>
+    <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
+    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
 <script>
@@ -29,8 +29,7 @@
     },
     data() {
       return {
-        relation_links: relations_storage.as_list(),
-        phonebook_links: [],
+        relations: relations_storage.as_list(),
         phonebook: [],
         working: true
       }
@@ -38,38 +37,34 @@
     created() {
       phonebook_storage.sync_list().then((people) => {
         this.working = false
-        this.phonebook_links = people
-        people.forEach(phone => {
-          phone_number.profile(phone.id).then(item => {
-            this.phonebook.push(item)
+        this.phonebook = people
+        this.phonebook.forEach((person, index) => {
+          phone_number.profile(person.id).then(profile => {
+            this.phonebook.splice(index, 1, profile)
           })
         })
       })
       this.$bus.$off('remove-relationship')
       this.$bus.$off('add-relationship')
       this.$bus.$on('add-relationship', person => {
-        // console.log('add-relationship', person)
-        this.relation_links.push(person)
-        localStorage.setItem('relations-count', this.relation_links.length)
+        this.relations.push(person)
+        localStorage.setItem('relations-count', this.relations.length)
       })
       this.$bus.$on('remove-relationship', person => {
-        // console.log('remove-relationship', person)
-        const index = this.relation_links.findIndex(p => (p.id === person.id))
+        const index = this.relations.findIndex(p => (p.id === person.id))
         if (index > -1) {
-          this.relation_links.splice(index, 1)
-          localStorage.setItem('relations-count', this.relation_links.length)
+          this.relations.splice(index, 1)
+          localStorage.setItem('relations-count', this.relations.length)
         }
       })
     },
     watch: {
       phonebook() {
-        Vue.nextTick(() => {
-          if (localStorage.getItem('save-phonebook')) {
-            phonebook_storage.save()
-          }
-        })
+        if (localStorage.getItem('save-phonebook')) {
+          Vue.nextTick(() => phonebook_storage.save())
+        }
       },
-      relation_links() {
+      relations() {
         Vue.nextTick(() => relations_storage.save())
       }
     }
