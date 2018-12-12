@@ -8,7 +8,6 @@
 
 <script>
   // TODO: add support for desktops. (need a submit button)
-  // TODO: add support for images and video
   export default {
     props: ['value'],
     data() {
@@ -48,6 +47,7 @@
     resize: none
     caret-color: red
     padding-top: 0
+    padding-left: 1rem
     &::placeholder
       transition-property:all
       font-family: 'Lato'
