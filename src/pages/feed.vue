@@ -16,13 +16,11 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/storage'
-  import Storage, {relations_storage, posts_storage, person_storage} from '@/modules/Storage'
-  import Item from '@/modules/Item'
+  import {relations_storage, posts_storage, person_storage} from '@/modules/Storage'
   import logoAsLink from '@/components/logo-as-link'
   import profileAsFigure from '@/components/profile/as-figure'
   import icon from '@/components/icon'
+  import profile from '@/modules/Profile'
   export default {
     components: {
       profileAsFigure,
@@ -35,52 +33,25 @@
         working: true
       }
     },
-    methods: {
-      posts_url(person) {
-        let posts_path = `/people/+1${person.mobile}/posts.html`
-        return firebase.storage().ref().child(posts_path).getDownloadURL()
-      },
-      sort_feed() {
-        this.feed.sort((a, b) => {
-          return Date.parse(a.created_at) - Date.parse(b.created_at)
-        })
-      },
-      insert_me_into_my_posts() {
-        const me = person_storage.as_object()
-        let my_posts = posts_storage.as_list()
-        my_posts.forEach(post => (post.person = me))
-        this.feed.push(...my_posts)
-      },
-      add_posts_to_feed(person, their_posts_as_text) {
-        console.log(person.last_name)
-        let posts = Item.get_items(Storage.hydrate(their_posts_as_text))
-        posts.forEach(post => {
-          post.person = person
-        })
-        this.feed.push(...posts)
-      },
-      add_relations_to_feed() {
-        return new Promise((resolve, reject) => {
-          relations_storage.as_list().forEach((person) => {
-            console.log(person.first_name)
-            this.posts_url(person).then((url) => {
-              fetch(url).then((response) => {
-                response.text().then(text => {
-                  this.add_posts_to_feed(person, text)
-                  this.sort_feed()
-                  this.working = false
-                  resolve()
-                })
-              })
+    created() {
+      const me = person_storage.as_object()
+      let my_posts = posts_storage.as_list()
+      my_posts.forEach(post => (post.person = me))
+      this.feed.push(...my_posts)
+      relations_storage.as_list().forEach((relation, index) => {
+        profile.load(relation.id).then(person => {
+          profile.items(relation.id, 'posts').then(posts => {
+            posts.forEach(post => {
+              post.person = person
             })
+            this.feed.push(...posts)
+            this.feed.sort((a, b) => {
+              return Date.parse(a.created_at) - Date.parse(b.created_at)
+            })
+            this.working = false
           })
         })
-      }
-    },
-    created() {
-      this.add_relations_to_feed()
-      this.insert_me_into_my_posts()
-      this.sort_feed()
+      })
     }
   }
 </script>
