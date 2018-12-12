@@ -7,15 +7,15 @@ function get_url(mobile, type) {
   return firebase.storage().ref().child(path).getDownloadURL()
 }
 export default {
-  profile(phone_number) {
+  load(phone_number) {
     // console.log(phone_number)
     return new Promise((resolve, reject) => {
-      this.profile_items(phone_number, 'person').then(items => {
+      this.items(phone_number, 'person').then(items => {
         resolve(items[0])
       })
     })
   },
-  profile_items(mobile, type) {
+  items(mobile, type) {
     return new Promise((resolve, reject) => {
       get_url(mobile, type).then((url) => {
         fetch(url).then(response => {

@@ -17,7 +17,7 @@
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
-  import phone_number from '@/modules/phone_number'
+  import profile from '@/modules/Profile'
   export default {
     components: {
       profileAsFigure,
@@ -29,11 +29,12 @@
     created() {
       const mobile = this.$route.params.mobile
       if (mobile) {
-        phone_number.profile(mobile).then(items => {
+        console.log(mobile)
+        profile.load(mobile).then(items => {
           this.working = false
           this.person = items[0]
         })
-        phone_number.profile_items(mobile, 'posts').then(items => {
+        profile.profile_items(mobile, 'posts').then(items => {
           this.posts = items
         })
       } else {

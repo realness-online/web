@@ -16,7 +16,7 @@
   import profileAsLinks from '@/components/profile/as-links'
   import Vue from 'vue'
   import {relations_storage} from '@/modules/Storage'
-  import phone_number from '@/modules/phone_number'
+  import profile from '@/modules/Profile'
   export default {
     components: {
       icon,
@@ -31,7 +31,7 @@
     },
     created() {
       this.relations.forEach((relation, index) => {
-        phone_number.profile(relation.id).then(profile => {
+        profile.load(relation.id).then(profile => {
           this.relations.splice(index, 1, profile)
         })
       })
