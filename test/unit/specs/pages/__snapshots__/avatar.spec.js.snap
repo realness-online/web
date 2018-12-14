@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/pages/avatar.vue displays the silhouette by default 1`] = `
+<section
+  id="upload"
+>
+  <input
+    accept="image/jpeg"
+    capture=""
+    type="file"
+  />
+   
+  <!---->
+   
+  <footer>
+    <button
+      disabled="disabled"
+    >
+      <!---->
+    </button>
+     
+    <a>
+      <!---->
+    </a>
+     
+    <a>
+      <!---->
+    </a>
+  </footer>
+</section>
+`;

@@ -1,17 +1,18 @@
 import { shallow } from 'vue-test-utils'
-import upload from '@/pages/upload'
+import avatar from '@/pages/avatar'
 
-describe('@/pages/upload.vue', () => {
+describe('@/pages/avatar.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(upload)
+    wrapper = shallow(avatar)
   })
-
-  it('displays the profile pictue ', () => {
-    let wrapper = shallow(upload)
+  it('displays the silhouette by default', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
+
   describe('uploading an avatar', () => {
+    it('displays the form for a person visiting their own avatar')
+    it('click@decline closes the form without saving the avatar')
     it('click@open_camera opens the camera', () => {
       wrapper.setProps({edit_avatar: true})
       let mock_click = jest.fn()
