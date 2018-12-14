@@ -1,7 +1,7 @@
 <template lang="html">
   <section id="profile" class="page" v-bind:class="{me}">
     <header>
-      <profile-as-figure :person='person' :me="me" :previous="true"></profile-as-figure>
+      <profile-as-figure :person='person' :me="me" :view_avatar="true"></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>

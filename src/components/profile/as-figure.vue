@@ -28,18 +28,13 @@
         type: Boolean,
         default: false
       },
-      edit_avatar: {
+      view_avatar: {
         type: Boolean,
         default: false
       },
       nav: {
         type: Boolean,
         default: true
-      }
-    },
-    data() {
-      return {
-        has_upload: false
       }
     },
     methods: {
@@ -53,7 +48,7 @@
         if (this.me) {
           route.path = '/account'
         }
-        if (this.edit_avatar) {
+        if (this.view_avatar) {
           route.path = '/avatar'
         }
         this.$router.push(route)

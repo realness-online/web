@@ -1,7 +1,7 @@
 <template lang="html">
   <section id="account" class="page left">
     <header>
-      <profile-as-figure :person='person' :me="true" :edit_avatar="true"></profile-as-figure>
+      <profile-as-figure :person='person' :me="true" :view_avatar="true"></profile-as-figure>
       <router-link to="/profile">
         <icon name="finished"></icon>
       </router-link>
