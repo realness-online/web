@@ -4,7 +4,7 @@ import * as firebase from 'firebase/app'
 import app from '@/components/application'
 import events from '@/pages/events'
 import feed from '@/pages/feed'
-import upload from '@/pages/upload'
+import avatar from '@/pages/avatar'
 import where from '@/pages/where'
 import account from '@/pages/account'
 import index from '@/pages/index'
@@ -35,7 +35,7 @@ const routes = [
   { path: '/relations', component: relations },
   { path: '/phonebook', component: phonebook },
   { path: '/profile', component: profile },
-  { path: '/upload', component: upload },
+  { path: '/avatar', component: avatar },
   { path: '/:phone_number', component: profile }
 ]
 const router = new VueRouter({

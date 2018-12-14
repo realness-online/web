@@ -54,7 +54,7 @@
           route.path = '/account'
         }
         if (this.edit_avatar) {
-          route.path = '/upload'
+          route.path = '/avatar'
         }
         this.$router.push(route)
       }
