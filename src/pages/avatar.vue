@@ -4,13 +4,13 @@
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person'></profile-as-figure>
     <footer>
-      <button disabled>
+      <button @click='decline'>
         <icon name="remove"></icon>
       </button>
       <a @click="open_camera">
         <icon name="add"></icon>
       </a>
-      <a @click="finished_click">
+      <a @click="accept">
         <icon name="finished"></icon>
       </a>
     </footer>
@@ -36,14 +36,21 @@
         this.working = true
         this.$refs.file_upload.click()
       },
-      finished_click(event) {
-        let route = {
+      accept(event) {
+        this.working = true
+        const route = {
           path: `/account`
         }
         person_storage.save().then(() => {
           console.log('person saved')
           this.$router.push(route)
         })
+      },
+      decline() {
+        const route = {
+          path: sessionStorage.previous
+        }
+        this.$router.push(route)
       }
     },
     directives: {
