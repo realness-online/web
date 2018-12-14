@@ -92,8 +92,6 @@
     methods: {
       disable_input() {
         this.$el.querySelector('#mobile').disabled = true
-        this.$el.querySelector('#first-name').disabled = true
-        this.$el.querySelector('#last-name').disabled = true
       },
       save_person() {
         if (!this.person.created_at) {
@@ -152,8 +150,6 @@
         this.show_sign_out = false
         this.show_authorize = true
         this.$el.querySelector('#mobile').disabled = false
-        this.$el.querySelector('#first-name').disabled = false
-        this.$el.querySelector('#last-name').disabled = false
       },
       mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) {
