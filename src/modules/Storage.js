@@ -32,9 +32,8 @@ class Storage {
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
       if (['person', 'posts'].includes(this.item_type)) {
-        console.log('saving person or posts')
         this.persist(items)
-          .then(resolve('saved local & network'))
+          .then(() => resolve('saved person or posts locally and to network'))
           .catch(e => reject(e))
       } else {
         resolve('saved local')
@@ -68,7 +67,7 @@ class Storage {
             .then((upload_task) => resolve(upload_task))
             .catch(e => reject(e))
         } else {
-          resolve('no need to persist')
+          resolve('Unable to persist to server')
         }
       })
     })
