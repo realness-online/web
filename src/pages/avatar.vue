@@ -4,15 +4,22 @@
     <icon v-if="working" name="working"></icon>
     <profile-as-figure v-else :person='person'></profile-as-figure>
     <footer>
-      <button @click='decline'>
-        <icon name="remove"></icon>
-      </button>
-      <a @click="open_camera">
-        <icon name="add"></icon>
-      </a>
-      <a @click="accept">
-        <icon name="finished"></icon>
-      </a>
+      <menu v-if="me">
+        <button @click='finished_viewing'>
+          <icon name="remove"></icon>
+        </button>
+        <a @click="open_camera">
+          <icon name="add"></icon>
+        </a>
+        <a @click="accept_changes">
+          <icon name="finished"></icon>
+        </a>
+      </menu>
+      <menu v-else>
+        <button @click='finished_viewing'>
+          <icon name="finished"></icon>
+        </button>
+      </menu>
     </footer>
   </section>
 </template>
@@ -21,14 +28,34 @@
   import profileAsFigure from '@/components/profile/as-figure'
   import {person_storage} from '@/modules/Storage'
   import convert_to_avatar from '@/modules/ConvertToAvatar'
+  import profile from '@/modules/Profile'
   export default {
     components: {
       icon, profileAsFigure
     },
     data() {
       return {
-        person: person_storage.as_object(),
-        working: false
+        person: {},
+        working: true,
+        me: false
+      }
+    },
+    created() {
+      console.log('avatar.vue')
+      const phone_number = this.$route.params.phone_number
+      if (phone_number) {
+        const profile_id = `/${phone_number}`
+        profile.load(profile_id).then(profile => {
+          this.person = profile
+        })
+        profile.items(profile_id, 'posts').then(items => {
+          this.posts = items
+          this.working = false
+        })
+      } else {
+        this.person = person_storage.as_object()
+        this.me = true
+        this.working = false
       }
     },
     methods: {
@@ -36,7 +63,7 @@
         this.working = true
         this.$refs.file_upload.click()
       },
-      accept(event) {
+      accept_changes(event) {
         this.working = true
         const route = {
           path: `/account`
@@ -46,7 +73,7 @@
           this.$router.push(route)
         })
       },
-      decline() {
+      finished_viewing() {
         const route = {
           path: sessionStorage.previous
         }
@@ -76,13 +103,14 @@
 <style lang="stylus">
   @require '../style/variables'
   section#upload
-    animation-name: slideInDown
+    // animation-name: slideInDown
     height: 100vh
     display: flex
     flex-direction: column
     justify-content: flex-start
     align-content: stretch
     figure.profile
+      margin-top: base-line * 1.5
       padding: 0
       flex-grow: 1
       display: flex
@@ -109,6 +137,7 @@
       padding: base-line
       display: flex
       justify-content: space-between
+      align-items: flex-end
       button
         border: none
         padding: 0
