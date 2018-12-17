@@ -4,14 +4,13 @@ import * as firebase from 'firebase/app'
 import app from '@/components/application'
 import events from '@/pages/events'
 import feed from '@/pages/feed'
-import avatar from '@/pages/avatar'
 import where from '@/pages/where'
 import account from '@/pages/account'
 import index from '@/pages/index'
 import profile from '@/pages/profile'
+import avatar from '@/pages/avatar'
 import relations from '@/pages/relations'
 import phonebook from '@/pages/phonebook'
-
 // if (process.env.NODE_ENV === 'production') {
 //   if ('serviceWorker' in navigator) {
 //     navigator.serviceWorker.register('/controller.js').then(registration => {
@@ -31,11 +30,11 @@ const routes = [
   { path: '/events', component: events },
   { path: '/feed', component: feed },
   { path: '/where', component: where },
-  { path: '/account', component: account },
   { path: '/relations', component: relations },
   { path: '/phonebook', component: phonebook },
   { path: '/profile', component: profile },
-  { path: '/avatar', component: avatar },
+  { path: '/account', component: account },
+  { path: '/:phone_number/avatar', component: avatar },
   { path: '/:phone_number', component: profile }
 ]
 const router = new VueRouter({
