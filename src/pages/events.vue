@@ -1,7 +1,7 @@
 <template>
   <section id="events" class="page">
     <header>
-      <icon name="hamburger"></icon>
+      <icon name=""></icon>
       <h1>Events</h1>
       <logo-as-link></logo-as-link>
     </header>
