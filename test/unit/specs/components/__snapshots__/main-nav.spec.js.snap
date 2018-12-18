@@ -39,7 +39,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
     class="black"
     to="/profile"
   >
-    Profile
+    You
   </router-link>
 </nav>
 `;

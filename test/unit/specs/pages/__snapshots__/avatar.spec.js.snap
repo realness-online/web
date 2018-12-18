@@ -27,31 +27,3 @@ exports[`@/pages/avatar.vue displaying an avatar renders the silhouette by defau
   </footer>
 </section>
 `;
-
-exports[`@/pages/avatar.vue displays the silhouette by default 1`] = `
-<section
-  id="upload"
->
-  <input
-    accept="image/jpeg"
-    capture=""
-    type="file"
-  />
-   
-  <!---->
-   
-  <footer>
-    <button>
-      <!---->
-    </button>
-     
-    <a>
-      <!---->
-    </a>
-     
-    <a>
-      <!---->
-    </a>
-  </footer>
-</section>
-`;
