@@ -16,6 +16,7 @@
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
+  import profile from '@/modules/Profile'
   import profile_init from '@/mixins/profile_init'
   export default {
     mixins: [profile_init],
@@ -29,6 +30,16 @@
     data() {
       return {
         posts: []
+      }
+    },
+    created() {
+      const phone_number = this.$route.params.phone_number
+      if (phone_number) {
+        this.working = true
+        profile.items(`/${phone_number}`, 'posts').then(items => {
+          this.posts = items
+          this.working = false
+        })
       }
     }
   }

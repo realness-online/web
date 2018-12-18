@@ -18,13 +18,8 @@ export default {
           this.me = true
         }
       })
-      const profile_id = `/${phone_number}`
-      console.log(profile_id)
-      profile.load(profile_id).then(profile => {
+      profile.load(`/${phone_number}`).then(profile => {
         this.person = profile
-      })
-      profile.items(profile_id, 'posts').then(items => {
-        this.posts = items
         this.working = false
       })
     } else {
