@@ -35,6 +35,7 @@
       }
     },
     created() {
+      console.log('profile.vue')
       const phone_number = this.$route.params.phone_number
       if (phone_number) {
         const profile_id = `/${phone_number}`

@@ -103,7 +103,7 @@
 <style lang="stylus">
   @require '../style/variables'
   section#upload
-    // animation-name: slideInDown
+    animation-name: slideInLeft
     height: 100vh
     display: flex
     flex-direction: column
@@ -133,10 +133,10 @@
       padding-top: base-line * 6
       width:100vw
       height:50vh
-    & > footer
+    & > footer > menu
       padding: base-line
       display: flex
-      justify-content: space-between
+      justify-content: space-evenly
       align-items: flex-end
       button
         border: none

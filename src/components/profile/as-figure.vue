@@ -39,17 +39,19 @@
     },
     methods: {
       avatar_click(event) {
+        // by default view the person's profile
         let route = {
-          path: `/+1${this.person.mobile}`
+          path: this.person.id
         }
-        if (this.previous) {
-          route.path = sessionStorage.previous
+        // if previousis set
+        if (this.view_avatar) {
+          route.path = `${this.person.id}/avatar`
         }
         if (this.me) {
           route.path = '/account'
         }
-        if (this.view_avatar) {
-          route.path = '/avatar'
+        if (this.previous) {
+          route.path = sessionStorage.previous
         }
         this.$router.push(route)
       }
