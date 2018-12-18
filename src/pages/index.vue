@@ -17,7 +17,7 @@
     computed: {
       slide_direction() {
         return {
-          left: ['/relations', '/profile'].includes(sessionStorage.previous)
+          left: ['/relations', '/profile', '/events'].includes(sessionStorage.previous)
         }
       }
     }
