@@ -21,7 +21,9 @@
   import {phonebook_storage} from '@/modules/PhoneBook'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
+  import relationship_events from '@/mixins/relationship_events'
   export default {
+    mixins: [relationship_events],
     components: {
       profileAsList,
       profileAsLinks,
@@ -29,12 +31,11 @@
     },
     data() {
       return {
-        relations: relations_storage.as_list(),
-        phonebook: [],
-        working: true
+        phonebook: []
       }
     },
     created() {
+      console.log('phonebook')
       phonebook_storage.sync_list().then((people) => {
         this.working = false
         this.phonebook = people
@@ -43,19 +44,6 @@
             this.phonebook.splice(index, 1, profile)
           })
         })
-      })
-      this.$bus.$off('remove-relationship')
-      this.$bus.$off('add-relationship')
-      this.$bus.$on('add-relationship', person => {
-        this.relations.push(person)
-        localStorage.setItem('relations-count', this.relations.length)
-      })
-      this.$bus.$on('remove-relationship', person => {
-        const index = this.relations.findIndex(p => (p.id === person.id))
-        if (index > -1) {
-          this.relations.splice(index, 1)
-          localStorage.setItem('relations-count', this.relations.length)
-        }
       })
     },
     watch: {
