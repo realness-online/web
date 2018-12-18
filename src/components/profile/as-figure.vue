@@ -39,11 +39,9 @@
     },
     methods: {
       avatar_click(event) {
-        // by default view the person's profile
         let route = {
           path: this.person.id
         }
-        // if previousis set
         if (this.view_avatar) {
           route.path = `${this.person.id}/avatar`
         }
