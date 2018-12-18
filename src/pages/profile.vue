@@ -11,14 +11,14 @@
 </template>
 <script>
   import '@/modules/timeago'
-  import {person_storage} from '@/modules/Storage'
   import profileAsFigure from '@/components/profile/as-figure'
   import logoAsLink from '@/components/logo-as-link'
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
-  import profile from '@/modules/Profile'
+  import profile_init from '@/mixins/profile_init'
   export default {
+    mixins: [profile_init],
     components: {
       profileAsFigure,
       myPosts,
@@ -28,28 +28,7 @@
     },
     data() {
       return {
-        me: false,
-        working: true,
-        person: {},
         posts: []
-      }
-    },
-    created() {
-      console.log('profile.vue')
-      const phone_number = this.$route.params.phone_number
-      if (phone_number) {
-        const profile_id = `/${phone_number}`
-        profile.load(profile_id).then(profile => {
-          this.person = profile
-        })
-        profile.items(profile_id, 'posts').then(items => {
-          this.posts = items
-          this.working = false
-        })
-      } else {
-        this.person = person_storage.as_object()
-        this.me = true
-        this.working = false
       }
     }
   }

@@ -28,35 +28,11 @@
   import profileAsFigure from '@/components/profile/as-figure'
   import {person_storage} from '@/modules/Storage'
   import convert_to_avatar from '@/modules/ConvertToAvatar'
-  import profile from '@/modules/Profile'
+  import profile_init from '@/mixins/profile_init'
   export default {
+    mixins: [profile_init],
     components: {
       icon, profileAsFigure
-    },
-    data() {
-      return {
-        person: {},
-        working: true,
-        me: false
-      }
-    },
-    created() {
-      console.log('avatar.vue')
-      const phone_number = this.$route.params.phone_number
-      if (phone_number) {
-        const profile_id = `/${phone_number}`
-        profile.load(profile_id).then(profile => {
-          this.person = profile
-        })
-        profile.items(profile_id, 'posts').then(items => {
-          this.posts = items
-          this.working = false
-        })
-      } else {
-        this.person = person_storage.as_object()
-        this.me = true
-        this.working = false
-      }
     },
     methods: {
       open_camera(event) {
