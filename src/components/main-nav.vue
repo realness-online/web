@@ -48,7 +48,7 @@
         }
       },
       user_name() {
-        return this.person.first_name || 'Profile'
+        return this.person.first_name || 'You'
       }
     }
   }
