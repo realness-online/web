@@ -16,6 +16,6 @@
 
 <style lang="stylus">
   @require '../style/variables'
-  section#groups
+  section#where
     padding: 0 base-line
 </style>
