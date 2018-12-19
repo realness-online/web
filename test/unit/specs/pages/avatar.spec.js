@@ -54,8 +54,6 @@ describe('@/pages/avatar.vue', () => {
       wrapper.vm.accept_changes()
       expect(save_spy).toBeCalled()
     })
-    it('should save person')
-
     it('should trigger change event on file input', () => {
       wrapper.setProps({view_avatar: true})
       let input = wrapper.find('input[type=file]')
