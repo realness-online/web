@@ -35,7 +35,6 @@
       }
     },
     created() {
-      console.log('phonebook')
       phonebook_storage.sync_list().then((people) => {
         this.working = false
         this.phonebook = people
