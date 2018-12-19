@@ -61,6 +61,7 @@ describe('@/modules/PhoneBook', () => {
     beforeEach(() => {
       phone_list = [
         {
+          id: '/+16282281824',
           first_name: 'Scott',
           last_name: 'Fryxell',
           mobile: '6282281824',
@@ -68,6 +69,7 @@ describe('@/modules/PhoneBook', () => {
           updated_at: '2018-07-16T18:12:21.552Z'
         },
         {
+          id: '/+16336661624',
           first_name: 'Katie',
           last_name: 'Caffey',
           mobile: '6336661624',
@@ -76,6 +78,7 @@ describe('@/modules/PhoneBook', () => {
         }
       ]
       me = {
+        id: '/+16282281824',
         first_name: 'Scott',
         last_name: 'Fryxell',
         mobile: '6282281824',
@@ -89,7 +92,7 @@ describe('@/modules/PhoneBook', () => {
       jest.restoreAllMocks()
     })
     it('should add new person to phone book', () => {
-      me.mobile = '4151234567'
+      me.id = '/+14151234567'
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       expect(phone_list.length).toBe(2)
       phonebook_storage.sync_list().then(people => {
@@ -99,16 +102,6 @@ describe('@/modules/PhoneBook', () => {
     it('should leave the phone book alone when my info is the same', () => {
       expect.assertions(3)
       expect(phone_list.length).toBe(2)
-      jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
-      phonebook_storage.sync_list().then(people => {
-        expect(people.length).toBe(2)
-        expect(people[0].updated_at).toBe(me.updated_at)
-      })
-    })
-    it('should update phone book when my info changes', () => {
-      expect.assertions(3)
-      expect(phone_list.length).toBe(2)
-      me.updated_at = new Date().toISOString()
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       phonebook_storage.sync_list().then(people => {
         expect(people.length).toBe(2)
