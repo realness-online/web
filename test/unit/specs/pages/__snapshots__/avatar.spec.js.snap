@@ -13,17 +13,19 @@ exports[`@/pages/avatar.vue displaying an avatar renders the silhouette by defau
   <!---->
    
   <footer>
-    <button>
-      <!---->
-    </button>
-     
-    <a>
-      <!---->
-    </a>
-     
-    <a>
-      <!---->
-    </a>
+    <menu>
+      <button>
+        <!---->
+      </button>
+       
+      <a>
+        <!---->
+      </a>
+       
+      <a>
+        <!---->
+      </a>
+    </menu>
   </footer>
 </section>
 `;

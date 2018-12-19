@@ -2,8 +2,15 @@ import { shallow } from 'vue-test-utils'
 import avatar from '@/pages/avatar'
 describe('@/pages/avatar.vue', () => {
   let wrapper
+  const $route = {
+    params: {}
+  }
   beforeEach(() => {
-    wrapper = shallow(avatar)
+    wrapper = shallow(avatar, {
+      mocks: {
+        $route
+      }
+    })
   })
   describe('displaying an avatar', () => {
     it('renders the silhouette by default', () => {
