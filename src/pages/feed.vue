@@ -34,24 +34,35 @@
       }
     },
     created() {
-      const me = person_storage.as_object()
-      let my_posts = posts_storage.as_list()
-      my_posts.forEach(post => (post.person = me))
-      this.feed.push(...my_posts)
-      relations_storage.as_list().forEach((relation, index) => {
-        profile.load(relation.id).then(person => {
-          profile.items(relation.id, 'posts').then(posts => {
-            posts.forEach(post => {
-              post.person = person
+      this.insert_me_into_my_posts()
+      this.add_relations_to_feed()
+    },
+    methods: {
+      insert_me_into_my_posts() {
+        const me = person_storage.as_object()
+        let my_posts = posts_storage.as_list()
+        my_posts.forEach(post => (post.person = me))
+        this.feed.push(...my_posts)
+      },
+      add_relations_to_feed() {
+        return new Promise((resolve, reject) => {
+          relations_storage.as_list().forEach((relation, index) => {
+            profile.load(relation.id).then(person => {
+              profile.items(relation.id, 'posts').then(posts => {
+                posts.forEach(post => {
+                  post.person = person
+                })
+                this.feed.push(...posts)
+                this.feed.sort((a, b) => {
+                  return Date.parse(a.created_at) - Date.parse(b.created_at)
+                })
+                this.working = false
+                resolve('finished')
+              })
             })
-            this.feed.push(...posts)
-            this.feed.sort((a, b) => {
-              return Date.parse(a.created_at) - Date.parse(b.created_at)
-            })
-            this.working = false
           })
         })
-      })
+      }
     }
   }
 </script>
