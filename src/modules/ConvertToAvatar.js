@@ -4,14 +4,6 @@ const EXIF = require('exif-js')
 const phone_is = {
   portate: 6
 }
-function orient(avatar) {
-  EXIF.getData(avatar, () => {
-    let orientation = avatar.exifdata.Orientation
-    console.log(orientation, phone_is, avatar.exifdata)
-    return orientation
-  })
-}
-function resize(image) {}
 function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
@@ -39,25 +31,33 @@ function trace(avatar, identifier) {
     }
   })
 }
-function posterize(poster) {
-  return new Promise((resolve, reject) => {
-    console.log('posterize...')
-    var posterizer = new potrace.Posterize()
-    posterizer.loadImage(poster, function(error) {
-      if (error) { reject(error) }
-      posterizer.setParameter({
-        steps: 2,
-        threshold: 200
-      })
-      resolve(posterizer.getSymbol('poster'))
-    })
-  })
-}
-function bannerize(banner) {}
+// function orient(avatar) {
+//   EXIF.getData(avatar, () => {
+//     let orientation = avatar.exifdata.Orientation
+//     console.log(orientation, phone_is, avatar.exifdata)
+//     return orientation
+//   })
+// }
+// function resize(image) {}
+// function posterize(poster) {
+//   return new Promise((resolve, reject) => {
+//     console.log('posterize...')
+//     var posterizer = new potrace.Posterize()
+//     posterizer.loadImage(poster, function(error) {
+//       if (error) { reject(error) }
+//       posterizer.setParameter({
+//         steps: 2,
+//         threshold: 200
+//       })
+//       resolve(posterizer.getSymbol('poster'))
+//     })
+//   })
+// }
+// function bannerize(banner) {}
 export default {
-  orient,
-  resize,
-  trace,
-  posterize,
-  bannerize
+  trace
+  // orient,
+  // resize,
+  // posterize,
+  // bannerize
 }
