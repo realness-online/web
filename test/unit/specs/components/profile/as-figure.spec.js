@@ -2,6 +2,11 @@ import {shallow, createLocalVue} from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 describe('@/compontent/profile/as-figure.vue', () => {
+  const avatar_mock = `<symbol id="#avatar_6282281824" viewBox="0 0 192 192">
+    <rect id="top-bun" x="0" y="0" width="192" height="32" rx="8"></rect>
+    <rect id="patty" x="0" y="80" width="192" height="32" rx="8"></rect>
+    <rect id="bottom-bun" x="0" y="160" width="192" height="32" rx="8"></rect>
+  </symbol>`
   let person, wrapper
   beforeEach(() => {
     person = {
@@ -10,7 +15,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
       image: '/people/+16282281824/avatar.svg',
       first_name: 'Scott',
       last_name: 'Fryxell',
-      mobile: '6282281824'
+      mobile: '6282281824',
+      id: '/+16282281824'
     }
     wrapper = shallow(as_figure, {
       propsData: {
@@ -41,6 +47,16 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(mobile.text()).toBe('(628) 228-18')
     })
   })
+  describe('rendering avatar', () => {
+    it('should render the users avatar', () => {
+      let avatar = wrapper.find('[itemprop=avatar]')
+      expect(avatar.empty).toBeFalsy()
+      person.avatar = avatar_mock
+      wrapper.setProps({person: person})
+      avatar = wrapper.find('[itemprop=avatar]')
+      expect(avatar.empty).not.toBeTruthy()
+    })
+  })
   describe('svg.avatar@click', () => {
     beforeEach(() => {
       const localVue = createLocalVue()
@@ -57,6 +73,11 @@ describe('@/compontent/profile/as-figure.vue', () => {
     it('should go to the mobile number when clicked', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
+    })
+    it('when view_avatar is tru it should go to the users avatar page', () => {
+      wrapper.setProps({view_avatar: true})
+      wrapper.vm.avatar_click()
+      expect(wrapper.vm.$route.path).toBe('/+16282281824/avatar')
     })
     it('when me is true should go to the account page', () => {
       wrapper.setProps({me: true})
