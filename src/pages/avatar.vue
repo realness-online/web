@@ -45,7 +45,6 @@
           path: `/account`
         }
         person_storage.save().then(() => {
-          console.log('person saved')
           this.$router.push(route)
         })
       },
@@ -61,6 +60,7 @@
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
             const avatar_image = event.target.files[0]
+            /* istanbul ignore next */
             if (avatar_image !== undefined) {
               if (avatar_image.type === 'image/jpeg') {
                 const identifier = `+1${vnode.context.person.mobile}_avatar`

@@ -1,9 +1,7 @@
 const potrace = require('potrace')
 const Jimp = require('jimp')
-const EXIF = require('exif-js')
-const phone_is = {
-  portate: 6
-}
+const EXIF = require('exif-js');
+
 function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
@@ -31,6 +29,9 @@ function trace(avatar, identifier) {
     }
   })
 }
+// const phone_is = {
+//   portate: 6
+// }
 // function orient(avatar) {
 //   EXIF.getData(avatar, () => {
 //     let orientation = avatar.exifdata.Orientation

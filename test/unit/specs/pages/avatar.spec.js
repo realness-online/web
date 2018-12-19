@@ -1,4 +1,6 @@
-import { shallow } from 'vue-test-utils'
+import { shallow, createLocalVue } from 'vue-test-utils'
+import Storage from '@/modules/Storage'
+import VueRouter from 'vue-router'
 import avatar from '@/pages/avatar'
 describe('@/pages/avatar.vue', () => {
   let wrapper
@@ -16,19 +18,45 @@ describe('@/pages/avatar.vue', () => {
     it('renders the silhouette by default', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('renders a person\'s avatar if one is available')
   })
-  describe('uploading an avatar', () => {
-    it('is only possible from the account page')
-    it('click@decline closes the form without saving the avatar')
-    it('click@open_camera opens the camera', () => {
-      wrapper.setProps({view_avatar: true})
-      let mock_click = jest.fn()
-      wrapper.vm.$refs.file_upload.click = mock_click
-      wrapper.vm.open_camera()
-      expect(mock_click).toBeCalled()
+
+  it('finished_viewing()', () => {
+    const localVue = createLocalVue()
+    localVue.use(VueRouter)
+    const router = new VueRouter()
+    sessionStorage.setItem('previous', '/test_route')
+    let wrapper = shallow(avatar, {
+      localVue,
+      router
     })
-    it('change event should get input file', () => {
+    wrapper.vm.finished_viewing()
+    expect(wrapper.vm.$route.path).toBe('/test_route')
+    sessionStorage.removeItem('previous')
+  })
+  it('open_camera()', () => {
+    wrapper.setProps({view_avatar: true})
+    let mock_click = jest.fn()
+    wrapper.vm.$refs.file_upload.click = mock_click
+    wrapper.vm.open_camera()
+    expect(mock_click).toBeCalled()
+  })
+  describe('accept_changes()', () => {
+    it('should update the avatar', () => {
+      const localVue = createLocalVue()
+      localVue.use(VueRouter)
+      const router = new VueRouter()
+      let wrapper = shallow(avatar, {
+        localVue,
+        router
+      })
+      const save_spy = jest.fn(() => Promise.resolve('save_spy'))
+      jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
+      wrapper.vm.accept_changes()
+      expect(save_spy).toBeCalled()
+    })
+    it('should save person')
+
+    it('should trigger change event on file input', () => {
       wrapper.setProps({view_avatar: true})
       let input = wrapper.find('input[type=file]')
       expect(input.exists()).toBe(true)
