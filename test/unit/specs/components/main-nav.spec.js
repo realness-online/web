@@ -86,8 +86,8 @@ describe('@/components/main-nav.vue', () => {
     })
   })
   describe('user_name()', () => {
-    it('returns \'Profile\' by default', () => {
-      expect(wrapper.vm.user_name).toBe('Profile')
+    it('returns \'You\' by default', () => {
+      expect(wrapper.vm.user_name).toBe('You')
     })
     it('returns the users first name if set', () => {
       wrapper.setData({ person: {first_name: 'Scott'} })
