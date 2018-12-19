@@ -3,7 +3,7 @@
     v-model="new_post"
     v-on:focusout="prepare_post"
     v-on:focusin="wat_focused"
-    placeholder="...">{{value}}</textarea>
+    placeholder="What?">{{value}}</textarea>
 </template>
 
 <script>
@@ -46,12 +46,10 @@
     border-style: solid
     resize: none
     caret-color: red
-    padding-top: 0
     padding-left: 1rem
     &::placeholder
       transition-property:all
       font-family: 'Lato'
-      font-size: 4.66rem
     &:focus
       margin-top: base-line
       animation-name: slideInLeft
