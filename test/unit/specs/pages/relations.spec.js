@@ -39,7 +39,7 @@ describe('@/pages/relations.vue', () => {
     wrapper.vm.$bus.$emit('remove-relationship', other_person)
     expect(wrapper.vm.relations.length).toBe(1)
   })
-  it.only('fill_in_relationships()', () => {
+  it('fill_in_relationships()', () => {
     const load_spy = jest.fn(() => Promise.resolve('load_spy'))
     jest.spyOn(profile, 'load').mockImplementation(() => Promise.resolve(person))
     wrapper.setData({relations: [person]})
