@@ -63,7 +63,7 @@ describe('@/modules/Storage.js', () => {
         return { onAuthStateChanged: not_signed_in }
       })
       storage.persist(item_as_string)
-        .then(result => expect(result).toBe('no need to persist'))
+        .then(result => expect(result).toBe('Unable to persist to server'))
     })
     it('can be told where to save', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -92,7 +92,7 @@ describe('@/modules/Storage.js', () => {
     })
     it('saves an item to local storage', () => {
       expect.assertions(1)
-      storage.save().then(result => expect(result).toBe('saved local & network'))
+      storage.save().then(result => expect(result).toBe('saved person or posts locally and to network'))
     })
   })
   describe('#get_download_url', () => {
