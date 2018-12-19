@@ -26,7 +26,6 @@
       logoAsLink
     },
     created() {
-      console.log('relations')
       this.relations.forEach((relation, index) => {
         profile.load(relation.id).then(profile => {
           this.relations.splice(index, 1, profile)
