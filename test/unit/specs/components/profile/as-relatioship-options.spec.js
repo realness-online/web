@@ -5,6 +5,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
   let relations = [
     {
+      id: '/+16282281824',
       first_name: 'Scott',
       last_name: 'Fryxell',
       mobile: '6282281824',
@@ -12,6 +13,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       updated_at: '2018-07-16T18:12:21.552Z'
     },
     {
+      id: '/+6336661624',
       first_name: 'Katie',
       last_name: 'Caffey',
       mobile: '6336661624',
@@ -20,6 +22,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     }
   ]
   let me = {
+    id: '/+16282281824',
     first_name: 'Scott',
     last_name: 'Fryxell',
     mobile: '6282281824',
@@ -39,7 +42,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       expect(wrapper.vm.relation).toBe(true)
     })
     it('should return false if profile is not a relationship', () => {
-      me.mobile = '4156661266'
+      me.id = '/+14156661266'
       wrapper = shallow(as_options, { propsData: { person: me } })
       wrapper.vm.is_relation()
       expect(wrapper.vm.relation).toBe(false)
