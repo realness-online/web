@@ -26,12 +26,20 @@
       logoAsLink
     },
     created() {
-      this.relations.forEach((relation, index) => {
-        profile.load(relation.id).then(profile => {
-          this.relations.splice(index, 1, profile)
-          this.working = false
+      this.fill_in_relationships()
+    },
+    methods: {
+      fill_in_relationships() {
+        return new Promise((resolve, reject) => {
+          this.relations.forEach((relation, index) => {
+            profile.load(relation.id).then(profile => {
+              this.relations.splice(index, 1, profile)
+              this.working = false
+              resolve('finished fill_in_relationships')
+            })
+          })
         })
-      })
+      }
     }
   }
 </script>
