@@ -27,6 +27,7 @@ describe('@/pages/relations.vue', () => {
   })
   it('remove-relationship should only remove the person provided', () => {
     const other_person = {
+      id: '/+12223334444',
       first_name: 'Katie',
       last_name: 'Caffey',
       mobile: '2223334444'
