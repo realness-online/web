@@ -3,7 +3,7 @@
     v-model="new_post"
     v-on:focusout="prepare_post"
     v-on:focusin="wat_focused"
-    placeholder="|>">{{value}}</textarea>
+    placeholder="$">{{value}}</textarea>
 </template>
 
 <script>
