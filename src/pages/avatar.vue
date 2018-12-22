@@ -63,7 +63,7 @@
             /* istanbul ignore next */
             if (avatar_image !== undefined) {
               if (avatar_image.type === 'image/jpeg') {
-                const identifier = `+1${vnode.context.person.mobile}_avatar`
+                const identifier = `avatar_1${vnode.context.person.mobile}`
                 convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
                   vnode.context.working = false
                   vnode.context.person.avatar = avatar
