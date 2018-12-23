@@ -5,20 +5,12 @@
     <profile-as-figure v-else :person='person'></profile-as-figure>
     <footer>
       <menu v-if="me">
-        <button @click='finished_viewing'>
-          <icon name="remove"></icon>
-        </button>
-        <a @click="open_camera">
-          <icon name="add"></icon>
-        </a>
-        <a @click="accept_changes">
-          <icon name="finished"></icon>
-        </a>
+        <button @click='finished_viewing'><icon name="remove"></icon></button>
+        <button @click="open_camera"><icon name="add"></icon></button>
+        <button @click="accept_changes"><icon name="finished"></icon></button>
       </menu>
       <menu v-else>
-        <button @click='finished_viewing'>
-          <icon name="finished"></icon>
-        </button>
+        <button @click='finished_viewing'><icon name="finished"></icon></button>
       </menu>
     </footer>
   </section>
