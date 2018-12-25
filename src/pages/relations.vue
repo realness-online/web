@@ -31,6 +31,9 @@
     methods: {
       fill_in_relationships() {
         return new Promise((resolve, reject) => {
+          if (this.relations.length === 0) {
+            this.working = false
+          }
           this.relations.forEach((relation, index) => {
             profile.load(relation.id).then(profile => {
               this.relations.splice(index, 1, profile)
