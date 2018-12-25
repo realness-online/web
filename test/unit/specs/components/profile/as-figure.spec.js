@@ -58,10 +58,11 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
   })
   describe('svg.avatar@click', () => {
+    let router
     beforeEach(() => {
       const localVue = createLocalVue()
       localVue.use(VueRouter)
-      const router = new VueRouter()
+      router = new VueRouter()
       wrapper = shallow(as_figure, {
         localVue,
         router,
@@ -89,6 +90,14 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.setProps({previous: true})
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/test-route')
+      sessionStorage.removeItem('previous')
+    })
+    it('just display the avatar when just_display_avatar is true', () => {
+      var push_spy = jest.fn()
+      router.push = push_spy
+      wrapper.setProps({just_display_avatar: true})
+      wrapper.vm.avatar_click()
+      expect(push_spy).not.toBeCalled()
     })
   })
 })

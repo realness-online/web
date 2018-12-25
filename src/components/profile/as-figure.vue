@@ -32,6 +32,10 @@
         type: Boolean,
         default: false
       },
+      just_display_avatar: {
+        type: Boolean,
+        default: false
+      },
       nav: {
         type: Boolean,
         default: true
@@ -51,7 +55,9 @@
         if (this.previous) {
           route.path = sessionStorage.previous
         }
-        this.$router.push(route)
+        if (!this.just_display_avatar) {
+          this.$router.push(route)
+        }
       }
     },
     computed: {

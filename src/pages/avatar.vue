@@ -2,7 +2,7 @@
   <section id="upload">
     <input type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
     <icon v-if="working" name="working"></icon>
-    <profile-as-figure v-else :person='person'></profile-as-figure>
+    <profile-as-figure v-else :person='person' :just_display_avatar="true"></profile-as-figure>
     <footer>
       <menu v-if="me">
         <button @click='finished_viewing'><icon name="remove"></icon></button>
