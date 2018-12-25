@@ -23,9 +23,19 @@ export default {
         this.working = false
       })
     } else {
-      this.person = person_storage.as_object()
       this.me = true
-      this.working = false
+      if (sessionStorage.getItem('profile_synced')) {
+        this.person = person_storage.as_object()
+        this.working = false
+      } else {
+        this.person = person_storage.as_object()
+        profile.load(this.person.id).then(profile => {
+          this.person = profile
+          this.working = false
+          sessionStorage.setItem('profile_synced', true)
+          console.log('profile_synced', sessionStorage.getItem('profile_synced'))
+        })
+      }
     }
   }
 }
