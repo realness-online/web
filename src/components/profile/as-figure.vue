@@ -92,13 +92,18 @@
       stroke: lighten(black, 20%)
       stroke-width: (base-line / 36)
       border-radius: base-line
+      @media (prefers-color-scheme: dark)
+        fill: lighten(black, 45%)
+        stroke: lighten(black, 66%)
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
       line-height: (base-line * 2)
       & > p
-        color:black
+        color: black
         margin:0
+        @media (prefers-color-scheme: dark)
+          color: rgba(246, 250, 253, 0.69)
         & > span
           text-transform: capitalize
       & > a

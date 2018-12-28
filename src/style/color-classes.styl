@@ -21,6 +21,11 @@
   -webkit-tap-highlight-color: red
   &::placeholder
     color:lighten(red, 85%)
+  @media (prefers-color-scheme: dark)
+    background-color: darken(red, 15%)
+    color: rgba(246, 250, 253, 0.69)
+    border-color: darken(red, 10%)
+
 
 .green
   background-color:green
@@ -29,6 +34,11 @@
   -webkit-tap-highlight-color: green
   &::placeholder
     color:lighten(green, 75%)
+  @media (prefers-color-scheme: dark)
+    background-color: darken(green, 30%)
+    color: rgba(246, 250, 253, 0.69)
+    border-color: darken(green, 20%)
+
 
 .blue
   background-color:blue
@@ -37,6 +47,10 @@
   -webkit-tap-highlight-color: blue
   &::placeholder
     color:lighten(blue, 95%)
+  @media (prefers-color-scheme: dark)
+    background-color: darken(blue, 33%)
+    color: rgba(246, 250, 253, 0.69)
+    border-color: darken(blue, 25%)
 
 .black
   background-color:black
@@ -45,3 +59,7 @@
   -webkit-tap-highlight-color: black
   &::placeholder
     color:lighten(black, 65%)
+  @media (prefers-color-scheme: dark)
+    background-color: darken(black, 45%)
+    color: rgba(246, 250, 253, 0.69)
+    border-color: darken(black, 15%)
