@@ -25,7 +25,7 @@ const profile_as_text = `
 `
 describe('@/pages/feed.vue', () => {
   it('render feed info', () => {
-    fetch.mockResponseOnce(server_text)
+    fetch.mockResponseOnce(posts_as_text)
     let wrapper = shallow(feed)
     expect(wrapper.element).toMatchSnapshot()
   })
@@ -58,7 +58,6 @@ describe('@/pages/feed.vue', () => {
     wrapper.vm.add_relations_to_feed().then(() => {
       expect(wrapper.vm.feed.length).toBe(5)
     })
-
   })
   it('#sort_feed', () => {
     expect.assertions(1)

@@ -1,4 +1,3 @@
-import { shallow } from 'vue-test-utils'
 import profile from '@/modules/Profile'
 
 const posts_as_text = `
@@ -35,7 +34,7 @@ const profile_as_text = `
   </figcaption>
 </figure>
 `
-describe("@/mixins/Profile", () => {
+describe('@/mixins/Profile', () => {
   it('items()', () => {
     fetch.mockResponseOnce(posts_as_text)
     profile.items('+14151231234', 'posts').then(items => {
@@ -45,7 +44,7 @@ describe("@/mixins/Profile", () => {
   })
   it('load()', () => {
     fetch.mockResponseOnce(profile_as_text)
-    const katie = profile.load('/+16282281824').then(katie => {
+    profile.load('/+16282281824').then(katie => {
       expect(katie.first_name).toBe('katie')
       expect(fetch).toBeCalled()
     })
