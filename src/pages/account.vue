@@ -1,7 +1,7 @@
 <template lang="html">
   <section id="account" class="page left">
     <header>
-      <profile-as-figure v-if="signed_in" :person="person" :view_avatar="false" ></profile-as-figure>
+      <profile-as-figure v-if="signed_in" :person="person" :view_avatar="true" ></profile-as-figure>
       <svg v-else> </svg>
       <router-link to="/profile">
         <icon name="finished"></icon>
