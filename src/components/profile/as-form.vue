@@ -11,7 +11,7 @@
     <fieldset id="phone">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
-             v-model="phone_number"
+             v-model="person.mobile"
              v-on:keypress="mobile_keypress"
              v-on:paste="mobile_paste"
              v-on:blur="save_person">
@@ -52,7 +52,6 @@
     },
     data() {
       return {
-        phone_number: null,
         working: true,
         storage: person_storage,
         code: null,
@@ -69,7 +68,6 @@
       firebase.auth().onAuthStateChanged(user => {
         this.working = false
         if (user) {
-          this.phone_number = user.phoneNumber.substring(2)
           this.show_sign_out = true
         } else {
           this.phone_number = this.person.mobile

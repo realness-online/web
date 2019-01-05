@@ -10,6 +10,8 @@
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import {person_storage} from '@/modules/Storage'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
@@ -24,6 +26,13 @@
       return {
         person: person_storage.as_object()
       }
+    },
+    created() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          this.person.mobile = user.phoneNumber.substring(2)
+        }
+      })
     }
   }
 </script>
