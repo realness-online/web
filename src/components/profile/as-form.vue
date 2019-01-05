@@ -95,15 +95,7 @@
         this.$el.querySelector('#mobile').disabled = true
       },
       save_person() {
-        if (!this.person.created_at) {
-          this.person.created_at = new Date().toISOString()
-          this.person.updated_at = this.person.created_at
-        } else {
-          this.person.updated_at = new Date().toISOString()
-        }
-        Vue.nextTick(() => {
-          this.storage.save()
-        })
+        Vue.nextTick(() => this.storage.save())
       },
       begin_authorization(event) {
         this.working = true
