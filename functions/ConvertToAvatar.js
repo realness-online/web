@@ -54,7 +54,7 @@ exports.download = (locals) => {
 exports.resize = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('resize...')
-    const properties = [locals.image, '-resize', '128x128>', locals.image]
+    const properties = [locals.image, '-resize', '512x512>', locals.image]
     spawn('convert', properties).then(() => {
       resolve(locals)
     }).catch(error => {
