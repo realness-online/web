@@ -72,7 +72,7 @@
   @require '../style/variables'
   section#upload
     animation-name: slideInLeft
-    height: 100vh
+    height: 80vh
     display: flex
     flex-direction: column
     justify-content: flex-start
