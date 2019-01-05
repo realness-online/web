@@ -36,11 +36,11 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
       placeholder="(555) 555-5555"
       type="tel"
     />
-     
-    <!---->
-     
-    <!---->
   </fieldset>
+   
+  <!---->
+   
+  <!---->
    
   <!---->
    
@@ -48,7 +48,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
     <button
       id="authorize"
     >
-      Enter realness
+      Sign in
     </button>
      
     <!---->

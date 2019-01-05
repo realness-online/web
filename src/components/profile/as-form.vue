@@ -15,20 +15,24 @@
              v-on:keypress="mobile_keypress"
              v-on:paste="mobile_paste"
              v-on:blur="save_person">
-      <input id="verification-code" type="tel" placeholder="Code"
-             v-if="show_code"
-             v-model="code"
-             v-on:keypress="code_keypress" >
+    </fieldset>
+    <fieldset v-if="show_captcha">
       <div id="captcha"
            v-if='show_captcha'
            v-bind:class="{hide_captcha}">
       </div>
     </fieldset>
+    <fieldset v-if="show_code">
+      <input id="verification-code" type="tel" placeholder="Verification Code"
+             v-model="code"
+             v-on:keypress="code_keypress" >
+    </fieldset>
+
     <icon v-show="working" name="working"></icon>
-    <menu v-if="valid_mobile_number">
+    <menu>
       <button id="authorize"
               v-if="show_authorize"
-              v-on:click='begin_authorization'>Enter realness</button>
+              v-on:click='begin_authorization'>Sign in</button>
       <button id='submit-verification'
               v-if="show_code"
               v-on:click="sign_in_with_code">Sign in</button>
@@ -116,6 +120,7 @@
       text_human_verify_code(response) {
         this.working = false
         this.show_code = true
+        this.show_captcha = false
         this.hide_captcha = true
         firebase.auth()
           .signInWithPhoneNumber(this.mobile_as_e164, this.human)
@@ -134,7 +139,7 @@
         this.authorizer.confirm(this.code).then(result => {
           this.working = false
           this.show_sign_out = true
-          Vue.nextTick(() => this.storage.save())
+          this.save_person()
         })
       },
       sign_out(event) {
@@ -171,7 +176,8 @@
   @require '../../style/variables'
   form#profile-form
     div#captcha
-      margin-top: base-line
+      overflow: hidden
+      max-width: 75vw
       &.hide_captcha
         display: none
     & > fieldset
@@ -184,8 +190,6 @@
           color:lighten(black, 30%)
       &::placeholder
         color: lighten(black, 30%)
-    // label[for=mobile]
-    //   margin-right: -0.3em
     input#first-name
       width:40%
       margin-right: base-line
@@ -194,7 +198,4 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
-    input#verification-code
-      margin-top: (base-line / 2)
-
 </style>

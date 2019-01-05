@@ -1,7 +1,8 @@
 <template lang="html">
   <section id="account" class="page left">
     <header>
-      <profile-as-figure :person="person" :view_avatar="true" ></profile-as-figure>
+      <profile-as-figure v-if="signed_in" :person="person" :view_avatar="false" ></profile-as-figure>
+      <svg v-else> </svg>
       <router-link to="/profile">
         <icon name="finished"></icon>
       </router-link>
@@ -24,13 +25,17 @@
     },
     data() {
       return {
-        person: person_storage.as_object()
+        person: person_storage.as_object(),
+        signed_in: false
       }
     },
     created() {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           this.person.mobile = user.phoneNumber.substring(2)
+          this.signed_in = true
+        } else {
+          this.signed_in = false
         }
       })
     }

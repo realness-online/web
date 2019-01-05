@@ -100,12 +100,12 @@ describe('@/compontent/profile/as-form.vue', () => {
       wrapper = shallow(as_form, { propsData: { person: person } })
       button = wrapper.find('#authorize')
     })
-    it('renders with valid mobile number', () => {
+    it('enabled with valid mobile number', () => {
       expect(firebase.auth).toBeCalled()
       expect(onAuthStateChanged).toBeCalled()
       expect(button.exists()).toBe(true)
     })
-    it('removed with invalid mobile number', () => {
+    it('disabled with invalid mobile number', () => {
       const invalid_person = { mobile: '415123456a' }
       wrapper = shallow(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
