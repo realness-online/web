@@ -13,8 +13,7 @@
       <input id="mobile" type="tel" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
-             v-on:paste="mobile_paste"
-             v-on:blur="save_person">
+             v-on:paste="mobile_paste">
     </fieldset>
     <fieldset v-if="show_captcha">
       <div id="captcha"
@@ -31,6 +30,7 @@
     <icon v-show="working" name="working"></icon>
     <menu>
       <button id="authorize"
+              :disabled="!valid_mobile_number"
               v-if="show_authorize"
               v-on:click='begin_authorization'>Sign in</button>
       <button id='submit-verification'
@@ -99,7 +99,9 @@
         this.$el.querySelector('#mobile').disabled = true
       },
       save_person() {
-        Vue.nextTick(() => this.storage.save())
+        if (this.valid_mobile_number) {
+          Vue.nextTick(() => this.storage.save())
+        }
       },
       begin_authorization(event) {
         this.working = true
