@@ -94,7 +94,7 @@
     "npm": ">= 6.0.0"
   },
   "browserslist": [
-    "> 1%",
+    "> 0.2%",
     "last 1 versions"
   ]
 }
