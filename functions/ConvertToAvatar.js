@@ -65,6 +65,7 @@ exports.resize = (locals) => {
 exports.trace = (locals) => {
   return new Promise((resolve, reject) => {
     console.log('trace...')
+    // potrace.setParameters({threshold: 95, turdSize: 12})
     potrace.trace(locals.image, function(err, svg) {
       if (err) { reject(err) }
       fs.writeFileSync(locals.avatar, svg)
