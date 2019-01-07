@@ -6,7 +6,7 @@ function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     let trace = new potrace.Potrace()
-    trace.setParameters({threshold: 95, turdSize: 12})
+    trace.setParameters({threshold: 80, turdSize: 12})
     let reader = new FileReader()
     reader.readAsArrayBuffer(avatar)
     reader.onload = function() {
