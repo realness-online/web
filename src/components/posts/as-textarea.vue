@@ -54,6 +54,7 @@
       margin-top: base-line
       animation-name: slideInLeft
       font-weight: normal
+      font-size:1.25em
       height:100vh
       text-align: left
       width:100vw
