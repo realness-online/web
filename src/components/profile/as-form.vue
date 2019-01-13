@@ -99,9 +99,7 @@
         this.$el.querySelector('#mobile').disabled = true
       },
       save_person() {
-        if (this.valid_mobile_number) {
-          Vue.nextTick(() => this.storage.save())
-        }
+        this.$bus.$emit('save-me', this.person)
       },
       begin_authorization(event) {
         this.working = true

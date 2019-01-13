@@ -1,8 +1,7 @@
 <template lang="html">
   <section id="account" class="page left">
     <header>
-      <profile-as-figure v-if="signed_in" :person="person" :view_avatar="true" ></profile-as-figure>
-      <svg v-else> </svg>
+      <profile-as-figure :person="person" :view_avatar="true" ></profile-as-figure>
       <router-link to="/profile">
         <icon name="finished"></icon>
       </router-link>
@@ -11,6 +10,7 @@
   </section>
 </template>
 <script>
+  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import {person_storage} from '@/modules/Storage'
@@ -30,8 +30,19 @@
       }
     },
     created() {
+      this.$bus.$off('save-me')
+      this.$bus.$on('save-me', person => {
+        console.log('save-me called')
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            this.person.mobile = user.phoneNumber.substring(2)
+          }
+          Vue.nextTick(() => person_storage.save())
+        })
+      })
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
+          console.log('signed in')
           this.person.mobile = user.phoneNumber.substring(2)
           this.signed_in = true
         } else {
