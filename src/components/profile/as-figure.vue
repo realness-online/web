@@ -9,12 +9,13 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <p v-if="me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
+      <p v-if="is_me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
     </figcaption>
   </figure>
 </template>
 <script>
+  import {person_storage} from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
   export default {
@@ -49,7 +50,7 @@
         if (this.view_avatar) {
           route.path = `${this.person.id}/avatar`
         }
-        if (this.me) {
+        if (this.is_me) {
           route.path = '/account'
         }
         if (this.previous) {
@@ -61,8 +62,12 @@
       }
     },
     computed: {
+      is_me() {
+        return person_storage.as_object().id === this.person.id
+      },
       avatar() {
         if (this.person.avatar) {
+          console.log('this.person.avatar:', this.person.avatar)
           return `#avatar_1${this.person.mobile}`
         }
         return `${icons}#silhouette`
