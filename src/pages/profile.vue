@@ -40,6 +40,8 @@
           this.posts = items
           this.working = false
         })
+      } else {
+        this.working = false
       }
     }
   }
