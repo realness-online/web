@@ -105,6 +105,7 @@
       begin_authorization(event) {
         this.working = true
         this.disable_input()
+        this.save_person()
         event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
