@@ -1,12 +1,17 @@
 <template lang="html">
   <section id="account" v-bind:class="{signed_in}" class="page left">
     <header>
-      <profile-as-figure :person="person" :just_display_avatar="true" ></profile-as-figure>
-      <router-link to="/profile">
-        <icon name="finished"></icon>
-      </router-link>
+      <a @click="open_camera">
+        <icon name="add"></icon>
+      </a>
+      <icon v-if="working" name="working"></icon>
+      <profile-as-figure v-else :person="person" :just_display_avatar="true" ></profile-as-figure>
+      <a @click="accept_changes">
+        <icon  name="finished"></icon>
+      </a>
     </header>
     <profile-as-form :person='person'></profile-as-form>
+    <input type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
   </section>
 </template>
 <script>
@@ -17,6 +22,7 @@
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
   import icon from '@/components/icon'
+  import convert_to_avatar from '@/modules/ConvertToAvatar'
   export default {
     components: {
       'profile-as-figure': as_figure,
@@ -25,8 +31,48 @@
     },
     data() {
       return {
+        working: false,
         person: person_storage.as_object(),
-        signed_in: false
+        signed_in: false,
+        shots: []
+      }
+    },
+    methods: {
+      open_camera(event) {
+        this.working = true
+        this.$refs.file_upload.click()
+      },
+      accept_changes(event) {
+        console.log('accept changes')
+        this.working = true
+        const route = {
+          path: `/profile`
+        }
+        person_storage.save().then(() => {
+          this.$router.push(route)
+        })
+      },
+      no_to_photo() {
+        this.person.avatar = this.shots[this.shots.index - 1]
+      }
+    },
+    directives: {
+      uploader: {
+        bind(input, binding, vnode) {
+          input.addEventListener('change', event => {
+            const avatar_image = event.target.files[0]
+            /* istanbul ignore next */
+            if (avatar_image !== undefined) {
+              if (avatar_image.type === 'image/jpeg') {
+                const identifier = `avatar_1${vnode.context.person.mobile}`
+                convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
+                  vnode.context.working = false
+                  vnode.context.person.avatar = avatar
+                })
+              }
+            }
+          })
+        }
       }
     },
     created() {
@@ -56,25 +102,53 @@
   @require '../style/variables'
   section#account.signed_in
     position: relative
+    svg.working
+      flex-grow: 1
+      padding: base-line
+      padding-top: base-line * 6
+      width:100vw
+      height:50vh
     & > header
-      margin-bottom: 0
+      min-height:100vh
+      margin-bottom: base-line
       & > a
         position: absolute
-        top: base-line
-        right: base-line
+        z-index: 2
+        &:first-child
+          display: inherit
+          left: base-line
+        &:nth-child(3)
+          right: base-line
       & > figure
         & > figcaption
           display: none
         & > svg
-          min-height:75vh
+          margin-top: base-line * 2
+          animation-name: slideInDown
+          border-radius: 100vw
+          // max-height: 90vh
+          height:66vh
           width:100vw
     form#profile-form
       #name
       #phone
         display:none
-      menu
-        position: absolute
-        top: base-line
-  section#account header
-    margin-bottom: base-line
+  section#account
+    input[type=file]
+      display: none
+    & > header
+      margin-bottom: base-line
+      a:first-of-type
+        display:none
+    & > footer > menu
+      padding: base-line
+      display: flex
+      justify-content: space-evenly
+      align-items: flex-end
+      button
+        border: none
+        padding: 0
+        margin:0
+        &[disabled]
+          opacity:0.5
 </style>
