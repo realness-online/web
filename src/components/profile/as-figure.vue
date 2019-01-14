@@ -67,7 +67,6 @@
       },
       avatar() {
         if (this.person.avatar) {
-          console.log('this.person.avatar:', this.person.avatar)
           return `#avatar_1${this.person.mobile}`
         }
         return `${icons}#silhouette`
