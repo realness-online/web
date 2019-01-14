@@ -43,7 +43,6 @@
       padding: 0
       flex-grow: 1
       display: flex
-      flex-direction: column
       justify-content: flex-start
       align-content: stretch
       & > svg
