@@ -81,6 +81,11 @@
           line-height: .66
       & > a > svg.finished
         fill:blue
+    nav.profile-list
+      display: flex
+      flex-direction: column-reverse
+      @media (min-width: min-screen)
+        flex-direction: row
     & > footer
       position: fixed
       bottom: (base-line * 1.5)

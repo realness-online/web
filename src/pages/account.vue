@@ -1,7 +1,7 @@
 <template lang="html">
-  <section id="account" class="page left">
+  <section id="account" v-bind:class="{signed_in}" class="page left">
     <header>
-      <profile-as-figure :person="person" :view_avatar="true" ></profile-as-figure>
+      <profile-as-figure :person="person" :just_display_avatar="true" ></profile-as-figure>
       <router-link to="/profile">
         <icon name="finished"></icon>
       </router-link>
@@ -54,6 +54,27 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
+  section#account.signed_in
+    position: relative
+    & > header
+      margin-bottom: 0
+      & > a
+        position: absolute
+        top: base-line
+        right: base-line
+      & > figure
+        & > figcaption
+          display: none
+        & > svg
+          min-height:75vh
+          width:100vw
+    form#profile-form
+      #name
+      #phone
+        display:none
+      menu
+        position: absolute
+        top: base-line
   section#account header
     margin-bottom: base-line
 </style>

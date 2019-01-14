@@ -15,12 +15,13 @@
              v-on:keypress="mobile_keypress"
              v-on:paste="mobile_paste">
     </fieldset>
-    <fieldset v-if="show_captcha">
-      <div id="captcha"
-           v-if='show_captcha'
-           v-bind:class="{hide_captcha}">
-      </div>
-    </fieldset>
+    <div id="captcha"
+         v-if='show_captcha'
+         v-bind:class="{hide_captcha}">
+    </div>
+    <!-- <fieldset v-if="show_captcha">
+
+    </fieldset> -->
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" placeholder="Verification Code"
              v-model="code"
@@ -176,8 +177,8 @@
   @require '../../style/variables'
   form#profile-form
     div#captcha
-      overflow: hidden
-      max-width: 75vw
+      // overflow: hidden
+      // max-width: 75vw
       &.hide_captcha
         display: none
     & > fieldset
