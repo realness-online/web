@@ -1,19 +1,18 @@
 .DS_Store
-node_modules/
-.firebase/
-.firebase/hosting*
-/dist/
-/repo/
-/statistics.html
+node_modules
+/dist
+
+/tests/e2e/videos/
+/tests/e2e/screenshots/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/test/unit/coverage/
-/test/unit/cache/
-/test/e2e/reports/
-/functions/coverage
-selenium-debug.log
-firebase-debug.log
 
 # Editor directories and files
 .idea
@@ -22,3 +21,4 @@ firebase-debug.log
 *.ntvs*
 *.njsproj
 *.sln
+*.sw*

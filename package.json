@@ -1,21 +1,13 @@
 {
-  "name": "realness.online",
-  "version": "0.2.12",
-  "description": "A webapp for realness.online",
-  "author": "Scott Fryxell <sfryxell@me.com>",
+  "name": "realness",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
-    "unit": "jest --config test/unit/jest.conf.js",
-    "unit:watch": "jest --config test/unit/jest.conf.js --watch",
-    "e2e": "node test/e2e/runner.js",
-    "test": "npm run unit && npm run e2e",
-    "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs functions",
-    "build": "node build/build.js",
-    "build:stats": "webpack-bundle-analyzer dist/stats.json",
-    "deploy": "npm run build && firebase deploy",
-    "deploy:hosting": "npm run build && firebase deploy --only hosting",
-    "deploy:functions": "npm run build && firebase deploy --only functions"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "test:e2e": "vue-cli-service test:e2e",
+    "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
     "exif-js": "^2.3.0",
@@ -24,78 +16,72 @@
     "libphonenumber-js": "^1.2.15",
     "potrace": "github:scott-fryxell/javascript-potrace",
     "register-service-worker": "^1.5.2",
-    "vue": "^2.5.20",
-    "vue-router": "^3.0.2"
+    "vue": "^2.5.21",
+    "vue-router": "^3.0.1"
   },
   "devDependencies": {
-    "@vue/test-utils": "^1.0.0-beta.25",
-    "autoprefixer": "^8.6.4",
-    "babel-core": "^6.26.3",
-    "babel-eslint": "^8.2.6",
+    "@vue/cli-plugin-babel": "^3.3.0",
+    "@vue/cli-plugin-e2e-cypress": "^3.3.0",
+    "@vue/cli-plugin-eslint": "^3.3.0",
+    "@vue/cli-plugin-pwa": "^3.3.0",
+    "@vue/cli-plugin-unit-jest": "^3.3.0",
+    "@vue/cli-service": "^3.3.0",
+    "@vue/eslint-config-airbnb": "^4.0.0",
+    "@vue/test-utils": "^1.0.0-beta.20",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
     "babel-jest": "^23.6.0",
-    "babel-loader": "^7.1.5",
-    "babel-plugin-dynamic-import-node": "^1.2.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
-    "babel-plugin-transform-runtime": "^6.22.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-2": "^6.22.0",
-    "babel-register": "^6.22.0",
-    "chalk": "^2.4.1",
-    "chromedriver": "2.35.0",
-    "copy-webpack-plugin": "^4.5.2",
-    "cross-spawn": "^6.0.5",
-    "css-loader": "^0.28.10",
-    "eslint": "^4.18.2",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-loader": "^1.7.1",
-    "eslint-plugin-html": "^4.0.5",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
-    "eventsource-polyfill": "^0.9.6",
-    "express": "^4.16.2",
-    "extract-text-webpack-plugin": "^3.0.0",
-    "file-loader": "^1.1.11",
-    "friendly-errors-webpack-plugin": "^1.6.1",
-    "html-webpack-plugin": "^2.30.1",
-    "jest": "^22.4.2",
-    "jest-fetch-mock": "^1.6.5",
-    "jest-localstorage-mock": "^2.2.0",
-    "jest-serializer-vue": "^2.0.2",
-    "nightwatch": "^0.9.21",
-    "node-notifier": "^5.1.2",
-    "optimize-css-assets-webpack-plugin": "^3.2.0",
-    "ora": "^2.1.0",
-    "portfinder": "^1.0.17",
-    "postcss-import": "^11.1.0",
-    "postcss-loader": "^2.1.6",
-    "rimraf": "^2.6.0",
-    "selenium-server": "^3.14.0",
-    "semver": "^5.5.1",
-    "shelljs": "^0.8.2",
+    "eslint": "^5.8.0",
+    "eslint-plugin-vue": "^5.0.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "url-loader": "^0.6.2",
-    "vue-jest": "^2.6.0",
-    "vue-loader": "^14.2.2",
-    "vue-style-loader": "^4.1.2",
-    "vue-template-compiler": "^2.5.20",
-    "vue-test-utils": "^1.0.0-beta.11",
-    "webpack": "^3.12.0",
-    "webpack-bundle-analyzer": "^2.13.1",
-    "webpack-dev-server": "^2.11.3",
-    "webpack-merge": "^4.1.4",
-    "webpack-visualizer-plugin": "0.1.11",
-    "workbox-webpack-plugin": "^3.6.3"
+    "vue-template-compiler": "^2.5.21"
   },
-  "engines": {
-    "node": ">= 8.0.0",
-    "npm": ">= 6.0.0"
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "@vue/airbnb"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
   },
   "browserslist": [
-    "> 0.2%",
-    "last 1 versions"
-  ]
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      "^.+\\.vue$": "vue-jest",
+      ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "snapshotSerializers": [
+      "jest-serializer-vue"
+    ],
+    "testMatch": [
+      "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
+    ],
+    "testURL": "http://localhost/"
+  }
 }
