@@ -5,7 +5,6 @@
     </header>
   </section>
 </template>
-
 <script>
   export default {
     data() {
@@ -13,7 +12,6 @@
     }
   }
 </script>
-
 <style lang="stylus">
   @require '../style/variables'
   section#where

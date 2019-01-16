@@ -8,7 +8,7 @@ import Index from '@/views/Index'
 import Profile from '@/views/Profile'
 import Avatar from '@/views/Avatar'
 import Relations from '@/views/Relations'
-import Phonebook from '@/views/PhoneBook'
+import PhoneBook from '@/views/PhoneBook'
 
 Vue.use(Router)
 export default new Router({
@@ -23,11 +23,8 @@ export default new Router({
     { path: '/relations', component: Relations },
     { path: '/phonebook', component: PhoneBook },
     { path: '/profile', component: Profile },
-    { path: '/account',
-      name: 'account',
-      component: () => import(/* webpackChunkName: "account" */ './views/Account.vue')
-    },
-    { path: '/:phone_number/avatar', component: avatar },
-    { path: '/:phone_number', component: profile }
+    { path: '/account', component: Account },
+    { path: '/:phone_number/avatar', component: Avatar },
+    { path: '/:phone_number', component: Profile }
   ]
 })
