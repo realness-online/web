@@ -1,6 +1,6 @@
 {
   "name": "realness",
-  "version": "0.2.16",
+  "version": "0.2.23",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,7 +9,10 @@
     "build:staging": "vue-cli-service build --modern --mode staging",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
-    "test:unit": "vue-cli-service test:unit"
+    "test:unit": "vue-cli-service test:unit",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:functions": "npm run build && firebase deploy --only functions"
   },
   "dependencies": {
     "exif-js": "^2.3.0",
@@ -59,9 +62,8 @@
     }
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
+    "> 0.2%",
+    "last 1 versions"
   ],
   "jest": {
     "moduleFileExtensions": [
