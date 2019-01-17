@@ -1,10 +1,11 @@
 {
   "name": "realness",
-  "version": "0.1.0",
+  "version": "0.2.16",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:modern": "vue-cli-service build --modern",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit"
