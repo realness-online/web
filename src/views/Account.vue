@@ -34,12 +34,12 @@
         working: false,
         person: person_storage.as_object(),
         signed_in: false,
-        shots: []
+        avatar_changed: false
       }
     },
     methods: {
       open_camera(event) {
-        this.working = true
+        // this.working = true
         this.$refs.file_upload.click()
       },
       accept_changes(event) {
@@ -48,21 +48,26 @@
         const route = {
           path: `/profile`
         }
-        person_storage.save().then(() => {
+        if (this.avatar_changed) {
+          person_storage.save().then(() => {
+            this.working = false
+            this.$router.push(route)
+          })
+        } else {
           this.$router.push(route)
-        })
-      },
-      no_to_photo() {
-        this.person.avatar = this.shots[this.shots.index - 1]
+        }
       }
     },
     directives: {
       uploader: {
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
+            console.log('change', event)
             const avatar_image = event.target.files[0]
             /* istanbul ignore next */
             if (avatar_image !== undefined) {
+              vnode.context.avatar_changed = true
+              vnode.context.working = true
               if (avatar_image.type === 'image/jpeg') {
                 const identifier = `avatar_1${vnode.context.person.mobile}`
                 convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
@@ -105,7 +110,7 @@
     svg.working
       flex-grow: 1
       padding: base-line
-      padding-top: base-line * 6
+      padding-top: (base-line * 6)
       width:100vw
       height:50vh
     & > header
@@ -123,10 +128,9 @@
         & > figcaption
           display: none
         & > svg
-          margin-top: base-line * 2
+          margin-top: (base-line * 2)
           // animation-name: slideInDown
           border-radius: 100vw
-          // max-height: 90vh
           height:66vh
           width:100vw
     form#profile-form
