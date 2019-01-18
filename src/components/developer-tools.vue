@@ -1,9 +1,8 @@
-<template>
-  <h6 class="app_version">{{version}}</h6>
-</template>
 <script>
   export default {
-
+    render() {
+      return null
+    }
   }
 </script>
 <style lang="stylus" >
