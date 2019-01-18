@@ -1,9 +1,9 @@
+<template>
+  <h6 class="app_version">{{version}}</h6>
+</template>
 <script>
-  /* istanbul ignore next */
   export default {
-    render() {
-      return null
-    }
+
   }
 </script>
 <style lang="stylus" >
