@@ -22,9 +22,8 @@
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" tabindex="5" placeholder="Verification Code"
              v-model="code"
-             v-on:keypress="code_keypress" >
+             v-on:keypress="code_keypress">
     </fieldset>
-
     <icon v-show="working" name="working"></icon>
     <menu>
       <button id="authorize"

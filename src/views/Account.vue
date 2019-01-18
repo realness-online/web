@@ -124,7 +124,7 @@
           display: none
         & > svg
           margin-top: base-line * 2
-          animation-name: slideInDown
+          // animation-name: slideInDown
           border-radius: 100vw
           // max-height: 90vh
           height:66vh
