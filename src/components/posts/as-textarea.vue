@@ -7,7 +7,6 @@
 </template>
 
 <script>
-  // TODO: add support for desktops. (need a submit button)
   export default {
     props: ['value'],
     data() {
