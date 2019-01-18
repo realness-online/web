@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
 import post_list from '@/components/posts/my-list'
 import * as firebase from 'firebase/app'
@@ -9,7 +9,7 @@ const person = {
   mobile: '4151234356'
 }
 const onAuthStateChanged = jest.fn((state_changed) => {
-  state_changed({user: person})
+  state_changed({ user: person })
 })
 describe('@/components/posts/my-list.vue', () => {
   let wrapper
@@ -29,7 +29,7 @@ describe('@/components/posts/my-list.vue', () => {
   it('should render proper item properties', () => {
     sessionStorage.setItem('posts_synced', 'true')
     wrapper = shallow(post_list)
-    wrapper.setProps({posts: []})
+    wrapper.setProps({ posts: [] })
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
@@ -37,7 +37,7 @@ describe('@/components/posts/my-list.vue', () => {
   it('should add an activity when post-added is emited', () => {
     sessionStorage.setItem('posts_synced', 'true')
     wrapper = shallow(post_list)
-    wrapper.setProps({posts: []})
+    wrapper.setProps({ posts: [] })
     expect(wrapper.vm.posts.length).toBe(0)
     wrapper.vm.$bus.$emit('post-added', post)
     expect(wrapper.vm.posts.length).toBe(1)
@@ -56,7 +56,7 @@ describe('@/components/posts/my-list.vue', () => {
       ])
     })
     wrapper = shallow(post_list)
-    wrapper.setProps({posts: []})
+    wrapper.setProps({ posts: [] })
     expect(sync_list_spy).toBeCalled()
   })
 })

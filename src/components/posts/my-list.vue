@@ -3,7 +3,7 @@
 </template>
 <script>
   import Vue from 'vue'
-  import {posts_storage} from '@/modules/Storage'
+  import { posts_storage } from '@/modules/Storage'
   import postsList from '@/components/posts/as-list'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'

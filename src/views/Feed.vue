@@ -16,7 +16,7 @@
   </section>
 </template>
 <script>
-  import {relations_storage, posts_storage, person_storage} from '@/modules/Storage'
+  import { relations_storage, posts_storage, person_storage } from '@/modules/Storage'
   import logoAsLink from '@/components/logo-as-link'
   import profileAsFigure from '@/components/profile/as-figure'
   import icon from '@/components/icon'

@@ -16,9 +16,9 @@
 <script>
   import Vue from 'vue'
   import icon from '@/components/icon'
-  import {relations_storage} from '@/modules/Storage'
+  import { relations_storage } from '@/modules/Storage'
   import profile from '@/modules/Profile'
-  import {phonebook_storage} from '@/modules/PhoneBook'
+  import { phonebook_storage } from '@/modules/PhoneBook'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
   import relationship_events from '@/mixins/relationship_events'

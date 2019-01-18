@@ -44,8 +44,8 @@
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import {parseNumber} from 'libphonenumber-js'
-  import {person_storage} from '@/modules/Storage'
+  import { parseNumber } from 'libphonenumber-js'
+  import { person_storage } from '@/modules/Storage'
   import icon from '@/components/icon'
   export default {
     props: ['person'],

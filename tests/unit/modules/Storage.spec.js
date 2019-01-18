@@ -1,4 +1,4 @@
-import Storage, {posts_storage} from '@/modules/Storage'
+import Storage, { posts_storage } from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'

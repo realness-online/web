@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
 import feed from '@/pages/feed'
 const posts_as_text = `
@@ -36,7 +36,7 @@ describe('@/pages/feed.vue', () => {
       return [{}]
     })
     jest.spyOn(Storage.prototype, 'as_object').mockImplementationOnce(() => {
-      return {first_name: 'scott'}
+      return { first_name: 'scott' }
     })
     wrapper.vm.insert_me_into_my_posts()
     expect(wrapper.vm.feed.length).toBe(1)

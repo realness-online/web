@@ -1,4 +1,4 @@
-global.Range = function Range() {};
+global.Range = function Range() {}
 
 const createContextualFragment = (html) => {
   const div = document.createElement('div')
@@ -14,9 +14,9 @@ global.window.document.createRange = function createRange() {
     setEnd: () => {},
     setStart: () => {},
     getBoundingClientRect: () => {
-      return { right: 0 };
+      return { right: 0 }
     },
     getClientRects: () => [],
-    createContextualFragment,
+    createContextualFragment
   }
 }

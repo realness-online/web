@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import main_nav from '@/components/main-nav'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -44,7 +44,7 @@ describe('@/components/main-nav.vue', () => {
         mobile: '4151234356'
       }
       const is_signed_in = jest.fn((state_changed) => {
-        state_changed({user: person})
+        state_changed({ user: person })
       })
       beforeEach(() => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -90,7 +90,7 @@ describe('@/components/main-nav.vue', () => {
       expect(wrapper.vm.user_name).toBe('You')
     })
     it('returns the users first name if set', () => {
-      wrapper.setData({ person: {first_name: 'Scott'} })
+      wrapper.setData({ person: { first_name: 'Scott' } })
       expect(wrapper.vm.user_name).toBe('Scott')
     })
   })

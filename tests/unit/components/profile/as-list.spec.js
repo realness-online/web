@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import as_list from '@/components/profile/as-list'
 describe('@/compontent/profile/as-list.vue', () => {
   let wrapper

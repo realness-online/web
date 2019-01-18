@@ -18,7 +18,7 @@
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import {person_storage} from '@/modules/Storage'
+  import { person_storage } from '@/modules/Storage'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
   import icon from '@/components/icon'

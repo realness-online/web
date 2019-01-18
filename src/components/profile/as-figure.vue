@@ -15,7 +15,7 @@
   </figure>
 </template>
 <script>
-  import {person_storage} from '@/modules/Storage'
+  import { person_storage } from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
   export default {

@@ -1,4 +1,4 @@
-import {shallow, createLocalVue} from 'vue-test-utils'
+import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 describe('@/compontent/profile/as-figure.vue', () => {
@@ -34,15 +34,15 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
     it('should parse mobile number as it\'s typed in', () => {
       person.mobile = '628'
-      wrapper = shallow(as_figure, {propsData: {person: person}})
+      wrapper = shallow(as_figure, { propsData: { person: person } })
       let mobile = wrapper.find('[itemprop=mobile]')
       expect(mobile.text()).toBe('(628)')
       person.mobile = '628228'
-      wrapper = shallow(as_figure, {propsData: {person: person}})
+      wrapper = shallow(as_figure, { propsData: { person: person } })
       mobile = wrapper.find('[itemprop=mobile]')
       expect(mobile.text()).toBe('(628) 228')
       person.mobile = '62822818'
-      wrapper = shallow(as_figure, {propsData: {person: person}})
+      wrapper = shallow(as_figure, { propsData: { person: person } })
       mobile = wrapper.find('[itemprop=mobile]')
       expect(mobile.text()).toBe('(628) 228-18')
     })
@@ -52,7 +52,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).toBeFalsy()
       person.avatar = avatar_mock
-      wrapper.setProps({person: person})
+      wrapper.setProps({ person: person })
       avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).not.toBeTruthy()
     })
@@ -76,18 +76,18 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
     it('when view_avatar is tru it should go to the users avatar page', () => {
-      wrapper.setProps({view_avatar: true})
+      wrapper.setProps({ view_avatar: true })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824/avatar')
     })
     it('when me is true should go to the account page', () => {
-      wrapper.setProps({me: true})
+      wrapper.setProps({ me: true })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
     it('when previous is true should go to the previous page', () => {
       sessionStorage.setItem('previous', '/test-route')
-      wrapper.setProps({previous: true})
+      wrapper.setProps({ previous: true })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/test-route')
       sessionStorage.removeItem('previous')
@@ -95,7 +95,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     it('just display the avatar when just_display_avatar is true', () => {
       var push_spy = jest.fn()
       router.push = push_spy
-      wrapper.setProps({just_display_avatar: true})
+      wrapper.setProps({ just_display_avatar: true })
       wrapper.vm.avatar_click()
       expect(push_spy).not.toBeCalled()
     })

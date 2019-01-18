@@ -34,7 +34,7 @@ describe('@/pages/avatar.vue', () => {
     sessionStorage.removeItem('previous')
   })
   it('open_camera()', () => {
-    wrapper.setProps({view_avatar: true})
+    wrapper.setProps({ view_avatar: true })
     let mock_click = jest.fn()
     wrapper.vm.$refs.file_upload.click = mock_click
     wrapper.vm.open_camera()
@@ -55,7 +55,7 @@ describe('@/pages/avatar.vue', () => {
       expect(save_spy).toBeCalled()
     })
     it('should trigger change event on file input', () => {
-      wrapper.setProps({view_avatar: true})
+      wrapper.setProps({ view_avatar: true })
       let input = wrapper.find('input[type=file]')
       expect(input.exists()).toBe(true)
       input.element.value = ''

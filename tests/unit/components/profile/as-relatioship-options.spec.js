@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import as_options from '@/components/profile/as-relationship-options'
 import Storage from '@/modules/Storage'
 describe('@/compontent/profile/as-relationship-options.vue', () => {

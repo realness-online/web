@@ -4,7 +4,7 @@
 <script>
   import icon from '@/components/icon'
   export default {
-    components: {icon}
+    components: { icon }
   }
 </script>
 <style lang="stylus">

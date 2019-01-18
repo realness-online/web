@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import as_search from '@/components/profile/as-search'
 describe('@/compontent/profile/as-search.vue', () => {
   let wrapper

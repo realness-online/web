@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

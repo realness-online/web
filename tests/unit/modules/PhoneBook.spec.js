@@ -1,4 +1,4 @@
-import {phonebook_storage} from '@/modules/PhoneBook'
+import { phonebook_storage } from '@/modules/PhoneBook'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

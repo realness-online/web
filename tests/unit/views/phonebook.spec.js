@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import phonebook from '@/pages/phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/Item'

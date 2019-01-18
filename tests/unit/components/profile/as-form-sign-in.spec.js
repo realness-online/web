@@ -1,4 +1,4 @@
-import {shallow} from 'vue-test-utils'
+import { shallow } from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -59,7 +59,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     let wrapper, button, is_signed_in, signOut
     beforeEach(() => {
       is_signed_in = jest.fn((state_changed) => {
-        state_changed({user: person})
+        state_changed({ user: person })
       })
       signOut = jest.fn()
       jest.spyOn(firebase, 'auth').mockImplementation(() => {

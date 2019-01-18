@@ -1,5 +1,5 @@
-import Vue from 'vue';
-import Router from 'vue-router';
+import Vue from 'vue'
+import Router from 'vue-router'
 import Events from '@/views/Events'
 import Feed from '@/views/Feed'
 import Where from '@/views/Where'
