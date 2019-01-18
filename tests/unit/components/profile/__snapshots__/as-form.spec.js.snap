@@ -11,6 +11,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
       id="first-name"
       placeholder="First"
       required="required"
+      tabindex="1"
       type="text"
     />
      
@@ -18,6 +19,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
       id="last-name"
       placeholder="Last"
       required="required"
+      tabindex="2"
       type="text"
     />
   </fieldset>
@@ -34,6 +36,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
     <input
       id="mobile"
       placeholder="(555) 555-5555"
+      tabindex="3"
       type="tel"
     />
   </fieldset>
@@ -47,6 +50,7 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
   <menu>
     <button
       id="authorize"
+      tabindex="4"
     >
       Sign in
     </button>

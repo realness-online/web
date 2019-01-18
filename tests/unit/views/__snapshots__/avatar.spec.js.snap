@@ -1,31 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/pages/avatar.vue displaying an avatar renders the silhouette by default 1`] = `
+exports[`@/views/avatar.vue displaying an avatar renders the silhouette by default 1`] = `
 <section
-  id="upload"
+  class="page"
+  id="avatar"
 >
-  <input
-    accept="image/jpeg"
-    capture=""
-    type="file"
-  />
+  <header>
+    <!---->
+     
+    <a>
+      <!---->
+    </a>
+  </header>
    
   <!---->
-   
-  <footer>
-    <menu>
-      <button>
-        <!---->
-      </button>
-       
-      <button>
-        <!---->
-      </button>
-       
-      <button>
-        <!---->
-      </button>
-    </menu>
-  </footer>
 </section>
 `;

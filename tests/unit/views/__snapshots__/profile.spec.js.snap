@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/pages/profile.vue shows a phone numbers profile information 1`] = `
+exports[`@/views/profile.vue shows a phone numbers profile information 1`] = `
 <section
   class="page me"
   id="profile"
@@ -17,7 +17,7 @@ exports[`@/pages/profile.vue shows a phone numbers profile information 1`] = `
 </section>
 `;
 
-exports[`@/pages/profile.vue shows the users profile information 1`] = `
+exports[`@/views/profile.vue shows the users profile information 1`] = `
 <section
   class="page me"
   id="profile"

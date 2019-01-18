@@ -11,7 +11,8 @@
     "build:staging": "vue-cli-service build --modern --mode staging",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
-    "test:unit": "vue-cli-service test:unit",
+    "test:unit": "vue-cli-service test:unit --watch",
+    "test:unit:watch": "vue-cli-service test:unit --watch",
     "deploy": "npm run build && firebase deploy",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
     "deploy:functions": "npm run build && firebase deploy --only functions"
@@ -86,9 +87,9 @@
       "vue"
     ],
     "setupFiles": [
-      "tests/unit/setup.js",
-      "/tests/polyfill/createRange.js",
-      "/tests/polyfill/scrollIntoView.js",
+      "<rootDir>/tests/unit/setup.js",
+      "<rootDir>/tests/polyfill/createRange.js",
+      "<rootDir>/tests/polyfill/scrollIntoView.js",
       "jest-localstorage-mock"
     ],
     "transform": {
@@ -96,8 +97,8 @@
       ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
       "^.+\\.jsx?$": "babel-jest"
     },
-    "coverageDirectory": "/tests/unit/coverage",
-    "cacheDirectory": "/tests/unit/cache",
+    "coverageDirectory": "<rootDir>/tests/unit/coverage",
+    "cacheDirectory": "<rootDir>/tests/unit/cache",
     "collectCoverageFrom": [
       "src/**/*.{js,vue}",
       "!src/main.js'",
@@ -112,7 +113,7 @@
       }
     },
     "moduleNameMapper": {
-      "^@/(.*)$": "/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1"
     },
     "snapshotSerializers": [
       "jest-serializer-vue"
