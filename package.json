@@ -51,11 +51,15 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "@vue/airbnb"
+      "@vue/standard"
     ],
-    "rules": {},
     "parserOptions": {
       "parser": "babel-eslint"
+    },
+    "rules": {
+      "camelcase": 0,
+      "space-before-function-paren": 0,
+      "indent": "off"
     }
   },
   "postcss": {
