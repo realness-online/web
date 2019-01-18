@@ -5,7 +5,6 @@
     v-on:focusin="wat_focused"
     placeholder=">">{{value}}</textarea>
 </template>
-
 <script>
   export default {
     props: ['value'],
