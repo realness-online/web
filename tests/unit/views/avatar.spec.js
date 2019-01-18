@@ -1,8 +1,8 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
 import VueRouter from 'vue-router'
-import avatar from '@/pages/avatar'
-describe('@/pages/avatar.vue', () => {
+import avatar from '@/views/avatar'
+describe('@/views/avatar.vue', () => {
   let wrapper
   const $route = {
     params: {}

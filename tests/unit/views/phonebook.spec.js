@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import phonebook from '@/pages/phonebook'
+import phonebook from '@/views/phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
@@ -31,7 +31,7 @@ const person = {
   last_name: 'Fryxell',
   mobile: '4151234356'
 }
-describe('@/pages/phonebook', () => {
+describe('@/views/phonebook', () => {
   it('render an empty phonebook', () => {
     let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()

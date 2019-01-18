@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
-import relations from '@/pages/relations'
+import relations from '@/views/relations'
 import profile from '@/modules/Profile'
-describe('@/pages/relations.vue', () => {
+describe('@/views/relations.vue', () => {
   let wrapper
   const person = {
     id: '/+14151234356',

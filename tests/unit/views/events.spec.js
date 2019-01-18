@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
-import events from '@/pages/events'
+import events from '@/views/events'
 
-describe('@/pages/events.vue', () => {
+describe('@/views/events.vue', () => {
   it('renders event information', () => {
     let wrapper = shallow(events)
     expect(wrapper.element).toMatchSnapshot()
