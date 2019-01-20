@@ -1,36 +1,33 @@
  <template lang="html">
   <form id="profile-form">
     <fieldset id="name">
-      <input id="first-name" type='text' placeholder="First" required
+      <input id="first-name" type='text' tabindex="1" placeholder="First" required
              v-model="person.first_name"
              v-on:blur="save_person">
-      <input id="last-name" type='text' placeholder="Last" required
+      <input id="last-name" type='text' tabindex="2"  placeholder="Last" required
              v-model="person.last_name"
              v-on:blur="save_person">
     </fieldset>
     <fieldset id="phone">
       <label for="mobile">1</label>
-      <input id="mobile" type="tel" placeholder="(555) 555-5555"
+      <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
              v-on:paste="mobile_paste">
     </fieldset>
-    <div id="captcha"
+    <fieldset id="captcha"
          v-if='show_captcha'
          v-bind:class="{hide_captcha}">
-    </div>
-    <!-- <fieldset v-if="show_captcha">
-
-    </fieldset> -->
-    <fieldset v-if="show_code">
-      <input id="verification-code" type="tel" placeholder="Verification Code"
-             v-model="code"
-             v-on:keypress="code_keypress" >
     </fieldset>
-
+    <fieldset v-if="show_code">
+      <input id="verification-code" type="tel" tabindex="5" placeholder="Verification Code"
+             v-model="code"
+             v-on:keypress="code_keypress">
+    </fieldset>
     <icon v-show="working" name="working"></icon>
     <menu>
       <button id="authorize"
+              tabindex="4"
               :disabled="!valid_mobile_number"
               v-if="show_authorize"
               v-on:click='begin_authorization'>Sign in</button>
@@ -47,8 +44,8 @@
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import {parseNumber} from 'libphonenumber-js'
-  import {person_storage} from '@/modules/Storage'
+  import { parseNumber } from 'libphonenumber-js'
+  import { person_storage } from '@/modules/Storage'
   import icon from '@/components/icon'
   export default {
     props: ['person'],

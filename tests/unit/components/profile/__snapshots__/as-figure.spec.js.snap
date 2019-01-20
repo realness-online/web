@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
+<figure
+  class="profile"
+  itemid="/+16282281824"
+  itemscope="itemscope"
+  itemtype="/person"
+>
+  <svg>
+    <defs
+      itemprop="avatar"
+    />
+     
+    <use
+      xlink:href="[object Object]#silhouette"
+    />
+  </svg>
+   
+  <figcaption>
+    <p>
+      <span
+        itemprop="first_name"
+      >
+        Scott
+      </span>
+       
+      <span
+        itemprop="last_name"
+      >
+        Fryxell
+      </span>
+    </p>
+     
+    <a
+      data-value="6282281824"
+      href="sms:+16282281824"
+      itemprop="mobile"
+    >
+      (628) 228-1824
+    </a>
+  </figcaption>
+</figure>
+`;

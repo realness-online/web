@@ -13,7 +13,7 @@ class Storage {
     this.item_type = type
     this.selector = query
     this.filename = file
-    this.metadata = {'contentType': content_type}
+    this.metadata = { 'contentType': content_type }
   }
   from_storage() {
     let storage_string = localStorage.getItem(this.item_type)

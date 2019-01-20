@@ -5,6 +5,6 @@
 </template>
 <script>
   export default {
-    props: {people: Array}
+    props: { people: Array }
   }
 </script>

@@ -5,9 +5,7 @@
     v-on:focusin="wat_focused"
     placeholder=">">{{value}}</textarea>
 </template>
-
 <script>
-  // TODO: add support for desktops. (need a submit button)
   export default {
     props: ['value'],
     data() {

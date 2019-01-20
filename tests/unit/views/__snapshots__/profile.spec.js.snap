@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/profile.vue shows a phone numbers profile information 1`] = `
+<section
+  class="page me"
+  id="profile"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <!---->
+   
+  <!---->
+</section>
+`;
+
+exports[`@/views/profile.vue shows the users profile information 1`] = `
+<section
+  class="page me"
+  id="profile"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <!---->
+   
+  <!---->
+</section>
+`;

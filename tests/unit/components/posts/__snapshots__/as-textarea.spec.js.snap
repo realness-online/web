@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/posts/as-textarea.vue renders a textarea 1`] = `
+<textarea
+  id="wat"
+  placeholder=">"
+>
+  
+</textarea>
+`;

@@ -15,7 +15,7 @@
   </figure>
 </template>
 <script>
-  import {person_storage} from '@/modules/Storage'
+  import { person_storage } from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
   export default {
@@ -109,6 +109,8 @@
         @media (prefers-color-scheme: dark)
           color: rgba(246, 250, 253, 0.69)
         & > span
+          &:first-of-type
+            margin-right:(base-line / 3)
           text-transform: capitalize
       & > a
         display:block

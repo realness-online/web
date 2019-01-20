@@ -1,4 +1,4 @@
-import Storage, {person_storage} from '@/modules/Storage'
+import Storage, { person_storage } from '@/modules/Storage'
 import Item from '@/modules/Item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
