@@ -128,6 +128,7 @@
         & > figcaption
           display: none
         & > svg
+          -webkit-tap-highlight-color: transparent
           margin-top: (base-line * 2)
           // animation-name: slideInDown
           border-radius: 100vw

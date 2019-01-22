@@ -46,6 +46,7 @@
       justify-content: flex-start
       align-content: stretch
       & > svg
+        -webkit-tap-highlight-color: transparent
         animation-name: slideInDown
         border-radius: 100vw
         width: 100vw
