@@ -1,7 +1,7 @@
 {
   "name": "Realness",
   "description": "Source code for realness.online",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "private": true,
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
@@ -12,9 +12,8 @@
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
-    "deploy": "npm run build && firebase deploy",
-    "deploy:hosting": "npm run build && firebase deploy --only hosting",
-    "deploy:functions": "npm run build && firebase deploy --only functions"
+    "deploy": "firebase use production && npm run build && firebase deploy --only hosting",
+    "deploy:staging": "firebase use staging && npm run build:staging && firebase deploy --only hosting"
   },
   "dependencies": {
     "exif-js": "^2.3.0",
