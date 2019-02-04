@@ -5,8 +5,6 @@ import { register } from 'register-service-worker'
 if (process.env.NODE_ENV === 'production') {
   register(`${process.env.BASE_URL}controller.js`, {
     ready() {
-      register.update()
-      console.log('called register.update()')
       console.log('service worker is ready')
     },
     registered() {
