@@ -48,6 +48,9 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
-  section#profile > svg.working
-    margin-top: base-line
+  section#profile
+    header > a
+      -webkit-tap-highlight-color: black
+    & > svg.working
+      margin-top: base-line
 </style>

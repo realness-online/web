@@ -118,6 +118,7 @@
       margin-bottom: base-line
       & > a
         position: absolute
+        -webkit-tap-highlight-color: black
         z-index: 2
         &:first-child
           display: inherit
