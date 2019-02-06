@@ -34,7 +34,7 @@
   h6.app_version
     margin: 0
     position:fixed
-    bottom: (base-line / 2)
+    bottom: (base-line - (base-line * 2))
     left: (base-line / 2)
   section#home.page
     padding: 0
