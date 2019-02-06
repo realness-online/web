@@ -13,7 +13,7 @@ exports[`@/views/relations.vue render relationship information 1`] = `
     </router-link>
      
     <h1>
-      Relations
+      Friends
     </h1>
      
     <!---->

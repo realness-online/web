@@ -11,7 +11,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
     class="blue"
     to="/relations"
   >
-    Relations
+    Friends
   </router-link>
    
   <router-link
