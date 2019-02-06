@@ -2,7 +2,7 @@
   <section id="relations" class="page">
     <header>
       <router-link to="/phonebook"><icon name="heart"></icon></router-link>
-      <h1>Relations</h1>
+      <h1>Friends</h1>
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>

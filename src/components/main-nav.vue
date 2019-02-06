@@ -1,7 +1,7 @@
 <template>
   <nav id="main_nav" v-bind:class="onboarding">
     <post-as-textarea v-on:toggle-keyboard="posting = !posting" class="red" ></post-as-textarea>
-    <router-link v-if="!posting" to="/relations" class="blue">Relations</router-link>
+    <router-link v-if="!posting" to="/relations" class="blue">Friends</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
     <router-link v-if="!posting" to="/where" class="green">Where</router-link>
