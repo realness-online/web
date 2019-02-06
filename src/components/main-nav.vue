@@ -56,11 +56,13 @@
 <style lang="stylus">
   @require '../style/variables'
   nav#main_nav
-    min-height: 100vh
+    min-height: s('calc(%s - %s)', 100vh, (base-line * 3))
+    margin-top: base-line * 1.5
+    margin-bottom: base-line * 1.5
     display: flex
     flex-direction:row
     flex-wrap:wrap
-    align-content: space-evenly
+    align-content: space-between
     justify-content:space-evenly
     align-items: flex-start
     & > a
@@ -76,8 +78,7 @@
         outline: none
     & > *
       font-weight: bold
-      -webkit-tap-highlight-color: transparent
-      transition-timing-function:ease-out
+      transition-timing-function: ease-out
       text-align: left
       width: 44vw
       height: 24vh
@@ -87,7 +88,7 @@
       padding: base-line
       &:nth-child(even)
         text-align: right
-        padding-right:base-line
+        padding-right: base-line
       &:active
         border-width: 1.33vh
         width: 42vw
