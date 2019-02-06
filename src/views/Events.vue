@@ -28,4 +28,6 @@
       margin-bottom: base-line
       & > svg
         fill: transparent
+      & > a
+        -webkit-tap-highlight-color: green
 </style>
