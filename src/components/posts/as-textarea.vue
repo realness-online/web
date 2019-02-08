@@ -49,7 +49,6 @@
       transition-property:all
       font-family: 'Lato'
     &:focus
-      margin-top: base-line
       animation-name: slideInLeft
       font-weight: normal
       font-size:1.25em
