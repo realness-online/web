@@ -19,7 +19,6 @@ describe('@/views/avatar.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-
   it('finished_viewing()', () => {
     const localVue = createLocalVue()
     localVue.use(VueRouter)
