@@ -13,7 +13,7 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
     />
      
     <use
-      xlink:href="[object Object]#silhouette"
+      xlink:href="#silhouette"
     />
   </svg>
    

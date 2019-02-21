@@ -10,7 +10,7 @@ exports[`@/views/index.vue renders navigation for the application 1`] = `
   <h6
     class="app_version"
   >
-    0.2.15
+    0.2.19
   </h6>
    
   <aside>
