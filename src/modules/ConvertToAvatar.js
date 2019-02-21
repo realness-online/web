@@ -6,7 +6,7 @@ function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     let trace = new potrace.Potrace()
-    trace.setParameters({ threshold: 95, turdSize: 12 })
+    trace.setParameters({ threshold: 133, turdSize: 1 })
     let reader = new FileReader()
     reader.readAsArrayBuffer(avatar)
     reader.onload = function() {
@@ -14,7 +14,7 @@ function trace(avatar, identifier) {
       let buffer = this.result
       Jimp.read(buffer).then(image => {
         EXIF.getData(avatar, () => {
-          image = image.resize(200, Jimp.AUTO)
+          image = image.resize(512, Jimp.AUTO)
           if (avatar.exifdata.Orientation === 6) {
             console.log('rotate')
             image = image.rotate(-90)
