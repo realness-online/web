@@ -6,9 +6,10 @@
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>
+    <profile-as-list :people='relations'></profile-as-list>
     <article v-if="!working" v-for="post in feed" itemscope itemtype="/post">
       <header>
-        <profile-as-figure :person='post.person'></profile-as-figure>
+        <profile-as-figure :person='post.person' :avatar_by_reference="true"></profile-as-figure>
       </header>
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
       <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
@@ -18,19 +19,22 @@
 <script>
   import { relations_storage, posts_storage, person_storage } from '@/modules/Storage'
   import logoAsLink from '@/components/logo-as-link'
+  import profileAsList from '@/components/profile/as-list'
   import profileAsFigure from '@/components/profile/as-figure'
   import icon from '@/components/icon'
   import profile from '@/modules/Profile'
   export default {
     components: {
       profileAsFigure,
+      profileAsList,
       logoAsLink,
       icon
     },
     data() {
       return {
         feed: [],
-        working: true
+        working: true,
+        relations: []
       }
     },
     created() {
@@ -41,6 +45,7 @@
       insert_me_into_my_posts() {
         const me = person_storage.as_object()
         let my_posts = posts_storage.as_list()
+        this.relations.push(me)
         my_posts.forEach(post => (post.person = me))
         this.feed.push(...my_posts)
       },
@@ -48,6 +53,7 @@
         return new Promise((resolve, reject) => {
           relations_storage.as_list().forEach((relation, index) => {
             profile.load(relation.id).then(person => {
+              this.relations.push(person)
               profile.items(relation.id, 'posts').then(posts => {
                 posts.forEach(post => {
                   post.person = person
@@ -71,6 +77,8 @@
   section#feed
     display: flex
     flex-direction: column-reverse
+    & > nav.profile-list
+      display:none
     & > header
       order: 2
       margin-bottom: base-line

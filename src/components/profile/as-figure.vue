@@ -1,7 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <svg @click="avatar_click">
-      <defs itemprop="avatar" v-html="person.avatar"></defs>
+      <defs v-if="!avatar_by_reference" itemprop="avatar" v-html="person.avatar"></defs>
       <use :xlink:href="avatar"/>
     </svg>
     <figcaption>
@@ -32,6 +32,10 @@
       view_avatar: {
         type: Boolean,
         default: false
+      },
+      avatar_by_reference: {
+        type: Boolean,
+        default:false
       },
       just_display_avatar: {
         type: Boolean,
