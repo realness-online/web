@@ -11,6 +11,7 @@
       </p>
       <p v-if="is_me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
       <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
+      <meta itemprop="curator" content="true">
     </figcaption>
   </figure>
 </template>
