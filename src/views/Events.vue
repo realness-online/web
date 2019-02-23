@@ -5,6 +5,7 @@
       <h1>Events</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-show="working" name="working"></icon>
     <figure>
       <svg v-for="person in curators">
         <defs itemprop="avatar" v-html="person.avatar"></defs>
@@ -27,12 +28,14 @@
     },
     data() {
       return {
-        curators: []
+        curators: [],
+        working: true
       }
     },
     created() {
       profile.load('/+16282281824').then(person => {
         this.curators.push(person)
+        this.working = false
       })
     }
   }
