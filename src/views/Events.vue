@@ -33,6 +33,9 @@
       }
     },
     created() {
+      profile.load('/+14158711557').then(person => {
+        this.curators.push(person)
+      })
       profile.load('/+16282281824').then(person => {
         this.curators.push(person)
         this.working = false
