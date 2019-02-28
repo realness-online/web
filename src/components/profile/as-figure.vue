@@ -100,7 +100,6 @@
       fill: black
       stroke: lighten(black, 20%)
       stroke-width: (base-line / 36)
-      border-radius: base-line
       @media (prefers-color-scheme: dark)
         fill: lighten(black, 45%)
         stroke: lighten(black, 66%)

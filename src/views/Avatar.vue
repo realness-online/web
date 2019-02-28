@@ -33,7 +33,7 @@
   @require '../style/variables'
   section#avatar
     animation-name: slideInLeft
-    height: 80vh
+    min-height: 80vh
     display: flex
     flex-direction: column
     justify-content: flex-start
@@ -48,7 +48,6 @@
       & > svg
         -webkit-tap-highlight-color: transparent
         animation-name: slideInDown
-        border-radius: 100vw
         width: 100vw
         height:100vw
         max-height: 90vh
