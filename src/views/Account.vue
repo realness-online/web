@@ -12,6 +12,10 @@
     </header>
     <profile-as-form :person='person'></profile-as-form>
     <input type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
+    <fieldset v-if="signed_in">
+      <label for="uploader">Upload photo</label>
+      <input type="file" id="uploader" accept="image/jpeg" v-uploader>
+    </fieldset>
   </section>
 </template>
 <script>
@@ -105,6 +109,24 @@
 </script>
 <style lang='stylus'>
   @require '../style/variables'
+  section#account
+    input[type=file]
+      display: none
+    & > header
+      margin-bottom: base-line
+      a:first-of-type
+        display:none
+    & > footer > menu
+      padding: base-line
+      display: flex
+      justify-content: space-evenly
+      align-items: flex-end
+      button
+        border: none
+        padding: 0
+        margin:0
+        &[disabled]
+          opacity:0.5
   section#account.signed_in
     position: relative
     svg.working
@@ -130,31 +152,17 @@
           display: none
         & > svg
           -webkit-tap-highlight-color: transparent
-          margin-top: (base-line * 2)
-          // animation-name: slideInDown
-          border-radius: 100vw
+          margin-top: (base-line * 3)
           height:66vh
           width:100vw
+    & > fieldset
+      width: max-content
+      margin-top: base-line
+      border-radius: base-line
+      @media (min-width: max-screen)
+        display: none
     form#profile-form
       #name
       #phone
         display:none
-  section#account
-    input[type=file]
-      display: none
-    & > header
-      margin-bottom: base-line
-      a:first-of-type
-        display:none
-    & > footer > menu
-      padding: base-line
-      display: flex
-      justify-content: space-evenly
-      align-items: flex-end
-      button
-        border: none
-        padding: 0
-        margin:0
-        &[disabled]
-          opacity:0.5
 </style>

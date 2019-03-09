@@ -1,4 +1,4 @@
- <template lang="html">
+<template lang="html">
   <form id="profile-form">
     <fieldset id="name">
       <input id="first-name" type='text' tabindex="1" placeholder="First" required
