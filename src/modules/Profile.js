@@ -25,6 +25,9 @@ export default {
             resolve(items)
           })
         })
+      }).catch(error => {
+        console.log(`${mobile}/${type} not found`)
+        resolve([])
       })
     })
   }
