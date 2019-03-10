@@ -1,13 +1,13 @@
 <template>
   <section id="feed" class="page left">
     <header>
-      <icon name="hamburger"></icon>
+      <icon name='nothing'></icon>
       <h1>Feed</h1>
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>
     <profile-as-list :people='relations'></profile-as-list>
-    <article v-if="!working" v-for="post in feed" itemscope itemtype="/post">
+    <article v-if="!working" v-for="post in size_limited_feed" itemscope itemtype="/post">
       <header>
         <profile-as-figure :person='post.person' :avatar_by_reference="true"></profile-as-figure>
       </header>
@@ -32,42 +32,56 @@
     },
     data() {
       return {
+        feed_limit: 100,
         feed: [],
+        relations: [],
         working: true,
-        relations: []
+        unsorted_relations: null
       }
     },
     created() {
-      this.insert_me_into_my_posts()
-      this.add_relations_to_feed()
+      const people_in_feed = relations_storage.as_list()
+      this.unsorted_relations = people_in_feed.length
+      this.add_relations_to_feed(people_in_feed)
+      this.insert_me_into_feed()
     },
     methods: {
-      insert_me_into_my_posts() {
+      insert_me_into_feed() {
         const me = person_storage.as_object()
         let my_posts = posts_storage.as_list()
         this.relations.push(me)
         my_posts.forEach(post => (post.person = me))
         this.feed.push(...my_posts)
       },
-      add_relations_to_feed() {
+      add_relations_to_feed(people_in_feed) {
         return new Promise((resolve, reject) => {
-          relations_storage.as_list().forEach((relation, index) => {
+          people_in_feed.forEach((relation, index) => {
             profile.load(relation.id).then(person => {
               this.relations.push(person)
+              // console.log(`getting posts for ${relation.id}`);
               profile.items(relation.id, 'posts').then(posts => {
+                // console.log(this.unsorted_relations)
+                this.unsorted_relations--
                 posts.forEach(post => {
                   post.person = person
                 })
                 this.feed.push(...posts)
                 this.feed.sort((a, b) => {
-                  return Date.parse(a.created_at) - Date.parse(b.created_at)
+                  return Date.parse(b.created_at) - Date.parse(a.created_at)
                 })
-                this.working = false
-                resolve('finished')
+                if(this.unsorted_relations < 1) {
+                  this.working = false
+                  resolve('finished')
+                }
               })
             })
           })
         })
+      }
+    },
+    computed:{
+      size_limited_feed(){
+        return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
       }
     }
   }
@@ -76,11 +90,10 @@
   @require '../style/variables'
   section#feed
     display: flex
-    flex-direction: column-reverse
+    flex-direction: column
     & > nav.profile-list
       display:none
     & > header
-      order: 2
       margin-bottom: base-line
       & > svg
         fill: transparent
