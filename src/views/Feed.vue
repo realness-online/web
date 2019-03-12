@@ -1,13 +1,13 @@
 <template>
-  <section id="feed" class="page left" @:scroll.passive="scrolled">
+  <section id="feed" class="page left">
     <header>
       <icon name='nothing'></icon>
       <h1>Feed</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <icon v-show="working" name="working"></icon>
     <profile-as-list :people='relations'></profile-as-list>
-    <article v-if="!working" v-for="post in size_limited_feed" itemscope itemtype="/post" >
+    <icon v-if="working" name="working"></icon>
+    <article v-else v-for="post in size_limited_feed" itemscope itemtype="/post" >
       <header>
         <profile-as-figure :person='post.person' :avatar_by_reference="true"></profile-as-figure>
       </header>
@@ -48,32 +48,25 @@
     created() {
       const people_in_feed = relations_storage.as_list()
       this.unsorted_relations = people_in_feed.length
-      this.add_relations_to_feed(people_in_feed)
-      this.insert_me_into_feed()
+      const me = person_storage.as_object()
+      people_in_feed.push(me)
+      this.populate_feed(people_in_feed)
     },
     methods: {
       scrolled(o)  {
-        const last_article = document.querySelector('#feed > article:last-of-type')
-        const bottom = last_article.getBoundingClientRect().bottom
+        const bottom = document.querySelector('#feed > article:last-of-type')
+          .getBoundingClientRect()
+          .bottom
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
         }
       },
-      insert_me_into_feed() {
-        const me = person_storage.as_object()
-        let my_posts = posts_storage.as_list()
-        this.relations.push(me)
-        my_posts.forEach(post => (post.person = me))
-        this.feed.push(...my_posts)
-      },
-      add_relations_to_feed(people_in_feed) {
+      populate_feed(people_in_feed) {
         return new Promise((resolve, reject) => {
           people_in_feed.forEach((relation, index) => {
             profile.load(relation.id).then(person => {
               this.relations.push(person)
-              // console.log(`getting posts for ${relation.id}`);
               profile.items(relation.id, 'posts').then(posts => {
-                // console.log(this.unsorted_relations)
                 this.unsorted_relations--
                 posts.forEach(post => {
                   post.person = person

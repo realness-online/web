@@ -33,12 +33,13 @@
       }
     },
     created() {
-      profile.load('/+14158711557').then(person => {
-        this.curators.push(person)
-      })
-      profile.load('/+16282281824').then(person => {
-        this.curators.push(person)
-        this.working = false
+      // Ned Tomo and Scott
+      // Soon Dylan and Reeves
+      ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(phone_number => {
+        profile.load(phone_number).then(person => {
+          this.curators.push(person)
+          this.working = false
+        })
       })
     }
   }
