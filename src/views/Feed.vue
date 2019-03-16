@@ -50,20 +50,18 @@
       console.clear()
       console.time('feed_load')
       const people_in_feed = relations_storage.as_list()
-      this.unsorted_relations = people_in_feed.length
       const me = person_storage.as_object()
       people_in_feed.push(me)
+      this.unsorted_relations = people_in_feed.length
       this.populate_feed(people_in_feed).then(() => {
-        console.timeEnd('feed_load')
-        console.log(`${this.feed.length} feed items`);
-        console.time('feed_sort')
         this.feed.sort((a, b) => {
           this.sort_count++
           return Date.parse(b.created_at) - Date.parse(a.created_at)
         })
-        console.info(`${this.sort_count} sort operations`)
-        console.timeEnd('feed_sort')
         this.working = false
+        console.timeEnd('feed_load')
+        console.log(`${this.feed.length} feed items`);
+        console.info(`${this.sort_count} sort operations`)
       })
     },
     methods: {
