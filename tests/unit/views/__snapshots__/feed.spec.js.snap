@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/events.vue renders event information 1`] = `
+exports[`@/views/feed.vue render feed info 1`] = `
 <section
-  class="page"
-  id="events"
+  class="page left"
+  id="feed"
 >
   <header>
     <!---->
      
     <h1>
-      Events
+      Feed
     </h1>
      
     <!---->
@@ -17,6 +17,6 @@ exports[`@/views/events.vue renders event information 1`] = `
    
   <!---->
    
-  <figure />
+  <!---->
 </section>
 `;
