@@ -25,56 +25,18 @@ const profile_as_text = `
 `
 describe('@/views/feed.vue', () => {
   it('render feed info', () => {
-    fetch.mockResponseOnce(posts_as_text)
     let wrapper = shallow(feed)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('#insert_me_into_my_posts', () => {
-    expect.assertions(2)
-    let wrapper = shallow(feed)
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementationOnce(() => {
-      return [{}]
-    })
-    jest.spyOn(Storage.prototype, 'as_object').mockImplementationOnce(() => {
-      return { first_name: 'scott' }
-    })
-    wrapper.vm.insert_me_into_my_posts()
-    expect(wrapper.vm.feed.length).toBe(1)
-    expect(wrapper.vm.feed[0].person.first_name).toBe('scott')
-  })
-  it.only('#add_relations_to_feed', () => {
-    // fetch.mockResponseOnce(posts_as_text)
-    fetch.once(profile_as_text).once(posts_as_text)
-    let relation = {
+  it('#populate_feed', () => {
+    let relations = [{
       first_name: 'katie',
       last_name: 'caffey',
       mobile: '2134445566'
-    }
+    }]
     let wrapper = shallow(feed)
-    // expect(wrapper.vm.feed.length).toBe(0)
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementationOnce(() => {
-      return [relation]
-    })
-    wrapper.vm.add_relations_to_feed().then(() => {
+    wrapper.vm.populate_feed(relations).then(() => {
       expect(wrapper.vm.feed.length).toBe(5)
     })
-  })
-  it('#sort_feed', () => {
-    expect.assertions(1)
-    let wrapper = shallow(feed)
-    wrapper.setData({
-      feed: [
-        {
-          name: 'later',
-          created_at: '2018-05-19T20:27:30.118Z'
-        },
-        {
-          name: 'earlier',
-          created_at: '2017-05-19T20:27:30.118Z'
-        }
-      ]
-    })
-    wrapper.vm.sort_feed()
-    expect(wrapper.vm.feed[1].name).toBe('later')
   })
 })
