@@ -47,7 +47,6 @@
         this.$refs.file_upload.click()
       },
       accept_changes(event) {
-        console.log('accept changes')
         this.working = true
         const route = {
           path: `/profile`
@@ -66,7 +65,6 @@
       uploader: {
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
-            console.log('change', event)
             const avatar_image = event.target.files[0]
             /* istanbul ignore next */
             if (avatar_image !== undefined) {
@@ -97,7 +95,6 @@
       })
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          console.log('signed in')
           this.person.mobile = user.phoneNumber.substring(2)
           this.signed_in = true
         } else {
