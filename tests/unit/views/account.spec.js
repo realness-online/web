@@ -21,35 +21,45 @@ describe('@/views/account.vue', () => {
     let wrapper = shallow(account)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('open_camera()', () => {
-    wrapper.setProps({ view_avatar: true })
-    let mock_click = jest.fn()
-    wrapper.vm.$refs.file_upload.click = mock_click
-    wrapper.vm.open_camera()
-    expect(mock_click).toBeCalled()
-  })
-  describe('accept_changes()', () => {
-    it('should update the avatar', () => {
-      const localVue = createLocalVue()
-      localVue.use(VueRouter)
-      const router = new VueRouter()
-      let wrapper = shallow(account, {
-        localVue,
-        router
-      })
-      wrapper.setData({avatar_changed: true})
-      const save_spy = jest.fn(() => Promise.resolve('save_spy'))
-      jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
-      wrapper.vm.accept_changes()
-      expect(save_spy).toBeCalled()
-    })
-    it('should trigger change event on file input', () => {
+  describe('adding an avatar', () => {
+    it('open_camera()', () => {
       wrapper.setProps({ view_avatar: true })
-      let input = wrapper.find('input[type=file]')
-      expect(input.exists()).toBe(true)
-      input.element.value = ''
-      input.trigger('change')
-      // currently no way to test file inputs. let's trigger the event anyway
+      let mock_click = jest.fn()
+      wrapper.vm.$refs.file_upload.click = mock_click
+      wrapper.vm.open_camera()
+      expect(mock_click).toBeCalled()
     })
+    describe('accept_changes()', () => {
+      it('should update the avatar', () => {
+        const localVue = createLocalVue()
+        localVue.use(VueRouter)
+        const router = new VueRouter()
+        let wrapper = shallow(account, {
+          localVue,
+          router
+        })
+        wrapper.setData({avatar_changed: true})
+        const save_spy = jest.fn(() => Promise.resolve('save_spy'))
+        jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
+        wrapper.vm.accept_changes()
+        expect(save_spy).toBeCalled()
+      })
+      it('should trigger change event on file input', () => {
+        wrapper.setProps({ view_avatar: true })
+        let input = wrapper.find('input[type=file]')
+        expect(input.exists()).toBe(true)
+        input.element.value = ''
+        input.trigger('change')
+        // currently no way to test file inputs. let's trigger the event anyway
+      })
+    })
+  })
+  describe('adding a poster', () => {
+    it('should have a button to upload', (done) => {
+      wrapper
+      expect(1).tobe(2)
+    })
+    it('should let the user decide to use vector or original')
+    it('should upload a poster to /+14156661212/poster.svg')
   })
 })

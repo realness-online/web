@@ -10,12 +10,12 @@
         <icon  name="finished"></icon>
       </a>
     </header>
-    <profile-as-form :person='person'></profile-as-form>
-    <input type="file" accept="image/jpeg" capture ref="file_upload" v-uploader>
+    <input type="file" accept="image/jpeg" capture ref="avatar_upload" v-uploader>
     <fieldset v-if="signed_in">
-      <label for="uploader">Upload photo</label>
-      <input type="file" id="uploader" accept="image/jpeg" v-uploader>
+      <label for="poster">Upload Poster</label>
+      <input type="file" id="poster" accept="image/jpeg" v-uploader>
     </fieldset>
+    <profile-as-form :person='person'></profile-as-form>
   </section>
 </template>
 <script>
@@ -41,19 +41,36 @@
         avatar_changed: false
       }
     },
+    created() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          this.person.mobile = user.phoneNumber.substring(2)
+          this.signed_in = true
+        } else {
+          this.signed_in = false
+        }
+      })
+      this.$bus.$off('save-me')
+      this.$bus.$on('save-me', person => {
+        console.log('save-me called')
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            this.person.mobile = user.phoneNumber.substring(2)
+          }
+          Vue.nextTick(() => person_storage.save())
+        })
+      })
+    },
     methods: {
       open_camera(event) {
-        // this.working = true
-        this.$refs.file_upload.click()
+        this.$refs.avatar_upload.click()
       },
       accept_changes(event) {
-        this.working = true
         const route = {
           path: `/profile`
         }
         if (this.avatar_changed) {
           person_storage.save().then(() => {
-            this.working = false
             this.$router.push(route)
           })
         } else {
@@ -81,26 +98,6 @@
           })
         }
       }
-    },
-    created() {
-      this.$bus.$off('save-me')
-      this.$bus.$on('save-me', person => {
-        console.log('save-me called')
-        firebase.auth().onAuthStateChanged(user => {
-          if (user) {
-            this.person.mobile = user.phoneNumber.substring(2)
-          }
-          Vue.nextTick(() => person_storage.save())
-        })
-      })
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          this.person.mobile = user.phoneNumber.substring(2)
-          this.signed_in = true
-        } else {
-          this.signed_in = false
-        }
-      })
     }
   }
 </script>
@@ -154,7 +151,7 @@
           width:100vw
     & > fieldset
       width: max-content
-      margin-top: base-line
+      margin-bottom: base-line
       border-radius: base-line
       @media (min-width: max-screen)
         display: none
