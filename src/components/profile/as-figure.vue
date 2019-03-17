@@ -25,10 +25,6 @@
         type: Boolean,
         default: false
       },
-      me: {
-        type: Boolean,
-        default: false
-      },
       view_avatar: {
         type: Boolean,
         default: false

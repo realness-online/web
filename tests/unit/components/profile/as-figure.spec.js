@@ -1,5 +1,6 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
+import Storage from '@/modules/Storage'
 import as_figure from '@/components/profile/as-figure'
 describe('@/compontent/profile/as-figure.vue', () => {
   const avatar_mock = `<symbol id="#avatar_6282281824" viewBox="0 0 192 192">
@@ -75,13 +76,14 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
-    it('when view_avatar is tru it should go to the users avatar page', () => {
+    it('when view_avatar is true it should go to the users avatar page', () => {
       wrapper.setProps({ view_avatar: true })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824/avatar')
     })
-    it('when me is true should go to the account page', () => {
-      wrapper.setProps({ me: true })
+    it('when is_me is true should go to the account page', () => {
+      jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => person)
+      wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
