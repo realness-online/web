@@ -109,7 +109,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       const invalid_person = { mobile: '415123456a' }
       wrapper = shallow(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
-      expect(button.exists()).not.toBe(true)
+      expect(button.is('[disabled]')).toBe(true)
     })
     it('starts captcha verification when clicked', () => {
       button.trigger('click')
