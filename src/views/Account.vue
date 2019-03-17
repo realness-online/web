@@ -10,10 +10,10 @@
         <icon  name="finished"></icon>
       </a>
     </header>
-    <input type="file" accept="image/jpeg" capture ref="avatar_upload" v-uploader>
+    <input type="file" accept="image/jpeg" capture ref="avatar_upload" v-avatar_generator>
     <fieldset v-if="signed_in">
       <label for="poster">Upload Poster</label>
-      <input type="file" id="poster" accept="image/jpeg" v-uploader>
+      <input type="file" id="poster" accept="image/jpeg" v-avatar_generator>
     </fieldset>
     <profile-as-form :person='person'></profile-as-form>
   </section>
@@ -38,7 +38,8 @@
         working: false,
         person: person_storage.as_object(),
         signed_in: false,
-        avatar_changed: false
+        avatar_changed: false,
+        image_file: null
       }
     },
     created() {
@@ -60,6 +61,7 @@
           Vue.nextTick(() => person_storage.save())
         })
       })
+      this.$bus.on
     },
     methods: {
       open_camera(event) {
@@ -76,24 +78,24 @@
         } else {
           this.$router.push(route)
         }
+      },
+      vectorize_avatar(image) {
+        this.avatar_changed = true
+        this.working = true
+        const identifier = `avatar_1${vnode.context.person.mobile}`
+        convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
+          this.working = false
+          this.person.avatar = avatar
+        })
       }
     },
     directives: {
-      uploader: {
+      avatar_generator: {
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
             const avatar_image = event.target.files[0]
-            /* istanbul ignore next */
-            if (avatar_image !== undefined) {
-              vnode.context.avatar_changed = true
-              vnode.context.working = true
-              if (avatar_image.type === 'image/jpeg') {
-                const identifier = `avatar_1${vnode.context.person.mobile}`
-                convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
-                  vnode.context.working = false
-                  vnode.context.person.avatar = avatar
-                })
-              }
+            if (avatar_image !== undefined && avatar_image.type === 'image/jpeg') {
+              vnode.context.vectorize_avatar(avatar_image)
             }
           })
         }
