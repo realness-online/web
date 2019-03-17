@@ -1,18 +1,22 @@
 import { shallow } from 'vue-test-utils'
 import * as firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
 import App from '@/App'
 describe('@/App.vue', () => {
+  let initialize_mock
+  let wrapper
+  beforeEach(() => {
+    initialize_mock = jest.fn()
+    jest.spyOn(firebase, 'initializeApp').mockImplementation(initialize_mock)
+    wrapper = shallow(App)
+  })
   it('renders layout for the application', () => {
-    let wrapper = shallow(App)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('sets previously visited page in sessionStorage', () => {
     const $route = {
       path: '/relations'
     }
-    let wrapper = shallow(App, {
+    wrapper = shallow(App, {
       mocks: {
         $route
       }
@@ -20,5 +24,7 @@ describe('@/App.vue', () => {
     wrapper.setData({ $route: { path: '/magic' } })
     expect(sessionStorage.previous).toBe('/relations')
   })
-  it('initialises firebase')
+  it('initialises firebase', () => {
+    expect(initialize_mock).toHaveBeenCalledTimes(1)
+  })
 })
