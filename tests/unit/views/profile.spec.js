@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import profile from '@/views/profile'
+import profile from '@/views/Profile'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 const is_signed_in = jest.fn((state_changed) => {
@@ -7,7 +7,7 @@ const is_signed_in = jest.fn((state_changed) => {
     phoneNumber: '14151231234'
   })
 })
-describe('@/views/profile.vue', () => {
+describe('@/views/Profile.vue', () => {
   it('shows the users profile information', () => {
     let $route = { params: {} }
     let wrapper = shallow(profile, { mocks: { $route } })
