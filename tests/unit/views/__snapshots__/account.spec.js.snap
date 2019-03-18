@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/account.vue renders event information 1`] = `
+exports[`@/views/Account.vue renders event information 1`] = `
 <section
   class="page left signed_in"
   id="account"

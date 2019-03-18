@@ -9,7 +9,7 @@ const is_signed_in = jest.fn((state_changed) => {
     phoneNumber: '14151231234'
   })
 })
-describe('@/views/account.vue', () => {
+describe('@/views/Account.vue', () => {
   let wrapper
   beforeEach(() => {
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -23,7 +23,7 @@ describe('@/views/account.vue', () => {
   })
   describe('adding an avatar', () => {
     it('open_camera()', () => {
-      wrapper.setProps({ view_avatar: true })
+      // wrapper.setProps({ view_avatar: true })
       let mock_click = jest.fn()
       wrapper.vm.$refs.uploader.click = mock_click
       wrapper.vm.open_camera()
@@ -45,7 +45,7 @@ describe('@/views/account.vue', () => {
         expect(save_spy).toBeCalled()
       })
       it('should trigger change event on file input', () => {
-        wrapper.setProps({ view_avatar: true })
+        // wrapper.setProps({ view_avatar: true })
         let input = wrapper.find('input[type=file]')
         expect(input.exists()).toBe(true)
         input.element.value = ''

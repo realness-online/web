@@ -76,8 +76,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
-    it('when view_avatar is true it should go to the users avatar page', () => {
-      wrapper.setProps({ view_avatar: true })
+    it('when click_to_avatar is true it should go to the users avatar page', () => {
+      wrapper.setProps({ click_to_avatar: true })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824/avatar')
     })

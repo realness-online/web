@@ -1,7 +1,7 @@
 <template lang="html">
-  <section id="profile" class="page" v-bind:class="{is_me}">
+  <section id="profile" class="page">
     <header>
-      <profile-as-figure :person='person' :view_avatar="true"></profile-as-figure>
+      <profile-as-figure :person='person' :click_to_avatar="true"></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>
@@ -30,13 +30,14 @@
     },
     data() {
       return {
-        person: {},
         working: true,
+        person: {},
         posts: []
       }
     },
     created() {
       let phone_number = this.$route.params.phone_number
+
       if (phone_number) {
         this.load_from_network(phone_number)
       } else {
@@ -51,6 +52,7 @@
     },
     methods: {
       load_from_network(phone_number){
+        console.log('load_from_network');
         const profile_id = `/${phone_number}`
         profile.load(profile_id).then(profile => {
           this.person = profile
@@ -61,6 +63,7 @@
         })
       },
       load_from_local(){
+        console.log('load_from_local');
         this.person = person_storage.as_object()
         this.posts = posts_storage.as_list()
         this.working = false
