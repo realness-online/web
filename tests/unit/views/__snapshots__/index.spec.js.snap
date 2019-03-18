@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/index.vue renders navigation for the application 1`] = `
+exports[`@/views/Index.vue renders navigation for the application 1`] = `
 <section
   class="page"
   id="home"

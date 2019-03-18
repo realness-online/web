@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/avatar.vue displaying an avatar renders the silhouette by default 1`] = `
+exports[`@/views/Avatar.vue displaying an avatar renders the silhouette by default 1`] = `
 <section
   class="page"
   id="avatar"

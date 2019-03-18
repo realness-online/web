@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/where.vue renders layout for location 1`] = `
+exports[`@/views/Where.vue renders layout for location 1`] = `
 <section
   id="groups"
 >

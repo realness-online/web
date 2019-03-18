@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/phonebook render an empty phonebook 1`] = `
+exports[`@/views/Phonebook render an empty phonebook 1`] = `
 <section
   class="page"
   id="directory"
