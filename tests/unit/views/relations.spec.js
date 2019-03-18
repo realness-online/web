@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import relations from '@/views/relations'
+import relations from '@/views/Relations'
 import profile from '@/modules/Profile'
 describe('@/views/relations.vue', () => {
   let wrapper

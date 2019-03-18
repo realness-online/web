@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import phonebook from '@/views/phonebook'
+import phonebook from '@/views/Phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
