@@ -1,20 +1,13 @@
 <template lang="html">
   <section id="account" v-bind:class="{signed_in}" class="page left">
     <header>
-      <a @click="open_camera">
-        <icon name="add"></icon>
-      </a>
+      <a @click="open_camera"><icon name="add"></icon></a>
       <icon v-if="working" name="working"></icon>
       <profile-as-figure v-else :person="person" :just_display_avatar="true" ></profile-as-figure>
-      <a @click="accept_changes">
-        <icon  name="finished"></icon>
-      </a>
+      <a @click="accept_changes"><icon  name="finished"></icon></a>
     </header>
-    <input type="file" accept="image/jpeg" capture ref="avatar_upload" v-avatar_generator>
-    <fieldset v-if="signed_in">
-      <label for="poster">Upload Poster</label>
-      <input type="file" id="poster" accept="image/jpeg" v-avatar_generator>
-    </fieldset>
+    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+    <button v-if="signed_in" @click="attach_poster">Upload Poster</button>
     <profile-as-form :person='person'></profile-as-form>
   </section>
 </template>
@@ -65,7 +58,8 @@
     },
     methods: {
       open_camera(event) {
-        this.$refs.avatar_upload.click()
+        this.$refs.uploader.setAttribute('capture', true)
+        this.$refs.uploader.click()
       },
       accept_changes(event) {
         const route = {
@@ -79,23 +73,28 @@
           this.$router.push(route)
         }
       },
-      vectorize_avatar(image) {
+      vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
-        const identifier = `avatar_1${vnode.context.person.mobile}`
-        convert_to_avatar.trace(avatar_image, identifier).then(avatar => {
+        const identifier = `avatar_1${this.person.mobile}`
+        convert_to_avatar.trace(image, identifier).then(avatar => {
           this.working = false
           this.person.avatar = avatar
         })
+      },
+      attach_poster(event) {
+        console.log('find me a poster')
+        this.$refs.uploader.removeAttribute('capture')
+        this.$refs.uploader.click()
       }
     },
     directives: {
-      avatar_generator: {
+      uploader: {
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
-            const avatar_image = event.target.files[0]
-            if (avatar_image !== undefined && avatar_image.type === 'image/jpeg') {
-              vnode.context.vectorize_avatar(avatar_image)
+            const image = event.target.files[0]
+            if (image !== undefined && avatar_image.type === 'image/jpeg') {
+              vnode.context.vectorize_image(image)
             }
           })
         }
@@ -151,12 +150,8 @@
           margin-top: (base-line * 3)
           height:66vh
           width:100vw
-    & > fieldset
-      width: max-content
+    & > button
       margin-bottom: base-line
-      border-radius: base-line
-      @media (min-width: max-screen)
-        display: none
     form#profile-form
       #name
       #phone

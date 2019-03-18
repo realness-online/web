@@ -35,8 +35,8 @@
     created() {
       // Ned Tomo and Scott
       // Soon Dylan and Reeves
-      ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(phone_number => {
-        profile.load(phone_number).then(person => {
+      ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(profile_id => {
+        profile.load(profile_id).then(person => {
           this.curators.push(person)
           this.working = false
         })

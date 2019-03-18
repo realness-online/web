@@ -1,25 +1,26 @@
 <template lang="html">
-  <section id="profile" class="page" v-bind:class="{me}">
+  <section id="profile" class="page" v-bind:class="{is_me}">
     <header>
-      <profile-as-figure :person='person' :me="me" :view_avatar="true"></profile-as-figure>
+      <profile-as-figure :person='person' :view_avatar="true"></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
     <icon v-show="working" name="working"></icon>
-    <my-posts v-if="me"></my-posts>
+    <my-posts v-if="is_me"></my-posts>
     <posts-list v-else :posts='posts'></posts-list>
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import '@/modules/timeago'
+  import profile from '@/modules/Profile'
+  import { person_storage, posts_storage } from '@/modules/Storage'
   import profileAsFigure from '@/components/profile/as-figure'
   import logoAsLink from '@/components/logo-as-link'
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
   import icon from '@/components/icon'
-  import profile from '@/modules/Profile'
-  import profile_init from '@/mixins/profile_init'
   export default {
-    mixins: [profile_init],
     components: {
       profileAsFigure,
       myPosts,
@@ -29,19 +30,45 @@
     },
     data() {
       return {
+        person: {},
+        working: true,
         posts: []
       }
     },
     created() {
-      const phone_number = this.$route.params.phone_number
+      let phone_number = this.$route.params.phone_number
       if (phone_number) {
-        this.working = true
-        profile.items(`/${phone_number}`, 'posts').then(items => {
+        this.load_from_network(phone_number)
+      } else {
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            this.load_from_network(user.phoneNumber)
+          } else {
+            this.load_from_local()
+          }
+        })
+      }
+    },
+    methods: {
+      load_from_network(phone_number){
+        const profile_id = `/${phone_number}`
+        profile.load(profile_id).then(profile => {
+          this.person = profile
+        })
+        profile.items(profile_id, 'posts').then(items => {
           this.posts = items
           this.working = false
         })
-      } else {
+      },
+      load_from_local(){
+        this.person = person_storage.as_object()
+        this.posts = posts_storage.as_list()
         this.working = false
+      }
+    },
+    computed: {
+      is_me() {
+        return person_storage.as_object().id === this.person.id
       }
     }
   }

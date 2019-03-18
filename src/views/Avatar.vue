@@ -13,9 +13,28 @@
 <script>
   import icon from '@/components/icon'
   import profileAsFigure from '@/components/profile/as-figure'
-  import profile_init from '@/mixins/profile_init'
+  import { person_storage } from '@/modules/Storage'
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
+  import profile from '@/modules/Profile'
   export default {
-    mixins: [profile_init],
+    data() {
+      return {
+        person: {},
+        working: true,
+        me: false
+      }
+    },
+    created() {
+      const profile_id = `/${this.$route.params.phone_number}`
+      profile.load(profile_id).then(profile => {
+        this.person = profile
+      })
+      profile.items(profile_id, 'posts').then(items => {
+        this.posts = items
+        this.working = false
+      })
+    },
     components: {
       icon, profileAsFigure
     },

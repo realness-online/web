@@ -15,9 +15,9 @@ export default {
       })
     })
   },
-  items(mobile, type) {
+  items(phone_number, type) {
     return new Promise((resolve, reject) => {
-      get_url(mobile, type).then((url) => {
+      get_url(phone_number, type).then((url) => {
         fetch(url).then(response => {
           response.text().then((server_text) => {
             const server_as_fragment = Storage.hydrate(server_text)
@@ -26,7 +26,7 @@ export default {
           })
         })
       }).catch(error => {
-        console.log(`${mobile}/${type} not found`)
+        console.log(`${phone_number}/${type}.html not found`)
         resolve([])
       })
     })
