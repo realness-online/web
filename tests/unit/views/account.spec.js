@@ -1,6 +1,6 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
-import account from '@/views/Account'
+import Account from '@/views/Account'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -15,10 +15,10 @@ describe('@/views/Account.vue', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { onAuthStateChanged: is_signed_in }
     })
-    wrapper = shallow(account)
+    wrapper = shallow(Account)
   })
   it('renders event information', () => {
-    let wrapper = shallow(account)
+    let wrapper = shallow(Account)
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('adding an avatar', () => {
@@ -34,7 +34,7 @@ describe('@/views/Account.vue', () => {
         const localVue = createLocalVue()
         localVue.use(VueRouter)
         const router = new VueRouter()
-        let wrapper = shallow(account, {
+        let wrapper = shallow(Account, {
           localVue,
           router
         })
