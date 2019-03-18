@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
-import feed from '@/views/feed'
+import feed from '@/views/Feed'
 const posts_as_text = `
   <div itemprop="posts" itemref="profile">
    <article itemscope itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
@@ -23,7 +23,7 @@ const profile_as_text = `
   </figcaption>
 </figure>
 `
-describe('@/views/feed.vue', () => {
+describe('@/views/Feed.vue', () => {
   it('render feed info', () => {
     let wrapper = shallow(feed)
     expect(wrapper.element).toMatchSnapshot()

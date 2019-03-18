@@ -31,7 +31,7 @@ const person = {
   last_name: 'Fryxell',
   mobile: '4151234356'
 }
-describe('@/views/phonebook', () => {
+describe('@/views/Phonebook', () => {
   it('render an empty phonebook', () => {
     let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()

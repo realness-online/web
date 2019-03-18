@@ -1,6 +1,6 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
-import account from '@/views/account'
+import account from '@/views/Account'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

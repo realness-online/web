@@ -1,8 +1,8 @@
 import { shallow } from 'vue-test-utils'
-import groups from '@/views/Where'
-describe('@/views/where.vue', () => {
+import where from '@/views/Where'
+describe('@/views/Where.vue', () => {
   it('renders layout for location', () => {
-    let wrapper = shallow(groups)
+    let wrapper = shallow(where)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

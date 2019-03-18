@@ -1,7 +1,7 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import avatar from '@/views/avatar'
-describe('@/views/avatar.vue', () => {
+describe('@/views/Avatar.vue', () => {
   let wrapper
   const $route = {
     params: {}
