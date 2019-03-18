@@ -25,7 +25,7 @@
         type: Boolean,
         default: false
       },
-      view_avatar: {
+      click_to_avatar: {
         type: Boolean,
         default: false
       },
@@ -47,7 +47,7 @@
         let route = {
           path: this.person.id
         }
-        if (this.view_avatar) {
+        if (this.click_to_avatar) {
           route.path = `${this.person.id}/avatar`
         }
         if (this.is_me) {
