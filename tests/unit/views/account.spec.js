@@ -25,7 +25,7 @@ describe('@/views/account.vue', () => {
     it('open_camera()', () => {
       wrapper.setProps({ view_avatar: true })
       let mock_click = jest.fn()
-      wrapper.vm.$refs.file_upload.click = mock_click
+      wrapper.vm.$refs.uploader.click = mock_click
       wrapper.vm.open_camera()
       expect(mock_click).toBeCalled()
     })

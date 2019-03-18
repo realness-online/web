@@ -17,26 +17,16 @@ exports[`@/views/account.vue renders event information 1`] = `
     </a>
   </header>
    
-  <!---->
-   
   <input
     accept="image/jpeg"
     capture=""
     type="file"
   />
    
-  <fieldset>
-    <label
-      for="uploader"
-    >
-      Upload photo
-    </label>
-     
-    <input
-      accept="image/jpeg"
-      id="uploader"
-      type="file"
-    />
-  </fieldset>
+  <button>
+    Upload Poster
+  </button>
+   
+  <!---->
 </section>
 `;
