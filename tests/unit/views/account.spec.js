@@ -54,13 +54,10 @@ describe('@/views/account.vue', () => {
       })
     })
   })
-  describe('adding a poster', () => {
-    it('should have a button to upload', (done) => {
-      wrapper
-      expect(1).tobe(2)
-    })
-    it('Should notify the service_worker about an image that needs converting')
-    it('should let the user decide to use vector or original')
-    it('should upload a poster to /+14156661212/poster.svg')
-  })
+  // describe('adding a poster', () => {
+  //   it('should have a button to upload')
+  //   it('Should notify the service_worker about an image that needs converting')
+  //   it('should let the user decide to use vector or original')
+  //   it('should upload a poster to /+14156661212/poster.svg')
+  // })
 })
