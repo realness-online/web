@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
-import feed from '@/views/Feed'
+import Feed from '@/views/Feed'
 const posts_as_text = `
   <div itemprop="posts" itemref="profile">
    <article itemscope itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
@@ -25,7 +25,7 @@ const profile_as_text = `
 `
 describe('@/views/Feed.vue', () => {
   it('render feed info', () => {
-    let wrapper = shallow(feed)
+    let wrapper = shallow(Feed)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('#populate_feed', () => {
@@ -34,7 +34,7 @@ describe('@/views/Feed.vue', () => {
       last_name: 'caffey',
       mobile: '2134445566'
     }]
-    let wrapper = shallow(feed)
+    let wrapper = shallow(Feed)
     wrapper.vm.populate_feed(relations).then(() => {
       expect(wrapper.vm.feed.length).toBe(5)
     })

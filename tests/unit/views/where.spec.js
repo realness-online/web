@@ -1,8 +1,8 @@
 import { shallow } from 'vue-test-utils'
-import where from '@/views/Where'
+import Where from '@/views/Where'
 describe('@/views/Where.vue', () => {
   it('renders layout for location', () => {
-    let wrapper = shallow(where)
+    let wrapper = shallow(Where)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

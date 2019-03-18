@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import relations from '@/views/Relations'
+import Relations from '@/views/Relations'
 import profile from '@/modules/Profile'
 describe('@/views/Relations.vue', () => {
   let wrapper
@@ -10,7 +10,7 @@ describe('@/views/Relations.vue', () => {
     mobile: '4151234356'
   }
   beforeEach(() => {
-    wrapper = shallow(relations)
+    wrapper = shallow(Relations)
   })
   it('render relationship information', () => {
     wrapper.setData({ relations: [person] })

@@ -1,13 +1,13 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
-import avatar from '@/views/avatar'
+import Avatar from '@/views/Avatar'
 describe('@/views/Avatar.vue', () => {
   let wrapper
   const $route = {
     params: {}
   }
   beforeEach(() => {
-    wrapper = shallow(avatar, {
+    wrapper = shallow(Avatar, {
       mocks: {
         $route
       }
@@ -23,7 +23,7 @@ describe('@/views/Avatar.vue', () => {
     localVue.use(VueRouter)
     const router = new VueRouter()
     sessionStorage.setItem('previous', '/test_route')
-    let wrapper = shallow(avatar, {
+    let wrapper = shallow(Avatar, {
       localVue,
       router
     })

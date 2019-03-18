@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import profile from '@/views/Profile'
+import Profile from '@/views/Profile'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -17,7 +17,7 @@ describe('@/views/Profile.vue', () => {
   })
   it('shows the users profile information', () => {
     let $route = { params: {} }
-    let wrapper = shallow(profile, { mocks: { $route } })
+    let wrapper = shallow(Profile, { mocks: { $route } })
     expect(wrapper.element).toMatchSnapshot()
   })
   it('shows profile information for a phone number', () => {
@@ -27,9 +27,9 @@ describe('@/views/Profile.vue', () => {
       }
     })
     const mock_load_from_network = jest.fn()
-    jest.spyOn(profile.methods, 'load_from_network').mockImplementation(mock_load_from_network)
+    jest.spyOn(Profile.methods, 'load_from_network').mockImplementation(mock_load_from_network)
     const $route = { params: { phone_number: '+14151231234' } }
-    let wrapper = shallow(profile, { mocks: { $route } })
+    let wrapper = shallow(Profile, { mocks: { $route } })
     expect(mock_load_from_network).toHaveBeenCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
