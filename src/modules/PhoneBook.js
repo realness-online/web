@@ -32,14 +32,19 @@ class PhoneBook extends Storage {
   }
   sync_list() {
     return new Promise((resolve, reject) => {
+      let me = person_storage.as_object()
       this.as_list().then(people => {
-        let me = person_storage.as_object()
-        let index = people.findIndex(contact => (contact.id === me.id))
-        if (index === -1) {
-          localStorage.setItem('save-phonebook', 'true')
-          people.push(me)
-        }
-        resolve(people)
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            me.id = `/${user.phoneNumber}`
+            let index = people.findIndex(contact => (contact.id === me.id))
+            if (index === -1) {
+              localStorage.setItem('save-phonebook', 'true')
+              people.push(me)
+            }
+            resolve(people)
+          }
+        })
       })
     })
   }

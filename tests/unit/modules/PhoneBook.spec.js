@@ -3,9 +3,14 @@ import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-const is_signed_in = jest.fn((state_changed) => {
+const is_existing_person = jest.fn((state_changed) => {
   state_changed({
-    phoneNumber: '6282281824'
+    phoneNumber: '+16282281824'
+  })
+})
+const is_new_person = jest.fn((state_changed) => {
+  state_changed({
+    phoneNumber: '+14151234567'
   })
 })
 const phonebook_as_text = `
@@ -36,7 +41,7 @@ describe('@/modules/PhoneBook', () => {
     })
     it('resolves a promise with a download url', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
+        return { onAuthStateChanged: is_existing_user }
       })
       expect.assertions(1)
       phonebook_storage.get_download_url().then(url => {
@@ -92,7 +97,9 @@ describe('@/modules/PhoneBook', () => {
       jest.restoreAllMocks()
     })
     it('should add new person to phone book', () => {
-      me.id = '/+14151234567'
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_new_person }
+      })
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       expect(phone_list.length).toBe(2)
       phonebook_storage.sync_list().then(people => {
@@ -102,6 +109,9 @@ describe('@/modules/PhoneBook', () => {
     it('should leave the phone book alone when my info is the same', () => {
       expect.assertions(3)
       expect(phone_list.length).toBe(2)
+      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        return { onAuthStateChanged: is_existing_person }
+      })
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
       phonebook_storage.sync_list().then(people => {
         expect(people.length).toBe(2)
