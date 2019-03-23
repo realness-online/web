@@ -8,7 +8,6 @@ function get_url(mobile, type) {
 }
 export default {
   load(phone_number) {
-    // console.log(phone_number)
     return new Promise((resolve, reject) => {
       this.items(phone_number, 'person').then(items => {
         resolve(items[0])
