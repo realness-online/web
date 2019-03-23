@@ -40,7 +40,9 @@
         this.phonebook = people
         this.phonebook.forEach((person, index) => {
           profile.load(person.id).then(profile => {
-            this.phonebook.splice(index, 1, profile)
+            if(profile) {
+              this.phonebook.splice(index, 1, profile)
+            }
           })
         })
       })
