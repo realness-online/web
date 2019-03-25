@@ -22,7 +22,7 @@
   import profileAsList from '@/components/profile/as-list'
   import profileAsFigure from '@/components/profile/as-figure'
   import icon from '@/components/icon'
-  import profile from '@/modules/Profile'
+  import profile_id from '@/modules/profile_id'
   export default {
     components: {
       profileAsFigure,
@@ -76,9 +76,9 @@
       populate_feed(people_in_feed) {
         return new Promise((resolve, reject) => {
           people_in_feed.forEach((relation, index) => {
-            profile.load(relation.id).then(person => {
+            profile_id.load(relation.id).then(person => {
               this.relations.push(person)
-              profile.items(relation.id, 'posts').then(posts => {
+              profile_id.items(relation.id, 'posts').then(posts => {
                 this.unsorted_relations--
                 posts.forEach(post => {
                   post.person = person

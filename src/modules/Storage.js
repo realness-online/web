@@ -1,4 +1,4 @@
-import Item from '@/modules/Item'
+import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'

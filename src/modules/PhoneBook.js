@@ -1,5 +1,5 @@
 import Storage, { person_storage } from '@/modules/Storage'
-import Item from '@/modules/Item'
+import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -36,14 +36,15 @@ class PhoneBook extends Storage {
       this.as_list().then(people => {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
+            console.log(user.phoneNumber)
             me.id = `/${user.phoneNumber}`
             let index = people.findIndex(contact => (contact.id === me.id))
             if (index === -1) {
               localStorage.setItem('save-phonebook', 'true')
               people.push(me)
             }
-            resolve(people)
           }
+          resolve(people)
         })
       })
     })

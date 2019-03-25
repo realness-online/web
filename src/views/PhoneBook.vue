@@ -17,7 +17,7 @@
   import Vue from 'vue'
   import icon from '@/components/icon'
   import { relations_storage } from '@/modules/Storage'
-  import profile from '@/modules/Profile'
+  import profile_id from '@/modules/profile_id'
   import { phonebook_storage } from '@/modules/PhoneBook'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
@@ -39,7 +39,7 @@
         this.working = false
         this.phonebook = people
         this.phonebook.forEach((person, index) => {
-          profile.load(person.id).then(profile => {
+          profile_id.load(person.id).then(profile => {
             if(profile) {
               this.phonebook.splice(index, 1, profile)
             }

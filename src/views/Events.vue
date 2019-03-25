@@ -9,7 +9,7 @@
     <figure>
       <svg v-for="person in curators">
         <defs itemprop="avatar" v-html="person.avatar"></defs>
-        <use :xlink:href="`#avatar_1${person.mobile}`"/>
+        <use :xlink:href="avatar_link(person.id)"/>
       </svg>
     </figure>
   </section>
@@ -18,7 +18,7 @@
   import logoAsLink from '@/components/logo-as-link'
   import profileAsList from '@/components/profile/as-list'
   import { relations_storage } from '@/modules/Storage'
-  import profile from '@/modules/Profile'
+  import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
     components: {
@@ -35,12 +35,17 @@
     created() {
       // Ned Tomo and Scott
       // Soon Dylan and Reeves
-      ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(profile_id => {
-        profile.load(profile_id).then(person => {
+      ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(id => {
+        profile_id.load(id).then(person => {
           this.curators.push(person)
           this.working = false
         })
       })
+    },
+    methods: {
+      avatar_link(item_id){
+        return profile_id.as_avatar_fragment(item_id)
+      }
     }
   }
 </script>

@@ -16,7 +16,7 @@
   import { person_storage } from '@/modules/Storage'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import profile from '@/modules/Profile'
+  import profile_id from '@/modules/profile_id'
   export default {
     data() {
       return {
@@ -26,11 +26,11 @@
       }
     },
     created() {
-      const profile_id = `/${this.$route.params.phone_number}`
-      profile.load(profile_id).then(profile => {
+      const id = `/${this.$route.params.phone_number}`
+      profile_id.load(id).then(profile => {
         this.person = profile
       })
-      profile.items(profile_id, 'posts').then(items => {
+      profile_id.items(id, 'posts').then(items => {
         this.posts = items
         this.working = false
       })

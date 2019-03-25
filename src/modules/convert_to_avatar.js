@@ -1,7 +1,6 @@
 const potrace = require('potrace')
 const Jimp = require('jimp')
 const EXIF = require('exif-js')
-/* istanbul ignore next */
 function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')

@@ -15,7 +15,7 @@
   import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
-  import profile from '@/modules/Profile'
+  import profile_id from '@/modules/profile_id'
   import relationship_events from '@/mixins/relationship_events'
   export default {
     mixins: [relationship_events],
@@ -35,7 +35,7 @@
             this.working = false
           }
           this.relations.forEach((relation, index) => {
-            profile.load(relation.id).then(profile => {
+            profile_id.load(relation.id).then(profile => {
               this.relations.splice(index, 1, profile)
               this.working = false
               resolve('finished fill_in_relationships')

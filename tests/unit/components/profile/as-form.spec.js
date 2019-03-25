@@ -58,7 +58,7 @@ describe('@/compontent/profile/as-form.vue', () => {
             getData: function() { return 'abc-123-1234' }
           }
         })
-        expect(wrapper.vm.person.mobile).toBeFalsy()
+        expect(wrapper.vm.person.id).toBeFalsy()
       })
       it('should accept 6282281824', () => {
         input.trigger('paste', {
@@ -66,7 +66,7 @@ describe('@/compontent/profile/as-form.vue', () => {
             getData() { return '4151234567' }
           }
         })
-        expect(wrapper.vm.person.mobile).toBe('4151234567')
+        expect(wrapper.vm.person.id).toBe('/+14151234567')
       })
       it('should accept (628) 228-1824', () => {
         input.trigger('paste', {
@@ -74,7 +74,7 @@ describe('@/compontent/profile/as-form.vue', () => {
             getData() { return '(628) 228-1824‬' }
           }
         })
-        expect(wrapper.vm.person.mobile).toBe('6282281824')
+        expect(wrapper.vm.person.id).toBe('/+16282281824')
       })
       it('should accept 628.228.1824', () => {
         input.trigger('paste', {
@@ -82,7 +82,7 @@ describe('@/compontent/profile/as-form.vue', () => {
             getData() { return '628.228.1824' }
           }
         })
-        expect(wrapper.vm.person.mobile).toBe('6282281824')
+        expect(wrapper.vm.person.id).toBe('/+16282281824')
       })
       it('should accept 628-228-1824', () => {
         input.trigger('paste', {
@@ -90,7 +90,7 @@ describe('@/compontent/profile/as-form.vue', () => {
             getData() { return '628-228-1824' }
           }
         })
-        expect(wrapper.vm.person.mobile).toBe('6282281824')
+        expect(wrapper.vm.person.id).toBe('/+16282281824')
       })
     })
   })

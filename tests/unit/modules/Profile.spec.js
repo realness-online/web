@@ -1,4 +1,4 @@
-import profile from '@/modules/Profile'
+import profile_id from '@/modules/profile_id'
 
 const posts_as_text = `
 <div itemprop="posts" itemref="profile">
@@ -34,18 +34,18 @@ const profile_as_text = `
   </figcaption>
 </figure>
 `
-describe('@/mixins/Profile', () => {
-  it('items()', () => {
-    fetch.mockResponseOnce(posts_as_text)
-    profile.items('+14151231234', 'posts').then(items => {
-      expect(items.length).toEqual(4)
+describe('@/modules/profile_id', () => {
+  it('load()', () => {
+    fetch.mockResponseOnce(profile_as_text)
+    profile_id.load('/+16282281824').then(katie => {
+      expect(katie.first_name).toBe('katie')
       expect(fetch).toBeCalled()
     })
   })
-  it('load()', () => {
-    fetch.mockResponseOnce(profile_as_text)
-    profile.load('/+16282281824').then(katie => {
-      expect(katie.first_name).toBe('katie')
+  it('items()', () => {
+    fetch.mockResponseOnce(posts_as_text)
+    profile_id.items('+14151231234', 'posts').then(items => {
+      expect(items.length).toEqual(4)
       expect(fetch).toBeCalled()
     })
   })

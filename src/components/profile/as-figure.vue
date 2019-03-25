@@ -1,5 +1,5 @@
 <template>
-  <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
+  <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
     <svg @click="avatar_click">
       <defs v-if="!avatar_by_reference" itemprop="avatar" v-html="person.avatar"></defs>
       <use :xlink:href="avatar"/>
@@ -9,8 +9,8 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <p v-if="is_me" itemprop="mobile" :data-value="person.mobile">{{mobile_display}}</p>
-      <a v-else itemprop="mobile" :data-value="person.mobile" :href="sms_link">{{mobile_display}}</a>
+      <p v-if="is_me">{{mobile_display}}</p>
+      <a v-else :href="sms_link">{{mobile_display}}</a>
     </figcaption>
   </figure>
 </template>
@@ -18,6 +18,7 @@
   import { person_storage } from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
+  import profile_id from '@/modules/profile_id'
   export default {
     props: {
       person: Object,
@@ -31,7 +32,7 @@
       },
       avatar_by_reference: {
         type: Boolean,
-        default:false
+        default: false
       },
       just_display_avatar: {
         type: Boolean,
@@ -67,18 +68,16 @@
       },
       avatar() {
         if (this.person.avatar) {
-          return `#avatar_1${this.person.mobile}`
+          return profile_id.as_avatar_fragment(this.person.id)
         }
         return `${icons}#silhouette`
       },
-      item_id() {
-        return `/+1${this.person.mobile}`
-      },
+
       sms_link() {
-        return !!this.person.mobile && `sms:+1${this.person.mobile}`
+        return `sms:${profile_id.as_phone_number(this.person.id)}`
       },
       mobile_display() {
-        return new AsYouType('US').input(this.person.mobile)
+        return new AsYouType('US').input(profile_id.as_phone_number(this.person.id))
       }
     }
   }

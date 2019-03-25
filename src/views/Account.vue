@@ -16,10 +16,11 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { person_storage } from '@/modules/Storage'
+  import profile_id from '@/modules/profile_id'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
   import icon from '@/components/icon'
-  import convert_to_avatar from '@/modules/ConvertToAvatar'
+  import convert_to_avatar from '@/modules/convert_to_avatar'
   export default {
     components: {
       'profile-as-figure': as_figure,
@@ -38,7 +39,7 @@
     created() {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          this.person.mobile = user.phoneNumber.substring(2)
+          this.person.id = profile_id.from_e64(user.phoneNumber)
           this.signed_in = true
         } else {
           this.signed_in = false
@@ -49,7 +50,7 @@
         console.log('save-me called')
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
-            this.person.mobile = user.phoneNumber.substring(2)
+            this.person.id = profile_id.from_e64(user.phoneNumber)
           }
           Vue.nextTick(() => person_storage.save())
         })
@@ -76,8 +77,8 @@
       vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
-        const identifier = `avatar_1${this.person.mobile}`
-        convert_to_avatar.trace(image, identifier).then(avatar => {
+        convert_to_avatar.trace(image, profile_id.as_avatar_id(this.person.id))
+        .then(avatar => {
           this.working = false
           this.person.avatar = avatar
         })
@@ -109,7 +110,7 @@
       display: none
     & > header
       margin-bottom: base-line
-      a:first-of-type
+      & > a:first-of-type
         display:none
     & > footer > menu
       padding: base-line

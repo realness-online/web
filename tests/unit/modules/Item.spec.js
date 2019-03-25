@@ -1,5 +1,5 @@
-import Item from '@/modules/Item'
-describe('@/modules/Item.js', () => {
+import Item from '@/modules/item'
+describe('@/modules/item.js', () => {
   let item
   const html_item = `
   <main id="profile" itemscope itemtype="/person" itemid='/people/666'>

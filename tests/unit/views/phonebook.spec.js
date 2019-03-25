@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import phonebook from '@/views/Phonebook'
 import PhoneBook from '@/modules/PhoneBook'
-import Item from '@/modules/Item'
+import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
 const phonebook_as_text = `
   <div id="phonebook">

@@ -13,7 +13,9 @@
       <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
              v-model="person.mobile"
              v-on:keypress="mobile_keypress"
-             v-on:paste="mobile_paste">
+             v-on:keyup="mobile_keyup"
+             v-on:paste="mobile_paste"
+             v-on:blur="save_person">
     </fieldset>
     <fieldset id="captcha"
          v-if='show_captcha'
@@ -46,6 +48,7 @@
   import 'firebase/auth'
   import { parseNumber } from 'libphonenumber-js'
   import { person_storage } from '@/modules/Storage'
+  import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
     props: ['person'],
@@ -71,8 +74,9 @@
         this.working = false
         if (user) {
           this.show_sign_out = true
+          this.person.id = profile_id.from_e64(user.phoneNumber)
         } else {
-          this.phone_number = this.person.mobile
+          this.person.mobile = profile_id.as_phone_number(this.person.id)
           this.show_authorize = true
         }
       })
@@ -86,10 +90,8 @@
     },
     computed: {
       valid_mobile_number() {
+        console.log('valid_mobile_number', this.person.mobile)
         return !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
-      },
-      mobile_as_e164() {
-        return `+1${this.person.mobile}`
       }
     },
     methods: {
@@ -122,7 +124,7 @@
         this.show_captcha = false
         this.hide_captcha = true
         firebase.auth()
-          .signInWithPhoneNumber(this.mobile_as_e164, this.human)
+          .signInWithPhoneNumber(`+1${this.person.mobile}`, this.human)
           .then(result => {
             this.authorizer = result
             this.$el.querySelector('#verification-code').scrollIntoView(false)
@@ -153,10 +155,14 @@
           event.preventDefault()
         }
       },
+      mobile_keyup(event){
+        this.person.id = profile_id.from_phone_number(this.person.mobile)
+      },
       mobile_paste(event) {
         event.preventDefault()
-        let paste = (event.clipboardData).getData('text')
-        this.person.mobile = parseNumber(paste, 'US').phone
+        const past_text = (event.clipboardData).getData('text')
+        const phone_number = past_text.parseNumber(paste, 'US').phone
+        this.person.id = profile_id.from_phone_number(phone_number)
       },
       code_keypress(event) {
         if (!event.key.match(/^\d$/)) {
@@ -175,7 +181,7 @@
   @require '../../style/variables'
   form#profile-form
     div#captcha
-      // overflow: hidden
+      overflow: hidden
       // max-width: 75vw
       &.hide_captcha
         display: none

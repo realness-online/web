@@ -12,8 +12,8 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import '@/modules/timeago'
-  import profile from '@/modules/Profile'
+  import '@/modules/time_ago'
+  import profile_id from '@/modules/profile_id'
   import { person_storage, posts_storage } from '@/modules/Storage'
   import profileAsFigure from '@/components/profile/as-figure'
   import logoAsLink from '@/components/logo-as-link'
@@ -53,11 +53,11 @@
     methods: {
       load_from_network(phone_number){
         console.log('load_from_network');
-        const profile_id = `/${phone_number}`
-        profile.load(profile_id).then(profile => {
+        const id = `/${phone_number}`
+        profile_id.load(id).then(profile => {
           this.person = profile
         })
-        profile.items(profile_id, 'posts').then(items => {
+        profile_id.items(id, 'posts').then(items => {
           this.posts = items
           this.working = false
         })

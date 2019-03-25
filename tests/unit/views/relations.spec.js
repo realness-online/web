@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
-import profile from '@/modules/Profile'
+import profile_id from '@/modules/profile_id'
 describe('@/views/Relations.vue', () => {
   let wrapper
   const person = {
@@ -41,7 +41,7 @@ describe('@/views/Relations.vue', () => {
   })
   it('fill_in_relationships()', () => {
     const load_spy = jest.fn(() => Promise.resolve('load_spy'))
-    jest.spyOn(profile, 'load').mockImplementation(() => Promise.resolve(person))
+    jest.spyOn(profile_id, 'load').mockImplementation(() => Promise.resolve(person))
     wrapper.setData({ relations: [person] })
     wrapper.vm.fill_in_relationships().then(() => {
       expect(load_spy).toBeCalled()
