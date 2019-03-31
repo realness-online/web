@@ -93,7 +93,7 @@
         bind(input, binding, vnode) {
           input.addEventListener('change', event => {
             const image = event.target.files[0]
-            if (image !== undefined && avatar_image.type === 'image/jpeg') {
+            if (image !== undefined && image.type === 'image/jpeg') {
               vnode.context.vectorize_image(image)
             }
           })
