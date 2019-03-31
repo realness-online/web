@@ -96,8 +96,8 @@
       stroke: lighten(black, 20%)
       stroke-width: (base-line / 36)
       @media (prefers-color-scheme: dark)
-        fill: lighten(black, 45%)
-        stroke: lighten(black, 66%)
+        fill: white
+        stroke: lighten(black, 99%)
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
@@ -106,7 +106,7 @@
         color: black
         margin:0
         @media (prefers-color-scheme: dark)
-          color: rgba(246, 250, 253, 0.69)
+          color: white
         & > span
           &:first-of-type
             margin-right:(base-line / 3)

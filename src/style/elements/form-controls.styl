@@ -35,14 +35,18 @@ input:focus
   transition-property: all
 
 button
-  standard-button: black
   background-color: inherit
   vertical-align: middle
   text-transform:capitalize
+  standard-button: black
   &:disabled
     standard-button: lighten(black, 30%)
+  @media (prefers-color-scheme: dark)
+    standard-button: white
 
 fieldset
-  standard-border: black
   padding: (base-line / 2 )
   overflow: hidden
+  standard-border: black
+  @media (prefers-color-scheme: dark)
+    standard-border: white
