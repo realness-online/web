@@ -51,8 +51,7 @@
       }
     },
     methods: {
-      load_from_network(phone_number){
-        console.log('load_from_network');
+      load_from_network(phone_number) {
         const id = `/${phone_number}`
         profile_id.load(id).then(profile => {
           this.person = profile
@@ -62,8 +61,7 @@
           this.working = false
         })
       },
-      load_from_local(){
-        console.log('load_from_local');
+      load_from_local() {
         this.person = person_storage.as_object()
         this.posts = posts_storage.as_list()
         this.working = false

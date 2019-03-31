@@ -30,19 +30,19 @@ export default {
       })
     })
   },
-  as_query_id(profile_id='/+') {
+  as_query_id(profile_id = '/+') {
     return profile_id.substring(2)
   },
-  as_avatar_id(profile_id='avatar_') {
+  as_avatar_id(profile_id = 'avatar_') {
     return `avatar_${this.as_query_id(profile_id)}`
   },
-  as_avatar_fragment(profile_id='avatar_') {
+  as_avatar_fragment(profile_id = 'avatar_') {
     return `#${this.as_avatar_id(profile_id)}`
   },
   from_phone_number(phone_number) {
     return `/+1${phone_number}`
   },
-  as_phone_number(profile_id='/+1') {
+  as_phone_number(profile_id = '/+1') {
     return profile_id.substring(3)
   },
   from_e64(e64_number) {
