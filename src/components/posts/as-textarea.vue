@@ -38,6 +38,8 @@
     cursor:pointer
     transition-property: border-width, border-radius, text-align, background-color
     color:black
+    @media (prefers-color-scheme: dark)
+      color: white
     font-family: 'Lato'
     font-size: inherit
     user-select: text
