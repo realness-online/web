@@ -55,7 +55,6 @@
           Vue.nextTick(() => person_storage.save())
         })
       })
-      this.$bus.on
     },
     methods: {
       open_camera(event) {
