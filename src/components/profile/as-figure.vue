@@ -72,9 +72,8 @@
         }
         return `${icons}#silhouette`
       },
-
       sms_link() {
-        return `sms:${profile_id.as_phone_number(this.person.id)}`
+        return `tel:${this.person.id}`
       },
       mobile_display() {
         return new AsYouType('US').input(profile_id.as_phone_number(this.person.id))
