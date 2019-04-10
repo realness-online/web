@@ -12,7 +12,11 @@ describe('@/modules/item.js', () => {
       <link itemprop="style" rel="stylesheet" href="/people/666/style.css">
     </section>
     <section>
-      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
+      <svg>
+        <use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use>
+        <g itemprop="another_vector"><symbol></g>
+      </svg>
+      <svg itemprop="third_vector"></svg>
       <img itemprop="profile_pic" src="/people/666/profile.svg">
       <object itemprop="logo_pic" src="/people/666/logo.svg" >
       <embed type="video/quicktime" src="/people/666/movie.mp4" width="300" height="300">
@@ -51,6 +55,7 @@ describe('@/modules/item.js', () => {
       expect(item.nickname).toBe('scoot')
       expect(item.url).toBe('/people/scott')
       expect(item.style).toBe('/people/666/style.css')
+      expect(item.third_vector).toBe('<svg itemprop="third_vector"></svg>')
     })
   })
   describe('get_first_item()', () => {

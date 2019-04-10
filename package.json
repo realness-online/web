@@ -99,7 +99,10 @@
     "cacheDirectory": "<rootDir>/tests/unit/cache",
     "collectCoverageFrom": [
       "src/**/*.{js,vue}",
-      "!src/main.js'",
+      "!src/main.js",
+      "!src/controller.js",
+      "!src/registerServiceWorker.js",
+      "!src/router.js",
       "!**/node_modules/**"
     ],
     "coverageThreshold": {
