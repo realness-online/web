@@ -1,5 +1,13 @@
 process.env.VUE_APP_VERSION = require('./package.json').version
 module.exports = {
+  css: {
+    loaderOptions: {
+      stylus: {
+        loader: 'stylus-resources-loader',
+        import: [path.resolve(__dirname, 'src/style/variables.styl')]
+      }
+    }
+  },
   pwa: {
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
