@@ -14,7 +14,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   div[itemprop="posts"]
     margin-top: base-line
     display:flex

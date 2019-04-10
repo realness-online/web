@@ -5,8 +5,7 @@
     }
   }
 </script>
-<style lang="stylus" >
-  @require '../style/variables'
+<style lang="stylus">
   [outline]
   [outline] *
     outline: 0.25vmin solid blue

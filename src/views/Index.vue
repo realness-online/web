@@ -30,7 +30,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   h6.app_version
     margin: 0
     position: fixed

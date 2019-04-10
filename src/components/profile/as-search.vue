@@ -31,7 +31,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   label[for=search]
     position: relative
     & > *

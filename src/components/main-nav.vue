@@ -54,7 +54,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   nav#main_nav
     min-height: s('calc(%s - %s)', 100vh, (base-line * 3))
     margin-top: base-line * 1.5

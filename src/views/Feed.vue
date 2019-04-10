@@ -101,7 +101,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   section#feed
     display: flex
     flex-direction: column

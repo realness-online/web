@@ -47,7 +47,6 @@
   }
 </script>
 <style lang='stylus'>
-  @require '../style/variables'
   section#relations svg
     fill: blue
 </style>

@@ -31,7 +31,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   textarea#wat
     transition-property: all
     transition-duration: 0.45s

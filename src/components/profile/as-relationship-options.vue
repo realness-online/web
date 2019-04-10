@@ -49,7 +49,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   .profile-list li >  menu
     display: inline-flex
     align-items: center;

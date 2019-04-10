@@ -7,9 +7,3 @@
     components: { icon }
   }
 </script>
-<style lang="stylus">
-  @require '../style/variables'
-  svg.realness
-    width:(base-line * 2)
-    height:(base-line * 2)
-</style>

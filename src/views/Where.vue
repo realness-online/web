@@ -13,7 +13,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   section#where
     padding: 0 base-line
 </style>

@@ -22,7 +22,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   nav.profile-list
     & > li
       margin-top: base-line

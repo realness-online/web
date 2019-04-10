@@ -60,7 +60,6 @@
   }
 </script>
 <style lang='stylus'>
-  @require '../style/variables'
   section#directory
     position: relative
     animation-name: slideInLeft

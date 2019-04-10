@@ -49,7 +49,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   section#avatar
     animation-name: slideInLeft
     min-height: 80vh

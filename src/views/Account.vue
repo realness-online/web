@@ -103,7 +103,6 @@
   }
 </script>
 <style lang='stylus'>
-  @require '../style/variables'
   section#account
     input[type=file]
       display: none

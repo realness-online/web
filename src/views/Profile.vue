@@ -75,7 +75,6 @@
   }
 </script>
 <style lang='stylus'>
-  @require '../style/variables'
   section#profile
     header > a
       -webkit-tap-highlight-color: black

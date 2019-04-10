@@ -178,7 +178,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   form#profile-form
     div#captcha
       overflow: hidden

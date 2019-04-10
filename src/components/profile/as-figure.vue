@@ -82,7 +82,6 @@
   }
 </script>
 <style lang="stylus">
-  @require '../../style/variables'
   figure.profile
     white-space: nowrap
     overflow: hidden

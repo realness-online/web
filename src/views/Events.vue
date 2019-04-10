@@ -50,11 +50,11 @@
   }
 </script>
 <style lang="stylus">
-  @require '../style/variables'
   section#events
     margin-top: 0
-    // padding: 0
+    padding: 0
     & > header
+      padding: base-line
       margin-bottom: base-line
       & > svg
         width: base-line * 2
@@ -67,11 +67,9 @@
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
       & > svg
-        // box-shadow: -1px 0px 0px black
         display: block
         width: 100%
         min-height: 66vh
-        // min-width: 50vw
         height: inherit
 
 </style>
