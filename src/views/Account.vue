@@ -7,6 +7,7 @@
       <a @click="accept_changes"><icon  name="finished"></icon></a>
     </header>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+    <a v-if="signed_in" :href="downloadable()" download='vector.svg'>Download</a>
     <button v-if="signed_in" @click="attach_poster">Upload Poster</button>
     <profile-as-form :person='person'></profile-as-form>
   </section>
@@ -41,6 +42,9 @@
         if (user) {
           this.person.id = profile_id.from_e64(user.phoneNumber)
           this.signed_in = true
+          profile_id.load(this.person.id).then(profile => {
+            this.person = profile
+          })
         } else {
           this.signed_in = false
         }
@@ -57,6 +61,10 @@
       })
     },
     methods: {
+      downloadable() {
+        const svg = document.querySelector('figure > svg').outerHTML
+        return `data:application/octet-stream,${encodeURIComponent(svg)}`
+      },
       open_camera(event) {
         this.$refs.uploader.setAttribute('capture', true)
         this.$refs.uploader.click()
@@ -110,6 +118,8 @@
       margin-bottom: base-line
       & > a:first-of-type
         display:none
+    & > button
+      display: block
     & > footer > menu
       padding: base-line
       display: flex
@@ -149,6 +159,10 @@
           margin-top: (base-line * 3)
           height:66vh
           width:100vw
+    & > a
+      standard-button: black
+      margin-bottom: base-line
+      display:inline-block
     & > button
       margin-bottom: base-line
     form#profile-form
