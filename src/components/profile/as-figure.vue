@@ -1,6 +1,6 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
-    <svg @click="avatar_click">
+    <svg @click="avatar_click" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMin meet">
       <defs v-if="!avatar_by_reference" itemprop="avatar" v-html="person.avatar"></defs>
       <use :xlink:href="avatar"/>
     </svg>
