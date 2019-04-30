@@ -15,7 +15,7 @@
 </script>
 <style lang="stylus">
   div[itemprop="posts"]
-    margin-top: base-line
+    padding: 0 base-line
     display:flex
     flex-direction: column-reverse
     & > article
