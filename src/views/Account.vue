@@ -115,7 +115,6 @@
     input[type=file]
       display: none
     & > header
-      margin-bottom: base-line
       & > a:first-of-type
         display:none
     & > button
