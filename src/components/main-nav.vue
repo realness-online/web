@@ -1,5 +1,5 @@
 <template>
-  <nav id="main_nav" v-bind:class="onboarding">
+  <nav id="main" v-bind:class="onboarding">
     <post-as-textarea v-on:toggle-keyboard="posting = !posting" class="red" ></post-as-textarea>
     <router-link v-if="!posting" to="/relations" class="blue">Friends</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
@@ -54,16 +54,21 @@
   }
 </script>
 <style lang="stylus">
-  nav#main_nav
-    min-height: s('calc(%s - %s)', 100vh, (base-line * 3))
-    margin-top: base-line * 1.5
-    margin-bottom: base-line * 1.5
-    display: flex
-    flex-direction:row
-    flex-wrap:wrap
-    align-content: space-between
-    justify-content:space-evenly
-    align-items: flex-start
+  nav#main
+    display: grid
+    grid-gap: base-line
+    grid-template-columns: 1fr 1fr
+    grid-template-rows: repeat(1fr)
+    align-items: stretch
+    justify-content: end
+    padding: base-line
+    max-height: 75vh
+    height: 100vh
+    & > *
+      font-weight: bold
+      padding: base-line
+      border-radius: base-line
+  nav#main
     & > a
       visibility: hidden
       text-transform: capitalize
@@ -71,30 +76,17 @@
         color:transparent
         transition-duration: 0.6s
         transition: all
-        margin:0.5vh 0.5vw
-        width: 43vw
-        height: 23vh
         outline: none
-    & > *
-      font-weight: bold
-      transition-timing-function: ease-out
+    & > a
       text-align: left
-      width: 44vw
-      height: 24vh
-      border-width: 1vmax
+      border-width: 1px
       border-style: solid
-      border-radius: base-line
-      padding: base-line
       &:nth-child(even)
         text-align: right
-        padding-right: base-line
       &:active
-        border-width: 1.33vh
-        width: 42vw
-        height: 22vh
-        margin: 1vh 1vw
+        border-width: 1vmax
         color:transparent
-  nav#main_nav
+  nav#main
     &.has_posts
       & > [href='/profile']
         visibility: visible

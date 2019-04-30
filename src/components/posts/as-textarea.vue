@@ -1,9 +1,11 @@
 <template lang="html">
   <textarea id="wat"
     v-model="new_post"
+    cols="1"
+    rows="1"
     v-on:focusout="prepare_post"
     v-on:focusin="wat_focused"
-    placeholder=">">{{value}}</textarea>
+    placeholder=">"></textarea>
 </template>
 <script>
   export default {
@@ -32,39 +34,36 @@
 </script>
 <style lang="stylus">
   textarea#wat
+    appearance: none
     transition-property: all
     transition-duration: 0.45s
-    cursor:pointer
+    cursor: pointer
     transition-property: border-width, border-radius, text-align, background-color
-    color:black
+    color: black
     @media (prefers-color-scheme: dark)
       color: white
-    font-family: 'Lato'
-    font-size: inherit
     user-select: text
     border-style: solid
     resize: none
     caret-color: red
-    padding-left: 1rem
     &::placeholder
-      transition-property:all
-      font-family: 'Lato'
+      transition-property: all
+      font-family: inherit
     &:focus
-      animation-name: slideInLeft
-      font-weight: normal
-      font-size:1.25em
-      height:100vh
+      font-size: 1.25em
+      padding: base-line
+      height: 100vh
+      width: 100vw
       text-align: left
-      width:100vw
       border-top: none
       border-radius: 0
       border-width: 0
       background-color: transparent
-      outline:0
+      outline: 0
       transition-duration: .3s
       transition-property: all
       line-height: base-line
       &::placeholder
-        color:red
+        color: red
         text-align: left
 </style>
