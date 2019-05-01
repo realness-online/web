@@ -102,10 +102,11 @@
 </script>
 <style lang="stylus">
   section#feed
+    max-width: page-width
     display: flex
     flex-direction: column
     & > nav.profile-list
-      display:none
+      display: none
     & > header
       margin-bottom: base-line
       & > svg

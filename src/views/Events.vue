@@ -51,11 +51,10 @@
 </script>
 <style lang="stylus">
   section#events
-    margin-top: 0
-    padding: 0
     & > header
+      margin: auto
       padding: base-line
-      margin-bottom: base-line
+      max-width: page-width
       & > svg
         width: base-line * 2
         height: base-line * 2

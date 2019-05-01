@@ -47,6 +47,10 @@
   }
 </script>
 <style lang='stylus'>
-  section#relations svg
-    fill: blue
+  section#relations
+    & > header
+      max-width: page-width
+      margin: auto
+    svg
+      fill: blue
 </style>

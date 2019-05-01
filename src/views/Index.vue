@@ -23,10 +23,12 @@
   }
 </script>
 <style lang="stylus">
-  h6.app_version
-    margin: 0
-    position: fixed
-    bottom: (base-line / 2)
-    left: (base-line / 2)
+  section#home.page
+    max-width: page-width
+    & > h6.app_version
+      margin: 0
+      position: fixed
+      bottom: (base-line / 2)
+      left: (base-line / 2)
 
 </style>

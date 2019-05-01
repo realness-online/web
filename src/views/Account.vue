@@ -112,6 +112,7 @@
 </script>
 <style lang='stylus'>
   section#account
+    max-width: page-width
     input[type=file]
       display: none
     & > header

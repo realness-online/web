@@ -76,7 +76,8 @@
 </script>
 <style lang='stylus'>
   section#profile
-    header > a
+    max-width: page-width
+    & > header > a
       -webkit-tap-highlight-color: black
     & > svg.working
       margin-top: base-line

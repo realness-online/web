@@ -69,6 +69,8 @@
       fill: blue
       margin-top: base-line
     & > header
+      max-width: page-width
+      margin: auto
       &:focus-within > h1
         transition-property: all
         overflow: hidden

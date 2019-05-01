@@ -23,6 +23,7 @@
 </script>
 <style lang="stylus">
   nav.profile-list
+    padding: 0 base-line
     & > li
       margin-top: base-line
       list-style: none
