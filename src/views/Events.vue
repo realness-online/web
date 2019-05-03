@@ -7,7 +7,7 @@
     </header>
     <icon v-show="working" name="working"></icon>
     <figure>
-      <svg v-for="person in curators">
+      <svg v-for="person in curators" :key="person.id" >
         <defs itemprop="avatar" v-html="person.avatar"></defs>
         <use :xlink:href="avatar_link(person.id)"/>
       </svg>
@@ -16,14 +16,11 @@
 </template>
 <script>
   import logoAsLink from '@/components/logo-as-link'
-  import profileAsList from '@/components/profile/as-list'
-  import { relations_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
     components: {
       logoAsLink,
-      profileAsList,
       icon
     },
     data() {
@@ -43,7 +40,7 @@
       })
     },
     methods: {
-      avatar_link(item_id){
+      avatar_link(item_id) {
         return profile_id.as_avatar_fragment(item_id)
       }
     }
