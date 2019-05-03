@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="profile" class="page">
+  <section id="profile" class="page" ref='profile'>
     <header>
       <profile-as-figure :person='person' :nav="false"></profile-as-figure>
       <logo-as-link></logo-as-link>
@@ -13,6 +13,7 @@
   </section>
 </template>
 <script>
+  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import '@/modules/time_ago'
@@ -23,15 +24,13 @@
   import logoAsLink from '@/components/logo-as-link'
   import postsList from '@/components/posts/as-list'
   import myPosts from '@/components/posts/my-list'
-  import icon from '@/components/icon'
   export default {
     components: {
       profileAsFigure,
       profileAsAvatar,
       myPosts,
       postsList,
-      logoAsLink,
-      icon
+      logoAsLink
     },
     data() {
       return {
@@ -47,6 +46,7 @@
       } else {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
+            this.load_from_local()
             this.load_from_network(user.phoneNumber)
           } else {
             this.load_from_local()
@@ -55,10 +55,23 @@
       }
     },
     methods: {
+      focus_on_avatar() {
+        Vue.nextTick(() => {
+          const id = profile_id.as_avatar_id(this.person.id)
+          // console.log('this.$refs.profile', )
+          const header = this.$refs.profile.querySelector('header')
+          // const avatar = document.getElementById(id)
+
+          console.log('avatar!', header.offsetHeight)
+          window.scrollTo(0, header.offsetHeight)
+          // avatar.scrollIntoView(true)
+        })
+      },
       load_from_network(phone_number) {
         const id = `/${phone_number}`
         profile_id.load(id).then(profile => {
           this.person = profile
+          this.focus_on_avatar()
         })
         profile_id.items(id, 'posts').then(items => {
           this.posts = items
@@ -68,6 +81,7 @@
       load_from_local() {
         this.person = person_storage.as_object()
         this.posts = posts_storage.as_list()
+        this.focus_on_avatar()
         this.working = false
       }
     },
@@ -86,15 +100,9 @@
       max-width: page-width
     & > footer
       padding: 0 base-line
-    & > header
-      position:relative
-      z-index: 2
-      figcaption > a
-        text-shadow: 0.25px 0.25px 0px black
-      & > a
-        -webkit-tap-highlight-color: black
+    & > header > a
+      -webkit-tap-highlight-color: blue
     & > svg:not(.working)
-      margin-top: -(base-line * 4)
       width: 100vw
       min-height: 100vh
       fill: white
