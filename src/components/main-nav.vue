@@ -62,13 +62,14 @@
     align-items: stretch
     justify-content: end
     padding: base-line
-    max-height: 75vh
     height: 100vh
+    width: 100%
     & > *
       font-weight: bold
       padding: base-line
       border-radius: base-line
   nav#main
+    max-height: 150vw
     & > a
       visibility: hidden
       text-transform: capitalize
