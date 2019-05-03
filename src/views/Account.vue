@@ -130,11 +130,8 @@
     & > header
       max-width: page-width
       margin: auto
-      position: relative
-      z-index: 2
     & > svg
       fill: white
-      margin-top: -(base-line * 4)
       width:100vw
       min-height:100vh
       &.working
