@@ -26,7 +26,6 @@
   import profileAsList from '@/components/profile/as-list'
   import profileAsAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
-
   export default {
     components: {
       profileAsAvatar,
@@ -120,12 +119,10 @@
       order: 1
       margin-bottom: base-line
     & > article
-      overflow:hidden
-      padding: base-line
+      overflow: hidden
+      padding: base-line base-line 0 base-line
       &:first-of-type
         padding-top: 0
-      & > blockquote
-        margin-left: (base-line / 6)
       & > hgroup
         & > span
         & > time
@@ -138,8 +135,9 @@
           color: white
           margin-left: (base-line / 6)
       & > a > svg
+        margin-right: (base-line / 3)
         float: left
-        clip-path: circle(40%)
+        clip-path: circle(50%)
         fill: blue
         stroke: lighten(blue, 33%)
         stroke-width:2px
