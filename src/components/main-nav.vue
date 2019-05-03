@@ -60,8 +60,6 @@
     grid-template-columns: 1fr 1fr
     grid-template-rows: repeat(1fr)
     align-items: stretch
-    justify-content: end
-    padding: base-line
     height: 100vh
     width: 100%
     & > *
@@ -69,7 +67,7 @@
       padding: base-line
       border-radius: base-line
   nav#main
-    max-height: 150vw
+    max-height: 133vw
     & > a
       visibility: hidden
       text-transform: capitalize

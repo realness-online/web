@@ -53,10 +53,11 @@
       & > a
         -webkit-tap-highlight-color: green
     & > figure
-      padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
+      @media (min-width: max-screen)
+        padding: 0 base-line
       & > svg
         display: block
         width: 100%

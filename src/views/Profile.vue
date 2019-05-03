@@ -84,9 +84,13 @@
     & > footer
       margin: auto
       max-width: page-width
+    & > footer
+      padding: 0 base-line
     & > header
       position:relative
       z-index: 2
+      figcaption > a
+        text-shadow: 0.25px 0.25px 0px black
       & > a
         -webkit-tap-highlight-color: black
     & > svg:not(.working)

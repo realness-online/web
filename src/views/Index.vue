@@ -24,6 +24,7 @@
 </script>
 <style lang="stylus">
   section#home.page
+    padding: base-line
     height:100vh
     display: flex
     align-items: center

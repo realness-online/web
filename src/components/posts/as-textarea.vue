@@ -51,9 +51,11 @@
       font-family: inherit
     &:focus
       font-size: 1.25em
-      padding: base-line
+      font-weight: normal
+      padding: 0
       height: 100vh
-      width: 100vw
+      grid-column-start: 1
+      grid-column-end: 3
       text-align: left
       border-top: none
       border-radius: 0

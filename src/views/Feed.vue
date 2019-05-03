@@ -8,7 +8,9 @@
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">
-      <profile-as-avatar :person='post.person' :by_reference="true"></profile-as-avatar>
+      <a @click="view_profile">
+        <profile-as-avatar :person='post.person' :by_reference="true"></profile-as-avatar>
+      </a>
       <hgroup>
         <span>{{post.person.first_name}}&nbsp;{{post.person.last_name}}</span>
         <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
@@ -66,6 +68,9 @@
       })
     },
     methods: {
+      view_profile(event) {
+        console.log('view_profile')
+      },
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
         const bottom = article.getBoundingClientRect().bottom - 200
@@ -116,17 +121,21 @@
       margin-bottom: base-line
     & > article
       padding: base-line
+      &:first-of-type
+        padding-top: 0
       & hgroup
         & > span
         & > time
           display: inline-block
           line-height: 1
-          vertical-align: super
+          vertical-align: center
         & > span
-          color:white
+          font-size: 0.75em
+          color: white
         & > time
+          color: white
           margin-left: (base-line / 6)
-      & > svg
+      & a > svg
         margin-right: (base-line / 2)
         float:left
         clip-path: circle(50%)
