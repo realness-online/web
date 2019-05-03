@@ -40,7 +40,7 @@
         this.phonebook = people
         this.phonebook.forEach((person, index) => {
           profile_id.load(person.id).then(profile => {
-            if(profile) {
+            if (profile) {
               this.phonebook.splice(index, 1, profile)
             }
           })
@@ -61,8 +61,6 @@
 </script>
 <style lang='stylus'>
   section#directory
-    position: relative
-    animation-name: slideInLeft
     position: relative
     min-height: 100vh
     svg.working
