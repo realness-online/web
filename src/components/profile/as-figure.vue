@@ -1,7 +1,7 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
-    <svg @click="avatar_click" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMinYMin meet">
-      <defs v-if="!avatar_by_reference" itemprop="avatar" v-html="person.avatar"></defs>
+    <svg @click="avatar_click">
+      <defs v-if="!avatar_by_reference" ref="avatar" itemprop="avatar" v-html="person.avatar"></defs>
       <use :xlink:href="avatar"/>
     </svg>
     <figcaption>
@@ -15,6 +15,7 @@
   </figure>
 </template>
 <script>
+  import Vue from 'vue'
   import { person_storage } from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
   import icons from '@/icons.svg'
@@ -43,7 +44,16 @@
         default: true
       }
     },
+    updated() {
+      Vue.nextTick(() => this.fit_avatar())
+    },
     methods: {
+      fit_avatar() {
+        const avatar_id = profile_id.as_avatar_id(this.person.id)
+        console.log(avatar_id, 'fit_avatar', this.$refs.avatar)
+
+        document.getElementById(avatar_id).setAttribute('preserveAspectRatio', 'xMidYMid slice')
+      },
       avatar_click(event) {
         let route = {
           path: this.person.id
@@ -88,6 +98,7 @@
     text-overflow: ellipsis
     display:flex
     & > svg
+      clip-path: circle(50%)
       cursor: pointer
       fill: black
       stroke: lighten(black, 20%)
