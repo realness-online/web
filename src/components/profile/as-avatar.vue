@@ -30,7 +30,9 @@
       fit_avatar() {
         const avatar_id = profile_id.as_avatar_id(this.person.id)
         const avatar = document.getElementById(avatar_id)
-        avatar.setAttribute('preserveAspectRatio', this.preserve_aspect_ratio)
+        if (avatar) {
+          avatar.setAttribute('preserveAspectRatio', this.preserve_aspect_ratio)
+        }
       }
     },
     computed: {
