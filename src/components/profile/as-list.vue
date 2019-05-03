@@ -25,7 +25,7 @@
   nav.profile-list
     padding: 0 base-line
     & > li
-      margin-top: base-line
+      margin-bottom: base-line
       list-style: none
       display: flex
       justify-content: space-between
