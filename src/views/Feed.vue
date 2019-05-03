@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" class="page left">
+  <section id="feed" class="page">
     <header>
       <icon name='nothing'></icon>
       <h1>Feed</h1>
@@ -7,7 +7,7 @@
     </header>
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
-    <article v-else v-for="post in size_limited_feed" itemscope itemtype="/post" >
+    <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post" >
       <header>
         <profile-as-figure :person='post.person' :avatar_by_reference="true"></profile-as-figure>
       </header>
@@ -17,7 +17,7 @@
   </section>
 </template>
 <script>
-  import { relations_storage, posts_storage, person_storage } from '@/modules/Storage'
+  import { relations_storage, person_storage } from '@/modules/Storage'
   import logoAsLink from '@/components/logo-as-link'
   import profileAsList from '@/components/profile/as-list'
   import profileAsFigure from '@/components/profile/as-figure'
@@ -65,7 +65,7 @@
       })
     },
     methods: {
-      scrolled(o)  {
+      scrolled(o) {
         const bottom = document.querySelector('#feed > article:last-of-type')
           .getBoundingClientRect()
           .bottom
@@ -84,7 +84,7 @@
                   post.person = person
                 })
                 this.feed.push(...posts)
-                if(this.unsorted_relations < 1) {
+                if (this.unsorted_relations < 1) {
                   resolve('finished')
                 }
               })
@@ -93,8 +93,8 @@
         })
       }
     },
-    computed:{
-      size_limited_feed(){
+    computed: {
+      size_limited_feed() {
         return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
       }
     }
@@ -105,16 +105,16 @@
     max-width: page-width
     display: flex
     flex-direction: column
-    & > nav.profile-list
-      display: none
     & > header
-      margin-bottom: base-line
       & > svg
         fill: transparent
+    & > nav.profile-list
+      display: none
     & > svg.working
       order: 1
       margin-bottom: base-line
     & > article
+      padding: 0 base-line
       margin-bottom: base-line
       & > header
         margin-bottom: (base-line / 2)
