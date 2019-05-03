@@ -55,6 +55,7 @@
 </script>
 <style lang="stylus">
   nav#main
+    padding: base-line 0
     display: grid
     grid-gap: base-line
     grid-template-columns: 1fr 1fr
