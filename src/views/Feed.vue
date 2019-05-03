@@ -111,15 +111,15 @@
     max-width: page-width
     display: flex
     flex-direction: column
-    & > header
-      & > svg
-        fill: transparent
+    & > header > svg
+      fill: transparent
     & > nav.profile-list
       display: none
     & > svg.working
       order: 1
       margin-bottom: base-line
     & > article
+      overflow:hidden
       padding: base-line
       &:first-of-type
         padding-top: 0
@@ -127,19 +127,18 @@
         & > span
         & > time
           display: inline-block
-          line-height: 1
-          vertical-align: center
+          vertical-align: top
         & > span
           font-size: 0.75em
           color: white
         & > time
           color: white
           margin-left: (base-line / 6)
-      & a > svg
+      & > a > svg
+        margin-top: (base-line / 2)
         margin-right: (base-line / 2)
         float:left
         clip-path: circle(50%)
-        border-color: blue
         fill: blue
         stroke: lighten(blue, 33%)
 </style>
