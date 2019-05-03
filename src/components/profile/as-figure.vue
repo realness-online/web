@@ -1,9 +1,8 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
-    <svg @click="avatar_click">
-      <defs v-if="!avatar_by_reference" ref="avatar" itemprop="avatar" v-html="person.avatar"></defs>
-      <use :xlink:href="avatar"/>
-    </svg>
+    <a @click.passive="avatar_click">
+      <as-avatar :person="person"></as-avatar>
+    </a>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
@@ -15,12 +14,14 @@
   </figure>
 </template>
 <script>
-  import Vue from 'vue'
-  import { person_storage } from '@/modules/Storage'
   import { AsYouType } from 'libphonenumber-js'
-  import icons from '@/icons.svg'
   import profile_id from '@/modules/profile_id'
+  import { person_storage } from '@/modules/Storage'
+  import asAvatar from '@/components/profile/as-avatar'
   export default {
+    components: {
+      asAvatar
+    },
     props: {
       person: Object,
       previous: {
@@ -35,26 +36,14 @@
         type: Boolean,
         default: false
       },
-      just_display_avatar: {
-        type: Boolean,
-        default: false
-      },
       nav: {
         type: Boolean,
         default: true
       }
     },
-    updated() {
-      Vue.nextTick(() => this.fit_avatar())
-    },
     methods: {
-      fit_avatar() {
-        const avatar_id = profile_id.as_avatar_id(this.person.id)
-        console.log(avatar_id, 'fit_avatar', this.$refs.avatar)
-
-        document.getElementById(avatar_id).setAttribute('preserveAspectRatio', 'xMidYMid slice')
-      },
       avatar_click(event) {
+        console.log('click')
         let route = {
           path: this.person.id
         }
@@ -67,20 +56,12 @@
         if (this.previous) {
           route.path = sessionStorage.previous
         }
-        if (!this.just_display_avatar) {
-          this.$router.push(route)
-        }
+        this.$router.push(route)
       }
     },
     computed: {
       is_me() {
         return person_storage.as_object().id === this.person.id
-      },
-      avatar() {
-        if (this.person.avatar) {
-          return profile_id.as_avatar_fragment(this.person.id)
-        }
-        return `${icons}#silhouette`
       },
       sms_link() {
         return `tel:${this.person.id}`
@@ -97,7 +78,7 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
-    & > svg
+    svg
       clip-path: circle(50%)
       cursor: pointer
       fill: black

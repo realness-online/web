@@ -24,6 +24,10 @@
 </script>
 <style lang="stylus">
   section#home.page
+    height:100vh
+    display: flex
+    align-items: center
+    margin:auto
     max-width: page-width
     & > h6.app_version
       margin: 0

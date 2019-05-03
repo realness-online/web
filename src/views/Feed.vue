@@ -7,12 +7,13 @@
     </header>
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
-    <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post" >
-      <header>
-        <profile-as-figure :person='post.person' :avatar_by_reference="true"></profile-as-figure>
-      </header>
+    <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">
+      <profile-as-avatar :person='post.person' :by_reference="true"></profile-as-avatar>
+      <hgroup>
+        <span>{{post.person.first_name}}&nbsp;{{post.person.last_name}}</span>
+        <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
+      </hgroup>
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
-      <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
     </article>
   </section>
 </template>
@@ -20,12 +21,12 @@
   import { relations_storage, person_storage } from '@/modules/Storage'
   import logoAsLink from '@/components/logo-as-link'
   import profileAsList from '@/components/profile/as-list'
-  import profileAsFigure from '@/components/profile/as-figure'
+  import profileAsAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
   import profile_id from '@/modules/profile_id'
   export default {
     components: {
-      profileAsFigure,
+      profileAsAvatar,
       profileAsList,
       logoAsLink,
       icon
@@ -65,10 +66,9 @@
       })
     },
     methods: {
-      scrolled(o) {
-        const bottom = document.querySelector('#feed > article:last-of-type')
-          .getBoundingClientRect()
-          .bottom
+      scrolled(event) {
+        const article = document.querySelector('#feed > article:last-of-type')
+        const bottom = article.getBoundingClientRect().bottom - 200
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
         }
@@ -102,6 +102,7 @@
 </script>
 <style lang="stylus">
   section#feed
+    position: relative
     max-width: page-width
     display: flex
     flex-direction: column
@@ -114,12 +115,22 @@
       order: 1
       margin-bottom: base-line
     & > article
-      padding: 0 base-line
-      margin-bottom: base-line
-      & > header
-        margin-bottom: (base-line / 2)
-        & > figure > svg
-          border-color: blue
-          fill: blue
-          stroke: lighten(blue, 33%)
+      padding: base-line
+      & hgroup
+        & > span
+        & > time
+          display: inline-block
+          line-height: 1
+          vertical-align: super
+        & > span
+          color:white
+        & > time
+          margin-left: (base-line / 6)
+      & > svg
+        margin-right: (base-line / 2)
+        float:left
+        clip-path: circle(50%)
+        border-color: blue
+        fill: blue
+        stroke: lighten(blue, 33%)
 </style>

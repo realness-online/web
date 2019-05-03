@@ -6,7 +6,6 @@ import Where from '@/views/Where'
 import Account from '@/views/Account'
 import Index from '@/views/Index'
 import Profile from '@/views/Profile'
-import Avatar from '@/views/Avatar'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 
@@ -24,7 +23,6 @@ export default new Router({
     { path: '/phonebook', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/:phone_number/avatar', component: Avatar },
     { path: '/:phone_number', component: Profile }
   ]
 })

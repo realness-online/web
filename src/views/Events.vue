@@ -7,20 +7,19 @@
     </header>
     <icon v-show="working" name="working"></icon>
     <figure>
-      <svg v-for="person in curators" :key="person.id" >
-        <defs itemprop="avatar" v-html="person.avatar"></defs>
-        <use :xlink:href="avatar_link(person.id)"/>
-      </svg>
+      <as-avatar v-for="person in curators" :person="person"></as-avatar>
     </figure>
   </section>
 </template>
 <script>
   import logoAsLink from '@/components/logo-as-link'
+  import asAvatar from '@/components/profile/as-avatar'
   import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
     components: {
       logoAsLink,
+      asAvatar,
       icon
     },
     data() {
@@ -38,11 +37,6 @@
           this.working = false
         })
       })
-    },
-    methods: {
-      avatar_link(item_id) {
-        return profile_id.as_avatar_fragment(item_id)
-      }
     }
   }
 </script>
@@ -59,6 +53,7 @@
       & > a
         -webkit-tap-highlight-color: green
     & > figure
+      padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line

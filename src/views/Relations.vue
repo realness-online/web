@@ -53,4 +53,6 @@
       margin: auto
     svg
       fill: blue
+      &.working
+        margin-bottom: base-line
 </style>
