@@ -1,15 +1,17 @@
 <template lang="html">
-  <section id="account" v-bind:class="{signed_in}" class="page left">
+  <section id="account" v-bind:class="{signed_in}" class="page">
     <header>
       <a @click="open_camera"><icon name="add"></icon></a>
       <icon v-if="working" name="working"></icon>
       <profile-as-figure v-else :person="person" :just_display_avatar="true" ></profile-as-figure>
       <a @click="accept_changes"><icon  name="finished"></icon></a>
     </header>
-    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
-    <a v-if="signed_in" :href="downloadable()" download='vector.svg'>Download</a>
-    <button v-if="signed_in" @click="attach_poster">Upload Poster</button>
-    <profile-as-form :person='person'></profile-as-form>
+    <div>
+      <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+      <a v-if="signed_in" :href="downloadable" download='vector.svg'>Download</a>
+      <button v-if="signed_in" @click="attach_poster">Poster</button>
+      <profile-as-form :person='person'></profile-as-form>
+    </div>
   </section>
 </template>
 <script>
@@ -60,11 +62,16 @@
         })
       })
     },
-    methods: {
+    computed: {
       downloadable() {
-        const svg = document.querySelector('figure > svg').outerHTML
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+          ${this.person.avatar}
+          <use href="${profile_id.as_avatar_fragment(this.person.id)}"/>
+        </svg>`
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
-      },
+      }
+    },
+    methods: {
       open_camera(event) {
         this.$refs.uploader.setAttribute('capture', true)
         this.$refs.uploader.click()
@@ -84,6 +91,7 @@
       vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
+        console.log(this.person)
         convert_to_avatar.trace(image, profile_id.as_avatar_id(this.person.id))
         .then(avatar => {
           this.working = false
@@ -118,6 +126,8 @@
     & > header
       & > a:first-of-type
         display:none
+    & > div
+      padding: 0 base-line base-line base-line
     & > button
       display: block
     & > footer > menu
@@ -141,7 +151,6 @@
       height:50vh
     & > header
       min-height:100vh
-      margin-bottom: base-line
       & > a
         position: absolute
         -webkit-tap-highlight-color: black
@@ -156,17 +165,21 @@
           display: none
         & > svg
           -webkit-tap-highlight-color: transparent
-          margin-top: (base-line * 3)
-          height:66vh
+          // margin-top: (base-line * 3)
+          min-height:100vh
           width:100vw
-    & > a
-      standard-button: black
-      margin-bottom: base-line
-      display:inline-block
-    & > button
-      margin-bottom: base-line
-    form#profile-form
-      #name
-      #phone
-        display:none
+    & > div
+      display: flex
+      flex-direction: column
+      align-items: center
+      & > a
+        margin-bottom: base-line
+        standard-button: black
+        display:inline-block
+      & > button
+        margin-bottom: base-line
+      & > form
+        #name
+        #phone
+          display:none
 </style>
