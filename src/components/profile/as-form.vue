@@ -30,7 +30,7 @@
     <menu>
       <button id="authorize"
               tabindex="4"
-              :disabled="!valid_mobile_number"
+              :disabled="disabled_sign_in"
               v-if="show_authorize"
               v-on:click='begin_authorization'>Sign in</button>
       <button id='submit-verification'
@@ -59,6 +59,7 @@
       return {
         working: true,
         storage: person_storage,
+        disabled_sign_in: true,
         code: null,
         human: null,
         authorizer: null,
@@ -79,6 +80,7 @@
           this.person.mobile = profile_id.as_phone_number(this.person.id)
           this.show_authorize = true
         }
+        this.validate_mobile_number()
       })
     },
     mounted() {
@@ -88,13 +90,16 @@
         }
       })
     },
-    computed: {
-      valid_mobile_number() {
-        console.log('valid_mobile_number', this.person.mobile)
-        return !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
-      }
-    },
     methods: {
+      validate_mobile_number(event) {
+        const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
+        if (is_valid) {
+          this.disabled_sign_in = false
+        } else {
+          this.disabled_sign_in = true
+        }
+        return is_valid
+      },
       disable_input() {
         this.$el.querySelector('#mobile').disabled = true
       },
@@ -155,14 +160,16 @@
           event.preventDefault()
         }
       },
-      mobile_keyup(event){
+      mobile_keyup(event) {
+        this.validate_mobile_number()
         this.person.id = profile_id.from_phone_number(this.person.mobile)
       },
       mobile_paste(event) {
         event.preventDefault()
         const past_text = (event.clipboardData).getData('text')
-        const phone_number = past_text.parseNumber(paste, 'US').phone
+        const phone_number = past_text.parseNumber(past_text, 'US').phone
         this.person.id = profile_id.from_phone_number(phone_number)
+        this.validate_mobile_number()
       },
       code_keypress(event) {
         if (!event.key.match(/^\d$/)) {
