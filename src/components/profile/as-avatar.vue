@@ -14,6 +14,10 @@
       by_reference: {
         type: Boolean,
         default: false
+      },
+      preserve_aspect_ratio: {
+        type: String,
+        default: 'xMidYMid slice'
       }
     },
     mounted() {
@@ -25,7 +29,8 @@
     methods: {
       fit_avatar() {
         const avatar_id = profile_id.as_avatar_id(this.person.id)
-        document.getElementById(avatar_id).setAttribute('preserveAspectRatio', 'xMidYMid slice')
+        const avatar = document.getElementById(avatar_id)
+        avatar.setAttribute('preserveAspectRatio', this.preserve_aspect_ratio)
       }
     },
     computed: {

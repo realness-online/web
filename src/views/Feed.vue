@@ -8,9 +8,9 @@
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">
-      <a @click="view_profile">
-        <profile-as-avatar :person='post.person' :by_reference="true"></profile-as-avatar>
-      </a>
+      <router-link :to="{ name: 'view-profile', params: {phone_number: post.person.id} }">
+        <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
+      </router-link>
       <hgroup>
         <span>{{post.person.first_name}}&nbsp;{{post.person.last_name}}</span>
         <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
@@ -21,11 +21,12 @@
 </template>
 <script>
   import { relations_storage, person_storage } from '@/modules/Storage'
+  import profile_id from '@/modules/profile_id'
   import logoAsLink from '@/components/logo-as-link'
   import profileAsList from '@/components/profile/as-list'
   import profileAsAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
-  import profile_id from '@/modules/profile_id'
+
   export default {
     components: {
       profileAsAvatar,
@@ -127,7 +128,7 @@
         & > span
         & > time
           display: inline-block
-          vertical-align: top
+          vertical-align: center
         & > span
           font-size: 0.75em
           color: white
@@ -135,10 +136,9 @@
           color: white
           margin-left: (base-line / 6)
       & > a > svg
-        margin-top: (base-line / 2)
-        margin-right: (base-line / 2)
-        float:left
-        clip-path: circle(50%)
+        float: left
+        clip-path: circle(45%)
         fill: blue
         stroke: lighten(blue, 33%)
+        stroke-width:2px
 </style>

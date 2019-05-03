@@ -23,6 +23,6 @@ export default new Router({
     { path: '/phonebook', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/:phone_number', component: Profile }
+    { path: '/:phone_number', component: Profile, name: 'view-profile'}
   ]
 })
