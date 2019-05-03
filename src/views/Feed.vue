@@ -124,7 +124,9 @@
       padding: base-line
       &:first-of-type
         padding-top: 0
-      & hgroup
+      & > blockquote
+        margin-left: (base-line / 6)
+      & > hgroup
         & > span
         & > time
           display: inline-block
@@ -137,7 +139,7 @@
           margin-left: (base-line / 6)
       & > a > svg
         float: left
-        clip-path: circle(45%)
+        clip-path: circle(40%)
         fill: blue
         stroke: lighten(blue, 33%)
         stroke-width:2px
