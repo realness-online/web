@@ -8,7 +8,7 @@
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">
-      <router-link :to="{ name: 'view-profile', params: {phone_number: post.person.id} }">
+      <router-link :to="post.person.id">
         <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
       </router-link>
       <hgroup>
@@ -68,12 +68,9 @@
       })
     },
     methods: {
-      view_profile(event) {
-        console.log('view_profile')
-      },
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
-        const bottom = article.getBoundingClientRect().bottom - 200
+        const bottom = article.getBoundingClientRect().bottom - 430
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
         }
