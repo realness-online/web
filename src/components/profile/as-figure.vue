@@ -28,10 +28,6 @@
         type: Boolean,
         default: false
       },
-      click_to_avatar: {
-        type: Boolean,
-        default: false
-      },
       avatar_by_reference: {
         type: Boolean,
         default: false
@@ -43,12 +39,8 @@
     },
     methods: {
       avatar_click(event) {
-        console.log('click')
         let route = {
           path: this.person.id
-        }
-        if (this.click_to_avatar) {
-          route.path = `${this.person.id}/avatar`
         }
         if (this.is_me) {
           route.path = '/account'
