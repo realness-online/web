@@ -68,7 +68,7 @@
       padding: base-line
       border-radius: base-line
   nav#main
-    max-height: 133vw
+    max-height: page-width
     & > a
       visibility: hidden
       text-transform: capitalize
