@@ -3,8 +3,8 @@
     <header>
       <a v-if="signed_in" @click="open_camera"><icon name="add"></icon></a>
       <profile-as-figure :person="person"></profile-as-figure>
-      <a v-if="avatar_changed" @click="revert_avatar" ><icon name="remove"></icon></a>
-      <a @click="accept_changes"><icon name="finished"></icon></a>
+      <a v-if="avatar_changed" @click="accept_changes"><icon name="finished"></icon></a>
+      <logo-as-link></logo-as-link>
     </header>
     <icon v-if="working" name="working"></icon>
     <as-avatar v-if="signed_in" :person="person"></as-avatar>
@@ -24,6 +24,7 @@
   import profile_id from '@/modules/profile_id'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
+  import logoAsLink from '@/components/logo-as-link'
   import asAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
   import convert_to_avatar from '@/modules/convert_to_avatar'
@@ -32,7 +33,8 @@
       'profile-as-figure': as_figure,
       'profile-as-form': as_form,
       icon,
-      asAvatar
+      asAvatar,
+      logoAsLink
     },
     data() {
       return {
@@ -46,10 +48,11 @@
     created() {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          this.person.id = profile_id.from_e64(user.phoneNumber)
+          const id = profile_id.from_e64(user.phoneNumber)
           this.signed_in = true
-          profile_id.load(this.person.id).then(profile => {
+          profile_id.load(id).then(profile => {
             this.person = profile
+            this.person.id = id
           })
         } else {
           this.signed_in = false
@@ -153,10 +156,12 @@
         standard-button: black
       & > button
         margin-bottom: base-line
-      & > form
+    &.signed_in
+      & > header > figure
+        display: none
+      & > div > form
+        width: inherit
         #name
         #phone
           display:none
-    &.signed_in > header > figure
-      display: none
 </style>
