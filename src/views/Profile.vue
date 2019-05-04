@@ -58,13 +58,8 @@
       focus_on_avatar() {
         Vue.nextTick(() => {
           const id = profile_id.as_avatar_id(this.person.id)
-          // console.log('this.$refs.profile', )
           const header = this.$refs.profile.querySelector('header')
-          // const avatar = document.getElementById(id)
-
-          console.log('avatar!', header.offsetHeight)
           window.scrollTo(0, header.offsetHeight)
-          // avatar.scrollIntoView(true)
         })
       },
       load_from_network(phone_number) {
