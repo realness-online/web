@@ -47,7 +47,6 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber } from 'libphonenumber-js'
-  import { person_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
@@ -58,7 +57,6 @@
     data() {
       return {
         working: true,
-        storage: person_storage,
         disabled_sign_in: true,
         code: null,
         human: null,
@@ -188,10 +186,9 @@
   form#profile-form
     div#captcha
       overflow: hidden
-      // max-width: 75vw
       &.hide_captcha
         display: none
-    & > fieldset
+    fieldset
       margin-bottom: base-line
     input
       color: red

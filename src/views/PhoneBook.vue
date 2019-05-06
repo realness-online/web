@@ -7,7 +7,6 @@
         <icon name="finished"></icon>
       </router-link>
     </header>
-    <icon v-show="working" name="working"></icon>
     <profile-as-list :people='phonebook'></profile-as-list>
     <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>

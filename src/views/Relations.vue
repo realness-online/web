@@ -5,7 +5,6 @@
       <h1>Friends</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <icon v-show="working" name="working"></icon>
     <profile-as-list :people='relations'></profile-as-list>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
@@ -25,19 +24,15 @@
       profileAsLinks,
       logoAsLink
     },
-    beforeMount() {
+    mounted() {
       this.fill_in_relationships()
     },
     methods: {
       fill_in_relationships() {
         return new Promise((resolve, reject) => {
-          if (this.relations.length === 0) {
-            this.working = false
-          }
           this.relations.forEach((relation, index) => {
             profile_id.load(relation.id).then(profile => {
               this.relations.splice(index, 1, profile)
-              this.working = false
               resolve('finished fill_in_relationships')
             })
           })

@@ -1,8 +1,6 @@
 <template>
   <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
-    <a @click.passive="avatar_click">
-      <as-avatar :person="person"></as-avatar>
-    </a>
+    <as-avatar @avatar-clicked="avatar_click" :person="person"></as-avatar>
     <figcaption>
       <p>
         <span itemprop="first_name">{{person.first_name}}</span>
@@ -31,28 +29,31 @@
       avatar_by_reference: {
         type: Boolean,
         default: false
-      },
-      nav: {
-        type: Boolean,
-        default: true
       }
     },
     methods: {
       avatar_click(event) {
+        console.log('avatarrrrr_click');
         let route = {
           path: this.person.id
         }
         if (this.is_me) {
+          console.log('me!');
           route.path = '/account'
         }
         if (this.previous) {
           route.path = sessionStorage.previous
         }
+        console.log(route, this.is_me);
         this.$router.push(route)
       }
     },
     computed: {
       is_me() {
+        // const my_id = person_storage.as_object().id
+        // console.log(person_storage.as_object());
+        // console.log('my_id', my_id)
+        // console.log('this.person.id', this.person.id);
         return person_storage.as_object().id === this.person.id
       },
       sms_link() {

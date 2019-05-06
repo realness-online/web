@@ -24,17 +24,17 @@
   import profile_id from '@/modules/profile_id'
   import as_figure from '@/components/profile/as-figure'
   import as_form from '@/components/profile/as-form'
-  import logoAsLink from '@/components/logo-as-link'
-  import asAvatar from '@/components/profile/as-avatar'
+  import logo_as_link from '@/components/logo-as-link'
+  import as_avatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
   import convert_to_avatar from '@/modules/convert_to_avatar'
   export default {
     components: {
       'profile-as-figure': as_figure,
       'profile-as-form': as_form,
+      'profile-as-avatar': as_avatar,
+      'logo-as-link': logo_as_link,
       icon,
-      asAvatar,
-      logoAsLink
     },
     data() {
       return {
@@ -130,21 +130,18 @@
 </script>
 <style lang='stylus'>
   section#account
-    & > header
-      max-width: page-width
-      margin: auto
+    max-width: page-width
+    margin: auto
     & > svg
-      fill: white
-      width:100vw
-      min-height:100vh
+      fill: black
+      width: 100vw
+      min-height: 100vh
       &.working
         flex-grow: 1
         padding: base-line
         width:100vw
         height:50vh
     & > div
-      margin: auto
-      max-width: page-width
       display: flex
       flex-direction: column
       align-items: center

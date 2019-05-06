@@ -5,7 +5,7 @@
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
     <router-link v-if="!posting" to="/where" class="green">Where</router-link>
-    <router-link v-if="!posting" to="/profile" class="black">{{user_name}}</router-link>
+    <router-link v-if="!posting" to="/account" class="black">{{user_name}}</router-link>
   </nav>
 </template>
 <script>
@@ -88,10 +88,10 @@
         color:transparent
   nav#main
     &.has_posts
-      & > [href='/profile']
+      & > [href='/account']
         visibility: visible
     &.is_person
-      & > [href='/profile']
+      & > [href='/account']
       & > [href='/relations']
         visibility: visible
     &.has_friends

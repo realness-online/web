@@ -1,10 +1,10 @@
 <template lang="html">
   <section id="profile" class="page" ref='profile'>
+    <profile-as-avatar v-if="!is_me" v-bind:by_reference="true" :person="person"></profile-as-avatar>
     <header>
-      <profile-as-figure :person='person' :nav="false"></profile-as-figure>
+      <profile-as-figure :person='person'></profile-as-figure>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-avatar :person="person"></profile-as-avatar>
     <footer>
       <h1>Posts</h1>
       <my-posts v-if="is_me"></my-posts>
@@ -46,7 +46,7 @@
       } else {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
-            this.load_from_local()
+            // this.load_from_local()
             this.load_from_network(user.phoneNumber)
           } else {
             this.load_from_local()
@@ -55,18 +55,11 @@
       }
     },
     methods: {
-      focus_on_avatar() {
-        Vue.nextTick(() => {
-          const id = profile_id.as_avatar_id(this.person.id)
-          const header = this.$refs.profile.querySelector('header')
-          window.scrollTo(0, header.offsetHeight)
-        })
-      },
+
       load_from_network(phone_number) {
         const id = `/${phone_number}`
         profile_id.load(id).then(profile => {
           this.person = profile
-          this.focus_on_avatar()
         })
         profile_id.items(id, 'posts').then(items => {
           this.posts = items
@@ -76,7 +69,6 @@
       load_from_local() {
         this.person = person_storage.as_object()
         this.posts = posts_storage.as_list()
-        this.focus_on_avatar()
         this.working = false
       }
     },
@@ -100,5 +92,5 @@
     & > svg:not(.working)
       width: 100vw
       min-height: 100vh
-      fill: white
+      fill: blue
 </style>
