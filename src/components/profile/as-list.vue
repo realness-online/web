@@ -44,7 +44,7 @@
         padding: (base-line / 2)
         standard-border: blue
         width:49%
-    @media (min-width: max-screen)
+    @media (min-width: mid-screen)
       & > li
         width:32%
 </style>

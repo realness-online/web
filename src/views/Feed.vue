@@ -70,7 +70,8 @@
     methods: {
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
-        const bottom = article.getBoundingClientRect().bottom - 430
+        const bottom = article.getBoundingClientRect().bottom - 525
+        console.log(bottom -window.scrollY)
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
         }

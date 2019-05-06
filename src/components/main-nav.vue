@@ -61,8 +61,9 @@
     grid-template-columns: 1fr 1fr
     grid-template-rows: repeat(1fr)
     align-items: stretch
-    height: 100vh
-    width: 100%
+    min-height: page-width
+    height: 100vmin
+    width: 100vmin
     & > *
       font-weight: bold
       padding: base-line
