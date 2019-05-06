@@ -55,13 +55,12 @@
 </script>
 <style lang="stylus">
   nav#main
-    padding: base-line 0
     display: grid
     grid-gap: base-line
     grid-template-columns: 1fr 1fr
     grid-template-rows: repeat(1fr)
     align-items: stretch
-    min-height: page-width
+    min-height: base-line * 18
     height: 100vmin
     width: 100vmin
     & > *
