@@ -53,9 +53,9 @@
       font-size: 1.25em
       font-weight: normal
       padding: 0
-      height: 100vh
-      grid-column-start: 1
-      grid-column-end: 3
+      // height: 100vh
+      grid-column: 1 / span 2
+      grid-row: 1 / span 3
       text-align: left
       border-top: none
       border-radius: 0
