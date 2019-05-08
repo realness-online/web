@@ -2,9 +2,11 @@
   <section id="relations" class="page">
     <header>
       <router-link to="/phonebook"><icon name="heart"></icon></router-link>
-      <h1>Friends</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <hgroup>
+      <h1>Friends</h1>
+    </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>

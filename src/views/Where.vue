@@ -1,5 +1,5 @@
 <template>
-  <section id="groups">
+  <section id="where">
     <header>
       <h1>Where</h1>
     </header>

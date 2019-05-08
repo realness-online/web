@@ -1,11 +1,13 @@
 <template>
   <section id="events" class="page">
     <header>
-      <icon name=""></icon>
-      <h1>Events</h1>
+      <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <icon v-show="working" name="working"></icon>
+    <hgroup>
+      <h1>Events</h1>
+      <icon v-show="working" name="working"></icon>
+    </hgroup>
     <figure>
       <as-avatar v-for="person in curators" :person="person"></as-avatar>
     </figure>
@@ -42,6 +44,8 @@
 </script>
 <style lang="stylus">
   section#events
+    h1
+      color: green
     & > header
       margin: auto
       padding: base-line

@@ -2,9 +2,11 @@
   <section id="feed" class="page">
     <header>
       <icon name='nothing'></icon>
-      <h1>Feed</h1>
       <logo-as-link></logo-as-link>
     </header>
+    <hgroup>
+      <h1>Feed</h1>
+    </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">

@@ -1,12 +1,14 @@
 <template>
   <section id="directory" class="page">
     <header>
-      <a></a>
-      <h1>Phonebook</h1>
+      <icon name="nothing"></icon>
       <router-link to="/relations">
         <icon name="finished"></icon>
       </router-link>
     </header>
+    <hgroup>
+      <h1>Phonebook</h1>
+    </hgroup>
     <profile-as-list :people='phonebook'></profile-as-list>
     <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
