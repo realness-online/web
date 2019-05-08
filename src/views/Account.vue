@@ -4,30 +4,24 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <hgroup>
-      <h1>Account</h1>
-      <icon v-show="working" name="working"></icon>
-    </hgroup>
+    <profile-as-avatar v-if="signed_in" :person="me"></profile-as-avatar>
+    <menu v-if="signed_in">
+      <a @click="open_camera">
+        <icon name="add"></icon>
+      </a>
+      <a @click="accept_changes" v-if="avatar_changed">
+        <icon name="finished"></icon>
+      </a>
+      <a :href="downloadable" download='vector.svg'>
+        <icon name="hamburger"></icon>
+      </a>
+    </menu>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
     </div>
-    <div id="manage-avatar" v-if="signed_in">
-      <profile-as-avatar :person="me"></profile-as-avatar>
-      <menu>
-        <a @click="open_camera"><icon name="add"></icon></a>
-        <a v-if="avatar_changed" @click="accept_changes"><icon name="finished"></icon></a>
-        <a :href="downloadable" download='vector.svg'>Download</a>
-      </menu>
-      <icon v-if="working" name="working"></icon>
-      <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
-    </div>
-    <article id="manage-posts">
-      <header>
-        <h1>Posts</h1>
-      </header>
-      <posts-as-list :posts="my_posts"></posts-as-list>
-    </article>
+    <posts-as-list :posts="my_posts"></posts-as-list>
+    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </section>
 </template>
 <script>
@@ -147,16 +141,12 @@
 </script>
 <style lang='stylus'>
   section#account
-    padding: base-line
-    max-width: page-width
-    margin: auto
-    & > hgroup > h1
-      color: black
     & > header
-      padding: 0
-      margin-bottom: base-line
-    & div#manage-avatar > svg
-      fill: black
+      margin-bottom: -(base-line * 4)
+      position: relative
+      z-index: 2
+    & > svg
+      fill: white
       width: 100vw
       min-height: 100vh
       &.working
@@ -164,25 +154,15 @@
         padding: base-line
         width:100vw
         height:50vh
-    & > details[open]
-      & > summary > h1 > span
+    & > div
+      padding: base-line
+      & > form
+        margin-top: base-line
+    & > input[type=file]
+      display: none
+    &.signed_in > div > form
+      width: inherit
+      #name
+      #phone
         display:none
-    & > div
-      display: flex
-      flex-flow: column
-      justify-content: space-between
-    & > div
-      & > input[type=file]
-        display: none
-      & > a
-        margin-bottom: base-line
-        standard-button: black
-      & > button
-        margin-bottom: base-line
-    &.signed_in
-      & > div > form
-        width: inherit
-        #name
-        #phone
-          display:none
 </style>
