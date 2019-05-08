@@ -8,6 +8,7 @@
     </header>
     <hgroup>
       <h1>Phonebook</h1>
+      <icon v-if="working" name="working"></icon>
     </hgroup>
     <profile-as-list :people='phonebook'></profile-as-list>
     <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
@@ -32,11 +33,12 @@
     },
     data() {
       return {
-        phonebook: []
+        phonebook: [],
+        working: true
       }
     },
     created() {
-      phonebook_storage.sync_list().then((people) => {
+      phonebook_storage.sync_list().then(people => {
         this.working = false
         this.phonebook = people
         this.phonebook.forEach((person, index) => {
@@ -82,7 +84,7 @@
         @media (min-width: max-screen)
           line-height: .66
       & > a > svg.finished
-        fill:blue
+        fill: blue
     nav.profile-list
       display: flex
       flex-direction: column-reverse
