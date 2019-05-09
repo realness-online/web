@@ -9,11 +9,11 @@
       <a @click="open_camera">
         <icon name="add"></icon>
       </a>
-      <a @click="accept_changes" v-if="avatar_changed">
-        <icon name="finished"></icon>
-      </a>
       <a :href="downloadable" download='vector.svg'>
         <icon name="hamburger"></icon>
+      </a>
+      <a @click="accept_changes" v-if="avatar_changed">
+        <icon name="finished"></icon>
       </a>
     </menu>
     <div id="login">
@@ -141,6 +141,8 @@
 </script>
 <style lang='stylus'>
   section#account
+    svg.hamburger
+      transform: rotate(90deg)
     & > header
       margin-bottom: -(base-line * 4)
       position: relative
@@ -154,14 +156,19 @@
         padding: base-line
         width:100vw
         height:50vh
+    & > menu
+      margin-top: -(base-line * 3)
+      padding-bottom: base-line
+      display: flex
+      justify-content: space-around
     & > div
-      padding: base-line
+      padding: base-line base-line 0 base-line
       & > form
         margin-top: base-line
     & > input[type=file]
       display: none
     &.signed_in > div > form
-      width: inherit
+      // width: inherit
       #name
       #phone
         display:none
