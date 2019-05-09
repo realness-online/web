@@ -22,14 +22,13 @@
          v-bind:class="{hide_captcha}">
     </fieldset>
     <fieldset v-if="show_code">
-      <input id="verification-code" type="tel" tabindex="5" placeholder="Verification Code"
+      <input id="verification-code" type="tel" tabindex="4" placeholder="Verification Code"
              v-model="code"
              v-on:keypress="code_keypress">
     </fieldset>
     <icon v-show="working" name="working"></icon>
     <menu>
       <button id="authorize"
-              tabindex="4"
               :disabled="disabled_sign_in"
               v-if="show_authorize"
               v-on:click='begin_authorization'>Sign in</button>
@@ -184,10 +183,10 @@
 </script>
 <style lang="stylus">
   form#profile-form
-    div#captcha
-      overflow: hidden
-      &.hide_captcha
-        display: none
+    // div#captcha
+    //   overflow: hidden
+    //   &.hide_captcha
+    //     display: none
     fieldset
       margin-bottom: base-line
     input
@@ -206,4 +205,7 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
+    menu
+      display:flex
+      justify-content: flex-end
 </style>
