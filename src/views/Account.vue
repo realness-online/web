@@ -158,16 +158,22 @@
         height:50vh
     & > menu
       margin-top: -(base-line * 3)
-      padding-bottom: base-line
+      padding: 0 base-line base-line base-line
       display: flex
-      justify-content: space-around
+      justify-content: space-between
+      & > a
+        cursor: pointer
+        opacity: 0.75
     & > div
+      max-width: page-width
+      margin: auto
       padding: base-line base-line 0 base-line
       & > form
         margin-top: base-line
     & > input[type=file]
       display: none
     &.signed_in > div > form
+      margin-top: -(base-line * 2)
       // width: inherit
       #name
       #phone
