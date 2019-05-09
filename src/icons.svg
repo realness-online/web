@@ -7,7 +7,7 @@
     <rect id="relations" fill-opacity=".69" fill="#52A0D1" x="103.385" width="88.615" height="53.76" rx="8"/>
     <rect id="feed" fill-opacity=".69" fill="#52A0D1" y="69.12" width="88.615" height="53.76" rx="8"/>
     <rect id="events" fill-opacity=".8" fill="#4FBF6D" x="103.385" y="69.12" width="88.615" height="53.76" rx="8"/>
-    <rect id="groups" fill-opacity=".8" fill="#4FBF6D" y="138.24" width="88.615" height="53.76" rx="8"/>
+    <rect id="where" fill-opacity=".8" fill="#4FBF6D" y="138.24" width="88.615" height="53.76" rx="8"/>
     <rect id="profile" fill-opacity=".8" fill="#5A585A" x="103.385" y="138.24" width="88.615" height="53.76" rx="8"/>
   </symbol>
   <symbol id="search" viewBox="0 0 192 192">
@@ -44,7 +44,6 @@
     <use xlink:href='#realness' height="100vh"/>
     <use xlink:href='#search' height="100vh"/>
     <use xlink:href='#hamburger' height="100vh"/>
-    <use xlink:href='#handshake' height="100vh"/>
     <use xlink:href='#add' height="100vh"/>
     <use xlink:href='#remove' height="100vh"/>
     <use xlink:href='#finished' height="100vh"/>
