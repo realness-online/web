@@ -21,7 +21,7 @@ function trace(avatar, identifier) {
           trace.loadImage(image, error => {
             console.log('loadImage')
             if (error) { reject(error) }
-            resolve(trace.getSymbol(identifier))
+            resolve(trace.get_as_symbol(identifier))
           })
         })
       })

@@ -4,16 +4,17 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
+    <icon v-if="working" name="working"></icon>
     <profile-as-avatar v-if="signed_in" :person="me"></profile-as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera">
         <icon name="add"></icon>
       </a>
-      <a :href="downloadable" download='vector.svg'>
-        <icon name="hamburger"></icon>
-      </a>
       <a @click="accept_changes" v-if="avatar_changed">
         <icon name="finished"></icon>
+      </a>
+      <a :href="downloadable" download='vector.svg'>
+        <icon name="download"></icon>
       </a>
     </menu>
     <div id="login">
@@ -90,29 +91,20 @@
       }
     },
     methods: {
-      revert_avatar(event) {
-        console.log('holy shit this is not implemented!')
-      },
       open_camera(event) {
         this.$refs.uploader.setAttribute('capture', true)
         this.$refs.uploader.click()
       },
       accept_changes(event) {
-        const route = {
-          path: `/profile`
-        }
         if (this.avatar_changed) {
           person_storage.save().then(() => {
-            this.$router.push(route)
+            this.avatar_changed = false
           })
-        } else {
-          this.$router.push(route)
         }
       },
       vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
-        console.log(this.me)
         convert_to_avatar.trace(image, profile_id.as_avatar_id(this.me.id))
         .then(avatar => {
           this.working = false
