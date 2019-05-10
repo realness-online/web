@@ -13,7 +13,7 @@
       <a @click="accept_changes" v-if="avatar_changed">
         <icon name="finished"></icon>
       </a>
-      <a :href="downloadable" download='vector.svg'>
+      <a id="download-avatar" :href="downloadable" download='vector.svg'>
         <icon name="download"></icon>
       </a>
     </menu>
@@ -156,6 +156,10 @@
       & > a
         cursor: pointer
         opacity: 0.75
+      & > a#download-avatar
+        display: none
+        @media (min-width: max-screen)
+          display: inherit
     & > div
       max-width: page-width
       margin: auto
