@@ -37,7 +37,9 @@
               v-on:click="sign_in_with_code">Sign in</button>
       <button id="sign-out"
               v-if="show_sign_out"
-              v-on:click="sign_out">Sign out</button>
+              v-on:click="sign_out">
+              <icon name="remove"></icon>
+      </button>
     </menu>
   </form>
 </template>
@@ -183,10 +185,7 @@
 </script>
 <style lang="stylus">
   form#profile-form
-    // div#captcha
-    //   overflow: hidden
-    //   &.hide_captcha
-    //     display: none
+
     fieldset
       margin-bottom: base-line
     input
@@ -205,6 +204,9 @@
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
+    button#sign-out
+      border:none
+      padding:0
     menu
       display:flex
       justify-content: flex-end
