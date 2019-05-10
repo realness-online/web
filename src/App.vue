@@ -1,7 +1,9 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness">
-    <router-view></router-view>
+    <transition name="fade" mode="out-in">
+      <router-view></router-view>
+    </transition>
     <developer-tools></developer-tools>
   </main>
 </template>
