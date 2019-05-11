@@ -33,6 +33,9 @@
         posts: []
       }
     },
+    mounted() {
+      document.body.scrollTop = document.documentElement.scrollTop = 0;
+    },
     created() {
       const id = profile_id.from_e64(this.$route.params.phone_number)
       profile_id.load(id).then(profile => {
