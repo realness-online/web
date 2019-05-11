@@ -6,8 +6,8 @@
         <span itemprop="first_name">{{person.first_name}}</span>
         <span itemprop="last_name">{{person.last_name}}</span>
       </p>
-      <p v-if="is_me">{{mobile_display}}</p>
-      <a v-else :href="sms_link">{{mobile_display}}</a>
+      <p class='phone' v-if="is_me">{{mobile_display}}</p>
+      <a class='phone' v-else :href="sms_link">{{mobile_display}}</a>
     </figcaption>
   </figure>
 </template>
@@ -84,6 +84,8 @@
       padding-left: (base-line / 2)
       vertical-align: middle
       line-height: (base-line * 2)
+      .phone
+        font-weight: 300
       & > p
         color: black
         margin:0

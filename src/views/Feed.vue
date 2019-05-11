@@ -124,15 +124,16 @@
       &:first-of-type
         padding-top: 0
       & > hgroup
+        font-weight: 200
         & > span
         & > time
           display: inline-block
           vertical-align: center
         & > span
-          font-size: 0.75em
-          color: white
+          // font-size: 0.75em
+          color: black
         & > time
-          color: white
+          color: black
           margin-left: (base-line / 6)
       & > a > svg
         shape-outside: circle()

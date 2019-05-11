@@ -155,7 +155,6 @@
       justify-content: space-between
       & > a
         cursor: pointer
-        opacity: 0.75
       & > a#download-avatar
         display: none
         @media (min-width: max-screen)
