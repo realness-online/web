@@ -185,7 +185,6 @@
 </script>
 <style lang="stylus">
   form#profile-form
-
     fieldset
       margin-bottom: base-line
     input
