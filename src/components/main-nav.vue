@@ -1,6 +1,7 @@
 <template>
   <nav id="main" v-bind:class="onboarding">
     <post-as-textarea v-on:toggle-keyboard="posting = !posting" class="red" ></post-as-textarea>
+    <button @click="done_posting" v-if="posting">done</button>
     <router-link v-if="!posting" to="/relations" class="blue">Friends</router-link>
     <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green">Events</router-link>
@@ -37,6 +38,11 @@
         has_posts: localStorage.getItem('posts-count') > 0
       }
     },
+    methods: {
+      done_posting(event) {
+        document.querySelector('nav > button').focus()
+      }
+    },
     computed: {
       onboarding() {
         return {
@@ -63,12 +69,19 @@
     min-height: base-line * 18
     height: 100vmin
     width: 100vmin
-    & > *
+    & > a
+    & > textarea
       font-weight: bold
       padding: base-line
       border-radius: base-line
   nav#main
     max-height: page-width
+    & > button
+      align-self: flex-end
+      width: base-line * 4
+      display: none
+      @media (min-width: max-screen)
+        display: block
     & > a
       visibility: hidden
       text-transform: capitalize
