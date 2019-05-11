@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import './registerServiceWorker'
+import './register_service_worker'
 Vue.config.productionTip = false
 Vue.prototype.$bus = new Vue({})
 new Vue({
