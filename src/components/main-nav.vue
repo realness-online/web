@@ -1,12 +1,12 @@
 <template>
   <nav id="main" v-bind:class="onboarding">
     <post-as-textarea v-on:toggle-keyboard="posting = !posting" class="red" ></post-as-textarea>
-    <button @click="done_posting" v-if="posting">done</button>
-    <router-link v-if="!posting" to="/relations" class="blue">Friends</router-link>
-    <router-link v-if="!posting" to="/feed" class="blue">Feed</router-link>
-    <router-link v-if="!posting" to="/events" class="green">Events</router-link>
-    <router-link v-if="!posting" to="/where" class="green">Where</router-link>
-    <router-link v-if="!posting" to="/account" class="black">{{user_name}}</router-link>
+    <button @click="done_posting" v-if="posting" tabindex="-1">done</button>
+    <router-link v-if="!posting" to="/relations" class="blue" tabindex="-1">Friends</router-link>
+    <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
+    <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Events</router-link>
+    <router-link v-if="!posting" to="/where" class="green" tabindex="-1">Where</router-link>
+    <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
   </nav>
 </template>
 <script>
