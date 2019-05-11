@@ -14,7 +14,7 @@
         <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
       </router-link>
       <hgroup>
-        <span>{{post.person.first_name}}&nbsp;{{post.person.last_name}}</span>
+        <span>{{post.person.first_name}} {{post.person.last_name}}</span>
         <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
       </hgroup>
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
