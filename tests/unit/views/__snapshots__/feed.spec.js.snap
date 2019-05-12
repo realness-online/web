@@ -2,18 +2,20 @@
 
 exports[`@/views/Feed.vue render feed info 1`] = `
 <section
-  class="page left"
+  class="page"
   id="feed"
 >
   <header>
     <!---->
      
+    <!---->
+  </header>
+   
+  <hgroup>
     <h1>
       Feed
     </h1>
-     
-    <!---->
-  </header>
+  </hgroup>
    
   <!---->
    

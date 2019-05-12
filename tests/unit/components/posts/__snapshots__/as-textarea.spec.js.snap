@@ -2,9 +2,9 @@
 
 exports[`@/components/posts/as-textarea.vue renders a textarea 1`] = `
 <textarea
+  cols="1"
   id="wat"
   placeholder=">"
->
-  
-</textarea>
+  rows="1"
+/>
 `;

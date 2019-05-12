@@ -2,7 +2,7 @@
 
 exports[`@/views/Where.vue renders layout for location 1`] = `
 <section
-  id="groups"
+  id="where"
 >
   <header>
     <h1>

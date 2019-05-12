@@ -49,8 +49,8 @@ exports[`@/compontent/profile/as-form.vue profile form should render profile for
    
   <menu>
     <button
+      disabled="disabled"
       id="authorize"
-      tabindex="4"
     >
       Sign in
     </button>

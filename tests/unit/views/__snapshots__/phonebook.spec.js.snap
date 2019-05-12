@@ -6,11 +6,7 @@ exports[`@/views/Phonebook render an empty phonebook 1`] = `
   id="directory"
 >
   <header>
-    <a />
-     
-    <h1>
-      Phonebook
-    </h1>
+    <!---->
      
     <router-link
       to="/relations"
@@ -19,7 +15,13 @@ exports[`@/views/Phonebook render an empty phonebook 1`] = `
     </router-link>
   </header>
    
-  <!---->
+  <hgroup>
+    <h1>
+      Phonebook
+    </h1>
+     
+    <!---->
+  </hgroup>
    
   <!---->
    

@@ -3,12 +3,15 @@
 exports[`@/components/main-nav.vue handling post events posting:false should render the main navigation 1`] = `
 <nav
   class=""
-  id="main_nav"
+  id="main"
 >
+  <!---->
+   
   <!---->
    
   <router-link
     class="blue"
+    tabindex="-1"
     to="/relations"
   >
     Friends
@@ -16,6 +19,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
    
   <router-link
     class="blue"
+    tabindex="-1"
     to="/feed"
   >
     Feed
@@ -23,6 +27,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
    
   <router-link
     class="green"
+    tabindex="-1"
     to="/events"
   >
     Events
@@ -30,6 +35,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
    
   <router-link
     class="green"
+    tabindex="-1"
     to="/where"
   >
     Where
@@ -37,7 +43,8 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
    
   <router-link
     class="black"
-    to="/profile"
+    tabindex="-1"
+    to="/account"
   >
     You
   </router-link>
@@ -47,9 +54,15 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
 exports[`@/components/main-nav.vue handling post events posting:true should hide main navigation 1`] = `
 <nav
   class=""
-  id="main_nav"
+  id="main"
 >
   <!---->
+   
+  <button
+    tabindex="-1"
+  >
+    done
+  </button>
    
   <!---->
    

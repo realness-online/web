@@ -1,6 +1,6 @@
-import convert_to_avatar from '@/modules/ConvertToAvatar'
+import convert_to_avatar from '@/modules/convert_to_avatar'
 
-describe('@/modules/ConvertToAvatar', () => {
+describe('@/modules/convert_to_avatar', () => {
   it('trace()', () => {
     convert_to_avatar.trace()
   })

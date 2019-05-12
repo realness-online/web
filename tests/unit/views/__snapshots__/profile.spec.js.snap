@@ -23,10 +23,12 @@ exports[`@/views/Profile.vue shows the users profile information 1`] = `
   id="profile"
 >
   <header>
-    <!---->
+    <svg />
      
     <!---->
   </header>
+   
+  <!---->
    
   <!---->
    

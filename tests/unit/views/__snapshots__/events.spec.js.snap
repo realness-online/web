@@ -8,14 +8,16 @@ exports[`@/views/Events.vue renders event information 1`] = `
   <header>
     <!---->
      
+    <!---->
+  </header>
+   
+  <hgroup>
     <h1>
       Events
     </h1>
      
     <!---->
-  </header>
-   
-  <!---->
+  </hgroup>
    
   <figure />
 </section>

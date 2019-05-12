@@ -7,15 +7,7 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
   itemscope="itemscope"
   itemtype="/person"
 >
-  <svg>
-    <defs
-      itemprop="avatar"
-    />
-     
-    <use
-      xlink:href="#silhouette"
-    />
-  </svg>
+  <!---->
    
   <figcaption>
     <p>
@@ -33,9 +25,8 @@ exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] 
     </p>
      
     <a
-      data-value="6282281824"
-      href="sms:+16282281824"
-      itemprop="mobile"
+      class="phone"
+      href="tel:/+16282281824"
     >
       (628) 228-1824
     </a>
