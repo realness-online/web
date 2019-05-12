@@ -21,7 +21,7 @@
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
     </div>
-    <posts-as-list :posts="my_posts"></posts-as-list>
+    <my-posts-as-list></my-posts-as-list>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </section>
 </template>
@@ -35,7 +35,7 @@
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
   import profile_as_avatar from '@/components/profile/as-avatar'
-  import posts_as_list from '@/components/posts/as-list'
+  import my_posts_as_list from '@/components/posts/my-list'
   import logo_as_link from '@/components/logo-as-link'
   import convert_to_avatar from '@/modules/convert_to_avatar'
   export default {
@@ -43,7 +43,7 @@
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
       'profile-as-avatar': profile_as_avatar,
-      'posts-as-list': posts_as_list,
+      'my-posts-as-list': my_posts_as_list,
       'logo-as-link': logo_as_link,
       icon,
     },
@@ -51,7 +51,6 @@
       return {
         working: false,
         me: person_storage.as_object(),
-        my_posts: posts_storage.as_list(),
         signed_in: false,
         avatar_changed: false,
         image_file: null

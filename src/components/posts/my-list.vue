@@ -27,7 +27,7 @@
           if (user) {
             posts_storage.sync_list().then((items) => {
               this.posts = items
-              sessionStorage.setItem('posts_synced', 'true')
+              sessionStorage.setItem('posts_synced', Date.now)
               console.log('posts synced')
             })
           }
