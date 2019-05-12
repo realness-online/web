@@ -71,7 +71,6 @@
     width: 100vmin
     & > a
     & > textarea
-      font-weight: bold
       padding: base-line
       border-radius: base-line
   nav#main
