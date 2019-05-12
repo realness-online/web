@@ -19,7 +19,4 @@
     flex-direction: column-reverse
     & > article
       margin-bottom: base-line
-      & > blockquote
-        cursor: default
-        white-space: pre-wrap
 </style>
