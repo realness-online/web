@@ -52,8 +52,8 @@
       window.removeEventListener('scroll', this.scrolled)
     },
     created() {
-      // console.clear()
-      // console.time('feed_load')
+      console.clear()
+      console.time('feed_load')
       const people_in_feed = relations_storage.as_list()
       const me = person_storage.as_object()
       people_in_feed.push(me)
@@ -64,16 +64,16 @@
           return Date.parse(b.created_at) - Date.parse(a.created_at)
         })
         this.working = false
-        // console.timeEnd('feed_load')
-        // console.log(`${this.feed.length} feed items`);
-        // console.info(`${this.sort_count} sort operations`)
+        console.timeEnd('feed_load')
+        console.log(`${this.feed.length} feed items`);
+        console.info(`${this.sort_count} sort operations`)
       })
     },
     methods: {
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
         const bottom = article.getBoundingClientRect().bottom - 560
-        console.log(bottom -window.scrollY)
+        // console.log(bottom -window.scrollY)
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
         }
