@@ -11,7 +11,7 @@
     <fieldset id="phone">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
-             v-model="person.mobile"
+             v-model="mobile"
              v-on:keypress="mobile_keypress"
              v-on:keyup="mobile_keyup"
              v-on:paste="mobile_paste"
@@ -57,6 +57,7 @@
     },
     data() {
       return {
+        mobile: null,
         working: true,
         disabled_sign_in: true,
         code: null,
@@ -76,7 +77,7 @@
           this.show_sign_out = true
           this.person.id = profile_id.from_e64(user.phoneNumber)
         } else {
-          this.person.mobile = profile_id.as_phone_number(this.person.id)
+          this.mobile = profile_id.as_phone_number(this.person.id)
           this.show_authorize = true
         }
         this.validate_mobile_number()
@@ -91,7 +92,7 @@
     },
     methods: {
       validate_mobile_number(event) {
-        const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
+        const is_valid = !!this.mobile && parseNumber(this.mobile, 'US').phone
         if (is_valid) {
           this.disabled_sign_in = false
         } else {
@@ -112,7 +113,7 @@
         event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
-        /* istanbul ignore next */
+
         Vue.nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
@@ -128,7 +129,7 @@
         this.show_captcha = false
         this.hide_captcha = true
         firebase.auth()
-          .signInWithPhoneNumber(`+1${this.person.mobile}`, this.human)
+          .signInWithPhoneNumber(`+1${this.mobile}`, this.human)
           .then(result => {
             this.authorizer = result
             this.$el.querySelector('#verification-code').scrollIntoView(false)
@@ -160,8 +161,8 @@
         }
       },
       mobile_keyup(event) {
+        this.person.id = profile_id.from_phone_number(this.mobile)
         this.validate_mobile_number()
-        this.person.id = profile_id.from_phone_number(this.person.mobile)
       },
       mobile_paste(event) {
         event.preventDefault()

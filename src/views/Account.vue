@@ -30,7 +30,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import icon from '@/components/icon'
-  import { person_storage, posts_storage } from '@/modules/Storage'
+  import { person_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
@@ -45,7 +45,7 @@
       'profile-as-avatar': profile_as_avatar,
       'my-posts-as-list': my_posts_as_list,
       'logo-as-link': logo_as_link,
-      icon,
+      icon
     },
     data() {
       return {
@@ -57,6 +57,7 @@
       }
     },
     created() {
+      console.log('me@created', this.me);
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           const id = profile_id.from_e64(user.phoneNumber)
@@ -66,6 +67,9 @@
             this.me.id = id
           })
         } else {
+
+          console.log('me', this.me)
+          this.me.id = ""
           this.signed_in = false
         }
       })
@@ -134,10 +138,6 @@
   section#account
     svg.hamburger
       transform: rotate(90deg)
-    & > header
-      margin-bottom: -(base-line * 4)
-      position: relative
-      z-index: 2
     & > svg
       fill: white
       width: 100vw
@@ -166,10 +166,14 @@
         margin-top: base-line
     & > input[type=file]
       display: none
-    &.signed_in > div > form
-      margin-top: -(base-line * 2)
-      // width: inherit
-      #name
-      #phone
-        display:none
+    &.signed_in
+      & > header
+        margin-bottom: -(base-line * 4)
+        position: relative
+        z-index: 2
+
+      & > div > form
+        margin-top: -(base-line * 2)
+        #name, #phone
+          display:none
 </style>
