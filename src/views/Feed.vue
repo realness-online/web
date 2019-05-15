@@ -17,22 +17,22 @@
         <span>{{post.person.first_name}} {{post.person.last_name}}</span>
         <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
       </hgroup>
-      <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
+      <blockquote v-for="statement in post.statements" data-created_at='statement.created_at'>{{statement.quote}}</blockquote>
     </article>
   </section>
 </template>
 <script>
   import { relations_storage, person_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
-  import logoAsLink from '@/components/logo-as-link'
-  import profileAsList from '@/components/profile/as-list'
-  import profileAsAvatar from '@/components/profile/as-avatar'
+  import logo_as_link from '@/components/logo-as-link'
+  import profile_as_list from '@/components/profile/as-list'
+  import profile_as_avatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
   export default {
     components: {
-      profileAsAvatar,
-      profileAsList,
-      logoAsLink,
+      'profile-as-avatar': profile_as_avatar,
+      'profile-as-list': profile_as_list,
+      'logo-as-link': logo_as_link,
       icon
     },
     data() {
@@ -41,7 +41,7 @@
         feed: [],
         relations: [],
         working: true,
-        unsorted_relations: null,
+        unpopulated_relations_count: null,
         sort_count: 0
       }
     },
@@ -57,12 +57,10 @@
       const people_in_feed = relations_storage.as_list()
       const me = person_storage.as_object()
       people_in_feed.push(me)
-      this.unsorted_relations = people_in_feed.length
+      this.unpopulated_relations_count = people_in_feed.length
       this.populate_feed(people_in_feed).then(() => {
-        this.feed.sort((a, b) => {
-          this.sort_count++
-          return Date.parse(b.created_at) - Date.parse(a.created_at)
-        })
+        this.feed.sort(this.feed_sorter)
+        this.condense_feed()
         this.working = false
         console.timeEnd('feed_load')
         console.log(`${this.feed.length} feed items`);
@@ -70,6 +68,17 @@
       })
     },
     methods: {
+      condense_feed() {
+        const condensed_feed = []
+
+        // take all of the feed items and condense them into posts
+        // with multiple statements.
+        // a feed item will have it's time sensitive statements grouped
+      },
+      feed_sorter(a, b) {
+        this.sort_count++
+        return Date.parse(b.created_at) - Date.parse(a.created_at)
+      },
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
         const bottom = article.getBoundingClientRect().bottom - 560
@@ -80,16 +89,18 @@
       },
       populate_feed(people_in_feed) {
         return new Promise((resolve, reject) => {
+          console.time('populate_feed')
           people_in_feed.forEach((relation, index) => {
             profile_id.load(relation.id).then(person => {
               this.relations.push(person)
               profile_id.items(relation.id, 'posts').then(posts => {
-                this.unsorted_relations--
+                this.unpopulated_relations_count--
                 posts.forEach(post => {
                   post.person = person
                 })
                 this.feed.push(...posts)
-                if (this.unsorted_relations < 1) {
+                if (this.unpopulated_relations_count < 1) {
+                  console.timeEnd('populate_feed')
                   resolve('finished')
                 }
               })
