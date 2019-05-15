@@ -1,7 +1,7 @@
 <template>
   <div itemprop="posts" itemref="profile">
     <article v-for="post in posts" itemscope itemtype="/post">
-      <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
+      <time itemprop="created_at" :datetime="post.created_at">Calculating...</time>
       <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
     </article>
   </div>
