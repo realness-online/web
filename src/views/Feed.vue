@@ -38,6 +38,7 @@
     },
     data() {
       return {
+        thirteen_minutes: 1000 * 60 * 13,
         feed_limit: 13,
         feed: [],
         relations: [],
@@ -85,7 +86,6 @@
         console.timeEnd('condense_feed')
       },
       is_train_of_thought(post) {
-        const five_minutes = 60 * 5 * 1000
         const next_post = this.feed[0]
         if (next_post && next_post.person.id === post.person.id) {
           let last_post = post
@@ -93,7 +93,7 @@
             last_post = post.statements[0]
           }
           let difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
-          if (difference < five_minutes) {
+          if (difference < this.thirteen_minutes) {
             return true
           } else {
             return false
