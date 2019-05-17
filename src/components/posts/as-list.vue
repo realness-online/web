@@ -16,7 +16,7 @@
 <style lang="stylus">
   div[itemprop="posts"]
     display:flex
-    flex-direction: column-reverse
+    flex-direction: column
     & > article
       margin-bottom: base-line
 </style>
