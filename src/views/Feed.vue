@@ -17,7 +17,8 @@
         <span>{{post.person.first_name}} {{post.person.last_name}}</span>
         <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
       </hgroup>
-      <blockquote v-for="statement in post.statements" data-created_at='statement.created_at'>{{statement.quote}}</blockquote>
+      <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
+      <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
     </article>
   </section>
 </template>
@@ -69,11 +70,37 @@
     },
     methods: {
       condense_feed() {
+        console.time('condense_feed')
         const condensed_feed = []
-
-        // take all of the feed items and condense them into posts
-        // with multiple statements.
-        // a feed item will have it's time sensitive statements grouped
+        while(this.feed.length > 0) {
+          let post = this.feed.shift()
+          post.statements = []
+          while(this.is_train_of_thought(post)) {
+            const next_statement = this.feed.shift()
+            post.statements.unshift(next_statement)
+          }
+          condensed_feed.push(post)
+        }
+        this.feed = condensed_feed
+        console.timeEnd('condense_feed')
+      },
+      is_train_of_thought(post) {
+        const five_minutes = 60 * 5 * 1000
+        const next_post = this.feed[0]
+        if (next_post && next_post.person.id === post.person.id) {
+          let last_post = post
+          if (post.statements.length > 0) {
+            last_post = post.statements[0]
+          }
+          let difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
+          if (difference < five_minutes) {
+            return true
+          } else {
+            return false
+          }
+        } else {
+          return false
+        }
       },
       feed_sorter(a, b) {
         this.sort_count++
@@ -146,6 +173,10 @@
         & > time
           color: black
           margin-left: (base-line / 6)
+      & > blockquote
+        margin-bottom: base-line
+        &:last-of-type
+          margin-bottom: 0
       & > a > svg
         shape-outside: circle()
         margin-right: base-line
