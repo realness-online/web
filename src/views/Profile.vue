@@ -61,6 +61,8 @@
       margin: auto
       max-width: page-width
       padding: base-line
+      & > article.silent
+        display: none
     & > svg:not(.working)
       width: 100vw
       min-height: 100vh

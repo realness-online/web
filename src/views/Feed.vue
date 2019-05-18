@@ -123,10 +123,11 @@
               this.relations.push(person)
               profile_id.items(relation.id, 'posts').then(posts => {
                 this.unpopulated_relations_count--
-                posts.forEach(post => {
+                const filtered = posts.filter(post => {
                   post.person = person
+                  return !post.muted
                 })
-                this.feed.push(...posts)
+                this.feed.push(...filtered)
                 if (this.unpopulated_relations_count < 1) {
                   console.timeEnd('populate_feed')
                   resolve('finished')

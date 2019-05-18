@@ -1,5 +1,5 @@
 <template>
-  <div itemprop="posts" itemref="profile" outline>
+  <div itemprop="posts" itemref="profile">
     <article v-for="post in posts" itemscope itemtype="/post" :key="post.created_at" v-bind:class="{silent: post.muted}">
       <header v-if="me">
         <menu>
@@ -13,7 +13,7 @@
       </header>
       <meta itemprop="muted" :content="post.muted">
       <time itemprop="created_at" :datetime="post.created_at">Calculating...</time>
-      <blockquote itemprop="articleBody">{{post.articleBody}}</blockquote>
+      <blockquote :contenteditable="me" @blur="save_me" itemprop="articleBody">{{post.articleBody}}</blockquote>
     </article>
   </div>
 </template>
@@ -33,13 +33,17 @@
       }
     },
     methods: {
+      save_me(){
+        console.log('save_me')
+        Vue.nextTick(() => posts_storage.save())
+      },
       mute_post(post) {
         post.muted = true
-        Vue.nextTick(() => posts_storage.save())
+        this.save_me()
       },
       sync_post(post) {
         post.muted = false
-        Vue.nextTick(() => posts_storage.save())
+        this.save_me()
       }
     }
   }
@@ -55,11 +59,13 @@
         shape-outside: circle()
         clip-path: circle(50%)
         & > menu svg
-          // padding: (base-line / 3) 0
           padding-right: (base-line / 6)
           height: base-line
           width: base-line
           fill: white
+      & > blockquote
+        display: inline-block
+        width:100%
       &.silent
         time
         blockquote
