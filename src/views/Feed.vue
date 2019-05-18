@@ -65,7 +65,7 @@
         this.condense_feed()
         this.working = false
         console.timeEnd('feed_load')
-        console.log(`${this.feed.length} feed items`);
+        console.log(`${this.feed.length} feed items`)
         console.info(`${this.sort_count} sort operations`)
       })
     },
@@ -86,6 +86,7 @@
         console.timeEnd('condense_feed')
       },
       is_train_of_thought(post) {
+        this.sort_count++
         const next_post = this.feed[0]
         if (next_post && next_post.person.id === post.person.id) {
           let last_post = post
@@ -168,7 +169,6 @@
           display: inline-block
           vertical-align: center
         & > span
-          // font-size: 0.75em
           color: black
         & > time
           color: black

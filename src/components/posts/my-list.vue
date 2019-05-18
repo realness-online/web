@@ -1,5 +1,5 @@
 <template>
-  <posts-list :posts='posts'></posts-list>
+  <posts-list :me="true" :posts='posts'></posts-list>
 </template>
 <script>
   import Vue from 'vue'
