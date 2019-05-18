@@ -17,17 +17,22 @@
       }
     },
     created() {
+
       localStorage.setItem('posts-count', this.posts.length)
       this.$bus.$on('post-added', post => {
         this.posts.push(post)
         localStorage.setItem('posts-count', this.posts.length)
       })
-      if (!sessionStorage.getItem('posts_synced')) {
+
+      const last_synced = sessionStorage.getItem('posts-synced')
+      const five_minutes_ago = Date.now() - (1000 * 60 * 5)
+      if (last_synced && five_minutes_ago > last_synced) {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
             posts_storage.sync_list().then((items) => {
               this.posts = items
-              sessionStorage.setItem('posts_synced', Date.now)
+              localStorage.setItem('posts-count', this.posts.length)
+              sessionStorage.setItem('posts-synced', Date.now())
               console.log('posts synced')
             })
           }

@@ -30,7 +30,9 @@
       }
     },
     created() {
-      if (!sessionStorage.getItem('profile_synced')) {
+      const last_synced = sessionStorage.getItem('profile-synced')
+      const five_minutes_ago = Date.now() - (1000 * 60 * 5)
+      if (last_synced && five_minutes_ago > last_synced) {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
             const id = profile_id.from_e64(user.phoneNumber)
@@ -46,8 +48,8 @@
       me() {
         Vue.nextTick(() => {
           person_storage.save().then(message => {
-            sessionStorage.setItem('profile_synced', Date.now)
-            console.log('profile_synced')
+            sessionStorage.setItem('profile_synced', Date.now())
+            console.log('profile synced')
           })
         })
       }
@@ -67,5 +69,4 @@
       position: fixed
       bottom: (base-line / 2)
       left: (base-line / 2)
-
 </style>

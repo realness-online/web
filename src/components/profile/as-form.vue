@@ -138,7 +138,8 @@
       },
       sign_in_with_code(event) {
         event.preventDefault()
-        sessionStorage.removeItem('posts_synced')
+        sessionStorage.removeItem('posts-synced')
+        sessionStorage.removeItem('profile-synced')
         this.working = true
         this.disable_input()
         this.show_code = false
