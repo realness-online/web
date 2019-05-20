@@ -7,19 +7,25 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <profile-as-list :people='relations'></profile-as-list>
+
     <icon v-if="working" name="working"></icon>
-    <article v-else v-for="post in size_limited_feed" :key="post.id" itemscope itemtype="/post">
-      <router-link :to="post.person.id">
-        <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
-      </router-link>
-      <hgroup>
-        <span>{{post.person.first_name}} {{post.person.last_name}}</span>
-        <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
-      </hgroup>
-      <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
-      <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
-    </article>
+    <section v-else class="day" v-for="day in days">
+
+      <article v-for="post in day" :key="post.created_at" itemscope itemtype="/post">
+        {{post}}
+        <router-link :to="post.person.id">
+          <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
+        </router-link>
+        <hgroup>
+          <span>{{post.person.first_name}} {{post.person.last_name}}</span>
+          <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
+        </hgroup>
+        <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
+        <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
+
+      </article>
+    </section>
+
   </section>
 </template>
 <script>
@@ -41,9 +47,10 @@
         thirteen_minutes: 1000 * 60 * 13,
         feed_limit: 13,
         feed: [],
+        days: null,
         relations: [],
         working: true,
-        unpopulated_relations_count: null,
+        relations_left: null,
         sort_count: 0
       }
     },
@@ -55,23 +62,30 @@
     },
     created() {
       console.clear()
-      console.time('feed_load')
+      console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
       const me = person_storage.as_object()
       people_in_feed.push(me)
-      this.unpopulated_relations_count = people_in_feed.length
-      this.populate_feed(people_in_feed).then(() => {
-        this.feed.sort(this.feed_sorter)
-        this.condense_feed()
+      this.relations_left = people_in_feed.length
+      this.populate_days(people_in_feed).then(days => {
+        days.forEach(day => {
+          this.sort_day(day)
+          // this.condense_day(day)
+        })
+
         this.working = false
-        console.timeEnd('feed_load')
+        console.timeEnd('feed-load')
         console.log(`${this.feed.length} feed items`)
         console.info(`${this.sort_count} sort operations`)
       })
     },
     methods: {
+      sort_day(day) {
+        console.log('day', day)
+        day.sort(this.feed_sorter)
+      },
       condense_feed() {
-        console.time('condense_feed')
+        console.time('condense-feed')
         const condensed_feed = []
         while(this.feed.length > 0) {
           let post = this.feed.shift()
@@ -83,7 +97,7 @@
           condensed_feed.push(post)
         }
         this.feed = condensed_feed
-        console.timeEnd('condense_feed')
+        console.timeEnd('condense-feed')
       },
       is_train_of_thought(post) {
         this.sort_count++
@@ -115,22 +129,31 @@
           this.feed_limit = this.feed_limit * 2
         }
       },
-      populate_feed(people_in_feed) {
+      populate_days(people_in_feed) {
         return new Promise((resolve, reject) => {
-          console.time('populate_feed')
-          people_in_feed.forEach((relation, index) => {
+          const days = new Map()
+          people_in_feed.forEach(relation => {
             profile_id.load(relation.id).then(person => {
               this.relations.push(person)
               profile_id.items(relation.id, 'posts').then(posts => {
-                this.unpopulated_relations_count--
-                const filtered = posts.filter(post => {
+                this.relations_left--
+                console.log(person.first_name,'person.posts.length', posts.length)
+                posts.forEach(post => {
+
                   post.person = person
-                  return !post.muted
+                  if (!post.muted) {
+                    const day = post.created_at.split('T')[0]
+
+                    if (days.has(day)) {
+                      const days_posts = days.get(day)
+                      days_posts.push(post)
+                    } else {
+                      days.set(day, [post])
+                    }
+                  }
                 })
-                this.feed.push(...filtered)
-                if (this.unpopulated_relations_count < 1) {
-                  console.timeEnd('populate_feed')
-                  resolve('finished')
+                if (this.relations_left < 1) {
+                  resolve(days)
                 }
               })
             })
