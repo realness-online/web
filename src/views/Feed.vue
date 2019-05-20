@@ -7,25 +7,24 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-
+    <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <section v-else class="day" v-for="day in days">
-
-      <article v-for="post in day" :key="post.created_at" itemscope itemtype="/post">
-        {{post}}
+      <header>
+        <h2>{{day[0]}}</h2>
+      </header>
+      <article v-for="post in day[1]" :key="post.created_at" itemscope itemtype="/post" :itemid="item_id(post)">
         <router-link :to="post.person.id">
           <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
         </router-link>
         <hgroup>
           <span>{{post.person.first_name}} {{post.person.last_name}}</span>
-          <time itemprop="created_at" :datetime="post.created_at">calculating...</time>
+          <time itemprop="created_at" :datetime="post.created_at">Calculating...</time>
         </hgroup>
         <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
         <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
-
       </article>
     </section>
-
   </section>
 </template>
 <script>
@@ -46,7 +45,6 @@
       return {
         thirteen_minutes: 1000 * 60 * 13,
         feed_limit: 13,
-        feed: [],
         days: null,
         relations: [],
         working: true,
@@ -67,41 +65,39 @@
       const me = person_storage.as_object()
       people_in_feed.push(me)
       this.relations_left = people_in_feed.length
-      this.populate_days(people_in_feed).then(days => {
-        days.forEach(day => {
-          this.sort_day(day)
-          // this.condense_day(day)
-        })
-
+      this.populate_feed(people_in_feed).then(feed => {
+        this.feed_length = feed.length
+        feed.sort(this.earlier_first)
+        feed = this.condense_feed(feed)
+        this.days = this.feed_into_days(feed)
         this.working = false
         console.timeEnd('feed-load')
-        console.log(`${this.feed.length} feed items`)
+        console.info(`${this.feed_length} feed items`)
         console.info(`${this.sort_count} sort operations`)
       })
     },
     methods: {
-      sort_day(day) {
-        console.log('day', day)
-        day.sort(this.feed_sorter)
+      item_id(post){
+        return `${post.person.id}/${post.created_at}`
       },
-      condense_feed() {
+      condense_feed(feed) {
         console.time('condense-feed')
         const condensed_feed = []
-        while(this.feed.length > 0) {
-          let post = this.feed.shift()
+        while(feed.length > 0) {
+          let post = feed.shift()
           post.statements = []
-          while(this.is_train_of_thought(post)) {
-            const next_statement = this.feed.shift()
+          while(this.is_train_of_thought(post, feed)) {
+            const next_statement = feed.shift()
             post.statements.unshift(next_statement)
           }
           condensed_feed.push(post)
         }
-        this.feed = condensed_feed
         console.timeEnd('condense-feed')
+        return condensed_feed
       },
-      is_train_of_thought(post) {
+      is_train_of_thought(post, feed) {
         this.sort_count++
-        const next_post = this.feed[0]
+        const next_post = feed[0]
         if (next_post && next_post.person.id === post.person.id) {
           let last_post = post
           if (post.statements.length > 0) {
@@ -117,7 +113,7 @@
           return false
         }
       },
-      feed_sorter(a, b) {
+      earlier_first(a, b) {
         this.sort_count++
         return Date.parse(b.created_at) - Date.parse(a.created_at)
       },
@@ -129,39 +125,50 @@
           this.feed_limit = this.feed_limit * 2
         }
       },
-      populate_days(people_in_feed) {
+      populate_feed(people_in_feed) {
         return new Promise((resolve, reject) => {
-          const days = new Map()
+          const feed = []
           people_in_feed.forEach(relation => {
             profile_id.load(relation.id).then(person => {
               this.relations.push(person)
               profile_id.items(relation.id, 'posts').then(posts => {
                 this.relations_left--
-                console.log(person.first_name,'person.posts.length', posts.length)
                 posts.forEach(post => {
-
-                  post.person = person
                   if (!post.muted) {
-                    const day = post.created_at.split('T')[0]
-
-                    if (days.has(day)) {
-                      const days_posts = days.get(day)
-                      days_posts.push(post)
-                    } else {
-                      days.set(day, [post])
-                    }
+                    post.person = person
+                    feed.push(post)
                   }
                 })
                 if (this.relations_left < 1) {
-                  resolve(days)
+                  resolve(feed)
                 }
               })
             })
           })
         })
+      },
+      feed_into_days(feed) {
+        const days = new Map()
+        feed.forEach(post => {
+          const day = post.created_at.split('T')[0]
+          if (days.has(day)) {
+            days.get(day).push(post)
+          } else {
+            days.set(day, [post])
+          }
+        })
+        return days
       }
     },
     computed: {
+      ordered_days() {
+        const ordered_keys = this.days.keys().sort(this.day_sorter)
+        const days_as_list = []
+        ordered_keys.forEach(day => {
+          days_as_list.push(this.days.get(day))
+        })
+        return days_as_list
+      },
       size_limited_feed() {
         return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
       }
@@ -181,11 +188,11 @@
     & > svg.working
       order: 1
       margin-bottom: base-line
-    & > article
+    & > section > article
       overflow: hidden
-      padding: base-line base-line 0 base-line
-      &:first-of-type
-        padding-top: 0
+      margin-bottom: base-line
+      &:last-of-type
+        margin-bottom: 0
       & > hgroup
         font-weight: 200
         & > span
