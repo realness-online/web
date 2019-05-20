@@ -11,7 +11,7 @@
     <icon v-if="working" name="working"></icon>
     <section v-else class="day" v-for="day in days">
       <header>
-        <h2>{{day[0]}}</h2>
+        <h3>{{day[0]}}</h3>
       </header>
       <article v-for="post in day[1]" :key="post.created_at" itemscope itemtype="/post" :itemid="item_id(post)">
         <router-link :to="post.person.id">
@@ -53,10 +53,10 @@
       }
     },
     beforeMount () {
-      window.addEventListener('scroll', this.scrolled)
+      // window.addEventListener('scroll', this.scrolled)
     },
     beforeDestroy () {
-      window.removeEventListener('scroll', this.scrolled)
+      // window.removeEventListener('scroll', this.scrolled)
     },
     created() {
       console.clear()
@@ -67,7 +67,7 @@
       this.relations_left = people_in_feed.length
       this.populate_feed(people_in_feed).then(feed => {
         this.feed_length = feed.length
-        feed.sort(this.earlier_first)
+        feed.sort(this.later_first)
         feed = this.condense_feed(feed)
         this.days = this.feed_into_days(feed)
         this.working = false
@@ -113,9 +113,13 @@
           return false
         }
       },
-      earlier_first(a, b) {
+      earlier_first(earlier, later) {
         this.sort_count++
-        return Date.parse(b.created_at) - Date.parse(a.created_at)
+        return Date.parse(earlier.created_at) - Date.parse(later.created_at)
+      },
+      later_first(earlier, later) {
+        this.sort_count++
+        return Date.parse(later.created_at) - Date.parse(earlier.created_at)
       },
       scrolled(event) {
         const article = document.querySelector('#feed > article:last-of-type')
@@ -150,9 +154,22 @@
       feed_into_days(feed) {
         const days = new Map()
         feed.forEach(post => {
-          const day = post.created_at.split('T')[0]
+          const created_time = new Date(post.created_at)
+          // const created_day =
+
+          const format = {weekday:'long', day:'numeric', month:'long'}
+          const today = "Today"
+          let day = created_time.toLocaleString('en-US', format)
+
+          if (created_time.toDateString()  === (new Date()).toDateString() ) {
+            day = today
+          }
           if (days.has(day)) {
-            days.get(day).push(post)
+            if (day === today) {
+              days.get(today).push(post)
+            } else {
+              days.get(day).unshift(post)
+            }
           } else {
             days.set(day, [post])
           }
@@ -183,37 +200,45 @@
     flex-direction: column
     & > header > svg
       fill: transparent
-    & > nav.profile-list
+    & > nav
       display: none
+    & > hgroup > h1
+      margin-bottom: 0
     & > svg.working
       order: 1
       margin-bottom: base-line
-    & > section > article
-      overflow: hidden
-      margin-bottom: base-line
-      &:last-of-type
-        margin-bottom: 0
-      & > hgroup
-        font-weight: 200
-        & > span
-        & > time
-          display: inline-block
-          vertical-align: center
-        & > span
-          color: black
-        & > time
-          color: black
-          margin-left: (base-line / 6)
-      & > blockquote
+
+    & > section
+      & > header > h3
+        font-weight: 100
+      &:first-of-type > header > h3
+        margin-top: base-line
+      & > article
+        overflow: hidden
         margin-bottom: base-line
         &:last-of-type
           margin-bottom: 0
-      & > a > svg
-        shape-outside: circle()
-        margin-right: base-line
-        float: left
-        clip-path: circle(50%)
-        fill: blue
-        stroke: lighten(blue, 33%)
-        stroke-width:2px
+        & > hgroup
+          font-weight: 200
+          & > span
+          & > time
+            display: inline-block
+            vertical-align: center
+          & > span
+            color: black
+          & > time
+            color: black
+            margin-left: (base-line / 6)
+        & > blockquote
+          margin-bottom: base-line
+          &:last-of-type
+            margin-bottom: 0
+        & > a > svg
+          shape-outside: circle()
+          margin-right: base-line
+          float: left
+          clip-path: circle(50%)
+          fill: blue
+          stroke: lighten(blue, 33%)
+          stroke-width:2px
 </style>
