@@ -11,7 +11,7 @@
     <icon v-if="working" name="working"></icon>
     <section v-else class="day" v-for="day in days">
       <header>
-        <h3>{{day[0]}}</h3>
+        <h4>{{day[0]}}</h4>
       </header>
       <article v-for="post in day[1]" :key="post.created_at" itemscope itemtype="/post" :itemid="item_id(post)">
         <router-link :to="post.person.id">
@@ -19,7 +19,7 @@
         </router-link>
         <hgroup>
           <span>{{post.person.first_name}} {{post.person.last_name}}</span>
-          <time itemprop="created_at" :datetime="post.created_at">Calculating...</time>
+          <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
         </hgroup>
         <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
         <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
@@ -77,6 +77,11 @@
       })
     },
     methods: {
+      created_time(created_at) {
+        const time = new Date(created_at)
+        const format = { hour: 'numeric', minute: 'numeric', hour12: true }
+        return time.toLocaleString('en-US', format)
+      },
       item_id(post){
         return `${post.person.id}/${post.created_at}`
       },
@@ -155,14 +160,12 @@
         const days = new Map()
         feed.forEach(post => {
           const created_time = new Date(post.created_at)
-          // const created_day =
-
           const format = {weekday:'long', day:'numeric', month:'long'}
           const today = "Today"
           let day = created_time.toLocaleString('en-US', format)
 
           if (created_time.toDateString()  === (new Date()).toDateString() ) {
-            day = today
+            day = `${today} – ${day}`
           }
           if (days.has(day)) {
             if (day === today) {
@@ -206,12 +209,12 @@
       margin-bottom: 0
     & > svg.working
       order: 1
-      margin-bottom: base-line
-
+      margin: base-line auto
     & > section
-      & > header > h3
+      padding: 0 base-line
+      & > header > h4
         font-weight: 100
-      &:first-of-type > header > h3
+      &:first-of-type > header > h4
         margin-top: base-line
       & > article
         overflow: hidden
