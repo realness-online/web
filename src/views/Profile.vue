@@ -13,7 +13,6 @@
   import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import '@/modules/time_ago'
   import profile_id from '@/modules/profile_id'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
