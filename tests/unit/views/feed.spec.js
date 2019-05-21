@@ -19,7 +19,7 @@ const profile_as_text = `
       <span itemprop="first_name">katie</span>
       <span itemprop="last_name">caffey</span>
     </p>
-    <a data-value="6282281824" href="sms:+16282281824" itemprop="mobile">(628) 228-1824</a>
+    <a content="6282281824" href="sms:+16282281824" itemprop="mobile">(628) 228-1824</a>
   </figcaption>
 </figure>
 `

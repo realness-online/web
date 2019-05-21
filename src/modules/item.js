@@ -30,23 +30,29 @@ export default {
     return props
   },
   property_value(element) {
-    if (element.getAttribute('data-value')) {
-      return element.getAttribute('data-value')
+    if (element.getAttribute('content')) {
+      return element.getAttribute('content')
     }
     switch (element.tagName.toLowerCase()) {
       case 'a':
+      case 'area':
       case 'link':
+      case 'use':
         return element.getAttribute('href')
+      case 'audio':
+      case 'iframe':
+      case 'source':
+      case 'track':
+      case 'video':
       case 'img':
-      case 'object':
       case 'embed':
         return element.getAttribute('src')
+      case 'data':
+      case 'meter':
       case 'input':
       case 'textarea':
       case 'select':
         return element.value
-      case 'meta':
-        return element.getAttribute('content')
       case 'time':
         return element.getAttribute('datetime')
       case 'svg':
@@ -54,8 +60,8 @@ export default {
       case 'g':
       case 'defs':
         return element.innerHTML
-      case 'use':
-        return element.getAttribute('href')
+      case 'object':
+        return element.getAttribute('data')
       default:
         return element.textContent.trim()
     }

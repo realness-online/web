@@ -21,6 +21,7 @@
   import Vue from 'vue'
   import {posts_storage} from '@/modules/Storage'
   import icon from '@/components/icon'
+  import time_ago from '@/modules/time_ago'
   export default {
     components: {
       icon
@@ -31,6 +32,9 @@
         type: Boolean,
         default: false
       }
+    },
+    created(){
+      time_ago()
     },
     methods: {
       save_me(){
@@ -51,7 +55,7 @@
 <style lang="stylus">
   div[itemprop="posts"]
     display:flex
-    flex-direction: column
+    flex-direction: column-reverse
     & > article
       margin-bottom: base-line
       & > header

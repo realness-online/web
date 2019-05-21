@@ -21,7 +21,7 @@ const phonebook_as_text = `
       <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
       <figcaption>
         <p><span itemprop="first_name">Scott</span><span itemprop="last_name">Fryxell</span></p>
-        <a itemprop="mobile" data-value="+16282281824">+1 (628) 228-1824</a>
+        <a itemprop="mobile" content="+16282281824">+1 (628) 228-1824</a>
       </figcaption>
     </figure>
     <figure itemscope itemtype="/person" itemid='+12403800385‬'>
@@ -30,7 +30,7 @@ const phonebook_as_text = `
       <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
       <figcaption>
         <p><span itemprop="first_name">Katie</span><span itemprop="last_name">Caffey</span></p>
-        <a itemprop="mobile" data-value="+12403800385‬">+1 (240) 380-0385‬</a>
+        <a itemprop="mobile" content="+12403800385‬">+1 (240) 380-0385‬</a>
       </figcaption>
     </figure>
   <div>`

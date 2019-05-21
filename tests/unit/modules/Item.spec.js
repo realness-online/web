@@ -5,7 +5,7 @@ describe('@/modules/item.js', () => {
   <main id="profile" itemscope itemtype="/person" itemid='/people/666'>
     <section>
       <h1 itemprop="name">Scott Fryxell</h1>
-      <h2 itemprop="nickname" data-value="scoot">lame</h2>
+      <h2 itemprop="nickname" content="scoot">lame</h2>
     </section>
     <section>
       <a itemprop="url" href="/people/scott">homepage</a>

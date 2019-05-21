@@ -61,4 +61,4 @@ function timeAgo() {
   setTimeout(timeAgo, 1000)
 }
 /* istanbul ignore next */
-export default timeAgo()
+export default timeAgo

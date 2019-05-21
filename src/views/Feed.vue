@@ -13,7 +13,7 @@
       <header>
         <h4>{{day[0]}}</h4>
       </header>
-      <article v-for="post in day[1]" :key="post.created_at" itemscope itemtype="/post" :itemid="item_id(post)">
+      <article v-for="post in day[1]" :key="item_id(post)" itemscope itemtype="/post" :itemid="item_id(post)">
         <router-link :to="post.person.id">
           <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
         </router-link>
