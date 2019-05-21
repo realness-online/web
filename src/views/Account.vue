@@ -57,7 +57,6 @@
       }
     },
     created() {
-      console.log('me@created', this.me);
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           const id = profile_id.from_e64(user.phoneNumber)
@@ -67,8 +66,6 @@
             this.me.id = id
           })
         } else {
-
-          console.log('me', this.me)
           this.me.id = ""
           this.signed_in = false
         }
