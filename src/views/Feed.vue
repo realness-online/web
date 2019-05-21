@@ -33,8 +33,10 @@
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import profile_as_avatar from '@/components/profile/as-avatar'
+  import posts_into_days from '@/mixins/posts_into_days'
   import icon from '@/components/icon'
   export default {
+    mixins: [posts_into_days],
     components: {
       'profile-as-avatar': profile_as_avatar,
       'profile-as-list': profile_as_list,
@@ -48,9 +50,7 @@
         relations: [],
         relations_left: null,
         working: true,
-        thirteen_minutes: 1000 * 60 * 13,
-        feed_limit: 8,
-        sort_count: 0
+        feed_limit: 8
       }
     },
     beforeMount () {
@@ -69,8 +69,8 @@
       this.populate_feed(people_in_feed).then(feed => {
         this.feed_length = feed.length
         feed.sort(this.later_first)
-        this.feed = this.condense_feed(feed)
-        this.days = this.feed_into_days(this.size_limited_feed)
+        this.feed = this.condense_posts(feed)
+        this.days = this.posts_into_days(this.size_limited_feed)
         this.working = false
         console.timeEnd('feed-load')
         console.info(`${this.feed_length} feed items`)
@@ -78,65 +78,20 @@
       })
     },
     methods: {
-      created_time(created_at) {
-        const time = new Date(created_at)
-        const format = { hour: 'numeric', minute: 'numeric', hour12: true }
-        return time.toLocaleString('en-US', format)
-      },
       item_id(post){
         return `${post.person.id}/${post.created_at}`
-      },
-      condense_feed(feed) {
-        console.time('condense-feed')
-        const condensed_feed = []
-        while(feed.length > 0) {
-          let post = feed.shift()
-          post.statements = []
-          while(this.is_train_of_thought(post, feed)) {
-            const next_statement = feed.shift()
-            post.statements.unshift(next_statement)
-          }
-          condensed_feed.push(post)
-        }
-        console.timeEnd('condense-feed')
-        return condensed_feed
-      },
-      is_train_of_thought(post, feed) {
-        this.sort_count++
-        const next_post = feed[0]
-        if (next_post && next_post.person.id === post.person.id) {
-          let last_post = post
-          if (post.statements.length > 0) {
-            last_post = post.statements[0]
-          }
-          let difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
-          if (difference < this.thirteen_minutes) {
-            return true
-          } else {
-            return false
-          }
-        } else {
-          return false
-        }
-      },
-      earlier_first(earlier, later) {
-        this.sort_count++
-        return Date.parse(earlier.created_at) - Date.parse(later.created_at)
-      },
-      later_first(earlier, later) {
-        this.sort_count++
-        return Date.parse(later.created_at) - Date.parse(earlier.created_at)
       },
       scrolled(event) {
         const article = document.querySelector('#feed > section.day:last-of-type')
         const bottom = article.getBoundingClientRect().bottom - 560
-        console.log(bottom -window.scrollY)
+        // console.log(bottom -window.scrollY)
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
-          this.days = this.feed_into_days(this.size_limited_feed)
+          this.days = this.posts_into_days(this.size_limited_feed)
         }
       },
       populate_feed(people_in_feed) {
+        console.time('populate-feed')
         return new Promise((resolve, reject) => {
           const feed = []
           people_in_feed.forEach(relation => {
@@ -151,6 +106,7 @@
                   }
                 })
                 if (this.relations_left < 1) {
+                  console.timeEnd('populate-feed')
                   resolve(feed)
                 }
               })
@@ -158,44 +114,8 @@
           })
         })
       },
-      feed_into_days(feed) {
-        const days = new Map()
-        feed.forEach(post => {
-          const created_time = new Date(post.created_at)
-          const format = {weekday:'long', day:'numeric', month:'long'}
-          const today = "Today"
-          let day = created_time.toLocaleString('en-US', format)
-
-          if (created_time.toDateString()  === (new Date()).toDateString() ) {
-            day = `${today} – ${day}`
-          }
-          if (days.has(day)) {
-            if (day === today) {
-              days.get(today).push(post)
-            } else {
-              days.get(day).unshift(post)
-            }
-          } else {
-            days.set(day, [post])
-          }
-        })
-        return days
-      }
     },
     computed: {
-      ordered_days() {
-        const ordered_keys = this.days.keys()
-        const days_as_list = []
-        this.feed_limit
-
-        let current_length = 0
-        ordered_keys.forEach(day => {
-          current_length += day.length
-
-          days_as_list.push(this.days.get(day))
-        })
-        return days_as_list
-      },
       size_limited_feed() {
         return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
       }
