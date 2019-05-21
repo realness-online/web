@@ -43,20 +43,21 @@
     },
     data() {
       return {
-        thirteen_minutes: 1000 * 60 * 13,
-        feed_limit: 13,
+        feed: [],
         days: null,
         relations: [],
-        working: true,
         relations_left: null,
+        working: true,
+        thirteen_minutes: 1000 * 60 * 13,
+        feed_limit: 8,
         sort_count: 0
       }
     },
     beforeMount () {
-      // window.addEventListener('scroll', this.scrolled)
+      window.addEventListener('scroll', this.scrolled)
     },
     beforeDestroy () {
-      // window.removeEventListener('scroll', this.scrolled)
+      window.removeEventListener('scroll', this.scrolled)
     },
     created() {
       console.clear()
@@ -68,8 +69,8 @@
       this.populate_feed(people_in_feed).then(feed => {
         this.feed_length = feed.length
         feed.sort(this.later_first)
-        feed = this.condense_feed(feed)
-        this.days = this.feed_into_days(feed)
+        this.feed = this.condense_feed(feed)
+        this.days = this.feed_into_days(this.size_limited_feed)
         this.working = false
         console.timeEnd('feed-load')
         console.info(`${this.feed_length} feed items`)
@@ -127,11 +128,12 @@
         return Date.parse(later.created_at) - Date.parse(earlier.created_at)
       },
       scrolled(event) {
-        const article = document.querySelector('#feed > article:last-of-type')
+        const article = document.querySelector('#feed > section.day:last-of-type')
         const bottom = article.getBoundingClientRect().bottom - 560
-        // console.log(bottom -window.scrollY)
+        console.log(bottom -window.scrollY)
         if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
           this.feed_limit = this.feed_limit * 2
+          this.days = this.feed_into_days(this.size_limited_feed)
         }
       },
       populate_feed(people_in_feed) {
@@ -182,9 +184,14 @@
     },
     computed: {
       ordered_days() {
-        const ordered_keys = this.days.keys().sort(this.day_sorter)
+        const ordered_keys = this.days.keys()
         const days_as_list = []
+        this.feed_limit
+
+        let current_length = 0
         ordered_keys.forEach(day => {
+          current_length += day.length
+
           days_as_list.push(this.days.get(day))
         })
         return days_as_list
@@ -213,7 +220,7 @@
     & > section
       padding: 0 base-line
       & > header > h4
-        font-weight: 100
+        font-weight: 200
       &:first-of-type > header > h4
         margin-top: base-line
       & > article
