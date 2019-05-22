@@ -20,7 +20,7 @@ export default new Router({
     { path: '/feed', component: Feed },
     { path: '/where', component: Where },
     { path: '/relations', component: Relations },
-    { path: '/phonebook', component: PhoneBook },
+    { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
     { path: '/:phone_number', component: Profile, name: 'view-profile' }

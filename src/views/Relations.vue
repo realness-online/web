@@ -1,7 +1,7 @@
 <template>
   <section id="relations" class="page">
     <header>
-      <router-link to="/phonebook"><icon name="heart"></icon></router-link>
+      <router-link to="/phone-book"><icon name="heart"></icon></router-link>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
