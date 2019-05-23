@@ -58,7 +58,7 @@ function timeAgo() {
     // console.log(time, timer(when),  when)
     time.textContent = timer(time.getAttribute('datetime'))
   })
-  setTimeout(timeAgo, 1000)
+  // setTimeout(timeAgo, 1000)
 }
 /* istanbul ignore next */
 export default timeAgo

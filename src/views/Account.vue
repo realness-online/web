@@ -38,7 +38,9 @@
   import my_posts_as_list from '@/components/posts/my-list'
   import logo_as_link from '@/components/logo-as-link'
   import convert_to_avatar from '@/modules/convert_to_avatar'
+  import posts_into_days from '@/mixins/posts_into_days'
   export default {
+    mixins: [posts_into_days],
     components: {
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,

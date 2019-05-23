@@ -9,14 +9,10 @@ export default {
     posts_into_days(posts) {
       console.time('feed-into-days')
       const days = new Map()
+      const today = this.created_day(new Date().toISOString())
+      console.log(today);
       posts.forEach(post => {
-        const created_time = new Date(post.created_at)
-        const format = {weekday:'long', day:'numeric', month:'long'}
-        const today = "Today"
-        let day = created_time.toLocaleString('en-US', format)
-        if (created_time.toDateString()  === (new Date()).toDateString() ) {
-          day = `${today} – ${day}`
-        }
+        const day = this.created_day(post.created_at)
         if (days.has(day)) {
           if (day === today) {
             days.get(today).push(post)
@@ -71,10 +67,33 @@ export default {
       this.sort_count++
       return Date.parse(later.created_at) - Date.parse(earlier.created_at)
     },
-    created_time(created_at) {
+    created_time(created_at, format={
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }) {
       const time = new Date(created_at)
-      const format = { hour: 'numeric', minute: 'numeric', hour12: true }
       return time.toLocaleString('en-US', format)
+    },
+    created_day(created_at) {
+      const format = {weekday:'long', day:'numeric', month:'long'}
+      let day = this.created_time(created_at, format)
+      const today = this.created_time(new Date().toISOString(), format)
+      if (day === today ) {
+        console.log('is today')
+        day = `Today – ${day}`
+      }
+      return day
+    },
+    created_day_and_time(created_at) {
+      return this.created_time(created_at, {
+        weekday:'long',
+        day:'numeric',
+        month:'long',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      })
     }
   }
 }

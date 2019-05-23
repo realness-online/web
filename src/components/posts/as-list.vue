@@ -12,7 +12,7 @@
         </menu>
       </header>
       <meta itemprop="muted" :content="post.muted">
-      <time itemprop="created_at" :datetime="post.created_at">Calculating...</time>
+      <time itemprop="created_at" :datetime="post.created_at">{{created_day_and_time(post.created_at)}}</time>
       <blockquote :contenteditable="me" @blur="save_me" itemprop="articleBody">{{post.articleBody}}</blockquote>
     </article>
   </div>
@@ -22,7 +22,9 @@
   import {posts_storage} from '@/modules/Storage'
   import icon from '@/components/icon'
   import time_ago from '@/modules/time_ago'
+  import posts_into_days from '@/mixins/posts_into_days'
   export default {
+    mixins: [posts_into_days],
     components: {
       icon
     },
