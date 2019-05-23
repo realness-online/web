@@ -3,11 +3,9 @@
     <article v-for="post in posts" itemscope itemtype="/post" :key="post.created_at" v-bind:class="{silent: post.muted}">
       <header v-if="me">
         <menu>
-          <a v-if="post.muted" @click="sync_post(post)">
-            <icon name="add"></icon>
-          </a>
-          <a v-else @click="mute_post(post)">
-            <icon name="remove"></icon>
+          <a @click="toggle_post(post)">
+            <icon v-if="post.muted" name="add"></icon>
+            <icon v-else name="remove"></icon>
           </a>
         </menu>
       </header>
@@ -40,15 +38,11 @@
     },
     methods: {
       save_me(){
-        console.log('save_me')
+        console.log('save_me()')
         Vue.nextTick(() => posts_storage.save())
       },
-      mute_post(post) {
-        post.muted = true
-        this.save_me()
-      },
-      sync_post(post) {
-        post.muted = false
+      toggle_post(post) {
+        post.muted = !post.muted
         this.save_me()
       }
     }

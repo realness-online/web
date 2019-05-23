@@ -39,6 +39,7 @@
     },
     watch: {
       posts() {
+        console.log('my-list posts() watch')
         Vue.nextTick(() => posts_storage.save())
       }
     }
