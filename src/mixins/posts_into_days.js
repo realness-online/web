@@ -6,16 +6,17 @@ export default {
     }
   },
   methods: {
-    posts_into_days(posts) {
-      console.time('feed-into-days')
+    posts_into_days(posts, chronological=false) {
+      console.time('posts-into-days')
       const days = new Map()
       const today = this.created_day(new Date().toISOString())
       console.log(today);
       posts.forEach(post => {
+        this.sort_count++
         const day = this.created_day(post.created_at)
         if (days.has(day)) {
-          if (day === today) {
-            days.get(today).push(post)
+          if(day === today || chronological) {
+            days.get(day).push(post)
           } else {
             days.get(day).unshift(post)
           }
@@ -23,11 +24,11 @@ export default {
           days.set(day, [post])
         }
       })
-      console.timeEnd('feed-into-days')
+      console.timeEnd('posts-into-days')
       return days
     },
     condense_posts(feed) {
-      console.time('condense-feed')
+      console.time('condense-posts')
       const condensed_feed = []
       while(feed.length > 0) {
         let post = feed.shift()
@@ -38,7 +39,7 @@ export default {
         }
         condensed_feed.push(post)
       }
-      console.timeEnd('condense-feed')
+      console.timeEnd('condense-posts')
       return condensed_feed
     },
     is_train_of_thought(post, feed) {
