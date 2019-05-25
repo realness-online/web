@@ -78,7 +78,7 @@
       })
     },
     methods: {
-      item_id(post){
+      item_id(post) {
         return `${post.person.id}/${post.created_at}`
       },
       scrolled(event) {
@@ -113,7 +113,7 @@
             })
           })
         })
-      },
+      }
     },
     computed: {
       size_limited_feed() {

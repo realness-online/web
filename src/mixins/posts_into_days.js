@@ -6,16 +6,15 @@ export default {
     }
   },
   methods: {
-    posts_into_days(posts, chronological=false) {
+    posts_into_days(posts, chronological = false) {
       console.time('posts-into-days')
       const days = new Map()
       const today = this.created_day(new Date().toISOString())
-      console.log(today);
       posts.forEach(post => {
         this.sort_count++
         const day = this.created_day(post.created_at)
         if (days.has(day)) {
-          if(day === today || chronological) {
+          if (day === today || chronological) {
             days.get(day).push(post)
           } else {
             days.get(day).unshift(post)
@@ -30,10 +29,10 @@ export default {
     condense_posts(feed) {
       console.time('condense-posts')
       const condensed_feed = []
-      while(feed.length > 0) {
+      while (feed.length > 0) {
         let post = feed.shift()
         post.statements = []
-        while(this.is_train_of_thought(post, feed)) {
+        while (this.is_train_of_thought(post, feed)) {
           const next_statement = feed.shift()
           post.statements.unshift(next_statement)
         }
@@ -68,7 +67,7 @@ export default {
       this.sort_count++
       return Date.parse(later.created_at) - Date.parse(earlier.created_at)
     },
-    created_time(created_at, format={
+    created_time(created_at, format = {
       hour: 'numeric',
       minute: 'numeric',
       hour12: true
@@ -77,20 +76,19 @@ export default {
       return time.toLocaleString('en-US', format)
     },
     created_day(created_at) {
-      const format = {weekday:'long', day:'numeric', month:'long'}
+      const format = { weekday: 'long', day: 'numeric', month: 'long' }
       let day = this.created_time(created_at, format)
       const today = this.created_time(new Date().toISOString(), format)
-      if (day === today ) {
-        console.log('is today')
+      if (day === today) {
         day = `Today – ${day}`
       }
       return day
     },
     created_day_and_time(created_at) {
       return this.created_time(created_at, {
-        weekday:'long',
-        day:'numeric',
-        month:'long',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
         hour: 'numeric',
         minute: 'numeric',
         hour12: true
