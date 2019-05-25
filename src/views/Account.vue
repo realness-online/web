@@ -170,7 +170,6 @@
         margin-bottom: -(base-line * 4)
         position: relative
         z-index: 2
-
       & > div > form
         margin-top: -(base-line * 2)
         #name, #phone

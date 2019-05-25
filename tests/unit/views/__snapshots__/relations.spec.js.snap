@@ -7,7 +7,7 @@ exports[`@/views/Relations.vue render relationship information 1`] = `
 >
   <header>
     <router-link
-      to="/phonebook"
+      to="/phone-book"
     >
       <!---->
     </router-link>

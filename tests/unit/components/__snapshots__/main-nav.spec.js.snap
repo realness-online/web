@@ -12,7 +12,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
   <router-link
     class="blue"
     tabindex="-1"
-    to="/relations"
+    to="/phone-book"
   >
     Friends
   </router-link>
