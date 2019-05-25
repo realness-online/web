@@ -1,6 +1,6 @@
 <template>
   <div itemprop="posts" itemref="profile">
-    <section class="day" v-for="day in days">
+    <section class="day" v-for="day in days" v-bind:class="{today: is_today(day)}" >
       <header>
         <h4>{{day[0]}}</h4>
       </header>
@@ -55,6 +55,14 @@
       }
     },
     methods: {
+      is_today(day) {
+        console.log(day[0].indexOf('Today'))
+        if(day[0].indexOf('Today') > -1) {
+          return true
+        } else {
+          return false
+        }
+      },
       save_me(){
         console.log('save_me()')
         Vue.nextTick(() => posts_storage.save())
@@ -70,10 +78,11 @@
   div[itemprop="posts"]
     display:flex
     flex-direction: column-reverse
+
     & > section.day
       display:flex
       flex-direction: column
-      &:last-of-type
+      &.today
         flex-direction: column-reverse
         & > header
           order: 1
