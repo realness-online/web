@@ -1,4 +1,4 @@
-<template lang="html">
+’<template lang="html">
   <section id="profile" class="page" ref='profile'>
     <header>
       <svg></svg>

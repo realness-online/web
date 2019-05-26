@@ -2,23 +2,29 @@ import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import Storage from '@/modules/Storage'
+import profile_id from '@/modules/profile_id'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-const is_signed_in = jest.fn((state_changed) => {
+const onAuthStateChanged = jest.fn((state_changed) => {
   state_changed({
     phoneNumber: '14151231234'
   })
 })
 describe('@/views/Account.vue', () => {
   let wrapper
+  const me = {
+    first_name: 'Scott',
+    last_name: 'Fryxell',
+    id: '/+16282281824'
+  }
   beforeEach(() => {
+    jest.spyOn(profile_id, 'load').mockImplementation(() => Promise.resolve(me))
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged: is_signed_in }
+      return { onAuthStateChanged }
     })
     wrapper = shallow(Account)
   })
   it('renders event information', () => {
-    let wrapper = shallow(Account)
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('adding an avatar', () => {
@@ -54,10 +60,4 @@ describe('@/views/Account.vue', () => {
       })
     })
   })
-  // describe('adding a poster', () => {
-  //   it('should have a button to upload')
-  //   it('Should notify the service_worker about an image that needs converting')
-  //   it('should let the user decide to use vector or original')
-  //   it('should upload a poster to /+14156661212/poster.svg')
-  // })
 })

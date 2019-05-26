@@ -6,23 +6,6 @@ exports[`@/views/Profile.vue shows profile information for a phone number 1`] = 
   id="profile"
 >
   <header>
-    <!---->
-     
-    <!---->
-  </header>
-   
-  <!---->
-   
-  <!---->
-</section>
-`;
-
-exports[`@/views/Profile.vue shows the users profile information 1`] = `
-<section
-  class="page"
-  id="profile"
->
-  <header>
     <svg />
      
     <!---->

@@ -74,7 +74,7 @@
       })
       this.$bus.$off('save-me')
       this.$bus.$on('save-me', person => {
-        console.log('save-me called')
+        console.log('save-me called', person)
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
             this.me.id = profile_id.from_e64(user.phoneNumber)
@@ -107,10 +107,12 @@
       vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
-        convert_to_avatar.trace(image, profile_id.as_avatar_id(this.me.id))
-        .then(avatar => {
-          this.working = false
-          this.me.avatar = avatar
+        const avatar_id = profile_id.as_avatar_id(this.me.id)
+        Vue.nextTick(() => {
+          convert_to_avatar.trace(image, avatar_id).then(avatar => {
+            this.working = false
+            this.me.avatar = avatar
+          })
         })
       },
       attach_poster(event) {
@@ -135,8 +137,6 @@
 </script>
 <style lang='stylus'>
   section#account
-    svg.hamburger
-      transform: rotate(90deg)
     & > svg
       fill: white
       width: 100vw
@@ -144,8 +144,8 @@
       &.working
         flex-grow: 1
         padding: base-line
-        width:100vw
-        height:50vh
+        width: 100vw
+        height: 50vh
     & > menu
       margin-top: -(base-line * 3)
       padding: 0 base-line base-line base-line
@@ -173,5 +173,5 @@
       & > div > form
         margin-top: -(base-line * 2)
         #name, #phone
-          display:none
+          display: none
 </style>
