@@ -40,23 +40,23 @@
     },
     data(){
       return {
-        days: null
+        days: null,
+        chronological: true
       }
     },
     created(){
       console.clear()
-      this.days = this.posts_into_days(this.posts, true)
-      console.info(`${this.posts.length} feed items`)
+      this.days = this.posts_into_days(this.posts, this.chronological)
+      console.info(`${this.posts.length} posts`)
       console.info(`${this.sort_count} sort operations`)
     },
     watch: {
       posts() {
-        this.days = this.posts_into_days(this.posts, true)
+        this.days = this.posts_into_days(this.posts, this.chronological)
       }
     },
     methods: {
       is_today(day) {
-        console.log(day[0].indexOf('Today'))
         if(day[0].indexOf('Today') > -1) {
           return true
         } else {
@@ -78,7 +78,6 @@
   div[itemprop="posts"]
     display:flex
     flex-direction: column-reverse
-
     & > section.day
       display:flex
       flex-direction: column

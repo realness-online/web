@@ -3,8 +3,10 @@ import post_list from '@/components/posts/as-list'
 describe('@/components/posts/as-list.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(post_list)
-    wrapper.setProps({ posts: [] })
+    wrapper = shallow(post_list, {
+      propsData: { posts: [] }
+    })
+
   })
   it('should render proper microdata for posts', () => {
     expect(wrapper.element).toMatchSnapshot()
