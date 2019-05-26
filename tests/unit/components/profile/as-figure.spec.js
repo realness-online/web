@@ -12,8 +12,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
   beforeEach(() => {
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
-      updated_at: '2018-07-16T18:12:21.552Z',
-      image: '/people/+16282281824/avatar.svg',
       first_name: 'Scott',
       last_name: 'Fryxell',
       id: '/+16282281824'
@@ -29,21 +27,21 @@ describe('@/compontent/profile/as-figure.vue', () => {
   })
   describe('mobile number', () => {
     it('should format the mobile number for display', () => {
-      let mobile = wrapper.find('[itemprop=mobile]')
+      let mobile = wrapper.find('.phone')
       expect(mobile.text()).toBe('(628) 228-1824')
     })
     it('should parse mobile number as it\'s typed in', () => {
-      person.id = '+1628'
+      person.id = '/+1628'
       wrapper = shallow(as_figure, { propsData: { person: person } })
-      let mobile = wrapper.find('[itemprop=mobile]')
+      let mobile = wrapper.find('a.phone')
       expect(mobile.text()).toBe('(628)')
-      person.id = '+1628228'
+      person.id = '/+1628228'
       wrapper = shallow(as_figure, { propsData: { person: person } })
-      mobile = wrapper.find('[itemprop=mobile]')
+      mobile = wrapper.find('a.phone')
       expect(mobile.text()).toBe('(628) 228')
-      person.id = '+162822818'
+      person.id = '/+162822818'
       wrapper = shallow(as_figure, { propsData: { person: person } })
-      mobile = wrapper.find('[itemprop=mobile]')
+      mobile = wrapper.find('a.phone')
       expect(mobile.text()).toBe('(628) 228-18')
     })
   })
@@ -75,11 +73,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
-    it('when click_to_avatar is true it should go to the users avatar page', () => {
-      wrapper.setProps({ click_to_avatar: true })
-      wrapper.vm.avatar_click()
-      expect(wrapper.vm.$route.path).toBe('/+16282281824/avatar')
-    })
     it('when is_me is true should go to the account page', () => {
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => person)
       wrapper.setProps({ person: person })
@@ -92,13 +85,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/test-route')
       sessionStorage.removeItem('previous')
-    })
-    it('just display the avatar when just_display_avatar is true', () => {
-      var push_spy = jest.fn()
-      router.push = push_spy
-      wrapper.setProps({ just_display_avatar: true })
-      wrapper.vm.avatar_click()
-      expect(push_spy).not.toBeCalled()
     })
   })
 })
