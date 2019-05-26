@@ -191,23 +191,23 @@
     input
       color: red
       &:focus
-        outline:0
+        outline: 0
         &::placeholder
-          color:lighten(black, 30%)
+          color: lighten(black, 30%)
       &::placeholder
         color: lighten(black, 30%)
     input#first-name
-      width:40%
+      width: 40%
       margin-right: base-line
     input#last-name
-      width:40%
+      width: 40%
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
     button#sign-out
-      border:none
-      padding:0
+      border: none
+      padding: 0
     menu
-      display:flex
+      display: flex
       justify-content: flex-end
 </style>
