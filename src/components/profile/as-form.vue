@@ -107,13 +107,12 @@
         this.$bus.$emit('save-me', this.person)
       },
       begin_authorization(event) {
+        event.preventDefault()
         this.working = true
         this.disable_input()
         this.save_person()
-        event.preventDefault()
         this.show_authorize = false
         this.show_captcha = true
-
         Vue.nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
@@ -157,9 +156,7 @@
         this.$el.querySelector('#mobile').disabled = false
       },
       mobile_keypress(event) {
-        if (!event.key.match(/^\d$/)) {
-          event.preventDefault()
-        }
+        if (!event.key.match(/^\d$/)) event.preventDefault();
       },
       mobile_keyup(event) {
         this.person.id = profile_id.from_phone_number(this.mobile)
@@ -167,15 +164,17 @@
       },
       mobile_paste(event) {
         event.preventDefault()
-        const past_text = (event.clipboardData).getData('text')
-        const phone_number = past_text.parseNumber(past_text, 'US').phone
-        this.person.id = profile_id.from_phone_number(phone_number)
-        this.validate_mobile_number()
+        const past_text = (event.clipboardData).getData('text/plain')
+        const phone_number = parseNumber(past_text, 'US').phone
+        if (phone_number) {
+          this.person.id = profile_id.from_phone_number(phone_number)
+          this.validate_mobile_number()
+        } else {
+          return false
+        }
       },
       code_keypress(event) {
-        if (!event.key.match(/^\d$/)) {
-          event.preventDefault()
-        }
+        if (!event.key.match(/^\d$/)) event.preventDefault();
         let button = this.$el.querySelector('#submit-verification')
         let input = this.$el.querySelector('#verification-code')
         if (input.value.length === 5) { // after this keypress it will be 6
