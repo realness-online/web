@@ -43,9 +43,9 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(wrapper.vm.show_code).toBe(false)
     })
     it('sets posts to be resynced', () => {
-      sessionStorage.setItem('posts_synced', true)
+      sessionStorage.setItem('posts-synced', true)
       button.trigger('click')
-      expect(sessionStorage.getItem('posts_synced')).toBeFalsy()
+      expect(sessionStorage.getItem('posts-synced')).toBeFalsy()
     })
     it('renders the sign out button when clicked', () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
