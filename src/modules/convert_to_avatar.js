@@ -1,4 +1,4 @@
-const potrace = require('potrace')
+const potrace = require('javascript-potrace')
 const Jimp = require('jimp')
 const EXIF = require('exif-js')
 function trace(avatar, identifier) {
@@ -12,8 +12,9 @@ function trace(avatar, identifier) {
       console.log('buffered')
       let buffer = this.result
       Jimp.read(buffer).then(image => {
+        image = image.resize(333, Jimp.AUTO).normalize().greyscale()
         EXIF.getData(avatar, () => {
-          image = image.resize(333, Jimp.AUTO)
+
           if (avatar.exifdata.Orientation === 6) {
             console.log('rotate')
             image = image.rotate(-90)
