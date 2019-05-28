@@ -129,7 +129,7 @@
         this.show_captcha = false
         this.hide_captcha = true
         firebase.auth()
-          .signInWithPhoneNumber(`+1${this.mobile}`, this.human)
+          .signInWithPhoneNumber(`+1${this.person.mobile}`, this.human)
           .then(result => {
             this.authorizer = result
             this.$el.querySelector('#verification-code').scrollIntoView(false)
