@@ -11,7 +11,7 @@
     <fieldset id="phone">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
-             v-model="mobile"
+             v-model="person.mobile"
              v-on:keypress="mobile_keypress"
              v-on:keyup="mobile_keyup"
              v-on:paste="mobile_paste"
@@ -57,7 +57,6 @@
     },
     data() {
       return {
-        mobile: null,
         working: true,
         disabled_sign_in: true,
         code: null,
@@ -77,7 +76,9 @@
           this.show_sign_out = true
           this.person.id = profile_id.from_e64(user.phoneNumber)
         } else {
-          this.mobile = profile_id.as_phone_number(this.person.id)
+          if (this.person.id) {
+            this.person.mobile = profile_id.as_phone_number(this.person.id)
+          }
           this.show_authorize = true
         }
         this.validate_mobile_number()
@@ -159,7 +160,6 @@
         if (!event.key.match(/^\d$/)) event.preventDefault();
       },
       mobile_keyup(event) {
-        this.person.id = profile_id.from_phone_number(this.mobile)
         this.validate_mobile_number()
       },
       mobile_paste(event) {
@@ -167,7 +167,7 @@
         const past_text = (event.clipboardData).getData('text/plain')
         const phone_number = parseNumber(past_text, 'US').phone
         if (phone_number) {
-          this.person.id = profile_id.from_phone_number(phone_number)
+          this.person.mobile = phone_number
           this.validate_mobile_number()
         } else {
           return false

@@ -1,5 +1,5 @@
 <template>
-  <figure class="profile" itemscope itemtype='/person' :itemid="this.person.id">
+  <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <as-avatar @avatar-clicked="avatar_click" :person="person"></as-avatar>
     <figcaption>
       <p>
@@ -46,6 +46,14 @@
       }
     },
     computed: {
+      item_id() {
+        console.log('item_id');
+        if (this.person.mobile){
+          return profile_id.from_phone_number(this.person.mobile)
+        } else {
+          return this.person.id
+        }
+      },
       is_me() {
         return person_storage.as_object().id === this.person.id
       },
@@ -53,7 +61,7 @@
         return `tel:${this.person.id}`
       },
       mobile_display() {
-        return new AsYouType('US').input(profile_id.as_phone_number(this.person.id))
+        return new AsYouType('US').input(this.person.mobile)
       }
     }
   }

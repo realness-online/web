@@ -61,15 +61,12 @@
     created() {
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          const id = profile_id.from_e64(user.phoneNumber)
           this.signed_in = true
+          const id = profile_id.from_e64(user.phoneNumber)
           profile_id.load(id).then(profile => {
             this.me = profile
             this.me.id = id
           })
-        } else {
-          this.me.id = ""
-          this.signed_in = false
         }
       })
       this.$bus.$off('save-me')
