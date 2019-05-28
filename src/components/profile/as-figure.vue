@@ -61,7 +61,8 @@
         return `tel:${this.person.id}`
       },
       mobile_display() {
-        return new AsYouType('US').input(this.person.mobile)
+        const phone_number = profile_id.as_phone_number(this.item_id)
+        return new AsYouType('US').input(phone_number)
       }
     }
   }
