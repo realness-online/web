@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <icon v-if="working" name="working"></icon>
-    <profile-as-avatar v-if="signed_in" :person="me"></profile-as-avatar>
+    <profile-as-avatar v-if="show_avatar" :person="me"></profile-as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera">
         <icon name="add"></icon>
@@ -81,6 +81,13 @@
       })
     },
     computed: {
+      show_avatar() {
+        if(this.signed_in && !this.working) {
+          return true
+        } else {
+          return false
+        }
+      },
       downloadable() {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
           ${this.me.avatar}
