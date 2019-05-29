@@ -5,16 +5,19 @@ function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
     console.log('trace...')
     let trace = new potrace.Potrace()
-    trace.setParameters({ threshold: 133, turdSize: 8 })
+    trace.setParameters({ threshold: 133, turdSize: 22 })
     let reader = new FileReader()
     reader.readAsArrayBuffer(avatar)
     reader.onload = function() {
       console.log('buffered')
       let buffer = this.result
       Jimp.read(buffer).then(image => {
-        image = image.resize(512, Jimp.AUTO).normalize().contrast(.2).brightness(.20).greyscale()
+        image = image.resize(333, Jimp.AUTO)
+          .greyscale()
+          .normalize()
+          .contrast(.5)
+          .brightness(.2)
         EXIF.getData(avatar, () => {
-
           if (avatar.exifdata.Orientation === 6) {
             console.log('rotate')
             image = image.rotate(-90)
