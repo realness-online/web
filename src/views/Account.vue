@@ -6,7 +6,7 @@
     </header>
     <icon v-if="working" name="working"></icon>
     <profile-as-avatar v-if="show_avatar" :person="me"></profile-as-avatar>
-    <menu v-if="signed_in">
+    <menu v-if="show_avatar">
       <a @click="open_camera">
         <icon name="add"></icon>
       </a>
@@ -75,8 +75,22 @@
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
             this.me.id = profile_id.from_e64(user.phoneNumber)
+            if (this.me.avatar) {
+              Vue.nextTick(() => person_storage.save())
+            } else {
+              console.log('no avatar', this.me.id)
+              profile_id.load(this.me.id).then(profile => {
+                this.me.avatar = profile.avatar
+                console.log('profile loaded', this.me.avatar)
+                Vue.nextTick(() => person_storage.save())
+              }).catch(error => {
+                console.log(error.message)
+                Vue.nextTick(() => person_storage.save())
+              })
+            }
+          } else {
+            Vue.nextTick(() => person_storage.save())
           }
-          Vue.nextTick(() => person_storage.save())
         })
       })
     },
@@ -120,7 +134,6 @@
         })
       },
       attach_poster(event) {
-        console.log('find me a poster')
         this.$refs.uploader.removeAttribute('capture')
         this.$refs.uploader.click()
       }
@@ -174,8 +187,14 @@
         margin-bottom: -(base-line * 4)
         position: relative
         z-index: 2
+      & > div > menu
+
       & > div > form
-        margin-top: -(base-line * 2)
-        #name, #phone
+
+        & > menu
+          // position: absolute
+          // top: 0
+          // // margin-top: -(base-line * 9)
+        #phone
           display: none
 </style>
