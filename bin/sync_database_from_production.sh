@@ -8,7 +8,7 @@ gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-staging.a
 gsutil -m rm -r gs://realness-development.appspot.com/people
 gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
 
-# # delete and copy to the desktop too
+# delete and copy to the desktop too
+rm -rf ~/realness.online
+mkdir ~/realness.online
 gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
-
-# gsutil -m cp -R ~/realness.online/people gs://realness-online.appspot.com/
