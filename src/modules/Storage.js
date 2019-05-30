@@ -33,7 +33,7 @@ class Storage {
       localStorage.setItem(this.item_type, items)
       if (['person', 'posts'].includes(this.item_type)) {
         this.persist(items)
-          .then(() => resolve('saved person or posts locally and to network'))
+          .then(() => resolve(`saved ${this.item_type} locally and to network`))
           .catch(e => reject(e))
       } else {
         resolve('saved local')

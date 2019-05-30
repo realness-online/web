@@ -47,7 +47,6 @@
     },
     computed: {
       item_id() {
-        console.log('item_id');
         if (this.person.mobile){
           return profile_id.from_phone_number(this.person.mobile)
         } else {
