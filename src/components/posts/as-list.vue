@@ -26,6 +26,8 @@
   import icon from '@/components/icon'
   import time_ago from '@/modules/time_ago'
   import posts_into_days from '@/mixins/posts_into_days'
+  import fibonnacci from '@/modules/fibonacci'
+  import sizer from '@/modules/sizer'
   export default {
     mixins: [posts_into_days],
     components: {
@@ -46,6 +48,10 @@
     },
     created(){
       console.clear()
+      console.log(sizer.rough_kb(this.posts))
+      console.log(fibonnacci.previous(32))
+      console.log(fibonnacci.next(32))
+      // this.days_into_silos
       this.days = this.posts_into_days(this.posts, this.chronological)
       console.info(`${this.posts.length} posts`)
       console.info(`${this.sort_count} sort operations`)
