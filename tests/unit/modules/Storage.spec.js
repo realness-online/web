@@ -92,7 +92,7 @@ describe('@/modules/Storage.js', () => {
     })
     it('saves an item to local storage', () => {
       expect.assertions(1)
-      storage.save().then(result => expect(result).toBe('saved person or posts locally and to network'))
+      storage.save().then(result => expect(result).toBe('saved person locally and to network'))
     })
   })
   describe('#get_download_url', () => {
