@@ -6,6 +6,9 @@ class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   }
+  static in_kb(bytes) {
+    return (bytes / 1024).toFixed(0)
+  }
   constructor(type,
     query = `[itemtype="/${type}"]`,
     file = `${type}.html`,
