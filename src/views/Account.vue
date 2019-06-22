@@ -51,8 +51,8 @@
     },
     data() {
       return {
-        working: false,
         me: person_storage.as_object(),
+        working: false,
         signed_in: false,
         avatar_changed: false,
         image_file: null
@@ -164,16 +164,16 @@
         width: 100vw
         height: 50vh
     & > menu
-      margin-top: -(base-line * 3)
-      padding: 0 base-line base-line base-line
       display: flex
       justify-content: space-between
+      margin-top: -(base-line * 3)
+      padding: 0 base-line base-line base-line
       & > a
         cursor: pointer
-      & > a#download-avatar
-        display: none
-        @media (min-width: max-screen)
-          display: inherit
+        &#download-avatar
+          display: none
+          @media (min-width: max-screen)
+            display: inherit
     & > div
       max-width: page-width
       margin: auto
@@ -187,14 +187,7 @@
         margin-bottom: -(base-line * 4)
         position: relative
         z-index: 2
-      & > div > menu
-
       & > div > form
-
-        & > menu
-          // position: absolute
-          // top: 0
-          // // margin-top: -(base-line * 9)
         #phone
           display: none
 </style>
