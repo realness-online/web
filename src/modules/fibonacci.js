@@ -5,7 +5,7 @@ function fibonacci(number){
     return fib >= number
   })
   const next = sequence[next_index]
-  const previous = sequence[next_index -1]  
+  const previous = sequence[next_index - 1]  
   return {
     previous,
     next
