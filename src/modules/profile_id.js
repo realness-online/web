@@ -39,6 +39,9 @@ export default {
   as_avatar_fragment(profile_id = 'avatar_') {
     return `#${this.as_avatar_id(profile_id)}`
   },
+  as_fragment(profile_id) {
+    return `#${this.as_query_id(profile_id)}`
+  },
   as_phone_number(profile_id = '/+1') {
     return profile_id.substring(3)
   },
