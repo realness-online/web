@@ -1,5 +1,5 @@
 <template>
-  <div itemprop="posts" itemref="profile">
+  <div itemprop="posts">
     <section class="day" v-for="day in days" v-bind:class="{today: is_today(day)}" >
       <header>
         <h4>{{day[0]}}</h4>
@@ -48,10 +48,8 @@
     },
     created(){
       console.clear()
-      console.log(sizer.rough_kb(this.posts))
-      console.log(fibonnacci.previous(32))
-      console.log(fibonnacci.next(32))
-      // this.days_into_silos
+
+      console.log(localStorage.getItem('posts').length / 1024)
       this.days = this.posts_into_days(this.posts, this.chronological)
       console.info(`${this.posts.length} posts`)
       console.info(`${this.sort_count} sort operations`)
