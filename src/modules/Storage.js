@@ -2,6 +2,7 @@ import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
+import fibonacci from '@/modules/fibonacci'
 class Storage {
   static hydrate(item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
@@ -28,18 +29,44 @@ class Storage {
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
+  optimize() {
+    return new Promise((resolve, reject) => {
+      const items = localStorage.getItem(this.item_type)
+      const max_base_size = fibonacci.next(fibonacci.first())
+      if ( items && Storage.in_kb(items.length) >= max_base_size ) {
+        const root = this.from_storage().childNodes[0]
+        console.log(root)
+        const older_items = document.createDocumentFragment()
+
+        while (Storage.in_kb(root.outerHTML.length) > fibonacci.first()) {
+          const in_transit = root.removeChild(root.childNodes[0])
+          older_items.appendChild(in_transit)
+        }
+        const name = `${this.item_type}.${max_base_size}`
+        const next_document = document.createElement(root.nodeName)
+        next_document.setAttribute('itemprop', this.item_type)
+        next_document.appendChild(older_items)
+        localStorage.setItem(this.item_type, root.outerHTML)
+        localStorage.setItem(name, next_document.outerHTML)
+        reject(name)
+      }
+    })
+
+  }
   save() {
     return new Promise((resolve, reject) => {
       let items = document.querySelector(this.selector)
       if (!items) { resolve('nothing to save') }
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
+
       if (['person', 'posts'].includes(this.item_type)) {
-        this.persist(items)
-          .then(() => resolve(`saved ${this.item_type} locally and to network`))
-          .catch(e => reject(e))
+        resolve('finished faker')
+        // this.persist(items)
+        //   .then(() => resolve(`saved ${this.item_type} locally and to network`))
+        //   .catch(e => reject(e))
       } else {
-        resolve('saved local')
+        resolve('saved locally')
       }
     })
   }

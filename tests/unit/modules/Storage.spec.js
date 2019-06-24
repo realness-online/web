@@ -2,6 +2,7 @@ import Storage, { posts_storage } from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
+import fibonacci from '@/modules/fibonacci'
 
 const not_signed_in = jest.fn(state_changed => state_changed())
 const is_signed_in = jest.fn((state_changed) => {
@@ -9,6 +10,7 @@ const is_signed_in = jest.fn((state_changed) => {
     phoneNumber: '+16282281824'
   })
 })
+const too_big_in_bytes = fibonacci.first() * 1024
 const server_text = `
   <div itemprop="posts" itemref="profile">
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
@@ -85,6 +87,30 @@ describe('@/modules/Storage.js', () => {
       expect(items.querySelectorAll('h1').length).toBe(1)
       expect(items.querySelectorAll('[itemprop="name"]').length).toBe(1)
     })
+  })
+  describe('#optimize', () => {
+    it('exists', () => {
+      expect(storage.optimize).toBeDefined()
+    })
+    it.only('it optimizes a user list accross a set of pages', e => {
+      let fat_file = local_text
+      while (fat_file.length < too_big_in_bytes ) {
+        fat_file += fat_file
+      }
+      localStorage.setItem(storage.item_type, fat_file)
+      expect(storage.optimize()).toBe(true)
+    })
+    // Create a second element
+    // Copy out the first element from the original element into the new one
+    //   This is the oldest post in the current index
+    //   Add this item to the second element
+    //   Save both elements when the first one has been prunned
+    //    (one fibonaci sequence smaller in size.)
+    //    (this is how we keep the index current but it never grows to large))
+    //   Once saved treat the file as the new index and prune it until you have spanned the length of elements accross files
+
+    // it optimizes the file accross a set of pages
+    // each of which get's larger the older it's contents created_at is
   })
   describe('#save', () => {
     it('exists', () => {
