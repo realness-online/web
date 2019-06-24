@@ -2,10 +2,10 @@ const sequence = [8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 41
 
 function fibonacci(number){
   const next_index = sequence.findIndex(fib => {
-    return fib >= number
+    return fib > number
   })
   const next = sequence[next_index]
-  const previous = sequence[next_index - 1]  
+  const previous = sequence[next_index - 1]
   return {
     previous,
     next
@@ -13,6 +13,9 @@ function fibonacci(number){
 }
 
 export default {
+  first(){
+    return sequence[0]
+  },
   next(number){
     return fibonacci(number).next
   },
