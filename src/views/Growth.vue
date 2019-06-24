@@ -56,7 +56,7 @@
   </section>
   </template>
 <script>
-  import fibonnacci from '@/modules/fibonacci'
+  import fibonacci from '@/modules/fibonacci'
   import sizer from '@/modules/sizer'
   export default {
   }
