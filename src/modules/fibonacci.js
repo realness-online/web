@@ -1,4 +1,4 @@
-const sequence = [8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 4145, 6711, 10856 ]
+const sequence = [13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 4145, 6711, 10856]
 
 function fibonacci(number){
   const next_index = sequence.findIndex(fib => {

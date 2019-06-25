@@ -3,9 +3,26 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import fibonacci from '@/modules/fibonacci'
+function keep_going(current_items) {
+  const first = fibonacci.first()
+  const shrink_too = first - fibonacci.next(first)
+  const current_size = current_items.outerHTML.length / 1024
+  if (current_size >= shrink_too) {
+    const item = Item.get_first_item(current_items)
+    const today = new Date().setHours(0, 0, 0, 0)
+    const created_at = Date.parse(item.created_at)
+    if (created_at && created_at < today ) return true;
+    else return false;
+  } else return false;
+
+}
 class Storage {
   static hydrate(item_as_string) {
-    return document.createRange().createContextualFragment(item_as_string)
+    if (item_as_string) {
+      return document.createRange().createContextualFragment(item_as_string)
+    } else {
+      return document.createDocumentFragment()
+    }
   }
   static in_kb(bytes) {
     return (bytes / 1024).toFixed(0)
@@ -19,6 +36,11 @@ class Storage {
     this.filename = file
     this.metadata = { 'contentType': content_type }
   }
+  as_kilobytes() {
+    const bytes = localStorage.getItem(this.item_type)
+    if (bytes) return (bytes.length / 1024).toFixed(0);
+    else return 0;
+  }
   from_storage() {
     let storage_string = localStorage.getItem(this.item_type)
     return Storage.hydrate(storage_string)
@@ -31,22 +53,21 @@ class Storage {
   }
   optimize() {
     return new Promise((resolve, reject) => {
-      const items = localStorage.getItem(this.item_type)
-      const max_base_size = fibonacci.next(fibonacci.first())
-      if ( items && Storage.in_kb(items.length) >= max_base_size ) {
-        const root = this.from_storage().childNodes[0]
-        console.log(root)
-        const older_items = document.createDocumentFragment()
-
-        while (Storage.in_kb(root.outerHTML.length) > fibonacci.first()) {
-          const in_transit = root.removeChild(root.childNodes[0])
-          older_items.appendChild(in_transit)
+      console.log(this.as_kilobytes())
+      if (this.as_kilobytes() > fibonacci.first() ) {
+        const name = `${this.item_type}.${fibonacci.first()}`
+        const current_items = this.from_storage().childNodes[0]
+        const offload_items = Storage.hydrate(localStorage.getItem(name))
+        while (keep_going(current_items)) {
+          console.log(Storage.in_kb(current_items.outerHTML.length))
+          const first = current_items.childNodes[0]
+          const in_transit = current_items.removeChild(first)
+          offload_items.appendChild(in_transit)
         }
-        const name = `${this.item_type}.${max_base_size}`
-        const next_document = document.createElement(root.nodeName)
+        localStorage.setItem(this.item_type, current_items.outerHTML)
+        const next_document = document.createElement(current_items.nodeName)
         next_document.setAttribute('itemprop', this.item_type)
-        next_document.appendChild(older_items)
-        localStorage.setItem(this.item_type, root.outerHTML)
+        next_document.appendChild(offload_items)
         localStorage.setItem(name, next_document.outerHTML)
         reject(name)
       }

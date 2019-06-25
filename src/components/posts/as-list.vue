@@ -48,8 +48,7 @@
     },
     created(){
       console.clear()
-
-      console.log(localStorage.getItem('posts').length / 1024)
+      console.log((localStorage.getItem('posts').length / 1024).toFixed() + 'kb in posts')
       this.days = this.posts_into_days(this.posts, this.chronological)
       console.info(`${this.posts.length} posts`)
       console.info(`${this.sort_count} sort operations`)
