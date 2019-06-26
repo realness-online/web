@@ -52,25 +52,27 @@ class Storage {
   }
   optimize() {
     return new Promise((resolve, reject) => {
-      console.log(this.as_kilobytes())
+
       if (this.as_kilobytes() > fibonacci.first() ) {
         const name = `${this.item_type}.${fibonacci.first()}`
         const current_items = this.from_storage().childNodes[0]
         const offload_items = Storage.hydrate(localStorage.getItem(name))
+
         while (keep_going(current_items)) {
-          console.log(Storage.in_kb(current_items.outerHTML.length))
-          const first = current_items.childNodes[0]
-          const in_transit = current_items.removeChild(first)
-          offload_items.appendChild(in_transit)
+          const first_child = current_items.childNodes[0]
+          offload_items.appendChild(current_items.removeChild(first_child))
         }
+
+        const older_items = document.createElement(current_items.nodeName)
+        older_items.setAttribute('itemprop', this.item_type)
+        older_items.appendChild(offload_items)
+
         localStorage.setItem(this.item_type, current_items.outerHTML)
-        const next_document = document.createElement(current_items.nodeName)
-        next_document.setAttribute('itemprop', this.item_type).appendChild(offload_items)
-        localStorage.setItem(name, next_document.outerHTML)
+        localStorage.setItem(name, older_items.outerHTML)
+
         reject(name)
       }
     })
-
   }
   save() {
     return new Promise((resolve, reject) => {
