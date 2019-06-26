@@ -5,7 +5,7 @@ import 'firebase/storage'
 import fibonacci from '@/modules/fibonacci'
 function keep_going(current_items) {
   const first = fibonacci.first()
-  const shrink_too = first - fibonacci.next(first)
+  const shrink_too =  fibonacci.next(first) - first
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= shrink_too) {
     const item = Item.get_first_item(current_items)
@@ -14,7 +14,6 @@ function keep_going(current_items) {
     if (created_at && created_at < today ) return true;
     else return false;
   } else return false;
-
 }
 class Storage {
   static hydrate(item_as_string) {
@@ -66,8 +65,7 @@ class Storage {
         }
         localStorage.setItem(this.item_type, current_items.outerHTML)
         const next_document = document.createElement(current_items.nodeName)
-        next_document.setAttribute('itemprop', this.item_type)
-        next_document.appendChild(offload_items)
+        next_document.setAttribute('itemprop', this.item_type).appendChild(offload_items)
         localStorage.setItem(name, next_document.outerHTML)
         reject(name)
       }
@@ -80,7 +78,6 @@ class Storage {
       if (!items) { resolve('nothing to save') }
       items = items.outerHTML
       localStorage.setItem(this.item_type, items)
-
       if (['person', 'posts'].includes(this.item_type)) {
         resolve('finished faker')
         // this.persist(items)
