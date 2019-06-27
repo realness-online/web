@@ -26,22 +26,21 @@ class Storage {
   static in_kb(bytes) {
     return (bytes / 1024).toFixed(0)
   }
-  constructor(type,
-    query = `[itemtype="/${type}"]`,
-    file = `${type}.html`,
-    content_type = 'text/html') {
+  constructor(type, query = `[itemtype="/${type}"]`, file = `${type}.html`,
+    name = type, content_type = 'text/html') {
     this.item_type = type
     this.selector = query
     this.filename = file
+    this.name = name
     this.metadata = { 'contentType': content_type }
   }
   as_kilobytes() {
-    const bytes = localStorage.getItem(this.item_type)
+    const bytes = localStorage.getItem(this.name)
     if (bytes) return (bytes.length / 1024).toFixed(0);
     else return 0;
   }
-  from_storage() {
-    let storage_string = localStorage.getItem(this.item_type)
+  from_storage(name=this.name) {
+    let storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
   }
   as_list() {
@@ -50,12 +49,13 @@ class Storage {
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
-  optimize() {
+  optimize(limit=fibonacci.first()) {
     return new Promise((resolve, reject) => {
 
-      if (this.as_kilobytes() > fibonacci.first() ) {
-        const name = `${this.item_type}.${fibonacci.first()}`
-        const current_items = this.from_storage().childNodes[0]
+      if (this.as_kilobytes() > limit ) {
+        const older_name = `${this.item_type}.${limit}`
+
+        const current_items = this.from_storage(this.name).childNodes[0]
         const offload_items = Storage.hydrate(localStorage.getItem(name))
 
         while (keep_going(current_items)) {
@@ -67,27 +67,35 @@ class Storage {
         older_items.setAttribute('itemprop', this.item_type)
         older_items.appendChild(offload_items)
 
-        localStorage.setItem(this.item_type, current_items.outerHTML)
-        localStorage.setItem(name, older_items.outerHTML)
+        localStorage.setItem(this.name, current_items.outerHTML)
+        localStorage.setItem(older_name, older_items.outerHTML)
 
-        reject(name)
+        this.persist(this.name, current_items.outerHTML)
+        this.persist(older_name, older_items.outerHTML).then(() => {
+          new Storage(this.type, older_name).optimize().then(() => resolve())
+        })
       }
+    })
+  }
+  persist(items, name=this.filename) {
+    return new Promise((resolve, reject) => {
+      if (['person', 'posts'].includes(this.item_type)) {
+        firebase.auth().onAuthStateChanged(user => {
+          const file = new File([items], name)
+          path = `/people/${user.phoneNumber}/${name}`
+          firebase.storage().ref().child(path).put(file, this.metadata)
+          .then(message => resolve(message))
+          .catch(error => reject(error))
+        })
+      } else resolve('nothing to save');
     })
   }
   save() {
     return new Promise((resolve, reject) => {
       let items = document.querySelector(this.selector)
-      if (!items) { resolve('nothing to save') }
-      items = items.outerHTML
-      localStorage.setItem(this.item_type, items)
-      if (['person', 'posts'].includes(this.item_type)) {
-        resolve('finished faker')
-        // this.persist(items)
-        //   .then(() => resolve(`saved ${this.item_type} locally and to network`))
-        //   .catch(e => reject(e))
-      } else {
-        resolve('saved locally')
-      }
+      if (!items) resolve('nothing to save');
+
+      persist(items.outerHTML)
     })
   }
   get_download_url() {
@@ -105,23 +113,21 @@ class Storage {
       })
     })
   }
-  persist(doc_u_ment, doc_u_path) {
-    return new Promise((resolve, reject) => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user && navigator.onLine) {
-          const file = new File([doc_u_ment], this.filename)
-          if (!doc_u_path) {
-            doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-          }
-          firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
-            .then((upload_task) => resolve(upload_task))
-            .catch(e => reject(e))
-        } else {
-          resolve('Unable to persist to server')
-        }
-      })
-    })
-  }
+  // persist(doc_u_ment, doc_u_path) {
+  //   return new Promise((resolve, reject) => {
+  //     firebase.auth().onAuthStateChanged(user => {
+  //       if (user && navigator.onLine) {
+  //         const file = new File([doc_u_ment], this.filename)
+  //         if (!doc_u_path) {
+  //           doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+  //         }
+  //         firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
+  //         .then(message => resolve(message))
+  //         .catch(e => reject(e))
+  //       } else resolve('offline or not signed in! Unable to persist to server');
+  //     })
+  //   })
+  // }
   sync_list() {
     return new Promise((resolve, reject) => {
       this.get_download_url().then(url => {
