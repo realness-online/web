@@ -23,14 +23,14 @@ class Storage {
       return document.createDocumentFragment()
     }
   }
-  static in_kb(bytes) {
-    return (bytes / 1024).toFixed(0)
-  }
-  constructor(type, query = `[itemtype="/${type}"]`, file = `${type}.html`,
-    name = type, content_type = 'text/html') {
-    this.item_type = type
-    this.selector = query
-    this.filename = file
+  // static in_kb(bytes) {
+  //   return (bytes / 1024).toFixed(0)
+  // }
+  constructor(type, selector = `[itemtype="/${type}"]`, name = type,
+    filename = `${name}.html`, content_type = 'text/html') {
+    this.type = type
+    this.selector = selector
+    this.filename = filename
     this.name = name
     this.metadata = { 'contentType': content_type }
   }
@@ -40,7 +40,7 @@ class Storage {
     else return 0;
   }
   from_storage(name=this.name) {
-    let storage_string = localStorage.getItem(name)
+    const storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
   }
   as_list() {
@@ -53,7 +53,8 @@ class Storage {
     return new Promise((resolve, reject) => {
 
       if (this.as_kilobytes() > limit ) {
-        const older_name = `${this.item_type}.${limit}`
+        console.log(this.name, this.as_kilobytes());
+        const older_name = `${this.type}.${limit}`
 
         const current_items = this.from_storage(this.name).childNodes[0]
         const offload_items = Storage.hydrate(localStorage.getItem(name))
@@ -64,7 +65,7 @@ class Storage {
         }
 
         const older_items = document.createElement(current_items.nodeName)
-        older_items.setAttribute('itemprop', this.item_type)
+        older_items.setAttribute('itemprop', this.type)
         older_items.appendChild(offload_items)
 
         localStorage.setItem(this.name, current_items.outerHTML)
@@ -72,30 +73,35 @@ class Storage {
 
         this.persist(this.name, current_items.outerHTML)
         this.persist(older_name, older_items.outerHTML).then(() => {
-          new Storage(this.type, older_name).optimize().then(() => resolve())
+
+          const wayback = new Storage(this.type, this.selector, older_name)
+          console.log(wayback, wayback.as_kilobytes());
+          wayback.optimize(fibonacci.next(limit)).then(() => resolve('dude'))
         })
       }
     })
   }
   persist(items, name=this.filename) {
     return new Promise((resolve, reject) => {
-      if (['person', 'posts'].includes(this.item_type)) {
-        firebase.auth().onAuthStateChanged(user => {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user && navigator.onLine) {
           const file = new File([items], name)
-          path = `/people/${user.phoneNumber}/${name}`
+          const path = `/people/${user.phoneNumber}/${name}`
           firebase.storage().ref().child(path).put(file, this.metadata)
           .then(message => resolve(message))
           .catch(error => reject(error))
-        })
-      } else resolve('nothing to save');
+        }
+      })
     })
   }
   save() {
     return new Promise((resolve, reject) => {
       let items = document.querySelector(this.selector)
       if (!items) resolve('nothing to save');
-
-      persist(items.outerHTML)
+      localStorage.setItem(this.name, items.outerHTML)
+      if (['person', 'posts'].includes(this.type)) {
+        this.persist(items.outerHTML).then(message => resolve(message))
+      } else resolve('nothing to save');
     })
   }
   get_download_url() {
