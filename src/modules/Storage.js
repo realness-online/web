@@ -3,9 +3,8 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import fibonacci from '@/modules/fibonacci'
-function keep_going(current_items) {
-  const first = fibonacci.first()
-  const shrink_too =  fibonacci.next(first) - first
+function keep_going(current_items, limit) {
+  const shrink_too =  fibonacci.next(limit) - limit
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= shrink_too) {
     const item = Item.get_first_item(current_items)
@@ -51,15 +50,13 @@ class Storage {
   }
   optimize(limit=fibonacci.first()) {
     return new Promise((resolve, reject) => {
-
+      console.log(this.name, this.as_kilobytes())
       if (this.as_kilobytes() > limit ) {
-        console.log(this.name, this.as_kilobytes());
         const older_name = `${this.type}.${limit}`
-
         const current_items = this.from_storage(this.name).childNodes[0]
         const offload_items = Storage.hydrate(localStorage.getItem(name))
 
-        while (keep_going(current_items)) {
+        while (keep_going(current_items, limit)) {
           const first_child = current_items.childNodes[0]
           offload_items.appendChild(current_items.removeChild(first_child))
         }
@@ -71,37 +68,42 @@ class Storage {
         localStorage.setItem(this.name, current_items.outerHTML)
         localStorage.setItem(older_name, older_items.outerHTML)
 
-        this.persist(this.name, current_items.outerHTML)
-        this.persist(older_name, older_items.outerHTML).then(() => {
-
-          const wayback = new Storage(this.type, this.selector, older_name)
-          console.log(wayback, wayback.as_kilobytes());
-          wayback.optimize(fibonacci.next(limit)).then(() => resolve('dude'))
+        this.persist(current_items.outerHTML, this.filename).then(() => {
+          this.persist(older_items.outerHTML, `${older_name}.html`).then(() => {
+            const wayback = new Storage(this.type, this.selector, older_name)
+            wayback.optimize(fibonacci.next(limit))
+          })
         })
       }
+      resolve(true)
     })
   }
   persist(items, name=this.filename) {
     return new Promise((resolve, reject) => {
+      // console.log('persist')
       firebase.auth().onAuthStateChanged(user => {
         if (user && navigator.onLine) {
           const file = new File([items], name)
           const path = `/people/${user.phoneNumber}/${name}`
+          console.log(path)
           firebase.storage().ref().child(path).put(file, this.metadata)
-          .then(message => resolve(message))
-          .catch(error => reject(error))
+          .then(message => resolve(message)).catch(error => reject(error))
+        } else {
+          resolve('offline')
         }
       })
     })
   }
   save() {
     return new Promise((resolve, reject) => {
-      let items = document.querySelector(this.selector)
+      const items = document.querySelector(this.selector)
       if (!items) resolve('nothing to save');
       localStorage.setItem(this.name, items.outerHTML)
       if (['person', 'posts'].includes(this.type)) {
         this.persist(items.outerHTML).then(message => resolve(message))
-      } else resolve('nothing to save');
+      } else {
+        resolve('nothing to save')
+      }
     })
   }
   get_download_url() {
@@ -119,7 +121,7 @@ class Storage {
       })
     })
   }
-  // persist(doc_u_ment, doc_u_path) {
+  // persist_old(doc_u_ment, doc_u_path) {
   //   return new Promise((resolve, reject) => {
   //     firebase.auth().onAuthStateChanged(user => {
   //       if (user && navigator.onLine) {

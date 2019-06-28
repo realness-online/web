@@ -101,8 +101,7 @@ describe('@/modules/Storage.js', () => {
       const posts = fs.readFileSync('tests/unit/modules/posts.html')
       localStorage.setItem(posts_storage.name, posts)
       posts_storage.optimize().then(message => {
-        console.log(localStorage.__STORE__)
-        expect(Object.keys(localStorage.__STORE__).length).toBe(3)
+        expect(Object.keys(localStorage.__STORE__).length).toBe(6)
         expect(message).toBe(true)
       })
     })
