@@ -39,8 +39,7 @@
     },
     watch: {
       posts() {
-        Vue.nextTick(() => posts_storage.save().then(message => {
-          console.log(message)
+        Vue.nextTick(() => posts_storage.save().then(() => {
           posts_storage.optimize()
         }))
       }

@@ -2,9 +2,10 @@ import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import fibonacci from '@/modules/fibonacci'
+import limiter from '@/modules/pager'
+const fibonacci = [13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 4145, 6711, 10856]
 function keep_going(current_items, limit) {
-  const shrink_too =  fibonacci.next(limit) - limit
+  const shrink_too =  limiter.next(limit) - limit
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= shrink_too) {
     const item = Item.get_first_item(current_items)
@@ -14,6 +15,19 @@ function keep_going(current_items, limit) {
     else return false;
   } else return false;
 }
+function page(current){
+  const index = fibonacci.findIndex(fib => {
+    return fib > current
+  })
+  const next = fibonacci[index]
+  const previous = next - current
+
+  return {
+    previous,
+    next
+  }
+}
+
 class Storage {
   static hydrate(item_as_string) {
     if (item_as_string) {
@@ -22,9 +36,6 @@ class Storage {
       return document.createDocumentFragment()
     }
   }
-  // static in_kb(bytes) {
-  //   return (bytes / 1024).toFixed(0)
-  // }
   constructor(type, selector = `[itemtype="/${type}"]`, name = type,
     filename = `${name}.html`, content_type = 'text/html') {
     this.type = type
@@ -48,11 +59,11 @@ class Storage {
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
-  optimize(limit=fibonacci.first()) {
+  optimize(limit=limiter.first()) {
     return new Promise((resolve, reject) => {
-      console.log(this.name, this.as_kilobytes())
-      if (this.as_kilobytes() > limit ) {
-        const older_name = `${this.type}.${limit}`
+      console.log(this.name, this.as_kilobytes(), limiter.previous(limit))
+      if (this.as_kilobytes() > limiter.previous(limit)  ) {
+        const history_name = `${this.type}.${limit}`
         const current_items = this.from_storage(this.name).childNodes[0]
         const offload_items = Storage.hydrate(localStorage.getItem(name))
 
@@ -66,32 +77,33 @@ class Storage {
         older_items.appendChild(offload_items)
 
         localStorage.setItem(this.name, current_items.outerHTML)
-        localStorage.setItem(older_name, older_items.outerHTML)
+        localStorage.setItem(history_name, older_items.outerHTML)
 
         this.persist(current_items.outerHTML, this.filename).then(() => {
-          this.persist(older_items.outerHTML, `${older_name}.html`).then(() => {
-            const wayback = new Storage(this.type, this.selector, older_name)
-            wayback.optimize(fibonacci.next(limit))
+          this.persist(older_items.outerHTML, `${history_name}.html`).then(() => {
+            const wayback = new Storage(this.type, this.selector, history_name)
+            wayback.optimize(limiter.next(limit))
           })
         })
       }
       resolve(true)
     })
   }
-  persist(items, name=this.filename) {
+  persist(items, name = this.filename) {
     return new Promise((resolve, reject) => {
+      resolve('offline')
       // console.log('persist')
-      firebase.auth().onAuthStateChanged(user => {
-        if (user && navigator.onLine) {
-          const file = new File([items], name)
-          const path = `/people/${user.phoneNumber}/${name}`
-          console.log(path)
-          firebase.storage().ref().child(path).put(file, this.metadata)
-          .then(message => resolve(message)).catch(error => reject(error))
-        } else {
-          resolve('offline')
-        }
-      })
+      // firebase.auth().onAuthStateChanged(user => {
+      //   if (user && navigator.onLine) {
+      //     const file = new File([items], name)
+      //     const path = `/people/${user.phoneNumber}/${name}`
+      //     console.log(path)
+      //     firebase.storage().ref().child(path).put(file, this.metadata)
+      //     .then(message => resolve(message)).catch(error => reject(error))
+      //   } else {
+      //     resolve('offline')
+      //   }
+      // })
     })
   }
   save() {
@@ -121,21 +133,6 @@ class Storage {
       })
     })
   }
-  // persist_old(doc_u_ment, doc_u_path) {
-  //   return new Promise((resolve, reject) => {
-  //     firebase.auth().onAuthStateChanged(user => {
-  //       if (user && navigator.onLine) {
-  //         const file = new File([doc_u_ment], this.filename)
-  //         if (!doc_u_path) {
-  //           doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-  //         }
-  //         firebase.storage().ref().child(doc_u_path).put(file, this.metadata)
-  //         .then(message => resolve(message))
-  //         .catch(e => reject(e))
-  //       } else resolve('offline or not signed in! Unable to persist to server');
-  //     })
-  //   })
-  // }
   sync_list() {
     return new Promise((resolve, reject) => {
       this.get_download_url().then(url => {

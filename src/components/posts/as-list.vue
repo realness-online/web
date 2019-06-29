@@ -26,7 +26,6 @@
   import icon from '@/components/icon'
   import time_ago from '@/modules/time_ago'
   import posts_into_days from '@/mixins/posts_into_days'
-  import fibonnacci from '@/modules/fibonacci'
   import sizer from '@/modules/sizer'
   export default {
     mixins: [posts_into_days],
