@@ -15,19 +15,6 @@ function keep_going(current_items, limit) {
     else return false;
   } else return false;
 }
-function page(current){
-  const index = fibonacci.findIndex(fib => {
-    return fib > current
-  })
-  const next = fibonacci[index]
-  const previous = next - current
-
-  return {
-    previous,
-    next
-  }
-}
-
 class Storage {
   static hydrate(item_as_string) {
     if (item_as_string) {
