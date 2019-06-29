@@ -2,12 +2,11 @@ import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import limiter from '@/modules/pager'
-const fibonacci = [13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 4145, 6711, 10856]
+import growth from '@/modules/growth'
+
 function keep_going(current_items, limit) {
-  const shrink_too =  limiter.next(limit) - limit
   const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= shrink_too) {
+  if (current_size >= growth.previous(limit)) {
     const item = Item.get_first_item(current_items)
     const today = new Date().setHours(0, 0, 0, 0)
     const created_at = Date.parse(item.created_at)
@@ -46,51 +45,43 @@ class Storage {
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
-  optimize(limit=limiter.first()) {
-    return new Promise((resolve, reject) => {
-      console.log(this.name, this.as_kilobytes(), limiter.previous(limit))
-      if (this.as_kilobytes() > limiter.previous(limit)  ) {
-        const history_name = `${this.type}.${limit}`
-        const current_items = this.from_storage(this.name).childNodes[0]
-        const offload_items = Storage.hydrate(localStorage.getItem(name))
-
-        while (keep_going(current_items, limit)) {
-          const first_child = current_items.childNodes[0]
-          offload_items.appendChild(current_items.removeChild(first_child))
-        }
-
-        const older_items = document.createElement(current_items.nodeName)
-        older_items.setAttribute('itemprop', this.type)
-        older_items.appendChild(offload_items)
-
-        localStorage.setItem(this.name, current_items.outerHTML)
-        localStorage.setItem(history_name, older_items.outerHTML)
-
-        this.persist(current_items.outerHTML, this.filename).then(() => {
-          this.persist(older_items.outerHTML, `${history_name}.html`).then(() => {
-            const wayback = new Storage(this.type, this.selector, history_name)
-            wayback.optimize(limiter.next(limit))
-          })
-        })
+  async optimize(limit=growth.first()) {
+    if (this.as_kilobytes() > growth.previous(limit)) {
+      const current_items = this.from_storage(this.name).childNodes[0]
+      const offload_items = Storage.hydrate(localStorage.getItem(name))
+      while (keep_going(current_items, limit)) {
+        const first_child = current_items.childNodes[0]
+        offload_items.appendChild(current_items.removeChild(first_child))
       }
-      resolve(true)
-    })
+      localStorage.setItem(this.name, current_items.outerHTML)
+      await this.persist(current_items.outerHTML, this.filename)
+
+      const older_items = document.createElement(current_items.nodeName)
+      older_items.setAttribute('itemprop', this.type)
+      older_items.appendChild(offload_items)
+
+      const history_name = `${this.type}.${limit}`
+      localStorage.setItem(history_name, older_items.outerHTML)
+
+      await this.persist(older_items.outerHTML, `${history_name}.html`)
+
+      const wayback = new Storage(this.type, this.selector, history_name)
+      wayback.optimize(growth.next(limit))
+    }
+    return true
   }
   persist(items, name = this.filename) {
     return new Promise((resolve, reject) => {
-      resolve('offline')
-      // console.log('persist')
-      // firebase.auth().onAuthStateChanged(user => {
-      //   if (user && navigator.onLine) {
-      //     const file = new File([items], name)
-      //     const path = `/people/${user.phoneNumber}/${name}`
-      //     console.log(path)
-      //     firebase.storage().ref().child(path).put(file, this.metadata)
-      //     .then(message => resolve(message)).catch(error => reject(error))
-      //   } else {
-      //     resolve('offline')
-      //   }
-      // })
+      firebase.auth().onAuthStateChanged(user => {
+        if (user && navigator.onLine) {
+          const file = new File([items], name)
+          const path = `/people/${user.phoneNumber}/${name}`
+          firebase.storage().ref().child(path).put(file, this.metadata)
+          .then(message => resolve(message)).catch(error => reject(error))
+        } else {
+          resolve('offline')
+        }
+      })
     })
   }
   save() {
