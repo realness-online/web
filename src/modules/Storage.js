@@ -6,7 +6,7 @@ import growth from '@/modules/growth'
 
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= limit) {
+  if (current_size >= growth.previous(limit)) {
     return true
     const item = Item.get_first_item(current_items)
     const today = new Date().setHours(0, 0, 0, 0)
