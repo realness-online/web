@@ -8,14 +8,14 @@ function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= limit) {
     return true
-    // const item = Item.get_first_item(current_items)
-    // const today = new Date().setHours(0, 0, 0, 0)
-    // const created_at = Date.parse(item.created_at)
-    // if (created_at && created_at < today ) {
-    //   return true
-    // } else {
-    //   return false
-    // }
+    const item = Item.get_first_item(current_items)
+    const today = new Date().setHours(0, 0, 0, 0)
+    const created_at = Date.parse(item.created_at)
+    if (created_at && created_at < today ) {
+      return true
+    } else {
+      return false
+    }
   } else {
     return false
   }
