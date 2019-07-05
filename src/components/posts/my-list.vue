@@ -42,11 +42,6 @@
           }
         })
       }
-    },
-    watch: {
-      posts() {
-        // Vue.nextTick(_ => posts_storage.save())
-      }
     }
   }
 </script>
