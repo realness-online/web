@@ -61,10 +61,11 @@ class Storage {
         offload.appendChild(current.removeChild(first_child))
       }
 
-      localStorage.setItem(this.name, current.outerHTML)
-      await this.persist(current.outerHTML, this.filename)
+      await this.save(current)
 
       const history_name = `${this.type}.${limit}`
+      const wayback = new Storage(this.type, this.selector, history_name)
+
       let history = localStorage.getItem(history_name)
       if (history) {
         history = this.from_storage(history_name).childNodes[0]
@@ -74,13 +75,8 @@ class Storage {
         history.setAttribute('itemprop', this.type)
       }
       history.appendChild(offload)
-      localStorage.setItem(history_name, history.outerHTML)
-      await this.persist(history.outerHTML, `${history_name}.html`)
 
-      const wayback = new Storage(this.type, this.selector, history_name)
-      const size_in_kb = (history.outerHTML.length / 1024).toFixed(0)
-      console.log('size_in_kb', size_in_kb, 'limit', limit)
-
+      await wayback.save(history)
       await wayback.optimize(growth.next(limit))
     }
     return Promise.resolve('Optimized')
@@ -99,9 +95,8 @@ class Storage {
       })
     })
   }
-  save() {
+  save(items = document.querySelector(this.selector)) {
     return new Promise((resolve, reject) => {
-      const items = document.querySelector(this.selector)
       if (!items) resolve('nothing to save');
       localStorage.setItem(this.name, items.outerHTML)
       if (['person', 'posts'].includes(this.type)) {
