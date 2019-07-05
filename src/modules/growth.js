@@ -1,6 +1,6 @@
 const fibonacci = [13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1579, 2566, 4145, 6711, 10856]
 
-function page(current){
+function page(current) {
   const index = fibonacci.findIndex(fib => fib > current)
   const next = fibonacci[index]
   const previous = next - current

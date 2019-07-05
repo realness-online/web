@@ -55,6 +55,7 @@ class Storage {
     if (this.as_kilobytes() > limit) {
       const current = this.from_storage(this.name).childNodes[0]
       const offload = document.createDocumentFragment()
+
       while (keep_going(current, limit)) {
         const first_child = current.childNodes[0]
         offload.appendChild(current.removeChild(first_child))
