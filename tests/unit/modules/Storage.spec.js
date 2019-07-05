@@ -2,7 +2,7 @@ import Storage, { posts_storage } from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import pager from '@/modules/pager'
+import growth from '@/modules/growth'
 const fs = require('fs')
 const not_signed_in = jest.fn(state_changed => state_changed())
 const is_signed_in = jest.fn(state_changed => {
@@ -10,7 +10,7 @@ const is_signed_in = jest.fn(state_changed => {
     phoneNumber: '+16282281824'
   })
 })
-const too_big_in_bytes = pager.first() * 1024
+const too_big_in_bytes = growth.first() * 1024
 const server_text = `
   <div itemprop="posts" itemref="profile">
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
@@ -90,20 +90,23 @@ describe('@/modules/Storage.js', () => {
     })
   })
   describe('#optimize', () => {
-    it('exists', () => {
-      expect(storage.optimize).toBeDefined()
+    let posts
+    beforeAll(() => {
+      return posts = fs.readFileSync('./tests/unit/modules/posts.html', 'utf8')
     })
-    it.only('it optimizes a user list accross a set of pages', e => {
+    beforeEach(() => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { onAuthStateChanged: is_signed_in }
       })
-      expect.assertions(2)
-      const posts = fs.readFileSync('tests/unit/modules/posts.html')
+    })
+    it('exists', () => {
+      expect(storage.optimize).toBeDefined()
+    })
+    it.only('it optimizes a user list accross a set of pages', async() => {
+      expect.assertions(1)
       localStorage.setItem(posts_storage.name, posts)
-      posts_storage.optimize().then(message => {
-        expect(Object.keys(localStorage.__STORE__).length).toBe(6)
-        expect(message).toBe(true)
-      })
+      await posts_storage.optimize()
+      expect(Object.keys(localStorage.__STORE__).length).toBe(6)
     })
   })
   describe('#save', () => {

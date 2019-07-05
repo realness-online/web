@@ -16,12 +16,20 @@
         posts: posts_storage.as_list()
       }
     },
+    methods: {
+      add_post(post) {
+        this.posts.push(post)
+        Vue.nextTick(async() => {
+          await posts_storage.save()
+          await posts_storage.optimize()
+          this.posts = posts_storage.as_list()
+        })
+        localStorage.setItem('posts-count', this.posts.length)
+      }
+    },
     created() {
       localStorage.setItem('posts-count', this.posts.length)
-      this.$bus.$on('post-added', post => {
-        this.posts.push(post)
-        localStorage.setItem('posts-count', this.posts.length)
-      })
+      this.$bus.$on('post-added', post => this.add_post(post))
       const last_synced = sessionStorage.getItem('posts-synced')
       const five_minutes_ago = Date.now() - (1000 * 60 * 5)
       if (!last_synced || five_minutes_ago > last_synced) {
@@ -39,9 +47,7 @@
     },
     watch: {
       posts() {
-        Vue.nextTick(() => posts_storage.save().then(() => {
-          posts_storage.optimize()
-        }))
+        // Vue.nextTick(_ => posts_storage.save())
       }
     }
   }

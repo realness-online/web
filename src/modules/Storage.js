@@ -6,13 +6,19 @@ import growth from '@/modules/growth'
 
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= growth.previous(limit)) {
-    const item = Item.get_first_item(current_items)
-    const today = new Date().setHours(0, 0, 0, 0)
-    const created_at = Date.parse(item.created_at)
-    if (created_at && created_at < today ) return true;
-    else return false;
-  } else return false;
+  if (current_size >= limit) {
+    return true
+    // const item = Item.get_first_item(current_items)
+    // const today = new Date().setHours(0, 0, 0, 0)
+    // const created_at = Date.parse(item.created_at)
+    // if (created_at && created_at < today ) {
+    //   return true
+    // } else {
+    //   return false
+    // }
+  } else {
+    return false
+  }
 }
 class Storage {
   static hydrate(item_as_string) {
@@ -46,29 +52,37 @@ class Storage {
     return Item.get_first_item(this.from_storage())
   }
   async optimize(limit=growth.first()) {
-    if (this.as_kilobytes() > growth.previous(limit)) {
-      const current_items = this.from_storage(this.name).childNodes[0]
-      const offload_items = Storage.hydrate(localStorage.getItem(name))
-      while (keep_going(current_items, limit)) {
-        const first_child = current_items.childNodes[0]
-        offload_items.appendChild(current_items.removeChild(first_child))
+    if (this.as_kilobytes() > limit) {
+      const current = this.from_storage(this.name).childNodes[0]
+      const offload = document.createDocumentFragment()
+      while (keep_going(current, limit)) {
+        const first_child = current.childNodes[0]
+        offload.appendChild(current.removeChild(first_child))
       }
-      localStorage.setItem(this.name, current_items.outerHTML)
-      await this.persist(current_items.outerHTML, this.filename)
 
-      const older_items = document.createElement(current_items.nodeName)
-      older_items.setAttribute('itemprop', this.type)
-      older_items.appendChild(offload_items)
+      localStorage.setItem(this.name, current.outerHTML)
+      await this.persist(current.outerHTML, this.filename)
 
       const history_name = `${this.type}.${limit}`
-      localStorage.setItem(history_name, older_items.outerHTML)
-
-      await this.persist(older_items.outerHTML, `${history_name}.html`)
+      let history = localStorage.getItem(history_name)
+      if (history) {
+        history = this.from_storage(history_name).childNodes[0]
+        console.log('if (history)', history, history.childNodes.length)
+      } else {
+        history = document.createElement(current.nodeName)
+        history.setAttribute('itemprop', this.type)
+      }
+      history.appendChild(offload)
+      localStorage.setItem(history_name, history.outerHTML)
+      await this.persist(history.outerHTML, `${history_name}.html`)
 
       const wayback = new Storage(this.type, this.selector, history_name)
-      wayback.optimize(growth.next(limit))
+      const size_in_kb = (history.outerHTML.length / 1024).toFixed(0)
+      console.log('size_in_kb', size_in_kb, 'limit', limit)
+
+      await wayback.optimize(growth.next(limit))
     }
-    return true
+    return Promise.resolve('Optimized')
   }
   persist(items, name = this.filename) {
     return new Promise((resolve, reject) => {
@@ -136,5 +150,5 @@ class Storage {
 }
 export default Storage
 export const person_storage = new Storage('person')
-export const posts_storage = new Storage('posts', '[itemprop=posts]')
+export var posts_storage = new Storage('posts', '[itemprop=posts]')
 export const relations_storage = new Storage('relations', '[itemprop=relations]')
