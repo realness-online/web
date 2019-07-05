@@ -24,11 +24,9 @@
           await posts_storage.optimize()
           this.posts = posts_storage.as_list()
         })
-        localStorage.setItem('posts-count', this.posts.length)
       }
     },
     created() {
-      localStorage.setItem('posts-count', this.posts.length)
       this.$bus.$on('post-added', post => this.add_post(post))
       const last_synced = sessionStorage.getItem('posts-synced')
       const five_minutes_ago = Date.now() - (1000 * 60 * 5)
@@ -37,8 +35,8 @@
           if (user) {
             posts_storage.sync_list().then(items => {
               this.posts = items
-              localStorage.setItem('posts-count', this.posts.length)
               sessionStorage.setItem('posts-synced', Date.now())
+              Vue.nextTick(_ => posts_storage.save())
               console.log('posts synced')
             })
           }

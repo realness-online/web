@@ -13,15 +13,13 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
-  import { person_storage, relations_storage } from '@/modules/Storage'
+  import { posts_storage, person_storage, relations_storage } from '@/modules/Storage'
   export default {
     components: {
       'post-as-textarea': as_textarea
     },
     created() {
-      this.$bus.$on('post-added', () => {
-        this.has_posts = true
-      })
+      this.$bus.$on('post-added', () => this.has_posts = true)
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
           this.signed_in = true
@@ -33,9 +31,9 @@
     data() {
       return {
         posting: false,
-        signed_in: localStorage.getItem('posts-count') > 0,
+        signed_in: posts_storage.as_list().length > 0,
         person: person_storage.as_object(),
-        has_posts: localStorage.getItem('posts-count') > 0
+        has_posts: posts_storage.as_list().length > 0
       }
     },
     methods: {
@@ -120,7 +118,7 @@
     &.can_event
       & > [href='/events']
         visibility: visible
-     &.can_where
-       & > [href='/where']
-         visibility: visible
+    &.can_where
+      & > [href='/where']
+        visibility: visible
 </style>
