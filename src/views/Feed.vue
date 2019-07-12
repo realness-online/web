@@ -164,11 +164,11 @@
           &:last-of-type
             margin-bottom: 0
         & > a > svg
-          shape-outside: circle()
-          margin-right: base-line
           float: left
-          clip-path: circle(50%)
+          margin-right: base-line
+          shape-outside: circle()
+          clip-path: circle(44%)
           fill: blue
           stroke: lighten(blue, 33%)
-          stroke-width:2px
+          stroke-width: 2px
 </style>
