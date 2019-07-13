@@ -26,8 +26,10 @@
         })
       }
     },
-    created() {
+    beforeCreate() {
       this.$bus.$on('post-added', post => this.add_post(post))
+    },
+    created() {
       const last_synced = sessionStorage.getItem('posts-synced')
       const five_minutes_ago = Date.now() - (1000 * 60 * 5)
       if (!last_synced || five_minutes_ago > last_synced) {

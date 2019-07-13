@@ -94,7 +94,7 @@
         & > header
           float:left
           shape-outside: circle()
-          clip-path: circle(50%)
+          clip-path: circle(44%)
           & > menu svg
             padding-right: (base-line / 6)
             height: base-line

@@ -73,7 +73,7 @@
     text-overflow: ellipsis
     display:flex
     svg
-      clip-path: circle(50%)
+      clip-path: circle(44%)
       cursor: pointer
       fill: black
       stroke: lighten(black, 20%)
