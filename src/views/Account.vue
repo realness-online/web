@@ -51,6 +51,7 @@
     },
     data() {
       return {
+        auth: firebase.auth(),
         me: person_storage.as_object(),
         auth_checked: false,
         working: false,
@@ -60,41 +61,9 @@
       }
     },
     created() {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          this.signed_in = true
-          const id = profile_id.from_e64(user.phoneNumber)
-          profile_id.load(id).then(profile => {
-            this.me = profile
-            this.me.id = id
-          })
-        }
-        this.auth_checked=true
-      })
+      this.auth.onAuthStateChanged(this.auth_check)
       this.$bus.$off('save-me')
-      this.$bus.$on('save-me', person => {
-        console.log('save-me called', person)
-        firebase.auth().onAuthStateChanged(user => {
-          if (user) {
-            this.me.id = profile_id.from_e64(user.phoneNumber)
-            if (this.me.avatar) {
-              Vue.nextTick(() => person_storage.save())
-            } else {
-              console.log('no avatar', this.me.id)
-              profile_id.load(this.me.id).then(profile => {
-                this.me.avatar = profile.avatar
-                console.log('profile loaded', this.me.avatar)
-                Vue.nextTick(() => person_storage.save())
-              }).catch(error => {
-                console.log(error.message)
-                Vue.nextTick(() => person_storage.save())
-              })
-            }
-          } else {
-            Vue.nextTick(() => person_storage.save())
-          }
-        })
-      })
+      this.$bus.$on('save-me', () => this.auth.onAuthStateChanged(this.save_me))
     },
     computed: {
       show_avatar() {
@@ -113,6 +82,38 @@
       }
     },
     methods: {
+      save_me(user) {
+        if (user) {
+          this.me.id = profile_id.from_e64(user.phoneNumber)
+          if (this.me.avatar) {
+            Vue.nextTick(() => person_storage.save())
+          } else {
+            console.log('no avatar', this.me.id)
+            profile_id.load(this.me.id).then(profile => {
+              this.me.avatar = profile.avatar
+              console.log('profile loaded', this.me.avatar)
+              Vue.nextTick(() => person_storage.save())
+            }).catch(error => {
+              console.log(error.message)
+              Vue.nextTick(() => person_storage.save())
+            })
+          }
+        } else {
+          Vue.nextTick(() => person_storage.save())
+        }
+
+      },
+      auth_check(user) {
+        if (user) {
+          this.signed_in = true
+          const id = profile_id.from_e64(user.phoneNumber)
+          profile_id.load(id).then(profile => {
+            this.me = profile
+            this.me.id = id
+          })
+        }
+        this.auth_checked=true
+      },
       open_camera(event) {
         this.$refs.uploader.setAttribute('capture', true)
         this.$refs.uploader.click()
@@ -124,15 +125,13 @@
           })
         }
       },
-      vectorize_image(image) {
+      async vectorize_image(image) {
         this.avatar_changed = true
         this.working = true
         const avatar_id = profile_id.as_avatar_id(this.me.id)
-        Vue.nextTick(() => {
-          convert_to_avatar.trace(image, avatar_id).then(avatar => {
-            this.working = false
-            this.me.avatar = avatar
-          })
+        Vue.nextTick(async() => {
+          this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
+          this.working = false
         })
       },
       attach_poster(event) {
