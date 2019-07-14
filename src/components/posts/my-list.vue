@@ -15,18 +15,15 @@
     data() {
       return {
         posts: posts_storage.as_list(),
-        observer: null,
+        observer: new IntersectionObserver(this.load_more_posts, {}),
         limit: growth.first()
       }
     },
     created() {
-      console.log('posts:', this.posts);
       this.$bus.$on('post-added', post => this.add_post(post))
-      this.observer = new IntersectionObserver(this.load_more_posts, {})
       this.sync_posts()
     },
     mounted() {
-      console.log('mounted() > observe_posts()');
       this.observe_posts()
     },
     methods: {
