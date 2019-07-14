@@ -11,7 +11,7 @@ function keep_going(current_items, limit) {
     const item = Item.get_first_item(current_items)
     const today = new Date().setHours(0, 0, 0, 0)
     const created_at = Date.parse(item.created_at)
-    if (created_at && created_at < today ) {
+    if (created_at && created_at < today) {
       return true
     } else {
       return false
@@ -41,7 +41,7 @@ class Storage {
     if (bytes) return (bytes.length / 1024).toFixed(0);
     else return 0;
   }
-  from_storage(name=this.name) {
+  from_storage(name = this.name) {
     const storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
   }
@@ -51,7 +51,7 @@ class Storage {
   as_object() {
     return Item.get_first_item(this.from_storage())
   }
-  async optimize(limit=growth.first()) {
+  async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
       const current = this.from_storage(this.name).childNodes[0]
       const offload = document.createDocumentFragment()
@@ -143,7 +143,7 @@ class Storage {
       })
     })
   }
-  next_list(limit=growth.first()) {
+  next_list(limit = growth.first()) {
     const history_name = `${this.type}.${limit}`
     return Item.get_items(this.from_storage(history_name))
   }

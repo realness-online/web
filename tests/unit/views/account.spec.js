@@ -44,7 +44,7 @@ describe('@/views/Account.vue', () => {
           localVue,
           router
         })
-        wrapper.setData({avatar_changed: true})
+        wrapper.setData({ avatar_changed: true })
         const save_spy = jest.fn(() => Promise.resolve('save_spy'))
         jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
         wrapper.vm.accept_changes()

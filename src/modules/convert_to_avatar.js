@@ -15,8 +15,8 @@ function trace(avatar, identifier) {
         image = image.resize(333, Jimp.AUTO)
           .greyscale()
           .normalize()
-          .contrast(.5)
-          .brightness(.2)
+          .contrast(0.5)
+          .brightness(0.2)
         EXIF.getData(avatar, () => {
           if (avatar.exifdata.Orientation === 6) {
             console.log('rotate')

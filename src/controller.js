@@ -1,4 +1,4 @@
-workbox.core.setCacheNameDetails({prefix: "Realness"})
+workbox.core.setCacheNameDetails({ prefix: 'Realness' })
 self.__precacheManifest = [].concat(self.__precacheManifest || [])
 workbox.precaching.suppressWarnings()
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {})

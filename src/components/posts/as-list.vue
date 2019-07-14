@@ -22,7 +22,7 @@
 </template>
 <script>
   import Vue from 'vue'
-  import {posts_storage} from '@/modules/Storage'
+  import { posts_storage } from '@/modules/Storage'
   import icon from '@/components/icon'
   import time_ago from '@/modules/time_ago'
   import posts_into_days from '@/mixins/posts_into_days'
@@ -39,7 +39,7 @@
         default: false
       }
     },
-    data(){
+    data() {
       return {
         days: null,
         chronological: true
@@ -55,13 +55,13 @@
     },
     methods: {
       is_today(day) {
-        if(day[0].indexOf('Today') > -1) {
+        if (day[0].indexOf('Today') > -1) {
           return true
         } else {
           return false
         }
       },
-      save_me(){
+      save_me() {
         console.log('save_me()')
         Vue.nextTick(_ => posts_storage.save())
       },

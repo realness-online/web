@@ -41,7 +41,7 @@
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book() {
-        if (relations_storage.as_list().length < 1){
+        if (relations_storage.as_list().length < 1) {
           return '/phone-book'
         } else {
           return '/relations'

@@ -19,7 +19,7 @@
     methods: {
       avatar_click(event) {
         this.$emit('avatar-clicked', event)
-      },
+      }
     },
     computed: {
       avatar_link() {

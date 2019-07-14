@@ -55,7 +55,7 @@
           console.log('isIntersecting', event)
           this.observer.unobserve(event[0].target)
           const more_posts = posts_storage.next_list(this.limit)
-          if ( more_posts.length > 0 ) {
+          if (more_posts.length > 0) {
             this.posts = [ ...this.posts, ...more_posts ]
             this.limit = growth.next(this.limit)
             Vue.nextTick(_ => this.observe_posts())

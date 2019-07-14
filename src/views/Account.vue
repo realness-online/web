@@ -67,7 +67,7 @@
     },
     computed: {
       show_avatar() {
-        if(this.signed_in && !this.working) {
+        if (this.signed_in && !this.working) {
           return true
         } else {
           return false
@@ -89,7 +89,7 @@
           this.me = await profile_id.load(id)
           this.me.id = id
         }
-        this.auth_checked=true
+        this.auth_checked = true
       },
       async save_me(user) {
         if (user) {

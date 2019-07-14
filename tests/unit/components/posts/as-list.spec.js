@@ -6,7 +6,6 @@ describe('@/components/posts/as-list.vue', () => {
     wrapper = shallow(post_list, {
       propsData: { posts: [] }
     })
-
   })
   it('should render proper microdata for posts', () => {
     expect(wrapper.element).toMatchSnapshot()
