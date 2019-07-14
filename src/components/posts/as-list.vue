@@ -42,40 +42,18 @@
     data(){
       return {
         days: null,
-        chronological: true,
-        observed_article: null
-
+        chronological: true
       }
     },
-    mounted() {
-      this.bind_to_display()
-    },
     created() {
-      console.clear()
       this.days = this.posts_into_days(this.posts, this.chronological)
-      console.info(`${this.posts.length} posts`)
-      console.info(`${this.sort_count} sort operations`)
-      this.observer = new IntersectionObserver(this.load_next_page, {})
     },
     watch: {
       posts() {
-        console.log('posts() watch')
         this.days = this.posts_into_days(this.posts, this.chronological)
-
       }
     },
     methods: {
-      bind_to_display() {
-        const selector = '[itemprop=posts] > .day:first-of-type > article:first-of-type'
-        const article = document.querySelector(selector)
-        this.observer.observe(article)
-      },
-      load_next_page(event) {
-        // console.log('load_next_page', event[0]);
-        if(event[0].isIntersecting) {
-          console.log('isIntersecting')
-        }
-      },
       is_today(day) {
         if(day[0].indexOf('Today') > -1) {
           return true
@@ -85,7 +63,7 @@
       },
       save_me(){
         console.log('save_me()')
-        Vue.nextTick(() => posts_storage.save())
+        Vue.nextTick(_ => posts_storage.save())
       },
       toggle_post(post) {
         post.muted = !post.muted

@@ -143,6 +143,10 @@ class Storage {
       })
     })
   }
+  next_list(limit=growth.first()) {
+    const history_name = `${this.type}.${limit}`
+    return Item.get_items(this.from_storage(history_name))
+  }
 }
 export default Storage
 export const person_storage = new Storage('person')
