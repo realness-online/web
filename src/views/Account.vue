@@ -82,48 +82,25 @@
       }
     },
     methods: {
-      save_me(user) {
-        if (user) {
-          this.me.id = profile_id.from_e64(user.phoneNumber)
-          if (this.me.avatar) {
-            Vue.nextTick(() => person_storage.save())
-          } else {
-            console.log('no avatar', this.me.id)
-            profile_id.load(this.me.id).then(profile => {
-              this.me.avatar = profile.avatar
-              console.log('profile loaded', this.me.avatar)
-              Vue.nextTick(() => person_storage.save())
-            }).catch(error => {
-              console.log(error.message)
-              Vue.nextTick(() => person_storage.save())
-            })
-          }
-        } else {
-          Vue.nextTick(() => person_storage.save())
-        }
-
-      },
-      auth_check(user) {
+      async auth_check(user) {
         if (user) {
           this.signed_in = true
           const id = profile_id.from_e64(user.phoneNumber)
-          profile_id.load(id).then(profile => {
-            this.me = profile
-            this.me.id = id
-          })
+          this.me = await profile_id.load(id)
+          this.me.id = id
         }
         this.auth_checked=true
       },
-      open_camera(event) {
-        this.$refs.uploader.setAttribute('capture', true)
-        this.$refs.uploader.click()
-      },
-      accept_changes(event) {
-        if (this.avatar_changed) {
-          person_storage.save().then(() => {
-            this.avatar_changed = false
-          })
+      async save_me(user) {
+        if (user) {
+          this.me.id = profile_id.from_e64(user.phoneNumber)
+          if (!this.me.avatar) {
+            console.log('no avatar', this.me.id)
+            const profile = await profile_id.load(this.me.id)
+            this.me.avatar = profile.avatar
+          }
         }
+        Vue.nextTick(_ => person_storage.save())
       },
       async vectorize_image(image) {
         this.avatar_changed = true
@@ -133,6 +110,16 @@
           this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
           this.working = false
         })
+      },
+      async accept_changes(event) {
+        if (this.avatar_changed) {
+          await person_storage.save()
+          this.avatar_changed = false
+        }
+      },
+      open_camera(event) {
+        this.$refs.uploader.setAttribute('capture', true)
+        this.$refs.uploader.click()
       },
       attach_poster(event) {
         this.$refs.uploader.removeAttribute('capture')
