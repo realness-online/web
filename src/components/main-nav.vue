@@ -19,24 +19,25 @@
       'post-as-textarea': as_textarea
     },
     created() {
-      this.$bus.$on('post-added', () => this.has_posts = true)
-      firebase.auth().onAuthStateChanged(user => {
+      this.$bus.$on('post-added', _ => { this.has_posts = true })
+      firebase.auth().onAuthStateChanged(this.auth_check)
+    },
+    data() {
+      return {
+        posting: false,
+        person: person_storage.as_object(),
+        signed_in: posts_storage.as_list().length > 0,
+        has_posts: posts_storage.as_list().length > 0
+      }
+    },
+    methods: {
+      auth_check(user) {
         if (user) {
           this.signed_in = true
         } else {
           this.signed_in = false
         }
-      })
-    },
-    data() {
-      return {
-        posting: false,
-        signed_in: posts_storage.as_list().length > 0,
-        person: person_storage.as_object(),
-        has_posts: posts_storage.as_list().length > 0
-      }
-    },
-    methods: {
+      },
       done_posting(event) {
         document.querySelector('nav > button').focus()
       },

@@ -1,6 +1,5 @@
 import { shallow } from 'vue-test-utils'
 import Profile from '@/views/Profile'
-import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 const onAuthStateChanged = jest.fn((state_changed) => {
