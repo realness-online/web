@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="account" v-bind:class="{signed_in}" class="page">
+  <section v-if="auth_checked" id="account" v-bind:class="{signed_in}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -52,6 +52,7 @@
     data() {
       return {
         me: person_storage.as_object(),
+        auth_checked: false,
         working: false,
         signed_in: false,
         avatar_changed: false,
@@ -68,6 +69,7 @@
             this.me.id = id
           })
         }
+        this.auth_checked=true
       })
       this.$bus.$off('save-me')
       this.$bus.$on('save-me', person => {
