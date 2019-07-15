@@ -102,7 +102,7 @@ describe('@/modules/Storage.js', () => {
     it('exists', () => {
       expect(storage.optimize).toBeDefined()
     })
-    it.only('it optimizes a user list accross a set of pages', async() => {
+    it('it optimizes a user list accross a set of pages', async() => {
       expect.assertions(1)
       localStorage.setItem(posts_storage.name, posts)
       await posts_storage.optimize()
