@@ -40,6 +40,10 @@ class Storage {
     if (bytes) return (bytes.length / 1024).toFixed(0);
     else return 0;
   }
+  async from_network() {
+    const url = await this.get_download_url()
+    return Item.get_items(Storage.hydrate(await (await fetch(url)).text()))
+  }
   from_storage(name = this.name) {
     const storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
@@ -121,10 +125,7 @@ class Storage {
     })
   }
   async sync_list() {
-    const url = await this.get_download_url()
-    const server_as_fragment = Storage.hydrate(await (await fetch(url)).text())
-    let from_server = Item.get_items(server_as_fragment)
-
+    let from_server = await this.from_network()
     let filtered_local = this.as_list().filter(local_item => {
       return !from_server.some(server_item => {
         return local_item.created_at === server_item.created_at
