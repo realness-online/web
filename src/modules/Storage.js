@@ -120,27 +120,21 @@ class Storage {
       })
     })
   }
-  sync_list() {
-    return new Promise((resolve, reject) => {
-      this.get_download_url().then(url => {
-        fetch(url).then(response => {
-          response.text().then(server_text => {
-            const server_as_fragment = Storage.hydrate(server_text)
-            let from_server = Item.get_items(server_as_fragment)
-            let filtered_local = this.as_list().filter(local_item => {
-              return !from_server.some(server_item => {
-                return local_item.created_at === server_item.created_at
-              })
-            })
-            let items = [...filtered_local, ...from_server]
-            items.sort((a, b) => {
-              return Date.parse(a.created_at) - Date.parse(b.created_at)
-            })
-            resolve(items)
-          })
-        })
+  async sync_list() {
+    const url = await this.get_download_url()
+    const server_as_fragment = Storage.hydrate(await (await fetch(url)).text())
+    let from_server = Item.get_items(server_as_fragment)
+
+    let filtered_local = this.as_list().filter(local_item => {
+      return !from_server.some(server_item => {
+        return local_item.created_at === server_item.created_at
       })
     })
+    let items = [...filtered_local, ...from_server]
+    items.sort((a, b) => {
+      return Date.parse(a.created_at) - Date.parse(b.created_at)
+    })
+    return items
   }
   next_list(limit = growth.first()) {
     const history_name = `${this.type}.${limit}`
