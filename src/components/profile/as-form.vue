@@ -86,9 +86,7 @@
     },
     mounted() {
       firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          this.disable_input()
-        }
+        if (user) this.disable_input();
       })
     },
     methods: {
