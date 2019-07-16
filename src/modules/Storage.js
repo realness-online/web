@@ -42,8 +42,13 @@ class Storage {
   }
   async from_network() {
     if (networkable.includes(this.type)) {
-      const url = await this.get_download_url()
-      return Storage.hydrate(await (await fetch(url)).text())
+      try {
+        const url = await this.get_download_url()
+        return Storage.hydrate(await (await fetch(url)).text())
+      } catch(e) {
+        if(e.code === 'storage/object-not-found') return null;
+        else console.log(e.code);
+      }
     } else return null;
   }
   from_local(name = this.name){
@@ -70,7 +75,6 @@ class Storage {
         offload.appendChild(current.removeChild(first_child))
       }
 
-      await this.save(current)
       let div = document.createElement(current.nodeName)
       div.setAttribute('itemprop', this.type)
 
@@ -81,6 +85,9 @@ class Storage {
       div.appendChild(offload)
 
       await history.save(div)
+      await this.save(current)
+      // only save yourself once you know the history file has saved successfully
+      // that way we don't have data loss for a process failure
       await history.optimize(growth.next(limit))
     }
     return Promise.resolve('Optimized')
