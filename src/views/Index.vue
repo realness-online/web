@@ -34,21 +34,18 @@
       this.sync_profile()
     },
     methods: {
-      sync_profile(firebase_user, me = this.me) {
+      async sync_profile(firebase_user, me = this.me) {
         const last_synced = sessionStorage.getItem('profile-synced')
         const five_minutes_ago = Date.now() - (1000 * 60 * 5)
-        firebase.auth().onAuthStateChanged(auth)
-        function auth(firebase_user) {
-          if (firebase_user && five_minutes_ago > last_synced) {
-            const id = profile_id.from_e64(firebase_user.phoneNumber)
-            profile_id.load(id).then(profile => {
-              me = profile
-              Vue.nextTick(() => {
-                person_storage.save().then(_ => {
-                  sessionStorage.setItem('profile-synced', Date.now())
-                  console.log('profile synced')
-                })
-              })
+        firebase.auth().onAuthStateChanged(await auth)
+        async function auth(user) {
+          if (user && five_minutes_ago > last_synced) {
+            const id = profile_id.from_e64(user.phoneNumber)
+            me = await profile_id.load(id)
+            Vue.nextTick(async() => {
+              await person_storage.save()
+              sessionStorage.setItem('profile-synced', Date.now())
+              console.log('profile synced')
             })
           }
         }
