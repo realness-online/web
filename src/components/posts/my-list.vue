@@ -14,12 +14,13 @@
     },
     data() {
       return {
-        posts: posts_storage.as_list(),
+        posts: [],
         observer: new IntersectionObserver(this.load_more_posts, {}),
         limit: growth.first()
       }
     },
-    created() {
+    async created() {
+      this.posts = await posts_storage.as_list()
       this.$bus.$on('post-added', post => this.add_post(post))
       firebase.auth().onAuthStateChanged(this.sync_posts)
     },
@@ -35,10 +36,11 @@
           this.posts = posts_storage.as_list()
         })
       },
-      async sync_posts(user) {
+      async sync_posts(firebase_user) {
+        console.log('sync_posts');
         const last_synced = sessionStorage.getItem('posts-synced')
         const five_minutes_ago = Date.now() - (1000 * 60 * 5)
-        if (user && !last_synced || five_minutes_ago > last_synced) {
+        if (firebase_user && five_minutes_ago > last_synced) {
           this.posts = await posts_storage.sync_list()
           sessionStorage.setItem('posts-synced', Date.now())
           Vue.nextTick(_ => posts_storage.save())

@@ -3,7 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import growth from '@/modules/growth'
-
+const networkable = ['person', 'posts']
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= growth.previous(limit)) {
@@ -41,18 +41,25 @@ class Storage {
     else return 0;
   }
   async from_network() {
-    const url = await this.get_download_url()
-    return Item.get_items(Storage.hydrate(await (await fetch(url)).text()))
+    if (networkable.includes(this.type)) {
+      const url = await this.get_download_url()
+      return Storage.hydrate(await (await fetch(url)).text())
+    } else return null;
   }
-  from_storage(name = this.name) {
+  from_local(name = this.name){
     const storage_string = localStorage.getItem(name)
-    return Storage.hydrate(storage_string)
+    if (storage_string) return Storage.hydrate(storage_string);
+    else return null;
   }
-  as_list() {
-    return Item.get_items(this.from_storage())
+  async from_storage(name = this.name) {
+    return this.from_local(name) || this.from_network()
   }
-  as_object() {
-    return Item.get_first_item(this.from_storage())
+  async as_list() {
+    console.log('as_list');
+    return Item.get_items(await this.from_storage())
+  }
+  async as_object() {
+    return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
@@ -65,22 +72,17 @@ class Storage {
       }
 
       await this.save(current)
+      let div = document.createElement(current.nodeName)
+      div.setAttribute('itemprop', this.type)
 
-      const history_name = `${this.type}.${limit}`
-      const wayback = new Storage(this.type, this.selector, history_name)
-
-      let history = localStorage.getItem(history_name)
-      if (history) {
-        history = this.from_storage(history_name).childNodes[0]
-        console.log('if (history)', history, history.childNodes.length)
-      } else {
-        history = document.createElement(current.nodeName)
-        history.setAttribute('itemprop', this.type)
+      let history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
+      if (div = await history.from_storage()) {
+         div = div.childNodes[0]
       }
-      history.appendChild(offload)
+      div.appendChild(offload)
 
-      await wayback.save(history)
-      await wayback.optimize(growth.next(limit))
+      await history.save(div)
+      await history.optimize(growth.next(limit))
     }
     return Promise.resolve('Optimized')
   }
@@ -98,16 +100,12 @@ class Storage {
       })
     })
   }
-  save(items = document.querySelector(this.selector)) {
-    return new Promise((resolve, reject) => {
-      if (!items) resolve('nothing to save');
-      localStorage.setItem(this.name, items.outerHTML)
-      if (['person', 'posts'].includes(this.type)) {
-        this.persist(items.outerHTML).then(message => resolve(message))
-      } else {
-        resolve('nothing to save')
-      }
-    })
+  async save(items = document.querySelector(this.selector)) {
+    if (!items) return;
+    localStorage.setItem(this.name, items.outerHTML)
+    if (networkable.includes(this.type)) {
+      await this.persist(items.outerHTML)
+    }
   }
   get_download_url() {
     return new Promise((resolve, reject) => {
@@ -126,7 +124,9 @@ class Storage {
   }
   async sync_list() {
     let from_server = await this.from_network()
-    let filtered_local = this.as_list().filter(local_item => {
+    let local = await this.as_list()
+    from_server = Item.get_items(from_server)
+    let filtered_local = local.filter(local_item => {
       return !from_server.some(server_item => {
         return local_item.created_at === server_item.created_at
       })
@@ -138,8 +138,8 @@ class Storage {
     return items
   }
   next_list(limit = growth.first()) {
-    const history_name = `${this.type}.${limit}`
-    return Item.get_items(this.from_storage(history_name))
+    console.log('next_list')
+    return Item.get_items(this.from_storage(`${this.type}.${limit}`))
   }
 }
 export default Storage

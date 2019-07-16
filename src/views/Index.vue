@@ -26,22 +26,22 @@
     data() {
       return {
         version: process.env.VUE_APP_VERSION,
-        me: person_storage.as_object()
+        me: {}
       }
     },
-    created() {
-      const last_synced = sessionStorage.getItem('profile-synced')
-      const five_minutes_ago = Date.now() - (1000 * 60 * 5)
-      if (five_minutes_ago > last_synced) {
-        firebase.auth().onAuthStateChanged(user => {
-          if (user) {
-            const id = profile_id.from_e64(user.phoneNumber)
-            profile_id.load(id).then(profile => {
-              this.me = profile
-              this.me.id = id
-            })
-          }
-        })
+    async created() {
+      this.me = await person_storage.as_object()
+      firebase.auth().onAuthStateChanged(this.sync_profile)
+
+    },
+    methods: {
+      async sync_profile(firebase_user) {
+        const last_synced = sessionStorage.getItem('profile-synced')
+        const five_minutes_ago = Date.now() - (1000 * 60 * 5)
+        if (firebase_user && five_minutes_ago > last_synced) {
+          const id = profile_id.from_e64(firebase_user.phoneNumber)
+          this.me = await profile_id.load(id)
+        }
       }
     },
     watch: {

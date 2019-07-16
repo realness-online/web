@@ -52,7 +52,7 @@
     data() {
       return {
         auth: firebase.auth(),
-        me: person_storage.as_object(),
+        me: {},
         auth_checked: false,
         working: false,
         signed_in: false,
@@ -60,7 +60,8 @@
         image_file: null
       }
     },
-    created() {
+    async created() {
+      this.me = await person_storage.as_object()
       this.auth.onAuthStateChanged(this.auth_check)
       this.$bus.$off('save-me')
       this.$bus.$on('save-me', () => this.auth.onAuthStateChanged(this.save_me))
@@ -82,18 +83,17 @@
       }
     },
     methods: {
-      async auth_check(user) {
-        if (user) {
+      async auth_check(firebase_user) {
+        if (firebase_user) {
           this.signed_in = true
-          const id = profile_id.from_e64(user.phoneNumber)
+          const id = profile_id.from_e64(firebase_user.phoneNumber)
           this.me = await profile_id.load(id)
-          this.me.id = id
         }
         this.auth_checked = true
       },
-      async save_me(user) {
-        if (user) {
-          this.me.id = profile_id.from_e64(user.phoneNumber)
+      async save_me(firebase_user) {
+        if (firebase_user) {
+          this.me.id = profile_id.from_e64(firebase_user.phoneNumber)
           if (!this.me.avatar) {
             console.log('no avatar', this.me.id)
             const profile = await profile_id.load(this.me.id)
