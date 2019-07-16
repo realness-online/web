@@ -1,5 +1,5 @@
 <template lang="html">
-  <section v-if="auth_checked" id="account" v-bind:class="{signed_in}" class="page">
+  <section id="account" v-bind:class="{signed_in}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -53,7 +53,6 @@
       return {
         auth: firebase.auth(),
         me: {},
-        auth_checked: false,
         working: false,
         signed_in: false,
         avatar_changed: false,
@@ -89,7 +88,6 @@
           const id = profile_id.from_e64(firebase_user.phoneNumber)
           this.me = await profile_id.load(id)
         }
-        this.auth_checked = true
       },
       async save_me(firebase_user) {
         if (firebase_user) {
