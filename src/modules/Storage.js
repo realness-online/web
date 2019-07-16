@@ -69,24 +69,19 @@ class Storage {
     if (this.as_kilobytes() > limit) {
       const current = (await this.from_storage(this.name)).childNodes[0]
       const offload = document.createDocumentFragment()
-
       while (keep_going(current, limit)) {
         const first_child = current.childNodes[0]
         offload.appendChild(current.removeChild(first_child))
       }
-
-      let div = document.createElement(current.nodeName)
+      const div = document.createElement(current.nodeName)
       div.setAttribute('itemprop', this.type)
-
-      let history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
-      if (div = await history.from_storage()) {
-         div = div.childNodes[0]
-      }
+      const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
+      const existing_history = await history.from_storage()
+      if (existing_history) div = existing_history.childNodes[0];
       div.appendChild(offload)
-
       await history.save(div)
       await this.save(current)
-      // only save yourself once you know the history file has saved successfully
+      // save yourself after the history file saves successfully
       // this helps prevent data loss when there is a process failure
       await history.optimize(growth.next(limit))
     }
