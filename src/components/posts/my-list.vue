@@ -32,7 +32,7 @@
         this.posts.push(post)
         Vue.nextTick(async() => {
           await posts_storage.save()
-          await posts_storage.optimize_list()
+          await posts_storage.optimize()
           this.posts = await posts_storage.as_list()
         })
       },
