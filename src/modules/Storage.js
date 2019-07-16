@@ -87,7 +87,7 @@ class Storage {
       await history.save(div)
       await this.save(current)
       // only save yourself once you know the history file has saved successfully
-      // that way we don't have data loss for a process failure
+      // this helps prevent data loss when there is a process failure
       await history.optimize(growth.next(limit))
     }
     return Promise.resolve('Optimized')
