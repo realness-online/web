@@ -9,14 +9,12 @@ function get_url(person_id, type) {
 export default {
   async load(profile_id) {
     const item = (await this.items(profile_id, 'person'))[0]
-    console.log(item, profile_id)
     item.id = profile_id
     return item
   },
   async items(profile_id, type) {
     const url = await get_url(profile_id, type)
     const server_text = await (await fetch(url)).text()
-    console.log('profile_id.items')
     return Item.get_items(Storage.hydrate(server_text))
   },
   as_query_id(profile_id = '/+') {
