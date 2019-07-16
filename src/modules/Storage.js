@@ -55,7 +55,6 @@ class Storage {
     return this.from_local(name) || this.from_network()
   }
   async as_list() {
-    console.log('as_list');
     return Item.get_items(await this.from_storage())
   }
   async as_object() {
