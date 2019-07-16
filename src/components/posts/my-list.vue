@@ -32,12 +32,11 @@
         this.posts.push(post)
         Vue.nextTick(async() => {
           await posts_storage.save()
-          await posts_storage.optimize()
-          this.posts = posts_storage.as_list()
+          await posts_storage.optimize_list()
+          this.posts = await posts_storage.as_list()
         })
       },
       async sync_posts(firebase_user) {
-        console.log('sync_posts');
         const last_synced = sessionStorage.getItem('posts-synced')
         const five_minutes_ago = Date.now() - (1000 * 60 * 5)
         if (firebase_user && five_minutes_ago > last_synced) {
