@@ -101,8 +101,8 @@
         Vue.nextTick(_ => person_storage.save())
       },
       async vectorize_image(image) {
-        this.avatar_changed = true
         this.working = true
+        this.avatar_changed = true
         const avatar_id = profile_id.as_avatar_id(this.me.id)
         Vue.nextTick(async() => {
           this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
