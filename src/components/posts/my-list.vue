@@ -1,5 +1,7 @@
 <template>
-  <posts-list :me="true" :posts='posts'></posts-list>
+  <div id="pages-of-posts">
+    <posts-list v-for="page in pages" :me="true" :posts='page'></posts-list>
+  </div>
 </template>
 <script>
   import Vue from 'vue'
@@ -14,18 +16,21 @@
     },
     data() {
       return {
-        posts: [],
+        pages: [],
         observer: new IntersectionObserver(this.load_more_posts, {}),
         limit: growth.first()
       }
     },
     async created() {
-      this.posts = await posts_storage.as_list()
+      this.pages.push(await posts_storage.as_list())
       this.$bus.$on('post-added', post => this.add_post(post))
       firebase.auth().onAuthStateChanged(this.sync_posts)
     },
-    mounted() {
-      this.observe_posts()
+    updated() {
+      Vue.nextTick(() => this.observe_posts())
+    },
+    beforeDestroy(){
+      this.observer.disconnect()
     },
     methods: {
       add_post(post) {
@@ -33,7 +38,6 @@
         Vue.nextTick(async() => {
           await posts_storage.save()
           await posts_storage.optimize()
-          this.posts = await posts_storage.as_list()
         })
       },
       async sync_posts(firebase_user) {
@@ -47,21 +51,24 @@
         }
       },
       observe_posts() {
-        const selector = '[itemprop=posts] > .day:first-of-type > article:first-of-type'
-        const article = document.querySelector(selector)
+        this.observer.disconnect()
+        const selector = '[itemprop=posts]:last-of-type > .day:first-of-type > article:first-of-type'
+        const article = this.$el.querySelector(selector)
         if (article) this.observer.observe(article);
       },
-      load_more_posts(event) {
-        if (event[0].isIntersecting) {
-          console.log('isIntersecting', event)
-          this.observer.unobserve(event[0].target)
-          const more_posts = posts_storage.next_list(this.limit)
-          if (more_posts.length > 0) {
-            this.posts = [ ...this.posts, ...more_posts ]
-            this.limit = growth.next(this.limit)
-            Vue.nextTick(_ => this.observe_posts())
+      async load_more_posts(entries) {
+        entries.forEach(async entry => {
+          if (entry.isIntersecting) {
+            // console.log('isIntersecting', entry)
+            this.observer.unobserve(entry.target)
+            const older_posts = await posts_storage.next_list(this.limit)
+            // console.log('more_posts', more_posts);
+            if (older_posts.length > 0) {
+              this.pages.push(older_posts)
+              this.limit = growth.next(this.limit)
+            }
           }
-        }
+        })
       }
     }
   }

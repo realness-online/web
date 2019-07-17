@@ -1,10 +1,10 @@
 <template>
   <div itemprop="posts">
-    <section class="day" v-for="day in days" v-bind:class="{today: is_today(day)}" >
+    <section class="day" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}" >
       <header>
-        <h4>{{day[0]}}</h4>
+        <h4>{{date}}</h4>
       </header>
-      <article v-for="post in day[1]" itemscope itemtype="/post" :key="post.created_at" v-bind:class="{silent: post.muted}">
+      <article v-for="post in day" itemscope itemtype="/post" :key="post.created_at" v-bind:class="{silent: post.muted}">
         <header v-if="me">
           <menu>
             <a @click="toggle_post(post)">
@@ -54,8 +54,8 @@
       }
     },
     methods: {
-      is_today(day) {
-        if (day[0].indexOf('Today') > -1) {
+      is_today(date) {
+        if (date.indexOf('Today') > -1) {
           return true
         } else {
           return false
