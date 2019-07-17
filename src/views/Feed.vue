@@ -9,11 +9,11 @@
     </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
-    <section v-else class="day" v-for="day in days">
+    <section v-else class="day" v-for="[date, day] in days">
       <header>
-        <h4>{{day[0]}}</h4>
+        <h4>{{date}}</h4>
       </header>
-      <article v-for="post in day[1]" :key="item_id(post)" itemscope itemtype="/post" :itemid="item_id(post)">
+      <article v-for="post in day" :key="item_id(post)" itemscope itemtype="/post" :itemid="item_id(post)">
         <router-link :to="post.person.id">
           <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
         </router-link>
