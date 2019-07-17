@@ -10,6 +10,7 @@
   import postsList from '@/components/posts/as-list'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  const options = { rootMargin: '0px 0px 64px 0px' }
   export default {
     components: {
       postsList
@@ -17,7 +18,7 @@
     data() {
       return {
         pages: [],
-        observer: new IntersectionObserver(this.load_more_posts, {}),
+        observer: new IntersectionObserver(this.load_more_posts, options),
         limit: growth.first()
       }
     },
