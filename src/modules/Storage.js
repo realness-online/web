@@ -138,9 +138,10 @@ class Storage {
     })
     return items
   }
-  next_list(limit = growth.first()) {
+  async next_list(limit = growth.first()) {
     console.log('next_list')
-    return Item.get_items(this.from_storage(`${this.type}.${limit}`))
+    const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
+    return await history.as_list()
   }
 }
 export default Storage
