@@ -31,13 +31,9 @@
     },
     methods: {
       fill_in_relationships() {
-        return new Promise((resolve, reject) => {
-          this.relations.forEach((relation, index) => {
-            profile_id.load(relation.id).then(profile => {
-              this.relations.splice(index, 1, profile)
-              resolve('finished fill_in_relationships')
-            })
-          })
+        this.relations.forEach(async(relation, index) => {
+          const profile = await profile_id.load(relation.id)
+          this.relations.splice(index, 1, profile)
         })
       }
     }
