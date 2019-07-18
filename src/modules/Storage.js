@@ -139,7 +139,6 @@ class Storage {
     return items
   }
   async next_list(limit = growth.first()) {
-    console.log('next_list')
     const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
     return await history.as_list()
   }
