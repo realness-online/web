@@ -59,11 +59,11 @@
     beforeDestroy () {
       window.removeEventListener('scroll', this.scrolled)
     },
-    created() {
+    async created() {
       console.clear()
       console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
-      const me = person_storage.as_object()
+      const me = await person_storage.as_object()
       people_in_feed.push(me)
       this.relations_left = people_in_feed.length
       this.populate_feed(people_in_feed).then(feed => {
