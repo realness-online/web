@@ -26,7 +26,7 @@
       profileAsLinks,
       logoAsLink
     },
-    mounted() {
+    created() {
       this.fill_in_relationships()
     },
     methods: {

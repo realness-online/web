@@ -4,7 +4,7 @@ export default {
   data() {
     return {
       working: true,
-      relations: []
+      relations: relations_storage.as_list()
     }
   },
   created() {
@@ -12,9 +12,6 @@ export default {
     this.$bus.$off('add-relationship')
     this.$bus.$on('add-relationship', this.add_relationship)
     this.$bus.$on('remove-relationship', this.remove_relationship)
-  },
-  async mounted() {
-    this.relations = await relations_storage.as_list()
   },
   methods: {
     add_relationship(person) {
