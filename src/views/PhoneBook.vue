@@ -37,27 +37,25 @@
         working: true
       }
     },
-    created() {
-      phonebook_storage.sync_list().then(people => {
-        this.working = false
-        this.phonebook = people
-        this.phonebook.forEach((person, index) => {
-          profile_id.load(person.id).then(profile => {
-            if (profile) {
-              this.phonebook.splice(index, 1, profile)
-            }
-          })
-        })
+    async created() {
+      const people = await phonebook_storage.sync_list()
+      this.phonebook = people
+      this.working = false
+      this.phonebook.forEach(async(person, index) => {
+        const profile = await profile_id.load(person.id)
+        if (profile) {
+          this.phonebook.splice(index, 1, profile)
+        }
       })
     },
     watch: {
       phonebook() {
         if (localStorage.getItem('save-phonebook')) {
-          Vue.nextTick(() => phonebook_storage.save())
+          Vue.nextTick(_ => phonebook_storage.save())
         }
       },
       relations() {
-        Vue.nextTick(() => relations_storage.save())
+        Vue.nextTick(_ => relations_storage.save())
       }
     }
   }

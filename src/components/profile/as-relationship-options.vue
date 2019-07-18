@@ -11,28 +11,29 @@
   import { relations_storage, person_storage } from '@/modules/Storage'
   export default {
     props: {
-      person: Object,
-      me: {
-        type: Boolean,
-        default: false
-      }
+      person: Object
     },
     components: {
       icon
     },
     data() {
       return {
-        relation: this.is_relation()
+        relation: this.is_relation(),
+        me: {}
       }
+    },
+    async created() {
+      this.me = await person_storage.as_object()
     },
     computed: {
       is_me() {
-        return person_storage.as_object().id === this.person.id
+        return (this.me.id === this.person.id)
       }
     },
     methods: {
       is_relation() {
-        return relations_storage.as_list().some((relation) => {
+        const friends = relations_storage.as_list()
+        return friends.some(relation => {
           return (relation.id === this.person.id)
         })
       },
