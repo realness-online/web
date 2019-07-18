@@ -4,24 +4,31 @@ export default {
   data() {
     return {
       working: true,
-      relations: relations_storage.as_list()
+      relations: []
     }
   },
   created() {
     this.$bus.$off('remove-relationship')
     this.$bus.$off('add-relationship')
-    this.$bus.$on('add-relationship', person => {
+    this.$bus.$on('add-relationship', this.add_relationship)
+    this.$bus.$on('remove-relationship', this.remove_relationship)
+  },
+  async mounted() {
+    this.relations = await relations_storage.as_list()
+  },
+  methods: {
+    add_relationship(person) {
       this.relations.push(person)
       localStorage.setItem('relations-count', this.relations.length)
-      Vue.nextTick(() => relations_storage.save())
-    })
-    this.$bus.$on('remove-relationship', person => {
+      Vue.nextTick(_ => relations_storage.save())
+    },
+    remove_relationship(person) {
       const index = this.relations.findIndex(p => (p.id === person.id))
       if (index > -1) {
         this.relations.splice(index, 1)
         localStorage.setItem('relations-count', this.relations.length)
-        Vue.nextTick(() => relations_storage.save())
+        Vue.nextTick(_ => relations_storage.save())
       }
-    })
+    }
   }
 }
