@@ -35,7 +35,7 @@
     },
     methods: {
       add_post(post) {
-        this.posts.push(post)
+        this.pages[0].push(post)
         Vue.nextTick(async() => {
           await posts_storage.save()
           await posts_storage.optimize()
