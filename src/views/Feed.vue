@@ -13,7 +13,7 @@
       <header>
         <h4>{{date}}</h4>
       </header>
-      <post-as-article v-for="post in day" :post="post"></post-as-article>
+      <post-as-article v-for="post in day" :post="post" v-on:next-page="next_page"></post-as-article>
     </section>
   </section>
 </template>
@@ -59,6 +59,9 @@
       console.timeEnd('feed-load')
     },
     methods: {
+      next_page(person) {
+        console.log('next_page', person);
+      },
       async populate_feed(people_in_feed) {
         const feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
@@ -84,11 +87,6 @@
         }))
         return feed
       }
-    },
-    computed: {
-      // size_limited_feed() {
-      //   return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
-      // }
     }
   }
 </script>

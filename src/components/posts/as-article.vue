@@ -59,7 +59,7 @@
       end_of_posts(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
-            console.log('end_of_posts', this.post.person.first_name)
+            this.$emit('next-page', this.post.person)
             this.observer.unobserve(this.$el)
           }
         })
