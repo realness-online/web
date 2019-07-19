@@ -55,6 +55,7 @@
           is_person: this.signed_in,
           has_posts: this.has_posts,
           has_friends: (this.signed_in && localStorage.getItem('relations-count') > 0),
+          has_friends: true,
           can_event: (this.signed_in && localStorage.getItem('relations-count') >= 25),
           can_where: (this.signed_in && localStorage.getItem('relations-count') >= 25)
         }

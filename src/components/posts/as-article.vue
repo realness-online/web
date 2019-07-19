@@ -30,11 +30,26 @@
         observer: null
       }
     },
-    mounted(){
-      console.log(this.post.person.oldest_post);
-      if (this.post.created_at === this.post.person.oldest_post) {
+    mounted() {
+      if(this.i_am_oldest) {
+        console.log('observe me', this.post);
         this.observer = new IntersectionObserver(this.end_of_posts, {})
         this.observer.observe(this.$el)
+      }
+    },
+    computed: {
+      i_am_oldest() {
+        const definitly = this.post.person.oldest_post
+        // console.log('i_am_oldest', goal);
+        if (this.post.created_at === definitly) return true;
+        else {
+          return this.post.statements.some(statement => {
+            const maybe = Date.parse(statement.created_at)
+            const definitly = Date.parse(this.post.person.oldest_post)
+            if (maybe === definitly) return true;
+            else return false;
+          })
+        }
       }
     },
     methods: {
@@ -48,4 +63,32 @@
   }
 </script>
 <style lang="stylus">
+  article[itemtype='/post']
+    overflow: hidden
+    margin-bottom: base-line
+    &:last-of-type
+      margin-bottom: 0
+    & > hgroup
+      font-weight: 200
+      & > span
+      & > time
+        display: inline-block
+        vertical-align: center
+      & > span
+        color: black
+      & > time
+        color: black
+        margin-left: (base-line / 6)
+    & > blockquote
+      margin-bottom: base-line
+      &:last-of-type
+        margin-bottom: 0
+    & > a > svg
+      float: left
+      margin-right: base-line
+      shape-outside: circle()
+      clip-path: circle(44%)
+      fill: blue
+      stroke: lighten(blue, 33%)
+      stroke-width: 2px
 </style>

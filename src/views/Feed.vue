@@ -45,6 +45,7 @@
       }
     },
     async created() {
+      console.clear()
       console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
       const me = await person_storage.as_object()
@@ -52,7 +53,7 @@
       const feed = await this.populate_feed(people_in_feed)
       feed.sort(this.later_first)
       this.feed = this.condense_posts(feed)
-      this.days = this.posts_into_days(this.size_limited_feed)
+      this.days = this.posts_into_days(this.feed)
       this.working = false
       console.info(`${this.sort_count} sort operations`)
       console.timeEnd('feed-load')
@@ -71,8 +72,9 @@
           posts.forEach(post => {
             if (!post.muted) {
               post.person = person
-              if (!person.oldest_post ||
-              (Date.parse(post.created_at) < Date.parse(person.oldest_post))) {
+              const current_oldest = Date.parse(person.oldest_post)
+              const maybe_older = Date.parse(post.created_at)
+              if (!current_oldest || (maybe_older < current_oldest)) {
                 person.oldest_post = post.created_at
               }
               feed.push(post)
@@ -84,9 +86,9 @@
       }
     },
     computed: {
-      size_limited_feed() {
-        return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
-      }
+      // size_limited_feed() {
+      //   return this.feed_limit ? this.feed.slice(0, this.feed_limit) : this.feed
+      // }
     }
   }
 </script>
@@ -111,32 +113,5 @@
         font-weight: 200
       &:first-of-type > header > h4
         margin-top: base-line
-      & > article
-        overflow: hidden
-        margin-bottom: base-line
-        &:last-of-type
-          margin-bottom: 0
-        & > hgroup
-          font-weight: 200
-          & > span
-          & > time
-            display: inline-block
-            vertical-align: center
-          & > span
-            color: black
-          & > time
-            color: black
-            margin-left: (base-line / 6)
-        & > blockquote
-          margin-bottom: base-line
-          &:last-of-type
-            margin-bottom: 0
-        & > a > svg
-          float: left
-          margin-right: base-line
-          shape-outside: circle()
-          clip-path: circle(44%)
-          fill: blue
-          stroke: lighten(blue, 33%)
-          stroke-width: 2px
+
 </style>

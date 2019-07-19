@@ -38,10 +38,8 @@ export default {
       const next_post = feed[0]
       if (next_post && next_post.person.id === post.person.id) {
         let last_post = post
-        if (post.statements.length > 0) {
-          last_post = post.statements[0]
-        }
-        let difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
+        if (post.statements.length > 0) last_post = post.statements[0];
+        const difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
         if (difference < this.thirteen_minutes) return true;
         else return false;
       }
