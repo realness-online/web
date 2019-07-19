@@ -59,7 +59,6 @@
     },
     methods: {
       async populate_feed(people_in_feed) {
-        console.time('populate-feed')
         const feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
           // const person = await profile_id.load(relation.id)
@@ -72,14 +71,15 @@
           posts.forEach(post => {
             if (!post.muted) {
               post.person = person
-              if (person.oldest_post < post.created_at) {
+              if (!person.oldest_post ||
+              (Date.parse(post.created_at) < Date.parse(person.oldest_post))) {
                 person.oldest_post = post.created_at
               }
               feed.push(post)
             }
           })
+
         }))
-        console.timeEnd('populate-feed')
         return feed
       }
     },
