@@ -21,7 +21,6 @@ export default {
       return days
     },
     condense_posts(feed) {
-      console.time('condense-posts')
       const condensed_feed = []
       while (feed.length > 0) {
         let post = feed.shift()
@@ -32,7 +31,6 @@ export default {
         }
         condensed_feed.push(post)
       }
-      console.timeEnd('condense-posts')
       return condensed_feed
     },
     is_train_of_thought(post, feed) {
