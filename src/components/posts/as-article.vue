@@ -32,10 +32,13 @@
       }
     },
     mounted() {
-      if(this.i_am_oldest) {
-        console.log('observe me', this.post);
-        this.observer = new IntersectionObserver(this.end_of_posts, {})
-        this.observer.observe(this.$el)
+      if (this.i_am_oldest) {
+        // console.log('observe me', this.post);
+        this.$nextTick(_ => {
+          this.observer = new IntersectionObserver(this.end_of_posts, {})
+          this.observer.observe(this.$el)
+        })
+
       }
     },
     destroyed() {
@@ -54,7 +57,12 @@
     },
     methods: {
       end_of_posts(entries) {
-        console.log('end_of_posts', entries)
+        entries.forEach(async entry => {
+          if (entry.isIntersecting) {
+            console.log('end_of_posts', this.post.person.first_name)
+            this.observer.unobserve(this.$el)
+          }
+        })
       },
       item_id(post) {
         return `${post.person.id}/${post.created_at}`
