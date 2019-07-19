@@ -90,29 +90,30 @@
           this.days = this.posts_into_days(this.size_limited_feed)
         }
       },
-      populate_feed(people_in_feed) {
+      async populate_feed(people_in_feed) {
         console.time('populate-feed')
-        return new Promise((resolve, reject) => {
-          const feed = []
-          people_in_feed.forEach(relation => {
-            profile_id.load(relation.id).then(person => {
-              this.relations.push(person)
-              profile_id.items(relation.id, 'posts').then(posts => {
-                this.relations_left--
-                posts.forEach(post => {
-                  if (!post.muted) {
-                    post.person = person
-                    feed.push(post)
-                  }
-                })
-                if (this.relations_left < 1) {
-                  console.timeEnd('populate-feed')
-                  resolve(feed)
-                }
-              })
-            })
+        const feed = []
+
+        await Promise.all(people_in_feed.map(async (relation) => {
+          // const person = await profile_id.load(relation.id)
+          // const posts = await profile_id.items(relation.id, 'posts')
+          const [person, posts] = await Promise.all([
+            profile_id.load(relation.id),
+            profile_id.items(relation.id, 'posts')
+          ])
+          this.relations.push(person)
+          posts.forEach(post => {
+            if (!post.muted) {
+              post.person = person
+              if (person.oldest_post < post.created_at) {
+                person.oldest_post = post.created_at
+              }
+              feed.push(post)
+            }
           })
-        })
+        }))
+        console.timeEnd('populate-feed')
+        return feed
       }
     },
     computed: {
