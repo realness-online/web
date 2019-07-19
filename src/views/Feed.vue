@@ -13,17 +13,7 @@
       <header>
         <h4>{{date}}</h4>
       </header>
-      <article v-for="post in day" :key="item_id(post)" itemscope itemtype="/post" :itemid="item_id(post)">
-        <router-link :to="post.person.id">
-          <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
-        </router-link>
-        <hgroup>
-          <span>{{post.person.first_name}} {{post.person.last_name}}</span>
-          <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
-        </hgroup>
-        <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
-        <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
-      </article>
+      <post-as-article v-for="post in day" :post="post"></post-as-article>
     </section>
   </section>
 </template>
@@ -34,6 +24,7 @@
   import profile_as_list from '@/components/profile/as-list'
   import profile_as_avatar from '@/components/profile/as-avatar'
   import posts_into_days from '@/mixins/posts_into_days'
+  import post_as_article from '@/components/posts/as-article'
   import icon from '@/components/icon'
   export default {
     mixins: [posts_into_days],
@@ -41,6 +32,7 @@
       'profile-as-avatar': profile_as_avatar,
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
+      'post-as-article': post_as_article,
       icon
     },
     data() {
@@ -48,52 +40,27 @@
         feed: [],
         days: null,
         relations: [],
-        relations_left: null,
         working: true,
         feed_limit: 8
       }
     },
-    beforeMount () {
-      window.addEventListener('scroll', this.scrolled)
-    },
-    beforeDestroy () {
-      window.removeEventListener('scroll', this.scrolled)
-    },
     async created() {
-      console.clear()
       console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
       const me = await person_storage.as_object()
       people_in_feed.push(me)
-      this.relations_left = people_in_feed.length
-      this.populate_feed(people_in_feed).then(feed => {
-        this.feed_length = feed.length
-        feed.sort(this.later_first)
-        this.feed = this.condense_posts(feed)
-        this.days = this.posts_into_days(this.size_limited_feed)
-        this.working = false
-        console.timeEnd('feed-load')
-        console.info(`${this.feed_length} feed items`)
-        console.info(`${this.sort_count} sort operations`)
-      })
+      const feed = await this.populate_feed(people_in_feed)
+      feed.sort(this.later_first)
+      this.feed = this.condense_posts(feed)
+      this.days = this.posts_into_days(this.size_limited_feed)
+      this.working = false
+      console.info(`${this.sort_count} sort operations`)
+      console.timeEnd('feed-load')
     },
     methods: {
-      item_id(post) {
-        return `${post.person.id}/${post.created_at}`
-      },
-      scrolled(event) {
-        const article = document.querySelector('#feed > section.day:last-of-type')
-        const bottom = article.getBoundingClientRect().bottom - 560
-        // console.log(bottom -window.scrollY)
-        if (bottom < window.scrollY && this.feed.length > this.feed_limit) {
-          this.feed_limit = this.feed_limit * 2
-          this.days = this.posts_into_days(this.size_limited_feed)
-        }
-      },
       async populate_feed(people_in_feed) {
         console.time('populate-feed')
         const feed = []
-
         await Promise.all(people_in_feed.map(async (relation) => {
           // const person = await profile_id.load(relation.id)
           // const posts = await profile_id.items(relation.id, 'posts')
