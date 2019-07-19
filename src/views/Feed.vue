@@ -48,42 +48,44 @@
       const people_in_feed = relations_storage.as_list()
       const me = await person_storage.as_object()
       people_in_feed.push(me)
-      const feed = await this.populate_feed(people_in_feed)
-      feed.sort(this.later_first)
-      this.feed = this.condense_posts(feed)
-      this.days = this.posts_into_days(this.feed)
+      await this.populate_feed(people_in_feed)
+      this.feed_into_days()
       this.working = false
       console.info(`${this.sort_count} sort operations`)
       console.timeEnd('feed-load')
     },
     methods: {
-      next_page(person) {
+      feed_into_days() {
+        this.feed.sort(this.later_first)
+        this.feed = this.condense_posts(this.feed)
+        this.days = this.posts_into_days(this.feed)
+      },
+      add_post_to_feed(person, post) {
+        if (!post.muted) {
+          post.person = person
+          const current = person.oldest_post
+          const maybe = post.created_at
+          if (!current || maybe < current) {
+            person.oldest_post = post.created_at
+          }
+          this.feed.push(post)
+        }
+      },
+      async next_page(person) {
         console.log('next_page', person);
+        const posts = await profile_id.next_items(person.id, 'posts')
+        posts.map(post => this.add_post_to_feed(person, posts))
+        this.feed_into_days()
       },
       async populate_feed(people_in_feed) {
-        const feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
-          // const person = await profile_id.load(relation.id)
-          // const posts = await profile_id.items(relation.id, 'posts')
           const [person, posts] = await Promise.all([
             profile_id.load(relation.id),
             profile_id.items(relation.id, 'posts')
           ])
           this.relations.push(person)
-          posts.forEach(post => {
-            if (!post.muted) {
-              post.person = person
-              const current_oldest = Date.parse(person.oldest_post)
-              const maybe_older = Date.parse(post.created_at)
-              if (!current_oldest || (maybe_older < current_oldest)) {
-                person.oldest_post = post.created_at
-              }
-              feed.push(post)
-            }
-          })
-
+          posts.map(post => this.add_post_to_feed(person, post))
         }))
-        return feed
       }
     }
   }
@@ -109,5 +111,4 @@
         font-weight: 200
       &:first-of-type > header > h4
         margin-top: base-line
-
 </style>
