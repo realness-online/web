@@ -2,18 +2,18 @@ import * as firebase from 'firebase/app'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
 import 'firebase/storage'
-function get_url(person_id, type) {
-  const path = `/people${person_id}/${type}.html`
+function get_url(person_id, name) {
+  const path = `/people${person_id}/${name}.html`
   return firebase.storage().ref().child(path).getDownloadURL()
 }
 export default {
   async load(profile_id) {
-    const item = (await this.items(profile_id, 'person'))[0]
-    item.id = profile_id
-    return item
+    const person = (await this.items(profile_id, 'person'))[0]
+    person.id = profile_id
+    return person
   },
-  async items(profile_id, type) {
-    const url = await get_url(profile_id, type)
+  async items(profile_id, name) {
+    const url = await get_url(profile_id, name)
     const server_text = await (await fetch(url)).text()
     return Item.get_items(Storage.hydrate(server_text))
   },
