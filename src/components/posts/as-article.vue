@@ -27,7 +27,8 @@
     },
     data() {
       return {
-        observer: null
+        observer: null,
+        oldest: this.post.person.oldest_post
       }
     },
     mounted() {
@@ -37,16 +38,15 @@
         this.observer.observe(this.$el)
       }
     },
+    destroyed() {
+      if (this.observer) this.observer.unobserve(this.$el);
+    },
     computed: {
       i_am_oldest() {
-        const definitly = this.post.person.oldest_post
-        // console.log('i_am_oldest', goal);
-        if (this.post.created_at === definitly) return true;
+        if (this.post.created_at === this.oldest) return true;
         else {
           return this.post.statements.some(statement => {
-            const maybe = Date.parse(statement.created_at)
-            const definitly = Date.parse(this.post.person.oldest_post)
-            if (maybe === definitly) return true;
+            if (statement.created_at === this.oldest) return true;
             else return false;
           })
         }
