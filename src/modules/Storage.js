@@ -81,11 +81,8 @@ class Storage {
       div.appendChild(offload)
       await history.save(div)
       await this.save(current)
-      // save yourself after the history file saves successfully
-      // this helps prevent data loss when there is a process failure
       await history.optimize(growth.next(limit))
     }
-    return Promise.resolve('Optimized')
   }
   persist(items, name = this.filename) {
     return new Promise((resolve, reject) => {
