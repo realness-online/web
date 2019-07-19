@@ -20,6 +20,7 @@
 <script>
   import { relations_storage, person_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
+  import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
@@ -65,16 +66,17 @@
           post.person = person
           const current = person.oldest_post
           const maybe = post.created_at
-          if (!current || maybe < current) {
-            person.oldest_post = post.created_at
-          }
+          if (!current || maybe < current) person.oldest_post = maybe;
           this.feed.push(post)
         }
       },
       async next_page(person) {
         console.log('next_page', person);
-        const posts = await profile_id.next_items(person.id, 'posts')
-        posts.map(post => this.add_post_to_feed(person, posts))
+        if (person.page) person.page = growth.next(person.page);
+        else person.page = growth.first()
+        const next_page = `posts.${person.page}`
+        const posts = await profile_id.items(person.id, next_page)
+        posts.forEach(post => this.add_post_to_feed(person, post))
         this.feed_into_days()
       },
       async populate_feed(people_in_feed) {
