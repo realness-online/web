@@ -22,14 +22,12 @@
   import profile_id from '@/modules/profile_id'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
-  import profile_as_avatar from '@/components/profile/as-avatar'
   import posts_into_days from '@/mixins/posts_into_days'
   import post_as_article from '@/components/posts/as-article'
   import icon from '@/components/icon'
   export default {
     mixins: [posts_into_days],
     components: {
-      'profile-as-avatar': profile_as_avatar,
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
       'post-as-article': post_as_article,
