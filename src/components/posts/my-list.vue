@@ -60,10 +60,8 @@
       async load_more_posts(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
-            // console.log('isIntersecting', entry)
             this.observer.unobserve(entry.target)
             const older_posts = await posts_storage.next_list(this.limit)
-            // console.log('more_posts', more_posts);
             if (older_posts.length > 0) {
               this.pages.push(older_posts)
               this.limit = growth.next(this.limit)
