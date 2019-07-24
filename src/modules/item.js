@@ -2,7 +2,7 @@ export default {
   get_items(elements, type) {
     if (!elements) return [];
     const items_as_data = []
-    const query = '[itemscope]'
+    let query = '[itemscope]'
     if (type) { query += `[itemtype="${type}"]` }
     let items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
