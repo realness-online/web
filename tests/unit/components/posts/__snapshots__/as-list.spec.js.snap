@@ -3,6 +3,5 @@
 exports[`@/components/posts/as-list.vue should render proper microdata for posts 1`] = `
 <div
   itemprop="posts"
-  itemref="profile"
 />
 `;
