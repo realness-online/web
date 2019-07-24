@@ -88,6 +88,7 @@
       "<rootDir>/tests/unit/setup.js",
       "<rootDir>/tests/polyfill/createRange.js",
       "<rootDir>/tests/polyfill/scrollIntoView.js",
+      "<rootDir>/tests/polyfill/IntersectionObserver.js",
       "jest-localstorage-mock"
     ],
     "transform": {
