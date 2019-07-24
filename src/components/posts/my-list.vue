@@ -23,8 +23,8 @@
       }
     },
     async created() {
-      this.pages.push(await posts_storage.as_list())
       this.$bus.$on('post-added', post => this.add_post(post))
+      this.pages.push(await posts_storage.as_list())
       firebase.auth().onAuthStateChanged(this.sync_posts)
     },
     updated() {
@@ -35,7 +35,14 @@
     },
     methods: {
       add_post(post) {
-        this.pages[0].push(post)
+        if (this.pages[0]) {
+          this.pages[0].push(post)
+        }
+        else {
+          const recent_posts = []
+          recent_posts.push(post)
+          this.pages[0] = recent_posts
+        }
         Vue.nextTick(async() => {
           await posts_storage.save()
           await posts_storage.optimize()

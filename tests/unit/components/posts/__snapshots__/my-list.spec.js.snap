@@ -3,5 +3,7 @@
 exports[`@/components/posts/my-list.vue should render proper item properties 1`] = `
 <div
   id="pages-of-posts"
-/>
+>
+  <!---->
+</div>
 `;

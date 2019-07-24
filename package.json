@@ -18,9 +18,10 @@
   "dependencies": {
     "exif-js": "^2.3.0",
     "firebase": "^5.5.3",
+    "flush-promises": "^1.0.2",
+    "javascript-potrace": "github:scott-fryxell/javascript-potrace",
     "jimp": "^0.6.0",
     "libphonenumber-js": "^1.2.15",
-    "javascript-potrace": "github:scott-fryxell/javascript-potrace",
     "register-service-worker": "^1.5.2",
     "vue": "^2.5.21",
     "vue-router": "^3.0.1"

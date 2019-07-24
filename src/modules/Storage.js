@@ -47,7 +47,7 @@ class Storage {
         return Storage.hydrate(await (await fetch(url)).text())
       } catch(e) {
         if(e.code === 'storage/object-not-found') return null;
-        else console.log(e.code);
+        else throw e;
       }
     } else return null;
   }
