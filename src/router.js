@@ -9,8 +9,6 @@ import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 
-import Growth from '@/views/Growth'
-
 Vue.use(Router)
 export default new Router({
   mode: 'history',
@@ -25,7 +23,6 @@ export default new Router({
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/growth', component: Growth },
     { path: '/:phone_number', component: Profile, name: 'view-profile' }
   ]
 })
