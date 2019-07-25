@@ -18,7 +18,6 @@
   "dependencies": {
     "exif-js": "^2.3.0",
     "firebase": "^5.5.3",
-    "flush-promises": "^1.0.2",
     "javascript-potrace": "github:scott-fryxell/javascript-potrace",
     "jimp": "^0.6.0",
     "libphonenumber-js": "^1.2.15",
@@ -40,6 +39,7 @@
     "babel-jest": "^24.8.0",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0",
+    "flush-promises": "^1.0.2",
     "jest-fetch-mock": "^2.1.0",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
