@@ -23,9 +23,7 @@ class Storage {
   static hydrate(item_as_string) {
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
-    } else {
-      return document.createDocumentFragment()
-    }
+    } else return null;
   }
   constructor(type, selector = `[itemtype="/${type}"]`, name = type,
     filename = `${name}.html`, content_type = 'text/html') {
@@ -66,6 +64,7 @@ class Storage {
     return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
+    console.log('calling optimize', limit);
     if (this.as_kilobytes() > limit) {
       const current = (await this.from_storage(this.name)).childNodes[0]
       const offload = document.createDocumentFragment()
@@ -73,7 +72,7 @@ class Storage {
         const first_child = current.childNodes[0]
         offload.appendChild(current.removeChild(first_child))
       }
-      const div = document.createElement(current.nodeName)
+      let div = document.createElement(current.nodeName)
       div.setAttribute('itemprop', this.type)
       const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
       const existing_history = await history.from_storage()
@@ -91,7 +90,7 @@ class Storage {
           const file = new File([items], name)
           const path = `/people/${user.phoneNumber}/${name}`
           firebase.storage().ref().child(path).put(file, this.metadata)
-          .then(message => resolve(message)).catch(error => reject(error))
+          .then(url => resolve(url)).catch(error => reject(error))
         } else {
           resolve('offline')
         }
@@ -102,7 +101,7 @@ class Storage {
     if (!items) return;
     localStorage.setItem(this.name, items.outerHTML)
     if (networkable.includes(this.type)) {
-      await this.persist(items.outerHTML)
+      return await this.persist(items.outerHTML)
     }
   }
   get_download_url() {
