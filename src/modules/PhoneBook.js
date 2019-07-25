@@ -20,7 +20,7 @@ class PhoneBook extends Storage {
     return Item.get_items(Storage.hydrate(server_text))
   }
   async sync_list() {
-    let me = person_storage.as_object()
+    let me = await person_storage.as_object()
     const people = await this.as_list()
     firebase.auth().onAuthStateChanged(add_me_to_phonebook)
     return people
