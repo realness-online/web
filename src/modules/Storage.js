@@ -21,6 +21,7 @@ function keep_going(current_items, limit) {
 }
 class Storage {
   static hydrate(item_as_string) {
+    // return document.createDocumentFragment()
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null;
@@ -51,8 +52,7 @@ class Storage {
   }
   from_local(name = this.name){
     const storage_string = localStorage.getItem(name)
-    if (storage_string) return Storage.hydrate(storage_string);
-    else return null;
+    return Storage.hydrate(storage_string)
   }
   async from_storage(name = this.name) {
     return this.from_local(name) || this.from_network()
@@ -64,9 +64,9 @@ class Storage {
     return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
-    console.log('calling optimize', limit);
     if (this.as_kilobytes() > limit) {
-      const current = (await this.from_storage(this.name)).childNodes[0]
+      console.log('calling optimize', limit);
+      let current = (await this.from_storage()).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {
         const first_child = current.childNodes[0]
@@ -110,9 +110,9 @@ class Storage {
         if (user) {
           const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
           firebase.storage().ref().child(doc_u_path)
-            .getDownloadURL()
-            .then(url => resolve(url))
-            .catch(e => reject(e))
+          .getDownloadURL()
+          .then(url => resolve(url))
+          .catch(e => reject(e))
         } else {
           reject(new Error('you must be signed in to get a download url'))
         }
