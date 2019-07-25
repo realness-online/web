@@ -138,7 +138,7 @@ describe('@/modules/Storage.js', () => {
       it.only('it optimizes a user list accross a set of pages', async() => {
         localStorage.setItem(posts_storage.name, posts)
         await posts_storage.optimize()
-        expect(Object.keys(localStorage.__STORE__).length).toBe(6)
+        expect(Object.keys(localStorage.__STORE__).length).toBe(3)
       })
     }),
     describe('#save', () => {
