@@ -2,6 +2,7 @@ import Storage, { posts_storage } from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
+import flushPromises from 'flush-promises'
 import growth from '@/modules/growth'
 const fs = require('fs')
 const not_signed_in = jest.fn(state_changed => state_changed())
@@ -28,155 +29,144 @@ const local_text = `
    <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">oh my god words!</blockquote> <time itemprop="created_at" datetime="2018-07-08T00:41:28.585Z"></time></article>
   </div>
   `
-
 describe('@/modules/Storage.js', () => {
-  let item_as_string, storage
+  let storage
   beforeEach(() => {
-    item_as_string = `
-    <section itemscope itemtype="/person">
-      <h1 itemprop="name">Scott Fryxell</h1>
-    </section>`
-    document.body.innerHTML = item_as_string
-    storage = new Storage('person')
-  })
-  describe('#hydrate', () => {
-    it('exists', () => {
-      expect(Storage.hydrate).toBeDefined()
-    })
-    it('will create an html fragment from a string', () => {
-      storage = Storage.hydrate(item_as_string)
-      expect(storage.querySelectorAll('h1').length).toBe(1)
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      return { onAuthStateChanged: is_signed_in }
     })
   })
-  describe('#persist', () => {
-    it('exists', () => {
-      expect(storage.persist).toBeDefined()
-    })
-    it('persist to server file under users directory the server', () => {
-      expect.assertions(1)
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
-      })
-      storage.persist(item_as_string)
-        .then(result => expect(result).toBe('/people/+16282281824/person.html'))
-    })
-    it('does nothing unless user is signed in', () => {
-      expect.assertions(1)
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: not_signed_in }
-      })
-      storage.persist(item_as_string)
-        .then(result => expect(result).toBe('Unable to persist to server'))
-    })
-    it('can be told where to save', () => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
-      })
-      storage.persist(item_as_string, '/some/other/path')
-        .then(result => expect(result).toBe('/some/other/path'))
-    })
+  afterEach(() => {
+    // jest.resetAllMocks()
   })
-  describe('#from_storage', () => {
+  describe('retrieving', () => {
+    let item_as_string
     beforeEach(() => {
-      storage.save()
+      item_as_string = `
+      <section itemscope itemtype="/person">
+        <h1 itemprop="name">Scott Fryxell</h1>
+      </section>`
+      document.body.innerHTML = item_as_string
+      storage = new Storage('person')
     })
-    it('exists', () => {
-      expect(storage.from_storage).toBeDefined()
-    })
-    it('loads an item from local storage', () => {
-      const items = storage.from_storage()
-      expect(items.querySelectorAll('h1').length).toBe(1)
-      expect(items.querySelectorAll('[itemprop="name"]').length).toBe(1)
-    })
-  })
-  describe('#optimize', () => {
-    let posts
-    beforeAll(() => {
-      return posts = fs.readFileSync('./tests/unit/modules/posts.html', 'utf8')
-    })
-    beforeEach(() => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
+    describe('#hydrate', () => {
+      it('exists', () => {
+        expect(Storage.hydrate).toBeDefined()
+      })
+      it('will create an html fragment from a string', () => {
+        storage = Storage.hydrate(item_as_string)
+        expect(storage.querySelectorAll('h1').length).toBe(1)
       })
     })
-    it('exists', () => {
-      expect(storage.optimize).toBeDefined()
-    })
-    it('it optimizes a user list accross a set of pages', async() => {
-      expect.assertions(1)
-      localStorage.setItem(posts_storage.name, posts)
-      await posts_storage.optimize()
-      expect(Object.keys(localStorage.__STORE__).length).toBe(6)
-    })
-  })
-  describe('#save', () => {
-    it('exists', () => {
-      expect(storage.save).toBeDefined()
-    })
-    it('saves an item to local storage', () => {
-      expect.assertions(1)
-      storage.save().then(result => expect(result).toBe('saved person locally and to network'))
-    })
-  })
-  describe('#get_download_url', () => {
-    it('exists', () => {
-      expect(storage.get_download_url).toBeDefined()
-    })
-    it('resolves a promise with a download url', () => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
+    describe('#from_storage', () => {
+      beforeEach(() => {
+        localStorage.setItem(storage.name, item_as_string)
       })
-      expect.assertions(1)
-      storage.get_download_url().then(url => {
+      it('exists', () => {
+        expect(storage.from_storage).toBeDefined()
+      })
+      it('loads an item from local storage', async() => {
+        const items = await storage.from_storage()
+        expect(items).not.toBe(null)
+        expect(items.querySelectorAll('h1').length).toBe(1)
+        expect(items.querySelectorAll('[itemprop="name"]').length).toBe(1)
+      })
+    })
+    describe('#as_list', () => {
+      beforeEach(() => {
+        localStorage.setItem(storage.name, item_as_string)
+      })
+      it('exists', () => {
+        expect(storage.as_list).toBeDefined()
+      })
+      it('creates list of objects', async() => {
+        const list = await storage.as_list()
+        expect(list.length).toBe(1)
+      })
+    })
+    describe('#as_object', () => {
+      it('exists', () => {
+        expect(storage.as_object).toBeDefined()
+      })
+      it('will return the first item it finds', async() => {
+        localStorage.setItem(storage.name, item_as_string)
+        const scott = await storage.as_object()
+        expect(scott.name).toBe('Scott Fryxell')
+      })
+    })
+    describe('#get_download_url', () => {
+      it('exists', () => {
+        expect(storage.get_download_url).toBeDefined()
+      })
+      it('resolves a promise with a download url', async() => {
+        const url = await storage.get_download_url()
         expect(url).toBe('https://download_url/people/+16282281824/person.html')
       })
-    })
-    it('rejects a promise if user is not logged in', () => {
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: not_signed_in }
+      it('rejects a promise if user is not logged in', () => {
+        jest.spyOn(firebase, 'auth').mockImplementation(() => {
+          return { onAuthStateChanged: not_signed_in }
+        })
+        storage.get_download_url().catch(e => {
+          expect(e.message).toEqual('you must be signed in to get a download url')
+        })
       })
-      expect.assertions(1)
-      storage.get_download_url().catch(e => {
-        expect(e.message).toEqual('you must be signed in to get a download url')
+    })
+    describe('#sync_list', () => {
+      beforeEach(() => {
+        storage = posts_storage
       })
-    })
-  })
-  describe('#as_list', () => {
-    beforeEach(() => {
-      storage.save()
-    })
-    it('exists', () => {
-      expect(storage.as_list).toBeDefined()
-    })
-    it('creates list of objects', () => {
-      expect.assertions(1)
-      expect(storage.as_list().length).toBe(1)
-    })
-  })
-  describe('#as_object', () => {
-    it('exists', () => {
-      expect(storage.as_object).toBeDefined()
-    })
-    it('will return the first item it finds', () => {
-      expect.assertions(1)
-      expect(storage.as_object().name).toBe('Scott Fryxell')
-    })
-  })
-  describe('#sync_list', () => {
-    beforeEach(() => {
-      storage = posts_storage
-    })
-    it('exists', () => {
-      expect(storage.sync_list).toBeDefined()
-    })
-    it('syncs posts from server to local storage', () => {
-      fetch.mockResponseOnce(server_text)
-      localStorage.setItem('posts', local_text)
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: is_signed_in }
+      it('exists', () => {
+        expect(storage.sync_list).toBeDefined()
       })
-      storage.sync_list().then((list) => {
+      it('syncs posts from server to local storage', async() => {
+        fetch.mockResponseOnce(server_text)
+        localStorage.setItem('posts', local_text)
+        const list = await storage.sync_list()
         expect(list.length).toBe(8)
+      })
+    })
+  })
+  describe('persistance', () => {
+    let posts
+    beforeEach(() => {
+      posts = fs.readFileSync('./tests/unit/modules/posts.html', 'utf8')
+    })
+    describe('#optimize', () => {
+      it('exists', () => {
+        expect(posts_storage.optimize).toBeDefined()
+      })
+      it.only('it optimizes a user list accross a set of pages', async() => {
+        localStorage.setItem(posts_storage.name, posts)
+        await posts_storage.optimize()
+        expect(Object.keys(localStorage.__STORE__).length).toBe(6)
+      })
+    }),
+    describe('#save', () => {
+      it('exists', () => {
+        expect(posts_storage.save).toBeDefined()
+      })
+      it('saves items to locally and on the server', async() => {
+        posts_storage.persist = jest.fn()
+        await posts_storage.save(posts)
+        await flushPromises()
+        expect(localStorage.setItem).toBeCalled()
+        expect(posts_storage.persist).toBeCalled()
+      })
+    })
+    describe('#persist', () => {
+      it('exists', () => {
+        expect(posts_storage.persist).toBeDefined()
+      })
+      it('persist to server file under users directory the server', async() => {
+        const url = await posts_storage.persist(posts)
+        expect(url).toBe('/people/+16282281824/posts.html')
+      })
+      it('does nothing unless user is signed in', async() => {
+        jest.spyOn(firebase, 'auth').mockImplementation(() => {
+          return { onAuthStateChanged: not_signed_in }
+        })
+        const url = await posts_storage.persist(posts)
+        expect(url).toBe('offline')
       })
     })
   })
