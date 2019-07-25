@@ -1,6 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import as_form from '@/components/profile/as-form'
 import * as firebase from 'firebase/app'
+import flushPromises from 'flush-promises'
 import 'firebase/auth'
 
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
@@ -47,12 +48,12 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(sessionStorage.getItem('posts-synced')).toBeFalsy()
     })
-    it('renders the sign out button when clicked', () => {
+    it('renders the sign out button after sign in', async() => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
-      wrapper.vm.$nextTick(() => {
-        expect(wrapper.vm.show_sign_out).toBe(true)
-      })
+      await flushPromises()
+      expect(wrapper.vm.show_sign_out).toBe(true)
+
     })
   })
   describe('Sign out', () => {
