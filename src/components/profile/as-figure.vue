@@ -12,6 +12,7 @@
   </figure>
 </template>
 <script>
+  import Item from '@/modules/item'
   import { AsYouType } from 'libphonenumber-js'
   import profile_id from '@/modules/profile_id'
   import { person_storage } from '@/modules/Storage'
@@ -54,7 +55,8 @@
         }
       },
       is_me() {
-        return person_storage.as_object().id === this.person.id
+        const me = Item.get_first_item(person_storage.from_local())
+        return me.id === this.person.id
       },
       sms_link() {
         return `tel:${this.person.id}`

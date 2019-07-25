@@ -1,4 +1,5 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
+import Item from '@/modules/item'
 import VueRouter from 'vue-router'
 import Storage from '@/modules/Storage'
 import as_figure from '@/components/profile/as-figure'
@@ -74,7 +75,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
     it('when is_me is true should go to the account page', () => {
-      jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => person)
+      jest.spyOn(Item, 'get_first_item').mockImplementation(() => person)
       wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
