@@ -1,4 +1,4 @@
-import Storage, { posts_storage } from '@/modules/Storage'
+import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -37,6 +37,7 @@ describe('@/modules/Storage.js', () => {
     })
   })
   afterEach(() => {
+    localStorage.clear();
     // jest.resetAllMocks()
   })
   describe('retrieving', () => {
@@ -112,30 +113,32 @@ describe('@/modules/Storage.js', () => {
       })
     })
     describe('#sync_list', () => {
+      let posts_storage
       beforeEach(() => {
-        storage = posts_storage
+        posts_storage = new Storage('posts', '[itemprop=posts]')
       })
       it('exists', () => {
-        expect(storage.sync_list).toBeDefined()
+        expect(posts_storage.sync_list).toBeDefined()
       })
       it('syncs posts from server to local storage', async() => {
         fetch.mockResponseOnce(server_text)
         localStorage.setItem('posts', local_text)
-        const list = await storage.sync_list()
+        const list = await posts_storage.sync_list()
         expect(list.length).toBe(8)
       })
     })
   })
   describe('persistance', () => {
-    let posts
+    let posts, posts_storage
     beforeEach(() => {
       posts = fs.readFileSync('./tests/unit/modules/posts.html', 'utf8')
+      posts_storage = new Storage('posts', '[itemprop=posts]')
     })
     describe('#optimize', () => {
       it('exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
-      it.only('it optimizes a user list accross a set of pages', async() => {
+      it('it optimizes a user list accross a set of pages', async() => {
         localStorage.setItem(posts_storage.name, posts)
         await posts_storage.optimize()
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
