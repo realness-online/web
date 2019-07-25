@@ -14,21 +14,24 @@
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
   import { posts_storage, person_storage, relations_storage } from '@/modules/Storage'
+  import Item from '@/modules/item'
   export default {
     components: {
       'post-as-textarea': as_textarea
     },
+    data() {
+      const local_posts = Item.get_items(posts_storage.from_local())
+      const local_me = Item.get_first_item(person_storage.from_local())
+      return {
+        posting: false,
+        person: local_me,
+        signed_in: local_posts.length > 0,
+        has_posts: local_posts.length > 0
+      }
+    },
     created() {
       this.$bus.$on('post-added', _ => { this.has_posts = true })
       firebase.auth().onAuthStateChanged(this.auth_check)
-    },
-    data() {
-      return {
-        posting: false,
-        person: person_storage.as_object(),
-        signed_in: posts_storage.as_list().length > 0,
-        has_posts: posts_storage.as_list().length > 0
-      }
     },
     methods: {
       auth_check(user) {
