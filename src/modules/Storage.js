@@ -154,5 +154,9 @@ class LocalStorage extends Storage {
 
 export default Storage
 export const person_storage = new Storage('person')
+export const person_local = new LocalStorage('person')
+
 export var posts_storage = new Storage('posts', '[itemprop=posts]')
+export var posts_local = new LocalStorage('posts', '[itemprop=posts]')
+
 export const relations_storage = new LocalStorage('relations', '[itemprop=relations]')

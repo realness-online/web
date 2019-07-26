@@ -13,20 +13,18 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
-  import { posts_storage, person_storage, relations_storage } from '@/modules/Storage'
+  import { posts_local, person_local, relations_storage } from '@/modules/Storage'
   import Item from '@/modules/item'
   export default {
     components: {
       'post-as-textarea': as_textarea
     },
     data() {
-      const local_posts = Item.get_items(posts_storage.from_local())
-      const local_me = Item.get_first_item(person_storage.from_local())
       return {
         posting: false,
-        person: local_me,
-        signed_in: local_posts.length > 0,
-        has_posts: local_posts.length > 0
+        person: person_local.as_object(),
+        signed_in: posts_local.as_list().length > 0,
+        has_posts: posts_local.as_list().length > 0
       }
     },
     created() {
@@ -35,21 +33,15 @@
     },
     methods: {
       auth_check(user) {
-        if (user) {
-          this.signed_in = true
-        } else {
-          this.signed_in = false
-        }
+        if (user) this.signed_in = true;
+        else this.signed_in = false;
       },
       done_posting(event) {
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book() {
-        if (relations_storage.as_list().length < 1) {
-          return '/phone-book'
-        } else {
-          return '/relations'
-        }
+        if (relations_storage.as_list().length < 1) return '/phone-book';
+        else return '/relations';
       }
     },
     computed: {
