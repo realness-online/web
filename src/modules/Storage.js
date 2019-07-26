@@ -105,19 +105,13 @@ class Storage {
       return await this.persist(items.outerHTML)
     }
   }
-  get_download_url() {
-    return new Promise((resolve, reject) => {
-      const user = firebase.auth().currentUser
-      if (user) {
-        const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-        firebase.storage().ref().child(doc_u_path)
-        .getDownloadURL()
-        .then(url => resolve(url))
-        .catch(e => reject(e))
-      } else {
-        reject(new Error('you must be signed in to get a download url'))
-      }
-    })
+  async get_download_url() {
+    const user = firebase.auth().currentUser
+    if (user) {
+      const file = `/people/${user.phoneNumber}/${this.filename}`
+      const url = await firebase.storage().ref().child(file).getDownloadURL()
+      return url
+    } else return null;
   }
   async sync_list() {
     let from_server = await this.from_network()
@@ -139,24 +133,7 @@ class Storage {
     return await history.as_list()
   }
 }
-class LocalStorage extends Storage {
-  constructor(type, selector = `[itemtype="/${type}"]`, name = type,
-    filename = `${name}.html`, content_type = 'text/html') {
-    super(type, selector, name, filename, content_type)
-  }
-  as_list() {
-    return Item.get_items(this.from_local())
-  }
-  as_object() {
-    return Item.get_first_item(this.from_local())
-  }
-}
 
 export default Storage
 export const person_storage = new Storage('person')
-export const person_local = new LocalStorage('person')
-
 export var posts_storage = new Storage('posts', '[itemprop=posts]')
-export var posts_local = new LocalStorage('posts', '[itemprop=posts]')
-
-export const relations_local = new LocalStorage('relations', '[itemprop=relations]')
