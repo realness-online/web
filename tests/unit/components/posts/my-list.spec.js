@@ -22,7 +22,7 @@ describe('@/components/posts/my-list.vue', () => {
   beforeEach( async() => {
     sessionStorage.setItem('posts-synced', Date.now())
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged }
+      return { currentUser: person }
     })
     wrapper = shallow(post_list)
     await flushPromises()
@@ -58,11 +58,10 @@ describe('@/components/posts/my-list.vue', () => {
     })
     it('should wait to sync until the user is signed in', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
-      const not_signed_in = jest.fn(state_changed => state_changed())
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return { onAuthStateChanged: not_signed_in }
+        return { currentUser: null }
       })
-      wrapper = shallow(post_list)
+      shallow(post_list);
       await flushPromises()
       expect(sync_list_spy).not.toBeCalled()
     })

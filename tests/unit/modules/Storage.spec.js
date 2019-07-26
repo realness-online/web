@@ -5,12 +5,6 @@ import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import growth from '@/modules/growth'
 const fs = require('fs')
-const not_signed_in = jest.fn(state_changed => state_changed())
-const is_signed_in = jest.fn(state_changed => {
-  state_changed({
-    phoneNumber: '+16282281824'
-  })
-})
 const too_big_in_bytes = growth.first() * 1024
 const server_text = `
   <div itemprop="posts" itemref="profile">
@@ -31,14 +25,8 @@ const local_text = `
   `
 describe('@/modules/Storage.js', () => {
   let storage
-  beforeEach(() => {
-    jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged: is_signed_in }
-    })
-  })
   afterEach(() => {
-    localStorage.clear();
-    // jest.resetAllMocks()
+    localStorage.clear()
   })
   describe('retrieving', () => {
     let item_as_string
@@ -103,13 +91,12 @@ describe('@/modules/Storage.js', () => {
         const url = await storage.get_download_url()
         expect(url).toBe('https://download_url/people/+16282281824/person.html')
       })
-      it('rejects a promise if user is not logged in', () => {
+      it('rejects a promise if user is not logged in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {
-          return { onAuthStateChanged: not_signed_in }
+          return { currentUser: null }
         })
-        storage.get_download_url().catch(e => {
-          expect(e.message).toEqual('you must be signed in to get a download url')
-        })
+        const url = await storage.get_download_url()
+        expect(url).toBe(null)
       })
     })
     describe('#sync_list', () => {
@@ -166,7 +153,7 @@ describe('@/modules/Storage.js', () => {
       })
       it('does nothing unless user is signed in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {
-          return { onAuthStateChanged: not_signed_in }
+          return { currentUser: null }
         })
         const url = await posts_storage.persist(posts)
         expect(url).toBe('offline')

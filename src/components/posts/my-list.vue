@@ -25,7 +25,7 @@
     async created() {
       this.$bus.$on('post-added', post => this.add_post(post))
       this.pages.push(await posts_storage.as_list())
-      firebase.auth().onAuthStateChanged(this.sync_posts)
+      this.sync_posts(firebase.auth().currentUser)
     },
     updated() {
       Vue.nextTick(() => this.observe_posts())
