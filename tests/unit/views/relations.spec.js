@@ -40,11 +40,10 @@ describe('@/views/Relations.vue', () => {
     expect(wrapper.vm.relations.length).toBe(1)
   })
   it('fill_in_relationships()', () => {
-    const load_spy = jest.fn(() => Promise.resolve('load_spy'))
-    jest.spyOn(profile_id, 'load').mockImplementation(() => Promise.resolve(person))
+    const load_spy = jest.spyOn(profile_id, 'load')
+    .mockImplementation(() => Promise.resolve(person))
     wrapper.setData({ relations: [person] })
-    wrapper.vm.fill_in_relationships().then(() => {
-      expect(load_spy).toBeCalled()
-    })
+    wrapper.vm.fill_in_relationships()
+    expect(load_spy).toBeCalled()
   })
 })
