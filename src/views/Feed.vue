@@ -18,7 +18,9 @@
   </section>
 </template>
 <script>
-  import { relations_local, person_storage } from '@/modules/Storage'
+  import { person_storage } from '@/modules/Storage'
+  import { relations_local } from '@/modules/LocalStorage'
+
   import profile_id from '@/modules/profile_id'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
