@@ -16,7 +16,6 @@
 <script>
   import logoAsLink from '@/components/logo-as-link'
   import asAvatar from '@/components/profile/as-avatar'
-  import profile_id from '@/modules/profile_id'
   import icon from '@/components/icon'
   export default {
     components: {
@@ -29,16 +28,6 @@
         curators: [],
         working: true
       }
-    },
-    created() {
-      // Ned Tomo and Scott
-      // Soon Dylan and Reeves
-      // ['/+14158711557', '/+14157220394', '/+16282281824'].forEach(id => {
-      //   profile_id.load(id).then(person => {
-      //     this.curators.push(person)
-      //     this.working = false
-      //   })
-      // })
     }
   }
 </script>

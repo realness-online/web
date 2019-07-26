@@ -23,7 +23,7 @@ class Storage {
   static hydrate(item_as_string) {
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
-    } else return null;
+    } else return null
   }
   constructor(type, selector = `[itemtype="/${type}"]`, name = type,
     filename = `${name}.html`, content_type = 'text/html') {
@@ -35,21 +35,21 @@ class Storage {
   }
   as_kilobytes() {
     const bytes = localStorage.getItem(this.name)
-    if (bytes) return (bytes.length / 1024).toFixed(0);
-    else return 0;
+    if (bytes) return (bytes.length / 1024).toFixed(0)
+    else return 0
   }
   async from_network() {
     if (networkable.includes(this.type)) {
       try {
         const url = await this.get_download_url()
         return Storage.hydrate(await (await fetch(url)).text())
-      } catch(e) {
-        if(e.code === 'storage/object-not-found') return null;
-        else throw e;
+      } catch (e) {
+        if (e.code === 'storage/object-not-found') return null
+        else throw e
       }
-    } else return null;
+    } else return null
   }
-  from_local(name = this.name){
+  from_local(name = this.name) {
     const storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
   }
@@ -64,7 +64,7 @@ class Storage {
   }
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
-      console.log('calling optimize', limit);
+      console.log('calling optimize', limit)
       let current = (await this.from_storage()).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {
@@ -75,7 +75,7 @@ class Storage {
       div.setAttribute('itemprop', this.type)
       const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
       const existing_history = await history.from_storage()
-      if (existing_history) div = existing_history.childNodes[0];
+      if (existing_history) div = existing_history.childNodes[0]
       div.appendChild(offload)
       await history.save(div)
       await this.save(current)
@@ -98,10 +98,10 @@ class Storage {
     })
   }
   async save(items = document.querySelector(this.selector)) {
-    if (!items) return;
+    if (!items) return
     localStorage.setItem(this.name, items.outerHTML)
     if (networkable.includes(this.type)) {
-      return await this.persist(items.outerHTML)
+      return this.persist(items.outerHTML)
     }
   }
   async get_download_url() {
@@ -110,7 +110,7 @@ class Storage {
       const file = `/people/${user.phoneNumber}/${this.filename}`
       const url = await firebase.storage().ref().child(file).getDownloadURL()
       return url
-    } else return null;
+    } else return null
   }
   async sync_list() {
     let from_server = await this.from_network()
@@ -129,7 +129,7 @@ class Storage {
   }
   async next_list(limit = growth.first()) {
     const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
-    return await history.as_list()
+    return history.as_list()
   }
 }
 

@@ -1,8 +1,5 @@
 import PhoneBook from '@/modules/PhoneBook'
 import Storage from '@/modules/LocalStorage'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
 const fs = require('fs')
 const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
 describe('@/modules/PhoneBook', () => {
@@ -65,7 +62,6 @@ describe('@/modules/PhoneBook', () => {
     })
     afterEach(() => {
       phone_list = null
-
     })
     it('should add new person to phone book', async() => {
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(_ => me)

@@ -1,7 +1,6 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import Item from '@/modules/item'
 import VueRouter from 'vue-router'
-import Storage from '@/modules/Storage'
 import as_figure from '@/components/profile/as-figure'
 describe('@/compontent/profile/as-figure.vue', () => {
   const avatar_mock = `<symbol id="#avatar_6282281824" viewBox="0 0 192 192">

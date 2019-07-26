@@ -23,7 +23,6 @@
 <script>
   import { posts_storage } from '@/modules/Storage'
   import icon from '@/components/icon'
-  import time_ago from '@/modules/time_ago'
   import posts_into_days from '@/mixins/posts_into_days'
   export default {
     mixins: [posts_into_days],

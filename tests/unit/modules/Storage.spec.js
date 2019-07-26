@@ -4,11 +4,9 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import flushPromises from 'flush-promises'
-import growth from '@/modules/growth'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const server_text = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
-const too_big_in_bytes = growth.first() * 1024
 
 describe('@/modules/Storage.js', () => {
   let storage
@@ -115,7 +113,6 @@ describe('@/modules/Storage.js', () => {
   describe('persistance', () => {
     let posts, posts_storage
     beforeEach(() => {
-
       posts_storage = new Storage('posts', '[itemprop=posts]')
     })
     describe('#optimize', () => {
@@ -127,7 +124,7 @@ describe('@/modules/Storage.js', () => {
         await posts_storage.optimize()
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
       })
-    }),
+    })
     describe('#save', () => {
       it('exists', () => {
         expect(posts_storage.save).toBeDefined()

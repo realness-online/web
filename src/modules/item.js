@@ -1,6 +1,6 @@
 export default {
   get_items(elements, type) {
-    if (!elements) return [];
+    if (!elements) return []
     const items_as_data = []
     let query = '[itemscope]'
     if (type) { query += `[itemtype="${type}"]` }

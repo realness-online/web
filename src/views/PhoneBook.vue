@@ -42,7 +42,6 @@
       this.working = false
       // console.log(this.phonebook.length);
       this.phonebook.forEach(async(person, index) => {
-
         const profile = await profile_id.load(person.id)
         if (profile) {
           this.phonebook.splice(index, 1, profile)

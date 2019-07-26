@@ -13,7 +13,7 @@ class PhoneBook extends Storage {
     this.itemtype = 'people'
   }
   async get_download_url() {
-    return await firebase.storage().ref().child('/people/index.html').getDownloadURL()
+    return firebase.storage().ref().child('/people/index.html').getDownloadURL()
   }
   async as_list() {
     const url = await this.get_download_url()
@@ -36,14 +36,14 @@ class PhoneBook extends Storage {
   }
   async save() {
     let items = document.querySelector(this.selector)
-    if (items && navigator.onLine && firebase.auth().currentUser ) {
+    if (items && navigator.onLine && firebase.auth().currentUser) {
       const storage = firebase.storage().ref()
       const phonebook = new File([items.outerHTML], 'index.html')
       const path = '/people/index.html'
       const url = await storage.child(path).put(phonebook, this.metadata)
       localStorage.removeItem('save-phonebook')
       return url
-    } else return null;
+    } else return null
   }
 }
 

@@ -16,7 +16,7 @@ describe('@/components/posts/my-list.vue', () => {
     created_at: '2017-12-20T23:01:14.310Z',
     articleBody: 'I like to move it'
   }
-  beforeEach( async() => {
+  beforeEach(async() => {
     sessionStorage.setItem('posts-synced', Date.now())
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { currentUser: person }
@@ -58,7 +58,7 @@ describe('@/components/posts/my-list.vue', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { currentUser: null }
       })
-      shallow(my_list);
+      shallow(my_list)
       await flushPromises()
       expect(sync_list_spy).not.toBeCalled()
     })

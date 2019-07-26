@@ -17,7 +17,7 @@
   export default {
     mixins: [posts_into_days],
     components: {
-      'profile-as-avatar': profile_as_avatar,
+      'profile-as-avatar': profile_as_avatar
     },
     props: {
       post: {
@@ -38,19 +38,18 @@
           this.observer = new IntersectionObserver(this.end_of_posts, {})
           this.observer.observe(this.$el)
         })
-
       }
     },
     destroyed() {
-      if (this.observer) this.observer.unobserve(this.$el);
+      if (this.observer) this.observer.unobserve(this.$el)
     },
     computed: {
       i_am_oldest() {
-        if (this.post.created_at === this.oldest) return true;
+        if (this.post.created_at === this.oldest) return true
         else {
           return this.post.statements.some(statement => {
-            if (statement.created_at === this.oldest) return true;
-            else return false;
+            if (statement.created_at === this.oldest) return true
+            else return false
           })
         }
       }
@@ -66,7 +65,7 @@
       },
       item_id(post) {
         return `${post.person.id}/${post.created_at}`
-      },
+      }
     }
   }
 </script>

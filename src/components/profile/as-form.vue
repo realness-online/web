@@ -85,7 +85,7 @@
     },
     mounted() {
       firebase.auth().onAuthStateChanged(user => {
-        if (user) this.disable_input();
+        if (user) this.disable_input()
       })
     },
     methods: {
@@ -154,7 +154,7 @@
         this.$el.querySelector('#mobile').disabled = false
       },
       mobile_keypress(event) {
-        if (!event.key.match(/^\d$/)) event.preventDefault();
+        if (!event.key.match(/^\d$/)) event.preventDefault()
       },
       mobile_keyup(event) {
         this.validate_mobile_number()
@@ -171,7 +171,7 @@
         }
       },
       code_keypress(event) {
-        if (!event.key.match(/^\d$/)) event.preventDefault();
+        if (!event.key.match(/^\d$/)) event.preventDefault()
         let button = this.$el.querySelector('#submit-verification')
         let input = this.$el.querySelector('#verification-code')
         if (input.value.length === 5) { // after this keypress it will be 6

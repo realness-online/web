@@ -53,7 +53,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       await flushPromises()
       expect(wrapper.vm.show_sign_out).toBe(true)
-
     })
   })
   describe('Sign out', () => {

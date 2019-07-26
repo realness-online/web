@@ -29,15 +29,14 @@
     updated() {
       this.$nextTick(() => this.observe_posts())
     },
-    beforeDestroy(){
+    beforeDestroy() {
       this.observer.disconnect()
     },
     methods: {
       add_post(post) {
         if (this.pages[0]) {
           this.pages[0].push(post)
-        }
-        else {
+        } else {
           const recent_posts = []
           recent_posts.push(post)
           this.pages[0] = recent_posts
@@ -60,7 +59,7 @@
         this.observer.disconnect()
         const selector = '[itemprop=posts]:last-of-type > .day:first-of-type > article:first-of-type'
         const article = this.$el.querySelector(selector)
-        if (article) this.observer.observe(article);
+        if (article) this.observer.observe(article)
       },
       async load_more_posts(entries) {
         entries.forEach(async entry => {

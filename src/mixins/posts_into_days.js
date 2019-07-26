@@ -13,10 +13,9 @@ export default {
         this.sort_count++
         const day = this.created_day(post.created_at)
         if (days.has(day)) {
-          if (day === today || chronological) days.get(day).push(post);
-          else days.get(day).unshift(post);
-        }
-        else days.set(day, [post]);
+          if (day === today || chronological) days.get(day).push(post)
+          else days.get(day).unshift(post)
+        } else days.set(day, [post])
       })
       return days
     },
@@ -38,12 +37,11 @@ export default {
       const next_post = feed[0]
       if (next_post && next_post.person.id === post.person.id) {
         let last_post = post
-        if (post.statements.length > 0) last_post = post.statements[0];
+        if (post.statements.length > 0) last_post = post.statements[0]
         const difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
-        if (difference < this.thirteen_minutes) return true;
-        else return false;
-      }
-      else return false;
+        if (difference < this.thirteen_minutes) return true
+        else return false
+      } else return false
     },
     earlier_first(earlier, later) {
       this.sort_count++

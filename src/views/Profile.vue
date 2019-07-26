@@ -10,8 +10,6 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
   import profile_id from '@/modules/profile_id'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'

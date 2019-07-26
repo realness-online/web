@@ -1,5 +1,4 @@
 import { shallow } from 'vue-test-utils'
-import Item from '@/modules/Item'
 import LocalStorage from '@/modules/LocalStorage'
 import main_nav from '@/components/main-nav'
 import * as firebase from 'firebase/app'

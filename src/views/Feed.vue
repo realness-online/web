@@ -68,13 +68,13 @@
           post.person = person
           const current = person.oldest_post
           const maybe = post.created_at
-          if (!current || maybe < current) person.oldest_post = maybe;
+          if (!current || maybe < current) person.oldest_post = maybe
           this.feed.push(post)
         }
       },
       async next_page(person) {
-        console.log('next_page', person);
-        if (person.page) person.page = growth.next(person.page);
+        console.log('next_page', person)
+        if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         const next_page = `posts.${person.page}`
         const posts = await profile_id.items(person.id, next_page)

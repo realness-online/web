@@ -14,7 +14,6 @@
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
   import { posts_local, person_local, relations_local } from '@/modules/LocalStorage'
-  import Item from '@/modules/item'
   export default {
     components: {
       'post-as-textarea': as_textarea
@@ -35,8 +34,8 @@
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book() {
-        if (relations_local.as_list().length < 1) return '/phone-book';
-        else return '/relations';
+        if (relations_local.as_list().length < 1) return '/phone-book'
+        else return '/relations'
       }
     },
     computed: {
