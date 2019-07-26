@@ -42,7 +42,7 @@
           recent_posts.push(post)
           this.pages[0] = recent_posts
         }
-        Vue.nextTick(async() => {
+        this.$nextTick(async() => {
           await posts_storage.save()
           await posts_storage.optimize()
         })
