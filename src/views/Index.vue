@@ -13,7 +13,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile_id from '@/modules/profile_id'
-  import { person_storage } from '@/modules/Storage'
+  import { person_local } from '@/modules/LocalStorage'
   import main_nav from '@/components/main-nav'
   import my_posts_as_list from '@/components/posts/my-list'
   import as_figure from '@/components/profile/as-figure'
@@ -26,28 +26,25 @@
     data() {
       return {
         version: process.env.VUE_APP_VERSION,
-        me: {}
+        me: person_local.as_object()
       }
     },
     async created() {
-      this.me = await person_storage.as_object()
       this.sync_profile()
     },
     methods: {
-      async sync_profile(firebase_user, me = this.me) {
+      async sync_profile() {
         const last_synced = sessionStorage.getItem('profile-synced')
         const five_minutes_ago = Date.now() - (1000 * 60 * 5)
-        firebase.auth().onAuthStateChanged(await auth)
-        async function auth(user) {
-          if (user && five_minutes_ago > last_synced) {
-            const id = profile_id.from_e64(user.phoneNumber)
-            me = await profile_id.load(id)
-            Vue.nextTick(async() => {
-              await person_storage.save()
-              sessionStorage.setItem('profile-synced', Date.now())
-              console.log('profile synced')
-            })
-          }
+        const user = firebase.auth().currentUser
+        if (user && five_minutes_ago > last_synced) {
+          const id = profile_id.from_e64(user.phoneNumber)
+          this.me = await profile_id.load(id)
+          Vue.nextTick(async() => {
+            await person_local.save()
+            sessionStorage.setItem('profile-synced', Date.now())
+            console.log('profile synced')
+          })
         }
       }
     }
