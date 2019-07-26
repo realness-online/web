@@ -1,4 +1,5 @@
-import Storage, { person_storage } from '@/modules/Storage'
+import Storage from '@/modules/Storage'
+import { person_local } from '@/modules/LocalStorage'
 import profile_id from '@/modules/profile_id'
 import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
@@ -20,27 +21,29 @@ class PhoneBook extends Storage {
     return Item.get_items(Storage.hydrate(server_text))
   }
   async sync_list() {
-    let me = await person_storage.as_object()
+    let me = person_local.as_object()
     const people = await this.as_list()
-    firebase.auth().onAuthStateChanged(add_me_to_phonebook)
-    return people
-    function add_me_to_phonebook(firebase_user) {
-      if (firebase_user) {
-        me.id = profile_id.from_e64(firebase_user.phoneNumber)
-        let index = people.findIndex(contact => (contact.id === me.id))
-        if (index === -1) {
-          localStorage.setItem('save-phonebook', 'true')
-          people.push(me)
-        }
+    const user = firebase.auth().currentUser
+    if (user) {
+      me.id = profile_id.from_e64(user.phoneNumber)
+      let index = people.findIndex(contact => (contact.id === me.id))
+      if (index === -1) {
+        localStorage.setItem('save-phonebook', 'true')
+        people.push(me)
       }
     }
+    return people
   }
   async save() {
     let items = document.querySelector(this.selector)
-    if (!items) return;
-    items = items.outerHTML
-    await this.persist(items, '/people/index.html')
-    localStorage.removeItem('save-phonebook')
+    if (items && navigator.onLine && firebase.auth().currentUser ) {
+      const storage = firebase.storage().ref()
+      const phonebook = new File([items.outerHTML], 'index.html')
+      const path = '/people/index.html'
+      const url = await storage.child(path).put(phonebook, this.metadata)
+      localStorage.removeItem('save-phonebook')
+      return url
+    } else return null;
   }
 }
 
