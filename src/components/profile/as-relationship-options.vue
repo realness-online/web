@@ -8,7 +8,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { relations_storage, person_storage } from '@/modules/Storage'
+  import { relations_local, person_local } from '@/modules/Storage'
   export default {
     props: {
       person: Object
@@ -19,11 +19,8 @@
     data() {
       return {
         relation: this.is_relation(),
-        me: {}
+        me: person_local.as_object()
       }
-    },
-    async created() {
-      this.me = await person_storage.as_object()
     },
     computed: {
       is_me() {
@@ -32,8 +29,7 @@
     },
     methods: {
       is_relation() {
-        const friends = relations_storage.as_list()
-        return friends.some(relation => {
+        return relations_local.as_list().some(relation => {
           return (relation.id === this.person.id)
         })
       },

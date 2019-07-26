@@ -18,7 +18,7 @@
 <script>
   import Vue from 'vue'
   import icon from '@/components/icon'
-  import { relations_storage } from '@/modules/Storage'
+  import { relations_local } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
   import { phonebook_storage } from '@/modules/PhoneBook'
   import profileAsList from '@/components/profile/as-list'
@@ -55,7 +55,7 @@
         }
       },
       relations() {
-        Vue.nextTick(_ => relations_storage.save())
+        Vue.nextTick(_ => relations_local.save())
       }
     }
   }

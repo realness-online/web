@@ -18,7 +18,7 @@
   </section>
 </template>
 <script>
-  import { relations_storage, person_storage } from '@/modules/Storage'
+  import { relations_local, person_storage } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
@@ -46,7 +46,7 @@
     async created() {
       console.clear()
       console.time('feed-load')
-      const people_in_feed = relations_storage.as_list()
+      const people_in_feed = relations_local.as_list()
       const me = await person_storage.as_object()
       people_in_feed.push(me)
       await this.populate_feed(people_in_feed)

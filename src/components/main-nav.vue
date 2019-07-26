@@ -13,7 +13,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
-  import { posts_local, person_local, relations_storage } from '@/modules/Storage'
+  import { posts_local, person_local, relations_local } from '@/modules/Storage'
   import Item from '@/modules/item'
   export default {
     components: {
@@ -40,18 +40,19 @@
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book() {
-        if (relations_storage.as_list().length < 1) return '/phone-book';
+        if (relations_local.as_list().length < 1) return '/phone-book';
         else return '/relations';
       }
     },
     computed: {
       onboarding() {
+        const relations_count = relations_local.as_list().length
         return {
           is_person: this.signed_in,
           has_posts: this.has_posts,
-          has_friends: (this.signed_in && localStorage.getItem('relations-count') > 0),
-          can_event: (this.signed_in && localStorage.getItem('relations-count') >= 25),
-          can_where: (this.signed_in && localStorage.getItem('relations-count') >= 25)
+          has_friends: (this.signed_in && relations_count > 0),
+          can_event: (this.signed_in && relations_count >= 25),
+          can_where: (this.signed_in && relations_count >= 25)
         }
       },
       user_name() {
