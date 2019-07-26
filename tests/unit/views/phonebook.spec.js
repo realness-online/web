@@ -3,6 +3,7 @@ import phonebook from '@/views/Phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
+import profile_id from '@/modules/profile_id'
 const fs = require('fs')
 const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
 const people = Item.get_items(Storage.hydrate(phonebook_as_text))
@@ -16,8 +17,9 @@ jest.spyOn(PhoneBook.prototype, 'sync_list').mockImplementation(() => {
   return Promise.resolve(people)
 })
 jest.spyOn(PhoneBook.prototype, 'save').mockImplementation(save_spy)
+jest.spyOn(profile_id, 'load').mockImplementation(() => person)
 describe('@/views/Phonebook', () => {
-  it('render an empty phonebook', () => {
+  it('render the phonebook', () => {
     let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })
