@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import as_options from '@/components/profile/as-relationship-options'
-import Storage from '@/modules/Storage'
+import Storage from '@/modules/LocalStorage'
 describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
   let relations = [
