@@ -97,9 +97,16 @@ describe('@/modules/Storage.js', () => {
       it.only('syncs posts from server to local storage', async() => {
         fetch.mockResponseOnce(server_text)
         localStorage.setItem('posts', posts)
+
+        // five posts on the server one that overlaps
+        const server_list = Item.get_items(Storage.hydrate(server_text))
+        expect(server_list.length).toBe(5)
+
+        // 54 posts on the clien one that overlaps
         const local_list = Item.get_items(posts_storage.from_local())
-        console.log(local_list);
         expect(local_list.length).toBe(54)
+
+        // 58 posts when synced
         const list = await posts_storage.sync_list()
         expect(list.length).toBe(58)
       })
