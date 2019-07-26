@@ -16,10 +16,10 @@
   </section>
 </template>
 <script>
-  import icon from '@/components/icon'
   import { relations_local } from '@/modules/LocalStorage'
-  import profile_id from '@/modules/profile_id'
   import { phonebook_storage } from '@/modules/PhoneBook'
+  import profile_id from '@/modules/profile_id'
+  import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
   import relationship_events from '@/mixins/relationship_events'
