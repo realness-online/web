@@ -44,7 +44,6 @@
   </form>
 </template>
 <script>
-  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber } from 'libphonenumber-js'
@@ -112,7 +111,7 @@
         this.save_person()
         this.show_authorize = false
         this.show_captcha = true
-        Vue.nextTick(() => {
+        this.$nextTick(() => {
           this.human = new firebase.auth.RecaptchaVerifier('captcha', {
             'size': 'invisible',
             'badge': 'inline',

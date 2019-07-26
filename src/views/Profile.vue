@@ -10,7 +10,6 @@
   </section>
 </template>
 <script>
-  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile_id from '@/modules/profile_id'

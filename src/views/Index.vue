@@ -9,7 +9,6 @@
   </section>
 </template>
 <script>
-  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile_id from '@/modules/profile_id'
@@ -40,7 +39,7 @@
         if (user && five_minutes_ago > last_synced) {
           const id = profile_id.from_e64(user.phoneNumber)
           this.me = await profile_id.load(id)
-          Vue.nextTick(async() => {
+          this.$nextTick(async() => {
             await person_local.save()
             sessionStorage.setItem('profile-synced', Date.now())
             console.log('profile synced')

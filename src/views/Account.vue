@@ -26,7 +26,6 @@
   </section>
 </template>
 <script>
-  import Vue from 'vue'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import icon from '@/components/icon'
@@ -98,13 +97,13 @@
             this.me.avatar = profile.avatar
           }
         }
-        Vue.nextTick(_ => person_storage.save())
+        this.$nextTick(_ => person_storage.save())
       },
       async vectorize_image(image) {
         this.working = true
         this.avatar_changed = true
         const avatar_id = profile_id.as_avatar_id(this.me.id)
-        Vue.nextTick(async() => {
+        this.$nextTick(async() => {
           this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
           this.working = false
         })

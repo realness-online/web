@@ -21,7 +21,6 @@
   </div>
 </template>
 <script>
-  import Vue from 'vue'
   import { posts_storage } from '@/modules/Storage'
   import icon from '@/components/icon'
   import time_ago from '@/modules/time_ago'
@@ -62,7 +61,7 @@
       },
       save_me() {
         console.log('save_me()')
-        Vue.nextTick(_ => posts_storage.save())
+        this.$nextTick(_ => posts_storage.save())
       },
       toggle_post(post) {
         post.muted = !post.muted

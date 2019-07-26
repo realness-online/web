@@ -5,7 +5,6 @@
   </svg>
 </template>
 <script>
-  import Vue from 'vue'
   import profile_id from '@/modules/profile_id'
   import icons from '@/icons.svg'
   export default {

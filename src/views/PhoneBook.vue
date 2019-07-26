@@ -16,7 +16,6 @@
   </section>
 </template>
 <script>
-  import Vue from 'vue'
   import icon from '@/components/icon'
   import { relations_local } from '@/modules/Storage'
   import profile_id from '@/modules/profile_id'
@@ -51,11 +50,11 @@
     watch: {
       phonebook() {
         if (localStorage.getItem('save-phonebook')) {
-          Vue.nextTick(_ => phonebook_storage.save())
+          this.$nextTick(_ => phonebook_storage.save())
         }
       },
       relations() {
-        Vue.nextTick(_ => relations_local.save())
+        this.$nextTick(_ => relations_local.save())
       }
     }
   }

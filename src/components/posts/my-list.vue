@@ -4,7 +4,6 @@
   </div>
 </template>
 <script>
-  import Vue from 'vue'
   import { posts_storage } from '@/modules/Storage'
   import growth from '@/modules/growth'
   import postsList from '@/components/posts/as-list'
@@ -28,7 +27,7 @@
       this.sync_posts(firebase.auth().currentUser)
     },
     updated() {
-      Vue.nextTick(() => this.observe_posts())
+      this.$nextTick(() => this.observe_posts())
     },
     beforeDestroy(){
       this.observer.disconnect()
@@ -54,8 +53,7 @@
         if (firebase_user && five_minutes_ago > last_synced) {
           this.posts = await posts_storage.sync_list()
           sessionStorage.setItem('posts-synced', Date.now())
-          Vue.nextTick(_ => posts_storage.save())
-          console.log('posts synced')
+          this.$nextTick(_ => posts_storage.save())
         }
       },
       observe_posts() {
