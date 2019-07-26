@@ -17,7 +17,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { relations_local } from '@/modules/Storage'
+  import { relations_local } from '@/modules/LocalStorage'
   import profile_id from '@/modules/profile_id'
   import { phonebook_storage } from '@/modules/PhoneBook'
   import profileAsList from '@/components/profile/as-list'
