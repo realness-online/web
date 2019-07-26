@@ -3,34 +3,19 @@ import phonebook from '@/views/Phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
-const phonebook_as_text = `
-  <div id="phonebook">
-    <figure itemscope itemtype="/person" itemid='6282281824'>
-      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
-      <figcaption>
-        <p><span itemprop="first_name">Scott</span><span itemprop="last_name">Fryxell</span></p>
-        <a itemprop="mobile" content="6282281824">+1 (628) 228-1824</a>
-      </figcaption>
-    </figure>
-    <figure itemscope itemtype="/person" itemid='+12403800385‬'>
-      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
-      <figcaption>
-        <p><span itemprop="first_name">Katie</span><span itemprop="last_name">Caffey</span></p>
-        <a itemprop="mobile" content="2403800385‬">+1 (240) 380-0385‬</a>
-      </figcaption>
-    </figure>
-  <div>`
+const fs = require('fs')
+const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
 const people = Item.get_items(Storage.hydrate(phonebook_as_text))
+const person = {
+  first_name: 'Scott',
+  last_name: 'Fryxell',
+  id: '/+14151234356'
+}
 const save_spy = jest.fn(() => Promise.resolve('save_spy'))
 jest.spyOn(PhoneBook.prototype, 'sync_list').mockImplementation(() => {
   return Promise.resolve(people)
 })
 jest.spyOn(PhoneBook.prototype, 'save').mockImplementation(save_spy)
-const person = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  mobile: '4151234356'
-}
 describe('@/views/Phonebook', () => {
   it('render an empty phonebook', () => {
     let wrapper = shallow(phonebook)

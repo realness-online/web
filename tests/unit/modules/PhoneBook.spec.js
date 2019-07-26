@@ -3,27 +3,8 @@ import Storage from '@/modules/LocalStorage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-const phonebook_as_text = `
-  <div id="phonebook">
-    <figure itemscope itemtype="/person" itemid='+16282281824'>
-      <meta itemprop="created_at" content="2018-07-15T18:11:31.018Z">
-      <meta itemprop="updated_at" content="2018-07-15T18:11:31.018Z">
-      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
-      <figcaption>
-        <p><span itemprop="first_name">Scott</span><span itemprop="last_name">Fryxell</span></p>
-        <a itemprop="mobile" content="+16282281824">+1 (628) 228-1824</a>
-      </figcaption>
-    </figure>
-    <figure itemscope itemtype="/person" itemid='+12403800385‬'>
-    <meta itemprop="created_at" content="2018-07-15T18:11:31.018Z">
-    <meta itemprop="updated_at" content="2018-07-15T18:11:31.018Z">
-      <svg><use itemprop="profile_vector" xlink:href="/static/icons.svg#silhouette"></use></svg>
-      <figcaption>
-        <p><span itemprop="first_name">Katie</span><span itemprop="last_name">Caffey</span></p>
-        <a itemprop="mobile" content="+12403800385‬">+1 (240) 380-0385‬</a>
-      </figcaption>
-    </figure>
-  <div>`
+const fs = require('fs')
+const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
 describe('@/modules/PhoneBook', () => {
   let phonebook
   beforeEach(() => {

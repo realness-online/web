@@ -21,7 +21,6 @@ function keep_going(current_items, limit) {
 }
 class Storage {
   static hydrate(item_as_string) {
-    // return document.createDocumentFragment()
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null;

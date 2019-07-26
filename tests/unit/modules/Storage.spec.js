@@ -1,3 +1,4 @@
+import Item from '@/modules/Item'
 import Storage from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -5,24 +6,10 @@ import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import growth from '@/modules/growth'
 const fs = require('fs')
+const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
+const server_text = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
 const too_big_in_bytes = growth.first() * 1024
-const server_text = `
-  <div itemprop="posts" itemref="profile">
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">This is a word</blockquote> <time itemprop="created_at" datetime="2018-04-13T20:02:50.533Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">These are some words.</blockquote> <time itemprop="created_at" datetime="2018-07-05T23:25:58.145Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">I am writing some words right now testing some magical magic out</blockquote> <time itemprop="created_at" datetime="2018-07-07T20:13:42.760Z">2 days ago</time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">zipper faced monkey</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:11:51.460Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">from the bottom of the zero's</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:44:05.363Z"></time></article>
-  </div>`
-const local_text = `
-  <div itemprop="posts" itemref="profile">
-  <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">zipper faced monkey</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:11:51.460Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">from the bottom of the zero's</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:44:05.363Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">Now I'm syncing like a magic man</blockquote> <time itemprop="created_at" datetime="2018-07-07T23:45:52.437Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">saying some more stuff.</blockquote> <time itemprop="created_at" datetime="2018-07-08T00:40:11.686Z"></time></article>
-   <article itemscope="itemscope" itemtype="/post"><blockquote itemprop="articleBody">oh my god words!</blockquote> <time itemprop="created_at" datetime="2018-07-08T00:41:28.585Z"></time></article>
-  </div>
-  `
+
 describe('@/modules/Storage.js', () => {
   let storage
   afterEach(() => {
@@ -51,7 +38,7 @@ describe('@/modules/Storage.js', () => {
       beforeEach(() => {
         localStorage.setItem(storage.name, item_as_string)
       })
-      it('exists', () => {
+      it.only('exists', () => {
         expect(storage.from_storage).toBeDefined()
       })
       it('loads an item from local storage', async() => {
@@ -107,18 +94,21 @@ describe('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(posts_storage.sync_list).toBeDefined()
       })
-      it('syncs posts from server to local storage', async() => {
+      it.only('syncs posts from server to local storage', async() => {
         fetch.mockResponseOnce(server_text)
-        localStorage.setItem('posts', local_text)
+        localStorage.setItem('posts', posts)
+        const local_list = Item.get_items(posts_storage.from_local())
+        console.log(local_list);
+        expect(local_list.length).toBe(54)
         const list = await posts_storage.sync_list()
-        expect(list.length).toBe(8)
+        expect(list.length).toBe(58)
       })
     })
   })
   describe('persistance', () => {
     let posts, posts_storage
     beforeEach(() => {
-      posts = fs.readFileSync('./tests/unit/modules/posts.html', 'utf8')
+
       posts_storage = new Storage('posts', '[itemprop=posts]')
     })
     describe('#optimize', () => {
