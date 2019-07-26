@@ -3,13 +3,13 @@ const Jimp = require('jimp')
 const EXIF = require('exif-js')
 function trace(avatar, identifier) {
   return new Promise((resolve, reject) => {
-    console.log('trace...')
+    // console.log('trace...')
     let trace = new potrace.Potrace()
     trace.setParameters({ threshold: 133, turdSize: 22 })
     let reader = new FileReader()
     reader.readAsArrayBuffer(avatar)
     reader.onload = function() {
-      console.log('buffered')
+      // console.log('buffered')
       let buffer = this.result
       Jimp.read(buffer).then(image => {
         image = image.resize(333, Jimp.AUTO)
@@ -19,11 +19,11 @@ function trace(avatar, identifier) {
           .brightness(0.2)
         EXIF.getData(avatar, () => {
           if (avatar.exifdata.Orientation === 6) {
-            console.log('rotate')
+            // console.log('rotate')
             image = image.rotate(-90)
           }
           trace.loadImage(image, error => {
-            console.log('loadImage')
+            // console.log('loadImage')
             if (error) { reject(error) }
             resolve(trace.get_as_symbol(identifier))
           })
