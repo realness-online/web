@@ -6,15 +6,8 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 describe('@/components/main-nav.vue', () => {
   let wrapper
-  // beforeEach(() => {
-
-  //   wrapper = shallow(main_nav)
-  // })
   describe('handling post events', () => {
     beforeEach(() => {
-      // jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      //   return { currentUser: null }
-      // })
       wrapper = shallow(main_nav)
     })
     it('posting:false should render the main navigation', () => {

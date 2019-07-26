@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Storage from '@/modules/Storage'
-import post_list from '@/components/posts/my-list'
+import my_list from '@/components/posts/my-list'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
@@ -10,9 +10,6 @@ const person = {
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-const onAuthStateChanged = jest.fn((state_changed) => {
-  state_changed({ user: person })
-})
 describe('@/components/posts/my-list.vue', () => {
   let wrapper
   const post = {
@@ -24,7 +21,7 @@ describe('@/components/posts/my-list.vue', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(() => {
       return { currentUser: person }
     })
-    wrapper = shallow(post_list)
+    wrapper = shallow(my_list)
     await flushPromises()
   })
   afterEach(() => {
@@ -61,7 +58,7 @@ describe('@/components/posts/my-list.vue', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { currentUser: null }
       })
-      shallow(post_list);
+      shallow(my_list);
       await flushPromises()
       expect(sync_list_spy).not.toBeCalled()
     })
@@ -71,13 +68,13 @@ describe('@/components/posts/my-list.vue', () => {
     })
     it('should sync after five minutes minutes', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
-      wrapper = shallow(post_list)
+      wrapper = shallow(my_list)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })
     it('should sync with the server with every new session', async() => {
       sessionStorage.removeItem('posts-synced')
-      wrapper = shallow(post_list)
+      wrapper = shallow(my_list)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })

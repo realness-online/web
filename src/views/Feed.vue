@@ -46,16 +46,16 @@
       }
     },
     async created() {
-      console.clear()
-      console.time('feed-load')
+      // console.clear()
+      // console.time('feed-load')
       const people_in_feed = relations_local.as_list()
       const me = await person_storage.as_object()
       people_in_feed.push(me)
       await this.populate_feed(people_in_feed)
       this.feed_into_days()
       this.working = false
-      console.info(`${this.sort_count} sort operations`)
-      console.timeEnd('feed-load')
+      // console.info(`${this.sort_count} sort operations`)
+      // console.timeEnd('feed-load')
     },
     methods: {
       feed_into_days() {

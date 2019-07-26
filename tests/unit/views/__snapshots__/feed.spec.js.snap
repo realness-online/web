@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Feed.vue render feed info 1`] = `
+exports[`@/views/Feed.vue render the feed 1`] = `
 <section
   class="page"
   id="feed"
