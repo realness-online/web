@@ -2,7 +2,7 @@
 
 exports[`@/components/main-nav.vue handling post events posting:false should render the main navigation 1`] = `
 <nav
-  class=""
+  class="is_person"
   id="main"
 >
   <!---->
@@ -53,7 +53,7 @@ exports[`@/components/main-nav.vue handling post events posting:false should ren
 
 exports[`@/components/main-nav.vue handling post events posting:true should hide main navigation 1`] = `
 <nav
-  class=""
+  class="is_person"
   id="main"
 >
   <!---->

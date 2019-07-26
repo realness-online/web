@@ -13,7 +13,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import as_textarea from '@/components/posts/as-textarea'
-  import { posts_local, person_local, relations_local } from '@/modules/Storage'
+  import { posts_local, person_local, relations_local } from '@/modules/LocalStorage'
   import Item from '@/modules/item'
   export default {
     components: {
@@ -23,19 +23,14 @@
       return {
         posting: false,
         person: person_local.as_object(),
-        signed_in: posts_local.as_list().length > 0,
+        signed_in: Boolean(firebase.auth().currentUser),
         has_posts: posts_local.as_list().length > 0
       }
     },
     created() {
       this.$bus.$on('post-added', _ => { this.has_posts = true })
-      firebase.auth().onAuthStateChanged(this.auth_check)
     },
     methods: {
-      auth_check(user) {
-        if (user) this.signed_in = true;
-        else this.signed_in = false;
-      },
       done_posting(event) {
         document.querySelector('nav > button').focus()
       },

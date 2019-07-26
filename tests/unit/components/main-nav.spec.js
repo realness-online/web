@@ -1,20 +1,22 @@
 import { shallow } from 'vue-test-utils'
+import Item from '@/modules/Item'
+import LocalStorage from '@/modules/LocalStorage'
 import main_nav from '@/components/main-nav'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-const onAuthStateChanged = jest.fn(state_changed => state_changed())
-jest.spyOn(firebase, 'auth').mockImplementation(() => {
-  return { onAuthStateChanged }
-})
 describe('@/components/main-nav.vue', () => {
   let wrapper
-  beforeEach(() => {
-    jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged }
-    })
-    wrapper = shallow(main_nav)
-  })
+  // beforeEach(() => {
+
+  //   wrapper = shallow(main_nav)
+  // })
   describe('handling post events', () => {
+    beforeEach(() => {
+      // jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      //   return { currentUser: null }
+      // })
+      wrapper = shallow(main_nav)
+    })
     it('posting:false should render the main navigation', () => {
       expect(wrapper.vm.posting).toBe(false)
       expect(wrapper.element).toMatchSnapshot()
@@ -30,59 +32,54 @@ describe('@/components/main-nav.vue', () => {
     })
   })
   describe('onBoarding()', () => {
-    it('app is initialized with wat-textarea alone on the page', () => {
-      expect(wrapper.vm.onboarding.has_posts).toBe(false)
-      expect(wrapper.vm.onboarding.is_person).toBe(false)
-      expect(wrapper.vm.onboarding.has_friends).toBe(false)
-      expect(wrapper.vm.onboarding.can_event).toBe(false)
-      expect(wrapper.vm.onboarding.can_where).toBe(false)
+    describe('signed out', () => {
+      it('app is initialized with wat-textarea alone on the page', () => {
+        const auth_spy = jest.spyOn(firebase, 'auth')
+        auth_spy.mockImplementation(() => {
+          return { currentUser: null }
+        })
+        wrapper = shallow(main_nav)
+        expect(wrapper.vm.onboarding.has_posts).toBe(false)
+        expect(wrapper.vm.onboarding.is_person).toBe(false)
+        expect(wrapper.vm.onboarding.has_friends).toBe(false)
+        expect(wrapper.vm.onboarding.can_event).toBe(false)
+        expect(wrapper.vm.onboarding.can_where).toBe(false)
+        auth_spy.mockImplementation(() => {
+          return { currentUser: { phoneNumber: '+16282281824' } }
+        })
+      })
+      it('profile is visible when person has posted', () => {
+        jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+          return new Array(1)
+        })
+        const wrapper = shallow(main_nav)
+        expect(wrapper.vm.onboarding.has_posts).toBe(true)
+      })
     })
     describe('signed in', () => {
-      const person = {
-        first_name: 'Scott',
-        last_name: 'Fryxell',
-        mobile: '4151234356'
-      }
-      const is_signed_in = jest.fn((state_changed) => {
-        state_changed({ user: person })
-      })
-      beforeEach(() => {
-        jest.spyOn(firebase, 'auth').mockImplementation(() => {
-          return { onAuthStateChanged: is_signed_in }
-        })
-      })
       it('relations is visible', () => {
-        wrapper = shallow(main_nav, {
-          data: { person: person }
-        })
+        wrapper = shallow(main_nav)
         expect(wrapper.vm.onboarding.is_person).toBe(true)
       })
-      it('feed is be visible when person has added a friend', () => {
-        localStorage.setItem('relations-count', 1)
-        wrapper = shallow(main_nav, {
-          data: { person: person }
+      it('feed is visible when person has added a friend', () => {
+        jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+          return new Array(1)
         })
+        wrapper = shallow(main_nav)
         expect(wrapper.vm.onboarding.has_friends).toBe(true)
       })
       it.skip('events will be visible when person has 5 friends', () => {
         localStorage.setItem('relations-count', 5)
-        wrapper = shallow(main_nav, {
-          data: { person: person }
-        })
+        wrapper = shallow(main_nav)
         expect(wrapper.vm.onboarding.can_event).toBe(true)
       })
       it('where will be visible when person has 25 friends', () => {
-        localStorage.setItem('relations-count', 25)
-        wrapper = shallow(main_nav, {
-          data: { person: person }
+        jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+          return new Array(25)
         })
+        wrapper = shallow(main_nav)
         expect(wrapper.vm.onboarding.can_where).toBe(true)
       })
-    })
-    it('profile is be visible when person has posted', () => {
-      localStorage.setItem('posts-count', 1)
-      const wrapper = shallow(main_nav)
-      expect(wrapper.vm.onboarding.has_posts).toBe(true)
     })
   })
   describe('user_name()', () => {
