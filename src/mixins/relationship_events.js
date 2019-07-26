@@ -1,4 +1,4 @@
-import { relations_local } from '@/modules/Storage'
+import { relations_local } from '@/modules/LocalStorage'
 import Vue from 'vue'
 export default {
   data() {
