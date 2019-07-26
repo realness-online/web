@@ -85,16 +85,17 @@ class Storage {
   }
   persist(items, name = this.filename) {
     return new Promise((resolve, reject) => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user && navigator.onLine) {
-          const file = new File([items], name)
-          const path = `/people/${user.phoneNumber}/${name}`
-          firebase.storage().ref().child(path).put(file, this.metadata)
-          .then(url => resolve(url)).catch(error => reject(error))
-        } else {
-          resolve('offline')
-        }
-      })
+      const user = firebase.auth().currentUser
+      if (user && navigator.onLine) {
+        const file = new File([items], name)
+        const path = `/people/${user.phoneNumber}/${name}`
+        firebase.storage().ref().child(path)
+        .put(file, this.metadata)
+        .then(url => resolve(url))
+        .catch(error => reject(error))
+      } else {
+        resolve('offline')
+      }
     })
   }
   async save(items = document.querySelector(this.selector)) {
@@ -106,17 +107,16 @@ class Storage {
   }
   get_download_url() {
     return new Promise((resolve, reject) => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
-          firebase.storage().ref().child(doc_u_path)
-          .getDownloadURL()
-          .then(url => resolve(url))
-          .catch(e => reject(e))
-        } else {
-          reject(new Error('you must be signed in to get a download url'))
-        }
-      })
+      const user = firebase.auth().currentUser
+      if (user) {
+        const doc_u_path = `/people/${user.phoneNumber}/${this.filename}`
+        firebase.storage().ref().child(doc_u_path)
+        .getDownloadURL()
+        .then(url => resolve(url))
+        .catch(e => reject(e))
+      } else {
+        reject(new Error('you must be signed in to get a download url'))
+      }
     })
   }
   async sync_list() {
@@ -159,4 +159,4 @@ export const person_local = new LocalStorage('person')
 export var posts_storage = new Storage('posts', '[itemprop=posts]')
 export var posts_local = new LocalStorage('posts', '[itemprop=posts]')
 
-export const relations_storage = new LocalStorage('relations', '[itemprop=relations]')
+export const relations_local = new LocalStorage('relations', '[itemprop=relations]')
