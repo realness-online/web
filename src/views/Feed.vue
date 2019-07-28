@@ -9,18 +9,17 @@
     </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
-    <section v-else class="day" v-for="[date, day] in days">
+    <section v-else class="day" :key="date" v-for="[date, day] in days">
       <header>
         <h4>{{date}}</h4>
       </header>
-      <post-as-article v-for="post in day" :post="post" v-on:next-page="next_page"></post-as-article>
+      <post-as-article v-for="post in day" :post="post" :key="post_id(post)" v-on:next-page="next_page"></post-as-article>
     </section>
   </section>
 </template>
 <script>
   import { person_storage } from '@/modules/Storage'
   import { relations_local } from '@/modules/LocalStorage'
-
   import profile_id from '@/modules/profile_id'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
@@ -58,6 +57,9 @@
       // console.timeEnd('feed-load')
     },
     methods: {
+      post_id(post) {
+        return `${post.person.id}/${post.created_at}`
+      },
       feed_into_days() {
         this.feed.sort(this.later_first)
         this.feed = this.condense_posts(this.feed)

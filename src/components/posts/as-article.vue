@@ -7,7 +7,7 @@
       <span>{{post.person.first_name}} {{post.person.last_name}}</span>
       <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
     </hgroup>
-    <blockquote itemprop="statement" v-for="statement in post.statements" >{{statement.articleBody}}</blockquote>
+    <blockquote itemprop="statement" v-for="statement in post.statements" :key="statement.created_at" >{{statement.articleBody}}</blockquote>
     <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
   </article>
 </template>

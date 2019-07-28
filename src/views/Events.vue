@@ -9,7 +9,7 @@
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <figure>
-      <as-avatar v-for="person in curators" :person="person"></as-avatar>
+      <as-avatar v-for="person in curators" :key="person.id" :person="person"></as-avatar>
     </figure>
   </section>
 </template>

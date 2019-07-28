@@ -1,6 +1,6 @@
 <template>
   <div itemprop="posts">
-    <section class="day" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}" >
+    <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}" >
       <header>
         <h4>{{date}}</h4>
       </header>
