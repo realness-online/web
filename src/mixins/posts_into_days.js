@@ -17,6 +17,7 @@ export default {
           else days.get(day).unshift(post)
         } else days.set(day, [post])
       })
+      // console.log(days);
       return days
     },
     condense_posts(feed) {

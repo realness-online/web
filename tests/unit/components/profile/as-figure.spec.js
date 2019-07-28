@@ -2,12 +2,9 @@ import { shallow, createLocalVue } from 'vue-test-utils'
 import Item from '@/modules/item'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
+const fs = require('fs')
+const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.svg', 'utf8')
 describe('@/compontent/profile/as-figure.vue', () => {
-  const avatar_mock = `<symbol id="#avatar_6282281824" viewBox="0 0 192 192">
-    <rect id="top-bun" x="0" y="0" width="192" height="32" rx="8"></rect>
-    <rect id="patty" x="0" y="80" width="192" height="32" rx="8"></rect>
-    <rect id="bottom-bun" x="0" y="160" width="192" height="32" rx="8"></rect>
-  </symbol>`
   let person, wrapper
   beforeEach(() => {
     person = {

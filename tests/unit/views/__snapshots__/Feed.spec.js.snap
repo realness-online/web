@@ -19,6 +19,118 @@ exports[`@/views/Feed.vue render the feed 1`] = `
    
   <!---->
    
-  <!---->
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Monday, June 24
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Saturday, June 22
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Monday, June 17
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, May 28
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Thursday, May 23
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, May 21
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Sunday, May 19
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Saturday, May 18
+      </h4>
+    </header>
+     
+    <!---->
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Friday, May 17
+      </h4>
+    </header>
+     
+    <!---->
+    <!---->
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Saturday, May 11
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
 </section>
 `;

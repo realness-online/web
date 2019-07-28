@@ -18,8 +18,7 @@
   </section>
 </template>
 <script>
-  import { person_storage } from '@/modules/Storage'
-  import { relations_local } from '@/modules/LocalStorage'
+  import { relations_local, person_local } from '@/modules/LocalStorage'
   import profile_id from '@/modules/profile_id'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
@@ -48,24 +47,32 @@
       // console.clear()
       // console.time('feed-load')
       const people_in_feed = relations_local.as_list()
-      const me = await person_storage.as_object()
+      const me = person_local.as_object()
       people_in_feed.push(me)
       await this.populate_feed(people_in_feed)
-      this.feed_into_days()
+      this.sort_feed_into_days()
       this.working = false
       // console.info(`${this.sort_count} sort operations`)
       // console.timeEnd('feed-load')
     },
     methods: {
-      post_id(post) {
-        return `${post.person.id}/${post.created_at}`
+      async populate_feed(people_in_feed) {
+        await Promise.all(people_in_feed.map(async (relation) => {
+          const [person, posts] = await Promise.all([
+            profile_id.load(relation.id),
+            profile_id.items(relation.id, 'posts')
+          ])
+          this.relations.push(person)
+          posts.map(post => this.add_post_to_feed(person, post))
+        }))
       },
-      feed_into_days() {
+      sort_feed_into_days() {
         this.feed.sort(this.later_first)
         this.feed = this.condense_posts(this.feed)
         this.days = this.posts_into_days(this.feed)
       },
       add_post_to_feed(person, post) {
+        // console.log(post);
         if (!post.muted) {
           post.person = person
           const current = person.oldest_post
@@ -83,15 +90,8 @@
         posts.forEach(post => this.add_post_to_feed(person, post))
         this.feed_into_days()
       },
-      async populate_feed(people_in_feed) {
-        await Promise.all(people_in_feed.map(async (relation) => {
-          const [person, posts] = await Promise.all([
-            profile_id.load(relation.id),
-            profile_id.items(relation.id, 'posts')
-          ])
-          this.relations.push(person)
-          posts.map(post => this.add_post_to_feed(person, post))
-        }))
+      post_id(post) {
+        return `${post.person.id}/${post.created_at}`
       }
     }
   }

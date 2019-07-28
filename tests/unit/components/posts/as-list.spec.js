@@ -7,7 +7,7 @@ describe('@/components/posts/as-list.vue', () => {
       propsData: { posts: [] }
     })
   })
-  it('should render proper microdata for posts', () => {
+  it('Render proper microdata for posts', () => {
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()

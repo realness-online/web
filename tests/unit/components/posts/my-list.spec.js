@@ -4,7 +4,6 @@ import my_list from '@/components/posts/my-list'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
-
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
@@ -27,12 +26,12 @@ describe('@/components/posts/my-list.vue', () => {
   afterEach(() => {
     sessionStorage.removeItem('posts-synced')
   })
-  it('should render proper item properties', () => {
+  it('Render proper item properties', () => {
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
-  it('should add an activity when post-added is emited', () => {
+  it('Add an activity when post-added is emited', () => {
     expect(wrapper.vm.pages[0].length).toBe(0)
     wrapper.vm.$bus.$emit('post-added', post)
     expect(wrapper.vm.pages[0].length).toBe(1)
@@ -53,7 +52,7 @@ describe('@/components/posts/my-list.vue', () => {
         ])
       })
     })
-    it('should wait to sync until the user is signed in', async() => {
+    it('Wait to sync until the user is signed in', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { currentUser: null }
@@ -62,17 +61,17 @@ describe('@/components/posts/my-list.vue', () => {
       await flushPromises()
       expect(sync_list_spy).not.toBeCalled()
     })
-    it('should wait to sync with the server for five minutes', () => {
+    it('Wait to sync with the server for five minutes', () => {
       expect(sync_list_spy).not.toBeCalled()
       sessionStorage.setItem('posts-synced', six_minutes_ago)
     })
-    it('should sync after five minutes minutes', async() => {
+    it('Sync after five minutes minutes', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
       wrapper = shallow(my_list)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })
-    it('should sync with the server with every new session', async() => {
+    it('Sync with the server with every new session', async() => {
       sessionStorage.removeItem('posts-synced')
       wrapper = shallow(my_list)
       await flushPromises()
