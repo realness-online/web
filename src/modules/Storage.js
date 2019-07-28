@@ -64,7 +64,6 @@ class Storage {
   }
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
-      console.log('calling optimize', limit)
       let current = (await this.from_storage()).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {

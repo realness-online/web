@@ -9,11 +9,12 @@ const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const server_text = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
 
 describe('@/modules/Storage.js', () => {
-  let storage
+
   afterEach(() => {
     localStorage.clear()
   })
   describe('retrieving', () => {
+    let storage
     let item_as_string
     beforeEach(() => {
       item_as_string = `
@@ -36,7 +37,7 @@ describe('@/modules/Storage.js', () => {
       beforeEach(() => {
         localStorage.setItem(storage.name, item_as_string)
       })
-      it.only('exists', () => {
+      it('exists', () => {
         expect(storage.from_storage).toBeDefined()
       })
       it('loads an item from local storage', async() => {
@@ -92,7 +93,7 @@ describe('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(posts_storage.sync_list).toBeDefined()
       })
-      it.only('syncs posts from server to local storage', async() => {
+      it('syncs posts from server to local storage', async() => {
         fetch.mockResponseOnce(server_text)
         localStorage.setItem('posts', posts)
 
@@ -111,7 +112,7 @@ describe('@/modules/Storage.js', () => {
     })
   })
   describe('persistance', () => {
-    let posts, posts_storage
+    let posts_storage
     beforeEach(() => {
       posts_storage = new Storage('posts', '[itemprop=posts]')
     })
@@ -119,7 +120,7 @@ describe('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
-      it('it optimizes a user list accross a set of pages', async() => {
+      it('it optimizes a list of items accross a set of pages', async() => {
         localStorage.setItem(posts_storage.name, posts)
         await posts_storage.optimize()
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
@@ -141,11 +142,11 @@ describe('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(posts_storage.persist).toBeDefined()
       })
-      it('persist to server file under users directory the server', async() => {
+      it('Persist a file in users directory', async() => {
         const url = await posts_storage.persist(posts)
         expect(url).toBe('/people/+16282281824/posts.html')
       })
-      it('does nothing unless user is signed in', async() => {
+      it('Does nothing unless user is signed in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {
           return { currentUser: null }
         })
