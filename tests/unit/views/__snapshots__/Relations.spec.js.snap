@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/Relations.vue render relationship information 1`] = `
+<section
+  class="page"
+  id="relations"
+>
+  <header>
+    <router-link
+      to="/phone-book"
+    >
+      <!---->
+    </router-link>
+     
+    <!---->
+  </header>
+   
+  <hgroup>
+    <h1>
+      Friends
+    </h1>
+  </hgroup>
+   
+  <!---->
+   
+  <!---->
+</section>
+`;

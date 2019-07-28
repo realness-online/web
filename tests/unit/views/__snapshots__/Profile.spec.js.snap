@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/Profile.vue shows profile information for a phone number 1`] = `
+<section
+  class="page"
+  id="profile"
+>
+  <header>
+    <svg />
+     
+    <!---->
+  </header>
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+</section>
+`;
