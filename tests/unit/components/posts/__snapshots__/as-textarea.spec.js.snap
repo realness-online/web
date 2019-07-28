@@ -8,12 +8,3 @@ exports[`@/components/posts/as-textarea.vue Renders 1`] = `
   rows="1"
 />
 `;
-
-exports[`@/components/posts/as-textarea.vue renders 1`] = `
-<textarea
-  cols="1"
-  id="wat"
-  placeholder=">"
-  rows="1"
-/>
-`;
