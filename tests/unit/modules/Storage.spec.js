@@ -78,7 +78,7 @@ describe('@/modules/Storage.js', () => {
         expect(url).toBe('https://download_url/people/+16282281824/person.html')
       })
       it('rejects a promise if user is not logged in', async() => {
-        jest.spyOn(firebase, 'auth').mockImplementation(() => {
+        jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
           return { currentUser: null }
         })
         const url = await storage.get_download_url()
