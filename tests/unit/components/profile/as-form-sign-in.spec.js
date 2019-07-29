@@ -37,18 +37,18 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
-    it('hides input#verification-code when clicked', () => {
+    it('Hides input#verification-code when clicked', () => {
       expect(wrapper.find('#verification-code').exists()).toBe(true)
       button.trigger('click')
       expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
     })
-    it('sets posts to be resynced', () => {
+    it('Sets posts to be resynced', () => {
       sessionStorage.setItem('posts-synced', true)
       button.trigger('click')
       expect(sessionStorage.getItem('posts-synced')).toBeFalsy()
     })
-    it('renders the sign out button after sign in', async() => {
+    it('Renders the sign out button after sign in', async() => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
       await flushPromises()
@@ -88,7 +88,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(button.exists()).toBe(false)
       expect(wrapper.vm.show_sign_out).toBe(false)
     })
-    it('renders the authorize button after sign out', () => {
+    it('Renders the authorize button after sign out', () => {
       button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(true)
     })

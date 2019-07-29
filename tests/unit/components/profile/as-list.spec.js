@@ -5,7 +5,7 @@ describe('@/compontent/profile/as-list.vue', () => {
   beforeEach(() => {
     wrapper = shallow(as_list, { propsData: { relations: [] } })
   })
-  it('should render a list of people', () => {
+  it('Render a list of people', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
 })

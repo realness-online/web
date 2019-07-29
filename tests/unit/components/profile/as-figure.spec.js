@@ -19,15 +19,15 @@ describe('@/compontent/profile/as-figure.vue', () => {
       }
     })
   })
-  it('should render user profile info', () => {
+  it('Render a person\'s profile info', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('mobile number', () => {
-    it('should format the mobile number for display', () => {
+    it('Format the mobile number for display', () => {
       let mobile = wrapper.find('.phone')
       expect(mobile.text()).toBe('(628) 228-1824')
     })
-    it('should parse mobile number as it\'s typed in', () => {
+    it('Parse mobile number as it\'s typed in', () => {
       person.id = '/+1628'
       wrapper = shallow(as_figure, { propsData: { person: person } })
       let mobile = wrapper.find('a.phone')
@@ -43,7 +43,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
   })
   describe('rendering avatar', () => {
-    it('should render the users avatar', () => {
+    it('Render the users avatar', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).toBeFalsy()
       person.avatar = avatar_mock
@@ -66,17 +66,17 @@ describe('@/compontent/profile/as-figure.vue', () => {
         }
       })
     })
-    it('should go to the mobile number when clicked', () => {
+    it('Go to the mobile number when clicked', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281824')
     })
-    it('when is_me is true should go to the account page', () => {
+    it('When is_me is true should go to the account page', () => {
       jest.spyOn(Item, 'get_first_item').mockImplementation(() => person)
       wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
-    it('when previous is true should go to the previous page', () => {
+    it('When previous is true should go to the previous page', () => {
       sessionStorage.setItem('previous', '/test-route')
       wrapper.setProps({ previous: true })
       wrapper.vm.avatar_click()
