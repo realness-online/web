@@ -8,7 +8,7 @@ const onAuthStateChanged = jest.fn((state_changed) => {
   })
 })
 describe('@/views/Profile.vue', () => {
-  it('shows profile information for a phone number', () => {
+  it('Shows profile information for a phone number', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(() => onAuthStateChanged)
     const $route = { params: { phone_number: '+14151231234' } }
     let wrapper = shallow(Profile, { mocks: { $route } })

@@ -1,5 +1,51 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`@/views/Events.vue Renders event information 1`] = `
+<section
+  class="page"
+  id="events"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <hgroup>
+    <h1>
+      Events
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <figure />
+</section>
+`;
+
+exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
+<section
+  class="page"
+  id="events"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <hgroup>
+    <h1>
+      Events
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <figure />
+</section>
+`;
+
 exports[`@/views/Events.vue renders event information 1`] = `
 <section
   class="page"

@@ -18,7 +18,7 @@ describe('@/views/Feed.vue', () => {
     jest.spyOn(profile_id, 'load').mockImplementation(() => person_local.as_object())
     jest.spyOn(profile_id, 'items').mockImplementation(() => posts_local.as_list())
   })
-  it('render the feed', async() => {
+  it('Render a feed of a persons friends', async() => {
     let wrapper = shallow(Feed)
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()

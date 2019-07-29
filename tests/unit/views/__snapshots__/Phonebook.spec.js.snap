@@ -1,5 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`@/views/Phonebook Render the phonebook 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <!---->
+     
+    <router-link
+      to="/relations"
+    >
+      <!---->
+    </router-link>
+  </header>
+   
+  <hgroup>
+    <h1>
+      Phonebook
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+</section>
+`;
+
 exports[`@/views/Phonebook render the phonebook 1`] = `
 <section
   class="page"

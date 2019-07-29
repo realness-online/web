@@ -19,11 +19,11 @@ jest.spyOn(PhoneBook.prototype, 'sync_list').mockImplementation(() => {
 jest.spyOn(PhoneBook.prototype, 'save').mockImplementation(save_spy)
 jest.spyOn(profile_id, 'load').mockImplementation(() => person)
 describe('@/views/Phonebook', () => {
-  it('render the phonebook', () => {
+  it('Render the phonebook', () => {
     let wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('saves the phone book when save-phonebook is set on localStorage', async () => {
+  it('Saves the phone book when save-phonebook is set on localStorage', async () => {
     let wrapper = shallow(phonebook)
     wrapper.vm.phonebook.push(person)
     expect(wrapper.vm.phonebook.length).toBe(1)

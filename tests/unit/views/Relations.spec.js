@@ -12,22 +12,22 @@ describe('@/views/Relations.vue', () => {
   beforeEach(() => {
     wrapper = shallow(Relations)
   })
-  it('render relationship information', () => {
+  it('Render relationship information', () => {
     wrapper.setData({ relations: [person] })
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('should emit an add-relationship event', () => {
+  it('Should emit an add-relationship event', () => {
     expect(wrapper.vm.relations.length).toBe(0)
     wrapper.vm.$bus.$emit('add-relationship', person)
     expect(wrapper.vm.relations.length).toBe(1)
   })
-  it('should respond to a remove-relationship event', () => {
+  it('Should respond to a remove-relationship event', () => {
     wrapper.setData({ relations: [person] })
     expect(wrapper.vm.relations.length).toBe(1)
     wrapper.vm.$bus.$emit('remove-relationship', person)
     expect(wrapper.vm.relations.length).toBe(0)
   })
-  it('remove-relationship should only remove the person provided', () => {
+  it('Remove-relationship should only remove the person provided', () => {
     const other_person = {
       id: '/+12223334444',
       first_name: 'Katie',
@@ -39,7 +39,7 @@ describe('@/views/Relations.vue', () => {
     wrapper.vm.$bus.$emit('remove-relationship', other_person)
     expect(wrapper.vm.relations.length).toBe(1)
   })
-  it('fill_in_relationships()', () => {
+  it('#fill_in_relationships', () => {
     const load_spy = jest.spyOn(profile_id, 'load')
     .mockImplementation(() => Promise.resolve(person))
     wrapper.setData({ relations: [person] })
