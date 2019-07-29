@@ -8,7 +8,7 @@ describe('@/compontent/profile/as-search.vue', () => {
   it('Render an input for search', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('go into search mode when clicked', () => {
+  it('Go into search mode when clicked', () => {
     let search = wrapper.find('#search')
     search.trigger('focusin')
     expect(wrapper.vm.searching).toBe(true)

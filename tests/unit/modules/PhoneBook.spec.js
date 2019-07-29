@@ -11,7 +11,7 @@ describe('@/modules/PhoneBook', () => {
     it('Exists', () => {
       expect(phonebook.get_download_url).toBeDefined()
     })
-    it('returns a download url', async() => {
+    it('Returns a download url', async() => {
       const url = await phonebook.get_download_url()
       expect(url).toBe('https://download_url/people/index.html')
     })
