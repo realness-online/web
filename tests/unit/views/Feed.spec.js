@@ -4,6 +4,7 @@ import { person_local, posts_local } from '@/modules/LocalStorage'
 import profile_id from '@/modules/profile_id'
 import Feed from '@/views/Feed'
 import flushPromises from 'flush-promises'
+
 const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')

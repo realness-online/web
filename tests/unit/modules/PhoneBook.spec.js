@@ -8,19 +8,19 @@ describe('@/modules/PhoneBook', () => {
     phonebook = new PhoneBook()
   })
   describe('#get_download_url', () => {
-    it('exists', () => {
+    it('Exists', () => {
       expect(phonebook.get_download_url).toBeDefined()
     })
-    it('resolves a promise with a download url', async() => {
+    it('returns a download url', async() => {
       const url = await phonebook.get_download_url()
       expect(url).toBe('https://download_url/people/index.html')
     })
   })
   describe('#as_list', () => {
-    it('should exist', () => {
+    it('Exists', () => {
       expect(phonebook.as_list).toBeDefined()
     })
-    it('should download the most recent version of the phonebook', () => {
+    it('Download the most recent version of the phonebook', () => {
       fetch.mockResponseOnce(phonebook_as_text)
       phonebook.as_list().then(people => {
         expect(fetch).toBeCalled()
@@ -63,7 +63,7 @@ describe('@/modules/PhoneBook', () => {
     afterEach(() => {
       phone_list = null
     })
-    it('should add new person to phone book', async() => {
+    it('Add new person to phone book', async() => {
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(_ => me)
       expect(phone_list.length).toBe(2)
       const people = await phonebook.sync_list()
@@ -71,7 +71,7 @@ describe('@/modules/PhoneBook', () => {
       expect(localStorage.setItem).toBeCalled()
       expect(localStorage.getItem('save-phonebook')).toBe('true')
     })
-    it('should leave the phone book alone when my info is the same', async() => {
+    it('Leave the phone book alone when my info is the same', async() => {
       phone_list.push(me)
       expect(phone_list.length).toBe(3)
       jest.spyOn(Storage.prototype, 'as_object').mockImplementation(() => me)
@@ -81,11 +81,11 @@ describe('@/modules/PhoneBook', () => {
     })
   })
   describe('#save', () => {
-    it('should not try to save phonebook unless it exists', async() => {
+    it('Should not try to save phonebook unless it exists', async() => {
       const message = await phonebook.save()
       expect(message).toBe(null)
     })
-    it('should save the phonebook', async() => {
+    it('Save the phonebook', async() => {
       document.body.innerHTML = phonebook_as_text
       const url = await phonebook.save()
       expect(url).toBe('/people/index.html')

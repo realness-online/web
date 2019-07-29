@@ -7,9 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const server_text = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
-
 describe('@/modules/Storage.js', () => {
-
   afterEach(() => {
     localStorage.clear()
   })
@@ -25,10 +23,10 @@ describe('@/modules/Storage.js', () => {
       storage = new Storage('person')
     })
     describe('#hydrate', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(Storage.hydrate).toBeDefined()
       })
-      it('will create an html fragment from a string', () => {
+      it('Will create an html fragment from a string', () => {
         storage = Storage.hydrate(item_as_string)
         expect(storage.querySelectorAll('h1').length).toBe(1)
       })
@@ -37,10 +35,10 @@ describe('@/modules/Storage.js', () => {
       beforeEach(() => {
         localStorage.setItem(storage.name, item_as_string)
       })
-      it('exists', () => {
+      it('Exists', () => {
         expect(storage.from_storage).toBeDefined()
       })
-      it('loads an item from local storage', async() => {
+      it('Loads an item from local storage', async() => {
         const items = await storage.from_storage()
         expect(items).not.toBe(null)
         expect(items.querySelectorAll('h1').length).toBe(1)
@@ -51,19 +49,19 @@ describe('@/modules/Storage.js', () => {
       beforeEach(() => {
         localStorage.setItem(storage.name, item_as_string)
       })
-      it('exists', () => {
+      it('Exists', () => {
         expect(storage.as_list).toBeDefined()
       })
-      it('creates list of objects', async() => {
+      it('Creates list of objects', async() => {
         const list = await storage.as_list()
         expect(list.length).toBe(1)
       })
     })
     describe('#as_object', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(storage.as_object).toBeDefined()
       })
-      it('will return the first item it finds', async() => {
+      it('Will return the first item it finds', async() => {
         localStorage.setItem(storage.name, item_as_string)
         const scott = await storage.as_object()
         expect(scott.name).toBe('Scott Fryxell')
@@ -73,11 +71,11 @@ describe('@/modules/Storage.js', () => {
       it('exists', () => {
         expect(storage.get_download_url).toBeDefined()
       })
-      it('resolves a promise with a download url', async() => {
+      it('Returns a url', async() => {
         const url = await storage.get_download_url()
         expect(url).toBe('https://download_url/people/+16282281824/person.html')
       })
-      it('rejects a promise if user is not logged in', async() => {
+      it('Returns null if person is not logged in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
           return { currentUser: null }
         })
@@ -90,10 +88,10 @@ describe('@/modules/Storage.js', () => {
       beforeEach(() => {
         posts_storage = new Storage('posts', '[itemprop=posts]')
       })
-      it('exists', () => {
+      it('Exists', () => {
         expect(posts_storage.sync_list).toBeDefined()
       })
-      it('syncs posts from server to local storage', async() => {
+      it('Syncs posts from server to local storage', async() => {
         fetch.mockResponseOnce(server_text)
         localStorage.setItem('posts', posts)
 
@@ -117,7 +115,7 @@ describe('@/modules/Storage.js', () => {
       posts_storage = new Storage('posts', '[itemprop=posts]')
     })
     describe('#optimize', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
       it('it optimizes a list of items accross a set of pages', async() => {
@@ -127,10 +125,10 @@ describe('@/modules/Storage.js', () => {
       })
     })
     describe('#save', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(posts_storage.save).toBeDefined()
       })
-      it('saves items to locally and on the server', async() => {
+      it('Saves items locally and on the server', async() => {
         posts_storage.persist = jest.fn()
         await posts_storage.save(posts)
         await flushPromises()
@@ -139,10 +137,10 @@ describe('@/modules/Storage.js', () => {
       })
     })
     describe('#persist', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(posts_storage.persist).toBeDefined()
       })
-      it('Persist a file in users directory', async() => {
+      it('Persist a file in a persons home directory', async() => {
         const url = await posts_storage.persist(posts)
         expect(url).toBe('/people/+16282281824/posts.html')
       })
