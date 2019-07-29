@@ -31,9 +31,7 @@ describe('@/views/Phonebook', () => {
     localStorage.setItem('save-phonebook', 'true')
     await wrapper.vm.phonebook.push(person)
     expect(wrapper.vm.phonebook.length).toBe(2)
-    wrapper.vm.$nextTick(() => {
-      expect(save_spy).toBeCalled()
-    })
+    wrapper.vm.$nextTick(() => expect(save_spy).toBeCalled())
     save_spy.mockClear()
   })
 })
