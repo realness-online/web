@@ -1,17 +1,15 @@
 import { shallow } from 'vue-test-utils'
 import Profile from '@/views/Profile'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
-const onAuthStateChanged = jest.fn((state_changed) => {
-  state_changed({
-    phoneNumber: '14151231234'
-  })
-})
+import flushPromises from 'flush-promises'
+const fs = require('fs')
+const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
+
 describe('@/views/Profile.vue', () => {
-  it('Shows profile information for a phone number', () => {
-    jest.spyOn(firebase, 'auth').mockImplementation(() => onAuthStateChanged)
+  fetch.mockResponseOnce(person)
+  it('Shows profile information for a phone number', async() => {
     const $route = { params: { phone_number: '+14151231234' } }
     let wrapper = shallow(Profile, { mocks: { $route } })
+    await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
   })
 })

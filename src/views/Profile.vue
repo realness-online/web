@@ -32,15 +32,11 @@
     mounted() {
       document.body.scrollTop = document.documentElement.scrollTop = 0
     },
-    created() {
+    async created() {
       const id = profile_id.from_e64(this.$route.params.phone_number)
-      profile_id.load(id).then(profile => {
-        this.person = profile
-      })
-      profile_id.items(id, 'posts').then(items => {
-        this.posts = items
-        this.working = false
-      })
+      this.person = await profile_id.load(id)
+      this.posts = await profile_id.items(id, 'posts')
+      this.working = false
     }
   }
 </script>
