@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-figure.vue should render user profile info 1`] = `
+exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] = `
 <figure
   class="profile"
   itemid="/+16282281824"

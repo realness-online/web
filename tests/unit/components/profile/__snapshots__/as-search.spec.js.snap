@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-search.vue should render an input for search 1`] = `
+exports[`@/compontent/profile/as-search.vue Render an input for search 1`] = `
 <label
   for="search"
 >

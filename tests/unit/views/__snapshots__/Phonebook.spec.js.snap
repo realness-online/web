@@ -30,34 +30,3 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
   <!---->
 </section>
 `;
-
-exports[`@/views/Phonebook render the phonebook 1`] = `
-<section
-  class="page"
-  id="directory"
->
-  <header>
-    <!---->
-     
-    <router-link
-      to="/relations"
-    >
-      <!---->
-    </router-link>
-  </header>
-   
-  <hgroup>
-    <h1>
-      Phonebook
-    </h1>
-     
-    <!---->
-  </hgroup>
-   
-  <!---->
-   
-  <!---->
-   
-  <!---->
-</section>
-`;

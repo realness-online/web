@@ -20,24 +20,3 @@ exports[`@/views/Index.vue Renders navigation for the application 1`] = `
   </aside>
 </section>
 `;
-
-exports[`@/views/Index.vue renders navigation for the application 1`] = `
-<section
-  class="page"
-  id="home"
->
-  <!---->
-   
-  <h6
-    class="app_version"
-  >
-    0.4.1
-  </h6>
-   
-  <aside>
-    <!---->
-     
-    <!---->
-  </aside>
-</section>
-`;

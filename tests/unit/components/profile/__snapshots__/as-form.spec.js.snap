@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-form.vue profile form should render profile form 1`] = `
+exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] = `
 <form
   id="profile-form"
 >
