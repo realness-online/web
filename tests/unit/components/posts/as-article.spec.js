@@ -19,7 +19,9 @@ describe('@/components/posts/as-article.vue', () => {
       propsData: { post }
     })
   })
+  afterEach
   it('Render a post as an article element', () => {
     expect(wrapper.element).toMatchSnapshot()
+    wrapper.destroy()
   })
 })

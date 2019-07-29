@@ -25,6 +25,7 @@ describe('@/components/posts/my-list.vue', () => {
   })
   afterEach(() => {
     sessionStorage.removeItem('posts-synced')
+    wrapper.destroy()
   })
   it('Render proper item properties', () => {
     expect(wrapper.element).toMatchSnapshot()
