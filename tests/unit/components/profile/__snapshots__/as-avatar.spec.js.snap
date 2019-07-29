@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/profile/as-avatar.vue Render an avatar 1`] = `
+<svg>
+  <defs
+    itemprop="avatar"
+    itemref="/+14151234356"
+  />
+   
+  <use
+    xlink:href="#silhouette"
+  />
+</svg>
+`;
