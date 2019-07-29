@@ -3,13 +3,6 @@ import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import Storage from '@/modules/Storage'
 import profile_id from '@/modules/profile_id'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
-const onAuthStateChanged = jest.fn((state_changed) => {
-  state_changed({
-    phoneNumber: '14151231234'
-  })
-})
 describe('@/views/Account.vue', () => {
   let wrapper
   const me = {
@@ -19,9 +12,6 @@ describe('@/views/Account.vue', () => {
   }
   beforeEach(() => {
     jest.spyOn(profile_id, 'load').mockImplementation(() => Promise.resolve(me))
-    jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged }
-    })
     wrapper = shallow(Account)
   })
   it('Renders account information', () => {

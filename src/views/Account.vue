@@ -60,9 +60,13 @@
     },
     async created() {
       this.me = await person_storage.as_object()
-      this.auth.onAuthStateChanged(this.auth_check)
+      if (this.auth.currentUSer) {
+        this.signed_in = true
+        const id = profile_id.from_e64(firebase_user.phoneNumber)
+        this.me = await profile_id.load(id)
+      }
       this.$bus.$off('save-me')
-      this.$bus.$on('save-me', () => this.auth.onAuthStateChanged(this.save_me))
+      this.$bus.$on('save-me', () => this.save_me())
     },
     computed: {
       show_avatar() {
@@ -81,15 +85,8 @@
       }
     },
     methods: {
-      async auth_check(firebase_user) {
-        if (firebase_user) {
-          this.signed_in = true
-          const id = profile_id.from_e64(firebase_user.phoneNumber)
-          this.me = await profile_id.load(id)
-        }
-      },
-      async save_me(firebase_user) {
-        if (firebase_user) {
+      async save_me() {
+        if (this.auth.currentUSer) {
           this.me.id = profile_id.from_e64(firebase_user.phoneNumber)
           if (!this.me.avatar) {
             console.log('no avatar', this.me.id)
