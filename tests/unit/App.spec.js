@@ -9,10 +9,10 @@ describe('@/App.vue', () => {
     jest.spyOn(firebase, 'initializeApp').mockImplementation(initialize_mock)
     wrapper = shallow(App)
   })
-  it('renders layout for the application', () => {
+  it('Renders layout of the application', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('sets previously visited page in sessionStorage', () => {
+  it('Sets previously visited page in sessionStorage', () => {
     const $route = {
       path: '/relations'
     }
@@ -24,7 +24,7 @@ describe('@/App.vue', () => {
     wrapper.setData({ $route: { path: '/magic' } })
     expect(sessionStorage.previous).toBe('/relations')
   })
-  it('initialises firebase', () => {
+  it('Initialises firebase', () => {
     expect(initialize_mock).toHaveBeenCalledTimes(1)
   })
 })
