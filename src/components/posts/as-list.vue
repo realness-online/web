@@ -13,7 +13,7 @@
             </a>
           </menu>
         </header>
-        <meta itemprop="muted" :content="post.muted">
+        <meta itemprop="muted" v-if="post.muted" :content="post.muted">
         <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
         <blockquote :contenteditable="me" @blur="save_me" itemprop="articleBody">{{post.articleBody}}</blockquote>
       </article>
