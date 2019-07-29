@@ -24,19 +24,21 @@ describe('@/views/Account.vue', () => {
     })
     wrapper = shallow(Account)
   })
-  it('renders event information', () => {
+  it('Renders account information', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('adding an avatar', () => {
-    it('open_camera()', () => {
-      // wrapper.setProps({ view_avatar: true })
-      let mock_click = jest.fn()
-      wrapper.vm.$refs.uploader.click = mock_click
-      wrapper.vm.open_camera()
-      expect(mock_click).toBeCalled()
+    describe('#open_camera', () => {
+      it('Should open the file dialog', () => {
+        // wrapper.setProps({ view_avatar: true })
+        let mock_click = jest.fn()
+        wrapper.vm.$refs.uploader.click = mock_click
+        wrapper.vm.open_camera()
+        expect(mock_click).toBeCalled()
+      })
     })
-    describe('accept_changes()', () => {
-      it('should update the avatar', () => {
+    describe('#accept_changes', () => {
+      it('Should update the avatar', () => {
         const localVue = createLocalVue()
         localVue.use(VueRouter)
         const router = new VueRouter()
@@ -50,7 +52,7 @@ describe('@/views/Account.vue', () => {
         wrapper.vm.accept_changes()
         expect(save_spy).toBeCalled()
       })
-      it('should trigger change event on file input', () => {
+      it('Should trigger change event on file input', () => {
         // wrapper.setProps({ view_avatar: true })
         let input = wrapper.find('input[type=file]')
         expect(input.exists()).toBe(true)
