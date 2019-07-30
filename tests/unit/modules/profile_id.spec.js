@@ -1,8 +1,8 @@
 import profile_id from '@/modules/profile_id'
+import flushPromises from 'flush-promises'
 const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
-import flushPromises from 'flush-promises'
 describe('@/modules/profile_id', () => {
   it('#load', async() => {
     fetch.mockResponseOnce(person)

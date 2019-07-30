@@ -20,7 +20,6 @@ const statement = {
 }
 
 describe('@/components/posts/as-article.vue', () => {
-
   it('Render a post as an article element', async() => {
     const wrapper = shallow(as_article, { propsData: { post } })
     await flushPromises()
@@ -39,8 +38,8 @@ describe('@/components/posts/as-article.vue', () => {
     expect(wrapper.vm.i_am_oldest).toBe(true)
   })
   it('Triggers an event if the article is observed', () => {
-    const wrapper = shallow(as_article, {propsData: { post } })
-    const entries = [{ isIntersecting:true }]
+    const wrapper = shallow(as_article, { propsData: { post } })
+    const entries = [{ isIntersecting: true }]
     wrapper.vm.end_of_posts(entries)
     expect(wrapper.emitted('next-page')).toBeTruthy
   })

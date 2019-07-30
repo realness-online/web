@@ -52,8 +52,8 @@
     },
     methods: {
       is_today(date) {
-        if (date.indexOf('Today') > -1) return true;
-        else return false;
+        if (date.indexOf('Today') > -1) return true
+        else return false
       },
       save_me() {
         this.$nextTick(_ => posts_storage.save())
