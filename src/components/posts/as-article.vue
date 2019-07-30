@@ -45,11 +45,11 @@
     },
     computed: {
       i_am_oldest() {
-        if (this.post.created_at === this.oldest) return true
+        if (this.post.created_at === this.oldest) return true;
         else {
           return this.post.statements.some(statement => {
-            if (statement.created_at === this.oldest) return true
-            else return false
+            if (statement.created_at === this.oldest) return true;
+            else return false;
           })
         }
       }
