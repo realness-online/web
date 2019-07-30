@@ -1,8 +1,10 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
-import Storage from '@/modules/Storage'
+import Storage, { person_storage } from '@/modules/Storage'
 import profile_id from '@/modules/profile_id'
+import convert_to_avatar from '@/modules/convert_to_avatar'
+import flushPromises from 'flush-promises'
 describe('@/views/Account.vue', () => {
   let wrapper
   const me = {
@@ -14,7 +16,8 @@ describe('@/views/Account.vue', () => {
     jest.spyOn(profile_id, 'load').mockImplementation(() => Promise.resolve(me))
     wrapper = shallow(Account)
   })
-  it('Renders account information', () => {
+  it('Renders account information', async() => {
+    await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('adding an avatar', () => {
@@ -49,6 +52,31 @@ describe('@/views/Account.vue', () => {
         input.element.value = ''
         input.trigger('change')
         // currently no way to test file inputs. let's trigger the event anyway
+      })
+    })
+    describe('#save_me', () => {
+      it('saves a user', async() => {
+        const spy = jest.spyOn(person_storage, 'save')
+        .mockImplementationOnce(() => Promise.resolve('spy'))
+        await wrapper.vm.save_me()
+        await flushPromises()
+        expect(spy).toBeCalled()
+      })
+    })
+    describe('#attach_poster', () => {
+      it('change file input to attach image rahter than capture', () => {
+        expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(true)
+        wrapper.vm.attach_poster()
+        expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(false)
+      })
+    })
+    describe('#vectorize_image', () => {
+      it('Should vectorize a jpg', () => {
+        const image = {i:'would be an image in real life'}
+        const spy = jest.fn(() => Promise.resolve('trace_spy'))
+        jest.spyOn(convert_to_avatar, 'trace').mockImplementation(() => spy)
+        wrapper.vm.vectorize_image(image)
+        expect(wrapper.vm.avatar_changed).toBe(true)
       })
     })
   })

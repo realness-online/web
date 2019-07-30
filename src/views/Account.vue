@@ -60,9 +60,10 @@
     },
     async created() {
       this.me = await person_storage.as_object()
-      if (this.auth.currentUSer) {
+      const user = this.auth.currentUser
+      if (user) {
         this.signed_in = true
-        const id = profile_id.from_e64(firebase_user.phoneNumber)
+        const id = profile_id.from_e64(user.phoneNumber)
         this.me = await profile_id.load(id)
       }
       this.$bus.$off('save-me')
@@ -86,8 +87,9 @@
     },
     methods: {
       async save_me() {
-        if (this.auth.currentUSer) {
-          this.me.id = profile_id.from_e64(firebase_user.phoneNumber)
+        const user = this.auth.currentUser
+        if (user) {
+          this.me.id = profile_id.from_e64(user.phoneNumber)
           if (!this.me.avatar) {
             console.log('no avatar', this.me.id)
             const profile = await profile_id.load(this.me.id)
