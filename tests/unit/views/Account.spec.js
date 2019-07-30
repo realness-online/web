@@ -57,7 +57,7 @@ describe('@/views/Account.vue', () => {
     describe('#save_me', () => {
       it('saves a user', async() => {
         const spy = jest.spyOn(person_storage, 'save')
-        .mockImplementationOnce(() => Promise.resolve('spy'))
+        .mockImplementation(() => Promise.resolve('spy'))
         await wrapper.vm.save_me()
         await flushPromises()
         expect(spy).toBeCalled()
