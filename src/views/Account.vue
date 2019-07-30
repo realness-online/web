@@ -91,7 +91,6 @@
         if (user) {
           this.me.id = profile_id.from_e64(user.phoneNumber)
           if (!this.me.avatar) {
-            console.log('no avatar', this.me.id)
             const profile = await profile_id.load(this.me.id)
             this.me.avatar = profile.avatar
           }
