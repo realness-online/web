@@ -6,7 +6,25 @@ exports[`@/components/profile/manage-avatar.vue Render avatar manager 1`] = `
 >
   <!---->
    
-  <!---->
+  <menu>
+    <a>
+      <!---->
+    </a>
+     
+    <a>
+      <!---->
+    </a>
+     
+    <!---->
+     
+    <a
+      download="vector.svg"
+      href="data:application/octet-stream,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%0A%20%20%20%20%20%20%20%20undefined%0A%20%20%20%20%20%20%20%20%3Cuse%20href%3D%22%23avatar_atar_%22%2F%3E%0A%20%20%20%20%20%20%3C%2Fsvg%3E"
+      id="download-avatar"
+    >
+      <!---->
+    </a>
+  </menu>
    
   <input
     accept="image/jpeg"

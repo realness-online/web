@@ -90,6 +90,8 @@
         width: 100vw
         height: 50vh
     & > menu
+      position: relative
+      z-index: 1
       display: flex
       justify-content: space-between
       margin-top: -(base-line * 3)
@@ -100,6 +102,8 @@
           display: none
           @media (min-width: max-screen)
             display: inherit
+        & > svg
+          fill: red
     & > input[type=file]
       display: none
 </style>
