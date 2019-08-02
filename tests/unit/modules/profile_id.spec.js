@@ -15,7 +15,7 @@ describe('@/models/profile_id', () => {
     fetch.mockResponseOnce(posts)
     const items = await profile_id.items('+14151231234', 'posts')
     await flushPromises()
-    expect(items.length).toEqual(54)
+    expect(items.length).toEqual(79)
     expect(fetch).toBeCalled()
   })
 })

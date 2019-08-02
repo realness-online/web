@@ -17,23 +17,23 @@ describe('@/views/Feed.vue', () => {
     profile_spy = jest.spyOn(profile_id, 'load').mockImplementation(_ => mock_person)
     posts_spy = jest.spyOn(profile_id, 'items').mockImplementation(_ => mock_posts)
   })
-  it.only('Render a feed of a persons friends', async() => {
+  it('Render a feed of a persons friends', async() => {
     let wrapper = shallow(Feed)
     await flushPromises()
     expect(profile_spy).toBeCalled()
     expect(posts_spy).toBeCalled()
-    expect(wrapper.vm.days.size).toBe(10)
+    expect(wrapper.vm.days.size).toBe(18)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('loads another page of data for a person', async() => {
     let wrapper = shallow(Feed)
     await flushPromises()
-    expect(wrapper.vm.days.size).toBe(10)
+    expect(wrapper.vm.days.size).toBe(18)
     jest.spyOn(profile_id, 'items').mockImplementationOnce(_ => {
       return Item.get_items(Storage.hydrate(other_posts))
     })
     wrapper.vm.next_page(mock_person)
     await flushPromises()
-    expect(wrapper.vm.days.size).toBe(15)
+    expect(wrapper.vm.days.size).toBe(22)
   })
 })
