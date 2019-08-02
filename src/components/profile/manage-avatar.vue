@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <as-avatar :person="me"></as-avatar>
-    <menu v-if="show_avatar">
+    <menu>
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a @click="select_photo"><icon name="add"></icon></a>
       <a @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
@@ -11,12 +11,15 @@
   </div>
 </template>
 <script>
-  import as_avatar from '@/components/profile/as-avatar'
   import convert_to_avatar from '@/modules/convert_to_avatar'
   import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/models/profile_id'
+  import icon from '@/components/icon'
+  import as_avatar from '@/components/profile/as-avatar'
+
   export default {
     components: {
+      icon,
       'as-avatar': as_avatar
     },
     data() {
