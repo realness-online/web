@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <icon v-if="working" name="working"></icon>
-    <manage-avatar @changed='save_me'></manage-avatar>
+    <manage-avatar></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
@@ -52,7 +52,6 @@
         auth: firebase.auth(),
         working: false,
         signed_in: false,
-        avatar_changed: false,
         image_file: null,
         chronological: true
       }
@@ -69,7 +68,7 @@
       this.$bus.$on('save-me', this.save_me)
     },
     updated() {
-      this.$nextTick(() => this.observe_posts())
+      // this.$nextTick(() => this.observe_posts())
     },
     computed: {
       show_avatar() {

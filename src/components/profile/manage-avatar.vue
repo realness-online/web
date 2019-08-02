@@ -21,7 +21,8 @@
     },
     data() {
       return {
-        me: person_local.as_object()
+        me: person_local.as_object(),
+        avatar_changed: false
       }
     },
     computed: {
@@ -44,10 +45,8 @@
         })
       },
       async accept_changes(event) {
-        if (this.avatar_changed) {
-          await person_local.save()
-          this.avatar_changed = false
-        }
+        await person_local.save()
+        this.avatar_changed = false
       },
       select_photo(event) {
         this.$refs.uploader.removeAttribute('capture')
