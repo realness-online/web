@@ -14,8 +14,8 @@
   </article>
 </template>
 <script>
-  const options = { rootMargin: '0px 0px 64px 0px' }
   import date_formating from '@/mixins/date_formating'
+  const options = { rootMargin: '0px 0px 64px 0px' }
   export default {
     mixins: [date_formating],
     props: {

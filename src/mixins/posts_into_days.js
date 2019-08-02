@@ -22,8 +22,7 @@ export default {
         if (this.chronological || day === this.today) {
           day.push(post)
           day.sort(this.newer_first)
-        }
-        else {
+        } else {
           day.unshift(post)
           day.sort(this.older_first)
         }
@@ -73,6 +72,6 @@ export default {
     older_first(earlier, later) {
       this.sort_count++
       return Date.parse(later.created_at) - Date.parse(earlier.created_at)
-    },
+    }
   }
 }

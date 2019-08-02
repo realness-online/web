@@ -34,7 +34,7 @@
     },
     mounted() {
       if (this.i_am_oldest) {
-        this.observer = new IntersectionObserver(this.end_of_posts, {}),
+        this.observer = new IntersectionObserver(this.end_of_posts, {})
         this.$nextTick(_ => this.observer.observe(this.$el))
       }
     },

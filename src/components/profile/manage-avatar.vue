@@ -1,6 +1,6 @@
 <template lang="html">
   <div id="manage-avatar">
-    <as-avatar :person="me"></profile-as>
+    <as-avatar :person="me"></as-avatar>
     <menu v-if="show_avatar">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a @click="select_photo"><icon name="add"></icon></a>
@@ -13,10 +13,16 @@
 <script>
   import as_avatar from '@/components/profile/as-avatar'
   import convert_to_avatar from '@/modules/convert_to_avatar'
+  import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/models/profile_id'
-    export default {
+  export default {
     components: {
       'as-avatar': as_avatar
+    },
+    data() {
+      return {
+        me: person_local.as_object()
+      }
     },
     computed: {
       downloadable() {
@@ -39,11 +45,11 @@
       },
       async accept_changes(event) {
         if (this.avatar_changed) {
-          await person_storage.save()
+          await person_local.save()
           this.avatar_changed = false
         }
       },
-      select_photo(event){
+      select_photo(event) {
         this.$refs.uploader.removeAttribute('capture')
         this.$refs.uploader.click()
       },
