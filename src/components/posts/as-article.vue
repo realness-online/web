@@ -10,19 +10,27 @@
     </header>
     <meta itemprop="muted" v-if="post.muted" :content="post.muted">
     <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
-    <blockquote :contenteditable="me" @blur="save_me" itemprop="articleBody">{{post.articleBody}}</blockquote>
+    <blockquote :contenteditable="me" @blur="changed" itemprop="articleBody">{{post.articleBody}}</blockquote>
   </article>
 </template>
 <script>
   import date_formating from '@/mixins/date_formating'
   import { posts_local } from '@/modules/LocalStorage'
+  import icon from '@/components/icon'
   const options = { rootMargin: '0px 0px 64px 0px' }
   export default {
     mixins: [date_formating],
+    components: {
+      icon
+    },
     props: {
       post: {
         type: Object,
         required: true
+      },
+      me: {
+        type: Boolean,
+        default: false
       }
     },
     data() {
@@ -49,6 +57,13 @@
       }
     },
     methods: {
+      changed() {
+        this.$nextTick(_ => posts_local.save())
+      },
+      toggle_post(post) {
+        post.muted = !post.muted
+        this.$nextTick(_ => posts_local.save())
+      },
       async end_of_articles(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {

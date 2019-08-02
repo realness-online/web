@@ -5,7 +5,7 @@
     <aside>
       <my-figure :person="me"></my-figure>
       <div id="my-posts">
-        <as-article v-for="post in posts" :key="as_id(post)" :post="post"></as-article>
+        <as-article v-for="post in posts" :key="as_id(post)" :post="post" :me="true"></as-article>
       </div>
     </aside>
   </section>

@@ -18,6 +18,7 @@ exports[`@/components/posts/as-article.vue Render a post as an article element 1
   </time>
    
   <blockquote
+    contenteditable="false"
     itemprop="articleBody"
   >
     I am saying it

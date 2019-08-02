@@ -14,7 +14,13 @@
       <div itemprop="posts" v-for="[page_name, days] in pages" :key="page_name">
         <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}" >
           <header><h4>{{date}}</h4></header>
-          <posts-as-article v-for="post in day" :key="post.id" :post="post" @end-of-articles="load_more_posts"></posts-as-article>
+          <posts-as-article
+            v-for="post in day"
+            :key="post.id"
+            :post="post"
+            :me="true"
+            @end-of-articles="next_page">
+          </posts-as-article>
         </section>
       </div>
     </div>
@@ -84,11 +90,7 @@
         if (date.indexOf('Today') > -1) return true
         else return false
       },
-      toggle_post(post) {
-        post.muted = !post.muted
-        this.$nextTick(_ => posts_local.save())
-      },
-      async load_more_posts() {
+      async next_page() {
         const older_posts = await posts_local.next_list(this.limit)
         if (older_posts.length > 0) {
           this.pages.push(older_posts)
