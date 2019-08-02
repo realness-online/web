@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`@/components/posts/my-list.vue Render proper item properties 1`] = `
-<div
-  id="pages-of-posts"
->
-  <!---->
-</div>
-`;

@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/feed/as-article.vue Render a feed item as an article element 1`] = `
+<article
+  class="feed activity"
+>
+  <router-link
+    to="/+14151234356"
+  >
+    <!---->
+  </router-link>
+   
+  <hgroup>
+    <span>
+      Scott Fryxell
+    </span>
+     
+    <time
+      datetime="2019-05-11T22:40:04.580Z"
+      itemprop="created_at"
+    >
+      3:40 PM
+    </time>
+  </hgroup>
+    
+  <blockquote
+    itemprop="statement"
+  >
+    I am saying it
+  </blockquote>
+</article>
+`;

@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`@/components/posts/as-list.vue Render proper microdata for posts 1`] = `
-<div
-  itemprop="posts"
-/>
-`;

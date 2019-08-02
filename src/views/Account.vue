@@ -27,6 +27,7 @@
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import growth from '@/modules/growth'
   import posts_into_days from '@/mixins/posts_into_days'
+  import date_formating from '@/mixins/date_formating'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
@@ -34,7 +35,7 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [posts_into_days],
+    mixins: [date_formating, posts_into_days],
     components: {
       icon,
       'logo-as-link': logo_as_link,

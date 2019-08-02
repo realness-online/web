@@ -15,16 +15,24 @@
 </template>
 <script>
   const options = { rootMargin: '0px 0px 64px 0px' }
+  import date_formating from '@/mixins/date_formating'
   export default {
+    mixins: [date_formating],
+    props: {
+      post: {
+        type: Object,
+        required: true
+      }
+    },
     data() {
       return {
         observer: new IntersectionObserver(this.end_of_articles, options)
       }
     },
     mounted() {
-      const selector = '[itemprop=posts]:last-of-type > .day:first-of-type > article:first-of-type'
-      const article = this.$el.querySelector(selector)
-      if (article) this.observer.observe(article)
+      // const selector = '[itemprop=posts]:last-of-type > .day:first-of-type > article:first-of-type'
+      // const article = this.$el.querySelector(selector)
+      // if (article) this.observer.observe(article)
     },
     created() {
     },

@@ -5,18 +5,20 @@ exports[`@/views/Index.vue Renders navigation for the application 1`] = `
   class="page"
   id="home"
 >
-  <!---->
-   
   <h6
     class="app_version"
   >
     0.4.1
   </h6>
    
+  <!---->
+   
   <aside>
     <!---->
      
-    <!---->
+    <div
+      id="my-posts"
+    />
   </aside>
 </section>
 `;

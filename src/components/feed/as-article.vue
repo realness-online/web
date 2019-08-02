@@ -13,9 +13,10 @@
 </template>
 <script>
   import posts_into_days from '@/mixins/posts_into_days'
+  import date_formating from '@/mixins/date_formating'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [posts_into_days],
+    mixins: [date_formating, posts_into_days],
     components: {
       'profile-as-avatar': profile_as_avatar
     },
@@ -27,15 +28,14 @@
     },
     data() {
       return {
-        observer: new IntersectionObserver(this.end_of_posts, {}),
+        observer: null,
         oldest: this.post.person.oldest_post
       }
     },
     mounted() {
       if (this.i_am_oldest) {
-        this.$nextTick(_ => {
-          this.observer.observe(this.$el)
-        })
+        this.observer = new IntersectionObserver(this.end_of_posts, {}),
+        this.$nextTick(_ => this.observer.observe(this.$el))
       }
     },
     destroyed() {

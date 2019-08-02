@@ -5,7 +5,7 @@
     <aside>
       <my-figure :person="me"></my-figure>
       <div id="my-posts">
-        <as-article v-for="post in posts" :key="post_id(post)" :post="post"></as-article>
+        <as-article v-for="post in posts" :key="as_id(post)" :post="post"></as-article>
       </div>
     </aside>
   </section>
@@ -14,7 +14,6 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/models/profile_id'
-  import post from '@/models/post'
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import main_nav from '@/components/main-nav'
   import as_figure from '@/components/profile/as-figure'
@@ -34,6 +33,9 @@
         auth: firebase.auth()
       }
     },
+    created() {
+      this.$bus.$on('post-added', this.add_post)
+    },
     async mounted() {
       await Promise.all([
         this.sync_posts(),
@@ -41,7 +43,10 @@
       ])
     },
     methods: {
-      add_post(event) {
+      as_id(post) {
+        return `${person_local.as_object().id}/${post.created_at}`
+      },
+      add_post(post) {
         this.posts.push(post)
         this.$nextTick(async() => {
           await posts_local.save()

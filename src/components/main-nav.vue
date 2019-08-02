@@ -1,7 +1,7 @@
 <template>
   <nav id="main" v-bind:class="onboarding">
     <post-as-textarea v-on:toggle-keyboard="posting = !posting" class="red" ></post-as-textarea>
-    <button @click="done_posting" v-if="posting" tabindex="-1">done</button>
+    <button v-if="posting" @click="done_posting" tabindex="-1">done</button>
     <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Friends</router-link>
     <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
     <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Events</router-link>

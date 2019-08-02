@@ -24,7 +24,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Monday, June 24
+        Saturday, May 11, 2019
       </h4>
     </header>
      
@@ -35,85 +35,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Saturday, June 22
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Monday, June 17
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Tuesday, May 28
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Thursday, May 23
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Tuesday, May 21
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Sunday, May 19
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Saturday, May 18
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Friday, May 17
+        Friday, May 17, 2019
       </h4>
     </header>
      
@@ -126,7 +48,85 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Saturday, May 11
+        Saturday, May 18, 2019
+      </h4>
+    </header>
+     
+    <!---->
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Sunday, May 19, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, May 21, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Thursday, May 23, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, May 28, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Monday, June 17, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Saturday, June 22, 2019
+      </h4>
+    </header>
+     
+    <!---->
+  </section>
+  <section
+    class="day"
+  >
+    <header>
+      <h4>
+        Monday, June 24, 2019
       </h4>
     </header>
      

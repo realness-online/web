@@ -15,7 +15,7 @@
       </header>
       <feed-as-article v-for="post in day"
         :post="post"
-        :key="post_helper.as_id(post)"
+        :key="as_id(post)"
         v-on:next-page="next_page">
       </feed-as-article>
     </section>
@@ -24,15 +24,15 @@
 <script>
   import { relations_local, person_local } from '@/modules/LocalStorage'
   import profile_id from '@/models/profile_id'
-  import post_helper from '@/models/post'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
+  import date_formating from '@/mixins/date_formating'
   import feed_as_article from '@/components/feed/as-article'
   import icon from '@/components/icon'
   export default {
-    mixins: [posts_into_days],
+    mixins: [date_formating, posts_into_days],
     components: {
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
@@ -42,10 +42,10 @@
     data() {
       return {
         posts: [],
-        chronological: false,
         relations: [],
-        working: true,
-        feed_limit: 8
+        feed_limit: 8,
+        chronological: false,
+        working: true
       }
     },
     async created() {
@@ -60,6 +60,9 @@
       // console.timeEnd('feed-load')
     },
     methods: {
+      as_id(post) {
+        return `${post.person.id}/${post.created_at}`
+      },
       async get_first_posts(people_in_feed) {
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts] = await Promise.all([
