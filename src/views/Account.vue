@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <icon v-if="working" name="working"></icon>
-    <manage-avatar></manage-avatar>
+    <manage-avatar v-else></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
@@ -120,7 +120,7 @@
       & > div > form
         #phone
           display: none
-    & > div
+    & > div#login
       max-width: page-width
       margin: auto
       padding: base-line base-line 0 base-line
@@ -138,7 +138,4 @@
             order: 1
         & > header > h4
           margin-top: base-line
-</style>
-<style lang="stylus">
-
 </style>

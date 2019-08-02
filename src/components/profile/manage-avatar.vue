@@ -77,6 +77,9 @@
 </script>
 <style lang="stylus">
   div#manage-avatar
+    position:relative;
+    margin-top: -(base-line * 4)
+    z-index: -1
     & > svg
       fill: white
       width: 100vw
