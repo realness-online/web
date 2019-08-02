@@ -5,69 +5,70 @@
       <logo-as-link></logo-as-link>
     </header>
     <icon v-if="working" name="working"></icon>
-    <profile-as-avatar v-if="show_avatar" :person="me"></profile-as-avatar>
-    <menu v-if="show_avatar">
-      <a @click="open_camera">
-        <icon name="add"></icon>
-      </a>
-      <a @click="accept_changes" v-if="avatar_changed">
-        <icon name="finished"></icon>
-      </a>
-      <a id="download-avatar" :href="downloadable" download='vector.svg'>
-        <icon name="download"></icon>
-      </a>
-    </menu>
+    <manage-avatar @changed='save_me'></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
     </div>
-    <my-posts-as-list></my-posts-as-list>
-    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+    <div id="pages-of-posts">
+      <div itemprop="posts" v-for="[page_name, days] in pages" :key="page_name">
+        <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}" >
+          <header><h4>{{date}}</h4></header>
+          <posts-as-article v-for="post in day" :key="post.id" :post="post" @end-of-articles="load_more_posts"></posts-as-article>
+        </section>
+      </div>
+    </div>
   </section>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import profile from '@/models/profile_id'
+  import { person_local, posts_local } from '@/modules/LocalStorage'
+  import growth from '@/modules/growth'
+  import posts_into_days from '@/mixins/posts_into_days'
   import icon from '@/components/icon'
-  import { person_storage } from '@/modules/Storage'
-  import profile_id from '@/modules/profile_id'
+  import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
-  import profile_as_avatar from '@/components/profile/as-avatar'
-  import my_posts_as_list from '@/components/posts/my-list'
-  import logo_as_link from '@/components/logo-as-link'
-  import convert_to_avatar from '@/modules/convert_to_avatar'
-  import posts_into_days from '@/mixins/posts_into_days'
+  import manage_avatar from '@/components/profile/manage-avatar'
+  import as_article from '@/components/posts/as-article'
   export default {
     mixins: [posts_into_days],
     components: {
+      icon,
+      'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
-      'profile-as-avatar': profile_as_avatar,
-      'my-posts-as-list': my_posts_as_list,
-      'logo-as-link': logo_as_link,
-      icon
+      'posts-as-article': as_article,
+      'manage-avatar': manage_avatar
     },
     data() {
       return {
+        pages: [],
+        me: person_local.as_object(),
+        limit: growth.first(),
         auth: firebase.auth(),
-        me: {},
         working: false,
         signed_in: false,
         avatar_changed: false,
-        image_file: null
+        image_file: null,
+        chronological: true
       }
     },
     async created() {
-      this.me = await person_storage.as_object()
+      this.pages.push(await posts_local.as_list())
       const user = this.auth.currentUser
       if (user) {
         this.signed_in = true
-        const id = profile_id.from_e64(user.phoneNumber)
-        this.me = await profile_id.load(id)
+        const id = profile.from_e64(user.phoneNumber)
+        this.me = await profile.load(id)
       }
       this.$bus.$off('save-me')
-      this.$bus.$on('save-me', () => this.save_me())
+      this.$bus.$on('save-me', this.save_me)
+    },
+    updated() {
+      this.$nextTick(() => this.observe_posts())
     },
     computed: {
       show_avatar() {
@@ -76,95 +77,39 @@
         } else {
           return false
         }
-      },
-      downloadable() {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-          ${this.me.avatar}
-          <use href="${profile_id.as_avatar_fragment(this.me.id)}"/>
-        </svg>`
-        return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
     },
     methods: {
-      async save_me() {
+      is_today(date) {
+        if (date.indexOf('Today') > -1) return true
+        else return false
+      },
+      toggle_post(post) {
+        post.muted = !post.muted
+        this.$nextTick(_ => posts_local.save())
+      },
+      async load_more_posts() {
+        const older_posts = await posts_local.next_list(this.limit)
+        if (older_posts.length > 0) {
+          this.pages.push(older_posts)
+          this.limit = growth.next(this.limit)
+        }
+      },
+      async save_me(event) {
         const user = this.auth.currentUser
         if (user) {
-          this.me.id = profile_id.from_e64(user.phoneNumber)
+          this.me.id = profile.from_e64(user.phoneNumber)
           if (!this.me.avatar) {
-            const profile = await profile_id.load(this.me.id)
-            this.me.avatar = profile.avatar
+            this.me.avatar = (await profile.load(this.me.id)).avatar
           }
         }
-        this.$nextTick(_ => person_storage.save())
-      },
-      async vectorize_image(image) {
-        this.working = true
-        this.avatar_changed = true
-        const avatar_id = profile_id.as_avatar_id(this.me.id)
-        this.$nextTick(async() => {
-          this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
-          this.working = false
-        })
-      },
-      async accept_changes(event) {
-        if (this.avatar_changed) {
-          await person_storage.save()
-          this.avatar_changed = false
-        }
-      },
-      open_camera(event) {
-        this.$refs.uploader.setAttribute('capture', true)
-        this.$refs.uploader.click()
-      },
-      attach_poster(event) {
-        this.$refs.uploader.removeAttribute('capture')
-        this.$refs.uploader.click()
-      }
-    },
-    directives: {
-      uploader: {
-        bind(input, binding, vnode) {
-          input.addEventListener('change', event => {
-            const image = event.target.files[0]
-            if (image !== undefined && image.type === 'image/jpeg') {
-              vnode.context.vectorize_image(image)
-            }
-          })
-        }
+        this.$nextTick(_ => person_local.save())
       }
     }
   }
 </script>
 <style lang='stylus'>
   section#account
-    & > svg
-      fill: white
-      width: 100vw
-      min-height: 100vh
-      &.working
-        flex-grow: 1
-        padding: base-line
-        width: 100vw
-        height: 50vh
-    & > menu
-      display: flex
-      justify-content: space-between
-      margin-top: -(base-line * 3)
-      padding: 0 base-line base-line base-line
-      & > a
-        cursor: pointer
-        &#download-avatar
-          display: none
-          @media (min-width: max-screen)
-            display: inherit
-    & > div
-      max-width: page-width
-      margin: auto
-      padding: base-line base-line 0 base-line
-      & > form
-        margin-top: base-line
-    & > input[type=file]
-      display: none
     &.signed_in
       & > header
         margin-bottom: -(base-line * 4)
@@ -173,4 +118,25 @@
       & > div > form
         #phone
           display: none
+    & > div
+      max-width: page-width
+      margin: auto
+      padding: base-line base-line 0 base-line
+      & > form
+        margin-top: base-line
+    div[itemprop="posts"]
+      display:flex
+      flex-direction: column-reverse
+      & > section.day
+        display:flex
+        flex-direction: column
+        &.today
+          flex-direction: column-reverse
+          & > header
+            order: 1
+        & > header > h4
+          margin-top: base-line
+</style>
+<style lang="stylus">
+
 </style>

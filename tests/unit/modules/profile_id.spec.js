@@ -1,9 +1,9 @@
-import profile_id from '@/modules/profile_id'
+import profile_id from '@/models/profile_id'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
-describe('@/modules/profile_id', () => {
+describe('@/models/profile_id', () => {
   it('#load', async() => {
     fetch.mockResponseOnce(person)
     const katie = await profile_id.load('/+16282281824')

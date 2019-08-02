@@ -76,8 +76,8 @@
     "last 1 versions"
   ],
   "jest": {
-    "verbose": true,
-    "collectCoverage": true,
+    "verbose": false,
+    "collectCoverage": false,
     "restoreMocks": false,
     "moduleFileExtensions": [
       "js",

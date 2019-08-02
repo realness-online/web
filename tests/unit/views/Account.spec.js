@@ -2,7 +2,7 @@ import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import Storage, { person_storage } from '@/modules/Storage'
-import profile_id from '@/modules/profile_id'
+import profile_id from '@/models/profile_id'
 import convert_to_avatar from '@/modules/convert_to_avatar'
 import flushPromises from 'flush-promises'
 describe('@/views/Account.vue', () => {

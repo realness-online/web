@@ -47,7 +47,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber } from 'libphonenumber-js'
-  import profile_id from '@/modules/profile_id'
+  import profile_id from '@/models/profile_id'
   import icon from '@/components/icon'
   export default {
     props: ['person'],

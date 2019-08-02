@@ -16,7 +16,7 @@
   import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
-  import profile_id from '@/modules/profile_id'
+  import profile_id from '@/models/profile_id'
   import relationship_events from '@/mixins/relationship_events'
   export default {
     mixins: [relationship_events],

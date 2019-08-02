@@ -1,49 +1,70 @@
 <template>
   <section id="home" class="page">
-    <main-nav></main-nav>
     <h6 class="app_version">{{version}}</h6>
+    <main-nav @new-post="add_post"></main-nav>
     <aside>
-      <my-posts></my-posts>
       <my-figure :person="me"></my-figure>
+      <div id="my-posts">
+        <as-article v-for="post in posts" :key="post_id(post)" :post="post"></as-article>
+      </div>
     </aside>
   </section>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import profile_id from '@/modules/profile_id'
-  import { person_local } from '@/modules/LocalStorage'
+  import profile from '@/models/profile_id'
+  import post from '@/models/post'
+  import { person_local, posts_local } from '@/modules/LocalStorage'
   import main_nav from '@/components/main-nav'
-  import my_posts_as_list from '@/components/posts/my-list'
   import as_figure from '@/components/profile/as-figure'
+  import as_article from '@/components/posts/as-article'
   export default {
     components: {
       'main-nav': main_nav,
-      'my-posts': my_posts_as_list,
-      'my-figure': as_figure
+      'my-figure': as_figure,
+      'as-article': as_article
     },
     data() {
       return {
+        five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
-        me: person_local.as_object()
+        me: person_local.as_object(),
+        posts: posts_local.as_list(),
+        auth: firebase.auth()
       }
     },
-    async created() {
-      this.sync_profile()
+    async mounted() {
+      await Promise.all([
+        this.sync_posts(),
+        this.sync_profile()
+      ])
     },
     methods: {
+      add_post(event) {
+        this.posts.push(post)
+        this.$nextTick(async() => {
+          await posts_local.save()
+          await posts_local.optimize()
+        })
+      },
       async sync_profile() {
         const last_synced = sessionStorage.getItem('profile-synced')
-        const five_minutes_ago = Date.now() - (1000 * 60 * 5)
-        const user = firebase.auth().currentUser
-        if (user && five_minutes_ago > last_synced) {
-          const id = profile_id.from_e64(user.phoneNumber)
-          this.me = await profile_id.load(id)
+        if (this.auth.currentUser && this.five_minutes_ago > last_synced) {
+          const id = profile.from_e64(this.auth.currentUser.phoneNumber)
+          this.me = await profile.load(id)
           this.$nextTick(async() => {
             await person_local.save()
             sessionStorage.setItem('profile-synced', Date.now())
-            console.log('profile synced')
           })
+        }
+      },
+      async sync_posts() {
+        const last_synced = sessionStorage.getItem('posts-synced')
+        if (this.auth.currentUser && this.five_minutes_ago > last_synced) {
+          this.posts = await posts_local.sync_list()
+          sessionStorage.setItem('posts-synced', Date.now())
+          this.$nextTick(_ => posts_local.save())
         }
       }
     }

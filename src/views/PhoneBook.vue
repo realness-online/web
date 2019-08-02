@@ -18,7 +18,7 @@
 <script>
   import { relations_local } from '@/modules/LocalStorage'
   import { phonebook_storage } from '@/modules/PhoneBook'
-  import profile_id from '@/modules/profile_id'
+  import profile_id from '@/models/profile_id'
   import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
