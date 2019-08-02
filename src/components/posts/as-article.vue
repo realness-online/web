@@ -15,6 +15,7 @@
 </template>
 <script>
   import date_formating from '@/mixins/date_formating'
+  import { posts_local } from '@/modules/LocalStorage'
   const options = { rootMargin: '0px 0px 64px 0px' }
   export default {
     mixins: [date_formating],
@@ -38,6 +39,14 @@
     },
     destryed() {
       this.observer.disconnect()
+    },
+    computed: {
+      i_am_oldest() {
+        const my_posts = posts_local.as_list()
+        const oldest = my_posts[my_posts.length - 1]
+        if (this.post.created_at === oldest.created_at) return true
+        else return false
+      }
     },
     methods: {
       async end_of_articles(entries) {

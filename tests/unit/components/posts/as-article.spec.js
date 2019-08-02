@@ -1,6 +1,12 @@
 import { shallow } from 'vue-test-utils'
-import as_article from '@/components/posts/as-article'
 import flushPromises from 'flush-promises'
+import Item from '@/modules/Item'
+import LocalStorage from '@/modules/LocalStorage'
+import Storage from '@/modules/Storage'
+import as_article from '@/components/posts/as-article'
+const fs = require('fs')
+const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
+
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
@@ -10,13 +16,12 @@ const post = {
   articleBody: 'I am saying it',
   created_at: '2019-05-11T22:40:04.580Z',
   id: '/+14151234356/2019-05-11T22:40:04.580Z',
-  statements: [],
   person
 }
-const statement = {
-  articleBody: 'I am making a statement',
-  created_at: '2019-05-11T22:50:04.580Z',
-  id: '/+14151234356/2019-05-11T22:40:04.580Z'
+const oldest_post = {
+  articleBody: 'I can say all the stuff',
+  created_at: '2019-06-24T20:52:56.031Z',
+  id: '/+14151234356/2019-06-24T20:52:56.031Z'
 }
 describe('@/components/posts/as-article.vue', () => {
   it('Render a post as an article element', async() => {
@@ -26,20 +31,23 @@ describe('@/components/posts/as-article.vue', () => {
     wrapper.destroy()
   })
   it('Sets an observer if it is the oldest post', () => {
-    post.person.oldest_post = post.created_at
-    const wrapper = shallow(as_article, { propsData: { post } })
+    jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(_ => {
+      return Item.get_items(Storage.hydrate(posts))
+    })
+    const wrapper = shallow(as_article, { propsData: { post: oldest_post } })
     expect(wrapper.vm.i_am_oldest).toBe(true)
   })
-  it('Sets an observer if one of a posts statements is the oldest post', () => {
-    post.person.oldest_post = statement.created_at
-    post.statements.push(statement)
+  it('knows when it is not the oldest post', () => {
+    jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(_ => {
+      return Item.get_items(Storage.hydrate(posts))
+    })
     const wrapper = shallow(as_article, { propsData: { post } })
-    expect(wrapper.vm.i_am_oldest).toBe(true)
+    expect(wrapper.vm.i_am_oldest).toBe(false)
   })
   it('Triggers an event if the article is observed', () => {
     const wrapper = shallow(as_article, { propsData: { post } })
     const entries = [{ isIntersecting: true }]
-    wrapper.vm.end_of_posts(entries)
+    wrapper.vm.end_of_articles(entries)
     expect(wrapper.emitted('next-page')).toBeTruthy
   })
 })
