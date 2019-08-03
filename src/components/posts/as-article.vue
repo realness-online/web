@@ -76,7 +76,7 @@
   }
 </script>
 <style lang="stylus"
-  & > article
+  & > article[itemtype="/post"]
     margin-bottom: base-line
     & > header
       float:left
