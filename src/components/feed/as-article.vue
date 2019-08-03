@@ -87,10 +87,8 @@
         margin-bottom: 0
     & > a > svg
       float: left
-      margin-right: base-line
+      margin-right: (base-line / 2) 
       shape-outside: circle()
       clip-path: circle(44%)
       fill: blue
-      stroke: lighten(blue, 33%)
-      stroke-width: 2px
 </style>
