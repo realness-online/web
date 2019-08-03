@@ -77,9 +77,7 @@
         display: inline-block
         vertical-align: center
       & > span
-        color: black
       & > time
-        color: black
         margin-left: (base-line / 6)
     & > blockquote
       margin-bottom: base-line
@@ -87,7 +85,7 @@
         margin-bottom: 0
     & > a > svg
       float: left
-      margin-right: (base-line / 2) 
+      margin-right: (base-line / 2)
       shape-outside: circle()
       clip-path: circle(44%)
       fill: blue
