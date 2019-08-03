@@ -61,7 +61,6 @@ describe('@/components/main-nav.vue', () => {
         expect(wrapper.vm.onboarding.has_friends).toBe(true)
       })
       it.skip('Events will be visible when person has 5 friends', () => {
-        localStorage.setItem('relations-count', 5)
         wrapper = shallow(main_nav)
         expect(wrapper.vm.onboarding.can_event).toBe(true)
       })

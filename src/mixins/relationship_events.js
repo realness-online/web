@@ -15,14 +15,12 @@ export default {
   methods: {
     add_relationship(person) {
       this.relations.push(person)
-      localStorage.setItem('relations-count', this.relations.length)
       this.$nextTick(_ => relations_local.save())
     },
     remove_relationship(person) {
       const index = this.relations.findIndex(p => (p.id === person.id))
       if (index > -1) {
         this.relations.splice(index, 1)
-        localStorage.setItem('relations-count', this.relations.length)
         this.$nextTick(_ => relations_local.save())
       }
     }
