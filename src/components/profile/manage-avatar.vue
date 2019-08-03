@@ -3,7 +3,7 @@
     <as-avatar :person="me"></as-avatar>
     <menu>
       <a @click="open_camera"><icon name="camera"></icon></a>
-      <a @click="select_photo"><icon name="add"></icon></a>
+      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
       <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
     </menu>
@@ -98,12 +98,18 @@
       padding: 0 base-line base-line base-line
       & > a
         cursor: pointer
+        &#select_photo
+          @media (min-width: max-screen)
+            display: none
         &#download-avatar
           display: none
           @media (min-width: max-screen)
             display: inherit
         & > svg
           fill: red
+          &.camera
+            height: (base-line * 3)
+            width: (base-line * 2.33)
     & > input[type=file]
       display: none
 </style>
