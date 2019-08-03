@@ -4,7 +4,7 @@
     <main-nav @new-post="add_post"></main-nav>
     <aside>
       <my-figure :person="me"></my-figure>
-      <div id="my-posts">
+      <div itemprop="posts">
         <as-article v-for="post in posts" :key="as_id(post)" :post="post" :me="true"></as-article>
       </div>
     </aside>
