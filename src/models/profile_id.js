@@ -10,10 +10,8 @@ async function get_url(person_id, name) {
     if (e.code === 'storage/object-not-found') {
       console.warn(path, e.code)
       return []
-    }
-    else throw e
+    } else throw e
   }
-
 }
 export default {
   async load(profile_id) {

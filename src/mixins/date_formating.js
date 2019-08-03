@@ -1,5 +1,4 @@
-// const a_year_ago = new Date().getFullYear() - 1
-const a_year_ago = Date.parse( (new Date().getFullYear() ) )
+const a_year_ago = Date.parse(new Date().getFullYear())
 const format_as_time = {
   hour: 'numeric',
   minute: 'numeric',
