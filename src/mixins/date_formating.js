@@ -1,5 +1,5 @@
 // const a_year_ago = new Date().getFullYear() - 1
-const a_year_ago = new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+const a_year_ago = Date.parse( (new Date().getFullYear() ) )
 const format_as_time = {
   hour: 'numeric',
   minute: 'numeric',
@@ -37,8 +37,9 @@ export default {
     },
     created_day(created_at) {
       let day
-      if (created_at < a_year_ago) day = this.created_time(created_at, format_as_day)
-      else day = this.created_time(created_at, format_as_day_and_year)
+      if (Date.parse(created_at) < a_year_ago) {
+        day = this.created_time(created_at, format_as_day_and_year)
+      } else day = this.created_time(created_at, format_as_day)
       const today = this.created_time(new Date().toISOString(), format_as_day)
       if (day === today) day = `Today – ${day}`
       return day
