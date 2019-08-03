@@ -19,11 +19,10 @@ export default {
       const day = this.days.get(day_name)
       if (day) {
         // TODO: play around with what's the fastest sorting unshift or push etc
+        day.push(post)
         if (this.chronological || day === this.today) {
-          day.push(post)
           day.sort(this.newer_first)
         } else {
-          day.unshift(post)
           day.sort(this.older_first)
         }
       } else {
@@ -39,15 +38,16 @@ export default {
       }
     },
     condense_posts() {
-      this.posts.sort(this.later_first)
+      this.posts.sort(this.newer_first)
       const condensed_posts = []
       while (this.posts.length > 0) {
         const post = this.posts.shift()
         post.statements = []
         while (this.is_train_of_thought(post)) {
           const next_statement = this.posts.shift()
-          post.statements.unshift(next_statement)
+          post.statements.push(next_statement)
         }
+        post.statements.sort(this.older_first)
         condensed_posts.push(post)
       }
       return condensed_posts
@@ -59,7 +59,7 @@ export default {
         let last_post = post
         // console.log('last_post', last_post);
         if (post.statements.length > 0) last_post = post.statements[0]
-        const difference = Date.parse(next_post.created_at) - Date.parse(last_post.created_at)
+        const difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
         // console.log(this.thirteen_minutes, difference, (difference < this.thirteen_minutes));
         if (difference < this.thirteen_minutes) return true
         else return false
@@ -67,11 +67,12 @@ export default {
     },
     newer_first(earlier, later) {
       this.sort_count++
-      return Date.parse(earlier.created_at) - Date.parse(later.created_at)
+      return Date.parse(later.created_at) - Date.parse(earlier.created_at)
     },
     older_first(earlier, later) {
       this.sort_count++
-      return Date.parse(later.created_at) - Date.parse(earlier.created_at)
+      return Date.parse(earlier.created_at) - Date.parse(later.created_at)
+      // return Date.parse(earlier.created_at) - Date.parse(later.created_at)
     }
   }
 }
