@@ -49,15 +49,15 @@
       }
     },
     async created() {
-      // console.clear()
-      // console.time('feed-load')
+      console.clear()
+      console.time('feed-load')
       const people_in_feed = relations_local.as_list()
       const me = person_local.as_object()
       people_in_feed.push(me)
       await this.get_first_posts(people_in_feed)
       this.working = false
-      // console.info(`${this.sort_count} sort operations`)
-      // console.timeEnd('feed-load')
+      console.info(`${this.sort_count} sort operations`)
+      console.timeEnd('feed-load')
     },
     methods: {
       as_id(post) {
@@ -81,7 +81,7 @@
         const next_page = `posts.${person.page}`
         const posts = await profile_id.items(person.id, next_page)
         posts.forEach(post => this.add_person_to_post(person, post))
-        console.assert(this.posts.length === 0, 'posts should be zero')
+        console.assert(this.posts.length === 0, 'posts should be zero', this.posts.length)
         this.posts = [...posts, ...this.posts]
         this.posts_into_days()
       }
