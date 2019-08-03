@@ -16,7 +16,6 @@
   import profile_id from '@/models/profile_id'
   import icon from '@/components/icon'
   import as_avatar from '@/components/profile/as-avatar'
-
   export default {
     components: {
       icon,
@@ -73,7 +72,6 @@
       }
     }
   }
-
 </script>
 <style lang="stylus">
   div#manage-avatar
