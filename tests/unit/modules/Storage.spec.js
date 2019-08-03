@@ -11,7 +11,7 @@ describe('@/modules/Storage.js', () => {
   afterEach(() => {
     localStorage.clear()
   })
-  describe('retrieving', () => {
+  describe('Retrieving', () => {
     let storage
     let item_as_string
     beforeEach(() => {
@@ -109,7 +109,7 @@ describe('@/modules/Storage.js', () => {
       })
     })
   })
-  describe('persistance', () => {
+  describe('Persistance', () => {
     let posts_storage
     beforeEach(() => {
       posts_storage = new Storage('posts', '[itemprop=posts]')
@@ -118,7 +118,7 @@ describe('@/modules/Storage.js', () => {
       it('Exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
-      it('it optimizes a list of items accross a set of pages', async() => {
+      it('It optimizes a list of items accross a set of pages', async() => {
         localStorage.setItem(posts_storage.name, posts)
         await posts_storage.optimize()
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)

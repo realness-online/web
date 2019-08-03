@@ -48,7 +48,7 @@ describe('@/components/profile/manage-avatar.vue', () => {
       })
     })
     describe('#select_photo', () => {
-      it('change file input to attach image rahter than capture', () => {
+      it('Change file input to attach image rahter than capture', () => {
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(true)
         wrapper.vm.select_photo()
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(false)

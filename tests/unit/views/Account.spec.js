@@ -19,8 +19,8 @@ describe('@/views/Account.vue', () => {
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe.only('#save_me', () => {
-    it('saves a user', async() => {
+  describe('#save_me', () => {
+    it('Saves a user', async() => {
       const spy = jest.spyOn(person_local, 'save')
       .mockImplementation(() => Promise.resolve('spy'))
       await wrapper.vm.save_me()

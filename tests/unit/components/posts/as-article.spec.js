@@ -37,7 +37,7 @@ describe('@/components/posts/as-article.vue', () => {
     const wrapper = shallow(as_article, { propsData: { post: oldest_post } })
     expect(wrapper.vm.i_am_oldest).toBe(true)
   })
-  it('knows when it is not the oldest post', () => {
+  it('Knows when it is not the oldest post', () => {
     jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(_ => {
       return Item.get_items(Storage.hydrate(posts))
     })

@@ -25,7 +25,7 @@ describe('@/views/Feed.vue', () => {
     expect(wrapper.vm.days.size).toBe(18)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('loads another page of data for a person', async() => {
+  it('Loads another page of data for a person', async() => {
     let wrapper = shallow(Feed)
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(18)
