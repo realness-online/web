@@ -34,6 +34,6 @@ describe('@/views/Feed.vue', () => {
     })
     wrapper.vm.next_page(mock_person)
     await flushPromises()
-    expect(wrapper.vm.days.size).toBe(22)
+    expect(wrapper.vm.days.size).toBe(23)
   })
 })
