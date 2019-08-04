@@ -2,17 +2,6 @@ import * as firebase from 'firebase/app'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
 import 'firebase/storage'
-async function get_url(person_id, name) {
-  const path = `/people${person_id}/${name}.html`
-  try {
-    return await firebase.storage().ref().child(path).getDownloadURL()
-  } catch (e) {
-    if (e.code === 'storage/object-not-found') {
-      console.warn(path, e.code)
-      return []
-    } else throw e
-  }
-}
 export default {
   async load(profile_id) {
     const person = (await this.items(profile_id, 'person'))[0]
@@ -20,7 +9,7 @@ export default {
     return person
   },
   async items(profile_id, name) {
-    const url = await get_url(profile_id, name)
+    const url = await Storage.get_download_url(profile_id, `${name}.html`)
     const server_text = await (await fetch(url)).text()
     return Item.get_items(Storage.hydrate(server_text))
   },

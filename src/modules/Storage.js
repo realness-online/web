@@ -3,6 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import growth from '@/modules/growth'
+import sorting from '@/modules/sorting'
 const networkable = ['person', 'posts']
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
@@ -20,6 +21,18 @@ function keep_going(current_items, limit) {
   }
 }
 class Storage {
+  static async get_download_url(person_id, name) {
+    const path = `/people${person_id}/${name}`
+    console.log(path)
+    try {
+      return firebase.storage().ref().child(path).getDownloadURL()
+    } catch (e) {
+      if (e.code === 'storage/object-not-found') {
+        console.warn(path, e.code)
+        return []
+      } else throw e
+    }
+  }
   static hydrate(item_as_string) {
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
@@ -40,14 +53,13 @@ class Storage {
   }
   async from_network() {
     if (networkable.includes(this.type)) {
-      try {
-        const url = await this.get_download_url()
+      const url = await this.get_download_url()
+      console.log(url);
+      if (url) {
         return Storage.hydrate(await (await fetch(url)).text())
-      } catch (e) {
-        if (e.code === 'storage/object-not-found') return null
-        else throw e
       }
-    } else return null
+    }
+    return null
   }
   from_local(name = this.name) {
     const storage_string = localStorage.getItem(name)
@@ -106,24 +118,27 @@ class Storage {
   async get_download_url() {
     const user = firebase.auth().currentUser
     if (user) {
-      const file = `/people/${user.phoneNumber}/${this.filename}`
-      const url = await firebase.storage().ref().child(file).getDownloadURL()
-      return url
+      return Storage.get_download_url(`/${user.phoneNumber}`, this.filename)
     } else return null
   }
   async sync_list() {
     let from_server = await this.from_network()
-    let local = await this.as_list()
+    console.log('from_server', from_server);
     from_server = Item.get_items(from_server)
-    let filtered_local = local.filter(local_item => {
-      return !from_server.some(server_item => {
-        return local_item.created_at === server_item.created_at
+
+    let items
+    if (this.from_local()) {
+      const local_items = Item.get_items(this.from_local())
+      let filtered_local = local_items.filter(local_item => {
+        return !from_server.some(server_item => {
+          return local_item.created_at === server_item.created_at
+        })
       })
-    })
-    let items = [...filtered_local, ...from_server]
-    items.sort((a, b) => {
-      return Date.parse(a.created_at) - Date.parse(b.created_at)
-    })
+      items = [...filtered_local, ...from_server]
+      items.sort(sorting.older_first)
+    } else {
+      items = from_server
+    }
     return items
   }
   async next_list(limit = growth.first()) {
@@ -131,7 +146,6 @@ class Storage {
     return history.as_list()
   }
 }
-
 export default Storage
 export const person_storage = new Storage('person')
 export var posts_storage = new Storage('posts', '[itemprop=posts]')

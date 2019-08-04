@@ -1,4 +1,5 @@
 // const a_year_ago = new Date().getFullYear() - 1
+import sorting from '@/modules/sorting'
 export default {
   data() {
     return {
@@ -67,12 +68,11 @@ export default {
     },
     newer_first(earlier, later) {
       this.sort_count++
-      return Date.parse(later.created_at) - Date.parse(earlier.created_at)
+      return sorting.newer_first(earlier, later)
     },
     older_first(earlier, later) {
       this.sort_count++
-      return Date.parse(earlier.created_at) - Date.parse(later.created_at)
-      // return Date.parse(earlier.created_at) - Date.parse(later.created_at)
+      return sorting.older_first(earlier, later)
     }
   }
 }

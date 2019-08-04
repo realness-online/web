@@ -29,8 +29,7 @@
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
         me: person_local.as_object(),
-        posts: posts_local.as_list(),
-        auth: firebase.auth()
+        posts: posts_local.as_list()
       }
     },
     created() {
@@ -51,25 +50,37 @@
         this.$nextTick(async() => {
           await posts_local.save()
           await posts_local.optimize()
+          this.posts = posts_storage.as_list()
         })
       },
+      should_sync(last_synced) {
+        if (!last_synced || firebase.auth().currentUser && this.five_minutes_ago > last_synced) {
+          console.log('should_sync')
+          return true
+        }
+        return false
+      },
       async sync_profile() {
-        const last_synced = sessionStorage.getItem('profile-synced')
-        if (this.auth.currentUser && this.five_minutes_ago > last_synced) {
-          const id = profile.from_e64(this.auth.currentUser.phoneNumber)
-          this.me = await profile.load(id)
-          this.$nextTick(async() => {
-            await person_local.save()
-            sessionStorage.setItem('profile-synced', Date.now())
-          })
+        if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
+          const user = firebase.auth().currentUser
+          if (user) {
+            const id = profile.from_e64(user.phoneNumber)
+            console.log(id);
+            this.me = await profile.load(id)
+            this.$nextTick(async() => {
+              await person_local.save()
+              sessionStorage.setItem('profile-synced', Date.now())
+            })
+          }
         }
       },
       async sync_posts() {
-        const last_synced = sessionStorage.getItem('posts-synced')
-        if (this.auth.currentUser && this.five_minutes_ago > last_synced) {
+        if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
           this.posts = await posts_local.sync_list()
-          sessionStorage.setItem('posts-synced', Date.now())
-          this.$nextTick(_ => posts_local.save())
+          this.$nextTick(async() => {
+            await posts_local.save()
+            sessionStorage.setItem('posts-synced', Date.now())
+          })
         }
       }
     }
