@@ -54,8 +54,8 @@
         })
       },
       should_sync(last_synced) {
-        if (!last_synced || firebase.auth().currentUser && this.five_minutes_ago > last_synced) {
-          console.log('should_sync')
+        const user = firebase.auth().currentUser
+        if (!last_synced || user && this.five_minutes_ago > last_synced) {
           return true
         }
         return false
@@ -65,7 +65,6 @@
           const user = firebase.auth().currentUser
           if (user) {
             const id = profile.from_e64(user.phoneNumber)
-            console.log(id);
             this.me = await profile.load(id)
             this.$nextTick(async() => {
               await person_local.save()
