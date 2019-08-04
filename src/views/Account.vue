@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="account" v-bind:class="{signed_in}" class="page">
+  <section id="account" v-bind:class="{signed_in: firebase.auth().currentUser}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -12,15 +12,14 @@
     </div>
     <div id="pages-of-posts">
       <div itemprop="posts" v-for="[page_name, days] in pages" :key="page_name">
-        <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}" >
+        <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}">
           <header><h4>{{date}}</h4></header>
-          <posts-as-article
-            v-for="post in day"
-            :key="post.id"
-            :post="post"
-            :me="true"
-            @end-of-articles="next_page">
-          </posts-as-article>
+          <post-as-article v-for="post in day" :key="post.id"
+                           :post="post"
+                           :person="me"
+                           @end-of-articles="next_page"
+                           @saved="save_posts">
+          </post-as-article>
         </section>
       </div>
     </div>
@@ -29,7 +28,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import profile from '@/models/profile_id'
+  import profile from '@/helpers/profile'
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import growth from '@/modules/growth'
   import posts_into_days from '@/mixins/posts_into_days'
@@ -41,21 +40,20 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [date_formating, posts_into_days],
+    mixins: [date_formating],
     components: {
       icon,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
-      'posts-as-article': as_article,
+      'post-as-article': as_article,
       'manage-avatar': manage_avatar
     },
     data() {
       return {
-        pages: [],
+        pages: new Map(),
         me: person_local.as_object(),
         limit: growth.first(),
-        auth: firebase.auth(),
         working: false,
         signed_in: false,
         image_file: null,
@@ -63,26 +61,13 @@
       }
     },
     async created() {
-      this.pages.push(await posts_local.as_list())
-      const user = this.auth.currentUser
+      posts_local.as_list().forEach(post => post.person = this.me)
+      this.pages.set('posts', posts_local.as_list())
+      const user = firebase.auth().currentUser
       if (user) {
         this.signed_in = true
         const id = profile.from_e64(user.phoneNumber)
         this.me = await profile.load(id)
-      }
-      this.$bus.$off('save-me')
-      this.$bus.$on('save-me', this.save_me)
-    },
-    updated() {
-      // this.$nextTick(() => this.observe_posts())
-    },
-    computed: {
-      show_avatar() {
-        if (this.signed_in && !this.working) {
-          return true
-        } else {
-          return false
-        }
       }
     },
     methods: {
@@ -98,7 +83,7 @@
         }
       },
       async save_me(event) {
-        const user = this.auth.currentUser
+        const user = firebase.auth().currentUser
         if (user) {
           this.me.id = profile.from_e64(user.phoneNumber)
           if (!this.me.avatar) {
@@ -106,6 +91,9 @@
           }
         }
         this.$nextTick(_ => person_local.save())
+      },
+      async save_posts(event) {
+        this.$nextTick(_ => posts_local.save())
       }
     }
   }

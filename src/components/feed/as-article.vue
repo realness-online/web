@@ -7,8 +7,8 @@
       <span>{{post.person.first_name}} {{post.person.last_name}}</span>
       <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
     </hgroup>
-    <blockquote itemprop="statement" v-for="statement in post.statements" :key="statement.created_at" >{{statement.articleBody}}</blockquote>
-    <blockquote itemprop="statement" >{{post.articleBody}}</blockquote>
+    <p itemprop="statement" itemscope itemtype='/post' :itemid="statement_id(statement)"  itemscope v-for="statement in post.statements" :key="statement.created_at" >{{statement.articleBody}}</0>
+    <p itemprop="statement" >{{post.articleBody}}</p>
   </article>
 </template>
 <script>

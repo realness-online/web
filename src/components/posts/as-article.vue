@@ -1,97 +1,92 @@
 <template lang="html">
-  <article itemscope itemtype="/post" :key="post.created_at" v-bind:class="{silent: post.muted}">
-    <header v-if="me">
-      <menu>
-        <a @click="toggle_post(post)">
-          <icon v-if="post.muted" name="add"></icon>
-          <icon v-else name="remove"></icon>
-        </a>
-      </menu>
-    </header>
-    <meta itemprop="muted" v-if="post.muted" :content="post.muted">
-    <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
-    <blockquote :contenteditable="me" @blur="changed" itemprop="articleBody">{{post.articleBody}}</blockquote>
+  <article itemscope itemtype='/post' :itemid="id" :key="id">
+    <time itemprop="created_at" :datetime="post.created_at">{{created_time}}</time>
+    <p itemprop="statement" :contenteditable="me" @blur="save">{{as_statement}}</p>
+    <ol v-if="post.statements">
+      <post-as-li v-for="statement in post.statements" :key="as_id(statement)"
+        :post="statement"
+        :person="person"
+        @end-of-page="next_page"
+        @saved="save":></post-as-li>
+    </ol>
   </article>
 </template>
 <script>
+  import posts_into_days from '@/mixins/posts_into_days'
   import date_formating from '@/mixins/date_formating'
-  import { posts_local } from '@/modules/LocalStorage'
-  import icon from '@/components/icon'
-  const options = { rootMargin: '0px 0px 64px 0px' }
+  import profile_as_avatar from '@/components/profile/as-avatar'
+  import post_helper from '@/helpers/post'
   export default {
-    mixins: [date_formating],
+    mixins: [date_formating, posts_into_days],
     components: {
-      icon
+      'profile-as-avatar': profile_as_avatar
     },
     props: {
       post: {
         type: Object,
         required: true
       },
-      me: {
-        type: Boolean,
-        default: false
+      person: {
+        type: Object,
+        required: true
       }
     },
     data() {
       return {
-        observer: new IntersectionObserver(this.end_of_articles, options)
+        observer: null
       }
     },
     mounted() {
-      // const selector = '[itemprop=posts]:last-of-type > .day:first-of-type > article:first-of-type'
-      // const article = this.$el.querySelector(selector)
-      // if (article) this.observer.observe(article)
+      if (this.i_am_oldest) {
+        this.observer = new IntersectionObserver(this.end_of_articles, {})
+        this.$nextTick(_ => this.observer.observe(this.$el))
+      }
     },
-    created() {
-    },
-    destryed() {
-      this.observer.disconnect()
+    destroyed() {
+      if (this.observer) this.observer.unobserve(this.$el)
     },
     computed: {
-      i_am_oldest() {
-        const my_posts = posts_local.as_list()
-        const oldest = my_posts[my_posts.length - 1]
-        if (this.post.created_at === oldest.created_at) return true
+      me() {
+        if (person_local.as_object().id === this.person.id) return true
         else return false
+      },
+      created_time() {
+        return created_time(post.created_at)
+      },
+      id() {
+        return post_helper.as_id(this.post, this.person)
+      },
+      as_statement() {
+        return post_helper.as_statement(this.post)
+      },
+      i_am_oldest() {
+        if (this.post.created_at === this.person.oldest_post) return true
+        else false
       }
     },
     methods: {
-      changed() {
-        this.$nextTick(_ => posts_local.save())
+      as_id(statement) {
+        return post_helper.as_id(statement, this.person)
       },
-      toggle_post(post) {
-        post.muted = !post.muted
-        this.$nextTick(_ => posts_local.save())
+      save() {
+        this.$emit('save-posts', this.person)
       },
-      async end_of_articles(entries) {
+      next_page(event){
+        this.$emit('end-of-page', this.person)
+      },
+      end_of_articles(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
-            this.observer.unobserve(entry.target)
-            this.$emit('end-of-articles')
+            this.$emit('end-of-page', this.person)
+            this.observer.unobserve(this.$el)
           }
         })
       }
     }
   }
 </script>
-<style lang="stylus"
-  & > article[itemtype="/post"]
+<style lang="stylus">
+  article[itemtype="/post"]
+    overflow: hidden
     margin-bottom: base-line
-    & > header
-      float:left
-      shape-outside: circle()
-      clip-path: circle(50%)
-      & > menu svg
-        padding-right: (base-line / 6)
-        height: base-line
-        width: base-line
-        fill: white
-    & > blockquote
-      display: inline-block
-      width:100%
-    &.silent
-      time
-      blockquote
-        color: white
 </style>
