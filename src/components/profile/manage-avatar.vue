@@ -13,7 +13,7 @@
 <script>
   import convert_to_avatar from '@/modules/convert_to_avatar'
   import { person_local } from '@/modules/LocalStorage'
-  import profile_id from '@/models/profile_id'
+  import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
   import as_avatar from '@/components/profile/as-avatar'
   export default {

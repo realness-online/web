@@ -1,6 +1,6 @@
 import Storage from '@/modules/Storage'
 import { person_local } from '@/modules/LocalStorage'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

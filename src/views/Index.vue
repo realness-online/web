@@ -13,7 +13,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import profile from '@/models/profile_id'
+  import profile from '@/helpers/profile'
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import main_nav from '@/components/main-nav'
   import as_figure from '@/components/profile/as-figure'

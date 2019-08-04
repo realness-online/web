@@ -10,7 +10,7 @@
   </section>
 </template>
 <script>
-  import profile_id from '@/models/profile_id'
+  import profile_id from '@/helpers/profile'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_avatar from '@/components/profile/as-avatar'

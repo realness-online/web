@@ -23,7 +23,7 @@
 </template>
 <script>
   import { relations_local, person_local } from '@/modules/LocalStorage'
-  import profile_id from '@/models/profile_id'
+  import profile_id from '@/helpers/profile'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'

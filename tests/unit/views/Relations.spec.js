@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 describe('@/views/Relations.vue', () => {
   let wrapper
   const person = {

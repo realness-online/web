@@ -3,7 +3,7 @@ import phonebook from '@/views/Phonebook'
 import PhoneBook from '@/modules/PhoneBook'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 const fs = require('fs')
 const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
 const people = Item.get_items(Storage.hydrate(phonebook_as_text))

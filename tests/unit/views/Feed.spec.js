@@ -2,7 +2,7 @@ import { shallow } from 'vue-test-utils'
 import LocalStorage, { person_local, posts_local } from '@/modules/LocalStorage'
 import Storage  from '@/modules/Storage'
 import Item from '@/modules/Item'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 import Feed from '@/views/Feed'
 import flushPromises from 'flush-promises'
 const fs = require('fs')

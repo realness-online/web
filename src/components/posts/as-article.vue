@@ -61,7 +61,7 @@
       },
       i_am_oldest() {
         if (this.post.created_at === this.person.oldest_post) return true
-        else false
+        else return false
       }
     },
     methods: {

@@ -1,7 +1,7 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 import { person_local } from '@/modules/LocalStorage'
 import flushPromises from 'flush-promises'
 describe('@/views/Account.vue', () => {

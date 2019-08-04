@@ -4,7 +4,7 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
 import Storage from '@/modules/Storage'
-import profile_id from '@/models/profile_id'
+import profile_id from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
   first_name: 'Scott',

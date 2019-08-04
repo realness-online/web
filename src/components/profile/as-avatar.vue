@@ -5,7 +5,7 @@
   </svg>
 </template>
 <script>
-  import profile_id from '@/models/profile_id'
+  import profile_id from '@/helpers/profile'
   import icons from '@/icons.svg'
   export default {
     props: {
