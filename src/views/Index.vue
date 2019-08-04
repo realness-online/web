@@ -50,7 +50,7 @@
         this.$nextTick(async() => {
           await posts_local.save()
           await posts_local.optimize()
-          this.posts = posts_storage.as_list()
+          this.posts = posts_local.as_list()
         })
       },
       should_sync(last_synced) {

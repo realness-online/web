@@ -17,7 +17,7 @@ exports[`@/views/Index.vue Renders navigation for the application 1`] = `
     <!---->
      
     <div
-      id="my-posts"
+      itemprop="posts"
     />
   </aside>
 </section>
