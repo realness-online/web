@@ -8,7 +8,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
-const hella_posts = fs.readFileSync('./tests/unit/html/posts_long.html', 'utf8')
+const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
 describe('@/views/Feed.vue', () => {
   let profile_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {

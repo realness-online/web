@@ -23,7 +23,7 @@ function keep_going(current_items, limit) {
 class Storage {
   static async get_download_url(person_id, name) {
     const path = `/people${person_id}/${name}`
-    console.log(path)
+    // console.log(path)
     try {
       return firebase.storage().ref().child(path).getDownloadURL()
     } catch (e) {
@@ -54,7 +54,6 @@ class Storage {
   async from_network() {
     if (networkable.includes(this.type)) {
       const url = await this.get_download_url()
-      console.log(url);
       if (url) {
         return Storage.hydrate(await (await fetch(url)).text())
       }
@@ -123,9 +122,7 @@ class Storage {
   }
   async sync_list() {
     let from_server = await this.from_network()
-    console.log('from_server', from_server);
     from_server = Item.get_items(from_server)
-
     let items
     if (this.from_local()) {
       const local_items = Item.get_items(this.from_local())

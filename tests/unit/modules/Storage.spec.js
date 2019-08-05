@@ -6,7 +6,7 @@ import 'firebase/storage'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
-const server_text = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
+const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
 describe('@/modules/Storage.js', () => {
   afterEach(() => {
     localStorage.clear()
@@ -92,14 +92,14 @@ describe('@/modules/Storage.js', () => {
         expect(posts_storage.sync_list).toBeDefined()
       })
       it('Syncs posts from server to local storage', async() => {
-        fetch.mockResponseOnce(server_text)
-        localStorage.setItem('posts', posts)
+        localStorage.setItem('posts', hella_posts)
+        fetch.mockResponseOnce(posts)
 
         // five posts on the server one that overlaps
-        const server_list = Item.get_items(Storage.hydrate(server_text))
+        const server_list = Item.get_items(Storage.hydrate(posts))
         expect(server_list.length).toBe(6)
 
-        // 54 posts on the clien one that overlaps
+        // 54 posts on the client one that overlaps
         const local_list = Item.get_items(posts_storage.from_local())
         expect(local_list.length).toBe(79)
 
@@ -119,7 +119,7 @@ describe('@/modules/Storage.js', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
       it('It optimizes a list of items accross a set of pages', async() => {
-        localStorage.setItem(posts_storage.name, posts)
+        localStorage.setItem(posts_storage.name, hella_posts)
         await posts_storage.optimize()
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
       })
