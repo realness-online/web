@@ -11,7 +11,7 @@ export default {
       while (posts.length > 0) {
         this.sort_count++
         const post = posts.shift()
-        post_helper.set_id(post, person)
+        post_helper.as_id(post, person)
         post.statements = []
         while (this.is_train_of_thought(post, posts)) {
           const next_statement = posts.shift()

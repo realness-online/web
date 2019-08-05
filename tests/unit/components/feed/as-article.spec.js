@@ -20,31 +20,31 @@ const statement = {
 }
 describe('@/components/feed/as-article.vue', () => {
   it('Render a feed item as an article element', async() => {
-    const wrapper = shallow(as_article, { propsData: { post } })
+    const wrapper = shallow(as_article, { propsData: { post, person } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()
   })
   it('Sets an observer if it is the oldest item', () => {
-    post.person.oldest_post = post.created_at
-    const wrapper = shallow(as_article, { propsData: { post } })
+    person.oldest_post = post.created_at
+    const wrapper = shallow(as_article, { propsData: { post, person } })
     expect(wrapper.vm.i_am_oldest).toBe(true)
   })
   it('Sets an observer if one of a posts statements is the oldest post', () => {
-    post.person.oldest_post = statement.created_at
+    person.oldest_post = statement.created_at
     post.statements.push(statement)
-    const wrapper = shallow(as_article, { propsData: { post } })
+    const wrapper = shallow(as_article, { propsData: { post, person } })
     expect(wrapper.vm.i_am_oldest).toBe(true)
   })
   it('Triggers next-page event and stops listener when observed', () => {
-    const wrapper = shallow(as_article, { propsData: { post } })
+    const wrapper = shallow(as_article, { propsData: { post, person } })
     const entries = [{ isIntersecting: true }]
     const unobserve_spy = jest.fn()
     wrapper.vm.observer = {
       observe: jest.fn(),
       unobserve: unobserve_spy
     }
-    wrapper.vm.end_of_posts(entries)
+    wrapper.vm.end_of_articles(entries)
     expect(wrapper.emitted('next-page')).toBeTruthy
     expect(unobserve_spy).toBeCalled()
   })

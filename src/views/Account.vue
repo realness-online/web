@@ -32,7 +32,7 @@
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import growth from '@/modules/growth'
   import posts_into_days from '@/mixins/posts_into_days'
-  import date_formating from '@/mixins/date_formating'
+  import create_date from '@/mixins/create_date'
   import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -41,7 +41,7 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [date_formating, condense_posts, posts_into_days],
+    mixins: [create_date, condense_posts, posts_into_days],
     components: {
       icon,
       'logo-as-link': logo_as_link,
@@ -85,7 +85,7 @@
         let posts = await posts_local.next_list(this.limit)
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
-          posts.forEach(post => this.insert_post_into_day(post, day))
+          posts.forEach(post => this.insert_post_into_day(post, days))
           this.limit = growth.next(this.limit)
         }
       },
@@ -119,6 +119,7 @@
         #phone
           display: none
     & > div#login
+    & > div#pages-of-posts
       max-width: page-width
       margin: auto
       padding: base-line base-line 0 base-line
@@ -126,7 +127,7 @@
         margin-top: base-line
     div[itemprop="posts"]
       display:flex
-      flex-direction: column-reverse
+      flex-direction: column
       & > section.day
         display:flex
         flex-direction: column

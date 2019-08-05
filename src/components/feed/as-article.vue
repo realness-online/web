@@ -5,18 +5,18 @@
     </router-link>
     <hgroup>
       <span>{{person.first_name}} {{person.last_name}}</span>
-      <time :datetime="post.created_at">{{created_time}}</time>
+      <time :datetime="post.created_at">{{as_created_time}}</time>
     </hgroup>
     <p>{{as_statement}}</p>
-    <p v-for="statement in post.statements" :key="statement.id" >{{as_statement(post)}}</p>
+    <p v-for="statement in post.statements" :key="statement.id" >{{as_statement_from_post(statement)}}</p>
   </article>
 </template>
 <script>
   import post_mixin from '@/mixins/post'
-  import date_formating from '@/mixins/date_formating'
+  import create_date from '@/mixins/create_date'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [post_mixin, date_formating],
+    mixins: [post_mixin, create_date],
     components: {
       'profile-as-avatar': profile_as_avatar
     },
@@ -35,7 +35,7 @@
       if (this.observer) this.observer.unobserve(this.$el)
     },
     methods: {
-      end_of_posts(entries) {
+      end_of_articles(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
             this.$emit('next-page', this.person)

@@ -2,14 +2,10 @@
 
 exports[`@/components/posts/as-article.vue Render a post as an article element 1`] = `
 <article
-  class=""
+  itemid="/+14151234356/2019-05-11T22:40:04.580Z"
   itemscope="itemscope"
   itemtype="/post"
 >
-  <!---->
-   
-  <!---->
-   
   <time
     datetime="2019-05-11T22:40:04.580Z"
     itemprop="created_at"
@@ -17,11 +13,13 @@ exports[`@/components/posts/as-article.vue Render a post as an article element 1
     3:40 PM
   </time>
    
-  <blockquote
+  <p
     contenteditable="false"
-    itemprop="articleBody"
+    itemprop="statement"
   >
     I am saying it
-  </blockquote>
+  </p>
+   
+  <!---->
 </article>
 `;

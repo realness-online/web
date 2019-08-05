@@ -5,7 +5,7 @@ export default {
     }
     return post.statement
   },
-  set_id(post, person) {
+  as_id(post, person) {
     post.id = `${person.id}/${post.created_at}`
     this.check_oldest(post, person)
     return post.id

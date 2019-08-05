@@ -28,11 +28,12 @@
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
-  import date_formating from '@/mixins/date_formating'
+  import condense_posts from '@/mixins/condense_posts'
+  import create_date from '@/mixins/create_date'
   import feed_as_article from '@/components/feed/as-article'
   import icon from '@/components/icon'
   export default {
-    mixins: [date_formating, posts_into_days],
+    mixins: [create_date, posts_into_days, condense_posts],
     components: {
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
@@ -60,7 +61,7 @@
     },
     methods: {
       async get_first_posts(people_in_feed) {
-        const everyones_posts = []
+        let everyones_posts = []
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts] = await Promise.all([
             profile.load(relation.id),
@@ -79,12 +80,6 @@
         posts.forEach(this.insert_post_into_day)
       }
     }
-    // watch: {
-    //   posts() {
-    //     console.log('watch posts triggered', this.sort_count)
-    //     this.posts_into_days()
-    //   }
-    // }
   }
 </script>
 <style lang="stylus">

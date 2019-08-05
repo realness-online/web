@@ -1,8 +1,8 @@
 <template lang="html">
   <article itemscope itemtype='/post' :itemid="id" :key="id">
-    <time itemprop="created_at" :datetime="post.created_at">{{created_time}}</time>
+    <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
     <p itemprop="statement" :contenteditable="me" @blur="save">{{as_statement}}</p>
-    <ol v-if="post.statements.length > 0">
+    <ol v-if="has_statements">
       <post-as-li v-for="statement in post.statements" :key="as_id(statement)"
         :post="statement"
         :person="person"
@@ -12,9 +12,9 @@
 </template>
 <script>
   import post_mixin from '@/mixins/post'
-  import date_formating from '@/mixins/date_formating'
+  import create_date from '@/mixins/create_date'
   export default {
-    mixins: [post_mixin, date_formating],
+    mixins: [post_mixin, create_date],
     data() {
       return {
         observer: null

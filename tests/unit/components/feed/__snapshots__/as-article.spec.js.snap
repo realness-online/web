@@ -17,16 +17,14 @@ exports[`@/components/feed/as-article.vue Render a feed item as an article eleme
      
     <time
       datetime="2019-05-11T22:40:04.580Z"
-      itemprop="created_at"
     >
       3:40 PM
     </time>
   </hgroup>
-    
-  <blockquote
-    itemprop="statement"
-  >
+   
+  <p>
     I am saying it
-  </blockquote>
+  </p>
+   
 </article>
 `;

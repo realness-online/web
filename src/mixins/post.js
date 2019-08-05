@@ -1,8 +1,7 @@
 import post_helper from '@/helpers/post'
+import date_helper from '@/helpers/display_date'
 import { person_local } from '@/modules/LocalStorage'
-import date_formating from '@/mixins/date_formating'
 export default {
-  mixins: [date_formating],
   props: {
     post: {
       type: Object,
@@ -18,8 +17,8 @@ export default {
       if (person_local.as_object().id === this.person.id) return true
       else return false
     },
-    created_time() {
-      return this.created_time(this.post.created_at)
+    as_created_time() {
+      return date_helper.as_time(this.post.created_at)
     },
     id() {
       return post_helper.as_id(this.post, this.person)
@@ -27,10 +26,14 @@ export default {
     as_statement() {
       return post_helper.as_statement(this.post)
     },
+    has_statements() {
+      if (this.post.statements && (this.post.statements.length > 1)) return true
+      else return false
+    },
     i_am_oldest() {
       if (this.post.created_at === this.person.oldest_post) return true
       else {
-        if (!this.statements) return false
+        if (!this.post.statements) return false
         return this.post.statements.some(statement => {
           if (statement.created_at === this.person.oldest_post) return true
           else return false
@@ -45,7 +48,7 @@ export default {
     as_id(post) {
       return post_helper.as_id(post, this.person)
     },
-    as_statement(post) {
+    as_statement_from_post(post) {
       return post_helper.as_statement(post)
     }
   }
