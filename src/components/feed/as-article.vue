@@ -12,8 +12,8 @@
   </article>
 </template>
 <script>
-  import date_formating from '@/mixins/date_formating'
   import post_mixin from '@/mixins/post'
+  import date_formating from '@/mixins/date_formating'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
     mixins: [post_mixin, date_formating],
