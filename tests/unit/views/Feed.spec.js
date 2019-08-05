@@ -25,7 +25,7 @@ describe('@/views/Feed.vue', () => {
     expect(wrapper.vm.days.size).toBe(6)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it.only('Loads another page of data for a person', async() => {
+  it('Loads another page of data for a person', async() => {
     let wrapper = shallow(Feed)
     const hella_list = Item.get_items(Storage.hydrate(hella_posts))
     await flushPromises()
