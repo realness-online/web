@@ -70,7 +70,6 @@
           ])
           this.relations.push(person)
           everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
-
         }))
         everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
       },
@@ -78,7 +77,8 @@
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         const next_page = `posts.${person.page}`
-        const posts = condense_posts(await profile.items(person.id, next_page))
+        const next_posts = await profile.items(person.id, next_page)
+        const posts = this.condense_posts(next_posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
       }
     }

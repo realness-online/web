@@ -24,7 +24,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Monday, June 24
+        Saturday, January 13, 2018
       </h4>
     </header>
      
@@ -35,7 +35,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Saturday, June 22
+        Monday, February 5, 2018
       </h4>
     </header>
      
@@ -46,7 +46,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Monday, June 17
+        Saturday, April 7, 2018
       </h4>
     </header>
      
@@ -57,7 +57,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Tuesday, May 28
+        Thursday, June 7, 2018
       </h4>
     </header>
      
@@ -68,7 +68,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Thursday, May 23
+        Tuesday, September 11, 2018
       </h4>
     </header>
      
@@ -80,147 +80,6 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
     <header>
       <h4>
         Tuesday, May 21
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Sunday, May 19
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Saturday, May 18
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Friday, May 17
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-    <!---->
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Saturday, May 11
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Thursday, August 9, 2018
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Wednesday, August 8, 2018
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Tuesday, August 7, 2018
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Sunday, August 5, 2018
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Friday, July 20, 2018
-      </h4>
-    </header>
-     
-    <!---->
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Tuesday, July 17, 2018
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Wednesday, June 13, 2018
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Thursday, May 3, 2018
       </h4>
     </header>
      

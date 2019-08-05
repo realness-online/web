@@ -27,10 +27,10 @@ export default {
       const next_post = posts[0]
       if (next_post) {
         let last_post = post
-        // console.log('last_post', last_post);
         if (post.statements.length > 0) last_post = post.statements[0]
-        const difference = Date.parse(last_post.created_at) - Date.parse(next_post.created_at)
-        // console.log(this.thirteen_minutes, difference, (difference < this.thirteen_minutes));
+        const last = Date.parse(last_post.created_at)
+        const next = Date.parse(next_post.created_at)
+        const difference = next - last
         if (difference < this.thirteen_minutes) return true
         else return false
       } else return false
