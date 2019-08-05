@@ -15,6 +15,7 @@
       </header>
       <feed-as-article v-for="post in day"
         :post="post"
+        :person="post.person"
         :key="post.id"
         v-on:next-page="next_page">
       </feed-as-article>
