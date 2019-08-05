@@ -3,7 +3,7 @@
     <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
     <p itemprop="statement" :contenteditable="me" @blur="save">{{as_statement}}</p>
     <ol v-if="has_statements">
-      <post-as-li v-for="statement in post.statements" :key="as_id(statement)"
+      <post-as-li v-for="statement in post.statements" :key="statement.id"
         :post="statement"
         :person="person"
         @blur="save"></post-as-li>

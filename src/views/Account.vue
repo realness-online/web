@@ -12,7 +12,7 @@
     </div>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
-        <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}">
+        <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
           <header><h4>{{date}}</h4></header>
           <post-as-article v-for="post in day" :key="post.id"
                            :post="post"
