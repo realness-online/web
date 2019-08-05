@@ -61,8 +61,10 @@
       }
     },
     async created() {
+      const days = new Map()
       const posts = this.condense_posts(posts_local.as_list(), this.me)
-      this.pages.set('posts', this.posts_into_days(posts))
+      posts.forEach(post => this.insert_post_into_day(post, days))
+      this.pages.set('posts', days)
       if (this.signed_in) {
         const id = profile.from_e64(this.signed_in.phoneNumber)
         this.me = await profile.load(id)
@@ -79,9 +81,11 @@
         else return false
       },
       async next_page() {
-        const older_posts = await posts_local.next_list(this.limit)
-        if (older_posts.length > 0) {
-          this.pages.push(older_posts)
+        const days = new Map()
+        let posts = await posts_local.next_list(this.limit)
+        if (posts.length > 0) {
+          posts = this.condense_posts(posts, this.me)
+          posts.forEach(post => this.insert_post_into_day(post, day))
           this.limit = growth.next(this.limit)
         }
       },
@@ -95,6 +99,7 @@
         this.$nextTick(_ => person_local.save())
       },
       async save_page(event, page_name) {
+        console.log('save_page', page_name)
         this.$nextTick(_ => {
           // const page = LocalStorage.new(page_name)
           // page.save()

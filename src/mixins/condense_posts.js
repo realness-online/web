@@ -10,7 +10,7 @@ export default {
       const condensed_posts = []
       while (posts.length > 0) {
         this.sort_count++
-        const post = this.posts.shift()
+        const post = posts.shift()
         post_helper.set_id(post, person)
         post.statements = []
         while (this.is_train_of_thought(post, posts)) {
@@ -24,7 +24,7 @@ export default {
     },
     is_train_of_thought(post, posts) {
       this.sort_count++
-      const next_post = this.posts[0]
+      const next_post = posts[0]
       if (next_post) {
         let last_post = post
         // console.log('last_post', last_post);

@@ -3,30 +3,22 @@ import sorting from '@/modules/sorting'
 export default {
   data() {
     return {
+      days: new Map(),
       sort_count: 0,
-      chronological: false,
-      days: new Map()
+      chronological: false
     }
   },
   methods: {
-    posts_into_days() {
-      this.posts.forEach(this.insert_post_into_day)
-    },
-    insert_post_into_day(post) {
+    insert_post_into_day(post, days = this.days) {
       this.sort_count++
       const day_name = this.created_day(post.created_at)
-      const day = this.days.get(day_name)
+      const day = days.get(day_name)
       if (day) {
-        // TODO: play around with what's the fastest sorting unshift or push etc
-        day.push(post)
-        if (this.chronological || day === this.today) {
-          day.sort(this.newer_first)
-        } else {
-          day.sort(this.older_first)
-        }
-      } else {
-        this.days.set(day_name, [post])
-      }
+        day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc
+        if (this.chronological || day === this.today) day.sort(this.newer_first)
+        else day.sort(this.older_first)
+      } else days.set(day_name, [post])
+      return days
     },
     newer_first(earlier, later) {
       this.sort_count++

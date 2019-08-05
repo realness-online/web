@@ -12,12 +12,11 @@
   </article>
 </template>
 <script>
-  import posts_into_days from '@/mixins/posts_into_days'
   import date_formating from '@/mixins/date_formating'
   import post_mixin from '@/mixins/post'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [post_mixin, date_formating, posts_into_days],
+    mixins: [post_mixin, date_formating],
     components: {
       'profile-as-avatar': profile_as_avatar
     },

@@ -41,7 +41,6 @@
     },
     data() {
       return {
-        posts: [],
         relations: [],
         feed_limit: 8,
         chronological: false,
@@ -61,25 +60,23 @@
     },
     methods: {
       async get_first_posts(people_in_feed) {
+        const everyones_posts = []
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts] = await Promise.all([
             profile.load(relation.id),
             profile.items(relation.id, 'posts')
           ])
           this.relations.push(person)
-          this.posts = [...this.posts, ...this.condense_posts(posts, person)]
+          everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
         }))
-        this.posts_into_days()
+        everyones_posts.forEach(this.insert_post_into_day)
       },
       async next_page(person) {
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         const next_page = `posts.${person.page}`
-        const posts = await profile.items(person.id, next_page)
-        posts.forEach(post => this.add_person_to_post(person, post))
-        console.assert(this.posts.length === 0, 'posts should be zero', this.posts.length)
-        this.posts = [...posts, ...this.posts]
-        this.posts_into_days()
+        const posts = condense_posts(await profile.items(person.id, next_page))
+        posts.forEach(this.insert_post_into_day)
       }
     }
     // watch: {
