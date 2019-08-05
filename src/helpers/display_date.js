@@ -31,7 +31,7 @@ export default {
   as_day(date) {
     let day
     if (Date.parse(date) < a_year_ago) {
-      day = this.created_time(date, format_as_day_and_year)
+      day = this.as_time(date, format_as_day_and_year)
     } else day = this.as_time(date, format_as_day)
     const today = this.as_time(new Date().toISOString(), format_as_day)
     if (day === today) day = `Today – ${day}`

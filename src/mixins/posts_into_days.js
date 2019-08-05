@@ -1,17 +1,17 @@
 // const a_year_ago = new Date().getFullYear() - 1
 import sorting from '@/modules/sorting'
+import date_helper from '@/helpers/display_date'
 export default {
   data() {
     return {
-      days: new Map(),
       sort_count: 0,
       chronological: false
     }
   },
   methods: {
-    insert_post_into_day(post, days = this.days) {
+    insert_post_into_day(post, days) {
       this.sort_count++
-      const day_name = this.created_day(post.created_at)
+      const day_name = date_helper.as_day(post.created_at)
       const day = days.get(day_name)
       if (day) {
         day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc

@@ -8,7 +8,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
-const other_posts = fs.readFileSync('./tests/unit/html/other_posts.html', 'utf8')
+const a_lot_of_posts = fs.readFileSync('./tests/unit/html/posts_long.html', 'utf8')
 describe('@/views/Feed.vue', () => {
   let profile_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe('@/views/Feed.vue', () => {
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(18)
     jest.spyOn(profile_id, 'items').mockImplementationOnce(_ => {
-      return Item.get_items(Storage.hydrate(other_posts))
+      return Item.get_items(Storage.hydrate(a_lot_of_posts))
     })
     wrapper.vm.next_page(mock_person)
     await flushPromises()

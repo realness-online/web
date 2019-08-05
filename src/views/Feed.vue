@@ -42,6 +42,7 @@
     },
     data() {
       return {
+        days: new Map(),
         relations: [],
         feed_limit: 8,
         chronological: false,
@@ -69,15 +70,16 @@
           ])
           this.relations.push(person)
           everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
+
         }))
-        everyones_posts.forEach(this.insert_post_into_day)
+        everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
       },
       async next_page(person) {
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         const next_page = `posts.${person.page}`
         const posts = condense_posts(await profile.items(person.id, next_page))
-        posts.forEach(this.insert_post_into_day)
+        posts.forEach(post => this.insert_post_into_day(post, this.days))
       }
     }
   }
