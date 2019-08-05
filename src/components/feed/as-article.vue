@@ -27,12 +27,12 @@
     },
     mounted() {
       if (this.i_am_oldest) {
-        this.observer = new IntersectionObserver(this.end_of_posts, {})
-        this.$nextTick(_ => this.observer.observe(this.$el))
+        // this.observer = new IntersectionObserver(this.end_of_posts, {})
+        // this.$nextTick(_ => this.observer.observe(this.$el))
       }
     },
     destroyed() {
-      if (this.observer) this.observer.unobserve(this.$el)
+      // if (this.observer) this.observer.unobserve(this.$el)
     },
     methods: {
       end_of_articles(entries) {
