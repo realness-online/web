@@ -2,7 +2,7 @@
 
 exports[`@/views/Account.vue Renders account information 1`] = `
 <section
-  class="page signed_in"
+  class="page signed-in"
   id="account"
 >
   <header>

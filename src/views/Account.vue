@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="account" v-bind:class="{signed_in}" class="page">
+  <section id="account" v-bind:class="{'signed-in': signed_in}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -67,6 +67,7 @@
       posts.forEach(post => this.insert_post_into_day(post, days))
       this.pages.set('posts', days)
       const user = firebase.auth().currentUser
+
       if (user) {
         this.signed_in = true
         const id = profile.from_e64(user.phoneNumber)
@@ -108,7 +109,7 @@
 </script>
 <style lang='stylus'>
   section#account
-    &.signed_in
+    &.signed-in
       & > header
         margin-bottom: -(base-line * 4)
         position: relative
