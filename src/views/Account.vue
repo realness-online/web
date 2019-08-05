@@ -56,6 +56,7 @@
         pages: new Map(),
         limit: growth.first(),
         working: false,
+        signed_in: false,
         image_file: null,
         chronological: true
       }
@@ -65,14 +66,11 @@
       const posts = this.condense_posts(posts_local.as_list(), this.me)
       posts.forEach(post => this.insert_post_into_day(post, days))
       this.pages.set('posts', days)
-      if (this.signed_in) {
-        const id = profile.from_e64(this.signed_in.phoneNumber)
+      const user = firebase.auth().currentUser
+      if (user) {
+        this.signed_in = true
+        const id = profile.from_e64(user.phoneNumber)
         this.me = await profile.load(id)
-      }
-    },
-    computed: {
-      signed_in() {
-        return firebase.auth().currentUser
       }
     },
     methods: {
@@ -115,9 +113,8 @@
         margin-bottom: -(base-line * 4)
         position: relative
         z-index: 2
-      & > div > form
-        #phone
-          display: none
+      #phone
+        display: none
     & > div#login
     & > div#pages-of-posts
       max-width: page-width
@@ -127,7 +124,7 @@
         margin-top: base-line
     div[itemprop="posts"]
       display:flex
-      flex-direction: column
+      flex-direction: column-reverse
       & > section.day
         display:flex
         flex-direction: column
