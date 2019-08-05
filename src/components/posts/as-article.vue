@@ -13,8 +13,12 @@
 <script>
   import post_mixin from '@/mixins/post'
   import create_date from '@/mixins/create_date'
+  import as_li from '@/components/posts/as-li'
   export default {
     mixins: [post_mixin, create_date],
+    components: {
+      'post-as-li': as_li
+    },
     data() {
       return {
         observer: null
