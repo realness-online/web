@@ -55,7 +55,7 @@
       },
       should_sync(last_synced) {
         const user = firebase.auth().currentUser
-        if (!last_synced || user && this.five_minutes_ago > last_synced) {
+        if (!last_synced || (user && this.five_minutes_ago > last_synced)) {
           return true
         }
         return false

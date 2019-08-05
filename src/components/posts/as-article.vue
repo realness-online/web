@@ -6,31 +6,16 @@
       <post-as-li v-for="statement in post.statements" :key="as_id(statement)"
         :post="statement"
         :person="person"
-        @end-of-page="next_page"
-        @saved="save":></post-as-li>
+        @blur="save"></post-as-li>
     </ol>
   </article>
 </template>
 <script>
+  import post_mixin from '@/mixins/post'
   import posts_into_days from '@/mixins/posts_into_days'
   import date_formating from '@/mixins/date_formating'
-  import profile_as_avatar from '@/components/profile/as-avatar'
-  import post_helper from '@/helpers/post'
   export default {
-    mixins: [date_formating, posts_into_days],
-    components: {
-      'profile-as-avatar': profile_as_avatar
-    },
-    props: {
-      post: {
-        type: Object,
-        required: true
-      },
-      person: {
-        type: Object,
-        required: true
-      }
-    },
+    mixins: [post_mixin, date_formating, posts_into_days],
     data() {
       return {
         observer: null
@@ -45,33 +30,8 @@
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
     },
-    computed: {
-      me() {
-        if (person_local.as_object().id === this.person.id) return true
-        else return false
-      },
-      created_time() {
-        return created_time(post.created_at)
-      },
-      id() {
-        return post_helper.as_id(this.post, this.person)
-      },
-      as_statement() {
-        return post_helper.as_statement(this.post)
-      },
-      i_am_oldest() {
-        if (this.post.created_at === this.person.oldest_post) return true
-        else return false
-      }
-    },
     methods: {
-      as_id(statement) {
-        return post_helper.as_id(statement, this.person)
-      },
-      save() {
-        this.$emit('save-posts', this.person)
-      },
-      next_page(event){
+      next_page(event) {
         this.$emit('end-of-page', this.person)
       },
       end_of_articles(entries) {

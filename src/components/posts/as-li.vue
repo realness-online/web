@@ -1,14 +1,13 @@
 <template lang="html">
-  <li itemscope itemtype='/post' :itemid="post_id(statement)">
-    <time itemprop="created_at" :datetime="statement.created_at">{{created_time(statement.created_at)}}</time>
-    <p :contenteditable="me" itemprop="statement">{{get_statement(statement)}}</p>
+  <li itemscope itemtype='/post' :itemid="id">
+    <meta itemprop="muted" v-if="post.muted" :content="post.muted">
+    <time itemprop="created_at" :datetime="post.created_at">{{created_time}}</time>
+    <p itemprop="statement" :contenteditable="me" @blur="save_me">{{statement}}</p>
   </li>
 </template>
-
 <script>
-export default {
-}
+  import post_mixin from '@/mixins/post'
+  export default {
+    mixins: [post_mixin]
+  }
 </script>
-
-<style lang="css" scoped>
-</style>

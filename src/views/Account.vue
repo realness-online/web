@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="account" v-bind:class="{signed_in: firebase.auth().currentUser}" class="page">
+  <section id="account" v-bind:class="{signed_in}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -11,14 +11,14 @@
       <profile-as-form :person='me'></profile-as-form>
     </div>
     <div id="pages-of-posts">
-      <div itemprop="posts" v-for="[page_name, days] in pages" :key="page_name">
+      <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
         <section class="day" v-for="[date, day] in days" :key="day" v-bind:class="{today: is_today(date)}">
           <header><h4>{{date}}</h4></header>
           <post-as-article v-for="post in day" :key="post.id"
                            :post="post"
                            :person="me"
                            @end-of-articles="next_page"
-                           @saved="save_posts">
+                           @saved="save_page">
           </post-as-article>
         </section>
       </div>
@@ -33,6 +33,7 @@
   import growth from '@/modules/growth'
   import posts_into_days from '@/mixins/posts_into_days'
   import date_formating from '@/mixins/date_formating'
+  import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
@@ -40,7 +41,7 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [date_formating],
+    mixins: [date_formating, condense_posts, posts_into_days],
     components: {
       icon,
       'logo-as-link': logo_as_link,
@@ -51,23 +52,25 @@
     },
     data() {
       return {
-        pages: new Map(),
         me: person_local.as_object(),
+        pages: new Map(),
         limit: growth.first(),
         working: false,
-        signed_in: false,
         image_file: null,
         chronological: true
       }
     },
     async created() {
-      posts_local.as_list().forEach(post => post.person = this.me)
-      this.pages.set('posts', posts_local.as_list())
-      const user = firebase.auth().currentUser
-      if (user) {
-        this.signed_in = true
-        const id = profile.from_e64(user.phoneNumber)
+      const posts = this.condense_posts(posts_local.as_list(), this.me)
+      this.pages.set('posts', this.posts_into_days(posts))
+      if (this.signed_in) {
+        const id = profile.from_e64(this.signed_in.phoneNumber)
         this.me = await profile.load(id)
+      }
+    },
+    computed: {
+      signed_in() {
+        return firebase.auth().currentUser
       }
     },
     methods: {
@@ -83,17 +86,19 @@
         }
       },
       async save_me(event) {
-        const user = firebase.auth().currentUser
-        if (user) {
-          this.me.id = profile.from_e64(user.phoneNumber)
+        if (this.signed_in) {
+          this.me.id = profile.from_e64(this.signed_in.phoneNumber)
           if (!this.me.avatar) {
             this.me.avatar = (await profile.load(this.me.id)).avatar
           }
         }
         this.$nextTick(_ => person_local.save())
       },
-      async save_posts(event) {
-        this.$nextTick(_ => posts_local.save())
+      async save_page(event, page_name) {
+        this.$nextTick(_ => {
+          // const page = LocalStorage.new(page_name)
+          // page.save()
+        })
       }
     }
   }

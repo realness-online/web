@@ -15,7 +15,7 @@
       </header>
       <feed-as-article v-for="post in day"
         :post="post"
-        :key="as_id(post)"
+        :key="post.id"
         v-on:next-page="next_page">
       </feed-as-article>
     </section>
@@ -23,7 +23,7 @@
 </template>
 <script>
   import { relations_local, person_local } from '@/modules/LocalStorage'
-  import profile_id from '@/helpers/profile'
+  import profile from '@/helpers/profile'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
@@ -60,18 +60,14 @@
       console.timeEnd('feed-load')
     },
     methods: {
-      as_id(post) {
-        return `${post.person.id}/${post.created_at}`
-      },
       async get_first_posts(people_in_feed) {
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts] = await Promise.all([
-            profile_id.load(relation.id),
-            profile_id.items(relation.id, 'posts')
+            profile.load(relation.id),
+            profile.items(relation.id, 'posts')
           ])
           this.relations.push(person)
-          posts.map(post => this.add_person_to_post(person, post))
-          this.posts = [...posts, ...this.posts]
+          this.posts = [...this.posts, ...this.condense_posts(posts, person)]
         }))
         this.posts_into_days()
       },
@@ -79,7 +75,7 @@
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         const next_page = `posts.${person.page}`
-        const posts = await profile_id.items(person.id, next_page)
+        const posts = await profile.items(person.id, next_page)
         posts.forEach(post => this.add_person_to_post(person, post))
         console.assert(this.posts.length === 0, 'posts should be zero', this.posts.length)
         this.posts = [...posts, ...this.posts]

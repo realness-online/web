@@ -1,35 +1,29 @@
 <template lang="html">
   <article class="feed activity">
-    <router-link :to="post.person.id">
-      <profile-as-avatar :person="post.person" :by_reference="true"></profile-as-avatar>
+    <router-link :to="person.id">
+      <profile-as-avatar :person="person" :by_reference="true"></profile-as-avatar>
     </router-link>
     <hgroup>
-      <span>{{post.person.first_name}} {{post.person.last_name}}</span>
-      <time itemprop="created_at" :datetime="post.created_at">{{created_time(post.created_at)}}</time>
+      <span>{{person.first_name}} {{person.last_name}}</span>
+      <time :datetime="post.created_at">{{created_time}}</time>
     </hgroup>
-    <p itemprop="statement" itemscope itemtype='/post' :itemid="statement_id(statement)"  itemscope v-for="statement in post.statements" :key="statement.created_at" >{{statement.articleBody}}</0>
-    <p itemprop="statement" >{{post.articleBody}}</p>
+    <p>{{as_statement}}</p>
+    <p v-for="statement in post.statements" :key="statement.id" >{{as_statement(post)}}</p>
   </article>
 </template>
 <script>
   import posts_into_days from '@/mixins/posts_into_days'
   import date_formating from '@/mixins/date_formating'
+  import post_mixin from '@/mixins/post'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [date_formating, posts_into_days],
+    mixins: [post_mixin, date_formating, posts_into_days],
     components: {
       'profile-as-avatar': profile_as_avatar
     },
-    props: {
-      post: {
-        type: Object,
-        required: true
-      }
-    },
     data() {
       return {
-        observer: null,
-        oldest: this.post.person.oldest_post
+        observer: null
       }
     },
     mounted() {
@@ -41,22 +35,11 @@
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
     },
-    computed: {
-      i_am_oldest() {
-        if (this.post.created_at === this.oldest) return true
-        else {
-          return this.post.statements.some(statement => {
-            if (statement.created_at === this.oldest) return true
-            else return false
-          })
-        }
-      }
-    },
     methods: {
       end_of_posts(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
-            this.$emit('next-page', this.post.person)
+            this.$emit('next-page', this.person)
             this.observer.unobserve(this.$el)
           }
         })
