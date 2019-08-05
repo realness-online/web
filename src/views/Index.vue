@@ -5,7 +5,7 @@
     <aside>
       <my-figure :person="me"></my-figure>
       <div itemprop="posts">
-        <as-article v-for="post in posts" :key="as_id(post)" :post="post" :me="true"></as-article>
+        <as-article v-for="post in posts" :post="post" :person="me" :key="as_id(post)"></as-article>
       </div>
     </aside>
   </section>
@@ -13,7 +13,8 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import profile from '@/helpers/profile'
+  import profile_helper from '@/helpers/profile'
+  import post_helper from '@/helpers/post'
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import main_nav from '@/components/main-nav'
   import as_figure from '@/components/profile/as-figure'
@@ -43,7 +44,7 @@
     },
     methods: {
       as_id(post) {
-        return `${person_local.as_object().id}/${post.created_at}`
+        return post_helper.as_id(post, this.me)
       },
       add_post(post) {
         this.posts.push(post)
@@ -56,6 +57,7 @@
       should_sync(last_synced) {
         const user = firebase.auth().currentUser
         if (!last_synced || (user && this.five_minutes_ago > last_synced)) {
+          console.log('should_sync')
           return true
         }
         return false
@@ -64,8 +66,8 @@
         if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
           const user = firebase.auth().currentUser
           if (user) {
-            const id = profile.from_e64(user.phoneNumber)
-            this.me = await profile.load(id)
+            const id = profile_helper.from_e64(user.phoneNumber)
+            this.me = await profile_helper.load(id)
             this.$nextTick(async() => {
               await person_local.save()
               sessionStorage.setItem('profile-synced', Date.now())
