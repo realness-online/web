@@ -10,8 +10,7 @@ export default {
   },
   methods: {
     insert_post_into_day(post, days) {
-      this.sort_count++
-      const day_name = date_helper.as_day(post.created_at)
+      const day_name = post.created_at.split('T', 1)[0]
       const day = days.get(day_name)
       if (day) {
         day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc

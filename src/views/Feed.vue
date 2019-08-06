@@ -11,7 +11,7 @@
     <icon v-if="working" name="working"></icon>
     <section v-else class="day" :key="date" v-for="[date, day] in days">
       <header>
-        <h4>{{date}}</h4>
+        <h4>{{as_day(date)}}</h4>
       </header>
       <feed-as-article v-for="post in day"
         :post="post"
@@ -25,6 +25,7 @@
 <script>
   import { relations_local, person_local } from '@/modules/LocalStorage'
   import profile from '@/helpers/profile'
+  import date_helper from '@/helpers/date'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
@@ -62,6 +63,9 @@
       console.timeEnd('feed-load')
     },
     methods: {
+      as_day(date) {
+        return date_helper.as_day(date)
+      },
       async get_first_posts(people_in_feed) {
         let everyones_posts = []
         await Promise.all(people_in_feed.map(async (relation) => {
@@ -72,6 +76,7 @@
           this.relations.push(person)
           everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
         }))
+        everyones_posts.sort(this.newer_first)
         everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
       },
       async next_page(person) {

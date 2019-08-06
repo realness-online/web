@@ -2,24 +2,36 @@ import post_helper from '@/helpers/post'
 export default {
   data() {
     return {
-      thirteen_minutes: 1000 * 60 * 13
+      thirteen_minutes: 1000 * 60 * 13,
+      include_muted: false
     }
   },
   methods: {
+    shift_mute(posts) {
+      let post = posts.shift()
+      if (this.include_muted) return post
+      else {
+        while (post.muted) {
+          this.sort_count++
+          post = posts.shift()
+        }
+        return post
+      }
+    },
     condense_posts(posts, person) {
-
       const condensed_posts = []
       while (posts.length > 0) {
         this.sort_count++
-        const post = posts.shift()
+        let post = this.shift_mute(posts)
         post_helper.as_id(post, person)
         post.statements = []
         while (this.is_train_of_thought(post, posts)) {
+          this.sort_count++
           const next_statement = posts.shift()
-          post.statements.push(next_statement)
+          if (!next_statement.muted) post.statements.push(next_statement)
         }
         post.statements.sort(this.older_first)
-        post.person = person
+        post.person = person // hack for Feed.vue
         condensed_posts.push(post)
       }
       return condensed_posts
