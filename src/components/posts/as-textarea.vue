@@ -23,7 +23,6 @@
         if (!post.articleBody) { return }
         this.new_post = ''
         post.created_at = new Date().toISOString()
-        post.muted = false
         this.$bus.$emit('post-added', post)
       },
       wat_focused($event) {
