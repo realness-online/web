@@ -1,4 +1,4 @@
-import date from '@/helpers/display_date'
+import date from '@/helpers/date'
 export default {
   data() {
     return {
