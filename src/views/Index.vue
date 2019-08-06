@@ -47,6 +47,7 @@
         return post_helper.as_id(post, this.me)
       },
       add_post(post) {
+        
         this.posts.push(post)
         this.$nextTick(async() => {
           await posts_local.save()
