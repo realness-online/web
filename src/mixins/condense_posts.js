@@ -2,7 +2,7 @@ import post_helper from '@/helpers/post'
 export default {
   data() {
     return {
-      thirteen_minutes: 1000 * 60 * 13      
+      thirteen_minutes: 1000 * 60 * 13
     }
   },
   methods: {
