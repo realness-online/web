@@ -13,7 +13,7 @@ const person = {
 }
 const post = {
   created_at: '2017-12-20T23:01:14.310Z',
-  articleBody: 'I like to move it'
+  statement: 'I like to move it'
 }
 jest.spyOn(profile_id, 'load').mockImplementation(() => person)
 describe('@/views/Index.vue', () => {
@@ -47,10 +47,10 @@ describe('@/views/Index.vue', () => {
       sync_list_spy = jest.spyOn(Storage.prototype, 'sync_list').mockImplementation(() => {
         return Promise.resolve([
           {
-            articleBody: 'mock post'
+            statement: 'mock post'
           },
           {
-            articleBody: 'another mock post'
+            statement: 'another mock post'
           }
         ])
       })

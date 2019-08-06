@@ -7,14 +7,14 @@ const person = {
   id: '/+14151234356'
 }
 const post = {
-  articleBody: 'I am saying it',
+  statement: 'I am saying it',
   created_at: '2019-05-11T22:40:04.580Z',
   id: '/+14151234356/2019-05-11T22:40:04.580Z',
   statements: [],
   person
 }
 const statement = {
-  articleBody: 'I am making a statement',
+  statement: 'I am making a statement',
   created_at: '2019-05-11T22:50:04.580Z',
   id: '/+14151234356/2019-05-11T22:40:04.580Z'
 }
