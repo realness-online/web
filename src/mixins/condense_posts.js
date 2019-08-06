@@ -41,7 +41,8 @@ export default {
       const next_post = posts[0]
       if (next_post) {
         let last_post = post
-        if (post.statements.length > 0) last_post = post.statements[0]
+        const length = post.statements.length
+        if (length > 0) last_post = post.statements[length - 1]
         const last = Date.parse(last_post.created_at)
         const next = Date.parse(next_post.created_at)
         const difference = next - last
