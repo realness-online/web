@@ -1,6 +1,5 @@
 // const a_year_ago = new Date().getFullYear() - 1
 import sorting from '@/modules/sorting'
-import date_helper from '@/helpers/date'
 export default {
   data() {
     return {

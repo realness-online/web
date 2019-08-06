@@ -12,10 +12,10 @@
 </template>
 <script>
   import post_mixin from '@/mixins/post'
-  import create_date from '@/mixins/create_date'
+  import date_mixin from '@/mixins/date'
   import as_li from '@/components/posts/as-li'
   export default {
-    mixins: [post_mixin, create_date],
+    mixins: [post_mixin, date_mixin],
     components: {
       'post-as-li': as_li
     },

@@ -13,7 +13,7 @@
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
         <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
-          <header><h4>{{date}}</h4></header>
+          <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day" :key="post.id"
                            :post="post"
                            :person="me"
@@ -32,7 +32,7 @@
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import growth from '@/modules/growth'
   import posts_into_days from '@/mixins/posts_into_days'
-  import create_date from '@/mixins/create_date'
+  import date_mixin from '@/mixins/date'
   import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -41,7 +41,7 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [create_date, condense_posts, posts_into_days],
+    mixins: [date_mixin, condense_posts, posts_into_days],
     components: {
       icon,
       'logo-as-link': logo_as_link,

@@ -25,17 +25,16 @@
 <script>
   import { relations_local, person_local } from '@/modules/LocalStorage'
   import profile from '@/helpers/profile'
-  import date_helper from '@/helpers/date'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
-  import create_date from '@/mixins/create_date'
+  import date_mixin from '@/mixins/date'
   import feed_as_article from '@/components/feed/as-article'
   import icon from '@/components/icon'
   export default {
-    mixins: [create_date, posts_into_days, condense_posts],
+    mixins: [date_mixin, posts_into_days, condense_posts],
     components: {
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
@@ -63,9 +62,6 @@
       console.timeEnd('feed-load')
     },
     methods: {
-      as_day(date) {
-        return date_helper.as_day(date)
-      },
       async get_first_posts(people_in_feed) {
         let everyones_posts = []
         await Promise.all(people_in_feed.map(async (relation) => {

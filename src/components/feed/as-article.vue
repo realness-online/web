@@ -13,10 +13,10 @@
 </template>
 <script>
   import post_mixin from '@/mixins/post'
-  import create_date from '@/mixins/create_date'
+  import date_mixin from '@/mixins/date'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [post_mixin, create_date],
+    mixins: [post_mixin, date_mixin],
     components: {
       'profile-as-avatar': profile_as_avatar
     },
