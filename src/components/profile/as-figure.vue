@@ -78,8 +78,6 @@
       clip-path: circle(44%)
       cursor: pointer
       fill: black
-      stroke: lighten(black, 20%)
-      stroke-width: (base-line / 36)
       @media (prefers-color-scheme: dark)
         fill: white
         stroke: lighten(black, 99%)
