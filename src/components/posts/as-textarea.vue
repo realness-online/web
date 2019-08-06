@@ -19,8 +19,8 @@
       prepare_post() {
         this.$emit('toggle-keyboard')
         let post = {}
-        post.articleBody = this.new_post && this.new_post.trim()
-        if (!post.articleBody) { return }
+        post.statement = this.new_post && this.new_post.trim()
+        if (!post.statement) { return }
         this.new_post = ''
         post.created_at = new Date().toISOString()
         this.$bus.$emit('post-added', post)
