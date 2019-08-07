@@ -25,11 +25,11 @@ class Storage {
     const path = `/people${person_id}/${name}`
     // console.log(path)
     try {
-      return firebase.storage().ref().child(path).getDownloadURL()
+      return await firebase.storage().ref().child(path).getDownloadURL()
     } catch (e) {
       if (e.code === 'storage/object-not-found') {
         console.warn(path, e.code)
-        return []
+        return null
       } else throw e
     }
   }
@@ -51,6 +51,16 @@ class Storage {
     if (bytes) return (bytes.length / 1024).toFixed(0)
     else return 0
   }
+  from_local(name = this.name) {
+    const storage_string = localStorage.getItem(name)
+    return Storage.hydrate(storage_string)
+  }
+  async get_download_url() {
+    const user = firebase.auth().currentUser
+    if (user) {
+      return Storage.get_download_url(`/${user.phoneNumber}`, this.filename)
+    } else return null
+  }
   async from_network() {
     if (networkable.includes(this.type)) {
       const url = await this.get_download_url()
@@ -59,10 +69,6 @@ class Storage {
       }
     }
     return null
-  }
-  from_local(name = this.name) {
-    const storage_string = localStorage.getItem(name)
-    return Storage.hydrate(storage_string)
   }
   async from_storage(name = this.name) {
     return this.from_local(name) || this.from_network()
@@ -85,6 +91,7 @@ class Storage {
       div.setAttribute('itemprop', this.type)
       const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
       const existing_history = await history.from_storage()
+      console.log('existing_history', existing_history)
       if (existing_history) div = existing_history.childNodes[0]
       div.appendChild(offload)
       await history.save(div)
@@ -113,12 +120,6 @@ class Storage {
     if (networkable.includes(this.type)) {
       return this.persist(items.outerHTML)
     }
-  }
-  async get_download_url() {
-    const user = firebase.auth().currentUser
-    if (user) {
-      return Storage.get_download_url(`/${user.phoneNumber}`, this.filename)
-    } else return null
   }
   async sync_list() {
     let from_server = await this.from_network()
