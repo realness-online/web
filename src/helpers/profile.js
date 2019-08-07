@@ -1,7 +1,5 @@
-import * as firebase from 'firebase/app'
 import Item from '@/modules/item'
 import Storage from '@/modules/Storage'
-import 'firebase/storage'
 export default {
   async load(id) {
     const person = (await this.items(id, 'person'))[0]

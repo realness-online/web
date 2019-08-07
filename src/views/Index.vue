@@ -47,7 +47,6 @@
         return post_helper.as_id(post, this.me)
       },
       add_post(post) {
-        
         this.posts.push(post)
         this.$nextTick(async() => {
           await posts_local.save()
@@ -58,7 +57,6 @@
       should_sync(last_synced) {
         const user = firebase.auth().currentUser
         if (!last_synced || (user && this.five_minutes_ago > last_synced)) {
-          console.log('should_sync')
           return true
         }
         return false
