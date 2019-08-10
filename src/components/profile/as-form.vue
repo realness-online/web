@@ -8,7 +8,7 @@
              v-model="person.last_name"
              v-on:blur="save_person">
     </fieldset>
-    <fieldset id="phone">
+    <fieldset id="phone" v-if="!show_sign_out">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
              v-model="person.mobile"

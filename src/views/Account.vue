@@ -109,13 +109,10 @@
 </script>
 <style lang='stylus'>
   section#account
-    &.signed-in
-      & > header
-        margin-bottom: -(base-line * 4)
-        position: relative
-        z-index: 2
-      #phone
-        display: none
+    & > header
+      margin-bottom: -(base-line * 4)
+      position: relative
+      z-index: 2
     & > div#login
     & > div#pages-of-posts
       max-width: page-width
