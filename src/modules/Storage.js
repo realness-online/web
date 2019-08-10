@@ -91,13 +91,12 @@ function keep_going(current_items, limit) {
       let div = document.createElement(current.nodeName)
       div.setAttribute('itemprop', this.type)
       const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
-      // history.sync_list()
       const existing_history = await history.from_network()
       if (existing_history) div = existing_history.childNodes[0]
       div.appendChild(offload)
       await history.save(div)
       await this.save(current)
-      // await history.optimize(growth.next(limit))
+      await history.optimize(growth.next(limit))
     }
   }
   persist(items, name = this.filename) {

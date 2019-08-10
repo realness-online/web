@@ -36,6 +36,9 @@
     created() {
       this.$bus.$on('post-added', this.add_post)
     },
+    destroyed() {
+      this.$bus.$off('post-added')
+    },
     async mounted() {
       await Promise.all([
         this.sync_posts(),
