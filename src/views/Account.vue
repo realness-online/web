@@ -121,9 +121,7 @@
       max-width: page-width
       margin: auto
       padding: base-line base-line 0 base-line
-      & > form
-        margin-top: base-line
-    div[itemprop="posts"]
+    & > div#pages-of-posts > div[itemprop]
       display:flex
       flex-direction: column-reverse
       & > section.day
