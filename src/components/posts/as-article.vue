@@ -34,13 +34,10 @@
       if (this.observer) this.observer.unobserve(this.$el)
     },
     methods: {
-      next_page(event) {
-        this.$emit('end-of-page', this.person)
-      },
       end_of_articles(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
-            this.$emit('end-of-page', this.person)
+            this.$emit('end-of-articles', this.person)
             this.observer.unobserve(this.$el)
           }
         })
