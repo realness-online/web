@@ -80,8 +80,8 @@ function keep_going(current_items, limit) {
     return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
+    console.info('optimize', this.filename, this.as_kilobytes())
     if (this.as_kilobytes() > limit) {
-      console.log('optimize', this.filename, this.as_kilobytes())
       let current = (await this.from_network()).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {
@@ -139,7 +139,7 @@ function keep_going(current_items, limit) {
     }
     return items
   }
-  async next_list(limit = growth.first()) {
+  async next_page(limit = growth.first()) {
     const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
     return history.as_list()
   }

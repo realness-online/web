@@ -67,7 +67,6 @@
       posts.forEach(post => this.insert_post_into_day(post, days))
       this.pages.set('posts', days)
       const user = firebase.auth().currentUser
-
       if (user) {
         this.signed_in = true
         const id = profile.from_e64(user.phoneNumber)
@@ -80,12 +79,16 @@
         else return false
       },
       async next_page() {
+        console.log('next_page', this.limit);
         const days = new Map()
-        let posts = await posts_local.next_list(this.limit)
+        const local_pages = new Map()
+        let posts = await posts_local.next_page(this.limit)
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
           posts.forEach(post => this.insert_post_into_day(post, days))
+          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days));
           this.limit = growth.next(this.limit)
+          console.log(this.pages);
         }
       },
       async save_me(event) {
