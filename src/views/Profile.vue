@@ -59,7 +59,20 @@
       this.populate_pages(person, posts)
     },
     methods: {
-      next_page(){},
+      async next_page() {
+        this.working = true
+        console.log('next_page', this.limit);
+        const days = new Map()
+        const id = profile.from_e64(this.$route.params.phone_number)
+        let posts = await profile.items(id, `posts.${this.limit}`)
+        if (posts.length > 0) {
+          posts = this.condense_posts(posts, this.person)
+          posts.forEach(post => this.insert_post_into_day(post, days))
+          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days));
+          this.limit = growth.next(this.limit)
+        }
+        this.working = false
+      },
       populate_pages(person, posts) {
         const days = new Map()
         posts = this.condense_posts(posts, person)
@@ -89,4 +102,22 @@
       width: 100vw
       min-height: 100vh
       fill: white
+</style>
+<style lang="stylus">
+  section#profile > div#pages-of-posts
+    max-width: page-width
+    margin: auto
+    padding: base-line base-line 0 base-line
+    & > div[itemprop]
+      display:flex
+      flex-direction: column-reverse
+      & > section.day
+        display:flex
+        flex-direction: column
+        &.today
+          flex-direction: column-reverse
+          & > header
+            order: 1
+        & > header > h4
+          margin-top: base-line
 </style>
