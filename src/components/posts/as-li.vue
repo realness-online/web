@@ -1,6 +1,6 @@
 <template lang="html">
   <li itemscope itemtype='/post' :itemid="id">
-    <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
+    <meta itemprop="created_at" :content="post.created_at">
     <p itemprop="statement" :contenteditable="me" @blur="save_me">{{as_statement}}</p>
   </li>
 </template>
