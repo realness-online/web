@@ -8,6 +8,10 @@ export default {
     }
   },
   methods: {
+    is_today(date) {
+      if (date.indexOf('Today') > -1) return true
+      else return false
+    },
     insert_post_into_day(post, days) {
       const day_name = post.created_at.split('T', 1)[0]
       const day = days.get(day_name)

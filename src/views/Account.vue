@@ -74,10 +74,6 @@
       }
     },
     methods: {
-      is_today(date) {
-        if (date.indexOf('Today') > -1) return true
-        else return false
-      },
       async next_page() {
         console.log('next_page', this.limit);
         const days = new Map()
