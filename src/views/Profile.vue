@@ -61,7 +61,7 @@
         const id = profile.from_e64(this.$route.params.phone_number)
         let posts = await profile.items(id, `posts.${this.limit}`)
         if (posts.length > 0) {
-          this.populate_page(person, posts)
+          this.populate_page(this.person, posts)
           this.limit = growth.next(this.limit)
         }
       },
