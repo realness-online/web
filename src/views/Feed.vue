@@ -59,6 +59,7 @@
       console.info(`${this.sort_count} sort operations`)
       console.timeEnd('feed-load')
     },
+
     methods: {
       async get_first_posts(people_in_feed) {
         let everyones_posts = []
@@ -80,7 +81,8 @@
         let posts = await profile.items(person.id, `posts.${person.page}`)
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
-        this.days = new Map(this.days)
+        const sorted =  [...this.days.entries()].sort(this.newer_day_first)
+        this.days = new Map(sorted)
       }
     }
   }

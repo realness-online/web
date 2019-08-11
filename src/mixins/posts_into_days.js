@@ -22,6 +22,10 @@ export default {
       } else days.set(day_name, [post])
       return days
     },
+    newer_day_first(earlier, later) {
+      this.sort_count++
+      return sorting.newer_day_first(earlier, later)
+    },
     newer_first(earlier, later) {
       this.sort_count++
       return sorting.newer_first(earlier, later)
