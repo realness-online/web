@@ -41,13 +41,10 @@
     data() {
       return {
         pages: new Map(),
-        limit: growth.first(),
+        limit: "",
         working: true,
         person: {}
       }
-    },
-    mounted() {
-      document.body.scrollTop = document.documentElement.scrollTop = 0
     },
     async created() {
       const id = profile.from_e64(this.$route.params.phone_number)
@@ -56,29 +53,23 @@
         profile.items(id, 'posts')
       ])
       this.person = person
-      this.populate_pages(person, posts)
+      this.populate_page(person, posts)
+      this.limit = growth.first()
     },
     methods: {
       async next_page() {
-        this.working = true
-        console.log('next_page', this.limit);
-        const days = new Map()
         const id = profile.from_e64(this.$route.params.phone_number)
         let posts = await profile.items(id, `posts.${this.limit}`)
         if (posts.length > 0) {
-          posts = this.condense_posts(posts, this.person)
-          posts.forEach(post => this.insert_post_into_day(post, days))
-          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days));
+          this.populate_page(person, posts)
           this.limit = growth.next(this.limit)
         }
-        this.working = false
       },
-      populate_pages(person, posts) {
+      populate_page(person, posts) {
         const days = new Map()
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, days))
-        this.pages = new Map(this.pages.set(`posts`, days));
-        this.working = false
+        this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
       }
     }
   }
