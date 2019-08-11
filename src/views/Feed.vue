@@ -75,9 +75,9 @@
         everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
       },
       async next_page(person) {
-        console.log(`posts.${person.page}`, person.first_name)
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
+        console.log(`posts.${person.page}`, person.first_name)
         let posts = await profile.items(person.id, `posts.${person.page}`)
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
