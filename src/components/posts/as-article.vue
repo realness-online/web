@@ -26,7 +26,9 @@
     },
     mounted() {
       if (this.i_am_oldest) {
-        this.observer = new IntersectionObserver(this.end_of_articles, {})
+        this.observer = new IntersectionObserver(this.end_of_articles, {
+          rootMargin: '0px 0px 256px 0px'
+        })
         this.$nextTick(_ => this.observer.observe(this.$el))
       }
     },
