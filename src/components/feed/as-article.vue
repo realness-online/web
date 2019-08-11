@@ -14,35 +14,12 @@
 <script>
   import post_mixin from '@/mixins/post'
   import date_mixin from '@/mixins/date'
+  import intersection_mixin from '@/mixins/intersection'
   import profile_as_avatar from '@/components/profile/as-avatar'
   export default {
-    mixins: [post_mixin, date_mixin],
+    mixins: [post_mixin, date_mixin, intersection_mixin],
     components: {
       'profile-as-avatar': profile_as_avatar
-    },
-    data() {
-      return {
-        observer: null
-      }
-    },
-    mounted() {
-      if (this.i_am_oldest) {
-        this.observer = new IntersectionObserver(this.end_of_articles, {})
-        this.$nextTick(_ => this.observer.observe(this.$el))
-      }
-    },
-    destroyed() {
-      if (this.observer) this.observer.unobserve(this.$el)
-    },
-    methods: {
-      end_of_articles(entries) {
-        entries.forEach(async entry => {
-          if (entry.isIntersecting) {
-            this.$emit('end-of-articles', this.person)
-            this.observer.unobserve(this.$el)
-          }
-        })
-      }
     }
   }
 </script>
