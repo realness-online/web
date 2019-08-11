@@ -5,11 +5,15 @@
   </svg>
 </template>
 <script>
-  import profile_id from '@/helpers/profile'
+  import profile from '@/helpers/profile'
   import icons from '@/icons.svg'
   export default {
     props: {
       person: Object,
+      working: {
+        type: Boolean,
+        default: false
+      },
       by_reference: {
         type: Boolean,
         default: false
@@ -22,10 +26,9 @@
     },
     computed: {
       avatar_link() {
-        if (this.person.avatar) {
-          return profile_id.as_avatar_fragment(this.person.id)
-        }
-        return `${icons}#silhouette`
+        if (this.person.avatar) return profile.as_avatar_fragment(this.person.id)
+        if (this.working) return `${icons}#working`
+        else return `${icons}#silhouette`
       }
     }
   }
