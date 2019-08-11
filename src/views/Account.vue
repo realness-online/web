@@ -75,16 +75,13 @@
     },
     methods: {
       async next_page() {
-        console.log('next_page', this.limit);
         const days = new Map()
-        const local_pages = new Map()
         let posts = await posts_local.next_page(this.limit)
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
           posts.forEach(post => this.insert_post_into_day(post, days))
           this.pages = new Map(this.pages.set(`posts.${this.limit}`, days));
           this.limit = growth.next(this.limit)
-          console.log(this.pages);
         }
       },
       async save_me(event) {
@@ -113,11 +110,18 @@
       position: relative
       z-index: 2
     & > div#login
-    & > div#pages-of-posts
-      max-width: page-width
       margin: auto
-      padding: base-line base-line 0 base-line
-    & > div#pages-of-posts > div[itemprop]
+      max-width: page-width
+      padding: base-line
+      form
+        margin-top: base-line
+</style>
+<style lang="stylus">
+  section#account > div#pages-of-posts
+    max-width: page-width
+    margin: auto
+    padding: base-line base-line 0 base-line
+    & > div[itemprop]
       display:flex
       flex-direction: column-reverse
       & > section.day
@@ -129,4 +133,5 @@
             order: 1
         & > header > h4
           margin-top: base-line
+
 </style>
