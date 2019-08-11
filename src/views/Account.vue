@@ -57,8 +57,7 @@
         limit: growth.first(),
         working: false,
         signed_in: false,
-        image_file: null,
-        chronological: true
+        image_file: null
       }
     },
     async created() {

@@ -17,7 +17,7 @@
         :post="post"
         :person="post.person"
         :key="post.id"
-        v-on:next-page="next_page">
+        @end-of-articles="next_page">
       </feed-as-article>
     </section>
   </section>
@@ -45,8 +45,6 @@
       return {
         days: new Map(),
         relations: [],
-        feed_limit: 8,
-        chronological: false,
         working: true
       }
     },
@@ -76,12 +74,13 @@
         everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
       },
       async next_page(person) {
+        console.log(`posts.${person.page}`, person.first_name)
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
-        const next_page = `posts.${person.page}`
-        const next_posts = await profile.items(person.id, next_page)
-        const posts = this.condense_posts(next_posts, person)
+        let posts = await profile.items(person.id, `posts.${person.page}`)
+        posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
+        this.days = new Map(this.days)
       }
     }
   }
