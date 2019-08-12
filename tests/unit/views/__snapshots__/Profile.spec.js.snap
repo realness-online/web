@@ -14,5 +14,13 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
   <!---->
    
   <!---->
+   
+  <div
+    id="pages-of-posts"
+  >
+    <div
+      itemprop="posts."
+    />
+  </div>
 </section>
 `;
