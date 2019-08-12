@@ -51,11 +51,7 @@
       },
       add_post(post) {
         this.posts.push(post)
-        this.$nextTick(async() => {
-          await posts_local.save()
-          await posts_local.optimize()
-          this.posts = posts_local.as_list()
-        })
+        this.$nextTick(async() => await posts_local.save())
       },
       should_sync(last_synced) {
         const user = firebase.auth().currentUser
@@ -82,6 +78,7 @@
           this.posts = await posts_local.sync_list()
           this.$nextTick(async() => {
             await posts_local.save()
+            await posts_local.optimize()
             sessionStorage.setItem('posts-synced', Date.now())
           })
         }
