@@ -7,19 +7,14 @@ import sorting from '@/modules/sorting'
 const networkable = ['person', 'posts']
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= growth.previous(limit)) return true
-  else return false
+  if (current_size >= growth.previous(limit)) {
+    const item = Item.get_first_item(current_items)
+    const today = new Date().setHours(0, 0, 0, 0)
+    const created_at = Date.parse(item.created_at)
+    if (created_at && created_at < today) return true
+    else return false
+  } else return false
 }
-// function keep_going(current_items, limit) {
-//   const current_size = current_items.outerHTML.length / 1024
-//   if (current_size >= growth.previous(limit)) {
-//     const item = Item.get_first_item(current_items)
-//     const today = new Date().setHours(0, 0, 0, 0)
-//     const created_at = Date.parse(item.created_at)
-//     if (created_at && created_at < today) return true
-//     else return false
-//   } else return false
-// }
   class Storage {
   static async get_download_url(person_id, name) {
     const path = `/people${person_id}/${name}`
@@ -80,9 +75,9 @@ function keep_going(current_items, limit) {
     return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
-    console.info('optimize', this.filename, this.as_kilobytes())
+    // console.info('optimize', this.filename, this.as_kilobytes())
     if (this.as_kilobytes() > limit) {
-      let current = (await this.from_network()).childNodes[0]
+      let current = (await this.from_storage()).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {
         const first_child = current.childNodes[0]
