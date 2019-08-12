@@ -56,7 +56,7 @@
         pages: new Map(),
         limit: growth.first(),
         working: false,
-        signed_in: false,
+        signed_in: firebase.auth().currentUser,
         image_file: null
       }
     },
@@ -65,10 +65,8 @@
       const posts = this.condense_posts(posts_local.as_list(), this.me)
       posts.forEach(post => this.insert_post_into_day(post, days))
       this.pages.set('posts', days)
-      const user = firebase.auth().currentUser
-      if (user) {
-        this.signed_in = true
-        const id = profile.from_e64(user.phoneNumber)
+      if (this.signed_in) {
+        const id = profile.from_e64(this.signed_in.phoneNumber)
         this.me = await profile.load(id)
       }
     },

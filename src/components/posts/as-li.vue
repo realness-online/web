@@ -1,7 +1,8 @@
 <template lang="html">
   <li itemscope itemtype='/post' :itemid="id">
     <meta itemprop="created_at" :content="post.created_at">
-    <p itemprop="statement" :contenteditable="me" @blur="save_me">{{as_statement}}</p>
+    <p v-if="me" itemprop="statement" :contenteditable="true" @blur="save">{{as_statement}}</p>
+    <p v-else itemprop="statement">{{as_statement}}</p>
   </li>
 </template>
 <script>
@@ -9,7 +10,7 @@
   export default {
     mixins: [post_mixin],
     methods: {
-      save_me(event) {
+      save(event) {
         this.$emit('save', this.post)
       }
     }

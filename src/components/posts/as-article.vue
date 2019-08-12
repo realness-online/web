@@ -1,7 +1,8 @@
 <template lang="html">
   <article itemscope itemtype='/post' :key="id">
     <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
-    <p itemprop="statement" :contenteditable="me" @blur="save">{{as_statement}}</p>
+    <p v-if="me" itemprop="statement" :contenteditable="true" @blur="save">{{as_statement}}</p>
+    <p v-else itemprop="statement">{{as_statement}}</p>
     <ol v-if="has_statements">
       <post-as-li v-for="statement in post.statements" :key="statement.id"
         :post="statement"
@@ -19,6 +20,11 @@
     mixins: [post_mixin, date_mixin, intersection_mixin],
     components: {
       'post-as-li': as_li
+    },
+    methods: {
+      save(event) {
+        console.log('blured');
+      }
     }
   }
 </script>

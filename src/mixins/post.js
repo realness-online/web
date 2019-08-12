@@ -10,11 +10,15 @@ export default {
     person: {
       type: Object,
       required: true
+    },
+    editable: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     me() {
-      if (person_local.as_object().id === this.person.id) return true
+      if (this.editable && person_local.as_object().id === this.person.id) return true
       else return false
     },
     as_created_time() {
