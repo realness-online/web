@@ -73,7 +73,7 @@
     },
     methods: {
       is_editable(page_name) {
-
+        return false
         if (page_name === 'posts') return true
         else return false
       },
@@ -97,8 +97,8 @@
         this.$nextTick(_ => person_local.save())
       },
       async save_page(event) {
-        console.log('save_page')
-        this.$nextTick(_ => posts_local.save())
+        console.log('save_page', posts_local.selector)
+        await posts_local.save()
       }
     }
   }
