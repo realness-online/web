@@ -15,6 +15,7 @@
         <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day" :key="post.id"
+                           :editable="is_editable(page_name)"
                            :post="post"
                            :person="me"
                            @end-of-articles="next_page"
@@ -71,6 +72,11 @@
       }
     },
     methods: {
+      is_editable(page_name) {
+
+        if (page_name === 'posts') return true
+        else return false
+      },
       async next_page() {
         const days = new Map()
         let posts = await posts_local.next_page(this.limit)
@@ -90,12 +96,9 @@
         }
         this.$nextTick(_ => person_local.save())
       },
-      async save_page(event, page_name) {
-        console.log('save_page', page_name)
-        this.$nextTick(_ => {
-          // const page = LocalStorage.new(page_name)
-          // page.save()
-        })
+      async save_page(event) {
+        console.log('save_page')
+        this.$nextTick(_ => posts_local.save())
       }
     }
   }

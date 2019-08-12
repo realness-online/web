@@ -23,7 +23,7 @@
     },
     methods: {
       save(event) {
-        console.log('blured');
+        this.$emit('saved', this.post)
       }
     }
   }
