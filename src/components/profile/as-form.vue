@@ -99,7 +99,8 @@
         return is_valid
       },
       disable_input() {
-        this.$el.querySelector('#mobile').disabled = true
+        const mobile = this.$el.querySelector('#mobile')
+        if (mobile) mobile.disabled = true
       },
       save_person() {
         this.$bus.$emit('save-me', this.person)
@@ -151,7 +152,8 @@
         firebase.auth().signOut()
         this.show_sign_out = false
         this.show_authorize = true
-        this.$el.querySelector('#mobile').disabled = false
+        const mobile = this.$el.querySelector('#mobile')
+        if (mobile) mobile.disabled = false
       },
       mobile_keypress(event) {
         if (!event.key.match(/^\d$/)) event.preventDefault()
