@@ -83,7 +83,7 @@
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
           posts.forEach(post => this.insert_post_into_day(post, days))
-          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days));
+          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
           this.limit = growth.next(this.limit)
         }
       },

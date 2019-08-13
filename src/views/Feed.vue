@@ -81,7 +81,7 @@
         let posts = await profile.items(person.id, `posts.${person.page}`)
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
-        const sorted =  [...this.days.entries()].sort(this.newer_day_first)
+        const sorted = [...this.days.entries()].sort(this.newer_day_first)
         this.days = new Map(sorted)
       }
     }

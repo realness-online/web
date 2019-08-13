@@ -51,7 +51,7 @@
       },
       add_post(post) {
         this.posts.push(post)
-        this.$nextTick(async() => await posts_local.save())
+        this.$nextTick(async() => posts_local.save())
       },
       should_sync(last_synced) {
         const user = firebase.auth().currentUser

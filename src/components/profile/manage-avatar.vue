@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <as-avatar :person="me"></as-avatar>
-    <menu>
+    <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
@@ -11,6 +11,8 @@
   </div>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import convert_to_avatar from '@/modules/convert_to_avatar'
   import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/helpers/profile'
@@ -23,6 +25,7 @@
     },
     data() {
       return {
+        signed_in: firebase.auth().currentUser,
         me: person_local.as_object(),
         avatar_changed: false
       }
