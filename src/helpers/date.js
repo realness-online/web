@@ -45,6 +45,11 @@ export default {
     return d1.getFullYear() === d2.getFullYear() &&
       d1.getDate() === d2.getDate() &&
       d1.getMonth() === d2.getMonth()
+  },
+  day_name(date) {
+    date = new Date(date)
+    const keyed_day = `${date.getMonth() +1 }-${date.getDate()}-${date.getFullYear()}`
+    console.log(keyed_day)
+    return keyed_day
   }
-
 }
