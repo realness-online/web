@@ -65,8 +65,8 @@
     async created() {
       firebase.auth().onAuthStateChanged(async user => {
         if (user) {
-          this.signed_in = user
-          const id = profile.from_e64(this.signed_in.phoneNumber)
+          this.signed_in = true
+          const id = profile.from_e64(user.phoneNumber)
           this.me = await profile.load(id)
         }
       })

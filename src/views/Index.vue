@@ -56,13 +56,11 @@
       }
     },
     async created() {
-      console.log('created')
       firebase.auth().onAuthStateChanged(user => {
-        this.signed_in = user
+        if (user) this.signed_in = true
       })
     },
     async mounted() {
-      console.log('mounted');
       await Promise.all([
         this.sync_posts(),
         this.sync_profile()
