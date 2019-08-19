@@ -33,13 +33,13 @@ export default {
     if (Date.parse(date) < this_year) {
       day = this.as_time(date, format_as_day_and_year)
     } else day = this.as_time(date, format_as_day)
-    if (this.same_day(date, new Date())) day = `Today – ${day}`
+    if (this.is_same_day(date, new Date())) day = `Today – ${day}`
     return day
   },
   as_day_and_time(date) {
     return this.as_time(date, format_as_day_and_time)
   },
-  same_day(d1, d2) {
+  is_same_day(d1, d2) {
     d1 = new Date(d1)
     d2 = new Date(d2)
     return d1.getFullYear() === d2.getFullYear() &&

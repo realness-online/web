@@ -23,7 +23,7 @@ export default {
       const day = days.get(day_name)
       if (day) {
         day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc
-        if (this.chronological || date_helper.same_day(day_name, new Date())){
+        if (this.chronological || date_helper.is_same_day(day_name, new Date())){
           day.sort(this.newer_first)
         }
         else day.sort(this.older_first)
