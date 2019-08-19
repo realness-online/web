@@ -8,7 +8,7 @@ export default {
     }
   },
   methods: {
-    populate_days(posts, person, days = new Map() ) {
+    populate_days(posts, person, days = new Map()) {
       const condensed = this.condense_posts(posts, person)
       condensed.forEach(post => this.insert_post_into_day(post, days))
       return days
