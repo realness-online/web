@@ -48,8 +48,6 @@ export default {
   },
   day_name(date) {
     date = new Date(date)
-    const keyed_day = `${date.getMonth() +1 }-${date.getDate()}-${date.getFullYear()}`
-    console.log(keyed_day)
-    return keyed_day
+    return `${date.getMonth() + 1 }-${date.getDate()}-${date.getFullYear()}`
   }
 }
