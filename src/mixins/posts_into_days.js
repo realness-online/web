@@ -8,6 +8,11 @@ export default {
     }
   },
   methods: {
+    populate_days(posts, person, days = new Map() ) {
+      const condensed = this.condense_posts(posts, person)
+      condensed.forEach(post => this.insert_post_into_day(post, days))
+      return days
+    },
     is_today(date) {
       if (date.indexOf('Today') > -1) return true
       else return false

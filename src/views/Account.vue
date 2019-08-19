@@ -32,8 +32,9 @@
   import profile from '@/helpers/profile'
   import { person_local, posts_local } from '@/modules/LocalStorage'
   import growth from '@/modules/growth'
-  import posts_into_days from '@/mixins/posts_into_days'
   import date_mixin from '@/mixins/date'
+  import posts_into_days from '@/mixins/posts_into_days'
+
   import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -57,23 +58,23 @@
         pages: new Map(),
         limit: growth.first(),
         working: false,
-        signed_in: firebase.auth().currentUser,
+        signed_in: false,
         image_file: null
       }
     },
     async created() {
-      const days = new Map()
-      const posts = this.condense_posts(posts_local.as_list(), this.me)
-      posts.forEach(post => this.insert_post_into_day(post, days))
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user) {
+          this.signed_in = user
+          const id = profile.from_e64(this.signed_in.phoneNumber)
+          this.me = await profile.load(id)
+        }
+      })
+      const days = this.populate_days(posts_local.as_list(), this.me)
       this.pages.set('posts', days)
-      if (this.signed_in) {
-        const id = profile.from_e64(this.signed_in.phoneNumber)
-        this.me = await profile.load(id)
-      }
     },
     methods: {
       is_editable(page_name) {
-        return false
         if (page_name === 'posts') return true
         else return false
       },

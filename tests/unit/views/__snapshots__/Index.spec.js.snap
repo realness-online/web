@@ -1,15 +1,56 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Index.vue Renders navigation for the application 1`] = `
+exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
 <section
   class="page"
   id="home"
 >
-  <h6
-    class="app_version"
+  <nav
+    class="signed-in"
+    id="main"
   >
-    0.4.1
-  </h6>
+    <!---->
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/phone-book"
+    >
+      Friends
+    </router-link>
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/feed"
+    >
+      Feed
+    </router-link>
+     
+    <router-link
+      class="green"
+      tabindex="-1"
+      to="/events"
+    >
+      Events
+    </router-link>
+     
+    <router-link
+      class="green"
+      tabindex="-1"
+      to="/where"
+    >
+      Where
+    </router-link>
+     
+    <router-link
+      class="black"
+      tabindex="-1"
+      to="/account"
+    >
+      Scott
+    </router-link>
+  </nav>
    
   <!---->
    
@@ -20,5 +61,125 @@ exports[`@/views/Index.vue Renders navigation for the application 1`] = `
       itemprop="posts"
     />
   </aside>
+   
+  <h6
+    class="app_version"
+  >
+    0.4.2
+  </h6>
+</section>
+`;
+
+exports[`@/views/Index.vue navigating the application handling post events posting:false should render the main navigation 1`] = `
+<section
+  class="page"
+  id="home"
+>
+  <nav
+    class="signed-in"
+    id="main"
+  >
+    <!---->
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/phone-book"
+    >
+      Friends
+    </router-link>
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/feed"
+    >
+      Feed
+    </router-link>
+     
+    <router-link
+      class="green"
+      tabindex="-1"
+      to="/events"
+    >
+      Events
+    </router-link>
+     
+    <router-link
+      class="green"
+      tabindex="-1"
+      to="/where"
+    >
+      Where
+    </router-link>
+     
+    <router-link
+      class="black"
+      tabindex="-1"
+      to="/account"
+    >
+      You
+    </router-link>
+  </nav>
+   
+  <!---->
+   
+  <aside>
+    <!---->
+     
+    <div
+      itemprop="posts"
+    />
+  </aside>
+   
+  <h6
+    class="app_version"
+  >
+    0.4.2
+  </h6>
+</section>
+`;
+
+exports[`@/views/Index.vue navigating the application handling post events posting:true should hide main navigation 1`] = `
+<section
+  class="page"
+  id="home"
+>
+  <nav
+    class="signed-in"
+    id="main"
+  >
+    <!---->
+     
+    <!---->
+     
+    <!---->
+     
+    <!---->
+     
+    <!---->
+     
+    <!---->
+  </nav>
+   
+  <button
+    tabindex="-1"
+  >
+    Done
+  </button>
+   
+  <aside>
+    <!---->
+     
+    <div
+      itemprop="posts"
+    />
+  </aside>
+   
+  <h6
+    class="app_version"
+  >
+    0.4.2
+  </h6>
 </section>
 `;

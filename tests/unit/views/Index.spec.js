@@ -4,6 +4,7 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
 import Storage from '@/modules/Storage'
+import LocalStorage from '@/modules/LocalStorage'
 import profile_id from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
@@ -30,7 +31,7 @@ describe('@/views/Index.vue', () => {
     sessionStorage.removeItem('posts-synced')
     wrapper.destroy()
   })
-  it('Renders navigation for the application', async() => {
+  it('Renders posts and profile for a person', async() => {
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
@@ -46,18 +47,14 @@ describe('@/views/Index.vue', () => {
     beforeEach(() => {
       sync_list_spy = jest.spyOn(Storage.prototype, 'sync_list').mockImplementation(() => {
         return Promise.resolve([
-          {
-            statement: 'mock post'
-          },
-          {
-            statement: 'another mock post'
-          }
+          { statement: 'mock post' },
+          { statement: 'another mock post' }
         ])
       })
     })
     it('Wait to sync until the user is signed in', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
         return { currentUser: null }
       })
       shallow(Index)
@@ -79,6 +76,66 @@ describe('@/views/Index.vue', () => {
       wrapper = shallow(Index)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
+    })
+  })
+  describe('navigating the application', () => {
+    describe('handling post events', () => {
+      it('posting:false should render the main navigation', () => {
+        expect(wrapper.vm.posting).toBe(false)
+        expect(wrapper.element).toMatchSnapshot()
+      })
+      it('posting:true should hide main navigation', () => {
+        wrapper.setData({ posting: true })
+        expect(wrapper.element).toMatchSnapshot()
+      })
+      it('post-added event should set has_posts to true', () => {
+        expect(wrapper.vm.has_posts).toBe(false)
+        wrapper.vm.$bus.$emit('post-added')
+        expect(wrapper.vm.has_posts).toBe(true)
+      })
+    })
+    describe('onBoarding()', () => {
+      describe('signed out', () => {
+        it('textarea is the only navigation element to start', () => {
+          jest.spyOn(firebase, 'auth').mockImplementation(() => {
+            return { currentUser: null }
+          })
+          wrapper = shallow(Index)
+          console.log(wrapper.vm.onboarding)
+          expect(wrapper.vm.onboarding['has-posts']).toBeFalsy()
+          expect(wrapper.vm.onboarding['signed-in']).toBeFalsy()
+          expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
+        })
+        it.only('Profile button is visible when person has posted', () => {
+          jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+            return new Array(1)
+          })
+          const wrapper = shallow(Index)
+          expect(wrapper.vm.onboarding['has-posts']).toBe(true)
+        })
+      })
+      describe('signed in', () => {
+        it('Relations is visible', () => {
+          wrapper = shallow(Index)
+          expect(wrapper.vm.onboarding['signed-in']).toBe(true)
+        })
+        it('Feed, Events and posters are visible when person has added a friend', () => {
+          jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+            return new Array(1)
+          })
+          wrapper = shallow(Index)
+          expect(wrapper.vm.onboarding['has-friends']).toBe(true)
+        })
+      })
+    })
+    describe('#user_name', () => {
+      it('Returns \'You\' by default', () => {
+        expect(wrapper.vm.user_name).toBe('You')
+      })
+      it('Returns the users first name if set', () => {
+        wrapper.setData({ person: { first_name: 'Scott' } })
+        expect(wrapper.vm.user_name).toBe('Scott')
+      })
     })
   })
 })

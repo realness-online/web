@@ -15,7 +15,7 @@ function keep_going(current_items, limit) {
     else return false
   } else return false
 }
-  class Storage {
+class Storage {
   static async get_download_url(person_id, name) {
     const path = `/people${person_id}/${name}`
     // console.log(path)

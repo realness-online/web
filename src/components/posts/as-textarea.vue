@@ -20,12 +20,12 @@
         this.$emit('toggle-keyboard')
         let post = {}
         post.statement = this.new_post && this.new_post.trim()
-        if (!post.statement) { return }
+        if (!post.statement) return
         this.new_post = ''
         post.created_at = new Date().toISOString()
-        this.$bus.$emit('post-added', post)
+        this.$emit('post-added', post)
       },
-      wat_focused($event) {
+      wat_focused(event) {
         this.$emit('toggle-keyboard')
       }
     }
