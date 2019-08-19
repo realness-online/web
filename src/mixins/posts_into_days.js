@@ -4,8 +4,7 @@ import date_helper from '@/helpers/date'
 export default {
   data() {
     return {
-      sort_count: 0,
-      chronological: false
+      sort_count: 0
     }
   },
   methods: {
@@ -23,9 +22,7 @@ export default {
       const day = days.get(day_name)
       if (day) {
         day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc
-        if (this.chronological || date_helper.is_same_day(day_name, new Date())){
-          day.sort(this.newer_first)
-        }
+        if (date_helper.is_same_day(day_name, new Date())) day.sort(this.newer_first)
         else day.sort(this.older_first)
       } else days.set(day_name, [post])
       return days
