@@ -43,11 +43,10 @@ export default {
     d1 = new Date(d1)
     d2 = new Date(d2)
     return d1.getFullYear() === d2.getFullYear() &&
-      d1.getDate() === d2.getDate() &&
-      d1.getMonth() === d2.getMonth()
+      d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth()
   },
   day_name(date) {
     date = new Date(date)
-    return `${date.getMonth() + 1 }-${date.getDate()}-${date.getFullYear()}`
+    return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
   }
 }
