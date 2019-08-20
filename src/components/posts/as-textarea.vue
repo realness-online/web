@@ -33,26 +33,26 @@
 </script>
 <style lang="stylus">
   textarea#wat
+    resize: none
     appearance: none
     transition-property: all
     transition-duration: 0.45s
+    user-select: text
+    border-style: solid
+    caret-color: red
     cursor: pointer
     transition-property: border-width, border-radius, text-align, background-color
     color: black
     @media (prefers-color-scheme: dark)
       color: white
-    user-select: text
-    border-style: solid
-    resize: none
-    caret-color: red
     &::placeholder
       transition-property: all
       font-family: inherit
     &:focus
+    &:active
       font-size: 1.25em
       font-weight: normal
       padding: 0
-      // height: 100vh
       grid-column: 1 / span 2
       grid-row: 1 / span 3
       text-align: left
