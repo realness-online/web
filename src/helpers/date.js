@@ -47,6 +47,6 @@ export default {
   },
   day_name(date) {
     date = new Date(date)
-    return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
   }
 }
