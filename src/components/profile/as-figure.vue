@@ -75,7 +75,8 @@
     text-overflow: ellipsis
     display:flex
     svg
-      clip-path: circle(44%)
+      shape-outside: circle()
+      clip-path: circle()
       cursor: pointer
       fill: black
       @media (prefers-color-scheme: dark)

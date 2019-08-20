@@ -46,6 +46,6 @@
       float: left
       margin-right: (base-line / 2)
       shape-outside: circle()
-      clip-path: circle(44%)
+      clip-path: circle()
       fill: blue
 </style>
