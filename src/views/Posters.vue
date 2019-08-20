@@ -1,38 +1,35 @@
 <template>
-  <section id="events" class="page">
+  <section id="posters" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1>Events</h1>
+      <h1>Posters</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
-    <figure>
-      <as-avatar v-for="person in curators" :key="person.id" :person="person"></as-avatar>
-    </figure>
+    <header>
+      <h1></h1>
+    </header>
   </section>
 </template>
 <script>
-  import logoAsLink from '@/components/logo-as-link'
-  import asAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
+  import logoAsLink from '@/components/logo-as-link'
   export default {
     components: {
       logoAsLink,
-      asAvatar,
       icon
     },
     data() {
       return {
-        curators: [],
         working: false
       }
     }
   }
 </script>
 <style lang="stylus">
-  section#events
+  section#posters
     h1
       color: green
     & > header
@@ -45,16 +42,4 @@
         fill: transparent
       & > a
         -webkit-tap-highlight-color: green
-    & > figure
-      display: grid
-      grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
-      grid-gap: base-line
-      @media (min-width: max-screen)
-        padding: 0 base-line
-      & > svg
-        display: block
-        width: 100%
-        min-height: 66vh
-        height: inherit
-
 </style>

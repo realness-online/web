@@ -6,7 +6,7 @@
       <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Friends</router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Events</router-link>
-      <router-link v-if="!posting" to="/where" class="green" tabindex="-1">Where</router-link>
+      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
     </nav>
     <aside>
@@ -179,7 +179,7 @@
     &.has-friends
       & > [href='/feed']
       & > [href='/events']
-      & > [href='/where']
+      & > [href='/posters']
         visibility: visible
 </style>
 <style lang="stylus">

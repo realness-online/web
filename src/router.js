@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Events from '@/views/Events'
 import Feed from '@/views/Feed'
-import Where from '@/views/Where'
+import Posters from '@/views/Posters'
 import Account from '@/views/Account'
 import Index from '@/views/Index'
 import Profile from '@/views/Profile'
@@ -18,7 +18,7 @@ export default new Router({
     { path: '/', component: Index },
     { path: '/events', component: Events },
     { path: '/feed', component: Feed },
-    { path: '/where', component: Where },
+    { path: '/posters', component: Posters },
     { path: '/relations', component: Relations },
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
