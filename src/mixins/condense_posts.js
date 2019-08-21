@@ -19,7 +19,7 @@ export default {
           post.statements.push(next_statement)
         }
         post.statements.sort(this.older_first)
-        post.person = person // hack for Feed.vue
+        post.person = person
         condensed_posts.push(post)
       }
       return condensed_posts
