@@ -4,8 +4,7 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <icon v-if="working" name="working"></icon>
-    <manage-avatar v-else></manage-avatar>
+    <manage-avatar></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
@@ -57,7 +56,6 @@
         me: person_local.as_object(),
         pages: new Map(),
         limit: growth.first(),
-        working: false,
         signed_in: false,
         image_file: null
       }

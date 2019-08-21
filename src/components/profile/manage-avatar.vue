@@ -1,6 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
-    <as-avatar :person="me"></as-avatar>
+    <icon v-if="working" name="working"></icon>
+    <as-avatar v-else :person="me"></as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
@@ -25,9 +26,10 @@
     },
     data() {
       return {
+        working: false,
+        avatar_changed: false,
         signed_in: firebase.auth().currentUser,
-        me: person_local.as_object(),
-        avatar_changed: false
+        me: person_local.as_object()
       }
     },
     computed: {
@@ -44,12 +46,13 @@
         this.working = true
         this.avatar_changed = true
         const avatar_id = profile_id.as_avatar_id(this.me.id)
-        this.$nextTick(async() => {
-          this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
-          this.working = false
-        })
+        await this.$nextTick()
+        this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
+        this.working = false
       },
       async accept_changes(event) {
+        console.log('lame');
+        await this.$nextTick()
         await person_local.save()
         this.avatar_changed = false
       },
@@ -87,8 +90,8 @@
       &.working
         flex-grow: 1
         padding: base-line
-        width: 100vw
-        height: 50vh
+        width: 30vw
+        height: 15vh
     & > menu
       position: relative
       z-index: 1
