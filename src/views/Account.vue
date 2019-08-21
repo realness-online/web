@@ -4,7 +4,7 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <manage-avatar></manage-avatar>
+    <manage-avatar @new-avatar="update_avatar"></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form :person='me'></profile-as-form>
@@ -33,7 +33,6 @@
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import posts_into_days from '@/mixins/posts_into_days'
-
   import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -72,6 +71,9 @@
       this.pages.set('posts', days)
     },
     methods: {
+      update_avatar(avatar) {
+        this.me.avatar = avatar
+      },
       is_editable(page_name) {
         if (page_name === 'posts') return true
         else return false
@@ -87,13 +89,15 @@
         }
       },
       async save_me(event) {
+        console.log('save_me');
         if (this.signed_in) {
           this.me.id = profile.from_e64(this.signed_in.phoneNumber)
           if (!this.me.avatar) {
             this.me.avatar = (await profile.load(this.me.id)).avatar
           }
         }
-        this.$nextTick(_ => person_local.save())
+        await this.$nextTick()
+        person_local.save()
       },
       async save_page(event) {
         console.log('save_page', posts_local.selector)

@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <icon v-if="working" name="working"></icon>
-    <as-avatar v-else :person="me"></as-avatar>
+    <as-avatar v-else :person="me" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
@@ -47,12 +47,11 @@
         this.avatar_changed = true
         const avatar_id = profile_id.as_avatar_id(this.me.id)
         await this.$nextTick()
-        this.me.avatar = await convert_to_avatar.trace(image, avatar_id)
+        const avatar = await convert_to_avatar.trace(image, avatar_id)
+        this.$emit('new-avatar', avatar)
         this.working = false
       },
       async accept_changes(event) {
-        console.log('lame');
-        await this.$nextTick()
         await person_local.save()
         this.avatar_changed = false
       },
