@@ -7,7 +7,7 @@
     <manage-avatar @new-avatar="update_avatar"></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
-      <profile-as-form :person='me'></profile-as-form>
+      <profile-as-form @modified="save_me" :person='me'></profile-as-form>
     </div>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
@@ -89,9 +89,8 @@
         }
       },
       async save_me(event) {
-        console.log('save_me');
         if (this.signed_in) {
-          this.me.id = profile.from_e64(this.signed_in.phoneNumber)
+          this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
           if (!this.me.avatar) {
             this.me.avatar = (await profile.load(this.me.id)).avatar
           }

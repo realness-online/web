@@ -103,7 +103,7 @@
         if (mobile) mobile.disabled = true
       },
       save_person() {
-        this.$bus.$emit('save-me', this.person)
+        this.$emit('modified', this.person)
       },
       begin_authorization(event) {
         event.preventDefault()
