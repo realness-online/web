@@ -1,6 +1,6 @@
 <template lang="html">
   <svg @click="avatar_click">
-    <defs itemprop="avatar" :itemref="person.id" v-if="!by_reference" ref="avatar" v-html="person.avatar"></defs>
+    <defs itemprop="avatar" v-if="!by_reference" ref="avatar" v-html="person.avatar"></defs>
     <use :xlink:href="avatar_link"/>
   </svg>
 </template>
