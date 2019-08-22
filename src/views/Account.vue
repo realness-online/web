@@ -18,7 +18,7 @@
                            :post="post"
                            :person="me"
                            @end-of-articles="next_page"
-                           @saved="save_page">
+                           @modified="save_page">
           </post-as-article>
         </section>
       </div>
