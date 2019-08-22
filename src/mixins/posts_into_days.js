@@ -20,10 +20,9 @@ export default {
       const day_name = date_helper.day_name(post.created_at)
       const day = days.get(day_name)
       if (day) {
-        day.push(post) // TODO: play around with what's the fastest sorting unshift or push etc
+        day.unshift(post)
         const today = new Date()
-        if (date_helper.is_same_day(day_name, today)) day.sort(this.newer_first)
-        else day.sort(this.older_first)
+        day.sort(this.older_first)
       } else days.set(day_name, [post])
       return days
     },
