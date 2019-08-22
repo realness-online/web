@@ -30,10 +30,6 @@ export default {
     as_statement() {
       return post_helper.as_statement(this.post)
     },
-    has_statements() {
-      if (this.post.statements && (this.post.statements.length > 1)) return true
-      else return false
-    },
     i_am_oldest() {
       if (this.post.created_at === this.person.oldest_post) return true
       else {
