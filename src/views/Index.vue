@@ -90,12 +90,13 @@
       as_id(post) {
         return post_helper.as_id(post, this.me)
       },
-      add_post(post) {
+      async add_post(post) {
         console.log('add_post', post)
         this.has_posts = true
         const posts = [post]
         this.days = this.populate_days(posts, this.me, this.days)
-        this.$nextTick(async() => posts_local.save())
+        await this.$nextTick()
+        posts_local.save()
       },
       should_sync(last_synced) {
         if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
