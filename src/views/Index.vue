@@ -15,7 +15,7 @@
         <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day"
-                           :key="as_id(post)"
+                           :key="as_id"
                            :post="post"
                            :person="me">
           </post-as-article>
