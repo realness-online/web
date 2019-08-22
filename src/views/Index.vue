@@ -15,7 +15,7 @@
         <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day"
-                           :key="as_id"
+                           :key="as_id(post)"
                            :post="post"
                            :person="me">
           </post-as-article>
@@ -29,7 +29,6 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import posts_into_days from '@/mixins/posts_into_days'
-  import post_mixin from '@/mixins/post'
   import condense_posts from '@/mixins/condense_posts'
   import date_mixin from '@/mixins/date'
   import profile_helper from '@/helpers/profile'
@@ -39,7 +38,7 @@
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [condense_posts, posts_into_days, date_mixin, post_mixin],
+    mixins: [condense_posts, posts_into_days, date_mixin],
     components: {
       'my-figure': as_figure,
       'post-as-article': as_article,
@@ -82,6 +81,9 @@
       }
     },
     methods: {
+      as_id(post) {
+        return post_helper.as_id(post, this.me)
+      },
       done_posting(event) {
         document.querySelector('nav > button').focus()
       },
