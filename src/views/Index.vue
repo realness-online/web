@@ -29,6 +29,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import posts_into_days from '@/mixins/posts_into_days'
+  import post_mixin from '@/mixins/post'
   import condense_posts from '@/mixins/condense_posts'
   import date_mixin from '@/mixins/date'
   import profile_helper from '@/helpers/profile'
@@ -38,7 +39,7 @@
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [condense_posts, posts_into_days, date_mixin],
+    mixins: [condense_posts, posts_into_days, date_mixin, post_mixin],
     components: {
       'my-figure': as_figure,
       'post-as-article': as_article,
@@ -52,10 +53,11 @@
         has_posts: (posts_local.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
-        days: this.populate_days(posts_local.as_list(), person_local.as_object())
+        days: new Map()
       }
     },
     async created() {
+      this.days = this.populate_days(posts_local.as_list(), this.me)
       firebase.auth().onAuthStateChanged(user => {
         if (user) this.signed_in = true
       })
@@ -86,9 +88,6 @@
       friend_or_phone_book() {
         if (relations_local.as_list().length < 1) return '/phone-book'
         else return '/relations'
-      },
-      as_id(post) {
-        return post_helper.as_id(post, this.me)
       },
       async add_post(post) {
         console.log('add_post', post)
