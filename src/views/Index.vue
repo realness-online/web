@@ -59,6 +59,7 @@
       this.days = this.populate_days(posts_local.as_list(), this.me)
       firebase.auth().onAuthStateChanged(user => {
         if (user) this.signed_in = true
+        else this.signed_in = false
       })
     },
     async mounted() {
