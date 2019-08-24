@@ -24,6 +24,7 @@ export default {
     const properties = Array.from(item.querySelectorAll('[itemprop]'))
     properties.forEach(prop => {
       const name = prop.getAttribute('itemprop')
+      if (props[name]) return //first set value wins
       const value = this.property_value(prop)
       props[name] = value
     })
