@@ -15,10 +15,9 @@ export default {
         post.statements = []
         while (this.is_train_of_thought(post, posts)) {
           this.sort_count++
-          const next_statement = posts.shift()
-          post.statements.push(next_statement)
+          post.statements.push(posts.shift())
         }
-        post.statements.sort(this.older_first)
+        // post.statements.sort(this.older_first) // soo, don't need it
         post.person = person
         condensed_posts.push(post)
       }
