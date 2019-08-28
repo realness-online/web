@@ -101,6 +101,7 @@
         posts_local.save()
       },
       should_sync(last_synced) {
+        return true
         if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
           return true
         }
@@ -108,24 +109,28 @@
       },
       async sync_profile() {
         if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
-          const user = firebase.auth().currentUser
-          if (user) {
-            const id = profile_helper.from_e64(user.phoneNumber)
-            this.me = await profile_helper.load(id)
-            this.$nextTick(async() => {
+          firebase.auth().onAuthStateChanged(async user => {
+            if (user) {
+              const id = profile_helper.from_e64(user.phoneNumber)
+              this.me = await profile_helper.load(id)
+              await this.$nextTick()
               await person_local.save()
               sessionStorage.setItem('profile-synced', Date.now())
-            })
-          }
+            }
+          })
         }
       },
       async sync_posts() {
         if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
-          this.posts = await posts_local.sync_list()
-          this.$nextTick(async() => {
-            sessionStorage.setItem('posts-synced', Date.now())
-            await posts_local.save()
-            await posts_local.optimize()
+          firebase.auth().onAuthStateChanged(async user => {
+            if (user) {
+              const synced_posts = await posts_local.sync_list()
+              this.days = new Map(this.populate_days(synced_posts, this.me))
+              await this.$nextTick()
+              sessionStorage.setItem('posts-synced', Date.now())
+              await posts_local.save()
+              await posts_local.optimize()
+            }
           })
         }
       }
