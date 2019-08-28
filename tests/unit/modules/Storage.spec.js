@@ -95,17 +95,14 @@ describe('@/modules/Storage.js', () => {
         localStorage.setItem('posts', hella_posts)
         fetch.mockResponseOnce(posts)
 
-        // five posts on the server one that overlaps
         const server_list = Item.get_items(Storage.hydrate(posts))
-        expect(server_list.length).toBe(6)
+        expect(server_list.length).toBe(9)
 
-        // 54 posts on the client one that overlaps
         const local_list = Item.get_items(posts_storage.from_local())
         expect(local_list.length).toBe(79)
 
-        // 58 posts when synced
         const list = await posts_storage.sync_list()
-        expect(list.length).toBe(85)
+        expect(list.length).toBe(88) // 3 posts are the same
       })
     })
   })
