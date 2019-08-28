@@ -30,14 +30,16 @@
     &:last-of-type
       margin-bottom: 0
     & > hgroup
-      font-weight: 200
       & > span
+        font-weight: 200
       & > time
-        display: inline-block
-        vertical-align: center
-      & > span
-      & > time
+        font-weight: 300
         margin-left: (base-line / 6)
+      & > span
+      & > time
+
+        display: inline-block
+
     & > blockquote
       margin-bottom: base-line
       &:last-of-type
