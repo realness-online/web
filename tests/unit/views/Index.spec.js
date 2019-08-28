@@ -5,25 +5,27 @@ import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
 import Storage from '@/modules/Storage'
 import LocalStorage from '@/modules/LocalStorage'
-import profile_id from '@/helpers/profile'
+import { person_local } from '@/modules/LocalStorage'
+import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-const currentUser = {
-  phoneNumber: '+16282281824'
-}
 const post = {
   created_at: '2017-12-20T23:01:14.310Z',
   statement: 'I like to move it'
 }
-jest.spyOn(profile_id, 'load').mockImplementation(() => person)
 describe('@/views/Index.vue', () => {
   let wrapper
   beforeEach(async() => {
+    jest.spyOn(profile, 'load').mockImplementation(() => person)
+    jest.spyOn(person_local, 'as_object').mockImplementation(_ => person)
     sessionStorage.setItem('posts-synced', Date.now())
+    const currentUser = {
+      phoneNumber: '+16282281824'
+    }
     const onAuthStateChanged = jest.fn(state_changed => {
       state_changed(currentUser)
     })
@@ -42,11 +44,13 @@ describe('@/views/Index.vue', () => {
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
-  it('Add a post when post-added is emited', () => {
-    expect(wrapper.vm.posts.length).toBe(0)
-    wrapper.vm.$bus.$emit('post-added', post)
-    expect(wrapper.vm.posts.length).toBe(1)
-    expect(wrapper.find('li')).toBeTruthy()
+  it('Add a post when post-added is emited', async() => {
+    expect(wrapper.vm.days.size).toBe(0)
+    wrapper.vm.$emit('post-added', post)
+    await flushPromises()
+    wrapper.vm.add_post(post)
+    expect(wrapper.vm.days.size).toBe(1)
+    expect(wrapper.find('ol')).toBeTruthy()
   })
   describe('syncing posts', () => {
     let sync_list_spy
@@ -60,8 +64,9 @@ describe('@/views/Index.vue', () => {
     })
     it('Wait to sync until the user is signed in', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
+      const signed_out = jest.fn(state_changed => state_changed(null))
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
-        return { currentUser: null }
+        return { onAuthStateChanged: signed_out }
       })
       shallow(Index)
       await flushPromises()
@@ -96,25 +101,27 @@ describe('@/views/Index.vue', () => {
       })
       it('post-added event should set has_posts to true', () => {
         expect(wrapper.vm.has_posts).toBe(false)
-        wrapper.vm.$bus.$emit('post-added')
+        wrapper.vm.add_post(post)
         expect(wrapper.vm.has_posts).toBe(true)
       })
     })
     describe('onBoarding()', () => {
       describe('signed out', () => {
         it('textarea is the only navigation element to start', () => {
-          jest.spyOn(firebase, 'auth').mockImplementation(() => {
-            return { currentUser: null }
+          const signed_out = jest.fn(state_changed => {
+            state_changed(null)
+          })
+          jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
+            return { onAuthStateChanged: signed_out }
           })
           wrapper = shallow(Index)
-          console.log(wrapper.vm.onboarding)
           expect(wrapper.vm.onboarding['has-posts']).toBeFalsy()
           expect(wrapper.vm.onboarding['signed-in']).toBeFalsy()
           expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
         })
-        it.only('Profile button is visible when person has posted', () => {
+        it('Profile button is visible when person has posted', () => {
           jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
-            return new Array(1)
+            return [post]
           })
           const wrapper = shallow(Index)
           expect(wrapper.vm.onboarding['has-posts']).toBe(true)
@@ -127,7 +134,7 @@ describe('@/views/Index.vue', () => {
         })
         it('Feed, Events and posters are visible when person has added a friend', () => {
           jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
-            return new Array(1)
+            return [post]
           })
           wrapper = shallow(Index)
           expect(wrapper.vm.onboarding['has-friends']).toBe(true)
@@ -136,10 +143,10 @@ describe('@/views/Index.vue', () => {
     })
     describe('#user_name', () => {
       it('Returns \'You\' by default', () => {
+        wrapper.vm.me = {}
         expect(wrapper.vm.user_name).toBe('You')
       })
       it('Returns the users first name if set', () => {
-        wrapper.setData({ person: { first_name: 'Scott' } })
         expect(wrapper.vm.user_name).toBe('Scott')
       })
     })

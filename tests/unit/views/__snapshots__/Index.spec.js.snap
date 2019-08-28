@@ -11,6 +11,8 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
   >
     <!---->
      
+    <!---->
+     
     <router-link
       class="blue"
       tabindex="-1"
@@ -38,9 +40,9 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
     <router-link
       class="green"
       tabindex="-1"
-      to="/where"
+      to="/posters"
     >
-      Where
+      Posters
     </router-link>
      
     <router-link
@@ -51,8 +53,6 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
       Scott
     </router-link>
   </nav>
-   
-  <!---->
    
   <aside>
     <!---->
@@ -65,7 +65,7 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
   <h6
     class="app_version"
   >
-    0.4.2
+    0.4.0
   </h6>
 </section>
 `;
@@ -81,6 +81,8 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   >
     <!---->
      
+    <!---->
+     
     <router-link
       class="blue"
       tabindex="-1"
@@ -108,9 +110,9 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     <router-link
       class="green"
       tabindex="-1"
-      to="/where"
+      to="/posters"
     >
-      Where
+      Posters
     </router-link>
      
     <router-link
@@ -118,11 +120,9 @@ exports[`@/views/Index.vue navigating the application handling post events posti
       tabindex="-1"
       to="/account"
     >
-      You
+      Scott
     </router-link>
   </nav>
-   
-  <!---->
    
   <aside>
     <!---->
@@ -135,7 +135,7 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   <h6
     class="app_version"
   >
-    0.4.2
+    0.4.0
   </h6>
 </section>
 `;
@@ -151,6 +151,12 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   >
     <!---->
      
+    <button
+      tabindex="-1"
+    >
+      Done
+    </button>
+     
     <!---->
      
     <!---->
@@ -161,12 +167,6 @@ exports[`@/views/Index.vue navigating the application handling post events posti
      
     <!---->
   </nav>
-   
-  <button
-    tabindex="-1"
-  >
-    Done
-  </button>
    
   <aside>
     <!---->
@@ -179,7 +179,7 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   <h6
     class="app_version"
   >
-    0.4.2
+    0.4.0
   </h6>
 </section>
 `;

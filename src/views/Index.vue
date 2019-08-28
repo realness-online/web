@@ -93,15 +93,14 @@
         else return '/relations'
       },
       async add_post(post) {
-        console.log('add_post', post)
+        // console.log('add_post', post)
         this.has_posts = true
         const posts = [post]
-        this.days = this.populate_days(posts, this.me, this.days)
+        this.days = new Map(this.populate_days(posts, this.me, this.days))
         await this.$nextTick()
         posts_local.save()
       },
       should_sync(last_synced) {
-        return true
         if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
           return true
         }
