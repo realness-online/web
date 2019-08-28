@@ -33,13 +33,10 @@
       & > span
         font-weight: 200
       & > time
-        font-weight: 300
         margin-left: (base-line / 6)
       & > span
       & > time
-
         display: inline-block
-
     & > blockquote
       margin-bottom: base-line
       &:last-of-type
