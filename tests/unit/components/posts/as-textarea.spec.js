@@ -49,7 +49,7 @@ describe('@/components/posts/as-textarea.vue', () => {
       })
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
-      wrapper.vm.$bus.$on('post-added', spy)
+      wrapper.vm.$on('post-added', spy)
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(1)
     })

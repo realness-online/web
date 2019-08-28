@@ -1,11 +1,8 @@
 <template lang="html">
-  <textarea id="wat"
+  <textarea id="wat" cols="1" rows="1" placeholder=">"
     v-model="new_post"
-    cols="1"
-    rows="1"
     v-on:focusout="prepare_post"
-    v-on:focusin="wat_focused"
-    placeholder=">"></textarea>
+    v-on:focusin="wat_focused"></textarea>
 </template>
 <script>
   export default {

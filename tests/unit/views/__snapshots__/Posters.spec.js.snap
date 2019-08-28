@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/Posters.vue Renders layout for posters 1`] = `
+<section
+  class="page"
+  id="posters"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <hgroup>
+    <h1>
+      Posters
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <header>
+    <h1 />
+  </header>
+</section>
+`;

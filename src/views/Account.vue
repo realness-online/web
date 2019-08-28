@@ -65,10 +65,10 @@
           this.signed_in = true
           const id = profile.from_e64(user.phoneNumber)
           this.me = await profile.load(id)
+          const days = this.populate_days(posts_local.as_list(), this.me)
+          this.pages.set('posts', days)
         }
       })
-      const days = this.populate_days(posts_local.as_list(), this.me)
-      this.pages.set('posts', days)
     },
     methods: {
       update_avatar(avatar) {

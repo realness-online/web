@@ -18,6 +18,6 @@ exports[`@/components/posts/as-article.vue Render a post as an article element 1
     I am saying it
   </p>
    
-  <!---->
+  <ol />
 </article>
 `;
