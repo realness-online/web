@@ -10,8 +10,10 @@ const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
-  id: '/+14151234356',
-  phoneNUmber: '+14151234356'
+  id: '/+14151234356'
+}
+const currentUser = {
+  phoneNumber: '+16282281824'
 }
 const post = {
   created_at: '2017-12-20T23:01:14.310Z',
@@ -23,10 +25,10 @@ describe('@/views/Index.vue', () => {
   beforeEach(async() => {
     sessionStorage.setItem('posts-synced', Date.now())
     const onAuthStateChanged = jest.fn(state_changed => {
-      state_changed({ user: person })
+      state_changed(currentUser)
     })
     jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-      return { onAuthStateChanged }
+      return { onAuthStateChanged, currentUser }
     })
     wrapper = shallow(Index)
     await flushPromises()
