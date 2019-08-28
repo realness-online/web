@@ -117,10 +117,10 @@ class Storage {
     }
   }
   async sync_list() {
-    let from_server = await this.from_network()
-    from_server = Item.get_items(from_server)
+    const from_server = Item.get_items(await this.from_network())
+    const local_items = Item.get_items(this.from_local())
     let items
-    if (this.from_local()) {
+    if (local_items.length > 0) {
       const local_items = Item.get_items(this.from_local())
       let filtered_local = local_items.filter(local_item => {
         return !from_server.some(server_item => {
