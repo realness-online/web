@@ -41,7 +41,7 @@
     data() {
       return {
         pages: new Map(),
-        limit: "",
+        limit: '',
         working: true,
         person: {}
       }

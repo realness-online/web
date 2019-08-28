@@ -48,5 +48,4 @@ describe('@/components/feed/as-article.vue', () => {
     expect(wrapper.emitted('next-page')).toBeTruthy
     expect(unobserve_spy).toBeCalled()
   })
-
 })

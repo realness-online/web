@@ -1,5 +1,4 @@
-import { shallow, createLocalVue } from 'vue-test-utils'
-import VueRouter from 'vue-router'
+import { shallow } from 'vue-test-utils'
 import Account from '@/views/Account'
 import profile from '@/helpers/profile'
 import { person_local } from '@/modules/LocalStorage'

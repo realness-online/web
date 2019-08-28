@@ -4,8 +4,8 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
 import Storage from '@/modules/Storage'
-import LocalStorage from '@/modules/LocalStorage'
-import { person_local } from '@/modules/LocalStorage'
+import LocalStorage, { person_local } from '@/modules/LocalStorage'
+
 import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {

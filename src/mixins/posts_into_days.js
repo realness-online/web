@@ -21,7 +21,6 @@ export default {
       const day = days.get(day_name)
       if (day) {
         day.unshift(post)
-        const today = new Date()
         day.sort(this.older_first)
       } else days.set(day_name, [post])
       return days
