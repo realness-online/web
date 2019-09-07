@@ -60,15 +60,9 @@
       }
     },
     async created() {
-      firebase.auth().onAuthStateChanged(async user => {
-        if (user) {
-          this.signed_in = true
-          const id = profile.from_e64(user.phoneNumber)
-          this.me = await profile.load(id)
-          const days = this.populate_days(posts_local.as_list(), this.me)
-          this.pages.set('posts', days)
-        }
-      })
+      const days = this.populate_days(posts_local.as_list(), this.me)
+      this.pages.set('posts', days)
+      firebase.auth().onAuthStateChanged(this.load_profile)
     },
     methods: {
       update_avatar(avatar) {
@@ -77,6 +71,13 @@
       is_editable(page_name) {
         if (page_name === 'posts') return true
         else return false
+      },
+      async load_profile(firebase_user) {
+        if (firebase_user) {
+          this.signed_in = true
+          const id = profile.from_e64(firebase_user.phoneNumber)
+          this.me = await profile.load(id)
+        }
       },
       async next_page() {
         const days = new Map()
