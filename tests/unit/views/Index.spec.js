@@ -33,6 +33,7 @@ describe('@/views/Index.vue', () => {
       return { onAuthStateChanged, currentUser }
     })
     wrapper = shallow(Index)
+    wrapper.setData({version: '1.0.0'})
     await flushPromises()
   })
   afterEach(() => {
