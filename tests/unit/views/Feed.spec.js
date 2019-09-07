@@ -21,19 +21,19 @@ describe('@/views/Feed.vue', () => {
     await flushPromises()
     expect(profile_spy).toBeCalled()
     expect(posts_spy).toBeCalled()
-    expect(wrapper.vm.days.size).toBe(6)
+    expect(wrapper.vm.days.size).toBe(5)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('Loads another page of data for a person', async() => {
     let wrapper = shallow(Feed)
     const hella_list = Item.get_items(Storage.hydrate(hella_posts))
     await flushPromises()
-    expect(wrapper.vm.days.size).toBe(6)
+    expect(wrapper.vm.days.size).toBe(5)
     jest.spyOn(profile_id, 'items').mockImplementationOnce(_ => {
       return hella_list
     })
     wrapper.vm.next_page(mock_person)
     await flushPromises()
-    expect(wrapper.vm.days.size).toBe(23)
+    expect(wrapper.vm.days.size).toBe(22)
   })
 })

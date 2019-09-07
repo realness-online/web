@@ -23,6 +23,10 @@ exports[`@/views/Account.vue Renders account information 1`] = `
    
   <div
     id="pages-of-posts"
-  />
+  >
+    <div
+      itemprop="posts"
+    />
+  </div>
 </section>
 `;

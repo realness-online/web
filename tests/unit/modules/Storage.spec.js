@@ -102,7 +102,9 @@ describe('@/modules/Storage.js', () => {
         expect(local_list.length).toBe(79)
 
         const list = await posts_storage.sync_list()
-        expect(list.length).toBe(88) // 3 posts are the same
+        // 3 posts are the same 25 posts are older then will sync
+        // 9 + 79 - 3 = 60
+        expect(list.length).toBe(60)
       })
     })
   })

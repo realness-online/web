@@ -24,7 +24,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Tuesday, May 21
+        Tuesday, May 28
       </h4>
     </header>
      
@@ -35,7 +35,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Tuesday, September 11, 2018
+        Monday, April 8
       </h4>
     </header>
      
@@ -46,7 +46,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Thursday, June 7, 2018
+        Sunday, April 7
       </h4>
     </header>
      
@@ -57,7 +57,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Saturday, April 7, 2018
+        Tuesday, February 5
       </h4>
     </header>
      
@@ -68,18 +68,7 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
   >
     <header>
       <h4>
-        Monday, February 5, 2018
-      </h4>
-    </header>
-     
-    <!---->
-  </section>
-  <section
-    class="day"
-  >
-    <header>
-      <h4>
-        Saturday, January 13, 2018
+        Sunday, January 13
       </h4>
     </header>
      
