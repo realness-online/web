@@ -62,7 +62,7 @@
     async created() {
       const days = this.populate_days(posts_local.as_list(), this.me)
       this.pages.set('posts', days)
-      firebase.auth().onAuthStateChanged(this.load_profile)
+      firebase.auth().onAuthStateChanged(this.sync_things)
     },
     methods: {
       update_avatar(avatar) {
@@ -72,11 +72,16 @@
         if (page_name === 'posts') return true
         else return false
       },
-      async load_profile(firebase_user) {
+      async sync_things(firebase_user) {
         if (firebase_user) {
           this.signed_in = true
           const id = profile.from_e64(firebase_user.phoneNumber)
           this.me = await profile.load(id)
+          const synced_pages = await posts_local.sync_list()
+          const days = this.populate_days(synced_pages, this.me)
+          const new_pages = new Map()
+          new_pages.set('posts', days)
+          this.pages = new_pages
         }
       },
       async next_page() {
