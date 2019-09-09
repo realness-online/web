@@ -77,7 +77,7 @@
           this.signed_in = true
           const id = profile.from_e64(firebase_user.phoneNumber)
           this.me = await profile.load(id)
-          this.sync_posts()
+          await this.sync_posts()
         }
       },
       async next_page() {
@@ -91,17 +91,13 @@
         }
       },
       async save_me(event) {
-        console.log('save_me')
         if (this.signed_in) {
-          console.log('signed in', firebase.auth().currentUser)
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
           if (!this.me.avatar) {
-            console.log('no avatar');
             this.me.avatar = (await profile.load(this.me.id)).avatar
           }
         }
         await this.$nextTick()
-        console.log('save');
         person_local.save()
       },
       async sync_posts() {
@@ -111,7 +107,6 @@
         this.pages = new_pages
       },
       async save_page(event) {
-        console.log('save_page')
         await this.sync_posts()
         await this.$nextTick()
         await posts_local.save()
@@ -131,23 +126,20 @@
       padding: base-line
       form
         margin-top: base-line
-</style>
-<style lang="stylus">
-  section#account > div#pages-of-posts
-    max-width: page-width
-    margin: auto
-    padding: base-line base-line 0 base-line
-    & > div[itemprop]
-      display:flex
-      flex-direction: column-reverse
-      & > section.day
+    & > div#pages-of-posts
+      max-width: page-width
+      margin: auto
+      padding: base-line base-line 0 base-line
+      & > div[itemprop]
         display:flex
-        flex-direction: column
-        &.today
-          flex-direction: column-reverse
-          & > header
-            order: 1
-        & > header > h4
-          margin-top: base-line
-
+        flex-direction: column-reverse
+        & > section.day
+          display:flex
+          flex-direction: column
+          &.today
+            flex-direction: column-reverse
+            & > header
+              order: 1
+          & > header > h4
+            margin-top: base-line
 </style>
