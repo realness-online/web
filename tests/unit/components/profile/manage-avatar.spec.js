@@ -3,14 +3,28 @@ import manage_avatar from '@/components/profile/manage-avatar'
 import convert_to_avatar from '@/modules/convert_to_avatar'
 import LocalStorage from '@/modules/LocalStorage'
 import flushPromises from 'flush-promises'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+
+const currentUser = {
+  phoneNumber: '+16282281824'
+}
+
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
+
 describe('@/components/profile/manage-avatar.vue', () => {
   let wrapper
   beforeEach(() => {
+    const onAuthStateChanged = jest.fn(state_changed => {
+      state_changed(currentUser)
+    })
+    jest.spyOn(firebase, 'auth').mockImplementation(_ => {
+      return { onAuthStateChanged }
+    })
     wrapper = shallow(manage_avatar, {
       propsData: { person }
     })

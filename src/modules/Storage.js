@@ -18,7 +18,7 @@ function keep_going(current_items, limit) {
 class Storage {
   static async get_download_url(person_id, name) {
     const path = `/people${person_id}/${name}`
-    console.info(path)
+    // console.info(path)
     try {
       return await firebase.storage().ref().child(path).getDownloadURL()
     } catch (e) {
