@@ -120,7 +120,8 @@ class Storage {
     const from_server = Item.get_items(await this.from_network())
     const local_items = Item.get_items(this.from_local())
     // the larger the number the more recent it is
-    const oldest_date = Date.parse(from_server[0].created_at)
+    let oldest_date = 0
+    if (from_server.length) oldest_date = Date.parse(from_server[0].created_at)
     let items
     if (local_items.length > 0) {
       const local_items = Item.get_items(this.from_local())
