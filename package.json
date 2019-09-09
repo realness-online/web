@@ -1,9 +1,8 @@
 {
   "name": "Realness",
-  "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency.",
+  "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
   "version": "0.4.3",
   "private": false,
-  "license": "All rights reserved",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
     "serve": "vue-cli-service serve",
