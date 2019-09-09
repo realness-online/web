@@ -4,8 +4,8 @@
     <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
-      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
+      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
     </menu>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
