@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <icon v-if="working" name="working"></icon>
-    <as-avatar v-else :person="me" :by_reference="true"></as-avatar>
+    <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
@@ -24,19 +24,26 @@
       icon,
       'as-avatar': as_avatar
     },
+    props: {
+      person: Object
+    },
     data() {
       return {
         working: false,
         avatar_changed: false,
-        signed_in: firebase.auth().currentUser,
-        me: person_local.as_object()
+        signed_in: false
       }
+    },
+    created() {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) this.signed_in = true
+      })
     },
     computed: {
       downloadable() {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-          ${this.me.avatar}
-          <use href="${profile_id.as_avatar_fragment(this.me.id)}"/>
+          ${this.person.avatar}
+          <use href="${profile_id.as_avatar_fragment(this.person.id)}"/>
         </svg>`
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
@@ -45,7 +52,7 @@
       async vectorize_image(image) {
         this.working = true
         this.avatar_changed = true
-        const avatar_id = profile_id.as_avatar_id(this.me.id)
+        const avatar_id = profile_id.as_avatar_id(this.person.id)
         await this.$nextTick()
         const avatar = await convert_to_avatar.trace(image, avatar_id)
         this.$emit('new-avatar', avatar)

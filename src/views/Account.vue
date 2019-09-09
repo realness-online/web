@@ -4,7 +4,7 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <manage-avatar @new-avatar="update_avatar"></manage-avatar>
+    <manage-avatar @new-avatar="update_avatar" :person='me'></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
@@ -62,7 +62,7 @@
     async created() {
       const days = this.populate_days(posts_local.as_list(), this.me)
       this.pages.set('posts', days)
-      firebase.auth().onAuthStateChanged(this.sync_things)
+      firebase.auth().onAuthStateChanged(this.auth_state_change)
     },
     methods: {
       update_avatar(avatar) {
@@ -72,16 +72,12 @@
         if (page_name === 'posts') return true
         else return false
       },
-      async sync_things(firebase_user) {
+      async auth_state_change(firebase_user) {
         if (firebase_user) {
           this.signed_in = true
           const id = profile.from_e64(firebase_user.phoneNumber)
           this.me = await profile.load(id)
-          const synced_pages = await posts_local.sync_list()
-          const days = this.populate_days(synced_pages, this.me)
-          const new_pages = new Map()
-          new_pages.set('posts', days)
-          this.pages = new_pages
+          this.sync_posts()
         }
       },
       async next_page() {
@@ -95,17 +91,29 @@
         }
       },
       async save_me(event) {
+        console.log('save_me')
         if (this.signed_in) {
+          console.log('signed in', firebase.auth().currentUser)
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
           if (!this.me.avatar) {
+            console.log('no avatar');
             this.me.avatar = (await profile.load(this.me.id)).avatar
           }
         }
         await this.$nextTick()
+        console.log('save');
         person_local.save()
       },
+      async sync_posts() {
+        const days = this.populate_days(await posts_local.sync_list(), this.me)
+        const new_pages = new Map()
+        new_pages.set('posts', days)
+        this.pages = new_pages
+      },
       async save_page(event) {
-        console.log('save_page', posts_local.selector)
+        console.log('save_page')
+        await this.sync_posts()
+        await this.$nextTick()
         await posts_local.save()
       }
     }
