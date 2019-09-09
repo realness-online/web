@@ -93,7 +93,6 @@
         else return '/relations'
       },
       async add_post(post) {
-        // console.log('add_post', post)
         this.has_posts = true
         const posts = [post]
         this.days = new Map(this.populate_days(posts, this.me, this.days))
