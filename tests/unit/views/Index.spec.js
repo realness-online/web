@@ -29,8 +29,8 @@ describe('@/views/Index.vue', () => {
     const onAuthStateChanged = jest.fn(state_changed => {
       state_changed(currentUser)
     })
-    jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-      return { onAuthStateChanged, currentUser }
+    jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      return { onAuthStateChanged }
     })
     wrapper = shallow(Index)
     wrapper.setData({version: '1.0.0'})

@@ -108,7 +108,7 @@
       },
       async sync_profile() {
         if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
-          const unsubscribe = firebase.auth().onAuthStateChanged(async user => {
+          firebase.auth().onAuthStateChanged(async user => {
             if (user) {
               const id = profile_helper.from_e64(user.phoneNumber)
               this.me = await profile_helper.load(id)
@@ -116,13 +116,12 @@
               await person_local.save()
               sessionStorage.setItem('profile-synced', Date.now())
             }
-            unsubscribe()
           })
         }
       },
       async sync_posts() {
         if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
-          const unsubscribe = firebase.auth().onAuthStateChanged(async user => {
+          firebase.auth().onAuthStateChanged(async user => {
             if (user) {
               const synced_posts = await posts_local.sync_list()
               this.days = new Map(this.populate_days(synced_posts, this.me))
@@ -131,7 +130,6 @@
               await posts_local.save()
               await posts_local.optimize()
             }
-            unsubscribe()
           })
         }
       }
