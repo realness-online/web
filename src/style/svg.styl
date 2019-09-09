@@ -10,6 +10,15 @@ svg
   stroke-width: 0
   &:active
     animation-name: button_click
+    animation-timing-function: ease-in-out
+    animation-fill-mode: none
+    animation-direction: alternate-reverse
+    animation-iteration-count: infinite;
+    // fill: red !important
+    transition-property: padding, fill
+    padding-top: 0.22em
+    transition-duration: 0.2s
+    transition-timing-function: ease
   @media (prefers-color-scheme: dark)
     fill: white
 
