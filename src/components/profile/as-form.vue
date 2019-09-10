@@ -3,10 +3,10 @@
     <fieldset id="name">
       <input id="first-name" type='text' tabindex="1" placeholder="First" required
              v-model="person.first_name"
-             v-on:blur="modified">
+             v-on:blur="modified_check">
       <input id="last-name" type='text' tabindex="2"  placeholder="Last" required
              v-model="person.last_name"
-             v-on:blur="modified">
+             v-on:blur="modified_check">
     </fieldset>
     <fieldset id="phone" v-if="!show_sign_out">
       <label for="mobile">1</label>
@@ -15,7 +15,7 @@
              v-on:keypress="mobile_keypress"
              v-on:keyup="mobile_keyup"
              v-on:paste.prevent="mobile_paste"
-             v-on:blur="modified">
+             v-on:blur="modified_check">
     </fieldset>
     <fieldset id="captcha"
          v-if='show_captcha'
@@ -100,14 +100,17 @@
         const mobile = this.$el.querySelector('#mobile')
         if (mobile) mobile.disabled = true
       },
-      modified() {
-        console.log('modified')
+      modified_check() {
         const me = person_local.as_object()
         let modified = false
         if (me.id != this.person.id) modified = true
         if (me.first_name != this.person.first_name) modified = true
         if (me.last_name != this.person.last_name) modified = true
-        if (modified) this.$emit('modified', this.person)
+        if (modified) {
+          this.$emit('modified', this.person)
+          sessionStorage.removeItem('profile-synced')
+          sessionStorage.removeItem('posts-synced')
+        }
       },
       async begin_authorization(event) {
         this.working = true
@@ -137,6 +140,8 @@
         this.working = true
         this.disable_input()
         this.show_code = false
+        sessionStorage.removeItem('profile-synced')
+        sessionStorage.removeItem('posts-synced')
         await this.authorizer.confirm(this.code)
         this.working = false
         this.show_sign_out = true
