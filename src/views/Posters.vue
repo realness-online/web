@@ -1,35 +1,65 @@
 <template>
   <section id="posters" class="page">
+    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
     <header>
-      <icon name="nothing"></icon>
+      <a @click="select_photo"><icon name="add"></icon></a>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
       <h1>Posters</h1>
-      <icon v-show="working" name="working"></icon>
+      <icon v-if="working" name="working"></icon>
+      <menu v-else>
+        <a @click="open_camera"><icon name="camera"></icon></a>
+      </menu>
     </hgroup>
-    <header>
-      <h1></h1>
-    </header>
+    <figure itemprop="posters">
+      <svg itemscope itemtype="poster" :itemid="itemid(poster)"
+           v-for="poster in posters"></svg>
+    </figure>
   </section>
 </template>
 <script>
+  // import convert_to_vector from '@/modules/convert_to_vector'
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
+  import uploader from '@/mixins/uploader'
+  import signed_in from '@/mixins/signed_in'
   export default {
+    mixins: [signed_in, uploader],
     components: {
       logoAsLink,
       icon
     },
     data() {
       return {
-        working: false
+        working: true,
+        posters: [],
+      }
+    },
+    methods: {
+      itemid(poster) {
+        return '/{phone_number}/posters/{created_at}.svg'
+      },
+      vectorize_image(image) {
+        this.working = true
+        // this.poster.push(await convert_to_vector.make_poster(image))
+        this.working = false
       }
     }
   }
 </script>
 <style lang="stylus">
   section#posters
+    input[type=file]
+      display:none
+    svg
+      fill: green
+    svg.camera
+      display:none
+      @media (max-width: min-screen)
+        display:block
+        width: 100vw
+        height: 50vh
     h1
       color: green
     & > header
@@ -39,7 +69,7 @@
       & > svg
         width: base-line * 2
         height: base-line * 2
-        fill: transparent
+
       & > a
         -webkit-tap-highlight-color: green
 </style>

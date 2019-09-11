@@ -3,7 +3,7 @@
     <icon v-if="working" name="working"></icon>
     <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
-      <a @click="open_camera"><icon name="camera"></icon></a>
+      <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
       <a id="accept_changes" @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
@@ -19,7 +19,10 @@
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
   import as_avatar from '@/components/profile/as-avatar'
+  import signed_in from '@/mixins/signed_in'
+  import uploader from '@/mixins/uploader'
   export default {
+    mixins: [signed_in, uploader],
     components: {
       icon,
       'as-avatar': as_avatar
@@ -30,14 +33,8 @@
     data() {
       return {
         working: false,
-        avatar_changed: false,
-        signed_in: false
+        avatar_changed: false
       }
-    },
-    created() {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) this.signed_in = true
-      })
     },
     computed: {
       downloadable() {
@@ -61,32 +58,17 @@
       async accept_changes(event) {
         await person_local.save()
         this.avatar_changed = false
-      },
-      select_photo(event) {
-        this.$refs.uploader.removeAttribute('capture')
-        this.$refs.uploader.click()
-      },
-      open_camera(event) {
-        this.$refs.uploader.setAttribute('capture', true)
-        this.$refs.uploader.click()
-      }
-    },
-    directives: {
-      uploader: {
-        bind(input, binding, vnode) {
-          input.addEventListener('change', event => {
-            const image = event.target.files[0]
-            if (image !== undefined && image.type === 'image/jpeg') {
-              vnode.context.vectorize_image(image)
-            }
-          })
-        }
       }
     }
+
   }
 </script>
 <style lang="stylus">
   div#manage-avatar
+    a#open_camera
+      visibility: hidden;
+      @media (max-width: min-screen)
+        visibility: visible
     position: relative
 
     & > svg
