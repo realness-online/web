@@ -36,11 +36,13 @@ module.exports = {
     },
     optimization: {
       splitChunks: {
+        automaticNameDelimiter: '-',
         cacheGroups: {
-          node_vendors: {
+          vendors: {
             test: /[\\/]node_modules[\\/]/,
-            chunks: 'all',
-            maxSize: 300000,
+            chunks: 'initial',
+            maxSize: 330000,
+            name: true,
             priority: 1
           }
         }
