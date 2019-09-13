@@ -36,6 +36,7 @@ module.exports = {
     },
     optimization: {
       splitChunks: {
+        name: false,
         automaticNameDelimiter: '-',
         cacheGroups: {
           vendors: {
@@ -46,7 +47,6 @@ module.exports = {
             priority: 1
           }
         }
-
       }
     }
   }

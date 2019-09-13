@@ -74,8 +74,7 @@
     }
   },
   "browserslist": [
-    "> 0.5%",
-    "last 1 versions"
+    "> 2%"
   ],
   "jest": {
     "verbose": false,
