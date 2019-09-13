@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import manage_avatar from '@/components/profile/manage-avatar'
-import convert_to_avatar from '@/modules/convert_to_avatar'
+
 import LocalStorage from '@/modules/LocalStorage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
@@ -69,7 +69,7 @@ describe('@/components/profile/manage-avatar.vue', () => {
       it('Should vectorize a jpg', () => {
         const image = { i: 'would be an image in real life' }
         const spy = jest.fn(() => Promise.resolve('trace_spy'))
-        jest.spyOn(convert_to_avatar, 'trace').mockImplementation(() => spy)
+        jest.spyOn(convert_to_vector, 'make_avatar').mockImplementation(() => spy)
         wrapper.vm.vectorize_image(image)
         expect(wrapper.vm.avatar_changed).toBe(true)
       })

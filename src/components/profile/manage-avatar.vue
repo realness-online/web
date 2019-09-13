@@ -14,7 +14,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import convert_to_avatar from '@/modules/convert_to_avatar'
+
   import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
@@ -50,7 +50,7 @@
         this.working = true
         const avatar_id = profile_id.as_avatar_id(this.person.id)
         await this.$nextTick()
-        const avatar = await convert_to_avatar.trace(image, avatar_id)
+        // const avatar = await convert_to_avatar.trace(image, avatar_id)
         this.$emit('new-avatar', avatar)
         this.avatar_changed = true
         this.working = false

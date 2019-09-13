@@ -40,9 +40,9 @@
       itemid(poster) {
         return '/{phone_number}/posters/{created_at}.svg'
       },
-      vectorize_image(image) {
+      async vectorize_image(image) {
         this.working = true
-        // this.poster.push(await convert_to_vector.make_poster(image))
+        this.poster.push(await convert_to_vector.make_poster(image))
         this.working = false
       }
     }

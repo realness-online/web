@@ -1,4 +1,5 @@
 const path = require('path')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 process.env.VUE_APP_VERSION = require('./package.json').version
 module.exports = {
   css: {
@@ -27,9 +28,23 @@ module.exports = {
     }
   },
   configureWebpack: {
+    plugins: [
+      new BundleAnalyzerPlugin()
+    ],
+    entry: {
+      vector: '@/workers/vector.js'
+    },
     optimization: {
       splitChunks: {
-        maxSize: 250000
+        cacheGroups: {
+          node_vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            chunks: 'all',
+            maxSize: 300000,
+            priority: 1
+          }
+        }
+
       }
     }
   }
