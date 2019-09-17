@@ -103,9 +103,9 @@
       modified_check() {
         const me = person_local.as_object()
         let modified = false
-        if (me.id != this.person.id) modified = true
-        if (me.first_name != this.person.first_name) modified = true
-        if (me.last_name != this.person.last_name) modified = true
+        if (me.id !== this.person.id) modified = true
+        if (me.first_name !== this.person.first_name) modified = true
+        if (me.last_name !== this.person.last_name) modified = true
         if (modified) {
           this.$emit('modified', this.person)
           sessionStorage.removeItem('profile-synced')

@@ -33,7 +33,7 @@
     data() {
       return {
         working: true,
-        posters: [],
+        posters: []
       }
     },
     methods: {
