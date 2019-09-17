@@ -42,9 +42,9 @@
       },
       async vectorize_image(image) {
         const worker = new Worker()
-        worker.postMessage({ a: 1 })
-        worker.onmessage = event => console.log(event)
-        worker.addEventListener("message",  event => console.log(event))
+        worker.postMessage('make me a vector')
+        // worker.onmessage = event => console.log(event)
+        worker.addEventListener('message', event => console.log(event))
         this.working = true
         // this.poster.push(await convert_to_vector.make_poster(image))
         this.working = false

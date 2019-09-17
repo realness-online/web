@@ -1,6 +1,4 @@
 const path = require('path')
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-
 process.env.VUE_APP_VERSION = require('./package.json').version
 module.exports = {
   css: {
@@ -28,23 +26,7 @@ module.exports = {
       msTileImage: 'icons/mstile-150x150.png'
     }
   },
-  // chainWebpack: config => {
-  //   config.module
-  //   .rule('web workers')
-  //     .test(/\.worker\.js$/)
-  //     .use('worker-loader')
-  //       .loader('worker-loader')
-  //       .options({
-  //         fallback: true,
-  //         inline: false,
-  //         name:  'vector.js',
-  //         publicPath: '/workers'
-  //       })
-  // },
   configureWebpack: {
-    // plugins: [
-    //   new BundleAnalyzerPlugin()
-    // ],
     module: {
       rules: [{
         test: /\.worker\.js$/,
@@ -58,16 +40,15 @@ module.exports = {
       }]
     },
     optimization: {
-      runtimeChunk: {
-        name: "manifest",
-      },
+      removeAvailableModules: false,
+      runtimeChunk: 'single',
       splitChunks: {
         name: false,
         automaticNameDelimiter: '-',
         cacheGroups: {
           vendors: {
             test: /[\\/]node_modules[\\/]/,
-            chunks: 'initial',
+            chunks: 'all',
             maxSize: 330000,
             name: false,
             priority: 1
