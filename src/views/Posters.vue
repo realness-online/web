@@ -19,7 +19,7 @@
   </section>
 </template>
 <script>
-  // import convert_to_vector from '@/modules/convert_to_vector'
+  import Worker from '@/vector.worker'
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
@@ -41,8 +41,12 @@
         return '/{phone_number}/posters/{created_at}.svg'
       },
       async vectorize_image(image) {
+        const worker = new Worker()
+        worker.postMessage({ a: 1 })
+        worker.onmessage = event => console.log(event)
+        worker.addEventListener("message",  event => console.log(event))
         this.working = true
-        this.poster.push(await convert_to_vector.make_poster(image))
+        // this.poster.push(await convert_to_vector.make_poster(image))
         this.working = false
       }
     }
@@ -69,7 +73,6 @@
       & > svg
         width: base-line * 2
         height: base-line * 2
-
       & > a
         -webkit-tap-highlight-color: green
 </style>

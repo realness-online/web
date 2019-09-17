@@ -48,7 +48,8 @@
     "stylus-loader": "^3.0.2",
     "vue-template-compiler": "^2.5.21",
     "vue-test-utils": "^1.0.0-beta.11",
-    "webpack-bundle-analyzer": "^3.5.0"
+    "webpack-bundle-analyzer": "^3.5.0",
+    "worker-loader": "^2.0.0"
   },
   "eslintConfig": {
     "root": true,
