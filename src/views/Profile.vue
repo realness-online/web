@@ -77,7 +77,7 @@
 <style lang='stylus'>
   section#profile
     & > header
-      margin-bottom: -(base-line * 4)
+      margin-bottom: -(base-line * 5)
       z-index: 2
       position: relative
       & > a

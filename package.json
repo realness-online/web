@@ -1,7 +1,7 @@
 {
   "name": "Realness",
   "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "private": false,
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {

@@ -1,13 +1,8 @@
 @require '../variables'
 section.page
+  padding-top: base-line
   overflow: hidden
   width:100%
-  & > hgroup
-    text-align: center
-    h1
-      color: blue
-      margin: 0
-      margin-bottom: base-line * 2
   & > header
     padding: base-line
     display:flex
@@ -20,8 +15,9 @@ section.page
       line-height: 1.33
       @media (min-width: max-screen)
         line-height: .66
-    details
-      &[open]
-        margin-right: inherit;
-        & > summary
-          margin-bottom: base-line
+  & > hgroup
+    text-align: center
+    h1
+      color: blue
+      margin: 0
+      margin-bottom: base-line * 2
