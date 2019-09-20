@@ -26,15 +26,20 @@ module.exports = {
       msTileImage: 'icons/mstile-150x150.png'
     }
   },
-  chainWebpack: config => {
-    config.module
-      .rule('web worker')
-      .test(/\.worker\.js$/)
-      .use('worker-loader')
-        .loader('worker-loader')
-        .end()
-  },
+  // chainWebpack: config => {
+  //   config.module
+  //     .rule('web worker')
+  //     .test(/\.worker\.js$/)
+  //     .use('worker-loader')
+  //       .loader('worker-loader')
+  //       .end()
+  // },
   configureWebpack: {
+    optimization: {
+      splitChunks: {
+        maxSize: 250000
+      }
+    },
     // module: {
     //   rules: [{
     //     test: /\.worker\.js$/,
@@ -46,7 +51,7 @@ module.exports = {
     //       }
     //     }
     //   }]
-    // },
+    // }
     // optimization: {
     //   removeAvailableModules: false,
     //   runtimeChunk: 'single',
