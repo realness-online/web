@@ -19,7 +19,6 @@
   </section>
 </template>
 <script>
-  import Worker from '@/vector.worker'
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
@@ -41,7 +40,7 @@
         return '/{phone_number}/posters/{created_at}.svg'
       },
       async vectorize_image(image) {
-        const worker = new Worker()
+        const worker = new Worker('/vector.worker')
         worker.addEventListener('message', event => {
           this.posters.push(event.data.image)
         })

@@ -12,7 +12,6 @@
   </div>
 </template>
 <script>
-  import Worker from '@/vector.worker'
   import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
@@ -51,7 +50,7 @@
       },
       vectorize_image(image) {
         this.working = true
-        const worker = new Worker()
+        const worker = new Worker('/vector.worker')
         worker.addEventListener('message', this.worker_event)
         worker.postMessage({
           cmd: 'make_avatar',
