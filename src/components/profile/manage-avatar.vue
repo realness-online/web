@@ -12,9 +12,7 @@
   </div>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
-
+  import Worker from '@/vector.worker'
   import { person_local } from '@/modules/LocalStorage'
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
@@ -46,21 +44,26 @@
       }
     },
     methods: {
-      async vectorize_image(image) {
-        this.working = true
-        const avatar_id = profile_id.as_avatar_id(this.person.id)
-        await this.$nextTick()
-        // const avatar = await convert_to_avatar.trace(image, avatar_id)
-        this.$emit('new-avatar', avatar)
+      worker_event(message) {
         this.avatar_changed = true
+        this.$emit('new-avatar', message.data.image)
         this.working = false
+      },
+      vectorize_image(image) {
+        this.working = true
+        const worker = new Worker()
+        worker.addEventListener('message', this.worker_event)
+        worker.postMessage({
+          cmd: 'make_avatar',
+          id: profile_id.as_avatar_id(this.person.id),
+          image: image
+        })
       },
       async accept_changes(event) {
         await person_local.save()
         this.avatar_changed = false
       }
     }
-
   }
 </script>
 <style lang="stylus">

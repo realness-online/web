@@ -12,9 +12,9 @@
         <a @click="open_camera"><icon name="camera"></icon></a>
       </menu>
     </hgroup>
-    <figure itemprop="posters">
-      <svg itemscope itemtype="poster" :itemid="itemid(poster)"
-           v-for="poster in posters"></svg>
+    <figure itemprop="posters" itemscope itemtype="poster"
+            :itemid="itemid(poster)" :key="itemid(poster)"
+            v-for="poster in posters" v-html="poster">
     </figure>
   </section>
 </template>
@@ -42,12 +42,13 @@
       },
       async vectorize_image(image) {
         const worker = new Worker()
-        worker.postMessage('make me a vector')
-        // worker.onmessage = event => console.log(event)
-        worker.addEventListener('message', event => console.log(event))
-        this.working = true
-        // this.poster.push(await convert_to_vector.make_poster(image))
-        this.working = false
+        worker.addEventListener('message', event => {
+          this.posters.push(event.data.image)
+        })
+        worker.postMessage({
+          cmd: 'make_poster',
+          image: image
+        })
       }
     }
   }

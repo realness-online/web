@@ -3,18 +3,19 @@ import Jimp from 'jimp'
 import EXIF from 'exif-js'
 const options = { threshold: 133, turdSize: 22 }
 const convert_to_vector = {
-  make_avatar(file, identifier) {
-    let image = read_image(file)
-    return trace_as_symbol(prepare(image.resize(333, Jimp.AUTO)), identifier)
+  async make_avatar(file, identifier) {
+    let image = await this.read_image(file)
+    image = image.resize(333, Jimp.AUTO)
+    return this.trace_as_symbol(this.prepare(image), identifier)
   },
-  make_poster(poster) {
-    let image = read_image(file)
-    return trace(prepare(image.resize(512, Jimp.AUTO)))
+  async make_poster(file) {
+    let image = await this.read_image(file)
+    return this.trace(this.prepare(image.resize(512, Jimp.AUTO)))
   },
-  read_image(file) {
+  async read_image(file) {
     const reader = new FileReaderSync()
-    let image = Jimp.read(reader.readAsArrayBuffer(file))
-    if (is_wrong_orientation(file)) image = image.rotate(-90)
+    let image = await Jimp.read(reader.readAsArrayBuffer(file))
+    if (this.is_wrong_orientation(file)) image = image.rotate(-90)
     return image
   },
   is_wrong_orientation(image_file) {
@@ -39,24 +40,25 @@ const convert_to_vector = {
     trace.setParameters(options)
     trace.loadImage(image, error => {
       if (error) return error
-      return trace.as_svg(identifier)
+      return trace.getSVG()
     })
   }
 }
-onmessage = (message) => {
+function message_listener(message) {
   switch (message.data.cmd) {
     case 'make_avatar':
       convert_to_vector
-      .make_avatar(message.data.image_file, message.data.id)
-      .then(vector => {
-        self.postMessage({ vector: vector })
-      })
+      .make_avatar(message.data.image, message.data.id)
+      .then(vector => self.postMessage({ vector: vector }))
     case 'make_poster':
       convert_to_vector
-      .make_poster(message.data.image_file)
+      .make_poster(message.data.image)
       .then(vector => {
-        self.postMessage({ vector: vector })
-      })
+        console.log('made a vecror', vector)
+        self.postMessage({ vector: vector }
+      }))
   }
 }
+self.addEventListener('message', message_listener)
+// onmessage = (message) => {}
 export default convert_to_vector

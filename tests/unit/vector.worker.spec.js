@@ -1,4 +1,7 @@
-import convert_to_vector from '@/modules/convert_to_vector'
+import convert_to_vector from '@/vector.worker'
+global.onmessage = function(message) {
+  console.log(message)
+};
 
 describe('@/modules/convert_to_vector', () => {
   it('#make_avatar', async() => {
