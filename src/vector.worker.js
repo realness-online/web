@@ -55,8 +55,8 @@ function message_listener(message) {
       .make_poster(message.data.image)
       .then(vector => {
         console.log('made a vecror', vector)
-        self.postMessage({ vector: vector }
-      }))
+        self.postMessage({ vector: vector })
+      })
   }
 }
 self.addEventListener('message', message_listener)
