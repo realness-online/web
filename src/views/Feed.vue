@@ -106,6 +106,5 @@
       padding: 0 base-line
       & > header > h4
         font-weight: 200
-      &:first-of-type > header > h4
         margin-top: base-line
 </style>
