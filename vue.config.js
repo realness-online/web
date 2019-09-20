@@ -31,8 +31,8 @@ module.exports = {
       removeAvailableModules: false,
       runtimeChunk: 'single',
       splitChunks: {
-        maxSize: 330000,
-        minSize: 250000
+        maxSize: 350000,
+        minSize: 200000
       }
     }
   }
