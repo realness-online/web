@@ -4,6 +4,7 @@
   "version": "0.4.12",
   "private": false,
   "author": "Scott Fryxell <sfryxell@me.com>",
+  "license": "UNLICENSED",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
