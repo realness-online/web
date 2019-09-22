@@ -42,8 +42,9 @@
 <style lang='stylus'>
   section#relations
     & > header
-      max-width: page-width
       margin: auto
+      @media (min-width: mid-screen)
+        max-width: page-width
     svg
       fill: blue
       &.working

@@ -37,7 +37,8 @@
       color: green
     & > header
       margin: auto
-      max-width: page-width
+      @media (min-width: mid-screen)
+        max-width: page-width
       & > svg
         width: base-line * 2
         height: base-line * 2

@@ -188,6 +188,7 @@
 </style>
 <style lang="stylus">
   section#home.page
+    width: auto
     padding: base-line
     height:100vh
     @media (max-height: min-screen) and (orientation: landscape)

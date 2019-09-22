@@ -1,13 +1,13 @@
 section.page
+  width:100%
   @media (orientation: portrait)
     overflow: hidden
-    width:100%
   & > header
     padding: base-line
     display:flex
     justify-content: space-between
     z-index: 2
-    @media (max-width: min-screen)
+    @media (max-width: min-screen) and (orientation: portrait)
       padding-top: base-line + 1rem
     h1
       color:blue
