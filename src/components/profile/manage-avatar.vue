@@ -4,7 +4,7 @@
     <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
       <a @click="open_camera"><icon name="camera"></icon></a>
-      <a @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
+      <a id="accept_changes" @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
     </menu>
@@ -51,11 +51,11 @@
     methods: {
       async vectorize_image(image) {
         this.working = true
-        this.avatar_changed = true
         const avatar_id = profile_id.as_avatar_id(this.person.id)
         await this.$nextTick()
         const avatar = await convert_to_avatar.trace(image, avatar_id)
         this.$emit('new-avatar', avatar)
+        this.avatar_changed = true
         this.working = false
       },
       async accept_changes(event) {
@@ -107,6 +107,13 @@
       padding: 0 base-line base-line base-line
       & > a
         cursor: pointer
+        & > svg
+          fill: red
+          &.camera
+            height: (base-line * 3)
+            width: (base-line * 2.33)
+        &#accept_changes > svg
+          fill: orange
         &#select_photo
           @media (min-width: max-screen)
             display: none
@@ -114,11 +121,6 @@
           display: none
           @media (min-width: max-screen)
             display: inherit
-        & > svg
-          fill: red
-          &.camera
-            height: (base-line * 3)
-            width: (base-line * 2.33)
     & > input[type=file]
       display: none
 </style>
