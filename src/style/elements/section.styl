@@ -1,6 +1,4 @@
 section.page
-  @media (max-width: min-screen)
-    padding-top: 1rem
   @media (orientation: portrait)
     overflow: hidden
     width:100%
@@ -9,6 +7,8 @@ section.page
     display:flex
     justify-content: space-between
     z-index: 2
+    @media (max-width: min-screen)
+      padding-top: base-line + 1rem
     h1
       color:blue
       vertical-align: top
