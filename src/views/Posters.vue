@@ -40,7 +40,7 @@
         return '/{phone_number}/posters/{created_at}.svg'
       },
       async vectorize_image(image) {
-        const worker = new Worker('/vector.worker')
+        const worker = new Worker('/vector.worker.js')
         worker.addEventListener('message', event => {
           this.posters.push(event.data.image)
         })
