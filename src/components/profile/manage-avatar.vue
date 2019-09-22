@@ -88,7 +88,7 @@
 <style lang="stylus">
   div#manage-avatar
     position: relative
-    margin-top: -(base-line * 4)
+
     & > svg
       fill: white
       width: 100vw

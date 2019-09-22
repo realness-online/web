@@ -172,7 +172,6 @@
       display: none
       @media (min-width: max-screen)
         display: block
-
   nav#main
     &.has-posts
       & > [href='/account']
@@ -190,8 +189,9 @@
 <style lang="stylus">
   section#home.page
     padding: base-line
-    @media (orientation:portrait)
-      height:100vh
+    height:100vh
+    @media (max-height: min-screen) and (orientation: landscape)
+      height:auto
     display: flex
     align-items: center
     margin:auto

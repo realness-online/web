@@ -117,8 +117,8 @@
 <style lang='stylus'>
   section#account
     & > header
-      margin-bottom: -(base-line * 4)
-      position: relative
+      position: absolute
+      width:100%
       z-index: 2
     & > div#login
       margin: auto

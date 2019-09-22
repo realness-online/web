@@ -77,9 +77,9 @@
 <style lang='stylus'>
   section#profile
     & > header
-      margin-bottom: -(base-line * 4)
       z-index: 2
-      position: relative
+      position: absolute
+      width:100%
       & > a
         -webkit-tap-highlight-color: blue
     & > figure
