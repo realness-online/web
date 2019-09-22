@@ -143,37 +143,36 @@
     grid-template-rows: repeat(1fr)
     align-items: stretch
     min-height: base-line * 18
+    max-height: page-width
     height: 100vmin
     width: 100vmin
+    & > a
+      visibility: hidden
+      text-transform: capitalize
+      text-align: left
+      border-width: 1px
+      border-style: solid
+      &:focus
+        color:transparent
+        transition-duration: 0.6s
+        transition: all
+        outline: none
+      &:nth-child(even)
+        text-align: right
+      &:active
+        border-width: 1vmax
+        color:transparent
     & > a
     & > textarea
       padding: base-line
       border-radius: base-line
-  nav#main
-    max-height: page-width
     & > button
       align-self: flex-end
       width: base-line * 4
       display: none
       @media (min-width: max-screen)
         display: block
-    & > a
-      visibility: hidden
-      text-transform: capitalize
-      &:focus
-        color:transparent
-        transition-duration: 0.6s
-        transition: all
-        outline: none
-    & > a
-      text-align: left
-      border-width: 1px
-      border-style: solid
-      &:nth-child(even)
-        text-align: right
-      &:active
-        border-width: 1vmax
-        color:transparent
+
   nav#main
     &.has-posts
       & > [href='/account']
