@@ -48,7 +48,7 @@
       return {
         me: person_local.as_object(),
         posting: false,
-        signed_in: false,
+        signed_in: true,
         has_posts: (posts_local.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
