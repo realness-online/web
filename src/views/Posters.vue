@@ -34,7 +34,6 @@
       color: green
     & > header
       margin: auto
-      padding: base-line
       max-width: page-width
       & > svg
         width: base-line * 2
