@@ -102,7 +102,7 @@
     "collectCoverageFrom": [
       "src/**/*.{js,vue}",
       "!src/main.js",
-      "!src/controller.js",
+      "!src/service.worker.js",
       "!src/register_service_worker.js",
       "!src/router.js",
       "!**/node_modules/**"

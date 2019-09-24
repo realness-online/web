@@ -12,7 +12,7 @@ module.exports = {
   pwa: {
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      swSrc: 'src/controller.js'
+      swSrc: 'src/service.worker.js'
     },
     themeColor: '#52a0d1',
     msTileColor: '#52a0d1',
