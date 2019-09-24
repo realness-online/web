@@ -13,8 +13,9 @@
       </menu>
     </hgroup>
     <figure itemprop="posters" itemscope itemtype="poster"
-            :itemid="itemid(poster)" :key="itemid(poster)"
-            v-for="poster in posters" v-html="poster">
+            :itemid="itemid(poster)"
+            v-for="poster in posters">
+            <svg :viewBox="viewport(poster)" v-html="poster.vector"></svg>
     </figure>
   </section>
 </template>
@@ -31,23 +32,25 @@
     },
     data() {
       return {
-        working: true,
+        worker: new Worker('/vector.worker.js'),
+        working: false,
         posters: []
       }
     },
     methods: {
+      viewport(poster){
+        return `0 0 ${poster.width} ${poster.height}`
+      },
       itemid(poster) {
         return '/{phone_number}/posters/{created_at}.svg'
       },
       async vectorize_image(image) {
-        const worker = new Worker('/vector.worker.js')
-        worker.addEventListener('message', event => {
-          this.posters.push(event.data.image)
+        this.working = true
+        this.worker.addEventListener('message', event => {
+          this.posters.unshift(event.data)
+          this.working = false
         })
-        worker.postMessage({
-          cmd: 'make_poster',
-          image: image
-        })
+        this.worker.postMessage({image})
       }
     }
   }
@@ -75,4 +78,8 @@
         height: base-line * 2
       & > a
         -webkit-tap-highlight-color: green
+    & > figure[itemprop=posters] svg
+      width:100%
+      height:100vh
+
 </style>
