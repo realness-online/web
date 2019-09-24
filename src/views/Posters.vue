@@ -50,7 +50,7 @@
           this.posters.unshift(event.data)
           this.working = false
         })
-        this.worker.postMessage({image})
+        this.worker.postMessage({image, width:512})
       }
     }
   }
