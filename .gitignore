@@ -7,7 +7,7 @@ node_modules
 /tests/unit/cache/
 /tests/e2e/reports/
 /functions/coverage
-
+/public/vector.worker.js
 .firebase/
 .firebase/hosting*
 
