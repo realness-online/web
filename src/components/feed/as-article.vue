@@ -30,6 +30,7 @@
     &:last-of-type
       margin-bottom: 0
     & > hgroup
+      max-width: none
       & > span
         font-weight: 200
       & > time
