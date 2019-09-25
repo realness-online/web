@@ -29,6 +29,7 @@
     },
     data() {
       return {
+        worker: new Worker('/vector.worker'),
         working: false,
         avatar_changed: false
       }
@@ -42,6 +43,9 @@
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
     },
+    created() {
+    worker.addEventListener('message', this.worker_event)
+    },
     methods: {
       worker_event(message) {
         this.avatar_changed = true
@@ -50,13 +54,7 @@
       },
       vectorize_image(image) {
         this.working = true
-        const worker = new Worker('/vector.worker')
-        worker.addEventListener('message', this.worker_event)
-        worker.postMessage({
-          cmd: 'make_avatar',
-          id: profile_id.as_avatar_id(this.person.id),
-          image: image
-        })
+        this.worker.postMessage({image, width:322})
       },
       async accept_changes(event) {
         await person_local.save()
@@ -72,7 +70,6 @@
       @media (max-width: min-screen)
         visibility: visible
     position: relative
-
     & > svg
       fill: white
       width: 100vw

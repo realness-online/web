@@ -37,6 +37,12 @@
         posters: []
       }
     },
+    created() {
+      this.worker.addEventListener('message', event => {
+        this.posters.unshift(event.data)
+        this.working = false
+      })
+    },
     methods: {
       viewport(poster){
         return `0 0 ${poster.width} ${poster.height}`
@@ -46,10 +52,6 @@
       },
       async vectorize_image(image) {
         this.working = true
-        this.worker.addEventListener('message', event => {
-          this.posters.unshift(event.data)
-          this.working = false
-        })
         this.worker.postMessage({image, width:512})
       }
     }
