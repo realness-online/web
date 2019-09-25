@@ -29,7 +29,7 @@
     },
     data() {
       return {
-        worker: new Worker('/vector.worker'),
+        worker: new Worker('/vector.worker.js'),
         working: false,
         avatar_changed: false
       }
@@ -44,7 +44,7 @@
       }
     },
     created() {
-    worker.addEventListener('message', this.worker_event)
+      this.worker.addEventListener('message', this.worker_event)
     },
     methods: {
       worker_event(message) {
@@ -54,7 +54,7 @@
       },
       vectorize_image(image) {
         this.working = true
-        this.worker.postMessage({image, width:322})
+        this.worker.postMessage({ image, width: 322 })
       },
       async accept_changes(event) {
         await person_local.save()
