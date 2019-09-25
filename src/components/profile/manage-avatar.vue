@@ -4,15 +4,18 @@
     <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
-      <a id="accept_changes" @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
+      <a id="accept_changes" @click="accept_changes" v-if="avatar_changed">
+        <icon v-if="finished" name="finished"></icon>
+        <icon v-else name="working"></icon>
+      </a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
     </menu>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </div>
 </template>
 <script>
-  import { person_local } from '@/modules/LocalStorage'
-  import profile_id from '@/helpers/profile'
+  import { person_local as me } from '@/modules/LocalStorage'
+  import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import as_avatar from '@/components/profile/as-avatar'
   import signed_in from '@/mixins/signed_in'
@@ -30,6 +33,7 @@
       return {
         worker: new Worker('/vector.worker.js'),
         working: false,
+        finished: true,
         avatar_changed: false
       }
     },
@@ -37,17 +41,23 @@
       this.worker.addEventListener('message', this.worker_event)
     },
     methods: {
+      as_symbol(data) {
+        const id = profile.as_avatar_id(me.as_object().id)
+        return `<symbol id="${id}" viewBox="0 0 ${data.width} ${data.height}" preserveAspectRatio="xMidYMid slice">${data.vector}</symbol>`
+      },
       worker_event(message) {
         this.avatar_changed = true
-        this.$emit('new-avatar', message.data.image)
+        this.$emit('new-avatar', this.as_symbol(message.data))
         this.working = false
       },
       vectorize_image(image) {
         this.working = true
-        this.worker.postMessage({ image, width: 322 })
+        this.worker.postMessage({ image, width: 512 })
       },
       async accept_changes(event) {
-        await person_local.save()
+        this.finished = false
+        await me.save()
+        this.finished = true
         this.avatar_changed = false
       }
     }
@@ -80,7 +90,7 @@
             height: (base-line * 3)
             width: (base-line * 2.33)
         &#accept_changes > svg
-          fill: yellow
+          fill: green
     & > input[type=file]
       display: none
 </style>
