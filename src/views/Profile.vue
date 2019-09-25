@@ -92,7 +92,7 @@
     & > svg:not(.working)
       width: 100vw
       min-height: 100vh
-      fill: white
+      stroke-width: 0.05px
 </style>
 <style lang="stylus">
   section#profile > div#pages-of-posts

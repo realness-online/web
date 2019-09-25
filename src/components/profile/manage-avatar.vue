@@ -67,7 +67,7 @@
   div#manage-avatar
     position: relative
     & > svg
-      fill: white
+      stroke-width: 0.05px
       width: 100vw
       min-height: 100vh
       &.working
