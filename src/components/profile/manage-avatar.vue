@@ -6,7 +6,6 @@
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
       <a id="accept_changes" @click="accept_changes" v-if="avatar_changed"><icon name="finished"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
-      <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
     </menu>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </div>
@@ -35,6 +34,7 @@
       }
     },
     computed: {
+      // <a id="download-avatar" :href="downloadable" download='vector.svg'><icon name="download"></icon></a>
       downloadable() {
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
           ${this.person.avatar}
@@ -65,10 +65,6 @@
 </script>
 <style lang="stylus">
   div#manage-avatar
-    a#open_camera
-      visibility: hidden;
-      @media (max-width: min-screen)
-        visibility: visible
     position: relative
     & > svg
       fill: white
@@ -94,14 +90,7 @@
             height: (base-line * 3)
             width: (base-line * 2.33)
         &#accept_changes > svg
-          fill: orange
-        &#select_photo
-          @media (min-width: max-screen)
-            display: none
-        &#download-avatar
-          display: none
-          @media (min-width: max-screen)
-            display: inherit
+          fill: yellow
     & > input[type=file]
       display: none
 </style>
