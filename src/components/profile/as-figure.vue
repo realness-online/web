@@ -78,10 +78,6 @@
       shape-outside: circle()
       clip-path: circle()
       cursor: pointer
-      fill: black
-      @media (prefers-color-scheme: dark)
-        fill: white
-        stroke: lighten(black, 99%)
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle
