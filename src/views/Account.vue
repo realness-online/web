@@ -7,7 +7,7 @@
     <manage-avatar @new-avatar="update_avatar" :person='me'></manage-avatar>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
-      <profile-as-form @modified="save_me" :person='me'></profile-as-form>
+      <profile-as-form v-if="edit_me" @modified="save_me" :person='me'></profile-as-form>
     </div>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
@@ -53,6 +53,7 @@
     data() {
       return {
         me: person_local.as_object(),
+        edit_me: false,
         pages: new Map(),
         limit: growth.first(),
         signed_in: false,
@@ -75,10 +76,11 @@
       async auth_state_change(firebase_user) {
         if (firebase_user) {
           this.signed_in = true
+          this.edit_me = false
           const id = profile.from_e64(firebase_user.phoneNumber)
           this.me = await profile.load(id)
           await this.sync_posts()
-        }
+        } else this.edit_me = true
       },
       async next_page() {
         const days = new Map()
