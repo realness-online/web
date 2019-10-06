@@ -12,11 +12,11 @@
         <a @click="open_camera"><icon name="camera"></icon></a>
       </menu>
     </hgroup>
-    <figure itemprop="posters" itemscope itemtype="poster"
-            :itemid="itemid(poster)"
-            v-for="poster in posters">
-            <svg :viewBox="viewport(poster)" v-html="poster.vector"></svg>
-    </figure>
+    <article>
+      <svg itemprop="posters" itemscope itemtype="/poster" preserveAspectRatio="xMidYMin slice"
+           :itemid="itemid(poster)" :viewBox="viewport(poster)"
+           v-for="poster in posters" v-html="poster.vector"></svg>
+    </article>
   </section>
 </template>
 <script>
@@ -80,8 +80,13 @@
         height: base-line * 2
       & > a
         -webkit-tap-highlight-color: green
-    & > figure[itemprop=posters] svg
-      width:100%
-      height:100vh
+    & > article
+      display: grid
+      grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
+      grid-gap: base-line
+      & > svg
+        width:100%
+        height: 100vh
+        display: block
 
 </style>
