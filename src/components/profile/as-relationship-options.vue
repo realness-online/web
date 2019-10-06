@@ -48,7 +48,7 @@
 <style lang="stylus">
   .profile-list li >  menu
     display: inline-flex
-    align-items: center;
+    align-items: center
     margin-left:  (base-line / 2)
     & > a
       width: (base-line * 2)
