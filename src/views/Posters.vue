@@ -13,7 +13,7 @@
       </menu>
     </hgroup>
     <article>
-      <svg itemprop="posters" itemscope itemtype="/poster" preserveAspectRatio="xMidYMin slice"
+      <svg itemprop="posters" itemscope itemtype="/poster" preserveAspectRatio="xMidYMin meet"
            :itemid="itemid(poster)" :viewBox="viewport(poster)"
            v-for="poster in posters" v-html="poster.vector"></svg>
     </article>
@@ -61,8 +61,9 @@
   section#posters
     input[type=file]
       display:none
-    svg
+    svg.working
       fill: green
+      margin-bottom: base-line
     svg.camera
       display:none
       @media (max-width: min-screen)
@@ -75,18 +76,17 @@
       margin: auto
       @media (min-width: mid-screen)
         max-width: page-width
-      & > svg
-        width: base-line * 2
-        height: base-line * 2
       & > a
         -webkit-tap-highlight-color: green
+        & > svg
+          fill: green
     & > article
+      padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
       & > svg
-        width:100%
-        height: 100vh
         display: block
-
+        width:100%
+        min-height: 66vh
 </style>
