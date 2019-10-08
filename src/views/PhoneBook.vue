@@ -16,9 +16,10 @@
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/storage'
   import { relations_local } from '@/modules/LocalStorage'
-  import { phonebook_storage } from '@/modules/PhoneBook'
-  import profile_id from '@/helpers/profile'
+  import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import profileAsList from '@/components/profile/as-list'
   import profileAsLinks from '@/components/profile/as-links'
@@ -37,25 +38,19 @@
       }
     },
     async created() {
-      const people = await phonebook_storage.sync_list()
-      this.phonebook = people
-      this.working = false
-      // console.log(this.phonebook.length);
-      this.phonebook.forEach(async(person, index) => {
-        const profile = await profile_id.load(person.id)
-        if (profile) {
-          this.phonebook.splice(index, 1, profile)
+      const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
+      phone_numbers.prefixes.forEach(async(phone_number) => {
+        const person = await profile.load(`/${phone_number.name}`)
+        if (person) {
+          this.phonebook.push(person)
         }
       })
+      this.working = false
     },
     watch: {
-      phonebook() {
-        if (localStorage.getItem('save-phonebook')) {
-          this.$nextTick(() => phonebook_storage.save())
-        }
-      },
-      relations() {
-        this.$nextTick(() => relations_local.save())
+      async relations() {
+        await this.$nextTick()
+        relations_local.save()
       }
     }
   }
