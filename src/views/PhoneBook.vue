@@ -11,7 +11,6 @@
       <icon v-if="working" name="working"></icon>
     </hgroup>
     <profile-as-list :people='phonebook'></profile-as-list>
-    <profile-as-links id="phonebook" :people='phonebook'></profile-as-links>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
