@@ -36,10 +36,10 @@
       update_relationship() {
         if (this.relation) {
           this.relation = false
-          this.$bus.$emit('remove-relationship', this.person)
+          this.$emit('remove-relationship', this.person)
         } else {
           this.relation = true
-          this.$bus.$emit('add-relationship', this.person)
+          this.$emit('add-relationship', this.person)
         }
       }
     }
