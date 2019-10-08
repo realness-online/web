@@ -2,26 +2,21 @@ import { relations_local } from '@/modules/LocalStorage'
 export default {
   data() {
     return {
-      working: true,
       relations: relations_local.as_list()
     }
   },
-  created() {
-    this.$bus.$off('remove-relationship')
-    this.$bus.$off('add-relationship')
-    this.$bus.$on('add-relationship', this.add_relationship)
-    this.$bus.$on('remove-relationship', this.remove_relationship)
-  },
   methods: {
-    add_relationship(person) {
+    async add_relationship(person) {
       this.relations.push(person)
-      this.$nextTick(_ => relations_local.save())
+      await this.$nextTick()
+      relations_local.save()
     },
-    remove_relationship(person) {
+    async remove_relationship(person) {
       const index = this.relations.findIndex(p => (p.id === person.id))
       if (index > -1) {
         this.relations.splice(index, 1)
-        this.$nextTick(_ => relations_local.save())
+        await this.$nextTick()
+        relations_local.save()
       }
     }
   }
