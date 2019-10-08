@@ -12,8 +12,8 @@
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
-    "deploy": "firebase use production && npm run build && firebase deploy --only hosting",
-    "deploy:staging": "firebase use staging && npm run build:staging && firebase deploy --only hosting"
+    "deploy": "firebase use production && yarn build && firebase deploy",
+    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy"
   },
   "dependencies": {
     "exif-js": "2.3.0",
