@@ -44,7 +44,7 @@
       })
     },
     methods: {
-      viewport(poster){
+      viewport(poster) {
         return `0 0 ${poster.width} ${poster.height}`
       },
       itemid(poster) {
@@ -52,7 +52,7 @@
       },
       async vectorize_image(image) {
         this.working = true
-        this.worker.postMessage({image, width:512})
+        this.worker.postMessage({ image, width: 512 })
       }
     }
   }
