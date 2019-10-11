@@ -22,7 +22,5 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
   </hgroup>
    
   <!---->
-   
-  <!---->
 </section>
 `;

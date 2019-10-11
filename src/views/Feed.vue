@@ -92,7 +92,7 @@
     position: relative
     display: flex
     flex-direction: column
-    @media (min-width: mid-screen)
+    @media (min-width: min-screen)
       max-width: page-width
     & > header > svg
       fill: transparent

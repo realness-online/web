@@ -5,17 +5,14 @@ import LocalStorage from '@/modules/LocalStorage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-
 const currentUser = {
   phoneNumber: '+16282281824'
 }
-
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-
 describe('@/components/profile/manage-avatar.vue', () => {
   let wrapper
   beforeEach(() => {

@@ -5,6 +5,7 @@ import 'firebase/auth'
 Vue.config.productionTip = false
 global.fetch = require('jest-fetch-mock')
 const currentUser = { phoneNumber: '+16282281824' }
+
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return { currentUser: currentUser }
 })
@@ -19,6 +20,9 @@ jest.spyOn(firebase, 'storage').mockImplementation(() => {
             getDownloadURL: jest.fn(path => {
               // console.log('reference_path', reference_path)
               return Promise.resolve(`https://download_url${reference_path}`)
+            }),
+            listAll: jest.fn(_ => {
+              return Promise.resolve({prefixes: []})
             })
           }
         })

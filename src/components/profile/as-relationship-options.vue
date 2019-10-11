@@ -12,7 +12,7 @@
   export default {
     props: {
       person: Object,
-      relations: Object
+      relations: Array
     },
     components: {
       icon

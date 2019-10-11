@@ -24,9 +24,5 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
   </hgroup>
    
   <!---->
-   
-  <!---->
-   
-  <!---->
 </section>
 `;
