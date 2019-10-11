@@ -30,8 +30,11 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     updated_at: '2018-07-16T18:12:21.552Z'
   }
   beforeEach(() => {
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
-    wrapper = shallow(as_options, { propsData: { person: me } })
+    // jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
+    wrapper = shallow(as_options, { propsData: {
+      person: me,
+      relations
+    }})
   })
   it('Render a list of options for this profile', () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -43,7 +46,10 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     })
     it('Return false if profile is not a relationship', () => {
       me.id = '/+14156661266'
-      wrapper = shallow(as_options, { propsData: { person: me } })
+      wrapper = shallow(as_options, { propsData: {
+        person: me,
+        relations
+      }})
       wrapper.vm.is_relation()
       expect(wrapper.vm.relation).toBe(false)
     })
@@ -52,14 +58,14 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     it('Tell the world to add a relationship', () => {
       wrapper.vm.relation = false
       const spy = jest.fn()
-      wrapper.vm.$on('add-relationship', spy)
+      wrapper.vm.$on('add', spy)
       wrapper.vm.update_relationship()
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Tell the world to remove a relationship', () => {
       wrapper.vm.relation = true
       const spy = jest.fn()
-      wrapper.vm.$on('remove-relationship', spy)
+      wrapper.vm.$on('remove', spy)
       wrapper.vm.update_relationship()
       expect(spy).toHaveBeenCalledTimes(1)
     })
