@@ -2,7 +2,6 @@ import Vue from 'vue'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
-Vue.prototype.$bus = new Vue({})
 Vue.config.productionTip = false
 global.fetch = require('jest-fetch-mock')
 const currentUser = { phoneNumber: '+16282281824' }

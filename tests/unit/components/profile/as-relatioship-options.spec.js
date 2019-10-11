@@ -52,14 +52,14 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     it('Tell the world to add a relationship', () => {
       wrapper.vm.relation = false
       const spy = jest.fn()
-      wrapper.vm.$bus.$on('add-relationship', spy)
+      wrapper.vm.$on('add-relationship', spy)
       wrapper.vm.update_relationship()
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Tell the world to remove a relationship', () => {
       wrapper.vm.relation = true
       const spy = jest.fn()
-      wrapper.vm.$bus.$on('remove-relationship', spy)
+      wrapper.vm.$on('remove-relationship', spy)
       wrapper.vm.update_relationship()
       expect(spy).toHaveBeenCalledTimes(1)
     })

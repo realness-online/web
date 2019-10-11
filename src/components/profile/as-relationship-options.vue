@@ -8,10 +8,11 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { relations_local, person_local } from '@/modules/LocalStorage'
+  import { person_local } from '@/modules/LocalStorage'
   export default {
     props: {
-      person: Object
+      person: Object,
+      relations: Object
     },
     components: {
       icon
@@ -29,17 +30,17 @@
     },
     methods: {
       is_relation() {
-        return relations_local.as_list().some(relation => {
+        return this.relations.some(relation => {
           return (relation.id === this.person.id)
         })
       },
       update_relationship() {
         if (this.relation) {
           this.relation = false
-          this.$emit('remove-relationship', this.person)
+          this.$emit('remove', this.person)
         } else {
           this.relation = true
-          this.$emit('add-relationship', this.person)
+          this.$emit('add', this.person)
         }
       }
     }

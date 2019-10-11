@@ -11,7 +11,6 @@
       <icon v-if="working" name="working"></icon>
     </hgroup>
     <profile-as-list :people='phonebook'></profile-as-list>
-    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
 <script>
@@ -20,14 +19,10 @@
   import { relations_local } from '@/modules/LocalStorage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
-  import profileAsList from '@/components/profile/as-list'
-  import profileAsLinks from '@/components/profile/as-links'
-  import relationship_events from '@/mixins/relationship_events'
+  import profile_as_list from '@/components/profile/as-list'
   export default {
-    mixins: [relationship_events],
     components: {
-      profileAsList,
-      profileAsLinks,
+      'profile-as-list': profile_as_list,
       icon
     },
     data() {

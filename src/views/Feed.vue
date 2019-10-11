@@ -96,6 +96,8 @@
       max-width: page-width
     & > header > svg
       fill: transparent
+    & > div
+      display: none
     & > nav
       display: none
     & > hgroup > h1

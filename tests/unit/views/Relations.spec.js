@@ -18,13 +18,13 @@ describe('@/views/Relations.vue', () => {
   })
   it('Should emit an add-relationship event', () => {
     expect(wrapper.vm.relations.length).toBe(0)
-    wrapper.vm.$bus.$emit('add-relationship', person)
+    wrapper.vm.$emit('add-relationship', person)
     expect(wrapper.vm.relations.length).toBe(1)
   })
   it('Should respond to a remove-relationship event', () => {
     wrapper.setData({ relations: [person] })
     expect(wrapper.vm.relations.length).toBe(1)
-    wrapper.vm.$bus.$emit('remove-relationship', person)
+    wrapper.vm.$emit('remove-relationship', person)
     expect(wrapper.vm.relations.length).toBe(0)
   })
   it('Remove-relationship should only remove the person provided', () => {
@@ -36,7 +36,7 @@ describe('@/views/Relations.vue', () => {
     }
     wrapper.setData({ relations: [person] })
     expect(wrapper.vm.relations.length).toBe(1)
-    wrapper.vm.$bus.$emit('remove-relationship', other_person)
+    wrapper.vm.$emit('remove-relationship', other_person)
     expect(wrapper.vm.relations.length).toBe(1)
   })
   it('#fill_in_relationships', () => {

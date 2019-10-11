@@ -8,34 +8,30 @@
       <h1>Friends</h1>
     </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
-    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
   </section>
 </template>
 <script>
-  import logoAsLink from '@/components/logo-as-link'
   import icon from '@/components/icon'
-  import profileAsList from '@/components/profile/as-list'
-  import profileAsLinks from '@/components/profile/as-links'
-  import profile_id from '@/helpers/profile'
-  import relationship_events from '@/mixins/relationship_events'
+  import logo_as_link from '@/components/logo-as-link'
+  import profile_as_list from '@/components/profile/as-list'
+  import { relations_local } from '@/modules/LocalStorage'
+  import profile from '@/helpers/profile'
   export default {
-    mixins: [relationship_events],
     components: {
       icon,
-      profileAsList,
-      profileAsLinks,
-      logoAsLink
+      'profile-as-list': profile_as_list,
+      'logo-as-link': logo_as_link
+    },
+    data() {
+      return {
+        relations: relations_local.as_list()
+      }
     },
     created() {
-      this.fill_in_relationships()
-    },
-    methods: {
-      fill_in_relationships() {
-        this.relations.forEach(async(relation, index) => {
-          const profile = await profile_id.load(relation.id)
-          this.relations.splice(index, 1, profile)
-        })
-      }
+      this.relations.forEach(async(relation, index) => {
+        const person = await profile.load(relation.id)
+        this.relations.splice(index, 1, person)
+      })
     }
   }
 </script>

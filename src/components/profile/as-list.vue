@@ -1,22 +1,51 @@
 <template lang="html">
-  <nav class="profile-list">
-    <li v-for="person in people" :key="person.id">
-      <as-figure :person="person"></as-figure>
-      <as-relationship-options :person="person"></as-relationship-options>
-    </li>
-  </nav>
+  <div class="">
+    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
+    <nav class="profile-list">
+      <li v-for="person in people" :key="person.id">
+        <as-figure :person="person"></as-figure>
+        <as-relationship-options :person="person"
+                                 :relations="relations"
+                                 @remove="remove_relationship"
+                                 @add="add_relationship"></as-relationship-options>
+      </li>
+    </nav>
+  </div>
 </template>
 <script>
+  import profile_as_links from '@/components/profile/as-links'
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
+  import { relations_local } from '@/modules/LocalStorage'
   export default {
     components: {
+      'profile-as-links': profile_as_links,
       'as-figure': as_figure,
       'as-relationship-options': as_options
     },
     props: {
       people: {
         type: Array
+      }
+    },
+    data() {
+      return {
+        relations: relations_local.as_list()
+      }
+    },
+    methods: {
+      async add_relationship(person) {
+        this.relations.push(person)
+        await this.$nextTick()
+        relations_local.save()
+      },
+      async remove_relationship(person) {
+        const index = this.relations.findIndex(p => (p.id === person.id))
+        if (index > -1) {
+          this.relations.splice(index, 1)
+          await this.$nextTick()
+          relations_local.save()
+        }
       }
     }
   }
