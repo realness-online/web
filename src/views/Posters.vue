@@ -13,7 +13,7 @@
       </menu>
     </hgroup>
     <article>
-      <svg itemprop="posters" itemscope itemtype="/poster" preserveAspectRatio="xMidYMin meet"
+      <svg itemscope itemtype="/poster" preserveAspectRatio="xMidYMin meet"
            :itemid="itemid(poster)" :viewBox="viewport(poster)"
            v-for="poster in posters" v-html="poster.vector"></svg>
     </article>
