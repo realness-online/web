@@ -1,10 +1,13 @@
 import Storage from '@/modules/Storage'
 import Item from '@/modules/item'
 
+// because sometimes you just wanna work with the on device data
 class LocalStorage extends Storage {
-  constructor(type, selector = `[itemtype="/${type}"]`, name = type,
-    filename = `${name}.html`, content_type = 'text/html') {
-    super(type, selector, name, filename, content_type)
+  constructor(type,
+              selector = `[itemtype="/${type}"]`,
+              filename = `${type}/index.html`,
+              content_type = 'text/html') {
+    super(type, selector, filename, content_type)
   }
   as_list() {
     return Item.get_items(this.from_local())
