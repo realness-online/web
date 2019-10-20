@@ -12,7 +12,20 @@
         <a @click="open_camera"><icon name="camera"></icon></a>
       </menu>
     </hgroup>
-    <article>
+    <figure>
+      <svg itemscope itemtype="/poster" preserveAspectRatio="xMidYMin meet"
+           :itemid="itemid(poster)" :viewBox="viewport(new_poster)"
+           v-if="new_poster" v-html="new_poster.vector"></svg>
+      <figcaption>
+        <menu>
+          <a id="accept_changes" @click="accept_changes" v-if="avatar_changed">
+            <icon v-if="finished" name="finished"></icon>
+            <icon v-else name="working"></icon>
+          </a>
+        </menu>
+      </figcaption>
+    </figure>
+    <article itemprop="posters">
       <svg itemscope itemtype="/poster" preserveAspectRatio="xMidYMin meet"
            :itemid="itemid(poster)" :viewBox="viewport(poster)"
            v-for="poster in posters" v-html="poster.vector"></svg>
@@ -20,6 +33,7 @@
   </section>
 </template>
 <script>
+  import { person_local } from '@/modules/LocalStorage'
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
@@ -32,8 +46,10 @@
     },
     data() {
       return {
+        me: person_local.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
+        new_poster: null,
         posters: []
       }
     },
@@ -42,13 +58,17 @@
         this.posters.unshift(event.data)
         this.working = false
       })
+      this.load_posters()
     },
     methods: {
+      load_posters() {
+        posters_local.as_directory().items()
+      },
       viewport(poster) {
         return `0 0 ${poster.width} ${poster.height}`
       },
       itemid(poster) {
-        return '/{phone_number}/posters/{created_at}.svg'
+        return `${this.me.id}/posters/${Date.now()}.svg`
       },
       async vectorize_image(image) {
         this.working = true
