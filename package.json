@@ -46,7 +46,8 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vue-template-compiler": "^2.5.21",
-    "vue-test-utils": "^1.0.0-beta.11"
+    "vue-test-utils": "^1.0.0-beta.11",
+    "jsdom-worker-fix": "^0.1.8"
   },
   "eslintConfig": {
     "root": true,
@@ -90,7 +91,8 @@
       "<rootDir>/tests/polyfill/scrollIntoView.js",
       "<rootDir>/tests/polyfill/IntersectionObserver.js",
       "<rootDir>/tests/polyfill/FileReaderSync.js",
-      "jest-localstorage-mock"
+      "jest-localstorage-mock",
+      "jsdom-worker-fix"
     ],
     "transform": {
       "^.+\\.vue$": "vue-jest",
