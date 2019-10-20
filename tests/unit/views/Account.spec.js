@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Account from '@/views/Account'
 import profile from '@/helpers/profile'
-import { person_local } from '@/modules/LocalStorage'
+import { person_local } from '@/classes/LocalStorage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

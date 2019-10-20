@@ -1,4 +1,4 @@
-import Storage from '@/modules/Storage'
+import Storage from '@/classes/Storage'
 import Item from '@/modules/item'
 
 // because sometimes you just wanna work with the on device data

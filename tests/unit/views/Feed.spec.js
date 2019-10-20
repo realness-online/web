@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import Storage from '@/modules/Storage'
+import Storage from '@/classes/Storage'
 import Item from '@/modules/Item'
 import profile_id from '@/helpers/profile'
 import Feed from '@/views/Feed'

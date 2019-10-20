@@ -15,7 +15,7 @@
   import Item from '@/modules/item'
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
-  import { person_storage } from '@/modules/Storage'
+  import { person_storage } from '@/classes/Storage'
   import asAvatar from '@/components/profile/as-avatar'
   export default {
     components: {

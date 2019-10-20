@@ -1,6 +1,6 @@
 import post_helper from '@/helpers/post'
 import date_helper from '@/helpers/date'
-import { person_local } from '@/modules/LocalStorage'
+import { person_local } from '@/classes/LocalStorage'
 export default {
   props: {
     post: {

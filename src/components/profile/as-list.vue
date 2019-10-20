@@ -16,7 +16,7 @@
   import profile_as_links from '@/components/profile/as-links'
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
-  import { relations_local } from '@/modules/LocalStorage'
+  import { relations_local } from '@/classes/LocalStorage'
   export default {
     components: {
       'profile-as-links': profile_as_links,

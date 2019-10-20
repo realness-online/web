@@ -29,7 +29,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/helpers/profile'
-  import { person_local, posts_local } from '@/modules/LocalStorage'
+  import { person_local, posts_local } from '@/classes/LocalStorage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import posts_into_days from '@/mixins/posts_into_days'

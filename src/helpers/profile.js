@@ -1,5 +1,5 @@
 import Item from '@/modules/item'
-import Storage from '@/modules/Storage'
+import Storage from '@/classes/Storage'
 export default {
   async load(id) {
     const person = (await this.items(id, 'person'))[0]

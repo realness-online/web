@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import manage_avatar from '@/components/profile/manage-avatar'
 
-import LocalStorage from '@/modules/LocalStorage'
+import LocalStorage from '@/classes/LocalStorage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'

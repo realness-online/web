@@ -49,7 +49,7 @@
   import { parseNumber } from 'libphonenumber-js'
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
-  import { person_local } from '@/modules/LocalStorage'
+  import { person_local } from '@/classes/LocalStorage'
   export default {
     props: ['person'],
     components: {

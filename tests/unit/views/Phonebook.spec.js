@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import phonebook from '@/views/Phonebook'
 import Item from '@/modules/item'
-import Storage from '@/modules/Storage'
+import Storage from '@/classes/Storage'
 import profile from '@/helpers/profile'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'

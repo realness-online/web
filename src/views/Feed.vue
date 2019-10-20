@@ -23,7 +23,7 @@
   </section>
 </template>
 <script>
-  import { relations_local, person_local } from '@/modules/LocalStorage'
+  import { relations_local, person_local } from '@/classes/LocalStorage'
   import profile from '@/helpers/profile'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'

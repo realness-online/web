@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import Storage, { person_storage } from '@/modules/Storage'
+import Storage, { person_storage } from '@/classes/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -7,7 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-describe('@/modules/Storage.js', () => {
+describe('@/classes/Storage.js', () => {
   afterEach(() => {
     localStorage.clear()
   })

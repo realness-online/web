@@ -5,7 +5,7 @@ exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] =
   class="profile"
   itemid="/+16282281824"
   itemscope="itemscope"
-  itemtype="/person"
+  itemtype="/people"
 >
   <!---->
    

@@ -33,7 +33,7 @@
   </section>
 </template>
 <script>
-  import { person_local } from '@/modules/LocalStorage'
+  import { person_local } from '@/classes/LocalStorage'
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
