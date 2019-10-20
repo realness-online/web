@@ -67,8 +67,6 @@ describe('@/components/profile/manage-avatar.vue', () => {
     describe('#vectorize_image', () => {
       it('Should vectorize a jpg', () => {
         const image = { i: 'would be an image in real life' }
-        const spy = jest.fn(() => Promise.resolve('trace_spy'))
-        jest.spyOn(convert_to_vector, 'make_avatar').mockImplementation(() => spy)
         wrapper.vm.vectorize_image(image)
         expect(wrapper.vm.avatar_changed).toBe(true)
       })
