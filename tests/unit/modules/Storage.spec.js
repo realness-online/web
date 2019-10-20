@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import Storage from '@/modules/Storage'
+import Storage, { person_storage } from '@/modules/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -16,11 +16,11 @@ describe('@/modules/Storage.js', () => {
     let item_as_string
     beforeEach(() => {
       item_as_string = `
-      <section itemscope itemtype="/person">
+      <section itemscope itemtype="/people">
         <h1 itemprop="name">Scott Fryxell</h1>
       </section>`
       document.body.innerHTML = item_as_string
-      storage = new Storage('person')
+      storage = person_storage
     })
     describe('#hydrate', () => {
       it('Exists', () => {
@@ -33,7 +33,7 @@ describe('@/modules/Storage.js', () => {
     })
     describe('#from_storage', () => {
       beforeEach(() => {
-        localStorage.setItem(storage.name, item_as_string)
+        localStorage.setItem(storage.filename, item_as_string)
       })
       it('Exists', () => {
         expect(storage.from_storage).toBeDefined()
@@ -47,7 +47,7 @@ describe('@/modules/Storage.js', () => {
     })
     describe('#as_list', () => {
       beforeEach(() => {
-        localStorage.setItem(storage.name, item_as_string)
+        localStorage.setItem(storage.filename, item_as_string)
       })
       it('Exists', () => {
         expect(storage.as_list).toBeDefined()
@@ -62,7 +62,7 @@ describe('@/modules/Storage.js', () => {
         expect(storage.as_object).toBeDefined()
       })
       it('Will return the first item it finds', async() => {
-        localStorage.setItem(storage.name, item_as_string)
+        localStorage.setItem(storage.filename, item_as_string)
         const scott = await storage.as_object()
         expect(scott.name).toBe('Scott Fryxell')
       })
@@ -73,7 +73,7 @@ describe('@/modules/Storage.js', () => {
       })
       it('Returns a url', async() => {
         const url = await storage.get_download_url()
-        expect(url).toBe('https://download_url/people/+16282281824/person.html')
+        expect(url).toBe('https://download_url/people/+16282281824/index.html')
       })
       it('Returns null if person is not logged in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
@@ -92,7 +92,7 @@ describe('@/modules/Storage.js', () => {
         expect(posts_storage.sync_list).toBeDefined()
       })
       it('Syncs posts from server to local storage', async() => {
-        localStorage.setItem('posts', hella_posts)
+        localStorage.setItem(posts_storage.filename, hella_posts)
         fetch.mockResponseOnce(posts)
 
         const server_list = Item.get_items(Storage.hydrate(posts))
@@ -113,13 +113,14 @@ describe('@/modules/Storage.js', () => {
     beforeEach(() => {
       posts_storage = new Storage('posts', '[itemprop=posts]')
     })
-    describe('#optimize', () => {
+    describe.only('#optimize', () => {
       it('Exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
       it('It optimizes a list of items accross a set of pages', async() => {
-        localStorage.setItem(posts_storage.name, hella_posts)
+        localStorage.setItem(posts_storage.filename, hella_posts)
         await posts_storage.optimize()
+        // console.log(localStorage.__STORE__);
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
       })
     })
@@ -141,7 +142,7 @@ describe('@/modules/Storage.js', () => {
       })
       it('Persist a file in a persons home directory', async() => {
         const url = await posts_storage.persist(posts)
-        expect(url).toBe('/people/+16282281824/posts.html')
+        expect(url).toBe('/people/+16282281824/posts/index.html')
       })
       it('Does nothing unless user is signed in', async() => {
         jest.spyOn(firebase, 'auth').mockImplementation(() => {

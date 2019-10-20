@@ -33,20 +33,22 @@ class Storage {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null
   }
-  constructor(type, selector = `[itemtype="/${type}"]`, name = type,
-    filename = `${name}.html`, content_type = 'text/html') {
+  // constructor(itemid="/people/+16282281824/index.html")
+  constructor(type,
+              selector = `[itemtype="/${type}"]`,
+              filename = `${type}/index.html`,
+              content_type = 'text/html') {
     this.type = type
     this.selector = selector
     this.filename = filename
-    this.name = name
     this.metadata = { 'contentType': content_type }
   }
   as_kilobytes() {
-    const bytes = localStorage.getItem(this.name)
+    const bytes = localStorage.getItem(this.filename)
     if (bytes) return (bytes.length / 1024).toFixed(0)
     else return 0
   }
-  from_local(name = this.name) {
+  from_local(name = this.filename) {
     const storage_string = localStorage.getItem(name)
     return Storage.hydrate(storage_string)
   }
@@ -65,7 +67,7 @@ class Storage {
     }
     return null
   }
-  async from_storage(name = this.name) {
+  async from_storage(name = this.filename) {
     return this.from_local(name) || this.from_network()
   }
   async as_list() {
@@ -75,7 +77,6 @@ class Storage {
     return Item.get_first_item(await this.from_storage())
   }
   async optimize(limit = growth.first()) {
-    // console.info('optimize', this.filename, this.as_kilobytes())
     if (this.as_kilobytes() > limit) {
       let current = (await this.from_storage()).childNodes[0]
       const offload = document.createDocumentFragment()
@@ -85,7 +86,7 @@ class Storage {
       }
       let div = document.createElement(current.nodeName)
       div.setAttribute('itemprop', this.type)
-      const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
+      const history = new Storage(this.type, this.selector, `${this.type}/${limit}.html`)
       const existing_history = await history.from_network()
       if (existing_history) div = existing_history.childNodes[0]
       div.appendChild(offload)
@@ -111,7 +112,7 @@ class Storage {
   }
   async save(items = document.querySelector(this.selector)) {
     if (!items) return
-    localStorage.setItem(this.name, items.outerHTML)
+    localStorage.setItem(this.filename, items.outerHTML)
     if (networkable.includes(this.type)) {
       return this.persist(items.outerHTML)
     }
@@ -140,10 +141,10 @@ class Storage {
     return items
   }
   async next_page(limit = growth.first()) {
-    const history = new Storage(this.type, this.selector, `${this.type}.${limit}`)
+    const history = new Storage(this.type, this.selector, `${this.type}.${limit}.html`)
     return history.as_list()
   }
 }
 export default Storage
-export const person_storage = new Storage('person')
+export const person_storage = new Storage('person', '[itemtype="/people"]', 'index.html' )
 export var posts_storage = new Storage('posts', '[itemprop=posts]')
