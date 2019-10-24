@@ -30,12 +30,13 @@
     </figure>
     <article itemprop="posters">
       <figure v-for="poster in posters">
-        <svg itemscope itemtype="/posters" preserveAspectRatio="xMidYMin meet"
-             :itemid="poster.id" :viewBox="poster.view_box" v-html="poster.path"></svg>
+        <svg itemscope itemtype="/posters" preserveAspectRatio="xMidYMin slice"
+             :itemid="poster.id" :viewBox="poster.view_box" v-html="poster.path">
+        </svg>
         <figcaption>
           <meta itemprop="view_box" :content="poster.view_box">
           <meta itemprop="created_at" :content="poster.created_at">
-          <menu><a @click="delete_poster(poster.id)"><icon name="delete"></icon></a></menu>
+          <menu><a @click="delete_poster(poster.id)"><icon name="remove"></icon></a></menu>
         </figcaption>
       </figure>
     </article>
@@ -115,6 +116,8 @@
   section#posters
     input[type=file]
       display:none
+    svg.remove
+      fill: red
     svg.working
       fill: green
       margin-bottom: base-line
@@ -134,12 +137,14 @@
         -webkit-tap-highlight-color: green
         & > svg
           fill: green
-    & > article
+    & > article[itemprop="posters"]
       padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
-      & > svg
+
+
+      & > figure > svg
         display: block
         width:100%
         min-height: 66vh
