@@ -4,7 +4,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
-const networkable = ['person', 'posts', 'avatars', 'posters']
+const networkable = ['person', 'posts']
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= growth.previous(limit)) {
@@ -55,7 +55,7 @@ class Storage {
   async get_download_url() {
     const user = firebase.auth().currentUser
     if (user) {
-      return Storage.get_download_url(`/${user.phoneNumber}`, this.filename)
+      return await Storage.get_download_url(`/${user.phoneNumber}`, this.filename)
     } else return null
   }
   async from_network() {

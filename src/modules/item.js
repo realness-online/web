@@ -57,6 +57,8 @@ export default {
       case 'time':
         return element.getAttribute('datetime')
       case 'svg':
+      case 'path':
+      case 'symbol':
         return element.outerHTML
       case 'g':
       case 'defs':
