@@ -65,7 +65,7 @@
         finished: true,
         me: person_local.as_object(),
         worker: new Worker('/vector.worker.js'),
-        working: false,
+        working: true,
         new_poster: null,
         posters: []
       }
@@ -76,12 +76,14 @@
         this.working = false
       })
       const directory_list =  await posters_storage.as_list()
-      directory_list.forEach(async(item) => {
+      await directory_list.forEach(async(item) => {
         const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
         const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
         const an_item = Item.get_first_item(item_as_fragment)
         this.posters.push(an_item)
+        this.working = false
       })
+
     },
     methods: {
       async vectorize_image(image) {
