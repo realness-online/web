@@ -65,7 +65,7 @@
         finished: true,
         me: person_local.as_object(),
         worker: new Worker('/vector.worker.js'),
-        working: true,
+        working: false,
         new_poster: null,
         posters: []
       }
