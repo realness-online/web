@@ -85,9 +85,6 @@
         cursor: pointer
         & > svg
           fill: red
-          &.camera
-            height: (base-line * 3)
-            width: (base-line * 2.33)
         &#accept_changes > svg
           fill: green
     & > input[type=file]

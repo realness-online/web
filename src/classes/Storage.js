@@ -33,7 +33,6 @@ class Storage {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null
   }
-  // constructor(itemid="/people/+16282281824/index.html")
   constructor(type,
               selector = `[itemtype="/${type}"]`,
               filename = `${type}/index.html`,
