@@ -6,11 +6,12 @@ import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import Storage from '@/classes/Storage'
 class LargeStorage extends Storage {
-  constructor(type,
-              selector = `[itemtype="${type}"]`,
-              filename = `${type}/${Date.now()}.html`,
-              content_type = 'text/html') {
-    super(type, selector, filename, content_type)
+  constructor(itemid) {
+    const item = itemid.split('/')
+    const type = item[0]
+    const name = item[1]
+    const content_type = name.split('.')[1]
+    super(type, `[itemprop="${type}"]`, itemid, content_type)
   }
   async from_storage(name = this.filename) {
     return this.from_local(name) || this.from_network()
@@ -26,8 +27,6 @@ class LargeStorage extends Storage {
     }
     return items
   }
-  async as_object() {}
-  async optimize(limit = growth.first()) {}
   async persist(items, name = this.filename) {
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
@@ -43,11 +42,12 @@ class LargeStorage extends Storage {
       await firebase.storage().ref().child(path).delete()
     }
   }
-  async save(items = document.querySelector(this.selector)) {
-    if (!items) return
-    return this.persist(items.outerHTML)
+  async save() {
+    localStorage.setItem(this.type, document.querySelector(this.selector))
+    const itemid = `[itemid="${this.filename}"]`
+    return this.persist(document.querySelector(itemid))
   }
 }
- export default LargeStorage
-export const avatars_storage = new LargeStorage('avatars')
-export var posters_storage = new LargeStorage('posters')
+export default LargeStorage
+export const avatars_storage = new LargeStorage('avatars/index.html')
+export var posters_storage = new LargeStorage('posters/index.html')

@@ -66,6 +66,7 @@
     async created() {
       this.worker.addEventListener('message', event => {
         this.new_poster = event.data
+        this.new_poster.id = this.as_itemid
         this.working = false
       })
       firebase.auth().onAuthStateChanged(this.auth)
@@ -75,13 +76,7 @@
         return `#${this.new_poster.created_at}`
       },
       as_itemid() {
-        return `posters/${this.new_poster.created_at}`
-      },
-      as_filename() {
-        return `${this.as_itemid}.html`
-      },
-      as_selector() {
-        return `[itemid="${this.as_itemid}"]`
+        return `posters/${this.new_poster.created_at}.html`
       }
     },
     methods: {
@@ -92,7 +87,6 @@
             const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
             const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
             const an_item = Item.get_first_item(item_as_fragment)
-            console.log(an_item)
             this.posters.push(an_item)
             this.working = false
           })
@@ -103,22 +97,17 @@
         this.worker.postMessage({ image, width: 512 })
       },
       async delete_poster(poster_id) {
-        const selector = `[itemid="${poster_id}"]`
-        const filename = `${poster_id}.html`
         this.working = true
-        const poster = new LargeStorage('posters', selector, filename)
+        const poster = new LargeStorage(poster_id)
         await poster.delete()
         this.working = false
       },
       async save() {
-        const poster = new LargeStorage('posters', this.as_selector, this.as_filename)
-        console.log(poster.filename)
-        await poster.save()
+        const poster = new LargeStorage(this.as_itemid)
         this.posters.unshift(this.new_poster)
         this.new_poster = null
         await this.$nextTick()
-        const items = document.querySelector('[itemprop="posters"]')
-        localStorage.setItem(poster.type, items.outerHTML)
+        await poster.save()
       }
     }
   }

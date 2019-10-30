@@ -16,7 +16,6 @@ class LocalStorage extends Storage {
     return Item.get_first_item(this.from_local())
   }
 }
-
 export default LocalStorage
 export const person_local = new LocalStorage('person')
 export const posts_local = new LocalStorage('posts', '[itemprop=posts]')
