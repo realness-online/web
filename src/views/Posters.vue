@@ -45,7 +45,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
-  import LargeStorage, { posters_storage } from '@/classes/LargeStorage'
+  import { posters_storage } from '@/classes/LargeStorage'
   export default {
     mixins: [signed_in, uploader],
     components: {
@@ -98,16 +98,18 @@
       },
       async delete_poster(poster_id) {
         this.working = true
-        const poster = new LargeStorage(poster_id)
-        await poster.delete()
+        posters_storage.filename = poster_id
+        await posters_storage.delete()
         this.working = false
       },
       async save() {
-        const poster = new LargeStorage(this.as_itemid)
+        this.working = true
+        posters_storage.filename = this.as_itemid
         this.posters.unshift(this.new_poster)
         this.new_poster = null
         await this.$nextTick()
-        await poster.save()
+        await posters_storage.save()
+        this.working = false
       }
     }
   }
