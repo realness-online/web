@@ -8,17 +8,19 @@
     <hgroup>
       <h1>Posters</h1>
     </hgroup>
-    <figure itemscope itemtype="/posters"
-      v-if="new_poster" :itemid="itemid(new_poster)">
-      <svg outline xmlns:xlink="http://www.w3.org/1999/xlink">
-        <symbol preserveAspectRatio="xMidYMin meet" :id="new_poster.created_at" :viewBox="new_poster.view_box" v-html="new_poster.path"></symbol>
-        <use :xlink:href='as_fragment_id(new_poster)'/>
+    <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
+      <svg>
+        <symbol preserveAspectRatio="xMidYMin meet"
+                :id="new_poster.created_at"
+                :viewBox="new_poster.view_box"
+                v-html="new_poster.path"></symbol>
+        <use :xlink:href='as_fragment_id'/>
       </svg>
       <figcaption>
         <meta itemprop="view_box" :content="new_poster.view_box">
         <meta itemprop="created_at" :content="new_poster.created_at">
         <menu>
-          <a id="accept_changes" @click="save(new_poster)">
+          <a id="accept_changes" @click="save()">
             <icon v-if="finished" name="finished"></icon>
             <icon v-else name="working"></icon>
           </a>
@@ -27,8 +29,7 @@
     </figure>
     <article itemprop="posters">
       <as-figure @delete="delete_poster" v-for="poster in posters"
-                :working="working"
-                :poster="poster"></as-figure>
+                :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
     </article>
   </section>
 </template>
@@ -44,7 +45,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
-  import LargeStorage, {posters_storage} from '@/classes/LargeStorage'
+  import LargeStorage, { posters_storage } from '@/classes/LargeStorage'
   export default {
     mixins: [signed_in, uploader],
     components: {
@@ -69,14 +70,29 @@
       })
       firebase.auth().onAuthStateChanged(this.auth)
     },
+    computed: {
+      as_fragment_id() {
+        return `#${this.new_poster.created_at}`
+      },
+      as_itemid() {
+        return `posters/${this.new_poster.created_at}`
+      },
+      as_filename() {
+        return `${this.as_itemid}.html`
+      },
+      as_selector() {
+        return `[itemid="${this.as_itemid}"]`
+      }
+    },
     methods: {
       async auth(user) {
-        if(user) {
-          const directory_list =  await posters_storage.as_list()
+        if (user) {
+          const directory_list = await posters_storage.as_list()
           await directory_list.forEach(async(item) => {
             const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
             const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
             const an_item = Item.get_first_item(item_as_fragment)
+            console.log(an_item)
             this.posters.push(an_item)
             this.working = false
           })
@@ -86,30 +102,23 @@
         this.working = true
         this.worker.postMessage({ image, width: 512 })
       },
-      itemid(poster) {
-        return `posters/${poster.created_at}`
-      },
-      as_fragment_id(poster){
-        return `#${poster.created_at}`
-      },
       async delete_poster(poster_id) {
+        const selector = `[itemid="${poster_id}"]`
+        const filename = `${poster_id}.html`
         this.working = true
-        const person_id = firebase.auth().currentUser.phoneNumber
-        const item_id = `/people/${person_id}/${poster_id}.html`
-        console.log('delete', item_id)
-        await firebase.storage().ref().child(item_id).delete()
+        const poster = new LargeStorage('posters', selector, filename)
+        await poster.delete()
         this.working = false
       },
-      async save(item) {
-        const location = this.itemid(item)
-        const poster = new LargeStorage('posters', `[itemid="${location}"]`)
+      async save() {
+        const poster = new LargeStorage('posters', this.as_selector, this.as_filename)
+        console.log(poster.filename)
         await poster.save()
-        this.posters.push(this.new_poster)
-        this.posters.sort()
+        this.posters.unshift(this.new_poster)
         this.new_poster = null
         await this.$nextTick()
         const items = document.querySelector('[itemprop="posters"]')
-        localStorage.setItem(poster.filename, items.outerHTML)
+        localStorage.setItem(poster.type, items.outerHTML)
       }
     }
   }
@@ -144,17 +153,15 @@
           display: block
           width:100%
           min-height: 66vh
-        & > figcaption
-          svg.remove
-            position: absolute
-            top:25%
-            left: 25%
-            width:50%
-            height: 50%
+        & > figcaption > menu svg
+          position: absolute
+          top:25%
+          left: 25%
+          width:50%
+          height: 50%
     svg
       &.remove
         fill: red
       &.working
         fill: green
-        margin-bottom: base-line
 </style>
