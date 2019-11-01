@@ -11,7 +11,7 @@ class LargeStorage extends Storage {
     const type = item[0]
     const name = item[1]
     const content_type = name.split('.')[1]
-    super(type, `[itemprop="${type}"]`, itemid, content_type)
+    super(type, `[itemprop="${type}"]`, itemid, `text/${content_type}`)
   }
   async from_storage(name = this.filename) {
     return this.from_local(name) || this.from_network()
@@ -32,7 +32,6 @@ class LargeStorage extends Storage {
     if (user && navigator.onLine) {
       const file = new File([items], name)
       const path = `people/${user.phoneNumber}/${this.filename}`
-      console.log(this.metadata);
       await firebase.storage().ref().child(path).put(file, this.metadata)
     }
   }
