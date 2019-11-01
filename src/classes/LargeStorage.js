@@ -32,6 +32,7 @@ class LargeStorage extends Storage {
     if (user && navigator.onLine) {
       const file = new File([items], name)
       const path = `people/${user.phoneNumber}/${this.filename}`
+      console.log(this.metadata);
       await firebase.storage().ref().child(path).put(file, this.metadata)
     }
   }
@@ -43,9 +44,8 @@ class LargeStorage extends Storage {
     }
   }
   async save() {
-    localStorage.setItem(this.type, document.querySelector(this.selector))
-    const itemid = `[itemid="${this.filename}"]`
-    return this.persist(document.querySelector(itemid))
+    localStorage.setItem(this.type, document.querySelector(this.selector).outerHTML)
+    this.persist(document.querySelector(`[itemid="${this.filename}"]`).outerHTML)
   }
 }
 export default LargeStorage

@@ -1,8 +1,7 @@
 <template lang="html">
-  <figure>
-    <svg itemscope itemtype="/posters" preserveAspectRatio="xMidYMid meet"
-         @click="menu = !menu"
-         :itemid="poster.id" :viewBox="poster.view_box" v-html="poster.path">
+  <figure itemscope itemtype="/posters" :itemid="poster.id" >
+    <svg @click="menu = !menu" preserveAspectRatio="xMidYMid meet"
+         :viewBox="poster.view_box" v-html="poster.path">
     </svg>
     <figcaption>
       <meta itemprop="view_box" :content="poster.view_box">
