@@ -2,15 +2,15 @@
   <section id="posters" class="page">
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
     <header>
-      <a @click="open_camera"><icon name="camera"></icon></a>
+      <icon name='nothing'></icon>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
       <h1>Posters</h1>
     </hgroup>
     <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
-      <svg>
-        <symbol preserveAspectRatio="xMidYMin meet"
+      <svg @click="show_menu = !show_menu">
+        <symbol preserveAspectRatio="xMidYMid meet"
                 :id="new_poster.created_at"
                 :viewBox="new_poster.view_box"
                 v-html="new_poster.path"></symbol>
@@ -19,7 +19,10 @@
       <figcaption>
         <meta itemprop="view_box" :content="new_poster.view_box">
         <meta itemprop="created_at" :content="new_poster.created_at">
-        <menu>
+        <menu v-if="show_menu">
+          <a @click="remove_new_poster()">
+            <icon name="remove"></icon>
+          </a>
           <a id="accept_changes" @click="save()">
             <icon v-if="finished" name="finished"></icon>
             <icon v-else name="working"></icon>
@@ -27,7 +30,11 @@
         </menu>
       </figcaption>
     </figure>
-    <article itemprop="posters">
+    <article outline v-else itemprop="posters">
+      <header>
+        <icon v-if="working" name="working"></icon>
+        <menu v-else><a @click="open_camera"><icon name="camera"></icon></a></menu>
+      </header>
       <as-figure @delete="delete_poster" v-for="poster in posters"
                 :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
     </article>
@@ -56,6 +63,7 @@
     data() {
       return {
         finished: true,
+        show_menu: true,
         me: person_local.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
@@ -80,6 +88,10 @@
       }
     },
     methods: {
+      remove_new_poster() {
+        this.new_poster = null
+        this.show_menu = true
+      },
       async auth(user) {
         if (user) {
           const directory_list = await posters_storage.as_list()
@@ -100,10 +112,7 @@
         this.working = true
         posters_storage.filename = poster_id
         await posters_storage.delete()
-        this.posters = this.posters.filter(poster => {
-          console.log(poster, poster_id)
-          poster_id != poster.id
-        })
+        this.posters = this.posters.filter(poster => poster_id != poster.id)
         this.working = false
       },
       async save() {
@@ -122,40 +131,53 @@
     & > input[type=file]
       display:none
     & > header
+      justify-content: space-between
       margin: auto
       @media (min-width: mid-screen)
         max-width: page-width
-      & > a
-        -webkit-tap-highlight-color: green
-        & > svg
-          fill: green
     & > hgroup > h1
-      color: green
-    & > figure[itemscope]
+        color: green
+    figure
+      position: relative
       & > svg
         width: 100%
-        max-width: page-width
-        min-height: 66vh
+        height: auto
+        min-height: 100vh
+    & > figure[itemscope]
+      margin 0 auto
+      max-width: page-width
+      & > figcaption > menu
+        position: absolute;
+        bottom: base-line
+        left: base-line
+        right: base-line
+        display: flex
+        justify-content: space-between
+        align-items: center
     & > article[itemprop="posters"]
       padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
+      grid-template-rows: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
-      & > figure
-        position: relative
-        & > svg
-          display: block
-          width:100%
-          min-height: 66vh
-        & > figcaption > menu svg
-          position: absolute
-          top:25%
-          left: 25%
-          width:50%
-          height: 50%
+      & > header
+        margin auto
+      & > figure > figcaption > menu svg
+        position: absolute
+        top:25%
+        left: 25%
+        width:50%
+        height: 50%
     svg
+      &.finished
+      &.working
+      &.camera
+        fill: green
       &.remove
         fill: red
-      &.working
-        fill: green
+      &.camera
+        width: (base-line * 6)
+        height: (base-line * 7.8) // 1 * 1.3
+
+
 </style>
