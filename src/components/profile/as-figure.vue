@@ -59,7 +59,7 @@
         return me.id === this.person.id
       },
       sms_link() {
-        return `tel:${this.person.id}`
+        return `sms:${this.person.id}`
       },
       mobile_display() {
         const phone_number = profile.as_phone_number(this.item_id)
