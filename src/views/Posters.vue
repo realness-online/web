@@ -2,7 +2,8 @@
   <section id="posters" class="page">
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
     <header>
-      <icon name='nothing'></icon>
+      <a @click="open_camera"><icon name="camera"></icon></a>
+      <icon v-if="working" name="working"></icon>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
@@ -31,10 +32,6 @@
       </figcaption>
     </figure>
     <article outline v-else itemprop="posters">
-      <header>
-        <icon v-if="working" name="working"></icon>
-        <menu v-else><a @click="open_camera"><icon name="camera"></icon></a></menu>
-      </header>
       <as-figure @delete="delete_poster" v-for="poster in posters"
                 :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
     </article>
@@ -169,8 +166,6 @@
       &.remove
         fill: red
       &.camera
-        width: (base-line * 6)
-        height: (base-line * 7.8) // 1 * 1.3
-
-
+        width: (base-line * 3)
+        height: (base-line * 3.9) // 1 * 1.3
 </style>
