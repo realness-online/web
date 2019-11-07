@@ -142,7 +142,7 @@
       & > svg
         width: 100%
         height: auto
-        min-height: 100vh
+        min-height: 66vh
     & > figure[itemscope]
       margin 0 auto
       max-width: page-width
@@ -155,19 +155,12 @@
         justify-content: space-between
         align-items: center
     & > article[itemprop="posters"]
-      padding: 0 base-line
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-template-rows: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
       & > header
         margin auto
-      & > figure > figcaption > menu svg
-        position: absolute
-        top:25%
-        left: 25%
-        width:50%
-        height: 50%
     svg
       &.finished
       &.working
