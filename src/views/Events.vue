@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1>Events</h1>
+      <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <figure>
@@ -34,7 +34,7 @@
 <style lang="stylus">
   section#events
     h1
-      color: green
+      color: blue
     & > header
       margin: auto
       @media (min-width: mid-screen)
