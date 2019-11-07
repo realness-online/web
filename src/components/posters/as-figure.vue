@@ -1,6 +1,6 @@
 <template lang="html">
   <figure itemscope itemtype="/posters" :itemid="poster.id" >
-    <svg @click="menu = !menu" preserveAspectRatio="xMidYMid meet"
+    <svg @click="menu = !menu" preserveAspectRatio="xMidYMin meet"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
     <figcaption>
