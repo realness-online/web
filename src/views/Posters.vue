@@ -1,13 +1,13 @@
 <template>
   <section id="posters" class="page">
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
-    <header>
+    <header v-if="!new_poster">
       <a @click="open_camera"><icon name="camera"></icon></a>
-      <icon v-if="working" name="working"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <hgroup>
+    <hgroup v-if="!new_poster">
       <h1>Posters</h1>
+      <icon v-if="working" name="working"></icon>
     </hgroup>
     <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
       <svg @click="show_menu = !show_menu">
@@ -73,6 +73,7 @@
         this.new_poster = event.data
         this.new_poster.id = this.as_itemid
         this.working = false
+        console.log(this.new_poster.view_box)
       })
       firebase.auth().onAuthStateChanged(this.auth)
     },
@@ -139,10 +140,9 @@
       & > svg
         width: 100%
         height: auto
-        min-height: 66vh
+        min-height: 100vh
     & > figure[itemscope]
       margin 0 auto
-      max-width: page-width
       & > figcaption > menu
         position: absolute;
         bottom: base-line
@@ -158,6 +158,16 @@
       grid-gap: base-line
       & > header
         margin auto
+      & > figure
+        max-width: page-width
+        & > svg
+          min-height: 66vh
+      & > figure > figcaption > menu svg
+        position: absolute
+        top:25%
+        left: 25%
+        width:50%
+        height: 50%
     svg
       &.finished
       &.working
@@ -166,6 +176,6 @@
       &.remove
         fill: red
       &.camera
-        width: (base-line * 3)
-        height: (base-line * 3.9) // 1 * 1.3
+        width: (base-line * 2.6)
+        height: (base-line * 2) // 1 * 1.3
 </style>
