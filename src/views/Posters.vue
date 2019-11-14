@@ -161,7 +161,7 @@
       & > figure
         max-width: page-width
         & > svg
-          min-height: 66vh
+          min-height: 50vh
       & > figure > figcaption > menu svg
         position: absolute
         top:25%
