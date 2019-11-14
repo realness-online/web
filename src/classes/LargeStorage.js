@@ -16,7 +16,7 @@ class LargeStorage extends Storage {
   async from_storage(name = this.filename) {
     return this.from_local(name) || this.from_network()
   }
-  async as_list() {
+  async as_network_list() {
     const items = []
     const user = firebase.auth().currentUser
     const storage = firebase.storage().ref()
