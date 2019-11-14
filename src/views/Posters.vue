@@ -10,7 +10,7 @@
       <icon v-if="working" name="working"></icon>
     </hgroup>
     <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
-      <svg @click="show_menu = !show_menu">
+      <svg>
         <symbol preserveAspectRatio="xMidYMid meet"
                 :id="new_poster.created_at"
                 :viewBox="new_poster.view_box"
@@ -20,7 +20,7 @@
       <figcaption>
         <meta itemprop="view_box" :content="new_poster.view_box">
         <meta itemprop="created_at" :content="new_poster.created_at">
-        <menu v-if="show_menu">
+        <menu>
           <a @click="remove_new_poster()">
             <icon name="remove"></icon>
           </a>
@@ -31,7 +31,7 @@
         </menu>
       </figcaption>
     </figure>
-    <article outline v-else itemprop="posters">
+    <article v-else itemprop="posters">
       <as-figure @delete="delete_poster" v-for="poster in posters"
                 :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
     </article>
