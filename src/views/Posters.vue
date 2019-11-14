@@ -69,12 +69,8 @@
       }
     },
     async created() {
-      this.worker.addEventListener('message', event => {
-        this.new_poster = event.data
-        this.new_poster.id = this.as_itemid
-        this.working = false
-        console.log(this.new_poster.view_box)
-      })
+      this.posters = await posters_storage.as_list()
+      this.worker.addEventListener('message', this.message_from_vector)
       firebase.auth().onAuthStateChanged(this.auth)
     },
     computed: {
@@ -86,19 +82,26 @@
       }
     },
     methods: {
+      message_from_vector(event) {
+        this.new_poster = event.data
+        this.new_poster.id = this.as_itemid
+        this.working = false
+      },
       remove_new_poster() {
         this.new_poster = null
         this.show_menu = true
       },
       async auth(user) {
         if (user) {
-          const directory_list = await posters_storage.as_list()
+          const directory_list = await posters_storage.as_network_list()
           await directory_list.forEach(async(item) => {
             const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
             const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
-            const an_item = Item.get_first_item(item_as_fragment)
-            this.posters.push(an_item)
-            this.working = false
+            const poster = Item.get_first_item(item_as_fragment)
+            const index = this.posters.findIndex(p => (p.id === poster.id))
+            if (index > -1) {
+              this.posters.splice(index, 1, poster)
+            }
           })
         }
       },
