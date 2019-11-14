@@ -1,13 +1,13 @@
 <template>
   <section id="posters" class="page">
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
-    <header v-if="!new_poster">
+    <header v-show="!new_poster">
       <a @click="open_camera"><icon name="camera"></icon></a>
       <logo-as-link></logo-as-link>
     </header>
-    <hgroup v-if="!new_poster">
+    <hgroup v-show="!new_poster">
       <h1>Posters</h1>
-      <icon v-if="working" name="working"></icon>
+      <icon v-show="working" name="working"></icon>
     </hgroup>
     <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
       <svg>
