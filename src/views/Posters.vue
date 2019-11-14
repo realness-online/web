@@ -31,7 +31,7 @@
         </menu>
       </figcaption>
     </figure>
-    <article v-else itemprop="posters">
+    <article v-show="!new_poster" itemprop="posters">
       <as-figure @delete="delete_poster" v-for="poster in posters"
                 :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
     </article>
