@@ -159,18 +159,22 @@
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-template-rows: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
+      @media (min-width: min-screen)
+        padding: 0 base-line
+      @media (min-width: mid-screen)
+        & > figure
+          max-width: page-width
       & > header
         margin auto
       & > figure
-        max-width: page-width
         & > svg
           min-height: 50vh
-      & > figure > figcaption > menu svg
-        position: absolute
-        top:25%
-        left: 25%
-        width:50%
-        height: 50%
+        & > figcaption > menu svg
+          position: absolute
+          top:25%
+          left: 25%
+          width:50%
+          height: 50%
     svg
       &.finished
       &.working
