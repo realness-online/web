@@ -95,13 +95,11 @@
         if (user) {
           const directory_list = await posters_storage.as_network_list()
           await directory_list.forEach(async(item) => {
-            console.log('boom there is one');
             const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
             const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
             const poster = Item.get_first_item(item_as_fragment)
             const index = this.posters.findIndex(p => (p.id === poster.id))
             if (index > -1) {
-              console.log('here i am');
               this.posters.splice(index, 1, poster)
             } else this.posters.push(poster)
           })
