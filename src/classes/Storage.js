@@ -66,7 +66,7 @@ class Storage {
     }
     return null
   }
-  async from_storage(name = this.filename) {
+  async from_storage(name = this.type) {
     return this.from_local(name) || this.from_network()
   }
   async as_list() {
