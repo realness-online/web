@@ -170,7 +170,7 @@
       align-self: flex-end
       width: base-line * 4
       display: none
-      @media (min-width: max-screen)
+      @media (min-width: min-screen)
         display: block
   nav#main
     &.has-posts
