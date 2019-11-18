@@ -1,5 +1,5 @@
 <template>
-  <figure class="profile" itemscope itemtype='/people' :itemid="item_id">
+  <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
     <as-avatar @avatar-clicked="avatar_click" :person="person"></as-avatar>
     <figcaption>
       <p>
@@ -12,7 +12,6 @@
   </figure>
 </template>
 <script>
-  import Item from '@/modules/item'
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
   import { person_storage } from '@/classes/Storage'
@@ -49,13 +48,13 @@
     computed: {
       item_id() {
         if (this.person.mobile) {
-          return profile.from_phone_number(this.person.mobile)
+          return `${profile.from_phone_number(this.person.mobile)}/person.html`
         } else {
           return this.person.id
         }
       },
       is_me() {
-        const me = Item.get_first_item(person_storage.from_local())
+        const me = person_storage.as_object()
         return me.id === this.person.id
       },
       sms_link() {

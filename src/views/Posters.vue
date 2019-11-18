@@ -43,7 +43,7 @@
   import 'firebase/storage'
   import Storage from '@/classes/Storage'
   import Item from '@/modules/item'
-  import { person_local } from '@/classes/LocalStorage'
+  import { person_storage } from '@/classes/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
@@ -62,7 +62,7 @@
       return {
         finished: true,
         show_menu: true,
-        me: person_local.as_object(),
+        me: person_storage.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,

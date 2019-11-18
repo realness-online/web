@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
 import profile from '@/helpers/profile'
-import { relations_local } from '@/classes/LocalStorage'
+import { relations_storage } from '@/classes/Storage'
 describe('@/views/Relations.vue', () => {
   const person = {
     id: '/+14151234356',
@@ -10,7 +10,7 @@ describe('@/views/Relations.vue', () => {
     mobile: '4151234356'
   }
   it('Render relationship information', () => {
-    const relations_spy = jest.spyOn(relations_local, 'as_list')
+    const relations_spy = jest.spyOn(relations_storage, 'as_list')
     .mockImplementation(() => [person])
     const spy = jest.spyOn(profile, 'load')
     .mockImplementation(() => Promise.resolve(person))

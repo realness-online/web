@@ -16,7 +16,7 @@
   import profile_as_links from '@/components/profile/as-links'
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
-  import { relations_local } from '@/classes/LocalStorage'
+  import { relations_storage } from '@/classes/Storage'
   export default {
     components: {
       'profile-as-links': profile_as_links,
@@ -30,21 +30,21 @@
     },
     data() {
       return {
-        relations: relations_local.as_list()
+        relations: relations_storage.as_list()
       }
     },
     methods: {
       async add_relationship(person) {
         this.relations.push(person)
         await this.$nextTick()
-        relations_local.save()
+        relations_storage.save()
       },
       async remove_relationship(person) {
         const index = this.relations.findIndex(p => (p.id === person.id))
         if (index > -1) {
           this.relations.splice(index, 1)
           await this.$nextTick()
-          relations_local.save()
+          relations_storage.save()
         }
       }
     }

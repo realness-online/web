@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Account from '@/views/Account'
 import profile from '@/helpers/profile'
-import { person_local } from '@/classes/LocalStorage'
+import { person_storage } from '@/classes/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -22,7 +22,7 @@ describe('@/views/Account.vue', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(_ => {
       return { onAuthStateChanged, currentUser }
     })
-    jest.spyOn(person_local, 'as_object').mockImplementation(_ => me)
+    jest.spyOn(person_storage, 'as_object').mockImplementation(_ => me)
     load_spy = jest.spyOn(profile, 'load').mockImplementation(_ => Promise.resolve(me))
     wrapper = shallow(Account)
   })
@@ -33,7 +33,7 @@ describe('@/views/Account.vue', () => {
   })
   describe('#save_me', () => {
     it('Saves a user', async() => {
-      const spy = jest.spyOn(person_local, 'save').mockImplementation(_ => {
+      const spy = jest.spyOn(person_storage, 'save').mockImplementation(_ => {
         Promise.resolve('spy')
       })
       await wrapper.vm.save_me()

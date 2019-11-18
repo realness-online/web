@@ -1,6 +1,6 @@
 import post_helper from '@/helpers/post'
 import date_helper from '@/helpers/date'
-import { person_local } from '@/classes/LocalStorage'
+import { person_storage } from '@/classes/Storage'
 export default {
   props: {
     post: {
@@ -18,7 +18,7 @@ export default {
   },
   computed: {
     me() {
-      if (this.editable && person_local.as_object().id === this.person.id) return true
+      if (this.editable && person_storage.as_object().id === this.person.id) return true
       else return false
     },
     as_created_time() {

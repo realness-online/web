@@ -14,7 +14,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
-  import { relations_local } from '@/classes/LocalStorage'
+  import { relations_storage } from '@/classes/Storage'
   import profile from '@/helpers/profile'
   export default {
     components: {
@@ -24,7 +24,7 @@
     },
     data() {
       return {
-        relations: relations_local.as_list()
+        relations: relations_storage.as_list()
       }
     },
     created() {

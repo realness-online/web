@@ -69,11 +69,25 @@ class Storage {
   async from_storage(name = this.type) {
     return this.from_local(name) || this.from_network()
   }
-  async as_list() {
-    return Item.get_items(await this.from_storage())
+  // async as_list() {
+  //   return Item.get_items(await this.from_storage())
+  // }
+  // async as_object() {
+  //   return Item.get_first_item(await this.from_storage())
+  // }
+  as_list() {
+    return Item.get_items(this.from_local())
   }
-  async as_object() {
-    return Item.get_first_item(await this.from_storage())
+  as_object() {
+    return Item.get_first_item(this.from_local())
+  }
+  async save(items = document.querySelector(this.selector)) {
+    console.log('save', this.selector, this.filename);
+    if (!items) return
+    localStorage.setItem(this.selector, items.outerHTML)
+    if (networkable.includes(this.type)) {
+      return this.persist(items.outerHTML)
+    }
   }
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
@@ -109,13 +123,6 @@ class Storage {
       }
     })
   }
-  async save(items = document.querySelector(this.selector)) {
-    if (!items) return
-    localStorage.setItem(this.filename, items.outerHTML)
-    if (networkable.includes(this.type)) {
-      return this.persist(items.outerHTML)
-    }
-  }
   async sync_list() {
     const from_server = Item.get_items(await this.from_network())
     const local_items = Item.get_items(this.from_local())
@@ -145,5 +152,6 @@ class Storage {
   }
 }
 export default Storage
-export const person_storage = new Storage('person', '[itemtype="/people"]', 'index.html' )
-export var posts_storage = new Storage('posts', '[itemprop=posts]')
+export const person_storage = new Storage('person', '[itemid="person.html"]', 'person.html')
+export const posts_storage = new Storage('posts', '[itemprop=posts]')
+export const relations_storage = new Storage('relations', '[itemprop=relations]')

@@ -11,7 +11,6 @@ export default {
     else return { id }
   },
   async items(id, name) {
-    console.log(name, id)
     const url = await Storage.get_download_url(id, `${name}.html`)
     const server_text = await (await fetch(url)).text()
     return Item.get_items(Storage.hydrate(server_text))

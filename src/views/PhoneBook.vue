@@ -16,7 +16,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
-  import { relations_local } from '@/classes/LocalStorage'
+  import { relations_storage } from '@/classes/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
@@ -44,7 +44,7 @@
     watch: {
       async relations() {
         await this.$nextTick()
-        relations_local.save()
+        relations_storage.save()
       }
     }
   }

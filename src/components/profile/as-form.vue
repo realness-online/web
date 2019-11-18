@@ -49,7 +49,7 @@
   import { parseNumber } from 'libphonenumber-js'
   import profile_id from '@/helpers/profile'
   import icon from '@/components/icon'
-  import { person_local } from '@/classes/LocalStorage'
+  import { person_storage } from '@/classes/Storage'
   export default {
     props: ['person'],
     components: {
@@ -101,7 +101,7 @@
         if (mobile) mobile.disabled = true
       },
       modified_check() {
-        const me = person_local.as_object()
+        const me = person_storage.as_object()
         let modified = false
         if (me.id !== this.person.id) modified = true
         if (me.first_name !== this.person.first_name) modified = true

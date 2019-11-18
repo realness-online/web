@@ -14,7 +14,7 @@
   </div>
 </template>
 <script>
-  import { person_local as me } from '@/classes/LocalStorage'
+  import { person_storage as me } from '@/classes/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import as_avatar from '@/components/profile/as-avatar'

@@ -33,7 +33,7 @@
   import date_mixin from '@/mixins/date'
   import profile_helper from '@/helpers/profile'
   import post_helper from '@/helpers/post'
-  import { posts_local, person_local, relations_local } from '@/classes/LocalStorage'
+  import { posts_storage, person_storage, relations_storage } from '@/classes/Storage'
   import as_textarea from '@/components/posts/as-textarea'
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
@@ -46,17 +46,17 @@
     },
     data() {
       return {
-        me: person_local.as_object(),
+        me: person_storage.as_object(),
         posting: false,
         signed_in: true,
-        has_posts: (posts_local.as_list().length > 0),
+        has_posts: (posts_storage.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
         days: new Map()
       }
     },
     async created() {
-      this.days = this.populate_days(posts_local.as_list(), this.me)
+      this.days = this.populate_days(posts_storage.as_list(), this.me)
       firebase.auth().onAuthStateChanged(user => {
         if (user) this.signed_in = true
         else this.signed_in = false
@@ -64,13 +64,13 @@
     },
     async mounted() {
       await Promise.all([
-        this.sync_posts(),
-        this.sync_profile()
+        // this.sync_posts(),
+        // this.sync_profile()
       ])
     },
     computed: {
       onboarding() {
-        const relations_count = relations_local.as_list().length
+        const relations_count = relations_storage.as_list().length
         return {
           'has-posts': this.has_posts,
           'signed-in': (this.has_posts && this.signed_in),
@@ -89,7 +89,7 @@
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book() {
-        if (relations_local.as_list().length < 1) return '/phone-book'
+        if (relations_storage.as_list().length < 1) return '/phone-book'
         else return '/relations'
       },
       async add_post(post) {
@@ -97,7 +97,7 @@
         const posts = [post]
         this.days = new Map(this.populate_days(posts, this.me, this.days))
         await this.$nextTick()
-        posts_local.save()
+        posts_storage.save()
       },
       should_sync(last_synced) {
         if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
@@ -111,7 +111,7 @@
             if (user) {
               const id = profile_helper.from_e64(user.phoneNumber)
               this.me = await profile_helper.load(id)
-              await person_local.save()
+              await person_storage.save()
               sessionStorage.setItem('profile-synced', Date.now())
             }
           })
@@ -121,12 +121,12 @@
         if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
           firebase.auth().onAuthStateChanged(async user => {
             if (user) {
-              const synced_posts = await posts_local.sync_list()
+              const synced_posts = await posts_storage.sync_list()
               this.days = new Map(this.populate_days(synced_posts, this.me))
               await this.$nextTick()
               sessionStorage.setItem('posts-synced', Date.now())
-              await posts_local.save()
-              await posts_local.optimize()
+              await posts_storage.save()
+              await posts_storage.optimize()
             }
           })
         }

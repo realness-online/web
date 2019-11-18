@@ -4,7 +4,7 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
 import Storage from '@/classes/Storage'
-import LocalStorage, { person_local } from '@/classes/LocalStorage'
+import Storage, { person_storage } from '@/classes/Storage'
 
 import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
@@ -21,7 +21,7 @@ describe('@/views/Index.vue', () => {
   let wrapper
   beforeEach(async() => {
     jest.spyOn(profile, 'load').mockImplementation(() => person)
-    jest.spyOn(person_local, 'as_object').mockImplementation(_ => person)
+    jest.spyOn(person_storage, 'as_object').mockImplementation(_ => person)
     sessionStorage.setItem('posts-synced', Date.now())
     const currentUser = {
       phoneNumber: '+16282281824'
@@ -121,7 +121,7 @@ describe('@/views/Index.vue', () => {
           expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
         })
         it('Profile button is visible when person has posted', () => {
-          jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+          jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
             return [post]
           })
           const wrapper = shallow(Index)
@@ -134,7 +134,7 @@ describe('@/views/Index.vue', () => {
           expect(wrapper.vm.onboarding['signed-in']).toBe(true)
         })
         it('Feed, Events and posters are visible when person has added a friend', () => {
-          jest.spyOn(LocalStorage.prototype, 'as_list').mockImplementation(() => {
+          jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
             return [post]
           })
           wrapper = shallow(Index)

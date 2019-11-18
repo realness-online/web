@@ -29,7 +29,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/helpers/profile'
-  import { person_local, posts_local } from '@/classes/LocalStorage'
+  import { person_storage, posts_storage } from '@/classes/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import posts_into_days from '@/mixins/posts_into_days'
@@ -52,7 +52,7 @@
     },
     data() {
       return {
-        me: person_local.as_object(),
+        me: person_storage.as_object(),
         pages: new Map(),
         limit: growth.first(),
         signed_in: false,
@@ -60,7 +60,7 @@
       }
     },
     async created() {
-      const days = this.populate_days(posts_local.as_list(), this.me)
+      const days = this.populate_days(posts_storage.as_list(), this.me)
       this.pages.set('posts', days)
       firebase.auth().onAuthStateChanged(this.auth_state_change)
     },
@@ -80,16 +80,6 @@
           await this.sync_posts()
         }
       },
-      async next_page() {
-        const days = new Map()
-        let posts = await posts_local.next_page(this.limit)
-        if (posts.length > 0) {
-          posts = this.condense_posts(posts, this.me)
-          posts.forEach(post => this.insert_post_into_day(post, days))
-          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
-          this.limit = growth.next(this.limit)
-        }
-      },
       async save_me(event) {
         if (this.signed_in) {
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
@@ -98,18 +88,28 @@
           }
         }
         await this.$nextTick()
-        person_local.save()
+        person_storage.save()
       },
       async sync_posts() {
-        const days = this.populate_days(await posts_local.sync_list(), this.me)
+        const days = this.populate_days(await posts_storage.sync_list(), this.me)
         const new_pages = new Map()
         new_pages.set('posts', days)
         this.pages = new_pages
       },
+      async next_page() {
+        const days = new Map()
+        let posts = await posts_storage.next_page(this.limit)
+        if (posts.length > 0) {
+          posts = this.condense_posts(posts, this.me)
+          posts.forEach(post => this.insert_post_into_day(post, days))
+          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
+          this.limit = growth.next(this.limit)
+        }
+      },
       async save_page(event) {
         await this.sync_posts()
         await this.$nextTick()
-        await posts_local.save()
+        await posts_storage.save()
       }
     }
   }
