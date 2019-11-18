@@ -72,8 +72,8 @@
       onboarding() {
         const relations_count = relations_local.as_list().length
         return {
-          'signed-in': this.signed_in,
           'has-posts': this.has_posts,
+          'signed-in': (this.has_posts && this.signed_in),
           'has-friends': (this.signed_in && relations_count > 0)
         }
       },
