@@ -8,7 +8,6 @@
       <router-link v-if="!posting" to="/events" class="blue" tabindex="-1">Tonight!</router-link>
       <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
       <post-as-textarea @toggle-keyboard="posting = !posting" @post-added="add_post" class="red"></post-as-textarea>
-
     </nav>
     <aside>
       <my-figure :person="me"></my-figure>
