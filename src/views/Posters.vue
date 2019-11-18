@@ -140,7 +140,10 @@
       margin: auto
       @media (min-width: mid-screen)
         max-width: page-width
-    & > hgroup > h1
+    & > hgroup
+      svg.working
+        margin-bottom: base-line
+      & > h1
         color: green
     figure
       position: relative
