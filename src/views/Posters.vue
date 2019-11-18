@@ -115,8 +115,9 @@
       async delete_poster(poster_id) {
         this.working = true
         posters_storage.filename = poster_id
-        await posters_storage.delete()
         this.posters = this.posters.filter(poster => poster_id != poster.id)
+        await this.$nextTick()
+        await posters_storage.delete()
         this.working = false
       },
       async save() {
