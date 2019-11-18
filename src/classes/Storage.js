@@ -47,9 +47,14 @@ class Storage {
     if (bytes) return (bytes.length / 1024).toFixed(0)
     else return 0
   }
-  from_local(name = this.filename) {
-    const storage_string = localStorage.getItem(name)
-    return Storage.hydrate(storage_string)
+  from_local(name = this.type) {
+    return Storage.hydrate(localStorage.getItem(name))
+  }
+  as_list() {
+    return Item.get_items(this.from_local())
+  }
+  as_object() {
+    return Item.get_first_item(this.from_local())
   }
   async get_download_url() {
     const user = firebase.auth().currentUser
@@ -68,18 +73,6 @@ class Storage {
   }
   async from_storage(name = this.type) {
     return this.from_local(name) || this.from_network()
-  }
-  // async as_list() {
-  //   return Item.get_items(await this.from_storage())
-  // }
-  // async as_object() {
-  //   return Item.get_first_item(await this.from_storage())
-  // }
-  as_list() {
-    return Item.get_items(this.from_local())
-  }
-  as_object() {
-    return Item.get_first_item(this.from_local())
   }
   async save(items = document.querySelector(this.selector)) {
     console.log('save', this.selector, this.filename);
