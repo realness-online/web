@@ -13,8 +13,9 @@ class LargeStorage extends Storage {
     const content_type = name.split('.')[1]
     super(type, `[itemprop="${type}"]`, itemid, `text/${content_type}`)
   }
-  async from_storage(name = this.filename) {
-    return this.from_local(name) || this.from_network()
+
+  async as_list() {
+    return Item.get_items(await this.from_local(this.type))
   }
   async as_network_list() {
     const items = []

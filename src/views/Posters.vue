@@ -120,6 +120,7 @@
         this.working = true
         posters_storage.filename = this.as_itemid
         this.posters.unshift(this.new_poster)
+        await this.$nextTick()
         await posters_storage.save()
         this.new_poster = null
         this.working = false
