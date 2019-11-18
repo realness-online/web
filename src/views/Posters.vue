@@ -50,6 +50,7 @@
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
   import { posters_storage } from '@/classes/LargeStorage'
+  import sorting from '@/modules/sorting'
   export default {
     mixins: [signed_in, uploader],
     components: {
@@ -69,7 +70,8 @@
       }
     },
     async created() {
-      this.posters = await posters_storage.as_list()
+      this.posters = ( await posters_storage.as_list() )
+      this.posters.sort(sorting.newer_first)
       this.worker.addEventListener('message', this.message_from_vector)
       firebase.auth().onAuthStateChanged(this.auth)
     },
@@ -103,6 +105,7 @@
               this.posters.splice(index, 1, poster)
             } else this.posters.push(poster)
           })
+          this.posters.sort(sorting.newer_first)
         }
       },
       async vectorize_image(image) {
