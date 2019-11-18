@@ -6,14 +6,13 @@ import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import Storage from '@/classes/Storage'
 class LargeStorage extends Storage {
-  constructor(itemid) {
+  constructor(itemid = "/unknown/index.html" ) {
     const item = itemid.split('/')
     const type = item[0]
     const name = item[1]
     const content_type = name.split('.')[1]
     super(type, `[itemprop="${type}"]`, itemid, `text/${content_type}`)
   }
-
   async as_list() {
     return Item.get_items(await this.from_local(this.type))
   }
@@ -38,6 +37,7 @@ class LargeStorage extends Storage {
   }
   async delete() {
     const user = firebase.auth().currentUser
+    localStorage.setItem(this.type, document.querySelector(this.selector).outerHTML)
     if (user && navigator.onLine) {
       const path = `people/${user.phoneNumber}/${this.filename}`
       await firebase.storage().ref().child(path).delete()
