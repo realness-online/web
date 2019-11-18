@@ -73,7 +73,7 @@
       this.posters = ( await posters_storage.as_list() )
       this.posters.sort(sorting.newer_first)
       this.worker.addEventListener('message', this.message_from_vector)
-      firebase.auth().onAuthStateChanged(this.auth)
+      firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
     },
     computed: {
       as_fragment_id() {
@@ -93,10 +93,10 @@
         this.new_poster = null
         this.show_menu = true
       },
-      async auth(user) {
+      async sync_posters_with_network(user) {
         if (user) {
           const directory_list = await posters_storage.as_network_list()
-          await directory_list.forEach(async(item) => {
+          await directory_list.forEach(async (item) => {
             const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
             const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
             const poster = Item.get_first_item(item_as_fragment)
