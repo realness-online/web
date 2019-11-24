@@ -30,7 +30,13 @@ class Person extends Cloud(Storage) {
     super('person', '[itemid="person.html"]', 'person.html')
   }
 }
-class Post extends Paged(Cloud(Storage)) {
+class History extends Cloud(Storage) {
+  constructor(item_id) {
+    const type = itemid.split('/')[0]
+    super(type, `[itemid="${item_id}"]`, item_id)
+  }
+}
+class Posts extends Paged(Cloud(Storage)) {
   constructor() {
     super('posts')
   }
@@ -38,6 +44,7 @@ class Post extends Paged(Cloud(Storage)) {
 class SVG extends Large(Cloud(Storage)) {}
 
 export default Storage
+export { History }
 export const relations_storage = new Storage('relations')
 export const person_storage = new Person()
 export const posts_storage = new Posts()
