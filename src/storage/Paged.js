@@ -2,7 +2,7 @@
 import Item from '@/modules/item'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
-import Storage from '@/storage/Storage'
+import Storage, { History } from '@/storage/Storage'
 import Cloud from '@/storage/Cloud'
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
@@ -13,13 +13,6 @@ function keep_going(current_items, limit) {
     if (created_at && created_at < today) return true
     else return false
   } else return false
-}
-
-class History extends Cloud(Storage) {
-  constructor(item_id) {
-    const type = itemid.split('/')[0]
-    super(type, `[itemid="${item_id}"]`, item_id)
-  }
 }
 
 let Paged = (superclass) => class extends superclass {
