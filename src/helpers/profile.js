@@ -1,5 +1,4 @@
 import Item from '@/modules/item'
-import Storage from '@/classes/Storage'
 import { get_download_url } from '@/storage/Cloud'
 export default {
   async load(id) {
@@ -8,8 +7,7 @@ export default {
       const person = people[0]
       person.id = id
       return person
-    }
-    else return { id }
+    } else return { id }
   },
   async items(id, item_id) {
     const url = await get_download_url(id, `${item_id}.html`)
