@@ -56,4 +56,4 @@ let Cloud = (superclass) => class extends superclass {
   }
 }
 export default Cloud
-export get_download_url
+export { get_download_url }
