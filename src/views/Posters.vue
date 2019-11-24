@@ -40,7 +40,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import Storage and { posters_storage, person_storage } from '@/storage/Storage'
+  import Storage and { posters_storage, person_storage as me } from '@/storage/Storage'
   import sorting from '@/modules/sorting'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -58,7 +58,7 @@
       return {
         finished: true,
         show_menu: true,
-        me: person_storage.as_object(),
+        me: me.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,

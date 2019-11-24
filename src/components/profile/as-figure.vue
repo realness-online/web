@@ -14,7 +14,7 @@
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
-  import { person_storage } from '@/storage/Storage'
+  import { person_storage as me} from '@/storage/Storage'
   import asAvatar from '@/components/profile/as-avatar'
   export default {
     components: {
@@ -54,8 +54,7 @@
         }
       },
       is_me() {
-        const me = person_storage.as_object()
-        return me.id === this.person.id
+        return me.as_object().id === this.person.id
       },
       sms_link() {
         return `sms:${this.person.id}`

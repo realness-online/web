@@ -33,7 +33,7 @@
   import date_mixin from '@/mixins/date'
   import profile_helper from '@/helpers/profile'
   import post_helper from '@/helpers/post'
-  import { posts_storage, person_storage, relations_storage } from '@/storage/Storage'
+  import { posts_storage, person_storage as me, relations_storage } from '@/storage/Storage'
   import as_textarea from '@/components/posts/as-textarea'
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
@@ -46,7 +46,7 @@
     },
     data() {
       return {
-        me: person_storage.as_object(),
+        me: me.as_object(),
         posting: false,
         signed_in: true,
         has_posts: (posts_storage.as_list().length > 0),
@@ -111,7 +111,7 @@
             if (user) {
               const id = profile_helper.from_e64(user.phoneNumber)
               this.me = await profile_helper.load(id)
-              await person_storage.save()
+              await me.save()
               sessionStorage.setItem('profile-synced', Date.now())
             }
           })

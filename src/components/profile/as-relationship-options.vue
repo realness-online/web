@@ -8,7 +8,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { person_storage } from '@/storage/Storage'
+  import { person_storage as me } from '@/storage/Storage'
   export default {
     props: {
       person: Object,
@@ -20,7 +20,7 @@
     data() {
       return {
         relation: this.is_relation(),
-        me: person_storage.as_object()
+        me: me.as_object()
       }
     },
     computed: {

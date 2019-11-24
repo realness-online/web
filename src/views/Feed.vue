@@ -23,7 +23,7 @@
   </section>
 </template>
 <script>
-  import { relations_storage, person_storage } from '@/storage/Storage'
+  import { relations_storage, person_storage as me } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import growth from '@/modules/growth'
   import icon from '@/components/icon'
@@ -52,8 +52,7 @@
       console.clear()
       console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
-      const me = person_storage.as_object()
-      people_in_feed.push(me)
+      people_in_feed.push(me.as_object())
       await this.get_first_posts(people_in_feed)
       this.working = false
       console.info(`${this.sort_count} sort operations`)
