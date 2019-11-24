@@ -40,7 +40,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import Storage and { posters_storage, person_storage as me } from '@/storage/Storage'
+  import Storage, { posters_storage, person_storage as me } from '@/storage/Storage'
   import sorting from '@/modules/sorting'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
