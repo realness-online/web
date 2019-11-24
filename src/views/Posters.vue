@@ -91,11 +91,8 @@
       },
       async sync_posters_with_network(user) {
         if (user) {
-          const directory_list = await posters_storage.as_network_list()
-          await directory_list.forEach(async (item) => {
-            const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
-            const item_as_fragment = Storage.hydrate(await (await fetch(url)).text())
-            const poster = Item.get_first_item(item_as_fragment)
+          const posters = await posters_storage.as_network_list()
+          await posters.forEach(async (poster) => {
             const index = this.posters.findIndex(p => (p.id === poster.id))
             if (index > -1) {
               this.posters.splice(index, 1, poster)
@@ -110,9 +107,9 @@
       },
       async delete_poster(poster_id) {
         this.working = true
-        posters_storage.filename = poster_id
         this.posters = this.posters.filter(poster => poster_id != poster.id)
         await this.$nextTick()
+        posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
       },
