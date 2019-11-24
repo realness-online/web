@@ -1,6 +1,13 @@
 export default {
+  hydrate(item_as_string) {
+    if (item_as_string) {
+      return document.createRange().createContextualFragment(item_as_string)
+    } else return null
+  },
   get_items(elements, type) {
     if (!elements) return []
+    console.log(typeof items)
+    if ( typeof elements === "string" ) elements = this.hydrate(items)
     const items_as_data = []
     let query = '[itemscope]'
     if (type) { query += `[itemtype="${type}"]` }
