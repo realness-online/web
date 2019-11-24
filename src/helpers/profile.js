@@ -1,5 +1,6 @@
 import Item from '@/modules/item'
 import Storage from '@/classes/Storage'
+import { get_download_url } from '@/storage/Cloud'
 export default {
   async load(id) {
     const people = await this.items(id, 'person')
@@ -10,10 +11,10 @@ export default {
     }
     else return { id }
   },
-  async items(id, name) {
-    const url = await Storage.get_download_url(id, `${name}.html`)
+  async items(id, item_id) {
+    const url = await get_download_url(id, `${item_id}.html`)
     const server_text = await (await fetch(url)).text()
-    return Item.get_items(Storage.hydrate(server_text))
+    return Item.get_items(server_text)
   },
   as_query_id(id = '/+') {
     return id.substring(2)

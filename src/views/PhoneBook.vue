@@ -16,7 +16,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
-  import { relations_storage } from '@/classes/Storage'
+  import { relations_storage } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'

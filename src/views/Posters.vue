@@ -40,17 +40,13 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import 'firebase/storage'
-  import Storage from '@/classes/Storage'
-  import Item from '@/modules/item'
-  import { person_storage } from '@/classes/Storage'
+  import Storage and { posters_storage, person_storage } from '@/storage/Storage'
+  import sorting from '@/modules/sorting'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
-  import { posters_storage } from '@/classes/LargeStorage'
-  import sorting from '@/modules/sorting'
   export default {
     mixins: [signed_in, uploader],
     components: {

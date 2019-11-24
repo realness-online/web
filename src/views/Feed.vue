@@ -23,16 +23,16 @@
   </section>
 </template>
 <script>
-  import { relations_storage, person_storage } from '@/classes/Storage'
+  import { relations_storage, person_storage } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import growth from '@/modules/growth'
+  import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
+  import feed_as_article from '@/components/feed/as-article'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
   import date_mixin from '@/mixins/date'
-  import feed_as_article from '@/components/feed/as-article'
-  import icon from '@/components/icon'
   export default {
     mixins: [date_mixin, posts_into_days, condense_posts],
     components: {

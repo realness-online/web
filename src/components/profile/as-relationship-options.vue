@@ -8,7 +8,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { person_storage } from '@/classes/Storage'
+  import { person_storage } from '@/storage/Storage'
   export default {
     props: {
       person: Object,
