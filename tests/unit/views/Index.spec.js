@@ -3,8 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
-import Storage from '@/classes/Storage'
-import Storage, { person_storage } from '@/classes/Storage'
+import Storage, { person_storage } from '@/storage/Storage'
 
 import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)

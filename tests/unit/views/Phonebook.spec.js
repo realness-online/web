@@ -1,14 +1,13 @@
 import { shallow } from 'vue-test-utils'
 import phonebook from '@/views/Phonebook'
 import Item from '@/modules/item'
-import Storage from '@/classes/Storage'
 import profile from '@/helpers/profile'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 
 const fs = require('fs')
 const phonebook_as_text = fs.readFileSync('./tests/unit/html/phonebook.html', 'utf8')
-const people = Item.get_items(Storage.hydrate(phonebook_as_text))
+const people = Item.get_items(phonebook_as_text)
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

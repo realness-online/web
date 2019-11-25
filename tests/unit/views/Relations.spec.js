@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
 import profile from '@/helpers/profile'
-import { relations_storage } from '@/classes/Storage'
+import { relations_storage } from '@/storage/Storage'
 describe('@/views/Relations.vue', () => {
   const person = {
     id: '/+14151234356',

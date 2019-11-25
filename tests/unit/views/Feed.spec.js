@@ -1,5 +1,4 @@
 import { shallow } from 'vue-test-utils'
-import Storage from '@/classes/Storage'
 import Item from '@/modules/Item'
 import profile_id from '@/helpers/profile'
 import Feed from '@/views/Feed'
@@ -11,8 +10,8 @@ const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8'
 describe('@/views/Feed.vue', () => {
   let profile_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {
-    mock_posts = Item.get_items(Storage.hydrate(posts))
-    mock_person = Item.get_first_item(Storage.hydrate(person))
+    mock_posts = Item.get_items(posts)
+    mock_person = Item.get_first_item(person)
     profile_spy = jest.spyOn(profile_id, 'load').mockImplementation(_ => mock_person)
     posts_spy = jest.spyOn(profile_id, 'items').mockImplementation(_ => mock_posts)
   })
@@ -26,7 +25,7 @@ describe('@/views/Feed.vue', () => {
   })
   it('Loads another page of data for a person', async() => {
     let wrapper = shallow(Feed)
-    const hella_list = Item.get_items(Storage.hydrate(hella_posts))
+    const hella_list = Item.get_items(hella_posts)
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(5)
     jest.spyOn(profile_id, 'items').mockImplementationOnce(_ => {
