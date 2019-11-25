@@ -6,7 +6,8 @@ import 'firebase/storage'
 let Large = (superclass) => class extends superclass {
   async as_network_list() {
     const items = []
-    await this.directory().items.forEach(async (item) => {
+    const directory = await this.directory()
+    await directory.items.forEach(async (item) => {
       const url = await firebase.storage().ref().child(item.fullPath).getDownloadURL()
       const items_as_text = await (await fetch(url)).text()
       items.push(Item.get_first_item(items_as_text))
