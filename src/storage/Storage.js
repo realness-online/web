@@ -6,7 +6,7 @@ import Cloud from '@/storage/Cloud'
 
 class Storage {
   constructor(type,
-              selector = `[itemprop="/${type}"]`,
+              selector = `[itemprop="${type}"]`,
               filename = `${type}/index.html`,
               content_type = 'text/html') {
     this.type = type
