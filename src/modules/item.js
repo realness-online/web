@@ -6,7 +6,6 @@ export default {
   },
   get_items(elements, type) {
     if (!elements) return []
-    console.log(typeof elements)
     if (typeof elements === 'string') elements = this.hydrate(elements)
     const items_as_data = []
     let query = '[itemscope]'
