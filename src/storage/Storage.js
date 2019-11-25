@@ -32,7 +32,7 @@ class Person extends Cloud(Storage) {
 }
 class History extends Cloud(Storage) {
   constructor(item_id) {
-    const type = itemid.split('/')[0]
+    const type = item_id.split('/')[0]
     super(type, `[itemid="${item_id}"]`, item_id)
   }
 }
