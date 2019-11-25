@@ -47,4 +47,17 @@ describe('@/modules/item.js', () => {
       expect(dodo).toEqual({})
     })
   })
+  describe('#hydrate', () => {
+    const item_as_string = `
+    <section itemscope itemtype="/people">
+      <h1 itemprop="name">Scott Fryxell</h1>
+    </section>`
+    it('Exists', () => {
+      expect(Item.hydrate).toBeDefined()
+    })
+    it('Will create an html fragment from a string', () => {
+      storage = Item.hydrate(item_as_string)
+      expect(storage.querySelectorAll('h1').length).toBe(1)
+    })
+  })
 })

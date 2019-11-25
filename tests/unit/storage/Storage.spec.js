@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import Storage, { person_storage } from '@/classes/Storage'
+import Storage, {posts_storage, person_storage } from '@/storage/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -7,7 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-describe('@/classes/Storage.js', () => {
+describe('@/storage/Storage.js', () => {
   afterEach(() => {
     localStorage.clear()
   })
@@ -21,15 +21,6 @@ describe('@/classes/Storage.js', () => {
       </section>`
       document.body.innerHTML = item_as_string
       storage = person_storage
-    })
-    describe('#hydrate', () => {
-      it('Exists', () => {
-        expect(Storage.hydrate).toBeDefined()
-      })
-      it('Will create an html fragment from a string', () => {
-        storage = Storage.hydrate(item_as_string)
-        expect(storage.querySelectorAll('h1').length).toBe(1)
-      })
     })
     describe('#from_storage', () => {
       beforeEach(() => {
@@ -95,7 +86,7 @@ describe('@/classes/Storage.js', () => {
         localStorage.setItem(posts_storage.filename, hella_posts)
         fetch.mockResponseOnce(posts)
 
-        const server_list = Item.get_items(Storage.hydrate(posts))
+        const server_list = Item.get_items(posts)
         expect(server_list.length).toBe(9)
 
         const local_list = Item.get_items(posts_storage.from_local())
@@ -109,10 +100,10 @@ describe('@/classes/Storage.js', () => {
     })
   })
   describe('Persistance', () => {
-    let posts_storage
-    beforeEach(() => {
-      posts_storage = new Storage('posts', '[itemprop=posts]')
-    })
+    // let posts_storage
+    // beforeEach(() => {
+    //   posts_storage = new Storage('posts', '[itemprop=posts]')
+    // })
     describe.only('#optimize', () => {
       it('Exists', () => {
         expect(posts_storage.optimize).toBeDefined()
