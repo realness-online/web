@@ -6,35 +6,23 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
   id="home"
 >
   <nav
-    class="signed-in"
+    class=""
     id="main"
   >
-    <!---->
-     
-    <!---->
-     
     <router-link
-      class="blue"
+      class="black"
       tabindex="-1"
-      to="/phone-book"
+      to="/account"
     >
-      Friends
-    </router-link>
-     
-    <router-link
-      class="blue"
-      tabindex="-1"
-      to="/feed"
-    >
-      Feed
+      Scott
     </router-link>
      
     <router-link
       class="green"
       tabindex="-1"
-      to="/events"
+      to="/phone-book"
     >
-      Events
+      Friends
     </router-link>
      
     <router-link
@@ -46,12 +34,24 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
     </router-link>
      
     <router-link
-      class="black"
+      class="blue"
       tabindex="-1"
-      to="/account"
+      to="/feed"
     >
-      Scott
+      Feed
     </router-link>
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/events"
+    >
+      Tonight!
+    </router-link>
+     
+    <!---->
+     
+    <!---->
   </nav>
    
   <aside>
@@ -76,35 +76,23 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   id="home"
 >
   <nav
-    class="signed-in"
+    class=""
     id="main"
   >
-    <!---->
-     
-    <!---->
-     
     <router-link
-      class="blue"
+      class="black"
       tabindex="-1"
-      to="/phone-book"
+      to="/account"
     >
-      Friends
-    </router-link>
-     
-    <router-link
-      class="blue"
-      tabindex="-1"
-      to="/feed"
-    >
-      Feed
+      Scott
     </router-link>
      
     <router-link
       class="green"
       tabindex="-1"
-      to="/events"
+      to="/phone-book"
     >
-      Events
+      Friends
     </router-link>
      
     <router-link
@@ -116,12 +104,24 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     </router-link>
      
     <router-link
-      class="black"
+      class="blue"
       tabindex="-1"
-      to="/account"
+      to="/feed"
     >
-      Scott
+      Feed
     </router-link>
+     
+    <router-link
+      class="blue"
+      tabindex="-1"
+      to="/events"
+    >
+      Tonight!
+    </router-link>
+     
+    <!---->
+     
+    <!---->
   </nav>
    
   <aside>
@@ -146,9 +146,17 @@ exports[`@/views/Index.vue navigating the application handling post events posti
   id="home"
 >
   <nav
-    class="signed-in"
+    class=""
     id="main"
   >
+    <!---->
+     
+    <!---->
+     
+    <!---->
+     
+    <!---->
+     
     <!---->
      
     <button
@@ -156,14 +164,6 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     >
       Done
     </button>
-     
-    <!---->
-     
-    <!---->
-     
-    <!---->
-     
-    <!---->
      
     <!---->
   </nav>
