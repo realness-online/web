@@ -3,7 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Index from '@/views/Index'
-import Storage, { person_storage } from '@/storage/Storage'
+import Storage, { person_storage, posts_storage } from '@/storage/Storage'
 
 import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
@@ -54,8 +54,8 @@ describe('@/views/Index.vue', () => {
   })
   describe('syncing posts', () => {
     let sync_list_spy
-    beforeEach(() => {
-      sync_list_spy = jest.spyOn(Storage.prototype, 'sync_list').mockImplementation(() => {
+    beforeAll(() => {
+      sync_list_spy = jest.spyOn(posts_storage, 'sync_list').mockImplementation(() => {
         return Promise.resolve([
           { statement: 'mock post' },
           { statement: 'another mock post' }
