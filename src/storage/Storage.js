@@ -32,7 +32,7 @@ class Storage {
 }
 class Person extends Cloud(Storage) {
   constructor() {
-    super('person', '[itemid="person.html"]', 'person.html')
+    super('person', '[itemtype="/person"]', 'index.html')
   }
 }
 class Posts extends Paged(Cloud(Storage)) {

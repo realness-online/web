@@ -44,9 +44,9 @@
     computed: {
       item_id() {
         if (this.person.mobile) {
-          return `${profile.from_phone_number(this.person.mobile)}`
+          return profile.from_phone_number(this.person.mobile)
         } else {
-          return `${this.person.id}/person.html`
+          return this.person.id
         }
       },
       is_me() {
