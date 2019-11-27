@@ -37,7 +37,7 @@ class Person extends Cloud(Storage) {
 }
 class Posts extends Paged(Cloud(Storage)) {
   constructor() {
-    super('posts')
+    super('posts', '[itemprop="posts"]')
   }
 }
 class SVG extends Large(Cloud(Storage)) {}
