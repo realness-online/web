@@ -11,7 +11,7 @@
     </nav>
     <aside>
       <my-figure :person="me"></my-figure>
-      <div itemprop="posts" itemscope itemtype="/posts" itemid="posts/index.html">
+      <div itemprop="posts">
         <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day"
