@@ -15,10 +15,12 @@
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
   import { person_storage as me} from '@/storage/Storage'
-  import asAvatar from '@/components/profile/as-avatar'
+  import as_avatar from '@/components/profile/as-avatar'
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   export default {
     components: {
-      asAvatar
+      "as-avatar": as_avatar
     },
     props: {
       person: Object,
@@ -33,28 +35,29 @@
     },
     methods: {
       avatar_click(event) {
-        let route = {
-          path: this.person.id
-        }
-        if (this.is_me) {
-          route.path = '/account'
-        }
-        if (this.previous) {
-          route.path = sessionStorage.previous
-        }
+        let route = { path: this.person.id }
+        if (this.is_me) route.path = '/account'
+        if (this.previous) route.path = sessionStorage.previous
         this.$router.push(route)
       }
     },
     computed: {
       item_id() {
         if (this.person.mobile) {
-          return `${profile.from_phone_number(this.person.mobile)}/person.html`
+          return `${profile.from_phone_number(this.person.mobile)}`
         } else {
-          return this.person.id
+          return `${this.person.id}/person.html`
         }
       },
       is_me() {
-        return me.as_object().id === this.person.id
+        const local_id = me.as_object().id
+        if (local_id) {
+          if (local_id === this.person.id) return true
+        } else if (firebase.auth().currentUser) {
+          const my_id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+          if (my_id === this.person.id) return true
+        }
+        return false
       },
       sms_link() {
         return `sms:${this.person.id}`
