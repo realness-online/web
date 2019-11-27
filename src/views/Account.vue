@@ -6,7 +6,7 @@
     </header>
     <manage-avatar @new-avatar="update_avatar" :person='me'></manage-avatar>
     <div id="login">
-      <profile-as-figure :person="me"></profile-as-figure>
+      <profile-as-figure :person="me" itemref="account"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
     </div>
     <div id="pages-of-posts">
