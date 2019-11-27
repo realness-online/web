@@ -43,7 +43,8 @@
     methods: {
       as_symbol(data) {
         const id = profile.as_avatar_id(me.as_object().id)
-        return `<symbol viewBox="${data.view_box}" id="${id}" preserveAspectRatio="xMidYMid slice">${data.vector}</symbol>`
+        console.log("as_symbol", id, data)
+        return `<symbol viewBox="${data.view_box}" id="${id}" preserveAspectRatio="xMidYMid slice">${data.path}</symbol>`
       },
       worker_event(message) {
         this.avatar_changed = true
