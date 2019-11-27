@@ -13,8 +13,8 @@ export default {
     let items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
       const meta = {
-        type: item.getAttribute('itemtype'),
-        id: item.getAttribute('itemid')
+        id: item.getAttribute('itemid'),
+        type: item.getAttribute('itemtype')
       }
       const properties = this.get_item_properties(item)
       items_as_data.push({ ...meta, ...properties })
