@@ -178,11 +178,11 @@
     &.signed-in
       & > [href='/relations']
       & > [href='/phone-book']
+      & > [href='/posters']
+      & > [href='/events']
         visibility: visible
     &.has-friends
       & > [href='/feed']
-      & > [href='/events']
-      & > [href='/posters']
         visibility: visible
 </style>
 <style lang="stylus">
