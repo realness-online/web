@@ -53,7 +53,7 @@
       },
       vectorize_image(image) {
         this.working = true
-        this.worker.postMessage({ image, width: 512 })
+        this.worker.postMessage({ image })
       },
       async accept_changes(event) {
         this.finished = false
