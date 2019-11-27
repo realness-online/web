@@ -16,11 +16,6 @@ function keep_going(current_items, limit) {
 }
 
 let Paged = (superclass) => class extends superclass {
-  as_kilobytes() {
-    const bytes = localStorage.getItem(this.selector)
-    if (bytes) return (bytes.length / 1024).toFixed(0)
-    else return 0
-  }
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
       let current = Item.hydrate(localStorage.getItem(this.selector)).childNodes[0]

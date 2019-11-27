@@ -14,6 +14,11 @@ class Storage {
     this.filename = filename
     this.metadata = { 'contentType': content_type }
   }
+  as_kilobytes() {
+    const bytes = localStorage.getItem(this.selector)
+    if (bytes) return (bytes.length / 1024).toFixed(2)
+    else return 0
+  }
   as_list() {
     return Item.get_items(localStorage.getItem(this.selector))
   }
