@@ -9,9 +9,9 @@
 # gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
 
 # # reset in home directory
-rm -rf ~/realness.online
-mkdir ~/realness.online
-gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
+# rm -rf ~/realness.online
+# mkdir ~/realness.online
+# gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
 # gsutil -m cp -R gs://realness-development.appspot.com/people ~/realness.online/
 
 # reset just me
