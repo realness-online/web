@@ -1,9 +1,7 @@
 standard-border($color=currentColor, $dark-color=dark-black)
   border: (base-line / 6) solid $color
   border-radius: (base-line / 3)
-  @media (prefers-color-scheme: dark)
-    border-color: $dark-color
-
+  
 standard-button($color=currentColor, $dark-color=white)
   standard-border: $color
   padding: (base-line / 2)
