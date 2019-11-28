@@ -65,7 +65,7 @@
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts] = await Promise.all([
             profile.load(relation.id),
-            profile.items(relation.id, 'posts')
+            profile.items(relation.id, 'posts/index')
           ])
           this.relations.push(person)
           everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
@@ -77,7 +77,7 @@
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         console.log(`posts.${person.page}`, person.first_name)
-        let posts = await profile.items(person.id, `posts.${person.page}`)
+        let posts = await profile.items(person.id, `posts/${person.page}`)
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
         const sorted = [...this.days.entries()].sort(this.newer_day_first)

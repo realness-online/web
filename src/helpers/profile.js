@@ -2,8 +2,8 @@ import Item from '@/modules/item'
 import { get_download_url } from '@/storage/Cloud'
 export default {
   async load(id) {
-    const people = await this.items(id, 'person')
-    if (people.length > 1) {
+    const people = await this.items(id, 'index')
+    if (people.length >= 1) {
       const person = people[0]
       person.id = id
       return person

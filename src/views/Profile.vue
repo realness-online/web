@@ -50,7 +50,7 @@
       const id = profile.from_e64(this.$route.params.phone_number)
       let [person, posts] = await Promise.all([
         profile.load(id),
-        profile.items(id, 'posts')
+        profile.items(id, 'posts/index')
       ])
       this.person = person
       this.populate_page(person, posts)
@@ -59,7 +59,7 @@
     methods: {
       async next_page() {
         const id = profile.from_e64(this.$route.params.phone_number)
-        let posts = await profile.items(id, `posts.${this.limit}`)
+        let posts = await profile.items(id, `posts/${this.limit}`)
         if (posts.length > 0) {
           this.populate_page(this.person, posts)
           this.limit = growth.next(this.limit)
