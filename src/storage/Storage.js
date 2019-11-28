@@ -1,9 +1,11 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+import profile from '@/helpers/profile'
 import Item from '@/modules/item'
 import Paged from '@/storage/Paged'
 import Large from '@/storage/Large'
 import Cloud from '@/storage/Cloud'
-
 class Storage {
   constructor(type,
               selector = `[itemprop="${type}"]`,
@@ -33,6 +35,12 @@ class Storage {
 class Person extends Cloud(Storage) {
   constructor() {
     super('person', '[itemtype="/person"]', 'index.html')
+  }
+  save() {
+    const item_id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+    const items = document.querySelector(`[itemid="${item_id}"]`)
+    if (items) super.save(items)
+    else super.save()
   }
 }
 class Posts extends Paged(Cloud(Storage)) {
