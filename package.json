@@ -13,12 +13,12 @@
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
-    "deploy": "firebase use production && yarn build && firebase deploy",
-    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy"
+    "deploy": "firebase use production && yarn build && firebase deploy --only hosting,storage",
+    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage"
   },
   "dependencies": {
     "@realness.online/web-workers": "^0.3.0",
-    "firebase": "6.4.2",
+    "firebase": "^7.5.0",
     "libphonenumber-js": "1.7.23",
     "register-service-worker": "1.6.2",
     "vue": "2.6.10",
@@ -38,16 +38,16 @@
     "babel-jest": "^24.8.0",
     "eslint": "^6.4.0",
     "eslint-plugin-vue": "^5.0.0",
-    "firebase-tools": "^7.3.2",
+    "firebase-tools": "^7.8.1",
     "flush-promises": "^1.0.2",
     "jest-fetch-mock": "^2.1.0",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
+    "jsdom-worker-fix": "^0.1.8",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vue-template-compiler": "^2.5.21",
-    "vue-test-utils": "^1.0.0-beta.11",
-    "jsdom-worker-fix": "^0.1.8"
+    "vue-test-utils": "^1.0.0-beta.11"
   },
   "eslintConfig": {
     "root": true,
