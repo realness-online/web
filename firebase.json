@@ -21,7 +21,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "script-src 'unsafe-inline' 'self' https://www.google.com https://apis.google.com https://www.gstatic.com https://storage.googleapis.com/"
+            "value": "script-src 'unsafe-eval' 'unsafe-inline' 'self' https://www.google.com https://apis.google.com https://www.gstatic.com https://storage.googleapis.com/"
           }
         ]
       },
