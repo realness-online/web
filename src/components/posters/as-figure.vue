@@ -34,5 +34,3 @@
     }
   }
 </script>
-<style lang="stylus">
-</style>

@@ -1,5 +1,5 @@
 <template lang="html">
-  <article class="feed activity">
+  <article class="feed post">
     <router-link :to="person.id">
       <profile-as-avatar :person="person" :by_reference="true"></profile-as-avatar>
     </router-link>
@@ -24,7 +24,7 @@
   }
 </script>
 <style lang="stylus">
-  article.feed.activity
+  article.feed.post
     overflow: hidden
     margin-bottom: base-line
     &:last-of-type

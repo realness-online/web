@@ -13,12 +13,10 @@
       <header>
         <h4>{{as_day(date)}}</h4>
       </header>
-      <feed-as-article v-for="post in day"
-        :post="post"
-        :person="post.person"
-        :key="post.id"
-        @end-of-articles="next_page">
-      </feed-as-article>
+      <div v-for="post in day" :key="post.id">
+        <poster-as-figure v-if="post.type === 'posters'" :poster="post"></poster-as-figure>
+        <post-as-article v-else :post="post" :person="post.person" @end-of-articles="next_page"></post-as-article>
+      </div>
     </section>
   </section>
 </template>
@@ -28,7 +26,8 @@
   import growth from '@/modules/growth'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
-  import feed_as_article from '@/components/feed/as-article'
+  import post_as_article from '@/components/feed/as-article'
+  import poster_as_figure from '@/components/feed/as-figure'
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
@@ -38,7 +37,8 @@
     components: {
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
-      'feed-as-article': feed_as_article,
+      'post-as-article': post_as_article,
+      'poster-as-figure': poster_as_figure,
       icon
     },
     data() {
@@ -58,20 +58,37 @@
       console.info(`${this.sort_count} sort operations`)
       console.timeEnd('feed-load')
     },
-
     methods: {
       async get_first_posts(people_in_feed) {
-        let everyones_posts = []
+        console.log('get_first_posts')
+        let feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
-          const [person, posts] = await Promise.all([
+          const [person, posts, posters] = await Promise.all([
             profile.load(relation.id),
-            profile.items(relation.id, 'posts/index')
+            profile.items(relation.id, 'posts/index'),
+            profile.directory(relation.id, 'posters')
           ])
           this.relations.push(person)
-          everyones_posts = [...everyones_posts, ...this.condense_posts(posts, person)]
+          feed = [...this.condense_posts(posts, person),
+                  ...this.prepare_posters(posters, person)]
         }))
-        everyones_posts.sort(this.newer_first)
-        everyones_posts.forEach(post => this.insert_post_into_day(post, this.days))
+        feed.sort(this.newer_first)
+        feed.forEach(post => this.insert_post_into_day(post, this.days))
+      },
+      prepare_posters(posters, person) {
+        const meta = []
+        posters.items.forEach(poster => {
+          const created_at = Number(poster.name.split('.')[0])
+          const poster_meta = {
+            type: 'posters',
+            created_at: new Date(created_at).toISOString(),
+            id: `posters/${created_at}`,
+            person,
+          }
+          console.log(poster_meta);
+          meta.push(poster_meta)
+        })
+        return meta
       },
       async next_page(person) {
         if (person.page) person.page = growth.next(person.page)
