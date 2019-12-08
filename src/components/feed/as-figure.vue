@@ -4,9 +4,13 @@
       <router-link :to="poster.person.id">
         <profile-as-avatar :person="poster.person" :by_reference="true"></profile-as-avatar>
       </router-link>
-      <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
+      <hgroup>
+        <span class="person">{{poster.person.first_name}} {{poster.person.last_name}} </span>
+        <span class="action">created a poster</span>
+        <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
+      </hgroup>
     </figcaption>
-    <svg v-if="actual_poster" preserveAspectRatio="xMidYMin meet"
+    <svg v-if="actual_poster" preserveAspectRatio="xMidYMin slice"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path"></svg>
     <icon v-else name="working"></icon>
   </figure>
@@ -44,7 +48,6 @@
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
             this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
-            console.log(this.actual_poster);
             this.observer.unobserve(this.$el)
           }
         })
@@ -54,6 +57,16 @@
 </script>
 <style lang="stylus">
   figure.feed.poster
+    & > figcaption
+      display: flex
+      justify-content: flex-start
+      & > hgroup
+        margin: 0 0 0 (base-line / 2 )
+      & a > svg
+        fill: blue
+        shape-outside: circle()
+        clip-path: circle()
+        cursor: pointer
     & > svg
       width: 100%
       height: 100vh
