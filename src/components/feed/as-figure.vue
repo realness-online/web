@@ -59,6 +59,7 @@
     & > figcaption
       display: flex
       justify-content: flex-start
+      margin-bottom: base-line
       & > hgroup
         margin: 0 0 0 (base-line / 2 )
       & a > svg
@@ -67,8 +68,11 @@
         clip-path: circle()
         cursor: pointer
     & > svg
-      margin-left -(base-line)
-      margin-right -(base-line)
       width: auto
       height: 100vh
+    @media (max-width: min-screen)
+      & > svg
+        margin-left -(base-line)
+        margin-right -(base-line)
+
 </style>
