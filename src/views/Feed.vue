@@ -60,7 +60,6 @@
     },
     methods: {
       async get_first_posts(people_in_feed) {
-        console.log('get_first_posts')
         let feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts, posters] = await Promise.all([
@@ -85,7 +84,6 @@
             id: `posters/${created_at}`,
             person,
           }
-          console.log(poster_meta);
           meta.push(poster_meta)
         })
         return meta
