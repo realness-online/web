@@ -9,7 +9,7 @@
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
-    <svg v-if="actual_poster" preserveAspectRatio="xMidYMin slice"
+    <svg v-if="actual_poster" preserveAspectRatio="xMidYMin meet"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path"></svg>
     <icon v-else name="working"></icon>
   </figure>
@@ -69,6 +69,7 @@
         cursor: pointer
     & > svg
       width: auto
+      max-width:100vw
       height: 100vh
     @media (max-width: min-screen)
       & > svg
