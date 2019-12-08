@@ -5,7 +5,7 @@
         <profile-as-avatar :person="poster.person" :by_reference="true"></profile-as-avatar>
       </router-link>
       <hgroup>
-        <span class="person">{{poster.person.first_name}} {{poster.person.last_name}} </span>
+        <span class="person">{{poster.person.first_name}} {{poster.person.last_name}}</span>
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
@@ -67,6 +67,8 @@
         clip-path: circle()
         cursor: pointer
     & > svg
-      width: 100%
+      margin-left -(base-line)
+      margin-right -(base-line)
+      width: auto
       height: 100vh
 </style>
