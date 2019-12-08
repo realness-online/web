@@ -103,7 +103,7 @@
       },
       async vectorize_image(image) {
         this.working = true
-        this.worker.postMessage({ image, width: 512 })
+        this.worker.postMessage({ image })
       },
       async delete_poster(poster_id) {
         this.working = true
