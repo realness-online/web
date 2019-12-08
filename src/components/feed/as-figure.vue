@@ -6,7 +6,6 @@
       </router-link>
       <hgroup>
         <span class="person">{{poster.person.first_name}} {{poster.person.last_name}} </span>
-        <span class="action">created a poster</span>
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
