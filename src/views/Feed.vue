@@ -69,7 +69,7 @@
           ])
           this.relations.push(person)
           feed = [...this.condense_posts(posts, person),
-                  ...this.prepare_posters(posters, person)]
+                  ...this.prepare_posters(posters, person), ...feed]
         }))
         feed.sort(this.newer_first)
         feed.forEach(post => this.insert_post_into_day(post, this.days))
