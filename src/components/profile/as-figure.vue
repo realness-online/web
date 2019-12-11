@@ -1,11 +1,8 @@
 <template>
-  <figure class="profile" itemscope itemtype='/person' :itemid="item_id">
+  <figure class="profile">
     <as-avatar @avatar-clicked="avatar_click" :person="person"></as-avatar>
     <figcaption>
-      <p>
-        <span itemprop="first_name">{{person.first_name}}</span>
-        <span itemprop="last_name">{{person.last_name}}</span>
-      </p>
+      <as-hgroup :person="person"></as-hgroup>
       <p class='phone' v-if="is_me">{{mobile_display}}</p>
       <a class='phone' v-else :href="sms_link">{{mobile_display}}</a>
     </figcaption>
@@ -14,13 +11,15 @@
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
-  import { person_storage as me} from '@/storage/Storage'
+  import { person_storage as me } from '@/storage/Storage'
   import as_avatar from '@/components/profile/as-avatar'
+  import as_hgroup from '@/components/profile/as-hgroup'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   export default {
     components: {
-      "as-avatar": as_avatar
+      'as-avatar': as_avatar,
+      'as-hgroup': as_hgroup
     },
     props: {
       person: Object,
@@ -42,13 +41,6 @@
       }
     },
     computed: {
-      item_id() {
-        if (this.person.mobile) {
-          return profile.from_phone_number(this.person.mobile)
-        } else {
-          return this.person.id
-        }
-      },
       is_me() {
         const local_id = me.as_object().id
         if (local_id) {
