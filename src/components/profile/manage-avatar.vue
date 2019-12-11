@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <icon v-if="working" name="working"></icon>
-    <as-avatar v-else :person="person" :by_reference="true"></as-avatar>
+    <as-avatar v-else :person="person"></as-avatar>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
       <a id="accept_changes" @click="accept_changes" v-if="avatar_changed">

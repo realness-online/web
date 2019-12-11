@@ -1,7 +1,7 @@
 <template lang="html">
   <article class="feed post">
     <router-link :to="person.id">
-      <profile-as-avatar :person="person" :by_reference="true"></profile-as-avatar>
+      <profile-as-avatar :person="person"></profile-as-avatar>
     </router-link>
     <hgroup>
       <span>{{person.first_name}} {{person.last_name}}</span>

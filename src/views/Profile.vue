@@ -4,7 +4,7 @@
       <svg></svg>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-avatar v-bind:by_reference="true" :person="person"></profile-as-avatar>
+    <profile-as-avatar :person="person"></profile-as-avatar>
     <profile-as-figure :person='person'></profile-as-figure>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">

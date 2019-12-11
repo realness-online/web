@@ -2,7 +2,7 @@
   <figure class='feed poster'>
     <figcaption>
       <router-link :to="poster.person.id">
-        <profile-as-avatar :person="poster.person" :by_reference="true"></profile-as-avatar>
+        <profile-as-avatar :person="poster.person"></profile-as-avatar>
       </router-link>
       <hgroup>
         <span class="person">{{poster.person.first_name}} {{poster.person.last_name}}</span>
