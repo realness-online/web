@@ -66,7 +66,7 @@
       }
     },
     async created() {
-      this.posters = ( await posters_storage.as_list() )
+      this.posters = (await posters_storage.as_list())
       this.posters.sort(sorting.newer_first)
       this.worker.addEventListener('message', this.message_from_vector)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
@@ -107,7 +107,7 @@
       },
       async delete_poster(poster_id) {
         this.working = true
-        this.posters = this.posters.filter(poster => poster_id != poster.id)
+        this.posters = this.posters.filter(poster => poster_id !== poster.id)
         await this.$nextTick()
         posters_storage.filename = poster_id
         await posters_storage.delete()
