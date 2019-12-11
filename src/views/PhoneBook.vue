@@ -17,10 +17,12 @@
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
   import { relations_storage } from '@/storage/Storage'
+  import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
   export default {
+    mixins: [signed_in],
     components: {
       'profile-as-list': profile_as_list,
       icon

@@ -24,6 +24,7 @@
   import posts_into_days from '@/mixins/posts_into_days'
   import date_mixin from '@/mixins/date'
   import condense_posts from '@/mixins/condense_posts'
+  import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
   import logo_as_link from '@/components/logo-as-link'
   import growth from '@/modules/growth'
@@ -31,7 +32,7 @@
   import profile_as_avatar from '@/components/profile/as-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [date_mixin, condense_posts, posts_into_days],
+    mixins: [signed_in, date_mixin, condense_posts, posts_into_days],
     components: {
       'profile-as-figure': profile_as_figure,
       'profile-as-avatar': profile_as_avatar,

@@ -31,9 +31,10 @@
   import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
+  import signed_in from '@/mixins/signed_in'
   import date_mixin from '@/mixins/date'
   export default {
-    mixins: [date_mixin, posts_into_days, condense_posts],
+    mixins: [signed_in, date_mixin, posts_into_days, condense_posts],
     components: {
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
@@ -82,7 +83,7 @@
             type: 'posters',
             created_at: new Date(created_at).toISOString(),
             id: `posters/${created_at}`,
-            person,
+            person
           }
           meta.push(poster_meta)
         })

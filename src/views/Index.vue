@@ -31,6 +31,7 @@
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
   import date_mixin from '@/mixins/date'
+  import signed_in from '@/mixins/signed_in'
   import profile_helper from '@/helpers/profile'
   import post_helper from '@/helpers/post'
   import { posts_storage, person_storage as me, relations_storage } from '@/storage/Storage'
@@ -38,7 +39,7 @@
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [condense_posts, posts_into_days, date_mixin],
+    mixins: [signed_in, condense_posts, posts_into_days, date_mixin],
     components: {
       'my-figure': as_figure,
       'post-as-article': as_article,
@@ -48,7 +49,6 @@
       return {
         me: me.as_object(),
         posting: false,
-        signed_in: true,
         has_posts: (posts_storage.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         version: process.env.VUE_APP_VERSION,
@@ -57,15 +57,11 @@
     },
     async created() {
       this.days = this.populate_days(posts_storage.as_list(), this.me)
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) this.signed_in = true
-        else this.signed_in = false
-      })
     },
     async mounted() {
       await Promise.all([
-        // this.sync_posts(),
-        // this.sync_profile()
+        this.sync_posts(),
+        this.sync_profile()
       ])
     },
     computed: {

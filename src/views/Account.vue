@@ -29,9 +29,10 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/helpers/profile'
-  import { person_storage as me, posts_storage } from '@/storage/Storage'
+  import { person_storage as me, posts_storage, avatars_storage } from '@/storage/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
+  import signed_in from '@/mixins/signed_in'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
@@ -41,7 +42,7 @@
   import manage_avatar from '@/components/profile/manage-avatar'
   import as_article from '@/components/posts/as-article'
   export default {
-    mixins: [date_mixin, condense_posts, posts_into_days],
+    mixins: [signed_in, date_mixin, condense_posts, posts_into_days],
     components: {
       icon,
       'logo-as-link': logo_as_link,
@@ -55,7 +56,6 @@
         me: me.as_object(),
         pages: new Map(),
         limit: growth.first(),
-        signed_in: false,
         image_file: null
       }
     },
@@ -74,7 +74,6 @@
       },
       async auth_state_change(firebase_user) {
         if (firebase_user) {
-          this.signed_in = true
           const id = profile.from_e64(firebase_user.phoneNumber)
           this.me = await profile.load(id)
           await this.sync_posts()

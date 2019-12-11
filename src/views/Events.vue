@@ -14,10 +14,12 @@
   </section>
 </template>
 <script>
+  import signed_in from '@/mixins/signed_in'
   import logoAsLink from '@/components/logo-as-link'
   import asAvatar from '@/components/profile/as-avatar'
   import icon from '@/components/icon'
   export default {
+    mixins: [signed_in],
     components: {
       logoAsLink,
       asAvatar,

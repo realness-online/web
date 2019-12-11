@@ -15,8 +15,10 @@
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import { relations_storage } from '@/storage/Storage'
+  import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
   export default {
+    mixins: [signed_in],
     components: {
       icon,
       'profile-as-list': profile_as_list,
