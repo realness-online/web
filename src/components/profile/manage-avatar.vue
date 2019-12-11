@@ -71,10 +71,7 @@
       width: 100vw
       min-height: 100vh
       &.working
-        flex-grow: 1
-        padding: base-line
-        width: 30vw
-        height: 15vh
+        width: base-line * 5
     & > menu
       position: relative
       z-index: 1
