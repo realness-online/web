@@ -4,9 +4,9 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <manage-avatar @new-avatar="update_avatar" :person='me'></manage-avatar>
+    <manage-avatar @new-avatar="new_avatar" :person='me'></manage-avatar>
     <div id="login">
-      <profile-as-figure :person="me" itemref="account"></profile-as-figure>
+      <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
     </div>
     <div id="pages-of-posts">
@@ -65,8 +65,11 @@
       firebase.auth().onAuthStateChanged(this.auth_state_change)
     },
     methods: {
-      update_avatar(avatar) {
-        this.me.avatar = avatar
+      async new_avatar(avatar) {
+        await this.$nextTick()
+        await avatars_storage.save()
+        const avatar_url = `avatars/${avatar.created_at}`
+        this.me.avatar = avatar_url
       },
       is_editable(page_name) {
         if (page_name === 'posts') return true
@@ -95,6 +98,11 @@
         new_pages.set('posts', days)
         this.pages = new_pages
       },
+      async save_page(event) {
+        await this.sync_posts()
+        await this.$nextTick()
+        await posts_storage.save()
+      },
       async next_page() {
         const days = new Map()
         let posts = await posts_storage.next_page(this.limit)
@@ -104,11 +112,6 @@
           this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
           this.limit = growth.next(this.limit)
         }
-      },
-      async save_page(event) {
-        await this.sync_posts()
-        await this.$nextTick()
-        await posts_storage.save()
       }
     }
   }

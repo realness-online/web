@@ -23,11 +23,7 @@
     },
     props: {
       person: Object,
-      previous: {
-        type: Boolean,
-        default: false
-      },
-      avatar_by_reference: {
+      previous: { // TODO: We can remove this
         type: Boolean,
         default: false
       }

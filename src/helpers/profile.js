@@ -12,6 +12,7 @@ export default {
     } else return { id }
   },
   async items(id, item_id) {
+    console.log(id, item_id);
     const url = await get_download_url(id, `${item_id}.html`)
     const server_text = await (await fetch(url)).text()
     return Item.get_items(server_text)

@@ -41,14 +41,9 @@
       this.worker.addEventListener('message', this.worker_event)
     },
     methods: {
-      as_symbol(data) {
-        const id = profile.as_avatar_id(me.as_object().id)
-        console.log("as_symbol", id, data)
-        return `<symbol viewBox="${data.view_box}" id="${id}" preserveAspectRatio="xMidYMid slice">${data.path}</symbol>`
-      },
       worker_event(message) {
         this.avatar_changed = true
-        this.$emit('new-avatar', this.as_symbol(message.data))
+        this.$emit('new-avatar', message.data)
         this.working = false
       },
       vectorize_image(image) {
