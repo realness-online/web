@@ -1,10 +1,13 @@
 <template lang="html">
   <div id="manage-avatar">
     <icon v-if="working" name="working"></icon>
-    <as-avatar v-else :person="person"></as-avatar>
+    <div v-else>
+      <avatar-as-figure v-if="avatar" :avatar="avatar"></avatar-as-figure>
+      <avatar-as-svg v-else :person="person"></avatar-as-svg>
+    </div>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
-      <a id="accept_changes" @click="accept_changes" v-if="avatar_changed">
+      <a id="accept_changes" @click="accept_changes" v-if="avatar">
         <icon v-if="finished" name="finished"></icon>
         <icon v-else name="working"></icon>
       </a>
@@ -17,14 +20,16 @@
   import { person_storage as me } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
-  import as_avatar from '@/components/profile/as-avatar'
+  import as_svg from '@/components/avatars/as-svg'
+  import as_figure from '@/components/avatars/as-figure'
   import signed_in from '@/mixins/signed_in'
   import uploader from '@/mixins/uploader'
   export default {
     mixins: [signed_in, uploader],
     components: {
       icon,
-      'as-avatar': as_avatar
+      'avatar-as-svg': as_svg,
+      'avatar-as-figure': as_figure
     },
     props: {
       person: Object
@@ -34,7 +39,7 @@
         worker: new Worker('/vector.worker.js'),
         working: false,
         finished: true,
-        avatar_changed: false
+        avatar: null
       }
     },
     created() {

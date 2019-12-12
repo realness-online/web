@@ -47,7 +47,6 @@
             if (this.first_instance()) {
               this.avatar = await profile.item(this.person.id, this.person.avatar)
             }
-
             this.observer.unobserve(this.$el)
           }
         })

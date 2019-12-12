@@ -29,7 +29,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import growth from '@/modules/growth'
   import profile_as_figure from '@/components/profile/as-figure'
-  import profile_as_avatar from '@/components/profile/as-avatar'
+  import profile_as_avatar from '@/components/avatars/as-svg'
   import as_article from '@/components/posts/as-article'
   export default {
     mixins: [signed_in, date_mixin, condense_posts, posts_into_days],

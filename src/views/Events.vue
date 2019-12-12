@@ -15,14 +15,14 @@
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
-  import logoAsLink from '@/components/logo-as-link'
-  import asAvatar from '@/components/profile/as-avatar'
+  import logo_as_link from '@/components/logo-as-link'
+  import as_svg from '@/components/avatars/as-svg'
   import icon from '@/components/icon'
   export default {
     mixins: [signed_in],
     components: {
-      logoAsLink,
-      asAvatar,
+      'logo-as-link': logo_as_link,
+      'as-avatar': as_svg,
       icon
     },
     data() {

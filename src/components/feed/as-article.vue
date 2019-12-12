@@ -15,7 +15,7 @@
   import post_mixin from '@/mixins/post'
   import date_mixin from '@/mixins/date'
   import intersection_mixin from '@/mixins/intersection'
-  import profile_as_avatar from '@/components/profile/as-avatar'
+  import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
     mixins: [post_mixin, date_mixin, intersection_mixin],
     components: {

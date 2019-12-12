@@ -4,7 +4,7 @@
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
     </header>
-    <manage-avatar @new-avatar="new_avatar" :person='me'></manage-avatar>
+    <avatar-as-form @new-avatar="new_avatar" :person='me'></avatar-as-form>
     <div id="login">
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
@@ -39,7 +39,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
-  import manage_avatar from '@/components/profile/manage-avatar'
+  import avatar_as_form from '@/components/avatars/as-form'
   import as_article from '@/components/posts/as-article'
   export default {
     mixins: [signed_in, date_mixin, condense_posts, posts_into_days],
@@ -49,7 +49,7 @@
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
       'post-as-article': as_article,
-      'manage-avatar': manage_avatar
+      'avatar-as-form': avatar_as_form
     },
     data() {
       return {
@@ -62,32 +62,25 @@
     async created() {
       const days = this.populate_days(posts_storage.as_list(), this.me)
       this.pages.set('posts', days)
-      firebase.auth().onAuthStateChanged(this.auth_state_change)
+      if (this.signed_in) {
+        const id = profile.from_e64(this.firebase_user.phoneNumber)
+        this.me = await profile.load(id)
+        await this.sync_posts()
+      }
     },
     methods: {
-      async new_avatar(avatar) {
-        await this.$nextTick()
-        await avatars_storage.save()
-        const avatar_url = `avatars/${avatar.created_at}`
+      async new_avatar(avatar_url) {
         this.me.avatar = avatar_url
+        await this.$nextTick()
+        me.save()
       },
       is_editable(page_name) {
         if (page_name === 'posts') return true
         else return false
       },
-      async auth_state_change(firebase_user) {
-        if (firebase_user) {
-          const id = profile.from_e64(firebase_user.phoneNumber)
-          this.me = await profile.load(id)
-          await this.sync_posts()
-        }
-      },
       async save_me(event) {
         if (this.signed_in) {
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
-          if (!this.me.avatar) {
-            this.me.avatar = (await profile.load(this.me.id)).avatar
-          }
         }
         await this.$nextTick()
         me.save()

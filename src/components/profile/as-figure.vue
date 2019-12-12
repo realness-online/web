@@ -1,6 +1,6 @@
 <template>
   <figure class="profile">
-    <as-avatar @avatar-clicked="avatar_click" :person="person"></as-avatar>
+    <as-svg @avatar-clicked="avatar_click" :person="person"></as-svg>
     <figcaption>
       <as-hgroup :person="person"></as-hgroup>
       <p class='phone' v-if="is_me">{{mobile_display}}</p>
@@ -12,13 +12,13 @@
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
   import { person_storage as me } from '@/storage/Storage'
-  import as_avatar from '@/components/profile/as-avatar'
+  import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   export default {
     components: {
-      'as-avatar': as_avatar,
+      'as-svg': as_svg,
       'as-hgroup': as_hgroup
     },
     props: {

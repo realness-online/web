@@ -18,7 +18,7 @@
   import profile from '@/helpers/profile'
   import date_mixin from '@/mixins/date'
   import icon from '@/components/icon'
-  import profile_as_avatar from '@/components/profile/as-avatar'
+  import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
     mixins: [date_mixin],
     props: ['poster'],
