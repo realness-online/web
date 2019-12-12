@@ -5,8 +5,8 @@ import 'firebase/auth'
 import 'firebase/storage'
 const networkable = ['person', 'posts', 'posters', 'avatars']
 async function get_download_url(person_id, item_id) {
-  const path = `/people${person_id}/${item_id}`
-  // console.info(path)
+  const path = `/people${person_id}/${item_id}.html`
+  console.info(path)
   try {
     return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
@@ -34,7 +34,6 @@ let Cloud = (superclass) => class extends superclass {
     if (super.save) super.save()
     console.log('cloud save', this.filename);
     if (!items) return
-
     if (networkable.includes(this.type)) {
       this.persist(items.outerHTML)
     }
@@ -44,7 +43,7 @@ let Cloud = (superclass) => class extends superclass {
     if (super.save) super.save()
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
-      const path = `people/${user.phoneNumber}/${this.filename}`
+      const path = `people/${user.phoneNumber}/${this.filename}.html`
       await firebase.storage().ref().child(path).delete()
     }
   }
@@ -52,7 +51,7 @@ let Cloud = (superclass) => class extends superclass {
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
       const file = new File([items], name)
-      const path = `people/${user.phoneNumber}/${name}`
+      const path = `people/${user.phoneNumber}/${name}.html`
       await firebase.storage().ref().child(path).put(file, this.metadata)
     }
   }

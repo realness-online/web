@@ -9,12 +9,11 @@ import Cloud from '@/storage/Cloud'
 class Storage {
   constructor(type,
               selector = `[itemprop="${type}"]`,
-              filename = `${type}/index.html`,
-              content_type = 'text/html') {
+              filename = `${type}/index`) {
     this.type = type
     this.selector = selector
     this.filename = filename
-    this.metadata = { 'contentType': content_type }
+    this.metadata = { 'contentType': 'text/html' }
   }
   as_kilobytes() {
     const bytes = localStorage.getItem(this.selector)
@@ -34,7 +33,7 @@ class Storage {
 }
 class Person extends Cloud(Storage) {
   constructor() {
-    super('person', '[itemtype="/person"]', 'index.html')
+    super('person', '[itemtype="/person"]', 'index')
   }
   save() {
     const item_id = profile.from_e64(firebase.auth().currentUser.phoneNumber)

@@ -3,7 +3,7 @@ import 'firebase/auth'
 export default {
   data() {
     return {
-      signed_in: true
+      signed_in: false
     }
   },
   created() {

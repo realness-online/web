@@ -7,7 +7,7 @@
     </div>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
-      <a id="accept_changes" @click="accept_changes" v-if="avatar">
+      <a id="accept_changes" @click="accept_new_avatar" v-if="avatar">
         <icon v-if="finished" name="finished"></icon>
         <icon v-else name="working"></icon>
       </a>
@@ -17,7 +17,7 @@
   </div>
 </template>
 <script>
-  import { person_storage as me } from '@/storage/Storage'
+  import { avatars_storage } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import as_svg from '@/components/avatars/as-svg'
@@ -43,23 +43,33 @@
       }
     },
     created() {
-      this.worker.addEventListener('message', this.worker_event)
+      this.worker.addEventListener('message', this.set_new_avatar)
     },
     methods: {
-      worker_event(message) {
+      set_new_avatar(message) {
         this.avatar_changed = true
-        this.$emit('new-avatar', message.data)
+        this.avatar = {
+          id: `avatars/${message.data.created_at}`,
+          path: message.data.path,
+          view_box: message.data.view_box,
+          created_at: new Date(message.data.created_at).toISOString(),
+          created_by: this.person.id
+        }
+        console.log(this.avatar.id)
+        avatars_storage.filename = this.avatar.id
         this.working = false
       },
       vectorize_image(image) {
         this.working = true
         this.worker.postMessage({ image })
       },
-      async accept_changes(event) {
-        this.finished = false
-        await me.save()
-        this.finished = true
+      async accept_new_avatar(event) {
         this.avatar_changed = false
+        this.finished = false
+        await this.$nextTick()
+        await avatars_storage.save()
+        this.$emit('new-avatar', this.avatar.id)
+        this.finished = true
       }
     }
   }
@@ -67,11 +77,12 @@
 <style lang="stylus">
   div#manage-avatar
     position: relative
-    & > svg
+    & div svg
       width: 100vw
       min-height: 100vh
-      &.working
-        width: base-line * 5
+    &.working
+      min-height: 100vh
+      width: base-line * 5
     & > menu
       position: relative
       z-index: 1

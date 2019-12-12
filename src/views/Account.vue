@@ -63,7 +63,7 @@
       const days = this.populate_days(posts_storage.as_list(), this.me)
       this.pages.set('posts', days)
       if (this.signed_in) {
-        const id = profile.from_e64(this.firebase_user.phoneNumber)
+        const id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
         this.me = await profile.load(id)
         await this.sync_posts()
       }
