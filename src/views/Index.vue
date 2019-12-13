@@ -47,6 +47,7 @@
     },
     data() {
       return {
+        signed_in: true,
         me: me.as_object(),
         posting: false,
         has_posts: (posts_storage.as_list().length > 0),
