@@ -6,7 +6,7 @@ import 'firebase/storage'
 const networkable = ['person', 'posts', 'posters', 'avatars']
 async function get_download_url(person_id, item_id) {
   const path = `/people${person_id}/${item_id}.html`
-  console.info(path)
+  // console.info(path)
   try {
     return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
