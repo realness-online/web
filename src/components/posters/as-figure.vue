@@ -13,7 +13,7 @@
     <svg @click="menu = !menu" preserveAspectRatio="xMidYMin slice"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
-    </figure>
+  </figure>
 </template>
 <script>
   import icon from '@/components/icon'
