@@ -109,13 +109,13 @@
         this.working = true
         this.posters = this.posters.filter(poster => poster_id !== poster.id)
         await this.$nextTick()
-        posters_storage.filename = `${poster_id}.html`
+        posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
       },
       async save() {
         this.working = true
-        posters_storage.filename = `${this.as_itemid}.html`
+        posters_storage.filename = this.as_itemid
         this.posters.unshift(this.new_poster)
         await this.$nextTick()
         await posters_storage.save()
