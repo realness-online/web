@@ -7,7 +7,6 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <profile-as-list :people='relations'></profile-as-list>
     <icon v-if="working" name="working"></icon>
     <section v-else class="day" :key="date" v-for="[date, day] in days">
       <header>
@@ -28,7 +27,6 @@
   import logo_as_link from '@/components/logo-as-link'
   import post_as_article from '@/components/feed/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
-  import profile_as_list from '@/components/profile/as-list'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
   import signed_in from '@/mixins/signed_in'
@@ -36,7 +34,6 @@
   export default {
     mixins: [signed_in, date_mixin, posts_into_days, condense_posts],
     components: {
-      'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link,
       'post-as-article': post_as_article,
       'poster-as-figure': poster_as_figure,
