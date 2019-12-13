@@ -5,7 +5,7 @@
       <meta itemprop="created_at" :content="avatar.created_at">
       <meta itemprop="view_box" :content="avatar.view_box">
     </figcaption>
-    <svg itemprop="path"preserveAspectRatio="xMidYMin meet"
+    <svg itemprop="path" preserveAspectRatio="xMidYMin meet"
          :viewBox="avatar.view_box" v-html="avatar.path">
     </svg>
   </figure>
