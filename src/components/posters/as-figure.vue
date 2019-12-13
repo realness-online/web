@@ -1,8 +1,5 @@
 <template lang="html">
-  <figure itemscope itemtype="/posters" :itemid="poster.id" >
-    <svg @click="menu = !menu" preserveAspectRatio="xMidYMin meet"
-         :viewBox="poster.view_box" v-html="poster.path">
-    </svg>
+  <figure itemscope itemtype="/posters" :itemid="poster.id">
     <figcaption>
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
@@ -13,7 +10,10 @@
         </a>
       </menu>
     </figcaption>
-  </figure>
+    <svg @click="menu = !menu" preserveAspectRatio="xMidYMin slice"
+         :viewBox="poster.view_box" v-html="poster.path">
+    </svg>
+    </figure>
 </template>
 <script>
   import icon from '@/components/icon'

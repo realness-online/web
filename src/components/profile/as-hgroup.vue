@@ -1,8 +1,8 @@
 <template lang="html">
   <hgroup itemscope itemtype='/person' :itemid="item_id">
-    <link itemprop="avatar" rel="icon" :href="person.avatar">
     <span itemprop="first_name">{{person.first_name}}</span>
     <span itemprop="last_name">{{person.last_name}}</span>
+    <link itemprop="avatar" rel="icon" :href="person.avatar">
   </hgroup>
 </template>
 <script>
