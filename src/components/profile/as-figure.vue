@@ -51,7 +51,7 @@
         return `sms:${this.person.id}`
       },
       mobile_display() {
-        const phone_number = profile.as_phone_number(this.item_id)
+        const phone_number = profile.as_phone_number(this.person.id)
         return new AsYouType('US').input(phone_number)
       }
     }
@@ -73,7 +73,7 @@
       line-height: (base-line * 2)
       .phone
         font-weight: 300
-      & > p
+      & > hgroup
         color: black
         margin:0
         @media (prefers-color-scheme: dark)
