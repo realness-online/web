@@ -72,6 +72,7 @@
       vertical-align: middle
       line-height: (base-line * 2)
       .phone
+        margin-bottom: 0
         font-weight: 300
       & > hgroup
         color: black
