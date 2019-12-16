@@ -36,7 +36,7 @@
 <style lang="stylus">
   section#events
     h1
-      color: blue
+      color: green
     & > header
       margin: auto
       @media (min-width: mid-screen)

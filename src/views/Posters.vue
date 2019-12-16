@@ -1,8 +1,8 @@
 <template>
   <section id="posters" class="page">
-    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+    <input type="file" accept="image/jpeg" ref="uploader" v-uploader>
     <header v-show="!new_poster">
-      <a @click="open_camera"><icon name="camera"></icon></a>
+      <a @click="select_photo"><icon name="add"></icon></a>
       <logo-as-link></logo-as-link>
     </header>
     <hgroup v-show="!new_poster">
@@ -147,6 +147,8 @@
         min-height: 100vh
     & > figure[itemscope]
       margin 0 auto
+      & > svg
+        background: blue
       & > figcaption > menu
         position: absolute;
         bottom: base-line
@@ -169,6 +171,7 @@
         margin auto
       & > figure
         & > svg
+          background: green
           min-height: 50vh
         & > figcaption > menu svg
           position: absolute
@@ -179,11 +182,8 @@
     svg
       &.finished
       &.working
-      &.camera
+      &.add
         fill: green
       &.remove
         fill: red
-      &.camera
-        width: (base-line * 2.6)
-        height: (base-line * 2) // 1 * 1.3
 </style>

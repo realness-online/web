@@ -1,13 +1,14 @@
 <template lang="html">
-  <div class="">
+  <div>
     <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
     <nav class="profile-list">
       <li v-for="person in people" :key="person.id">
         <as-figure :person="person"></as-figure>
-        <as-relationship-options :person="person"
-                                 :relations="relations"
-                                 @remove="remove_relationship"
-                                 @add="add_relationship"></as-relationship-options>
+        <as-relationship-options
+          :person="person"
+          :relations="relations"
+          @remove="remove_relationship"
+          @add="add_relationship"></as-relationship-options>
       </li>
     </nav>
   </div>
@@ -62,8 +63,8 @@
         & > figcaption a
           color:blue
         & svg
-          fill: blue
-          stroke: lighten(blue, 33%)
+          background: blue
+          fill: dark-black
     @media (min-width: min-screen)
       display: flex
       flex-direction: row

@@ -44,7 +44,8 @@
       @media (min-width: mid-screen)
         max-width: page-width
     svg
-      fill: blue
+      &.heart
+        fill: blue
       &.working
         margin-bottom: base-line
 </style>

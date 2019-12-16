@@ -2,10 +2,10 @@
   <section id="home" class="page">
     <nav id="main" v-bind:class="onboarding">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
-      <router-link v-if="!posting" :to="friend_or_phone_book()" class="green" tabindex="-1">Friends</router-link>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Tonight!</router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
-      <router-link v-if="!posting" to="/events" class="blue" tabindex="-1">Tonight!</router-link>
+      <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Friends</router-link>
       <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
       <post-as-textarea @toggle-keyboard="posting = !posting" @post-added="add_post" class="red"></post-as-textarea>
     </nav>
@@ -169,13 +169,15 @@
       @media (min-width: min-screen)
         display: block
   nav#main
+    & > [href='/posters']
+      visibility: visible
     &.has-posts
       & > [href='/account']
         visibility: visible
     &.signed-in
       & > [href='/relations']
       & > [href='/phone-book']
-      & > [href='/posters']
+
       & > [href='/events']
         visibility: visible
     &.has-friends

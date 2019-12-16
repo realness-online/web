@@ -69,15 +69,18 @@
         clip-path: circle()
         cursor: pointer
     & > svg
-      width: auto
+      width: stretch
       max-width: page-width
       height: 100vh
+      @media (prefers-color-scheme: dark)
+        &:not(.working)
+          background: blue
       &.working
-        min-height: 100vh
+        height:auto
         width: base-line * 5
-    @media (max-width: min-screen)
-      & > svg
-        margin-left -(base-line)
-        margin-right -(base-line)
+      @media (max-width: min-screen)
+        &:not(.working)
+          margin-left -(base-line)
+          margin-right -(base-line)
 
 </style>

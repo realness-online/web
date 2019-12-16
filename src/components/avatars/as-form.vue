@@ -78,6 +78,7 @@
   div#manage-avatar
     position: relative
     & div svg
+      background: red
       width: 100vw
       min-height: 100vh
     &.working
@@ -93,7 +94,7 @@
       & > a
         cursor: pointer
         & > svg
-          fill: red
+          fill: blue
         &#accept_changes > svg
           fill: green
     & > input[type=file]

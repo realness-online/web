@@ -66,15 +66,10 @@
         transition-property: all
         overflow: hidden
         width:0
-      & > h1
-        color:blue
-        vertical-align: top
-        margin: 0
-        line-height: 1.33
-        @media (min-width: max-screen)
-          line-height: .66
       & > a > svg.finished
         fill: blue
+    & > hgroup h1
+      color: blue
     nav.profile-list
       display: flex
       flex-direction: column-reverse
