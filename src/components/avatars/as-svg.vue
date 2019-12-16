@@ -26,13 +26,11 @@
         avatar: null
       }
     },
-    async mounted() {
+    async updated() {
+      if (this.observer) this.observer.unobserve(this.$el)
       this.observer = new IntersectionObserver(this.show_avatar)
       await this.$nextTick()
       this.observer.observe(this.$el)
-    },
-    async updated() {
-
     },
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
