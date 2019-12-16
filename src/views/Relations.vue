@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1>Friends</h1>
+      <h1>Relations</h1>
     </hgroup>
     <profile-as-list :people='relations'></profile-as-list>
   </section>
