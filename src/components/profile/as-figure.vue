@@ -80,9 +80,9 @@
         @media (prefers-color-scheme: dark)
           color: white
         & > span
+          text-transform: capitalize
           &:first-of-type
             margin-right:(base-line / 3)
-          text-transform: capitalize
       & > a
         display:block
 </style>
