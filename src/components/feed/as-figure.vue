@@ -72,9 +72,6 @@
       width: stretch
       max-width: page-width
       height: 100vh
-      @media (prefers-color-scheme: dark)
-        &:not(.working)
-          background: blue
       &.working
         height:auto
         width: base-line * 5
