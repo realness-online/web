@@ -172,7 +172,6 @@
       & > figure
         & > svg
           background: green
-          min-height: 50vh
         & > figcaption > menu svg
           position: absolute
           top:25%
