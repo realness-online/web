@@ -91,10 +91,8 @@
       & > article.silent
         display: none
     & > svg:not(.working)
-      background: blue
       width: 100vw
       min-height: 100vh
-      stroke-width: 0.05px
 </style>
 <style lang="stylus">
   section#profile > div#pages-of-posts
