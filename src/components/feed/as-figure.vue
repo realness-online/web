@@ -9,9 +9,7 @@
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
-    <svg class="background">
-      <rect width="100%" height="100%"/>
-    </svg>
+    <icon v-if="actual_poster" name="background"></icon>
     <svg v-if="actual_poster" preserveAspectRatio="xMidYMin slice"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
@@ -68,10 +66,9 @@
       & > hgroup
         margin: 0 0 0 (base-line / 2 )
       & a > svg
-        fill: blue
+        cursor: pointer
         shape-outside: circle()
         clip-path: circle()
-        cursor: pointer
     & > svg
       width: stretch
       max-width: page-width
@@ -87,5 +84,4 @@
         &:not(.working)
           margin-left -(base-line)
           margin-right -(base-line)
-
 </style>

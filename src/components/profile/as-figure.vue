@@ -63,10 +63,14 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
+
+    #background
+      fill: blue
     svg
-      shape-outside: circle()
-      clip-path: circle()
       cursor: pointer
+      border-radius: base-line
+      // shape-outside: circle()
+      // clip-path: circle()
     & > figcaption
       padding-left: (base-line / 2)
       vertical-align: middle

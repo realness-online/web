@@ -1,22 +1,23 @@
 <template lang="html">
   <svg @click="avatar_click">
     <defs>
-      <symbol id="background">
-        <rect width="100%" height="100%"/>
-      </symbol>
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.view_box"
               preserveAspectRatio="xMidYMid slice"
               v-html="avatar.path"></symbol>
     </defs>
-    <use href="#background"/>
+    <icon v-if="!working" name="background"></icon>
     <use :href="avatar_link"/>
   </svg>
 </template>
 <script>
   import profile from '@/helpers/profile'
+  import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {
+    components: {
+      icon
+    },
     props: {
       person: Object,
       working: {
@@ -30,16 +31,28 @@
         avatar: null
       }
     },
-    async updated() {
-      if (this.observer) this.observer.unobserve(this.$el)
-      this.observer = new IntersectionObserver(this.show_avatar)
-      await this.$nextTick()
-      this.observer.observe(this.$el)
-    },
+    async mounted() { this.intersect() },
+    async updated() { this.intersect() },
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
     },
+    computed: {
+      id() {
+        return profile.as_avatar_id(this.person.id)
+      },
+      avatar_link() {
+        if (this.working) return `${icons}#working`
+        if (this.person.avatar) return profile.as_avatar_fragment(this.person.id)
+        else return `${icons}#silhouette`
+      }
+    },
     methods: {
+      async intersect() {
+        if (this.observer) this.observer.unobserve(this.$el)
+        this.observer = new IntersectionObserver(this.show_avatar)
+        await this.$nextTick()
+        this.observer.observe(this.$el)
+      },
       first_instance() {
         if (document.getElementById(this.id)) return false
         else return true
@@ -57,20 +70,10 @@
           }
         })
       }
-    },
-    computed: {
-      id() {
-        return profile.as_avatar_id(this.person.id)
-      },
-      avatar_link() {
-        if (this.working) return `${icons}#working`
-        if (this.person.avatar) return profile.as_avatar_fragment(this.person.id)
-        else return `${icons}#silhouette`
-      }
     }
   }
 </script>
 <style lang="stylus">
-  #background rect
+  .background
     fill: blue
 </style>
