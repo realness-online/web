@@ -62,9 +62,6 @@
       & > figure
         & > figcaption a
           color:blue
-        & svg
-          background: blue
-          fill: dark-black
     @media (min-width: min-screen)
       display: flex
       flex-direction: row
