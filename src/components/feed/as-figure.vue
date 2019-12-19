@@ -9,8 +9,12 @@
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
+    <svg class="background">
+      <rect width="100%" height="100%"/>
+    </svg>
     <svg v-if="actual_poster" preserveAspectRatio="xMidYMin slice"
-         :viewBox="actual_poster.view_box" v-html="actual_poster.path"></svg>
+         :viewBox="actual_poster.view_box" v-html="actual_poster.path">
+    </svg>
     <icon v-else name="working"></icon>
   </figure>
 </template>
@@ -56,6 +60,7 @@
 </script>
 <style lang="stylus">
   figure.feed.poster
+    position:relative
     & > figcaption
       display: flex
       justify-content: flex-start
@@ -71,6 +76,10 @@
       width: stretch
       max-width: page-width
       height: 100vh
+      &.background
+        position: absolute
+        fill: blue
+        z-index: -1
       &.working
         height:auto
         width: base-line * 5

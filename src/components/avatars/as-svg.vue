@@ -1,12 +1,16 @@
 <template lang="html">
   <svg @click="avatar_click">
-    <defs v-if="first_instance()">
+    <defs>
+      <symbol id="background">
+        <rect width="100%" height="100%"/>
+      </symbol>
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.view_box"
-              preserveAspectRatio="xMidYMin slice"
+              preserveAspectRatio="xMidYMid slice"
               v-html="avatar.path"></symbol>
     </defs>
-    <use :xlink:href="avatar_link"/>
+    <use href="#background"/>
+    <use :href="avatar_link"/>
   </svg>
 </template>
 <script>
@@ -66,3 +70,7 @@
     }
   }
 </script>
+<style lang="stylus">
+  #background rect
+    fill: blue
+</style>
