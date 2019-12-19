@@ -59,9 +59,8 @@
       list-style: none
       display: flex
       justify-content: space-between
-      & > figure
-        & > figcaption a
-          color:blue
+      & > figure > figcaption a
+        color:blue
     @media (min-width: min-screen)
       display: flex
       flex-direction: row
