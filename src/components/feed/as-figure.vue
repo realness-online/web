@@ -56,11 +56,10 @@
 </script>
 <style lang="stylus">
   figure.feed.poster
-    margin-bottom: base-line
     & > figcaption
       display: flex
       justify-content: flex-start
-      margin-bottom: base-line
+      margin: base-line 0
       & > hgroup
         margin: 0 0 0 (base-line / 2 )
       & a > svg
