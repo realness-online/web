@@ -4,11 +4,9 @@
     <nav class="profile-list">
       <li v-for="person in people" :key="person.id">
         <as-figure :person="person"></as-figure>
-        <as-relationship-options
-          :person="person"
-          :relations="relations"
-          @remove="remove_relationship"
-          @add="add_relationship"></as-relationship-options>
+        <as-relationship-options :me="me" :person="person" :relations="relations"
+          @remove="remove_relationship" @add="add_relationship">
+        </as-relationship-options>
       </li>
     </nav>
   </div>
@@ -17,7 +15,7 @@
   import profile_as_links from '@/components/profile/as-links'
   import as_figure from '@/components/profile/as-figure'
   import as_options from '@/components/profile/as-relationship-options'
-  import { relations_storage } from '@/storage/Storage'
+  import { relations_storage, person_storage as me } from '@/storage/Storage'
   export default {
     components: {
       'profile-as-links': profile_as_links,
@@ -31,7 +29,8 @@
     },
     data() {
       return {
-        relations: relations_storage.as_list()
+        relations: relations_storage.as_list(),
+        me: me.as_object()
       }
     },
     methods: {

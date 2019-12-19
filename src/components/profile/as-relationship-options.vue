@@ -8,9 +8,9 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { person_storage as me } from '@/storage/Storage'
   export default {
     props: {
+      me: Object,
       person: Object,
       relations: Array
     },
@@ -19,8 +19,7 @@
     },
     data() {
       return {
-        relation: this.is_relation(),
-        me: me.as_object()
+        relation: this.is_relation()
       }
     },
     computed: {
@@ -57,19 +56,19 @@
       svg
         transition: fill
         transition-duration: 0.5s
-        cursor: pointer;
-        fill:blue
+        cursor: pointer
+        fill: blue
         &.remove
-          fill:red
+          fill: red
           height: 0
           width: 0
       &.relation
         svg.add
-          fill:red
+          fill: red
           height: 0
           width: 0
         svg.remove
-          fill:blue
+          fill: blue
           width: (base-line * 2)
           height: (base-line * 2)
 </style>

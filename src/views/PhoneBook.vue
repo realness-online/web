@@ -37,9 +37,7 @@
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
       phone_numbers.prefixes.forEach(async(phone_number) => {
         const person = await profile.load(profile.from_e64(phone_number.name))
-        if (person) {
-          this.phonebook.push(person)
-        }
+        if (person) this.phonebook.push(person)
       })
       this.working = false
     },
