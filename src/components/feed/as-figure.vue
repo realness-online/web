@@ -10,7 +10,7 @@
       </hgroup>
     </figcaption>
     <icon v-if="actual_poster" name="background"></icon>
-    <svg v-if="actual_poster" preserveAspectRatio="xMidYMin slice"
+    <svg v-if="actual_poster" @click="toggle_slice" :preserveAspectRatio="aspect_ratio"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
     <icon v-else name="working"></icon>
@@ -30,6 +30,7 @@
     },
     data() {
       return {
+        slice: true,
         observer: null,
         actual_poster: null,
         options: {
@@ -44,7 +45,16 @@
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
     },
+    computed: {
+      aspect_ratio() {
+        if (this.slice) return 'xMidYMid slice'
+        else return 'xMidYMid meet'
+      }
+    },
     methods: {
+      toggle_slice() {
+        this.slice = !this.slice
+      },
       async show_poster(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
