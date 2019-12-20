@@ -178,6 +178,8 @@
 </script>
 <style lang="stylus">
   form#profile-form
+    svg.remove
+      fill: red
     fieldset
       margin-bottom: base-line
     input

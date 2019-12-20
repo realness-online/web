@@ -111,6 +111,8 @@
 </script>
 <style lang='stylus'>
   section#account
+    svg.background
+      fill: red
     & > header
       position: absolute
       width:100%
