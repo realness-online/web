@@ -5,7 +5,7 @@
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1>Tonight!</h1>
+      <h1></h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <figure>
