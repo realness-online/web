@@ -27,8 +27,6 @@
 </script>
 <style lang="stylus">
   article.feed.post
-    overflow: hidden
-    margin-bottom: base-line
-    &:last-of-type
+    & > p:last-of-type
       margin-bottom: 0
 </style>
