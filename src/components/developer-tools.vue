@@ -8,5 +8,5 @@
 <style lang="stylus">
   [outline]
   [outline] *
-    outline: 0.25vmin solid blue
+    outline: 0.15vmin dashed dark-black
 </style>
