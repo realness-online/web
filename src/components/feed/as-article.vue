@@ -1,12 +1,14 @@
 <template lang="html">
   <article class="feed post">
-    <router-link :to="person.id">
-      <profile-as-avatar :person="person"></profile-as-avatar>
-    </router-link>
-    <hgroup>
-      <span>{{person.first_name}} {{person.last_name}}</span>
-      <time :datetime="post.created_at">{{as_created_time}}</time>
-    </hgroup>
+    <header>
+      <router-link :to="person.id">
+        <profile-as-avatar :person="person"></profile-as-avatar>
+      </router-link>
+      <hgroup>
+        <span>{{person.first_name}} {{person.last_name}}</span>
+        <time :datetime="post.created_at">{{as_created_time}}</time>
+      </hgroup>
+    </header>
     <p>{{as_statement}}</p>
     <p v-for="statement in post.statements" :key="statement.id" >{{as_statement_from_post(statement)}}</p>
   </article>
@@ -29,22 +31,9 @@
     margin-bottom: base-line
     &:last-of-type
       margin-bottom: 0
-    & > hgroup
-      max-width: none
-      & > span
-        font-weight: 200
-      & > time
-        margin-left: (base-line / 6)
-      & > span
-      & > time
-        display: inline-block
     & > blockquote
       margin-bottom: base-line
       &:last-of-type
         margin-bottom: 0
-    & > a > svg
-      float: left
-      margin-right: (base-line / 2)
-      shape-outside: circle()
-      clip-path: circle()
+
 </style>

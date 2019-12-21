@@ -69,16 +69,6 @@
 <style lang="stylus">
   figure.feed.poster
     position:relative
-    & > figcaption
-      display: flex
-      justify-content: flex-start
-      margin: base-line 0
-      & > hgroup
-        margin: 0 0 0 (base-line / 2 )
-      & a > svg
-        cursor: pointer
-        shape-outside: circle()
-        clip-path: circle()
     & > svg
       width: stretch
       max-width: page-width

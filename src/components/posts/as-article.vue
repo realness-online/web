@@ -1,6 +1,8 @@
 <template lang="html">
-  <article itemscope itemtype='/post' :key="id">
-    <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
+  <article itemscope itemtype='/posts' :key="id">
+    <header>
+      <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
+    </header>
     <p v-if="me" itemprop="statement" :contenteditable="true" @blur="save">{{as_statement}}</p>
     <p v-else itemprop="statement">{{as_statement}}</p>
     <ol>
@@ -28,3 +30,7 @@
     }
   }
 </script>
+<style lang='stylus'>
+  article[itemtype="/posts"] header
+    margin-bottom: (base-line / 2)
+</style>

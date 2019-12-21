@@ -117,9 +117,27 @@
     & > svg.working
       order: 1
       margin: base-line auto
-    & > section
+    & > section.day
       padding: 0 base-line
       & > header > h4
-        font-weight: 200
+        font-weight: 800
         margin-top: base-line
+      & > div
+        & > figure > figcaption,
+        & > article > header
+          display: flex
+          justify-content: flex-start
+          flex-direction: row
+          margin: base-line 0
+          & a > svg
+            cursor: pointer
+            shape-outside: circle()
+            border-radius: base-line
+            margin-right: (base-line / 4)
+          & > hgroup
+            margin: 0
+            & > span
+              font-weight: 300
+              display: inline-block
+
 </style>
