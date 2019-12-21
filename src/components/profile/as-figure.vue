@@ -63,18 +63,14 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
-
     #background
       fill: blue
     svg
       cursor: pointer
       border-radius: base-line
-      // shape-outside: circle()
-      // clip-path: circle()
+      shape-outside: circle()
+      margin-right: (base-line / 4)
     & > figcaption
-      padding-left: (base-line / 2)
-      vertical-align: middle
-      line-height: (base-line * 2)
       .phone
         margin-bottom: 0
         font-weight: 300
@@ -86,7 +82,7 @@
         & > span
           text-transform: capitalize
           &:first-of-type
-            margin-right:(base-line / 3)
+            margin-right:(base-line / 4)
       & > a
         display:block
 </style>
