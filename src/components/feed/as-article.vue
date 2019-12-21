@@ -31,9 +31,4 @@
     margin-bottom: base-line
     &:last-of-type
       margin-bottom: 0
-    & > blockquote
-      margin-bottom: base-line
-      &:last-of-type
-        margin-bottom: 0
-
 </style>

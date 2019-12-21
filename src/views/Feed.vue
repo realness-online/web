@@ -122,6 +122,7 @@
       & > header > h4
         font-weight: 800
         margin-top: base-line
+        margin-bottom: 0
       & > div
         & > figure > figcaption,
         & > article > header
@@ -139,5 +140,4 @@
             & > span
               font-weight: 300
               display: inline-block
-
 </style>

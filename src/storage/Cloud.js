@@ -32,7 +32,7 @@ let Cloud = (superclass) => class extends superclass {
   }
   async save(items = document.querySelector(`[itemid="${this.filename}"]`)) {
     if (super.save) super.save()
-    console.log('cloud save', this.filename);
+    console.log('cloud save', this.filename, this.selector, items)
     if (!items) return
     if (networkable.includes(this.type)) {
       this.persist(items.outerHTML)
