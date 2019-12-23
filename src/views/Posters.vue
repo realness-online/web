@@ -9,31 +9,11 @@
       <h1>Posters</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
-    <figure itemscope itemtype="/posters" v-if="new_poster" :itemid="as_itemid">
-      <svg>
-        <symbol preserveAspectRatio="xMidYMid meet"
-                :id="new_poster.created_at"
-                :viewBox="new_poster.view_box"
-                v-html="new_poster.path"></symbol>
-        <use :xlink:href='as_fragment_id'/>
-      </svg>
-      <figcaption>
-        <meta itemprop="view_box" :content="new_poster.view_box">
-        <meta itemprop="created_at" :content="new_poster.created_at">
-        <menu>
-          <a @click="remove_new_poster()">
-            <icon name="remove"></icon>
-          </a>
-          <a id="accept_changes" @click="save()">
-            <icon v-if="finished" name="finished"></icon>
-            <icon v-else name="working"></icon>
-          </a>
-        </menu>
-      </figcaption>
-    </figure>
-    <article v-show="!new_poster" itemprop="posters">
-      <as-figure @delete="delete_poster" v-for="poster in posters"
-                :working="working" :poster="poster" v-bind:key="poster.id"></as-figure>
+    <article itemprop="posters">
+      <as-figure v-if="new_poster" :is_new="true" @delete="remove_new_poster" @save="save_new_poster"
+                 :poster="new_poster" :author="me" :working="working" v-bind:key="as_itemid"></as-figure>
+      <as-figure v-else v-for="poster in posters" @delete="delete_poster"
+                :poster="poster" :author="me" :working="working"  v-bind:key="poster.id"></as-figure>
     </article>
   </section>
 </template>
@@ -72,9 +52,6 @@
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
     },
     computed: {
-      as_fragment_id() {
-        return `#${this.new_poster.created_at}`
-      },
       as_itemid() {
         return `posters/${this.new_poster.created_at}`
       }
@@ -82,12 +59,24 @@
     methods: {
       message_from_vector(event) {
         this.new_poster = event.data
+        this.new_poster.type = '/posters'
         this.new_poster.id = this.as_itemid
         this.working = false
       },
       remove_new_poster() {
+        this.working = true
         this.new_poster = null
         this.show_menu = true
+        this.working = false
+      },
+      async save_new_poster() {
+        this.working = true
+        posters_storage.filename = this.as_itemid
+        this.posters.unshift(this.new_poster)
+        this.new_poster = null
+        await this.$nextTick()
+        await posters_storage.save()
+        this.working = false
       },
       async sync_posters_with_network(user) {
         if (user) {
@@ -112,23 +101,19 @@
         posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
-      },
-      async save() {
-        this.working = true
-        posters_storage.filename = this.as_itemid
-        this.posters.unshift(this.new_poster)
-        await this.$nextTick()
-        await posters_storage.save()
-        this.new_poster = null
-        this.working = false
       }
     }
   }
 </script>
 <style lang="stylus">
   section#posters
-    & > input[type=file]
-      display:none
+    svg
+      &.finished
+      &.working
+      &.add
+        fill: green
+      &.remove
+        fill: red
     & > header
       justify-content: space-between
       margin: auto
@@ -139,24 +124,6 @@
         margin-bottom: base-line
       & > h1
         color: green
-    figure
-      position: relative
-      & > svg
-        width: 100%
-        height: auto
-        min-height: 100vh
-    & > figure[itemscope]
-      margin 0 auto
-      & > svg
-        background: blue
-      & > figcaption > menu
-        position: absolute;
-        bottom: base-line
-        left: base-line
-        right: base-line
-        display: flex
-        justify-content: space-between
-        align-items: center
     & > article[itemprop="posters"]
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
@@ -164,25 +131,6 @@
       grid-gap: base-line
       @media (min-width: min-screen)
         padding: 0 base-line
-      @media (min-width: mid-screen)
-        & > figure
-          max-width: page-width
       & > header
         margin auto
-      & > figure
-        & > svg
-          background: green
-        & > figcaption > menu svg
-          position: absolute
-          top:25%
-          left: 25%
-          width:50%
-          height: 50%
-    svg
-      &.finished
-      &.working
-      &.add
-        fill: green
-      &.remove
-        fill: red
 </style>
