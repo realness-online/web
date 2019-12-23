@@ -3,15 +3,16 @@
     <icon v-if="working" name="working"></icon>
     <div v-else>
       <avatar-as-figure v-if="avatar" :avatar="avatar"></avatar-as-figure>
-      <avatar-as-svg v-else :person="person"></avatar-as-svg>
+      <avatar-as-svg @loaded="set_current_avatar" v-else :person="person"></avatar-as-svg>
     </div>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
+      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
       <a id="accept_changes" @click="accept_new_avatar" v-if="avatar">
         <icon v-if="finished" name="finished"></icon>
         <icon v-else name="working"></icon>
       </a>
-      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
+      <download-vector v-if="current_avatar" :vector="current_avatar" :author="person"></download-vector>
     </menu>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </div>
@@ -20,6 +21,7 @@
   import { avatars_storage } from '@/storage/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
+  import download_vector from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
   import as_figure from '@/components/avatars/as-figure'
   import signed_in from '@/mixins/signed_in'
@@ -28,6 +30,7 @@
     mixins: [signed_in, uploader],
     components: {
       icon,
+      'download-vector': download_vector,
       'avatar-as-svg': as_svg,
       'avatar-as-figure': as_figure
     },
@@ -37,6 +40,7 @@
     data() {
       return {
         worker: new Worker('/vector.worker.js'),
+        current_avatar: null,
         working: false,
         finished: true,
         avatar: null
@@ -46,6 +50,9 @@
       this.worker.addEventListener('message', this.set_new_avatar)
     },
     methods: {
+      set_current_avatar(avatar) {
+        this.current_avatar = avatar
+      },
       set_new_avatar(message) {
         this.avatar_changed = true
         this.avatar = {
@@ -55,6 +62,7 @@
           created_at: new Date(message.data.created_at).toISOString(),
           created_by: this.person.id
         }
+        this.current_avatar = this.avatar
         console.log(this.avatar.id)
         avatars_storage.filename = this.avatar.id
         this.working = false
@@ -98,6 +106,9 @@
           fill: blue
         &#accept_changes > svg
           fill: green
+        @media (min-width: min-screen)
+          &#open_camera
+            display: none
     & > input[type=file]
       display: none
 </style>
