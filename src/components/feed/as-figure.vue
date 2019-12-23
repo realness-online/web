@@ -8,6 +8,9 @@
         <span class="person">{{poster.person.first_name}} {{poster.person.last_name}}</span>
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
+      <menu v-if="actual_poster">
+        <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
+      </menu>
     </figcaption>
     <icon v-if="actual_poster" name="background"></icon>
     <svg v-if="actual_poster" @click="toggle_slice" :preserveAspectRatio="aspect_ratio"
@@ -20,12 +23,14 @@
   import profile from '@/helpers/profile'
   import date_mixin from '@/mixins/date'
   import icon from '@/components/icon'
+  import download_vector from '@/components/download-vector'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
     mixins: [date_mixin],
     props: ['poster'],
     components: {
       'profile-as-avatar': profile_as_avatar,
+      'download-vector': download_vector,
       icon
     },
     data() {
@@ -69,6 +74,15 @@
 <style lang="stylus">
   figure.feed.poster
     position:relative
+    & > figcaption > menu
+      position:absolute
+      right:0
+      align-self: center
+      margin-left: base-line
+      svg
+        fill: blue
+        height: base-line * 1.33
+        width: base-line * 1.33
     & > svg
       width: stretch
       max-width: page-width
