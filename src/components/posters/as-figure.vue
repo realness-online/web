@@ -77,10 +77,12 @@
 <style lang="stylus">
   figure[itemtype="/posters"]
     background: green
+    @media (min-width: min-screen)
+      &:first-of-type
+        max-width: 50vw
     & > svg
       width: 100%
-      // height: auto
-      min-height: 100vh
+      height: 100vh
       @media (prefers-color-scheme: dark)
         stroke: red
         stroke-width: 0.25px
