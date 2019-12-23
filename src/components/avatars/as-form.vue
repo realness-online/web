@@ -63,7 +63,6 @@
           created_by: this.person.id
         }
         this.current_avatar = this.avatar
-        console.log(this.avatar.id)
         avatars_storage.filename = this.avatar.id
         this.working = false
       },
