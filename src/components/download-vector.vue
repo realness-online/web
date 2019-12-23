@@ -20,8 +20,9 @@
     },
     computed: {
       vector_name() {
-        const type = this.vector.type.split('/')[1]
-        const time = date_helper.as_day_and_time(Number(this.vector.created_at))    
+        const info = this.vector.id.split('/')
+        const type = `${info[0]}`
+        const time = date_helper.as_day_and_time(Number(info[1]))
         const name = `${this.author.first_name}_${this.author.last_name}`
         return `${name}_${type}_${time}.svg`
       },
