@@ -4,7 +4,10 @@
       <svg></svg>
       <logo-as-link></logo-as-link>
     </header>
-    <profile-as-avatar :person="person"></profile-as-avatar>
+    <avatar @loaded="avatar_loaded" :person="person"></avatar>
+    <menu v-if="avatar">
+      <download-vector :vector="avatar" :author="person"></download-vector>
+    </menu>
     <profile-as-figure :person='person'></profile-as-figure>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
@@ -26,16 +29,18 @@
   import condense_posts from '@/mixins/condense_posts'
   import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
-  import logo_as_link from '@/components/logo-as-link'
   import growth from '@/modules/growth'
+  import logo_as_link from '@/components/logo-as-link'
+  import download_vector from '@/components/download-vector'
   import profile_as_figure from '@/components/profile/as-figure'
-  import profile_as_avatar from '@/components/avatars/as-svg'
+  import avatar from '@/components/avatars/as-svg'
   import as_article from '@/components/posts/as-article'
   export default {
     mixins: [signed_in, date_mixin, condense_posts, posts_into_days],
     components: {
       'profile-as-figure': profile_as_figure,
-      'profile-as-avatar': profile_as_avatar,
+      'avatar': avatar,
+      'download-vector': download_vector,
       'logo-as-link': logo_as_link,
       'post-as-article': as_article
     },
@@ -44,7 +49,8 @@
         pages: new Map(),
         limit: '',
         working: true,
-        person: {}
+        person: {},
+        avatar: null
       }
     },
     async created() {
@@ -58,6 +64,9 @@
       this.limit = growth.first()
     },
     methods: {
+      avatar_loaded(avatar) {
+        this.avatar = avatar
+      },
       async next_page() {
         const id = profile.from_e64(this.$route.params.phone_number)
         let posts = await profile.items(id, `posts/${this.limit}`)
@@ -83,6 +92,16 @@
       width:100%
       & > a
         -webkit-tap-highlight-color: blue
+    & > menu
+      display: flex
+      justify-content: flex-end
+      padding: base-line
+      margin-top -(base-line * 4 )
+      & > a
+        text-align: right
+
+      & a > svg
+        fill: red
     & > figure
     & > div
       margin: auto
