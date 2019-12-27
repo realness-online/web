@@ -66,6 +66,8 @@
     #background
       fill: blue
     svg
+      min-height: base-line * 2
+      min-width: base-line * 2
       cursor: pointer
       border-radius: base-line
       shape-outside: circle()
