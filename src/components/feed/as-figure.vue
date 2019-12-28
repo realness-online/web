@@ -8,15 +8,15 @@
         <span class="person">{{poster.person.first_name}} {{poster.person.last_name}}</span>
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
-      <menu v-if="actual_poster">
-        <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
-      </menu>
     </figcaption>
     <icon v-if="actual_poster" name="background"></icon>
     <svg v-if="actual_poster" @click="toggle_slice" :preserveAspectRatio="aspect_ratio"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
     <icon v-else name="working"></icon>
+    <menu v-if="!slice">
+      <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
+    </menu>
   </figure>
 </template>
 <script>
@@ -74,15 +74,13 @@
 <style lang="stylus">
   figure.feed.poster
     position:relative
-    & > figcaption > menu
-      position:absolute
-      right:0
-      align-self: center
-      margin-left: base-line
-      svg
-        fill: blue
-        height: base-line * 1.33
-        width: base-line * 1.33
+    & >  menu
+      display: flex
+      justify-content:flex-end
+      padding: base-line
+      margin-top: -(base-line * 4)
+      & > a > svg
+        fill: red
     & > svg
       width: stretch
       max-width: page-width
