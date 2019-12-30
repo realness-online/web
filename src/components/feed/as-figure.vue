@@ -86,9 +86,7 @@
       max-width: page-width
       height: 100vh
       &.background
-        position: absolute
         fill: blue
-        z-index: -1
       &.working
         height:auto
         width: base-line * 5

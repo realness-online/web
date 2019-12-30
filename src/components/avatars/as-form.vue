@@ -85,12 +85,12 @@
   div#manage-avatar
     position: relative
     & div svg
-      &.background
-        fill: red
       width: 100vw
       min-height: 100vh
-    &.working
-      min-height: 100vh
+      &.background
+        fill: red
+    & > svg.working
+      height: 100vh
       width: base-line * 5
     & > menu
       position: relative

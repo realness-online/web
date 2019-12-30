@@ -78,7 +78,7 @@
   figure[itemtype="/posters"]
     background: green
     @media (min-width: min-screen)
-      &:first-of-type
+      &:first-of-type:not(.new)
         max-width: 50vw
     & > svg
       width: 100%
