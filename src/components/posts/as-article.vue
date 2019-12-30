@@ -3,13 +3,13 @@
     <header>
       <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
     </header>
-    <p v-if="me" itemprop="statement" contenteditable="true" @blur="save">{{as_statement}}</p>
+    <p v-if="me" itemprop="statement" :contenteditable="editable" @blur="save">{{as_statement}}</p>
     <p v-else itemprop="statement">{{as_statement}}</p>
     <ol>
       <post-as-li v-for="statement in post.statements" :key="statement.id"
         :post="statement"
         :person="person"
-        @blur="save"></post-as-li>
+        @blur="save" :contenteditable="editable"></post-as-li>
     </ol>
   </article>
 </template>
