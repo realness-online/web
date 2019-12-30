@@ -86,9 +86,7 @@
           // remove any posters not in the directory
           this.posters = this.posters.filter(poster => {
             return posters_directory.items.some(remote_poster => {
-              const my_id = `posters/${remote_poster.name.split('.')[0]}`
-              // console.log(my_id, poster.id)
-              return my_id === poster.id
+              return poster.id === this.get_id(remote_poster)
             })
           })
           // add any posters not in the list
@@ -97,7 +95,6 @@
               return local_poster.id === this.get_id(poster_reference)
             })
           })
-          console.log(put_me_in_coach);
           put_me_in_coach.forEach(async (poster_reference) => {
             const url = await this.storage.child(poster_reference.fullPath).getDownloadURL()
             const items_as_text = await (await fetch(url)).text()
