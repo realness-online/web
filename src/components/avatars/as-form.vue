@@ -3,12 +3,12 @@
     <icon v-if="working" name="working"></icon>
     <div v-else>
       <avatar-as-figure v-if="avatar" :avatar="avatar"></avatar-as-figure>
-      <avatar-as-svg @loaded="set_current_avatar" v-else :person="person"></avatar-as-svg>
+      <avatar-as-svg  v-else @loaded="set_current_avatar" :person="person"></avatar-as-svg>
     </div>
     <menu v-if="signed_in">
       <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
       <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
-      <a id="accept_changes" @click="accept_new_avatar" v-if="avatar">
+      <a id="accept_changes" @click="accept_new_avatar" v-if="avatar_changed">
         <icon v-if="finished" name="finished"></icon>
         <icon v-else name="working"></icon>
       </a>
@@ -72,6 +72,7 @@
       },
       async accept_new_avatar(event) {
         this.avatar_changed = false
+        this.avatar = null
         this.finished = false
         await this.$nextTick()
         await avatars_storage.save()
