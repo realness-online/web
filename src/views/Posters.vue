@@ -21,6 +21,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { posters_storage, person_storage as me } from '@/storage/Storage'
+  import Item from '@/modules/item'
   import sorting from '@/modules/sorting'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -42,13 +43,14 @@
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,
-        posters: []
+        posters: [],
+        storage: firebase.storage().ref()
       }
     },
     async created() {
       this.posters = (await posters_storage.as_list())
       this.posters.sort(sorting.newer_first)
-      this.worker.addEventListener('message', this.message_from_vector)
+      this.worker.addEventListener('message', this.brand_new_poster)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
     },
     computed: {
@@ -57,7 +59,7 @@
       }
     },
     methods: {
-      message_from_vector(event) {
+      brand_new_poster(event) {
         this.new_poster = event.data
         this.new_poster.type = '/posters'
         this.new_poster.id = this.as_itemid
@@ -80,15 +82,33 @@
       },
       async sync_posters_with_network(user) {
         if (user) {
-          const posters = await posters_storage.as_network_list()
-          await posters.forEach(async (poster) => {
-            const index = this.posters.findIndex(p => (p.id === poster.id))
-            if (index > -1) {
-              this.posters.splice(index, 1, poster)
-            } else this.posters.push(poster)
+          const posters_directory = await posters_storage.directory()
+          // remove any posters not in the directory
+          this.posters = this.posters.filter(poster => {
+            return posters_directory.items.some(remote_poster => {
+              const my_id = `posters/${remote_poster.name.split('.')[0]}`
+              // console.log(my_id, poster.id)
+              return my_id === poster.id
+            })
+          })
+          // add any posters not in the list
+          const put_me_in_coach = posters_directory.items.filter(poster_reference => {
+            return !this.posters.some(local_poster => {
+              return local_poster.id === this.get_id(poster_reference)
+            })
+          })
+          console.log(put_me_in_coach);
+          put_me_in_coach.forEach(async (poster_reference) => {
+            const url = await this.storage.child(poster_reference.fullPath).getDownloadURL()
+            const items_as_text = await (await fetch(url)).text()
+            const poster_object = Item.get_first_item(items_as_text)
+            this.posters.push(poster_object)
           })
           this.posters.sort(sorting.newer_first)
         }
+      },
+      get_id(poster_reference) {
+        return `posters/${poster_reference.name.split('.')[0]}`
       },
       async vectorize_image(image) {
         this.working = true
