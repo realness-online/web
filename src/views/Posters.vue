@@ -49,7 +49,7 @@
     async created() {
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
-    }
+    },
     computed: {
       as_itemid() {
         return `posters/${this.new_poster.created_at}`
