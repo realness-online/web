@@ -22,7 +22,6 @@
   import 'firebase/auth'
   import { posters_storage, person_storage as me } from '@/storage/Storage'
   import Item from '@/modules/item'
-  import sorting from '@/modules/sorting'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
@@ -43,22 +42,23 @@
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,
-        posters: [],
+        posters: posters_storage.as_list(),
         storage: firebase.storage().ref()
       }
     },
     async created() {
-      this.posters = (await posters_storage.as_list())
-      this.posters.sort(sorting.newer_first)
-      this.worker.addEventListener('message', this.brand_new_poster)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
-    },
+      this.worker.addEventListener('message', this.brand_new_poster)
+    }
     computed: {
       as_itemid() {
         return `posters/${this.new_poster.created_at}`
       }
     },
     methods: {
+      newer_first(earlier, later) {
+        return later.created_at - earlier.created_at
+      },
       brand_new_poster(event) {
         this.new_poster = event.data
         this.new_poster.type = '/posters'
@@ -100,8 +100,8 @@
             const items_as_text = await (await fetch(url)).text()
             const poster_object = Item.get_first_item(items_as_text)
             this.posters.push(poster_object)
+            this.posters.sort(this.newer_first)
           })
-          this.posters.sort(sorting.newer_first)
         }
       },
       get_id(poster_reference) {
@@ -118,6 +118,12 @@
         posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
+      }
+    },
+    watch: {
+      async posters() {
+        await this.$nextTick()
+        posters_storage.save()
       }
     }
   }
