@@ -41,6 +41,7 @@
       return {
         worker: new Worker('/vector.worker.js'),
         current_avatar: null,
+        avatar_changed: false,
         working: false,
         finished: true,
         avatar: null
@@ -72,11 +73,11 @@
       },
       async accept_new_avatar(event) {
         this.avatar_changed = false
-        this.avatar = null
         this.finished = false
         await this.$nextTick()
         await avatars_storage.save()
         this.$emit('new-avatar', this.avatar.id)
+        this.avatar = null
         this.finished = true
       }
     }
