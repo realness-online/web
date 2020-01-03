@@ -83,9 +83,6 @@
     & > svg
       width: 100%
       height: 100vh
-      @media (prefers-color-scheme: dark)
-        stroke: red
-        stroke-width: 0.25px
     & > figcaption > menu
       padding: base-line
       margin-top: -(base-line * 4)
