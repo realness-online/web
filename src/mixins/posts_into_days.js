@@ -12,8 +12,14 @@ export default {
       condensed.forEach(post => this.insert_post_into_day(post, days))
       return days
     },
+    today_as_date(){
+      const now = new Date()
+      return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
+    },
     is_today(date) {
-      if (date.indexOf('Today') > -1) return true
+      console.log(date)
+      console.log(this.today_as_date())
+      if (date === this.today_as_date()) return true
       else return false
     },
     insert_post_into_day(post, days) {

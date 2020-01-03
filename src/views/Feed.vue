@@ -8,7 +8,7 @@
       <h1>Feed</h1>
     </hgroup>
     <icon v-if="working" name="working"></icon>
-    <section v-else class="day" :key="date" v-for="[date, day] in days">
+    <section v-else class="day" :key="date" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}">
       <header>
         <h4>{{as_day(date)}}</h4>
       </header>
@@ -119,6 +119,12 @@
       margin: base-line auto
     & > section.day
       padding: 0 base-line
+      display:flex
+      flex-direction: column
+      &.today
+        flex-direction: column-reverse
+        & > header
+          order: 1
       & > header > h4
         font-weight: 800
         margin-top: base-line
