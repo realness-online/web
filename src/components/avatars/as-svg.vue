@@ -3,7 +3,7 @@
     <defs>
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.view_box"
-              preserveAspectRatio="xMidYMid slice"
+              :preserveAspectRatio="aspect_ratio"
               v-html="avatar.path"></symbol>
     </defs>
     <icon v-if="!working" name="background"></icon>
@@ -29,7 +29,12 @@
       working: {
         type: Boolean,
         default: false
-      }
+      },
+      slice: {
+        type: Boolean,
+        required: false,
+        default: true
+      },
     },
     data() {
       return {
@@ -46,6 +51,10 @@
       if (this.observer) this.observer.unobserve(this.$el)
     },
     computed: {
+      aspect_ratio() {
+        if (this.slice) return `xMidYMid slice`
+        else return `xMidYMid meet`
+      },
       id() {
         return profile.as_avatar_id(this.person.id)
       },
@@ -56,6 +65,7 @@
       }
     },
     methods: {
+
       async intersect() {
         if (this.observer) this.observer.unobserve(this.$el)
         this.observer = new IntersectionObserver(this.show_avatar)
@@ -67,6 +77,7 @@
         else return true
       },
       avatar_click(event) {
+        this.slice =! this.slice
         this.$emit('avatar-clicked', event)
       },
       async show_avatar(entries) {
