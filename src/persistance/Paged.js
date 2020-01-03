@@ -3,7 +3,7 @@ import Item from '@/modules/item'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import Storage, { History } from '@/persistance/Storage'
-import Cloud from '@/storage/Cloud'
+import Cloud from '@/persistance/Cloud'
 function keep_going(current_items, limit) {
   const current_size = current_items.outerHTML.length / 1024
   if (current_size >= growth.previous(limit)) {

@@ -1,5 +1,5 @@
 import Item from '@/modules/item'
-import { get_download_url } from '@/storage/Cloud'
+import { get_download_url } from '@/persistance/Cloud'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 export default {

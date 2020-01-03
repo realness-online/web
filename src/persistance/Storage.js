@@ -3,9 +3,9 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import profile from '@/helpers/profile'
 import Item from '@/modules/item'
-import Paged from '@/storage/Paged'
-import Large from '@/storage/Large'
-import Cloud from '@/storage/Cloud'
+import Paged from '@/persistance/Paged'
+import Large from '@/persistance/Large'
+import Cloud from '@/persistance/Cloud'
 class Storage {
   constructor(type,
               selector = `[itemprop="${type}"]`,
