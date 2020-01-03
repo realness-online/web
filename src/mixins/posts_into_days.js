@@ -17,8 +17,6 @@ export default {
       return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
     },
     is_today(date) {
-      console.log(date)
-      console.log(this.today_as_date())
       if (date === this.today_as_date()) return true
       else return false
     },
