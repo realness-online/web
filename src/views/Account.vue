@@ -97,8 +97,10 @@
         await posts_storage.save()
       },
       async next_page() {
+        console.log('next_page');
         const days = new Map()
         let posts = await posts_storage.next_page(this.limit)
+        console.log(posts);
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
           posts.forEach(post => this.insert_post_into_day(post, days))
