@@ -11,6 +11,7 @@
   </svg>
 </template>
 <script>
+  import { avatars_storage } from  '@/storage/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
@@ -20,6 +21,11 @@
     },
     props: {
       person: Object,
+      me: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
       working: {
         type: Boolean,
         default: false
@@ -30,6 +36,9 @@
         observer: null,
         avatar: null
       }
+    },
+    created() {
+      if (this.me) this.avatar = avatars_storage.as_object()
     },
     async mounted() { this.intersect() },
     async updated() { this.intersect() },
