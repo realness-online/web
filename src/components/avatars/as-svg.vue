@@ -29,17 +29,13 @@
       working: {
         type: Boolean,
         default: false
-      },
-      slice: {
-        type: Boolean,
-        required: false,
-        default: true
-      },
+      }
     },
     data() {
       return {
         observer: null,
-        avatar: null
+        avatar: null,
+        slice: true
       }
     },
     created() {
@@ -65,7 +61,6 @@
       }
     },
     methods: {
-
       async intersect() {
         if (this.observer) this.observer.unobserve(this.$el)
         this.observer = new IntersectionObserver(this.show_avatar)
