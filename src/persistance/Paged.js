@@ -57,9 +57,5 @@ let Paged = (superclass) => class extends superclass {
     }
     return items
   }
-  async next_page(limit = growth.first()) {
-    // TODO: check for existence rather than relying on exceptions
-    return new History(`${this.type}/${limit}.html`).as_list()
-  }
 }
 export default Paged
