@@ -34,7 +34,7 @@
   import signed_in from '@/mixins/signed_in'
   import profile_helper from '@/helpers/profile'
   import post_helper from '@/helpers/post'
-  import { posts_storage, person_storage as me, relations_storage } from '@/storage/Storage'
+  import { posts_storage, person_storage as me, relations_storage } from '@/persistance/Storage'
   import as_textarea from '@/components/posts/as-textarea'
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'

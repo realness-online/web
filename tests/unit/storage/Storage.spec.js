@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import Storage, {posts_storage, person_storage } from '@/storage/Storage'
+import Storage, {posts_storage, person_storage } from '@/persistance/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -7,7 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-describe('@/storage/Storage.js', () => {
+describe('@/persistance/Storage.js', () => {
   afterEach(() => {
     localStorage.clear()
   })

@@ -1,6 +1,6 @@
 import post_helper from '@/helpers/post'
 import date_helper from '@/helpers/date'
-import { person_storage as me } from '@/storage/Storage'
+import { person_storage as me } from '@/persistance/Storage'
 export default {
   props: {
     post: {

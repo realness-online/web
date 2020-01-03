@@ -18,7 +18,7 @@
   </div>
 </template>
 <script>
-  import { avatars_storage } from '@/storage/Storage'
+  import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'

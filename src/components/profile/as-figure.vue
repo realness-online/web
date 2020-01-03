@@ -11,7 +11,7 @@
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
-  import { person_storage as me } from '@/storage/Storage'
+  import { person_storage as me } from '@/persistance/Storage'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
   import * as firebase from 'firebase/app'

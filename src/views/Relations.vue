@@ -14,7 +14,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
-  import { relations_storage } from '@/storage/Storage'
+  import { relations_storage } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
   export default {

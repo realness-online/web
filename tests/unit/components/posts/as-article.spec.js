@@ -1,7 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
 import Item from '@/modules/Item'
-import Storage from '@/storage/Storage'
+import Storage from '@/persistance/Storage'
 import as_article from '@/components/posts/as-article'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')

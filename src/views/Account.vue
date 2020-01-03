@@ -29,7 +29,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/helpers/profile'
-  import { person_storage as me, posts_storage, avatars_storage } from '@/storage/Storage'
+  import { person_storage as me, posts_storage, avatars_storage } from '@/persistance/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
