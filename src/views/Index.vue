@@ -169,18 +169,16 @@
       @media (min-width: min-screen)
         display: block
   nav#main
-    & > [href='/posters']
-      visibility: visible
     &.has-posts
       & > [href='/account']
         visibility: visible
     &.signed-in
+      & > [href='/posters']
       & > [href='/relations']
       & > [href='/phone-book']
-
-      & > [href='/events']
         visibility: visible
     &.has-friends
+      & > [href='/events']
       & > [href='/feed']
         visibility: visible
 </style>
