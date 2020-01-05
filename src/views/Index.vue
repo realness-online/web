@@ -176,7 +176,6 @@
       & > [href='/posters']
       & > [href='/relations']
       & > [href='/phone-book']
-        visibility: visible
     &.has-friends
       & > [href='/events']
       & > [href='/feed']
