@@ -8,7 +8,7 @@
       <h1>Feed</h1>
     </hgroup>
     <icon v-if="working" name="working"></icon>
-    <section v-else class="day" :key="date" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}">
+    <article v-else class="day" :key="date" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}">
       <header>
         <h4>{{as_day(date)}}</h4>
       </header>
@@ -16,7 +16,7 @@
         <poster-as-figure v-if="post.type === 'posters'" :poster="post"></poster-as-figure>
         <post-as-article v-else :post="post" :person="post.person" @end-of-articles="next_page"></post-as-article>
       </div>
-    </section>
+    </article>
   </section>
 </template>
 <script>
@@ -29,10 +29,17 @@
   import poster_as_figure from '@/components/feed/as-figure'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
+  import posters_mixin from '@/mixins/posters'
   import signed_in from '@/mixins/signed_in'
   import date_mixin from '@/mixins/date'
   export default {
-    mixins: [signed_in, date_mixin, posts_into_days, condense_posts],
+    mixins: [
+      signed_in,
+      date_mixin,
+      condense_posts,
+      posts_into_days,
+      posters_mixin
+    ],
     components: {
       'logo-as-link': logo_as_link,
       'post-as-article': post_as_article,
@@ -72,20 +79,6 @@
         feed.sort(this.newer_first)
         feed.forEach(post => this.insert_post_into_day(post, this.days))
       },
-      prepare_posters(posters, person) {
-        const meta = []
-        posters.items.forEach(poster => {
-          const created_at = Number(poster.name.split('.')[0])
-          const poster_meta = {
-            type: 'posters',
-            created_at: new Date(created_at).toISOString(),
-            id: `posters/${created_at}`,
-            person
-          }
-          meta.push(poster_meta)
-        })
-        return meta
-      },
       async next_page(person) {
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
@@ -117,7 +110,7 @@
     & > svg.working
       order: 1
       margin: base-line auto
-    & > section.day
+    & > article.day
       padding: 0 base-line
       display:flex
       flex-direction: column
