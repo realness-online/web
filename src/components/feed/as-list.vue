@@ -15,7 +15,13 @@
     </section>
 </template>
 <script>
+  import post_as_article from '@/components/feed/as-article'
+  import poster_as_figure from '@/components/feed/as-figure'
   export default {
+    components: {
+      'post-as-article': post_as_article,
+      'poster-as-figure': poster_as_figure
+    },
     methods: {
       async get_first_posts(people_in_feed) {
         let feed = []
