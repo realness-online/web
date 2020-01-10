@@ -39,7 +39,6 @@ class Person extends Cloud(Storage) {
     const item_id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
     const items = document.querySelector(`[itemid="${item_id}"]`)
     if (items) super.save(items)
-    else super.save()
   }
 }
 class Posts extends Paged(Cloud(Storage)) {
