@@ -123,7 +123,7 @@
               await this.$nextTick()
               sessionStorage.setItem('posts-synced', Date.now())
               await posts_storage.save()
-              await posts_storage.optimize()
+              // await posts_storage.optimize()
             }
           })
         }
