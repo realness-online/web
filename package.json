@@ -76,8 +76,8 @@
     "> 2%"
   ],
   "jest": {
-    "verbose": false,
-    "collectCoverage": false,
+    "verbose": true,
+    "collectCoverage": true,
     "restoreMocks": false,
     "moduleFileExtensions": [
       "js",

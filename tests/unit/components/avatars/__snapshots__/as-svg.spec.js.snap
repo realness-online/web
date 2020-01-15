@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/avatars/as-svg.vue Render an avatar 1`] = `
+<svg>
+  <defs>
+    <!---->
+  </defs>
+   
+  <!---->
+   
+  <use
+    href="#silhouette"
+  />
+</svg>
+`;

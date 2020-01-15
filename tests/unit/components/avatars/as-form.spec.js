@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import manage_avatar from '@/components/profile/manage-avatar'
+import as_form from '@/components/avatars/as-form'
 import Storage from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
@@ -12,7 +12,7 @@ const person = {
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-describe('@/components/profile/manage-avatar.vue', () => {
+describe('@/components/avatars/as-form.vue', () => {
   let wrapper
   beforeEach(() => {
     const onAuthStateChanged = jest.fn(state_changed => {
@@ -21,7 +21,7 @@ describe('@/components/profile/manage-avatar.vue', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(_ => {
       return { onAuthStateChanged }
     })
-    wrapper = shallow(manage_avatar, {
+    wrapper = shallow(as_form, {
       propsData: { person }
     })
   })

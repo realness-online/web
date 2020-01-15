@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/avatars/as-form.vue Render avatar manager 1`] = `
+<div
+  id="manage-avatar"
+>
+  <div>
+    <!---->
+  </div>
+   
+  <menu>
+    <a
+      id="open_camera"
+    >
+      <!---->
+    </a>
+     
+    <a
+      id="select_photo"
+    >
+      <!---->
+    </a>
+     
+    <!---->
+     
+    <!---->
+  </menu>
+   
+  <input
+    accept="image/jpeg"
+    capture=""
+    type="file"
+  />
+</div>
+`;
