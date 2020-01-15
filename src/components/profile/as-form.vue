@@ -120,7 +120,6 @@
         await this.$nextTick()
         this.human = new firebase.auth.RecaptchaVerifier('captcha', {
           'size': 'invisible',
-          'badge': 'inline',
           'callback': this.text_human_verify_code
         })
         this.human.verify()
@@ -201,6 +200,9 @@
     button#sign-out
       border: none
       padding: 0
+    button#authorize
+      color: green
+      border-color: green
     menu
       display: flex
       justify-content: flex-end
