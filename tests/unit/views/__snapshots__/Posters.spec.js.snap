@@ -5,8 +5,15 @@ exports[`@/views/Posters.vue Renders layout for posters 1`] = `
   class="page"
   id="posters"
 >
+  <input
+    accept="image/jpeg"
+    type="file"
+  />
+   
   <header>
-    <!---->
+    <a>
+      <!---->
+    </a>
      
     <!---->
   </header>
@@ -19,8 +26,8 @@ exports[`@/views/Posters.vue Renders layout for posters 1`] = `
     <!---->
   </hgroup>
    
-  <header>
-    <h1 />
-  </header>
+  <article
+    itemprop="posters"
+  />
 </section>
 `;
