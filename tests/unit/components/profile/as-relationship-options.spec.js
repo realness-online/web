@@ -33,6 +33,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     // jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
     wrapper = shallow(as_options, { propsData: {
       person: me,
+      me: me,
       relations
     }})
   })
@@ -48,6 +49,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       me.id = '/+14156661266'
       wrapper = shallow(as_options, { propsData: {
         person: me,
+        me: me,
         relations
       }})
       wrapper.vm.is_relation()
