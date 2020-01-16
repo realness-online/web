@@ -38,7 +38,7 @@ describe('@/persistance/Storage.js', () => {
     })
     describe('#as_list', () => {
       beforeEach(() => {
-        localStorage.setItem(storage.filename, item_as_string)
+        localStorage.setItem(storage.selector, item_as_string)
       })
       it('Exists', () => {
         expect(storage.as_list).toBeDefined()
@@ -53,11 +53,25 @@ describe('@/persistance/Storage.js', () => {
         expect(storage.as_object).toBeDefined()
       })
       it('Will return the first item it finds', async() => {
-        localStorage.setItem(storage.filename, item_as_string)
+        localStorage.setItem(storage.selector, item_as_string)
         const scott = await storage.as_object()
         expect(scott.name).toBe('Scott Fryxell')
       })
     })
+    describe.only('#save', () => {
+      it('Exists', () => {
+        expect(posts_storage.save).toBeDefined()
+      })
+      it('Saves items locally and on the server', async() => {
+        posts_storage.persist = jest.fn()
+        await posts_storage.save(posts)
+        await flushPromises()
+        expect(localStorage.setItem).toBeCalled()
+        expect(posts_storage.persist).toBeCalled()
+      })
+    })
+  })
+  describe('Persistance', () => {
     describe('#get_download_url', () => {
       it('exists', () => {
         expect(storage.get_download_url).toBeDefined()
@@ -98,13 +112,11 @@ describe('@/persistance/Storage.js', () => {
         expect(list.length).toBe(60)
       })
     })
-  })
-  describe('Persistance', () => {
     // let posts_storage
     // beforeEach(() => {
     //   posts_storage = new Storage('posts', '[itemprop=posts]')
     // })
-    describe.only('#optimize', () => {
+    describe('#optimize', () => {
       it('Exists', () => {
         expect(posts_storage.optimize).toBeDefined()
       })
@@ -115,18 +127,7 @@ describe('@/persistance/Storage.js', () => {
         expect(Object.keys(localStorage.__STORE__).length).toBe(3)
       })
     })
-    describe('#save', () => {
-      it('Exists', () => {
-        expect(posts_storage.save).toBeDefined()
-      })
-      it('Saves items locally and on the server', async() => {
-        posts_storage.persist = jest.fn()
-        await posts_storage.save(posts)
-        await flushPromises()
-        expect(localStorage.setItem).toBeCalled()
-        expect(posts_storage.persist).toBeCalled()
-      })
-    })
+
     describe('#persist', () => {
       it('Exists', () => {
         expect(posts_storage.persist).toBeDefined()
