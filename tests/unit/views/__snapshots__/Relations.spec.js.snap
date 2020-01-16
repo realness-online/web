@@ -17,7 +17,7 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
    
   <hgroup>
     <h1>
-      Friends
+      Relations
     </h1>
   </hgroup>
    
