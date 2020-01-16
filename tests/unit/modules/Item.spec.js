@@ -56,7 +56,7 @@ describe('@/modules/item.js', () => {
       expect(Item.hydrate).toBeDefined()
     })
     it('Will create an html fragment from a string', () => {
-      storage = Item.hydrate(item_as_string)
+      const storage = Item.hydrate(item_as_string)
       expect(storage.querySelectorAll('h1').length).toBe(1)
     })
   })
