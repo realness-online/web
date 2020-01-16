@@ -9,11 +9,12 @@ exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] =
   <figcaption>
     <!---->
      
-    <p
+    <a
       class="phone"
+      href="sms:/+16282281823"
     >
-      (628) 228-1824
-    </p>
+      (628) 228-1823
+    </a>
   </figcaption>
 </figure>
 `;

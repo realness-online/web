@@ -11,7 +11,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       created_at: '2018-07-15T18:11:31.018Z',
       first_name: 'Scott',
       last_name: 'Fryxell',
-      id: '/+16282281824'
+      id: '/+16282281823'
     }
     wrapper = shallow(as_figure, {
       propsData: {
@@ -25,7 +25,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   describe('mobile number', () => {
     it('Format the mobile number for display', () => {
       let mobile = wrapper.find('.phone')
-      expect(mobile.text()).toBe('(628) 228-1824')
+      expect(mobile.text()).toBe('(628) 228-1823')
     })
     it('Parse mobile number as it\'s typed in', () => {
       person.id = '/+1628'
@@ -68,7 +68,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
     it('Go to the mobile number when clicked', () => {
       wrapper.vm.avatar_click()
-      expect(wrapper.vm.$route.path).toBe('/+16282281824')
+      expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
     it('When is_me is true should go to the account page', () => {
       jest.spyOn(Item, 'get_first_item').mockImplementation(() => person)
