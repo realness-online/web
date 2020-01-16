@@ -20,10 +20,8 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
     <router-link
       class="green"
       tabindex="-1"
-      to="/phone-book"
-    >
-      Friends
-    </router-link>
+      to="/events"
+    />
      
     <router-link
       class="green"
@@ -44,9 +42,9 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
     <router-link
       class="blue"
       tabindex="-1"
-      to="/events"
+      to="/phone-book"
     >
-      Tonight!
+      Relations
     </router-link>
      
     <!---->
@@ -90,10 +88,8 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     <router-link
       class="green"
       tabindex="-1"
-      to="/phone-book"
-    >
-      Friends
-    </router-link>
+      to="/events"
+    />
      
     <router-link
       class="green"
@@ -114,9 +110,9 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     <router-link
       class="blue"
       tabindex="-1"
-      to="/events"
+      to="/phone-book"
     >
-      Tonight!
+      Relations
     </router-link>
      
     <!---->
