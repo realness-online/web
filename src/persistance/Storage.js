@@ -21,6 +21,7 @@ class Storage {
     else return 0
   }
   as_list() {
+    console.log(this.selector);
     return Item.get_items(localStorage.getItem(this.selector))
   }
   as_object() {
@@ -52,13 +53,11 @@ class Posts extends Paged(Cloud(Storage)) {
   }
 }
 class SVG extends Large(Cloud(Storage)) {}
-
 class Avatar extends SVG {
   constructor() {
     super('avatars', '[itemtype="/avatars"]')
   }
 }
-
 export default Storage
 export class History extends Cloud(Storage) {
   constructor(item_id) {
