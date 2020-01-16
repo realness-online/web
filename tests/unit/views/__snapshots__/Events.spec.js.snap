@@ -12,9 +12,7 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   </header>
    
   <hgroup>
-    <h1>
-      Events
-    </h1>
+    <h1 />
      
     <!---->
   </hgroup>
