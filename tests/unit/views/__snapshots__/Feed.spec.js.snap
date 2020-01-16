@@ -17,62 +17,70 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
     </h1>
   </hgroup>
    
-  <!---->
-   
-  <section
+  <article
     class="day"
   >
     <header>
       <h4>
-        Tuesday, May 28
+        Tuesday, May 28, 2019
       </h4>
     </header>
      
-    <!---->
-  </section>
-  <section
+    <div>
+      <!---->
+    </div>
+  </article>
+  <article
     class="day"
   >
     <header>
       <h4>
-        Monday, April 8
+        Monday, April 8, 2019
       </h4>
     </header>
      
-    <!---->
-  </section>
-  <section
+    <div>
+      <!---->
+    </div>
+  </article>
+  <article
     class="day"
   >
     <header>
       <h4>
-        Sunday, April 7
+        Sunday, April 7, 2019
       </h4>
     </header>
      
-    <!---->
-  </section>
-  <section
+    <div>
+      <!---->
+    </div>
+  </article>
+  <article
     class="day"
   >
     <header>
       <h4>
-        Tuesday, February 5
+        Tuesday, February 5, 2019
       </h4>
     </header>
      
-    <!---->
-  </section>
-  <section
+    <div>
+      <!---->
+    </div>
+  </article>
+  <article
     class="day"
   >
     <header>
       <h4>
-        Sunday, January 13
+        Sunday, January 13, 2019
       </h4>
     </header>
      
-    <!---->
-  </section>
+    <div>
+      <!---->
+    </div>
+  </article>
 </section>
 `;
