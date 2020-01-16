@@ -3,33 +3,17 @@
 exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] = `
 <figure
   class="profile"
-  itemid="/+16282281824"
-  itemscope="itemscope"
-  itemtype="/people"
 >
   <!---->
    
   <figcaption>
-    <p>
-      <span
-        itemprop="first_name"
-      >
-        Scott
-      </span>
-       
-      <span
-        itemprop="last_name"
-      >
-        Fryxell
-      </span>
-    </p>
+    <!---->
      
-    <a
+    <p
       class="phone"
-      href="tel:/+16282281824"
     >
       (628) 228-1824
-    </a>
+    </p>
   </figcaption>
 </figure>
 `;
