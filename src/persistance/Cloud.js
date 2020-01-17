@@ -17,6 +17,13 @@ async function get_download_url(person_id, item_id) {
   }
 }
 let Cloud = (superclass) => class extends superclass {
+  constructor(type,
+              selector = `[itemprop="${type}"]`,
+              filename = `${type}/index`) {    
+    super(type, selector)
+    this.filename = filename
+  }
+
   async get_download_url() {
     const user = firebase.auth().currentUser
     if (user) {

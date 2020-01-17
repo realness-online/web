@@ -1,4 +1,4 @@
-// https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+ // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import profile from '@/helpers/profile'
@@ -7,12 +7,9 @@ import Paged from '@/persistance/Paged'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 class Storage {
-  constructor(type,
-              selector = `[itemprop="${type}"]`,
-              filename = `${type}/index`) {
+  constructor(type, selector = `[itemprop="${type}"]`) {
     this.type = type
     this.selector = selector
-    this.filename = filename
     this.metadata = { 'contentType': 'text/html' }
   }
   as_kilobytes() {
@@ -21,7 +18,6 @@ class Storage {
     else return 0
   }
   as_list() {
-    console.log(this.selector);
     return Item.get_items(localStorage.getItem(this.selector))
   }
   as_object() {
@@ -44,7 +40,7 @@ class Person extends Cloud(Storage) {
 }
 class Posts extends Paged(Cloud(Storage)) {
   constructor() {
-    super('posts', '[itemprop="posts"]')
+    super('posts')
   }
   save() {
     const items = document.querySelector(this.selector)
