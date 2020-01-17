@@ -38,12 +38,17 @@ describe('@/components/avatars/as-form.vue', () => {
         expect(mock_click).toBeCalled()
       })
     })
-    describe('#accept_changes', () => {
+    describe('#accept_new_avatar', () => {
       it('Should update the avatar', async() => {
         const save_spy = jest.fn(() => Promise.resolve())
         jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
-        wrapper.setData({ avatar_changed: true })
-        wrapper.vm.accept_changes()
+        wrapper.setData({
+          avatar_changed: true,
+          avatar: {
+            id: 'avatars/153423367'
+          }
+        })
+        wrapper.vm.accept_new_avatar()
         await flushPromises()
         expect(wrapper.vm.avatar_changed).toBe(false)
         expect(save_spy).toBeCalled()
@@ -66,9 +71,16 @@ describe('@/components/avatars/as-form.vue', () => {
     })
     describe('#vectorize_image', () => {
       it('Should vectorize a jpg', () => {
+        const post_message_spy = jest.fn()
+        wrapper.setData({
+          worker: {
+            postMessage: post_message_spy
+          }
+        })
         const image = { i: 'would be an image in real life' }
         wrapper.vm.vectorize_image(image)
-        expect(wrapper.vm.avatar_changed).toBe(true)
+        expect(wrapper.vm.working).toBe(true)
+        expect(post_message_spy).toBeCalled()
       })
     })
   })

@@ -48,7 +48,6 @@
       }
     },
     created() {
-
       this.worker.addEventListener('message', this.set_new_avatar)
     },
     methods: {
