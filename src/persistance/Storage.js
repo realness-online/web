@@ -45,7 +45,6 @@ class Posts extends Paged(Cloud(Storage)) {
   save() {
     const items = document.querySelector(this.selector)
     if (items) super.save(items)
-    else super.save()
   }
 }
 class SVG extends Large(Cloud(Storage)) {}

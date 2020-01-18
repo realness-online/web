@@ -2,19 +2,7 @@
 import Item from '@/modules/item'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
-import Storage, { History } from '@/persistance/Storage'
-import Cloud from '@/persistance/Cloud'
-function keep_going(current_items, limit) {
-  const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= growth.previous(limit)) {
-    const item = Item.get_first_item(current_items)
-    const today = new Date().setHours(0, 0, 0, 0)
-    const created_at = Date.parse(item.created_at)
-    if (created_at && created_at < today) return true
-    else return false
-  } else return false
-}
-
+import { History } from '@/persistance/Storage'
 let Paged = (superclass) => class extends superclass {
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
@@ -57,5 +45,15 @@ let Paged = (superclass) => class extends superclass {
     }
     return items
   }
+}
+function keep_going(current_items, limit) {
+  const current_size = current_items.outerHTML.length / 1024
+  if (current_size >= growth.previous(limit)) {
+    const item = Item.get_first_item(current_items)
+    const today = new Date().setHours(0, 0, 0, 0)
+    const created_at = Date.parse(item.created_at)
+    if (created_at && created_at < today) return true
+    else return false
+  } else return false
 }
 export default Paged

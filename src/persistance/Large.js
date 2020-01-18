@@ -3,7 +3,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 let Large = (superclass) => class extends superclass {
-    async directory() {
+  async directory() {
     const user = firebase.auth().currentUser
     const storage = firebase.storage().ref()
     if (user && navigator.onLine) {
