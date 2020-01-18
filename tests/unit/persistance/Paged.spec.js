@@ -1,5 +1,5 @@
 import Item from '@/modules/Item'
-import Storage, { posts_storage } from '@/persistance/Storage'
+import { Posts } from '@/persistance/Storage'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -7,7 +7,12 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-describe('@/persistance/Paged', () => {
+const fetch =  require('jest-fetch-mock')
+describe('@/persistance/Paged.js', () => {
+  let posts_storage
+  beforeEach(() => {
+    posts_storage = new Posts()
+  })
   afterEach(() => {
     localStorage.clear()
   })
@@ -17,7 +22,6 @@ describe('@/persistance/Paged', () => {
     })
     it('Syncs posts from server to local storage', async() => {
       localStorage.setItem(posts_storage.selector, hella_posts)
-      // console.log(fetch)
       fetch.mockResponseOnce(posts)
       const server_list = Item.get_items(posts)
       expect(server_list.length).toBe(9)
@@ -32,10 +36,10 @@ describe('@/persistance/Paged', () => {
     it('Exists', () => {
       expect(posts_storage.optimize).toBeDefined()
     })
-    it('It optimizes a list of items accross a set of pages', async() => {
-      localStorage.setItem(posts_storage.selector, hella_posts)
+    it.skip('It optimizes a list of items accross a set of pages', async() => {
+      localStorage.setItem(posts_storage.filename, hella_posts)
       await posts_storage.optimize()
-      // console.log(localStorage.__STORE__);
+      console.log(Object.keys(localStorage.__STORE__));
       expect(Object.keys(localStorage.__STORE__).length).toBe(3)
     })
   })

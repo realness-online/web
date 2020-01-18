@@ -28,7 +28,8 @@ class Storage {
     localStorage.setItem(this.selector, items.outerHTML)
   }
 }
-class Person extends Cloud(Storage) {
+export default Storage
+export class Person extends Cloud(Storage) {
   constructor() {
     super('person', '[itemtype="/person"]', 'index')
   }
@@ -38,7 +39,7 @@ class Person extends Cloud(Storage) {
     if (items) super.save(items)
   }
 }
-class Posts extends Paged(Cloud(Storage)) {
+export class Posts extends Paged(Cloud(Storage)) {
   constructor() {
     super('posts')
   }
@@ -47,19 +48,20 @@ class Posts extends Paged(Cloud(Storage)) {
     if (items) super.save(items)
   }
 }
-class SVG extends Large(Cloud(Storage)) {}
-class Avatar extends SVG {
-  constructor() {
-    super('avatars', '[itemtype="/avatars"]')
-  }
-}
-export default Storage
-export class History extends Cloud(Storage) {
+export class History extends Paged(Cloud(Storage)) {
   constructor(item_id) {
     const type = item_id.split('/')[0]
     super(type, `[itemid="${item_id}"]`, item_id)
   }
 }
+export class SVG extends Large(Cloud(Storage)) {}
+export class Avatar extends SVG {
+  constructor() {
+    super('avatars', '[itemtype="/avatars"]')
+  }
+}
+
+
 export const relations_storage = new Storage('relations')
 export const person_storage = new Person()
 export const posts_storage = new Posts()

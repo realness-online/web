@@ -4,6 +4,7 @@ import 'firebase/storage'
 import 'firebase/auth'
 Vue.config.productionTip = false
 global.fetch = require('jest-fetch-mock')
+
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return {
     currentUser: { phoneNumber: '+16282281824' },
