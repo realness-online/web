@@ -22,9 +22,6 @@
       Vue.config.errorHandler = this.on_error
       console.info = this.info_logger
     },
-    mounted() {
-      throw new Error("satan is calling")
-    },
     methods: {
       async info_logger() {
         this.info.apply(this, Array.prototype.slice.call(arguments))
@@ -46,5 +43,4 @@
     outline: 0.15vmin dashed orange
   ol[itemtype="/activity"]
     display:none
-
 </style>
