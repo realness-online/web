@@ -15,12 +15,22 @@
       <as-figure v-else v-for="poster in posters" @delete="delete_poster"
                 :poster="poster" :author="me" :working="working"  v-bind:key="poster.id"></as-figure>
     </article>
+    <aside class="events">
+      <article v-for="event in events" itemprop="events" itemscope itemtype="/events">
+        <p itemprop="description">{{event.description}}</p>
+        <img itemprop="poster" :src="event.poster">
+        <time itemprop="start_time" :datetime="starts_at"></time>
+        <meta itemprop="location" :content="event.location">
+      </article>
+    </aside>
   </section>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import { posters_storage, person_storage as me } from '@/persistance/Storage'
+  import { posters_storage,
+           events_storage,
+           person_storage as me } from '@/persistance/Storage'
   import Item from '@/modules/item'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -38,6 +48,7 @@
       return {
         finished: true,
         show_menu: true,
+        events: events_storage.as_list(),
         me: me.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
