@@ -1,10 +1,12 @@
 <template lang="html">
-  <ol itemscope itemtype="/activity">
-    <li v-for="[message, created_at] in activity">
-      <span>{{message}}</span>
-      <time>{{created_at}}</time>
-    </li>
-  </ol>
+  <table itemscope itemtype="/activity">
+    <tbody>
+      <tr v-for="[message, created_at] in activity">
+        <td><time>{{created_at}}</time></td>
+        <td>{{message}}</td>
+      </tr>
+    </tbody>
+  </table>
 </template>
 <script>
   import Vue from 'vue'
@@ -41,6 +43,6 @@
   [outline],
   [outline] *
     outline: 0.15vmin dashed orange
-  ol[itemtype="/activity"]
+  [itemtype="/activity"]
     display:none
 </style>
