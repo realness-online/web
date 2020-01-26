@@ -61,7 +61,6 @@ export class Avatar extends SVG {
     super('avatars', '[itemtype="/avatars"]')
   }
 }
-
 export class Activity extends Cloud(Storage) {
   constructor() {
     super('activity', '[itemtype="/activity"]', `activity/${new Date().toISOString()}`)
@@ -74,9 +73,7 @@ export class Activity extends Cloud(Storage) {
     }
   }
 }
-
 export const relations_storage = new Storage('relations')
-export const activity_storage = new Activity()
 export const person_storage = new Person()
 export const posts_storage = new Posts()
 export const avatars_storage = new Avatar()
