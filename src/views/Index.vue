@@ -57,7 +57,7 @@
       }
     },
     async created() {
-      console.info(`${this.me.first_name} viewed realness homepage`)
+      console.info(`${this.me.first_name} viewed realness version ${this.version}`)
       this.days = this.populate_days(posts_storage.as_list(), this.me)
     },
     async mounted() {
