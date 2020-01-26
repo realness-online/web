@@ -21,8 +21,10 @@
         this.new_post = ''
         post.created_at = new Date().toISOString()
         this.$emit('post-added', post)
+        console.info(`Created a post`)
       },
       wat_focused(event) {
+        console.info(`Displayed post entry form`)
         this.$emit('toggle-keyboard')
       }
     }
