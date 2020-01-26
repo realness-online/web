@@ -47,8 +47,9 @@
         avatar: null
       }
     },
-    created() {
+    async created() {
       this.worker.addEventListener('message', this.set_new_avatar)
+      this.current_avatar = await profile.item(this.person.id, this.person.avatar)
     },
     methods: {
       set_current_avatar(avatar) {
