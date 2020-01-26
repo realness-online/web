@@ -49,6 +49,11 @@ export class Posts extends Paged(Cloud(Storage)) {
     if (items) super.save(items)
   }
 }
+export class Events extends Paged(Cloud(Storage)) {
+  constructor() {
+    super('events')
+  }
+}
 export class History extends Paged(Cloud(Storage)) {
   constructor(item_id) {
     const type = item_id.split('/')[0]
@@ -73,8 +78,10 @@ export class Activity extends Cloud(Storage) {
     }
   }
 }
+
 export const relations_storage = new Storage('relations')
 export const person_storage = new Person()
 export const posts_storage = new Posts()
 export const avatars_storage = new Avatar()
 export const posters_storage = new SVG('posters')
+export const events_storage = new Events()
