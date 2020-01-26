@@ -60,6 +60,7 @@
       }
     },
     async created() {
+      console.info(`${this.me.first_name} viewed their account page`)
       const days = this.populate_days(posts_storage.as_list(), this.me)
       this.pages.set('posts', days)
       if (this.signed_in) {

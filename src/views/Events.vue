@@ -30,6 +30,9 @@
         curators: [],
         working: false
       }
+    },
+    created() {
+      console.info("Viewed the events page");
     }
   }
 </script>

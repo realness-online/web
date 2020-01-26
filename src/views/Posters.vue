@@ -47,6 +47,7 @@
       }
     },
     async created() {
+      console.info("Viewed their posters")
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
     },

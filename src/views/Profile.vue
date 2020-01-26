@@ -73,6 +73,7 @@
         profile.directory(id, 'posters')
       ])
       this.person = person
+      console.info(`Viewed ${person.first_name}'s  profile`)
       this.populate_page(person, posts, posters)
       this.limit = growth.first()
     },
