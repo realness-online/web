@@ -1,6 +1,7 @@
  // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
+import 'firebase/storage'
 import profile from '@/helpers/profile'
 import Item from '@/modules/item'
 import Paged from '@/persistance/Paged'
@@ -61,8 +62,21 @@ export class Avatar extends SVG {
   }
 }
 
+export class Activity extends Cloud(Storage) {
+  constructor() {
+    super('activity', '[itemtype="/activity"]', `activity/${new Date().toISOString()}`)
+  }
+  async save(items = document.querySelector(this.selector)) {
+    if (navigator.onLine) {
+      const file = new File([items.outerHTML], name)
+      const path = `${this.filename}.html`
+      await firebase.storage().ref().child(path).put(file, this.metadata)
+    }
+  }
+}
 
 export const relations_storage = new Storage('relations')
+export const activity_storage = new Activity()
 export const person_storage = new Person()
 export const posts_storage = new Posts()
 export const avatars_storage = new Avatar()
