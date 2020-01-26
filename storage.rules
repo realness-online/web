@@ -8,5 +8,8 @@ service firebase.storage {
         allow write, delete: if request.auth.token.phone_number == mobile;
       }
     }
+    match /activity/{user_file=**} {
+      allow read, write
+    }
   }
 }
