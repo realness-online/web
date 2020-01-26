@@ -60,6 +60,7 @@
         return later.created_at - earlier.created_at
       },
       brand_new_poster(event) {
+        console.info(`${this.me.first_name} created a poster`)
         this.new_poster = event.data
         this.new_poster.type = '/posters'
         this.new_poster.id = this.as_itemid
@@ -72,6 +73,7 @@
         this.working = false
       },
       async save_new_poster() {
+        console.info(`${this.me.first_name} saved poster`)
         this.working = true
         posters_storage.filename = this.as_itemid
         this.posters.unshift(this.new_poster)
