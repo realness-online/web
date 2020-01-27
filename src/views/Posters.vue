@@ -152,8 +152,8 @@
         color: green
     & > article[itemprop="posters"]
       display: grid
-      grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
-      grid-template-rows: repeat(auto-fit, minmax(base-line * 12, 1fr))
+      grid-template-columns: repeat(auto-fit, minmax(base-line * 16, 1fr))
+      grid-template-rows: repeat(auto-fit, minmax(base-line * 16, 1fr))
       grid-gap: base-line
       @media (min-width: min-screen)
         padding: 0 base-line
