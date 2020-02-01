@@ -85,6 +85,7 @@
       width: stretch
       max-width: page-width
       height: 100vh
+      max-height: page-width
       &.background
         fill: blue
       &.working
