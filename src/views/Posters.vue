@@ -13,13 +13,11 @@
       <as-figure class="new" v-if="new_poster" :is_new="true" @delete="remove_new_poster" @save="save_new_poster"
                  :poster="new_poster" :author="me" :working="working" v-bind:key="as_itemid"></as-figure>
       <as-figure v-else v-for="poster in posters" @delete="delete_poster"
-                :poster="poster" :author="me" :working="working"  v-bind:key="poster.id"></as-figure>
+                :poster="poster" :author="me" :working="working" v-bind:key="poster.id"></as-figure>
     </article>
     <aside class="events" itemprop="events">
-      <link rel="icon" itemscope itemtype="/events"
-            v-for="event in events"
-            :href="event.poster"
-            :itemid="event.id">
+      <link rel="icon" itemscope itemtype="/events" :itemid="event.id"
+            v-for="event in events" :href="event.poster">
     </aside>
   </section>
 </template>
