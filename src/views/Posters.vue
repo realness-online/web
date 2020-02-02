@@ -15,13 +15,11 @@
       <as-figure v-else v-for="poster in posters" @delete="delete_poster"
                 :poster="poster" :author="me" :working="working"  v-bind:key="poster.id"></as-figure>
     </article>
-    <aside class="events">
-      <article v-for="event in events" itemprop="events" itemscope itemtype="/events">
-        <p itemprop="description">{{event.description}}</p>
-        <img itemprop="poster" :src="event.poster">
-        <time itemprop="start_time" :datetime="starts_at"></time>
-        <meta itemprop="location" :content="event.location">
-      </article>
+    <aside class="events" itemprop="events">
+      <link rel="icon" itemscope itemtype="/events"
+            v-for="event in events"
+            :href="event.poster"
+            :itemid="event.id">
     </aside>
   </section>
 </template>
