@@ -83,9 +83,8 @@
         fill: red
     & > svg
       width: stretch
-      max-width: page-width
       height: 100vh
-      max-height: page-width
+      max-height: page-width + (base-line * 6)
       &.background
         fill: blue
       &.working
