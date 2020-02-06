@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure itemscope itemtype="/posters" :itemid="poster.id">
+  <figure itemscope itemtype="/posters" :itemid="poster.id" v-bind:class="selecting">
     <svg @click="menu = !menu" :preserveAspectRatio="aspect_ratio"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
@@ -7,7 +7,17 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input type="datetime-local" ref="picker">
+      <fieldset>
+        <menu v-if="show_event">
+          <a v-on:click="remove_event"><icon name="remove"></icon></a>
+          <a v-on:click="save_event"><icon name="add"></icon></a>
+        </menu>
+        <input type="datetime-local"
+               ref="picker"
+               v-model="new_event"
+               v-on:input="selected_event_time"
+               placeholder="MM/DD/YYYY 9pm">
+      </fieldset>
       <menu v-if="menu">
         <a id="create_event" @click="manage_event">
           <svg viewBox="0 0 150 150">
@@ -59,7 +69,8 @@
       return {
         menu: false,
         accept: true,
-        show_event: false
+        show_event: false,
+        new_event: null
       }
     },
     created() {
@@ -70,6 +81,11 @@
       icon
     },
     computed: {
+      selecting() {
+        return {
+          'selecting-date': this.show_event
+        }
+      },
       aspect_ratio() {
         if (this.menu) return `xMidYMid meet`
         else return `xMidYMid slice`
@@ -82,9 +98,20 @@
       }
     },
     methods: {
+      selected_event_time(event) {
+        console.log("selected_event_time")
+        this.show_event = false
+      },
       manage_event(event) {
-        console.log("what up", this.$refs.picker);
+        console.log("manage_event")
+        this.show_event = true
         this.$refs.picker.focus()
+      },
+      remove_event() {
+        this.show_event = false
+      },
+      save_event() {
+        this.show_event = false
       },
       delete_me() {
         this.$emit('delete', this.poster.id)
@@ -97,48 +124,84 @@
 </script>
 <style lang="stylus">
   figure[itemtype="/posters"]
+    overflow: hidden;
     position: relative
     background: green
-    input[type="datetime-local"]
-      position:absolute
-      z-index: -2
-      width: 0
-      height: 0
     @media (min-width: min-screen)
-      &:first-of-type:not(.new)
+      &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
     & > svg
       width: 100%
       height: 100vh
       max-height: page-width
-    & > figcaption > menu
-      padding: base-line
-      margin-top: -(base-line * 4)
-      display: flex
-      justify-content: space-between
-      a
-        cursor: pointer
-      a#create_event
+    & > figcaption
+      & > fieldset
+        display: none
+      & > menu
+        padding: base-line
+        margin-top: -(base-line * 4)
         display: flex
-        flex-direction: column;
-        justify-content: center;
-        span
-          color: red
-          z-index: 2
-          padding-top: (base-line / 4)
-          padding-left: ( base-line / 3)
+        justify-content: space-between
+        a#create_event
+          display: flex
+          flex-direction: column;
+          justify-content: center;
+          span
+            color: red
+            z-index: 2
+            padding-top: (base-line / 4)
+            padding-left: ( base-line / 3)
+          svg
+            text
+              fill: white
+              font-size: base-line * 2
+            text.month
+              font-size: (base-line / 2)
+              font-weight: 900
+            rect, path
+              stroke: darken(black, 5%)
+              stroke-width: 0.5px
         svg
-          text
-            fill: white
-            font-size: base-line * 2
-          text.month
-            font-size: (base-line / 2)
-            font-weight: 900
-          rect, path
-            stroke: darken(black, 5%)
-            stroke-width: 0.5px
-      svg
-        fill: red
-        &.finished
-          fill: blue !important
+          fill: red
+          &.finished
+            fill: blue !important
+</style>
+<style lang="stylus">
+  figure[itemtype="/posters"].selecting-date
+    & > svg
+      opacity: 0.1
+    & > figcaption
+      & > menu
+        display: none
+      fieldset
+        padding: 0
+        display: block
+        border:none
+        & > menu
+          width: 100%
+          z-index: 55
+          position: absolute
+          margin-top: -(base-line * 4)
+          display: flex
+          padding: base-line
+          justify-content: space-between
+          & > a > svg
+            fill: red !important
+        & > input
+          display: block
+          padding: base-line
+          user-select: none
+          position: absolute
+          z-index: 3
+          top: 0
+          bottom: 0
+          right: 0
+          left: 0
+          font-size: base-line * 1.4
+          line-height: 1.33
+          color:red
+          &::placeholder
+            color:red
+          &:focus
+            z-index: 3
 </style>
