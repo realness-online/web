@@ -17,7 +17,7 @@
     </article>
     <aside class="events" itemprop="events">
       <link rel="icon" itemscope itemtype="/events" :itemid="event.id"
-            v-for="event in events" :href="event.poster">
+            v-for="event in events" :href="event.poster" v-bind:key="event.id">
     </aside>
   </section>
 </template>
@@ -54,7 +54,7 @@
       }
     },
     async created() {
-      console.info("Viewed their posters")
+      console.info('Viewed their posters')
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
