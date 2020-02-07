@@ -42,7 +42,7 @@
 <style lang="stylus">
   [outline],
   [outline] *
-    outline: 0.15vmin dashed orange
+    outline: 0.15vmin dashed black
   [itemtype="/activity"]
     display:none
 </style>
