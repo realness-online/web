@@ -8,18 +8,16 @@
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
       <fieldset>
+        <label for="event-picker">{{tonight}}</label>
+        <input id="time-picker" type="time" value="21:00" ref="time" >
         <menu v-if="show_event">
           <a v-on:click="remove_event"><icon name="remove"></icon></a>
           <a v-on:click="save_event"><icon name="add"></icon></a>
         </menu>
-        <input type="datetime-local"
-               ref="picker"
-               v-model="new_event"
-               v-on:input="selected_event_time"
-               placeholder="MM/DD/YYYY 9pm">
       </fieldset>
       <menu v-if="menu">
-        <a id="create_event" @click="manage_event">
+        <a id="create_event" v-if="!is_new">
+          <input id="event-picker" type="date" ref="picker" v-model="new_event" @click="manage_event">
           <svg viewBox="0 0 150 150">
             <rect x="1" y="1" rx="8" width="114" height="114" />
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
@@ -76,6 +74,10 @@
     created() {
       if(this.is_new) this.menu = true
     },
+    mounted() {
+      this.$refs.picker.defaultValue = this.tonight
+      this.$refs.picker.value = this.tonight
+    },
     components: {
       'download-vector': download_vector,
       icon
@@ -90,6 +92,11 @@
         if (this.menu) return `xMidYMid meet`
         else return `xMidYMid slice`
       },
+      tonight() {
+        const tonight = new Date()
+        tonight.setHours(19)
+        return tonight.toLocaleString('en-US', { dateStyle: 'full' })
+      },
       today() {
         return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
@@ -99,11 +106,10 @@
     },
     methods: {
       selected_event_time(event) {
-        console.log("selected_event_time")
-        this.show_event = false
+        console.log("selected_event_time", this.new_event)
       },
       manage_event(event) {
-        console.log("manage_event")
+        console.log("manage_event", this.new_event)
         this.show_event = true
         this.$refs.picker.focus()
       },
@@ -114,7 +120,8 @@
         this.show_event = false
       },
       delete_me() {
-        this.$emit('delete', this.poster.id)
+        const message = 'Delete poster?'
+        if (window.confirm(message)) this.$emit('delete', this.poster.id)
       },
       save() {
         this.$emit('save', this.poster.id)
@@ -143,15 +150,27 @@
         display: flex
         justify-content: space-between
         a#create_event
-          display: flex
-          flex-direction: column;
-          justify-content: center;
-          span
-            color: red
-            z-index: 2
-            padding-top: (base-line / 4)
-            padding-left: ( base-line / 3)
+          position: relative
+          & > input
+            position: absolute;
+            top: 0
+            left: 0
+            color: transparent
+            z-index: 14
+            width: base-line * 2
+            height: base-line * 2
+            &::-webkit-datetime-edit
+            &::-webkit-datetime-edit-fields-wrapper
+            &::-webkit-datetime-edit-text
+            &::-webkit-datetime-edit-month-field
+            &::-webkit-datetime-edit-day-field
+            &::-webkit-datetime-edit-year-field
+            &::-webkit-inner-spin-button
+            &::-webkit-calendar-picker-indicator
+              display: none
           svg
+            &.has-date
+              fill: blue
             text
               fill: white
               font-size: base-line * 2
@@ -164,7 +183,7 @@
         svg
           fill: red
           &.finished
-            fill: blue !important
+            fill: blue
 </style>
 <style lang="stylus">
   figure[itemtype="/posters"].selecting-date
@@ -173,35 +192,36 @@
     & > figcaption
       & > menu
         display: none
-      fieldset
-        padding: 0
-        display: block
+      & > fieldset
+        margin-top: -(round(base-line * 10.25, 2))
+        padding: base-line
+        display: flex
+        justify-content: space-around
+        flex-direction: column
         border:none
+        & > label
+          text-align: ceter
+          display: block;
+          line-height: base-line
+          margin-bottom: base-line
+          color: red
+          font-weight: 800
+          font-size: base-line
+        & > input
+          padding: 0
+          line-height: 1
+          z-index: 44
+          cursor: pointer
+          color:red
+          font-weight: 900
+          margin-bottom: base-line * 3
         & > menu
           width: 100%
           z-index: 55
-          position: absolute
-          margin-top: -(base-line * 4)
           display: flex
-          padding: base-line
           justify-content: space-between
           & > a > svg
-            fill: red !important
-        & > input
-          display: block
-          padding: base-line
-          user-select: none
-          position: absolute
-          z-index: 3
-          top: 0
-          bottom: 0
-          right: 0
-          left: 0
-          font-size: base-line * 1.4
-          line-height: 1.33
-          color:red
-          &::placeholder
-            color:red
-          &:focus
-            z-index: 3
+            fill: red
+            &.add
+              fill: blue
 </style>
