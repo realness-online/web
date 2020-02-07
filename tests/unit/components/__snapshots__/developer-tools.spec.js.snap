@@ -1,3 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/developer-tools.js Renders developer tools 1`] = `<!---->`;
+exports[`@/components/developer-tools.js Renders developer tools 1`] = `
+<table
+  itemscope="itemscope"
+  itemtype="/activity"
+>
+  <tbody />
+</table>
+`;

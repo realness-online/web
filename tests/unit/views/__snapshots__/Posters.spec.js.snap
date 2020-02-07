@@ -29,5 +29,10 @@ exports[`@/views/Posters.vue Renders layout for posters 1`] = `
   <article
     itemprop="posters"
   />
+   
+  <aside
+    class="events"
+    itemprop="events"
+  />
 </section>
 `;
