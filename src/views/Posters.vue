@@ -140,18 +140,13 @@
 </script>
 <style lang="stylus">
   section#posters
-    svg
-      &.finished
-      &.working
-      &.add
-        fill: green
-      &.remove
-        fill: red
     & > header
       justify-content: space-between
       margin: auto
       @media (min-width: mid-screen)
         max-width: page-width
+      & > a > svg.add
+        fill: green
     & > hgroup
       svg.working
         margin-bottom: base-line
