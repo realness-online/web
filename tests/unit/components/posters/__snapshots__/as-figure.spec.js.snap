@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-figure.vue Render a poster 1`] = `
+<figure
+  class=""
+  itemid="/posters/55599555955"
+  itemscope="itemscope"
+  itemtype="/posters"
+>
+  <svg
+    preserveAspectRatio="xMidYMid slice"
+  />
+   
+  <figcaption>
+    <meta
+      itemprop="view_box"
+    />
+     
+    <meta
+      itemprop="created_at"
+    />
+     
+    <meta
+      content="/+16282281823"
+      itemprop="created_by"
+    />
+     
+    <input
+      id="event-picker"
+      type="date"
+      value="Friday, February 7"
+    />
+     
+    <!---->
+     
+    <!---->
+  </figcaption>
+</figure>
+`;
