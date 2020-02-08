@@ -7,17 +7,17 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <fieldset>
+      <input id="event-picker" type="date" ref="picker" v-model="new_event" @click="manage_event">
+      <fieldset v-if="show_event">
         <label for="event-picker">{{tonight}}</label>
         <input id="time-picker" type="time" value="21:00" ref="time" >
-        <menu v-if="show_event">
+        <menu>
           <a v-on:click="remove_event"><icon name="remove"></icon></a>
           <a v-on:click="save_event"><icon name="add"></icon></a>
         </menu>
       </fieldset>
       <menu v-if="menu">
         <a id="create_event" v-if="!is_new">
-          <input id="event-picker" type="date" ref="picker" v-model="new_event" @click="manage_event">
           <svg viewBox="0 0 150 150">
             <rect x="1" y="1" rx="8" width="114" height="114" />
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
@@ -95,7 +95,11 @@
       tonight() {
         const tonight = new Date()
         tonight.setHours(19)
-        return tonight.toLocaleString('en-US', { dateStyle: 'full' })
+        return tonight.toLocaleString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric'
+        })
       },
       today() {
         return new Date().toLocaleString('en-US', { day: 'numeric' })
@@ -142,8 +146,32 @@
       height: 100vh
       max-height: page-width
     & > figcaption
+      position: relative
+      & > input[type="date"]
+        position: absolute
+        top: base-line
+        left: base-line
+        color: transparent
+        z-index: 1
+        width: base-line * 2
+        height: base-line * 2
+        &::-webkit-date-edit
+        &::-webkit-datetime-edit-fields-wrapper
+        &::-webkit-datetime-edit-text
+        &::-webkit-datetime-edit-month-field
+        &::-webkit-datetime-edit-day-field
+        &::-webkit-datetime-edit-year-field
+        &::-webkit-inner-spin-button
+        &::-webkit-calendar-picker-indicator
+          display: none
       & > fieldset
-        display: none
+        padding: base-line
+        display: flex
+        justify-content: space-around
+        flex-direction: column
+        border:none
+        padding: base-line
+        border: none
       & > menu
         padding: base-line
         margin-top: -(base-line * 4)
@@ -151,23 +179,6 @@
         justify-content: space-between
         a#create_event
           position: relative
-          & > input
-            position: absolute;
-            top: 0
-            left: 0
-            color: transparent
-            z-index: 14
-            width: base-line * 2
-            height: base-line * 2
-            &::-webkit-datetime-edit
-            &::-webkit-datetime-edit-fields-wrapper
-            &::-webkit-datetime-edit-text
-            &::-webkit-datetime-edit-month-field
-            &::-webkit-datetime-edit-day-field
-            &::-webkit-datetime-edit-year-field
-            &::-webkit-inner-spin-button
-            &::-webkit-calendar-picker-indicator
-              display: none
           svg
             &.has-date
               fill: blue
@@ -193,31 +204,29 @@
       & > menu
         display: none
       & > fieldset
-        margin-top: -(round(base-line * 10.25, 2))
-        padding: base-line
-        display: flex
-        justify-content: space-around
-        flex-direction: column
-        border:none
+        margin-top: -(round(base-line * 10, 2))
         & > label
+          z-index: 2
+          cursor: pointer
           text-align: ceter
-          display: block;
+          display: block
           line-height: base-line
           margin-bottom: base-line
           color: red
           font-weight: 800
           font-size: base-line
         & > input
+          height: base-line
           padding: 0
           line-height: 1
-          z-index: 44
+          z-index: 3
           cursor: pointer
           color:red
           font-weight: 900
           margin-bottom: base-line * 3
         & > menu
           width: 100%
-          z-index: 55
+          z-index: 4
           display: flex
           justify-content: space-between
           & > a > svg
