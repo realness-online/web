@@ -43,6 +43,10 @@
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   export default {
+    components: {
+      'download-vector': download_vector,
+      icon
+    },
     props: {
       poster: {
         type: Object,
@@ -77,10 +81,6 @@
     mounted() {
       this.$refs.picker.defaultValue = this.tonight
       this.$refs.picker.value = this.tonight
-    },
-    components: {
-      'download-vector': download_vector,
-      icon
     },
     computed: {
       selecting() {
@@ -144,6 +144,39 @@
     @media (min-width: min-screen)
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
+    &.selecting-date
+      & > svg
+        opacity: 0.1
+      & > figcaption > fieldset
+        margin-top: -(round(base-line * 10, 2))
+        & > label
+          z-index: 2
+          cursor: pointer
+          text-align: ceter
+          display: block
+          line-height: base-line
+          margin-bottom: base-line
+          color: red
+          font-weight: 800
+          font-size: base-line
+        & > input
+          height: base-line
+          padding: 0
+          line-height: 1
+          z-index: 3
+          cursor: pointer
+          color:red
+          font-weight: 900
+          margin-bottom: base-line * 3
+        & > menu
+          width: 100%
+          z-index: 4
+          display: flex
+          justify-content: space-between
+          & > a > svg
+            fill: red
+            &.add
+              fill: blue
     & > svg
       width: 100%
       height: 100vh
@@ -197,40 +230,5 @@
         svg
           fill: red
           &.finished
-            fill: blue
-</style>
-<style lang="stylus">
-  figure[itemtype="/posters"].selecting-date
-    & > svg
-      opacity: 0.1
-    & > figcaption > fieldset
-      margin-top: -(round(base-line * 10, 2))
-      & > label
-        z-index: 2
-        cursor: pointer
-        text-align: ceter
-        display: block
-        line-height: base-line
-        margin-bottom: base-line
-        color: red
-        font-weight: 800
-        font-size: base-line
-      & > input
-        height: base-line
-        padding: 0
-        line-height: 1
-        z-index: 3
-        cursor: pointer
-        color:red
-        font-weight: 900
-        margin-bottom: base-line * 3
-      & > menu
-        width: 100%
-        z-index: 4
-        display: flex
-        justify-content: space-between
-        & > a > svg
-          fill: red
-          &.add
             fill: blue
 </style>
