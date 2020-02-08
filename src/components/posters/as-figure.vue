@@ -109,9 +109,6 @@
       }
     },
     methods: {
-      selected_event_time(event) {
-        console.log('selected_event_time', this.new_event)
-      },
       manage_event(event) {
         console.log('manage_event', this.new_event)
         this.show_event = true
