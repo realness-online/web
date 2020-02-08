@@ -115,13 +115,16 @@
       manage_event(event) {
         console.log('manage_event', this.new_event)
         this.show_event = true
+        this.menu = false
         this.$refs.picker.focus()
       },
       remove_event() {
         this.show_event = false
+        this.menu = true
       },
       save_event() {
         this.show_event = false
+        this.menu = true
       },
       delete_me() {
         const message = 'Delete poster?'
@@ -200,37 +203,34 @@
   figure[itemtype="/posters"].selecting-date
     & > svg
       opacity: 0.1
-    & > figcaption
+    & > figcaption > fieldset
+      margin-top: -(round(base-line * 10, 2))
+      & > label
+        z-index: 2
+        cursor: pointer
+        text-align: ceter
+        display: block
+        line-height: base-line
+        margin-bottom: base-line
+        color: red
+        font-weight: 800
+        font-size: base-line
+      & > input
+        height: base-line
+        padding: 0
+        line-height: 1
+        z-index: 3
+        cursor: pointer
+        color:red
+        font-weight: 900
+        margin-bottom: base-line * 3
       & > menu
-        display: none
-      & > fieldset
-        margin-top: -(round(base-line * 10, 2))
-        & > label
-          z-index: 2
-          cursor: pointer
-          text-align: ceter
-          display: block
-          line-height: base-line
-          margin-bottom: base-line
-          color: red
-          font-weight: 800
-          font-size: base-line
-        & > input
-          height: base-line
-          padding: 0
-          line-height: 1
-          z-index: 3
-          cursor: pointer
-          color:red
-          font-weight: 900
-          margin-bottom: base-line * 3
-        & > menu
-          width: 100%
-          z-index: 4
-          display: flex
-          justify-content: space-between
-          & > a > svg
-            fill: red
-            &.add
-              fill: blue
+        width: 100%
+        z-index: 4
+        display: flex
+        justify-content: space-between
+        & > a > svg
+          fill: red
+          &.add
+            fill: blue
 </style>
