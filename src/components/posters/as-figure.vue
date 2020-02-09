@@ -96,7 +96,7 @@
       has_date() {
         return this.events.some(event => {
           event.poster.id === this.poster.id
-        })      
+        })
       },
       aspect_ratio() {
         if (this.menu) return `xMidYMid meet`
@@ -126,14 +126,14 @@
         this.$refs.picker.focus()
       },
       remove_event() {
-        this.$emit('remove_event', this.new_event)
         this.show_event = false
         this.menu = true
+        this.$emit('remove-event', this.new_event)
       },
       save_event() {
-        this.$emit('save_event', this.new_event)
         this.show_event = false
         this.menu = true
+        this.$emit('add-event', this.new_event)
       },
       delete_me() {
         const message = 'Delete poster?'
