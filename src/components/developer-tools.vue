@@ -1,7 +1,7 @@
 <template lang="html">
   <table itemscope itemtype="/activity">
     <tbody>
-      <tr v-for="[message, created_at] in activity" v-bind:key="created_at">
+      <tr v-for="[message, created_at] in activity">
         <td><time>{{created_at}}</time></td>
         <td>{{message}}</td>
       </tr>
