@@ -18,7 +18,7 @@
       </fieldset>
       <menu v-if="menu">
         <a id="create_event" v-if="!is_new">
-          <svg viewBox="0 0 150 150">
+          <svg viewBox="0 0 150 150" v-bind:class="has_date">
             <rect x="1" y="1" rx="8" width="114" height="114" />
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
             <text x="57" y="84" text-anchor="middle">{{today}}</text>
@@ -65,6 +65,11 @@
         type: Boolean,
         required: false,
         default: false
+      },
+      events: {
+        type: Array,
+        required: false,
+        default: []
       }
     },
     data() {
@@ -87,6 +92,11 @@
         return {
           'selecting-date': this.show_event
         }
+      },
+      has_date() {
+        return this.events.some(event => {
+          event.poster.id === this.poster.id
+        })      
       },
       aspect_ratio() {
         if (this.menu) return `xMidYMid meet`
@@ -116,10 +126,12 @@
         this.$refs.picker.focus()
       },
       remove_event() {
+        this.$emit('remove_event', this.new_event)
         this.show_event = false
         this.menu = true
       },
       save_event() {
+        this.$emit('save_event', this.new_event)
         this.show_event = false
         this.menu = true
       },
