@@ -13,7 +13,12 @@
       <as-figure class="new" v-if="new_poster" :is_new="true" @delete="remove_new_poster" @save="save_new_poster"
                  :poster="new_poster" :author="me" :working="working" v-bind:key="as_itemid"></as-figure>
       <as-figure v-else v-for="poster in posters" @delete="delete_poster"
-                :poster="poster" :author="me" :working="working" v-bind:key="poster.id"></as-figure>
+                :author="me"
+                :poster="poster"
+                :events="events"
+                :working="working"
+                @add-event="add_event"
+                @remove-event="remove_event" v-bind:key="poster.id"></as-figure>
     </article>
     <aside class="events" itemprop="events">
       <link rel="icon" itemscope itemtype="/events" :itemid="event.id"
@@ -54,9 +59,10 @@
       }
     },
     async created() {
-      console.info('Viewed their posters')
+      console.info(`${this.me.first_name} viewed their posters`)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
+
     },
     computed: {
       as_itemid() {
@@ -64,6 +70,13 @@
       }
     },
     methods: {
+      get_id(poster_reference) {
+        return `posters/${poster_reference.name.split('.')[0]}`
+      },
+      async vectorize_image(image) {
+        this.working = true
+        this.worker.postMessage({ image })
+      },
       newer_first(earlier, later) {
         return later.created_at - earlier.created_at
       },
@@ -114,13 +127,6 @@
           })
         }
       },
-      get_id(poster_reference) {
-        return `posters/${poster_reference.name.split('.')[0]}`
-      },
-      async vectorize_image(image) {
-        this.working = true
-        this.worker.postMessage({ image })
-      },
       async delete_poster(poster_id) {
         this.working = true
         this.posters = this.posters.filter(poster => poster_id !== poster.id)
@@ -128,7 +134,19 @@
         posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
+      },
+      async add_event(event) {
+        console.log('add_event', event)
+        // this.events.push(event)
+        // await this.$nextTick()
+        // events_storage.save()
+      },
+      async remove_event(event) {
+        console.log('remove-event', event)
+        // await this.$nextTick()
+        // events_storage.save()
       }
+
     },
     watch: {
       async posters() {
