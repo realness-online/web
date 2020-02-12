@@ -3,11 +3,11 @@
     <svg @click="svg_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
-    <figcaption >
+    <figcaption>
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input id="event-day" type="date" ref="day" :value="event_day" @click="manage_event" required>
+      <input outline id="event-day" type="date" ref="day" :value="event_day" @click="manage_event" required>
       <fieldset v-if="show_event">
         <label for="event-day">{{event_label}}</label>
         <input id="event-time" type="time" :value="event_time" ref="time" required>
@@ -77,13 +77,13 @@
         menu: false,
         accept: true,
         show_event: false,
-        event: null
+        main_event: null
       }
     },
     created() {
       if (this.is_new) this.menu = true
-      this.event = this.events.find(event => event.href === poster.id)
-      if (!this.event) this.event = this.tonight
+      this.main_event = this.events.find(event => event.href === poster.id)
+      if (!this.main_event) this.main_event = this.tonight
     },
     computed: {
       selecting() {
@@ -99,25 +99,29 @@
         else return `xMidYMid slice`
       },
       event_time() {
-        return `${this.event.getHours()}:${this.event.getMinutes()}`
+        let minutes = this.main_event.getMinutes()
+        minutes = minutes > 9? minutes : `0${minutes}`
+        const time_value = `${this.main_event.getHours()}:${minutes}`
+        console.log('event_time', time_value)
+        return time_value
       },
       event_day() {
-        let day = this.event.toISOString().split('T')[0]
-        console.log(day);
-        return day
+        const day_value = this.main_event.toISOString().split('T')[0]
+        console.log('day', day_value);
+        return day_value
       },
       event_label() {
-        return this.event.toLocaleString('en-US', {
+        return this.main_event.toLocaleString('en-US', {
           weekday: 'long',
           month: 'long',
           day: 'numeric'
         })
       },
       day() {
-        return this.event.toLocaleString('en-US', { day: 'numeric' })
+        return this.main_event.toLocaleString('en-US', { day: 'numeric' })
       },
       month() {
-        return this.event.toLocaleString('en-US', { month: 'long' })
+        return this.main_event.toLocaleString('en-US', { month: 'long' })
       },
       tonight() {
         const tonight = new Date()
@@ -132,23 +136,23 @@
         else this.menu = !this.menu
       },
       manage_event(event) {
-        console.log('manage_event', this.event, this.event_time)
         this.show_event = true
         this.menu = false
-        this.$refs.picker.focus()
+        // this.$refs.day.focus()
+        console.log('manage_event', this.show_event)
       },
       remove_event() {
         this.show_event = false
         this.menu = true
-        this.$emit('remove-event', this.event)
+        this.$emit('remove-event', this.main_event)
         this.new_event = null
       },
       save_event() {
         this.show_event = false
         this.menu = true
-        const event = this.event_day + this.event_time
+        const temp_event = this.event_day + this.event_time
         console.log(event)
-        if (this.new_event) this.$emit('add-event', event)
+        if (this.new_event) this.$emit('add-event', temp_event)
       },
       delete_me() {
         const message = 'Delete poster?'
