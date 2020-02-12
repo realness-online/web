@@ -178,7 +178,7 @@
       & > figcaption > input[type="date"]
         width: auto
         height: base-line
-        @media (min-width: mid-screen)
+        @media (min-width: max-screen)
           top: base-line * 2
           &::-webkit-datetime-edit-fields-wrapper
           &::-webkit-datetime-edit-text
