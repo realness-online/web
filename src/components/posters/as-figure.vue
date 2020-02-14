@@ -7,7 +7,11 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input outline id="event-day" type="date" ref="day" :value="event_day" @click="manage_event" required>
+      <input id="event-day" type="date" required
+             ref="day"
+             :value="event_day"
+             @click="manage_event"
+             @input="update_date">
       <fieldset v-if="show_event">
         <label for="event-day">{{event_label}}</label>
         <input id="event-time" type="time" :value="event_time" ref="time" required>
@@ -26,7 +30,7 @@
             <path d="M88.5442 88.5442C74.4853 102.603 74.4853 125.397 88.5442 139.456C102.603 153.515 125.397 153.515 139.456 139.456C153.515 125.397 153.515 102.603 139.456 88.5442C125.397 74.4853 102.603 74.4853 88.5442 88.5442ZM134.543 134.544C123.198 145.888 104.802 145.889 93.4566 134.544C82.1109 123.198 82.1109 104.803 93.4566 93.4566C104.802 82.1109 123.198 82.1109 134.543 93.4566C145.889 104.803 145.889 123.198 134.543 134.544Z" />
           </svg>
         </a>
-        <a @click="delete_me">
+        <a @click="delete_poster">
           <icon v-if="working" name="working"></icon>
           <icon v-else name="remove"></icon>
         </a>
@@ -102,15 +106,24 @@
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9? minutes : `0${minutes}`
         const time_value = `${this.main_event.getHours()}:${minutes}`
-        console.log('event_time', time_value)
+        // console.log('event_time', time_value)
         return time_value
       },
       event_day() {
-        const day_value = this.main_event.toISOString().split('T')[0]
-        console.log('day', day_value);
+        // console.log('event_day');
+        const year = this.main_event.getFullYear()
+        let month = this.main_event.getMonth() + 1
+        let day = this.main_event.getDate()
+
+        if (month <= 9) month = `0${month}`
+        if (day <= 9) day = `0${day}`
+
+        const day_value = `${year}-${month}-${day}`
+        // console.log('day', day_value);
         return day_value
       },
       event_label() {
+
         return this.main_event.toLocaleString('en-US', {
           weekday: 'long',
           month: 'long',
@@ -135,11 +148,16 @@
         if(this.show_event) this.menu = false
         else this.menu = !this.menu
       },
+      update_date(event) {
+        const date_list = this.$refs.day.value.split('-')
+        const year = parseInt(date_list[0])
+        const month = parseInt(date_list[1]) - 1
+        const day = parseInt(date_list[2])
+        this.main_event = new Date(this.main_event.setFullYear(year, month, day))
+      },
       manage_event(event) {
         this.show_event = true
         this.menu = false
-        // this.$refs.day.focus()
-        console.log('manage_event', this.show_event)
       },
       remove_event() {
         this.show_event = false
@@ -154,7 +172,7 @@
         console.log(event)
         if (this.new_event) this.$emit('add-event', temp_event)
       },
-      delete_me() {
+      delete_poster() {
         const message = 'Delete poster?'
         if (window.confirm(message)) this.$emit('delete', this.poster.id)
       },
@@ -178,7 +196,7 @@
       & > figcaption > input[type="date"]
         width: auto
         height: base-line
-        @media (min-width: max-screen)
+        @media (min-width: mid-screen)
           top: base-line * 2
           &::-webkit-datetime-edit-fields-wrapper
           &::-webkit-datetime-edit-text
