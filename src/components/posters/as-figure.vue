@@ -7,14 +7,16 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input id="event-day" type="date" required
-             ref="day"
+      <input id="day" type="date" required ref="day"
              :value="event_day"
              @click="manage_event"
              @input="update_date">
       <fieldset v-if="show_event">
-        <label for="event-day">{{event_label}}</label>
-        <input id="event-time" type="time" :value="event_time" ref="time" required>
+        <label for="day">{{event_label}}</label>
+        <input type="time" required
+               :value="event_time"
+               ref="time"
+               @input="update_time">
         <menu>
           <a @click="remove_event"><icon name="remove"></icon></a>
           <a @click="save_event"><icon name="add"></icon></a>
@@ -123,7 +125,6 @@
         return day_value
       },
       event_label() {
-
         return this.main_event.toLocaleString('en-US', {
           weekday: 'long',
           month: 'long',
@@ -155,6 +156,14 @@
         const day = parseInt(date_list[2])
         this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
+      update_time() {
+        console.log('update_time', this.$refs.time.value)
+        const time_list = this.$refs.time.value.split(':')
+        const hour = parseInt(time_list[0])
+        const minute = parseInt(time_list[1])
+        this.main_event = new Date(this.main_event.setHours(hour, minute))
+        console.log('new-time', this.main_event)
+      },
       manage_event(event) {
         this.show_event = true
         this.menu = false
@@ -166,11 +175,10 @@
         this.new_event = null
       },
       save_event() {
+        console.log('save_event')
         this.show_event = false
         this.menu = true
-        const temp_event = this.event_day + this.event_time
-        console.log(event)
-        if (this.new_event) this.$emit('add-event', temp_event)
+        if (this.new_event) this.$emit('add-event', this.main_event)
       },
       delete_poster() {
         const message = 'Delete poster?'
