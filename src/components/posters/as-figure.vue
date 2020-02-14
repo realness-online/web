@@ -32,11 +32,11 @@
             <path d="M88.5442 88.5442C74.4853 102.603 74.4853 125.397 88.5442 139.456C102.603 153.515 125.397 153.515 139.456 139.456C153.515 125.397 153.515 102.603 139.456 88.5442C125.397 74.4853 102.603 74.4853 88.5442 88.5442ZM134.543 134.544C123.198 145.888 104.802 145.889 93.4566 134.544C82.1109 123.198 82.1109 104.803 93.4566 93.4566C104.802 82.1109 123.198 82.1109 134.543 93.4566C145.889 104.803 145.889 123.198 134.543 134.544Z" />
           </svg>
         </a>
-        <a @click="delete_poster">
+        <a @click="remove_poster">
           <icon v-if="working" name="working"></icon>
           <icon v-else name="remove"></icon>
         </a>
-        <a @click="save" v-if="is_new">
+        <a @click="add_poster" v-if="is_new">
           <icon v-if="accept" name="finished"></icon>
           <icon v-else name="working"></icon>
         </a>
@@ -157,12 +157,10 @@
         this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
       update_time() {
-        console.log('update_time', this.$refs.time.value)
         const time_list = this.$refs.time.value.split(':')
         const hour = parseInt(time_list[0])
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
-        console.log('new-time', this.main_event)
       },
       manage_event(event) {
         this.show_event = true
@@ -180,12 +178,12 @@
         this.menu = true
         if (this.new_event) this.$emit('add-event', this.main_event)
       },
-      delete_poster() {
+      remove_poster() {
         const message = 'Delete poster?'
-        if (window.confirm(message)) this.$emit('delete', this.poster.id)
+        if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
       },
-      save() {
-        this.$emit('save', this.poster.id)
+      add_poster() {
+        this.$emit('add-poster', this.poster.id)
       }
     }
   }

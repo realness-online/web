@@ -10,7 +10,9 @@
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <article itemprop="posters">
-      <as-figure class="new" v-if="new_poster" :is_new="true" @delete="remove_new_poster" @save="save_new_poster"
+      <as-figure class="new" v-if="new_poster" :is_new="true"
+                  @delete="remove_new_poster" 
+                  @save_poster="save_new_poster"
                  :poster="new_poster" :author="me" :working="working" v-bind:key="as_itemid"></as-figure>
       <as-figure v-else v-for="poster in posters" @delete="delete_poster"
                 :author="me"
