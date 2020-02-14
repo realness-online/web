@@ -16,8 +16,8 @@
         <label for="event-day">{{event_label}}</label>
         <input id="event-time" type="time" :value="event_time" ref="time" required>
         <menu>
-          <a @:click="remove_event"><icon name="remove"></icon></a>
-          <a @:click="save_event"><icon name="add"></icon></a>
+          <a @click="remove_event"><icon name="remove"></icon></a>
+          <a @click="save_event"><icon name="add"></icon></a>
         </menu>
       </fieldset>
       <menu v-if="menu">

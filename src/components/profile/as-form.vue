@@ -3,19 +3,19 @@
     <fieldset id="name">
       <input id="first-name" type='text' tabindex="1" placeholder="First" required
              v-model="person.first_name"
-             v-on:blur="modified_check">
+             @blur="modified_check">
       <input id="last-name" type='text' tabindex="2"  placeholder="Last" required
              v-model="person.last_name"
-             v-on:blur="modified_check">
+             @blur="modified_check">
     </fieldset>
     <fieldset id="phone" v-if="!show_sign_out">
       <label for="mobile">1</label>
       <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
              v-model="person.mobile"
-             v-on:keypress="mobile_keypress"
-             v-on:keyup="mobile_keyup"
-             v-on:paste.prevent="mobile_paste"
-             v-on:blur="modified_check">
+             @keypress="mobile_keypress"
+             @keyup="mobile_keyup"
+             @paste.prevent="mobile_paste"
+             @blur="modified_check">
     </fieldset>
     <fieldset id="captcha"
          v-if='show_captcha'
@@ -24,20 +24,20 @@
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" tabindex="4" placeholder="Verification Code"
              v-model="code"
-             v-on:keypress="code_keypress">
+             @keypress="code_keypress">
     </fieldset>
     <icon v-show="working" name="working"></icon>
     <menu>
       <button id="authorize"
               :disabled="disabled_sign_in"
               v-if="show_authorize"
-              v-on:click.prevent='begin_authorization'>Sign in</button>
+              @click.prevent='begin_authorization'>Sign in</button>
       <button id='submit-verification'
               v-if="show_code"
-              v-on:click.prevent="sign_in_with_code">Sign in</button>
+              @click.prevent="sign_in_with_code">Sign in</button>
       <button id="sign-out"
               v-if="show_sign_out"
-              v-on:click.prevent="sign_out">
+              @click.prevent="sign_out">
               <icon name="remove"></icon>
       </button>
     </menu>

@@ -2,8 +2,8 @@
   <label for="search">
     <input id="search" type="search" placeholder="Search phonebook" autocomplete="off"
       v-model="query"
-      v-on:focusout="view_friends_mode"
-      v-on:focusin="search_mode">
+      @focusout="view_friends_mode"
+      @focusin="search_mode">
     <icon name="search"></icon>
   </label>
 </template>

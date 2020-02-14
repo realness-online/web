@@ -1,6 +1,6 @@
 <template>
   <menu>
-    <a v-if="!is_me" v-bind:class="{relation}" v-on:click="update_relationship">
+    <a v-if="!is_me" v-bind:class="{relation}" @click="update_relationship">
       <icon name="add"></icon>
       <icon name="remove"></icon>
     </a>
