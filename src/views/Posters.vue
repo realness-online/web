@@ -10,17 +10,24 @@
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <article itemprop="posters">
-      <as-figure class="new" v-if="new_poster" :is_new="true"
-                  @delete="remove_new_poster" 
-                  @save_poster="save_new_poster"
-                 :poster="new_poster" :author="me" :working="working" v-bind:key="as_itemid"></as-figure>
-      <as-figure v-else v-for="poster in posters" @delete="delete_poster"
+      <as-figure  v-if="new_poster"
+                  class="new"  
+                  :is_new="true"
+                  :poster="new_poster"
+                  :author="me"
+                  :working="working"
+                  @remove-poster="remove_new_poster"
+                  @add-poster="save_new_poster"
+                  v-bind:key="as_itemid"></as-figure>
+      <as-figure v-else v-for="poster in posters"
                 :author="me"
                 :poster="poster"
                 :events="events"
                 :working="working"
+                @remove-poster="delete_poster"
                 @add-event="add_event"
-                @remove-event="remove_event" v-bind:key="poster.id"></as-figure>
+                @remove-event="remove_event"
+                v-bind:key="poster.id"></as-figure>
     </article>
     <aside class="events" itemprop="events">
       <link rel="icon" itemscope itemtype="/events" :itemid="event.id"

@@ -26,9 +26,9 @@ exports[`@/compontent/profile/as-figure.vue Render a poster 1`] = `
     />
      
     <input
-      id="event-picker"
+      id="day"
+      required="required"
       type="date"
-      value="Friday, February 7"
     />
      
     <!---->

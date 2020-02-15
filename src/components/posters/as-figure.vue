@@ -7,7 +7,7 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input id="day" type="date" required ref="day"
+      <input id="day" type="date" required ref="day" v-if="!is_new"
              :value="event_day"
              @click="manage_event"
              @input="update_date">
@@ -75,7 +75,7 @@
       events: {
         type: Array,
         required: false,
-        default: []
+        default: () => []
       }
     },
     data() {
@@ -183,6 +183,8 @@
         if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
       },
       add_poster() {
+
+
         this.$emit('add-poster', this.poster.id)
       }
     }
