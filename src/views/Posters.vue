@@ -10,28 +10,31 @@
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <article itemprop="posters">
-      <as-figure  v-if="new_poster"
-                  class="new"  
-                  :is_new="true"
-                  :poster="new_poster"
-                  :author="me"
-                  :working="working"
-                  @remove-poster="remove_new_poster"
-                  @add-poster="save_new_poster"
-                  v-bind:key="as_itemid"></as-figure>
+      <as-figure v-if="new_poster"
+                 class="new"
+                 :is_new="true"
+                 :poster="new_poster"
+                 :author="me"
+                 :working="working"
+                 @add-poster="add_poster"
+                 @remove-poster="remove_new_poster"
+                 v-bind:key="as_itemid"></as-figure>
       <as-figure v-else v-for="poster in posters"
-                :author="me"
-                :poster="poster"
-                :events="events"
-                :working="working"
-                @remove-poster="delete_poster"
-                @add-event="add_event"
-                @remove-event="remove_event"
-                v-bind:key="poster.id"></as-figure>
+                 :author="me"
+                 :poster="poster"
+                 :events="events"
+                 :working="working"
+                 @remove-poster="remove_poster"
+                 @add-event="add_event"
+                 @remove-event="remove_event"
+                 v-bind:key="poster.id"></as-figure>
     </article>
     <aside class="events" itemprop="events">
-      <link rel="icon" itemscope itemtype="/events" :itemid="event.id"
-            v-for="event in events" :href="event.poster" v-bind:key="event.id">
+      <link rel="icon" itemscope itemtype="/events"
+            v-for="event in events"
+            v-bind:key="event.id"
+            :itemid="event.id"
+            :href="event.poster"/>
     </aside>
   </section>
 </template>
@@ -57,7 +60,6 @@
     data() {
       return {
         finished: true,
-        show_menu: true,
         events: events_storage.as_list(),
         me: me.as_object(),
         worker: new Worker('/vector.worker.js'),
@@ -71,7 +73,6 @@
       console.info(`${this.me.first_name} viewed their posters`)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
-
     },
     computed: {
       as_itemid() {
@@ -88,29 +89,6 @@
       },
       newer_first(earlier, later) {
         return later.created_at - earlier.created_at
-      },
-      brand_new_poster(event) {
-        console.info(`${this.me.first_name} created a poster`)
-        this.new_poster = event.data
-        this.new_poster.type = '/posters'
-        this.new_poster.id = this.as_itemid
-        this.working = false
-      },
-      remove_new_poster() {
-        this.working = true
-        this.new_poster = null
-        this.show_menu = true
-        this.working = false
-      },
-      async save_new_poster() {
-        console.info(`${this.me.first_name} saved poster`)
-        this.working = true
-        posters_storage.filename = this.as_itemid
-        this.posters.unshift(this.new_poster)
-        this.new_poster = null
-        await this.$nextTick()
-        await posters_storage.save()
-        this.working = false
       },
       async sync_posters_with_network(user) {
         if (user) {
@@ -136,7 +114,29 @@
           })
         }
       },
-      async delete_poster(poster_id) {
+      brand_new_poster(event) {
+        console.info(`${this.me.first_name} created a poster`)
+        this.new_poster = event.data
+        this.new_poster.type = '/posters'
+        this.new_poster.id = this.as_itemid
+        this.working = false
+      },
+      remove_new_poster() {
+        this.working = true
+        this.new_poster = null
+        this.working = false
+      },
+      async add_poster() {
+        console.info(`${this.me.first_name} saved poster`)
+        this.working = true
+        posters_storage.filename = this.as_itemid
+        this.posters.unshift(this.new_poster)
+        this.new_poster = null
+        await this.$nextTick()
+        await posters_storage.save()
+        this.working = false
+      },
+      async remove_poster(poster_id) {
         this.working = true
         this.posters = this.posters.filter(poster => poster_id !== poster.id)
         await this.$nextTick()
@@ -146,21 +146,21 @@
       },
       async add_event(event) {
         console.log('add_event', event)
-        // this.events.push(event)
-        // await this.$nextTick()
-        // events_storage.save()
+        this.events.push(event)
+        await this.$nextTick()
+        events_storage.save()
       },
       async remove_event(event) {
         console.log('remove-event', event)
-        // await this.$nextTick()
-        // events_storage.save()
+        await this.$nextTick()
+        events_storage.save()
       }
 
     },
     watch: {
       async posters() {
         await this.$nextTick()
-        posters_storage.save()
+        // posters_storage.save()
       }
     }
   }

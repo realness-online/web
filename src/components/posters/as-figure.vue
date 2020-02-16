@@ -7,7 +7,9 @@
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
       <meta itemprop="created_by" :content="author.id">
-      <input id="day" type="date" required ref="day" v-if="!is_new"
+      <input id="day" type="date" required
+             ref="day"
+             v-if="show_date_picker"
              :value="event_day"
              @click="manage_event"
              @input="update_date">
@@ -24,12 +26,10 @@
       </fieldset>
       <menu v-if="menu">
         <a id="create-event" v-if="!is_new">
-          <svg viewBox="0 0 150 150" v-bind:class="has_date">
-            <rect x="1" y="1" rx="8" width="114" height="114" />
+          <svg viewBox="0 0 150 150" v-bind:class="has_event">
+            <use :xlink:href="date_picker_icon"/>
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
             <text x="57" y="84" text-anchor="middle">{{day}}</text>
-            <path d="M130.019 110.44H117.56V97.9805C117.56 97.0364 117.185 96.131 116.517 95.4635C115.85 94.7959 114.944 94.4209 114 94.4209C113.056 94.4209 112.151 94.7959 111.483 95.4635C110.816 96.131 110.441 97.0364 110.441 97.9805V110.44H97.9807C97.0367 110.44 96.1313 110.815 95.4637 111.483C94.7962 112.15 94.4211 113.056 94.4211 114C94.4211 114.944 94.7962 115.849 95.4637 116.517C96.1313 117.184 97.0367 117.559 97.9807 117.559H110.441V130.019C110.441 130.963 110.816 131.869 111.483 132.536C112.151 133.204 113.056 133.579 114 133.579C114.944 133.579 115.85 133.204 116.517 132.536C117.185 131.869 117.56 130.963 117.56 130.019V117.559H130.019C130.964 117.559 131.869 117.184 132.536 116.517C133.204 115.849 133.579 114.944 133.579 114C133.579 113.056 133.204 112.15 132.536 111.483C131.869 110.815 130.964 110.44 130.019 110.44V110.44Z" />
-            <path d="M88.5442 88.5442C74.4853 102.603 74.4853 125.397 88.5442 139.456C102.603 153.515 125.397 153.515 139.456 139.456C153.515 125.397 153.515 102.603 139.456 88.5442C125.397 74.4853 102.603 74.4853 88.5442 88.5442ZM134.543 134.544C123.198 145.888 104.802 145.889 93.4566 134.544C82.1109 123.198 82.1109 104.803 93.4566 93.4566C104.802 82.1109 123.198 82.1109 134.543 93.4566C145.889 104.803 145.889 123.198 134.543 134.544Z" />
           </svg>
         </a>
         <a @click="remove_poster">
@@ -40,12 +40,13 @@
           <icon v-if="accept" name="finished"></icon>
           <icon v-else name="working"></icon>
         </a>
-        <download-vector :vector="poster" :author="author"></download-vector>
+        <download-vector :vector="poster" :author="author" v-if="!is_new"></download-vector>
       </menu>
     </figcaption>
   </figure>
 </template>
 <script>
+  import icons from '@/icons.svg'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   export default {
@@ -92,13 +93,19 @@
       if (!this.main_event) this.main_event = this.tonight
     },
     computed: {
+      date_picker_icon() {
+        return `${icons}#date-picker`
+      },
+      show_date_picker() {
+        if (this.menu && this.is_new === false) return true
+      },
       selecting() {
         return {
           'selecting-date': this.show_event
         }
       },
-      has_date() {
-        return this.events.some(event => event.href === this.poster.id)? 'has-date' : null
+      has_event() {
+        return this.events.some(event => event.href === this.poster.id)? 'has-event' : null
       },
       aspect_ratio() {
         if (this.menu) return `xMidYMid meet`
@@ -146,8 +153,9 @@
     },
     methods: {
       svg_click() {
-        if(this.show_event) this.menu = false
-        else this.menu = !this.menu
+        console.log('svg_click', this.menu, this.show_event)
+        if (this.show_event) this.menu = false
+        this.menu = !this.menu
       },
       update_date(event) {
         const date_list = this.$refs.day.value.split('-')
@@ -169,22 +177,25 @@
       remove_event() {
         this.show_event = false
         this.menu = true
-        this.$emit('remove-event', this.main_event)
+        this.$emit('remove-event', this.poster.id)
         this.new_event = null
       },
       save_event() {
-        console.log('save_event')
         this.show_event = false
         this.menu = true
-        if (this.new_event) this.$emit('add-event', this.main_event)
+        this.$emit('add-event', {
+          id: this.main_event.getTime(),
+          poster: this.poster.id
+        })
       },
       remove_poster() {
         const message = 'Delete poster?'
         if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
       },
-      add_poster() {
-
-
+      async add_poster() {
+        this.show_event = false
+        this.menu = false
+        await this.$nextTick()
         this.$emit('add-poster', this.poster.id)
       }
     }
