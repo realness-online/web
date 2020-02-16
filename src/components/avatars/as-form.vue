@@ -6,13 +6,17 @@
       <avatar-as-svg  v-else @loaded="set_current_avatar" :me="true" :person="person"></avatar-as-svg>
     </div>
     <menu v-if="signed_in">
-      <a id="open_camera" @click="open_camera"><icon name="camera"></icon></a>
-      <a id="select_photo" @click="select_photo"><icon name="add"></icon></a>
+      <a id="open_camera" @click="open_camera">
+        <icon name="camera"></icon>
+      </a>
+      <a id="select_photo" @click="select_photo">
+        <icon name="add"></icon>
+      </a>
       <a id="accept_changes" @click="accept_new_avatar" v-if="avatar_changed">
         <icon v-if="finished" name="finished"></icon>
         <icon v-else name="working"></icon>
       </a>
-      <download-vector v-if="current_avatar" :vector="current_avatar" :author="person"></download-vector>
+      <download-vector v-if="download_vector" :vector="current_avatar" :author="person"></download-vector>
     </menu>
     <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
   </div>
@@ -80,6 +84,11 @@
         this.$emit('new-avatar', this.avatar.id)
         this.avatar = null
         this.finished = true
+      }
+    },
+    computed: {
+      download_vector() {
+        if (this.avatar_changed && this.current_avatar) return true
       }
     }
   }
