@@ -25,11 +25,7 @@ exports[`@/compontent/profile/as-figure.vue Render a poster 1`] = `
       itemprop="created_by"
     />
      
-    <input
-      id="day"
-      required="required"
-      type="date"
-    />
+    <!---->
      
     <!---->
      
