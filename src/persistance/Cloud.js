@@ -3,7 +3,7 @@ import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-const networkable = ['person', 'posts', 'posters', 'avatars']
+const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
 async function get_download_url(person_id, item_id) {
   const path = `/people${person_id}/${item_id}.html`
   // console.info(path)
@@ -51,6 +51,7 @@ let Cloud = (superclass) => class extends superclass {
     }
   }
   async persist(items, name = this.filename) {
+    console.log(name);
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
       const file = new File([items], name)

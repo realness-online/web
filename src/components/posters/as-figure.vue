@@ -89,15 +89,16 @@
     },
     created() {
       if (this.is_new) this.menu = true
-      this.main_event = this.events.find(event => event.href === poster.id)
-      if (!this.main_event) this.main_event = this.tonight
+      const my_event = this.events.find(event => event.poster === this.poster.id)
+      if (my_event) this.main_event = new Date(parseInt(my_event.id))
+      else this.main_event = this.tonight
     },
     computed: {
       date_picker_icon() {
         return `${icons}#date-picker`
       },
       show_date_picker() {
-        if (this.menu && this.is_new === false) return true
+        if (this.menu || this.show_event && this.is_new === false) return true
       },
       selecting() {
         return {
@@ -105,7 +106,8 @@
         }
       },
       has_event() {
-        return this.events.some(event => event.href === this.poster.id)? 'has-event' : null
+        const exists = this.events.some(event => event.poster === this.poster.id)
+        return exists? 'has-event' : null
       },
       aspect_ratio() {
         if (this.menu) return `xMidYMid meet`
@@ -115,20 +117,15 @@
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9? minutes : `0${minutes}`
         const time_value = `${this.main_event.getHours()}:${minutes}`
-        // console.log('event_time', time_value)
         return time_value
       },
       event_day() {
-        // console.log('event_day');
         const year = this.main_event.getFullYear()
         let month = this.main_event.getMonth() + 1
         let day = this.main_event.getDate()
-
         if (month <= 9) month = `0${month}`
         if (day <= 9) day = `0${day}`
-
         const day_value = `${year}-${month}-${day}`
-        // console.log('day', day_value);
         return day_value
       },
       event_label() {
@@ -153,11 +150,10 @@
     },
     methods: {
       svg_click() {
-        console.log('svg_click', this.menu, this.show_event)
         if (this.show_event) this.menu = false
         this.menu = !this.menu
       },
-      update_date(event) {
+      update_date() {
         const date_list = this.$refs.day.value.split('-')
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
@@ -170,23 +166,25 @@
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
       },
-      manage_event(event) {
+      manage_event() {
         this.show_event = true
         this.menu = false
       },
       remove_event() {
         this.show_event = false
         this.menu = true
+        this.main_event = new Date(this.tonight)
         this.$emit('remove-event', this.poster.id)
-        this.new_event = null
       },
       save_event() {
         this.show_event = false
         this.menu = true
-        this.$emit('add-event', {
+        const new_event = {
           id: this.main_event.getTime(),
           poster: this.poster.id
-        })
+        }
+        if (this.has_event) this.$emit('remove-event', this.poster.id)
+        this.$emit('add-event', new_event)
       },
       remove_poster() {
         const message = 'Delete poster?'
@@ -296,7 +294,7 @@
         a#create-event
           position: relative
           svg
-            &.has-date
+            &.has-event
               fill: blue
             text
               fill: white

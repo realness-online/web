@@ -29,12 +29,12 @@
                  @remove-event="remove_event"
                  v-bind:key="poster.id"></as-figure>
     </article>
-    <aside class="events" itemprop="events">
-      <link rel="icon" itemscope itemtype="/events"
-            v-for="event in events"
-            v-bind:key="event.id"
-            :itemid="event.id"
-            :href="event.poster"/>
+    <aside>
+      <ol ref="events" itemprop="events">
+        <li itemscope itemtype="/events" v-for="event in events" :itemid="event.id" v-bind:key="event.id" >
+          <link itemprop="poster" rel="icon" :href="event.poster">
+        </li>
+      </ol>
     </aside>
   </section>
 </template>
@@ -80,15 +80,15 @@
       }
     },
     methods: {
+      newer_first(earlier, later) {
+        return later.created_at - earlier.created_at
+      },
       get_id(poster_reference) {
         return `posters/${poster_reference.name.split('.')[0]}`
       },
       async vectorize_image(image) {
         this.working = true
         this.worker.postMessage({ image })
-      },
-      newer_first(earlier, later) {
-        return later.created_at - earlier.created_at
       },
       async sync_posters_with_network(user) {
         if (user) {
@@ -145,22 +145,20 @@
         this.working = false
       },
       async add_event(event) {
-        console.log('add_event', event)
         this.events.push(event)
         await this.$nextTick()
-        events_storage.save()
+        events_storage.save(this.$refs.events)
       },
-      async remove_event(event) {
-        console.log('remove-event', event)
+      async remove_event(poster_id) {
+        this.events = this.events.filter(event => event.poster !== poster_id)
         await this.$nextTick()
-        events_storage.save()
+        events_storage.save(this.$refs.events)
       }
-
     },
     watch: {
       async posters() {
         await this.$nextTick()
-        // posters_storage.save()
+        posters_storage.save()
       }
     }
   }
