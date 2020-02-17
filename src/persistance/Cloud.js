@@ -51,7 +51,6 @@ let Cloud = (superclass) => class extends superclass {
     }
   }
   async persist(items, name = this.filename) {
-    console.log(name);
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
       const file = new File([items], name)

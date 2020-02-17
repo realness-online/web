@@ -4,8 +4,8 @@ import Item from '@/modules/item'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/posters/as-figure'
 const fs = require('fs')
-const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.svg', 'utf8')
-describe('@/compontent/profile/as-figure.vue', () => {
+const poster_mock = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
+describe('@/compontent/posters/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     person = {
@@ -17,9 +17,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
     wrapper = shallow(as_figure, {
       propsData: {
         author: person,
-        poster: {
-          id: "/posters/55599555955"
-        }
+        poster: Item.get_items(poster_mock)[0]
       }
     })
   })
