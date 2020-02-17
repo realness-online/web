@@ -140,6 +140,7 @@
         this.working = true
         this.posters = this.posters.filter(poster => poster_id !== poster.id)
         await this.$nextTick()
+        await this.remove_event(poster_id)
         posters_storage.filename = poster_id
         await posters_storage.delete()
         this.working = false
