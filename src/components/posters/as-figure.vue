@@ -27,7 +27,7 @@
       <menu v-if="menu">
         <a id="create-event" v-if="!is_new">
           <svg viewBox="0 0 150 150" v-bind:class="has_event">
-            <use :xlink:href="date_picker_icon"/>
+            <use :href="date_picker_icon"/>
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
             <text x="57" y="84" text-anchor="middle">{{day}}</text>
           </svg>
@@ -99,6 +99,7 @@
       },
       show_date_picker() {
         if (this.menu || this.show_event && this.is_new === false) return true
+        else return false
       },
       selecting() {
         return {
@@ -151,20 +152,16 @@
     methods: {
       svg_click() {
         if (this.show_event) this.menu = false
-        this.menu = !this.menu
+        else this.menu = !this.menu
       },
-      update_date() {
-        const date_list = this.$refs.day.value.split('-')
-        const year = parseInt(date_list[0])
-        const month = parseInt(date_list[1]) - 1
-        const day = parseInt(date_list[2])
-        this.main_event = new Date(this.main_event.setFullYear(year, month, day))
+      remove_poster() {
+        const message = 'Delete poster?'
+        if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
       },
-      update_time() {
-        const time_list = this.$refs.time.value.split(':')
-        const hour = parseInt(time_list[0])
-        const minute = parseInt(time_list[1])
-        this.main_event = new Date(this.main_event.setHours(hour, minute))
+      add_poster() {
+        this.show_event = false
+        this.menu = false
+        this.$emit('add-poster', this.poster.id)
       },
       manage_event() {
         this.show_event = true
@@ -186,15 +183,18 @@
         if (this.has_event) this.$emit('remove-event', this.poster.id)
         this.$emit('add-event', new_event)
       },
-      remove_poster() {
-        const message = 'Delete poster?'
-        if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
+      update_date() {
+        const date_list = this.$refs.day.value.split('-')
+        const year = parseInt(date_list[0])
+        const month = parseInt(date_list[1]) - 1
+        const day = parseInt(date_list[2])
+        this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
-      async add_poster() {
-        this.show_event = false
-        this.menu = false
-        await this.$nextTick()
-        this.$emit('add-poster', this.poster.id)
+      update_time() {
+        const time_list = this.$refs.time.value.split(':')
+        const hour = parseInt(time_list[0])
+        const minute = parseInt(time_list[1])
+        this.main_event = new Date(this.main_event.setHours(hour, minute))
       }
     }
   }

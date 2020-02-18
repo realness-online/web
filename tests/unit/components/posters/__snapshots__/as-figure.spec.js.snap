@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/posters/as-figure.vue Render a new poster 1`] = `
+exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
 <figure
   class=""
   itemid="posters/1576588885385"
@@ -8,7 +8,7 @@ exports[`@/compontent/posters/as-figure.vue Render a new poster 1`] = `
   itemtype="/posters"
 >
   <svg
-    preserveAspectRatio="xMidYMid slice"
+    preserveAspectRatio="xMidYMid meet"
     viewBox="0, 0, 333, 444"
   >
     <path
@@ -34,16 +34,32 @@ exports[`@/compontent/posters/as-figure.vue Render a new poster 1`] = `
       itemprop="created_by"
     />
      
-    <!---->
+    <input
+      id="day"
+      required="required"
+      type="date"
+    />
      
     <!---->
      
-    <!---->
+    <menu>
+      <!---->
+       
+      <a>
+        <!---->
+      </a>
+       
+      <a>
+        <!---->
+      </a>
+       
+      <!---->
+    </menu>
   </figcaption>
 </figure>
 `;
 
-exports[`@/compontent/posters/as-figure.vue Render a poster 1`] = `
+exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
 <figure
   class=""
   itemid="posters/1576588885385"
