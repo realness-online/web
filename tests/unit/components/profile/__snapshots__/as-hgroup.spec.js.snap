@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-hgroup.vue Renders a person as a hgroup element 1`] = `
+<hgroup
+  itemid="/+14151234356"
+  itemscope="itemscope"
+  itemtype="/person"
+>
+  <span
+    itemprop="first_name"
+  >
+    Scott
+  </span>
+   
+  <span
+    itemprop="last_name"
+  >
+    Fryxell
+  </span>
+   
+  <link
+    href="avatars/5553338945763"
+    itemprop="avatar"
+    rel="icon"
+  />
+</hgroup>
+`;
