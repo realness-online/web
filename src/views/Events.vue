@@ -2,10 +2,11 @@
   <section id="events" class="page">
     <header>
       <icon name="nothing"></icon>
+
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1></h1>
+      <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <figure>
@@ -28,7 +29,7 @@
     data() {
       return {
         curators: [],
-        working: false
+        working: true
       }
     },
     created() {
