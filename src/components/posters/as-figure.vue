@@ -98,7 +98,7 @@
         return `${icons}#date-picker`
       },
       show_date_picker() {
-        if (this.menu || this.show_event && this.is_new === false) return true
+        if ((this.menu || this.show_event) && this.is_new === false) return true
         else return false
       },
       selecting() {

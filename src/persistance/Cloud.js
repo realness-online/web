@@ -8,7 +8,7 @@ async function get_download_url(person_id, item_id) {
   const path = `/people${person_id}/${item_id}.html`
   // console.info(path)
   try {
-    return await firebase.storage().ref().child(path).getDownloadURL()
+    return firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(path, e.code)
@@ -27,7 +27,7 @@ const Cloud = (superclass) => class extends superclass {
   async get_download_url() {
     const user = firebase.auth().currentUser
     if (user) {
-      return await get_download_url(`/${user.phoneNumber}`, this.filename)
+      return get_download_url(`/${user.phoneNumber}`, this.filename)
     } else return null
   }
 

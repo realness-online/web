@@ -43,9 +43,10 @@
         }
       }
     },
-    mounted() {
+    async mounted() {
       this.observer = new IntersectionObserver(this.show_poster, this.options)
-      this.$nextTick(_ => this.observer.observe(this.$el))
+      await this.$nextTick()
+      this.observer.observe(this.$el)
     },
     destroyed() {
       if (this.observer) this.observer.unobserve(this.$el)
