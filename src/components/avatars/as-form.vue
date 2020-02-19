@@ -5,7 +5,7 @@
       <avatar-as-figure v-if="avatar" :avatar="avatar"></avatar-as-figure>
       <avatar-as-svg  v-else @loaded="set_current_avatar" :me="true" :person="person"></avatar-as-svg>
     </div>
-    <menu v-if="signed_in">
+    <menu v-if="show_menu">
       <a id="open_camera" @click="open_camera">
         <icon name="camera"></icon>
       </a>
@@ -88,7 +88,11 @@
     },
     computed: {
       download_vector() {
-        if (this.avatar_changed && this.current_avatar) return true
+        if (!this.avatar_changed && this.current_avatar) return true
+        else return false
+      },
+      show_menu() {
+        if (this.signed_in && !this.working) return true
         else return false
       }
     }
