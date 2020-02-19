@@ -7,7 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-const fetch =  require('jest-fetch-mock')
+const fetch = require('jest-fetch-mock')
 describe('@/persistance/Paged.js', () => {
   let posts_storage
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('@/persistance/Paged.js', () => {
     it.skip('It optimizes a list of items accross a set of pages', async() => {
       localStorage.setItem(posts_storage.filename, hella_posts)
       await posts_storage.optimize()
-      console.log(Object.keys(localStorage.__STORE__));
+      console.log(Object.keys(localStorage.__STORE__))
       expect(Object.keys(localStorage.__STORE__).length).toBe(3)
     })
   })

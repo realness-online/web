@@ -3,7 +3,7 @@ import icon from '@/components/icon'
 
 describe('@/components/icon', () => {
   it('Renders an icon', () => {
-    let wrapper = shallow(icon)
+    const wrapper = shallow(icon)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

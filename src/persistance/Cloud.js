@@ -16,19 +16,21 @@ async function get_download_url(person_id, item_id) {
     } else throw e
   }
 }
-let Cloud = (superclass) => class extends superclass {
+const Cloud = (superclass) => class extends superclass {
   constructor(type,
               selector = `[itemprop="${type}"]`,
               filename = `${type}/index`) {
     super(type, selector)
     this.filename = filename
   }
+
   async get_download_url() {
     const user = firebase.auth().currentUser
     if (user) {
       return await get_download_url(`/${user.phoneNumber}`, this.filename)
     } else return null
   }
+
   async from_network() {
     if (networkable.includes(this.type)) {
       const url = await this.get_download_url()
@@ -36,12 +38,14 @@ let Cloud = (superclass) => class extends superclass {
     }
     return null
   }
+
   async save(items = document.querySelector(`[itemid="${this.filename}"]`)) {
     console.log('cloud save', this.selector, this.filename, items)
     if (super.save) super.save()
     if (!items) return
     if (networkable.includes(this.type)) this.persist(items.outerHTML)
   }
+
   async delete() {
     if (super.save) super.save() // save the current state of the document to localstorage
     const user = firebase.auth().currentUser
@@ -50,6 +54,7 @@ let Cloud = (superclass) => class extends superclass {
       await firebase.storage().ref().child(path).delete()
     }
   }
+
   async persist(items, name = this.filename) {
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {

@@ -15,5 +15,4 @@ describe('@/compontent/profile/as-hgroup.vue', () => {
   it('Renders a person as a hgroup element', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-
 })

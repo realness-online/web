@@ -30,7 +30,7 @@
     },
     methods: {
       avatar_click(event) {
-        let route = { path: this.person.id }
+        const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         if (this.previous) route.path = sessionStorage.previous
         this.$router.push(route)

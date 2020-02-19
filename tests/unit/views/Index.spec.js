@@ -34,7 +34,7 @@ describe('@/views/Index.vue', () => {
       }
     })
     wrapper = shallow(Index)
-    wrapper.setData({version: '1.0.0'})
+    wrapper.setData({ version: '1.0.0' })
     await flushPromises()
   })
   afterEach(() => {

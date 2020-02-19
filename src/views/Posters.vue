@@ -41,9 +41,11 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import { posters_storage,
-           events_storage,
-           person_storage as me } from '@/persistance/Storage'
+  import {
+    posters_storage,
+    events_storage,
+    person_storage as me
+  } from '@/persistance/Storage'
   import Item from '@/modules/item'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'

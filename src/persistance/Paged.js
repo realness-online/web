@@ -3,10 +3,10 @@ import Item from '@/modules/item'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import { History } from '@/persistance/Storage'
-let Paged = (superclass) => class extends superclass {
+const Paged = (superclass) => class extends superclass {
   async optimize(limit = growth.first()) {
     if (this.as_kilobytes() > limit) {
-      let current = Item.hydrate(localStorage.getItem(this.selector)).childNodes[0]
+      const current = Item.hydrate(localStorage.getItem(this.selector)).childNodes[0]
       const offload = document.createDocumentFragment()
       while (keep_going(current, limit)) {
         const first_child = current.childNodes[0]
@@ -23,6 +23,7 @@ let Paged = (superclass) => class extends superclass {
       await history.optimize(growth.next(limit))
     }
   }
+
   async sync_list() {
     const from_server = Item.get_items(await this.from_network())
     const local_items = this.as_list()
@@ -31,7 +32,7 @@ let Paged = (superclass) => class extends superclass {
     if (from_server.length) oldest_date = Date.parse(from_server[0].created_at)
     let items
     if (local_items.length > 0) {
-      let filtered_local = local_items.filter(local_item => {
+      const filtered_local = local_items.filter(local_item => {
         const current_date = Date.parse(local_item.created_at)
         if (oldest_date > current_date) return false
         return !from_server.some(server_item => {

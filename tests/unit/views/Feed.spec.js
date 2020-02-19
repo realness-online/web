@@ -16,7 +16,7 @@ describe('@/views/Feed.vue', () => {
     posts_spy = jest.spyOn(profile_id, 'items').mockImplementation(_ => mock_posts)
   })
   it('Render a feed of a persons friends', async() => {
-    let wrapper = shallow(Feed)
+    const wrapper = shallow(Feed)
     await flushPromises()
     expect(profile_spy).toBeCalled()
     expect(posts_spy).toBeCalled()
@@ -24,7 +24,7 @@ describe('@/views/Feed.vue', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   it('Loads another page of data for a person', async() => {
-    let wrapper = shallow(Feed)
+    const wrapper = shallow(Feed)
     const hella_list = Item.get_items(hella_posts)
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(5)

@@ -89,6 +89,7 @@
     computed: {
       download_vector() {
         if (this.avatar_changed && this.current_avatar) return true
+        else return false
       }
     }
   }

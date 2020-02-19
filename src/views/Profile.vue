@@ -50,7 +50,7 @@
     ],
     components: {
       'profile-as-figure': profile_as_figure,
-      'avatar': avatar,
+      avatar: avatar,
       'download-vector': download_vector,
       'logo-as-link': logo_as_link,
       'poster-as-figure': poster_as_figure,
@@ -67,7 +67,7 @@
     },
     async created() {
       const id = profile.from_e64(this.$route.params.phone_number)
-      let [person, posts, posters] = await Promise.all([
+      const [person, posts, posters] = await Promise.all([
         profile.load(id),
         profile.items(id, 'posts/index'),
         profile.directory(id, 'posters')
@@ -83,14 +83,14 @@
       },
       async next_page() {
         const id = profile.from_e64(this.$route.params.phone_number)
-        let posts = await profile.items(id, `posts/${this.limit}`)
+        const posts = await profile.items(id, `posts/${this.limit}`)
         if (posts.length > 0) {
           this.populate_page(this.person, posts)
           this.limit = growth.next(this.limit)
         }
       },
       populate_page(person, posts, posters) {
-        console.log('populate_page', posters);
+        console.log('populate_page', posters)
         const days = new Map()
         posts = [...this.condense_posts(posts, person),
                 ...this.prepare_posters(posters, person)]

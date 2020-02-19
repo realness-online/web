@@ -14,7 +14,7 @@ const person = {
 
 describe('@/components/download-vector', () => {
   it('Renders link to download svg', () => {
-    let wrapper = shallow(download_vector, {
+    const wrapper = shallow(download_vector, {
       propsData: {
         vector: poster,
         author: person

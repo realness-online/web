@@ -56,7 +56,6 @@ describe('@/persistance/Cloud.js', () => {
           })
         }
       })
-
     })
     it('Exists', () => {
       expect(posts_storage.persist).toBeDefined()
@@ -65,7 +64,6 @@ describe('@/persistance/Cloud.js', () => {
       await posts_storage.persist(posts)
       await flushPromises()
       expect(put_spy).toBeCalled()
-
     })
     it('Does nothing unless user is signed in', async() => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
@@ -74,7 +72,6 @@ describe('@/persistance/Cloud.js', () => {
       await posts_storage.persist(posts)
       await flushPromises()
       expect(put_spy).not.toBeCalled()
-
     })
   })
 })

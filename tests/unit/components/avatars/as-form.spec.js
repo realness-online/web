@@ -32,7 +32,7 @@ describe('@/components/avatars/as-form.vue', () => {
     describe('#open_camera', () => {
       it('Should open the file dialog', () => {
         // wrapper.setProps({ view_avatar: true })
-        let mock_click = jest.fn()
+        const mock_click = jest.fn()
         wrapper.vm.$refs.uploader.click = mock_click
         wrapper.vm.open_camera()
         expect(mock_click).toBeCalled()
@@ -55,7 +55,7 @@ describe('@/components/avatars/as-form.vue', () => {
       })
       it('Should trigger change event on file input', () => {
         // wrapper.setProps({ view_avatar: true })
-        let input = wrapper.find('input[type=file]')
+        const input = wrapper.find('input[type=file]')
         expect(input.exists()).toBe(true)
         input.element.value = ''
         input.trigger('change')

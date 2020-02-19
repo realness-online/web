@@ -16,7 +16,7 @@ jest.spyOn(firebase, 'storage').mockImplementation(() => {
     ref: jest.fn(() => {
       return {
         child: jest.fn(path => {
-          let reference_path = path
+          const reference_path = path
           return {
             put: jest.fn(path => Promise.resolve(reference_path)),
             getDownloadURL: jest.fn(path => {
@@ -24,7 +24,7 @@ jest.spyOn(firebase, 'storage').mockImplementation(() => {
               return Promise.resolve(`https://download_url${reference_path}`)
             }),
             listAll: jest.fn(_ => {
-              return Promise.resolve({prefixes: []})
+              return Promise.resolve({ prefixes: [] })
             })
           }
         })

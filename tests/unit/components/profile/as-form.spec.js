@@ -114,7 +114,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     it('Starts captcha verification when clicked', () => {
       button.trigger('click')
       expect(wrapper.vm.show_captcha).toBe(true)
-      let captcha = wrapper.find('#captcha')
+      const captcha = wrapper.find('#captcha')
       expect(captcha.exists()).toBe(true)
     })
     it('Is removed after click', () => {
@@ -179,7 +179,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(stub).toBeCalled()
     })
     it('Renders sign in button with valid input', () => {
-      let button = wrapper.find('#submit-verification')
+      const button = wrapper.find('#submit-verification')
       input.trigger('keypress', {
         key: '6',
         preventDefault: stub

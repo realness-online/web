@@ -8,11 +8,11 @@ describe('@/modules/item.js', () => {
   })
   describe('get_items()', () => {
     beforeEach(() => {
-      let items = Item.get_items(document.body, '/person')
+      const items = Item.get_items(document.body, '/person')
       item = items[0]
     })
     it('Fails gracefully if no elements provided', () => {
-      let items = Item.get_items(null, '/person')
+      const items = Item.get_items(null, '/person')
       expect(items.length).toBe(0)
     })
     it('Has meta data about the item', () => {
@@ -36,7 +36,7 @@ describe('@/modules/item.js', () => {
       expect(person.style).toBe('/people/666/style.css')
     })
     it('Gets first item of any type', () => {
-      let item = Item.get_first_item(document.body)
+      const item = Item.get_first_item(document.body)
       expect(item.name).toBe('Scott Fryxell')
       expect(item.nickname).toBe('scoot')
       expect(item.url).toBe('/people/scott')

@@ -24,7 +24,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   })
   describe('mobile number', () => {
     it('Format the mobile number for display', () => {
-      let mobile = wrapper.find('.phone')
+      const mobile = wrapper.find('.phone')
       expect(mobile.text()).toBe('(628) 228-1823')
     })
     it('Parse mobile number as it\'s typed in', () => {

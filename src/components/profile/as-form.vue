@@ -120,8 +120,8 @@
         this.show_captcha = true
         await this.$nextTick()
         this.human = new firebase.auth.RecaptchaVerifier('captcha', {
-          'size': 'invisible',
-          'callback': this.text_human_verify_code
+          size: 'invisible',
+          callback: this.text_human_verify_code
         })
         this.human.verify()
       },

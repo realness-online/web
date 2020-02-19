@@ -10,7 +10,7 @@ export default {
       const condensed_posts = []
       while (posts.length > 0) {
         this.sort_count++
-        let post = posts.shift()
+        const post = posts.shift()
         post_helper.as_id(post, person)
         post.statements = []
         while (this.is_train_of_thought(post, posts)) {

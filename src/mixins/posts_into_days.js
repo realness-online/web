@@ -12,7 +12,7 @@ export default {
       condensed.forEach(post => this.insert_post_into_day(post, days))
       return days
     },
-    today_as_date(){
+    today_as_date() {
       const now = new Date()
       return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
     },

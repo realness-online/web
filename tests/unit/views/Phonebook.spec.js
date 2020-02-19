@@ -18,7 +18,7 @@ const save_spy = jest.fn(() => Promise.resolve('save_spy'))
 jest.spyOn(profile, 'load').mockImplementation(() => person)
 describe('@/views/Phonebook', () => {
   it('Render the phonebook', () => {
-    let wrapper = shallow(phonebook)
+    const wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

@@ -108,15 +108,15 @@
       },
       has_event() {
         const exists = this.events.some(event => event.poster === this.poster.id)
-        return exists? 'has-event' : null
+        return exists ? 'has-event' : null
       },
       aspect_ratio() {
-        if (this.menu) return `xMidYMid meet`
-        else return `xMidYMid slice`
+        if (this.menu) return 'xMidYMid meet'
+        else return 'xMidYMid slice'
       },
       event_time() {
         let minutes = this.main_event.getMinutes()
-        minutes = minutes > 9? minutes : `0${minutes}`
+        minutes = minutes > 9 ? minutes : `0${minutes}`
         const time_value = `${this.main_event.getHours()}:${minutes}`
         return time_value
       },

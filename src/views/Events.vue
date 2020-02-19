@@ -32,7 +32,7 @@
       }
     },
     created() {
-      console.info("Viewed the events page");
+      console.info('Viewed the events page')
     }
   }
 </script>

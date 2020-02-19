@@ -26,13 +26,12 @@ describe('@/views/Posters.vue', () => {
   describe('Rendering', () => {
     it('Renders ui for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
-
     })
   })
-  describe("methods", () => {
+  describe('methods', () => {
     describe('get_id', () => {
       it('gets the poster id from the directory listing on hte network', () => {
-        wrapper.vm.get_id({name: `${poster.id}.html`})
+        wrapper.vm.get_id({ name: `${poster.id}.html` })
       })
     })
     describe('newer_first', () => {

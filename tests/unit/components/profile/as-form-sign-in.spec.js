@@ -65,7 +65,8 @@ describe('@/compontent/profile/as-form.vue', () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return {
           signOut,
-          onAuthStateChanged: is_signed_in }
+          onAuthStateChanged: is_signed_in
+}
       })
       wrapper = shallow(as_form, {
         propsData: { person: person }

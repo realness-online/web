@@ -2,7 +2,7 @@ import { shallow } from 'vue-test-utils'
 import wat from '@/components/posts/as-textarea'
 describe('@/components/posts/as-textarea.vue', () => {
   it('Renders', () => {
-    let wrapper = shallow(wat)
+    const wrapper = shallow(wat)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('#wat_focused() exists', () => {
@@ -13,7 +13,7 @@ describe('@/components/posts/as-textarea.vue', () => {
       expect(typeof wat.methods.prepare_post).toBe('function')
     })
     it('Only triggers a post event when there is text', () => {
-      let wrapper = shallow(wat, {
+      const wrapper = shallow(wat, {
         data: {
           posts: [],
           new_post: ''
@@ -26,7 +26,7 @@ describe('@/components/posts/as-textarea.vue', () => {
   })
   describe('focus', () => {
     it('Emits a toggle-keyboard event when focused', () => {
-      let wrapper = shallow(wat)
+      const wrapper = shallow(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('toggle-keyboard', spy)
@@ -34,7 +34,7 @@ describe('@/components/posts/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Emits a toggle-keyboard event when loosing focus', () => {
-      let wrapper = shallow(wat)
+      const wrapper = shallow(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('toggle-keyboard', spy)
@@ -42,7 +42,7 @@ describe('@/components/posts/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Emits a post-added event when there is text', () => {
-      let wrapper = shallow(wat, {
+      const wrapper = shallow(wat, {
         data: {
           new_post: 'I like to move it.'
         }
@@ -54,7 +54,7 @@ describe('@/components/posts/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Does not emit post-added when there is not text', () => {
-      let wrapper = shallow(wat)
+      const wrapper = shallow(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('post-added', spy)

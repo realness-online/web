@@ -41,5 +41,4 @@ describe('@/persistance/Storage.js', () => {
         expect(localStorage.setItem).toBeCalled()
       })
     })
-
 })

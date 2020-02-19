@@ -11,7 +11,7 @@
   </svg>
 </template>
 <script>
-  import { avatars_storage } from  '@/persistance/Storage'
+  import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
@@ -48,8 +48,8 @@
     },
     computed: {
       aspect_ratio() {
-        if (this.slice) return `xMidYMid slice`
-        else return `xMidYMid meet`
+        if (this.slice) return 'xMidYMid slice'
+        else return 'xMidYMid meet'
       },
       id() {
         return profile.as_avatar_id(this.person.id)
@@ -72,7 +72,7 @@
         else return true
       },
       avatar_click(event) {
-        this.slice =! this.slice
+        this.slice = !this.slice
         this.$emit('avatar-clicked', event)
       },
       async show_avatar(entries) {

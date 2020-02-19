@@ -3,7 +3,7 @@ import as_options from '@/components/profile/as-relationship-options'
 import Storage from '@/persistance/Storage'
 describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
-  let relations = [
+  const relations = [
     {
       id: '/+16282281824',
       first_name: 'Scott',
@@ -21,7 +21,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       updated_at: '2018-07-18T22:27:09.086Z'
     }
   ]
-  let me = {
+  const me = {
     id: '/+16282281824',
     first_name: 'Scott',
     last_name: 'Fryxell',
@@ -31,11 +31,13 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
   }
   beforeEach(() => {
     // jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
-    wrapper = shallow(as_options, { propsData: {
+    wrapper = shallow(as_options, {
+ propsData: {
       person: me,
       me: me,
       relations
-    }})
+    }
+})
   })
   it('Render a list of options for this profile', () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -47,11 +49,13 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     })
     it('Return false if profile is not a relationship', () => {
       me.id = '/+14156661266'
-      wrapper = shallow(as_options, { propsData: {
+      wrapper = shallow(as_options, {
+ propsData: {
         person: me,
         me: me,
         relations
-      }})
+      }
+})
       wrapper.vm.is_relation()
       expect(wrapper.vm.relation).toBe(false)
     })

@@ -10,7 +10,7 @@ export default {
     const items_as_data = []
     let query = '[itemscope]'
     if (type) { query += `[itemtype="${type}"]` }
-    let items = Array.from(elements.querySelectorAll(query))
+    const items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
       const meta = {
         id: item.getAttribute('itemid'),

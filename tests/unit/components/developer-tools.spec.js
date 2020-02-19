@@ -3,7 +3,7 @@ import tools from '@/components/developer-tools'
 
 describe('@/components/developer-tools.js', () => {
   it('Renders developer tools', () => {
-    let wrapper = shallow(tools)
+    const wrapper = shallow(tools)
     expect(wrapper.element).toMatchSnapshot()
   })
 })

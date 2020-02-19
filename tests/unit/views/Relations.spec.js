@@ -14,7 +14,7 @@ describe('@/views/Relations.vue', () => {
     .mockImplementation(() => [person])
     const spy = jest.spyOn(profile, 'load')
     .mockImplementation(() => Promise.resolve(person))
-    let wrapper = shallow(Relations)
+    const wrapper = shallow(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
     expect(spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
