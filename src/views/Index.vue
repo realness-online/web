@@ -1,6 +1,6 @@
 <template>
   <section id="home" class="page">
-    <nav id="main" v-bind:class="onboarding">
+    <nav id="main" :class="onboarding">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1"></router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
@@ -12,7 +12,7 @@
     <aside>
       <my-figure :person="me"></my-figure>
       <div itemprop="posts">
-        <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
+        <section class="day" v-for="[date, day] in days" :key="date" :class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day"
                            :key="as_id(post)"

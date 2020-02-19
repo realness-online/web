@@ -16,22 +16,22 @@
                  :poster="new_poster"
                  :author="me"
                  :working="working"
+                 :key="as_itemid"
                  @add-poster="add_poster"
-                 @remove-poster="remove_new_poster"
-                 v-bind:key="as_itemid"></as-figure>
+                 @remove-poster="remove_new_poster"></as-figure>
       <as-figure v-else v-for="poster in posters"
                  :author="me"
                  :poster="poster"
                  :events="events"
                  :working="working"
+                 :key="poster.id"
                  @remove-poster="remove_poster"
                  @add-event="add_event"
-                 @remove-event="remove_event"
-                 v-bind:key="poster.id"></as-figure>
+                 @remove-event="remove_event"></as-figure>
     </article>
     <aside>
       <ol ref="events" itemprop="events">
-        <li itemscope itemtype="/events" v-for="event in events" :itemid="event.id" v-bind:key="event.id" >
+        <li itemscope itemtype="/events" v-for="event in events" :itemid="event.id" :key="event.id" >
           <link itemprop="poster" rel="icon" :href="event.poster">
         </li>
       </ol>

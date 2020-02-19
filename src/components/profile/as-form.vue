@@ -17,9 +17,8 @@
              @paste.prevent="mobile_paste"
              @blur="modified_check">
     </fieldset>
-    <fieldset id="captcha"
-         v-if='show_captcha'
-         v-bind:class="{hide_captcha}">
+    <fieldset id="captcha" v-if='show_captcha'
+              :class="{hide_captcha}">
     </fieldset>
     <fieldset v-if="show_code">
       <input id="verification-code" type="tel" tabindex="4" placeholder="Verification Code"

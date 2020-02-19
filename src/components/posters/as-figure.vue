@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure itemscope itemtype="/posters" :itemid="poster.id" v-bind:class="selecting">
+  <figure itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
     <svg @click="svg_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
@@ -26,7 +26,7 @@
       </fieldset>
       <menu v-if="menu">
         <a id="create-event" v-if="!is_new">
-          <svg viewBox="0 0 150 150" v-bind:class="has_event">
+          <svg viewBox="0 0 150 150" :class="has_event">
             <use :href="date_picker_icon"/>
             <text class="month" x="57" y="24" text-anchor="middle">{{month}}</text>
             <text x="57" y="84" text-anchor="middle">{{day}}</text>

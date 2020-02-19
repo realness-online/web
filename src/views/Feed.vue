@@ -8,7 +8,7 @@
       <h1>Feed</h1>
     </hgroup>
     <icon v-if="working" name="working"></icon>
-    <article v-else class="day" :key="date" v-for="[date, day] in days" v-bind:class="{today: is_today(date)}">
+    <article v-else class="day" :key="date" v-for="[date, day] in days" :class="{today: is_today(date)}">
       <header>
         <h4>{{as_day(date)}}</h4>
       </header>

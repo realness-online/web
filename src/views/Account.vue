@@ -1,5 +1,5 @@
 <template lang="html">
-  <section id="account" v-bind:class="{'signed-in': signed_in}" class="page">
+  <section id="account" :class="{'signed-in': signed_in}" class="page">
     <header>
       <icon name="nothing"></icon>
       <logo-as-link></logo-as-link>
@@ -11,7 +11,7 @@
     </div>
     <div id="pages-of-posts">
       <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
-        <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
+        <section class="day" v-for="[date, day] in days" :key="date" :class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day" :key="post.id"
                            :editable="is_editable(page_name)"

@@ -10,7 +10,7 @@
     </menu>
     <profile-as-figure :person='person'></profile-as-figure>
     <div v-for="[page_name, days] in pages" :key="page_name">
-      <section class="day" v-for="[date, day] in days" :key="date" v-bind:class="{today: is_today(date)}">
+      <section class="day" v-for="[date, day] in days" :key="date" :class="{today: is_today(date)}">
         <header><h4>{{as_day(date)}}</h4></header>
         <div v-for="post in day" :key="post.id">
           <poster-as-figure v-if="post.type === 'posters'"
