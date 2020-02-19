@@ -1,11 +1,10 @@
 
-import { shallow, createLocalVue } from 'vue-test-utils'
-import Item from '@/modules/item'
+import { shallow } from 'vue-test-utils'
 import as_figure from '@/components/posters/as-figure'
+import Item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = Item.get_items(poster_html)[0]
-
 const author = {
   created_at: '2018-07-15T18:11:31.018Z',
   first_name: 'Scott',

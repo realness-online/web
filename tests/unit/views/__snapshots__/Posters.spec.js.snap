@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Posters.vue Renders layout for posters 1`] = `
+exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
 <section
   class="page"
   id="posters"
@@ -28,12 +28,26 @@ exports[`@/views/Posters.vue Renders layout for posters 1`] = `
    
   <article
     itemprop="posters"
-  />
+  >
+    <!---->
+  </article>
    
   <aside>
     <ol
       itemprop="events"
-    />
+    >
+      <li
+        itemid="1580544000000"
+        itemscope="itemscope"
+        itemtype="/events"
+      >
+        <link
+          href="posters/1576588885385"
+          itemprop="poster"
+          rel="icon"
+        />
+      </li>
+    </ol>
   </aside>
 </section>
 `;
