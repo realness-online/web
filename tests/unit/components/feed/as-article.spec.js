@@ -45,7 +45,7 @@ describe('@/components/feed/as-article.vue', () => {
       unobserve: unobserve_spy
     }
     wrapper.vm.end_of_articles(entries)
-    expect(wrapper.emitted('next-page')).toBeTruthy()
+    expect(wrapper.emitted('end-of-articles')).toBeTruthy()
     expect(unobserve_spy).toBeCalled()
   })
 })
