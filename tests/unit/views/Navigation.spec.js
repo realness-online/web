@@ -2,7 +2,7 @@ import { shallow } from 'vue-test-utils'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
-import Index from '@/views/Index'
+import Navigation from '@/views/Navigation'
 import Storage, { person_storage, posts_storage } from '@/persistance/Storage'
 import profile from '@/helpers/profile'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
@@ -33,7 +33,7 @@ describe('@/views/Index.vue', () => {
         onAuthStateChanged
       }
     })
-    wrapper = shallow(Index)
+    wrapper = shallow(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
   })

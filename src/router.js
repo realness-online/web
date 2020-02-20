@@ -4,7 +4,7 @@ import Events from '@/views/Events'
 import Feed from '@/views/Feed'
 import Posters from '@/views/Posters'
 import Account from '@/views/Account'
-import Index from '@/views/Index'
+import Navigation from '@/views/Navigation'
 import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
@@ -15,8 +15,8 @@ export default new Router({
   el: '#loading-realness',
   base: process.env.BASE_URL,
   routes: [
-    { path: '/', component: Index },
-    { path: '/events', component: Events },
+    { path: '/', component: Events },
+    { path: '/nav', component: Navigation },
     { path: '/feed', component: Feed },
     { path: '/posters', component: Posters },
     { path: '/relations', component: Relations },
