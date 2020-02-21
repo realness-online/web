@@ -2,38 +2,60 @@
   <section id="events" class="page">
     <header>
       <icon name="nothing"></icon>
-
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
       <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
-    <figure>
-      <as-avatar v-for="person in curators" :key="person.id" :person="person"></as-avatar>
-    </figure>
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
+  import { relations_storage, person_storage as me } from '@/persistance/Storage'
+  import profile from '@/helpers/profile'
   import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
-  import as_svg from '@/components/avatars/as-svg'
   import icon from '@/components/icon'
   export default {
     mixins: [signed_in],
     components: {
       'logo-as-link': logo_as_link,
-      'as-avatar': as_svg,
       icon
     },
     data() {
       return {
-        curators: [],
-        working: true
+        relations: [],
+        working: true,
+        days: new Map(),
+        storage: firebase.storage().ref()
       }
     },
     created() {
-      console.info('Viewed the events page')
+      console.clear()
+      console.time('events-load')
+      this.events = this.get_upcoming_events()
+      console.timeEnd('events-load')
+    },
+    methods: {
+      async get_upcoming_events() {
+        const relations = relations_storage.as_list()
+        relations.push(me.as_object())
+        // let events = this.storage.child('upcoming.html').getDownloadURL()
+        let events = []
+        await Promise.all(relations.map(async (relation) => {
+          const relation_events = await profile.items(relation.id, 'events/upcoming')
+          events = [...relation_events, ...events]
+        }))
+        events.sort(this.newer_first)
+        // sort events into nights
+        // filter out any events that already happened
+        // events.forEach(event => this.insert_event_into_day(event, this.days))
+      },
+      newer_first(earlier, later) {
+        return later.id - earlier.id
+      }
     }
   }
 </script>

@@ -15,7 +15,7 @@ const post = {
   created_at: '2017-12-20T23:01:14.310Z',
   statement: 'I like to move it'
 }
-describe('@/views/Index.vue', () => {
+describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async() => {
     jest.spyOn(profile, 'load').mockImplementation(() => person)
@@ -70,7 +70,7 @@ describe('@/views/Index.vue', () => {
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
         return { onAuthStateChanged: signed_out }
       })
-      shallow(Index)
+      shallow(Navigation)
       await flushPromises()
       expect(sync_list_spy).not.toBeCalled()
     })
@@ -80,13 +80,13 @@ describe('@/views/Index.vue', () => {
     })
     it('Sync after five minutes minutes', async() => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
-      wrapper = shallow(Index)
+      wrapper = shallow(Navigation)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })
     it('Sync with the server with every new session', async() => {
       sessionStorage.removeItem('posts-synced')
-      wrapper = shallow(Index)
+      wrapper = shallow(Navigation)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })
@@ -116,7 +116,7 @@ describe('@/views/Index.vue', () => {
           jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
             return { onAuthStateChanged: signed_out }
           })
-          wrapper = shallow(Index)
+          wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['has-posts']).toBeFalsy()
           expect(wrapper.vm.onboarding['signed-in']).toBeFalsy()
           expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
@@ -125,20 +125,20 @@ describe('@/views/Index.vue', () => {
           jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
             return [post]
           })
-          const wrapper = shallow(Index)
+          const wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['has-posts']).toBe(true)
         })
       })
       describe('signed in', () => {
         it('Relations is visible', () => {
-          wrapper = shallow(Index)
+          wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['signed-in']).toBe(true)
         })
         it('Feed, Events and posters are visible when person has added a friend', () => {
           jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
             return [post]
           })
-          wrapper = shallow(Index)
+          wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['has-friends']).toBe(true)
         })
       })

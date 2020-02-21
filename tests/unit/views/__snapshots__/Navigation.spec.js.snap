@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
+exports[`@/views/Navigation.vue Renders posts and profile for a person 1`] = `
 <section
   class="page"
   id="home"
@@ -20,8 +20,10 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
     <router-link
       class="green"
       tabindex="-1"
-      to="/events"
-    />
+      to="/"
+    >
+      Tonight!
+    </router-link>
      
     <router-link
       class="green"
@@ -68,7 +70,7 @@ exports[`@/views/Index.vue Renders posts and profile for a person 1`] = `
 </section>
 `;
 
-exports[`@/views/Index.vue navigating the application handling post events posting:false should render the main navigation 1`] = `
+exports[`@/views/Navigation.vue navigating the application handling post events posting:false should render the main navigation 1`] = `
 <section
   class="page"
   id="home"
@@ -88,8 +90,10 @@ exports[`@/views/Index.vue navigating the application handling post events posti
     <router-link
       class="green"
       tabindex="-1"
-      to="/events"
-    />
+      to="/"
+    >
+      Tonight!
+    </router-link>
      
     <router-link
       class="green"
@@ -136,7 +140,7 @@ exports[`@/views/Index.vue navigating the application handling post events posti
 </section>
 `;
 
-exports[`@/views/Index.vue navigating the application handling post events posting:true should hide main navigation 1`] = `
+exports[`@/views/Navigation.vue navigating the application handling post events posting:true should hide main navigation 1`] = `
 <section
   class="page"
   id="home"

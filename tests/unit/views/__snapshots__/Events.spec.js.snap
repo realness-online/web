@@ -12,11 +12,11 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   </header>
    
   <hgroup>
-    <h1 />
+    <h1>
+      Tonight!
+    </h1>
      
     <!---->
   </hgroup>
-   
-  <figure />
 </section>
 `;
