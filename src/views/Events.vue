@@ -42,8 +42,7 @@
       async get_upcoming_events() {
         const relations = relations_storage.as_list()
         relations.push(me.as_object())
-        // let events = this.storage.child('upcoming.html').getDownloadURL()
-        let events = []
+        let events = this.storage.child('upcoming.html').getDownloadURL()
         await Promise.all(relations.map(async (relation) => {
           const relation_events = await profile.items(relation.id, 'events/upcoming')
           events = [...relation_events, ...events]
