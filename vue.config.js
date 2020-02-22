@@ -26,13 +26,9 @@ module.exports = {
       msTileImage: 'icons/mstile-150x150.png'
     },
     manifestOptions: {
-      name: 'Realness online',
-      short_name: 'Realness',
       description: 'A social network for the realness in all of us realness.online',
-      start_url: '/',
       scope: '/',
       orientation: 'portrait',
-      display: 'standalone',
       background_color: '#52a0d1',
       icons: [
         {
