@@ -24,6 +24,28 @@ module.exports = {
       appleTouchIcon: 'icons/apple-touch-icon.png',
       maskIcon: 'icons/safari-pinned-tab.svg',
       msTileImage: 'icons/mstile-150x150.png'
+    },
+    manifestOptions: {
+      name: 'Realness online',
+      short_name: 'Realness',
+      description: 'A social network for the realness in all of us realness.online',
+      start_url: '/',
+      scope: '/',
+      orientation: 'portrait',
+      display: 'standalone',
+      background_color: '#52a0d1',
+      icons: [
+        {
+          src: '/icons/android-chrome-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: '/icons/android-chrome-512x512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        }
+      ]
     }
   },
   configureWebpack: {
