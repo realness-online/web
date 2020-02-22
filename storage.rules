@@ -11,5 +11,8 @@ service firebase.storage {
     match /activity/{user_file=**} {
       allow read, write
     }
+    match /upcoming.html {
+      allow read, write
+    }
   }
 }
