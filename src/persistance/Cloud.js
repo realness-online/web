@@ -11,7 +11,7 @@ async function get_download_url(person_id, item_id) {
     return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.warn(path, 'not found')
+      console.warn(path)
       return null
     } else throw e
   }
