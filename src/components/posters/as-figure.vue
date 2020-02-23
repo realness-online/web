@@ -204,7 +204,7 @@
     overflow: hidden;
     position: relative
     background: green
-    @media (min-width: min-screen)
+    @media (min-width: pad-begins)
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
     &.selecting-date
@@ -213,7 +213,7 @@
       & > figcaption > input[type="date"]
         width: auto
         height: base-line
-        @media (min-width: mid-screen)
+        @media (min-width: typing-begins)
           top: base-line * 2
           &::-webkit-datetime-edit-fields-wrapper
           &::-webkit-datetime-edit-text

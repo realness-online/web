@@ -171,7 +171,7 @@
     & > header
       justify-content: space-between
       margin: auto
-      @media (min-width: mid-screen)
+      @media (min-width: typing-begins)
         max-width: page-width
       & > a > svg.add
         fill: green
@@ -185,7 +185,7 @@
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-template-rows: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
-      @media (min-width: min-screen)
+      @media (min-width: pad-begins)
         padding: 0 base-line
       & > header
         margin auto

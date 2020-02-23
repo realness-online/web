@@ -167,7 +167,7 @@
       align-self: flex-end
       width: base-line * 4
       display: none
-      @media (min-width: min-screen)
+      @media (min-width: pad-begins)
         display: block
   nav#main
     & > [href='/']
@@ -189,7 +189,7 @@
     width: auto
     padding: base-line
     height:100vh
-    @media (max-height: min-screen) and (orientation: landscape)
+    @media (max-height: pad-begins) and (orientation: landscape)
       height:auto
     display: flex
     align-items: center

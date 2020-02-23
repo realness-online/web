@@ -12,16 +12,11 @@ export default {
     } else return { id }
   },
   async items(id, item_id) {
-    try {
-      const url = await get_download_url(id, item_id)
+    const url = await get_download_url(id, item_id)
+    if (url) {
       const server_text = await (await fetch(url)).text()
       return Item.get_items(server_text)
-    } catch (e) {
-      if (e.code === 'storage/object-not-found') {
-        // console.log(`${item_id}.html`, e.code)
-        return []
-      } else throw e
-    }
+    } else return []
   },
   async item(id, item_id) {
     return (await this.items(id, item_id))[0]

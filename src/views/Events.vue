@@ -15,11 +15,10 @@
   import 'firebase/auth'
   import { relations_storage, person_storage as me } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
-  import signed_in from '@/mixins/signed_in'
+  // import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   export default {
-    mixins: [signed_in],
     components: {
       'logo-as-link': logo_as_link,
       icon
@@ -32,17 +31,22 @@
         storage: firebase.storage().ref()
       }
     },
-    created() {
+    async created() {
       console.clear()
       console.time('events-load')
-      this.events = this.get_upcoming_events()
+      try {
+        this.events = await this.get_upcoming_events()
+      } catch (e) {
+        console.log(e)
+      }
       console.timeEnd('events-load')
     },
     methods: {
       async get_upcoming_events() {
         const relations = relations_storage.as_list()
         relations.push(me.as_object())
-        let events = this.storage.child('upcoming.html').getDownloadURL()
+        // let events = this.storage.child('upcoming.html').getDownloadURL()
+        let events = []
         await Promise.all(relations.map(async (relation) => {
           const relation_events = await profile.items(relation.id, 'events/upcoming')
           events = [...relation_events, ...events]
@@ -64,7 +68,7 @@
       color: green
     & > header
       margin: auto
-      @media (min-width: mid-screen)
+      @media (min-width: typing-begins)
         max-width: page-width
       & > svg
         width: base-line * 2
@@ -76,7 +80,7 @@
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
-      @media (min-width: max-screen)
+      @media (min-width: pad-begins)
         padding: 0 base-line
       & > svg
         display: block

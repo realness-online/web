@@ -122,7 +122,7 @@
           fill: blue
         &#accept_changes > svg
           fill: green
-        @media (min-width: min-screen)
+        @media (min-width: pad-begins)
           &#open_camera
             display: none
     & > input[type=file]

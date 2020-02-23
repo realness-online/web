@@ -91,7 +91,7 @@
       &.working
         height:auto
         width: base-line * 5
-      @media (max-width: min-screen)
+      @media (max-width: pad-begins)
         &:not(.working)
           margin-left -(base-line)
           margin-right -(base-line)

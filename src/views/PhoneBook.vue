@@ -58,7 +58,7 @@
       fill: blue
       margin-top: base-line
     & > header
-      @media (min-width: mid-screen)
+      @media (min-width: typing-begins)
         max-width: page-width
       margin: auto
       &:focus-within > h1
@@ -72,7 +72,7 @@
     nav.profile-list
       display: flex
       flex-direction: column-reverse
-      @media (min-width: min-screen)
+      @media (min-width: pad-begins)
         flex-direction: row
     & > footer
       position: fixed

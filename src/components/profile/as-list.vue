@@ -60,7 +60,7 @@
       justify-content: space-between
       & > figure > figcaption a
         color:blue
-    @media (min-width: min-screen)
+    @media (min-width: pad-begins)
       display: flex
       flex-direction: row
       flex-wrap: wrap
@@ -69,7 +69,7 @@
         padding: (base-line / 2)
         standard-border: blue
         width:49%
-    @media (min-width: mid-screen)
+    @media (min-width: typing-begins)
       & > li
         width:32%
 </style>

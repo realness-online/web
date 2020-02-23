@@ -17,9 +17,15 @@ base-line  = 1.333rem // smallest horizontal block of content
 min-font   = 1.125rem
 max-font   = 1.33rem
 
-min-screen = round(base-line * 26, 3)
-mid-screen = round(base-line * 49, 3) // larger than an ipad pro
-max-screen = round(base-line * 60, 3)
+                                      // default is mobile support
+min-screen = round(base-line * 26, 3) // pad begins
+mid-screen = round(base-line * 49, 3) // typing begins
+max-screen = round(base-line * 60, 3) // display begins
+
+pad-begins = min-screen
+typing-begins = mid-screen
+display-begins = max-screen
+
 
 // Modular scale. for small and larger screens
 // if you change the scales you'll need to recalculate when the are applied

@@ -8,10 +8,10 @@ async function get_download_url(person_id, item_id) {
   const path = `/people${person_id}/${item_id}.html`
   // console.info(path)
   try {
-    return firebase.storage().ref().child(path).getDownloadURL()
+    return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.warn(path, e.code)
+      console.warn(path, 'not found')
       return null
     } else throw e
   }
