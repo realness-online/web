@@ -48,7 +48,7 @@
         // let events = this.storage.child('upcoming.html').getDownloadURL()
         let events = []
         await Promise.all(relations.map(async (relation) => {
-          const relation_events = await profile.items(relation.id, 'events/upcoming')
+          const relation_events = await profile.items(relation.id, 'events/index')
           events = [...relation_events, ...events]
         }))
         events.sort(this.newer_first)
