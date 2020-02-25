@@ -18,5 +18,6 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
      
     <!---->
   </hgroup>
+   
 </section>
 `;

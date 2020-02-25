@@ -49,8 +49,8 @@
       posts_into_days
     ],
     components: {
-      'profile-as-figure': profile_as_figure,
       avatar: avatar,
+      'profile-as-figure': profile_as_figure,
       'download-vector': download_vector,
       'logo-as-link': logo_as_link,
       'poster-as-figure': poster_as_figure,

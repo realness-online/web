@@ -8,50 +8,49 @@
       <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
+    <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
   import { relations_storage, person_storage as me } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
-  // import signed_in from '@/mixins/signed_in'
+  import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
+  import as_figure from '@/components/events/as-figure'
   import icon from '@/components/icon'
   export default {
+    mixins: [signed_in],
     components: {
       'logo-as-link': logo_as_link,
+      'event-as-figure': as_figure,
       icon
     },
     data() {
       return {
-        relations: [],
+        events: [],
         working: true,
-        days: new Map(),
-        storage: firebase.storage().ref()
+        days: new Map()
       }
     },
     async created() {
       console.clear()
       console.time('events-load')
-      try {
-        this.events = await this.get_upcoming_events()
-      } catch (e) {
-        console.log(e)
-      }
+      this.events = await this.get_upcoming_events()
+      this.working = false
       console.timeEnd('events-load')
     },
     methods: {
+
       async get_upcoming_events() {
         const relations = relations_storage.as_list()
         relations.push(me.as_object())
-        // let events = this.storage.child('upcoming.html').getDownloadURL()
         let events = []
         await Promise.all(relations.map(async (relation) => {
           const relation_events = await profile.items(relation.id, 'events/index')
           events = [...relation_events, ...events]
         }))
         events.sort(this.newer_first)
+        return events
         // sort events into nights
         // filter out any events that already happened
         // events.forEach(event => this.insert_event_into_day(event, this.days))
