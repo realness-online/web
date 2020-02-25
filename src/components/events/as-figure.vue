@@ -6,7 +6,9 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import intersection_mixin from '@/mixins/intersection'
   export default {
+    mixins: [intersection_mixin],
     props: {
       event: {
         type: Object,
@@ -28,6 +30,9 @@
       console.log(download_url)
       this.url = download_url
       // download and get path info from the poster
+    },
+    methods: {
+      async show() { console.log('show!!!!!') }
     }
   }
 </script>

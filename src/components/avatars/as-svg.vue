@@ -13,9 +13,11 @@
 <script>
   import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
+  import intersection_mixin from '@/mixins/intersection'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {
+    mixins: [intersection_mixin],
     components: {
       icon
     },
@@ -33,18 +35,12 @@
     },
     data() {
       return {
-        observer: null,
         avatar: null,
         slice: true
       }
     },
     created() {
       if (this.me) this.avatar = avatars_storage.as_object()
-    },
-    async mounted() { this.intersect() },
-    async updated() { this.intersect() },
-    destroyed() {
-      if (this.observer) this.observer.unobserve(this.$el)
     },
     computed: {
       aspect_ratio() {
@@ -61,12 +57,6 @@
       }
     },
     methods: {
-      async intersect() {
-        if (this.observer) this.observer.unobserve(this.$el)
-        this.observer = new IntersectionObserver(this.show_avatar)
-        await this.$nextTick()
-        this.observer.observe(this.$el)
-      },
       first_instance() {
         if (document.getElementById(this.id)) return false
         else return true
@@ -75,16 +65,12 @@
         this.slice = !this.slice
         this.$emit('avatar-clicked', event)
       },
-      async show_avatar(entries) {
-        entries.forEach(async entry => {
-          if (entry.isIntersecting) {
-            if (this.first_instance() && this.person.avatar) {
-              this.avatar = await profile.item(this.person.id, this.person.avatar)
-              this.$emit('loaded', this.avatar)
-              this.observer.unobserve(this.$el)
-            }
-          }
-        })
+      async show() {
+        if (this.first_instance() && this.person.avatar) {
+          this.avatar = await profile.item(this.person.id, this.person.avatar)
+          this.$emit('loaded', this.avatar)
+          this.observer.unobserve(this.$el)
+        }
       }
     }
   }

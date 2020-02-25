@@ -22,11 +22,12 @@
 <script>
   import profile from '@/helpers/profile'
   import date_mixin from '@/mixins/date'
+  import intersection_mixin from '@/mixins/intersection'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
-    mixins: [date_mixin],
+    mixins: [date_mixin, intersection_mixin],
     props: ['poster'],
     components: {
       'profile-as-avatar': profile_as_avatar,
@@ -36,20 +37,8 @@
     data() {
       return {
         slice: true,
-        observer: null,
         actual_poster: null,
-        options: {
-          rootMargin: '0px 0px 0px 0px'
-        }
       }
-    },
-    async mounted() {
-      this.observer = new IntersectionObserver(this.show_poster, this.options)
-      await this.$nextTick()
-      this.observer.observe(this.$el)
-    },
-    destroyed() {
-      if (this.observer) this.observer.unobserve(this.$el)
     },
     computed: {
       aspect_ratio() {
@@ -61,13 +50,9 @@
       toggle_slice() {
         this.slice = !this.slice
       },
-      async show_poster(entries) {
-        entries.forEach(async entry => {
-          if (entry.isIntersecting) {
-            this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
-            this.observer.unobserve(this.$el)
-          }
-        })
+      async show() {
+        this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
+        this.observer.unobserve(this.$el)
       }
     }
   }
