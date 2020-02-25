@@ -32,7 +32,7 @@
     <aside>
       <ol ref="events" itemprop="events">
         <li itemscope itemtype="/events" v-for="event in events" :itemid="event.id" :key="event.id" >
-          <link itemprop="poster" rel="icon" :href="event.poster">
+          <link itemprop="url" rel="icon" :href="event.url">
         </li>
       </ol>
     </aside>

@@ -89,11 +89,14 @@
     },
     created() {
       if (this.is_new) this.menu = true
-      const my_event = this.events.find(event => event.poster === this.poster.id)
+      const my_event = this.events.find(event => event.url === this.url)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
       else this.main_event = this.tonight
     },
     computed: {
+      url() {
+        return `${this.author.id}/${this.poster.id}`
+      },
       date_picker_icon() {
         return `${icons}#date-picker`
       },
@@ -107,7 +110,7 @@
         }
       },
       has_event() {
-        const exists = this.events.some(event => event.poster === this.poster.id)
+        const exists = this.events.some(event => event.url === this.url)
         return exists ? 'has-event' : null
       },
       aspect_ratio() {
@@ -156,12 +159,12 @@
       },
       remove_poster() {
         const message = 'Delete poster?'
-        if (window.confirm(message)) this.$emit('remove-poster', this.poster.id)
+        if (window.confirm(message)) this.$emit('remove-poster', this.url)
       },
       add_poster() {
         this.show_event = false
         this.menu = false
-        this.$emit('add-poster', this.poster.id)
+        this.$emit('add-poster', this.url)
       },
       manage_event() {
         this.show_event = true
@@ -171,16 +174,16 @@
         this.show_event = false
         this.menu = true
         this.main_event = new Date(this.tonight)
-        this.$emit('remove-event', this.poster.id)
+        this.$emit('remove-event', this.url)
       },
       save_event() {
         this.show_event = false
         this.menu = true
         const new_event = {
           id: this.main_event.getTime(),
-          poster: this.poster.id
+          url: this.url
         }
-        if (this.has_event) this.$emit('remove-event', this.poster.id)
+        if (this.has_event) this.$emit('remove-event', this.url)
         this.$emit('add-event', new_event)
       },
       update_date() {

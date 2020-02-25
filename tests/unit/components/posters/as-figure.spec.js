@@ -1,4 +1,3 @@
-
 import { shallow } from 'vue-test-utils'
 import as_figure from '@/components/posters/as-figure'
 import Item from '@/modules/item'
@@ -13,7 +12,7 @@ const author = {
 }
 const events = [{
   id: new Date(2020, 1, 1).getTime(),
-  poster: poster.id
+  url: `${author.id}/${poster.id}`
 }]
 describe('@/compontent/posters/as-figure.vue', () => {
   let wrapper
