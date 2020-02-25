@@ -16,7 +16,7 @@
 <script>
   import post_mixin from '@/mixins/post'
   import date_mixin from '@/mixins/date'
-  import intersection_mixin from '@/mixins/intersection'
+  import intersection_mixin from '@/mixins/post_intersection'
   import as_li from '@/components/posts/as-li'
   export default {
     mixins: [post_mixin, date_mixin, intersection_mixin],

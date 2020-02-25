@@ -7,10 +7,11 @@ export default {
       }
     }
   },
-  updated() {
+  async updated() {
     if (this.i_am_oldest) {
       this.observer = new IntersectionObserver(this.end_of_articles, this.options)
-      this.$nextTick(_ => this.observer.observe(this.$el))
+      await this.$nextTick()
+      this.observer.observe(this.$el)
     }
   },
   destroyed() {
