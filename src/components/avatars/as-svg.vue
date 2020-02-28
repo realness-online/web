@@ -13,7 +13,7 @@
 <script>
   import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
-  import intersection_mixin from '@/mixins/intersection'
+  import intersection_mixin from '@/mixins/vector_intersection'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {

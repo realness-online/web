@@ -40,7 +40,6 @@
       console.timeEnd('events-load')
     },
     methods: {
-
       async get_upcoming_events() {
         const relations = relations_storage.as_list()
         relations.push(me.as_object())

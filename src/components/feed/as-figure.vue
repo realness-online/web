@@ -22,7 +22,7 @@
 <script>
   import profile from '@/helpers/profile'
   import date_mixin from '@/mixins/date'
-  import intersection_mixin from '@/mixins/intersection'
+  import intersection_mixin from '@/mixins/vector_intersection'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   import profile_as_avatar from '@/components/avatars/as-svg'
@@ -37,7 +37,7 @@
     data() {
       return {
         slice: true,
-        actual_poster: null,
+        actual_poster: null
       }
     },
     computed: {
