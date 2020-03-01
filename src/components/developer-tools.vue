@@ -25,11 +25,19 @@
       console.info = this.info_logger
     },
     methods: {
+      eight_seconds_ago() {
+        return Date.now() - (1000 * 8)
+      },
       async info_logger() {
         this.info.apply(this, Array.prototype.slice.call(arguments))
         this.activity.push([arguments[0], new Date().toISOString()])
-        await this.$nextTick()
-        this.activity_storage.save()
+        const last_save = sessionStorage.getItem('activity-synced')
+        if (!last_save || parseInt(this.eight_seconds_ago()) > parseInt(last_save)) {
+          console.log('saving it')
+          sessionStorage.setItem('activity-synced', Date.now())
+          await this.$nextTick()
+          this.activity_storage.save()
+        } else console.log(this.eight_seconds_ago() - parseInt(last_save))
       },
       async on_error(event) {
         this.activity.push([event.message, new Date().toISOString()])
