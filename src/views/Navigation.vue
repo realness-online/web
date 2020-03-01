@@ -55,7 +55,7 @@
       }
     },
     async created() {
-      console.info(`${this.me.first_name} viewed realness version ${this.version}`)
+      console.info(this.me.first_name, 'uses the navigation')
       this.days = this.populate_days(posts_storage.as_list(), this.me)
     },
     async mounted() {
