@@ -66,8 +66,9 @@
   section#events
     & > hgroup > h6.app_version
       margin: 0
+      padding: 0
       position: fixed
-      bottom: (base-line / 2)
+      bottom: 0
       left: (base-line / 2)
     h1
       color: green
