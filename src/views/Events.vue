@@ -5,11 +5,21 @@
       <logo-as-link></logo-as-link>
     </header>
     <hgroup>
-      <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
       <h6 class="app_version">{{version}}</h6>
     </hgroup>
-    <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
+    <article id="tonight">
+      <header>
+        <h1>Tonight!</h1>
+      </header>
+      <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
+    </article>
+    <article id="upcoming">
+      <hgroup>
+        <h1>Upcoming</h1>
+      </hgroup>
+      <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
+    </article>
   </section>
 </template>
 <script>
@@ -30,6 +40,7 @@
       return {
         version: process.env.VUE_APP_VERSION,
         events: [],
+        upcoming: [],
         working: true,
         days: new Map()
       }
@@ -37,6 +48,7 @@
     async created() {
       console.clear()
       console.time('events-load')
+      console.info(`${me.as_object().first_name} views realness version ${this.version}`)
       this.events = await this.get_upcoming_events()
       this.working = false
       console.timeEnd('events-load')
@@ -82,16 +94,10 @@
         fill: transparent
       & > a
         -webkit-tap-highlight-color: green
-    & > figure
+    & > article
+      padding: 0 base-line
       display: grid
-      grid-template-columns: repeat(auto-fit, minmax(base-line * 12, 1fr))
       grid-gap: base-line
-      @media (min-width: pad-begins)
-        padding: 0 base-line
-      & > svg
-        display: block
-        width: 100%
-        min-height: 66vh
-        height: inherit
-
+      grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
+      grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
 </style>
