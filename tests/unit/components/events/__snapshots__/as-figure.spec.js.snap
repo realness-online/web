@@ -1,7 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`@/components/events/as-figure.js Renders a figure element of an event 1`] = `
-<figure>
-  <svg />
+<figure
+  class="events poster"
+>
+  <!---->
+   
+  <!---->
 </figure>
 `;

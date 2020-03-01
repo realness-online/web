@@ -3,11 +3,10 @@
 exports[`@/views/Navigation.vue Renders posts and profile for a person 1`] = `
 <section
   class="page"
-  id="home"
+  id="navigation"
 >
   <nav
     class=""
-    id="main"
   >
     <router-link
       class="black"
@@ -61,23 +60,16 @@ exports[`@/views/Navigation.vue Renders posts and profile for a person 1`] = `
       itemprop="posts"
     />
   </aside>
-   
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
 </section>
 `;
 
 exports[`@/views/Navigation.vue navigating the application handling post events posting:false should render the main navigation 1`] = `
 <section
   class="page"
-  id="home"
+  id="navigation"
 >
   <nav
     class=""
-    id="main"
   >
     <router-link
       class="black"
@@ -131,23 +123,16 @@ exports[`@/views/Navigation.vue navigating the application handling post events 
       itemprop="posts"
     />
   </aside>
-   
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
 </section>
 `;
 
 exports[`@/views/Navigation.vue navigating the application handling post events posting:true should hide main navigation 1`] = `
 <section
-  class="page"
-  id="home"
+  class="page posting"
+  id="navigation"
 >
   <nav
     class=""
-    id="main"
   >
     <!---->
      
@@ -175,11 +160,5 @@ exports[`@/views/Navigation.vue navigating the application handling post events 
       itemprop="posts"
     />
   </aside>
-   
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
 </section>
 `;
