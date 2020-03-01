@@ -7,6 +7,7 @@
     <hgroup>
       <h1>Tonight!</h1>
       <icon v-show="working" name="working"></icon>
+      <h6 class="app_version">{{version}}</h6>
     </hgroup>
     <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
   </section>
@@ -27,6 +28,7 @@
     },
     data() {
       return {
+        version: process.env.VUE_APP_VERSION,
         events: [],
         working: true,
         days: new Map()
@@ -62,6 +64,11 @@
 </script>
 <style lang="stylus">
   section#events
+    & > hgroup > h6.app_version
+      margin: 0
+      position: fixed
+      bottom: (base-line / 2)
+      left: (base-line / 2)
     h1
       color: green
     & > header

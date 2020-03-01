@@ -22,7 +22,6 @@
         </section>
       </div>
     </aside>
-    <h6 class="app_version">{{version}}</h6>
   </section>
 </template>
 <script>
@@ -52,7 +51,6 @@
         posting: false,
         has_posts: (posts_storage.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
-        version: process.env.VUE_APP_VERSION,
         days: new Map()
       }
     },
@@ -143,18 +141,12 @@
     height: 100vh
     @media (max-height: pad-begins) and (orientation: landscape)
       height: auto
-    & > h6.app_version
-      margin: 0
-      position: fixed
-      bottom: (base-line / 2)
-      left: (base-line / 2)
     &.posting
-
       height: inherit
       align-items: flex-end
     &.posting > nav
-      min-height: round(base-line * 7.25)
-      height: round(base-line * 7.25)
+      min-height: round(base-line * 8)
+      height: round(base-line * 8)
       & > textarea
         margin-top: base-line
         padding: 0
