@@ -204,7 +204,6 @@
 </script>
 <style lang="stylus">
   figure[itemtype="/posters"]
-    overflow: hidden;
     position: relative
     background: green
     @media (min-width: pad-begins)

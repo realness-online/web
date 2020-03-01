@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure>
+  <figure class="events poster">
     <icon name="background"></icon>
     <svg v-if="poster" :viewBox="poster.view_box" v-html="poster.path"></svg>
   </figure>
@@ -28,14 +28,20 @@
     methods: {
       async show() {
         const [person, poster] = this.event.url.split('/posters')
-        console.log(person, poster)
         this.poster = await profile.item(person, `posters${poster}`)
-        console.log(this.poster)
-        // const url = `/people${this.event.url}.html`
-        // const download_url = await this.storage.child(url).getDownloadURL()
       }
     }
   }
 </script>
 <style lang="stylus">
+  figure.events.poster
+    position: relative
+    & > svg
+      display: block
+      height: 100%
+      width: 100%
+      max-height: page-width
+      &.background
+        border: none
+        fill: green
 </style>
