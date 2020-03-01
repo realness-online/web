@@ -1,5 +1,6 @@
 <template lang="html">
   <figure>
+    <icon name="background"></icon>
     <svg v-if="poster" :viewBox="poster.view_box" v-html="poster.path"></svg>
   </figure>
 </template>
@@ -8,8 +9,10 @@
   import 'firebase/auth'
   import intersection_mixin from '@/mixins/vector_intersection'
   import profile from '@/helpers/profile'
+  import icon from '@/components/icon'
   export default {
     mixins: [intersection_mixin],
+    components: { icon },
     props: {
       event: {
         type: Object,
@@ -24,14 +27,12 @@
     },
     methods: {
       async show() {
-        console.log(this.event.url)
         const [person, poster] = this.event.url.split('/posters')
         console.log(person, poster)
-        this.poster = profile.item(person, poster)
-        const url = `/people${this.event.url}.html`
-        const download_url = await this.storage.child(url).getDownloadURL()
-        this.url = download_url
-        console.log(download_url)
+        this.poster = await profile.item(person, `posters${poster}`)
+        console.log(this.poster)
+        // const url = `/people${this.event.url}.html`
+        // const download_url = await this.storage.child(url).getDownloadURL()
       }
     }
   }
