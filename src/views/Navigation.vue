@@ -149,13 +149,15 @@
       bottom: (base-line / 2)
       left: (base-line / 2)
     &.posting
+
       height: inherit
       align-items: flex-end
     &.posting > nav
       min-height: round(base-line * 7.25)
       height: round(base-line * 7.25)
       & > textarea
-        padding:0
+        margin-top: base-line
+        padding: 0
         border-radius: 0
     & > nav
       display: grid
