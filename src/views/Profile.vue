@@ -90,7 +90,6 @@
         }
       },
       populate_page(person, posts, posters) {
-        console.log('populate_page', posters)
         const days = new Map()
         posts = [...this.condense_posts(posts, person),
                 ...this.prepare_posters(posters, person)]

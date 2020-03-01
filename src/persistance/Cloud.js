@@ -6,7 +6,7 @@ import 'firebase/storage'
 const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
 async function get_download_url(person_id, item_id) {
   const path = `/people${person_id}/${item_id}.html`
-  // console.info(path)
+  // console.log(path)
   try {
     return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
@@ -40,7 +40,7 @@ const Cloud = (superclass) => class extends superclass {
   }
 
   async save(items = document.querySelector(`[itemid="${this.filename}"]`)) {
-    console.log('cloud save', this.selector, this.filename, items)
+    console.info('Cloud.save()', this.selector, this.filename, items)
     if (super.save) super.save()
     if (!items) return
     if (networkable.includes(this.type)) this.persist(items.outerHTML)

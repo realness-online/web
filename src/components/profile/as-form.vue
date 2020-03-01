@@ -75,7 +75,7 @@
           this.show_sign_out = true
           this.person.id = profile.from_e64(user.phoneNumber)
         } else {
-          console.info(`Showing ${this.person.first_name} the sign in form`)
+          console.info(`Shows ${this.person.first_name} the sign in form`)
           if (this.person.id) {
             this.person.mobile = profile.as_phone_number(this.person.id)
           }

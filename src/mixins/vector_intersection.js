@@ -18,7 +18,6 @@ export default {
     check_intersection(entries) {
       entries.forEach(async entry => {
         if (entry.isIntersecting) {
-          console.log('calling show()', this.$el)
           this.show()
           this.observer.unobserve(this.$el)
         }
