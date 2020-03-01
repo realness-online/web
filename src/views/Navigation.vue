@@ -1,6 +1,6 @@
 <template>
-  <section id="home" class="page">
-    <nav id="main" :class="onboarding">
+  <section id="navigation" class="page" :class="{ posting }">
+    <nav :class="onboarding">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
       <router-link v-if="!posting" to="/" class="green" tabindex="-1">Tonight!</router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
@@ -133,71 +133,75 @@
   }
 </script>
 <style lang="stylus">
-  nav#main
-    display: grid
-    grid-gap: base-line
-    grid-template-columns: 1fr 1fr
-    grid-template-rows: repeat(1fr)
-    align-items: stretch
-    min-height: base-line * 18
-    max-height: page-width
-    height: 100vmin
-    width: 100vmin
-    & > a
-      visibility: hidden
-      text-transform: capitalize
-      text-align: left
-      border-width: 1px
-      border-style: solid
-      &:focus
-        color:transparent
-        transition-duration: 0.6s
-        transition: all
-        outline: none
-      &:nth-child(even)
-        text-align: right
-      &:active
-        border-width: 1vmax
-        color:transparent
-    & > a
-    & > textarea
-      padding: base-line
-      border-radius: base-line
-    & > button
-      align-self: flex-end
-      width: base-line * 4
-      display: none
-      @media (min-width: pad-begins)
-        display: block
-  nav#main
-    & > [href='/']
-      visibility: visible
-    &.has-posts
-      & > [href='/account']
-        visibility: visible
-    &.signed-in
-      & > [href='/posters']
-      & > [href='/relations']
-      & > [href='/phone-book']
-        visibility: visible
-    &.has-friends
-      & > [href='/feed']
-        visibility: visible
-</style>
-<style lang="stylus">
-  section#home.page
-    width: auto
+  section#navigation.page
+    width: 100%
     padding: base-line
-    height:100vh
-    @media (max-height: pad-begins) and (orientation: landscape)
-      height:auto
     display: flex
     align-items: center
-    margin:auto
+    margin: auto
     max-width: page-width
+    height: 100vh
+    @media (max-height: pad-begins) and (orientation: landscape)
+      height: auto
     & > h6.app_version
       margin: 0
       position: fixed
       bottom: (base-line / 2)
       left: (base-line / 2)
+    &.posting
+      height: inherit
+      align-items: flex-end
+    &.posting > nav
+      min-height: round(base-line * 7.25)
+      height: round(base-line * 7.25)
+      & > textarea
+        padding:0
+        border-radius: 0
+    & > nav
+      display: grid
+      grid-gap: base-line
+      grid-template-columns: 1fr 1fr
+      grid-template-rows: repeat(1fr)
+      align-items: stretch
+      min-height: round(base-line * 16)
+      max-height: page-width
+      height: 100vmin
+      width: 100vw
+      &.has-posts
+        & > [href='/account']
+          visibility: visible
+      &.signed-in
+        & > [href='/posters']
+        & > [href='/relations']
+        & > [href='/phone-book']
+          visibility: visible
+      &.has-friends
+        & > [href='/feed']
+          visibility: visible
+      & > a[href='/']
+        visibility: visible
+      & > a
+        visibility: hidden
+        text-transform: capitalize
+        text-align: left
+        border-width: 1px
+        border-style: solid
+        &:focus
+          color:transparent
+          transition-duration: 0.6s
+          transition: all
+          outline: none
+        &:nth-child(even)
+          text-align: right
+        &:active
+          border-width: 1vmax
+          color:transparent
+      & > a
+      & > textarea
+        padding: base-line
+        border-radius: base-line
+      & > button
+        align-self: flex-end
+        width: base-line * 4
+        display: block
 </style>
