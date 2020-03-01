@@ -145,9 +145,10 @@
       height: inherit
       align-items: flex-end
     &.posting > nav
-      min-height: round(base-line * 8)
-      height: round(base-line * 8)
+      min-height: round(base-line * 9)
+      height: round(base-line * 9)
       & > textarea
+        text-align: inherit
         margin-top: base-line
         padding: 0
         border-radius: 0
@@ -186,7 +187,7 @@
           transition: all
           outline: none
         &:nth-child(even)
-          text-align: right
+         text-align: right
         &:active
           border-width: 1vmax
           color:transparent
@@ -198,4 +199,6 @@
         align-self: flex-end
         width: base-line * 4
         display: block
+      & > textarea
+        text-align: right
 </style>
