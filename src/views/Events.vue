@@ -16,7 +16,7 @@
     </article>
     <article id="upcoming">
       <hgroup>
-        <h1>Upcoming</h1>
+        <h1>Soon</h1>
       </hgroup>
       <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
     </article>
@@ -83,6 +83,7 @@
       bottom: 0
       left: (base-line / 2)
     h1
+      padding: base-line
       color: green
     & > header
       margin: auto
@@ -95,9 +96,10 @@
       & > a
         -webkit-tap-highlight-color: green
     & > article
-      padding: 0 base-line
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
       grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
+      @media (min-width: pad-begins)
+        padding: 0 base-line
 </style>

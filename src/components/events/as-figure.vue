@@ -1,7 +1,11 @@
 <template lang="html">
   <figure class="events poster">
     <icon name="background"></icon>
-    <svg v-if="poster" :viewBox="poster.view_box" v-html="poster.path"></svg>
+    <svg v-if="poster"
+         @click="svg_click"
+         :viewBox="poster.view_box"
+         :preserveAspectRatio="aspect_ratio"
+         v-html="poster.path" ></svg>
   </figure>
 </template>
 <script>
@@ -22,13 +26,24 @@
     data() {
       return {
         storage: firebase.storage().ref(),
-        poster: null
+        poster: null,
+        slice: false
+      }
+    },
+    computed: {
+      aspect_ratio() {
+        if (this.slice) return 'xMidYMid slice'
+        else return 'xMidYMid meet'
       }
     },
     methods: {
       async show() {
         const [person, poster] = this.event.url.split('/posters')
         this.poster = await profile.item(person, `posters${poster}`)
+      },
+      svg_click(event) {
+        this.slice = !this.slice
+        this.$emit('poster-clicked', event)
       }
     }
   }
