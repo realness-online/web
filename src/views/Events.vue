@@ -15,9 +15,9 @@
       <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
     </article>
     <article id="upcoming">
-      <hgroup>
+      <header>
         <h1>Soon</h1>
-      </hgroup>
+      </header>
       <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
     </article>
   </section>
@@ -41,7 +41,7 @@
         version: process.env.VUE_APP_VERSION,
         events: [],
         upcoming: [],
-        working: true,
+        working: false,
         days: new Map()
       }
     },
@@ -80,7 +80,7 @@
       margin: 0
       padding: 0
       position: fixed
-      bottom: 0
+      bottom: (base-line / 2)
       left: (base-line / 2)
     h1
       padding: base-line
@@ -102,4 +102,6 @@
       grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
       @media (min-width: pad-begins)
         padding: 0 base-line
+      &:first-of-type
+        margin-bottom: base-line
 </style>

@@ -6,10 +6,12 @@
       <logo-as-link></logo-as-link>
     </header>
     <hgroup v-show="!new_poster">
-      <h1>Posters</h1>
       <icon v-show="working" name="working"></icon>
     </hgroup>
     <article itemprop="posters">
+      <header>
+        <h1>Posters</h1>
+      </header>
       <as-figure v-if="new_poster"
                  class="new"
                  :is_new="true"
@@ -72,7 +74,7 @@
       }
     },
     async created() {
-      console.info(`${this.me.first_name} viewed their posters`)
+      console.info(`${this.me.first_name} views their posters`)
       firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
@@ -117,7 +119,7 @@
         }
       },
       brand_new_poster(event) {
-        console.info(`${this.me.first_name} created a poster`)
+        console.info(`${this.me.first_name} creates a poster`)
         this.new_poster = event.data
         this.new_poster.type = '/posters'
         this.new_poster.id = this.as_itemid
@@ -129,7 +131,7 @@
         this.working = false
       },
       async add_poster() {
-        console.info(`${this.me.first_name} saved poster`)
+        console.info(`${this.me.first_name} saves a poster`)
         this.working = true
         posters_storage.filename = this.as_itemid
         this.posters.unshift(this.new_poster)
@@ -168,6 +170,8 @@
 </script>
 <style lang="stylus">
   section#posters
+    h1
+      color: green
     & > header
       justify-content: space-between
       margin: auto
@@ -178,15 +182,13 @@
     & > hgroup
       svg.working
         margin-bottom: base-line
-      & > h1
-        color: green
     & > article[itemprop="posters"]
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
       grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
       grid-gap: base-line
-      // @media (min-width: pad-begins)
-      padding: 0 base-line
+      @media (min-width: pad-begins)
+        padding: 0 base-line
       & > header
-        margin auto
+        padding: 0 base-line
 </style>

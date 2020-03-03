@@ -41,7 +41,6 @@
 <style lang="stylus">
   figure.events
     position: relative
-    min-height: 100vh
     & > svg
       display: block
       height: 100%
