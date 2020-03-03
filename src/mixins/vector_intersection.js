@@ -5,7 +5,7 @@ export default {
     }
   },
   async mounted() { this.intersect() },
-  // async updated() { this.intersect() },
+  async updated() { this.intersect() },
   destroyed() {
     if (this.observer) this.observer.unobserve(this.$el)
   },
