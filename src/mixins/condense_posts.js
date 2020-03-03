@@ -17,7 +17,6 @@ export default {
           this.sort_count++
           post.statements.push(posts.shift())
         }
-        // post.statements.sort(this.older_first) // soo, don't need it
         post.person = person
         condensed_posts.push(post)
       }
