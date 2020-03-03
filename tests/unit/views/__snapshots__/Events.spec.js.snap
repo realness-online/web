@@ -37,7 +37,7 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   >
     <hgroup>
       <h1>
-        Upcoming
+        Soon
       </h1>
     </hgroup>
      

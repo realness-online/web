@@ -10,11 +10,11 @@
       </hgroup>
     </figcaption>
     <icon v-if="actual_poster" name="background"></icon>
-    <svg v-if="actual_poster" @click="toggle_slice" :preserveAspectRatio="aspect_ratio"
+    <svg v-if="actual_poster" @click="vector_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
     <icon v-else name="working"></icon>
-    <menu v-if="!slice">
+    <menu v-if="!menu">
       <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
     </menu>
   </figure>
@@ -22,12 +22,13 @@
 <script>
   import profile from '@/helpers/profile'
   import date_mixin from '@/mixins/date'
-  import intersection_mixin from '@/mixins/vector_intersection'
+  import vector_intersection from '@/mixins/vector_intersection'
+  import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
-    mixins: [date_mixin, intersection_mixin],
+    mixins: [date_mixin, vector_intersection, vector_click],
     props: ['poster'],
     components: {
       'profile-as-avatar': profile_as_avatar,
@@ -36,20 +37,10 @@
     },
     data() {
       return {
-        slice: true,
         actual_poster: null
       }
     },
-    computed: {
-      aspect_ratio() {
-        if (this.slice) return 'xMidYMid slice'
-        else return 'xMidYMid meet'
-      }
-    },
     methods: {
-      toggle_slice() {
-        this.slice = !this.slice
-      },
       async show() {
         this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
         this.observer.unobserve(this.$el)
@@ -62,7 +53,7 @@
     position:relative
     & >  menu
       display: flex
-      justify-content:flex-end
+      justify-content: flex-end
       padding: base-line
       margin-top: -(base-line * 4)
       & > a > svg
@@ -74,7 +65,7 @@
       &.background
         fill: blue
       &.working
-        height:auto
+        height: auto
         width: base-line * 5
       @media (max-width: pad-begins)
         &:not(.working)

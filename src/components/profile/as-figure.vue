@@ -1,6 +1,6 @@
 <template>
   <figure class="profile">
-    <as-svg @avatar-clicked="avatar_click" :person="person"></as-svg>
+    <as-svg @vector-clicked="avatar_click" :person="person"></as-svg>
     <figcaption>
       <as-hgroup :person="person"></as-hgroup>
       <p class='phone' v-if="is_me">{{mobile_display}}</p>

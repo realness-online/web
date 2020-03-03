@@ -1,6 +1,6 @@
 <template lang="html">
   <figure itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
-    <svg @click="svg_click" :preserveAspectRatio="aspect_ratio"
+    <svg @click="vector_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
     <figcaption>
@@ -49,7 +49,9 @@
   import icons from '@/icons.svg'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
+  import vector_click from '@/mixins/vector_click'
   export default {
+    mixins: [vector_click],
     components: {
       'download-vector': download_vector,
       icon
@@ -113,10 +115,6 @@
         const exists = this.events.some(event => event.url === this.url)
         return exists ? 'has-event' : null
       },
-      aspect_ratio() {
-        if (this.menu) return 'xMidYMid meet'
-        else return 'xMidYMid slice'
-      },
       event_time() {
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9 ? minutes : `0${minutes}`
@@ -153,7 +151,7 @@
       }
     },
     methods: {
-      svg_click() {
+      vector_click() {
         if (this.show_event) this.menu = false
         else this.menu = !this.menu
       },

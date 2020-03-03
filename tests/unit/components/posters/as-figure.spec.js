@@ -41,7 +41,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
     })
   })
   describe('methods:', () => {
-    describe('#svg_click', () => {
+    describe('#vector_click', () => {
       it('Shows the menu', () => {
         const svg = wrapper.find('figure > svg')
         expect(wrapper.vm.menu).toBe(false)
@@ -53,7 +53,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.vm.menu).toBe(false)
         wrapper.vm.show_event = true
         expect(wrapper.vm.show_event).toBe(true)
-        wrapper.vm.svg_click()
+        wrapper.vm.vector_click()
         expect(wrapper.vm.menu).toBe(false)
       })
     })

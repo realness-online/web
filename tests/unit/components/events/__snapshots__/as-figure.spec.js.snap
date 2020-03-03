@@ -2,7 +2,7 @@
 
 exports[`@/components/events/as-figure.js Renders a figure element of an event 1`] = `
 <figure
-  class="events poster"
+  class="events"
 >
   <!---->
    

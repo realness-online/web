@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg @click="avatar_click">
+  <svg @click="vector_click">
     <defs>
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.view_box"
@@ -13,11 +13,12 @@
 <script>
   import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
-  import intersection_mixin from '@/mixins/vector_intersection'
+  import vector_intersection from '@/mixins/vector_intersection'
+  import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {
-    mixins: [intersection_mixin],
+    mixins: [vector_intersection, vector_click],
     components: {
       icon
     },
@@ -35,18 +36,13 @@
     },
     data() {
       return {
-        avatar: null,
-        slice: true
+        avatar: null
       }
     },
     created() {
       if (this.me) this.avatar = avatars_storage.as_object()
     },
     computed: {
-      aspect_ratio() {
-        if (this.slice) return 'xMidYMid slice'
-        else return 'xMidYMid meet'
-      },
       id() {
         return profile.as_avatar_id(this.person.id)
       },
@@ -60,10 +56,6 @@
       first_instance() {
         if (document.getElementById(this.id)) return false
         else return true
-      },
-      avatar_click(event) {
-        this.slice = !this.slice
-        this.$emit('avatar-clicked', event)
       },
       async show() {
         if (this.first_instance() && this.person.avatar) {
