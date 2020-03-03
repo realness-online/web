@@ -60,7 +60,7 @@
       people_in_feed.push(me.as_object())
       await this.get_first_posts(people_in_feed)
       this.working = false
-      console.info(`Feed ${this.sort_count} sort count for ${me.as_object().first_name}`)
+      console.info(`Feed sorts ${this.sort_count} items for  ${me.as_object().first_name}`)
       console.timeEnd('feed-load')
     },
     methods: {

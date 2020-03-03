@@ -30,7 +30,7 @@
       }
     },
     created() {
-      console.info('Viewed relations')
+      console.info('Views relations')
       this.relations.forEach(async(relation, index) => {
         const person = await profile.load(relation.id)
         this.relations.splice(index, 1, person)
