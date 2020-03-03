@@ -158,7 +158,7 @@
       grid-template-columns: 1fr 1fr
       grid-template-rows: repeat(1fr)
       align-items: stretch
-      min-height: round(base-line * 16)
+      min-height: page-width
       max-height: page-width
       height: 100vmin
       width: 100vw
