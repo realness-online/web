@@ -13,7 +13,7 @@
     "deploy": "firebase use production && yarn build && firebase deploy --only hosting,storage",
     "build:staging": "vue-cli-service build --mode staging",
     "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage",
-    "test:unit:watch": "vue-cli-service test:unit --watchAll"
+    "test:unit:watch": "vue-cli-service test:unit --watch"
   },
   "dependencies": {
     "@realness.online/web-workers": "^0.3.0",
