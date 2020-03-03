@@ -172,6 +172,8 @@
   section#posters
     h1
       color: green
+    svg.working
+      margin-bottom: base-line
     & > header
       justify-content: space-between
       margin: auto
@@ -179,9 +181,6 @@
         max-width: page-width
       & > a > svg.add
         fill: green
-    & > hgroup
-      svg.working
-        margin-bottom: base-line
     & > article[itemprop="posters"]
       display: grid
       grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
