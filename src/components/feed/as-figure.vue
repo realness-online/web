@@ -14,7 +14,7 @@
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
     <icon v-else name="working"></icon>
-    <menu v-if="!menu">
+    <menu v-if="menu">
       <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
     </menu>
   </figure>
@@ -37,6 +37,7 @@
     },
     data() {
       return {
+        menu: false,
         actual_poster: null
       }
     },
@@ -50,7 +51,8 @@
 </script>
 <style lang="stylus">
   figure.feed.poster
-    position:relative
+    position: relative
+    overflow: hidden
     & >  menu
       display: flex
       justify-content: flex-end
@@ -60,8 +62,8 @@
         fill: red
     & > svg
       width: stretch
-      height: 100vh
-      max-height: page-width + (base-line * 6)
+      height: 100%
+      max-height: poster-height
       &.background
         fill: blue
       &.working
