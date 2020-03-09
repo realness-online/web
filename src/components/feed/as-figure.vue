@@ -53,6 +53,10 @@
   figure.feed.poster
     position: relative
     overflow: hidden
+    margin-left -(base-line)
+    margin-right -(base-line)
+    @media (min-width: pad-begins)
+      margin: 0
     & >  menu
       display: flex
       justify-content: flex-end
@@ -69,8 +73,5 @@
       &.working
         height: auto
         width: base-line * 5
-      @media (max-width: pad-begins)
-        &:not(.working)
-          margin-left -(base-line)
-          margin-right -(base-line)
+
 </style>
