@@ -76,12 +76,6 @@
 </script>
 <style lang="stylus">
   section#events
-    & > hgroup > h6.app_version
-      margin: 0
-      padding: 0
-      position: fixed
-      bottom: (base-line / 2)
-      left: (base-line / 2)
     h1
       padding: base-line
       color: green
@@ -89,19 +83,37 @@
       margin: auto
       @media (min-width: typing-begins)
         max-width: page-width
+        padding: base-line 0
       & > svg
         width: base-line * 2
         height: base-line * 2
         fill: transparent
       & > a
         -webkit-tap-highlight-color: green
+    & > hgroup > h6.app_version
+      margin: 0
+      padding: 0
+      position: fixed
+      bottom: (base-line / 2)
+      left: (base-line / 2)
     & > article
       display: grid
       grid-gap: base-line
-      grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
-      grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
+      grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
+      grid-template-rows: base-line * 22
+      & > header
+        max-height: base-line * 6
       @media (min-width: pad-begins)
         padding: 0 base-line
+        & > header > h1
+          padding: 0
       &:first-of-type
         margin-bottom: base-line
+      & > figure > svg
+        // @media (orientation: portrait)
+        //   max-height: calc(100vmin * 1.33)
+        // @media (min-height: pad-begins) and (orientation: landscape)
+        //   between: max-height 26rem 26rem
+        // @media (min-height: typing-begins) and (orientation: landscape)
+        //   between: max-height 25rem 30rem
 </style>
