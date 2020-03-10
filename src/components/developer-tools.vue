@@ -22,7 +22,7 @@
     },
     created() {
       Vue.config.errorHandler = this.on_error
-      console.info = this.info_logger
+      // console.info = this.info_logger
     },
     methods: {
       eight_seconds_ago() {
