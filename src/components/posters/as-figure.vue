@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
+  <figure outline itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
     <svg @click="vector_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="poster.view_box" v-html="poster.path">
     </svg>
@@ -203,7 +203,7 @@
 <style lang="stylus">
   figure[itemtype="/posters"]
     position: relative
-    background: green
+    // background: green
     @media (min-width: pad-begins)
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
@@ -257,9 +257,9 @@
             &.add
               fill: blue
     & > svg
-      width: 100%
-      height: 100%
-      max-height: page-width
+      width: stretch
+      height: auto
+      max-height: poster-feed-height
     & > figcaption
       position: relative
       & > input[type="date"]

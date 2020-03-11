@@ -6,7 +6,6 @@
     </header>
     <hgroup>
       <icon v-show="working" name="working"></icon>
-      <h6 class="app_version">{{version}}</h6>
     </hgroup>
     <article id="tonight">
       <header>
@@ -23,7 +22,7 @@
   </section>
 </template>
 <script>
-  import { relations_storage, person_storage as me } from '@/persistance/Storage'
+  import { person_storage as me } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
   import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
@@ -38,7 +37,6 @@
     },
     data() {
       return {
-        version: process.env.VUE_APP_VERSION,
         events: [],
         upcoming: [],
         working: false,
@@ -55,8 +53,8 @@
     },
     methods: {
       async get_upcoming_events() {
-        const relations = relations_storage.as_list()
-        relations.push(me.as_object())
+        const relations = me.as_list()
+
         let events = []
         await Promise.all(relations.map(async (relation) => {
           const relation_events = await profile.items(relation.id, 'events/index')
@@ -90,12 +88,6 @@
         fill: transparent
       & > a
         -webkit-tap-highlight-color: green
-    & > hgroup > h6.app_version
-      margin: 0
-      padding: 0
-      position: fixed
-      bottom: (base-line / 2)
-      left: (base-line / 2)
     & > article
       display: grid
       grid-gap: base-line

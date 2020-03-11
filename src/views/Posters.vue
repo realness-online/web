@@ -178,16 +178,16 @@
       justify-content: space-between
       margin: auto
       @media (min-width: typing-begins)
+        padding: base-line 0
         max-width: page-width
       & > a > svg.add
         fill: green
     & > article[itemprop="posters"]
       display: grid
-      grid-template-columns: repeat(auto-fit, minmax(min-poster, 1fr))
-      grid-template-rows: repeat(auto-fit, minmax(min-poster, 1fr))
       grid-gap: base-line
+      grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
       @media (min-width: pad-begins)
         padding: 0 base-line
       & > header
-        padding: 0 base-line
+        padding: 0
 </style>

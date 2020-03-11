@@ -2,13 +2,13 @@
   <section id="navigation" class="page" :class="{ posting }">
     <nav :class="onboarding">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
-      <router-link v-if="!posting" to="/" class="green" tabindex="-1">Tonight!</router-link>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Tonight!</router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
       <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Relations</router-link>
       <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
       <post-as-textarea @toggle-keyboard="posting = !posting" @post-added="add_post" class="red"></post-as-textarea>
-    </nav>
+    </nav><h6 class="app_version">{{version}}</h6>
     <aside>
       <my-figure :person="me"></my-figure>
       <div itemprop="posts">
@@ -46,6 +46,7 @@
     },
     data() {
       return {
+        version: process.env.VUE_APP_VERSION,
         signed_in: true,
         me: me.as_object(),
         posting: false,
@@ -55,7 +56,7 @@
       }
     },
     async created() {
-      console.info(this.me.first_name, 'uses the navigation')
+      console.info(`${this.me.first_name} uses the navigation`)
       this.days = this.populate_days(posts_storage.as_list(), this.me)
     },
     async mounted() {
@@ -173,7 +174,7 @@
       &.has-friends
         & > [href='/feed']
           visibility: visible
-      & > a[href='/']
+      & > a[href='/events']
         visibility: visible
       & > a
         visibility: hidden
@@ -201,4 +202,10 @@
         display: block
       & > textarea
         text-align: right
+    & > h6.app_version
+      margin: 0
+      padding: 0
+      position: fixed
+      bottom: (base-line / 2)
+      left: (base-line / 2)
 </style>

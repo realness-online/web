@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure class='feed poster'>
+  <figure class='feed poster' outline>
     <figcaption>
       <router-link :to="poster.person.id">
         <profile-as-avatar :person="poster.person"></profile-as-avatar>
@@ -9,7 +9,6 @@
         <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
       </hgroup>
     </figcaption>
-    <icon v-if="actual_poster" name="background"></icon>
     <svg v-if="actual_poster" @click="vector_click" :preserveAspectRatio="aspect_ratio"
          :viewBox="actual_poster.view_box" v-html="actual_poster.path">
     </svg>
@@ -44,7 +43,6 @@
     methods: {
       async show() {
         this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
-        this.observer.unobserve(this.$el)
       }
     }
   }
@@ -52,11 +50,7 @@
 <style lang="stylus">
   figure.feed.poster
     position: relative
-    overflow: hidden
-    margin-left -(base-line)
-    margin-right -(base-line)
-    @media (min-width: pad-begins)
-      margin: 0
+    // overflow: hidden
     & >  menu
       display: flex
       justify-content: flex-end
@@ -65,13 +59,16 @@
       & > a > svg
         fill: red
     & > svg
-      width: stretch
+      width: 100%
       height: 100%
-      max-height: poster-height
+      max-height: poster-feed-height
       &.background
         fill: blue
       &.working
         height: auto
         width: base-line * 5
-
+      @media (max-width: pad-begins)
+        &:not(.working)
+          margin-left -(base-line)
+          margin-right -(base-line)
 </style>

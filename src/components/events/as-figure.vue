@@ -45,7 +45,12 @@
       display: block
       height: 100%
       width: 100%
-      max-height: page-width
+      // @media(min-width: pad-begins)
+      //   max-height: base-line * 20
+      // @media(min-width: pad-begins) and (orientation: landscape)
+      //   max-height: base-line * 20
+      // @media(min-width: typing-begins)
+      //   max-height: base-line * 16
       &.background
         border: none
         fill: green

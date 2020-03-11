@@ -2,7 +2,7 @@
 // from this article: https://www.smashingmagazine.com/2016/05/fluid-typography/
 // this codepen clears up the slope intercept implementation: http://codepen.io/maranomynet/pen/ozNpXV
 
-between($properties, $min-value=min-font, $max-value=max-font, $min-vw=min-screen, $max-vw=max-screen)
+between($properties, $min-value=min-font, $max-value=max-font, $min-vw=pad-begins, $max-vw=display-begins)
 
   // Renders: calc(1rem + (1.5rem - 1rem) * (100vw - 25rem) / (50rem - 25rem)
   $min-value-stripped = remove-unit($min-value)

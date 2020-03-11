@@ -5,13 +5,13 @@
 # gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-staging.appspot.com/
 
 # reset development repo with production
-gsutil -m rm -r gs://realness-development.appspot.com/people
-gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
+# gsutil -m rm -r gs://realness-development.appspot.com/people
+# gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
 
-# # reset in home directory
-# rm -rf ~/realness.online
-# mkdir ~/realness.online
-# gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
+# reset in home directory
+rm -rf ~/realness.online
+mkdir ~/realness.online
+gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
 # gsutil -m cp -R gs://realness-development.appspot.com/people ~/realness.online/
 
 # reset just me

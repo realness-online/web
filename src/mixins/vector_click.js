@@ -1,7 +1,7 @@
 export default {
   data() {
     return {
-      menu: true
+      menu: false
     }
   },
   methods: {
@@ -13,8 +13,8 @@ export default {
   },
   computed: {
     aspect_ratio() {
-      if (this.menu) return 'xMidYMid slice'
-      else return 'xMidYMid meet'
+      if (this.menu) return 'xMidYMid meet'
+      else return 'xMidYMid slice'
     }
   }
 }

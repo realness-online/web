@@ -15,8 +15,8 @@ export default new Router({
   el: '#loading-realness',
   base: process.env.BASE_URL,
   routes: [
-    { path: '/', component: Events },
-    { path: '/nav', component: Navigation },
+    { path: '/', component: Navigation },
+    { path: '/events', component: Events },
     { path: '/feed', component: Feed },
     { path: '/posters', component: Posters },
     { path: '/relations', component: Relations },

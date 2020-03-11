@@ -1,6 +1,6 @@
 {
   "name": "Realness",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "private": false,
   "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
   "author": "Scott Fryxell <sfryxell@me.com>",
@@ -19,6 +19,7 @@
     "@realness.online/web-workers": "^0.3.0",
     "firebase": "^7.8.2",
     "libphonenumber-js": "^1.7.44",
+    "localforage": "^1.7.3",
     "register-service-worker": "1.6.2",
     "vue": "2.6.11",
     "vue-router": "^3.1.5"

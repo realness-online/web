@@ -16,10 +16,10 @@ export default {
       this.observer.observe(this.$el)
     },
     check_intersection(entries) {
-      entries.forEach(async entry => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
-          this.show()
           this.observer.unobserve(this.$el)
+          this.show()
         }
       })
     }

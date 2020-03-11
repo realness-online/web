@@ -61,7 +61,6 @@
         if (this.first_instance() && this.person.avatar) {
           this.avatar = await profile.item(this.person.id, this.person.avatar)
           this.$emit('loaded', this.avatar)
-          this.observer.unobserve(this.$el)
         }
       }
     }
