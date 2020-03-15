@@ -177,19 +177,19 @@
       margin-bottom: base-line
     & > header
       justify-content: space-between
-      margin: auto
-      @media (min-width: typing-begins)
-        padding: base-line 0
-        max-width: page-width
       & > a > svg.add
         fill: green
     & > article[itemprop="posters"]
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
-      grid-template-rows: repeat(1000, minmax((poster-min-width * 1.3), poster-grid-height))
+      grid-template-rows: (base-line * 6) repeat(1000, poster-grid-height)
       @media (min-width: pad-begins)
+        // grid-template-rows: repeat(1000, minmax((poster-min-width * 1.8), poster-grid-height))
         padding: 0 base-line
       & > header
-        padding: 0
+        @media (min-width: pad-begins)
+          grid-column: 1 / -1
+        & > h1
+          margin: base-line
 </style>
