@@ -78,10 +78,6 @@
       padding: base-line
       color: green
     & > header
-      margin: auto
-      @media (min-width: typing-begins)
-        max-width: page-width
-        padding: base-line 0
       & > svg
         width: base-line * 2
         height: base-line * 2
