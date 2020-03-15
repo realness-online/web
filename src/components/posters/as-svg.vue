@@ -1,9 +1,8 @@
 <template lang="html">
-  <svg class="poster" @click="vector_click">
+  <svg class="poster" @click="vector_click" :preserveAspectRatio="aspect_ratio">
     <defs>
       <symbol v-if="vector" :id="id"
               :viewBox="vector.view_box"
-              :preserveAspectRatio="aspect_ratio"
               v-html="vector.path"></symbol>
     </defs>
     <use v-if="!working" :href="background" class='background'/>
@@ -57,6 +56,7 @@
         else return true
       },
       async show() {
+        console.log('show')
         if (this.first_instance()) {
           this.poster = await profile.item(this.poster.person.id, this.poster.id)
           this.$emit('vector-loaded', this.poster.id)
