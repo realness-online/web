@@ -172,6 +172,7 @@
   section#posters
     h1
       color: green
+      margin: 0
     svg.working
       margin-bottom: base-line
     & > header
