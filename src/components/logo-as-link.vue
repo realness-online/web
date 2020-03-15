@@ -10,5 +10,4 @@
 <style lang="stylus">
   svg.realness:active
     transition-duration: 0.1s
-
 </style>
