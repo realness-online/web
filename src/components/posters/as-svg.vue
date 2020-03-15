@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg @click="vector_click">
+  <svg class="poster" @click="vector_click">
     <defs>
       <symbol v-if="vector" :id="id"
               :viewBox="vector.view_box"
@@ -40,13 +40,18 @@
       vector_link() {
         if (this.working) return `${icons}#working`
         if (this.poster) return this.as_fragment_id()
-        else return `${icons}#mock_poster`
+        else return `${icons}#mock-poster`
       },
       background() {
         return `${icons}#background`
       }
     },
     methods: {
+      fragment_id(vector_id = this.vector.id) {
+        const id = vector_id.replace('/', '-')
+        console.log(vector_id, id)
+        return '+16282281823-posters-55434443578'
+      },
       first_instance() {
         if (document.getElementById(this.id)) return false
         else return true
@@ -61,6 +66,11 @@
   }
 </script>
 <style lang="stylus">
+  svg.poster
+    display: block
+    height: 100%
+    width: 100%
+    max-height: poster-feed-height
   .background
     fill: green
 </style>

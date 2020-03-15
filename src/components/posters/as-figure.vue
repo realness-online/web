@@ -1,8 +1,6 @@
 <template lang="html">
-  <figure outline itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
-    <svg @click="vector_click" :preserveAspectRatio="aspect_ratio"
-         :viewBox="poster.view_box" v-html="poster.path">
-    </svg>
+  <figure itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
+    <as-svg @vector-click="vector_click"></as-svg>
     <figcaption>
       <meta itemprop="view_box" :content="poster.view_box">
       <meta itemprop="created_at" :content="poster.created_at">
@@ -48,12 +46,14 @@
 <script>
   import icons from '@/icons.svg'
   import icon from '@/components/icon'
+  import as_svg from '@/components/posters/as-svg'
   import download_vector from '@/components/download-vector'
   import vector_click from '@/mixins/vector_click'
   export default {
     mixins: [vector_click],
     components: {
       'download-vector': download_vector,
+      'as-svg': as_svg,
       icon
     },
     props: {
@@ -203,7 +203,6 @@
 <style lang="stylus">
   figure[itemtype="/posters"]
     position: relative
-    // background: green
     @media (min-width: pad-begins)
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
@@ -256,10 +255,6 @@
             fill: red
             &.add
               fill: blue
-    & > svg
-      width: stretch
-      height: auto
-      max-height: poster-feed-height
     & > figcaption
       position: relative
       & > input[type="date"]

@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/posters/as-svg.vue Render a poster 1`] = `
+<svg
+  class="poster"
+>
+  <defs>
+    <!---->
+  </defs>
+   
+  <use
+    class="green"
+    href="#background"
+  />
+   
+  <use
+    href="#mock_poster"
+  />
+</svg>
+`;
