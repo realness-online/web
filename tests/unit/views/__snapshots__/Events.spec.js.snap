@@ -13,12 +13,6 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
    
   <hgroup>
     <!---->
-     
-    <h6
-      class="app_version"
-    >
-      0.6.2
-    </h6>
   </hgroup>
    
   <article
@@ -35,11 +29,11 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   <article
     id="upcoming"
   >
-    <hgroup>
+    <header>
       <h1>
         Soon
       </h1>
-    </hgroup>
+    </header>
      
   </article>
 </section>

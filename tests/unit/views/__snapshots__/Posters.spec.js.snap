@@ -19,16 +19,18 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
   </header>
    
   <hgroup>
-    <h1>
-      Posters
-    </h1>
-     
     <!---->
   </hgroup>
    
   <article
     itemprop="posters"
   >
+    <header>
+      <h1>
+        Posters
+      </h1>
+    </header>
+     
     <!---->
   </article>
    

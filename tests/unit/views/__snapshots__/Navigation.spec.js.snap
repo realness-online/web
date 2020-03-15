@@ -19,7 +19,7 @@ exports[`@/views/Navigation.vue Renders posts and profile for a person 1`] = `
     <router-link
       class="green"
       tabindex="-1"
-      to="/"
+      to="/events"
     >
       Tonight!
     </router-link>
@@ -52,6 +52,11 @@ exports[`@/views/Navigation.vue Renders posts and profile for a person 1`] = `
      
     <!---->
   </nav>
+  <h6
+    class="app_version"
+  >
+    1.0.0
+  </h6>
    
   <aside>
     <!---->
@@ -82,7 +87,7 @@ exports[`@/views/Navigation.vue navigating the application handling post events 
     <router-link
       class="green"
       tabindex="-1"
-      to="/"
+      to="/events"
     >
       Tonight!
     </router-link>
@@ -115,6 +120,11 @@ exports[`@/views/Navigation.vue navigating the application handling post events 
      
     <!---->
   </nav>
+  <h6
+    class="app_version"
+  >
+    1.0.0
+  </h6>
    
   <aside>
     <!---->
@@ -152,6 +162,11 @@ exports[`@/views/Navigation.vue navigating the application handling post events 
      
     <!---->
   </nav>
+  <h6
+    class="app_version"
+  >
+    1.0.0
+  </h6>
    
   <aside>
     <!---->
