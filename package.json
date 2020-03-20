@@ -69,7 +69,8 @@
     "rules": {
       "camelcase": 0,
       "space-before-function-paren": 0,
-      "indent": "off"
+      "indent": "off",
+      "lines-between-class-members": 0
     }
   },
   "postcss": {
