@@ -6,7 +6,7 @@
     </header>
     <avatar @loaded="avatar_loaded" :person="person"></avatar>
     <menu v-if="avatar">
-      <download-vector :vector="avatar" :author="person"></download-vector>
+      <download-vector :vector="avatar"></download-vector>
     </menu>
     <profile-as-figure :person='person'></profile-as-figure>
     <div v-for="[page_name, days] in pages" :key="page_name">

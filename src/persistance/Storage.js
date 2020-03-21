@@ -7,6 +7,7 @@ import Item from '@/modules/item'
 import Paged from '@/persistance/Paged'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
+
 export default class Storage {
   constructor(type, selector = `[itemprop="${type}"]`) {
     this.type = type
@@ -29,7 +30,6 @@ export default class Storage {
     localStorage.setItem(this.selector, items.outerHTML)
   }
 }
-
 export class Person extends Cloud(Storage) {
   constructor() {
     super('person', '[itemtype="/person"]', 'index')

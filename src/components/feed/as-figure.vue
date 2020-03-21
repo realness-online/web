@@ -14,7 +14,7 @@
     </svg>
     <icon v-else name="working"></icon>
     <menu v-if="menu">
-      <download-vector :vector="actual_poster" :author="poster.person"></download-vector>
+      <download-vector :vector="actual_poster"></download-vector>
     </menu>
   </figure>
 </template>

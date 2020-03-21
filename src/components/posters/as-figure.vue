@@ -38,7 +38,7 @@
           <icon v-if="accept" name="finished"></icon>
           <icon v-else name="working"></icon>
         </a>
-        <download-vector :vector="poster" :author="author" v-if="!is_new"></download-vector>
+        <download-vector v-if="!is_new" :vector="poster"></download-vector>
       </menu>
     </figcaption>
   </figure>
