@@ -4,7 +4,7 @@
     <figcaption>
       <as-hgroup :person="person"></as-hgroup>
       <p class='phone' v-if="is_me">{{mobile_display}}</p>
-      <a class='phone' v-else :href="sms_link">{{mobile_display}}</a>
+      <a class='phone' v-else @click="open_sms_app">{{mobile_display}}</a>
     </figcaption>
   </figure>
 </template>
@@ -34,6 +34,10 @@
         if (this.is_me) route.path = '/account'
         if (this.previous) route.path = sessionStorage.previous
         this.$router.push(route)
+      },
+      open_sms_app(event) {
+        if (navigator.share) navigator.share({ url: this.sms_link })
+        else window.open(this.sms_link, '_self')
       }
     },
     computed: {
@@ -72,6 +76,8 @@
       border-radius: base-line
       shape-outside: circle()
       margin-right: (base-line / 4)
+      .background
+        fill: blue
     & > figcaption
       .phone
         margin-bottom: 0
