@@ -36,8 +36,7 @@
         this.$router.push(route)
       },
       open_sms_app (event) {
-        if (navigator.share) navigator.share({ url: this.sms_link })
-        else window.open(this.sms_link, '_self')
+        window.open(this.sms_link, '_self')
       }
     },
     computed: {
