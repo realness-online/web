@@ -18,7 +18,7 @@
       </a>
       <download-vector v-if="download_vector" :vector="current_avatar"></download-vector>
     </menu>
-    <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+    <input type="file" accept="image/jpeg" capture="user" ref="uploader" v-uploader>
   </div>
 </template>
 <script>
