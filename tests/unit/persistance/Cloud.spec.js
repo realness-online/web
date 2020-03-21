@@ -16,7 +16,7 @@ describe('@/persistance/Cloud.js', () => {
     it('Exists', () => {
       expect(posts_storage.save).toBeDefined()
     })
-    it.skip('Saves items on the server', async() => {
+    it.skip('Saves items on the server', async () => {
       posts_storage.persist = jest.fn()
       await posts_storage.save(posts)
       await flushPromises()
@@ -27,11 +27,11 @@ describe('@/persistance/Cloud.js', () => {
     it('exists', () => {
       expect(posts_storage.get_download_url).toBeDefined()
     })
-    it('Returns a url', async() => {
+    it('Returns a url', async () => {
       const url = await posts_storage.get_download_url()
       expect(url).toBe('https://download_url/people/+16282281824/posts/index.html')
     })
-    it('Returns null if person is not logged in', async() => {
+    it('Returns null if person is not logged in', async () => {
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
         return { currentUser: null }
       })
@@ -60,12 +60,12 @@ describe('@/persistance/Cloud.js', () => {
     it('Exists', () => {
       expect(posts_storage.persist).toBeDefined()
     })
-    it('Persist a file in a persons home directory', async() => {
+    it('Persist a file in a persons home directory', async () => {
       await posts_storage.persist(posts)
       await flushPromises()
       expect(put_spy).toBeCalled()
     })
-    it('Does nothing unless user is signed in', async() => {
+    it('Does nothing unless user is signed in', async () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { currentUser: null }
       })

@@ -16,7 +16,7 @@ const event = {
 describe('@/components/events/as-figure.js', () => {
   let wrapper
   beforeEach(() => {
-    wrapper =  shallow(as_figure, { propsData: { event } })
+    wrapper = shallow(as_figure, { propsData: { event } })
   })
   it('Renders a figure element of an event', () => {
     expect(wrapper.element).toMatchSnapshot()

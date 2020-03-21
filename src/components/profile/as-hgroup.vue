@@ -10,7 +10,7 @@
   export default {
     props: ['person'],
     computed: {
-      item_id() {
+      item_id () {
         if (this.person.mobile) {
           return profile.from_phone_number(this.person.mobile)
         } else {

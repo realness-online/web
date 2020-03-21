@@ -19,7 +19,7 @@ const statement = {
   id: '/+14151234356/2019-05-11T22:40:04.580Z'
 }
 describe('@/components/feed/as-article.vue', () => {
-  it('Render a feed item as an article element', async() => {
+  it('Render a feed item as an article element', async () => {
     const wrapper = shallow(as_article, { propsData: { post, person } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()

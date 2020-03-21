@@ -2,8 +2,8 @@ import Vue from 'vue'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
-Vue.config.productionTip=false
-Vue.config.devtools=false
+Vue.config.productionTip = false
+Vue.config.devtools = false
 require('jest-fetch-mock').enableMocks()
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return {

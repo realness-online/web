@@ -54,7 +54,7 @@
     components: {
       icon
     },
-    data() {
+    data () {
       return {
         working: true,
         disabled_sign_in: true,
@@ -68,7 +68,7 @@
         show_code: false
       }
     },
-    created() {
+    created () {
       firebase.auth().onAuthStateChanged(user => {
         this.working = false
         if (user) {
@@ -84,23 +84,23 @@
         this.validate_mobile_number()
       })
     },
-    mounted() {
+    mounted () {
       firebase.auth().onAuthStateChanged(user => {
         if (user) this.disable_input()
       })
     },
     methods: {
-      validate_mobile_number(event) {
+      validate_mobile_number (event) {
         const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
         if (is_valid) this.disabled_sign_in = false
         else this.disabled_sign_in = true
         return is_valid
       },
-      disable_input() {
+      disable_input () {
         const mobile = this.$el.querySelector('#mobile')
         if (mobile) mobile.disabled = true
       },
-      modified_check() {
+      modified_check () {
         const me = person_storage.as_object()
         let modified = false
         if (me.id !== this.person.id) modified = true
@@ -112,7 +112,7 @@
           sessionStorage.removeItem('posts-synced')
         }
       },
-      async begin_authorization(event) {
+      async begin_authorization (event) {
         this.working = true
         this.disable_input()
         this.show_authorize = false
@@ -124,7 +124,7 @@
         })
         this.human.verify()
       },
-      async text_human_verify_code(response) {
+      async text_human_verify_code (response) {
         this.working = false
         this.show_code = true
         this.show_captcha = false
@@ -135,7 +135,7 @@
         this.$el.querySelector('#verification-code').scrollIntoView(false)
         this.$el.querySelector('#verification-code').focus()
       },
-      async sign_in_with_code(event) {
+      async sign_in_with_code (event) {
         this.working = true
         this.disable_input()
         this.show_code = false
@@ -145,20 +145,20 @@
         this.working = false
         this.show_sign_out = true
       },
-      sign_out(event) {
+      sign_out (event) {
         firebase.auth().signOut()
         this.show_sign_out = false
         this.show_authorize = true
         const mobile = this.$el.querySelector('#mobile')
         if (mobile) mobile.disabled = false
       },
-      mobile_keypress(event) {
+      mobile_keypress (event) {
         if (!event.key.match(/^\d$/)) event.preventDefault()
       },
-      mobile_keyup(event) {
+      mobile_keyup (event) {
         this.validate_mobile_number()
       },
-      mobile_paste(event) {
+      mobile_paste (event) {
         const past_text = (event.clipboardData).getData('text/plain')
         const phone_number = parseNumber(past_text, 'US').phone
         if (phone_number) {
@@ -166,7 +166,7 @@
           this.validate_mobile_number()
         } else return false
       },
-      code_keypress(event) {
+      code_keypress (event) {
         if (!event.key.match(/^\d$/)) event.preventDefault()
         const button = this.$el.querySelector('#submit-verification')
         const input = this.$el.querySelector('#verification-code')

@@ -57,7 +57,7 @@
       'logo-as-link': logo_as_link,
       icon
     },
-    data() {
+    data () {
       return {
         finished: true,
         posters: [],
@@ -69,46 +69,46 @@
         storage: firebase.storage().ref()
       }
     },
-    async created() {
+    async created () {
       console.info(`${this.me.first_name} views their posters`)
       firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
     computed: {
-      as_itemid() {
+      as_itemid () {
         return `${this.me.id}/posters/${this.new_poster.created_at}`
       }
     },
     methods: {
-      newer_first(earlier, later) {
+      newer_first (earlier, later) {
         return later.created_at - earlier.created_at
       },
-      get_id(poster_reference) {
+      get_id (poster_reference) {
         return `posters/${poster_reference.name.split('.')[0]}`
       },
-      async vectorize_image(image) {
+      async vectorize_image (image) {
         this.working = true
         this.worker.postMessage({ image })
       },
-      async get_poster_list(user) {
+      async get_poster_list (user) {
         if (user) {
           const directory = await posters_storage.directory()
           directory.items.forEach(item => this.posters.push(this.get_id(item)))
         }
       },
-      brand_new_poster(event) {
+      brand_new_poster (event) {
         console.info(`${this.me.first_name} creates a poster`)
         this.new_poster = event.data
         this.new_poster.type = '/posters'
         this.new_poster.id = this.as_itemid
         this.working = false
       },
-      remove_new_poster() {
+      remove_new_poster () {
         this.working = true
         this.new_poster = null
         this.working = false
       },
-      async add_poster() {
+      async add_poster () {
         console.info(`${this.me.first_name} saves a poster`)
         this.working = true
         posters_storage.filename = this.as_itemid
@@ -118,7 +118,7 @@
         await posters_storage.save()
         this.working = false
       },
-      async remove_poster(poster_id) {
+      async remove_poster (poster_id) {
         this.working = true
         this.posters = this.posters.filter(poster => poster_id !== poster.id)
         await this.$nextTick()
@@ -127,19 +127,19 @@
         await posters_storage.delete()
         this.working = false
       },
-      async add_event(event) {
+      async add_event (event) {
         this.events.push(event)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
       },
-      async remove_event(poster_id) {
+      async remove_event (poster_id) {
         this.events = this.events.filter(event => event.poster !== poster_id)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
       }
     },
     watch: {
-      async posters() {
+      async posters () {
         await this.$nextTick()
         posters_storage.save()
       }

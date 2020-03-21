@@ -1,18 +1,18 @@
 export default {
-  data() {
+  data () {
     return {
       menu: false
     }
   },
   methods: {
-    vector_click(event) {
+    vector_click (event) {
       console.log('vector_click')
       this.menu = !this.menu
       this.$emit('vector-clicked', event)
     }
   },
   computed: {
-    aspect_ratio() {
+    aspect_ratio () {
       if (this.menu) return 'xMidYMid meet'
       else return 'xMidYMid slice'
     }

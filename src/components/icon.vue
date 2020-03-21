@@ -6,7 +6,7 @@
   export default {
     props: ['name'],
     computed: {
-      icon_location() {
+      icon_location () {
         return `${icons}#${this.name}`
       }
     }

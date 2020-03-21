@@ -1,10 +1,10 @@
 export default {
-  hydrate(item_as_string) {
+  hydrate (item_as_string) {
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null
   },
-  get_items(elements, type) {
+  get_items (elements, type) {
     if (!elements) return []
     if (typeof elements === 'string') elements = this.hydrate(elements)
     const items_as_data = []
@@ -21,11 +21,11 @@ export default {
     })
     return items_as_data
   },
-  get_first_item(elements, type) {
+  get_first_item (elements, type) {
     const item = this.get_items(elements, type)[0]
     return item || {}
   },
-  get_item_properties(item) {
+  get_item_properties (item) {
     const props = {}
     const properties = Array.from(item.querySelectorAll('[itemprop]'))
     properties.forEach(prop => {
@@ -36,7 +36,7 @@ export default {
     })
     return props
   },
-  property_value(element) {
+  property_value (element) {
     if (element.getAttribute('content')) {
       return element.getAttribute('content')
     }

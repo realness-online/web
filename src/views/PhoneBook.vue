@@ -27,23 +27,23 @@
       'profile-as-list': profile_as_list,
       icon
     },
-    data() {
+    data () {
       return {
         phonebook: [],
         working: true
       }
     },
-    async created() {
+    async created () {
       console.info('Views Phonebook')
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
-      phone_numbers.prefixes.forEach(async(phone_number) => {
+      phone_numbers.prefixes.forEach(async (phone_number) => {
         const person = await profile.load(profile.from_e64(phone_number.name))
         if (person) this.phonebook.push(person)
       })
       this.working = false
     },
     watch: {
-      async relations() {
+      async relations () {
         await this.$nextTick()
         relations_storage.save()
       }

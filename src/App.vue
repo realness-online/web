@@ -17,7 +17,7 @@
         sessionStorage.previous = from.path
       }
     },
-    created() {
+    created () {
       firebase.initializeApp({
         apiKey: process.env.VUE_APP_API_KEY,
         authDomain: process.env.VUE_APP_AUTH_DOMAIN,

@@ -1,12 +1,12 @@
 import post_helper from '@/helpers/post'
 export default {
-  data() {
+  data () {
     return {
       thirteen_minutes: 1000 * 60 * 13
     }
   },
   methods: {
-    condense_posts(posts, person) {
+    condense_posts (posts, person) {
       const condensed_posts = []
       while (posts.length > 0) {
         this.sort_count++
@@ -22,7 +22,7 @@ export default {
       }
       return condensed_posts
     },
-    is_train_of_thought(post, posts) {
+    is_train_of_thought (post, posts) {
       this.sort_count++
       const next_post = posts[0]
       if (next_post) {

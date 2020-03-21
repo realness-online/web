@@ -48,7 +48,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       button.trigger('click')
       expect(sessionStorage.getItem('posts-synced')).toBeFalsy()
     })
-    it('Renders the sign out button after sign in', async() => {
+    it('Renders the sign out button after sign in', async () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
       await flushPromises()

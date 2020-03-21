@@ -39,7 +39,7 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
     describe('#accept_new_avatar', () => {
-      it('Should update the avatar', async() => {
+      it('Should update the avatar', async () => {
         const save_spy = jest.fn(() => Promise.resolve())
         jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
         wrapper.setData({

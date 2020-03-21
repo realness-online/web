@@ -76,7 +76,7 @@
         default: () => []
       }
     },
-    data() {
+    data () {
       return {
         menu: false,
         accept: true,
@@ -84,36 +84,36 @@
         main_event: null
       }
     },
-    created() {
+    created () {
       if (this.is_new) this.menu = true
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
       else this.main_event = this.tonight
     },
     computed: {
-      date_picker_icon() {
+      date_picker_icon () {
         return `${icons}#date-picker`
       },
-      show_date_picker() {
+      show_date_picker () {
         if ((this.menu || this.show_event) && this.is_new === false) return true
         else return false
       },
-      selecting() {
+      selecting () {
         return {
           'selecting-date': this.show_event
         }
       },
-      has_event() {
+      has_event () {
         const exists = this.events.some(event => event.url === this.itemid)
         return exists ? 'has-event' : null
       },
-      event_time() {
+      event_time () {
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9 ? minutes : `0${minutes}`
         const time_value = `${this.main_event.getHours()}:${minutes}`
         return time_value
       },
-      event_day() {
+      event_day () {
         const year = this.main_event.getFullYear()
         let month = this.main_event.getMonth() + 1
         let day = this.main_event.getDate()
@@ -122,20 +122,20 @@
         const day_value = `${year}-${month}-${day}`
         return day_value
       },
-      event_label() {
+      event_label () {
         return this.main_event.toLocaleString('en-US', {
           weekday: 'long',
           month: 'long',
           day: 'numeric'
         })
       },
-      day() {
+      day () {
         return this.main_event.toLocaleString('en-US', { day: 'numeric' })
       },
-      month() {
+      month () {
         return this.main_event.toLocaleString('en-US', { month: 'long' })
       },
-      tonight() {
+      tonight () {
         const tonight = new Date()
         tonight.setHours(21)
         tonight.setMinutes(0)
@@ -143,30 +143,30 @@
       }
     },
     methods: {
-      vector_click() {
+      vector_click () {
         if (this.show_event) this.menu = false
         else this.menu = !this.menu
       },
-      remove_poster() {
+      remove_poster () {
         const message = 'Delete poster?'
         if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
       },
-      add_poster() {
+      add_poster () {
         this.show_event = false
         this.menu = false
         this.$emit('add-poster', this.itemid)
       },
-      manage_event() {
+      manage_event () {
         this.show_event = true
         this.menu = false
       },
-      remove_event() {
+      remove_event () {
         this.show_event = false
         this.menu = true
         this.main_event = new Date(this.tonight)
         this.$emit('remove-event', this.itemid)
       },
-      save_event() {
+      save_event () {
         this.show_event = false
         this.menu = true
         const new_event = {
@@ -176,14 +176,14 @@
         if (this.has_event) this.$emit('remove-event', this.itemid)
         this.$emit('add-event', new_event)
       },
-      update_date() {
+      update_date () {
         const date_list = this.$refs.day.value.split('-')
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
         const day = parseInt(date_list[2])
         this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
-      update_time() {
+      update_time () {
         const time_list = this.$refs.time.value.split(':')
         const hour = parseInt(time_list[0])
         const minute = parseInt(time_list[1])

@@ -51,7 +51,7 @@
       'post-as-article': as_article,
       'avatar-as-form': avatar_as_form
     },
-    data() {
+    data () {
       return {
         me: me.as_object(),
         pages: new Map(),
@@ -59,7 +59,7 @@
         image_file: null
       }
     },
-    async created() {
+    async created () {
       console.info(`${this.me.first_name} views their account page`)
       const days = this.populate_days(posts_storage.as_list(), this.me)
       this.pages.set('posts', days)
@@ -70,34 +70,34 @@
       }
     },
     methods: {
-      async new_avatar(avatar_url) {
+      async new_avatar (avatar_url) {
         this.me.avatar = avatar_url
         await this.$nextTick()
         me.save()
       },
-      is_editable(page_name) {
+      is_editable (page_name) {
         if (page_name === 'posts') return true
         else return false
       },
-      async save_me(event) {
+      async save_me (event) {
         if (this.signed_in) {
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
         }
         await this.$nextTick()
         me.save()
       },
-      async sync_posts() {
+      async sync_posts () {
         const days = this.populate_days(await posts_storage.sync_list(), this.me)
         const new_pages = new Map()
         new_pages.set('posts', days)
         this.pages = new_pages
       },
-      async save_page(event) {
+      async save_page (event) {
         await this.sync_posts()
         await this.$nextTick()
         await posts_storage.save()
       },
-      async next_page() {
+      async next_page () {
         const days = new Map()
         let posts = await profile.items(this.me.id, `posts/${this.limit}`)
         if (posts.length > 0) {

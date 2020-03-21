@@ -29,19 +29,19 @@
       }
     },
     methods: {
-      avatar_click(event) {
+      avatar_click (event) {
         const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         if (this.previous) route.path = sessionStorage.previous
         this.$router.push(route)
       },
-      open_sms_app(event) {
+      open_sms_app (event) {
         if (navigator.share) navigator.share({ url: this.sms_link })
         else window.open(this.sms_link, '_self')
       }
     },
     computed: {
-      is_me() {
+      is_me () {
         const local_id = me.as_object().id
         if (local_id) {
           if (local_id === this.person.id) return true
@@ -51,10 +51,10 @@
         }
         return false
       },
-      sms_link() {
+      sms_link () {
         return `sms:${this.person.id}`
       },
-      mobile_display() {
+      mobile_display () {
         const phone_number = profile.as_phone_number(this.person.id)
         return new AsYouType('US').input(phone_number)
       }

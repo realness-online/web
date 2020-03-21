@@ -56,7 +56,7 @@
       'poster-as-figure': poster_as_figure,
       'post-as-article': as_article
     },
-    data() {
+    data () {
       return {
         pages: new Map(),
         limit: null,
@@ -65,7 +65,7 @@
         avatar: null
       }
     },
-    async created() {
+    async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
       const [person, posts, posters] = await Promise.all([
         profile.load(id),
@@ -78,10 +78,10 @@
       this.limit = growth.first()
     },
     methods: {
-      avatar_loaded(avatar) {
+      avatar_loaded (avatar) {
         this.avatar = avatar
       },
-      async next_page() {
+      async next_page () {
         const id = profile.from_e64(this.$route.params.phone_number)
         const posts = await profile.items(id, `posts/${this.limit}`)
         if (posts.length > 0) {
@@ -89,7 +89,7 @@
           this.limit = growth.next(this.limit)
         }
       },
-      populate_page(person, posts, posters) {
+      populate_page (person, posts, posters) {
         const days = new Map()
         posts = [...this.condense_posts(posts, person),
                 ...this.prepare_posters(posters, person)]

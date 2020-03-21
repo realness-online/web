@@ -34,14 +34,14 @@
       'download-vector': download_vector,
       icon
     },
-    data() {
+    data () {
       return {
         menu: false,
         actual_poster: null
       }
     },
     methods: {
-      async show() {
+      async show () {
         this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
       }
     }

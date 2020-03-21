@@ -13,17 +13,17 @@
     components: {
       icon
     },
-    data() {
+    data () {
       return {
         searching: false,
         query: ''
       }
     },
     methods: {
-      search_mode(event) {
+      search_mode (event) {
         this.searching = true
       },
-      view_friends_mode(event) {
+      view_friends_mode (event) {
         this.query = ''
         this.searching = false
       }

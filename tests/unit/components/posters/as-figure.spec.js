@@ -58,7 +58,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#remove_poster', () => {
-      it('is called when remove button is clicked', async() => {
+      it('is called when remove button is clicked', async () => {
         const remove_spy = jest.fn()
         wrapper.vm.remove_poster = remove_spy
         wrapper.vm.menu = true
@@ -82,7 +82,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#add_poster', () => {
-      it('is called when the add button is pressed', async() => {
+      it('is called when the add button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.add_poster = spy
         wrapper.vm.menu = true
@@ -109,7 +109,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#manage_event', () => {
-      it('is called when the calender button is pressed', async() => {
+      it('is called when the calender button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.manage_event = spy
         wrapper.vm.menu = true
@@ -129,7 +129,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#remove_event', () => {
-      it('Is called when the remove button is pressed', async() => {
+      it('Is called when the remove button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.remove_event = spy
         wrapper.vm.show_event = true
@@ -150,7 +150,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#save_event', () => {
-      it('is called when save event button is pressed', async() => {
+      it('is called when save event button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.save_event = spy
         wrapper.vm.show_event = true
@@ -184,7 +184,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#update_date', () => {
-      it('updates date from picker', async() => {
+      it('updates date from picker', async () => {
         wrapper.vm.show_event = true
         await wrapper.vm.$nextTick()
         wrapper.vm.$refs.day.value = '02-01-2020'
@@ -192,7 +192,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#update_time', () => {
-      it('updates event time from time picer', async() => {
+      it('updates event time from time picer', async () => {
         wrapper.vm.show_event = true
         await wrapper.vm.$nextTick()
         wrapper.vm.$refs.time.value = '02:03'

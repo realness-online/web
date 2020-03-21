@@ -44,7 +44,7 @@
       'post-as-article': as_article,
       'post-as-textarea': as_textarea
     },
-    data() {
+    data () {
       return {
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
@@ -55,18 +55,18 @@
         days: new Map()
       }
     },
-    async created() {
+    async created () {
       console.info(`${this.me.first_name} uses the navigation`)
       this.days = this.populate_days(posts_storage.as_list(), this.me)
     },
-    async mounted() {
+    async mounted () {
       await Promise.all([
         this.sync_posts(),
         this.sync_profile()
       ])
     },
     computed: {
-      onboarding() {
+      onboarding () {
         const relations_count = relations_storage.as_list().length
         return {
           'has-posts': this.has_posts,
@@ -74,35 +74,35 @@
           'has-friends': (this.signed_in && relations_count > 0)
         }
       },
-      user_name() {
+      user_name () {
         return this.me.first_name || 'You'
       }
     },
     methods: {
-      as_id(post) {
+      as_id (post) {
         return post_helper.as_id(post, this.me)
       },
-      done_posting(event) {
+      done_posting (event) {
         document.querySelector('nav > button').focus()
       },
-      friend_or_phone_book() {
+      friend_or_phone_book () {
         if (relations_storage.as_list().length < 1) return '/phone-book'
         else return '/relations'
       },
-      async add_post(post) {
+      async add_post (post) {
         this.has_posts = true
         const posts = [post]
         this.days = new Map(this.populate_days(posts, this.me, this.days))
         await this.$nextTick()
         posts_storage.save()
       },
-      should_sync(last_synced) {
+      should_sync (last_synced) {
         if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
           return true
         }
         return false
       },
-      async sync_profile() {
+      async sync_profile () {
         if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
           firebase.auth().onAuthStateChanged(async user => {
             if (user) {
@@ -114,7 +114,7 @@
           })
         }
       },
-      async sync_posts() {
+      async sync_posts () {
         if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
           firebase.auth().onAuthStateChanged(async user => {
             if (user) {

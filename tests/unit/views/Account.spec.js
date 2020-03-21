@@ -26,13 +26,13 @@ describe('@/views/Account.vue', () => {
     load_spy = jest.spyOn(profile, 'load').mockImplementation(_ => Promise.resolve(me))
     wrapper = shallow(Account)
   })
-  it('Renders account information', async() => {
+  it('Renders account information', async () => {
     await flushPromises()
     expect(load_spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
   describe('#save_me', () => {
-    it('Saves a user', async() => {
+    it('Saves a user', async () => {
       const spy = jest.spyOn(person_storage, 'save').mockImplementation(_ => {
         Promise.resolve('spy')
       })

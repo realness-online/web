@@ -24,14 +24,14 @@
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link
     },
-    data() {
+    data () {
       return {
         relations: relations_storage.as_list()
       }
     },
-    created() {
+    created () {
       console.info('Views relations')
-      this.relations.forEach(async(relation, index) => {
+      this.relations.forEach(async (relation, index) => {
         const person = await profile.load(relation.id)
         this.relations.splice(index, 1, person)
       })

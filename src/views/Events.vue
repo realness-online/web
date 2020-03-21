@@ -35,7 +35,7 @@
       'event-as-figure': as_figure,
       icon
     },
-    data() {
+    data () {
       return {
         events: [],
         upcoming: [],
@@ -43,7 +43,7 @@
         days: new Map()
       }
     },
-    async created() {
+    async created () {
       console.clear()
       console.time('events-load')
       console.info(`${me.as_object().first_name} views realness version ${this.version}`)
@@ -52,7 +52,7 @@
       console.timeEnd('events-load')
     },
     methods: {
-      async get_upcoming_events() {
+      async get_upcoming_events () {
         const relations = me.as_list()
 
         let events = []
@@ -66,7 +66,7 @@
         // filter out any events that already happened
         // events.forEach(event => this.insert_event_into_day(event, this.days))
       },
-      newer_first(earlier, later) {
+      newer_first (earlier, later) {
         return later.id - earlier.id
       }
     }

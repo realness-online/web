@@ -34,30 +34,30 @@
         default: false
       }
     },
-    data() {
+    data () {
       return {
         avatar: null
       }
     },
-    created() {
+    created () {
       if (this.me) this.avatar = avatars_storage.as_object()
     },
     computed: {
-      id() {
+      id () {
         return profile.as_avatar_id(this.person.id)
       },
-      avatar_link() {
+      avatar_link () {
         if (this.working) return `${icons}#working`
         if (this.person.avatar) return profile.as_avatar_fragment(this.person.id)
         else return `${icons}#silhouette`
       }
     },
     methods: {
-      first_instance() {
+      first_instance () {
         if (document.getElementById(this.id)) return false
         else return true
       },
-      async show() {
+      async show () {
         if (this.first_instance() && this.person.avatar) {
           this.avatar = await profile.item(this.person.id, this.person.avatar)
           this.$emit('loaded', this.avatar)

@@ -10,7 +10,7 @@
   export default {
     mixins: [post_mixin],
     methods: {
-      save(event) {
+      save (event) {
         this.$emit('save', this.post)
       }
     }

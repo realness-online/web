@@ -17,7 +17,7 @@ const post = {
 }
 describe('@/views/Navigation.vue', () => {
   let wrapper
-  beforeEach(async() => {
+  beforeEach(async () => {
     jest.spyOn(profile, 'load').mockImplementation(() => person)
     jest.spyOn(person_storage, 'as_object').mockImplementation(_ => person)
     sessionStorage.setItem('posts-synced', Date.now())
@@ -41,12 +41,12 @@ describe('@/views/Navigation.vue', () => {
     sessionStorage.removeItem('posts-synced')
     wrapper.destroy()
   })
-  it('Renders posts and profile for a person', async() => {
+  it('Renders posts and profile for a person', async () => {
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
-  it('Add a post when post-added is emited', async() => {
+  it('Add a post when post-added is emited', async () => {
     expect(wrapper.vm.days.size).toBe(0)
     wrapper.vm.$emit('post-added', post)
     await flushPromises()
@@ -64,7 +64,7 @@ describe('@/views/Navigation.vue', () => {
         ])
       })
     })
-    it('Wait to sync until the user is signed in', async() => {
+    it('Wait to sync until the user is signed in', async () => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
       const signed_out = jest.fn(state_changed => state_changed(null))
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
@@ -78,13 +78,13 @@ describe('@/views/Navigation.vue', () => {
       expect(sync_list_spy).not.toBeCalled()
       sessionStorage.setItem('posts-synced', six_minutes_ago)
     })
-    it('Sync after five minutes minutes', async() => {
+    it('Sync after five minutes minutes', async () => {
       sessionStorage.setItem('posts-synced', six_minutes_ago)
       wrapper = shallow(Navigation)
       await flushPromises()
       expect(sync_list_spy).toBeCalled()
     })
-    it('Sync with the server with every new session', async() => {
+    it('Sync with the server with every new session', async () => {
       sessionStorage.removeItem('posts-synced')
       wrapper = shallow(Navigation)
       await flushPromises()

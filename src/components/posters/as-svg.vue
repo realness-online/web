@@ -29,33 +29,33 @@
         default: false
       }
     },
-    data() {
+    data () {
       return {
         vector: null
       }
     },
     computed: {
-      id() {
+      id () {
         return itemid.as_query_id(this.itemid)
       },
-      fragment_id() {
+      fragment_id () {
         return itemid.as_fragment_id(this.itemid)
       },
-      vector_link() {
+      vector_link () {
         if (this.working) return `${icons}#working`
         if (this.poster) return this.as_fragment_id()
         else return `${icons}#mock-poster`
       },
-      background() {
+      background () {
         return `${icons}#background`
       }
     },
     methods: {
-      first_instance() {
+      first_instance () {
         if (document.getElementById(this.id)) return false
         else return true
       },
-      async show() {
+      async show () {
         console.log('show', this.itemid)
         if (this.first_instance()) {
           this.poster = await itemid.load(this.vector.id)

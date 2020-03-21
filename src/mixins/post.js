@@ -17,20 +17,20 @@ export default {
     }
   },
   computed: {
-    me() {
+    me () {
       if (this.editable && me.as_object().id === this.person.id) return true
       else return false
     },
-    as_created_time() {
+    as_created_time () {
       return date_helper.as_time(this.post.created_at)
     },
-    id() {
+    id () {
       return post_helper.as_id(this.post, this.person)
     },
-    as_statement() {
+    as_statement () {
       return post_helper.as_statement(this.post)
     },
-    i_am_oldest() {
+    i_am_oldest () {
       if (this.post.created_at === this.person.oldest_post) return true
       else {
         if (!this.post.statements) return false
@@ -42,13 +42,13 @@ export default {
     }
   },
   methods: {
-    save() {
+    save () {
       this.$emit('save-posts', this.person)
     },
-    as_id(post) {
+    as_id (post) {
       return post_helper.as_id(post, this.person)
     },
-    as_statement_from_post(post) {
+    as_statement_from_post (post) {
       return post_helper.as_statement(post)
     }
   }

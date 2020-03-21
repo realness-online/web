@@ -1,1 +1,1 @@
-window.HTMLElement.prototype.scrollIntoView = function() {}
+window.HTMLElement.prototype.scrollIntoView = function () {}

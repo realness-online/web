@@ -1,6 +1,6 @@
 export default {
   methods: {
-    prepare_posters(posters, person) {
+    prepare_posters (posters, person) {
       const meta = []
       if (!posters.items) return meta
       posters.items.forEach(poster => {

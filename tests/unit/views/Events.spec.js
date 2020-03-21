@@ -6,5 +6,4 @@ describe('@/views/Events.vue', () => {
     expect(wrapper.element).toMatchSnapshot()
     // const people_in_feed = relations_storage.as_list()
   })
-
 })

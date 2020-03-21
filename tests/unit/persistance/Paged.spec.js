@@ -20,7 +20,7 @@ describe('@/persistance/Paged.js', () => {
     it('Exists', () => {
       expect(posts_storage.sync_list).toBeDefined()
     })
-    it('Syncs posts from server to local storage', async() => {
+    it('Syncs posts from server to local storage', async () => {
       localStorage.setItem(posts_storage.selector, hella_posts)
       fetch.mockResponseOnce(posts)
       const server_list = Item.get_items(posts)
@@ -36,7 +36,7 @@ describe('@/persistance/Paged.js', () => {
     it('Exists', () => {
       expect(posts_storage.optimize).toBeDefined()
     })
-    it.skip('It optimizes a list of items accross a set of pages', async() => {
+    it.skip('It optimizes a list of items accross a set of pages', async () => {
       localStorage.setItem(posts_storage.filename, hella_posts)
       await posts_storage.optimize()
       console.log(Object.keys(localStorage.__STORE__))

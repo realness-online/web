@@ -24,7 +24,7 @@ const oldest_post = {
   statements: []
 }
 describe('@/components/posts/as-article.vue', () => {
-  it('Render a post as an article element', async() => {
+  it('Render a post as an article element', async () => {
     const wrapper = shallow(as_article, { propsData: { post, person } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()

@@ -24,14 +24,14 @@
         required: true
       }
     },
-    data() {
+    data () {
       return {
         storage: firebase.storage().ref(),
         poster: null
       }
     },
     methods: {
-      async show() {
+      async show () {
         const [person, poster] = this.event.url.split('/posters')
         this.poster = await profile.item(person, `posters${poster}`)
       }

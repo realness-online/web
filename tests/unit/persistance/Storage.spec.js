@@ -18,7 +18,7 @@ describe('@/persistance/Storage.js', () => {
       it('Exists', () => {
         expect(storage.as_list).toBeDefined()
       })
-      it('Creates list of objects', async() => {
+      it('Creates list of objects', async () => {
         const list = await storage.as_list()
         expect(list.length).toBe(1)
       })

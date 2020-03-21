@@ -46,14 +46,14 @@
       'poster-as-figure': poster_as_figure,
       icon
     },
-    data() {
+    data () {
       return {
         days: new Map(),
         relations: [],
         working: true
       }
     },
-    async created() {
+    async created () {
       console.clear()
       console.time('feed-load')
       const people_in_feed = relations_storage.as_list()
@@ -64,7 +64,7 @@
       console.timeEnd('feed-load')
     },
     methods: {
-      async get_first_posts(people_in_feed) {
+      async get_first_posts (people_in_feed) {
         let feed = []
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts, posters] = await Promise.all([
@@ -79,7 +79,7 @@
         feed.sort(this.newer_first)
         feed.forEach(post => this.insert_post_into_day(post, this.days))
       },
-      async next_page(person) {
+      async next_page (person) {
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         console.info(`${me.first_name} loads`, `posts.${person.page}`, person.first_name)

@@ -7,13 +7,13 @@
 <script>
   export default {
     props: ['value'],
-    data() {
+    data () {
       return {
         new_post: ''
       }
     },
     methods: {
-      prepare_post() {
+      prepare_post () {
         this.$emit('toggle-keyboard')
         const post = {}
         post.statement = this.new_post && this.new_post.trim()
@@ -23,7 +23,7 @@
         this.$emit('post-added', post)
         console.info('Creates a post')
       },
-      wat_focused(event) {
+      wat_focused (event) {
         console.info('Displays post entry form')
         this.$emit('toggle-keyboard')
       }

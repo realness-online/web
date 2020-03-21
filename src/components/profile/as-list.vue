@@ -27,19 +27,19 @@
         type: Array
       }
     },
-    data() {
+    data () {
       return {
         relations: relations_storage.as_list(),
         me: me.as_object()
       }
     },
     methods: {
-      async add_relationship(person) {
+      async add_relationship (person) {
         this.relations.push(person)
         await this.$nextTick()
         relations_storage.save()
       },
-      async remove_relationship(person) {
+      async remove_relationship (person) {
         const index = this.relations.findIndex(p => (p.id === person.id))
         if (index > -1) {
           this.relations.splice(index, 1)

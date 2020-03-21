@@ -55,7 +55,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('Reject invalid mobile number', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData: function() { return 'abc-123-1234' }
+            getData: function () { return 'abc-123-1234' }
           }
         })
         expect(wrapper.vm.person.mobile).toBeFalsy()
@@ -63,7 +63,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('Accept 6282281824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData() { return '4151234567' }
+            getData () { return '4151234567' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('4151234567')
@@ -71,7 +71,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('Accept (628) 228-1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData() { return '(628) 228-1824‬' }
+            getData () { return '(628) 228-1824‬' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')
@@ -79,7 +79,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('Accept 628.228.1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData() { return '628.228.1824' }
+            getData () { return '628.228.1824' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')
@@ -87,7 +87,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       it('Accept 628-228-1824', () => {
         input.trigger('paste', {
           clipboardData: {
-            getData() { return '628-228-1824' }
+            getData () { return '628-228-1824' }
           }
         })
         expect(wrapper.vm.person.mobile).toBe('6282281824')

@@ -16,13 +16,13 @@
       }
     },
     computed: {
-      downloadable() {
+      downloadable () {
         const svg = `<svg viewBox="${this.vector.view_box}" xmlns="http://www.w3.org/2000/svg">${this.vector.path}</svg>`
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
     },
     methods: {
-      async vector_name() {
+      async vector_name () {
         const info = this.vector.id.split('/')
         const author_id = `${info[0]}`
         const type = `${info[1]}`

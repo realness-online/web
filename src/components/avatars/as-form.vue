@@ -41,7 +41,7 @@
     props: {
       person: Object
     },
-    data() {
+    data () {
       return {
         worker: new Worker('/vector.worker.js'),
         current_avatar: null,
@@ -51,15 +51,15 @@
         avatar: null
       }
     },
-    async created() {
+    async created () {
       this.worker.addEventListener('message', this.set_new_avatar)
       this.current_avatar = await profile.item(this.person.id, this.person.avatar)
     },
     methods: {
-      set_current_avatar(avatar) {
+      set_current_avatar (avatar) {
         this.current_avatar = avatar
       },
-      set_new_avatar(message) {
+      set_new_avatar (message) {
         this.avatar_changed = true
         this.avatar = {
           id: `avatars/${message.data.created_at}`,
@@ -72,11 +72,11 @@
         avatars_storage.filename = this.avatar.id
         this.working = false
       },
-      vectorize_image(image) {
+      vectorize_image (image) {
         this.working = true
         this.worker.postMessage({ image })
       },
-      async accept_new_avatar(event) {
+      async accept_new_avatar (event) {
         this.avatar_changed = false
         this.finished = false
         await this.$nextTick()
@@ -87,11 +87,11 @@
       }
     },
     computed: {
-      download_vector() {
+      download_vector () {
         if (!this.avatar_changed && this.current_avatar) return true
         else return false
       },
-      show_menu() {
+      show_menu () {
         if (this.signed_in && !this.working) return true
         else return false
       }

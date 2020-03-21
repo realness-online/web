@@ -17,23 +17,23 @@
     components: {
       icon
     },
-    data() {
+    data () {
       return {
         relation: this.is_relation()
       }
     },
     computed: {
-      is_me() {
+      is_me () {
         return (this.me.id === this.person.id)
       }
     },
     methods: {
-      is_relation() {
+      is_relation () {
         return this.relations.some(relation => {
           return (relation.id === this.person.id)
         })
       },
-      update_relationship() {
+      update_relationship () {
         if (this.relation) {
           this.relation = false
           this.$emit('remove', this.person)

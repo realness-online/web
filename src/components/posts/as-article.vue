@@ -24,7 +24,7 @@
       'post-as-li': as_li
     },
     methods: {
-      save(event) {
+      save (event) {
         this.$emit('modified', this.post)
       }
     }

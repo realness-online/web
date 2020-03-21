@@ -5,14 +5,14 @@ const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const fetch = require('jest-fetch-mock')
 describe('@/helpers/profile', () => {
-  it('#load', async() => {
+  it('#load', async () => {
     fetch.mockResponseOnce(person)
     const katie = await profile.load('/+16282281824')
     await flushPromises()
     expect(katie.first_name).toBe('katie')
     expect(fetch).toBeCalled()
   })
-  it('#items', async() => {
+  it('#items', async () => {
     fetch.mockResponseOnce(posts)
     const items = await profile.items('+14151231234', 'posts')
     await flushPromises()
