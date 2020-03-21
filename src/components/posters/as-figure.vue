@@ -1,13 +1,9 @@
 <template lang="html">
-  <figure itemscope itemtype="/posters" :itemid="poster.id" :class="selecting">
-    <as-svg @vector-click="vector_click"></as-svg>
+  <figure itemscope itemtype="/posters" :itemid="itemid" :class="selecting">
+    <as-svg @vector-click="vector_click" :itemid="itemid"></as-svg>
     <figcaption>
-      <meta itemprop="view_box" :content="poster.view_box">
-      <meta itemprop="created_at" :content="poster.created_at">
-      <meta itemprop="created_by" :content="author.id">
-      <input id="day" type="date" required
+      <input v-if="show_date_picker" id="day" type="date" required
              ref="day"
-             v-if="show_date_picker"
              :value="event_day"
              @click="manage_event"
              @input="update_date">
@@ -48,22 +44,21 @@
   import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
   import download_vector from '@/components/download-vector'
-  import vector_click from '@/mixins/vector_click'
   export default {
-    mixins: [vector_click],
     components: {
       'download-vector': download_vector,
       'as-svg': as_svg,
       icon
     },
     props: {
-      poster: {
-        type: Object,
+      itemid: {
+        type: String,
         required: true
       },
-      author: {
+      poster: {
         type: Object,
-        required: true
+        required: false,
+        default: null
       },
       working: {
         type: Boolean,
@@ -91,14 +86,11 @@
     },
     created() {
       if (this.is_new) this.menu = true
-      const my_event = this.events.find(event => event.url === this.url)
+      const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
       else this.main_event = this.tonight
     },
     computed: {
-      url() {
-        return `${this.author.id}/${this.poster.id}`
-      },
       date_picker_icon() {
         return `${icons}#date-picker`
       },
@@ -112,7 +104,7 @@
         }
       },
       has_event() {
-        const exists = this.events.some(event => event.url === this.url)
+        const exists = this.events.some(event => event.url === this.itemid)
         return exists ? 'has-event' : null
       },
       event_time() {
@@ -157,12 +149,12 @@
       },
       remove_poster() {
         const message = 'Delete poster?'
-        if (window.confirm(message)) this.$emit('remove-poster', this.url)
+        if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
       },
       add_poster() {
         this.show_event = false
         this.menu = false
-        this.$emit('add-poster', this.url)
+        this.$emit('add-poster', this.itemid)
       },
       manage_event() {
         this.show_event = true
@@ -172,16 +164,16 @@
         this.show_event = false
         this.menu = true
         this.main_event = new Date(this.tonight)
-        this.$emit('remove-event', this.url)
+        this.$emit('remove-event', this.itemid)
       },
       save_event() {
         this.show_event = false
         this.menu = true
         const new_event = {
           id: this.main_event.getTime(),
-          url: this.url
+          url: this.itemid
         }
-        if (this.has_event) this.$emit('remove-event', this.url)
+        if (this.has_event) this.$emit('remove-event', this.itemid)
         this.$emit('add-event', new_event)
       },
       update_date() {

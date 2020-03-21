@@ -5,28 +5,25 @@
       <a @click="select_photo"><icon name="add"></icon></a>
       <logo-as-link></logo-as-link>
     </header>
-    <hgroup v-show="!new_poster">
-      <icon v-show="working" name="working"></icon>
-    </hgroup>
     <article itemprop="posters">
       <header>
         <h1>Posters</h1>
+        <hgroup v-show="!new_poster">
+          <icon v-show="working" name="working"></icon>
+        </hgroup>
       </header>
-      <as-figure v-if="new_poster"
-                 class="new"
+      <as-figure v-if="new_poster" class="new"
                  :is_new="true"
+                 :itemid="as_itemid"
                  :poster="new_poster"
-                 :author="me"
                  :working="working"
-                 :key="as_itemid"
                  @add-poster="add_poster"
                  @remove-poster="remove_new_poster"></as-figure>
-      <as-figure v-else v-for="poster in posters"
-                 :author="me"
-                 :poster="poster"
+      <as-figure v-else v-for="itemid in posters"
+                 :itemid="itemid"
                  :events="events"
+                 :key="itemid"
                  :working="working"
-                 :key="poster.id"
                  @remove-poster="remove_poster"
                  @add-event="add_event"
                  @remove-event="remove_event"></as-figure>

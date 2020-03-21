@@ -1,23 +1,25 @@
 <template lang="html">
-  <svg class="poster" @click="vector_click" :preserveAspectRatio="aspect_ratio">
+  <svg class="poster" @click="vector_click">
+    <defs v-if="vector" itemprop="view_box">{{vector.view_box}}</defs>
     <defs>
       <symbol v-if="vector" :id="id"
               :viewBox="vector.view_box"
+              :preserveAspectRatio="aspect_ratio"
               v-html="vector.path"></symbol>
     </defs>
-    <use v-if="!working" :href="background" class='background'/>
+    <use :href="background" class='background'/>
     <use :href="vector_link"/>
   </svg>
 </template>
 <script>
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
   import icons from '@/icons.svg'
   export default {
     mixins: [vector_intersection, vector_click],
     props: {
-      poster_id: {
+      itemid: {
         type: String,
         required: true
       },
@@ -34,7 +36,10 @@
     },
     computed: {
       id() {
-        return this.fragment_id(this.vector.id)
+        return itemid.as_query_id(this.itemid)
+      },
+      fragment_id() {
+        return itemid.as_fragment_id(this.itemid)
       },
       vector_link() {
         if (this.working) return `${icons}#working`
@@ -46,20 +51,15 @@
       }
     },
     methods: {
-      fragment_id(vector_id = this.vector.id) {
-        const id = vector_id.replace('/', '-')
-        console.log(vector_id, id)
-        return '+16282281823-posters-55434443578'
-      },
       first_instance() {
         if (document.getElementById(this.id)) return false
         else return true
       },
       async show() {
-        console.log('show')
+        console.log('show', this.itemid)
         if (this.first_instance()) {
-          this.poster = await profile.item(this.poster.person.id, this.poster.id)
-          this.$emit('vector-loaded', this.poster.id)
+          this.poster = await itemid.load(this.vector.id)
+          if (this.poster) this.$emit('vector-loaded', this.poster.id)
         }
       }
     }
@@ -71,6 +71,6 @@
     height: 100%
     width: 100%
     max-height: poster-feed-height
-  .background
-    fill: green
+    .background
+      fill: green
 </style>
