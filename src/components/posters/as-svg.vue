@@ -58,7 +58,7 @@
       async show () {
         console.log('show', this.itemid)
         if (this.first_instance()) {
-          this.poster = await itemid.load(this.vector.id)
+          this.poster = await itemid.load(this.itemid)
           if (this.poster) this.$emit('vector-loaded', this.poster.id)
         }
       }
