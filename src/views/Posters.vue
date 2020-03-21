@@ -45,7 +45,6 @@
     events_storage,
     person_storage as me
   } from '@/persistance/Storage'
-  import Item from '@/modules/item'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
@@ -61,23 +60,23 @@
     data() {
       return {
         finished: true,
+        posters: [],
         events: events_storage.as_list(),
         me: me.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,
-        posters: posters_storage.as_list(),
         storage: firebase.storage().ref()
       }
     },
     async created() {
       console.info(`${this.me.first_name} views their posters`)
-      firebase.auth().onAuthStateChanged(this.sync_posters_with_network)
+      firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
     computed: {
       as_itemid() {
-        return `posters/${this.new_poster.created_at}`
+        return `${this.me.id}/posters/${this.new_poster.created_at}`
       }
     },
     methods: {
@@ -91,28 +90,10 @@
         this.working = true
         this.worker.postMessage({ image })
       },
-      async sync_posters_with_network(user) {
+      async get_poster_list(user) {
         if (user) {
-          const posters_directory = await posters_storage.directory()
-          // remove any posters not in the directory
-          this.posters = this.posters.filter(poster => {
-            return posters_directory.items.some(remote_poster => {
-              return poster.id === this.get_id(remote_poster)
-            })
-          })
-          // add any posters not in the list
-          const put_me_in_coach = posters_directory.items.filter(poster_reference => {
-            return !this.posters.some(local_poster => {
-              return local_poster.id === this.get_id(poster_reference)
-            })
-          })
-          put_me_in_coach.forEach(async (poster_reference) => {
-            const url = await this.storage.child(poster_reference.fullPath).getDownloadURL()
-            const items_as_text = await (await fetch(url)).text()
-            const poster_object = Item.get_first_item(items_as_text)
-            this.posters.push(poster_object)
-            this.posters.sort(this.newer_first)
-          })
+          const directory = await posters_storage.directory()
+          directory.items.forEach(item => this.posters.push(this.get_id(item)))
         }
       },
       brand_new_poster(event) {
