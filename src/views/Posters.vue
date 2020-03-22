@@ -163,8 +163,8 @@
       grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
       grid-template-rows: (base-line * 6) repeat(1000, poster-grid-height)
       @media (min-width: pad-begins)
-        // grid-template-rows: repeat(1000, minmax((poster-min-width * 1.8), poster-grid-height))
         padding: 0 base-line
+
       & > header
         @media (min-width: pad-begins)
           grid-column: 1 / -1
