@@ -14,7 +14,7 @@
   import icon from '@/components/icon'
   export default {
     components: [icon],
-    data() {
+    data () {
       return {
         main_event: null
       }
@@ -61,7 +61,7 @@
       }
     },
     methods: {
-      remove() {
+      remove () {
         this.emit('remove')
         this.main_event = new Date(this.tonight)
       },

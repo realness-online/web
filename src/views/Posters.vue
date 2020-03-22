@@ -13,9 +13,8 @@
         </hgroup>
       </header>
       <as-figure v-if="new_poster" class="new"
-                 :is_new="true"
                  :itemid="as_itemid"
-                 :poster="new_poster"
+                 :new_poster="new_poster"
                  :working="working"
                  @add-poster="add_poster"
                  @remove-poster="remove_new_poster"></as-figure>

@@ -23,6 +23,11 @@
         type: String,
         required: true
       },
+      new_poster: {
+        type: Object,
+        required: false,
+        default: null
+      },
       working: {
         type: Boolean,
         required: false,
@@ -38,12 +43,12 @@
       id () {
         return itemid.as_query_id(this.itemid)
       },
-      fragment_id () {
-        return itemid.as_fragment_id(this.itemid)
+      as_fragment_id () {
+        return itemid.as_fragment(this.itemid)
       },
       vector_link () {
         if (this.working) return `${icons}#working`
-        if (this.poster) return this.as_fragment_id()
+        if (this.vector) return this.as_fragment_id
         else return `${icons}#mock-poster`
       },
       background () {
@@ -56,10 +61,11 @@
         else return true
       },
       async show () {
-        console.log('show', this.itemid)
         if (this.first_instance()) {
-          this.poster = await itemid.load(this.itemid)
-          if (this.poster) this.$emit('vector-loaded', this.poster.id)
+          console.log('first_instance', this.new_poster)
+          if (this.new_poster) this.vector = this.new_poster
+          else this.vector = await itemid.load(this.itemid)
+          if (this.vector) this.$emit('vector-loaded', this.vector.id)
         }
       }
     }

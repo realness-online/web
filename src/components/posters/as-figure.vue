@@ -1,6 +1,6 @@
 <template lang="html">
   <figure class="poster" :class="selecting">
-    <as-svg @vector-click="vector_click" :itemid="itemid"></as-svg>
+    <as-svg @vector-click="vector_click" :itemid="itemid" :new_poster="new_poster"></as-svg>
     <figcaption>
       <input v-if="show_date_picker" id="day" type="date" required
              ref="day"
@@ -11,18 +11,18 @@
                          :selecting="show_date_picker"
                          @save="save_event"
                          @remove="remove_event"></event-as-fieldset>
-      <poster-menu v-if="menu" poster="poster"></poster-menu>
+      <!-- <poster-menu v-if="menu" poster="poster"></poster-menu> -->
     </figcaption>
   </figure>
 </template>
 <script>
   import as_svg from '@/components/posters/as-svg'
-  import as_menu from '@/components/posters/as-menu'
+  // import as_menu from '@/components/posters/as-menu'
   import event_as_fieldset from '@/components/events/as-fieldset'
   export default {
     components: {
       'as-svg': as_svg,
-      'poster-menu': as_menu,
+      // 'poster-menu': as_menu,
       'event-as-fieldset': event_as_fieldset
     },
     props: {
@@ -30,17 +30,12 @@
         type: String,
         required: true
       },
-      poster: {
+      new_poster: {
         type: Object,
         required: false,
         default: null
       },
       working: {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      is_new: {
         type: Boolean,
         required: false,
         default: false
@@ -55,15 +50,17 @@
       return {
         menu: false,
         accept: true,
-        show_event: false
+        show_event: false,
+        poster: null
       }
     },
     created () {
-      if (this.is_new) this.menu = true
+      if (this.new_poster) this.menu = true
+      if (this.new_poster) this.poster = this.new_poster
     },
     computed: {
       show_date_picker () {
-        if ((this.menu || this.show_event) && this.is_new === false) return true
+        if ((this.menu || this.show_event) && this.is_new === null) return true
         else return false
       },
       selecting () {

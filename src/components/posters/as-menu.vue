@@ -1,5 +1,5 @@
 <template lang="html">
-  <menu v-if="menu">
+  <menu>
     <a @click="remove_poster">
       <icon v-if="working" name="working"></icon>
       <icon v-else name="remove"></icon>
