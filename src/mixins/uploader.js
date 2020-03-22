@@ -1,4 +1,4 @@
-// <input type="file" accept="image/jpeg" capture ref="uploader" v-uploader>
+// <input type="file" accept="image/jpeg" capture="user" ref="uploader" v-uploader>
 export default {
   methods: {
     select_photo (event) {
@@ -6,7 +6,7 @@ export default {
       this.$refs.uploader.click()
     },
     open_camera (event) {
-      this.$refs.uploader.setAttribute('capture', true)
+      this.$refs.uploader.setAttribute('capture', 'user')
       this.$refs.uploader.click()
     }
   },
