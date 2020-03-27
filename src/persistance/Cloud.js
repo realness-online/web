@@ -4,9 +4,8 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
-async function get_download_url (person_id, item_id) {
-  const path = `/people${person_id}/${item_id}.html`
-  // console.log(path)
+async function get_download_url (itemid) {
+  const path = `/people${itemid}.html`
   try {
     return await firebase.storage().ref().child(path).getDownloadURL()
   } catch (e) {
@@ -26,7 +25,7 @@ const Cloud = (superclass) => class extends superclass {
   async get_download_url () {
     const user = firebase.auth().currentUser
     if (user) {
-      return get_download_url(`/${user.phoneNumber}`, this.filename)
+      return get_download_url(`/${user.phoneNumber}/${this.filename}`)
     } else return null
   }
   async from_network () {
@@ -50,11 +49,11 @@ const Cloud = (superclass) => class extends superclass {
       await firebase.storage().ref().child(path).delete()
     }
   }
-  async persist (items, name = this.filename) {
+  async persist (items, filename = this.filename) {
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
-      const file = new File([items], name)
-      const path = `people/${user.phoneNumber}/${name}.html`
+      const file = new File([items], filename)
+      const path = `people/${filename}.html`
       await firebase.storage().ref().child(path).put(file, this.metadata)
     }
   }

@@ -29,6 +29,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import { person_storage as me, posts_storage } from '@/persistance/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
@@ -99,7 +100,7 @@
       },
       async next_page () {
         const days = new Map()
-        let posts = await profile.items(this.me.id, `posts/${this.limit}`)
+        let posts = await itemid.load(`${this.me.id}/posts/${this.limit}`)
         if (posts.length > 0) {
           posts = this.condense_posts(posts, this.me)
           posts.forEach(post => this.insert_post_into_day(post, days))

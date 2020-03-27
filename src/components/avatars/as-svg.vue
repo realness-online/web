@@ -13,6 +13,7 @@
 <script>
   import { avatars_storage } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
@@ -59,7 +60,7 @@
       },
       async show () {
         if (this.first_instance() && this.person.avatar) {
-          this.avatar = await profile.item(this.person.id, this.person.avatar)
+          this.avatar = await itemid.load(`${this.person.id}/${this.person.avatar}`)
           this.$emit('loaded', this.avatar)
         }
       }

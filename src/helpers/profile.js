@@ -1,25 +1,11 @@
-import Item from '@/modules/item'
-import { get_download_url } from '@/persistance/Cloud'
+import itemid from '@/helpers/itemid'
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 export default {
   async load (id) {
-    const people = await this.items(id, 'index')
-    if (people.length >= 1) {
-      const person = people[0]
-      person.id = id
-      return person
-    } else return { id }
-  },
-  async items (id, item_id) {
-    const url = await get_download_url(id, item_id)
-    if (url) {
-      const server_text = await (await fetch(url)).text()
-      return Item.get_items(server_text)
-    } else return []
-  },
-  async item (id, item_id) {
-    return (await this.items(id, item_id))[0]
+    const person = await itemid.load(`${id}/index`)
+    if (person) return person
+    else return { id }
   },
   async directory (id, type) {
     const storage = firebase.storage().ref()

@@ -23,7 +23,7 @@
 </template>
 <script>
   import { person_storage as me } from '@/persistance/Storage'
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
@@ -54,10 +54,9 @@
     methods: {
       async get_upcoming_events () {
         const relations = me.as_list()
-
         let events = []
         await Promise.all(relations.map(async (relation) => {
-          const relation_events = await profile.items(relation.id, 'events/index')
+          const relation_events = await itemid.load(`${relation.id}/events/index`)
           events = [...relation_events, ...events]
         }))
         events.sort(this.newer_first)

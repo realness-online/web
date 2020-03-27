@@ -83,7 +83,7 @@
         return later.created_at - earlier.created_at
       },
       get_id (poster_reference) {
-        return `posters/${poster_reference.name.split('.')[0]}`
+        return `${this.me.id}/posters/${poster_reference.name.split('.')[0]}`
       },
       async vectorize_image (image) {
         this.working = true
@@ -107,22 +107,22 @@
         this.new_poster = null
         this.working = false
       },
-      async add_poster () {
-        console.info(`${this.me.first_name} saves a poster`)
+      async add_poster (itemid) {
         this.working = true
-        posters_storage.filename = this.as_itemid
-        this.posters.unshift(this.new_poster)
-        this.new_poster = null
+        console.info(`${this.me.first_name} saves a poster`)
+        posters_storage.filename = itemid
+        this.posters.unshift(itemid)
         await this.$nextTick()
         await posters_storage.save()
+        this.new_poster = null
         this.working = false
       },
-      async remove_poster (poster_id) {
+      async remove_poster (itemid) {
         this.working = true
-        this.posters = this.posters.filter(poster => poster_id !== poster.id)
+        this.posters = this.posters.filter(poster => itemid !== poster.id)
         await this.$nextTick()
-        await this.remove_event(poster_id)
-        posters_storage.filename = poster_id
+        await this.remove_event(itemid)
+        posters_storage.filename = itemid
         await posters_storage.delete()
         this.working = false
       },
@@ -131,16 +131,10 @@
         await this.$nextTick()
         events_storage.save(this.$refs.events)
       },
-      async remove_event (poster_id) {
-        this.events = this.events.filter(event => event.poster !== poster_id)
+      async remove_event (itemid) {
+        this.events = this.events.filter(event => event.poster !== itemid)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
-      }
-    },
-    watch: {
-      async posters () {
-        await this.$nextTick()
-        posters_storage.save()
       }
     }
   }
@@ -163,7 +157,6 @@
       grid-template-rows: (base-line * 6) repeat(1000, poster-grid-height)
       @media (min-width: pad-begins)
         padding: 0 base-line
-
       & > header
         @media (min-width: pad-begins)
           grid-column: 1 / -1

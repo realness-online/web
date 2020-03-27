@@ -33,6 +33,7 @@
   import signed_in from '@/mixins/signed_in'
   import posters_mixin from '@/mixins/posters'
   import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import growth from '@/modules/growth'
   import logo_as_link from '@/components/logo-as-link'
   import download_vector from '@/components/download-vector'
@@ -69,7 +70,7 @@
       const id = profile.from_e64(this.$route.params.phone_number)
       const [person, posts, posters] = await Promise.all([
         profile.load(id),
-        profile.items(id, 'posts/index'),
+        itemid.load(`${id}/posts/index`),
         profile.directory(id, 'posters')
       ])
       this.person = person
@@ -83,7 +84,7 @@
       },
       async next_page () {
         const id = profile.from_e64(this.$route.params.phone_number)
-        const posts = await profile.items(id, `posts/${this.limit}`)
+        const posts = await itemid.load(`${id}/posts/${this.limit}`)
         if (posts.length > 0) {
           this.populate_page(this.person, posts)
           this.limit = growth.next(this.limit)

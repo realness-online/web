@@ -22,6 +22,7 @@
 <script>
   import { relations_storage, person_storage as me } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import growth from '@/modules/growth'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -69,7 +70,7 @@
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts, posters] = await Promise.all([
             profile.load(relation.id),
-            profile.items(relation.id, 'posts/index'),
+            itemid.load(`${relation.id}/posts/index`),
             profile.directory(relation.id, 'posters')
           ])
           this.relations.push(person)
@@ -83,7 +84,7 @@
         if (person.page) person.page = growth.next(person.page)
         else person.page = growth.first()
         console.info(`${me.first_name} loads`, `posts.${person.page}`, person.first_name)
-        let posts = await profile.items(person.id, `posts/${person.page}`)
+        let posts = await itemid.load(`${person.id}/posts/${person.page}`)
         posts = this.condense_posts(posts, person)
         posts.forEach(post => this.insert_post_into_day(post, this.days))
         const sorted = [...this.days.entries()].sort(this.newer_day_first)

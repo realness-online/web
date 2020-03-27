@@ -23,7 +23,7 @@
 </template>
 <script>
   import { avatars_storage } from '@/persistance/Storage'
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
@@ -53,7 +53,7 @@
     },
     async created () {
       this.worker.addEventListener('message', this.set_new_avatar)
-      this.current_avatar = await profile.item(this.person.id, this.person.avatar)
+      this.current_avatar = await itemid.load(this.person.avatar)
     },
     methods: {
       set_current_avatar (avatar) {
