@@ -1,6 +1,8 @@
 <template lang="html">
   <figure class="poster" :class="selecting">
-    <as-svg @vector-click="vector_click" :itemid="itemid" :new_poster="new_poster"></as-svg>
+    <as-svg :itemid="itemid"
+            :new_poster="new_poster"
+            @vector-click="vector_click"></as-svg>
     <figcaption>
       <input v-if="show_date_picker" id="day" type="date" required
              ref="day"
@@ -11,18 +13,20 @@
                          :selecting="show_date_picker"
                          @save="save_event"
                          @remove="remove_event"></event-as-fieldset>
-      <!-- <poster-menu v-if="menu" poster="poster"></poster-menu> -->
+      <poster-menu v-if="menu" :is_new="new_poster? true : false"
+                   @add-poster="add_poster"
+                   @remove-poster="remove_poster"></poster-menu>
     </figcaption>
   </figure>
 </template>
 <script>
   import as_svg from '@/components/posters/as-svg'
-  // import as_menu from '@/components/posters/as-menu'
+  import as_menu from '@/components/posters/as-menu'
   import event_as_fieldset from '@/components/events/as-fieldset'
   export default {
     components: {
       'as-svg': as_svg,
-      // 'poster-menu': as_menu,
+      'poster-menu': as_menu,
       'event-as-fieldset': event_as_fieldset
     },
     props: {
@@ -49,7 +53,6 @@
     data () {
       return {
         menu: false,
-        accept: true,
         show_event: false,
         poster: null
       }
@@ -74,9 +77,9 @@
       }
     },
     methods: {
-      vector_click () {
+      vector_click (menu) {
         if (this.show_event) this.menu = false
-        else this.menu = !this.menu
+        else this.menu = menu
       },
       remove_poster () {
         const message = 'Delete poster?'
@@ -135,15 +138,6 @@
               color: red
               font-weight: 800
               font-family: Lato
-        & > menu
-          width: 100%
-          z-index: 4
-          display: flex
-          justify-content: space-between
-          & > a > svg
-            fill: red
-            &.add
-              fill: blue
     & > figcaption
       position: relative
       & > input[type="date"]
@@ -163,27 +157,4 @@
         &::-webkit-inner-spin-button
         &::-webkit-calendar-picker-indicator
           display: none
-      & > menu
-        padding: base-line
-        margin-top: -(base-line * 4)
-        display: flex
-        justify-content: space-between
-        a#create-event
-          position: relative
-          svg
-            &.has-event
-              fill: blue
-            text
-              fill: white
-              font-size: base-line * 2
-            text.month
-              font-size: (base-line / 2)
-              font-weight: 900
-            rect, path
-              stroke: darken(black, 5%)
-              stroke-width: 0.5px
-        svg
-          fill: red
-          &.finished
-            fill: blue
 </style>

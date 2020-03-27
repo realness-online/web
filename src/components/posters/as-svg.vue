@@ -1,14 +1,11 @@
 <template lang="html">
-  <svg class="poster" @click="vector_click">
+  <svg itemscope :class="action" itemtype="posters" :itemid="itemid" @click="vector_click">
     <defs v-if="vector" itemprop="view_box">{{vector.view_box}}</defs>
-    <defs>
-      <symbol v-if="vector" :id="id"
-              :viewBox="vector.view_box"
-              :preserveAspectRatio="aspect_ratio"
-              v-html="vector.path"></symbol>
-    </defs>
-    <use :href="background" class='background'/>
-    <use :href="vector_link"/>
+    <symbol v-if="vector" :id="id"
+            :preserveAspectRatio="aspect_ratio"
+            :viewBox="vector.view_box" v-html="vector.path"></symbol>
+    <use :href="background_link" :class='background'/>
+    <use v-if="vector" :href="as_fragment_id"/>
   </svg>
 </template>
 <script>
@@ -27,11 +24,6 @@
         type: Object,
         required: false,
         default: null
-      },
-      working: {
-        type: Boolean,
-        required: false,
-        default: false
       }
     },
     data () {
@@ -46,13 +38,17 @@
       as_fragment_id () {
         return itemid.as_fragment(this.itemid)
       },
-      vector_link () {
-        if (this.working) return `${icons}#working`
-        if (this.vector) return this.as_fragment_id
-        else return `${icons}#mock-poster`
+      background_link () {
+        if (this.vector) return `${icons}#background`
+        else return `${icons}#working`
       },
       background () {
-        return `${icons}#background`
+        if (this.vector) return 'background'
+        else return 'working'
+      },
+      action () {
+        if (this.vector) return 'display'
+        else return 'working'
       }
     },
     methods: {
@@ -62,7 +58,7 @@
       },
       async show () {
         if (this.first_instance()) {
-          console.log('first_instance', this.new_poster)
+          // console.log('first_instance', this.new_poster)
           if (this.new_poster) this.vector = this.new_poster
           else this.vector = await itemid.load(this.itemid)
           if (this.vector) this.$emit('vector-loaded', this.vector.id)
@@ -72,11 +68,13 @@
   }
 </script>
 <style lang="stylus">
-  svg.poster
+  svg[itemtype="posters"]
     display: block
     height: 100%
     width: 100%
     max-height: poster-feed-height
+    &.working
+      max-width: base-line * 6
     .background
       fill: green
 </style>
