@@ -1,5 +1,5 @@
 <template lang="html">
-  <a :href="downloadable" :download='vector_name'>
+  <a :href="downloadable" :download='vector_name()'>
     <icon name="download"></icon>
   </a>
 </template>
