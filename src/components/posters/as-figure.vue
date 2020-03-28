@@ -67,7 +67,7 @@
     },
     computed: {
       show_date_picker () {
-        if ((this.menu || this.show_event) && this.is_new === null) return true
+        if ((this.menu || this.show_event) && this.new_poster === null) return true
         else return false
       },
       selecting () {
@@ -75,7 +75,6 @@
           'selecting-date': this.show_event
         }
       }
-
     },
     methods: {
       vector_click (menu) {
