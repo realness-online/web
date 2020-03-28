@@ -10,10 +10,14 @@
              @click="manage_event"
              @input="update_date">
       <event-as-fieldset v-if="show_event"
+                         :itemid="itemid"
                          :selecting="show_date_picker"
                          @save="save_event"
                          @remove="remove_event"></event-as-fieldset>
-      <poster-menu v-if="menu" :is_new="new_poster? true : false"
+      <poster-menu v-if="menu"
+                   :itemid="itemid"
+                   :is_new="new_poster? true : false"
+                   :working="working"
                    @add-poster="add_poster"
                    @remove-poster="remove_poster"></poster-menu>
     </figcaption>
@@ -70,11 +74,8 @@
         return {
           'selecting-date': this.show_event
         }
-      },
-      has_event () {
-        const exists = this.events.some(event => event.url === this.itemid)
-        return exists ? 'has-event' : null
       }
+
     },
     methods: {
       vector_click (menu) {

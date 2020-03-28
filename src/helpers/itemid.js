@@ -2,6 +2,9 @@ import Item from '@/modules/item'
 import { get_download_url } from '@/persistance/Cloud'
 export default {
   async load (itemid) {
+    // check for it on the page facilitating redux like state manamgent
+    // check for it in local storage
+    // check for it on the network
     const url = await get_download_url(itemid)
     if (url) {
       const server_text = await (await fetch(url)).text()
