@@ -28,14 +28,12 @@
     },
     computed: {
       downloadable () {
-        console.log(this.vector)
         const svg = `<svg viewBox="${this.vector.view_box}" xmlns="http://www.w3.org/2000/svg">${this.vector.path}</svg>`
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
     },
     methods: {
       async get_vector_name () {
-        console.log(this.itemid)
         const info = this.itemid.split('/')
         const author_id = `/${info[1]}`
         const type = `${info[2]}`
