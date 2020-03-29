@@ -132,12 +132,14 @@
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
-      grid-template-rows: (base-line * 4) repeat(1000, poster-grid-height)
+      grid-template-rows: (base-line * 5) repeat(1000, poster-grid-height)
       @media (min-width: pad-begins)
         padding: 0 base-line
       & > header
-        @media (min-width: pad-begins)
-          grid-column: 1 / -1
         & > h1
           margin: base-line
+        @media (min-width: pad-begins)
+          grid-column: 1 / -1
+          & > hgroup
+            margin-top: -(base-line)
 </style>
