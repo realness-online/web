@@ -4,18 +4,11 @@
             :new_poster="new_poster"
             @vector-click="vector_click"></as-svg>
     <figcaption>
-      <input v-if="show_date_picker" id="day" type="date" required
-             ref="day"
-             :value="event_day"
-             @click="manage_event"
-             @input="update_date">
-      <event-as-fieldset v-if="show_event"
-                         :itemid="itemid"
+      <event-as-fieldset :itemid="itemid"
                          :selecting="show_date_picker"
                          @save="save_event"
                          @remove="remove_event"></event-as-fieldset>
-      <poster-menu v-if="menu"
-                   :itemid="itemid"
+      <poster-menu v-if="menu" :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
                    @add-poster="add_poster"
@@ -57,7 +50,6 @@
     data () {
       return {
         menu: false,
-        show_event: false,
         poster: null
       }
     },
@@ -89,25 +81,6 @@
         this.show_event = false
         this.menu = false
         this.$emit('add-poster', this.itemid)
-      },
-      manage_event () {
-        this.show_event = true
-        this.menu = false
-      },
-      remove_event () {
-        this.show_event = false
-        this.menu = true
-        this.$emit('remove-event', this.itemid)
-      },
-      save_event (event_at) {
-        this.show_event = false
-        this.menu = true
-        const new_event = {
-          id: event_at,
-          url: this.itemid
-        }
-        if (this.has_event) this.$emit('remove-event', this.itemid)
-        this.$emit('add-event', new_event)
       }
     }
   }
@@ -121,40 +94,6 @@
     &.selecting-date
       & > svg > use:not(.background)
         opacity: 0.1
-      & > figcaption
-        & > input[type="date"]
-          width: auto
-          height: base-line
-          left: base-line
-          @media (min-width: typing-begins)
-            top: base-line * 2
-            &::-webkit-datetime-edit-fields-wrapper
-            &::-webkit-datetime-edit-text
-            &::-webkit-datetime-edit-month-field
-            &::-webkit-datetime-edit-day-field
-            &::-webkit-datetime-edit-year-field
-            &::-webkit-calendar-picker-indicator
-              display:inline-block
-              color: red
-              font-weight: 800
-              font-family: Lato
     & > figcaption
       position: relative
-      & > input[type="date"]
-        position: absolute
-        top: base-line
-        left: s('calc( 50% - %s)', base-line)
-        color: transparent
-        z-index: 1
-        width: base-line * 2
-        height: base-line * 2
-        &::-webkit-date-edit
-        &::-webkit-datetime-edit-fields-wrapper
-        &::-webkit-datetime-edit-text
-        &::-webkit-datetime-edit-month-field
-        &::-webkit-datetime-edit-day-field
-        &::-webkit-datetime-edit-year-field
-        &::-webkit-inner-spin-button
-        &::-webkit-calendar-picker-indicator
-          display: none
 </style>

@@ -1,5 +1,5 @@
 <template lang="html">
-  <fieldset class="event">
+  <fieldset class="event" :class="state">
     <ol ref="events" itemprop="events" hidden>
       <li itemscope itemtype="/events"
           v-for="event in events"
@@ -9,12 +9,18 @@
       </li>
     </ol>
     <label for="day">{{event_label}}</label>
-    <input type="time" required :value="event_time" ref="time" @input="update_time">
+    <input id="day" type="date" required
+           ref="day"
+           :value="event_day"
+           @click="manage_event"
+           @input="update_date">
+    <input type="time" required
+           ref="time"
+           :value="event_time"
+           @input="update_time">
     <menu>
       <a @click="remove"><icon name="remove"></icon></a>
-      <a @click="emit('save', this.main_event.getTime())">
-        <icon name="add"></icon>
-      </a>
+      <a @click="save"><icon name="add"></icon></a>
     </menu>
   </fieldset>
 </template>
@@ -23,9 +29,17 @@
   import { events_storage } from '@/persistance/Storage'
   export default {
     components: [icon],
+    props: {
+      menu: {
+        type: Boolean,
+        required: false,
+        default: false
+      }
+    },
     data () {
       return {
         main_event: null,
+        show_event: false,
         events: events_storage.as_list()
       }
     },
@@ -35,6 +49,12 @@
       else this.main_event = this.tonight
     },
     computed: {
+      state () {
+        return {
+          show: true,
+          focus: false
+        }
+      },
       event_time () {
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9 ? minutes : `0${minutes}`
@@ -71,9 +91,11 @@
       }
     },
     methods: {
-      remove () {
-        this.emit('remove')
+      async remove () {
         this.main_event = new Date(this.tonight)
+        this.events = this.events.filter(event => event.poster !== this.itemid)
+        await this.$nextTick()
+        events_storage.save(this.$refs.events)
       },
       update_date () {
         const date_list = this.find('#day').value.split('-')
@@ -88,41 +110,94 @@
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
       },
-      async add_event (event) {
+      async add (event) {
+        this.main_event.getTime()
         this.events.push(event)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
       },
-      async remove_event (itemid) {
-        this.events = this.events.filter(event => event.poster !== itemid)
-        await this.$nextTick()
-        events_storage.save(this.$refs.events)
+      manage_event () {
+        this.show_event = true
+        this.menu = false
+      },
+      remove_event () {
+        this.show_event = false
+        this.menu = true
+        this.$emit('remove-event', this.itemid)
+      },
+      save_event (event_at) {
+        this.show_event = false
+        this.menu = true
+        const new_event = {
+          id: event_at,
+          url: this.itemid
+        }
+        if (this.has_event) this.$emit('remove-event', this.itemid)
+        this.$emit('add-event', new_event)
       }
     }
   }
 </script>
 <style lang="stylus">
   fieldset.event
-    padding: base-line
+    position: absolute
     display: flex
     justify-content: space-around
     flex-direction: column
-    border:none
-    padding: base-line
     border: none
-    &.selecting
-      margin-top: -(round(base-line * 10, 2))
-      & > label
-        z-index: 2
-        cursor: pointer
-        text-align: ceter
+    padding: 0
+    &.show
+      input[type="date"]
         display: block
-        line-height: base-line
-        margin-bottom: base-line
-        color: red
-        font-weight: 800
-        font-size: base-line
-      & > input
+      &.focus
+        margin-top: -(round(base-line * 10, 2))
+        label, input[type="time"], menu
+          display: block
+        input[type="date"]
+          width: auto
+          height: base-line
+          left: base-line
+          @media (min-width: typing-begins)
+            top: base-line * 2
+            &::-webkit-datetime-edit-fields-wrapper
+            &::-webkit-datetime-edit-text
+            &::-webkit-datetime-edit-month-field
+            &::-webkit-datetime-edit-day-field
+            &::-webkit-datetime-edit-year-field
+            &::-webkit-calendar-picker-indicator
+              display:inline-block
+              color: red
+              font-weight: 800
+              font-family: Lato
+    ol, label, input, menu
+      display: none
+    & > label
+      z-index: 2
+      cursor: pointer
+      text-align: center
+      line-height: base-line
+      margin-bottom: base-line
+      color: red
+      font-weight: 800
+      font-size: base-line
+    & > input[type="date"]
+      position: absolute
+      top: base-line
+      left: s('calc( 50% - %s)', base-line)
+      color: transparent
+      z-index: 1
+      width: base-line * 2
+      height: base-line * 2
+      &::-webkit-date-edit
+      &::-webkit-datetime-edit-fields-wrapper
+      &::-webkit-datetime-edit-text
+      &::-webkit-datetime-edit-month-field
+      &::-webkit-datetime-edit-day-field
+      &::-webkit-datetime-edit-year-field
+      &::-webkit-inner-spin-button
+      &::-webkit-calendar-picker-indicator
+        display: none
+    & > input[type="time"]
         height: base-line
         padding: 0
         line-height: 1
