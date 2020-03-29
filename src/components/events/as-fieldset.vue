@@ -1,5 +1,13 @@
 <template lang="html">
   <fieldset class="event">
+    <ol ref="events" itemprop="events" hidden>
+      <li itemscope itemtype="/events"
+          v-for="event in events"
+          :itemid="event.id"
+          :key="event.id">
+        <link itemprop="url" rel="icon" :href="event.url">
+      </li>
+    </ol>
     <label for="day">{{event_label}}</label>
     <input type="time" required :value="event_time" ref="time" @input="update_time">
     <menu>
@@ -12,11 +20,13 @@
 </template>
 <script>
   import icon from '@/components/icon'
+  import { events_storage } from '@/persistance/Storage'
   export default {
     components: [icon],
     data () {
       return {
-        main_event: null
+        main_event: null,
+        events: events_storage.as_list()
       }
     },
     created () {
@@ -77,6 +87,16 @@
         const hour = parseInt(time_list[0])
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
+      },
+      async add_event (event) {
+        this.events.push(event)
+        await this.$nextTick()
+        events_storage.save(this.$refs.events)
+      },
+      async remove_event (itemid) {
+        this.events = this.events.filter(event => event.poster !== itemid)
+        await this.$nextTick()
+        events_storage.save(this.$refs.events)
       }
     }
   }

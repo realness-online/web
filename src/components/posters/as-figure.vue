@@ -119,7 +119,7 @@
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
     &.selecting-date
-      & > svg
+      & > svg > use:not(.background)
         opacity: 0.1
       & > figcaption
         & > input[type="date"]

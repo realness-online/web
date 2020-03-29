@@ -17,23 +17,13 @@
                  :new_poster="new_poster"
                  :working="working"
                  @add-poster="add_poster"
-                 @remove-poster="remove_new_poster"></as-figure>
+                 @remove-poster="cancel_poster"></as-figure>
       <as-figure v-else v-for="itemid in posters"
                  :itemid="itemid"
-                 :events="events"
                  :key="itemid"
                  :working="working"
-                 @remove-poster="remove_poster"
-                 @add-event="add_event"
-                 @remove-event="remove_event"></as-figure>
+                 @remove-poster="remove_poster"></as-figure>
     </article>
-    <aside>
-      <ol ref="events" itemprop="events">
-        <li itemscope itemtype="/events" v-for="event in events" :itemid="event.id" :key="event.id" >
-          <link itemprop="url" rel="icon" :href="event.url">
-        </li>
-      </ol>
-    </aside>
   </section>
 </template>
 <script>
@@ -41,7 +31,6 @@
   import 'firebase/auth'
   import {
     posters_storage,
-    events_storage,
     person_storage as me
   } from '@/persistance/Storage'
   import icon from '@/components/icon'
@@ -60,7 +49,6 @@
       return {
         finished: true,
         posters: [],
-        events: events_storage.as_list(),
         me: me.as_object(),
         worker: new Worker('/vector.worker.js'),
         working: false,
@@ -102,14 +90,9 @@
         this.new_poster.id = this.as_itemid
         this.working = false
       },
-      remove_new_poster () {
-        this.working = true
-        this.new_poster = null
-        this.working = false
-      },
       async add_poster (itemid) {
         this.working = true
-        console.info(`${this.me.first_name} saves a poster`)
+        console.info(`${this.me.first_name} adds a poster`)
         posters_storage.filename = itemid
         this.posters.unshift(itemid)
         await this.$nextTick()
@@ -126,15 +109,10 @@
         await posters_storage.delete()
         this.working = false
       },
-      async add_event (event) {
-        this.events.push(event)
-        await this.$nextTick()
-        events_storage.save(this.$refs.events)
-      },
-      async remove_event (itemid) {
-        this.events = this.events.filter(event => event.poster !== itemid)
-        await this.$nextTick()
-        events_storage.save(this.$refs.events)
+      cancel_poster () {
+        this.working = true
+        this.new_poster = null
+        this.working = false
       }
     }
   }
