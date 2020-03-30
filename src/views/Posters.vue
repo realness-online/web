@@ -135,7 +135,7 @@
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
-      grid-template-rows: (base-line * 5) poster-grid-height
+      grid-template-rows: (base-line * 5)
       grid-auto-rows: poster-grid-height
       @media (min-width: pad-begins)
         padding: 0 base-line
