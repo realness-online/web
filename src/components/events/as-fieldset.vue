@@ -28,7 +28,7 @@
   import icon from '@/components/icon'
   import { events_storage } from '@/persistance/Storage'
   export default {
-    components: [icon],
+    components: { icon },
     props: {
       menu: {
         type: Boolean,
@@ -92,6 +92,9 @@
     },
     methods: {
       async remove () {
+        this.show_event = false
+        this.menu = true
+
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.poster !== this.itemid)
         await this.$nextTick()
@@ -110,30 +113,22 @@
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
       },
-      async add (event) {
-        this.main_event.getTime()
-        this.events.push(event)
-        await this.$nextTick()
-        events_storage.save(this.$refs.events)
-      },
       manage_event () {
         this.show_event = true
         this.menu = false
       },
-      remove_event () {
+      async save () {
         this.show_event = false
         this.menu = true
-        this.$emit('remove-event', this.itemid)
-      },
-      save_event (event_at) {
-        this.show_event = false
-        this.menu = true
-        const new_event = {
-          id: event_at,
-          url: this.itemid
+        if (this.has_event) {
+          this.events = this.events.filter(event => event.poster !== this.itemid)
         }
-        if (this.has_event) this.$emit('remove-event', this.itemid)
-        this.$emit('add-event', new_event)
+        this.events.push({
+          id: this.main_event.getTime(),
+          url: this.itemid
+        })
+        await this.$nextTick()
+        events_storage.save(this.$refs.events)
       }
     }
   }

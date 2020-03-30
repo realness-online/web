@@ -6,8 +6,7 @@
     <figcaption>
       <event-as-fieldset :itemid="itemid"
                          :selecting="show_date_picker"
-                         @save="save_event"
-                         @remove="remove_event"></event-as-fieldset>
+                         :menu="menu"></event-as-fieldset>
       <poster-menu v-if="menu" :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
@@ -75,7 +74,9 @@
       },
       remove_poster () {
         const message = 'Delete poster?'
-        if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
+        if (window.confirm(message)) {
+          this.$emit('remove-poster', this.itemid)
+        }
       },
       add_poster () {
         this.show_event = false

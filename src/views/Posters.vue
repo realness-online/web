@@ -79,6 +79,7 @@
       },
       async get_poster_list (user) {
         if (user) {
+          this.posters = []
           const directory = await posters_storage.directory()
           directory.items.forEach(item => this.posters.push(this.get_id(item)))
         }
@@ -97,14 +98,13 @@
         this.posters.unshift(itemid)
         await this.$nextTick()
         await posters_storage.save()
+        this.get_poster_list(firebase.auth().currentUser)
         this.new_poster = null
         this.working = false
       },
       async remove_poster (itemid) {
         this.working = true
-        this.posters = this.posters.filter(poster => itemid !== poster.id)
-        await this.$nextTick()
-        await this.remove_event(itemid)
+        this.posters = this.posters.filter(id => itemid !== id)
         posters_storage.filename = itemid
         await posters_storage.delete()
         this.working = false

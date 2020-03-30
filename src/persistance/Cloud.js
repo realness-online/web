@@ -42,10 +42,10 @@ const Cloud = (superclass) => class extends superclass {
     if (networkable.includes(this.type)) this.persist(items.outerHTML)
   }
   async delete () {
-    if (super.save) super.save() // save the current state of the document to localstorage
+    // if (super.save) super.save() // save the current state of the document to localstorage
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
-      const path = `people/${user.phoneNumber}/${this.filename}.html`
+      const path = `people/${this.filename}.html`
       await firebase.storage().ref().child(path).delete()
     }
   }
