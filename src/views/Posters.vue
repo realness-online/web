@@ -68,7 +68,9 @@
     },
     methods: {
       newer_first (earlier, later) {
-        return later.created_at - earlier.created_at
+        const first = parseInt(earlier.split('/posters/')[1])
+        const second = parseInt(later.split('/posters/')[1])
+        return second - first
       },
       get_id (poster_reference) {
         return `${this.me.id}/posters/${poster_reference.name.split('.')[0]}`
@@ -82,6 +84,7 @@
           this.posters = []
           const directory = await posters_storage.directory()
           directory.items.forEach(item => this.posters.push(this.get_id(item)))
+          this.posters.sort(this.newer_first)
         }
       },
       brand_new_poster (event) {
@@ -131,8 +134,9 @@
     & > article[itemprop="posters"]
       display: grid
       grid-gap: base-line
-      grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
-      grid-template-rows: (base-line * 5) repeat(1000, poster-grid-height)
+      grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
+      grid-template-rows: (base-line * 5) poster-grid-height
+      grid-auto-rows: poster-grid-height
       @media (min-width: pad-begins)
         padding: 0 base-line
       & > header
