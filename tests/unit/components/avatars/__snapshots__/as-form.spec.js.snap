@@ -28,7 +28,7 @@ exports[`@/components/avatars/as-form.vue Render avatar manager 1`] = `
    
   <input
     accept="image/jpeg"
-    capture=""
+    capture="user"
     type="file"
   />
 </div>

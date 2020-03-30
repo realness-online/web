@@ -2,79 +2,25 @@
 
 exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
 <figure
-  class=""
-  itemid="posters/1576588885385"
-  itemscope="itemscope"
-  itemtype="/posters"
-  outline=""
+  class="poster"
 >
   <!---->
    
   <figcaption>
-    <meta
-      content="0, 0, 333, 444"
-      itemprop="view_box"
-    />
-     
-    <meta
-      content="1576588885385"
-      itemprop="created_at"
-    />
-     
-    <meta
-      content="/+16282281823"
-      itemprop="created_by"
-    />
-     
     <!---->
      
     <!---->
-     
-    <menu>
-      <a>
-        <!---->
-      </a>
-       
-      <!---->
-       
-      <a>
-        <!---->
-      </a>
-       
-      <!---->
-    </menu>
   </figcaption>
 </figure>
 `;
 
 exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
 <figure
-  class=""
-  itemid="posters/1576588885385"
-  itemscope="itemscope"
-  itemtype="/posters"
-  outline=""
+  class="poster"
 >
   <!---->
    
   <figcaption>
-    <meta
-      content="0, 0, 333, 444"
-      itemprop="view_box"
-    />
-     
-    <meta
-      content="1576588885385"
-      itemprop="created_at"
-    />
-     
-    <meta
-      content="/+16282281823"
-      itemprop="created_by"
-    />
-     
-    <!---->
-     
     <!---->
      
     <!---->

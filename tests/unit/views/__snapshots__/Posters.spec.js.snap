@@ -18,10 +18,6 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
     <!---->
   </header>
    
-  <hgroup>
-    <!---->
-  </hgroup>
-   
   <article
     itemprop="posters"
   >
@@ -29,26 +25,13 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
       <h1>
         Posters
       </h1>
+       
+      <hgroup>
+        <!---->
+      </hgroup>
     </header>
      
     <!---->
   </article>
-   
-  <aside>
-    <ol
-      itemprop="events"
-    >
-      <li
-        itemid="1580544000000"
-        itemscope="itemscope"
-        itemtype="/events"
-      >
-        <link
-          itemprop="url"
-          rel="icon"
-        />
-      </li>
-    </ol>
-  </aside>
 </section>
 `;
