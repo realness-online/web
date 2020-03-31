@@ -5,8 +5,7 @@ export default {
     }
   },
   methods: {
-    vector_click (event) {
-      console.log('vector_click')
+    vector_click () {
       this.menu = !this.menu
       this.$emit('vector-click', this.menu)
     }
