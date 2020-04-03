@@ -1,5 +1,6 @@
 <template lang="html">
   <figure class="poster" :class="selecting">
+    <icon name="background"></icon>
     <as-svg :itemid="itemid"
             :new_poster="new_poster"
             @vector-click="vector_click"></as-svg>
@@ -16,11 +17,13 @@
   </figure>
 </template>
 <script>
+  import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
   import as_menu from '@/components/posters/as-menu'
   import event_as_fieldset from '@/components/events/as-fieldset'
   export default {
     components: {
+      icon,
       'as-svg': as_svg,
       'poster-menu': as_menu,
       'event-as-fieldset': event_as_fieldset
@@ -97,4 +100,8 @@
         opacity: 0.1
     & > figcaption
       position: relative
+    svg.background
+      fill: green
+      width: 100%
+      height: 100%
 </style>
