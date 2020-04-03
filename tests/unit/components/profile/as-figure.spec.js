@@ -3,7 +3,7 @@ import Item from '@/modules/item'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 const fs = require('fs')
-const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.svg', 'utf8')
+const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.html', 'utf8')
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
