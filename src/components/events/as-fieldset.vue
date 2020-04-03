@@ -1,7 +1,7 @@
 <template lang="html">
   <fieldset class="event" :class="state">
     <ol ref="events" itemprop="events" hidden>
-      <li itemscope itemtype="/events"
+      <li itemscope itemtype="/event"
           v-for="event in events"
           :itemid="event.id"
           :key="event.id">

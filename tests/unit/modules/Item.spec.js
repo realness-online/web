@@ -49,7 +49,7 @@ describe('@/modules/item.js', () => {
   })
   describe('#hydrate', () => {
     const item_as_string = `
-    <section itemscope itemtype="/people">
+    <section itemscope itemtype="/person">
       <h1 itemprop="name">Scott Fryxell</h1>
     </section>`
     it('Exists', () => {

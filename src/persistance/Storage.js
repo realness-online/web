@@ -63,7 +63,7 @@ export class History extends Paged(Cloud(Storage)) {
 export class SVG extends Large(Cloud(Storage)) {}
 export class Avatar extends SVG {
   constructor () {
-    super('avatars', '[itemtype="/avatars"]')
+    super('avatars', '[itemtype="/avatar"]')
   }
 }
 export class Activity extends Cloud(Storage) {
@@ -79,9 +79,9 @@ export class Activity extends Cloud(Storage) {
   }
 }
 
-export const relations_storage = new Storage('relations')
+export const relations_storage = new Storage('relationship')
 export const person_storage = new Person()
 export const posts_storage = new Posts()
 export const avatars_storage = new Avatar()
-export const posters_storage = new SVG('posters')
+export const posters_storage = new SVG('poster')
 export const events_storage = new Events()

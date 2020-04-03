@@ -1,5 +1,5 @@
 <template lang="html">
-  <article itemscope itemtype='/posts' :key="id">
+  <article itemscope itemtype='/post' :key="id">
     <header>
       <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
     </header>
@@ -31,6 +31,6 @@
   }
 </script>
 <style lang='stylus'>
-  article[itemtype="/posts"] header
+  article[itemtype="/post"] header
     margin-bottom: (base-line / 2)
 </style>
