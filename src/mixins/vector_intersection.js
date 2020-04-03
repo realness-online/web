@@ -19,9 +19,7 @@ export default {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (this.observer) this.observer.unobserve(this.$el)
-          this.$nextTick(() => {
-            this.show()
-          })
+          this.show()
         }
       })
     }
