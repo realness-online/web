@@ -79,9 +79,7 @@
       },
       remove_poster () {
         const message = 'Delete poster?'
-        if (window.confirm(message)) {
-          this.$emit('remove-poster', this.itemid)
-        }
+        if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
       },
       add_poster () {
         this.show_event = false
