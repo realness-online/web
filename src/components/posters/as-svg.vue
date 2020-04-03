@@ -1,11 +1,10 @@
 <template lang="html">
-  <svg itemscope :class="action" itemtype="posters" :itemid="itemid" @click="vector_click">
-    <defs v-if="vector" itemprop="view_box">{{vector.view_box}}</defs>
-    <symbol v-if="vector" :id="id"
-            :preserveAspectRatio="aspect_ratio"
-            :viewBox="vector.view_box" v-html="vector.path"></symbol>
-    <use :href="background_link" :class='background'/>
-    <use v-if="vector" :href="as_fragment_id"/>
+  <svg itemscope itemtype="posters"
+       :itemid="itemid"
+       :viewBox="viewbox"
+       :preserveAspectRatio="aspect_ratio"
+       @click="vector_click"
+       v-html="path">
   </svg>
 </template>
 <script>
@@ -49,20 +48,29 @@
       action () {
         if (this.vector) return 'display'
         else return 'working'
+      },
+      viewbox () {
+        if (this.vector) return this.vector.viewbox
+        else return ''
+      },
+      path () {
+        if (this.vector) return this.vector.path
+        else return ''
       }
+
     },
     methods: {
       first_instance () {
-        if (document.getElementById(this.id)) return false
+        if (document.querySelector(`[itemid="${this.itemid}"]`)) return false
         else return true
       },
       async show () {
-        if (this.first_instance()) {
-          // console.log('first_instance', this.new_poster)
-          if (this.new_poster) this.vector = this.new_poster
-          else this.vector = await itemid.load(this.itemid)
-          if (this.vector) this.$emit('vector-loaded', this.vector.id)
-        }
+        if (this.vector) return
+        console.log('first_instance', this.itemid)
+        if (this.new_poster) this.vector = this.new_poster
+        else this.vector = await itemid.load(this.itemid)
+        console.log(this.vector)
+        this.$emit('vector-loaded', this.vector.id)
       }
     }
   }

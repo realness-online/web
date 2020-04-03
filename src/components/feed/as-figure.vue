@@ -10,7 +10,7 @@
       </hgroup>
     </figcaption>
     <svg v-if="actual_poster" @click="vector_click" :preserveAspectRatio="aspect_ratio"
-         :viewBox="actual_poster.view_box" v-html="actual_poster.path">
+         :viewBox="actual_poster.viewbox" v-html="actual_poster.path">
     </svg>
     <icon v-else name="working"></icon>
     <menu v-if="menu">

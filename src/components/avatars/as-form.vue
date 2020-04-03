@@ -62,11 +62,9 @@
       set_new_avatar (message) {
         this.avatar_changed = true
         this.avatar = {
-          id: `avatars/${message.data.created_at}`,
+          id: `${this.person.id}/avatars/${message.data.created_at}`,
           path: message.data.path,
-          view_box: message.data.view_box,
-          created_at: new Date(message.data.created_at).toISOString(),
-          created_by: this.person.id
+          viewbox: message.data.viewbox
         }
         this.current_avatar = this.avatar
         avatars_storage.filename = this.avatar.id

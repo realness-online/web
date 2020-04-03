@@ -3,7 +3,7 @@
     <icon name="background"></icon>
     <svg v-if="poster"
          @click="vector_click"
-         :viewBox="poster.view_box"
+         :viewBox="poster.viewbox"
          :preserveAspectRatio="aspect_ratio"
          v-html="poster.path"></svg>
   </figure>

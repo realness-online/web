@@ -2,7 +2,7 @@
   <svg @click="vector_click">
     <defs>
       <symbol v-if="avatar" :id="id"
-              :viewBox="avatar.view_box"
+              :viewBox="avatar.viewbox"
               :preserveAspectRatio="aspect_ratio"
               v-html="avatar.path"></symbol>
     </defs>
@@ -59,6 +59,7 @@
         else return true
       },
       async show () {
+        console.log('avatars/as-svg')
         if (this.first_instance() && this.person.avatar) {
           this.avatar = await itemid.load(`${this.person.id}/${this.person.avatar}`)
           this.$emit('loaded', this.avatar)

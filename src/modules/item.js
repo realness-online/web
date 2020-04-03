@@ -34,6 +34,11 @@ export default {
       const value = this.property_value(prop)
       props[name] = value
     })
+    switch (item.tagName.toLowerCase()) {
+      case 'svg':
+      case 'symbol':
+        props.viewbox = item.getAttribute('viewBox')
+    }
     return props
   },
   property_value (element) {
