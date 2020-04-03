@@ -11,7 +11,6 @@
   import itemid from '@/helpers/itemid'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
-  import icons from '@/icons.svg'
   export default {
     mixins: [vector_intersection, vector_click],
     props: {
@@ -31,24 +30,6 @@
       }
     },
     computed: {
-      id () {
-        return itemid.as_query_id(this.itemid)
-      },
-      as_fragment_id () {
-        return itemid.as_fragment(this.itemid)
-      },
-      background_link () {
-        if (this.vector) return `${icons}#background`
-        else return `${icons}#working`
-      },
-      background () {
-        if (this.vector) return 'background'
-        else return 'working'
-      },
-      action () {
-        if (this.vector) return 'display'
-        else return 'working'
-      },
       viewbox () {
         if (this.vector) return this.vector.viewbox
         else return ''
@@ -57,7 +38,6 @@
         if (this.vector) return this.vector.path
         else return ''
       }
-
     },
     methods: {
       first_instance () {
@@ -66,10 +46,8 @@
       },
       async show () {
         if (this.vector) return
-        console.log('first_instance', this.itemid)
         if (this.new_poster) this.vector = this.new_poster
         else this.vector = await itemid.load(this.itemid)
-        console.log(this.vector)
         this.$emit('vector-loaded', this.vector.id)
       }
     }
@@ -81,8 +59,4 @@
     height: 100%
     width: 100%
     max-height: poster-feed-height
-    &.working
-      max-width: base-line * 6
-    .background
-      fill: green
 </style>

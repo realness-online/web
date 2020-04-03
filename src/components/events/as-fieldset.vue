@@ -94,7 +94,6 @@
       async remove () {
         this.show_event = false
         this.menu = true
-
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.poster !== this.itemid)
         await this.$nextTick()

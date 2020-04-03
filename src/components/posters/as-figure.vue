@@ -56,8 +56,10 @@
       }
     },
     created () {
-      if (this.new_poster) this.menu = true
-      if (this.new_poster) this.poster = this.new_poster
+      if (this.new_poster) {
+        this.menu = true
+        this.poster = this.new_poster
+      }
     },
     computed: {
       show_date_picker () {
@@ -104,4 +106,6 @@
       fill: green
       width: 100%
       height: 100%
+    svg.working
+      max-width: base-line * 6
 </style>
