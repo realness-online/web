@@ -1,7 +1,7 @@
 <template lang="html">
-  <figure itemscope itemtype="/avatars" :itemid="avatar.id">
+  <figure>
     <icon name="background"></icon>
-    <svg itemprop="path" preserveAspectRatio="xMidYMin meet"
+    <svg itemscope itemtype="/avatars" :itemid="avatar.id"
          :viewBox="avatar.viewbox" v-html="avatar.path">
     </svg>
   </figure>
