@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg itemscope itemtype="/poster"
+  <svg itemscope itemtype="/posters"
        :itemid="itemid"
        :viewBox="viewbox"
        :preserveAspectRatio="aspect_ratio"
@@ -54,7 +54,7 @@
   }
 </script>
 <style lang="stylus">
-  svg[itemtype="/poster"]
+  svg[itemtype="/posters"]
     display: block
     height: 100%
     width: 100%

@@ -25,6 +25,20 @@ describe('@/compontent/posters/as-figure.vue', () => {
       wrapper = shallow(as_figure, { propsData: { new_poster: poster, is_new: true } })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it.only('a poster with an event', () => {
+      expect(wrapper.vm.has_event).toBe(null)
+      wrapper = shallow(as_figure, { propsData: { author, poster, events } })
+      expect(wrapper.vm.has_event).toBe('has-event')
+    })
+    it('the date-picker apropriately', () => {
+      expect(wrapper.vm.show_date_picker).toBe(false)
+      wrapper.vm.menu = true
+      expect(wrapper.vm.show_date_picker).toBe(true)
+      wrapper.vm.menu = false
+      expect(wrapper.vm.show_date_picker).toBe(false)
+      wrapper.vm.show_event = true
+      expect(wrapper.vm.show_date_picker).toBe(true)
+    })
   })
   describe('methods:', () => {
     describe('#vector_click', () => {
@@ -94,24 +108,96 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.vm.show_date_picker).toBe(false)
       })
     })
-  })
-  describe('computed:', () => {
-    describe.only('show_date_picker', () => {
-      it('is false by default', () => {
-        expect(wrapper.vm.show_date_picker).toBe(false)
-      })
-      it('is true when menu is visible', () => {
-        expect(wrapper.vm.show_date_picker).toBe(false)
+    describe('#manage_event', () => {
+      it('is called when the calender button is pressed', async () => {
+        const spy = jest.fn()
+        wrapper.vm.manage_event = spy
         wrapper.vm.menu = true
         expect(wrapper.vm.show_date_picker).toBe(true)
+        await wrapper.vm.$nextTick()
+        wrapper.find('figcaption > input').trigger('click')
+        expect(spy).toBeCalled()
       })
-      it('is false when menu is gone', () => {
-        wrapper.vm.menu = true
+      it('displays the event', () => {
+        wrapper.vm.manage_event()
         expect(wrapper.vm.show_date_picker).toBe(true)
-        wrapper.vm.menu = false
-        expect(wrapper.vm.show_date_picker).toBe(false)
+        expect(wrapper.vm.selecting['selecting-date']).toBe(true)
+      })
+      it('hides the menu', () => {
+        wrapper.vm.manage_event()
+        expect(wrapper.vm.menu).toBe(false)
       })
     })
-
+    describe('#remove_event', () => {
+      it('Is called when the remove button is pressed', async () => {
+        const spy = jest.fn()
+        wrapper.vm.remove_event = spy
+        wrapper.vm.show_event = true
+        expect(wrapper.vm.show_date_picker).toBe(true)
+        await wrapper.vm.$nextTick()
+        wrapper.find('fieldset > menu > a:first-of-type').trigger('click')
+        expect(spy).toBeCalled()
+      })
+      it('Emits an event to remove the event', () => {
+        wrapper.vm.remove_event()
+        expect(wrapper.emitted('remove-event')).toBeTruthy()
+        expect(wrapper.vm.has_event).toBeFalsy()
+      })
+      it('Locally turns the event off', () => {
+        wrapper.vm.remove_event()
+        expect(wrapper.emitted('remove-event')).toBeTruthy()
+        expect(wrapper.vm.has_event).toBeFalsy()
+      })
+    })
+    describe('#save_event', () => {
+      it('is called when save event button is pressed', async () => {
+        const spy = jest.fn()
+        wrapper.vm.save_event = spy
+        wrapper.vm.show_event = true
+        expect(wrapper.vm.show_date_picker).toBe(true)
+        await wrapper.vm.$nextTick()
+        wrapper.find('fieldset > menu > a:last-of-type').trigger('click')
+        expect(spy).toBeCalled()
+      })
+      it('emits a save-event', () => {
+        wrapper.vm.save_event()
+        expect(wrapper.vm.show_event).toBe(false)
+        expect(wrapper.vm.menu).toBe(true)
+        expect(wrapper.emitted('add-event')).toBeTruthy()
+      })
+      it('emits a remove-event if poster already has event', () => {
+        wrapper.setProps({ events })
+        wrapper.vm.save_event()
+        expect(wrapper.vm.show_event).toBe(false)
+        expect(wrapper.vm.menu).toBe(true)
+        expect(wrapper.emitted('remove-event')).toBeTruthy()
+      })
+      it('hides date picking ui', () => {
+        wrapper.vm.show_event = true
+        wrapper.vm.save_event()
+        expect(wrapper.vm.show_event).toBe(false)
+      })
+      it('shows the menu', () => {
+        wrapper.vm.menu = false
+        wrapper.vm.save_event()
+        expect(wrapper.vm.menu).toBe(true)
+      })
+    })
+    describe('#update_date', () => {
+      it('updates date from picker', async () => {
+        wrapper.vm.show_event = true
+        await wrapper.vm.$nextTick()
+        wrapper.vm.$refs.day.value = '02-01-2020'
+        wrapper.vm.update_date()
+      })
+    })
+    describe('#update_time', () => {
+      it('updates event time from time picer', async () => {
+        wrapper.vm.show_event = true
+        await wrapper.vm.$nextTick()
+        wrapper.vm.$refs.time.value = '02:03'
+        wrapper.vm.update_time()
+      })
+    })
   })
 })

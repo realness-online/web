@@ -1,7 +1,7 @@
 <template lang="html">
   <fieldset class="event" :class="state">
     <ol ref="events" itemprop="events" hidden>
-      <li itemscope itemtype="/event"
+      <li itemscope itemtype="/events"
           v-for="event in events"
           :itemid="event.id"
           :key="event.id">
@@ -93,7 +93,6 @@
     methods: {
       async remove () {
         this.show_event = false
-        this.menu = true
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.poster !== this.itemid)
         await this.$nextTick()
@@ -114,11 +113,9 @@
       },
       manage_event () {
         this.show_event = true
-        this.menu = false
       },
       async save () {
         this.show_event = false
-        this.menu = true
         if (this.has_event) {
           this.events = this.events.filter(event => event.poster !== this.itemid)
         }

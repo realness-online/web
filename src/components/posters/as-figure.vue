@@ -42,11 +42,6 @@
         type: Boolean,
         required: false,
         default: false
-      },
-      events: {
-        type: Array,
-        required: false,
-        default: () => []
       }
     },
     data () {
@@ -56,6 +51,7 @@
       }
     },
     created () {
+      console.log('hiiiii')
       if (this.new_poster) {
         this.menu = true
         this.poster = this.new_poster

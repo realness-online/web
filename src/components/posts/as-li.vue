@@ -1,5 +1,5 @@
 <template lang="html">
-  <li itemscope itemtype='/post'>
+  <li itemscope itemtype='/posts'>
     <meta itemprop="created_at" :content="post.created_at">
     <p v-if="me" itemprop="statement" :contenteditable="true" @blur="save">{{as_statement}}</p>
     <p v-else itemprop="statement">{{as_statement}}</p>
