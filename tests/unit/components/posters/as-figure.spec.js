@@ -96,7 +96,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
     })
   })
   describe('computed:', () => {
-    describe.only('show_date_picker', () => {
+    describe('show_date_picker', () => {
       it('is false by default', () => {
         expect(wrapper.vm.show_date_picker).toBe(false)
       })

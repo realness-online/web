@@ -25,7 +25,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       wrapper = shallow(as_figure, { propsData: { new_poster: poster, is_new: true } })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it.only('a poster with an event', () => {
+    it('a poster with an event', () => {
       expect(wrapper.vm.has_event).toBe(null)
       wrapper = shallow(as_figure, { propsData: { author, poster, events } })
       expect(wrapper.vm.has_event).toBe('has-event')
