@@ -87,9 +87,9 @@
           this.posters.sort(this.newer_first)
         }
       },
-      brand_new_poster (event) {
+      brand_new_poster (response) {
         console.info(`${this.me.first_name} creates a poster`)
-        this.new_poster = event.data
+        this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
