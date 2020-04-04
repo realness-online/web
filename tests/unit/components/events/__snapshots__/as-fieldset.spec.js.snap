@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
+<figure
+  class="poster"
+>
+  <!---->
+   
+  <!---->
+   
+  <figcaption>
+    <!---->
+     
+    <!---->
+  </figcaption>
+</figure>
+`;
+
+exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
+<figure
+  class="poster"
+>
+  <!---->
+   
+  <!---->
+   
+  <figcaption>
+    <!---->
+     
+    <!---->
+  </figcaption>
+</figure>
+`;
