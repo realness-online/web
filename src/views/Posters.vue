@@ -75,7 +75,7 @@
       get_id (poster_reference) {
         return `${this.me.id}/posters/${poster_reference.name.split('.')[0]}`
       },
-      async vectorize_image (image) {
+      vectorize_image (image) {
         this.working = true
         this.worker.postMessage({ image })
       },
@@ -90,18 +90,17 @@
       brand_new_poster (event) {
         console.info(`${this.me.first_name} creates a poster`)
         this.new_poster = event.data
-        this.new_poster.type = '/posters'
+        this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
       },
       async add_poster (itemid) {
         this.working = true
-        console.info(`${this.me.first_name} adds a poster`)
+        console.info(`${this.me.first_name} adds poster ${itemid}`)
         posters_storage.filename = itemid
-        this.posters.unshift(itemid)
-        await this.$nextTick()
         await posters_storage.save()
-        this.get_poster_list(firebase.auth().currentUser)
+        await this.$nextTick()
+        this.posters.unshift(itemid)
         this.new_poster = null
         this.working = false
       },

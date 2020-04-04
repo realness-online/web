@@ -61,7 +61,7 @@
       async show () {
         console.log('avatars/as-svg')
         if (this.first_instance() && this.person.avatar) {
-          this.avatar = await itemid.load(`${this.person.id}/${this.person.avatar}`)
+          this.avatar = await itemid.load(this.person.avatar)
           this.$emit('vector-loaded', this.avatar)
         }
       }

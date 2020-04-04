@@ -51,7 +51,6 @@
       }
     },
     created () {
-      console.log('hiiiii')
       if (this.new_poster) {
         this.menu = true
         this.poster = this.new_poster

@@ -32,7 +32,7 @@
     computed: {
       viewbox () {
         if (this.vector) return this.vector.viewbox
-        else return ''
+        else return '0 0 0 0'
       },
       path () {
         if (this.vector) return this.vector.path
@@ -40,15 +40,11 @@
       }
     },
     methods: {
-      first_instance () {
-        if (document.querySelector(`[itemid="${this.itemid}"]`)) return false
-        else return true
-      },
       async show () {
         if (this.vector) return
         if (this.new_poster) this.vector = this.new_poster
         else this.vector = await itemid.load(this.itemid)
-        this.$emit('vector-loaded', this.vector.id)
+        this.$emit('vector-loaded', this.itemid)
       }
     }
   }
