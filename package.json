@@ -16,7 +16,7 @@
     "test:unit:watch": "vue-cli-service test:unit --watch"
   },
   "dependencies": {
-    "@realness.online/web-workers": "^0.3.0",
+    "@realness.online/web-workers": "^0.3.7",
     "firebase": "^7.8.2",
     "libphonenumber-js": "^1.7.44",
     "localforage": "^1.7.3",
