@@ -41,9 +41,9 @@
   export default {
     mixins: [signed_in, uploader],
     components: {
+      icon,
       'as-figure': as_figure,
-      'logo-as-link': logo_as_link,
-      icon
+      'logo-as-link': logo_as_link
     },
     data () {
       return {
