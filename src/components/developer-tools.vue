@@ -9,7 +9,7 @@
   </table>
 </template>
 <script>
-  // import Vue from 'vue'
+  import Vue from 'vue'
   import { Activity } from '@/persistance/Storage'
   export default {
     data () {
@@ -21,27 +21,35 @@
       }
     },
     created () {
-      // Vue.config.errorHandler = this.on_error
-      // console.info = this.info_logger
+      if (process.env.NODE_ENV === "production") {
+        Vue.config.errorHandler = this.on_error
+        console.info = this.info_logger
+      }
     },
     methods: {
+      one_second_ago () {
+        return Date.now() - 1000
+      },
       eight_seconds_ago () {
-        return Date.now() - (1000 * 8)
+        return this.one_second_ago * 8
       },
       async info_logger () {
         this.info.apply(this, Array.prototype.slice.call(arguments))
         this.activity.push([arguments[0], new Date().toISOString()])
-        await this.$nextTick()
         const last_save = sessionStorage.getItem('activity-synced')
         if (!last_save || this.eight_seconds_ago() > parseInt(last_save)) {
           sessionStorage.setItem('activity-synced', Date.now())
+          await this.$nextTick()
           this.activity_storage.save()
         } else console.log(this.eight_seconds_ago() - parseInt(last_save))
       },
       async on_error (event) {
-        this.activity.push([event.message, new Date().toISOString()])
-        await this.$nextTick()
-        this.activity_storage.save()
+        const last_save = sessionStorage.getItem('activity-synced')
+        if (!last_save || this.eight_seconds_ago() > parseInt(last_save)) {
+
+          this.activity.push([event.message, new Date().toISOString()])
+          await this.$nextTick()
+          this.activity_storage.save()
       }
     }
   }
