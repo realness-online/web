@@ -1,6 +1,6 @@
 <template>
   <section id="posters" class="page">
-    <input type="file" accept="image/jpeg" ref="uploader" v-uploader>
+    <input v-if="!new_poster" type="file" accept="image/jpeg" ref="uploader" v-uploader>
     <header v-show="!new_poster">
       <a @click="select_photo"><icon name="add"></icon></a>
       <logo-as-link></logo-as-link>
