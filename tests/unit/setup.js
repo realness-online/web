@@ -4,6 +4,9 @@ import 'firebase/storage'
 import 'firebase/auth'
 Vue.config.productionTip = false
 Vue.config.devtools = false
+console.info = function() {
+  // do nothing therby gounding info into the dirt
+}
 require('jest-fetch-mock').enableMocks()
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return {
