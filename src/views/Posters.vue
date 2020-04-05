@@ -134,10 +134,13 @@
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
-      grid-template-rows: (base-line * 5)
-      grid-auto-rows: poster-grid-height
       @media (min-width: pad-begins)
-        padding: 0 base-line
+        grid-template-rows: (base-line * 5)
+        grid-auto-rows: poster-grid-height
+      @media (min-width: typing-begins)
+        grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+        grid-auto-rows: (poster-grid-height * 1.11)
+        // padding: 0 base-line
       & > header
         & > h1
           margin: base-line
