@@ -140,7 +140,6 @@
       @media (min-width: typing-begins)
         grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
         grid-auto-rows: (poster-grid-height * 1.11)
-        // padding: 0 base-line
       & > header
         & > h1
           margin: base-line
