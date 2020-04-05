@@ -36,7 +36,7 @@ describe('@/persistance/Paged.js', () => {
     it('Exists', () => {
       expect(posts_storage.optimize).toBeDefined()
     })
-    it.skip('It optimizes a list of items accross a set of pages', async () => {
+    it.todo('It optimizes a list of items accross a set of pages', async () => {
       localStorage.setItem(posts_storage.filename, hella_posts)
       await posts_storage.optimize()
       console.log(Object.keys(localStorage.__STORE__))
