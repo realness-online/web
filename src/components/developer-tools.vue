@@ -21,7 +21,7 @@
       }
     },
     created () {
-      if (process.env.NODE_ENV === "production") {
+      if (process.env.NODE_ENV === 'production') {
         Vue.config.errorHandler = this.on_error
         console.info = this.info_logger
       }
@@ -46,10 +46,10 @@
       async on_error (event) {
         const last_save = sessionStorage.getItem('activity-synced')
         if (!last_save || this.eight_seconds_ago() > parseInt(last_save)) {
-
           this.activity.push([event.message, new Date().toISOString()])
           await this.$nextTick()
           this.activity_storage.save()
+        }
       }
     }
   }
