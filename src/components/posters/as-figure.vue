@@ -88,6 +88,10 @@
 <style lang="stylus">
   figure.poster
     position: relative
+    &.new
+      margin: auto 0
+      @media (min-width: pad-begins)
+        margin: auto base-line
     @media (min-width: pad-begins)
       &:first-of-type:not(.new) // how to handle the first poster on a desktop
         max-width: 50vw
