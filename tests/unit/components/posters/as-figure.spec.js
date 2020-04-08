@@ -112,6 +112,5 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.vm.show_date_picker).toBe(false)
       })
     })
-
   })
 })

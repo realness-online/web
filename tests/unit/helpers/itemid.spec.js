@@ -1,18 +1,17 @@
 import itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
+import { get, set } from 'idb-keyval'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const my_itemid = '/+16282281824/posters/559666932867'
 
 const fetch = require('jest-fetch-mock')
-import { get, set,  } from 'idb-keyval'
 
 describe('@/helpers/itemid', () => {
   beforeEach(() => {
     localStorage.clear()
     localStorage.getItem.mockClear()
     localStorage.setItem.mockClear()
-    // jest.resetAllMocks()
   })
   describe('#load', () => {
     it('Item is on the page', async () => {
