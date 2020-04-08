@@ -43,7 +43,7 @@
       async show () {
         if (this.vector) return
         if (this.new_poster) this.vector = this.new_poster
-        else this.vector = await itemid.load(this.itemid)
+        else this.vector = await itemid.as_object(this.itemid)
         this.$emit('vector-loaded', this.itemid)
       }
     }

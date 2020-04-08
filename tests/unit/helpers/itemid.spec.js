@@ -2,37 +2,55 @@ import itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
-const test_id = '/+16282281824/posters/559666932867'
+const my_itemid = '/+16282281824/posters/559666932867'
+
 const fetch = require('jest-fetch-mock')
+import { get, set,  } from 'idb-keyval'
 
 describe('@/helpers/itemid', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    localStorage.getItem.mockClear()
+    localStorage.setItem.mockClear()
+    // jest.resetAllMocks()
+  })
   describe('#load', () => {
-    it.only('First it tries to find the item on the page', async () => {
+    it('Item is on the page', async () => {
       const get_id_spy = jest.fn(() => poster_html)
       const keeps = document.getElementById
       document.getElementById = get_id_spy
-      const poster = await itemid.load(test_id)
+      const poster = (await itemid.load(my_itemid))[0]
+      await flushPromises()
       expect(get_id_spy).toBeCalled()
       expect(poster.viewbox).toBe('0 0 333 444')
-      expect(poster.id).toBe(test_id)
+      expect(poster.id).toBe(my_itemid)
       document.getElementById = keeps
     })
-    describe('Someone else\'s stuff', () => {
-      it.todo('It tries indexdb')
+    describe('It\'s someone elses stuff', () => {
+      it('It tries indexdb', () => {
+        itemid.load(my_itemid, '/+14152281824')
+        expect(localStorage.getItem).not.toBeCalled()
+        expect(get).toBeCalled()
+      })
     })
     describe('It\'s my stuff', () => {
-      it.todo('If pageable it tries local storage')
-      it.todo('If historical it tries indexdb')
-      it.todo('If large it tries indexdb')
+      it.todo('it tries local storage first')
+      it.todo('If tries indexdb')
     })
     describe('Can\'t find it locally', () => {
-      it('Try the network', async () => {
-        const network_request = fetch.mockResponseOnce(poster_html)
-        const poster = await itemid.load(test_id, '/+16282281824')
+      let network_request, poster
+      beforeEach(async () => {
+        network_request = fetch.mockResponseOnce(poster_html)
+        poster = (await itemid.load(my_itemid, '/+16282281824'))[0]
         await flushPromises()
+      })
+      it('Try the network', async () => {
         expect(poster.viewbox).toBe('0 0 333 444')
-        expect(poster.id).toBe(test_id)
+        expect(poster.id).toBe(my_itemid)
         expect(network_request).toBeCalled()
+      })
+      it('Saves it to indexdb when loaded', () => {
+        expect(set).toBeCalled()
       })
     })
   })
