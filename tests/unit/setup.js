@@ -4,10 +4,9 @@ import 'firebase/storage'
 import 'firebase/auth'
 Vue.config.productionTip = false
 Vue.config.devtools = false
-console.info = function() {
-  // do nothing therby gounding info into the dirt
-}
+require("fake-indexeddb/auto")
 require('jest-fetch-mock').enableMocks()
+
 jest.spyOn(firebase, 'auth').mockImplementation(() => {
   return {
     currentUser: { phoneNumber: '+16282281824' },
@@ -35,3 +34,6 @@ jest.spyOn(firebase, 'storage').mockImplementation(() => {
     })
   }
 })
+console.info = function() {
+  // do nothing therby gounding info into the dirt
+}

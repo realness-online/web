@@ -12,11 +12,4 @@ describe('@/helpers/profile', () => {
     expect(katie.first_name).toBe('katie')
     expect(fetch).toBeCalled()
   })
-  it('#items', async () => {
-    fetch.mockResponseOnce(posts)
-    const items = await profile.items('+14151231234', 'posts')
-    await flushPromises()
-    expect(items.length).toEqual(9)
-    expect(fetch).toBeCalled()
-  })
 })

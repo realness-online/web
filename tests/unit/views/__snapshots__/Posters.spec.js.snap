@@ -5,15 +5,15 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
   class="page"
   id="posters"
 >
-  <input
-    accept="image/jpeg"
-    type="file"
-  />
-   
   <header>
     <a>
       <!---->
     </a>
+     
+    <input
+      accept="image/jpeg"
+      type="file"
+    />
      
     <!---->
   </header>

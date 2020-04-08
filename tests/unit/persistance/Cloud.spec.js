@@ -16,7 +16,7 @@ describe('@/persistance/Cloud.js', () => {
     it('Exists', () => {
       expect(posts_storage.save).toBeDefined()
     })
-    it.todo('Saves items on the server', async () => {
+    it.skip('Saves items on the server', async () => {
       posts_storage.persist = jest.fn()
       await posts_storage.save(posts)
       await flushPromises()

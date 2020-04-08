@@ -2,19 +2,9 @@
 
 exports[`@/components/posters/as-svg.vue Render a poster 1`] = `
 <svg
-  class="working"
   itemscope="itemscope"
-  itemtype="posters"
->
-  <!---->
-   
-  <!---->
-   
-  <use
-    class="working"
-    href="#working"
-  />
-   
-  <!---->
-</svg>
+  itemtype="/posters"
+  preserveAspectRatio="xMidYMid slice"
+  viewBox="0 0 0 0"
+/>
 `;
