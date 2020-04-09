@@ -47,7 +47,8 @@
     data () {
       return {
         menu: false,
-        poster: null
+        poster: null,
+        show_event: false
       }
     },
     created () {
@@ -92,9 +93,6 @@
       margin: auto 0
       @media (min-width: pad-begins)
         margin: auto base-line
-    @media (min-width: pad-begins)
-      &:first-of-type:not(.new) // how to handle the first poster on a desktop
-        max-width: 50vw
     &.selecting-date
       & > svg > use:not(.background)
         opacity: 0.1

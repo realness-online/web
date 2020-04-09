@@ -31,9 +31,9 @@ describe('@/compontent/posters/as-figure.vue', () => {
       it('Shows the menu', () => {
         const svg = wrapper.find('figure > svg')
         expect(wrapper.vm.menu).toBe(false)
-        svg.trigger('click')
+        expect(wrapper.vm.show_event).toBe(false)
+        wrapper.vm.vector_click(true)
         expect(wrapper.vm.menu).toBe(true)
-        expect(wrapper.find('figure > figcaption > menu').exists()).toBe(true)
       })
       it('Doesn/t show the menu if the event selection has focus', () => {
         expect(wrapper.vm.menu).toBe(false)
@@ -44,14 +44,6 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#remove_poster', () => {
-      it('is called when remove button is clicked', async () => {
-        const remove_spy = jest.fn()
-        wrapper.vm.remove_poster = remove_spy
-        wrapper.vm.menu = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(remove_spy).toBeCalled
-      }),
       it('triggers a confirm message before deleting poster', () => {
         const confirm_spy = jest.fn(() => true)
         window.confirm = confirm_spy
@@ -68,18 +60,6 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#add_poster', () => {
-      it('is called when the add button is pressed', async () => {
-        const spy = jest.fn()
-        wrapper.vm.add_poster = spy
-        wrapper.vm.menu = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(spy).not.toBeCalled()
-        wrapper.vm.is_new = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(spy).toBeCalled()
-      })
       it('emits add-poster when called', () => {
         wrapper.vm.add_poster()
         expect(wrapper.emitted('add-poster')).toBeTruthy()
