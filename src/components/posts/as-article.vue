@@ -31,6 +31,8 @@
   }
 </script>
 <style lang='stylus'>
-  article[itemtype="/posts"] header
-    margin-bottom: (base-line / 2)
+  article[itemtype="/posts"]
+    overflow: hidden
+    & > header
+      margin-bottom: (base-line / 2)
 </style>
