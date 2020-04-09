@@ -4,7 +4,6 @@ import { get, set } from 'idb-keyval'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const my_itemid = '/+16282281824/posters/559666932867'
-
 const fetch = require('jest-fetch-mock')
 
 describe('@/helpers/itemid', () => {
@@ -26,15 +25,26 @@ describe('@/helpers/itemid', () => {
       document.getElementById = keeps
     })
     describe('It\'s someone elses stuff', () => {
-      it('It tries indexdb', () => {
+      beforeEach(()=>{
         itemid.load(my_itemid, '/+14152281824')
-        expect(localStorage.getItem).not.toBeCalled()
+      })
+      it ('It tries indexdb', () => {
         expect(get).toBeCalled()
+      })
+      it ('Does NOT try localStorage', () => {
+        expect(localStorage.getItem).not.toBeCalled()
       })
     })
     describe('It\'s my stuff', () => {
-      it.todo('it tries local storage first')
-      it.todo('If tries indexdb')
+      beforeEach(()=>{
+        itemid.load(my_itemid)
+      })
+      it('It tries local storage first', () => {
+        expect(localStorage.getItem).toHaveBeenCalledTimes(1)
+      })
+      it('It tries indexdb', () => {
+        expect(get).toBeCalled()
+      })
     })
     describe('Can\'t find it locally', () => {
       let network_request, poster
@@ -51,6 +61,20 @@ describe('@/helpers/itemid', () => {
       it('Saves it to indexdb when loaded', () => {
         expect(set).toBeCalled()
       })
+    })
+  })
+  describe('#as_fragment', () => {
+    expect(itemid.as_fragment(my_itemid)).toBe('#16282281824-posters-559666932867')
+  })
+  describe('#as_query_id', () => {
+    expect(itemid.as_query_id(my_itemid)).toBe('16282281824-posters-559666932867')
+  })
+  describe('#as_object', () => {
+    it('calls load', async () => {
+      const network_request = fetch.mockResponseOnce(poster_html)
+      await itemid.as_object(my_itemid, '/+16282281824')
+      await flushPromises()
+      expect(network_request).toBeCalled()
     })
   })
 })

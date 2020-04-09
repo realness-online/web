@@ -9,7 +9,7 @@ async function load (itemid, me = myself.as_object().id) {
   if (~itemid.indexOf(me)) items = Item.get_items(localStorage.getItem(itemid))
   if (!items.length) items = Item.get_items(await get(itemid))
   if (!items.length) items = await load_from_network(itemid)
-  return items || []
+  return items
 }
 async function load_from_network (itemid, me) {
   const url = await get_download_url(itemid)
@@ -22,7 +22,7 @@ async function load_from_network (itemid, me) {
 async function as_object (itemid, me = myself.as_object().id) {
   return (await load(itemid, me))[0]
 }
-function as_query_id (itemid = '/+') {
+function as_query_id (itemid) {
   return itemid.substring(2).replace('/', '-').replace('/', '-')
 }
 function as_fragment (itemid) {

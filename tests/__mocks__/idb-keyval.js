@@ -1,6 +1,3 @@
-'use strict'
-const indexdb = jest.genMockFromModule('fs')
-
 const get_mock = jest.fn(itemid => {
   return 'some stufffff!!!!!!!!!!!!!!!'
 })
