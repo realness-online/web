@@ -9,7 +9,7 @@
       </li>
     </ol>
     <label for="day">{{event_label}}</label>
-    <input id="day" type="date" required
+    <input outline id="day" type="date" required
            ref="day"
            :value="event_day"
            @click="manage_event"
@@ -39,7 +39,7 @@
     data () {
       return {
         main_event: null,
-        show_event: false,
+        show: false,
         events: events_storage.as_list()
       }
     },
@@ -91,12 +91,18 @@
       }
     },
     methods: {
+      manage_event () {
+        console.log('manage_event')
+        this.show = true
+        this.$emit('show-picker')
+      },
       async remove () {
-        this.show_event = false
+        this.show = false
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.poster !== this.itemid)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
+        this.$emit('hide-picker')
       },
       update_date () {
         const date_list = this.find('#day').value.split('-')
@@ -111,11 +117,8 @@
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
       },
-      manage_event () {
-        this.show_event = true
-      },
       async save () {
-        this.show_event = false
+        this.show = false
         if (this.has_event) {
           this.events = this.events.filter(event => event.poster !== this.itemid)
         }
@@ -125,13 +128,13 @@
         })
         await this.$nextTick()
         events_storage.save(this.$refs.events)
+        this.$emit('hide-picker')
       }
     }
   }
 </script>
 <style lang="stylus">
   fieldset.event
-    position: absolute
     display: flex
     justify-content: space-around
     flex-direction: column
@@ -173,7 +176,7 @@
       font-size: base-line
     & > input[type="date"]
       position: absolute
-      top: base-line
+      top: -(base-line * 3)
       left: s('calc( 50% - %s)', base-line)
       color: transparent
       z-index: 1

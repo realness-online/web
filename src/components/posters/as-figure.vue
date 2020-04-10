@@ -1,13 +1,15 @@
 <template lang="html">
-  <figure class="poster" :class="selecting">
+  <figure class="poster" :class="{ 'selecting-event': this.selecting_event }">
     <icon name="background"></icon>
     <as-svg :itemid="itemid"
             :new_poster="new_poster"
             @vector-click="vector_click"></as-svg>
     <figcaption>
-      <event-as-fieldset :itemid="itemid"
-                         :selecting="show_date_picker"
-                         :menu="menu"></event-as-fieldset>
+      <event-as-fieldset v-if="date_picker"
+                         :itemid="itemid"
+                         :menu="menu"
+                         @show-picker="selecting_event=true"
+                         @hide-picker="selecting_event=false"></event-as-fieldset>
       <poster-menu v-if="menu" :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
@@ -48,7 +50,7 @@
       return {
         menu: false,
         poster: null,
-        show_event: false
+        selecting_event: false
       }
     },
     created () {
@@ -58,19 +60,14 @@
       }
     },
     computed: {
-      show_date_picker () {
-        if ((this.menu || this.show_event) && this.new_poster === null) return true
+      date_picker () {
+        if ((this.menu || this.selecting_event) && this.new_poster === null) return true
         else return false
-      },
-      selecting () {
-        return {
-          'selecting-date': this.show_event
-        }
       }
     },
     methods: {
       vector_click (menu) {
-        if (this.show_event) this.menu = false
+        if (this.selecting_event) this.menu = false
         else this.menu = menu
       },
       remove_poster () {
@@ -79,7 +76,7 @@
         else if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
       },
       add_poster () {
-        this.show_event = false
+        this.selecting_event = false
         this.menu = false
         this.$emit('add-poster', this.itemid)
       }
@@ -93,8 +90,8 @@
       margin: auto 0
       @media (min-width: pad-begins)
         margin: auto base-line
-    &.selecting-date
-      & > svg > use:not(.background)
+    &.selecting-event
+      & > svg:not(.background)
         opacity: 0.1
     & > figcaption
       position: relative

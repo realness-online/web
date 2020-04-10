@@ -28,7 +28,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
   })
   describe('methods:', () => {
     describe('#remove', () => {
-      it.only('Removes the event', async () => {
+      it('Removes the event', async () => {
         const spy = jest.fn()
         wrapper.vm.remove_event = spy
         wrapper.vm.show_event = true
