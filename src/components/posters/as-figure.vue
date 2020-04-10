@@ -8,8 +8,7 @@
       <event-as-fieldset v-if="date_picker"
                          :itemid="itemid"
                          :menu="menu"
-                         @show-picker="selecting_event=true"
-                         @hide-picker="selecting_event=false"></event-as-fieldset>
+                         @picker="event_picker"></event-as-fieldset>
       <poster-menu v-if="menu" :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
@@ -66,6 +65,15 @@
       }
     },
     methods: {
+      event_picker (selecting) {
+        if (selecting) {
+          this.menu = false
+          this.selecting_event = true
+        } else {
+          this.menu = true
+          this.selecting_event = false
+        }
+      },
       vector_click (menu) {
         if (this.selecting_event) this.menu = false
         else this.menu = menu
@@ -86,6 +94,7 @@
 <style lang="stylus">
   figure.poster
     position: relative
+    overflow: hidden
     &.new
       margin: auto 0
       @media (min-width: pad-begins)

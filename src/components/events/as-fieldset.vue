@@ -9,11 +9,11 @@
       </li>
     </ol>
     <label for="day">{{event_label}}</label>
-    <input outline id="day" type="date" required
+    <input id="day" type="date" required
            ref="day"
            :value="event_day"
-           @click="manage_event"
-           @input="update_date">
+           @input="update_date"
+           @click="show_picker">
     <input type="time" required
            ref="time"
            :value="event_time"
@@ -50,10 +50,7 @@
     },
     computed: {
       state () {
-        return {
-          show: true,
-          focus: false
-        }
+        return { picker: this.show }
       },
       event_time () {
         let minutes = this.main_event.getMinutes()
@@ -91,10 +88,9 @@
       }
     },
     methods: {
-      manage_event () {
-        console.log('manage_event')
+      show_picker () {
         this.show = true
-        this.$emit('show-picker')
+        this.$emit('picker', true)
       },
       async remove () {
         this.show = false
@@ -102,7 +98,7 @@
         this.events = this.events.filter(event => event.poster !== this.itemid)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
-        this.$emit('hide-picker')
+        this.$emit('picker', false)
       },
       update_date () {
         const date_list = this.find('#day').value.split('-')
@@ -128,7 +124,7 @@
         })
         await this.$nextTick()
         events_storage.save(this.$refs.events)
-        this.$emit('hide-picker')
+        this.$emit('picker', false)
       }
     }
   }
@@ -140,41 +136,10 @@
     flex-direction: column
     border: none
     padding: 0
-    &.show
-      input[type="date"]
-        display: block
-      &.focus
-        margin-top: -(round(base-line * 10, 2))
-        label, input[type="time"], menu
-          display: block
-        input[type="date"]
-          width: auto
-          height: base-line
-          left: base-line
-          @media (min-width: typing-begins)
-            top: base-line * 2
-            &::-webkit-datetime-edit-fields-wrapper
-            &::-webkit-datetime-edit-text
-            &::-webkit-datetime-edit-month-field
-            &::-webkit-datetime-edit-day-field
-            &::-webkit-datetime-edit-year-field
-            &::-webkit-calendar-picker-indicator
-              display:inline-block
-              color: red
-              font-weight: 800
-              font-family: Lato
     ol, label, input, menu
       display: none
-    & > label
-      z-index: 2
-      cursor: pointer
-      text-align: center
-      line-height: base-line
-      margin-bottom: base-line
-      color: red
-      font-weight: 800
-      font-size: base-line
-    & > input[type="date"]
+    input[type="date"]
+      display: block
       position: absolute
       top: -(base-line * 3)
       left: s('calc( 50% - %s)', base-line)
@@ -191,13 +156,56 @@
       &::-webkit-inner-spin-button
       &::-webkit-calendar-picker-indicator
         display: none
-    & > input[type="time"]
-        height: base-line
-        padding: 0
-        line-height: 1
-        z-index: 3
-        cursor: pointer
-        color:red
-        font-weight: 900
-        margin-bottom: base-line * 3
+</style>
+<style lang="stylus">
+  fieldset.event.picker
+    position: relative
+    margin-top: -(round(base-line * 10, 2))
+    label, input[type="time"], menu
+      display: block
+    label
+      z-index: 2
+      cursor: pointer
+      text-align: left
+      line-height: base-line
+      margin: 0 0 base-line base-line
+      color: red
+      font-weight: 800
+      font-size: base-line
+    input[type="date"]
+      position: static
+      width: auto
+      height: base-line
+      left: base-line
+      margin: 0 0 base-line base-line
+      @media (min-width: typing-begins)
+        top: base-line
+        &::-webkit-datetime-edit-fields-wrapper
+        &::-webkit-datetime-edit-text
+        &::-webkit-datetime-edit-month-field
+        &::-webkit-datetime-edit-day-field
+        &::-webkit-datetime-edit-year-field
+        &::-webkit-calendar-picker-indicator
+          display:inline-block
+          color: red
+          font-weight: 800
+          font-family: Lato
+    input[type="time"]
+      height: base-line
+      margin-left: base-line
+      padding: 0
+      line-height: 1
+      z-index: 3
+      cursor: pointer
+      color:red
+      font-weight: 900
+      margin-bottom: base-line
+    menu
+      padding: base-line
+      display: flex
+      justify-content: space-between
+      width: 100%
+      z-index: 4
+      svg
+        fill:red
 </style>

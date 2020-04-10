@@ -27,28 +27,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
     })
   })
   describe('methods:', () => {
-    describe('#remove', () => {
-      it('Removes the event', async () => {
-        const spy = jest.fn()
-        wrapper.vm.remove_event = spy
-        wrapper.vm.show_event = true
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        await wrapper.vm.$nextTick()
-        wrapper.find('fieldset > menu > a:first-of-type').trigger('click')
-        expect(spy).toBeCalled()
-      })
-      it('Emits an event to remove the event', () => {
-        wrapper.vm.remove_event()
-        expect(wrapper.emitted('remove-event')).toBeTruthy()
-        expect(wrapper.vm.has_event).toBeFalsy()
-      })
-      it('Locally turns the event off', () => {
-        wrapper.vm.remove_event()
-        expect(wrapper.emitted('remove-event')).toBeTruthy()
-        expect(wrapper.vm.has_event).toBeFalsy()
-      })
-    })
-    describe('#save', () => {
+    describe.only('#save', () => {
       it('is called when save event button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.save_event = spy
@@ -80,6 +59,27 @@ describe('@/compontent/events/as-fieldset.vue', () => {
         wrapper.vm.menu = false
         wrapper.vm.save_event()
         expect(wrapper.vm.menu).toBe(true)
+      })
+    })
+    describe('#remove', () => {
+      it('Removes the event', async () => {
+        const spy = jest.fn()
+        wrapper.vm.remove_event = spy
+        wrapper.vm.show_event = true
+        expect(wrapper.vm.show_date_picker).toBe(true)
+        await wrapper.vm.$nextTick()
+        wrapper.find('fieldset > menu > a:first-of-type').trigger('click')
+        expect(spy).toBeCalled()
+      })
+      it('Emits an event to remove the event', () => {
+        wrapper.vm.remove_event()
+        expect(wrapper.emitted('remove-event')).toBeTruthy()
+        expect(wrapper.vm.has_event).toBeFalsy()
+      })
+      it('Locally turns the event off', () => {
+        wrapper.vm.remove_event()
+        expect(wrapper.emitted('remove-event')).toBeTruthy()
+        expect(wrapper.vm.has_event).toBeFalsy()
       })
     })
     describe('#update_date', () => {
