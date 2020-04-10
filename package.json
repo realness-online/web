@@ -7,13 +7,13 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:staging": "vue-cli-service build --mode staging",
     "test:unit": "vue-cli-service test:unit",
+    "test:unit:watch": "vue-cli-service test:unit --watch",
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
     "deploy": "firebase use production && yarn build && firebase deploy --only hosting,storage",
-    "build:staging": "vue-cli-service build --mode staging",
-    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage",
-    "test:unit:watch": "vue-cli-service test:unit --watch"
+    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage"
   },
   "dependencies": {
     "@realness.online/web-workers": "0.3.8",
