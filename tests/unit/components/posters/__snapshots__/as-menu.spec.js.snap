@@ -1,33 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
-<figure
-  class="poster"
->
-  <!---->
+exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
+<menu>
+  <a>
+    <!---->
+  </a>
+   
+  <a
+    id="create-event"
+  >
+    <svg
+      viewBox="0 0 150 150"
+    >
+      <use
+        href="#date-picker"
+      />
+       
+      <text
+        class="month"
+        text-anchor="middle"
+        x="57"
+        y="24"
+      >
+        April
+      </text>
+       
+      <text
+        text-anchor="middle"
+        x="57"
+        y="84"
+      >
+        9
+      </text>
+    </svg>
+  </a>
    
   <!---->
    
-  <figcaption>
-    <!---->
-     
-    <!---->
-  </figcaption>
-</figure>
-`;
-
-exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
-<figure
-  class="poster"
->
   <!---->
-   
-  <!---->
-   
-  <figcaption>
-    <!---->
-     
-    <!---->
-  </figcaption>
-</figure>
+</menu>
 `;

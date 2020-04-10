@@ -91,6 +91,11 @@ describe('@/compontent/posters/as-figure.vue', () => {
         wrapper.vm.menu = false
         expect(wrapper.vm.show_date_picker).toBe(false)
       })
+      it ('is true when show_event is true', () => {
+        expect(wrapper.vm.show_date_picker).toBe(false)
+        wrapper.vm.show_event = true
+        expect(wrapper.vm.show_date_picker).toBe(true)
+      })
     })
   })
 })

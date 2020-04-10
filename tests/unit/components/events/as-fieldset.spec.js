@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import as_figure from '@/components/posters/as-figure'
+import as_fieldset from '@/components/events/as-fieldset'
 import Item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -14,100 +14,15 @@ const events = [{
   id: new Date(2020, 1, 1).getTime(),
   url: poster.id
 }]
-describe('@/compontent/posters/as-figure.vue', () => {
+describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
-  beforeEach(() => wrapper = shallow(as_figure, { propsData: { itemid: poster.id } }))
-  describe('Renders', () => {
-    it('a poster', () => {
+  beforeEach(() => wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } }))
+  describe.only('Renders', () => {
+    it('a fieldset', () => {
       expect(wrapper.element).toMatchSnapshot()
-    })
-    it('a new poster', () => {
-      wrapper = shallow(as_figure, { propsData: { new_poster: poster, is_new: true } })
-      expect(wrapper.element).toMatchSnapshot()
-    })
-    it('a poster with an event', () => {
-      expect(wrapper.vm.has_event).toBe(null)
-      wrapper = shallow(as_figure, { propsData: { author, poster, events } })
-      expect(wrapper.vm.has_event).toBe('has-event')
-    })
-    it('the date-picker apropriately', () => {
-      expect(wrapper.vm.show_date_picker).toBe(false)
-      wrapper.vm.menu = true
-      expect(wrapper.vm.show_date_picker).toBe(true)
-      wrapper.vm.menu = false
-      expect(wrapper.vm.show_date_picker).toBe(false)
-      wrapper.vm.show_event = true
-      expect(wrapper.vm.show_date_picker).toBe(true)
     })
   })
   describe('methods:', () => {
-    describe('#vector_click', () => {
-      it('Shows the menu', () => {
-        const svg = wrapper.find('figure > svg')
-        expect(wrapper.vm.menu).toBe(false)
-        svg.trigger('click')
-        expect(wrapper.vm.menu).toBe(true)
-        expect(wrapper.find('figure > figcaption > menu').exists()).toBe(true)
-      })
-      it('Doesn/t show the menu if the event selection has focus', () => {
-        expect(wrapper.vm.menu).toBe(false)
-        wrapper.vm.show_event = true
-        expect(wrapper.vm.show_event).toBe(true)
-        wrapper.vm.vector_click()
-        expect(wrapper.vm.menu).toBe(false)
-      })
-    })
-    describe('#remove_poster', () => {
-      it('is called when remove button is clicked', async () => {
-        const remove_spy = jest.fn()
-        wrapper.vm.remove_poster = remove_spy
-        wrapper.vm.menu = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(remove_spy).toBeCalled
-      }),
-      it('triggers a confirm message before deleting poster', () => {
-        const confirm_spy = jest.fn(() => true)
-        window.confirm = confirm_spy
-        wrapper.vm.remove_poster()
-        expect(confirm_spy).toBeCalled()
-        expect(wrapper.emitted('remove-poster')).toBeTruthy()
-      })
-      it('will not emit remove-poster unless confirmed', () => {
-        const confirm_spy = jest.fn(() => false)
-        window.confirm = confirm_spy
-        wrapper.vm.remove_poster()
-        expect(confirm_spy).toBeCalled()
-        expect(wrapper.emitted('remove-poster')).toBeFalsy()
-      })
-    })
-    describe('#add_poster', () => {
-      it('is called when the add button is pressed', async () => {
-        const spy = jest.fn()
-        wrapper.vm.add_poster = spy
-        wrapper.vm.menu = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(spy).not.toBeCalled()
-        wrapper.vm.is_new = true
-        await wrapper.vm.$nextTick()
-        wrapper.find('menu > a:nth-child(2)').trigger('click')
-        expect(spy).toBeCalled()
-      })
-      it('emits add-poster when called', () => {
-        wrapper.vm.add_poster()
-        expect(wrapper.emitted('add-poster')).toBeTruthy()
-      })
-      it('gets rid of all the extra html it can before saving', () => {
-        wrapper.vm.show_event = true
-        wrapper.vm.menu = true
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        wrapper.vm.add_poster()
-        expect(wrapper.vm.show_event).toBe(false)
-        expect(wrapper.vm.menu).toBe(false)
-        expect(wrapper.vm.show_date_picker).toBe(false)
-      })
-    })
     describe('#manage_event', () => {
       it('is called when the calender button is pressed', async () => {
         const spy = jest.fn()

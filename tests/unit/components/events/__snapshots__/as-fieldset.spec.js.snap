@@ -1,33 +1,39 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
-<figure
-  class="poster"
+exports[`@/compontent/events/as-fieldset.vue Renders a fieldset 1`] = `
+<fieldset
+  class="event show"
 >
-  <!---->
+  <ol
+    hidden="hidden"
+    itemprop="events"
+  />
    
-  <!---->
+  <label
+    for="day"
+  >
+    Thursday, April 9
+  </label>
    
-  <figcaption>
-    <!---->
+  <input
+    id="day"
+    required="required"
+    type="date"
+  />
+   
+  <input
+    required="required"
+    type="time"
+  />
+   
+  <menu>
+    <a>
+      <!---->
+    </a>
      
-    <!---->
-  </figcaption>
-</figure>
-`;
-
-exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
-<figure
-  class="poster"
->
-  <!---->
-   
-  <!---->
-   
-  <figcaption>
-    <!---->
-     
-    <!---->
-  </figcaption>
-</figure>
+    <a>
+      <!---->
+    </a>
+  </menu>
+</fieldset>
 `;
