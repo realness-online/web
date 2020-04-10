@@ -1,5 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import as_fieldset from '@/components/events/as-fieldset'
+import { events_storage } from '@/persistance/Storage'
 import Item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -16,35 +17,18 @@ const events = [{
 }]
 describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
-  beforeEach(() => wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } }))
-  describe.only('Renders', () => {
+  beforeEach(() => {
+    events_storage.as_list = jest.fn(() => events)
+    wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+  })
+  describe('Renders', () => {
     it('a fieldset', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('methods:', () => {
-    describe('#manage_event', () => {
-      it('is called when the calender button is pressed', async () => {
-        const spy = jest.fn()
-        wrapper.vm.manage_event = spy
-        wrapper.vm.menu = true
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        await wrapper.vm.$nextTick()
-        wrapper.find('figcaption > input').trigger('click')
-        expect(spy).toBeCalled()
-      })
-      it('displays the event', () => {
-        wrapper.vm.manage_event()
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        expect(wrapper.vm.selecting['selecting-date']).toBe(true)
-      })
-      it('hides the menu', () => {
-        wrapper.vm.manage_event()
-        expect(wrapper.vm.menu).toBe(false)
-      })
-    })
-    describe('#remove_event', () => {
-      it('Is called when the remove button is pressed', async () => {
+    describe('#remove', () => {
+      it.only('Removes the event', async () => {
         const spy = jest.fn()
         wrapper.vm.remove_event = spy
         wrapper.vm.show_event = true
@@ -64,7 +48,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
         expect(wrapper.vm.has_event).toBeFalsy()
       })
     })
-    describe('#save_event', () => {
+    describe('#save', () => {
       it('is called when save event button is pressed', async () => {
         const spy = jest.fn()
         wrapper.vm.save_event = spy
