@@ -19,8 +19,8 @@
            :value="event_time"
            @input="update_time">
     <menu>
-      <a @click="remove"><icon name="remove"></icon></a>
-      <a @click="save"><icon name="add"></icon></a>
+      <a ref="remove" @click="remove"><icon name="remove"></icon></a>
+      <a ref="save" @click="save"><icon name="add"></icon></a>
     </menu>
   </fieldset>
 </template>
@@ -30,6 +30,10 @@
   export default {
     components: { icon },
     props: {
+      itemid: {
+        type: String,
+        required: true
+      },
       menu: {
         type: Boolean,
         required: false,
@@ -74,12 +78,6 @@
           day: 'numeric'
         })
       },
-      day () {
-        return this.main_event.toLocaleString('en-US', { day: 'numeric' })
-      },
-      month () {
-        return this.main_event.toLocaleString('en-US', { month: 'long' })
-      },
       tonight () {
         const tonight = new Date()
         tonight.setHours(21)
@@ -92,16 +90,27 @@
         this.show = true
         this.$emit('picker', true)
       },
+      async save () {
+        this.show = false
+        this.events = this.events.filter(event => event.url !== this.itemid)
+        this.events.push({
+          id: this.main_event.getTime(),
+          url: this.itemid
+        })
+        await this.$nextTick()
+        events_storage.save(this.$refs.events)
+        this.$emit('picker', false)
+      },
       async remove () {
         this.show = false
         this.main_event = new Date(this.tonight)
-        this.events = this.events.filter(event => event.poster !== this.itemid)
+        this.events = this.events.filter(event => event.url !== this.itemid)
         await this.$nextTick()
         events_storage.save(this.$refs.events)
         this.$emit('picker', false)
       },
       update_date () {
-        const date_list = this.find('#day').value.split('-')
+        const date_list = this.$refs.day.value.split('-')
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
         const day = parseInt(date_list[2])
@@ -112,19 +121,6 @@
         const hour = parseInt(time_list[0])
         const minute = parseInt(time_list[1])
         this.main_event = new Date(this.main_event.setHours(hour, minute))
-      },
-      async save () {
-        this.show = false
-        if (this.has_event) {
-          this.events = this.events.filter(event => event.poster !== this.itemid)
-        }
-        this.events.push({
-          id: this.main_event.getTime(),
-          url: this.itemid
-        })
-        await this.$nextTick()
-        events_storage.save(this.$refs.events)
-        this.$emit('picker', false)
       }
     }
   }

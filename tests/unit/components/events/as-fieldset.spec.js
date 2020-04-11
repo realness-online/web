@@ -17,69 +17,74 @@ const events = [{
 }]
 describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
-  beforeEach(() => {
-    events_storage.as_list = jest.fn(() => events)
-    wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
-  })
   describe('Renders', () => {
-    it('a fieldset', () => {
+    it('a fieldset with the default event', () => {
+      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => [])
+      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('a fieldset with an existing event', () => {
+      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => events)
+      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('methods:', () => {
-    describe.only('#save', () => {
-      it('is called when save event button is pressed', async () => {
-        const spy = jest.fn()
-        wrapper.vm.save_event = spy
-        wrapper.vm.show_event = true
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        await wrapper.vm.$nextTick()
-        wrapper.find('fieldset > menu > a:last-of-type').trigger('click')
-        expect(spy).toBeCalled()
+    beforeEach(() => {
+      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => events)
+      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+    })
+    describe('#show_picker', () => {
+      it('is called when the date input is clicked', () => {
+        wrapper.vm.show = false
+        wrapper.vm.$refs.day.click()
+        expect(wrapper.vm.show).toBe(true)
       })
-      it('emits a save-event', () => {
-        wrapper.vm.save_event()
-        expect(wrapper.vm.show_event).toBe(false)
-        expect(wrapper.vm.menu).toBe(true)
-        expect(wrapper.emitted('add-event')).toBeTruthy()
+      it('shows the picker', () => {
+        wrapper.vm.show = false
+        wrapper.vm.show_picker()
+        expect(wrapper.vm.show).toBe(true)
+      }),
+      it('tells the world it is showing the picker', () => {
+        wrapper.vm.show_picker()
+        expect(wrapper.emitted('picker')).toBeTruthy()
       })
-      it('emits a remove-event if poster already has event', () => {
-        wrapper.setProps({ events })
-        wrapper.vm.save_event()
-        expect(wrapper.vm.show_event).toBe(false)
-        expect(wrapper.vm.menu).toBe(true)
-        expect(wrapper.emitted('remove-event')).toBeTruthy()
+    })
+    describe('#save', () => {
+      it('is called when save button is pressed', () => {
+        wrapper.vm.show = true
+        wrapper.vm.$refs.save.click()
+        expect(wrapper.vm.show).toBe(false)
+      })
+      it('emits a picker event', async () => {
+        await wrapper.vm.save()
+        expect(wrapper.emitted('picker')).toBeTruthy()
+      })
+      it('removes any existing events', () => {
+        expect(wrapper.vm.events.length).toBe(1)
+        wrapper.vm.save()
+        expect(wrapper.vm.events.length).toBe(1)
       })
       it('hides date picking ui', () => {
-        wrapper.vm.show_event = true
-        wrapper.vm.save_event()
-        expect(wrapper.vm.show_event).toBe(false)
-      })
-      it('shows the menu', () => {
-        wrapper.vm.menu = false
-        wrapper.vm.save_event()
-        expect(wrapper.vm.menu).toBe(true)
+        wrapper.vm.show = true
+        wrapper.vm.save()
+        expect(wrapper.vm.show).toBe(false)
       })
     })
     describe('#remove', () => {
-      it('Removes the event', async () => {
-        const spy = jest.fn()
-        wrapper.vm.remove_event = spy
-        wrapper.vm.show_event = true
-        expect(wrapper.vm.show_date_picker).toBe(true)
-        await wrapper.vm.$nextTick()
-        wrapper.find('fieldset > menu > a:first-of-type').trigger('click')
-        expect(spy).toBeCalled()
+      it('hides the picker', async () => {
+        wrapper.vm.show = true
+        wrapper.vm.$refs.remove.click()
+        expect(wrapper.vm.show).toBe(false)
       })
-      it('Emits an event to remove the event', () => {
-        wrapper.vm.remove_event()
-        expect(wrapper.emitted('remove-event')).toBeTruthy()
-        expect(wrapper.vm.has_event).toBeFalsy()
+      it('Emits an event to remove the event', async () => {
+        await wrapper.vm.remove()
+        expect(wrapper.emitted('picker')).toBeTruthy()
       })
-      it('Locally turns the event off', () => {
-        wrapper.vm.remove_event()
-        expect(wrapper.emitted('remove-event')).toBeTruthy()
-        expect(wrapper.vm.has_event).toBeFalsy()
+      it('Removes the event', () => {
+        expect(wrapper.vm.events.length).toBe(1)
+        wrapper.vm.remove()
+        expect(wrapper.vm.events.length).toBe(0)
       })
     })
     describe('#update_date', () => {
