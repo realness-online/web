@@ -60,12 +60,12 @@
       },
       day () {
         const event = this.events.find(event => event.url === this.itemid)
-        if (event) return event.toLocaleString('en-US', { day: 'numeric' })
+        if (event) return new Date(event.id).toLocaleString('en-US', { day: 'numeric' })
         else return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month () {
         const event = this.events.find(event => event.url === this.itemid)
-        if (event) return event.toLocaleString('en-US', { month: 'long' })
+        if (event) return new Date(event.id).toLocaleString('en-US', { month: 'long' })
         else return new Date().toLocaleString('en-US', { month: 'long' })
       },
       has_event () {
