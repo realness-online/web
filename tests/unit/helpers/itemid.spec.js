@@ -25,18 +25,18 @@ describe('@/helpers/itemid', () => {
       document.getElementById = keeps
     })
     describe('It\'s someone elses stuff', () => {
-      beforeEach(()=>{
+      beforeEach(() => {
         itemid.load(my_itemid, '/+14152281824')
       })
-      it ('It tries indexdb', () => {
+      it('It tries indexdb', () => {
         expect(get).toBeCalled()
       })
-      it ('Does NOT try localStorage', () => {
+      it('Does NOT try localStorage', () => {
         expect(localStorage.getItem).not.toBeCalled()
       })
     })
     describe('It\'s my stuff', () => {
-      beforeEach(()=>{
+      beforeEach(() => {
         itemid.load(my_itemid)
       })
       it('It tries local storage first', () => {

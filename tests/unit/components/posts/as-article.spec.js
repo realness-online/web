@@ -52,6 +52,6 @@ describe('@/components/posts/as-article.vue', () => {
     const wrapper = shallow(as_article, { propsData: { post, person } })
     const entries = [{ isIntersecting: true }]
     wrapper.vm.end_of_articles(entries)
-    expect(wrapper.emitted('next-page')).toBeTruthy
+    expect(wrapper.emitted('next-page')).toBeTruthy()
   })
 })

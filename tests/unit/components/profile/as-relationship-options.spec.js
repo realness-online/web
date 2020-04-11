@@ -1,6 +1,5 @@
 import { shallow } from 'vue-test-utils'
 import as_options from '@/components/profile/as-relationship-options'
-import Storage from '@/persistance/Storage'
 describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
   const relations = [
@@ -30,14 +29,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     updated_at: '2018-07-16T18:12:21.552Z'
   }
   beforeEach(() => {
-    // jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => relations)
-    wrapper = shallow(as_options, {
- propsData: {
-      person: me,
-      me: me,
-      relations
-    }
-})
+    wrapper = shallow(as_options, { propsData: { person: me, me: me, relations } })
   })
   it('Render a list of options for this profile', () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -49,13 +41,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     })
     it('Return false if profile is not a relationship', () => {
       me.id = '/+14156661266'
-      wrapper = shallow(as_options, {
- propsData: {
-        person: me,
-        me: me,
-        relations
-      }
-})
+      wrapper = shallow(as_options, { propsData: { person: me, me, relations } })
       wrapper.vm.is_relation()
       expect(wrapper.vm.relation).toBe(false)
     })

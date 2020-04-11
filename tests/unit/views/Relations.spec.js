@@ -10,13 +10,12 @@ describe('@/views/Relations.vue', () => {
     mobile: '4151234356'
   }
   it('Render relationship information', () => {
-    const relations_spy = jest.spyOn(relations_storage, 'as_list')
-    .mockImplementation(() => [person])
-    const spy = jest.spyOn(profile, 'load')
-    .mockImplementation(() => Promise.resolve(person))
+    const relations_spy = jest.spyOn(relations_storage, 'as_list').mockImplementation(() => [person])
+    const spy = jest.spyOn(profile, 'load').mockImplementation(() => Promise.resolve(person))
     const wrapper = shallow(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
     expect(spy).toBeCalled()
+    expect(relations_spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
 })

@@ -1,6 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Item from '@/modules/Item'
 import profile_id from '@/helpers/profile'
+import itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
@@ -13,7 +14,7 @@ describe('@/views/Feed.vue', () => {
     mock_posts = Item.get_items(posts)
     mock_person = Item.get_first_item(person)
     profile_spy = jest.spyOn(profile_id, 'load').mockImplementation(_ => mock_person)
-    posts_spy = jest.spyOn(profile_id, 'items').mockImplementation(_ => mock_posts)
+    posts_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => mock_posts)
   })
   it('Render a feed of a persons friends', async () => {
     const wrapper = shallow(Feed)
@@ -28,7 +29,7 @@ describe('@/views/Feed.vue', () => {
     const hella_list = Item.get_items(hella_posts)
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(5)
-    jest.spyOn(profile_id, 'items').mockImplementationOnce(_ => {
+    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => {
       return hella_list
     })
     wrapper.vm.next_page(mock_person)

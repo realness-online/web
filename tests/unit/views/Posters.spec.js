@@ -1,16 +1,11 @@
 import { shallow } from 'vue-test-utils'
+import { posters_storage } from '@/persistance/Storage'
 import Posters from '@/views/Posters'
 import Item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = Item.get_items(poster_html)[0]
 
-const author = {
-  created_at: '2018-07-15T18:11:31.018Z',
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+16282281823'
-}
 const events = [{
   id: new Date(2020, 1, 1).getTime(),
   poster: poster.id
@@ -36,8 +31,8 @@ describe('@/views/Posters.vue', () => {
     })
     describe('newer_first', () => {
       it('Sorts a list by newer first', () => {
-        const earlier = { created_at: 1582074363603 }
-        const later = { created_at: 1582074400500 }
+        const earlier = '/+16282281824/posters/1582074363603'
+        const later = '/+16282281824/posters/1582074400500'
         expect(wrapper.vm.newer_first(earlier, later)).toBeTruthy()
         expect(wrapper.vm.newer_first(later, earlier)).toBeTruthy()
       })
@@ -47,9 +42,12 @@ describe('@/views/Posters.vue', () => {
         wrapper.vm.vectorize_image()
       })
     })
-    describe('sync_posters_with_network', () => {
-      it('executes the method', () => {
-        wrapper.vm.sync_posters_with_network({})
+    describe('get_poster_list', () => {
+      it('executes the method', async () => {
+        jest.spyOn(posters_storage, 'directory').mockImplementationOnce(() => {
+            return { items: [] }
+        })
+        await wrapper.vm.get_poster_list({})
       })
     })
     describe('brand_new_poster', () => {
@@ -63,29 +61,22 @@ describe('@/views/Posters.vue', () => {
         expect(wrapper.vm.new_poster.id).toBe(poster.id)
       })
     })
-    describe('remove_new_poster', () => {
+    describe('cancel_poster', () => {
       it('executes the method', () => {
-        wrapper.vm.remove_new_poster()
+        wrapper.vm.cancel_poster()
       })
     })
     describe('add_poster', () => {
-      it('executes the method', () => {
-        wrapper.vm.add_poster()
+      it('executes the method', async () => {
+        await wrapper.vm.add_poster()
       })
     })
     describe('remove_poster', () => {
-      it('executes the method', () => {
-        wrapper.vm.remove_poster()
-      })
-    })
-    describe('add_event', () => {
-      it('executes the method', () => {
-        wrapper.vm.add_event()
-      })
-    })
-    describe('remove_event', () => {
-      it('executes the method', () => {
-        wrapper.vm.remove_event()
+      it('executes the method', async () => {
+        jest.spyOn(posters_storage, 'delete').mockImplementationOnce(() => {
+            return null
+        })
+        await wrapper.vm.remove_poster()
       })
     })
   })
