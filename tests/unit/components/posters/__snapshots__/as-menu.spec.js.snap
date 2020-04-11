@@ -22,7 +22,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
         x="57"
         y="24"
       >
-        April
+        December
       </text>
        
       <text
@@ -30,7 +30,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
         x="57"
         y="84"
       >
-        10
+        31
       </text>
     </svg>
   </a>

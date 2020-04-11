@@ -4,6 +4,8 @@ import Item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = Item.get_first_item(poster_html)
+const MockDate = require('mockdate')
+MockDate.set('2020-01-01', new Date().getTimezoneOffset())
 const events = [{
   id: new Date(2020, 1, 1).getTime(),
   url: poster.id

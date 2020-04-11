@@ -62,7 +62,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders a fieldset with the default
   <label
     for="day"
   >
-    Friday, April 10
+    Tuesday, December 31
   </label>
    
   <input
