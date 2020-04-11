@@ -30,7 +30,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
         x="57"
         y="84"
       >
-        9
+        10
       </text>
     </svg>
   </a>
