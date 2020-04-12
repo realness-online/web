@@ -13,7 +13,7 @@ function storage() {
               return Promise.resolve(`https://download_url${reference_path}`)
             }),
             listAll: jest.fn(_ => {
-              return Promise.resolve({ prefixes: [] })
+              return Promise.resolve({ prefixes: [], items: [] })
             })
           }
         })
