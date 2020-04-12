@@ -2,12 +2,12 @@ import { shallow } from 'vue-test-utils'
 import * as firebase from 'firebase/app'
 import App from '@/App'
 describe('@/App.vue', () => {
-  let initialize_mock
   let wrapper
   beforeEach(() => {
-    initialize_mock = jest.fn()
-    jest.spyOn(firebase, 'initializeApp').mockImplementation(initialize_mock)
     wrapper = shallow(App)
+  })
+  afterEach(() => {
+    firebase.initializeApp.mockClear()
   })
   it('Renders layout of the application', () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -25,6 +25,6 @@ describe('@/App.vue', () => {
     expect(sessionStorage.previous).toBe('/relations')
   })
   it('Initialises firebase', () => {
-    expect(initialize_mock).toHaveBeenCalledTimes(1)
+    expect(firebase.initializeApp).toHaveBeenCalledTimes(1)
   })
 })
