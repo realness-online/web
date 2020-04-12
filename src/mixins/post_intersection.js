@@ -19,10 +19,10 @@ export default {
   },
   methods: {
     end_of_articles (entries) {
-      entries.forEach(async entry => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           this.$emit('end-of-articles', this.person)
-          this.observer.unobserve(this.$el)
+          if (this.observer) this.observer.unobserve(this.$el)
         }
       })
     }

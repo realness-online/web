@@ -16,8 +16,7 @@ describe('@/components/download-vector', () => {
   it('Renders link to download svg', () => {
     const wrapper = shallow(download_vector, {
       propsData: {
-        vector: poster,
-        author: person
+        itemid: poster.id
       }
     })
     expect(wrapper.element).toMatchSnapshot()

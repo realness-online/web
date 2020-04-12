@@ -10,7 +10,8 @@ const currentUser = {
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
-  id: '/+14151234356'
+  id: '/+14151234356',
+  avatar: 'avatars/1578929551564'
 }
 describe('@/components/avatars/as-form.vue', () => {
   let wrapper

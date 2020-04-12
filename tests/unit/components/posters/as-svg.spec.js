@@ -8,7 +8,7 @@ describe('@/components/posters/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(as_svg, {
-      propsData: { poster_id: poster.id }
+      propsData: { itemid: poster.id }
     })
   })
   it('Render a poster', () => {
