@@ -4,18 +4,12 @@ import * as firebase from 'firebase/app'
 import flushPromises from 'flush-promises'
 import 'firebase/auth'
 
-const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form.vue', () => {
   const person = {
     first_name: 'Scott',
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  beforeEach(() => {
-    jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return { onAuthStateChanged }
-    })
-  })
   describe('Sign in', () => {
     let wrapper, button, confirm_spy
     beforeEach(() => {

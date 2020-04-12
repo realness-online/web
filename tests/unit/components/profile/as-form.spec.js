@@ -9,11 +9,6 @@ describe('@/compontent/profile/as-form.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  beforeEach(() => {
-    // jest.spyOn(firebase, 'auth').mockImplementation(() => {
-    //   return { onAuthStateChanged }
-    // })
-  })
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
@@ -101,8 +96,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       button = wrapper.find('#authorize')
     })
     it('Enabled with valid mobile number', () => {
-      // expect(firebase.auth).toBeCalled()
-      // expect(onAuthStateChanged).toBeCalled()
       expect(button.exists()).toBe(true)
     })
     it('Disabled with invalid mobile number', () => {
