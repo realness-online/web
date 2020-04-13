@@ -23,14 +23,14 @@ const oldest_post = {
   id: '/+14151234356/2019-06-24T20:52:56.031Z',
   statements: []
 }
-describe('@/components/posts/as-article.vue', () => {
-  it('Render a post as an article element', async () => {
+describe ('@/components/posts/as-article.vue', () => {
+  it ('Render a post as an article element', async () => {
     const wrapper = shallow(as_article, { propsData: { post, person } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()
   })
-  it('Sets an observer if it is the oldest post', () => {
+  it ('Sets an observer if it is the oldest post', () => {
     jest.spyOn(Storage.prototype, 'as_list').mockImplementation(_ => {
       return Item.get_items(posts)
     })
@@ -39,7 +39,7 @@ describe('@/components/posts/as-article.vue', () => {
     expect(wrapper.vm.i_am_oldest).toBe(true)
     person.oldest_post = undefined
   })
-  it('Knows when it is not the oldest post', () => {
+  it ('Knows when it is not the oldest post', () => {
     jest.spyOn(Storage.prototype, 'as_list').mockImplementation(_ => {
       return Item.get_items(posts)
     })
@@ -48,7 +48,7 @@ describe('@/components/posts/as-article.vue', () => {
     expect(wrapper.vm.i_am_oldest).toBe(false)
     person.oldest_post = undefined
   })
-  it('Triggers an event if the article is observed', () => {
+  it ('Triggers an event if the article is observed', () => {
     const wrapper = shallow(as_article, { propsData: { post, person } })
     const entries = [{ isIntersecting: true }]
     wrapper.vm.end_of_articles(entries)

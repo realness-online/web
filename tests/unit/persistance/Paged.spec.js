@@ -4,7 +4,7 @@ const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
 const fetch = require('jest-fetch-mock')
-describe('@/persistance/Paged.js', () => {
+describe ('@/persistance/Paged.js', () => {
   let posts_storage
   beforeEach(() => {
     posts_storage = new Posts()
@@ -12,11 +12,11 @@ describe('@/persistance/Paged.js', () => {
   afterEach(() => {
     localStorage.clear()
   })
-  describe('#sync_list', () => {
-    it('Exists', () => {
+  describe ('#sync_list', () => {
+    it ('Exists', () => {
       expect(posts_storage.sync_list).toBeDefined()
     })
-    it('Syncs posts from server to local storage', async () => {
+    it ('Syncs posts from server to local storage', async () => {
       localStorage.setItem(posts_storage.selector, hella_posts)
       fetch.mockResponseOnce(posts)
       const server_list = Item.get_items(posts)
@@ -28,8 +28,8 @@ describe('@/persistance/Paged.js', () => {
       expect(list.length).toBe(60)
     })
   })
-  describe('#optimize', () => {
-    it('Exists', () => {
+  describe ('#optimize', () => {
+    it ('Exists', () => {
       expect(posts_storage.optimize).toBeDefined()
     })
     it.skip('It optimizes a list of items accross a set of pages', async () => {

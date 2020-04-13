@@ -7,8 +7,8 @@ const person = {
   id: '/+14151234356'
 }
 jest.spyOn(profile, 'load').mockImplementation(() => person)
-describe('@/views/Phonebook', () => {
-  it('Render the phonebook', () => {
+describe ('@/views/Phonebook', () => {
+  it ('Render the phonebook', () => {
     const wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })

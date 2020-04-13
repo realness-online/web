@@ -13,12 +13,12 @@ const event = {
   id: new Date(2020, 1, 1).getTime(),
   url: `${author.id}/${poster.id}`
 }
-describe('@/components/events/as-figure.js', () => {
+describe ('@/components/events/as-figure.js', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(as_figure, { propsData: { event } })
   })
-  it('Renders a figure element of an event', () => {
+  it ('Renders a figure element of an event', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
 })

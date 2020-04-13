@@ -8,7 +8,7 @@ const fs = require('fs')
 const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
-describe('@/views/Feed.vue', () => {
+describe ('@/views/Feed.vue', () => {
   let profile_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {
     mock_posts = Item.get_items(posts)
@@ -16,7 +16,7 @@ describe('@/views/Feed.vue', () => {
     profile_spy = jest.spyOn(profile_id, 'load').mockImplementation(_ => mock_person)
     posts_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => mock_posts)
   })
-  it('Render a feed of a persons friends', async () => {
+  it ('Render a feed of a persons friends', async () => {
     const wrapper = shallow(Feed)
     await flushPromises()
     expect(profile_spy).toBeCalled()
@@ -24,7 +24,7 @@ describe('@/views/Feed.vue', () => {
     expect(wrapper.vm.days.size).toBe(5)
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('Loads another page of data for a person', async () => {
+  it ('Loads another page of data for a person', async () => {
     const wrapper = shallow(Feed)
     const hella_list = Item.get_items(hella_posts)
     await flushPromises()

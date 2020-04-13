@@ -11,47 +11,47 @@ const events = [{
   poster: poster.id
 }]
 
-describe('@/views/Posters.vue', () => {
+describe ('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(Posters)
     wrapper.vm.posters = [poster]
     wrapper.vm.events = events
   })
-  describe('Rendering', () => {
-    it('Renders ui for posters', () => {
+  describe ('Rendering', () => {
+    it ('Renders ui for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('methods', () => {
-    describe('get_id', () => {
-      it('gets the poster id from the directory listing on hte network', () => {
+  describe ('methods', () => {
+    describe ('get_id', () => {
+      it ('gets the poster id from the directory listing on hte network', () => {
         wrapper.vm.get_id({ name: `${poster.id}.html` })
       })
     })
-    describe('newer_first', () => {
-      it('Sorts a list by newer first', () => {
+    describe ('newer_first', () => {
+      it ('Sorts a list by newer first', () => {
         const earlier = '/+16282281824/posters/1582074363603'
         const later = '/+16282281824/posters/1582074400500'
         expect(wrapper.vm.newer_first(earlier, later)).toBeTruthy()
         expect(wrapper.vm.newer_first(later, earlier)).toBeTruthy()
       })
     })
-    describe('vectorize_image', () => {
-      it('executes the method', () => {
+    describe ('vectorize_image', () => {
+      it ('executes the method', () => {
         wrapper.vm.vectorize_image()
       })
     })
-    describe('get_poster_list', () => {
-      it('executes the method', async () => {
+    describe ('get_poster_list', () => {
+      it ('executes the method', async () => {
         jest.spyOn(posters_storage, 'directory').mockImplementationOnce(() => {
             return { items: [] }
         })
         await wrapper.vm.get_poster_list({})
       })
     })
-    describe('brand_new_poster', () => {
-      it('gets the poster from the worker', () => {
+    describe ('brand_new_poster', () => {
+      it ('gets the poster from the worker', () => {
         const event = {
           data: poster
         }
@@ -61,18 +61,18 @@ describe('@/views/Posters.vue', () => {
         expect(wrapper.vm.new_poster.id).toBe(poster.id)
       })
     })
-    describe('cancel_poster', () => {
-      it('executes the method', () => {
+    describe ('cancel_poster', () => {
+      it ('executes the method', () => {
         wrapper.vm.cancel_poster()
       })
     })
-    describe('add_poster', () => {
-      it('executes the method', async () => {
+    describe ('add_poster', () => {
+      it ('executes the method', async () => {
         await wrapper.vm.add_poster()
       })
     })
-    describe('remove_poster', () => {
-      it('executes the method', async () => {
+    describe ('remove_poster', () => {
+      it ('executes the method', async () => {
         jest.spyOn(posters_storage, 'delete').mockImplementationOnce(() => {
             return null
         })

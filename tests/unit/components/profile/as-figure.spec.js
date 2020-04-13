@@ -4,7 +4,7 @@ import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 const fs = require('fs')
 const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.html', 'utf8')
-describe('@/compontent/profile/as-figure.vue', () => {
+describe ('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     person = {
@@ -19,15 +19,15 @@ describe('@/compontent/profile/as-figure.vue', () => {
       }
     })
   })
-  it('Render a person\'s profile info', () => {
+  it ('Render a person\'s profile info', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('mobile number', () => {
-    it('Format the mobile number for display', () => {
+  describe ('mobile number', () => {
+    it ('Format the mobile number for display', () => {
       const mobile = wrapper.find('.phone')
       expect(mobile.text()).toBe('(628) 228-1823')
     })
-    it('Parse mobile number as it\'s typed in', () => {
+    it ('Parse mobile number as it\'s typed in', () => {
       person.id = '/+1628'
       wrapper = shallow(as_figure, { propsData: { person: person } })
       let mobile = wrapper.find('a.phone')
@@ -42,8 +42,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(mobile.text()).toBe('(628) 228-18')
     })
   })
-  describe('rendering avatar', () => {
-    it('Render the users avatar', () => {
+  describe ('rendering avatar', () => {
+    it ('Render the users avatar', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).toBeFalsy()
       person.avatar = avatar_mock
@@ -52,7 +52,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(avatar.empty).not.toBeTruthy()
     })
   })
-  describe('svg.avatar@click', () => {
+  describe ('svg.avatar@click', () => {
     let router
     beforeEach(() => {
       const localVue = createLocalVue()
@@ -66,17 +66,17 @@ describe('@/compontent/profile/as-figure.vue', () => {
         }
       })
     })
-    it('Go to the mobile number when clicked', () => {
+    it ('Go to the mobile number when clicked', () => {
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
-    it('When is_me is true should go to the account page', () => {
+    it ('When is_me is true should go to the account page', () => {
       jest.spyOn(Item, 'get_first_item').mockImplementation(() => person)
       wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
-    it('When previous is true should go to the previous page', () => {
+    it ('When previous is true should go to the previous page', () => {
       sessionStorage.setItem('previous', '/test-route')
       wrapper.setProps({ previous: true })
       wrapper.vm.avatar_click()
