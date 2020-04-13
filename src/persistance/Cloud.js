@@ -4,7 +4,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
-async function get_download_url (itemid) {
+export async function get_download_url (itemid) {
   const path = `/people${itemid}.html`
   try {
     return await firebase.storage().ref().child(path).getDownloadURL()
@@ -15,7 +15,7 @@ async function get_download_url (itemid) {
     } else throw e
   }
 }
-const Cloud = (superclass) => class extends superclass {
+export const Cloud = (superclass) => class extends superclass {
   constructor (type,
               selector = `[itemprop="${type}"]`,
               filename = `${type}/index`) {
@@ -59,4 +59,3 @@ const Cloud = (superclass) => class extends superclass {
   }
 }
 export default Cloud
-export { get_download_url }
