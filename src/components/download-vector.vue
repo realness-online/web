@@ -22,8 +22,8 @@
       }
     },
     async created () {
+      this.vector = await itemid.as_object(this.itemid)
       this.file_name = await this.get_vector_name()
-      this.vector = await itemid.load(this.itemid)
     },
     computed: {
       downloadable () {
