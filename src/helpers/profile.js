@@ -1,19 +1,4 @@
-import itemid from '@/helpers/itemid'
-import * as firebase from 'firebase/app'
-import 'firebase/storage'
 export default {
-  async load (id) {
-    const person = await itemid.as_object(`${id}/index`)
-    if (person) return person
-    else return { id }
-  },
-  async directory (id, type) {
-    const storage = firebase.storage().ref()
-    const path = `/people/${id}/${type}`
-    if (navigator.onLine) {
-      return storage.child(path).listAll()
-    } else return null
-  },
   as_query_id (id = '/+') {
     return id.substring(2)
   },
