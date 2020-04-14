@@ -25,8 +25,8 @@ describe ('@/helpers/itemid', () => {
       document.getElementById = keeps
     })
     describe ('It\'s someone elses stuff', () => {
-      beforeEach(() => {
-        itemid.load(my_itemid, '/+14152281824')
+      beforeEach( async() => {
+        await itemid.load(my_itemid, '/+14152281824')
       })
       it ('It tries indexdb', () => {
         expect(get).toBeCalled()
@@ -40,7 +40,8 @@ describe ('@/helpers/itemid', () => {
         itemid.load(my_itemid)
       })
       it ('It tries local storage first', () => {
-        expect(localStorage.getItem).toHaveBeenCalledTimes(1)
+        // first call to get item loads the users local profile
+        expect(localStorage.getItem).toHaveBeenCalledTimes(2)
       })
       it ('It tries indexdb', () => {
         expect(get).toBeCalled()

@@ -3,13 +3,12 @@ import { person_storage as myself } from '@/persistance/Storage'
 import { get_download_url } from '@/persistance/Cloud'
 import { get, set } from 'idb-keyval'
 export async function load (itemid, me = myself.as_object().id) {
-  const index = `${itemid}/index`
   const element = document.getElementById(as_query_id(itemid))
   if (element) return Item.get_items(element)
   let items = []
-  if (~itemid.indexOf(me)) items = Item.get_items(localStorage.getItem(index))
-  if (!items.length) items = Item.get_items(await get(index))
-  if (!items.length) items = await load_from_network(index)
+  if (~itemid.indexOf(me)) items = Item.get_items(localStorage.getItem(itemid))
+  if (!items.length) items = Item.get_items(await get(itemid))
+  if (!items.length) items = await load_from_network(itemid, me)
   return items
 }
 export async function load_from_network (itemid, me = myself.as_object().id) {
