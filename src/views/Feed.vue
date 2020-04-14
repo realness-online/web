@@ -67,11 +67,12 @@
     methods: {
       async get_first_posts (people_in_feed) {
         let feed = []
+        const my_id = me.as_object().id
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts, posters] = await Promise.all([
-            profile.load(relation.id),
-            itemid.load(`${relation.id}/posts/index`),
-            profile.directory(relation.id, 'posters')
+            itemid.as_object(relation.id, my_id),
+            itemid.load(`${relation.id}/posts`, my_id),
+            itemid.directory(`${relation.id}/posters`, my_id)
           ])
           this.relations.push(person)
           feed = [...this.condense_posts(posts, person),
