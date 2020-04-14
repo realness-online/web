@@ -19,7 +19,7 @@
   </figure>
 </template>
 <script>
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import date_mixin from '@/mixins/date'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
@@ -42,7 +42,7 @@
     },
     methods: {
       async show () {
-        this.actual_poster = await profile.item(this.poster.person.id, this.poster.id)
+        this.actual_poster = await itemid.as_object(this.poster.id)
       }
     }
   }

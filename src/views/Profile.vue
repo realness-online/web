@@ -69,9 +69,9 @@
     async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
       const [person, posts, posters] = await Promise.all([
-        profile.load(id),
-        itemid.load(`${id}/posts/index`),
-        profile.directory(id, 'posters')
+        itemid.as_object(id),
+        itemid.load(`${id}/posts`),
+        itemid.directory(`${id}/posters`)
       ])
       this.person = person
       console.info(`Views ${person.first_name}'s profile`)

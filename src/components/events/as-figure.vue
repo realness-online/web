@@ -13,7 +13,7 @@
   import 'firebase/auth'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
     mixins: [vector_intersection, vector_click],
@@ -32,8 +32,7 @@
     },
     methods: {
       async show () {
-        const [person, poster] = this.event.url.split('/posters')
-        this.poster = await profile.item(person, `posters${poster}`)
+        this.poster = await itemid.load(this.events.url)
       }
     }
   }
