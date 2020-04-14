@@ -1,4 +1,4 @@
-import Storage { Posts } from '@/persistance/Storage'
+import Storage, { Posts } from '@/persistance/Storage'
 const fs = require('fs')
 const preferences = fs.readFileSync('./tests/unit/html/preferences.html', 'utf8')
 
