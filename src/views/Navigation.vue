@@ -59,12 +59,6 @@
       console.info(`${this.me.first_name} uses the navigation`)
       this.days = this.populate_days(posts_storage.as_list(), this.me)
     },
-    async mounted () {
-      await Promise.all([
-        this.sync_posts(),
-        this.sync_profile()
-      ])
-    },
     computed: {
       onboarding () {
         const relations_count = relations_storage.as_list().length
@@ -95,38 +89,6 @@
         this.days = new Map(this.populate_days(posts, this.me, this.days))
         await this.$nextTick()
         posts_storage.save()
-      },
-      should_sync (last_synced) {
-        if (!last_synced || (this.signed_in && this.five_minutes_ago > last_synced)) {
-          return true
-        }
-        return false
-      },
-      async sync_profile () {
-        if (this.should_sync(sessionStorage.getItem('profile-synced'))) {
-          firebase.auth().onAuthStateChanged(async user => {
-            if (user) {
-              const id = profile_helper.from_e64(user.phoneNumber)
-              this.me = await profile_helper.load(id)
-              await me.save()
-              sessionStorage.setItem('profile-synced', Date.now())
-            }
-          })
-        }
-      },
-      async sync_posts () {
-        if (this.should_sync(sessionStorage.getItem('posts-synced'))) {
-          firebase.auth().onAuthStateChanged(async user => {
-            if (user) {
-              const synced_posts = await posts_storage.sync_list()
-              this.days = new Map(this.populate_days(synced_posts, this.me))
-              await this.$nextTick()
-              sessionStorage.setItem('posts-synced', Date.now())
-              await posts_storage.save()
-              // await posts_storage.optimize()
-            }
-          })
-        }
       }
     }
   }
