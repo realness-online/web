@@ -20,7 +20,8 @@
   </section>
 </template>
 <script>
-  import { relations_storage, person_storage as me } from '@/persistance/Storage'
+  import { relations_storage,
+           person_storage as me } from '@/persistance/Storage'
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
   import growth from '@/modules/growth'
