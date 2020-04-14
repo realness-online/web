@@ -4,7 +4,7 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import Storage, { person_storage, posts_storage } from '@/persistance/Storage'
-import profile from '@/helpers/profile'
+import itemid from '@/helpers/itemid'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
   first_name: 'Scott',
@@ -18,7 +18,7 @@ const post = {
 describe ('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
-    jest.spyOn(profile, 'load').mockImplementation(() => person)
+    jest.spyOn(itemid, 'load').mockImplementation(() => person)
     jest.spyOn(person_storage, 'as_object').mockImplementation(_ => person)
     sessionStorage.setItem('posts-synced', Date.now())
     const currentUser = {
@@ -53,43 +53,6 @@ describe ('@/views/Navigation.vue', () => {
     wrapper.vm.add_post(post)
     expect(wrapper.vm.days.size).toBe(1)
     expect(wrapper.find('ol')).toBeTruthy()
-  })
-  describe ('syncing posts', () => {
-    let sync_list_spy
-    beforeAll(() => {
-      sync_list_spy = jest.spyOn(posts_storage, 'sync_list').mockImplementation(() => {
-        return Promise.resolve([
-          { statement: 'mock post' },
-          { statement: 'another mock post' }
-        ])
-      })
-    })
-    it ('Wait to sync until the user is signed in', async () => {
-      sessionStorage.setItem('posts-synced', six_minutes_ago)
-      const signed_out = jest.fn(state_changed => state_changed(null))
-      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
-        return { onAuthStateChanged: signed_out }
-      })
-      shallow(Navigation)
-      await flushPromises()
-      expect(sync_list_spy).not.toBeCalled()
-    })
-    it ('Wait to sync with the server for five minutes', () => {
-      expect(sync_list_spy).not.toBeCalled()
-      sessionStorage.setItem('posts-synced', six_minutes_ago)
-    })
-    it ('Sync after five minutes minutes', async () => {
-      sessionStorage.setItem('posts-synced', six_minutes_ago)
-      wrapper = shallow(Navigation)
-      await flushPromises()
-      expect(sync_list_spy).toBeCalled()
-    })
-    it ('Sync with the server with every new session', async () => {
-      sessionStorage.removeItem('posts-synced')
-      wrapper = shallow(Navigation)
-      await flushPromises()
-      expect(sync_list_spy).toBeCalled()
-    })
   })
   describe ('navigating the application', () => {
     describe ('handling post events', () => {

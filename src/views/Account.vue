@@ -66,7 +66,7 @@
       this.pages.set('posts', days)
       if (this.signed_in) {
         const id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
-        this.me = await profile.load(id)
+        this.me = await itemid.as_object(id)
         await this.sync_posts()
       }
     },

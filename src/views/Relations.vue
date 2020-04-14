@@ -16,7 +16,7 @@
   import profile_as_list from '@/components/profile/as-list'
   import { relations_storage } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
-  import profile from '@/helpers/profile'
+  import itemid from '@/helpers/itemid'
   export default {
     mixins: [signed_in],
     components: {
@@ -32,7 +32,7 @@
     created () {
       console.info('Views relations')
       this.relations.forEach(async (relation, index) => {
-        const person = await profile.load(relation.id)
+        const person = await itemid.as_object(relation.id)
         this.relations.splice(index, 1, person)
       })
     }

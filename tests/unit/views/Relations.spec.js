@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
-import profile from '@/helpers/profile'
+import itemid from '@/helpers/itemid'
 import { relations_storage } from '@/persistance/Storage'
 describe ('@/views/Relations.vue', () => {
   const person = {
@@ -11,7 +11,7 @@ describe ('@/views/Relations.vue', () => {
   }
   it ('Render relationship information', () => {
     const relations_spy = jest.spyOn(relations_storage, 'as_list').mockImplementation(() => [person])
-    const spy = jest.spyOn(profile, 'load').mockImplementation(() => Promise.resolve(person))
+    const spy = jest.spyOn(itemid, 'as_object').mockImplementation(() => Promise.resolve(person))
     const wrapper = shallow(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
     expect(spy).toBeCalled()

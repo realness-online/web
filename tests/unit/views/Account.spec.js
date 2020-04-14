@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Account from '@/views/Account'
-import profile from '@/helpers/profile'
+import itemid from '@/helpers/itemid'
 import { person_storage } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
@@ -23,7 +23,7 @@ describe ('@/views/Account.vue', () => {
       return { onAuthStateChanged, currentUser }
     })
     jest.spyOn(person_storage, 'as_object').mockImplementation(_ => me)
-    load_spy = jest.spyOn(profile, 'load').mockImplementation(_ => Promise.resolve(me))
+    load_spy = jest.spyOn(itemid, 'as_object').mockImplementation(_ => Promise.resolve(me))
     wrapper = shallow(Account)
   })
   it ('Renders account information', async () => {

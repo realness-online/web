@@ -9,17 +9,17 @@ const person = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
 describe ('@/views/Feed.vue', () => {
-  let profile_spy, posts_spy, mock_person, mock_posts
+  let person_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {
     mock_posts = Item.get_items(posts)
     mock_person = Item.get_first_item(person)
-    profile_spy = jest.spyOn(profile_id, 'load').mockImplementation(_ => mock_person)
+    person_spy = jest.spyOn(itemid, 'as_object').mockImplementation(_ => mock_person)
     posts_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => mock_posts)
   })
   it ('Render a feed of a persons friends', async () => {
     const wrapper = shallow(Feed)
     await flushPromises()
-    expect(profile_spy).toBeCalled()
+    expect(person_spy).toBeCalled()
     expect(posts_spy).toBeCalled()
     expect(wrapper.vm.days.size).toBe(5)
     expect(wrapper.element).toMatchSnapshot()

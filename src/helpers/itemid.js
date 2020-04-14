@@ -1,3 +1,5 @@
+import * as firebase from 'firebase/app'
+import 'firebase/storage'
 import Item from '@/modules/item'
 import { person_storage as myself } from '@/persistance/Storage'
 import { get_download_url } from '@/persistance/Cloud'
@@ -23,6 +25,7 @@ export async function directory (itemid, me = myself.as_object().id ) {
   const storage = firebase.storage().ref()
   let path = itemid
   if (itemid.startsWith('/+')) path = `/people${itemid}`
+  console.log(path)
   if (navigator.onLine) {
     return storage.child(path).listAll()
   } else return null
@@ -39,4 +42,4 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, as_object, as_fragment, as_query_id }
+export default { load, as_object, as_fragment, as_query_id, directory }

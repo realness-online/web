@@ -5,7 +5,6 @@
 </template>
 <script>
   import date_helper from '@/helpers/date'
-  import profile_helper from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
@@ -38,7 +37,7 @@
         const author_id = `/${info[1]}`
         const type = `${info[2]}`
         const time = date_helper.as_day_and_time(Number(info[3]))
-        const creator = await profile_helper.load(author_id)
+        const creator = await itemid.as_object(author_id)
         const name = `${creator.first_name}_${creator.last_name}`
         return `${name}_${type}_${time}.svg`
       }
