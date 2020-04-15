@@ -12,7 +12,6 @@
 </template>
 <script>
   import { avatars_storage } from '@/persistance/Storage'
-  import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
@@ -45,11 +44,11 @@
     },
     computed: {
       id () {
-        return profile.as_avatar_id(this.person.id)
+        return itemid.as_query_id(this.person.avatar)
       },
       avatar_link () {
         if (this.working) return `${icons}#working`
-        if (this.person.avatar) return profile.as_avatar_fragment(this.person.id)
+        if (this.person.avatar) return itemid.as_fragment(this.person.avatar)
         else return `${icons}#silhouette`
       }
     },
