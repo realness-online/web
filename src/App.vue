@@ -1,6 +1,6 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
-  <main id="realness">
+  <main id="realness" :class="status">
     <router-view></router-view>
     <developer-tools></developer-tools>
   </main>
@@ -26,6 +26,16 @@
         storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
         messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
       })
+    },
+    computed: {
+      status () {
+        return ~navigator.online ? null : 'offline'
+      }
     }
   }
 </script>
+<style lang="stylus">
+  main.offline
+    border: (base-line * .333) solid yellow
+    border-radius: base-line
+</style>
