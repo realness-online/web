@@ -14,9 +14,6 @@
 # gsutil -m cp -R gs://realness-online.appspot.com/people/ ~/realness.online/
 # gsutil -m cp -R gs://realness-development.appspot.com/people ~/realness.online/
 
-# reseet development from home directory
-gsutil -m cp -R ~/realness.online/people gs://realness-development.appspot.com/
-
 # reseet production from home directory
 # gsutil -m cp -R ~/realness.online/people gs://realness-online.appspot.com/
 
