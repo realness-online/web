@@ -25,13 +25,10 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
   import posts_into_days from '@/mixins/posts_into_days'
   import condense_posts from '@/mixins/condense_posts'
   import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
-  import profile_helper from '@/helpers/profile'
   import post_helper from '@/helpers/post'
   import { posts_storage, person_storage as me, relations_storage } from '@/persistance/Storage'
   import as_textarea from '@/components/posts/as-textarea'

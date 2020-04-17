@@ -15,61 +15,28 @@ describe ('@/persistance/Cloud.js', () => {
       expect(posts_storage.save).toBeDefined()
     })
     it.skip('Saves items on the server', async () => {
-      posts_storage.persist = jest.fn()
+      posts_storage.to_network = jest.fn()
       await posts_storage.save(posts)
       await flushPromises()
-      expect(posts_storage.persist).toBeCalled()
+      expect(posts_storage.to_network).toBeCalled()
     })
   })
-  describe ('#get_download_url', () => {
-    it ('exists', () => {
-      expect(posts_storage.get_download_url).toBeDefined()
-    })
-    it ('Returns a url', async () => {
-      const url = await posts_storage.get_download_url()
-      expect(url).toBe('https://download_url/people/+16282281824/posts/index.html')
-    })
-    it ('Returns null if person is not logged in', async () => {
-      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
-        return { currentUser: null }
-      })
-      const url = await posts_storage.get_download_url()
-      expect(url).toBe(null)
-    })
-  })
-  describe ('#persist', () => {
-    let put_spy
-    beforeEach(() => {
-      put_spy = jest.fn(path => Promise.resolve(path))
-      jest.spyOn(firebase, 'storage').mockImplementation(() => {
-        return {
-          ref: jest.fn(() => {
-            return {
-              child: jest.fn(path => {
-                return {
-                  put: put_spy
-                }
-              })
-            }
-          })
-        }
-      })
-    })
+  describe ('#to_network', () => {
     it ('Exists', () => {
-      expect(posts_storage.persist).toBeDefined()
+      expect(posts_storage.to_network).toBeDefined()
     })
     it ('Persist a file in a persons home directory', async () => {
-      await posts_storage.persist(posts)
+      await posts_storage.to_network(posts)
       await flushPromises()
-      expect(put_spy).toBeCalled()
+      expect(firebase.storage().child().put).toBeCalled()
     })
     it ('Does nothing unless user is signed in', async () => {
       jest.spyOn(firebase, 'auth').mockImplementation(() => {
         return { currentUser: null }
       })
-      await posts_storage.persist(posts)
+      await posts_storage.to_network(posts)
       await flushPromises()
-      expect(put_spy).not.toBeCalled()
+      expect(firebase.storage().child().put).not.toBeCalled()
     })
   })
 })

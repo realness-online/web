@@ -10,10 +10,11 @@ function storage() {
             put: jest.fn(() => Promise.resolve(reference_path)),
             getDownloadURL: jest.fn(() => {
               // console.log('reference_path', reference_path)
-              return Promise.resolve(`https://download_url${reference_path}`)
+              return Promise.resolve(`https://example.com${reference_path}`)
             }),
             listAll: jest.fn(() => {
-              return Promise.resolve({ prefixes: [], items: [] })
+              console.log('reference_path', reference_path)
+              return Promise.resolve({ prefixes: [], items: [], path: reference_path })
             })
           }
         })

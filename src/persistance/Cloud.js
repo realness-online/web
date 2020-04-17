@@ -3,18 +3,9 @@ import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
+import { download_url, as_filename } from '@/helpers/itemid'
+import { del } from 'idb-keyval'
 const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
-export async function get_download_url (itemid) {
-  const path = `/people${itemid}.html`
-  try {
-    return await firebase.storage().ref().child(path).getDownloadURL()
-  } catch (e) {
-    if (e.code === 'storage/object-not-found') {
-      console.warn(path)
-      return null
-    } else throw e
-  }
-}
 export const Cloud = (superclass) => class extends superclass {
   constructor (type,
               selector = `[itemprop="${type}"]`,
@@ -22,39 +13,32 @@ export const Cloud = (superclass) => class extends superclass {
     super(type, selector)
     this.filename = filename
   }
-  async get_download_url () {
-    const user = firebase.auth().currentUser
-    if (user) {
-      return get_download_url(`/${user.phoneNumber}/${this.filename}`)
-    } else return null
-  }
   async from_network () {
     if (networkable.includes(this.type)) {
-      const url = await this.get_download_url()
+      const url = await download_url(this.id)
       if (url) return Item.hydrate(await (await fetch(url)).text())
     }
     return null
   }
-  async save (items = document.querySelector(`[itemid="${this.filename}"]`)) {
-    console.info('Cloud.save()', this.selector, this.filename, items)
-    if (super.save) super.save()
-    if (!items) return
-    if (networkable.includes(this.type)) this.persist(items.outerHTML)
-  }
-  async delete () {
-    // if (super.save) super.save() // save the current state of the document to localstorage
+  async to_network (items) {
     const user = firebase.auth().currentUser
+    const path = as_filename(this.id)
     if (user && navigator.onLine) {
-      const path = `people/${this.filename}.html`
-      await firebase.storage().ref().child(path).delete()
+      const file = new File([items], path)
+      await firebase.storage().ref().child(path).put(file, this.metadata)
     }
   }
-  async persist (items, filename = this.filename) {
+  async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
+    console.info('Cloud.save()', this.id)
+    if (super.save) super.save()
+    if (!items) return
+    if (networkable.includes(this.type)) this.to_network(items.outerHTML)
+  }
+  async delete () {
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
-      const file = new File([items], filename)
-      const path = `people/${filename}.html`
-      await firebase.storage().ref().child(path).put(file, this.metadata)
+      del(this.id)
+      await firebase.storage().ref().child(as_filename(this.id)).delete()
     }
   }
 }

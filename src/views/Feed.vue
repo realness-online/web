@@ -20,9 +20,7 @@
   </section>
 </template>
 <script>
-  import { relations_storage,
-           person_storage as me } from '@/persistance/Storage'
-  import profile from '@/helpers/profile'
+  import { relations_storage, person_storage as me } from '@/persistance/Storage'
   import itemid from '@/helpers/itemid'
   import growth from '@/modules/growth'
   import icon from '@/components/icon'
@@ -73,7 +71,7 @@
           const [person, posts, posters] = await Promise.all([
             itemid.as_object(relation.id, my_id),
             itemid.load(`${relation.id}/posts`, my_id),
-            itemid.directory(`${relation.id}/posters`, my_id)
+            itemid.as_directory(`${relation.id}/posters`, my_id)
           ])
           this.relations.push(person)
           feed = [...this.condense_posts(posts, person),

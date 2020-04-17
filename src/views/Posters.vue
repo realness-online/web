@@ -29,6 +29,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import itemid from '@/helpers/itemid'
   import {
     posters_storage,
     person_storage as me
@@ -57,6 +58,8 @@
       }
     },
     async created () {
+      console.clear()
+      console.time('feed-load')
       console.info(`${this.me.first_name} views their posters`)
       firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
@@ -72,8 +75,8 @@
         const second = parseInt(later.split('/posters/')[1])
         return second - first
       },
-      get_id (poster_reference) {
-        return `${this.me.id}/posters/${poster_reference.name.split('.')[0]}`
+      get_id (name) {
+        return `${this.me.id}/posters/${name.split('.')[0]}`
       },
       vectorize_image (image) {
         this.working = true
@@ -82,9 +85,10 @@
       async get_poster_list (user) {
         if (user) {
           this.posters = []
-          const directory = await posters_storage.directory()
-          directory.items.forEach(item => this.posters.push(this.get_id(item)))
+          const directory = await itemid.as_directory(`/${user.phoneNumber}/posters`)
+          if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
           this.posters.sort(this.newer_first)
+          console.timeEnd('feed-load')
         }
       },
       brand_new_poster (response) {
@@ -94,20 +98,19 @@
         this.new_poster.id = this.as_itemid
         this.working = false
       },
-      async add_poster (itemid) {
+      async add_poster (id) {
         this.working = true
-        console.info(`${this.me.first_name} adds poster ${itemid}`)
-        posters_storage.filename = itemid
+        console.info(`${this.me.first_name} adds poster ${id}`)
         await posters_storage.save()
         await this.$nextTick()
-        this.posters.unshift(itemid)
+        this.posters.unshift(id)
         this.new_poster = null
         this.working = false
       },
-      async remove_poster (itemid) {
+      async remove_poster (id) {
         this.working = true
-        this.posters = this.posters.filter(id => itemid !== id)
-        posters_storage.filename = itemid
+        this.posters = this.posters.filter(item => id !== item)
+        posters_storage.filename = id
         await posters_storage.delete()
         this.working = false
       },
