@@ -2,6 +2,7 @@ import { shallow } from 'vue-test-utils'
 import { posters_storage } from '@/persistance/Storage'
 import Posters from '@/views/Posters'
 import Item from '@/modules/item'
+import itemid from '@/helpers/itemid'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = Item.get_items(poster_html)[0]
@@ -26,7 +27,7 @@ describe ('@/views/Posters.vue', () => {
   describe ('methods', () => {
     describe ('get_id', () => {
       it ('gets the poster id from the directory listing on hte network', () => {
-        wrapper.vm.get_id({ name: `${poster.id}.html` })
+        wrapper.vm.get_id(`${poster.id}.html`)
       })
     })
     describe ('newer_first', () => {
@@ -44,7 +45,7 @@ describe ('@/views/Posters.vue', () => {
     })
     describe ('get_poster_list', () => {
       it ('executes the method', async () => {
-        jest.spyOn(posters_storage, 'directory').mockImplementationOnce(() => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
             return { items: [] }
         })
         await wrapper.vm.get_poster_list({})
