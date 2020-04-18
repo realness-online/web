@@ -22,6 +22,7 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async to_network (items) {
     const user = firebase.auth().currentUser
+    console.log(this.id)
     const path = as_filename(this.id)
     if (user && navigator.onLine) {
       const file = new File([items], path)

@@ -21,6 +21,9 @@ describe ('@/persistance/Cloud.js', () => {
       expect(posts_storage.to_network).toBeCalled()
     })
   })
+  describe ('#delete', () => {
+    it.todo('Deletes a resource on the cloud')
+  })
   describe ('#to_network', () => {
     it ('Exists', () => {
       expect(posts_storage.to_network).toBeDefined()
@@ -38,5 +41,8 @@ describe ('@/persistance/Cloud.js', () => {
       await flushPromises()
       expect(firebase.storage().child().put).not.toBeCalled()
     })
+  })
+  describe ('#from_network', () => {
+    it.todo('Loads a resource on the cloud')
   })
 })
