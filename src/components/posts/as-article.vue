@@ -1,5 +1,5 @@
 <template lang="html">
-  <article itemscope itemtype='/posts' :key="id">
+  <article itemscope itemtype='/posts' :key="id" :itemid="id">
     <header>
       <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
     </header>
@@ -16,10 +16,10 @@
 <script>
   import post_mixin from '@/mixins/post'
   import date_mixin from '@/mixins/date'
-  import intersection_mixin from '@/mixins/post_intersection'
+  import post_intersection from '@/mixins/post_intersection'
   import as_li from '@/components/posts/as-li'
   export default {
-    mixins: [post_mixin, date_mixin, intersection_mixin],
+    mixins: [post_mixin, date_mixin, post_intersection],
     components: {
       'post-as-li': as_li
     },
