@@ -17,6 +17,7 @@ export async function load (itemid, me = myself.as_object()) {
 export async function load_from_network (itemid, me = myself.as_object()) {
   const url = await as_download_url(itemid, me)
   if (url) {
+    console.info(`${me.first_name} loads a storage item`)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return Item.get_items(server_text)
@@ -29,7 +30,7 @@ export async function as_directory (itemid, me = myself.as_object()) {
   if (!firebase.auth().currentUser) return null
   if (navigator.onLine) {
     const meta = { items: [], types: [] } // in our vocabulary folders are types
-    console.info(`${me.first_name} makes a firebase request`)
+    console.info(`${me.first_name} makes a storage request`)
     const directory = await firebase.storage().ref().child(path).listAll()
     directory.items.forEach(item => meta.items.push(item.name))
     directory.prefixes.forEach(folder => meta.types.push(folder.name))
@@ -44,7 +45,7 @@ export async function as_download_url (itemid, me = myself.as_object()) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
-    console.info(`${me.first_name} makes a firebase request`)
+    console.info(`${me.first_name} makes a storage request`)
     return await storage.child(as_filename(itemid)).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
