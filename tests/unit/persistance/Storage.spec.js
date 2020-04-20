@@ -1,70 +1,43 @@
-import Storage, { Posts } from '@/persistance/Storage'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+import Storage, { Me } from '@/persistance/Storage'
 const fs = require('fs')
 const preferences = fs.readFileSync('./tests/unit/html/preferences.html', 'utf8')
 
 describe ('@/persistance/Storage.js', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    jest.clearAllMocks()
+  })
   describe ('Storage', () => {
-    let storage
-    beforeEach(() => {
-      storage = new Storage('preferences')
+    it('sets the id from the itemid', () => {
+      const human = new Storage('/scott/fryxell')
+      expect(human.id).toBe('/scott/fryxell')
     })
-    afterEach(() => {
-      localStorage.setItem.mockClear();
-      localStorage.clear()
-    })
-    describe ('#as_list', () => {
-      it ('Exists', () => {
-        expect(storage.as_list).toBeDefined()
-      })
-      it ('Creates list of objects', async () => {
-        localStorage.setItem(storage.selector, preferences)
-        const list = await storage.as_list()
-        expect(list.length).toBe(1)
-      })
-    })
-    describe ('#as_object', () => {
-      it ('Exists', () => {
-        expect(storage.as_object).toBeDefined()
-      })
-      it ('Will return the first item it finds', () => {
-        localStorage.setItem(storage.selector, preferences)
-        const my_pref = storage.as_object()
-        expect(my_pref.salutation).toBe('Mr. Scott')
-      })
-    })
-    describe ('#save', () => {
-      it ('Exists', () => {
-        expect(storage.save).toBeDefined()
-      })
-      it ('Saves items locally and on the server', () => {
-        storage.save(preferences)
-        expect(localStorage.setItem).toBeCalled()
-      })
-      it ('Only saves if there are items to save', () => {
-        storage.save()
-        expect(localStorage.setItem).not.toBeCalled()
-      })
-    })
-    describe ('#as_kilobytes', () => {
-      it ('Exists', () => {
-        expect(storage.as_kilobytes).toBeDefined()
-      })
-      it ('Tells the size of the item in local storage', () => {
-        localStorage.setItem(storage.selector, preferences)
-        expect(storage.as_kilobytes()).toBe('0.21')
-      })
-      it ('returns zero if nothing in storage', () => {
-        expect(storage.as_kilobytes()).toBe(0)
-      })
+    it('has metadata', () => {
+      const human = new Storage('/scott/fryxell')
+      expect(human.metadata.contentType).toBe('text/html')
     })
   })
-  describe ('Posts', () => {
-    let storage
-    beforeEach(() => {
-      storage = new Posts()
+  describe ('Me', () => {
+    it('gets me from local storage', () => {
+      localStorage.setItem('me', '/+16282281824')
+      expect(new Me().id).toBe('/+16282281824')
+      expect(localStorage.getItem).toBeCalled()
     })
-    describe ('#save', () => {
-
+    it('gets me from firebase.auth().currentUser', () => {
+      expect(localStorage.getItem('me')).toBe(null)
+      expect(new Me().id).toBe('/+16282281824')
+      expect(localStorage.getItem('me')).toBe('/+16282281824')
+    })
+    it('Returns an apropriage object for new users', () => {
+      const signed_out = { currentUser: null }
+      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => signed_out)
+      expect(localStorage.getItem('me')).toBe(null)
+      const me = new Me()
+      expect(me.id).toBe(undefined)
+      expect(me.type).toBe('person')
+      expect(localStorage.getItem('me')).toBe(null)
     })
   })
 })
