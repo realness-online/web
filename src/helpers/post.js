@@ -1,9 +1,7 @@
 export default {
   as_statement (post) {
-    if (post.articleBody) {
-      return post.articleBody
-    }
-    return post.statement
+    if (post.articleBody) return post.articleBody
+    else return post.statement
   },
   as_id (post, person) {
     post.id = `${person.id}/${post.created_at}`

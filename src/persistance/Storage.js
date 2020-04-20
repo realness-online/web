@@ -3,86 +3,31 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import Item from '@/modules/item'
-import Paged from '@/persistance/Paged'
-import Large from '@/persistance/Large'
+import Local from '@/persistance/Local'
 import Cloud from '@/persistance/Cloud'
+import Paged from '@/persistance/Paged'
 import profile from '@/helpers/profile'
-import itemid from '@/helpers/itemid'
 
 export default class Storage {
-  constructor (type, selector = `[itemprop="${type}"]`) {
-    this.type = type
-    this.selector = selector
+  constructor (itemid) {
+    this.id = itemid
     this.metadata = { contentType: 'text/html' }
   }
-  as_kilobytes () {
-    const bytes = localStorage.getItem(this.selector)
-    if (bytes) return (bytes.length / 1024).toFixed(2)
-    else return 0
-  }
-  as_list () {
-    return Item.get_items(localStorage.getItem(this.selector))
-  }
-  as_object () {
-    return Item.get_first_item(localStorage.getItem(this.selector))
-  }
-  async save (items = document.querySelector(this.selector)) {
-    if (!items) return
-    localStorage.setItem(this.selector, items.outerHTML)
+}
+export class Person extends Cloud(Local(Storage)) {
+  constructor (itemid = null) {
+    if (itemid) return super(itemid)
+    let me = localStorage.getItem('me')
+    if (me) return ths.super(me)
+    me = firebase.auth().currentUser
+    if (me) return this.super(profile.from_e64(me.phoneNumber))
   }
 }
-export class Person extends Cloud(Storage) {
-  constructor () {
-    super('person', '[itemtype="/person"]', 'index')
-  }
-  save () {
-    const item_id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
-    const items = document.querySelector(`[itemid="${item_id}"]`)
-    if (items) super.save(items)
-  }
-}
-export class Posts extends Paged(Cloud(Storage)) {
-  constructor () {
-    super('posts')
-  }
-  save () {
-    const items = document.querySelector(this.selector)
-    if (items) super.save(items)
-  }
-}
-export class Events extends Paged(Cloud(Storage)) {
-  constructor () {
-    super('events')
-  }
-}
-export class History extends Paged(Cloud(Storage)) {
-  constructor (item_id) {
-    const type = item_id.split('/')[0]
-    super(type, `[itemid="${item_id}"]`, item_id)
-  }
-}
-export class SVG extends Large(Cloud(Storage)) {}
-export class Avatar extends SVG {
-  constructor () {
-    super('avatars', '[itemtype="/avatars"]')
-  }
-}
-export class Activity extends Cloud(Storage) {
-  constructor () {
-    super('activity', '[itemtype="/activity"]', `activity/${new Date().toISOString()}`)
-  }
-  async save (items = document.querySelector(this.selector)) {
-    if (navigator.onLine) {
-      const file = new File([items.outerHTML], name)
-      const path = `${this.filename}.html`
-      await firebase.storage().ref().child(path).put(file, this.metadata)
-    }
-  }
-}
-
-export const relations_storage = new Storage('relations')
-export const person_storage = new Person()
-export const posts_storage = new Posts()
-export const avatars_storage = new Avatar()
-export const posters_storage = new SVG('posters')
-export const events_storage = new Events()
+export class Relations extends Local(Storage) {}
+export class Posts extends Paged(Cloud(Local(Storage))) {}
+export class Events extends Paged(Cloud(Local(Storage))) {}
+export class History extends Paged(Cloud(Local(Storage))) {}
+export class Activity extends Cloud(Local(Storage)) {}
+export class SVG extends Cloud(Local(Storage)) {}
+export class Avatar extends SVG {}
+export class Poster extends SVG {}

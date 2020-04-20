@@ -22,8 +22,7 @@ const Paged = (superclass) => class extends superclass {
       await this.save(current)
       await history.optimize(growth.next(limit))
     }
-  }
-
+  }``
   async sync_list () {
     const from_server = Item.get_items(await this.from_network())
     const local_items = this.as_list()

@@ -11,7 +11,7 @@
     </nav><h6 class="app_version">{{version}}</h6>
     <aside>
       <my-figure :person="me"></my-figure>
-      <div itemprop="posts">
+      <div itemscope itemtype"/posts" itemid="">
         <section class="day" v-for="[date, day] in days" :key="date" :class="{today: is_today(date)}">
           <header><h4>{{as_day(date)}}</h4></header>
           <post-as-article v-for="post in day"
@@ -30,7 +30,7 @@
   import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
   import post_helper from '@/helpers/post'
-  import { posts_storage, person_storage as me, relations_storage } from '@/persistance/Storage'
+  import { me, Posts, Relations } from '@/persistance/Storage'
   import as_textarea from '@/components/posts/as-textarea'
   import as_figure from '@/components/profile/as-figure'
   import as_article from '@/components/posts/as-article'
@@ -43,18 +43,19 @@
     },
     data () {
       return {
+        me: me.as_object(),
+        posts: new Posts(`${this.me.id}/posts`)
+        has_posts: (this.posts.as_list().length > 0),
+        five_minutes_ago: Date.now() - (1000 * 60 * 5),
+        days: new Map(),
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
-        me: me.as_object(),
-        posting: false,
-        has_posts: (posts_storage.as_list().length > 0),
-        five_minutes_ago: Date.now() - (1000 * 60 * 5),
-        days: new Map()
+        posting: false
       }
     },
     async created () {
       console.info(`${this.me.first_name} uses the navigation`)
-      this.days = this.populate_days(posts_storage.as_list(), this.me)
+      this.days = this.populate_days(this.posts.as_list(), this.me)
     },
     computed: {
       onboarding () {
@@ -85,7 +86,7 @@
         const posts = [post]
         this.days = new Map(this.populate_days(posts, this.me, this.days))
         await this.$nextTick()
-        posts_storage.save()
+        this.posts.save()
       }
     }
   }
