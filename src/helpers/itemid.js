@@ -2,35 +2,35 @@ import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import Item from '@/modules/item'
-import { person_storage as myself } from '@/persistance/Storage'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
-export async function load (itemid, me = myself.as_object()) {
+const myself = localStorage.getItem('me')
+export async function load (itemid, me = myself) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return Item.get_items(element)
   let items = []
-  if (~itemid.indexOf(me.id)) items = Item.get_items(localStorage.getItem(itemid))
+  if (~itemid.indexOf(me)) items = Item.get_items(localStorage.getItem(itemid))
   if (!items.length) items = Item.get_items(await get(itemid))
   if (!items.length) items = await load_from_network(itemid, me)
   return items
 }
-export async function load_from_network (itemid, me = myself.as_object()) {
+export async function load_from_network (itemid, me = myself) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info(`${me.first_name} loads a storage item`)
+    console.info(`loads a storage item`)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return Item.get_items(server_text)
   } else return []
 }
-export async function as_directory (itemid, me = myself.as_object()) {
+export async function as_directory (itemid, me = myself) {
   const path = as_directory_path(itemid)
   const cached = await get(path)
   if (cached) return cached
   if (!firebase.auth().currentUser) return null
   if (navigator.onLine) {
     const meta = { items: [], types: [] } // in our vocabulary folders are types
-    console.info(`${me.first_name} makes a storage request`)
+    console.info('Makes a storage request')
     const directory = await firebase.storage().ref().child(path).listAll()
     directory.items.forEach(item => meta.items.push(item.name))
     directory.prefixes.forEach(folder => meta.types.push(folder.name))
@@ -38,14 +38,14 @@ export async function as_directory (itemid, me = myself.as_object()) {
     return meta
   } else return null
 }
-export async function as_object (itemid, me = myself.as_object()) {
+export async function as_object (itemid, me = myself) {
   return (await load(itemid, me))[0]
 }
-export async function as_download_url (itemid, me = myself.as_object()) {
+export async function as_download_url (itemid, me = myself) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
-    console.info(`${me.first_name} makes a storage request`)
+    console.info('Makes a storage request')
     return await storage.child(as_filename(itemid)).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {

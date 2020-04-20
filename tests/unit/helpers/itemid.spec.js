@@ -3,6 +3,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import itemid, { as_download_url,
                  as_directory_path,
+                 as_filename,
                  as_type } from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
@@ -15,9 +16,7 @@ const fetch = require('jest-fetch-mock')
 
 describe ('@/helpers/itemid', () => {
   beforeEach(() => {
-    localStorage.clear()
-    localStorage.getItem.mockClear()
-    localStorage.setItem.mockClear()
+    jest.clearAllMocks()
   })
   describe ('default itemid', () => {
     describe ('#load', () => {
@@ -44,15 +43,14 @@ describe ('@/helpers/itemid', () => {
         })
       })
       describe ('It\'s my stuff', () => {
-        beforeEach(() => {
-          itemid.load(posterid)
-        })
         it ('It tries local storage first', () => {
-          // first call to get item loads the users local profile
-          expect(localStorage.getItem).toHaveBeenCalledTimes(2)
+          itemid.load(posterid, '/+16282281824')
+          expect(localStorage.getItem).toHaveBeenCalledTimes(1)
         })
         it ('It tries indexdb', () => {
-          expect(get).toBeCalled()
+          itemid.load(posterid, '/+16282281824')
+          expect(localStorage.getItem).toHaveBeenCalledTimes(1)
+          expect(get).toHaveBeenCalledTimes(1)
         })
       })
       describe ('Can\'t find it locally', () => {
@@ -105,7 +103,10 @@ describe ('@/helpers/itemid', () => {
         expect(as_type('/+14156281828/avatars/559666932867')).toBe('avatars')
       })
     })
-    describe.only ('#as_directory_path', () => {
+    describe ('#as_directory_path', () => {
+      it ('gives null for empty string', () => {
+        expect(as_directory_path('')).toBe(null)
+      })
       it ('gives person for /+14156281828', () => {
         expect(as_directory_path('/+14156281828'))
         .toBe('/people/+14156281828')
@@ -135,6 +136,14 @@ describe ('@/helpers/itemid', () => {
         expect(url).toBe(null)
       })
     })
-  })
+    describe ('#as_filename', () => {
+      it ('returns /people/+16282281824/index.html for /+16282281824', () => {
+        expect(as_filename('/+16282281824')).toBe('/people/+16282281824/index.html')
+      })
+      it ('returns /activity/index.html for /activity', () => {
+        expect(as_filename('/activity')).toBe('/activity/index.html')
+      })
 
+    })
+  })
 })
