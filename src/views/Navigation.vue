@@ -44,7 +44,7 @@
     data () {
       return {
         me: me.as_object(),
-        posts: new Posts(`${this.me.id}/posts`)
+        posts: new Posts(`${this.me.id}/posts`),
         has_posts: (this.posts.as_list().length > 0),
         five_minutes_ago: Date.now() - (1000 * 60 * 5),
         days: new Map(),
