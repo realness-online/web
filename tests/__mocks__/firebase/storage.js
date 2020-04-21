@@ -1,5 +1,10 @@
 import * as firebase from 'firebase/app'
-
+export const put_mock = jest.fn(reference => Promise.resolve(reference))
+export const delete_mock = jest.fn(reference => Promise.resolve(reference))
+export const getDownloadURL_mock = jest.fn(reference => Promise.resolve(reference))
+export const listAll_mock = jest.fn((reference_path) => {
+  return Promise.resolve({ prefixes: [], items: [], path: reference_path })
+})
 function storage() {
   return {
     ref: jest.fn(() => {
@@ -7,15 +12,10 @@ function storage() {
         child: jest.fn(path => {
           const reference_path = path
           return {
-            put: jest.fn(() => Promise.resolve(reference_path)),
-            getDownloadURL: jest.fn(() => {
-              // console.log('reference_path', reference_path)
-              return Promise.resolve(`https://example.com${reference_path}`)
-            }),
-            listAll: jest.fn(() => {
-              console.log('reference_path', reference_path)
-              return Promise.resolve({ prefixes: [], items: [], path: reference_path })
-            })
+            put: put_mock,
+            getDownloadURL: getDownloadURL_mock,
+            listAll: listAll_mock,
+            delete: delete_mock
           }
         })
       }

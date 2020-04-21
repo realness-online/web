@@ -7,22 +7,8 @@ import { download_url, as_filename } from '@/helpers/itemid'
 import { del } from 'idb-keyval'
 const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
 export const Cloud = (superclass) => class extends superclass {
-  constructor (type,
-              selector = `[itemprop="${type}"]`,
-              filename = `${type}/index`) {
-    super(type, selector)
-    this.filename = filename
-  }
-  async from_network () {
-    if (networkable.includes(this.type)) {
-      const url = await download_url(this.id)
-      if (url) return Item.hydrate(await (await fetch(url)).text())
-    }
-    return null
-  }
   async to_network (items) {
     const user = firebase.auth().currentUser
-    console.log(this.id)
     const path = as_filename(this.id)
     if (user && navigator.onLine) {
       const file = new File([items], path)
@@ -31,11 +17,12 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.info('Cloud.save()', this.id)
-    if (super.save) super.save()
     if (!items) return
+    if (super.save) super.save(items)
     if (networkable.includes(this.type)) this.to_network(items.outerHTML)
   }
   async delete () {
+    console.info('Cloud.delete()', this.id)
     const user = firebase.auth().currentUser
     if (user && navigator.onLine) {
       del(this.id)
