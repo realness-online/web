@@ -19,7 +19,7 @@ export const Cloud = (superclass) => class extends superclass {
     console.info('Cloud.save()', this.id)
     if (!items) return
     if (super.save) super.save(items)
-    if (networkable.includes(this.type)) this.to_network(items.outerHTML)
+    if (networkable.includes(this.type)) this.to_network(items.innerHTML)
   }
   async delete () {
     console.info('Cloud.delete()', this.id)

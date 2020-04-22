@@ -6,8 +6,7 @@ const Local = (superclass) => class extends superclass {
     else return 0
   }
   save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    if (!items) return
-    localStorage.setItem(this.id, items.outerHTML)
+    if (items) localStorage.setItem(this.id, items.innerHTML)
   }
 }
 export default Local
