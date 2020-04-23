@@ -25,7 +25,7 @@ export default {
       const day = days.get(day_name)
       if (day) {
         day.unshift(post)
-        day.sort(this.older_first)
+        day.sort(this.newer_first)
       } else days.set(day_name, [post])
       return days
     },
