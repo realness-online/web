@@ -1,20 +1,21 @@
+import { as_type } from '@/helpers/itemid'
 export default {
   hydrate (item_as_string) {
     if (item_as_string) {
       return document.createRange().createContextualFragment(item_as_string)
     } else return null
   },
-  get_items (elements, type) {
+  get_items (elements) {
     if (!elements) return []
     if (typeof elements === 'string') elements = this.hydrate(elements)
     const items_as_data = []
     let query = '[itemscope]'
-    if (type) { query += `[itemtype="${type}"]` }
     const items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
-      let id = item.getAttribute('itemid')
-      let type =  item.getAttribute('itemtype')
+      const id = item.getAttribute('itemid')
+      let type = item.getAttribute('itemtype')
       const meta = {}
+      if (id && !type) type = as_type(id)
       if (id) meta.id = id
       if (type) meta.type = type
       const properties = this.get_item_properties(item)
