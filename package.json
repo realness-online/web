@@ -83,6 +83,9 @@
     "> 2%"
   ],
   "jest": {
+    "notify": true,
+    "notifyMode": "change",
+    "bail": 0,
     "verbose": false,
     "collectCoverage": false,
     "restoreMocks": false,
