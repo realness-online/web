@@ -4,9 +4,9 @@ import { load, load_from_network } from '@/helpers/itemid'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import { History } from '@/persistance/Storage'
-function keep_going (current_items, limit) {
-  const current_size = current_items.outerHTML.length / 1024
-  if (current_size >= growth.previous(limit)) {
+function is_trim (items, upper_limit) {
+  const size = items.outerHTML.length / 1024).toFixed(2)
+  if (size >= growth.previous(upper_limit)) {
     const item = Item.get_first_item(current_items)
     const today = new Date().setHours(0, 0, 0, 0)
     const created_at = Date.parse(item.created_at)
@@ -14,14 +14,20 @@ function keep_going (current_items, limit) {
     else return false
   } else return false
 }
+export function as_kilobytes (itemid) {
+  const bytes = localStorage.getItem(itemid)
+  if (bytes) return (bytes.length / 1024).toFixed(2)
+  else return 0
+}
 const Paged = (superclass) => class extends superclass {
   async optimize (limit = growth.first()) {
     // First in first out storage (FIFO)
-    if (this.as_kilobytes() > limit) {
-      const current = await load(this.id)
+    if (as_kilobytes(this.id) > limit) {
+      const current = Item.hydrate(localStorage.getItem(this.id))
+      if (!current) return
       const offload = document.createDocumentFragment()
       let oldest = null
-      while (keep_going(current, limit)) {
+      while (is_trim(current, limit)) {
         const last_child = current.childNodes[current.childNodes.index - 1]
         if (!oldest)
         offload.insertBefore(current.removeChild(last_child))
@@ -38,8 +44,8 @@ const Paged = (superclass) => class extends superclass {
   }
   async sync_list () {
     let items, oldest_at = 0 // the larger the number the more recent it is
-    const cloud_items = await load_from_network(this.id, '/+16282281824')
-    const local_items = await load(this.id, '/+16282281824')
+    const cloud_items = await load_from_network(this.id)
+    const local_items = await load(this.id)
     const length = cloud_items.length
     if (length) oldest_at = Date.parse(cloud_items[length - 1].created_at)
     if (local_items.length) {
@@ -58,28 +64,3 @@ const Paged = (superclass) => class extends superclass {
   }
 }
 export default Paged
-
-
-// async sync_list () {
-//   const from_server = Item.get_items(await this.from_network())
-//   const local_items = this.as_list()
-//   // the larger the number the more recent it is
-//   let oldest_date = 0
-//   if (from_server.length) oldest_date = Date.parse(from_server[0].created_at)
-//   let items
-//   if (local_items.length > 0) {
-//     const filtered_local = local_items.filter(local_item => {
-//       const current_date = Date.parse(local_item.created_at)
-//       if (oldest_date > current_date) return false
-//       return !from_server.some(server_item => {
-//         return local_item.created_at === server_item.created_at
-//       })
-//     })
-//     items = [...filtered_local, ...from_server]
-//     items.sort(sorting.older_first)
-//   } else {
-//     items = from_server
-//   }
-//   return items
-// }
-// }
