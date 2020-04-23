@@ -1,7 +1,7 @@
 import Item from '@/modules/Item'
 import * as itemid from '@/helpers/itemid'
-
-import { Posts } from '@/persistance/Storage'
+import { Posts } from '@/persistance/Storage' //posts extends Paged
+import { as_kilobytes } from '@/persistance/Paged'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8')
@@ -65,6 +65,13 @@ describe ('@/persistance/Paged.js', () => {
     })
   })
   describe ('#optimize', () => {
+    const hella_as_list = Item.get_items(hella_posts)
+    let load_spy
+    beforeEach(() => {
+      localStorage.setItem(paged.id, hella_posts)
+      load_spy = jest.spyOn(itemid, 'load')
+                     .mockImplementation(() => hella_as_list)
+    })
     it ('Exists', () => {
       expect(paged.optimize).toBeDefined()
     })
@@ -73,6 +80,18 @@ describe ('@/persistance/Paged.js', () => {
       await paged.optimize()
       console.log(Object.keys(localStorage.__STORE__))
       expect(Object.keys(localStorage.__STORE__).length).toBe(3)
+    })
+  })
+  describe ('#as_kilobytes', () => {
+    it ('Exists', () => {
+      expect(as_kilobytes).toBeDefined()
+    })
+    it ('Tells the size of the item in local storage', () => {
+      localStorage.setItem(paged.id, posts)
+      expect(as_kilobytes(paged.id)).toBe('1.82')
+    })
+    it ('returns zero if nothing in storage', () => {
+      expect(as_kilobytes(paged.id)).toBe(0)
     })
   })
 })

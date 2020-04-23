@@ -26,16 +26,4 @@ describe ('@/persistance/Local.js', () => {
       expect(localStorage.setItem).not.toBeCalled()
     })
   })
-  describe ('#as_kilobytes', () => {
-    it ('Exists', () => {
-      expect(local.as_kilobytes).toBeDefined()
-    })
-    it ('Tells the size of the item in local storage', () => {
-      localStorage.setItem(local.id, preferences)
-      expect(local.as_kilobytes()).toBe('0.21')
-    })
-    it ('returns zero if nothing in storage', () => {
-      expect(local.as_kilobytes()).toBe(0)
-    })
-  })
 })
