@@ -12,10 +12,11 @@ export default {
     if (type) { query += `[itemtype="${type}"]` }
     const items = Array.from(elements.querySelectorAll(query))
     items.forEach(item => {
-      const meta = {
-        id: item.getAttribute('itemid'),
-        type: item.getAttribute('itemtype')
-      }
+      let id = item.getAttribute('itemid')
+      let type =  item.getAttribute('itemtype')
+      const meta = {}
+      if (id) meta.id = id
+      if (type) meta.type = type
       const properties = this.get_item_properties(item)
       items_as_data.push({ ...meta, ...properties })
     })
