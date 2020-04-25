@@ -4,36 +4,48 @@ export function hydrate (item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   } else return null
 }
-export function get_items (elements) {
+export function get_item (elements, itemid) {
   if (!elements) return []
   if (typeof elements === 'string') elements = hydrate(elements)
-  const items_as_data = []
+  let main_element = elements.querySelector(`[itemid="${itemid}"]`)
+  if (!main_element) main_element = elements.querySelector(`[itemid]`)
+  if (!main_element) return null
+  if (!itemid) itemid = main_element.getAttribute('itemid')
+  const me = {
+    id: itemid,
+    type: as_type(itemid),
+    ...get_itemprops(main_element)
+  }
+  const items = []
   let query = '[itemscope]'
-  const items = Array.from(elements.querySelectorAll(query))
-  items.forEach(item => {
+  const items_as_element = Array.from(main_element.querySelectorAll(query))
+  items_as_element.forEach(item => {
     const id = item.getAttribute('itemid')
     let type = item.getAttribute('itemtype')
-    const meta = {}
     if (id && !type) type = as_type(id)
+    const meta = {}
     if (id) meta.id = id
     if (type) meta.type = type
-    const properties = get_item_properties(item)
-    items_as_data.push({ ...meta, ...properties })
+    items.push({ ...meta, ...get_itemprops(item) })
   })
-  return items_as_data
+  if (items_as_element.length) me.items = items
+  return me
 }
-export function get_first_item (elements, type) {
-  const item = get_items(elements, type)[0]
-  return item || {}
-}
-export function get_item_properties (item) {
+export function get_itemprops (item) {
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
     const name = prop.getAttribute('itemprop')
-    if (props[name]) return // first set value wins
-    const value = property_value(prop)
-    props[name] = value
+    let value
+    if (prop.hasAttribute('itemscope')) {
+      value = get_itemprops(prop)
+    } else value = property_value(prop)
+
+    let has_value
+    if (has_value = props[name]) {
+      if (Array.isArray(has_value)) has_value.push(value)
+      else props[name] = [has_value, value]
+    } else props[name] = value
   })
   switch (item.tagName.toLowerCase()) {
     case 'svg':
@@ -81,4 +93,4 @@ export function property_value (element) {
       return element.textContent.trim()
   }
 }
-export default {get_items, get_first_item}
+export default { get_item }

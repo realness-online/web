@@ -1,23 +1,25 @@
-import Item from '@/modules/item'
+import { get_item, hydrate } from '@/modules/item'
 const fs = require('fs')
 const html_item = fs.readFileSync('./tests/unit/html/item.html', 'utf8')
 describe ('@/modules/item.js', () => {
   let item
-  beforeEach(() => {
-    document.body.innerHTML = html_item
-  })
   describe ('get_items()', () => {
     beforeEach(() => {
-      const items = Item.get_items(document.body, '/person')
-      item = items[0]
+      item = get_item(html_item)
+    })
+    it ('will work when you feed it elements', () => {
+      document.body.innerHTML = html_item
+      item = get_item(document.body, '/+16282281824')
+      expect(item.type).toBe('person')
+      expect(item.id).toBe('/+16282281824')
     })
     it ('Fails gracefully if no elements provided', () => {
-      const items = Item.get_items(null, '/person')
-      expect(items.length).toBe(0)
+      const items = get_item()
+      expect(items.id).toBe(undefined)
     })
     it ('Has meta data about the item', () => {
-      expect(item.type).toBe('/person')
-      expect(item.id).toBe('/people/666')
+      expect(item.type).toBe('person')
+      expect(item.id).toBe('/+16282281824')
     })
     it ('Gets the properties of an item', () => {
       expect(item.name).toBe('Scott Fryxell')
@@ -26,37 +28,28 @@ describe ('@/modules/item.js', () => {
       expect(item.style).toBe('/people/666/style.css')
       expect(item.third_vector).toBe('<svg itemprop="third_vector"></svg>')
     })
-  })
-  describe ('get_first_item()', () => {
-    it ('Returns the first of an object type', () => {
-      const person = Item.get_first_item(document.body, '/person')
-      expect(person.name).toBe('Scott Fryxell')
-      expect(person.nickname).toBe('scoot')
-      expect(person.url).toBe('/people/scott')
-      expect(person.style).toBe('/people/666/style.css')
-    })
-    it ('Gets first item of any type', () => {
-      const item = Item.get_first_item(document.body)
-      expect(item.name).toBe('Scott Fryxell')
-      expect(item.nickname).toBe('scoot')
-      expect(item.url).toBe('/people/scott')
-      expect(item.style).toBe('/people/666/style.css')
-    })
-    it ('Returns an empty object if no item is found', () => {
-      const dodo = Item.get_first_item(document.body, '/dodo')
-      expect(dodo).toEqual({})
+    it ('Fails without an itemid', () => {
+      item = get_item(`
+      <section itemscope itemtype="person">
+        <h1 itemprop="name">Scott Fryxell</h1>
+      </section>`)
+      expect(item).toBe(null)
     })
   })
   describe ('#hydrate', () => {
-    const item_as_string = `
-    <section itemscope itemtype="/person">
+    const simple_item = `
+    <section itemscope itemtype="person">
       <h1 itemprop="name">Scott Fryxell</h1>
     </section>`
+
     it ('Exists', () => {
-      expect(Item.hydrate).toBeDefined()
+      expect(hydrate).toBeDefined()
+    })
+    it ('Fails gracefully', () => {
+      expect(hydrate()).toBe(null)
     })
     it ('Will create an html fragment from a string', () => {
-      const storage = Item.hydrate(item_as_string)
+      const storage = hydrate(simple_item)
       expect(storage.querySelectorAll('h1').length).toBe(1)
     })
   })
