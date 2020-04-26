@@ -1,4 +1,4 @@
-import Item from '@/modules/Item'
+import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { Posts } from '@/persistance/Storage' //posts extends Paged
 import { as_kilobytes } from '@/persistance/Paged'
@@ -17,29 +17,17 @@ describe ('@/persistance/Paged.js', () => {
   })
   describe ('#sync_list', () => {
     let cloud_spy, local_spy
-
     beforeEach(() => {
-      console.log(Item.get_items(posts), paged.id)
-      const network = {
-        id: paged.id,
-        type: 'posts',
-        posts: Item.get_items(posts)
-      }
-      const local = {
-        id: paged.id,
-        type: 'posts',
-        posts: Item.get_items(hella_posts)
-      }
-      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => network)
-      local_spy = jest.spyOn(itemid, 'load').mockImplementation(() => local)
+      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => get_item(posts))
+      local_spy = jest.spyOn(itemid, 'load').mockImplementation(() => get_item(hella_posts))
     })
     it ('Exists', () => {
       expect(paged.sync_list).toBeDefined()
     })
 
-    it.only ('Syncs posts from server to local storage', async () => {
-      // expect(posts_as_list.length).toBe(9)
-      // expect(hella_as_list.length).toBe(79)
+    it ('Syncs posts from server to local storage', async () => {
+      expect(get_item(posts).posts.length).toBe(9)
+      expect(get_item(hella_posts).posts.length).toBe(79)
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
@@ -49,24 +37,21 @@ describe ('@/persistance/Paged.js', () => {
       // 9 - 3 = 6
       // 54 + 6 = 60
       // 54 unsynced posts locally 6 unsynced posts in the cloud
-      console.log(list)
-      expect(list.posts.length).toBe(60)
+      expect(list.length).toBe(60)
     })
-    it('syncs if there are no server items', async () => {
+    it ('syncs if there are no server items', async () => {
+      const mock_posts = { posts: [] }
       cloud_spy = jest.spyOn(itemid, 'load_from_network')
-                      .mockImplementationOnce(() => [])
-      expect(posts_as_list.length).toBe(9)
-      expect(hella_as_list.length).toBe(79)
+                      .mockImplementationOnce(() => mock_posts)
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
       expect(list.length).toBe(79)
     })
-    it('syncs if there are no local items', async () => {
+    it ('syncs if there are no local items', async () => {
+      const mock_posts = { posts: [] }
       cloud_spy = jest.spyOn(itemid, 'load')
-                      .mockImplementationOnce(() => [])
-      expect(posts_as_list.length).toBe(9)
-      expect(hella_as_list.length).toBe(79)
+                      .mockImplementationOnce(() => mock_posts)
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
@@ -74,12 +59,11 @@ describe ('@/persistance/Paged.js', () => {
     })
   })
   describe ('#optimize', () => {
-    const hella_as_list = Item.get_items(hella_posts)
     let load_spy
     beforeEach(() => {
       localStorage.setItem(paged.id, hella_posts)
       load_spy = jest.spyOn(itemid, 'load')
-                     .mockImplementation(() => hella_as_list)
+                     .mockImplementation(() => get_item(hella_posts))
     })
     it ('Exists', () => {
       expect(paged.optimize).toBeDefined()
@@ -97,7 +81,7 @@ describe ('@/persistance/Paged.js', () => {
     })
     it ('Tells the size of the item in local storage', () => {
       localStorage.setItem(paged.id, posts)
-      expect(as_kilobytes(paged.id)).toBe('2.01')
+      expect(as_kilobytes(paged.id)).toBe('2.04')
     })
     it ('returns zero if nothing in storage', () => {
       expect(as_kilobytes(paged.id)).toBe(0)

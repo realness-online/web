@@ -1,18 +1,13 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import Item, { hydrate } from '@/modules/item'
+import { hydrate, get_item, get_type } from '@/modules/item'
 import { load, load_from_network } from '@/helpers/itemid'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import { History } from '@/persistance/Storage'
-function is_trim (items, upper_limit) {
+function is_fat (items, upper_limit) {
   const size = (items.outerHTML.length / 1024).toFixed(2)
-  if (size >= growth.previous(upper_limit)) {
-    const item = Item.get_first_item(current_items)
-    const today = new Date().setHours(0, 0, 0, 0)
-    const created_at = Date.parse(item.created_at)
-    if (created_at && created_at < today) return true // never trim today's stuff
-    else return false
-  } else return false
+  if (size >= growth.previous(upper_limit)) return true
+  else return false
 }
 export function as_kilobytes (itemid) {
   const bytes = localStorage.getItem(itemid)
@@ -26,10 +21,8 @@ const Paged = (superclass) => class extends superclass {
       const current = hydrate(localStorage.getItem(this.id))
       if (!current) return
       const offload = document.createDocumentFragment()
-      let oldest = null
-      while (is_trim(current, limit)) {
+      while (is_fat(current, limit)) {
         const last_child = current.childNodes[current.childNodes.index - 1]
-        if (!oldest)
         offload.insertBefore(current.removeChild(last_child))
       }
       let div = document.createElement(current.nodeName)
@@ -44,22 +37,22 @@ const Paged = (superclass) => class extends superclass {
   }
   async sync_list () {
     let items, oldest_at = 0 // the larger the number the more recent it is
-    const cloud_items = await load_from_network(this.id)
-    const local_items = await load(this.id)
-    const length = cloud_items.length
-    if (length) oldest_at = Date.parse(cloud_items[length - 1].created_at)
-    if (local_items.length) {
-      const new_local_stuff = local_items.filter(local_item => {
+    const cloud = (await load_from_network(this.id))[this.type]
+    const local = (await load(this.id))[this.type]
+    const length = cloud.length
+    if (length) oldest_at = Date.parse(cloud[length - 1].created_at)
+    if (local.length) {
+      const new_local_stuff = local.filter(local_item => {
         const created_at = Date.parse(local_item.created_at)
         // local older items are ignored, probably optimized away
         if (oldest_at > created_at) return false
-        return !cloud_items.some(server_item => {
+        return !cloud.some(server_item => {
           return local_item.created_at === server_item.created_at
         })
       })
-      items = [...new_local_stuff, ...cloud_items]
+      items = [...new_local_stuff, ...cloud]
       items.sort(sorting.newer_first)
-    } else items = cloud_items
+    } else items = cloud
     return items
   }
 }
