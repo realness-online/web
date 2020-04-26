@@ -10,26 +10,19 @@ export function get_item (elements, itemid) {
   let main_element = elements.querySelector(`[itemid="${itemid}"]`)
   if (!main_element) main_element = elements.querySelector(`[itemid]`)
   if (!main_element) return null
-  if (!itemid) itemid = main_element.getAttribute('itemid')
-  const me = {
-    id: itemid,
-    type: as_type(itemid),
-    ...get_itemprops(main_element)
-  }
-  const items = []
-  let query = '[itemscope]'
-  const items_as_element = Array.from(main_element.querySelectorAll(query))
-  items_as_element.forEach(item => {
-    const id = item.getAttribute('itemid')
-    let type = item.getAttribute('itemtype')
-    if (id && !type) type = as_type(id)
-    const meta = {}
-    if (id) meta.id = id
-    if (type) meta.type = type
-    items.push({ ...meta, ...get_itemprops(item) })
-  })
-  if (items_as_element.length) me.items = items
-  return me
+  return make_item(main_element)
+}
+export function make_item (element) {
+  return { ...get_meta(element), ...get_itemprops(element) }
+}
+export function get_meta(item) {
+  const meta = {}
+  const id = item.getAttribute('itemid')
+  let type = item.getAttribute('itemtype')
+  if (id && !type) type = as_type(id)
+  if (id) meta.id = id
+  if (type) meta.type = type
+  return meta
 }
 export function get_itemprops (item) {
   const props = {}
@@ -37,10 +30,8 @@ export function get_itemprops (item) {
   properties.forEach(prop => {
     const name = prop.getAttribute('itemprop')
     let value
-    if (prop.hasAttribute('itemscope')) {
-      value = get_itemprops(prop)
-    } else value = property_value(prop)
-
+    if (prop.hasAttribute('itemscope')) value = make_item(prop)
+    else value = itemprop_value(prop)
     let has_value
     if (has_value = props[name]) {
       if (Array.isArray(has_value)) has_value.push(value)
@@ -54,10 +45,9 @@ export function get_itemprops (item) {
   }
   return props
 }
-export function property_value (element) {
-  if (element.getAttribute('content')) {
-    return element.getAttribute('content')
-  }
+export function itemprop_value (element) {
+  if (element.hasAttribute('content')) return element.getAttribute('content')
+  if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
   switch (element.tagName.toLowerCase()) {
     case 'a':
     case 'area':
@@ -78,8 +68,6 @@ export function property_value (element) {
     case 'textarea':
     case 'select':
       return element.value
-    case 'time':
-      return element.getAttribute('datetime')
     case 'svg':
     case 'path':
     case 'symbol':
@@ -93,4 +81,4 @@ export function property_value (element) {
       return element.textContent.trim()
   }
 }
-export default { get_item }
+export default get_item

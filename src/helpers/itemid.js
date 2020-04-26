@@ -1,16 +1,16 @@
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
-import Item from '@/modules/item'
+import { get_item } from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const myself = localStorage.getItem('me')
 export async function load (itemid, me = myself) {
   const element = document.getElementById(as_query_id(itemid))
-  if (element) return Item.get_items(element)
+  if (element) return get_item(element)
   let items = []
-  if (~itemid.indexOf(me)) items = Item.get_items(localStorage.getItem(itemid))
-  if (!items.length) items = Item.get_items(await get(itemid))
+  if (~itemid.indexOf(me)) items = get_item(localStorage.getItem(itemid))
+  if (!items.length) items = get_item(await get(itemid))
   if (!items.length) items = await load_from_network(itemid, me)
   return items
 }
@@ -20,7 +20,7 @@ export async function load_from_network (itemid, me = myself) {
     console.info(`loads a storage item`)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
-    return Item.get_items(server_text)
+    return get_item(server_text, itemid)
   } else return []
 }
 export async function as_directory (itemid, me = myself) {
@@ -87,4 +87,4 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, as_object, as_fragment, as_query_id, as_directory }
+export default { load, as_object, as_directory, as_fragment, as_query_id}
