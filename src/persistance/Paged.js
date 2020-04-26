@@ -1,11 +1,11 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import Item from '@/modules/item'
+import Item, { hydrate } from '@/modules/item'
 import { load, load_from_network } from '@/helpers/itemid'
 import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
 import { History } from '@/persistance/Storage'
 function is_trim (items, upper_limit) {
-  const size = items.outerHTML.length / 1024).toFixed(2)
+  const size = (items.outerHTML.length / 1024).toFixed(2)
   if (size >= growth.previous(upper_limit)) {
     const item = Item.get_first_item(current_items)
     const today = new Date().setHours(0, 0, 0, 0)
@@ -23,7 +23,7 @@ const Paged = (superclass) => class extends superclass {
   async optimize (limit = growth.first()) {
     // First in first out storage (FIFO)
     if (as_kilobytes(this.id) > limit) {
-      const current = Item.hydrate(localStorage.getItem(this.id))
+      const current = hydrate(localStorage.getItem(this.id))
       if (!current) return
       const offload = document.createDocumentFragment()
       let oldest = null

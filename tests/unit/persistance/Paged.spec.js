@@ -16,22 +16,30 @@ describe ('@/persistance/Paged.js', () => {
     localStorage.clear()
   })
   describe ('#sync_list', () => {
-    const hella_as_list = Item.get_items(hella_posts)
-    const posts_as_list = Item.get_items(posts)
     let cloud_spy, local_spy
+
     beforeEach(() => {
-      cloud_spy = jest.spyOn(itemid, 'load_from_network')
-                      .mockImplementation(() => posts_as_list)
-      local_spy = jest.spyOn(itemid, 'load')
-                      .mockImplementation(() => hella_as_list)
+      console.log(Item.get_items(posts), paged.id)
+      const network = {
+        id: paged.id,
+        type: 'posts',
+        posts: Item.get_items(posts)
+      }
+      const local = {
+        id: paged.id,
+        type: 'posts',
+        posts: Item.get_items(hella_posts)
+      }
+      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => network)
+      local_spy = jest.spyOn(itemid, 'load').mockImplementation(() => local)
     })
     it ('Exists', () => {
       expect(paged.sync_list).toBeDefined()
     })
 
-    it ('Syncs posts from server to local storage', async () => {
-      expect(posts_as_list.length).toBe(9)
-      expect(hella_as_list.length).toBe(79)
+    it.only ('Syncs posts from server to local storage', async () => {
+      // expect(posts_as_list.length).toBe(9)
+      // expect(hella_as_list.length).toBe(79)
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
@@ -41,7 +49,8 @@ describe ('@/persistance/Paged.js', () => {
       // 9 - 3 = 6
       // 54 + 6 = 60
       // 54 unsynced posts locally 6 unsynced posts in the cloud
-      expect(list.length).toBe(60)
+      console.log(list)
+      expect(list.posts.length).toBe(60)
     })
     it('syncs if there are no server items', async () => {
       cloud_spy = jest.spyOn(itemid, 'load_from_network')
@@ -88,7 +97,7 @@ describe ('@/persistance/Paged.js', () => {
     })
     it ('Tells the size of the item in local storage', () => {
       localStorage.setItem(paged.id, posts)
-      expect(as_kilobytes(paged.id)).toBe('1.82')
+      expect(as_kilobytes(paged.id)).toBe('2.01')
     })
     it ('returns zero if nothing in storage', () => {
       expect(as_kilobytes(paged.id)).toBe(0)
