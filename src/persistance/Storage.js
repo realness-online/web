@@ -1,7 +1,7 @@
  // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import Item from '@/modules/item'
+import { as_type } from '@/helpers/itemid'
 import Local from '@/persistance/Local'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
@@ -10,6 +10,7 @@ import profile from '@/helpers/profile'
 export default class Storage {
   constructor (itemid) {
     this.id = itemid
+    this.type = as_type(itemid)
     this.metadata = { contentType: 'text/html' }
   }
 }
