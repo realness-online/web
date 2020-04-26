@@ -30,7 +30,7 @@
   import 'firebase/auth'
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
-  import { me, posts_storage } from '@/persistance/Storage'
+  import { me, Posts } from '@/persistance/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
@@ -54,7 +54,7 @@
     },
     data () {
       return {
-        me: me.as_object(),
+        me: itemid.as_object(me),
         pages: new Map(),
         limit: growth.first(),
         image_file: null
@@ -62,7 +62,7 @@
     },
     async created () {
       console.info(`${this.me.first_name} views their account page`)
-      const days = this.populate_days(posts_storage.as_list(), this.me)
+      const days = this.populate_days(itemid.load(`${me}/posts`), this.me)
       this.pages.set('posts', days)
       if (this.signed_in) {
         const id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
@@ -85,18 +85,12 @@
           this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
         }
         await this.$nextTick()
-        me.save()
-      },
-      async sync_posts () {
-        const days = this.populate_days(await posts_storage.sync_list(), this.me)
-        const new_pages = new Map()
-        new_pages.set('posts', days)
-        this.pages = new_pages
+        new Person(me).save()
       },
       async save_page (event) {
         await this.sync_posts()
         await this.$nextTick()
-        await posts_storage.save()
+        await new posts(`${me}/posts`).save()
       },
       async next_page () {
         const days = new Map()
