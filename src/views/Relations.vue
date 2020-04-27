@@ -14,7 +14,6 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
-  import { relations_storage } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
   export default {
@@ -26,13 +25,15 @@
     },
     data () {
       return {
-        relations: relations_storage.as_list()
+        relations: []
       }
     },
-    created () {
+    async created () {
       console.info('Views relations')
+      const my = await itemid.load(`${localStorage.getItem('me')}/relations`)
+      this.relations = my.relations
       this.relations.forEach(async (relation, index) => {
-        const person = await itemid.as_object(relation.id)
+        const person = await itemid.load(relation.id)
         this.relations.splice(index, 1, person)
       })
     }

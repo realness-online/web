@@ -1,21 +1,32 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
 import itemid from '@/helpers/itemid'
-import { relations_storage } from '@/persistance/Storage'
+import { Relations as buddies } from '@/persistance/Storage'
 describe ('@/views/Relations.vue', () => {
-  const person = {
-    id: '/+14151234356',
-    first_name: 'Scott',
-    last_name: 'Fryxell',
-    mobile: '4151234356'
+  const me = {
+    id: "/+16282281824",
+    type: "person"
   }
-  it ('Render relationship information', () => {
-    const relations_spy = jest.spyOn(relations_storage, 'as_list').mockImplementation(() => [person])
-    const spy = jest.spyOn(itemid, 'as_object').mockImplementation(() => Promise.resolve(person))
-    const wrapper = shallow(Relations)
+  const joe_friday = {
+    id: '/+14151234356',
+    type: 'person',
+    first_name: 'Joe',
+    last_name: 'Friday'
+  }
+  it ('Render relationship information', async () => {
+    const my = {
+      id: "/+16282281824/relations",
+      type: "relations",
+      relations: [{ id: '/+14151234356' }]
+    }
+    const load_relations = jest.spyOn(itemid, 'load')
+                          .mockImplementationOnce(() => Promise.resolve(my))
+    const load_profile = jest.spyOn(itemid, 'load')
+                         .mockImplementationOnce(() => Promise.resolve(joe_friday))
+    const wrapper = await shallow(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
-    expect(spy).toBeCalled()
-    expect(relations_spy).toBeCalled()
+    expect(load_relations).toBeCalled()
+    expect(load_profile).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
 })
