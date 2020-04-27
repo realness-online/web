@@ -3,7 +3,7 @@ const fs = require('fs')
 const html_item = fs.readFileSync('./tests/unit/html/item.html', 'utf8')
 describe ('@/modules/item.js', () => {
   let item
-  describe ('get_items()', () => {
+  describe ('get_item()', () => {
     beforeEach(() => {
       item = get_item(html_item)
     })
