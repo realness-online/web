@@ -1,6 +1,6 @@
 <template lang="html">
   <div>
-    <profile-as-links itemprop="relations" :people='relations'></profile-as-links>
+    <profile-as-links :people='relations'></profile-as-links>
     <nav class="profile-list">
       <li v-for="person in people" :key="person.id">
         <as-figure :person="person"></as-figure>

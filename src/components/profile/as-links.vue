@@ -1,10 +1,15 @@
 <template lang="html">
-  <aside>
-    <link v-for="person in people" itemscope :itemid="person.id" :key="person.id">
+  <aside itemscope :itemid="itemid">
+    <meta v-for="person in people" itemprop="relation" :content="person.id" :key="person.id">
   </aside>
 </template>
 <script>
   export default {
-    props: { people: Array }
+    props: { people: Array },
+    computed: {
+      itemid() {
+        return `${localStorage.getItem('me')}/relations`        
+      }
+    }
   }
 </script>
