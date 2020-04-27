@@ -30,10 +30,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import itemid from '@/helpers/itemid'
-  import {
-    posters_storage,
-    person_storage as me
-  } from '@/persistance/Storage'
+  import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
@@ -50,7 +47,7 @@
       return {
         finished: true,
         posters: [],
-        me: me.as_object(),
+        my_id: localStorage.getItem('me'),
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,
@@ -60,13 +57,13 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      console.info(`${this.me.first_name} views their posters`)
+      console.info('views their posters')
       firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
     computed: {
       as_itemid () {
-        return `${this.me.id}/posters/${this.new_poster.created_at}`
+        return `${this.my_id}/posters/${this.new_poster.created_at}`
       }
     },
     methods: {
@@ -76,7 +73,7 @@
         return second - first
       },
       get_id (name) {
-        return `${this.me.id}/posters/${name.split('.')[0]}`
+        return `${this.my_id}/posters/${name.split('.')[0]}`
       },
       vectorize_image (image) {
         this.working = true
@@ -92,7 +89,7 @@
         }
       },
       brand_new_poster (response) {
-        console.info(`${this.me.first_name} creates a poster`)
+        console.info('creates a poster')
         this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
@@ -100,8 +97,9 @@
       },
       async add_poster (id) {
         this.working = true
-        console.info(`${this.me.first_name} adds poster ${id}`)
-        await posters_storage.save()
+        console.info(`adds poster ${id}`)
+        const poster = new Poster(id)
+        await poster.save()
         await this.$nextTick()
         this.posters.unshift(id)
         this.new_poster = null
@@ -110,8 +108,8 @@
       async remove_poster (id) {
         this.working = true
         this.posters = this.posters.filter(item => id !== item)
-        posters_storage.filename = id
-        await posters_storage.delete()
+        const poster = new Poster(id)
+        await poster.delete()
         this.working = false
       },
       cancel_poster () {
