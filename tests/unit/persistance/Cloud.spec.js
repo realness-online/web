@@ -40,7 +40,7 @@ describe ('@/persistance/Cloud.js', () => {
     })
     it('calls save on a parent class', async () => {
       class Whatever extends Cloud(Local(Storage)) {}
-      cloud = new Whatever()
+      cloud = new Whatever("/+16282281824/whatevers")
       cloud.to_network = jest.fn()
       cloud.type = 'avatars'
       await cloud.save(posts)
