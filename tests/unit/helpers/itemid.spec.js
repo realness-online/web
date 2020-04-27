@@ -24,7 +24,7 @@ describe ('@/helpers/itemid', () => {
         const get_id_spy = jest.fn(() => poster_html)
         const keeps = document.getElementById
         document.getElementById = get_id_spy
-        const poster = (await itemid.load(posterid))[0]
+        const poster = (await itemid.load(posterid))
         await flushPromises()
         expect(get_id_spy).toBeCalled()
         expect(poster.viewbox).toBe('0 0 333 444')
@@ -57,7 +57,7 @@ describe ('@/helpers/itemid', () => {
         let network_request, poster
         beforeEach(async () => {
           network_request = fetch.mockResponseOnce(poster_html)
-          poster = (await itemid.load(posterid, '/+16282281824'))[0]
+          poster = await itemid.load(posterid, '/+16282281824')
           await flushPromises()
         })
         it ('Try the network', async () => {
@@ -68,14 +68,6 @@ describe ('@/helpers/itemid', () => {
         it ('Saves it to indexdb when loaded', () => {
           expect(set).toBeCalled()
         })
-      })
-    })
-    describe ('#as_object', () => {
-      it ('calls load', async () => {
-        const network_request = fetch.mockResponseOnce(poster_html)
-        await itemid.as_object(posterid, '/+16282281824')
-        await flushPromises()
-        expect(network_request).toBeCalled()
       })
     })
     describe ('#as_query_id', () => {
@@ -126,7 +118,7 @@ describe ('@/helpers/itemid', () => {
       })
       it ('Returns a url', async () => {
         const url = await as_download_url(posterid)
-        expect(url).toBe('https://example.com/people/+16282281824/posters/559666932867.html')
+        expect(url).toBe('/path/to/file.html')
       })
       it ('Returns null if person is not logged in', async () => {
         jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {

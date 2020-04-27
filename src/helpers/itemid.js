@@ -5,23 +5,28 @@ import { get_item } from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const myself = localStorage.getItem('me')
+
 export async function load (itemid, me = myself) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
-  let items = []
-  if (~itemid.indexOf(me)) items = get_item(localStorage.getItem(itemid))
-  if (!items.length) items = get_item(await get(itemid))
-  if (!items.length) items = await load_from_network(itemid, me)
-  return items
+  let item
+  const mine = ~itemid.indexOf(me)
+  if (mine) {
+    item = localStorage.getItem(itemid)
+    if (item) return get_item(item)
+  }
+  if (item = get_item(await get(itemid))) return item
+  else if (item = await load_from_network(itemid, me)) return item
+  return null
 }
 export async function load_from_network (itemid, me = myself) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info(`loads a storage item`)
+    console.info('loads a storage item')
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return get_item(server_text, itemid)
-  } else return []
+  } else return null
 }
 export async function as_directory (itemid, me = myself) {
   const path = as_directory_path(itemid)
@@ -37,9 +42,6 @@ export async function as_directory (itemid, me = myself) {
     set(path, meta)
     return meta
   } else return null
-}
-export async function as_object (itemid, me = myself) {
-  return (await load(itemid, me))[0]
 }
 export async function as_download_url (itemid, me = myself) {
   if (!firebase.auth().currentUser) return null
@@ -87,4 +89,4 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, as_object, as_directory, as_fragment, as_query_id}
+export default { load, as_directory, as_fragment, as_query_id}

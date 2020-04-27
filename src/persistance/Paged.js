@@ -1,8 +1,14 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { hydrate, get_item, get_type, get_itemprops } from '@/modules/item'
+import * as firebase from 'firebase/app'
+import 'firebase/storage'
+import 'firebase/auth'
+import { hydrate,
+        get_item,
+        get_type,
+        get_itemprops } from '@/modules/item'
 import { load, load_from_network } from '@/helpers/itemid'
-import sorting from '@/modules/sorting'
-import { History, Me } from '@/persistance/Storage'
+import profile from '@/helpers/profile'
+import { History } from '@/persistance/Storage'
 function get_oldest_at(elements, prop_name) {
   const list = get_itemprops(elements)
   const props = list[prop_name]
@@ -35,8 +41,8 @@ const Paged = (superclass) => class extends superclass {
       div.setAttribute('itemscope', '')
       div.setAttribute('itemid', this.id)
       div.appendChild(offload)
-      const me = new Me()
-      const id = `${me.id}/${this.type}/${get_oldest_at(div, this.type)}.html`
+      const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+      const id = `${me}/${this.type}/${get_oldest_at(div, this.type)}.html`
       await this.save(current)
       new History(id).save(div)
     }
