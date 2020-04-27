@@ -26,10 +26,16 @@ export class Me extends Storage {
     return { type: 'person' } // just a local user
   }
 }
-export class Person extends Local(Storage) {}
-export class Relations extends Local(Storage) {}
-export class Posts extends Paged(Cloud(Local(Storage))) {}
-export class Events extends Paged(Cloud(Local(Storage))) {}
+// export class Person extends Local(Storage) {}
+export class Relations extends Local(Storage) {
+  constructor() { super(`${localStorage.getItem('me')}/relations`) }
+}
+export class Posts extends Paged(Cloud(Local(Storage))) {
+  constructor() { super(`${localStorage.getItem('me')}/posts`) }
+}
+export class Events extends Paged(Cloud(Local(Storage))) {
+  constructor() { super(`${localStorage.getItem('me')}/events`) }
+}
 export class History extends Paged(Cloud(Local(Storage))) {}
 export class Activity extends Cloud(Local(Storage)) {}
 export class Avatar extends Cloud(Local(Storage)) {}
