@@ -1,12 +1,18 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { hydrate, get_item, get_type } from '@/modules/item'
+import { hydrate, get_item, get_type, get_itemprops } from '@/modules/item'
 import { load, load_from_network } from '@/helpers/itemid'
-import growth from '@/modules/growth'
 import sorting from '@/modules/sorting'
-import { History } from '@/persistance/Storage'
-function is_fat (items, upper_limit) {
-  const size = (items.outerHTML.length / 1024).toFixed(2)
-  if (size >= growth.previous(upper_limit)) return true
+import { History, Me } from '@/persistance/Storage'
+function get_oldest_at(elements, prop_name) {
+  const list = get_itemprops(elements)
+  const props = list[prop_name]
+  const oldest = props[props.length -1]
+  return Date.parse(oldest.created_at)
+}
+function is_fat (items, prop_name) {
+  const today = new Date().setHours(0, 0, 0, 0)
+  const as_kilobytes = (items.outerHTML.length / 1024).toFixed(2)
+  if ((as_kilobytes > 5) && (get_oldest_at(items, prop_name) < today)) return true // only count stuff before today
   else return false
 }
 export function as_kilobytes (itemid) {
@@ -15,24 +21,24 @@ export function as_kilobytes (itemid) {
   else return 0
 }
 const Paged = (superclass) => class extends superclass {
-  async optimize (limit = growth.first()) {
+  async optimize () {
     // First in first out storage (FIFO)
-    if (as_kilobytes(this.id) > limit) {
-      const current = hydrate(localStorage.getItem(this.id))
-      if (!current) return
+    if (as_kilobytes(this.id) > 13) {
+      const current = hydrate(localStorage.getItem(this.id)).childNodes[0]
       const offload = document.createDocumentFragment()
-      while (is_fat(current, limit)) {
-        const last_child = current.childNodes[current.childNodes.index - 1]
-        offload.insertBefore(current.removeChild(last_child))
+      while (is_fat(current, this.type)) {
+        const fatty = current.childNodes[current.childNodes.length - 1]
+        const new_sibling = offload.childNodes[0] || null
+        offload.insertBefore(current.removeChild(fatty), new_sibling)
       }
       let div = document.createElement(current.nodeName)
-      const existing_history = await load_from_network(this.id)
-      if (existing_history) div = existing_history.childNodes[0]
-      div.insertBefore(offload)
-      const history = new History(`${this.type}/${limit}.html`)
-      await history.save(div)
+      div.setAttribute('itemscope', '')
+      div.setAttribute('itemid', this.id)
+      div.appendChild(offload)
+      const me = new Me()
+      const id = `${me.id}/${this.type}/${get_oldest_at(div, this.type)}.html`
       await this.save(current)
-      await history.optimize(growth.next(limit))
+      new History(id).save(div)
     }
   }
   async sync_list () {

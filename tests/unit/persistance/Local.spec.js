@@ -7,7 +7,7 @@ describe ('@/persistance/Local.js', () => {
   class Preferences extends Local(Storage) {}
   let local
   beforeEach(() => {
-    local = new Preferences()
+    local = new Preferences('/+16282281824/preferences')
   })
   afterEach(() => {
     jest.clearAllMocks()

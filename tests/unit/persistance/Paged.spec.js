@@ -70,9 +70,17 @@ describe ('@/persistance/Paged.js', () => {
     })
     it ('It optimizes a list of items accross a set of pages', async () => {
       localStorage.setItem(paged.id, hella_posts)
+      expect(Object.keys(localStorage.__STORE__).length).toBe(1)
       await paged.optimize()
-      console.log(Object.keys(localStorage.__STORE__))
+      // set's one for me
       expect(Object.keys(localStorage.__STORE__).length).toBe(3)
+    })
+    it ('It fails gracefully', async () => {
+      localStorage.setItem(paged.id, '')
+      expect(Object.keys(localStorage.__STORE__).length).toBe(1)
+      await paged.optimize()
+
+      expect(Object.keys(localStorage.__STORE__).length).toBe(1)
     })
   })
   describe ('#as_kilobytes', () => {
