@@ -8,7 +8,7 @@
     props: { people: Array },
     computed: {
       itemid() {
-        return `${localStorage.getItem('me')}/relations`        
+        return `${this.me}/relations`        
       }
     }
   }

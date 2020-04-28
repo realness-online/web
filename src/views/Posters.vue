@@ -47,7 +47,6 @@
       return {
         finished: true,
         posters: [],
-        my_id: localStorage.getItem('me'),
         worker: new Worker('/vector.worker.js'),
         working: false,
         new_poster: null,
@@ -63,7 +62,7 @@
     },
     computed: {
       as_itemid () {
-        return `${this.my_id}/posters/${this.new_poster.created_at}`
+        return `${this.me}/posters/${this.new_poster.created_at}`
       }
     },
     methods: {
@@ -73,7 +72,7 @@
         return second - first
       },
       get_id (name) {
-        return `${this.my_id}/posters/${name.split('.')[0]}`
+        return `${this.me}/posters/${name.split('.')[0]}`
       },
       vectorize_image (image) {
         this.working = true
