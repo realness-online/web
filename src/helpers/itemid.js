@@ -1,7 +1,7 @@
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
-import { get_item } from '@/modules/item'
+import get_item from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const myself = localStorage.getItem('me')

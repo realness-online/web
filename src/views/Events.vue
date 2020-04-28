@@ -22,13 +22,12 @@
   </section>
 </template>
 <script>
-  import { person_storage as me } from '@/persistance/Storage'
   import itemid from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
+  import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
-  import icon from '@/components/icon'
-  export default {
+    export default {
     mixins: [signed_in],
     components: {
       'logo-as-link': logo_as_link,
@@ -37,33 +36,34 @@
     },
     data () {
       return {
+        me: localStorage.getItem('me'),
         events: [],
         upcoming: [],
-        working: false,
+        working: true,
         days: new Map()
       }
     },
     async created () {
       console.clear()
       console.time('events-load')
-      console.info(`${me.as_object().first_name} views realness version ${this.version}`)
+      console.info(`Views realness version ${this.version}`)
       this.events = await this.get_upcoming_events()
       this.working = false
       console.timeEnd('events-load')
     },
     methods: {
       async get_upcoming_events () {
-        const relations = me.as_list()
-        let events = []
-        await Promise.all(relations.map(async (relation) => {
-          const relation_events = await itemid.load(`${relation.id}/events/index`)
-          events = [...relation_events, ...events]
+        const [my_rel, my_ev] = await Promise.all([
+          itemid.load(`${this.me}/relations`),
+          itemid.load(`${this.me}/events`)
+        ])
+        let events = my_ev.events
+        await Promise.all(my_rel.relations.map(async (person) => {
+          const relation = await itemid.load(`${person.id}/events`)
+          events = [...relation.events, ...events]
         }))
         events.sort(this.newer_first)
         return events
-        // sort events into nights
-        // filter out any events that already happened
-        // events.forEach(event => this.insert_event_into_day(event, this.days))
       },
       newer_first (earlier, later) {
         return later.id - earlier.id
@@ -94,13 +94,4 @@
         padding: 0 base-line
         & > header > h1
           padding: 0
-      &:first-of-type
-        margin-bottom: base-line
-      & > figure > svg
-        // @media (orientation: portrait)
-        //   max-height: calc(100vmin * 1.33)
-        // @media (min-height: pad-begins) and (orientation: landscape)
-        //   between: max-height 26rem 26rem
-        // @media (min-height: typing-begins) and (orientation: landscape)
-        //   between: max-height 25rem 30rem
 </style>
