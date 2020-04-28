@@ -69,8 +69,8 @@
     async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
       const [person, posts, posters] = await Promise.all([
-        itemid.as_object(id),
-        itemid.load(`${id}/posts`),
+        itemid.load(id),
+        itemid.list(`${id}/posts`),
         itemid.directory(`${id}/posters`)
       ])
       this.person = person
@@ -93,7 +93,7 @@
       populate_page (person, posts, posters) {
         const days = new Map()
         posts = [...this.condense_posts(posts, person),
-                ...this.prepare_posters(posters, person)]
+                 ...this.prepare_posters(posters, person)]
         posts.sort(this.newer_first)
         posts.forEach(post => this.insert_post_into_day(post, days))
         this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))

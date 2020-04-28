@@ -36,7 +36,6 @@
     },
     data () {
       return {
-        me: localStorage.getItem('me'),
         events: [],
         upcoming: [],
         working: true,
@@ -53,14 +52,14 @@
     },
     methods: {
       async get_upcoming_events () {
-        const [my_rel, my_ev] = await Promise.all([
-          itemid.load(`${this.me}/relations`),
-          itemid.load(`${this.me}/events`)
+        const [relations, my_events] = await Promise.all([
+          itemid.list(`${this.me}/relations`),
+          itemid.list(`${this.me}/events`)
         ])
-        let events = my_ev.events
-        await Promise.all(my_rel.relations.map(async (person) => {
-          const relation = await itemid.load(`${person.id}/events`)
-          events = [...relation.events, ...events]
+        let events = my_events
+        await Promise.all(relations.map(async (person) => {
+          const relation_events = await itemid.list(`${person.id}/events`)
+          events = [...relation_events, ...events]
         }))
         events.sort(this.newer_first)
         return events

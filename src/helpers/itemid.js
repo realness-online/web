@@ -19,6 +19,11 @@ export async function load (itemid, me = myself) {
   else if (item = await load_from_network(itemid, me)) return item
   return null
 }
+export async function list (itemid, me = myself) {
+  const type = as_type(itemid)
+  const list = await load(itemid, me)
+  return list[type]
+}
 export async function load_from_network (itemid, me = myself) {
   const url = await as_download_url(itemid, me)
   if (url) {
@@ -89,4 +94,4 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, as_directory, as_fragment, as_query_id}
+export default { load, list, as_directory, as_fragment, as_query_id}
