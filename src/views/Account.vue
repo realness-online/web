@@ -30,7 +30,7 @@
   import 'firebase/auth'
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
-  import { me, Posts } from '@/persistance/Storage'
+  import { Posts } from '@/persistance/Storage'
   import growth from '@/modules/growth'
   import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
@@ -54,19 +54,17 @@
     },
     data () {
       return {
-        me: itemid.as_object(me),
         pages: new Map(),
         limit: growth.first(),
         image_file: null
       }
     },
     async created () {
-      console.info(`${this.me.first_name} views their account page`)
-      const days = this.populate_days(itemid.load(`${me}/posts`), this.me)
+      console.info(`Views account page`)
+      const days = this.populate_days(itemid.list(`${this.me}/posts`), this.me)
       this.pages.set('posts', days)
       if (this.signed_in) {
-        const id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
-        this.me = await itemid.as_object(id)
+        localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
         await this.sync_posts()
       }
     },

@@ -56,26 +56,27 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      const people_in_feed = relations_storage.as_list()
+      const people_in_feed = itemid.load()
       people_in_feed.push(me.as_object())
       await this.get_first_posts(people_in_feed)
       this.working = false
-      console.info(`Feed sorts ${this.sort_count} items for  ${me.as_object().first_name}`)
+      console.info(`Feed sorts ${this.sort_count} items`)
       console.timeEnd('feed-load')
     },
     methods: {
       async get_first_posts (people_in_feed) {
         let feed = []
-        const my_id = me.as_object().id
+
         await Promise.all(people_in_feed.map(async (relation) => {
           const [person, posts, posters] = await Promise.all([
-            itemid.as_object(relation.id, my_id),
-            itemid.load(`${relation.id}/posts`, my_id),
-            itemid.as_directory(`${relation.id}/posters`, my_id)
+            itemid.load(relation.id, this.me),
+            itemid.list(`${relation.id}/posts`, this.me),
+            itemid.as_directory(`${relation.id}/posters`, this.me)
           ])
           this.relations.push(person)
           feed = [...this.condense_posts(posts, person),
-                  ...this.prepare_posters(posters, person), ...feed]
+                  ...this.prepare_posters(posters, person),
+                  ...feed]
         }))
         feed.sort(this.newer_first)
         feed.forEach(post => this.insert_post_into_day(post, this.days))
