@@ -1,92 +1,81 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
+    <header><h6 class="app_version">{{version}}</h6></header>
     <nav :class="onboarding">
-      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{user_name}}</router-link>
+      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{first_name}}</router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Tonight!</router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
       <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Relations</router-link>
       <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
       <post-as-textarea @toggle-keyboard="posting = !posting" @post-added="add_post" class="red"></post-as-textarea>
-    </nav><h6 class="app_version">{{version}}</h6>
-    <aside>
-      <my-figure :person="me"></my-figure>
-      <div itemscope itemtype"/posts" itemid="">
-        <section class="day" v-for="[date, day] in days" :key="date" :class="{today: is_today(date)}">
-          <header><h4>{{as_day(date)}}</h4></header>
-          <post-as-article v-for="post in day"
-                           :key="as_id(post)"
-                           :post="post"
-                           :person="me">
-          </post-as-article>
-        </section>
-      </div>
-    </aside>
+    </nav>
+    <footer hidden>
+      <as-days itemscope :itemid="itemid" :posts="posts">
+        <thought-as-article :item="item"></thought-as-article>
+      </as-days>
+    </footer>
   </section>
 </template>
 <script>
-  import posts_into_days from '@/mixins/posts_into_days'
-  import condense_posts from '@/mixins/condense_posts'
-  import date_mixin from '@/mixins/date'
+  import { Posts } from '@/mixins/Storage'
   import signed_in from '@/mixins/signed_in'
-  import post_helper from '@/helpers/post'
-  import { me, Posts, Relations } from '@/persistance/Storage'
+  import itemid from '@/helpers/itemid'
+  import as_thoughts from '@/helpers/thoughts'
   import as_textarea from '@/components/posts/as-textarea'
-  import as_figure from '@/components/profile/as-figure'
-  import as_article from '@/components/posts/as-article'
+  import as_days from '@/components/as-days'
+  import thought_as_article from '@/components/posts/as-article'
   export default {
-    mixins: [signed_in, condense_posts, posts_into_days, date_mixin],
+    mixins: [signed_in],
     components: {
-      'my-figure': as_figure,
-      'post-as-article': as_article,
+      'as-days': as_days,
+      'thought-as-article': thought_as_article,
       'post-as-textarea': as_textarea
     },
     data () {
       return {
-        me: me.as_object(),
-        posts: new Posts(`${this.me.id}/posts`),
-        has_posts: (this.posts.as_list().length > 0),
-        five_minutes_ago: Date.now() - (1000 * 60 * 5),
-        days: new Map(),
+        itemid: `${this.me}/posts`
+        relations: [],
+        posts: [],
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
-        posting: false
+        posting: false,
+        first_name: null
       }
     },
     async created () {
-      console.info(`${this.me.first_name} uses the navigation`)
-      this.days = this.populate_days(this.posts.as_list(), this.me)
+      console.info(`uses the navigation`)
+      const [my, posts, relations] = await Promise.all([
+        itemid.load(`${this.me}`),
+        itemid.list(`${this.me}/posts`),
+        itemid.list(`${this.me}/relations`)
+      ])
+      this.first_name = my.first_name || 'You'
+      this.posts = as_thoughts(posts)
+      this.relations = relations
     },
     computed: {
       onboarding () {
-        const relations_count = relations_storage.as_list().length
         return {
           'has-posts': this.has_posts,
           'signed-in': (this.has_posts && this.signed_in),
-          'has-friends': (this.signed_in && relations_count > 0)
+          'has-friends': (this.signed_in && this.relations.length > 0)
         }
-      },
-      user_name () {
-        return this.me.first_name || 'You'
       }
     },
     methods: {
-      as_id (post) {
-        return post_helper.as_id(post, this.me)
-      },
       done_posting (event) {
         document.querySelector('nav > button').focus()
       },
       friend_or_phone_book () {
-        if (relations_storage.as_list().length < 1) return '/phone-book'
+        if (this.relations.length < 1) return '/phone-book'
         else return '/relations'
       },
       async add_post (post) {
         this.has_posts = true
-        const posts = [post]
-        this.days = new Map(this.populate_days(posts, this.me, this.days))
+        this.posts.push(post)
         await this.$nextTick()
-        this.posts.save()
+        new Posts().save()
       }
     }
   }

@@ -19,26 +19,11 @@ describe ('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(() => person)
-    jest.spyOn(person_storage, 'as_object').mockImplementation(_ => person)
-    sessionStorage.setItem('posts-synced', Date.now())
-    const currentUser = {
-      phoneNumber: '+16282281824'
-    }
-    const onAuthStateChanged = jest.fn(state_changed => {
-      state_changed(currentUser)
-    })
-    jest.spyOn(firebase, 'auth').mockImplementation(() => {
-      return {
-        currentUser,
-        onAuthStateChanged
-      }
-    })
     wrapper = shallow(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
   })
   afterEach(() => {
-    sessionStorage.removeItem('posts-synced')
     wrapper.destroy()
   })
   it ('Renders posts and profile for a person', async () => {
@@ -46,7 +31,7 @@ describe ('@/views/Navigation.vue', () => {
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
-  it ('Add a post when post-added is emited', async () => {
+  it.only ('Add a post when post-added is emited', async () => {
     expect(wrapper.vm.days.size).toBe(0)
     wrapper.vm.$emit('post-added', post)
     await flushPromises()
@@ -98,8 +83,8 @@ describe ('@/views/Navigation.vue', () => {
           expect(wrapper.vm.onboarding['signed-in']).toBe(true)
         })
         it ('Feed, Events and posters are visible when person has added a friend', () => {
-          jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
-            return [post]
+          jest.spyOn(itemid, 'load').mockImplementation(() => {
+            return { posts: [post] }
           })
           wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['has-friends']).toBe(true)

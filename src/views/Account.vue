@@ -9,20 +9,12 @@
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
     </div>
-    <div id="pages-of-posts">
-      <div :itemprop="page_name" v-for="[page_name, days] in pages" :key="page_name">
-        <section class="day" v-for="[date, day] in days" :key="date" :class="{ today: is_today(date) }">
-          <header><h4>{{as_day(date)}}</h4></header>
-          <post-as-article v-for="post in day" :key="post.id"
-                           :post="post"
-                           :person="me"
-                           :editable="is_editable(page_name)"
-                           @end-of-articles="next_page"
-                           @modified="save_page">
-          </post-as-article>
-        </section>
-      </div>
-    </div>
+    <as-days itemscope :itemid="itemid" :posts="posts">
+      <thought-as-article :post="item"
+                       @viewed="post_viewed"
+                       @modified="save_page">
+      </thought-as-article>
+    </as-days>
   </section>
 </template>
 <script>
@@ -30,43 +22,37 @@
   import 'firebase/auth'
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
+  import as_thoughts from '@/helpers/thoughts'
   import { Posts } from '@/persistance/Storage'
-  import growth from '@/modules/growth'
-  import date_mixin from '@/mixins/date'
   import signed_in from '@/mixins/signed_in'
-  import posts_into_days from '@/mixins/posts_into_days'
-  import condense_posts from '@/mixins/condense_posts'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
   import avatar_as_form from '@/components/avatars/as-form'
-  import as_article from '@/components/posts/as-article'
+  import thought_as_article from '@/components/posts/as-article'
   export default {
-    mixins: [signed_in, date_mixin, condense_posts, posts_into_days],
+    mixins: [signed_in],
     components: {
       icon,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
-      'post-as-article': as_article,
+      'thought-as-article': thought_as_article,
       'avatar-as-form': avatar_as_form
     },
     data () {
       return {
-        pages: new Map(),
-        limit: growth.first(),
+        posts: [],
         image_file: null
       }
     },
     async created () {
       console.info(`Views account page`)
-      const days = this.populate_days(itemid.list(`${this.me}/posts`), this.me)
-      this.pages.set('posts', days)
       if (this.signed_in) {
         localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
-        await this.sync_posts()
       }
+      this.posts = itemid.list(`${this.me}/posts`)
     },
     methods: {
       async new_avatar (avatar_url) {
@@ -74,31 +60,16 @@
         await this.$nextTick()
         me.save()
       },
-      is_editable (page_name) {
-        if (page_name === 'posts') return true
-        else return false
-      },
       async save_me (event) {
         if (this.signed_in) {
-          this.me.id = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+          localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
         }
         await this.$nextTick()
-        new Person(me).save()
+        new Person().save()
       },
       async save_page (event) {
-        await this.sync_posts()
         await this.$nextTick()
-        await new posts(`${me}/posts`).save()
-      },
-      async next_page () {
-        const days = new Map()
-        let posts = await itemid.load(`${this.me.id}/posts/${this.limit}`)
-        if (posts.length > 0) {
-          posts = this.condense_posts(posts, this.me)
-          posts.forEach(post => this.insert_post_into_day(post, days))
-          this.pages = new Map(this.pages.set(`posts.${this.limit}`, days))
-          this.limit = growth.next(this.limit)
-        }
+        await new posts(`${this.me}/posts`).save()
       }
     }
   }

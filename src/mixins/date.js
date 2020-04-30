@@ -11,9 +11,6 @@ export default {
     },
     as_time (iso_string) {
       return date_helper.as_time(iso_string)
-    },
-    as_day_and_time (iso_string) {
-      return date_helper.as_day_and_time(iso_string)
     }
   }
 }
