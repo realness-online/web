@@ -62,8 +62,7 @@ export async function as_download_url (itemid, me = myself) {
   }
 }
 export function as_directory_path (itemid) {
-  const path_parts = itemid.split('/')
-  if (~path_parts[0].length) path_parts.shift() // remove empty split
+  const path_parts = as_path_parts(itemid)
   let path = `/${path_parts[0]}`
   if (itemid.startsWith('/+')) path = `/people${path}`
   switch (path_parts.length) {
@@ -81,11 +80,21 @@ export function as_filename (itemid) {
   if (large.includes(as_type(itemid))) return `${filename}.html`
   else return `${filename}/index.html`
 }
-export function as_type (itemid) {
+export function as_path_parts (itemid) {
+  console.log(itemid)
   const path = itemid.split('/')
   if (~path[0].length) path.shift()
+  return path
+}
+export function as_type (itemid) {
+  const path = as_path_parts(itemid)
   if (path[1]) return path[1]
   if (itemid.startsWith('/+')) return 'person'
+  else return null
+}
+export function as_created_at (itemid) {
+  const path = as_path_parts(itemid)
+  if (path[2]) return path[2]
   else return null
 }
 export function as_query_id (itemid) {
@@ -94,4 +103,4 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, list, as_directory, as_fragment, as_query_id}
+export default { load, list, as_directory, as_created_at, as_fragment, as_query_id}

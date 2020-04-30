@@ -1,25 +1,23 @@
+import { as_created_at } from '@/helpers/itemid'
 export const thirteen_minutes = 1000 * 60 * 13
-export function as_thoughts (posts, person) {
+export function as_thoughts (posts) {
   const thoughts = []
-  while (posts.length > 0) {
+  while (posts.length) {
     const post = posts.shift()
-    post.statements = []
-    while (is_train_of_thought(post, posts)) {
-      post.statements.push(posts.shift())
+    const thot = [post]
+    while (is_train_of_thought(thot, posts)) {
+      thot.push(posts.shift())
     }
-    post.person = person
-    thoughts.push(post)
+    thoughts.push(thot)
   }
   return thoughts
-},
-export function is_train_of_thought (post, posts) {
+}
+export function is_train_of_thought (thot, posts) {
   const next_post = posts[0]
   if (next_post) {
-    let last_post = post
-    const length = post.statements.length
-    if (length > 0) last_post = post.statements[length - 1]
-    const last = Date.parse(last_post.created_at)
-    const next = Date.parse(next_post.created_at)
+    let last_post = thot[thot.index -1]
+    const last = Date.parse(as_created_at(last_post.id))
+    const next = Date.parse(as_created_at(last_post.id))
     const difference = next - last
     if (difference < thirteen_minutes) return true
     else return false

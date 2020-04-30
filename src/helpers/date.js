@@ -1,3 +1,4 @@
+import { as_created_at } from '@/helpers/itemid'
 const this_year = Date.parse(new Date().getFullYear())
 const format_as_time = {
   hour: 'numeric',
@@ -48,5 +49,9 @@ export default {
   day_name (date) {
     date = new Date(date)
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+  },
+  id_as_day (itemid) {
+    return new Date(as_created_at(itemid))
   }
+
 }

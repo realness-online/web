@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/as-days Renders a list of posts sorted into the days they were created 1`] = `
+<section
+  class="as-day"
+/>
+`;
+
+exports[`@/components/as-days Renders though is provided nothing 1`] = `
+<section
+  class="as-day"
+/>
+`;

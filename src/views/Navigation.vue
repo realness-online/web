@@ -34,7 +34,7 @@
     },
     data () {
       return {
-        itemid: `${this.me}/posts`
+        itemid: `${this.me}/posts`,
         relations: [],
         posts: [],
         version: process.env.VUE_APP_VERSION,
