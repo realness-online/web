@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/posts/as-statement.vue Render a statement 1`] = `
+<div
+  itemscope="itemscope"
+>
+  <p
+    itemprop="what"
+  >
+    9 The way that avatars get processed has been updated. They are brighter, have more contrast, and detail
+  </p>
+   
+  <!---->
+   
+  <!---->
+</div>
+`;
