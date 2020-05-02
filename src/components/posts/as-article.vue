@@ -1,21 +1,21 @@
 <template lang="html">
   <article class="thought">
-    <header v-if="show_author">
-      <router-link :to="person.id">
-        <profile-as-avatar :person="person.id"></profile-as-avatar>
+    <header v-if="verbose">
+      <router-link :to="author.id">
+        <profile-as-avatar :person="author"></profile-as-avatar>
       </router-link>
       <hgroup>
-        <span>{{person.first_name}} {{person.last_name}}</span>
-        <time :datetime="post.created_at">{{as_created_time}}</time>
+        <span>{{ author.first_name }}</span>
+        <span>{{ author.last_name }}</span>
+        <time>{{ thought_starts_at }}</time>
       </hgroup>
     </header>
-    <header v-else>
-      <time>{{as_created_time}}</time>
-    </header>
+    <header v-else><time>{{thought_starts_at}}</time></header>
     <as-statements v-for="statement in statements" :statement="statement"></as-statements>
   </article>
 </template>
 <script>
+  import date_helper from '@/helpers/date'
   import as_statment from '@/components/posts/as-statement'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
@@ -27,11 +27,27 @@
       statements: {
         type: Array,
         required: true
+      },
+      verbose: {
+        type: Boolean,
+        required: false,
+        default: false
+      }
+    },
+    data() {
+      return {
+        author: {}
+      }
+    },
+    async created() {
+      if (this.verbose) {
+        const author_id = itemid.get_author(this.statement.id)
+        this.author = await itemid.load(author_id)
       }
     },
     computed: {
-      as_created_time() {
-        get_created_at(this.statements[0])
+      thought_starts_at() {
+        return date_helper.as_time(get_created_at(this.statements[0].id))
       }
     }
   }
