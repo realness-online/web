@@ -9,7 +9,7 @@
     </hgroup>
     <as-days :posters="posters" :posts="posts">
       <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" @viewed="post_viewed"></thought-as-article>
+      <thought-as-article v-else :item="item" :verbose="true" @viewed="post_viewed"></thought-as-article>
     </as-days>
   </section>
 </template>
@@ -18,13 +18,11 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
-  import thought_as_article from '@/components/feed/as-article'
+  import thought_as_article from '@/components/posts/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
   import signed_in from '@/mixins/signed_in'
   export default {
-    mixins: [
-      signed_in,
-    ],
+    mixins: [signed_in],
     components: {
       'as-days': as_days,
       'logo-as-link': logo_as_link,
