@@ -1,10 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Navigation.vue Renders statements and profile for a person 1`] = `
+exports[`@/views/Navigation.vue Renders statments and profile for a person 1`] = `
 <section
   class="page"
   id="navigation"
 >
+  <header>
+    <h6
+      class="app_version"
+    >
+      1.0.0
+    </h6>
+  </header>
+   
   <nav
     class=""
   >
@@ -52,19 +60,12 @@ exports[`@/views/Navigation.vue Renders statements and profile for a person 1`] 
      
     <!---->
   </nav>
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
    
-  <aside>
+  <footer
+    hidden="hidden"
+  >
     <!---->
-     
-    <div
-      itemprop="statements"
-    />
-  </aside>
+  </footer>
 </section>
 `;
 
@@ -73,6 +74,14 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   class="page"
   id="navigation"
 >
+  <header>
+    <h6
+      class="app_version"
+    >
+      1.0.0
+    </h6>
+  </header>
+   
   <nav
     class=""
   >
@@ -120,19 +129,12 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
      
     <!---->
   </nav>
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
    
-  <aside>
+  <footer
+    hidden="hidden"
+  >
     <!---->
-     
-    <div
-      itemprop="statements"
-    />
-  </aside>
+  </footer>
 </section>
 `;
 
@@ -141,6 +143,14 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   class="page posting"
   id="navigation"
 >
+  <header>
+    <h6
+      class="app_version"
+    >
+      1.0.0
+    </h6>
+  </header>
+   
   <nav
     class=""
   >
@@ -162,18 +172,11 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
      
     <!---->
   </nav>
-  <h6
-    class="app_version"
-  >
-    1.0.0
-  </h6>
    
-  <aside>
+  <footer
+    hidden="hidden"
+  >
     <!---->
-     
-    <div
-      itemprop="statements"
-    />
-  </aside>
+  </footer>
 </section>
 `;

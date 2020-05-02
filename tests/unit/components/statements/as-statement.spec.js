@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
-import as_statement from '@/components/statements/as-statement'
+import as_statement from '@/components/statements/as-div'
 const fs = require('fs')
 const statements_as_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 import get_item from '@/modules/item'
@@ -10,7 +10,7 @@ const person = {
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-describe ('@/components/statements/as-statement.vue', () => {
+describe ('@/components/statements/as-div.vue', () => {
   it ('Render a statement', async () => {
     const statements = get_item(statements_as_html)
     console.log(statements)

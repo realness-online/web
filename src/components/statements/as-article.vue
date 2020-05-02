@@ -21,7 +21,7 @@
   export default {
     components: {
       'profile-as-avatar': profile_as_avatar,
-      'as-statment': as_statment
+      'as-statement': as_statement
     },
     props: {
       statements: {
