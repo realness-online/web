@@ -6,7 +6,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
-const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
+const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 import { del } from 'idb-keyval'
 describe ('@/persistance/Cloud.js', () => {
   class Preferences extends Cloud(Storage) {}
@@ -29,13 +29,13 @@ describe ('@/persistance/Cloud.js', () => {
     })
     it('Only saves certain types', async () => {
       cloud.to_network = jest.fn()
-      await cloud.save(posts)
+      await cloud.save(statements)
       expect(cloud.to_network).not.toBeCalled()
     })
     it('Saves items on the server', async () => {
       cloud.to_network = jest.fn()
       cloud.type = 'avatars'
-      await cloud.save(posts)
+      await cloud.save(statements)
       expect(cloud.to_network).toBeCalled()
     })
     it('calls save on a parent class', async () => {
@@ -43,7 +43,7 @@ describe ('@/persistance/Cloud.js', () => {
       cloud = new Whatever("/+16282281824/whatevers")
       cloud.to_network = jest.fn()
       cloud.type = 'avatars'
-      await cloud.save(posts)
+      await cloud.save(statements)
       expect(cloud.to_network).toBeCalled()
     })
   })
@@ -67,14 +67,14 @@ describe ('@/persistance/Cloud.js', () => {
       expect(cloud.to_network).toBeDefined()
     })
     it ('Persist a file in a persons home directory', async () => {
-      await cloud.to_network(posts)
+      await cloud.to_network(statements)
       expect(firebase.storage().ref().child().put).toBeCalled()
     })
     it ('Does nothing unless user is signed in', async () => {
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
         return { currentUser: null }
       })
-      await cloud.to_network(posts)
+      await cloud.to_network(statements)
       expect(firebase.storage().ref().child().put).not.toBeCalled()
     })
   })

@@ -106,11 +106,7 @@
         if (me.id !== this.person.id) modified = true
         if (me.first_name !== this.person.first_name) modified = true
         if (me.last_name !== this.person.last_name) modified = true
-        if (modified) {
-          this.$emit('modified', this.person)
-          sessionStorage.removeItem('profile-synced')
-          sessionStorage.removeItem('posts-synced')
-        }
+        if (modified) this.$emit('modified', this.person)
       },
       async begin_authorization (event) {
         this.working = true
@@ -139,8 +135,6 @@
         this.working = true
         this.disable_input()
         this.show_code = false
-        sessionStorage.removeItem('profile-synced')
-        sessionStorage.removeItem('posts-synced')
         await this.authorizer.confirm(this.code)
         this.working = false
         this.show_sign_out = true

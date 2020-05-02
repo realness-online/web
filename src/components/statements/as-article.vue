@@ -11,12 +11,12 @@
       </hgroup>
     </header>
     <header v-else><time>{{thought_starts_at}}</time></header>
-    <as-statements v-for="statement in statements" :statement="statement"></as-statements>
+    <as-statement v-for="statement in statements" :statement="statement"></as-statement>
   </article>
 </template>
 <script>
   import date_helper from '@/helpers/date'
-  import as_statment from '@/components/posts/as-statement'
+  import as_statement from '@/components/statements/as-div'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
     components: {
@@ -53,7 +53,7 @@
   }
 </script>
 <style lang='stylus'>
-  article[itemtype="/posts"]
+  article.thought
     overflow: hidden
     & > header
       margin-bottom: (base-line / 2)

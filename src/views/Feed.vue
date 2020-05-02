@@ -7,9 +7,9 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <as-days :posters="posters" :posts="posts">
+    <as-days :posters="posters" :statements="statements">
       <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" :verbose="true" @viewed="post_viewed"></thought-as-article>
+      <thought-as-article v-else :item="item" :verbose="true" @viewed="statement_viewed"></thought-as-article>
     </as-days>
   </section>
 </template>
@@ -18,7 +18,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
-  import thought_as_article from '@/components/posts/as-article'
+  import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
   import signed_in from '@/mixins/signed_in'
   export default {
@@ -44,11 +44,11 @@
     },
     async fill_feed() {
       await Promise.all(this.people.map(async (relation) => {
-        const [posts, posters] = await Promise.all([
-          itemid.list(`${relation.id}/posts`, this.me),
+        const [statements, posters] = await Promise.all([
+          itemid.list(`${relation.id}/statements`, this.me),
           itemid.as_directory(`${relation.id}/posters`, this.me)
         ])
-        this.posts = [...posts, ...this.posts]
+        this.statements = [...statements, ...this.statements]
         this.posters = [...posters, ...this.posters]
       }))
     }

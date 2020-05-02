@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
-import wat from '@/components/posts/as-textarea'
-describe ('@/components/posts/as-textarea.vue', () => {
+import wat from '@/components/statements/as-textarea'
+describe ('@/components/statements/as-textarea.vue', () => {
   it ('Renders', () => {
     const wrapper = shallow(wat)
     expect(wrapper.element).toMatchSnapshot()
@@ -8,20 +8,20 @@ describe ('@/components/posts/as-textarea.vue', () => {
   it ('#wat_focused() exists', () => {
     expect(typeof wat.methods.wat_focused).toBe('function')
   })
-  describe ('#prepare_post', () => {
+  describe ('#prepare_statement', () => {
     it ('Exists', () => {
-      expect(typeof wat.methods.prepare_post).toBe('function')
+      expect(typeof wat.methods.prepare_statement).toBe('function')
     })
-    it ('Only triggers a post event when there is text', () => {
+    it ('Only triggers a statement event when there is text', () => {
       const wrapper = shallow(wat, {
         data: {
-          posts: [],
-          new_post: ''
+          statements: [],
+          new_statement: ''
         }
       })
-      expect(wrapper.vm.posts.length).toBe(0)
-      wrapper.vm.prepare_post()
-      expect(wrapper.vm.posts.length).toBe(0)
+      expect(wrapper.vm.statements.length).toBe(0)
+      wrapper.vm.prepare_statement()
+      expect(wrapper.vm.statements.length).toBe(0)
     })
   })
   describe ('focus', () => {
@@ -41,23 +41,23 @@ describe ('@/components/posts/as-textarea.vue', () => {
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(1)
     })
-    it ('Emits a post-added event when there is text', () => {
+    it ('Emits a statement-added event when there is text', () => {
       const wrapper = shallow(wat, {
         data: {
-          new_post: 'I like to move it.'
+          new_statement: 'I like to move it.'
         }
       })
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
-      wrapper.vm.$on('post-added', spy)
+      wrapper.vm.$on('statement-added', spy)
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(1)
     })
-    it ('Does not emit post-added when there is not text', () => {
+    it ('Does not emit statement-added when there is not text', () => {
       const wrapper = shallow(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
-      wrapper.vm.$on('post-added', spy)
+      wrapper.vm.$on('statement-added', spy)
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(0)
     })

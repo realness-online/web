@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posts/as-article.vue Render a post as an article element 1`] = `
+exports[`@/components/statements/as-article.vue Render a statement as an article element 1`] = `
 <article
   itemscope="itemscope"
-  itemtype="/posts"
+  itemtype="/statements"
 >
   <header>
     <time

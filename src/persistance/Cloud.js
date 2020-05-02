@@ -4,7 +4,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import { download_url, as_filename } from '@/helpers/itemid'
 import { del } from 'idb-keyval'
-const networkable = ['person', 'posts', 'posters', 'avatars', 'events']
+const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
     const user = firebase.auth().currentUser

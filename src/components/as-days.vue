@@ -19,7 +19,7 @@
   export default {
     components: { icon },
     props: {
-      posts: {
+      statements: {
         type: Array,
         required: false,
         default: () => []
@@ -47,7 +47,7 @@
       }
     },
     created() {
-      as_thoughts(this.posts).forEach(this.insert_into_day)
+      as_thoughts(this.statements).forEach(this.insert_into_day)
       this.posters.forEach(this.insert_into_day)
       this.working = false
     },

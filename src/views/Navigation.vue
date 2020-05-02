@@ -8,35 +8,35 @@
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
       <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Relations</router-link>
       <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
-      <post-as-textarea @toggle-keyboard="posting = !posting" @post-added="add_post" class="red"></post-as-textarea>
+      <statement-as-textarea @toggle-keyboard="posting = !posting" @statement-added="add_statement" class="red"></statement-as-textarea>
     </nav>
     <footer hidden>
-      <as-days itemscope :itemid="itemid" :posts="posts">
+      <as-days itemscope :itemid="itemid" :statements="statements">
         <thought-as-article :item="item"></thought-as-article>
       </as-days>
     </footer>
   </section>
 </template>
 <script>
-  import { Posts } from '@/persistance/Storage'
+  import { Statements } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'
-  import as_textarea from '@/components/posts/as-textarea'
+  import as_textarea from '@/components/statements/as-textarea'
   import as_days from '@/components/as-days'
-  import thought_as_article from '@/components/posts/as-article'
+  import thought_as_article from '@/components/statements/as-article'
   export default {
     mixins: [signed_in],
     components: {
       'as-days': as_days,
       'thought-as-article': thought_as_article,
-      'post-as-textarea': as_textarea
+      'statement-as-textarea': as_textarea
     },
     data () {
       return {
-        itemid: `${this.me}/posts`,
+        has_statements: false,
         relations: [],
-        posts: [],
+        statements: [],
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
         posting: false,
@@ -45,20 +45,20 @@
     },
     async created () {
       console.info(`uses the navigation`)
-      const [my, posts, relations] = await Promise.all([
+      const [my, statements, relations] = await Promise.all([
         itemid.load(`${this.me}`),
-        itemid.list(`${this.me}/posts`),
+        itemid.list(`${this.me}/statements`),
         itemid.list(`${this.me}/relations`)
       ])
       this.first_name = my.first_name || 'You'
-      this.posts = as_thoughts(posts)
+      this.statements = as_thoughts(statements)
       this.relations = relations
     },
     computed: {
       onboarding () {
         return {
-          'has-posts': this.has_posts,
-          'signed-in': (this.has_posts && this.signed_in),
+          'has-statements': this.has_statements,
+          'signed-in': (this.has_statements && this.signed_in),
           'has-friends': (this.signed_in && this.relations.length > 0)
         }
       }
@@ -71,11 +71,11 @@
         if (this.relations.length < 1) return '/phone-book'
         else return '/relations'
       },
-      async add_post (post) {
-        this.has_posts = true
-        this.posts.push(post)
+      async add_statement (statement) {
+        this.has_statements = true
+        this.statements.push(statement)
         await this.$nextTick()
-        new Posts().save()
+        new Statements().save()
       }
     }
   }
@@ -112,7 +112,7 @@
       max-height: page-width
       height: 100vmin
       width: 100vw
-      &.has-posts
+      &.has-statements
         & > [href='/account']
           visibility: visible
       &.signed-in

@@ -83,7 +83,7 @@
     "> 2%"
   ],
   "jest": {
-    "notify": true,
+    "notify": false,
     "notifyMode": "change",
     "bail": 0,
     "verbose": false,

@@ -1,7 +1,7 @@
 <template lang="html">
   <textarea id="wat" cols="1" rows="1" placeholder=">"
-    v-model="new_post"
-    @focusout="prepare_post"
+    v-model="new_statement"
+    @focusout="prepare_statement"
     @focusin="wat_focused"></textarea>
 </template>
 <script>
@@ -9,22 +9,22 @@
     props: ['value'],
     data () {
       return {
-        new_post: ''
+        new_statement: ''
       }
     },
     methods: {
-      prepare_post () {
+      prepare_statement () {
         this.$emit('toggle-keyboard')
-        const post = {}
-        post.statement = this.new_post && this.new_post.trim()
-        if (!post.statement) return
-        this.new_post = ''
-        post.created_at = new Date().toISOString()
-        this.$emit('post-added', post)
-        console.info('Creates a post')
+        const statement = {}
+        statement.statement = this.new_statement && this.new_statement.trim()
+        if (!statement.statement) return
+        this.new_statement = ''
+        statement.created_at = new Date().toISOString()
+        this.$emit('statement-added', statement)
+        console.info('Creates a statement')
       },
       wat_focused (event) {
-        console.info('Displays post entry form')
+        console.info('Displays statement entry form')
         this.$emit('toggle-keyboard')
       }
     }

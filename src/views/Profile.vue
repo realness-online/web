@@ -9,9 +9,9 @@
       <download-vector :vector="avatar"></download-vector>
     </menu>
     <profile-as-figure :person='person'></profile-as-figure>
-    <as-days :posters="posters" :posts="posts">
+    <as-days :posters="posters" :statements="statements">
       <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" @viewed="post_viewed"></thought-as-article>
+      <thought-as-article v-else :item="item" @viewed="statement_viewed"></thought-as-article>
     </as-days>
   </section>
 </template>
@@ -26,7 +26,7 @@
   import download_vector from '@/components/download-vector'
   import profile_as_figure from '@/components/profile/as-figure'
   import avatar from '@/components/avatars/as-svg'
-  import as_article from '@/components/posts/as-article'
+  import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
   export default {
     mixins: [ signed_in ],
@@ -41,7 +41,7 @@
     data () {
       return {
         person: {},
-        posts: [],
+        statements: [],
         posters: [],
         working: true,
         avatar: null
@@ -49,13 +49,13 @@
     },
     async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
-      const [person, posts, posters] = await Promise.all([
+      const [person, statements, posters] = await Promise.all([
         itemid.load(id),
-        itemid.list(`${id}/posts`),
+        itemid.list(`${id}/statements`),
         itemid.directory(`${id}/posters`)
       ])
       this.person = person
-      this.posts = as_thoughts(posts)
+      this.statements = as_thoughts(statements)
       this.posters = posters
       console.info(`Views ${person.first_name}'s profile`)
     },

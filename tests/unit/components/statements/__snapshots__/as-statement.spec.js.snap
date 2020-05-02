@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posts/as-statement.vue Render a statement 1`] = `
+exports[`@/components/statements/as-statement.vue Render a statement 1`] = `
 <div
   itemscope="itemscope"
 >

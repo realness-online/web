@@ -9,9 +9,9 @@
       <profile-as-figure :person="me"></profile-as-figure>
       <profile-as-form @modified="save_me" :person='me'></profile-as-form>
     </div>
-    <as-days itemscope :itemid="itemid" :posts="posts">
+    <as-days itemscope :itemid="itemid" :statements="statements">
       <thought-as-article :post="item"
-                       @viewed="post_viewed"
+                       @viewed="statement_viewed"
                        @modified="save_page">
       </thought-as-article>
     </as-days>
@@ -23,14 +23,14 @@
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'
-  import { Posts } from '@/persistance/Storage'
+  import { Statements, Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
   import avatar_as_form from '@/components/avatars/as-form'
-  import thought_as_article from '@/components/posts/as-article'
+  import thought_as_article from '@/components/statements/as-article'
   export default {
     mixins: [signed_in],
     components: {
@@ -43,7 +43,7 @@
     },
     data () {
       return {
-        posts: [],
+        statements: [],
         image_file: null
       }
     },
@@ -52,11 +52,12 @@
       if (this.signed_in) {
         localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
       }
-      this.posts = itemid.list(`${this.me}/posts`)
+      this.statements = itemid.list(`${this.me}/statements`)
     },
     methods: {
       async new_avatar (avatar_url) {
-        this.me.avatar = avatar_url
+        me = new Me()
+        me.avatar = avatar_url
         await this.$nextTick()
         me.save()
       },
@@ -65,11 +66,11 @@
           localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
         }
         await this.$nextTick()
-        new Person().save()
+        new Me().save()
       },
       async save_page (event) {
         await this.$nextTick()
-        await new posts(`${this.me}/posts`).save()
+        await new Statements().save()
       }
     }
   }
@@ -88,7 +89,7 @@
       padding: base-line
       form
         margin-top: base-line
-    & > div#pages-of-posts
+    & > div#pages-of-statements
       max-width: page-width
       margin: auto
       padding: base-line base-line 0 base-line
