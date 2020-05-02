@@ -2,6 +2,7 @@ import { shallow } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
 import get_item from '@/modules/item'
 import as_article from '@/components/posts/as-article'
+import itemid from '@/helpers/itemid'
 const fs = require('fs')
 const posts = fs.readFileSync('./tests/unit/html/posts.html', 'utf8')
 const person = {
@@ -30,7 +31,7 @@ describe ('@/components/posts/as-article.vue', () => {
     wrapper.destroy()
   })
   it ('Sets an observer if it is the oldest post', () => {
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementation(_ => {
+    jest.spyOn(itemid, 'list').mockImplementation(_ => {
       return get_item(posts)
     })
     person.oldest_post = oldest_post.created_at
@@ -39,7 +40,7 @@ describe ('@/components/posts/as-article.vue', () => {
     person.oldest_post = undefined
   })
   it ('Knows when it is not the oldest post', () => {
-    jest.spyOn(Storage.prototype, 'as_list').mockImplementation(_ => {
+    jest.spyOn(itemid 'list').mockImplementation(_ => {
       return get_item(posts)
     })
     person.oldest_post = oldest_post.created_at
