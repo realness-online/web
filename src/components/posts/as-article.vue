@@ -1,31 +1,37 @@
 <template lang="html">
-  <article itemscope itemtype='/posts' :key="id" :itemid="id">
-    <header>
-      <time itemprop="created_at" :datetime="post.created_at">{{as_created_time}}</time>
+  <article class="thought">
+    <header v-if="show_author">
+      <router-link :to="person.id">
+        <profile-as-avatar :person="person.id"></profile-as-avatar>
+      </router-link>
+      <hgroup>
+        <span>{{person.first_name}} {{person.last_name}}</span>
+        <time :datetime="post.created_at">{{as_created_time}}</time>
+      </hgroup>
     </header>
-    <p v-if="me" itemprop="statement" :contenteditable="editable" @blur="save">{{as_statement}}</p>
-    <p v-else itemprop="statement">{{as_statement}}</p>
-    <ol>
-      <post-as-li v-for="statement in post.statements" :key="statement.id"
-        :post="statement"
-        :person="person"
-        @blur="save" :contenteditable="editable"></post-as-li>
-    </ol>
+    <header v-else>
+      <time>{{as_created_time}}</time>
+    </header>
+    <as-statements v-for="statement in statements" :statement="statement"></as-statements>
   </article>
 </template>
 <script>
-  import post_mixin from '@/mixins/post'
-  import date_mixin from '@/mixins/date'
-  import post_intersection from '@/mixins/post_intersection'
-  import as_li from '@/components/posts/as-li'
+  import as_statment from '@/components/posts/as-statement'
+  import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
-    mixins: [post_mixin, date_mixin, post_intersection],
     components: {
-      'post-as-li': as_li
+      'profile-as-avatar': profile_as_avatar,
+      'as-statment': as_statment
     },
-    methods: {
-      save (event) {
-        this.$emit('modified', this.post)
+    props: {
+      statements: {
+        type: Array,
+        required: true
+      }
+    },
+    computed: {
+      as_created_time() {
+        get_created_at(this.statements[0])
       }
     }
   }
