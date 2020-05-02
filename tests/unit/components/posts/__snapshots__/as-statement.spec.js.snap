@@ -5,7 +5,7 @@ exports[`@/components/posts/as-statement.vue Render a statement 1`] = `
   itemscope="itemscope"
 >
   <p
-    itemprop="what"
+    itemprop="statement"
   >
     9 The way that avatars get processed has been updated. They are brighter, have more contrast, and detail
   </p>
