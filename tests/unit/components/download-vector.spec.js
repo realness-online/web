@@ -15,8 +15,8 @@ const person = {
 }
 describe ('@/components/download-vector', () => {
   it ('Renders link to download svg',  async () => {
-    jest.spyOn(itemid, 'as_object').mockImplementationOnce(_ => Promise.resolve(poster))
-    jest.spyOn(itemid, 'as_object').mockImplementationOnce(_ => Promise.resolve(person))
+    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(poster))
+    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(person))
     const wrapper = shallow(download_vector, {
       propsData: {
         itemid: poster.id

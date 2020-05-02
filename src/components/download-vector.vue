@@ -22,7 +22,7 @@
       }
     },
     async created () {
-      this.vector = await itemid.as_object(this.itemid)
+      this.vector = await itemid.load(this.itemid)
       this.file_name = await this.get_vector_name()
     },
     computed: {
@@ -37,7 +37,7 @@
         const author_id = `/${info[1]}`
         const type = `${info[2]}`
         const time = date_helper.as_day_and_time(Number(info[3]))
-        const creator = await itemid.as_object(author_id)
+        const creator = await itemid.load(author_id)
         const name = `${creator.first_name}_${creator.last_name}`
         return `${name}_${type}_${time}.svg`
       }

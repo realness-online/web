@@ -42,7 +42,7 @@
     },
     methods: {
       async show () {
-        this.actual_poster = await itemid.as_object(this.poster.id)
+        this.actual_poster = await itemid.load(this.poster.id)
       }
     }
   }
