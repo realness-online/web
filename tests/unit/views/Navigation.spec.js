@@ -31,7 +31,7 @@ describe ('@/views/Navigation.vue', () => {
     expect(wrapper.find('[itemprop=posts]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
-  it.only ('Add a post when post-added is emited', async () => {
+  it ('Add a post when post-added is emited', async () => {
     expect(wrapper.vm.days.size).toBe(0)
     wrapper.vm.$emit('post-added', post)
     await flushPromises()

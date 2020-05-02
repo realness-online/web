@@ -21,7 +21,7 @@
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
-  import as_day from '@/components/as_day'
+  import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
   import download_vector from '@/components/download-vector'
   import profile_as_figure from '@/components/profile/as-figure'
