@@ -1,5 +1,4 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import Item from '@/modules/item'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'

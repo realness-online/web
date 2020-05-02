@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import Item from '@/modules/Item'
+import get_item from '@/modules/item'
 import profile_id from '@/helpers/profile'
 import itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
@@ -11,10 +11,10 @@ const hella_posts = fs.readFileSync('./tests/unit/html/hella_posts.html', 'utf8'
 describe ('@/views/Feed.vue', () => {
   let person_spy, posts_spy, mock_person, mock_posts
   beforeEach(() => {
-    mock_posts = Item.get_items(posts)
-    mock_person = Item.get_first_item(person)
-    person_spy = jest.spyOn(itemid, 'as_object').mockImplementation(_ => mock_person)
-    posts_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => mock_posts)
+    mock_posts = get_item(posts).posts
+    mock_person = get_item(person)
+    person_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => mock_person)
+    posts_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => mock_posts)
   })
   it ('Render a feed of a persons friends', async () => {
     const wrapper = shallow(Feed)
@@ -26,7 +26,7 @@ describe ('@/views/Feed.vue', () => {
   })
   it ('Loads another page of data for a person', async () => {
     const wrapper = shallow(Feed)
-    const hella_list = Item.get_items(hella_posts)
+    const hella_list = get_item(hella_posts)
     await flushPromises()
     expect(wrapper.vm.days.size).toBe(5)
     jest.spyOn(itemid, 'load').mockImplementationOnce(_ => {

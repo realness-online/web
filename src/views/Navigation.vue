@@ -18,7 +18,7 @@
   </section>
 </template>
 <script>
-  import { Posts } from '@/mixins/Storage'
+  import { Posts } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'

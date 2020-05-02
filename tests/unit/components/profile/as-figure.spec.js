@@ -1,5 +1,5 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
-import Item from '@/modules/item'
+import get_item from '@/modules/item'
 import VueRouter from 'vue-router'
 import as_figure from '@/components/profile/as-figure'
 const fs = require('fs')
