@@ -22,7 +22,7 @@
   </div>
 </template>
 <script>
-  import { avatars_storage } from '@/persistance/Storage'
+  import { Avatar } from '@/persistance/Storage'
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
@@ -67,7 +67,6 @@
           viewbox: message.data.viewbox
         }
         this.current_avatar = this.avatar
-        avatars_storage.filename = this.avatar.id
         this.working = false
       },
       vectorize_image (image) {
@@ -78,7 +77,7 @@
         this.avatar_changed = false
         this.finished = false
         await this.$nextTick()
-        await avatars_storage.save()
+        new Avatar(this.avatar.id).save()
         this.$emit('new-avatar', this.avatar.id)
         this.avatar = null
         this.finished = true

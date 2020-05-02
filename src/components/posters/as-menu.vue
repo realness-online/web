@@ -21,8 +21,8 @@
 <script>
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
+  import itemid from '@/helpers/itemid'
   import download_vector from '@/components/download-vector'
-  import { events_storage } from '@/persistance/Storage'
   export default {
     components: {
       icon,
@@ -46,7 +46,7 @@
       events: {
         type: Array,
         required: false,
-        default: () => events_storage.as_list()
+        default: async () => await itemid.list(`${this.me}/events`)
       }
     },
     data () {

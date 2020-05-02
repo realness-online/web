@@ -26,7 +26,8 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { events_storage } from '@/persistance/Storage'
+  import itemid from '@/helpers/itemid'
+  import { Events } from '@/persistance/Storage'
   export default {
     components: { icon },
     props: {
@@ -44,10 +45,11 @@
       return {
         main_event: null,
         show: false,
-        events: events_storage.as_list()
+        events: []
       }
     },
-    created () {
+    async created () {
+      this.events = awaititemid.list(`${this.me}/events`)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
       else this.main_event = this.tonight
@@ -98,7 +100,7 @@
           url: this.itemid
         })
         await this.$nextTick()
-        events_storage.save(this.$refs.events)
+        new Events().save(this.$refs.events)
         this.$emit('picker', false)
       },
       async remove () {
@@ -106,7 +108,7 @@
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.url !== this.itemid)
         await this.$nextTick()
-        events_storage.save(this.$refs.events)
+        new Events().save(this.$refs.events)
         this.$emit('picker', false)
       },
       update_date () {

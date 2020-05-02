@@ -29,8 +29,8 @@ export class Me extends Storage {
 export class Relations extends Local(Storage) {
   constructor() { super(`${me}/relations`) }
 }
-export class Posts extends Paged(Cloud(Local(Storage))) {
-  constructor() { super(`${me}/posts`) }
+export class Statements extends Paged(Cloud(Local(Storage))) {
+  constructor() { super(`${me}/statements`) }
 }
 export class Events extends Paged(Cloud(Local(Storage))) {
   constructor() { super(`${me}/events`) }

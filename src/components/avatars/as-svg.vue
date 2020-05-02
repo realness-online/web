@@ -11,7 +11,6 @@
   </svg>
 </template>
 <script>
-  import { avatars_storage } from '@/persistance/Storage'
   import itemid from '@/helpers/itemid'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
@@ -39,8 +38,8 @@
         avatar: null
       }
     },
-    created () {
-      if (this.me) this.avatar = avatars_storage.as_object()
+    async created () {
+      if (this.me) this.avatar = await itemid.load(this.person.avatar)
     },
     computed: {
       id () {

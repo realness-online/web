@@ -15,7 +15,6 @@
     data () {
       return {
         previous: null,
-        activity_storage: new Activity(),
         activity: [],
         info: console.info
       }
@@ -40,7 +39,7 @@
         if (!last_save || this.eight_seconds_ago() > parseInt(last_save)) {
           sessionStorage.setItem('activity-synced', Date.now())
           await this.$nextTick()
-          this.activity_storage.save()
+          new Activity().save()
         } else console.log(this.eight_seconds_ago() - parseInt(last_save))
       },
       async on_error (event) {
@@ -48,7 +47,7 @@
         if (!last_save || this.eight_seconds_ago() > parseInt(last_save)) {
           this.activity.push([event.message, new Date().toISOString()])
           await this.$nextTick()
-          this.activity_storage.save()
+          new Activity().save()
         }
       }
     }

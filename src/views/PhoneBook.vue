@@ -16,7 +16,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
-  import { relations_storage } from '@/persistance/Storage'
+  import { Relations } from '@/persistance/Storage'
   import itemid from '@/helpers/itemid'
   import profile from '@/helpers/profile'
   import signed_in from '@/mixins/signed_in'
@@ -45,8 +45,9 @@
     },
     watch: {
       async relations () {
+        console.info('Saves Relations')
         await this.$nextTick()
-        relations_storage.save()
+        new Relations().save()
       }
     }
   }

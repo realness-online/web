@@ -3,7 +3,6 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
-import Storage, { person_storage, posts_storage } from '@/persistance/Storage'
 import itemid from '@/helpers/itemid'
 const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
@@ -70,7 +69,7 @@ describe ('@/views/Navigation.vue', () => {
           expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
         })
         it ('Profile button is visible when person has posted', () => {
-          jest.spyOn(Storage.prototype, 'as_list').mockImplementation(() => {
+          jest.spyOn(itemid, 'list').mockImplementation(() => {
             return [post]
           })
           const wrapper = shallow(Navigation)

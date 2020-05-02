@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import as_fieldset from '@/components/events/as-fieldset'
-import { events_storage } from '@/persistance/Storage'
+import itemid from '@/helpers/itemid'
 import get_item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -15,19 +15,19 @@ describe ('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
   describe ('Renders', () => {
     it ('a fieldset with the default event', () => {
-      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => [])
+      jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
     it ('a fieldset with an existing event', () => {
-      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => events)
+      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe ('methods:', () => {
     beforeEach(() => {
-      jest.spyOn(events_storage, 'as_list').mockImplementationOnce(() => events)
+      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
     })
     describe ('#show_picker', () => {

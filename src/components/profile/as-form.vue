@@ -48,7 +48,7 @@
   import { parseNumber } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
-  import { person_storage } from '@/persistance/Storage'
+  import itemid from '@/helpers/itemid'
   export default {
     props: ['person'],
     components: {
@@ -100,8 +100,8 @@
         const mobile = this.$el.querySelector('#mobile')
         if (mobile) mobile.disabled = true
       },
-      modified_check () {
-        const me = person_storage.as_object()
+      async modified_check () {
+        const me = await itemid.load(this.me)
         let modified = false
         if (me.id !== this.person.id) modified = true
         if (me.first_name !== this.person.first_name) modified = true

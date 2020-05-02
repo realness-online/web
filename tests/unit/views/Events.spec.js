@@ -28,6 +28,5 @@ describe ('@/views/Events.vue', () => {
     const wrapper = shallow(Events)
     expect(wrapper.element).toMatchSnapshot()
     expect(load).toBeCalled()
-    // const people_in_feed = relations_storage.as_list()
   })
 })
