@@ -9,8 +9,14 @@
     </hgroup>
     <as-days :posters="posters" :statements="statements">
       <template v-slot:item="{ item }">
-        <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-        <thought-as-article v-else :item="item" :verbose="true" @viewed="statement_viewed"></thought-as-article>
+        <poster-as-figure v-if="item.type === 'posters'"
+                          :poster="item">
+                          </poster-as-figure>
+        <thought-as-article v-else
+                            :item="item"
+                            :verbose="true"
+                            @viewed="statement_viewed">
+                            </thought-as-article>
       </template>
     </as-days>
   </section>

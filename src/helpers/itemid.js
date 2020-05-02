@@ -81,7 +81,6 @@ export function as_filename (itemid) {
   else return `${filename}/index.html`
 }
 export function as_path_parts (itemid) {
-  console.log(itemid)
   const path = itemid.split('/')
   if (~path[0].length) path.shift()
   return path
