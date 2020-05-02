@@ -28,15 +28,17 @@ export function get_itemprops (item) {
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
-    const name = prop.getAttribute('itemprop')
     let value
-    if (prop.hasAttribute('itemscope')) value = make_item(prop)
-    else value = itemprop_value(prop)
-    let has_value
-    if (has_value = props[name]) {
-      if (Array.isArray(has_value)) has_value.push(value)
-      else props[name] = [has_value, value]
-    } else props[name] = value
+    if (prop.closest('[itemscope]').isSameNode(item)) value = itemprop_value(prop)
+    else if (prop.hasAttribute('itemscope')) value = make_item(prop)
+    if (value) {
+      const name = prop.getAttribute('itemprop')
+      let has_value
+      if (has_value = props[name]) {
+        if (Array.isArray(has_value)) has_value.push(value)
+        else props[name] = [has_value, value]
+      } else props[name] = value
+    }
   })
   switch (item.tagName.toLowerCase()) {
     case 'svg':
