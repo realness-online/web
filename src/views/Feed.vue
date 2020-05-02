@@ -8,8 +8,10 @@
       <h1>Feed</h1>
     </hgroup>
     <as-days :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" :verbose="true" @viewed="statement_viewed"></thought-as-article>
+      <template v-slot:item="{ item }">
+        <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
+        <thought-as-article v-else :item="item" :verbose="true" @viewed="statement_viewed"></thought-as-article>
+      </template>
     </as-days>
   </section>
 </template>
@@ -32,7 +34,9 @@
     },
     data () {
       return {
-        people: []
+        people: [],
+        statements: [],
+        posters: []
       }
     },
     async created () {
@@ -42,15 +46,17 @@
       await this.fill_feed()
       console.timeEnd('feed-load')
     },
-    async fill_feed() {
-      await Promise.all(this.people.map(async (relation) => {
-        const [statements, posters] = await Promise.all([
-          itemid.list(`${relation.id}/statements`, this.me),
-          itemid.as_directory(`${relation.id}/posters`, this.me)
-        ])
-        this.statements = [...statements, ...this.statements]
-        this.posters = [...posters, ...this.posters]
-      }))
+    methods: {
+      async fill_feed() {
+        await Promise.all(this.people.map(async (relation) => {
+          const [statements, posters] = await Promise.all([
+            itemid.list(`${relation.id}/statements`, this.me),
+            itemid.as_directory(`${relation.id}/posters`, this.me)
+          ])
+          this.statements = [...statements, ...this.statements]
+          this.posters = [...posters.items, ...this.posters]
+        }))
+      }
     }
   }
 </script>
