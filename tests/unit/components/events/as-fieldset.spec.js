@@ -8,7 +8,7 @@ const poster = get_item(poster_html)
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01', new Date().getTimezoneOffset())
 const events = [{
-  id: new Date(2020, 1, 1).getTime(),
+  id: `/+16282281824/events/${new Date(2020, 1, 1).getTime()}`,
   url: poster.id
 }]
 describe ('@/compontent/events/as-fieldset.vue', () => {

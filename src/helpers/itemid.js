@@ -93,8 +93,7 @@ export function as_type (itemid) {
 }
 export function as_created_at (itemid) {
   const path = as_path_parts(itemid)
-  if (path[2]) return path[2]
-  else return null
+  return parseInt(path[2])
 }
 export function as_query_id (itemid) {
   return itemid.substring(2).replace('/', '-').replace('/', '-')

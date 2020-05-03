@@ -71,7 +71,6 @@ describe ('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
     it ('When is_me is true should go to the account page', () => {
-      jest.spyOn(Item, 'get_first_item').mockImplementation(() => person)
       wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')

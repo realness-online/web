@@ -1,6 +1,8 @@
 import { as_created_at } from '@/helpers/itemid'
+import { older_first } from '@/helpers/older_first'
 export const thirteen_minutes = 1000 * 60 * 13
 export function as_thoughts (statements) {
+  statements.sort(older_first)
   const thoughts = []
   while (statements.length) {
     const statement = statements.shift()
@@ -15,9 +17,9 @@ export function as_thoughts (statements) {
 export function is_train_of_thought (thot, statements) {
   const next_statement = statements[0]
   if (next_statement) {
-    let last_statement = thot[thot.index -1]
-    const last = Date.parse(as_created_at(last_statement.id))
-    const next = Date.parse(as_created_at(next_statement.id))
+    let last_statement = thot[thot.length - 1]
+    const last = as_created_at(last_statement.id)
+    const next = as_created_at(next_statement.id)
     const difference = next - last
     if (difference < thirteen_minutes) return true
     else return false
