@@ -1,5 +1,5 @@
 import { as_created_at } from '@/helpers/itemid'
-import { older_first } from '@/helpers/older_first'
+import { older_first } from '@/modules/sorting'
 export const thirteen_minutes = 1000 * 60 * 13
 export function as_thoughts (statements) {
   statements.sort(older_first)

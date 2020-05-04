@@ -2,6 +2,7 @@
 
 exports[`@/components/statements/as-div.vue Render a statement 1`] = `
 <div
+  itemid="/+16282281824/statements/1559097345025"
   itemscope="itemscope"
 >
   <p

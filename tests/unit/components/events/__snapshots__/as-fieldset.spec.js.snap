@@ -7,24 +7,12 @@ exports[`@/compontent/events/as-fieldset.vue Renders a fieldset with an existing
   <ol
     hidden="hidden"
     itemprop="events"
-  >
-    <li
-      itemid="1580544000000"
-      itemscope="itemscope"
-      itemtype="/events"
-    >
-      <link
-        href="/+16282281824/posters/559666932867"
-        itemprop="url"
-        rel="icon"
-      />
-    </li>
-  </ol>
+  />
    
   <label
     for="day"
   >
-    Saturday, February 1
+    Tuesday, December 31
   </label>
    
   <input

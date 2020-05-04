@@ -6,7 +6,7 @@ import Local from '@/persistance/Local'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
 import profile from '@/helpers/profile'
-const me = localStorage.getItem('me')
+
 export default class Storage {
   constructor (itemid) {
     this.id = itemid
@@ -16,9 +16,11 @@ export default class Storage {
 }
 export class Me extends Storage {
   constructor () {
+    const me = localStorage.getItem('me')
     if (me) return super(me)
-    if (me = firebase.auth().currentUser) {
-      const id = profile.from_e64(me.phoneNumber)
+    let user
+    if (user = firebase.auth().currentUser) {
+      const id = profile.from_e64(user.phoneNumber)
       localStorage.setItem('me', id)
       return super(id)
     }
@@ -27,16 +29,18 @@ export class Me extends Storage {
 }
 // export class Person extends Local(Storage) {}
 export class Relations extends Local(Storage) {
-  constructor() { super(`${me}/relations`) }
+  constructor() {
+    super(`${localStorage.getItem('me')}/relations`)
+  }
 }
 export class Statements extends Paged(Cloud(Local(Storage))) {
-  constructor() { super(`${me}/statements`) }
+  constructor() { super(`${localStorage.getItem('me')}/statements`) }
 }
 export class Events extends Paged(Cloud(Local(Storage))) {
-  constructor() { super(`${me}/events`) }
+  constructor() { super(`${localStorage.getItem('me')}/events`) }
 }
 export class Activity extends Cloud(Local(Storage)) {
-  constructor() { super(`${me}/activity`) }
+  constructor() { super(`${localStorage.getItem('me')}/activity`) }
 }
 export class History extends Paged(Cloud(Local(Storage))) {}
 export class Avatar extends Cloud(Local(Storage)) {}
