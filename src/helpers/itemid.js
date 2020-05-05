@@ -4,9 +4,8 @@ import 'firebase/auth'
 import get_item from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
-const myself = localStorage.getItem('me')
 
-export async function load (itemid, me = myself) {
+export async function load (itemid, me = localStorage.getItem('me')) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
   let item
@@ -19,12 +18,12 @@ export async function load (itemid, me = myself) {
   else if (item = await load_from_network(itemid, me)) return item
   return null
 }
-export async function list (itemid, me = myself) {
+export async function list (itemid, me = localStorage.getItem('me')) {
   const type = as_type(itemid)
   const list = await load(itemid, me)
   return list[type]
 }
-export async function load_from_network (itemid, me = myself) {
+export async function load_from_network (itemid, me = localStorage.getItem('me')) {
   const url = await as_download_url(itemid, me)
   if (url) {
     console.info('loads a storage item')
@@ -33,7 +32,7 @@ export async function load_from_network (itemid, me = myself) {
     return get_item(server_text, itemid)
   } else return null
 }
-export async function as_directory (itemid, me = myself) {
+export async function as_directory (itemid, me = localStorage.getItem('me')) {
   const path = as_directory_path(itemid)
   const cached = await get(path)
   if (cached) return cached
@@ -48,7 +47,7 @@ export async function as_directory (itemid, me = myself) {
     return meta
   } else return null
 }
-export async function as_download_url (itemid, me = myself) {
+export async function as_download_url (itemid, me = localStorage.getItem('me')) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
