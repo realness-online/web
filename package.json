@@ -8,12 +8,17 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build:staging": "vue-cli-service build --mode staging",
+    "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
     "test:e2e": "vue-cli-service test:e2e",
-    "lint": "vue-cli-service lint",
     "deploy": "firebase use production && yarn build && firebase deploy --only hosting,storage",
-    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage"
+    "deploy:staging": "firebase use staging && yarn build:staging && firebase deploy --only hosting,storage",
+    "functions:serve": "firebase serve --only functions",
+    "functions:shell": "firebase functions:shell",
+    "functions:start": "npm run shell",
+    "functions:deploy": "firebase deploy --only functions",
+    "functions:logs": "firebase functions:log"
   },
   "dependencies": {
     "@realness.online/web-workers": "0.3.8",
@@ -85,7 +90,7 @@
   "jest": {
     "notify": false,
     "notifyMode": "change",
-    "bail": 0,
+    "bail": 1,
     "verbose": false,
     "collectCoverage": false,
     "restoreMocks": false,

@@ -11,6 +11,7 @@ describe ('@/components/as-days', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   it ('Renders a list of statements sorted into the days they were created', () => {
+    console.log(person.statements.length)
     const wrapper = shallow(as_days, { propsData: { statements: person.statements } })
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.vm.days.keys.length).toBe(4)

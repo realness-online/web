@@ -56,7 +56,12 @@
   },
   "functions": {
     "predeploy": [
-      "npm run lint"
-    ]
+      "yarn lint"
+    ],
+    "emulators": {
+      "functions": {
+        "port": 5001
+      }
+    }
   }
 }

@@ -24,7 +24,6 @@ describe ('@/persistance/Paged.js', () => {
     it ('Exists', () => {
       expect(paged.sync_list).toBeDefined()
     })
-
     it ('Syncs statements from server to local storage', async () => {
       expect(get_item(statements).statements.length).toBe(9)
       expect(get_item(hella_statements).statements.length).toBe(79)

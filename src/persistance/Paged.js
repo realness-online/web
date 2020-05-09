@@ -11,6 +11,7 @@ import profile from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest_at(elements, prop_name) {
   const list = get_itemprops(elements)
+  console.log(list);
   const props = list[prop_name]
   const oldest = props[props.length -1]
   return Date.parse(oldest.created_at)
