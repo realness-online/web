@@ -55,9 +55,7 @@
     ]
   },
   "functions": {
-    "predeploy": [
-      "yarn lint"
-    ],
+    
     "emulators": {
       "functions": {
         "port": 5001

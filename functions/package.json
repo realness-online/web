@@ -13,13 +13,8 @@
     "node": "8"
   },
   "dependencies": {
-    "@google-cloud/storage": "^4.7.0",
     "firebase-admin": "^8.11.0",
     "firebase-functions": "^3.6.1"
-  },
-  "devDependencies": {
-    "jest": "^26.0.1",
-    "firebase-functions-test": "^0.1.6"
   },
   "jest": {
     "moduleNameMapper": {
