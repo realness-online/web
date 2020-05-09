@@ -2,7 +2,6 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import Storage, { Me } from '@/persistance/Storage'
 const fs = require('fs')
-const preferences = fs.readFileSync('./tests/unit/html/preferences.html', 'utf8')
 
 describe('@/persistance/Storage.js', () => {
   beforeEach(() => {

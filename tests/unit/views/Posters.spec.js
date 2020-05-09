@@ -1,5 +1,4 @@
 import { shallow } from 'vue-test-utils'
-import { Poster } from '@/persistance/Storage'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
 import itemid from '@/helpers/itemid'

@@ -5,7 +5,6 @@ import { as_kilobytes } from '@/persistance/Paged'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync('./tests/unit/html/hella_statements.html', 'utf8')
-const fetch = require('jest-fetch-mock')
 describe('@/persistance/Paged.js', () => {
   let paged
   beforeEach(() => {
@@ -58,11 +57,10 @@ describe('@/persistance/Paged.js', () => {
     })
   })
   describe('#optimize', () => {
-    let load_spy
     beforeEach(() => {
       localStorage.setItem(paged.id, hella_statements)
-      load_spy = jest.spyOn(itemid, 'load')
-                     .mockImplementation(() => get_item(hella_statements))
+      jest.spyOn(itemid, 'load')
+          .mockImplementation(() => get_item(hella_statements))
     })
     it('Exists', () => {
       expect(paged.optimize).toBeDefined()

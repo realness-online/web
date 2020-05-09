@@ -1,12 +1,7 @@
 import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
 import itemid from '@/helpers/itemid'
-import { Relations as buddies } from '@/persistance/Storage'
 describe('@/views/Relations.vue', () => {
-  const me = {
-    id: '/+16282281824',
-    type: 'person'
-  }
   const joe_friday = {
     id: '/+14151234356',
     type: 'person',

@@ -1,12 +1,9 @@
 import { shallow } from 'vue-test-utils'
 import get_item from '@/modules/item'
-import profile_id from '@/helpers/profile'
 import itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
-import flushPromises from 'flush-promises'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const hella_statements = fs.readFileSync('./tests/unit/html/hella_statements.html', 'utf8')
 describe('@/views/Feed.vue', () => {
   let relations_spy, statements_spy
   beforeEach(() => {

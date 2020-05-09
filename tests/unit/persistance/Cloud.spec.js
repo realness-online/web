@@ -4,7 +4,6 @@ import Local from '@/persistance/Local'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import flushPromises from 'flush-promises'
 import { del } from 'idb-keyval'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
