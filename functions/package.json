@@ -1,6 +1,7 @@
 {
   "name": "realness.online.functions",
   "description": "Functions for realness.online",
+  "license": "UNLICENSED",
   "scripts": {
     "functions:serve": "firebase serve --only functions",
     "functions:shell": "firebase functions:shell",
