@@ -33,7 +33,7 @@
         relations: []
       }
     },
-    async created() {
+    async created () {
       this.relations = await itemid.list(`${this.me}/relations`)
     },
     methods: {

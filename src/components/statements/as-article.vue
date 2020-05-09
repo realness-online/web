@@ -34,19 +34,19 @@
         default: false
       }
     },
-    data() {
+    data () {
       return {
         author: {}
       }
     },
-    async created() {
+    async created () {
       if (this.verbose) {
         const author_id = itemid.get_author(this.statement.id)
         this.author = await itemid.load(author_id)
       }
     },
     computed: {
-      thought_starts_at() {
+      thought_starts_at () {
         return date_helper.as_time(get_created_at(this.statements[0].id))
       }
     }

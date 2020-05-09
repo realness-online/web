@@ -4,14 +4,14 @@ import get_item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
-describe ('@/components/posters/as-svg.vue', () => {
+describe('@/components/posters/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(as_svg, {
       propsData: { itemid: poster.id }
     })
   })
-  it ('Render a poster', () => {
+  it('Render a poster', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
 })

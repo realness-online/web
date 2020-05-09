@@ -48,7 +48,7 @@
       }
     },
     async created () {
-      console.info(`Views account page`)
+      console.info('Views account page')
       if (this.signed_in) {
         localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
       }

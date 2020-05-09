@@ -4,7 +4,7 @@ Vue.config.devtools = false
 require('fake-indexeddb/auto')
 require('jest-fetch-mock').enableMocks()
 Vue.mixin({
-  data() {
+  data () {
     return {
       me: localStorage.getItem('me')
     }

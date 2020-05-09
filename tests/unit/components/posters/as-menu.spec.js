@@ -10,16 +10,16 @@ const events = [{
   id: new Date(2020, 1, 1).getTime(),
   url: poster.id
 }]
-describe ('@/compontent/posters/as-menu.vue', () => {
+describe('@/compontent/posters/as-menu.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallow(as_menu, { propsData: { itemid: poster.id } })
   })
-  describe ('Renders', () => {
-    it ('a poster menu', () => {
+  describe('Renders', () => {
+    it('a poster menu', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it ('a poster menu with an event', () => {
+    it('a poster menu with an event', () => {
       wrapper.setProps({ events })
     })
   })

@@ -2,10 +2,10 @@ import { shallow } from 'vue-test-utils'
 import Relations from '@/views/Relations'
 import itemid from '@/helpers/itemid'
 import { Relations as buddies } from '@/persistance/Storage'
-describe ('@/views/Relations.vue', () => {
+describe('@/views/Relations.vue', () => {
   const me = {
-    id: "/+16282281824",
-    type: "person"
+    id: '/+16282281824',
+    type: 'person'
   }
   const joe_friday = {
     id: '/+14151234356',
@@ -13,10 +13,10 @@ describe ('@/views/Relations.vue', () => {
     first_name: 'Joe',
     last_name: 'Friday'
   }
-  it ('Render relationship information', async () => {
+  it('Render relationship information', async () => {
     const my = {
-      id: "/+16282281824/relations",
-      type: "relations",
+      id: '/+16282281824/relations',
+      type: 'relations',
       relations: [{ id: '/+14151234356' }]
     }
     const load_relations = jest.spyOn(itemid, 'load')

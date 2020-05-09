@@ -13,7 +13,7 @@ const me = {
   last_name: 'Fryxell',
   id: '/+16282281824'
 }
-describe ('@/views/Account.vue', () => {
+describe('@/views/Account.vue', () => {
   let wrapper, load_spy
   beforeEach(() => {
     const onAuthStateChanged = jest.fn(state_changed => {
@@ -25,13 +25,13 @@ describe ('@/views/Account.vue', () => {
     load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
     wrapper = shallow(Account)
   })
-  it ('Renders account information', async () => {
+  it('Renders account information', async () => {
     await flushPromises()
     expect(load_spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe ('#save_me', () => {
-    it ('Saves a user', async () => {
+  describe('#save_me', () => {
+    it('Saves a user', async () => {
       const spy = jest.spyOn(Me, 'save').mockImplementation(_ => {
         Promise.resolve('spy')
       })

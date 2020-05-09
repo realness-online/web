@@ -3,7 +3,7 @@ import Local from '@/persistance/Local'
 const fs = require('fs')
 const preferences = fs.readFileSync('./tests/unit/html/preferences.html', 'utf8')
 
-describe ('@/persistance/Local.js', () => {
+describe('@/persistance/Local.js', () => {
   class Preferences extends Local(Storage) {}
   let local
   beforeEach(() => {
@@ -13,15 +13,15 @@ describe ('@/persistance/Local.js', () => {
     jest.clearAllMocks()
     localStorage.clear()
   })
-  describe ('#save', () => {
-    it ('Exists', () => {
+  describe('#save', () => {
+    it('Exists', () => {
       expect(local.save).toBeDefined()
     })
-    it ('Saves items locally and on the server', () => {
+    it('Saves items locally and on the server', () => {
       local.save(preferences)
       expect(localStorage.setItem).toBeCalled()
     })
-    it ('Only saves if there are items to save', () => {
+    it('Only saves if there are items to save', () => {
       local.save()
       expect(localStorage.setItem).not.toBeCalled()
     })

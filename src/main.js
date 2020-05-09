@@ -4,7 +4,7 @@ import router from './router'
 import './register_service_worker'
 Vue.config.productionTip = false
 Vue.mixin({
-  data() {
+  data () {
     return {
       me: localStorage.getItem('me')
     }

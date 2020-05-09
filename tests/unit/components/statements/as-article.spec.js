@@ -23,14 +23,14 @@ const oldest_statement = {
   id: '/+14151234356/2019-06-24T20:52:56.031Z',
   statements: []
 }
-describe ('@/components/statements/as-article.vue', () => {
-  it ('Render a statement as an article element', async () => {
+describe('@/components/statements/as-article.vue', () => {
+  it('Render a statement as an article element', async () => {
     const wrapper = shallow(as_article, { propsData: { statement, person } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()
   })
-  it ('Sets an observer if it is the oldest statement', () => {
+  it('Sets an observer if it is the oldest statement', () => {
     jest.spyOn(itemid, 'list').mockImplementation(_ => {
       return get_item(statements)
     })
@@ -39,7 +39,7 @@ describe ('@/components/statements/as-article.vue', () => {
     expect(wrapper.vm.i_am_oldest).toBe(true)
     person.oldest_statement = undefined
   })
-  it ('Knows when it is not the oldest statement', () => {
+  it('Knows when it is not the oldest statement', () => {
     jest.spyOn(itemid, 'list').mockImplementation(_ => {
       return get_item(statements)
     })
@@ -48,7 +48,7 @@ describe ('@/components/statements/as-article.vue', () => {
     expect(wrapper.vm.i_am_oldest).toBe(false)
     person.oldest_statement = undefined
   })
-  it ('Triggers an event if the article is observed', () => {
+  it('Triggers an event if the article is observed', () => {
     const wrapper = shallow(as_article, { propsData: { statement, person } })
     const entries = [{ isIntersecting: true }]
     wrapper.vm.end_of_articles(entries)

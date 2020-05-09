@@ -53,7 +53,7 @@
       console.timeEnd('feed-load')
     },
     methods: {
-      async fill_feed() {
+      async fill_feed () {
         await Promise.all(this.people.map(async (relation) => {
           const [statements, posters] = await Promise.all([
             itemid.list(`${relation.id}/statements`, this.me),

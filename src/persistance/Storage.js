@@ -29,18 +29,18 @@ export class Me extends Storage {
 }
 // export class Person extends Local(Storage) {}
 export class Relations extends Local(Storage) {
-  constructor() {
+  constructor () {
     super(`${localStorage.getItem('me')}/relations`)
   }
 }
 export class Statements extends Paged(Cloud(Local(Storage))) {
-  constructor() { super(`${localStorage.getItem('me')}/statements`) }
+  constructor () { super(`${localStorage.getItem('me')}/statements`) }
 }
 export class Events extends Paged(Cloud(Local(Storage))) {
-  constructor() { super(`${localStorage.getItem('me')}/events`) }
+  constructor () { super(`${localStorage.getItem('me')}/events`) }
 }
 export class Activity extends Cloud(Local(Storage)) {
-  constructor() { super(`${localStorage.getItem('me')}/activity`) }
+  constructor () { super(`${localStorage.getItem('me')}/activity`) }
 }
 export class History extends Paged(Cloud(Local(Storage))) {}
 export class Avatar extends Cloud(Local(Storage)) {}

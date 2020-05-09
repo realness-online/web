@@ -17,7 +17,7 @@ export function as_thoughts (statements) {
 export function is_train_of_thought (thot, statements) {
   const next_statement = statements[0]
   if (next_statement) {
-    let last_statement = thot[thot.length - 1]
+    const last_statement = thot[thot.length - 1]
     const last = as_created_at(last_statement.id)
     const next = as_created_at(next_statement.id)
     const difference = next - last

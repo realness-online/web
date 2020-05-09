@@ -44,7 +44,7 @@
       }
     },
     async created () {
-      console.info(`uses the navigation`)
+      console.info('uses the navigation')
       const [my, statements, relations] = await Promise.all([
         itemid.load(`${this.me}`),
         itemid.list(`${this.me}/statements`),

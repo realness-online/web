@@ -29,9 +29,10 @@
   import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
   export default {
-    mixins: [ signed_in ],
+    mixins: [signed_in],
     components: {
-      avatar, icon,
+      avatar,
+icon,
       'profile-as-figure': profile_as_figure,
       'download-vector': download_vector,
       'logo-as-link': logo_as_link,

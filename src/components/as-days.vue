@@ -40,13 +40,13 @@
         default: () => []
       }
     },
-    data() {
+    data () {
       return {
         working: true,
         days: new Map()
       }
     },
-    created() {
+    created () {
       as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
       this.posters.forEach(poster => this.insert_into_day(poster))
       this.working = false
@@ -70,7 +70,7 @@
         if (date === this.today_as_date) return true
         else return false
       },
-      as_day(date) {
+      as_day (date) {
         return date_helper.as_day(date)
       }
     }

@@ -1,16 +1,16 @@
 import * as firebase from 'firebase/app'
-function auth() {
+function auth () {
   return {
     currentUser: { phoneNumber: '+16282281824' },
-    onAuthStateChanged: jest.fn(state_changed => state_changed()),
+    onAuthStateChanged: jest.fn(state_changed => state_changed())
   }
 }
 firebase.auth = auth
 firebase.auth.RecaptchaVerifier = class {
-  constructor() {
+  constructor () {
     // console.log('RecaptchaVerifier')
   }
-  verify() {
+  verify () {
     // console.log('RecaptchaVerifier.verify');
   }
 }

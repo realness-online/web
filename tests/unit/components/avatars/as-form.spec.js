@@ -13,7 +13,7 @@ const person = {
   id: '/+14151234356',
   avatar: 'avatars/1578929551564'
 }
-describe ('@/components/avatars/as-form.vue', () => {
+describe('@/components/avatars/as-form.vue', () => {
   let wrapper
   beforeEach(() => {
     const onAuthStateChanged = jest.fn(state_changed => {
@@ -26,12 +26,12 @@ describe ('@/components/avatars/as-form.vue', () => {
       propsData: { person }
     })
   })
-  it ('Render avatar manager', () => {
+  it('Render avatar manager', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe ('methods', () => {
-    describe ('#open_camera', () => {
-      it ('Should open the file dialog', () => {
+  describe('methods', () => {
+    describe('#open_camera', () => {
+      it('Should open the file dialog', () => {
         // wrapper.setProps({ view_avatar: true })
         const mock_click = jest.fn()
         wrapper.vm.$refs.uploader.click = mock_click
@@ -39,8 +39,8 @@ describe ('@/components/avatars/as-form.vue', () => {
         expect(mock_click).toBeCalled()
       })
     })
-    describe ('#accept_new_avatar', () => {
-      it ('Should update the avatar', async () => {
+    describe('#accept_new_avatar', () => {
+      it('Should update the avatar', async () => {
         const save_spy = jest.fn(() => Promise.resolve())
         jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
         wrapper.setData({
@@ -54,7 +54,7 @@ describe ('@/components/avatars/as-form.vue', () => {
         expect(wrapper.vm.avatar_changed).toBe(false)
         expect(save_spy).toBeCalled()
       })
-      it ('Should trigger change event on file input', () => {
+      it('Should trigger change event on file input', () => {
         // wrapper.setProps({ view_avatar: true })
         const input = wrapper.find('input[type=file]')
         expect(input.exists()).toBe(true)
@@ -63,15 +63,15 @@ describe ('@/components/avatars/as-form.vue', () => {
         // currently no way to test file inputs. let's trigger the event anyway
       })
     })
-    describe ('#select_photo', () => {
-      it ('Change file input to attach image rahter than capture', () => {
+    describe('#select_photo', () => {
+      it('Change file input to attach image rahter than capture', () => {
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(true)
         wrapper.vm.select_photo()
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(false)
       })
     })
-    describe ('#vectorize_image', () => {
-      it ('Should vectorize a jpg', () => {
+    describe('#vectorize_image', () => {
+      it('Should vectorize a jpg', () => {
         const post_message_spy = jest.fn()
         wrapper.setData({
           worker: {

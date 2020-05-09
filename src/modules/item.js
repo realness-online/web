@@ -8,14 +8,14 @@ export function get_item (elements, itemid) {
   if (!elements) return []
   if (typeof elements === 'string') elements = hydrate(elements)
   let main_element = elements.querySelector(`[itemid="${itemid}"]`)
-  if (!main_element) main_element = elements.querySelector(`[itemid]`)
+  if (!main_element) main_element = elements.querySelector('[itemid]')
   if (!main_element) return null
   return make_item(main_element)
 }
 export function make_item (element) {
   return { ...get_meta(element), ...get_itemprops(element) }
 }
-export function get_meta(item) {
+export function get_meta (item) {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')

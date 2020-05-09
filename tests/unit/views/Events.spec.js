@@ -16,15 +16,14 @@ const relations = {
     { id: '/+15104512765' }
   ]
 }
-describe ('@/views/Events.vue', () => {
+describe('@/views/Events.vue', () => {
   let load
   beforeEach(() => {
     load = jest.spyOn(itemid, 'load')
                .mockImplementationOnce(() => relations)
                .mockImplementation(() => events)
-
   })
-  it ('Renders list of upcoming events', () => {
+  it('Renders list of upcoming events', () => {
     const wrapper = shallow(Events)
     expect(wrapper.element).toMatchSnapshot()
     expect(load).toBeCalled()

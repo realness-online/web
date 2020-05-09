@@ -7,8 +7,8 @@
   export default {
     props: { people: Array },
     computed: {
-      itemid() {
-        return `${this.me}/relations`        
+      itemid () {
+        return `${this.me}/relations`
       }
     }
   }

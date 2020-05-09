@@ -13,8 +13,8 @@ const person = {
   mobile: '4151234356',
   avatar: 'avatars/5553338945763'
 }
-describe ('@/components/download-vector', () => {
-  it ('Renders link to download svg',  async () => {
+describe('@/components/download-vector', () => {
+  it('Renders link to download svg', async () => {
     jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(poster))
     jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(person))
     const wrapper = shallow(download_vector, {

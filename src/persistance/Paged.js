@@ -2,18 +2,20 @@
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
-import { hydrate,
+import {
+ hydrate,
         get_item,
         get_type,
-        get_itemprops } from '@/modules/item'
+        get_itemprops
+} from '@/modules/item'
 import { load, load_from_network } from '@/helpers/itemid'
 import profile from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
-function get_oldest_at(elements, prop_name) {
+function get_oldest_at (elements, prop_name) {
   const list = get_itemprops(elements)
-  console.log(list);
+  console.log(list)
   const props = list[prop_name]
-  const oldest = props[props.length -1]
+  const oldest = props[props.length - 1]
   return Date.parse(oldest.created_at)
 }
 function is_fat (items, prop_name) {
@@ -38,7 +40,7 @@ const Paged = (superclass) => class extends superclass {
         const new_sibling = offload.childNodes[0] || null
         offload.insertBefore(current.removeChild(fatty), new_sibling)
       }
-      let div = document.createElement(current.nodeName)
+      const div = document.createElement(current.nodeName)
       div.setAttribute('itemscope', '')
       div.setAttribute('itemid', this.id)
       div.appendChild(offload)
@@ -49,7 +51,7 @@ const Paged = (superclass) => class extends superclass {
     }
   }
   async sync_list () {
-    let items, oldest_at = 0 // the larger the number the more recent it is
+    let items; let oldest_at = 0 // the larger the number the more recent it is
     const cloud = (await load_from_network(this.id))[this.type]
     const local = (await load(this.id))[this.type]
     const length = cloud.length
