@@ -52,7 +52,7 @@
       const [person, statements, posters] = await Promise.all([
         itemid.load(id),
         itemid.list(`${id}/statements`),
-        itemid.directory(`${id}/posters`)
+        itemid.as_directory(`${id}/posters`)
       ])
       this.person = person
       this.statements = as_thoughts(statements)
