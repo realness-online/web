@@ -24,7 +24,7 @@ export default new Router({
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/:phone_number', component: Profile, name: 'view-profile' },
-    { path: '/admin', component: Admin }
+    { path: '/admin', component: Admin },
+    { path: '/:phone_number', component: Profile, name: 'view-profile' }
   ]
 })

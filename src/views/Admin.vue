@@ -1,16 +1,17 @@
 <template lang="html">
-  <section>
+  <section class="page">
     <header>
       <h1>Migrations</h1>
     </header>
   </section>
-
 </template>
-
 <script>
-export default {
-}
+  export default {
+    created () {
+      console.log('I am running')
+    }
+  }
 </script>
+<style lang="stylus">
 
-<style lang="css" scoped>
 </style>
