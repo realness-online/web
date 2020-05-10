@@ -7,7 +7,7 @@
       <header>
         <h4>{{as_day(date)}}</h4>
       </header>
-      <slot v-for="item in day" v-slot="{ item }"></slot>
+      <slot v-for="item in day" :item="item"></slot>
     </article>
   </section>
 </template>
