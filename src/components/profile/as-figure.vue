@@ -13,8 +13,6 @@
   import profile from '@/helpers/profile'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
   export default {
     components: {
       'as-svg': as_svg,

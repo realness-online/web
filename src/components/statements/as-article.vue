@@ -11,10 +11,11 @@
       </hgroup>
     </header>
     <header v-else><time>{{thought_starts_at}}</time></header>
-    <as-statement v-for="statement in statements" :statement="statement"></as-statement>
+    <as-statement v-for="statement in statements" :key='statement.id' :statement="statement"></as-statement>
   </article>
 </template>
 <script>
+  import { load, as_author, as_created_at } from '@/helpers/itemid'
   import date_helper from '@/helpers/date'
   import as_statement from '@/components/statements/as-div'
   import profile_as_avatar from '@/components/avatars/as-svg'
@@ -41,13 +42,12 @@
     },
     async created () {
       if (this.verbose) {
-        const author_id = itemid.get_author(this.statement.id)
-        this.author = await itemid.load(author_id)
+        this.author = await load(as_author(this.statement.id))
       }
     },
     computed: {
       thought_starts_at () {
-        return date_helper.as_time(get_created_at(this.statements[0].id))
+        return date_helper.as_time(as_created_at(this.statements[0].id))
       }
     }
   }

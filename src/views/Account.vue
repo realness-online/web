@@ -22,7 +22,6 @@
   import 'firebase/auth'
   import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
-  import as_thoughts from '@/helpers/thoughts'
   import { Statements, Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
@@ -56,7 +55,7 @@
     },
     methods: {
       async new_avatar (avatar_url) {
-        me = new Me()
+        const me = new Me()
         me.avatar = avatar_url
         await this.$nextTick()
         me.save()

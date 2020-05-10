@@ -16,15 +16,13 @@ export default class Storage {
 }
 export class Me extends Storage {
   constructor () {
-    const me = localStorage.getItem('me')
-    if (me) return super(me)
-    let user
-    if (user = firebase.auth().currentUser) {
-      const id = profile.from_e64(user.phoneNumber)
-      localStorage.setItem('me', id)
-      return super(id)
+    let me = localStorage.getItem('me')
+    if (!me) {
+      const user = firebase.auth().currentUser
+      if (user) localStorage.setItem('me', profile.from_e64(user.phoneNumber))
+      else me = '/+'
     }
-    return { type: 'person' } // just a local user
+    super(me)
   }
 }
 // export class Person extends Local(Storage) {}

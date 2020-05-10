@@ -21,7 +21,6 @@
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
-  import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
   import download_vector from '@/components/download-vector'
   import profile_as_figure from '@/components/profile/as-figure'
@@ -32,7 +31,7 @@
     mixins: [signed_in],
     components: {
       avatar,
-icon,
+      icon,
       'profile-as-figure': profile_as_figure,
       'download-vector': download_vector,
       'logo-as-link': logo_as_link,

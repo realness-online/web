@@ -9,14 +9,15 @@ export async function load (itemid, me = localStorage.getItem('me')) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
   let item
-  const mine = ~itemid.indexOf(me)
-  if (mine) {
+  if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
   }
-  if (item = get_item(await get(itemid))) return item
-  else if (item = await load_from_network(itemid, me)) return item
-  return null
+  item = get_item(await get(itemid))
+  if (item) return item
+  item = await load_from_network(itemid, me)
+  if (item) return item
+  else return null
 }
 export async function list (itemid, me = localStorage.getItem('me')) {
   const type = as_type(itemid)
@@ -83,6 +84,11 @@ export function as_path_parts (itemid) {
   const path = itemid.split('/')
   if (~path[0].length) path.shift()
   return path
+}
+export function as_author (itemid) {
+  const path = as_path_parts(itemid)
+  if (path[1]) return path[1]
+  else return null
 }
 export function as_type (itemid) {
   const path = as_path_parts(itemid)
