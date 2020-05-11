@@ -5,7 +5,7 @@ export function hydrate (item_as_string) {
   } else return null
 }
 export function get_item (elements, itemid) {
-  if (!elements) return []
+  if (!elements) return null
   if (typeof elements === 'string') elements = hydrate(elements)
   let main_element = elements.querySelector(`[itemid="${itemid}"]`)
   if (!main_element) main_element = elements.querySelector('[itemid]')
