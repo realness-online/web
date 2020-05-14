@@ -43,6 +43,9 @@ export function get_itemprops (item) {
   switch (item.tagName.toLowerCase()) {
     case 'svg':
     case 'symbol':
+    case 'marker':
+    case 'view':
+    case 'pattern':
       props.viewbox = item.getAttribute('viewBox')
   }
   return props
