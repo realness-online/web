@@ -5,12 +5,16 @@
       <h1>Admin</h1>
       <logo-as-link></logo-as-link>
     </header>
-    <div class="person" v-for="person in phonebook" :key="person.id">
-      <as-days :statements="person.statements" v-slot="thoughts">
-        {{thoughts.length}}
-        <thought-as-article v-for="thought in thoughts" :key="thought[0].id" :statements="thought" :verbose="false"></thought-as-article>
-      </as-days>
-    </div>
+    <as-days v-for="person in phonebook"
+            :key="person.id"
+            :statements="person.statements"
+            v-slot="thoughts">
+      <thought-as-article v-for="thought in thoughts"
+                          :key="thought[0].id"
+                          :statements="thought"
+                          :verbose="false">
+      </thought-as-article>
+    </as-days>
   </section>
 </template>
 <script>
@@ -38,7 +42,6 @@
       console.info('Views Admin')
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
       phone_numbers.prefixes.forEach(async (phone_number, index) => {
-        if (index > 0) return
         const person = await itemid.load(profile.from_e64(phone_number.name))
         if (person.id) {
           const statements = await itemid.load(`${person.id}/statements`)
