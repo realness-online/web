@@ -1,6 +1,6 @@
 <template lang="html">
   <article class="thought">
-    <header v-if="verbose">
+    <header v-if="author">
       <router-link :to="author.id">
         <profile-as-avatar :person="author"></profile-as-avatar>
       </router-link>
@@ -37,7 +37,7 @@
     },
     data () {
       return {
-        author: {}
+        author: null
       }
     },
     async created () {
@@ -47,7 +47,9 @@
     },
     computed: {
       thought_starts_at () {
-        return date_helper.as_time(as_created_at(this.statements[0].id))
+        const created_at = as_created_at(this.statements[0].id)
+        if (created_at) return date_helper.as_time(created_at)
+        else return null
       }
     }
   }

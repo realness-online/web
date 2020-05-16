@@ -4,7 +4,6 @@ import 'firebase/auth'
 import get_item from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
-
 export async function load (itemid, me = localStorage.getItem('me')) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
@@ -17,7 +16,7 @@ export async function load (itemid, me = localStorage.getItem('me')) {
   if (item) return item
   item = await load_from_network(itemid, me)
   if (item) return item
-  else return null
+  return null
 }
 export async function list (itemid, me = localStorage.getItem('me')) {
   const type = as_type(itemid)
@@ -29,7 +28,7 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
   if (url) {
     console.info('loads a storage item')
     const server_text = await (await fetch(url)).text()
-    set(itemid, server_text)
+    // set(itemid, server_text)
     return get_item(server_text, itemid)
   } else return null
 }
@@ -39,8 +38,8 @@ export async function as_directory (itemid, me = localStorage.getItem('me')) {
   if (cached) return cached
   if (!firebase.auth().currentUser) return null
   if (navigator.onLine) {
-    const meta = { items: [], types: [] } // in our vocabulary folders are types
-    console.info('Makes a storage request')
+    const meta = { items: [], types: [] } // folders are types in our vocabulary
+    console.info('Makes a directory request')
     const directory = await firebase.storage().ref().child(path).listAll()
     directory.items.forEach(item => meta.items.push(item.name))
     directory.prefixes.forEach(folder => meta.types.push(folder.name))

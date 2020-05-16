@@ -1,6 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import * as firebase from 'firebase/app'
-import { newer_first } from '@/modules/sorting'
+import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import { hydrate, get_itemprops } from '@/modules/item'
@@ -62,7 +62,7 @@ const Paged = (superclass) => class extends superclass {
         })
       })
       items = [...new_local_stuff, ...cloud]
-      items.sort(newer_first)
+      items.sort(newer_item_first)
     } else items = cloud
     return items
   }

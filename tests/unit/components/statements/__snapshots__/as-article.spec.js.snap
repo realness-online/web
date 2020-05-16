@@ -2,24 +2,15 @@
 
 exports[`@/components/statements/as-article.vue Render a statement as an article element 1`] = `
 <article
-  itemscope="itemscope"
-  itemtype="/statements"
+  class="thought"
 >
   <header>
-    <time
-      datetime="2019-05-11T22:40:04.580Z"
-      itemprop="created_at"
-    >
+    <time>
       3:40 PM
     </time>
   </header>
    
-  <p
-    itemprop="statement"
-  >
-    I am saying it
-  </p>
-   
-  <ol />
+  <!---->
+  <!---->
 </article>
 `;

@@ -1,7 +1,8 @@
+
 <template lang="html">
   <section class="as-day">
     <header v-if="working">
-      <icon  name="working"></icon>
+      <icon name="working"></icon>
     </header>
     <article v-else class="day" :key="date" v-for="[date, day] in days" :class="{today: is_today(date)}">
       <header>
@@ -12,7 +13,7 @@
   </section>
 </template>
 <script>
-  import sorting from '@/modules/sorting'
+  import { newer_item_first } from '@/helpers/sorting'
   import date_helper from '@/helpers/date'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
@@ -47,7 +48,10 @@
       }
     },
     created () {
-      as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
+      if (this.statements.length) {
+        this.statements.sort(newer_item_first)
+        as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
+      }
       this.posters.forEach(poster => this.insert_into_day(poster))
       this.working = false
     },
@@ -63,7 +67,7 @@
         const day = this.days.get(day_name)
         if (day) {
           day.unshift(item)
-          day.sort(sorting.newer_first)
+          day.sort()
         } else this.days.set(day_name, [item])
       },
       is_today (date) {
@@ -76,5 +80,3 @@
     }
   }
 </script>
-<style lang="stylus">
-</style>

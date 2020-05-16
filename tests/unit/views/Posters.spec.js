@@ -29,14 +29,6 @@ describe('@/views/Posters.vue', () => {
         wrapper.vm.get_id(`${poster.id}.html`)
       })
     })
-    describe('newer_first', () => {
-      it('Sorts a list by newer first', () => {
-        const earlier = '/+16282281824/posters/1582074363603'
-        const later = '/+16282281824/posters/1582074400500'
-        expect(wrapper.vm.newer_first(earlier, later)).toBeTruthy()
-        expect(wrapper.vm.newer_first(later, earlier)).toBeTruthy()
-      })
-    })
     describe('vectorize_image', () => {
       it('executes the method', () => {
         wrapper.vm.vectorize_image()

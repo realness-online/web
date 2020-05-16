@@ -30,6 +30,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import itemid from '@/helpers/itemid'
+  import { newer_item_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -66,11 +67,6 @@
       }
     },
     methods: {
-      newer_first (earlier, later) {
-        const first = parseInt(earlier.split('/posters/')[1])
-        const second = parseInt(later.split('/posters/')[1])
-        return second - first
-      },
       get_id (name) {
         return `${this.me}/posters/${name.split('.')[0]}`
       },
@@ -83,7 +79,7 @@
           this.posters = []
           const directory = await itemid.as_directory(`/${user.phoneNumber}/posters`)
           if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-          this.posters.sort(this.newer_first)
+          this.posters.sort(newer_item_first)
           console.timeEnd('feed-load')
         }
       },

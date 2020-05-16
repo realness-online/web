@@ -51,8 +51,6 @@ export default {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
   },
   id_as_day (itemid) {
-    const created_at = as_created_at(itemid)
-    return new Date(created_at)
+    return this.day_name(as_created_at(itemid))
   }
-
 }

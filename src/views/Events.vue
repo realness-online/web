@@ -23,6 +23,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
+  import { newer_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -61,11 +62,8 @@
           const relation_events = await itemid.list(`${person.id}/events`)
           events = [...relation_events, ...events]
         }))
-        events.sort(this.newer_first)
+        events.sort(newer_item_first)
         return events
-      },
-      newer_first (earlier, later) {
-        return later.id - earlier.id
       }
     }
   }

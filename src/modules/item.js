@@ -13,7 +13,17 @@ export function get_item (elements, itemid) {
   return make_item(main_element)
 }
 export function make_item (element) {
-  return { ...get_meta(element), ...get_itemprops(element) }
+  const unfiltered = { ...get_meta(element), ...get_itemprops(element) }
+  return filter_item(unfiltered, element)
+}
+export function filter_item (unfiltered, element) {
+  const filtered = unfiltered
+  if (!unfiltered.id) {
+    const parent_id = element.closest('[itemid]').getAttribute('itemid')
+    const created_at = new Date(unfiltered.created_at).getTime()
+    filtered.id = `${parent_id}/${created_at}`
+  }
+  return filtered
 }
 export function get_meta (item) {
   const meta = {}
