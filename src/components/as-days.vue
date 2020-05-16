@@ -65,10 +65,8 @@
       insert_into_day (item) {
         const day_name = date_helper.id_as_day(item[0].id)
         const day = this.days.get(day_name)
-        if (day) {
-          day.unshift(item)
-          day.sort()
-        } else this.days.set(day_name, [item])
+        if (day) day.push(item)
+        else this.days.set(day_name, [item])
       },
       is_today (date) {
         if (date === this.today_as_date) return true
