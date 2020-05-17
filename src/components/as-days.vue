@@ -1,6 +1,6 @@
 
 <template lang="html">
-  <section class="as-day">
+  <section class="as-days">
     <header v-if="working">
       <icon name="working"></icon>
     </header>
@@ -78,3 +78,22 @@
     }
   }
 </script>
+<style lang="stylus">
+  section.as-days > article.day
+    display: grid
+    grid-gap: base-line
+    grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
+    @media (min-width: pad-begins)
+      grid-template-rows: (base-line * 5)
+      grid-auto-rows: poster-grid-height
+    @media (min-width: typing-begins)
+      grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+      grid-auto-rows: (poster-grid-height * 1.11)
+    & > header
+      & > h1
+        margin: base-line
+      @media (min-width: pad-begins)
+        grid-column: 1 / -1
+        & > hgroup
+          margin-top: -(base-line)
+</style>

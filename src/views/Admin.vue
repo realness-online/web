@@ -7,12 +7,11 @@
     </header>
     <as-days v-for="person in phonebook"
             :key="person.id"
-            :statements="person.statements"
-            v-slot="thoughts">
+            :statements="person.statements" v-slot="thoughts">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :verbose="false">
+                          :verbose="true">
       </thought-as-article>
     </as-days>
   </section>
@@ -54,5 +53,10 @@
   }
 </script>
 <style lang="stylus">
+  section#admin
+    padding: base-line
+
+    article.day
+      grid-auto-rows: inherit
 
 </style>
