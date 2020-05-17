@@ -2,14 +2,34 @@
 
 exports[`@/components/as-days Renders a list of statements sorted into the days they were created 1`] = `
 <section
-  class="as-day"
+  class="as-days"
 >
   <article
     class="day"
   >
     <header>
       <h4>
-        Tuesday, May 28, 2019
+        Sunday, January 13, 2019
+      </h4>
+    </header>
+     
+  </article>
+  <article
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, February 5, 2019
+      </h4>
+    </header>
+     
+  </article>
+  <article
+    class="day"
+  >
+    <header>
+      <h4>
+        Sunday, April 7, 2019
       </h4>
     </header>
      
@@ -24,11 +44,21 @@ exports[`@/components/as-days Renders a list of statements sorted into the days 
     </header>
      
   </article>
+  <article
+    class="day"
+  >
+    <header>
+      <h4>
+        Tuesday, May 28, 2019
+      </h4>
+    </header>
+     
+  </article>
 </section>
 `;
 
 exports[`@/components/as-days Renders though is provided nothing 1`] = `
 <section
-  class="as-day"
+  class="as-days"
 />
 `;

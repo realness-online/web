@@ -48,16 +48,14 @@
       }
     },
     created () {
+      this.days[Symbol.iterator] = function * () {
+        yield * [...this.entries()].sort(newer_date_first)
+      }
       if (this.statements.length) {
         this.statements.sort(newer_item_first)
         as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
       }
       this.posters.forEach(poster => this.insert_into_day(poster))
-      this.days[Symbol.iterator] = function * () {
-        // TODO: understand this
-        // https://stackoverflow.com/questions/37982476/how-to-sort-a-map-by-value-in-javascript
-        yield * [...this.entries()].sort(newer_date_first)
-      }
       this.working = false
     },
     computed: {
