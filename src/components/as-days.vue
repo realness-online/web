@@ -13,7 +13,7 @@
   </section>
 </template>
 <script>
-  import { newer_item_first } from '@/helpers/sorting'
+  import { newer_item_first, newer_date_first } from '@/helpers/sorting'
   import date_helper from '@/helpers/date'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
@@ -53,6 +53,11 @@
         as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
       }
       this.posters.forEach(poster => this.insert_into_day(poster))
+      this.days[Symbol.iterator] = function * () {
+        // TODO: understand this
+        // https://stackoverflow.com/questions/37982476/how-to-sort-a-map-by-value-in-javascript
+        yield * [...this.entries()].sort(newer_date_first)
+      }
       this.working = false
     },
     computed: {
