@@ -38,9 +38,10 @@
       }
     },
     async created () {
+      console.time('admin-load')
       console.info('Views Admin')
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
-      phone_numbers.prefixes.forEach(async (phone_number, index) => {
+      await phone_numbers.prefixes.forEach(async (phone_number, index) => {
         const person = await itemid.load(profile.from_e64(phone_number.name))
         if (person.id) {
           const statements = await itemid.load(`${person.id}/statements`)
@@ -49,6 +50,7 @@
           this.phonebook.push(person)
         }
       })
+      console.timeEnd('admin-load')
     }
   }
 </script>
