@@ -11,7 +11,7 @@
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :verbose="true">
+                          :verbose="false">
       </thought-as-article>
     </as-days>
   </section>
