@@ -5,7 +5,7 @@
       <input type="file" accept="image/jpeg" ref="uploader" v-uploader>
       <logo-as-link></logo-as-link>
     </header>
-    <article itemprop="posters">
+    <article>
       <header>
         <h1>Posters</h1>
         <hgroup v-show="!new_poster">
@@ -117,6 +117,7 @@
 </script>
 <style lang="stylus">
   section#posters
+    padding-bottom: base-line
     h1
       color: green
       margin: 0

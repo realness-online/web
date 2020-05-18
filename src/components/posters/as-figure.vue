@@ -104,6 +104,8 @@
         opacity: 0.1
     & > figcaption
       position: relative
+    svg[itemscope]
+      position: relative
     svg.background
       fill: green
       width: 100%
