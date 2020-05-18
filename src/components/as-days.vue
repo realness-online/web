@@ -83,6 +83,7 @@
 </script>
 <style lang="stylus">
   section.as-days > article.day
+  section#posters > article
     display: grid
     grid-gap: base-line
     grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
