@@ -18,6 +18,8 @@ describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(() => person)
+    jest.spyOn(itemid, 'list').mockImplementationOnce(() => [statement])
+    jest.spyOn(itemid, 'list').mockImplementationOnce(() => [person])
     wrapper = shallow(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
@@ -25,18 +27,17 @@ describe('@/views/Navigation.vue', () => {
   afterEach(() => {
     wrapper.destroy()
   })
-  it('Renders statments and profile for a person', async () => {
+  it('Renders statements and profile for a person', async () => {
     expect(wrapper.element).toMatchSnapshot()
     expect(wrapper.find('[itemprop=statements]')).toBeTruthy()
     expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
   })
   it('Add a statement when statement-added is emited', async () => {
-    expect(wrapper.vm.days.size).toBe(0)
+    expect(wrapper.vm.statements.length).toBe(1)
     wrapper.vm.$emit('statement-added', statement)
     await flushPromises()
     wrapper.vm.add_statement(statement)
-    expect(wrapper.vm.days.size).toBe(1)
-    expect(wrapper.find('ol')).toBeTruthy()
+    expect(wrapper.vm.statements.length).toBe(2)
   })
   describe('navigating the application', () => {
     describe('handling statement events', () => {
@@ -49,8 +50,9 @@ describe('@/views/Navigation.vue', () => {
         expect(wrapper.element).toMatchSnapshot()
       })
       it('statement-added event should set has_statements to true', () => {
+        wrapper.vm.statements = []
         expect(wrapper.vm.has_statements).toBe(false)
-        wrapper.vm.add_statements(statement)
+        wrapper.vm.add_statement(statement)
         expect(wrapper.vm.has_statements).toBe(true)
       })
     })
@@ -69,16 +71,15 @@ describe('@/views/Navigation.vue', () => {
           expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
         })
         it('Profile button is visible when person has posted', () => {
-          jest.spyOn(itemid, 'list').mockImplementation(() => {
-            return [statement]
-          })
-          const wrapper = shallow(Navigation)
+          expect(wrapper.vm.statements.length).toBe(1)
           expect(wrapper.vm.onboarding['has-statements']).toBe(true)
+          wrapper.vm.statements = []
+          expect(wrapper.vm.onboarding['has-statements']).toBe(false)
         })
       })
       describe('signed in', () => {
-        it('Relations is visible', () => {
-          wrapper = shallow(Navigation)
+        it.only('Relations is visible', () => {
+          // wrapper = shallow(Navigation)
           expect(wrapper.vm.onboarding['signed-in']).toBe(true)
         })
         it('Feed, Events and posters are visible when person has added a friend', () => {
@@ -91,12 +92,14 @@ describe('@/views/Navigation.vue', () => {
       })
     })
     describe('#user_name', () => {
-      it('Returns \'You\' by default', () => {
-        wrapper.vm.me = {}
-        expect(wrapper.vm.user_name).toBe('You')
+      it('Returns \'You\' by default', async () => {
+        jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
+        wrapper = shallow(Navigation)
+        await flushPromises()
+        expect(wrapper.vm.first_name).toBe('You')
       })
       it('Returns the users first name if set', () => {
-        expect(wrapper.vm.user_name).toBe('Scott')
+        expect(wrapper.vm.first_name).toBe('Scott')
       })
     })
   })

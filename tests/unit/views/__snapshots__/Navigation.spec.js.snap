@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Navigation.vue Renders statments and profile for a person 1`] = `
+exports[`@/views/Navigation.vue Renders statements and profile for a person 1`] = `
 <section
   class="page"
   id="navigation"
@@ -14,7 +14,7 @@ exports[`@/views/Navigation.vue Renders statments and profile for a person 1`] =
   </header>
    
   <nav
-    class=""
+    class="has-statements"
   >
     <router-link
       class="black"
@@ -51,7 +51,7 @@ exports[`@/views/Navigation.vue Renders statments and profile for a person 1`] =
     <router-link
       class="blue"
       tabindex="-1"
-      to="/phone-book"
+      to="/relations"
     >
       Relations
     </router-link>
@@ -83,7 +83,7 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   </header>
    
   <nav
-    class=""
+    class="has-statements"
   >
     <router-link
       class="black"
@@ -120,7 +120,7 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
     <router-link
       class="blue"
       tabindex="-1"
-      to="/phone-book"
+      to="/relations"
     >
       Relations
     </router-link>
@@ -152,7 +152,7 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   </header>
    
   <nav
-    class=""
+    class="has-statements"
   >
     <!---->
      

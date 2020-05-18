@@ -11,8 +11,10 @@
       <statement-as-textarea @toggle-keyboard="posting = !posting" @statement-added="add_statement" class="red"></statement-as-textarea>
     </nav>
     <footer hidden>
-      <as-days itemscope :itemid="itemid" :statements="statements">
-        <thought-as-article :item="item"></thought-as-article>
+      <as-days itemscope :itemid="itemid" :statements="statements" v-slot="thoughts">
+        <thought-as-article v-for="thought in thoughts"
+                            :key="thought[0].id"
+                            :statements="thought"></thought-as-article>
       </as-days>
     </footer>
   </section>
@@ -34,7 +36,7 @@
     },
     data () {
       return {
-        has_statements: false,
+        itemid: null,
         relations: [],
         statements: [],
         version: process.env.VUE_APP_VERSION,
@@ -45,22 +47,28 @@
     },
     async created () {
       console.info('uses the navigation')
+      this.itemid = `${this.me}/statements`
       const [my, statements, relations] = await Promise.all([
         itemid.load(`${this.me}`),
         itemid.list(`${this.me}/statements`),
         itemid.list(`${this.me}/relations`)
       ])
-      this.first_name = my.first_name || 'You'
-      this.statements = as_thoughts(statements)
-      this.relations = relations
+      if (my && my.first_name) this.first_name = my.first_name
+      else this.first_name = 'You'
+      if (statements) this.statements = as_thoughts(statements)
+      if (relations) this.relations = relations
     },
     computed: {
       onboarding () {
         return {
           'has-statements': this.has_statements,
-          'signed-in': (this.has_statements && this.signed_in),
+          'signed-in': this.signed_in,
           'has-friends': (this.signed_in && this.relations.length > 0)
         }
+      },
+      has_statements () {
+        if (this.statements.length) return true
+        else return false
       }
     },
     methods: {
@@ -72,7 +80,6 @@
         else return '/relations'
       },
       async add_statement (statement) {
-        this.has_statements = true
         this.statements.push(statement)
         await this.$nextTick()
         new Statements().save()
@@ -151,7 +158,7 @@
         display: block
       & > textarea
         text-align: right
-    & > h6.app_version
+    h6.app_version
       margin: 0
       padding: 0
       position: fixed
