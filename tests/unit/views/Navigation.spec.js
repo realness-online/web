@@ -1,6 +1,4 @@
 import { shallow } from 'vue-test-utils'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import itemid from '@/helpers/itemid'
@@ -48,47 +46,6 @@ describe('@/views/Navigation.vue', () => {
       it('posting:true should hide main navigation', () => {
         wrapper.setData({ posting: true })
         expect(wrapper.element).toMatchSnapshot()
-      })
-      it('statement-added event should set has_statements to true', () => {
-        wrapper.vm.statements = []
-        expect(wrapper.vm.has_statements).toBe(false)
-        wrapper.vm.add_statement(statement)
-        expect(wrapper.vm.has_statements).toBe(true)
-      })
-    })
-    describe('onBoarding()', () => {
-      describe('signed out', () => {
-        it('textarea is the only navigation element to start', () => {
-          const signed_out = jest.fn(state_changed => {
-            state_changed(null)
-          })
-          jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
-            return { onAuthStateChanged: signed_out }
-          })
-          wrapper = shallow(Navigation)
-          expect(wrapper.vm.onboarding['has-statements']).toBeFalsy()
-          expect(wrapper.vm.onboarding['signed-in']).toBeFalsy()
-          expect(wrapper.vm.onboarding['has-friends']).toBeFalsy()
-        })
-        it('Profile button is visible when person has posted', () => {
-          expect(wrapper.vm.statements.length).toBe(1)
-          expect(wrapper.vm.onboarding['has-statements']).toBe(true)
-          wrapper.vm.statements = []
-          expect(wrapper.vm.onboarding['has-statements']).toBe(false)
-        })
-      })
-      describe('signed in', () => {
-        it.only('Relations is visible', () => {
-          // wrapper = shallow(Navigation)
-          expect(wrapper.vm.onboarding['signed-in']).toBe(true)
-        })
-        it('Feed, Events and posters are visible when person has added a friend', () => {
-          jest.spyOn(itemid, 'load').mockImplementation(() => {
-            return { statements: [statement] }
-          })
-          wrapper = shallow(Navigation)
-          expect(wrapper.vm.onboarding['has-friends']).toBe(true)
-        })
       })
     })
     describe('#user_name', () => {

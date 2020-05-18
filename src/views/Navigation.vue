@@ -57,20 +57,7 @@
       else this.first_name = 'You'
       if (statements) this.statements = as_thoughts(statements)
       if (relations) this.relations = relations
-    },
-    computed: {
-      onboarding () {
-        return {
-          'has-statements': this.has_statements,
-          'signed-in': this.signed_in,
-          'has-friends': (this.signed_in && this.relations.length > 0)
-        }
-      },
-      has_statements () {
-        if (this.statements.length) return true
-        else return false
-      }
-    },
+    },  
     methods: {
       done_posting (event) {
         document.querySelector('nav > button').focus()
@@ -119,21 +106,7 @@
       max-height: page-width
       height: 100vmin
       width: 100vw
-      &.has-statements
-        & > [href='/account']
-          visibility: visible
-      &.signed-in
-        & > [href='/posters']
-        & > [href='/relations']
-        & > [href='/phone-book']
-          visibility: visible
-      &.has-friends
-        & > [href='/feed']
-          visibility: visible
-      & > a[href='/events']
-        visibility: visible
       & > a
-        visibility: hidden
         text-transform: capitalize
         text-align: left
         border-width: 1px
