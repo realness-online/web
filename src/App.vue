@@ -7,6 +7,7 @@
 </template>
 <script>
   import developerTools from '@/components/developer-tools'
+  import { Me } from '@/persistance/Storage'
   import * as firebase from 'firebase/app'
   export default {
     components: {
@@ -26,11 +27,20 @@
         storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
         messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
       })
+      firebase.auth().onAuthStateChanged(this.init_me)
     },
     computed: {
       status () {
         return ~navigator.online ? null : 'offline'
       }
+    },
+    methods: {
+      init_me () {
+        // guarantees that me gets set in localstorage
+        const me = new Me()
+        return me
+      }
+
     }
   }
 </script>
