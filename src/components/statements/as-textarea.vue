@@ -1,12 +1,12 @@
 <template lang="html">
-  <textarea id="wat" cols="1" rows="1" placeholder=">"
-    v-model="new_statement"
-    @focusout="prepare_statement"
-    @focusin="wat_focused"></textarea>
+  <textarea id="wat" v-model="new_statement"
+            cols="1" rows="1"
+            placeholder=">"
+            @focusout="prepare_statement"
+            @focusin="wat_focused"/>
 </template>
 <script>
   export default {
-    props: ['value'],
     data () {
       return {
         new_statement: ''

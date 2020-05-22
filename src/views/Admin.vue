@@ -1,18 +1,16 @@
 <template lang="html">
   <section id="admin" class="page">
     <header>
-      <icon name="nothing"></icon>
+      <icon name="nothing"/>
       <h1>Admin</h1>
-      <logo-as-link></logo-as-link>
+      <logo-as-link/>
     </header>
-    <as-days v-for="person in phonebook"
-            :key="person.id"
-            :statements="person.statements" v-slot="thoughts">
+    <as-days v-for="person in phonebook" :key="person.id"
+             v-slot="thoughts" :statements="person.statements">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :verbose="false">
-      </thought-as-article>
+                          :verbose="false"/>
     </as-days>
   </section>
 </template>
@@ -44,9 +42,9 @@
       await phone_numbers.prefixes.forEach(async (phone_number, index) => {
         const person = await itemid.load(profile.from_e64(phone_number.name))
         if (person.id) {
-          const statements = await itemid.load(`${person.id}/statements`)
-          if (Array.isArray(statements.statements)) person.statements = statements.statements
-          else person.statements = [statements.statements]
+          const statements = await itemid.list(`${person.id}/statements`)
+          if (Array.isArray(statements)) person.statements = statements
+          else person.statements = [statements]
           this.phonebook.push(person)
         }
       })
@@ -57,8 +55,6 @@
 <style lang="stylus">
   section#admin
     padding: base-line
-
     article.day
       grid-auto-rows: inherit
-
 </style>

@@ -1,16 +1,16 @@
 <template>
   <section id="directory" class="page">
     <header>
-      <icon name="nothing"></icon>
+      <icon name="nothing"/>
       <router-link to="/relations">
-        <icon name="finished"></icon>
+        <icon name="finished"/>
       </router-link>
     </header>
     <hgroup>
       <h1>Phonebook</h1>
-      <icon v-if="working" name="working"></icon>
+      <icon v-if="working" name="working"/>
     </hgroup>
-    <profile-as-list :people='phonebook'></profile-as-list>
+    <profile-as-list :people="phonebook"/>
   </section>
 </template>
 <script>
@@ -23,15 +23,22 @@
   import icon from '@/components/icon'
   import profile_as_list from '@/components/profile/as-list'
   export default {
-    mixins: [signed_in],
     components: {
       'profile-as-list': profile_as_list,
       icon
     },
+    mixins: [signed_in],
     data () {
       return {
         phonebook: [],
         working: true
+      }
+    },
+    watch: {
+      async relations () {
+        console.info('Saves Relations')
+        await this.$nextTick()
+        new Relations().save()
       }
     },
     async created () {
@@ -42,13 +49,6 @@
         if (person) this.phonebook.push(person)
       })
       this.working = false
-    },
-    watch: {
-      async relations () {
-        console.info('Saves Relations')
-        await this.$nextTick()
-        new Relations().save()
-      }
     }
   }
 </script>

@@ -1,19 +1,14 @@
 <template lang="html">
-  <figure class="poster" :class="{ 'selecting-event': this.selecting_event }">
-    <icon name="background"></icon>
-    <as-svg :itemid="itemid"
-            :new_poster="new_poster"
-            @vector-click="vector_click"></as-svg>
+  <figure class="poster" :class="{ 'selecting-event': selecting_event }">
+    <icon name="background"/>
+    <as-svg :itemid="itemid" :new_poster="new_poster" @vector-click="vector_click"/>
     <figcaption>
-      <event-as-fieldset v-if="date_picker"
-                         :itemid="itemid"
-                         :menu="menu"
-                         @picker="event_picker"></event-as-fieldset>
+      <event-as-fieldset v-if="date_picker" :itemid="itemid" :menu="menu" @picker="event_picker"/>
       <poster-menu v-if="menu" :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
                    @add-poster="add_poster"
-                   @remove-poster="remove_poster"></poster-menu>
+                   @remove-poster="remove_poster"/>
     </figcaption>
   </figure>
 </template>
@@ -52,16 +47,16 @@
         selecting_event: false
       }
     },
-    created () {
-      if (this.new_poster) {
-        this.menu = true
-        this.poster = this.new_poster
-      }
-    },
     computed: {
       date_picker () {
         if ((this.menu || this.selecting_event) && this.new_poster === null) return true
         else return false
+      }
+    },
+    created () {
+      if (this.new_poster) {
+        this.menu = true
+        this.poster = this.new_poster
       }
     },
     methods: {

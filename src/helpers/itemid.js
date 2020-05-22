@@ -19,8 +19,9 @@ export async function load (itemid, me = localStorage.getItem('me')) {
   return null
 }
 export async function list (itemid, me = localStorage.getItem('me')) {
-  const type = as_type(itemid)
   const list = await load(itemid, me)
+  console.log(list)
+  const type = as_type(itemid)
   if (list) return list[type]
   else return null
 }
@@ -29,7 +30,7 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
   if (url) {
     console.info('Loads a storage item')
     const server_text = await (await fetch(url)).text()
-    set(itemid, server_text)
+    // set(itemid, server_text)
     return get_item(server_text, itemid)
   } else return null
 }

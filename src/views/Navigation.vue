@@ -1,20 +1,35 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <header><h6 class="app_version">{{version}}</h6></header>
-    <nav :class="onboarding">
-      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">{{first_name}}</router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">Tonight!</router-link>
-      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">Posters</router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">Feed</router-link>
-      <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">Relations</router-link>
-      <button v-if="posting" @click="done_posting" tabindex="-1">Done</button>
-      <statement-as-textarea @toggle-keyboard="posting = !posting" @statement-added="add_statement" class="red"></statement-as-textarea>
+    <header>
+      <h6 class="app_version">
+        {{ version }}
+      </h6>
+    </header>
+    <nav>
+      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
+        {{ first_name }}
+      </router-link>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
+        Tonight!
+      </router-link>
+      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
+        Posters
+      </router-link>
+      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
+        Feed
+      </router-link>
+      <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">
+        Relations
+      </router-link>
+      <button v-if="posting" tabindex="-1" @click="done_posting">
+        Done
+      </button>
+      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" @statement-added="add_statement"/>
     </nav>
     <footer hidden>
-      <as-days itemscope :itemid="itemid" :statements="statements" v-slot="thoughts">
-        <thought-as-article v-for="thought in thoughts"
-                            :key="thought[0].id"
-                            :statements="thought"></thought-as-article>
+      <as-days v-slot="{ item: thoughts }" itemscope :itemid="itemid" :statements="statements">
+        {{ thoughts }}
+        <thought-as-article v-for="thought in thoughts" :key="thought[0].id" statements="thought"/>
       </as-days>
     </footer>
   </section>
@@ -23,17 +38,16 @@
   import { Statements } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
-  import as_thoughts from '@/helpers/thoughts'
   import as_textarea from '@/components/statements/as-textarea'
   import as_days from '@/components/as-days'
   import thought_as_article from '@/components/statements/as-article'
   export default {
-    mixins: [signed_in],
     components: {
       'as-days': as_days,
       'thought-as-article': thought_as_article,
       'statement-as-textarea': as_textarea
     },
+    mixins: [signed_in],
     data () {
       return {
         itemid: null,
@@ -49,15 +63,15 @@
       console.info('uses the navigation')
       this.itemid = `${this.me}/statements`
       const [my, statements, relations] = await Promise.all([
-        itemid.load(`${this.me}`),
-        itemid.list(`${this.me}/statements`),
-        itemid.list(`${this.me}/relations`)
+        itemid.load(this.me, this.me),
+        itemid.list(`${this.me}/statements`, this.me),
+        itemid.list(`${this.me}/relations`, this.me)
       ])
       if (my && my.first_name) this.first_name = my.first_name
       else this.first_name = 'You'
-      if (statements) this.statements = as_thoughts(statements)
+      if (statements) this.statements = statements
       if (relations) this.relations = relations
-    },  
+    },
     methods: {
       done_posting (event) {
         document.querySelector('nav > button').focus()

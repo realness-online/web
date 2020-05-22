@@ -1,11 +1,11 @@
 <template lang="html">
   <figure class="events">
-    <icon name="background"></icon>
+    <icon name="background"/>
     <svg v-if="poster"
-         @click="vector_click"
          :viewBox="poster.viewbox"
          :preserveAspectRatio="aspect_ratio"
-         v-html="poster.path"></svg>
+         @click="vector_click"
+         v-html="poster.path"/>
   </figure>
 </template>
 <script>
@@ -16,8 +16,8 @@
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
-    mixins: [vector_intersection, vector_click],
     components: { icon },
+    mixins: [vector_intersection, vector_click],
     props: {
       event: {
         type: Object,

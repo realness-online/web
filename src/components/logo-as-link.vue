@@ -1,5 +1,7 @@
 <template lang="html">
-  <router-link id="logo" to="/"><icon name="realness"></icon></router-link>
+  <router-link id="logo" to="/">
+    <icon name="realness"/>
+  </router-link>
 </template>
 <script>
   import icon from '@/components/icon'

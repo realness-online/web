@@ -1,10 +1,10 @@
 <template>
   <figure class="profile">
-    <as-svg @vector-clicked="avatar_click" :person="person"></as-svg>
+    <as-svg :person="person" @vector-clicked="avatar_click"/>
     <figcaption>
-      <as-hgroup :person="person"></as-hgroup>
-      <p class='phone' v-if="is_me">{{mobile_display}}</p>
-      <a class='phone' v-else @click="open_sms_app">{{mobile_display}}</a>
+      <as-hgroup :person="person"/>
+      <p v-if="is_me" class="phone">{{ mobile_display }}</p>
+      <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
   </figure>
 </template>
@@ -24,16 +24,6 @@
         required: true
       }
     },
-    methods: {
-      avatar_click (event) {
-        const route = { path: this.person.id }
-        if (this.is_me) route.path = '/account'
-        this.$router.push(route)
-      },
-      open_sms_app (event) {
-        window.open(this.sms_link, '_self')
-      }
-    },
     computed: {
       is_me () {
         if (this.me === this.person.id) return true
@@ -45,6 +35,16 @@
       mobile_display () {
         const phone_number = profile.as_phone_number(this.person.id)
         return new AsYouType('US').input(phone_number)
+      }
+    },
+    methods: {
+      avatar_click (event) {
+        const route = { path: this.person.id }
+        if (this.is_me) route.path = '/account'
+        this.$router.push(route)
+      },
+      open_sms_app (event) {
+        window.open(this.sms_link, '_self')
       }
     }
   }

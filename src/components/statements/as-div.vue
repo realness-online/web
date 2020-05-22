@@ -1,8 +1,10 @@
 <template lang="html">
   <div itemscope :itemid="statement.id">
-    <p itemprop="statement">{{statement.statement}}</p>
-    <meta itemprop="why" :content="statement.why" v-if="statement.why">
-    <meta itemprop="where" :content="statement.where" v-if="statement.where">
+    <p itemprop="statement">
+      {{ statement.statement }}
+    </p>
+    <meta v-if="statement.why" itemprop="why" :content="statement.why">
+    <meta v-if="statement.where" itemprop="where" :content="statement.where">
   </div>
 </template>
 <script>
@@ -15,5 +17,3 @@
     }
   }
 </script>
-<style lang="stylus">
-</style>

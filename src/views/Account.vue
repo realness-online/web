@@ -1,19 +1,18 @@
 <template lang="html">
   <section id="account" :class="{'signed-in': signed_in}" class="page">
     <header>
-      <icon name="nothing"></icon>
-      <logo-as-link></logo-as-link>
+      <icon name="nothing"/>
+      <logo-as-link/>
     </header>
-    <avatar-as-form @new-avatar="new_avatar" :person='me'></avatar-as-form>
+    <avatar-as-form :person="me" @new-avatar="new_avatar"/>
     <div id="login">
-      <profile-as-figure :person="me"></profile-as-figure>
-      <profile-as-form @modified="save_me" :person='me'></profile-as-form>
+      <profile-as-figure :person="me"/>
+      <profile-as-form :person="me" @modified="save_me"/>
     </div>
     <as-days itemscope :itemid="itemid" :statements="statements">
       <thought-as-article :post="item"
-                       @viewed="statement_viewed"
-                       @modified="save_page">
-      </thought-as-article>
+                          @viewed="statement_viewed"
+                          @modified="save_page"/>
     </as-days>
   </section>
 </template>
@@ -31,7 +30,6 @@
   import avatar_as_form from '@/components/avatars/as-form'
   import thought_as_article from '@/components/statements/as-article'
   export default {
-    mixins: [signed_in],
     components: {
       icon,
       'logo-as-link': logo_as_link,
@@ -40,6 +38,7 @@
       'thought-as-article': thought_as_article,
       'avatar-as-form': avatar_as_form
     },
+    mixins: [signed_in],
     data () {
       return {
         statements: [],

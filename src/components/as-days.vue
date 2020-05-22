@@ -1,14 +1,16 @@
-
 <template lang="html">
   <section class="as-days">
     <header v-if="working">
-      <icon name="working"></icon>
+      <icon name="working"/>
     </header>
-    <article v-else class="day" :key="date" v-for="[date, day] in days" :class="{today: is_today(date)}">
+    <article v-for="[date, day] in days" v-else
+             :key="date"
+             :class="{today: is_today(date)}"
+             class="day">
       <header>
-        <h4>{{as_day(date)}}</h4>
+        <h4>{{ as_day(date) }}</h4>
       </header>
-      <slot v-for="item in day" :item="item"></slot>
+      <slot v-for="item in day" :item="item"/>
     </article>
   </section>
 </template>
@@ -47,25 +49,27 @@
         days: new Map()
       }
     },
-    created () {
-      this.days[Symbol.iterator] = function * () {
-        yield * [...this.entries()].sort(newer_date_first)
-      }
-      if (this.statements.length) {
-        this.statements.sort(newer_item_first)
-        as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
-      }
-      this.posters.forEach(poster => this.insert_into_day(poster))
-      this.working = false
-    },
     computed: {
       today_as_date () {
         const now = new Date()
         return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
       }
     },
+    updated () {
+      this.days[Symbol.iterator] = function * () {
+        yield * [...this.entries()].sort(newer_date_first)
+      }
+      console.log(this.statements.length)
+      // if (this.statements.length) {
+        this.statements.sort(newer_item_first)
+        as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
+      // }
+      this.posters.forEach(poster => this.insert_into_day(poster))
+      this.working = false
+    },
     methods: {
       insert_into_day (item) {
+        console.log(item)
         const day_name = date_helper.id_as_day(item[0].id)
         const day = this.days.get(day_name)
         if (day) day.push(item)

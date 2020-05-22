@@ -4,9 +4,9 @@
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.viewbox"
               :preserveAspectRatio="aspect_ratio"
-              v-html="avatar.path"></symbol>
+              v-html="avatar.path"/>
     </defs>
-    <icon v-if="!working" name="background"></icon>
+    <icon v-if="!working" name="background"/>
     <use :href="avatar_link"/>
   </svg>
 </template>
@@ -17,16 +17,14 @@
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {
-    mixins: [vector_intersection, vector_click],
     components: {
       icon
     },
+    mixins: [vector_intersection, vector_click],
     props: {
-      person: Object,
-      me: {
-        type: Boolean,
-        required: false,
-        default: false
+      person: {
+        type: Object,
+        required: true
       },
       working: {
         type: Boolean,
@@ -38,9 +36,6 @@
         avatar: null
       }
     },
-    async created () {
-      if (this.me) this.avatar = await itemid.load(this.person.avatar)
-    },
     computed: {
       id () {
         return itemid.as_query_id(this.person.avatar)
@@ -50,6 +45,9 @@
         if (this.person.avatar) return itemid.as_fragment(this.person.avatar)
         else return `${icons}#silhouette`
       }
+    },
+    async created () {
+      if (this.me === this.person.id) this.avatar = await itemid.load(this.person.avatar)
     },
     methods: {
       first_instance () {

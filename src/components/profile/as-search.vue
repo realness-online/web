@@ -1,10 +1,12 @@
 <template>
   <label for="search">
-    <input id="search" type="search" placeholder="Search phonebook" autocomplete="off"
-      v-model="query"
-      @focusout="view_friends_mode"
-      @focusin="search_mode">
-    <icon name="search"></icon>
+    <input id="search" v-model="query"
+           type="search"
+           placeholder="Search phonebook"
+           autocomplete="off"
+           @focusout="view_friends_mode"
+           @focusin="search_mode">
+    <icon name="search"/>
   </label>
 </template>
 <script>

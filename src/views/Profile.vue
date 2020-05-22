@@ -1,17 +1,17 @@
 ’<template lang="html">
-  <section id="profile" class="page" ref='profile'>
+  <section id="profile" ref="profile" class="page">
     <header>
-      <icon name='nothing'></icon>
-      <logo-as-link></logo-as-link>
+      <icon name="nothing"/>
+      <logo-as-link/>
     </header>
-    <avatar @loaded="avatar_loaded" :person="person"></avatar>
+    <avatar :person="person" @loaded="avatar_loaded"/>
     <menu v-if="avatar">
-      <download-vector :vector="avatar"></download-vector>
+      <download-vector :vector="avatar"/>
     </menu>
-    <profile-as-figure :person='person'></profile-as-figure>
-    <as-days :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" @viewed="statement_viewed"></thought-as-article>
+    <profile-as-figure :person="person"/>
+    <as-days v-slot="item" :posters="posters" :statements="statements">
+      <poster-as-figure v-if="item.type === 'posters'" :itemid="item"/>
+      <thought-as-article v-else :throught="item" @viewed="statement_viewed"/>
     </as-days>
   </section>
 </template>
@@ -21,6 +21,7 @@
   import itemid from '@/helpers/itemid'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
+  import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
   import download_vector from '@/components/download-vector'
   import profile_as_figure from '@/components/profile/as-figure'
@@ -28,16 +29,17 @@
   import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/feed/as-figure'
   export default {
-    mixins: [signed_in],
     components: {
       avatar,
       icon,
+      'as-days': as_days,
       'profile-as-figure': profile_as_figure,
       'download-vector': download_vector,
       'logo-as-link': logo_as_link,
       'poster-as-figure': poster_as_figure,
       'thought-as-article': as_article
     },
+    mixins: [signed_in],
     data () {
       return {
         person: {},
@@ -54,9 +56,16 @@
         itemid.list(`${id}/statements`),
         itemid.as_directory(`${id}/posters`)
       ])
-      this.person = person
-      this.statements = as_thoughts(statements)
-      this.posters = posters
+      if (person) this.person = person
+      if (statements) this.statements = as_thoughts(statements)
+      posters.items.forEach(filename => {
+        const created_at = filename.split('.')[0]
+        const poster = {
+          id: `${person.id}/posters/${created_at}`,
+          type: 'posters'
+        }
+        this.posters.push(poster)
+      })
       console.info(`Views ${person.first_name}'s profile`)
     },
     methods: {
@@ -68,6 +77,7 @@
 </script>
 <style lang='stylus'>
   section#profile
+    padding-bottom: base-line
     & > header
       z-index: 2
       position: absolute

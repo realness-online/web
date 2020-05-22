@@ -1,23 +1,23 @@
 <template>
   <section id="events" class="page">
     <header>
-      <icon name="nothing"></icon>
-      <logo-as-link></logo-as-link>
+      <icon name="nothing"/>
+      <logo-as-link/>
     </header>
     <hgroup>
-      <icon v-show="working" name="working"></icon>
+      <icon v-show="working" name="working"/>
     </hgroup>
     <article id="tonight">
       <header>
         <h1>Tonight!</h1>
       </header>
-      <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
+      <event-as-figure v-for="event in events" :key="event.url" :event="event"/>
     </article>
     <article id="upcoming">
       <header>
         <h1>Soon</h1>
       </header>
-      <event-as-figure v-for="event in events" :event="event" :key="event.url"></event-as-figure>
+      <event-as-figure v-for="event in events" :key="event.url" :event="event"/>
     </article>
   </section>
 </template>
@@ -29,12 +29,12 @@
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
     export default {
-    mixins: [signed_in],
     components: {
       'logo-as-link': logo_as_link,
       'event-as-figure': as_figure,
       icon
     },
+    mixins: [signed_in],
     data () {
       return {
         events: [],

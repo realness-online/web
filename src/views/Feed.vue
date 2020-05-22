@@ -1,15 +1,15 @@
 <template>
   <section id="feed" class="page">
     <header>
-      <icon name='nothing'></icon>
-      <logo-as-link></logo-as-link>
+      <icon name="nothing"/>
+      <logo-as-link/>
     </header>
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <as-days :posters="posters" :statements="statements" v-slot="{ item }">
-      <poster-as-figure v-if="item.type === 'posters'" :poster="item"></poster-as-figure>
-      <thought-as-article v-else :item="item" :verbose="true" @viewed="statement_viewed"></thought-as-article>
+    <as-days v-slot="item" :posters="posters" :statements="statements">
+      <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id"/>
+      <thought-as-article v-else :statements="item" :verbose="true" @viewed="statement_viewed"/>
     </as-days>
   </section>
 </template>
@@ -19,10 +19,9 @@
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
   import thought_as_article from '@/components/statements/as-article'
-  import poster_as_figure from '@/components/feed/as-figure'
+  import poster_as_figure from '@/components/posters/as-figure'
   import signed_in from '@/mixins/signed_in'
   export default {
-    mixins: [signed_in],
     components: {
       'as-days': as_days,
       'logo-as-link': logo_as_link,
@@ -30,6 +29,7 @@
       'poster-as-figure': poster_as_figure,
       icon
     },
+    mixins: [signed_in],
     data () {
       return {
         people: [],

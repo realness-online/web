@@ -16,6 +16,7 @@ export default class Storage {
 }
 export class Me extends Storage {
   constructor () {
+    console.log(firebase.auth().currentUser)
     let me = localStorage.getItem('me')
     if (!me) {
       const user = firebase.auth().currentUser

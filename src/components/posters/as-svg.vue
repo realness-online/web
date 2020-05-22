@@ -1,11 +1,12 @@
 <template lang="html">
-  <svg itemscope itemtype="/posters"
-       :itemid="itemid"
-       :viewBox="viewbox"
-       :preserveAspectRatio="aspect_ratio"
-       @click="vector_click"
-       v-html="path">
-  </svg>
+  <svg
+    itemscope
+    itemtype="/posters"
+    :itemid="itemid"
+    :viewBox="viewbox"
+    :preserveAspectRatio="aspect_ratio"
+    @click="vector_click"
+    v-html="path"/>
 </template>
 <script>
   import itemid from '@/helpers/itemid'

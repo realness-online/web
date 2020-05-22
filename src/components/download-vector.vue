@@ -1,6 +1,6 @@
 <template lang="html">
   <a :href="downloadable" :download="file_name">
-    <icon name="download"></icon>
+    <icon name="download"/>
   </a>
 </template>
 <script>
@@ -21,15 +21,15 @@
         file_name: null
       }
     },
-    async created () {
-      this.vector = await itemid.load(this.itemid)
-      this.file_name = await this.get_vector_name()
-    },
     computed: {
       downloadable () {
         const svg = `<svg viewBox="${this.vector.viewbox}" xmlns="http://www.w3.org/2000/svg">${this.vector.path}</svg>`
         return `data:application/octet-stream,${encodeURIComponent(svg)}`
       }
+    },
+    async created () {
+      this.vector = await itemid.load(this.itemid)
+      this.file_name = await this.get_vector_name()
     },
     methods: {
       async get_vector_name () {

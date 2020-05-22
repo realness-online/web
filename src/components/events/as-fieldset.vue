@@ -1,26 +1,27 @@
 <template lang="html">
   <fieldset class="event" :class="state">
     <ol ref="events" itemprop="events" hidden>
-      <li itemscope itemtype="/events"
-          v-for="event in events"
-          :itemid="event.id"
-          :key="event.id">
+      <li v-for="event in events" :key="event.id"
+          itemscope
+          itemtype="/events"
+          :itemid="event.id">
         <link itemprop="url" rel="icon" :href="event.url">
       </li>
     </ol>
-    <label for="day">{{event_label}}</label>
-    <input id="day" type="date" required
-           ref="day"
+    <label for="day">{{ event_label }}</label>
+    <input id="day" ref="day"
+           type="date"
+           required
            :value="event_day"
            @input="update_date"
            @click="show_picker">
-    <input type="time" required
-           ref="time"
+    <input ref="time" type="time"
+           required
            :value="event_time"
            @input="update_time">
     <menu>
-      <a ref="remove" @click="remove"><icon name="remove"></icon></a>
-      <a ref="save" @click="save"><icon name="add"></icon></a>
+      <a ref="remove" @click="remove"><icon name="remove"/></a>
+      <a ref="save" @click="save"><icon name="add"/></a>
     </menu>
   </fieldset>
 </template>
@@ -47,12 +48,6 @@
         show: false,
         events: []
       }
-    },
-    async created () {
-      this.main_event = this.tonight
-      this.events = await itemid.list(`${this.me}/events`)
-      const my_event = this.events.find(event => event.url === this.itemid)
-      if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
     computed: {
       state () {
@@ -86,6 +81,12 @@
         tonight.setMinutes(0)
         return tonight
       }
+    },
+    async created () {
+      this.main_event = this.tonight
+      this.events = await itemid.list(`${this.me}/events`)
+      const my_event = this.events.find(event => event.url === this.itemid)
+      if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
     methods: {
       show_picker () {

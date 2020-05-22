@@ -1,24 +1,24 @@
 <template lang="html">
   <div id="manage-avatar">
-    <icon v-if="working" name="working"></icon>
+    <icon v-if="working" name="working"/>
     <div v-else>
-      <avatar-as-figure v-if="avatar" :avatar="avatar"></avatar-as-figure>
-      <avatar-as-svg  v-else @vector-loaded="set_current_avatar" :me="true" :person="person"></avatar-as-svg>
+      <avatar-as-figure v-if="avatar" :avatar="avatar"/>
+      <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar"/>
     </div>
     <menu v-if="show_menu">
       <a id="open_camera" @click="open_camera">
-        <icon name="camera"></icon>
+        <icon name="camera"/>
       </a>
       <a id="select_photo" @click="select_photo">
-        <icon name="add"></icon>
+        <icon name="add"/>
       </a>
-      <a id="accept_changes" @click="accept_new_avatar" v-if="avatar_changed">
-        <icon v-if="finished" name="finished"></icon>
-        <icon v-else name="working"></icon>
+      <a v-if="avatar_changed" id="accept_changes" @click="accept_new_avatar">
+        <icon v-if="finished" name="finished"/>
+        <icon v-else name="working"/>
       </a>
-      <download-vector v-if="download_vector" :vector="current_avatar"></download-vector>
+      <download-vector v-if="download_vector" :vector="current_avatar"/>
     </menu>
-    <input type="file" accept="image/jpeg" capture="user" ref="uploader" v-uploader>
+    <input ref="uploader" v-uploader type="file" accept="image/jpeg" capture="user">
   </div>
 </template>
 <script>
@@ -31,15 +31,18 @@
   import signed_in from '@/mixins/signed_in'
   import uploader from '@/mixins/uploader'
   export default {
-    mixins: [signed_in, uploader],
     components: {
       icon,
       'download-vector': download_vector,
       'avatar-as-svg': as_svg,
       'avatar-as-figure': as_figure
     },
+    mixins: [signed_in, uploader],
     props: {
-      person: Object
+      person: {
+        type: Object,
+        required: true
+      }
     },
     data () {
       return {
@@ -49,6 +52,16 @@
         working: false,
         finished: true,
         avatar: null
+      }
+    },
+    computed: {
+      download_vector () {
+        if (!this.avatar_changed && this.current_avatar) return true
+        else return false
+      },
+      show_menu () {
+        if (this.signed_in && !this.working) return true
+        else return false
       }
     },
     async created () {
@@ -81,16 +94,6 @@
         this.$emit('new-avatar', this.avatar.id)
         this.avatar = null
         this.finished = true
-      }
-    },
-    computed: {
-      download_vector () {
-        if (!this.avatar_changed && this.current_avatar) return true
-        else return false
-      },
-      show_menu () {
-        if (this.signed_in && !this.working) return true
-        else return false
       }
     }
   }

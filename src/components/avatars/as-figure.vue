@@ -1,9 +1,11 @@
 <template lang="html">
   <figure>
-    <icon name="background"></icon>
-    <svg itemscope itemtype="/avatars" :itemid="avatar.id"
-         :viewBox="avatar.viewbox" v-html="avatar.path">
-    </svg>
+    <icon name="background"/>
+    <svg itemscope
+         itemtype="/avatars"
+         :itemid="avatar.id"
+         :viewBox="avatar.viewbox"
+         v-html="avatar.path"/>
   </figure>
 </template>
 <script>
@@ -12,6 +14,11 @@
     components: {
       icon
     },
-    props: ['avatar']
+    props: {
+      avatar: {
+        type: Object,
+        required: true
+      }
+    }
   }
 </script>

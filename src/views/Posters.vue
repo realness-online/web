@@ -1,15 +1,17 @@
 <template>
   <section id="posters" class="page">
     <header v-show="!new_poster">
-      <a @click="select_photo"><icon name="add"></icon></a>
-      <input type="file" accept="image/jpeg" ref="uploader" v-uploader>
-      <logo-as-link></logo-as-link>
+      <a @click="select_photo">
+        <icon name="add"/>
+      </a>
+      <input ref="uploader" v-uploader type="file" accept="image/jpeg">
+      <logo-as-link/>
     </header>
     <article>
       <header>
         <h1>Posters</h1>
         <hgroup v-show="!new_poster">
-          <icon v-show="working" name="working"></icon>
+          <icon v-show="working" name="working"/>
         </hgroup>
       </header>
       <as-figure v-if="new_poster" class="new"
@@ -17,12 +19,12 @@
                  :new_poster="new_poster"
                  :working="working"
                  @add-poster="add_poster"
-                 @remove-poster="cancel_poster"></as-figure>
-      <as-figure v-else v-for="itemid in posters"
-                 :itemid="itemid"
+                 @remove-poster="cancel_poster"/>
+      <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
+                 :itemid="itemid"
                  :working="working"
-                 @remove-poster="remove_poster"></as-figure>
+                 @remove-poster="remove_poster"/>
     </article>
   </section>
 </template>
@@ -38,12 +40,12 @@
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
   export default {
-    mixins: [signed_in, uploader],
     components: {
       icon,
       'as-figure': as_figure,
       'logo-as-link': logo_as_link
     },
+    mixins: [signed_in, uploader],
     data () {
       return {
         finished: true,
@@ -54,17 +56,17 @@
         storage: firebase.storage().ref()
       }
     },
+    computed: {
+      as_itemid () {
+        return `${this.me}/posters/${this.new_poster.created_at}`
+      }
+    },
     async created () {
       console.clear()
       console.time('feed-load')
       console.info('views their posters')
       firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
-    },
-    computed: {
-      as_itemid () {
-        return `${this.me}/posters/${this.new_poster.created_at}`
-      }
     },
     methods: {
       get_id (name) {

@@ -1,20 +1,22 @@
 <template lang="html">
-  <figure class='feed poster' outline>
+  <figure class="feed poster">
     <figcaption>
       <router-link :to="poster.person.id">
-        <profile-as-avatar :person="poster.person"></profile-as-avatar>
+        <profile-as-avatar :person="poster.person"/>
       </router-link>
       <hgroup>
-        <span class="person">{{poster.person.first_name}} {{poster.person.last_name}}</span>
-        <time :datetime="poster.created_at">{{as_time(poster.created_at)}}</time>
+        <span class="person">{{ poster.person.first_name }} {{ poster.person.last_name }}</span>
+        <time :datetime="poster.created_at">{{ as_time(poster.created_at) }}</time>
       </hgroup>
     </figcaption>
-    <svg v-if="actual_poster" @click="vector_click" :preserveAspectRatio="aspect_ratio"
-         :viewBox="actual_poster.viewbox" v-html="actual_poster.path">
-    </svg>
-    <icon v-else name="working"></icon>
+    <svg v-if="actual_poster"
+         :preserveAspectRatio="aspect_ratio"
+         :viewBox="actual_poster.viewbox"
+         @click="vector_click"
+         v-html="actual_poster.path"/>
+    <icon v-else name="working"/>
     <menu v-if="menu">
-      <download-vector :vector="actual_poster"></download-vector>
+      <download-vector :vector="actual_poster"/>
     </menu>
   </figure>
 </template>
@@ -27,12 +29,17 @@
   import download_vector from '@/components/download-vector'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
-    mixins: [date_mixin, vector_intersection, vector_click],
-    props: ['poster'],
     components: {
       'profile-as-avatar': profile_as_avatar,
       'download-vector': download_vector,
       icon
+    },
+    mixins: [date_mixin, vector_intersection, vector_click],
+    props: {
+      poster: {
+        type: Object,
+        required: true
+      }
     },
     data () {
       return {

@@ -1,43 +1,48 @@
 <template lang="html">
   <form id="profile-form">
     <fieldset id="name">
-      <input id="first-name" type='text' tabindex="1" placeholder="First" required
-             v-model="person.first_name"
-             @blur="modified_check">
-      <input id="last-name" type='text' tabindex="2"  placeholder="Last" required
-             v-model="person.last_name"
+      <input id="first-name" v-model="person.first_name"
+             type="text"
+             tabindex="1"
+             placeholder="First"
+             required>
+      <input id="last-name" v-model="person.last_name"
+             type="text"
+             tabindex="2"
+             placeholder="Last"
+             required
              @blur="modified_check">
     </fieldset>
-    <fieldset id="phone" v-if="!show_sign_out">
+    <fieldset v-if="!show_sign_out" id="phone">
       <label for="mobile">1</label>
-      <input id="mobile" type="tel" tabindex="3" placeholder="(555) 555-5555"
-             v-model="person.mobile"
+      <input id="mobile" v-model="person.mobile"
+             type="tel"
+             tabindex="3"
+             placeholder="(555) 555-5555"
              @keypress="mobile_keypress"
              @keyup="mobile_keyup"
              @paste.prevent="mobile_paste"
              @blur="modified_check">
     </fieldset>
-    <fieldset id="captcha" v-if='show_captcha'
-              :class="{hide_captcha}">
-    </fieldset>
+    <fieldset v-if="show_captcha" id="captcha" :class="{hide_captcha}"/>
     <fieldset v-if="show_code">
-      <input id="verification-code" type="tel" tabindex="4" placeholder="Verification Code"
-             v-model="code"
+      <input id="verification-code" v-model="code"
+             type="tel"
+             tabindex="4"
+             placeholder="Verification Code"
              @keypress="code_keypress">
     </fieldset>
-    <icon v-show="working" name="working"></icon>
+    <icon v-show="working" name="working"/>
     <menu>
-      <button id="authorize"
-              :disabled="disabled_sign_in"
-              v-if="show_authorize"
-              @click.prevent='begin_authorization'>Sign in</button>
-      <button id='submit-verification'
-              v-if="show_code"
-              @click.prevent="sign_in_with_code">Sign in</button>
-      <button id="sign-out"
-              v-if="show_sign_out"
-              @click.prevent="sign_out">
-              <icon name="remove"></icon>
+      <button v-if="show_authorize" id="authorize"
+              :disabled="disabled_sign_in" @click.prevent="begin_authorization">
+        Sign in
+      </button>
+      <button v-if="show_code" id="submit-verification" @click.prevent="sign_in_with_code">
+        Sign in
+      </button>
+      <button v-if="show_sign_out" id="sign-out" @click.prevent="sign_out">
+        <icon name="remove"/>
       </button>
     </menu>
   </form>
@@ -50,9 +55,14 @@
   import icon from '@/components/icon'
   import itemid from '@/helpers/itemid'
   export default {
-    props: ['person'],
     components: {
       icon
+    },
+    props: {
+      person: {
+        type: Object,
+        required: true
+      }
     },
     data () {
       return {

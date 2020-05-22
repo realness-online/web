@@ -1,14 +1,19 @@
 <template lang="html">
-  <hgroup itemscope itemtype='/person' :itemid="item_id">
-    <span itemprop="first_name">{{person.first_name}}</span>
-    <span itemprop="last_name">{{person.last_name}}</span>
+  <hgroup itemscope itemtype="/person" :itemid="item_id">
+    <span itemprop="first_name">{{ person.first_name }}</span>
+    <span itemprop="last_name">{{ person.last_name }}</span>
     <link itemprop="avatar" rel="icon" :href="person.avatar">
   </hgroup>
 </template>
 <script>
   import profile from '@/helpers/profile'
   export default {
-    props: ['person'],
+    props: {
+      person: {
+        type: Object,
+        required: true
+      }
+    },
     computed: {
       item_id () {
         if (this.person.mobile) {

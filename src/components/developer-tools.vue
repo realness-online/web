@@ -2,8 +2,8 @@
   <table itemscope itemtype="/activity">
     <tbody>
       <tr v-for="[message, created_at] in activity" :key="created_at">
-        <td><time>{{created_at}}</time></td>
-        <td>{{message}}</td>
+        <td><time>{{ created_at }}</time></td>
+        <td>{{ message }}</td>
       </tr>
     </tbody>
   </table>

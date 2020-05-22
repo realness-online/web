@@ -1,13 +1,15 @@
 <template>
   <section id="relations" class="page">
     <header>
-      <router-link to="/phone-book"><icon name="heart"></icon></router-link>
-      <logo-as-link></logo-as-link>
+      <router-link to="/phone-book">
+        <icon name="heart"/>
+      </router-link>
+      <logo-as-link/>
     </header>
     <hgroup>
       <h1>Relations</h1>
     </hgroup>
-    <profile-as-list :people='relations'></profile-as-list>
+    <profile-as-list :people="relations"/>
   </section>
 </template>
 <script>
@@ -17,12 +19,12 @@
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
   export default {
-    mixins: [signed_in],
     components: {
       icon,
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link
     },
+    mixins: [signed_in],
     data () {
       return {
         relations: []

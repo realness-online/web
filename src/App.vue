@@ -1,8 +1,8 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view></router-view>
-    <developer-tools></developer-tools>
+    <router-view/>
+    <developer-tools/>
   </main>
 </template>
 <script>
@@ -12,6 +12,11 @@
   export default {
     components: {
       developerTools
+    },
+    computed: {
+      status () {
+        return ~navigator.online ? null : 'offline'
+      }
     },
     watch: {
       '$route' (to, from) {
@@ -29,18 +34,12 @@
       })
       firebase.auth().onAuthStateChanged(this.init_me)
     },
-    computed: {
-      status () {
-        return ~navigator.online ? null : 'offline'
-      }
-    },
     methods: {
-      init_me () {
+      init_me (user) {
         // guarantees that me gets set in localstorage
         const me = new Me()
         return me
       }
-
     }
   }
 </script>

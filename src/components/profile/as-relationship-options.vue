@@ -1,21 +1,26 @@
 <template>
   <menu>
     <a v-if="!is_me" :class="{relation}" @click="update_relationship">
-      <icon name="add"></icon>
-      <icon name="remove"></icon>
+      <icon name="add"/>
+      <icon name="remove"/>
     </a>
   </menu>
 </template>
 <script>
   import icon from '@/components/icon'
   export default {
-    props: {
-      me: Object,
-      person: Object,
-      relations: Array
-    },
     components: {
       icon
+    },
+    props: {
+      person: {
+        type: Object,
+        required: true
+      },
+      relations: {
+        type: Array,
+        required: true
+      }
     },
     data () {
       return {
@@ -24,7 +29,7 @@
     },
     computed: {
       is_me () {
-        return (this.me.id === this.person.id)
+        return (this.me === this.person.id)
       }
     },
     methods: {
