@@ -78,22 +78,33 @@
       "indent": "off",
       "lines-between-class-members": 0,
       "vue/no-v-html": "off",
-      "vue/prop-name-casing": ["error", "snake_case"],
-      "vue/max-attributes-per-line": ["error", {
-        "singleline": 6,
-        "multiline": {
-          "max": 2,
-          "allowFirstLine": true
+      "vue/prop-name-casing": [
+        "error",
+        "snake_case"
+      ],
+      "vue/max-attributes-per-line": [
+        "error",
+        {
+          "singleline": 6,
+          "multiline": {
+            "max": 2,
+            "allowFirstLine": true
+          }
         }
-      }],
-      "vue/html-closing-bracket-spacing": ["error", {
-        "selfClosingTag": "never"
-      }],
-      "vue/html-closing-bracket-newline": ["error", {
-        "singleline": "never",
-        "multiline": "never"
-      }]
-
+      ],
+      "vue/html-closing-bracket-spacing": [
+        "error",
+        {
+          "selfClosingTag": "never"
+        }
+      ],
+      "vue/html-closing-bracket-newline": [
+        "error",
+        {
+          "singleline": "never",
+          "multiline": "never"
+        }
+      ]
     }
   },
   "postcss": {
