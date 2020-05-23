@@ -51,7 +51,9 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
     <button
       id="authorize"
     >
+      
       Sign in
+    
     </button>
      
     <!---->

@@ -13,9 +13,9 @@ describe('@/modules/item.js', () => {
       expect(item.type).toBe('person')
       expect(item.id).toBe('/+16282281824')
     })
-    it('Fails gracefully if no elements provided', () => {
+    it('returns null if no elements provided', () => {
       const items = get_item()
-      expect(items.id).toBe(undefined)
+      expect(items).toBe(null)
     })
     it('Has meta data about the item', () => {
       expect(item.type).toBe('person')

@@ -21,7 +21,7 @@
 <script>
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
-  import itemid from '@/helpers/itemid'
+  import { as_created_at, list } from '@/helpers/itemid'
   import download_vector from '@/components/download-vector'
   export default {
     components: {
@@ -42,16 +42,12 @@
         type: Boolean,
         required: false,
         default: false
-      },
-      events: {
-        type: Array,
-        required: false,
-        default: async () => await itemid.list(`${this.me}/events`)
       }
     },
     data () {
       return {
-        accept: true
+        accept: true,
+        events: []
       }
     },
     computed: {
@@ -60,18 +56,25 @@
       },
       day () {
         const event = this.events.find(event => event.url === this.itemid)
-        if (event) return new Date(event.id).toLocaleString('en-US', { day: 'numeric' })
-        else return new Date().toLocaleString('en-US', { day: 'numeric' })
+        if (event) {
+          const event_at = as_created_at(event.id)
+          return new Date(event_at).toLocaleString('en-US', { day: 'numeric' })
+        } else return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month () {
         const event = this.events.find(event => event.url === this.itemid)
-        if (event) return new Date(event.id).toLocaleString('en-US', { month: 'long' })
-        else return new Date().toLocaleString('en-US', { month: 'long' })
+        if (event) {
+          const event_at = as_created_at(event.id)
+          return new Date(event_at).toLocaleString('en-US', { month: 'long' })
+        } else return new Date().toLocaleString('en-US', { month: 'long' })
       },
       has_event () {
         const exists = this.events.some(event => event.url === this.itemid)
         return exists ? 'has-event' : null
       }
+    },
+    async created () {
+      this.events = await list(`${this.me}/events`)
     }
   }
 </script>

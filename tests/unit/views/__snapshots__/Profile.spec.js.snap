@@ -6,7 +6,7 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
   id="profile"
 >
   <header>
-    <svg />
+    <!---->
      
     <!---->
   </header>
@@ -17,6 +17,6 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
    
   <!---->
    
-  <div />
+  <!---->
 </section>
 `;

@@ -2,6 +2,12 @@
 
 exports[`@/compontent/profile/as-relationship-options.vue Render a list of options for this profile 1`] = `
 <menu>
-  <!---->
+  <a
+    class="relation"
+  >
+    <!---->
+     
+    <!---->
+  </a>
 </menu>
 `;

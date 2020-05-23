@@ -55,21 +55,17 @@
         return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
       }
     },
-    updated () {
+    created () {
       this.days[Symbol.iterator] = function * () {
         yield * [...this.entries()].sort(newer_date_first)
       }
-      console.log(this.statements.length)
-      // if (this.statements.length) {
-        this.statements.sort(newer_item_first)
-        as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
-      // }
+      this.statements.sort(newer_item_first)
+      as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
       this.posters.forEach(poster => this.insert_into_day(poster))
       this.working = false
     },
     methods: {
       insert_into_day (item) {
-        console.log(item)
         const day_name = date_helper.id_as_day(item[0].id)
         const day = this.days.get(day_name)
         if (day) day.push(item)

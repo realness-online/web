@@ -8,7 +8,9 @@ exports[`@/components/statements/as-div.vue Render a statement 1`] = `
   <p
     itemprop="statement"
   >
+    
     9 The way that avatars get processed has been updated. They are brighter, have more contrast, and detail
+  
   </p>
    
   <!---->

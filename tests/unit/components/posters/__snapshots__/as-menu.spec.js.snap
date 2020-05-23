@@ -10,6 +10,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
     id="create-event"
   >
     <svg
+      class="has-event"
       viewBox="0 0 150 150"
     >
       <use
@@ -22,7 +23,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
         x="57"
         y="24"
       >
-        December
+        February
       </text>
        
       <text
@@ -30,7 +31,7 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
         x="57"
         y="84"
       >
-        31
+        1
       </text>
     </svg>
   </a>
