@@ -6,7 +6,7 @@
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     @click="vector_click"
-    v-html="path"/>
+    v-html="path" />
 </template>
 <script>
   import itemid from '@/helpers/itemid'

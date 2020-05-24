@@ -1,17 +1,17 @@
 ’<template lang="html">
   <section id="profile" ref="profile" class="page">
     <header>
-      <icon name="nothing"/>
-      <logo-as-link/>
+      <icon name="nothing" />
+      <logo-as-link />
     </header>
-    <avatar :person="person" @loaded="avatar_loaded"/>
+    <avatar :person="person" @loaded="avatar_loaded" />
     <menu v-if="avatar">
-      <download-vector :vector="avatar"/>
+      <download-vector :vector="avatar" />
     </menu>
-    <profile-as-figure :person="person"/>
+    <profile-as-figure :person="person" />
     <as-days v-slot="item" :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :itemid="item"/>
-      <thought-as-article v-else :throught="item" @viewed="statement_viewed"/>
+      <poster-as-figure v-if="item.type === 'posters'" :itemid="item" />
+      <thought-as-article v-else :throught="item" @viewed="statement_viewed" />
     </as-days>
   </section>
 </template>

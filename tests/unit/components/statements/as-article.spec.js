@@ -16,11 +16,11 @@ const statement = {
 }
 const older_statement = {
   statement: 'I can say all the stuff',
-  id: '/+14151234356/statements/1553460776031',
+  id: '/+14151234356/statements/1553460776031'
 }
 describe('@/components/statements/as-article.vue', () => {
   it('Render a statement as an article element', async () => {
-    const wrapper = shallow(as_article, { propsData: {statements: [statement, older_statement] } })
+    const wrapper = shallow(as_article, { propsData: { statements: [statement, older_statement] } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()

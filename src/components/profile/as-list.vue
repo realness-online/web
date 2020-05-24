@@ -1,14 +1,14 @@
 <template lang="html">
   <div>
-    <profile-as-links :people="relations"/>
+    <profile-as-links :people="relations" />
     <nav class="profile-list">
       <li v-for="person in people" :key="person.id">
-        <as-figure :person="person"/>
+        <as-figure :person="person" />
         <as-relationship-options :me="me"
                                  :person="person"
                                  :relations="relations"
                                  @remove="remove_relationship"
-                                 @add="add_relationship"/>
+                                 @add="add_relationship" />
       </li>
     </nav>
   </div>

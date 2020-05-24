@@ -4,10 +4,10 @@
       <symbol v-if="avatar" :id="id"
               :viewBox="avatar.viewbox"
               :preserveAspectRatio="aspect_ratio"
-              v-html="avatar.path"/>
+              v-html="avatar.path" />
     </defs>
-    <icon v-if="!working" name="background"/>
-    <use :href="avatar_link"/>
+    <icon v-if="!working" name="background" />
+    <use :href="avatar_link" />
   </svg>
 </template>
 <script>

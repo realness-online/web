@@ -1,8 +1,8 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view/>
-    <developer-tools/>
+    <router-view />
+    <developer-tools />
   </main>
 </template>
 <script>

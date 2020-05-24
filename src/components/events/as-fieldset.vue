@@ -20,8 +20,8 @@
            :value="event_time"
            @input="update_time">
     <menu>
-      <a ref="remove" @click="remove"><icon name="remove"/></a>
-      <a ref="save" @click="save"><icon name="add"/></a>
+      <a ref="remove" @click="remove"><icon name="remove" /></a>
+      <a ref="save" @click="save"><icon name="add" /></a>
     </menu>
   </fieldset>
 </template>

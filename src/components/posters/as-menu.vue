@@ -1,21 +1,21 @@
 <template lang="html">
   <menu>
     <a @click="$emit('remove-poster')">
-      <icon v-if="working" name="working"/>
-      <icon v-else name="remove"/>
+      <icon v-if="working" name="working" />
+      <icon v-else name="remove" />
     </a>
     <a v-if="!is_new" id="create-event">
       <svg viewBox="0 0 150 150" :class="has_event">
-        <use :href="date_picker_icon"/>
+        <use :href="date_picker_icon" />
         <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
         <text x="57" y="84" text-anchor="middle">{{ day }}</text>
       </svg>
     </a>
     <a v-if="is_new" @click="$emit('add-poster')">
-      <icon v-if="accept" name="finished"/>
-      <icon v-else name="working"/>
+      <icon v-if="accept" name="finished" />
+      <icon v-else name="working" />
     </a>
-    <download-vector v-if="!is_new" :itemid="itemid"/>
+    <download-vector v-if="!is_new" :itemid="itemid" />
   </menu>
 </template>
 <script>

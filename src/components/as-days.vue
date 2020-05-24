@@ -1,7 +1,7 @@
 <template lang="html">
   <section class="as-days">
     <header v-if="working">
-      <icon name="working"/>
+      <icon name="working" />
     </header>
     <article v-for="[date, day] in days" v-else
              :key="date"
@@ -10,7 +10,7 @@
       <header>
         <h4>{{ as_day(date) }}</h4>
       </header>
-      <slot v-for="item in day" :item="item"/>
+      <slot v-for="item in day" :item="item" />
     </article>
   </section>
 </template>

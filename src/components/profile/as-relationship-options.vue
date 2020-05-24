@@ -1,8 +1,8 @@
 <template>
   <menu>
     <a v-if="!is_me" :class="{relation}" @click="update_relationship">
-      <icon name="add"/>
-      <icon name="remove"/>
+      <icon name="add" />
+      <icon name="remove" />
     </a>
   </menu>
 </template>

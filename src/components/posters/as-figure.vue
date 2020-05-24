@@ -1,20 +1,20 @@
 <template lang="html">
   <figure class="poster" :class="{ 'selecting-event': selecting_event }">
-    <icon name="background"/>
+    <icon name="background" />
     <as-svg :itemid="itemid"
             :new_poster="new_poster"
-            @vector-click="vector_click"/>
+            @vector-click="vector_click" />
     <figcaption>
       <event-as-fieldset v-if="date_picker"
                          :itemid="itemid"
                          :menu="menu"
-                         @picker="event_picker"/>
+                         @picker="event_picker" />
       <poster-menu v-if="menu"
                    :itemid="itemid"
                    :is_new="new_poster? true : false"
                    :working="working"
                    @add-poster="add_poster"
-                   @remove-poster="remove_poster"/>
+                   @remove-poster="remove_poster" />
     </figcaption>
   </figure>
 </template>

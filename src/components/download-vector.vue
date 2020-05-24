@@ -1,6 +1,6 @@
 <template lang="html">
   <a :href="downloadable" :download="file_name">
-    <icon name="download"/>
+    <icon name="download" />
   </a>
 </template>
 <script>

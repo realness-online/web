@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg :class="name"><use :xlink:href="icon_location"/></svg>
+  <svg :class="name"><use :xlink:href="icon_location" /></svg>
 </template>
 <script>
   import icons from '@/icons.svg'

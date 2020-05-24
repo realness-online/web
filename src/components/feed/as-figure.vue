@@ -2,7 +2,7 @@
   <figure class="feed poster">
     <figcaption>
       <router-link :to="poster.person.id">
-        <profile-as-avatar :person="poster.person"/>
+        <profile-as-avatar :person="poster.person" />
       </router-link>
       <hgroup>
         <span class="person">{{ poster.person.first_name }} {{ poster.person.last_name }}</span>
@@ -13,10 +13,10 @@
          :preserveAspectRatio="aspect_ratio"
          :viewBox="actual_poster.viewbox"
          @click="vector_click"
-         v-html="actual_poster.path"/>
-    <icon v-else name="working"/>
+         v-html="actual_poster.path" />
+    <icon v-else name="working" />
     <menu v-if="menu">
-      <download-vector :vector="actual_poster"/>
+      <download-vector :vector="actual_poster" />
     </menu>
   </figure>
 </template>

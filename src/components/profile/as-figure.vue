@@ -1,9 +1,11 @@
 <template>
   <figure class="profile">
-    <as-svg :person="person" @vector-clicked="avatar_click"/>
+    <as-svg :person="person" @vector-clicked="avatar_click" />
     <figcaption>
-      <as-hgroup :person="person"/>
-      <p v-if="is_me" class="phone">{{ mobile_display }}</p>
+      <as-hgroup :person="person" />
+      <p v-if="is_me" class="phone">
+        {{ mobile_display }}
+      </p>
       <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
   </figure>

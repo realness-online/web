@@ -24,12 +24,12 @@
       <button v-if="posting" tabindex="-1" @click="done_posting">
         Done
       </button>
-      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" @statement-added="add_statement"/>
+      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" @statement-added="add_statement" />
     </nav>
     <footer hidden>
       <as-days v-slot="{ item: thoughts }" itemscope :itemid="itemid" :statements="statements">
         {{ thoughts }}
-        <thought-as-article v-for="thought in thoughts" :key="thought[0].id" statements="thought"/>
+        <thought-as-article v-for="thought in thoughts" :key="thought[0].id" statements="thought" />
       </as-days>
     </footer>
   </section>

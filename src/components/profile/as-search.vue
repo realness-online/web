@@ -6,7 +6,7 @@
            autocomplete="off"
            @focusout="view_friends_mode"
            @focusin="search_mode">
-    <icon name="search"/>
+    <icon name="search" />
   </label>
 </template>
 <script>

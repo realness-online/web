@@ -1,11 +1,11 @@
 <template lang="html">
   <figure class="events">
-    <icon name="background"/>
+    <icon name="background" />
     <svg v-if="poster"
          :viewBox="poster.viewbox"
          :preserveAspectRatio="aspect_ratio"
          @click="vector_click"
-         v-html="poster.path"/>
+         v-html="poster.path" />
   </figure>
 </template>
 <script>

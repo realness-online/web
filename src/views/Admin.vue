@@ -1,16 +1,16 @@
 <template lang="html">
   <section id="admin" class="page">
     <header>
-      <icon name="nothing"/>
+      <icon name="nothing" />
       <h1>Admin</h1>
-      <logo-as-link/>
+      <logo-as-link />
     </header>
     <as-days v-for="person in phonebook" :key="person.id"
              v-slot="thoughts" :statements="person.statements">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :verbose="false"/>
+                          :verbose="false" />
     </as-days>
   </section>
 </template>

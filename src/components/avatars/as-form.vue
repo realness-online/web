@@ -1,22 +1,22 @@
 <template lang="html">
   <div id="manage-avatar">
-    <icon v-if="working" name="working"/>
+    <icon v-if="working" name="working" />
     <div v-else>
-      <avatar-as-figure v-if="avatar" :avatar="avatar"/>
-      <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar"/>
+      <avatar-as-figure v-if="avatar" :avatar="avatar" />
+      <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </div>
     <menu v-if="show_menu">
       <a id="open_camera" @click="open_camera">
-        <icon name="camera"/>
+        <icon name="camera" />
       </a>
       <a id="select_photo" @click="select_photo">
-        <icon name="add"/>
+        <icon name="add" />
       </a>
       <a v-if="avatar_changed" id="accept_changes" @click="accept_new_avatar">
-        <icon v-if="finished" name="finished"/>
-        <icon v-else name="working"/>
+        <icon v-if="finished" name="finished" />
+        <icon v-else name="working" />
       </a>
-      <download-vector v-if="download_vector" :vector="current_avatar"/>
+      <download-vector v-if="download_vector" :vector="current_avatar" />
     </menu>
     <input ref="uploader" v-uploader type="file" accept="image/jpeg" capture="user">
   </div>

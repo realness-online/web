@@ -2,16 +2,16 @@
   <section id="posters" class="page">
     <header v-show="!new_poster">
       <a @click="select_photo">
-        <icon name="add"/>
+        <icon name="add" />
       </a>
       <input ref="uploader" v-uploader type="file" accept="image/jpeg">
-      <logo-as-link/>
+      <logo-as-link />
     </header>
     <article>
       <header>
         <h1>Posters</h1>
         <hgroup v-show="!new_poster">
-          <icon v-show="working" name="working"/>
+          <icon v-show="working" name="working" />
         </hgroup>
       </header>
       <as-figure v-if="new_poster" class="new"
@@ -19,12 +19,12 @@
                  :new_poster="new_poster"
                  :working="working"
                  @add-poster="add_poster"
-                 @remove-poster="cancel_poster"/>
+                 @remove-poster="cancel_poster" />
       <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
                  :itemid="itemid"
                  :working="working"
-                 @remove-poster="remove_poster"/>
+                 @remove-poster="remove_poster" />
     </article>
   </section>
 </template>

@@ -24,7 +24,7 @@
              @paste.prevent="mobile_paste"
              @blur="modified_check">
     </fieldset>
-    <fieldset v-if="show_captcha" id="captcha" :class="{hide_captcha}"/>
+    <fieldset v-if="show_captcha" id="captcha" :class="{hide_captcha}" />
     <fieldset v-if="show_code">
       <input id="verification-code" v-model="code"
              type="tel"
@@ -32,7 +32,7 @@
              placeholder="Verification Code"
              @keypress="code_keypress">
     </fieldset>
-    <icon v-show="working" name="working"/>
+    <icon v-show="working" name="working" />
     <menu>
       <button v-if="show_authorize" id="authorize"
               :disabled="disabled_sign_in" @click.prevent="begin_authorization">
@@ -42,7 +42,7 @@
         Sign in
       </button>
       <button v-if="show_sign_out" id="sign-out" @click.prevent="sign_out">
-        <icon name="remove"/>
+        <icon name="remove" />
       </button>
     </menu>
   </form>

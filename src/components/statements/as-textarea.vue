@@ -3,7 +3,7 @@
             cols="1" rows="1"
             placeholder=">"
             @focusout="prepare_statement"
-            @focusin="wat_focused"/>
+            @focusin="wat_focused" />
 </template>
 <script>
   export default {

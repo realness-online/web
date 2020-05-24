@@ -1,6 +1,6 @@
 <template lang="html">
   <router-link id="logo" to="/">
-    <icon name="realness"/>
+    <icon name="realness" />
   </router-link>
 </template>
 <script>

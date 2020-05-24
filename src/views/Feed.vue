@@ -1,15 +1,15 @@
 <template>
   <section id="feed" class="page">
     <header>
-      <icon name="nothing"/>
-      <logo-as-link/>
+      <icon name="nothing" />
+      <logo-as-link />
     </header>
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
     <as-days v-slot="item" :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id"/>
-      <thought-as-article v-else :statements="item" :verbose="true" @viewed="statement_viewed"/>
+      <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
+      <thought-as-article v-else :statements="item" :verbose="true" @viewed="statement_viewed" />
     </as-days>
   </section>
 </template>

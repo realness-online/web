@@ -1,23 +1,23 @@
 <template>
   <section id="events" class="page">
     <header>
-      <icon name="nothing"/>
-      <logo-as-link/>
+      <icon name="nothing" />
+      <logo-as-link />
     </header>
     <hgroup>
-      <icon v-show="working" name="working"/>
+      <icon v-show="working" name="working" />
     </hgroup>
     <article id="tonight">
       <header>
         <h1>Tonight!</h1>
       </header>
-      <event-as-figure v-for="event in events" :key="event.url" :event="event"/>
+      <event-as-figure v-for="event in events" :key="event.url" :event="event" />
     </article>
     <article id="upcoming">
       <header>
         <h1>Soon</h1>
       </header>
-      <event-as-figure v-for="event in events" :key="event.url" :event="event"/>
+      <event-as-figure v-for="event in events" :key="event.url" :event="event" />
     </article>
   </section>
 </template>

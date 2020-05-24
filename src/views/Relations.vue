@@ -2,14 +2,14 @@
   <section id="relations" class="page">
     <header>
       <router-link to="/phone-book">
-        <icon name="heart"/>
+        <icon name="heart" />
       </router-link>
-      <logo-as-link/>
+      <logo-as-link />
     </header>
     <hgroup>
       <h1>Relations</h1>
     </hgroup>
-    <profile-as-list :people="relations"/>
+    <profile-as-list :people="relations" />
   </section>
 </template>
 <script>

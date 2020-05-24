@@ -1,16 +1,16 @@
 <template>
   <section id="directory" class="page">
     <header>
-      <icon name="nothing"/>
+      <icon name="nothing" />
       <router-link to="/relations">
-        <icon name="finished"/>
+        <icon name="finished" />
       </router-link>
     </header>
     <hgroup>
       <h1>Phonebook</h1>
-      <icon v-if="working" name="working"/>
+      <icon v-if="working" name="working" />
     </hgroup>
-    <profile-as-list :people="phonebook"/>
+    <profile-as-list :people="phonebook" />
   </section>
 </template>
 <script>

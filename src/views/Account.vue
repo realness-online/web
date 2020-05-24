@@ -1,18 +1,18 @@
 <template lang="html">
   <section id="account" :class="{'signed-in': signed_in}" class="page">
     <header>
-      <icon name="nothing"/>
-      <logo-as-link/>
+      <icon name="nothing" />
+      <logo-as-link />
     </header>
-    <avatar-as-form :person="me" @new-avatar="new_avatar"/>
+    <avatar-as-form :person="me" @new-avatar="new_avatar" />
     <div id="login">
-      <profile-as-figure :person="me"/>
-      <profile-as-form :person="me" @modified="save_me"/>
+      <profile-as-figure :person="me" />
+      <profile-as-form :person="me" @modified="save_me" />
     </div>
     <as-days itemscope :itemid="itemid" :statements="statements">
       <thought-as-article :post="item"
                           @viewed="statement_viewed"
-                          @modified="save_page"/>
+                          @modified="save_page" />
     </as-days>
   </section>
 </template>
