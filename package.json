@@ -95,7 +95,7 @@
       "vue/html-closing-bracket-spacing": [
         "error",
         {
-          "selfClosingTag": "never"
+          "selfClosingTag": "always"
         }
       ],
       "vue/html-closing-bracket-newline": [

@@ -17,25 +17,25 @@ describe('@/persistance/Paged.js', () => {
   describe('#sync_list', () => {
     let cloud_spy, local_spy
     beforeEach(() => {
-      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => get_item(statements))
-      local_spy = jest.spyOn(itemid, 'load').mockImplementation(() => get_item(hella_statements))
+      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => Promise.resolve(get_item(statements)))
+      local_spy = jest.spyOn(itemid, 'list').mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
     })
     it('Exists', () => {
       expect(paged.sync_list).toBeDefined()
     })
-    it('Syncs statements from server to local storage', async () => {
-      expect(get_item(statements).statements.length).toBe(9)
-      expect(get_item(hella_statements).statements.length).toBe(79)
+    it.only('Syncs statements from server to local storage', async () => {
+      expect(get_item(statements).statements.length).toBe(20)
+      expect(get_item(hella_statements).statements.length).toBe(100)
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      // 79 local statements - 25 were optimized away on another device
+      // 100 local statements - 20 were optimized away on another device
       // 9 statements from the cloud 3 of which are shared between local and cloud
-      // 79 - 25 = 54
-      // 9 - 3 = 6
-      // 54 + 6 = 60
-      // 54 unsynced statements locally 6 unsynced statements in the cloud
-      expect(list.length).toBe(60)
+      // 100 - 20 = 80
+      // 20 - 10 = 10
+      // 80 + 10 = 90
+      // 20 optimized away, 70 new local statements, 10 unsynced statements in the cloud
+      expect(list.length).toBe(90)
     })
     it('syncs if there are no server items', async () => {
       const mock_statements = { statements: [] }
@@ -44,7 +44,7 @@ describe('@/persistance/Paged.js', () => {
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      expect(list.length).toBe(79)
+      expect(list.length).toBe(100)
     })
     it('syncs if there are no local items', async () => {
       const mock_statements = { statements: [] }
@@ -53,7 +53,7 @@ describe('@/persistance/Paged.js', () => {
       const list = await paged.sync_list()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      expect(list.length).toBe(9)
+      expect(list.length).toBe(20)
     })
   })
   describe('#optimize', () => {
@@ -86,7 +86,7 @@ describe('@/persistance/Paged.js', () => {
     })
     it('Tells the size of the item in local storage', () => {
       localStorage.setItem(paged.id, statements)
-      expect(as_kilobytes(paged.id)).toBe('1.93')
+      expect(as_kilobytes(paged.id)).toBe('4.14')
     })
     it('returns zero if nothing in storage', () => {
       expect(as_kilobytes(paged.id)).toBe(0)

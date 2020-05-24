@@ -2,7 +2,7 @@
   <article class="thought">
     <header v-if="author">
       <router-link :to="author.id">
-        <profile-as-avatar :person="author"/>
+        <profile-as-avatar :person="author" />
       </router-link>
       <hgroup>
         <span>{{ author.first_name }}</span>
@@ -13,7 +13,10 @@
     <header v-else>
       <time>{{ thought_starts_at }}</time>
     </header>
-    <as-statement v-for="statement in statements" :key="statement.id" :statement="statement"/>
+    <as-statement v-for="statement in statements"
+                  :key="statement.id"
+                  itemprop="statements"
+                  :statement="statement" />
   </article>
 </template>
 <script>

@@ -4,12 +4,15 @@ import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import { hydrate, get_itemprops } from '@/modules/item'
-import { load, load_from_network } from '@/helpers/itemid'
+import {
+  list,
+  load_from_network,
+  as_created_at
+} from '@/helpers/itemid'
 import profile from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest_at (elements, prop_name) {
   const list = get_itemprops(elements)
-  console.log(list)
   const props = list[prop_name]
   const oldest = props[props.length - 1]
   return Date.parse(oldest.created_at)
@@ -48,22 +51,29 @@ const Paged = (superclass) => class extends superclass {
   }
   async sync_list () {
     let items; let oldest_at = 0 // the larger the number the more recent it is
-    const cloud = (await load_from_network(this.id))[this.type]
-    const local = (await load(this.id))[this.type]
-    const length = cloud.length
-    if (length) oldest_at = Date.parse(cloud[length - 1].created_at)
-    if (local.length) {
-      const new_local_stuff = local.filter(local_item => {
-        const created_at = Date.parse(local_item.created_at)
+    const cloud = await load_from_network(this.id)
+    const local = await list(this.id)
+    const cloud_items = cloud[cloud.type]
+    const local_items = local[cloud.type]
+    if (cloud_items && cloud_items.length) {
+      cloud_items.sort(newer_item_first)
+      const oldest_id = cloud_items[cloud_items.length - 1].id
+      oldest_at = as_created_at(oldest_id)
+      console.log(oldest_at)
+    }
+    if (local_items && local_items.length) {
+      local_items.sort(newer_item_first)
+      const new_local_stuff = local_items.filter(local_item => {
+        const created_at = as_created_at(local_item.id)
         // local older items are ignored, probably optimized away
         if (oldest_at > created_at) return false
-        return !cloud.some(server_item => {
-          return local_item.created_at === server_item.created_at
+        return !cloud_items.some(server_item => {
+          return local_item.id === server_item.id
         })
       })
-      items = [...new_local_stuff, ...cloud]
+      items = [...new_local_stuff, ...cloud_items]
       items.sort(newer_item_first)
-    } else items = cloud
+    } else items = cloud_items
     return items
   }
 }

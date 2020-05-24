@@ -16,12 +16,13 @@ export default class Storage {
 }
 export class Me extends Storage {
   constructor () {
-    console.log(firebase.auth().currentUser)
     let me = localStorage.getItem('me')
     if (!me) {
       const user = firebase.auth().currentUser
-      if (user) localStorage.setItem('me', profile.from_e64(user.phoneNumber))
-      else me = '/+'
+      if (user) {
+        me = profile.from_e64(user.phoneNumber)
+        localStorage.setItem('me', me)
+      } else me = '/+'
     }
     super(me)
   }
