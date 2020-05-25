@@ -107,4 +107,11 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-export default { load, list, as_directory, as_created_at, as_fragment, as_query_id }
+export default {
+  load,
+  list,
+  as_directory,
+  as_created_at,
+  as_fragment,
+  as_query_id
+}

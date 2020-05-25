@@ -3,7 +3,10 @@ import * as firebase from 'firebase/app'
 import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
-import { hydrate, get_itemprops } from '@/modules/item'
+import {
+  hydrate,
+  get_itemprops
+} from '@/modules/item'
 import {
   list,
   load_from_network,
@@ -11,55 +14,66 @@ import {
 } from '@/helpers/itemid'
 import profile from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
-function get_oldest_at (elements, prop_name) {
+function get_oldest (elements, prop_name) {
   const list = get_itemprops(elements)
   const props = list[prop_name]
+  props.sort(newer_item_first)
   const oldest = props[props.length - 1]
-  return Date.parse(oldest.created_at)
+  return new Date(as_created_at(oldest.id))
 }
 function is_fat (items, prop_name) {
   const today = new Date().setHours(0, 0, 0, 0)
-  const as_kilobytes = (items.outerHTML.length / 1024).toFixed(2)
-  if ((as_kilobytes > 5) && (get_oldest_at(items, prop_name) < today)) return true // only count stuff before today
+  if (
+    (elements_as_kilobytes(items) > 5) &&
+    (get_oldest(items, prop_name) < today)
+  ) return true // only count stuff before today
   else return false
 }
-export function as_kilobytes (itemid) {
+export function itemid_as_kilobytes (itemid) {
   const bytes = localStorage.getItem(itemid)
   if (bytes) return (bytes.length / 1024).toFixed(2)
+  else return 0
+}
+export function elements_as_kilobytes (elements) {
+  if (elements) return (elements.outerHTML.length / 1024).toFixed(2)
   else return 0
 }
 const Paged = (superclass) => class extends superclass {
   async optimize () {
     // First in first out storage (FIFO)
-    if (as_kilobytes(this.id) > 13) {
+    if (itemid_as_kilobytes(this.id) > 13) {
       const current = hydrate(localStorage.getItem(this.id)).childNodes[0]
+      const oldest = get_oldest(current, this.type)
       const offload = document.createDocumentFragment()
-      while (is_fat(current, this.type)) {
+      const original_size = elements_as_kilobytes(current)
+      let amount_moved = 0
+      while (is_fat(current, this.type) && amount_moved <= 8) {
         const fatty = current.childNodes[current.childNodes.length - 1]
         const new_sibling = offload.childNodes[0] || null
         offload.insertBefore(current.removeChild(fatty), new_sibling)
+        amount_moved = original_size - elements_as_kilobytes(current)
       }
       const div = document.createElement(current.nodeName)
       div.setAttribute('itemscope', '')
       div.setAttribute('itemid', this.id)
       div.appendChild(offload)
       const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
-      const id = `${me}/${this.type}/${get_oldest_at(div, this.type)}.html`
+      const id = `${me}/${this.type}/${oldest.getTime()}`
       await this.save(current)
-      new History(id).save(div)
+      await new History(id).save(div)
+      if (elements_as_kilobytes(current) > 13) this.optimize()
     }
   }
   async sync_list () {
     let items; let oldest_at = 0 // the larger the number the more recent it is
+    const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)
-    const local = await list(this.id)
+    if (!cloud) return local_items
     const cloud_items = cloud[cloud.type]
-    const local_items = local[cloud.type]
     if (cloud_items && cloud_items.length) {
       cloud_items.sort(newer_item_first)
       const oldest_id = cloud_items[cloud_items.length - 1].id
       oldest_at = as_created_at(oldest_id)
-      console.log(oldest_at)
     }
     if (local_items && local_items.length) {
       local_items.sort(newer_item_first)
