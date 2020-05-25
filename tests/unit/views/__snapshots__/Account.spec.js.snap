@@ -21,12 +21,10 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     <!---->
   </div>
    
-  <div
-    id="pages-of-statements"
+  <as-days
+    itemscope=""
   >
-    <div
-      itemprop="statements"
-    />
-  </div>
+    <!---->
+  </as-days>
 </section>
 `;

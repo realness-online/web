@@ -14,7 +14,7 @@ export default class Storage {
     this.metadata = { contentType: 'text/html' }
   }
 }
-export class Me extends Storage {
+export class Me extends Cloud(Local(Storage)) {
   constructor () {
     let me = localStorage.getItem('me')
     if (!me) {

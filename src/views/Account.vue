@@ -4,10 +4,10 @@
       <icon name="nothing" />
       <logo-as-link />
     </header>
-    <avatar-as-form :person="me" @new-avatar="new_avatar" />
+    <avatar-as-form :person="person" @new-avatar="new_avatar" />
     <div id="login">
-      <profile-as-figure :person="me" />
-      <profile-as-form :person="me" @modified="save_me" />
+      <profile-as-figure :person="person" />
+      <profile-as-form :person="person" @modified="save_me" />
     </div>
     <as-days itemscope :itemid="itemid" :statements="statements">
       <thought-as-article :post="item"
@@ -41,34 +41,40 @@
     mixins: [signed_in],
     data () {
       return {
+        person: null,
         statements: [],
-        image_file: null
+        image_file: null,
+        me_storage: null,
+        statements_storage: null
+      }
+    },
+    watch: {
+      signed_in () {
+        if (this.signed_in) {
+          localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
+        }
       }
     },
     async created () {
       console.info('Views account page')
-      if (this.signed_in) {
-        localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
-      }
-      this.statements = itemid.list(`${this.me}/statements`)
+      this.me_storage = new Me()
+      this.statements_storage = new Statements()
+      this.person = await itemid.load(this.me)
+      this.statements = await itemid.list(`${this.me}/statements`)
     },
     methods: {
       async new_avatar (avatar_url) {
-        const me = new Me()
-        me.avatar = avatar_url
+        this.person.avatar = avatar_url
         await this.$nextTick()
-        me.save()
+        this.me_storage.save()
       },
       async save_me (event) {
-        if (this.signed_in) {
-          localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
-        }
         await this.$nextTick()
-        new Me().save()
+        await this.me_storage.save()
       },
       async save_page (event) {
         await this.$nextTick()
-        await new Statements().save()
+        await this.statements_storage.save()
       }
     }
   }
