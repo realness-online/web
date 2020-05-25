@@ -1,7 +1,6 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import Storage, { Me } from '@/persistance/Storage'
-const fs = require('fs')
 
 describe('@/persistance/Storage.js', () => {
   beforeEach(() => {
@@ -34,7 +33,7 @@ describe('@/persistance/Storage.js', () => {
       jest.spyOn(firebase, 'auth').mockImplementationOnce(() => signed_out)
       expect(localStorage.getItem('me')).toBe(null)
       const me = new Me()
-      expect(me.id).toBe(undefined)
+      expect(me.id).toBe('/+')
       expect(me.type).toBe('person')
       expect(localStorage.getItem('me')).toBe(null)
     })
