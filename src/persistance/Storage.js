@@ -1,10 +1,10 @@
  // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-import { as_type } from '@/helpers/itemid'
 import Local from '@/persistance/Local'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
+import { as_type } from '@/helpers/itemid'
 import profile from '@/helpers/profile'
 
 export default class Storage {
@@ -27,7 +27,6 @@ export class Me extends Cloud(Local(Storage)) {
     super(me)
   }
 }
-// export class Person extends Local(Storage) {}
 export class Relations extends Local(Storage) {
   constructor () {
     super(`${localStorage.getItem('me')}/relations`)

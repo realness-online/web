@@ -1,7 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import Account from '@/views/Account'
 import itemid from '@/helpers/itemid'
-import { Me } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
