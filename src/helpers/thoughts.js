@@ -5,20 +5,23 @@ export function as_thoughts (statements) {
   statements.sort(newer_item_first)
   const thoughts = []
   while (statements.length) {
-    const statement = statements.shift()
+    const statement = statements.pop()
     const thot = [statement]
-    while (is_train_of_thought(thot, statements)) { thot.push(statements.shift()) }
+    while (is_train_of_thought(thot, statements)) { thot.push(statements.pop()) }
     thoughts.push(thot)
   }
+  thoughts.sort((first, second) => {
+    return as_created_at(first[0].id) - as_created_at(second[0].id)
+  })
   return thoughts
 }
-export function is_train_of_thought (thot, statements) {
-  const next_statement = statements[0]
-  const last_statement = thot[thot.length - 1]
-  if (next_statement && last_statement) {
-    const last = as_created_at(last_statement.id)
+function is_train_of_thought (thot, statements) {
+  const next_statement = statements[statements.length - 1]
+  const nearest_statement = thot[thot.length - 1]
+  if (next_statement && nearest_statement) {
+    const nearest = as_created_at(nearest_statement.id)
     const next = as_created_at(next_statement.id)
-    const difference = next - last
+    const difference = next - nearest
     if (difference < thirteen_minutes) return true
     else return false
   } else return false

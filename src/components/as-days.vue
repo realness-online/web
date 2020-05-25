@@ -60,7 +60,8 @@
         yield * [...this.entries()].sort(newer_date_first)
       }
       this.statements.sort(newer_item_first)
-      as_thoughts(this.statements).forEach(thought => this.insert_into_day(thought))
+      const thoughts = as_thoughts(this.statements)
+      thoughts.forEach(thought => this.insert_into_day(thought))
       this.posters.forEach(poster => this.insert_into_day(poster))
       this.working = false
     },
