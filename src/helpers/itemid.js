@@ -20,7 +20,6 @@ export async function load (itemid, me = localStorage.getItem('me')) {
 }
 export async function list (itemid, me = localStorage.getItem('me')) {
   const list = await load(itemid, me)
-  console.log(list)
   const type = as_type(itemid)
   if (list) return list[type]
   else return null

@@ -6,6 +6,7 @@ const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.html', 'utf8')
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
+    localStorage.setItem('me', '/+16282281824')
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
       first_name: 'Scott',
@@ -70,16 +71,10 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
     it('When is_me is true should go to the account page', () => {
+      person.id = localStorage.getItem('me')
       wrapper.setProps({ person: person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
-    })
-    it('When previous is true should go to the previous page', () => {
-      sessionStorage.setItem('previous', '/test-route')
-      wrapper.setProps({ previous: true })
-      wrapper.vm.avatar_click()
-      expect(wrapper.vm.$route.path).toBe('/test-route')
-      sessionStorage.removeItem('previous')
     })
   })
 })

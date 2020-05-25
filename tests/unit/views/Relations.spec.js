@@ -14,8 +14,8 @@ describe('@/views/Relations.vue', () => {
       type: 'relations',
       relations: [{ id: '/+14151234356' }]
     }
-    const load_relations = jest.spyOn(itemid, 'load')
-                          .mockImplementationOnce(() => Promise.resolve(my))
+    const load_relations = jest.spyOn(itemid, 'list')
+                          .mockImplementationOnce(() => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
                          .mockImplementationOnce(() => Promise.resolve(joe_friday))
     const wrapper = await shallow(Relations)

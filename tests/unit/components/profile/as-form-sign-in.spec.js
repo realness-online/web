@@ -37,11 +37,6 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
     })
-    it('Sets statements to be resynced', () => {
-      sessionStorage.setItem('statements-synced', true)
-      button.trigger('click')
-      expect(sessionStorage.getItem('statements-synced')).toBeFalsy()
-    })
     it('Renders the sign out button after sign in', async () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')

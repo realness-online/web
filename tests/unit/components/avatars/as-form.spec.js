@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import as_form from '@/components/avatars/as-form'
-import Storage from '@/persistance/Storage'
+import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -42,7 +42,7 @@ describe('@/components/avatars/as-form.vue', () => {
     describe('#accept_new_avatar', () => {
       it('Should update the avatar', async () => {
         const save_spy = jest.fn(() => Promise.resolve())
-        jest.spyOn(Storage.prototype, 'save').mockImplementation(save_spy)
+        jest.spyOn(Avatar.prototype, 'save').mockImplementation(save_spy)
         wrapper.setData({
           avatar_changed: true,
           avatar: {
