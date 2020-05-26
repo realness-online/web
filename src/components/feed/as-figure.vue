@@ -5,8 +5,9 @@
         <profile-as-avatar :person="poster.person" />
       </router-link>
       <hgroup>
-        <span class="person">{{ poster.person.first_name }} {{ poster.person.last_name }}</span>
-        <time :datetime="poster.created_at">{{ as_time(poster.created_at) }}</time>
+        <span>{{ poster.person.first_name }}</span>
+        <span>{{ poster.person.last_name }}</span>
+        <time>{{ as_created_at }}</time>
       </hgroup>
     </figcaption>
     <svg v-if="actual_poster"
@@ -22,7 +23,6 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
-  import date_mixin from '@/mixins/date'
   import vector_intersection from '@/mixins/vector_intersection'
   import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
@@ -34,7 +34,7 @@
       'download-vector': download_vector,
       icon
     },
-    mixins: [date_mixin, vector_intersection, vector_click],
+    mixins: [vector_intersection, vector_click],
     props: {
       poster: {
         type: Object,
@@ -45,6 +45,11 @@
       return {
         menu: false,
         actual_poster: null
+      }
+    },
+    computed: {
+      as_created_at () {
+        return 'fix me'
       }
     },
     methods: {
