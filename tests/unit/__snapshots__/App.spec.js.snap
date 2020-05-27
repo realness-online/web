@@ -6,6 +6,8 @@ exports[`@/App.vue Renders layout of the application 1`] = `
 >
   <router-view />
    
-  <!---->
+  <aside>
+    <!---->
+  </aside>
 </main>
 `;
