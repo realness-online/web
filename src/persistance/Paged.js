@@ -60,8 +60,11 @@ const Paged = (superclass) => class extends superclass {
       const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
       const id = `${me}/${this.type}/${oldest.getTime()}`
       await this.save(current)
-      await new History(id).save(div)
-      if (elements_as_kilobytes(current) > 13) this.optimize()
+      const history = new History(id)
+      await history.save(div)
+      if (elements_as_kilobytes(current) > 13) {
+        await this.optimize()
+      }
     }
   }
   async sync_list () {

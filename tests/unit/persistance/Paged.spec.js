@@ -2,6 +2,7 @@ import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
 import { itemid_as_kilobytes } from '@/persistance/Paged'
+import flushPromises from 'flush-promises'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync('./tests/unit/html/hella_statements.html', 'utf8')
@@ -65,9 +66,12 @@ describe('@/persistance/Paged.js', () => {
     })
     it('It optimizes a list of items accross a set of pages', async () => {
       localStorage.setItem(paged.id, hella_statements)
+      const save_spy = jest.spyOn(paged, 'save')
       expect(Object.keys(localStorage.__STORE__).length).toBe(2)
       await paged.optimize()
-      expect(Object.keys(localStorage.__STORE__).length).toBe(4)
+      await flushPromises()
+      expect(Object.keys(localStorage.__STORE__).length).toBe(2)
+      expect(save_spy).toHaveBeenCalledTimes(2)
     })
     it('It fails gracefully', async () => {
       localStorage.setItem(paged.id, '')
