@@ -9,7 +9,7 @@ describe('@/compontent/profile/as-list.vue', () => {
     mobile: '4151234356'
   }
   beforeEach(() => {
-    wrapper = shallow(as_list, { propsData: { relations: [] } })
+    wrapper = shallow(as_list, { propsData: { people: [] } })
   })
   it('Render a list of people', () => {
     expect(wrapper.element).toMatchSnapshot()
