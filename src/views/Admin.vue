@@ -41,7 +41,7 @@
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
       await phone_numbers.prefixes.forEach(async (phone_number, index) => {
         const person = await itemid.load(profile.from_e64(phone_number.name))
-        if (person.id) {
+        if (person.id && person.first_name === 'Scott') {
           const statements = await itemid.list(`${person.id}/statements`)
           if (Array.isArray(statements)) person.statements = statements
           else person.statements = [statements]
