@@ -60,7 +60,7 @@
       }
     },
     async created () {
-      console.info('uses the navigation')
+      console.info('Views the navigation')
       this.itemid = `${this.me}/statements`
       const [my, statements, relations] = await Promise.all([
         itemid.load(this.me, this.me),
