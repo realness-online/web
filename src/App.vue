@@ -2,20 +2,30 @@
 <template lang="html">
   <main id="realness" :class="status">
     <router-view />
-    <developer-tools />
+    <aside v-if="production_mode">
+      <activity-as-table />
+    </aside>
+    <aside v-else>
+      <developer-tools />
+    </aside>
   </main>
 </template>
 <script>
-  import developerTools from '@/components/developer-tools'
+  import developer_tools from '@/components/developer-tools'
+  import activity from '@/components/activity/as-table'
   import { Me } from '@/persistance/Storage'
   import * as firebase from 'firebase/app'
   export default {
     components: {
-      developerTools
+      'developer-tools': developer_tools,
+      'activity-as-table': activity
     },
     computed: {
       status () {
         return ~navigator.online ? null : 'offline'
+      },
+      production_mode () {
+        return process.env.NODE_ENV === 'production'
       }
     },
     watch: {
@@ -36,9 +46,7 @@
     },
     methods: {
       init_me (user) {
-        // guarantees that me gets set in localstorage
-        const me = new Me()
-        return me
+        return new Me() // guarantees that me gets set in localstorage
       }
     }
   }
