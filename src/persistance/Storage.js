@@ -40,5 +40,6 @@ export class Activity extends Cloud(Local(Storage)) {
   constructor () { super(`${localStorage.getItem('me')}/activity`) }
 }
 export class History extends Paged(Cloud(Storage)) {}
+export class Admin extends Cloud(Storage) {}
 export class Avatar extends Cloud(Local(Storage)) {}
 export class Poster extends Cloud(Local(Storage)) {}
