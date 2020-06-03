@@ -27,9 +27,13 @@
       <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" @statement-added="add_statement" />
     </nav>
     <footer hidden>
-      <as-days v-slot="{ item: thoughts }" itemscope :itemid="itemid" :statements="statements">
-        {{ thoughts }}
-        <thought-as-article v-for="thought in thoughts" :key="thought[0].id" statements="thought" />
+      <as-days v-if="statements"
+               v-slot="thoughts" itemscope
+               :itemid="itemid" :statements="statements">
+        <thought-as-article v-for="thought in thoughts"
+                            :key="thought[0].id"
+                            :statements="thought"
+                            :verbose="false" />
       </as-days>
     </footer>
   </section>
@@ -52,7 +56,7 @@
       return {
         itemid: null,
         relations: [],
-        statements: [],
+        statements: null,
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
         posting: false,
@@ -60,6 +64,7 @@
       }
     },
     async created () {
+      console.clear()
       console.info('Views the navigation')
       this.itemid = `${this.me}/statements`
       const [my, statements, relations] = await Promise.all([
