@@ -39,7 +39,18 @@ export class Events extends Paged(Cloud(Local(Storage))) {
 export class Activity extends Cloud(Local(Storage)) {
   constructor () { super(`${localStorage.getItem('me')}/activity`) }
 }
-export class History extends Paged(Cloud(Storage)) {}
+export class History extends Cloud(Storage) {
+  async save (items) {
+    console.info('History.save()', this.id)
+    if (!items) return
+    const user = firebase.auth().currentUser
+    const path = `/people/${this.id}.html`
+    if (user && navigator.onLine) {
+      const file = new File([items.outerHTML], path)
+      await firebase.storage().ref().child(path).put(file, this.metadata)
+    }
+  }
+}
 export class Admin extends Cloud(Storage) {}
 export class Avatar extends Cloud(Local(Storage)) {}
 export class Poster extends Cloud(Local(Storage)) {}
