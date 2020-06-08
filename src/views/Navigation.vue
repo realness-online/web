@@ -115,6 +115,8 @@
         margin-top: base-line
         padding: 0
         border-radius: 0
+    & > header
+      padding: 0
     & > nav
       display: grid
       grid-gap: base-line
