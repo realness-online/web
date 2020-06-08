@@ -71,8 +71,10 @@
       display: none
     & > nav
       display: none
-    & > hgroup > h1
-      margin-bottom: 0
+    & > hgroup
+      margin: 0
+      & > h1
+        margin-bottom: 0
     & > svg.working
       order: 1
       margin: base-line auto
