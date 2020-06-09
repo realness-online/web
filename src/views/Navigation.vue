@@ -66,18 +66,23 @@
     async created () {
       console.clear()
       console.info('Views the navigation')
-      this.itemid = `${this.me}/statements`
-      const [my, statements, relations] = await Promise.all([
-        itemid.load(this.me, this.me),
-        itemid.list(`${this.me}/statements`, this.me),
-        itemid.list(`${this.me}/relations`, this.me)
-      ])
-      if (my && my.first_name) this.first_name = my.first_name
-      else this.first_name = 'You'
-      if (statements) this.statements = statements
-      if (relations) this.relations = relations
+      console.log(this.me)
+      if (this.me) this.get_all_my_stuff()
     },
     methods: {
+      async get_all_my_stuff () {
+        this.itemid = `${this.me}/statements`
+        const [my, statements, relations] = await Promise.all([
+          itemid.load(this.me, this.me),
+          itemid.list(`${this.me}/statements`, this.me),
+          itemid.list(`${this.me}/relations`, this.me)
+        ])
+
+        if (my && my.first_name) this.first_name = my.first_name
+        else this.first_name = 'You'
+        if (statements) this.statements = statements
+        if (relations) this.relations = relations
+      },
       done_posting (event) {
         document.querySelector('nav > button').focus()
       },
@@ -86,6 +91,8 @@
         else return '/relations'
       },
       async add_statement (statement) {
+        console.log(this.statements, statement)
+        if (!this.statements) this.statements = []
         this.statements.push(statement)
         await this.$nextTick()
         new Statements().save()

@@ -19,7 +19,7 @@
         statement.statement = this.new_statement && this.new_statement.trim()
         if (!statement.statement) return
         this.new_statement = ''
-        statement.created_at = new Date().toISOString()
+        statement.id = `${this.me}/statements/${new Date().getTime()}`
         this.$emit('statement-added', statement)
         console.info('Creates a statement')
       },
