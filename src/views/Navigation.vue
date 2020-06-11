@@ -21,14 +21,13 @@
       <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">
         Relations
       </router-link>
-      <button v-if="posting" tabindex="-1" @click="done_posting">
-        Done
-      </button>
-      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" @statement-added="add_statement" />
+      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
+      <statement-as-textarea class="red"
+                             @toggle-keyboard="posting = !posting"
+                             @statement-added="add_statement" />
     </nav>
     <footer hidden>
-      <as-days v-if="statements"
-               v-slot="thoughts" itemscope
+      <as-days v-slot="thoughts" itemscope
                :itemid="itemid" :statements="statements">
         <thought-as-article v-for="thought in thoughts"
                             :key="thought[0].id"
@@ -54,32 +53,35 @@
     mixins: [signed_in],
     data () {
       return {
-        itemid: null,
         relations: [],
-        statements: null,
+        statements: [],
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
         posting: false,
-        first_name: null
+        first_name: 'You'
+      }
+    },
+    computed: {
+      has_statements () {
+        return this.statements.length > 0
+      },
+      itemid () {
+        return `${this.me}/statements`
       }
     },
     async created () {
       console.clear()
       console.info('Views the navigation')
-      console.log(this.me)
-      if (this.me) this.get_all_my_stuff()
+      if (this.me) await this.get_all_my_stuff()
     },
     methods: {
       async get_all_my_stuff () {
-        this.itemid = `${this.me}/statements`
         const [my, statements, relations] = await Promise.all([
           itemid.load(this.me, this.me),
           itemid.list(`${this.me}/statements`, this.me),
           itemid.list(`${this.me}/relations`, this.me)
         ])
-
         if (my && my.first_name) this.first_name = my.first_name
-        else this.first_name = 'You'
         if (statements) this.statements = statements
         if (relations) this.relations = relations
       },
@@ -91,9 +93,8 @@
         else return '/relations'
       },
       async add_statement (statement) {
-        console.log(this.statements, statement)
-        if (!this.statements) this.statements = []
         this.statements.push(statement)
+        console.log(this.statements)
         await this.$nextTick()
         new Statements().save()
       }

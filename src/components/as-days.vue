@@ -15,7 +15,7 @@
   </section>
 </template>
 <script>
-  import { newer_item_first, newer_date_first } from '@/helpers/sorting'
+  import { newer_date_first } from '@/helpers/sorting'
   import date_helper from '@/helpers/date'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
@@ -53,24 +53,34 @@
       today_as_date () {
         const now = new Date()
         return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
+      },
+      thoughts () {
+        return as_thoughts(this.statements)
+      }
+    },
+    watch: {
+      statements () {
+        console.log('thoughts', this.thoughts)
+        const days = new Map()
+        this.thoughts.forEach(thought => this.insert_into_day(thought, days))
+        this.days = days
+      },
+      posters () {
+        this.posters.forEach(poster => this.insert_into_day(poster))
       }
     },
     created () {
       this.days[Symbol.iterator] = function * () {
         yield * [...this.entries()].sort(newer_date_first)
       }
-      this.statements.sort(newer_item_first)
-      const thoughts = as_thoughts(this.statements)
-      thoughts.forEach(thought => this.insert_into_day(thought))
-      this.posters.forEach(poster => this.insert_into_day(poster))
       this.working = false
     },
     methods: {
-      insert_into_day (item) {
+      insert_into_day (item, days) {
         const day_name = date_helper.id_as_day(item[0].id)
         const day = this.days.get(day_name)
         if (day) day.push(item)
-        else this.days.set(day_name, [item])
+        else days.set(day_name, [item])
       },
       is_today (date) {
         if (date === this.today_as_date) return true
