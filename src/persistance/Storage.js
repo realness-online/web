@@ -19,10 +19,9 @@ export class Me extends Cloud(Local(Storage)) {
     let me = localStorage.getItem('me')
     if (!me) {
       const user = firebase.auth().currentUser
-      if (user) {
-        me = profile.from_e64(user.phoneNumber)
-        localStorage.setItem('me', me)
-      } else me = '/+'
+      if (user) me = profile.from_e64(user.phoneNumber)
+      else me = '/+'
+      localStorage.setItem('me', me)
     }
     super(me)
   }
