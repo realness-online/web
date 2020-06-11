@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/statements/as-div.vue Render a statement 1`] = `
+<div
+  itemid="/+16282281824/statements/1569909292018"
+  itemscope="itemscope"
+>
+  <p
+    itemprop="statement"
+  >
+    Mark Zuckerberg is just feeding his AI vanity
+  </p>
+   
+  <!---->
+   
+  <!---->
+</div>
+`;
