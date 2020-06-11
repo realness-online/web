@@ -1,7 +1,8 @@
 import { as_created_at } from '@/helpers/itemid'
 import { newer_item_first } from '@/helpers/sorting'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
-export function as_thoughts (statements) {
+export function as_thoughts (sacred_statements) {
+  const statements = [...sacred_statements]
   statements.sort(newer_item_first)
   const thoughts = []
   while (statements.length) {
