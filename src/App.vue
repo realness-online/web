@@ -13,7 +13,6 @@
 <script>
   import developer_tools from '@/components/developer-tools'
   import activity from '@/components/activity/as-table'
-  import { Me } from '@/persistance/Storage'
   import * as firebase from 'firebase/app'
   export default {
     components: {
@@ -42,12 +41,6 @@
         storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
         messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
       })
-      firebase.auth().onAuthStateChanged(this.init_me)
-    },
-    methods: {
-      init_me (user) {
-        return new Me() // guarantees that me gets set in localstorage
-      }
     }
   }
 </script>
