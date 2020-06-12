@@ -60,8 +60,10 @@
     },
     watch: {
       statements () {
-        console.log('thoughts', this.thoughts)
         const days = new Map()
+        days[Symbol.iterator] = function * () {
+          yield * [...this.entries()].sort(newer_date_first)
+        }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.days = days
       },
@@ -70,9 +72,6 @@
       }
     },
     created () {
-      this.days[Symbol.iterator] = function * () {
-        yield * [...this.entries()].sort(newer_date_first)
-      }
       this.working = false
     },
     methods: {

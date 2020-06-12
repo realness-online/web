@@ -3,14 +3,17 @@ import as_days from '@/components/as-days'
 import get_item from '@/modules/item'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const person = get_item(statements_html)
+const statements = get_item(statements_html).statements
 describe('@/components/as-days', () => {
+  let wrapper
+  beforeEach(() => {
+    wrapper = shallow(as_days)
+  })
   it('Renders though is provided nothing', () => {
-    const wrapper = shallow(as_days)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('Renders a list of statements sorted into the days they were created', () => {
-    const wrapper = shallow(as_days, { propsData: { statements: person.statements } })
+    wrapper.setProps({ statements })
     expect(wrapper.element).toMatchSnapshot()
     expect([...wrapper.vm.days.entries()].length).toBe(3)
   })
