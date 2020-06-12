@@ -94,7 +94,6 @@
       },
       async add_statement (statement) {
         this.statements.push(statement)
-        console.log(this.statements)
         await this.$nextTick()
         new Statements().save()
       }
