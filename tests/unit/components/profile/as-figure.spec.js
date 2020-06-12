@@ -61,9 +61,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       wrapper = shallow(as_figure, {
         localVue,
         router,
-        propsData: {
-          person: person
-        }
+        propsData: { person }
       })
     })
     it('Go to the mobile number when clicked', () => {
@@ -71,8 +69,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
     it('When is_me is true should go to the account page', () => {
-      person.id = localStorage.getItem('me')
-      wrapper.setProps({ person: person })
+      wrapper.vm.me = person.id
+      wrapper.setProps({ person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
