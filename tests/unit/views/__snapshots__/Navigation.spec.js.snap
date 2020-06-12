@@ -187,9 +187,7 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
     <button
       tabindex="-1"
     >
-      
       Done
-    
     </button>
      
     <!---->

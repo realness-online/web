@@ -6,7 +6,7 @@ require('jest-fetch-mock').enableMocks()
 Vue.mixin({
   data () {
     return {
-      me: localStorage.getItem('me')
+      me: '/+'
     }
   }
 })
