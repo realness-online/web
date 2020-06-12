@@ -78,7 +78,7 @@
     methods: {
       insert_into_day (item, days) {
         const day_name = date_helper.id_as_day(item[0].id)
-        const day = this.days.get(day_name)
+        const day = days.get(day_name)
         if (day) day.push(item)
         else days.set(day_name, [item])
       },
