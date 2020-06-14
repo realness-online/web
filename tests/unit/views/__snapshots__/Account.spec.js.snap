@@ -9,22 +9,18 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     <!---->
      
     <!---->
+     
+    <!---->
   </header>
    
   <!---->
    
-  <div
-    id="login"
-  >
-    <!---->
-     
-    <!---->
-  </div>
+  <!---->
    
-  <as-days
-    itemscope=""
-  >
-    <!---->
-  </as-days>
+  <h1>
+    Statements
+  </h1>
+   
+  <!---->
 </section>
 `;

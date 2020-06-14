@@ -1,18 +1,22 @@
 <template lang="html">
   <section id="account" :class="{'signed-in': signed_in}" class="page">
     <header>
-      <icon name="nothing" />
+      <icon v-if="signed_in || show_form" name="nothing" />
+      <button v-if="!signed_in && !show_form" @click="show_form = !show_form">Sign On</button>
       <logo-as-link />
     </header>
-    <avatar-as-form :person="person" @new-avatar="new_avatar" />
-    <div id="login">
-      <profile-as-figure :person="person" />
+    <avatar-as-form v-if="signed_in" :person="person" @new-avatar="new_avatar" />
+    <div v-if="show_form" id="login">
+      <profile-as-figure v-if="signed_in" :person="person" />
       <profile-as-form :person="person" @modified="save_me" />
     </div>
-    <as-days itemscope :itemid="itemid" :statements="statements">
-      <thought-as-article :post="item"
-                          @viewed="statement_viewed"
-                          @modified="save_page" />
+    <h1>Statements</h1>
+    <as-days v-slot="thoughts" itemscope
+             :itemid="itemid" :statements="statements">
+      <thought-as-article v-for="thought in thoughts"
+                          :key="thought[0].id"
+                          :statements="thought"
+                          :verbose="false" />
     </as-days>
   </section>
 </template>
@@ -24,6 +28,7 @@
   import { Statements, Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
+  import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
@@ -32,6 +37,7 @@
   export default {
     components: {
       icon,
+      'as-days': as_days,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
@@ -41,12 +47,16 @@
     mixins: [signed_in],
     data () {
       return {
-        person: null,
+        person: {},
         statements: [],
         image_file: null,
         me_storage: null,
-        statements_storage: null
+        statements_storage: null,
+        show_form: false
       }
+    },
+    computed: {
+      itemid () { return `${this.me}/statements` }
     },
     watch: {
       signed_in () {
@@ -60,7 +70,9 @@
       this.me_storage = new Me()
       this.statements_storage = new Statements()
       this.person = await itemid.load(this.me)
-      this.statements = await itemid.list(`${this.me}/statements`)
+      const statements = await itemid.list(`${this.me}/statements`)
+      if (Array.isArray(statements)) this.statements = statements
+      else if (statements) this.statements = [statements]
     },
     methods: {
       async new_avatar (avatar_url) {
@@ -83,30 +95,13 @@
   section#account
     svg.background
       fill: red
-    & > header
-      position: absolute
-      width:100%
-      z-index: 2
-    & > div#login
-      margin: auto
-      max-width: page-width
+    & > *:not(header)
       padding: base-line
-      form
-        margin-top: base-line
-    & > div#pages-of-statements
-      max-width: page-width
-      margin: auto
-      padding: base-line base-line 0 base-line
-      & > div[itemprop]
-        display:flex
-        flex-direction: column-reverse
-        & > section.day
-          display:flex
-          flex-direction: column
-          &.today
-            flex-direction: column-reverse
-            & > header
-              order: 1
-          & > header > h4
-            margin-top: base-line
+    & div#login > figure
+      margin-bottom: base-line
+    article.day
+      @media (min-width: pad-begins)
+        grid-auto-rows: auto
+      @media (min-width: typing-begins)
+        grid-auto-rows: auto
 </style>

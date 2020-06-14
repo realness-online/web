@@ -15,6 +15,7 @@ const me = {
 describe('@/views/Account.vue', () => {
   let wrapper, load_spy, list_spy
   beforeEach(() => {
+    localStorage.setItem('me', '/+')
     const onAuthStateChanged = jest.fn(state_changed => {
       state_changed(currentUser)
     })
@@ -24,6 +25,10 @@ describe('@/views/Account.vue', () => {
     load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
     list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => Promise.resolve(null))
     wrapper = shallow(Account)
+  })
+  afterEach(() => {
+    jest.clearAllMocks()
+    localStorage.clear()
   })
   it('Renders account information', async () => {
     await flushPromises()
