@@ -72,7 +72,7 @@
     async created () {
       console.clear()
       console.info('Views the navigation')
-      if (this.me) await this.get_all_my_stuff()
+      await this.get_all_my_stuff()
     },
     methods: {
       async get_all_my_stuff () {
@@ -82,7 +82,10 @@
           itemid.list(`${this.me}/relations`, this.me)
         ])
         if (my && my.first_name) this.first_name = my.first_name
-        if (statements) this.statements = statements
+        if (statements) {
+          if (Array.isArray(statements)) this.statements = statements
+          else if (statements) this.statements = [statements]
+        }
         if (relations) this.relations = relations
       },
       done_posting (event) {
