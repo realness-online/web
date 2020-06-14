@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import itemid from '@/helpers/itemid'
-import Events from '@/views/events'
+import Events from '@/views/Events'
 const events = {
   id: '/+{phone-number}/events',
   events: [{
