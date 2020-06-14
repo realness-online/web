@@ -1,8 +1,8 @@
 <template lang="html">
   <section id="account" :class="{'signed-in': signed_in}" class="page">
     <header>
-      <icon v-if="signed_in || show_form" name="nothing" />
-      <button v-if="!signed_in && !show_form" @click="show_form = !show_form">Sign On</button>
+      <icon v-if="signed_in" name="nothing" />
+      <sign-on v-else />
       <logo-as-link />
     </header>
     <avatar-as-form v-if="signed_in" :person="person" @new-avatar="new_avatar" />
@@ -30,6 +30,7 @@
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
+  import sign_on from '@/components/sign-on'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
   import avatar_as_form from '@/components/avatars/as-form'
@@ -38,6 +39,7 @@
     components: {
       icon,
       'as-days': as_days,
+      'sign-on': sign_on,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
       'profile-as-form': profile_as_form,
