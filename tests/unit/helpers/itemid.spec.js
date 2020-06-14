@@ -79,6 +79,9 @@ describe('@/helpers/itemid', () => {
   })
   describe('exports', () => {
     describe('#as_type', () => {
+      it('gives person for /+', () => {
+        expect(as_type('/+')).toBe('person')
+      })
       it('gives person for /+14156281828', () => {
         expect(as_type('/+14156281828')).toBe('person')
       })
