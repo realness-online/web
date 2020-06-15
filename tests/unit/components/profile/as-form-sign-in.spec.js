@@ -10,7 +10,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  describe('Sign in', () => {
+  describe('Sign on', () => {
     let wrapper, button, confirm_spy
     beforeEach(() => {
       confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
@@ -37,7 +37,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
     })
-    it('Renders the sign out button after sign in', async () => {
+    it('Renders the sign out button after sign on', async () => {
       expect(wrapper.vm.show_sign_out).toBe(false)
       button.trigger('click')
       await flushPromises()

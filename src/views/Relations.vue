@@ -1,19 +1,27 @@
 <template>
   <section id="relations" class="page">
     <header>
-      <router-link to="/phone-book">
+      <router-link v-if="signed_in" to="/phone-book">
         <icon name="heart" />
       </router-link>
+      <icon v-else name="nothing" />
       <logo-as-link />
     </header>
     <hgroup>
       <h1>Relations</h1>
     </hgroup>
-    <profile-as-list :people="relations" />
+    <profile-as-list v-if="signed_in" :people="relations" />
+    <hgroup v-else class="sign-on message">
+      <p>
+        <sign-on /> and you can check out <icon name="heart" /> who's on here.
+      </p>
+      <h6><a>Watch</a> a video and learn some more.</h6>
+    </hgroup>
   </section>
 </template>
 <script>
   import icon from '@/components/icon'
+  import sign_on from '@/components/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
   import signed_in from '@/mixins/signed_in'
@@ -21,6 +29,7 @@
   export default {
     components: {
       icon,
+      'sign-on': sign_on,
       'profile-as-list': profile_as_list,
       'logo-as-link': logo_as_link
     },
@@ -42,11 +51,11 @@
 </script>
 <style lang='stylus'>
   section#relations
-    & > header
-      margin: auto
     svg
       &.heart
         fill: blue
       &.working
         margin-bottom: base-line
+    & > header
+      margin: auto
 </style>

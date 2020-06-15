@@ -102,17 +102,17 @@
 </script>
 <style lang='stylus'>
   section#account
-    :focus
+    p[itemprop="statement"]:focus
       outline: 2px solid red
+    h1
+      width:100vw
+      margin: 0
+    h4
+      margin: base-line 0 0 0
     @media (prefers-color-scheme: dark)
-      svg.background
+      h1, h4, svg.background
+        color: red
         fill: red
-      h1
-        margin: 0
-        color: red
-      h4
-        color: red
-        margin: base-line 0 0 0
     & > *:not(header)
       padding: base-line
     & div#login > figure

@@ -7,10 +7,16 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <as-days v-slot="item" :posters="posters" :statements="statements">
+    <as-days v-if="signed_in" v-slot="item" :posters="posters" :statements="statements">
       <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
       <thought-as-article v-else :statements="item" :verbose="true" @viewed="statement_viewed" />
     </as-days>
+    <hgroup v-else class="sign-on message">
+      <p>
+        <sign-on /> and you can check out <icon name="heart" /> who's on here
+      </p>
+      <h6><a>Watch</a> a video and learn some more</h6>
+    </hgroup>
   </section>
 </template>
 <script>
@@ -18,11 +24,13 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
+  import sign_on from '@/components/sign-on'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
   import signed_in from '@/mixins/signed_in'
   export default {
     components: {
+      'sign-on': sign_on,
       'as-days': as_days,
       'logo-as-link': logo_as_link,
       'thought-as-article': thought_as_article,
@@ -65,18 +73,13 @@
     flex-direction: column
     & > header > svg
       fill: transparent
-    & > div
-      display: none
     & > nav
       display: none
     & > hgroup
-      margin: 0
       & > h1
+        padding: 0 base-line
         width:100vw
         margin-bottom: 0
-    & > svg.working
-      order: 1
-      margin: base-line auto
     & > article.day
       padding: 0 base-line
       display:flex

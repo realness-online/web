@@ -7,7 +7,6 @@
     <profile-as-form :person="person" @modified="save_me" />
   </section>
 </template>
-
 <script>
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'

@@ -1,3 +1,22 @@
 hgroup
-  max-width: page-width
-  margin: auto
+  p
+    user-select: none
+  h1
+    padding-left: base-line
+    text-align: left
+    width: 100vw
+  &.message
+    max-width: page-width
+    margin: base-line auto
+    order: 1
+    & > p
+      text-align: center
+      & > svg
+        fill: blue
+        width: 1em
+        height: 1em
+        display: inline-block
+        margin-bottom: -0.25em
+      & > button
+        color: blue
+        border-color: blue

@@ -121,6 +121,7 @@
   section#posters
     padding-bottom: base-line
     h1
+      width: 100vw
       color: green
       margin: 0
     svg.working

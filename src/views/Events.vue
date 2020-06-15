@@ -5,18 +5,10 @@
       <logo-as-link />
     </header>
     <hgroup>
+      <h1>Tonight!</h1>
       <icon v-show="working" name="working" />
     </hgroup>
     <article id="tonight">
-      <header>
-        <h1>Tonight!</h1>
-      </header>
-      <event-as-figure v-for="event in events" :key="event.url" :event="event" />
-    </article>
-    <article id="upcoming">
-      <header>
-        <h1>Soon</h1>
-      </header>
       <event-as-figure v-for="event in events" :key="event.url" :event="event" />
     </article>
   </section>
@@ -39,7 +31,7 @@
       return {
         events: [],
         upcoming: [],
-        working: true,
+        working: false,
         days: new Map()
       }
     },
@@ -71,7 +63,6 @@
 <style lang="stylus">
   section#events
     h1
-      width: 100vw
       padding: base-line
       color: green
     & > header

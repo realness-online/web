@@ -36,10 +36,10 @@
     <menu>
       <button v-if="show_authorize" id="authorize"
               :disabled="disabled_sign_in" @click.prevent="begin_authorization">
-        Sign in
+        Sign on
       </button>
       <button v-if="show_code" id="submit-verification" @click.prevent="sign_in_with_code">
-        Sign in
+        Sign on
       </button>
       <button v-if="show_sign_out" id="sign-out" @click.prevent="sign_out">
         <icon name="remove" />
@@ -85,7 +85,7 @@
           this.show_sign_out = true
           this.person.id = profile.from_e64(user.phoneNumber)
         } else {
-          console.info(`Shows ${this.person.first_name} the sign in form`)
+          console.info(`Shows ${this.person.first_name} the sign on form`)
           if (this.person.id) {
             this.person.mobile = profile.as_phone_number(this.person.id)
           }

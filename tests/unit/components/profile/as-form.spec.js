@@ -171,7 +171,7 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       expect(stub).toBeCalled()
     })
-    it('Renders sign in button with valid input', () => {
+    it('Renders sign on button with valid input', () => {
       const button = wrapper.find('#submit-verification')
       input.trigger('keypress', {
         key: '6',
