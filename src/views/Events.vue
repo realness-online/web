@@ -71,6 +71,7 @@
 <style lang="stylus">
   section#events
     h1
+      width: 100vw
       padding: base-line
       color: green
     & > header
