@@ -9,6 +9,7 @@ import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Admin from '@/views/Admin'
+import Sign_on from '@/views/Sign-on'
 
 Vue.use(Router)
 export default new Router({
@@ -17,6 +18,7 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     { path: '/', component: Navigation },
+    { path: '/sign-on', component: Sign_on },
     { path: '/events', component: Events },
     { path: '/feed', component: Feed },
     { path: '/posters', component: Posters },

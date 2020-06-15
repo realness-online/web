@@ -5,9 +5,9 @@
       <sign-on v-else />
       <logo-as-link />
     </header>
-    <avatar-as-form v-if="signed_in" :person="person" @new-avatar="new_avatar" />
-    <div v-if="show_form" id="login">
-      <profile-as-figure v-if="signed_in" :person="person" />
+    <div v-if="signed_in">
+      <avatar-as-form :person="person" @new-avatar="new_avatar" />
+      <profile-as-figure :person="person" />
       <profile-as-form :person="person" @modified="save_me" />
     </div>
     <h1>Statements</h1>
@@ -53,8 +53,7 @@
         statements: [],
         image_file: null,
         me_storage: null,
-        statements_storage: null,
-        show_form: false
+        statements_storage: null
       }
     },
     computed: {
@@ -95,6 +94,7 @@
 </script>
 <style lang='stylus'>
   section#account
+    color: red
     svg.background
       fill: red
     & > *:not(header)
