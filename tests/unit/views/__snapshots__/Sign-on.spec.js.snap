@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/Sign-on.vue Renders a form for signing on to the app 1`] = `
+<section
+  class="page"
+  id="sign-on"
+>
+  <header>
+    <!---->
+     
+    <!---->
+  </header>
+   
+  <!---->
+</section>
+`;

@@ -28,6 +28,10 @@
 
 <style lang="stylus">
   section#sign-on.page
+    hgroup
+      color: red
+    svg.background
+      fill: red
     form
       padding: base-line
 </style>

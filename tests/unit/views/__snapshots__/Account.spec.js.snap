@@ -11,9 +11,13 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     <!---->
   </header>
    
-  <!---->
-   
-  <!---->
+  <div>
+    <!---->
+     
+    <!---->
+     
+    <!---->
+  </div>
    
   <h1>
     Statements
