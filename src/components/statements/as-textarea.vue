@@ -35,7 +35,7 @@
     resize: none
     appearance: none
     transition-property: all
-    transition-duration: 0.45s
+    transition-duration: 0.4s
     user-select: text
     border-style: solid
     caret-color: red
