@@ -18,7 +18,7 @@
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
         Feed
       </router-link>
-      <router-link v-if="!posting" :to="friend_or_phone_book()" class="blue" tabindex="-1">
+      <router-link v-if="!posting" to="/relations" class="blue" tabindex="-1">
         Relations
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
@@ -91,10 +91,6 @@
       done_posting (event) {
         document.querySelector('nav > button').focus()
       },
-      friend_or_phone_book () {
-        if (this.relations.length < 1) return '/phone-book'
-        else return '/relations'
-      },
       async add_statement (statement) {
         this.statements.push(statement)
         await this.$nextTick()
@@ -118,8 +114,8 @@
       height: inherit
       align-items: flex-end
     &.posting > nav
-      min-height: round(base-line * 9)
-      height: round(base-line * 9)
+      // min-height: round(base-line * 9)
+      // height: round(base-line * 9)
       & > textarea
         text-align: inherit
         margin-top: base-line
