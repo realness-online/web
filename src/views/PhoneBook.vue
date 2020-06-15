@@ -60,9 +60,6 @@
       fill: blue
       margin-top: base-line
     & > header
-      @media (min-width: typing-begins)
-        max-width: page-width
-      margin: auto
       &:focus-within > h1
         transition-property: all
         overflow: hidden

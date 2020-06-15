@@ -98,6 +98,7 @@
       svg.background
         fill: red
       h1, h4
+        margin-bottom: 0
         color: red
     & > *:not(header)
       padding: base-line

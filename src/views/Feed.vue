@@ -63,8 +63,6 @@
     position: relative
     display: flex
     flex-direction: column
-    @media (min-width: pad-begins)
-      max-width: page-width
     & > header > svg
       fill: transparent
     & > div
@@ -74,6 +72,7 @@
     & > hgroup
       margin: 0
       & > h1
+        width:100vw
         margin-bottom: 0
     & > svg.working
       order: 1

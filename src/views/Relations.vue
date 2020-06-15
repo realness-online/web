@@ -44,8 +44,6 @@
   section#relations
     & > header
       margin: auto
-      @media (min-width: typing-begins)
-        max-width: page-width
     svg
       &.heart
         fill: blue
