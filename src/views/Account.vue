@@ -102,19 +102,26 @@
 </script>
 <style lang='stylus'>
   section#account
+    :focus
+      outline: 2px solid red
     @media (prefers-color-scheme: dark)
       svg.background
         fill: red
-      h1, h4
-        margin-bottom: 0
+      h1
+        margin: 0
         color: red
+      h4
+        color: red
+        margin: base-line 0 0 0
     & > *:not(header)
       padding: base-line
     & div#login > figure
       margin-bottom: base-line
-    article.day
-      @media (min-width: pad-begins)
-        grid-auto-rows: auto
-      @media (min-width: typing-begins)
-        grid-auto-rows: auto
+    section.as-days
+      padding-top: 0
+      article.day
+        @media (min-width: pad-begins)
+          grid-auto-rows: auto
+        @media (min-width: typing-begins)
+          grid-auto-rows: auto
 </style>
