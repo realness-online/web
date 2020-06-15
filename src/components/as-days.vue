@@ -99,7 +99,7 @@
     grid-gap: base-line
     grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
     @media (min-width: pad-begins)
-      grid-template-rows: (base-line * 5)
+      grid-template-rows: (base-line * 3)
       grid-auto-rows: poster-grid-height
     @media (min-width: typing-begins)
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
