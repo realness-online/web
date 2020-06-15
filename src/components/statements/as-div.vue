@@ -1,6 +1,7 @@
 <template lang="html">
   <div itemscope :itemid="statement.id">
-    <p itemprop="statement">{{ statement.statement }}</p>
+    <p v-if="editable" contenteditable="true" itemprop="statement">{{ statement.statement }}</p>
+    <p v-else itemprop="statement">{{ statement.statement }}</p>
     <meta v-if="statement.why" itemprop="why" :content="statement.why">
     <meta v-if="statement.where" itemprop="where" :content="statement.where">
   </div>
@@ -11,6 +12,11 @@
       statement: {
         type: Object,
         required: true
+      },
+      editable: {
+        type: Boolean,
+        required: false,
+        default: false
       }
     }
   }
