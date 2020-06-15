@@ -16,7 +16,8 @@
     <as-statement v-for="statement in statements"
                   :key="statement.id"
                   itemprop="statements"
-                  :statement="statement" />
+                  :statement="statement"
+                  :editable="editable" />
   </article>
 </template>
 <script>
@@ -35,6 +36,11 @@
         required: true
       },
       verbose: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
+      editable: {
         type: Boolean,
         required: false,
         default: false
