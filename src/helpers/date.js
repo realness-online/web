@@ -34,7 +34,7 @@ export default {
     if (Date.parse(date) < this_year) {
       day = this.as_time(date, format_as_day_and_year)
     } else day = this.as_time(date, format_as_day)
-    if (this.is_same_day(date, new Date())) day = 'Today'
+    if (this.is_same_day(date, new Date())) day = 'Now'
     return day
   },
   as_day_and_time (date) {
