@@ -16,6 +16,7 @@
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
+                          :editable="!working"
                           :verbose="false" />
     </as-days>
   </section>
@@ -53,7 +54,8 @@
         statements: [],
         image_file: null,
         me_storage: null,
-        statements_storage: null
+        statements_storage: null,
+        working: false
       }
     },
     computed: {
@@ -78,16 +80,22 @@
     methods: {
       async new_avatar (avatar_url) {
         this.person.avatar = avatar_url
+        this.working = true
         await this.$nextTick()
         this.me_storage.save()
+        this.working = false
       },
       async save_me (event) {
+        this.working = true
         await this.$nextTick()
         await this.me_storage.save()
+        this.working = false
       },
       async save_page (event) {
+        this.working = true
         await this.$nextTick()
         await this.statements_storage.save()
+        this.working = false
       }
     }
   }
