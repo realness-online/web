@@ -94,9 +94,11 @@
 </script>
 <style lang='stylus'>
   section#account
-    color: red
-    svg.background
-      fill: red
+    @media (prefers-color-scheme: dark)
+      svg.background
+        fill: red
+      h1, h4
+        color: red
     & > *:not(header)
       padding: base-line
     & div#login > figure
