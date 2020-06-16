@@ -8,9 +8,14 @@
       <h1>Tonight!</h1>
       <icon v-show="working" name="working" />
     </hgroup>
-    <article id="tonight">
+    <article v-if="events.length" id="tonight">
       <event-as-figure v-for="event in events" :key="event.url" :event="event" />
     </article>
+    <hgroup v-else class="message">
+      <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
+      <p>People see them after you <sign-on /></p>
+      <h6><a>Watch</a> a video and learn some more</h6>
+    </hgroup>
   </section>
 </template>
 <script>
@@ -18,10 +23,12 @@
   import { newer_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
+  import sign_on from '@/components/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
     export default {
     components: {
+      'sign-on': sign_on,
       'logo-as-link': logo_as_link,
       'event-as-figure': as_figure,
       icon
@@ -62,6 +69,11 @@
 </script>
 <style lang="stylus">
   section#events
+    hgroup.message
+      svg, a, button, span
+        border-color: green
+        fill: green
+        color: green
     h1
       padding: base-line
       color: green

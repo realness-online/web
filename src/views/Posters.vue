@@ -26,9 +26,11 @@
                  :working="working"
                  @remove-poster="remove_poster" />
     </article>
-    <hgroup v-if="posters.length === 0" class="sign-on message">
-      <p>Click the <icon name="add" /> button to turn any picture you
-        have into a poster</p>
+    <hgroup v-if="posters.length === 0" class="message">
+      <p>
+        Click the <a @click="select_photo"><icon name="add" /></a> button to turn any picture you
+        have into a Poster
+      </p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
@@ -125,6 +127,8 @@
 <style lang="stylus">
   section#posters
     padding-bottom: base-line
+    hgroup.message > p:first-child a
+      border-bottom: 0
     h1
       width: 100vw
       color: green
@@ -133,8 +137,9 @@
       margin-bottom: base-line
     & > header
       justify-content: space-between
-      & > a > svg.add
+    & hgroup
+    & header
+      svg, a
+        color: green
         fill: green
-    & hgroup svg.add
-      fill: green
 </style>

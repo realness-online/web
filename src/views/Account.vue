@@ -20,7 +20,7 @@
                           :editable="!working"
                           :verbose="false" />
     </as-days>
-    <hgroup v-else class="sign-on message">
+    <hgroup v-else class="message">
       <p>Say some stuff by using the <button class="mock" /> red button on the home page</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
@@ -111,6 +111,14 @@
 </script>
 <style lang='stylus'>
   section#account
+    button, a
+      border-color: red
+      color: red
+      border-color: red
+    button.mock
+      background-color: red
+      border-radius: 0.2em
+      height: 1.33em
     p[itemprop="statement"]:focus
       outline: 2px solid red
     h1
@@ -126,11 +134,6 @@
       padding: base-line
     & div#login > figure
       margin-bottom: base-line
-    button.mock
-      border-color: red
-      background-color: red
-      border-radius: 0.2em
-      height: 1.33em
     section.as-days
       padding-top: 0
       article.day
