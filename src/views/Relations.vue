@@ -13,9 +13,9 @@
     <profile-as-list v-if="signed_in" :people="relations" />
     <hgroup v-else class="sign-on message">
       <p>
-        <sign-on /> and you can check out <icon name="heart" /> who's on here.
+        <sign-on /> and you can check out <icon name="heart" /> who's on here
       </p>
-      <h6><a>Watch</a> a video and learn some more.</h6>
+      <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
 </template>
