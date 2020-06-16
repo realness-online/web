@@ -11,14 +11,19 @@
       <profile-as-form :person="person" @modified="save_me" />
     </div>
     <h1>Statements</h1>
-    <as-days v-slot="thoughts" itemscope
-             :itemid="itemid" :statements="statements">
+    <as-days v-if="has_statements" v-slot="thoughts"
+             itemscope :itemid="itemid"
+             :statements="statements">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
                           :editable="!working"
                           :verbose="false" />
     </as-days>
+    <hgroup v-else class="sign-on message">
+      <p>Say some stuff by using the <button class="mock" /> red button on the home page</p>
+      <h6><a>Watch</a> a video and learn some more</h6>
+    </hgroup>
   </section>
 </template>
 <script>
@@ -59,7 +64,11 @@
       }
     },
     computed: {
-      itemid () { return `${this.me}/statements` }
+      itemid () { return `${this.me}/statements` },
+      has_statements () {
+        if (this.thoughts) return this.thoughts.length > 0
+        else return false
+      }
     },
     watch: {
       signed_in () {
@@ -117,6 +126,11 @@
       padding: base-line
     & div#login > figure
       margin-bottom: base-line
+    button.mock
+      border-color: red
+      background-color: red
+      border-radius: 0.2em
+      height: 1.33em
     section.as-days
       padding-top: 0
       article.day
