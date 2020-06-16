@@ -26,6 +26,11 @@
                  :working="working"
                  @remove-poster="remove_poster" />
     </article>
+    <hgroup v-if="posters.length === 0" class="sign-on message">
+      <p>Click the <icon name="add" /> button to turn any picture you
+        have into a poster</p>
+      <h6><a>Watch</a> a video and learn some more</h6>
+    </hgroup>
   </section>
 </template>
 <script>
@@ -130,4 +135,6 @@
       justify-content: space-between
       & > a > svg.add
         fill: green
+    & hgroup svg.add
+      fill: green
 </style>
