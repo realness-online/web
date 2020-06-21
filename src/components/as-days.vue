@@ -103,10 +103,9 @@
       grid-auto-rows: poster-grid-height
     @media (min-width: typing-begins)
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
-      grid-auto-rows: (poster-grid-height * 1.11)
     & > header
       & > h1
-        margin: base-line
+        padding: 0 base-line
       @media (min-width: pad-begins)
         grid-column: 1 / -1
         & > hgroup
