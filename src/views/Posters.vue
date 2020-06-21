@@ -1,9 +1,10 @@
 <template>
   <section id="posters" class="page">
-    <header v-show="!new_poster">
-      <a @click="select_photo">
+    <header>
+      <a v-if="add" @click="select_photo">
         <icon name="add" />
       </a>
+      <icon v-else name="nothing" />
       <input ref="uploader" v-uploader type="file" accept="image/jpeg">
       <logo-as-link />
     </header>
@@ -26,7 +27,7 @@
                  :working="working"
                  @remove-poster="remove_poster" />
     </article>
-    <hgroup v-if="posters.length === 0" class="message">
+    <hgroup v-if="friendly" class="message">
       <p>
         Click the <a @click="select_photo"><icon name="add" /></a> button to turn any picture you
         have into a Poster
@@ -66,6 +67,14 @@
     computed: {
       as_itemid () {
         return `${this.me}/posters/${this.new_poster.created_at}`
+      },
+      friendly () {
+        if (this.posters.length === 0 && !this.working && !this.new_poster) return true
+        else return false
+      },
+      add () {
+        if (this.working || this.new_poster) return false
+        else return true
       }
     },
     async created () {
