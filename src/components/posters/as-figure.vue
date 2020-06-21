@@ -96,10 +96,9 @@
   figure.poster
     position: relative
     overflow: hidden
-    &.new
-      margin: auto 0
-      @media (min-width: pad-begins)
-        margin: auto base-line
+    @media (min-width: pad-begins)
+      &.new
+        margin-left: base-line
     &.selecting-event
       & > svg:not(.background)
         opacity: 0.1
