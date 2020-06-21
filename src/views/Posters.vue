@@ -138,6 +138,9 @@
     & > header
       justify-content: space-between
     & hgroup
+      margin-top: base-line
+      align-self: center
+    & hgroup
     & header
       svg, a
         color: green
