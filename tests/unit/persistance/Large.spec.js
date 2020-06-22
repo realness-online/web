@@ -12,7 +12,6 @@ describe('@/persistance/Local.js', () => {
   })
   afterEach(() => {
     jest.clearAllMocks()
-    // set.clear()
   })
   describe('#save', () => {
     it('Exists', () => {
