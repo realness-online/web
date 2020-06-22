@@ -2,6 +2,7 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import Local from '@/persistance/Local'
+import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
 import { as_type } from '@/helpers/itemid'
@@ -13,6 +14,9 @@ export default class Storage {
     this.metadata = { contentType: 'text/html' }
   }
 }
+export class Admin extends Cloud(Storage) {}
+export class Avatar extends Large(Cloud(Storage)) {}
+export class Poster extends Large(Cloud(Storage)) {}
 export class Me extends Cloud(Local(Storage)) {
   constructor () { super(localStorage.getItem('me')) }
 }
@@ -39,6 +43,3 @@ export class History extends Cloud(Storage) {
     }
   }
 }
-export class Admin extends Cloud(Storage) {}
-export class Avatar extends Cloud(Local(Storage)) {}
-export class Poster extends Cloud(Local(Storage)) {}
