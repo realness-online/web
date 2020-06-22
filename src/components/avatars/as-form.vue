@@ -68,6 +68,9 @@
       this.worker.addEventListener('message', this.set_new_avatar)
       this.current_avatar = await itemid.load(this.person.avatar)
     },
+    destroyed () {
+      this.worker.terminate()
+    },
     methods: {
       set_current_avatar (avatar) {
         this.current_avatar = avatar

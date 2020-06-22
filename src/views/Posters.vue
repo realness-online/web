@@ -84,6 +84,9 @@
       firebase.auth().onAuthStateChanged(this.get_poster_list)
       this.worker.addEventListener('message', this.brand_new_poster)
     },
+    destroyed () {
+      this.worker.terminate()
+    },
     methods: {
       get_id (name) {
         return `${this.me}/posters/${name.split('.')[0]}`
