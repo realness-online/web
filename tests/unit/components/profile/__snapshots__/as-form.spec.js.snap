@@ -14,7 +14,7 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
       tabindex="1"
       type="text"
     />
-
+     
     <input
       id="last-name"
       placeholder="Last"
@@ -23,7 +23,7 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
       type="text"
     />
   </fieldset>
-
+   
   <fieldset
     id="phone"
   >
@@ -32,7 +32,7 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
     >
       1
     </label>
-
+     
     <input
       id="mobile"
       placeholder="(555) 555-5555"
@@ -40,24 +40,24 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
       type="tel"
     />
   </fieldset>
-
+   
   <!---->
-
+   
   <!---->
-
+   
   <!---->
-
+   
   <menu>
     <button
       id="authorize"
     >
-
+      
       Sign on
-
+    
     </button>
-
+     
     <!---->
-
+     
     <!---->
   </menu>
 </form>

@@ -23,6 +23,22 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     Statements
   </h1>
    
-  <!---->
+  <hgroup
+    class="message"
+  >
+    <p>
+      Say some stuff by using the homepage red 
+      <button
+        class="mock"
+      />
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
 </section>
 `;

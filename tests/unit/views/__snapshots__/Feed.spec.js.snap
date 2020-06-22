@@ -17,6 +17,22 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
     </h1>
   </hgroup>
    
-  <!---->
+  <hgroup
+    class="sign-on message"
+  >
+    <p>
+      <!---->
+       and you can check out 
+      <!---->
+       who's on here
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
 </section>
 `;

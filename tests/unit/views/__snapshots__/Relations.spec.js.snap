@@ -6,11 +6,7 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
   id="relations"
 >
   <header>
-    <router-link
-      to="/phone-book"
-    >
-      <!---->
-    </router-link>
+    <!---->
      
     <!---->
   </header>
@@ -21,6 +17,23 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
     </h1>
   </hgroup>
    
-  <!---->
+  <hgroup
+    class="sign-on message"
+  >
+    <p>
+      <!---->
+       and you can check out 
+      <!---->
+       who's on here
+    
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
 </section>
 `;

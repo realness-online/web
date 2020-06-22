@@ -12,29 +12,40 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   </header>
    
   <hgroup>
+    <h1>
+      Tonight!
+    </h1>
+     
     <!---->
   </hgroup>
    
-  <article
-    id="tonight"
+  <hgroup
+    class="message"
   >
-    <header>
-      <h1>
-        Tonight!
-      </h1>
-    </header>
+    <p>
+      <span>
+        Zero
+      </span>
+       public events. You create events from 
+      <router-link
+        to="/posters"
+      >
+        Posters
+      </router-link>
+      .
+    </p>
      
-  </article>
-   
-  <article
-    id="upcoming"
-  >
-    <header>
-      <h1>
-        Soon
-      </h1>
-    </header>
+    <p>
+      People see them after you 
+      <!---->
+    </p>
      
-  </article>
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
 </section>
 `;
