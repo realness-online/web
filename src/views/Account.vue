@@ -100,7 +100,7 @@
         await this.me_storage.save()
         this.working = false
       },
-      async save_page (event) {
+      async save_statements (event) {
         this.working = true
         await this.$nextTick()
         await this.statements_storage.save()

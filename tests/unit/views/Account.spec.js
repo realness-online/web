@@ -36,12 +36,34 @@ describe('@/views/Account.vue', () => {
     expect(list_spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('#save_me', () => {
-    it('Saves a user', async () => {
-      const save_spy = jest.spyOn(wrapper.vm.me_storage, 'save')
-      await wrapper.vm.save_me()
-      await flushPromises()
-      expect(save_spy).toBeCalled()
+  describe('computed', () => {
+    describe('#itemid', () => {
+      it('give the current users id', async () => {
+        expect(wrapper.vm.itemid).toBe('/+/statements')
+      })
+    })
+  })
+  describe('methods', () => {
+    describe('#save_page', () => {
+      it('Saves a user', async () => {
+        const save_spy = jest.spyOn(wrapper.vm.statements_storage, 'save')
+        await wrapper.vm.save_statements()
+        await flushPromises()
+        expect(save_spy).toBeCalled()
+      })
+    })
+    describe('#save_me', () => {
+      it('Saves a user', async () => {
+        const save_spy = jest.spyOn(wrapper.vm.me_storage, 'save')
+        await wrapper.vm.save_me()
+        await flushPromises()
+        expect(save_spy).toBeCalled()
+      })
+    })
+    describe('#new_avatar', () => {
+      it('writes a new avatar', async () => {
+        await wrapper.vm.new_avatar('/+/avatrars/4444555657674tu')
+      })
     })
   })
 })
