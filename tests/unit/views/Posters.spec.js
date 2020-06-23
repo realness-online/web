@@ -23,6 +23,12 @@ describe('@/views/Posters.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
+  it('Unmounts the worker when destroyed', () => {
+    const mock = jest.fn()
+    wrapper.vm.worker = { terminate: mock }
+    wrapper.destroy()
+    expect(mock).toBeCalled()
+  })
   describe('methods', () => {
     describe('get_id', () => {
       it('gets the poster id from the directory listing on hte network', () => {
