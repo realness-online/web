@@ -4,6 +4,7 @@ import 'firebase/storage'
 import itemid, {
   as_download_url,
   as_directory_path,
+  as_directory,
   as_filename,
   as_type
 } from '@/helpers/itemid'
@@ -137,6 +138,19 @@ describe('@/helpers/itemid', () => {
       })
       it('returns /activity/index.html for /activity', () => {
         expect(as_filename('/activity')).toBe('/activity/index.html')
+      })
+    })
+    describe('#as_directory', () => {
+      it('exists', () => {
+        expect(as_directory).toBeDefined()
+      })
+      it('Returns a directory when offline', () => {
+        as_directory('/+/posters/')
+        expect(get).toBeCalled()
+      })
+      it('Returns a directory', () => {
+        as_directory('/+/posters/')
+        expect(get).toBeCalled()
       })
     })
   })
