@@ -9,7 +9,7 @@ exports[`@/components/avatars/as-svg.vue Render an avatar 1`] = `
   <!---->
    
   <use
-    href="#silhouette"
+    href="#14151234356-avatars-559888845532"
   />
 </svg>
 `;
