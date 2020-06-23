@@ -1,10 +1,10 @@
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
-import { set } from 'idb-keyval'
+import { set, get } from 'idb-keyval'
 const fs = require('fs')
 const poster = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 
-describe('@/persistance/Local.js', () => {
+describe('@/persistance/Large.js', () => {
   class Picture extends Large(Storage) {}
   let pic
   beforeEach(() => {
@@ -17,12 +17,19 @@ describe('@/persistance/Local.js', () => {
     it('Exists', () => {
       expect(pic.save).toBeDefined()
     })
-    it('Saves items to indexdb', () => {
-      pic.save(poster)
-      expect(set).toBeCalled()
+    it('retrieves and ads to an already existing directory', async () => {
+      const mock_get = get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+      await pic.save(poster)
+      expect(mock_get).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(2)
     })
-    it('Only saves if there are items to save', () => {
-      pic.save()
+    it('Saves items to indexdb', async () => {
+      await pic.save(poster)
+      expect(get).toBeCalled() // checks locally for directory
+      expect(set).toHaveBeenCalledTimes(2) // sets directory and poster
+    })
+    it('Only saves if there are items to save', async () => {
+      await pic.save()
       expect(set).not.toBeCalled()
     })
   })
