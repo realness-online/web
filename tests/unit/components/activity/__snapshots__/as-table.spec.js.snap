@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/developer-tools.js Renders developer tools 1`] = `
+exports[`@/components/activity/as-table.js a table of activity  1`] = `
 <table
   hidden="hidden"
   itemscope="itemscope"

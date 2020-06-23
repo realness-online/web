@@ -20,6 +20,7 @@
       }
     },
     created () {
+      // I want to test it
       Vue.config.errorHandler = this.on_error
       console.info = this.info_logger
     },
@@ -38,7 +39,7 @@
           sessionStorage.setItem('activity-synced', Date.now())
           await this.$nextTick()
           new Activity().save()
-        } else console.log(this.eight_seconds_ago() - parseInt(last_save))
+        }
       },
       async on_error (event) {
         const last_save = sessionStorage.getItem('activity-synced')
