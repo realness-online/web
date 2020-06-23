@@ -144,13 +144,26 @@ describe('@/helpers/itemid', () => {
       it('exists', () => {
         expect(as_directory).toBeDefined()
       })
-      it('Returns a directory when offline', () => {
-        as_directory('/+/posters/')
-        expect(get).toBeCalled()
+      it('Returns a directory when offline', async () => {
+        const mock_get = get.mockImplementationOnce(() => Promise.resolve({ items: ['1555347888'] }))
+        await as_directory('/+/posters/')
+        expect(mock_get).toBeCalled()
       })
-      it('Returns a directory', () => {
-        as_directory('/+/posters/')
-        expect(get).toBeCalled()
+      it('Returns a directory', async () => {
+        const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
+        await as_directory('/+/posters/')
+        expect(mock_get).toBeCalled()
+        expect(set).toBeCalled()
+      })
+      it('Returns null if not online and not found locally directory', async () => {
+        const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
+        jest.spyOn(firebase, 'auth').mockImplementation(_ => {
+          return { currentUser: null }
+        })
+        navigator.online = false
+        const directory = await as_directory('/+/posters/')
+        expect(mock_get).toBeCalled()
+        expect(directory).toBe(null)
       })
     })
   })

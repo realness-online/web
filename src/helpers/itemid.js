@@ -37,8 +37,7 @@ export async function as_directory (itemid, me = localStorage.getItem('me')) {
   const path = as_directory_path(itemid)
   const cached = await get(path)
   if (cached) return cached
-  if (!firebase.auth().currentUser) return null
-  if (navigator.onLine) {
+  else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
     console.info('Makes a directory request')
     const directory = await firebase.storage().ref().child(path).listAll()
