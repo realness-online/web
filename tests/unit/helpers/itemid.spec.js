@@ -3,7 +3,8 @@ import 'firebase/auth'
 import 'firebase/storage'
 import itemid, {
   as_download_url,
-  as_directory_path,
+  as_storage_path,
+  as_directory_id,
   as_directory,
   as_filename,
   as_type
@@ -66,7 +67,7 @@ describe('@/helpers/itemid', () => {
           expect(poster.id).toBe(posterid)
           expect(network_request).toBeCalled()
         })
-        it.skip('Saves it to indexdb when loaded', () => {
+        it('Saves it to indexdb when loaded', () => {
           expect(set).toBeCalled()
         })
       })
@@ -99,20 +100,29 @@ describe('@/helpers/itemid', () => {
         expect(as_type('/+14156281828/avatars/559666932867')).toBe('avatars')
       })
     })
-    describe('#as_directory_path', () => {
+    describe('#as_directory_id', () => {
+      it('returns /+/posters for /+/posters/559666932867', () => {
+        expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters')
+      })
+      it('returns /+16282281824/posters for /+/posters/559666932867', () => {
+        expect(as_directory_id('/+16282281824/posters/559666932867'))
+        .toBe('/+16282281824/posters')
+      })
+    })
+    describe('#as_storage_path', () => {
       it('gives null for empty string', () => {
-        expect(as_directory_path('')).toBe(null)
+        expect(as_storage_path('')).toBe(null)
       })
       it('gives person for /+14156281828', () => {
-        expect(as_directory_path('/+14156281828'))
+        expect(as_storage_path('/+14156281828'))
         .toBe('/people/+14156281828')
       })
       it('gives avatars for /+14156281828/avatars', () => {
-        expect(as_directory_path('/+14156281828/avatars'))
+        expect(as_storage_path('/+14156281828/avatars'))
         .toBe('/people/+14156281828/avatars')
       })
       it('gives /people/+14156281828/avatars for /+14156281828/avatars/559666932867', () => {
-        expect(as_directory_path('/+14156281828/avatars/559666932867'))
+        expect(as_storage_path('/+14156281828/avatars/559666932867'))
         .toBe('/people/+14156281828/avatars')
       })
     })

@@ -34,7 +34,8 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
   } else return null
 }
 export async function as_directory (itemid, me = localStorage.getItem('me')) {
-  const path = as_directory_path(itemid)
+  const path = as_directory_id(itemid)
+  console.log(path)
   const cached = await get(path)
   if (cached) return cached
   else if (navigator.onLine && firebase.auth().currentUser) {
@@ -60,7 +61,7 @@ export async function as_download_url (itemid, me = localStorage.getItem('me')) 
     } else throw e
   }
 }
-export function as_directory_path (itemid) {
+export function as_storage_path (itemid) {
   const path_parts = as_path_parts(itemid)
   let path = `/${path_parts[0]}`
   if (itemid.startsWith('/+')) path = `/people${path}`
@@ -72,6 +73,10 @@ export function as_directory_path (itemid) {
     default:
       return `${path}/${path_parts[1]}`
   }
+}
+export function as_directory_id (itemid) {
+  const parts = as_path_parts(itemid)
+  return `/${parts[0]}/${parts[1]}`
 }
 export function as_filename (itemid) {
   let filename = itemid
