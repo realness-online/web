@@ -81,8 +81,9 @@
       console.clear()
       console.time('feed-load')
       console.info('views their posters')
-      firebase.auth().onAuthStateChanged(this.get_poster_list)
+      await this.get_poster_list()
       this.worker.addEventListener('message', this.brand_new_poster)
+      console.timeEnd('feed-load')
     },
     destroyed () {
       this.worker.terminate()
@@ -96,13 +97,10 @@
         this.worker.postMessage({ image })
       },
       async get_poster_list (user) {
-        if (user) {
-          this.posters = []
-          const directory = await itemid.as_directory(`/${user.phoneNumber}/posters`)
-          if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-          this.posters.sort(newer_item_first)
-          console.timeEnd('feed-load')
-        }
+        this.posters = []
+        const directory = await itemid.as_directory(`${this.me}/posters`)
+        if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
+        this.posters.sort(newer_item_first)
       },
       brand_new_poster (response) {
         console.info('creates a poster')
