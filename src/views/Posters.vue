@@ -40,7 +40,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import itemid from '@/helpers/itemid'
-  import { newer_item_first } from '@/helpers/sorting'
+  import { newer_date_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -100,7 +100,7 @@
         this.posters = []
         const directory = await itemid.as_directory(`${this.me}/posters`)
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        this.posters.sort(newer_item_first)
+        this.posters.sort(newer_date_first)
       },
       brand_new_poster (response) {
         console.info('creates a poster')
