@@ -8,6 +8,8 @@ node_modules
 /tests/e2e/reports/
 /functions/coverage
 /public/vector.worker.js
+/public/compression.worker.js
+/public/sync.worker.js
 /public/report.html
 .firebase/
 .firebase/hosting*
