@@ -19,10 +19,12 @@
       'developer-tools': developer_tools,
       'activity-as-table': activity
     },
+    data () {
+      return {
+        status: null
+      }
+    },
     computed: {
-      status () {
-        return ~navigator.online ? null : 'offline'
-      },
       production_mode () {
         return process.env.NODE_ENV === 'production'
       }
@@ -33,6 +35,8 @@
       }
     },
     created () {
+      window.addEventListener('online', this.online)
+      window.addEventListener('offline', this.offline)
       firebase.initializeApp({
         apiKey: process.env.VUE_APP_API_KEY,
         authDomain: process.env.VUE_APP_AUTH_DOMAIN,
@@ -41,6 +45,18 @@
         storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
         messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
       })
+    },
+    beforeDestroy () {
+      window.removeEventListener('online', this.online)
+      window.removeEventListener('offline', this.offline)
+    },
+    methods: {
+      online () {
+        this.status = null
+      },
+      offline () {
+        this.status = 'offline'
+      }
     }
   }
 </script>
