@@ -63,7 +63,12 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "browser": true,
+      "es2020": true,
+      "jest": true,
+      "serviceworker": true,
+      "worker": true
     },
     "extends": [
       "eslint:recommended",
