@@ -28,5 +28,4 @@ describe('@/components/activity/as-table.js', () => {
       })
     })
   })
-
 })

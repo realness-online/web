@@ -43,7 +43,7 @@ describe('@/components/avatars/as-form.vue', () => {
     })
     describe('set_new_avatar', () => {
       it('sets a new current avatar', () => {
-        wrapper.vm.set_new_avatar({ data: {created_at: 'ummm'} })
+        wrapper.vm.set_new_avatar({ data: { created_at: 'ummm' } })
       })
     })
     describe('#open_camera', () => {
