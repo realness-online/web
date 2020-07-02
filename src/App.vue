@@ -14,6 +14,7 @@
   import developer_tools from '@/components/developer-tools'
   import activity from '@/components/activity/as-table'
   import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   export default {
     components: {
       'developer-tools': developer_tools,
@@ -21,7 +22,16 @@
     },
     data () {
       return {
-        status: null
+        status: null,
+        worker: new Worker('/sync.worker.js'),
+        firebase_keys: {
+          apiKey: process.env.VUE_APP_API_KEY,
+          authDomain: process.env.VUE_APP_AUTH_DOMAIN,
+          databaseUrl: process.env.VUE_APP_DATABASE_URL,
+          projectId: process.env.VUE_APP_PROJECT_ID,
+          storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
+          messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
+        }
       }
     },
     computed: {
@@ -35,27 +45,32 @@
       }
     },
     created () {
+      this.worker.addEventListener('message', this.worker_message)
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
-      firebase.initializeApp({
-        apiKey: process.env.VUE_APP_API_KEY,
-        authDomain: process.env.VUE_APP_AUTH_DOMAIN,
-        databaseUrl: process.env.VUE_APP_DATABASE_URL,
-        projectId: process.env.VUE_APP_PROJECT_ID,
-        storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
-        messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
-      })
+      firebase.initializeApp(this.firebase_keys)
+      firebase.auth().onAuthStateChanged(user => this.sync)
+      this.worker.postMessage('From App.vue Create')
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
+      this.worker.terminate()
     },
     methods: {
       online () {
+        this.sync(firebase.auth().currentUser)
         this.status = null
       },
       offline () {
         this.status = 'offline'
+      },
+      sync (current_user) {
+        console.log('calling sync', new Date(), current_user)
+        if (current_user) this.worker.postMessage('sync message')
+      },
+      worker_message (message) {
+        console.log('worker message!', message)
       }
     }
   }
