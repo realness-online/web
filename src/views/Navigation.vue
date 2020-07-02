@@ -70,7 +70,6 @@
       }
     },
     async created () {
-      console.clear()
       console.info('Views the navigation')
       await this.get_all_my_stuff()
     },

@@ -35,7 +35,6 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
 }
 export async function as_directory (itemid, me = localStorage.getItem('me')) {
   const path = as_directory_id(itemid)
-  console.log(path)
   const cached = await get(path)
   if (cached) return cached
   else if (navigator.onLine && firebase.auth().currentUser) {

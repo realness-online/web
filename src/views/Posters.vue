@@ -79,11 +79,11 @@
     },
     async created () {
       console.clear()
-      console.time('feed-load')
+      console.time('posters-load')
       console.info('views their posters')
       await this.get_poster_list()
       this.worker.addEventListener('message', this.brand_new_poster)
-      console.timeEnd('feed-load')
+      console.timeEnd('posters-load')
     },
     destroyed () {
       this.worker.terminate()
