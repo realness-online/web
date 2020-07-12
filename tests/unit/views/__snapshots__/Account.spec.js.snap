@@ -27,10 +27,11 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     class="message"
   >
     <p>
-      Say some stuff by using the homepage red 
+      Say some stuff via the 
       <button
         class="mock"
       />
+       button on the homepage
     </p>
      
     <h6>
