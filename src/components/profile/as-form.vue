@@ -106,10 +106,9 @@
       })
     },
     methods: {
-      validate_mobile_number (event) {
+      validate_mobile_number () {
         const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
-        if (is_valid) this.disabled_sign_in = false
-        else this.disabled_sign_in = true
+        this.disabled_sign_in = !is_valid
         return is_valid
       },
       disable_input () {
