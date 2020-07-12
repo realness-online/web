@@ -141,9 +141,8 @@
         this.show_code = true
         this.show_captcha = false
         this.hide_captcha = true
-        const result = await firebase.auth()
+        this.authorizer = await firebase.auth()
         .signInWithPhoneNumber(`+1${this.person.mobile}`, this.human)
-        this.authorizer = result
         this.$el.querySelector('#verification-code').scrollIntoView(false)
         this.$el.querySelector('#verification-code').focus()
       },
