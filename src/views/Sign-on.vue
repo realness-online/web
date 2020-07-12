@@ -4,13 +4,16 @@
       <profile-as-figure :person="person" />
       <logo-as-link />
     </header>
-    <profile-as-form :person="person" @modified="save_me" />
+    <profile-as-form :person="person"
+                     @modified="save_me"
+                     @signed-on="forward_on" />
   </section>
 </template>
 <script>
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import profile_as_form from '@/components/profile/as-form'
+  import { Me } from '@/persistance/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -19,7 +22,24 @@
     },
     data () {
       return {
-        person: {}
+        person: {
+          id: '/+'
+        }
+      }
+    },
+    methods: {
+      async forward_on (event) {
+        console.log('forward_on called')
+        const me = new Me()
+        await this.$nextTick()
+        await me.save()
+        this.$router.push({ path: '/' })
+      },
+      async save_me (event) {
+        console.log('save me called')
+        const me = new Me()
+        await this.$nextTick()
+        await me.save()
       }
     }
   }
