@@ -43,6 +43,10 @@ describe('@/compontent/profile/as-form.vue', () => {
       await flushPromises()
       expect(wrapper.vm.show_sign_out).toBe(true)
     })
+    it('emits an event when the user is signed on', async () => {
+      await wrapper.vm.sign_in_with_code()
+      expect(wrapper.emitted('signed-on')).toBeTruthy()
+    })
   })
   describe('Sign out', () => {
     let wrapper, button, is_signed_in, signOut

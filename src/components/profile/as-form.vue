@@ -152,6 +152,7 @@
         this.disable_input()
         this.show_code = false
         await this.authorizer.confirm(this.code)
+        this.$emit('signed-on', this.person)
         this.working = false
         this.show_sign_out = true
       },
