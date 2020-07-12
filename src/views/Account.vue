@@ -21,7 +21,7 @@
                           :verbose="false" />
     </as-days>
     <hgroup v-else class="message">
-      <p>Say some stuff by using the homepage red <button class="mock" /></p>
+      <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
