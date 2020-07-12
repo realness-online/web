@@ -34,14 +34,20 @@
     </fieldset>
     <icon v-show="working" name="working" />
     <menu>
-      <button v-if="show_authorize" id="authorize"
-              :disabled="disabled_sign_in" @click.prevent="begin_authorization">
+      <button v-if="show_authorize"
+              id="authorize"
+              :disabled="disabled_sign_in"
+              @click.prevent="begin_authorization">
         Sign on
       </button>
-      <button v-if="show_code" id="submit-verification" @click.prevent="sign_in_with_code">
+      <button v-if="show_code"
+              id="submit-verification"
+              @click.prevent="sign_in_with_code">
         Sign on
       </button>
-      <button v-if="show_sign_out" id="sign-out" @click.prevent="sign_out">
+      <button v-if="show_sign_out"
+              id="sign-out"
+              @click.prevent="sign_out">
         <icon name="remove" />
       </button>
     </menu>
