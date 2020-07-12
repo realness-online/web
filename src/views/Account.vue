@@ -134,14 +134,24 @@
       margin: 0
     h4
       margin: base-line 0 0 0
+    & > header
+      position: relative
+      margin-bottom: -(base-line * 4)
+      animation: slide-in-down
+      animation-delay: 0.33s
+      animation-duration: 0.35s
+      animation-fill-mode: backwards
+    & > div
+      position: relative
+      z-index: 1
     @media (prefers-color-scheme: dark)
       h1, h4, svg.background
         color: red
         fill: red
-    & > *:not(header)
-      padding: base-line
-    & div#login > figure
-      margin-bottom: base-line
+    & > h1
+    & > div > figure
+    & > div > form
+      padding: base-line base-line 0 base-line
     section.as-days
       padding-top: 0
       article.day
