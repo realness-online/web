@@ -38,7 +38,8 @@
     },
     computed: {
       id () {
-        return itemid.as_query_id(this.person.avatar)
+        if (this.person.avatar) return itemid.as_query_id(this.person.avatar)
+        else return null
       },
       avatar_link () {
         if (this.working) return `${icons}#working`
@@ -47,7 +48,9 @@
       }
     },
     async created () {
-      if (this.me === this.person.id) this.avatar = await itemid.load(this.person.avatar)
+      if (this.me === this.person.id && this.me.length > 2) {
+       this.avatar = await itemid.load(this.person.avatar)
+     }
     },
     methods: {
       first_instance () {
