@@ -3,9 +3,7 @@
     <as-svg :person="person" @vector-clicked="avatar_click" />
     <figcaption>
       <as-hgroup :person="person" />
-      <p v-if="is_me" class="phone">
-        {{ mobile_display }}
-      </p>
+      <p v-if="is_me" class="phone">{{ mobile_display }}</p>
       <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
   </figure>
@@ -35,7 +33,9 @@
         return `sms:${this.person.id}`
       },
       mobile_display () {
-        const phone_number = profile.as_phone_number(this.person.id)
+        let phone_number
+        if (this.person.mobile) phone_number = this.person.mobile
+        else phone_number = profile.as_phone_number(this.person.id)
         return new AsYouType('US').input(phone_number)
       }
     },
