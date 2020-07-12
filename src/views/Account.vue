@@ -86,6 +86,14 @@
       if (Array.isArray(statements)) this.statements = statements
       else if (statements) this.statements = [statements]
     },
+    mounted () {
+      const html = document.getElementsByTagName('html')[0]
+      html.style.setProperty('--slip-color', '#52A0D1')
+    },
+    destroyed () {
+      const html = document.getElementsByTagName('html')[0]
+      html.style.removeProperty('--slip-color')
+    },
     methods: {
       async new_avatar (avatar_url) {
         this.person.avatar = avatar_url
