@@ -15,9 +15,9 @@ const events = [{
 describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
+    get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
     wrapper = shallow(Posters)
     wrapper.vm.events = events
-    get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
   })
   describe('Rendering', () => {
     it('Renders ui for posters', () => {
