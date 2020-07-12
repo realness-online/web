@@ -49,7 +49,7 @@
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
-      firebase.auth().onAuthStateChanged(user => this.sync)
+      firebase.auth().onAuthStateChanged(this.sync)
       this.worker.postMessage('From App.vue Create')
     },
     beforeDestroy () {
