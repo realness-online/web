@@ -6,15 +6,20 @@
       <p v-if="is_me" class="phone">{{ mobile_display }}</p>
       <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
+    <menu v-if="is_me">
+      <icon name="gear" />
+    </menu>
   </figure>
 </template>
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
+  import icon from '@/components/icon'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
   export default {
     components: {
+      icon,
       'as-svg': as_svg,
       'as-hgroup': as_hgroup
     },
@@ -57,18 +62,20 @@
     overflow: hidden
     text-overflow: ellipsis
     display:flex
+    justify-content: space-between
     #background
       fill: blue
-    svg
+    & > svg
       min-height: base-line * 2
       min-width: base-line * 2
       cursor: pointer
       border-radius: base-line
       shape-outside: circle()
       margin-right: (base-line / 4)
-      .background
+      &.background
         fill: blue
     & > figcaption
+      flex: 1
       .phone
         margin-bottom: 0
         font-weight: 300
@@ -83,4 +90,10 @@
             margin-right:(base-line / 4)
       & > a
         display:block
+    & > menu
+      width: base-line * 2
+      align-self: center
+      svg.gear
+        @media (prefers-color-scheme: dark)
+          fill: red
 </style>
