@@ -8,7 +8,6 @@
     <div v-if="signed_in">
       <avatar-as-form :person="person" @new-avatar="new_avatar" />
       <profile-as-figure :person="person" />
-      <profile-as-form :person="person" @modified="save_me" />
     </div>
     <h1>Statements</h1>
     <as-days v-if="has_statements" v-slot="thoughts"
@@ -27,9 +26,6 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
-  import profile from '@/helpers/profile'
   import itemid from '@/helpers/itemid'
   import { Statements, Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
@@ -38,7 +34,6 @@
   import logo_as_link from '@/components/logo-as-link'
   import sign_on from '@/components/sign-on'
   import profile_as_figure from '@/components/profile/as-figure'
-  import profile_as_form from '@/components/profile/as-form'
   import avatar_as_form from '@/components/avatars/as-form'
   import thought_as_article from '@/components/statements/as-article'
   export default {
@@ -48,7 +43,6 @@
       'sign-on': sign_on,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
-      'profile-as-form': profile_as_form,
       'thought-as-article': thought_as_article,
       'avatar-as-form': avatar_as_form
     },
@@ -68,13 +62,6 @@
       has_statements () {
         if (this.thoughts) return this.thoughts.length > 0
         else return false
-      }
-    },
-    watch: {
-      signed_in () {
-        if (this.signed_in) {
-          localStorage.setItem('me', profile.from_e64(firebase.auth().currentUser.phoneNumber))
-        }
       }
     },
     async created () {
