@@ -123,7 +123,6 @@
       margin: base-line 0 0 0
     & > header
       position: relative
-      margin-bottom: -(base-line * 4)
       animation: slide-in-down
       animation-delay: 0.33s
       animation-duration: 0.35s
@@ -139,11 +138,15 @@
     & > div > figure
     & > div > form
       padding: base-line base-line 0 base-line
-    section.as-days
+    & section.as-days
       padding-top: 0
       article.day
         @media (min-width: pad-begins)
           grid-auto-rows: auto
         @media (min-width: typing-begins)
           grid-auto-rows: auto
+</style>
+<style lang="stylus">
+  section#account.signed-in > header
+    margin-bottom: -(base-line * 4)
 </style>
