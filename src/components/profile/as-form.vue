@@ -209,6 +209,8 @@
     button#sign-out
       border: none
       padding: 0
+    button[disabled]
+      opacity:0.5
     button#authorize,
     button#submit-verification
       color: green
