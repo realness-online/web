@@ -117,6 +117,7 @@
       },
       async modified_check () {
         const me = await itemid.load(this.me)
+        if (!me) return true
         let modified = false
         if (me.id !== this.person.id) modified = true
         if (me.first_name !== this.person.first_name) modified = true
