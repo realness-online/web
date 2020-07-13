@@ -11,10 +11,11 @@
   </main>
 </template>
 <script>
-  import developer_tools from '@/components/developer-tools'
-  import activity from '@/components/activity/as-table'
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import developer_tools from '@/components/developer-tools'
+  import activity from '@/components/activity/as-table'
+  import profile from '@/helpers/profile'
   export default {
     components: {
       'developer-tools': developer_tools,
@@ -67,7 +68,11 @@
       },
       sync (current_user) {
         console.log('calling sync', new Date(), current_user)
-        if (current_user) this.worker.postMessage('sync message')
+        if (current_user) {
+          const me = profile.from_e64(current_user.phoneNumber)
+          localStorage.setItem('me', me)
+          this.worker.postMessage('sync message')
+        } else localStorage.setItem('me', '/+')
       },
       worker_message (message) {
         console.log('worker message!', message)
