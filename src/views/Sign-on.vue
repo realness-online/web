@@ -6,7 +6,7 @@
     </header>
     <profile-as-form :person="person"
                      @modified="save_me"
-                     @signed-on="forward_on" />
+                     @signed-on="signed_on" />
   </section>
 </template>
 <script>
@@ -28,8 +28,7 @@
       }
     },
     methods: {
-      async forward_on (event) {
-        console.log('forward_on called')
+      async signed_on (event) {
         const me = new Me()
         await this.$nextTick()
         await me.save()
