@@ -66,7 +66,7 @@
     },
     async created () {
       this.worker.addEventListener('message', this.set_new_avatar)
-      this.current_avatar = await itemid.load(this.person.avatar)
+      if (this.person.avatar) this.current_avatar = await itemid.load(this.person.avatar)
     },
     destroyed () {
       this.worker.terminate()

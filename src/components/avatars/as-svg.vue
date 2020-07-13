@@ -48,7 +48,7 @@
       }
     },
     async created () {
-      if (this.me === this.person.id && this.me.length > 2) {
+      if (this.person.avatar && this.me === this.person.id && this.me.length > 2) {
        this.avatar = await itemid.load(this.person.avatar)
      }
     },
