@@ -16,7 +16,7 @@
         <icon v-if="finished" name="finished" />
         <icon v-else name="working" />
       </a>
-      <download-vector v-if="download_vector" :vector="current_avatar" />
+      <download-vector v-if="download_vector" :itemid="current_avatar.id" />
     </menu>
     <input ref="uploader" v-uploader type="file" accept="image/jpeg" capture="user">
   </div>
