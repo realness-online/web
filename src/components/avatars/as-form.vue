@@ -117,6 +117,10 @@
       height: 100vh
       width: base-line * 5
     & > menu
+      animation: slide-in-up
+      animation-delay: 0.33s
+      animation-duration: 0.35s
+      animation-fill-mode: backwards
       position: relative
       z-index: 1
       display: flex
