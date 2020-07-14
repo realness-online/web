@@ -27,7 +27,8 @@
                              @statement-added="add_statement" />
     </nav>
     <footer hidden>
-      <as-days v-slot="thoughts" itemscope
+      <as-days v-slot="thoughts"
+               itemscope
                :itemid="statements_id"
                :statements="statements">
         <thought-as-article v-for="thought in thoughts"
