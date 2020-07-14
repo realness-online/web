@@ -90,11 +90,13 @@
         this.worker.postMessage({ image })
       },
       async accept_new_avatar (event) {
-        this.avatar_changed = false
         this.finished = false
         await this.$nextTick()
-        new Avatar(this.avatar.id).save()
+        const avatar = new Avatar(this.avatar.id)
+        await avatar.save()
         this.$emit('new-avatar', this.avatar.id)
+        await this.$nextTick()
+        this.avatar_changed = false
         this.avatar = null
         this.finished = true
       }
@@ -104,6 +106,8 @@
 <style lang="stylus">
   div#manage-avatar
     position: relative
+    & figure svg[itemscope]
+      position: relative
     & div svg
       width: 100vw
       min-height: 100vh

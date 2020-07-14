@@ -28,11 +28,11 @@
     </nav>
     <footer hidden>
       <as-days v-slot="thoughts" itemscope
-               :itemid="itemid" :statements="statements">
+               :itemid="statements_id"
+               :statements="statements">
         <thought-as-article v-for="thought in thoughts"
                             :key="thought[0].id"
-                            :statements="thought"
-                            :verbose="false" />
+                            :statements="thought" />
       </as-days>
     </footer>
   </section>
@@ -65,7 +65,7 @@
       has_statements () {
         return this.statements.length > 0
       },
-      itemid () {
+      statements_id () {
         return `${this.me}/statements`
       }
     },

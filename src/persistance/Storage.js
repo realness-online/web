@@ -6,7 +6,6 @@ import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
 import { as_type } from '@/helpers/itemid'
-
 export default class Storage {
   constructor (itemid) {
     this.id = itemid

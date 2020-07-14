@@ -12,6 +12,7 @@ const Large = (superclass) => class extends superclass {
       set(this.id, items.outerHTML)
       set(path, directory)
     }
+    if (super.save) super.save(items)
   }
 }
 export default Large

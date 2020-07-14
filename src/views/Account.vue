@@ -10,14 +10,15 @@
       <profile-as-figure :person="person" />
     </div>
     <h1>Statements</h1>
-    <as-days v-if="has_statements" v-slot="thoughts"
-             itemscope :itemid="itemid"
+    <as-days v-if="has_statements"
+             v-slot="thoughts"
+             itemscope
+             :itemid="statements_id"
              :statements="statements">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :editable="!working"
-                          :verbose="false" />
+                          :editable="!working" />
     </as-days>
     <hgroup v-else class="message">
       <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
@@ -52,26 +53,23 @@
         person: {},
         statements: [],
         image_file: null,
-        me_storage: null,
-        statements_storage: null,
-        working: false
+        working: true
       }
     },
     computed: {
-      itemid () { return `${this.me}/statements` },
-      has_statements () {
-        if (this.thoughts) return this.thoughts.length > 0
-        else return false
-      }
+      statements_id () { return `${this.me}/statements` },
+      has_statements () { return this.statements.length > 0 }
     },
     async created () {
       console.info('Views account page')
-      this.me_storage = new Me()
-      this.statements_storage = new Statements()
-      this.person = await itemid.load(this.me)
-      const statements = await itemid.list(`${this.me}/statements`)
+      const [person, statements] = await Promise.all([
+        itemid.load(this.me, this.me),
+        itemid.list(`${this.me}/statements`, this.me)
+      ])
+      if (person) this.person = person
       if (Array.isArray(statements)) this.statements = statements
       else if (statements) this.statements = [statements]
+      this.working = false
     },
     mounted () {
       const html = document.getElementsByTagName('html')[0]
@@ -83,22 +81,25 @@
     },
     methods: {
       async new_avatar (avatar_url) {
-        this.person.avatar = avatar_url
         this.working = true
+        this.person.avatar = avatar_url
+        const me = new Me()
         await this.$nextTick()
-        this.me_storage.save()
+        await me.save()
         this.working = false
       },
       async save_me (event) {
         this.working = true
         await this.$nextTick()
-        await this.me_storage.save()
+        const me = new Me()
+        await me.save()
         this.working = false
       },
       async save_statements (event) {
         this.working = true
         await this.$nextTick()
-        await this.statements_storage.save()
+        const statements = new Statements()
+        await statements.save()
         this.working = false
       }
     }

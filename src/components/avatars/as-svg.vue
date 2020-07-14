@@ -47,7 +47,7 @@
         else return `${icons}#silhouette`
       }
     },
-    async created () {
+    async mounted () {
       if (this.person.avatar && this.me === this.person.id && this.me.length > 2) {
        this.avatar = await itemid.load(this.person.avatar)
      }
@@ -58,9 +58,7 @@
         else return true
       },
       async show () {
-        console.log('avatars/as-svg')
         if (this.first_instance() && this.person.avatar) {
-          console.log(this.person.avatar)
           this.avatar = await itemid.load(this.person.avatar)
           this.$emit('vector-loaded', this.avatar)
         }
@@ -68,7 +66,3 @@
     }
   }
 </script>
-<style lang="stylus">
-  .background
-    fill: blue
-</style>
