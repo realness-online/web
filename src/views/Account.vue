@@ -62,13 +62,7 @@
     },
     async created () {
       console.info('Views account page')
-      const [person, statements] = await Promise.all([
-        itemid.load(this.me, this.me),
-        itemid.list(`${this.me}/statements`, this.me)
-      ])
-      if (person) this.person = person
-      if (Array.isArray(statements)) this.statements = statements
-      else if (statements) this.statements = [statements]
+      await this.get_all_my_stuff()
       this.working = false
     },
     mounted () {
@@ -80,6 +74,17 @@
       html.style.removeProperty('--slip-color')
     },
     methods: {
+      async get_all_my_stuff () {
+        const [person, statements] = await Promise.all([
+          itemid.load(this.me, this.me),
+          itemid.list(`${this.me}/statements`, this.me)
+        ])
+        if (person) this.person = person
+        if (statements) {
+          if (Array.isArray(statements)) this.statements = statements
+          else if (statements) this.statements = [statements]
+        }
+      },
       async new_avatar (avatar_url) {
         this.working = true
         this.person.avatar = avatar_url
@@ -140,7 +145,7 @@
     & > div > form
       padding: base-line base-line 0 base-line
     & section.as-days
-      padding-top: 0
+      padding: base-line
       article.day
         @media (min-width: pad-begins)
           grid-auto-rows: auto
