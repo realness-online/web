@@ -6,20 +6,15 @@
       <p v-if="is_me" class="phone">{{ mobile_display }}</p>
       <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
-    <menu v-if="is_me">
-      <icon name="gear" />
-    </menu>
   </figure>
 </template>
 <script>
   import { AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
-  import icon from '@/components/icon'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
   export default {
     components: {
-      icon,
       'as-svg': as_svg,
       'as-hgroup': as_hgroup
     },

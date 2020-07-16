@@ -28,7 +28,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
-  import { Statements, Me } from '@/persistance/Storage'
+  import { Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
@@ -92,20 +92,6 @@
         await this.$nextTick()
         await me.save()
         this.working = false
-      },
-      async save_me (event) {
-        this.working = true
-        await this.$nextTick()
-        const me = new Me()
-        await me.save()
-        this.working = false
-      },
-      async save_statements (event) {
-        this.working = true
-        await this.$nextTick()
-        const statements = new Statements()
-        await statements.save()
-        this.working = false
       }
     }
   }
@@ -120,7 +106,9 @@
       background-color: red
       border-radius: 0.2em
       height: 1.33em
-    p[itemprop="statement"]:focus
+    p[itemprop="statement"]:focus,
+    hgroup > span[itemprop]:focus
+      padding: 0 0 0 2px
       outline: 2px solid red
     h1
       width:100vw
