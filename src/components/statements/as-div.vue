@@ -23,11 +23,7 @@
     methods: {
       save (event) {
         const possibly_changed = this.$refs.editable.textContent.trim()
-        if (this.statement.statement !== possibly_changed) {
-          console.log('changed')
-          const statements = new Statements()
-          statements.save()
-        }
+        if (this.statement.statement !== possibly_changed) new Statements().save()
       }
     }
   }
