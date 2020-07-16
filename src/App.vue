@@ -51,7 +51,6 @@
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
       firebase.auth().onAuthStateChanged(this.sync)
-      this.worker.postMessage('From App.vue Create')
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
@@ -67,11 +66,11 @@
         this.status = 'offline'
       },
       sync (current_user) {
-        console.log('calling sync', new Date(), current_user)
+        // console.log('calling sync', new Date(), current_user)
         if (current_user) {
           const me = profile.from_e64(current_user.phoneNumber)
           localStorage.setItem('me', me)
-          this.worker.postMessage('sync message')
+          // this.worker.postMessage('sync message')
         } else localStorage.setItem('me', '/+')
       },
       worker_message (message) {
