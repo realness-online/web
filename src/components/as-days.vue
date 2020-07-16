@@ -60,6 +60,18 @@
     },
     watch: {
       statements () {
+        this.populate_days()
+      },
+      posters () {
+        this.posters.forEach(poster => this.insert_into_day(poster))
+      }
+    },
+    created () {
+      this.populate_days()
+      this.working = false
+    },
+    methods: {
+      populate_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
           yield * [...this.entries()].sort(newer_date_first)
@@ -67,14 +79,6 @@
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.days = days
       },
-      posters () {
-        this.posters.forEach(poster => this.insert_into_day(poster))
-      }
-    },
-    created () {
-      this.working = false
-    },
-    methods: {
       insert_into_day (item, days) {
         const day_name = date_helper.id_as_day(item[0].id)
         const day = days.get(day_name)
