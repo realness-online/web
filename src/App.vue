@@ -47,10 +47,12 @@
     },
     created () {
       this.worker.addEventListener('message', this.worker_message)
+
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
       firebase.auth().onAuthStateChanged(this.sync)
+      if (!navigator.onLine) this.offline()
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
@@ -60,9 +62,18 @@
     methods: {
       online () {
         this.sync(firebase.auth().currentUser)
+        const editable = document.querySelectorAll('[contenteditable]')
+        editable.forEach(element => {
+          element.setAttribute('contenteditable', true)
+        })
         this.status = null
       },
       offline () {
+        const editable = document.querySelectorAll('[contenteditable]')
+        console.log(editable)
+        editable.forEach(element => {
+          element.setAttribute('contenteditable', false)
+        })
         this.status = 'offline'
       },
       sync (current_user) {
