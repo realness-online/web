@@ -15,7 +15,5 @@ exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] =
       (628) 228-1823
     </a>
   </figcaption>
-   
-  <!---->
 </figure>
 `;

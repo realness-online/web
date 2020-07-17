@@ -39,30 +39,22 @@ describe('@/views/Account.vue', () => {
   describe('computed', () => {
     describe('#itemid', () => {
       it('give the current users id', async () => {
-        expect(wrapper.vm.itemid).toBe('/+/statements')
+        expect(wrapper.vm.statements_id).toBe('/+/statements')
       })
     })
   })
+  describe('#destroy', () => {
+    it('Removes the css variable', async () => {
+      wrapper.destroy()
+    })
+  })
   describe('methods', () => {
-    describe('#save_page', () => {
-      it('Saves a user', async () => {
-        const save_spy = jest.spyOn(wrapper.vm.statements_storage, 'save')
-        await wrapper.vm.save_statements()
-        await flushPromises()
-        expect(save_spy).toBeCalled()
-      })
-    })
-    describe('#save_me', () => {
-      it('Saves a user', async () => {
-        const save_spy = jest.spyOn(wrapper.vm.me_storage, 'save')
-        await wrapper.vm.save_me()
-        await flushPromises()
-        expect(save_spy).toBeCalled()
-      })
-    })
     describe('#new_avatar', () => {
-      it('writes a new avatar', async () => {
-        await wrapper.vm.new_avatar('/+/avatrars/4444555657674tu')
+      it('Handles connecting new avatar to person', async () => {
+        const mock_avatar_url = '/+16282281824/avatars/555666777'
+        await wrapper.vm.new_avatar(mock_avatar_url)
+        await flushPromises()
+        expect(wrapper.vm.person.avatar).toBe(mock_avatar_url)
       })
     })
   })
