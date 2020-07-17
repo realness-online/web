@@ -106,10 +106,9 @@
       background-color: red
       border-radius: 0.2em
       height: 1.33em
-    p[itemprop="statement"]:focus,
-    hgroup > span[itemprop]:focus
-      padding: 0 0 0 2px
-      outline: 2px solid red
+    p[itemprop="statement"]:focus
+      font-weight: 700
+      outline: 0px
     h1
       width:100vw
       margin: 0

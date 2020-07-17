@@ -74,15 +74,7 @@
       .phone
         margin-bottom: 0
         font-weight: 300
-      & > hgroup
-        color: black
-        margin:0
-        @media (prefers-color-scheme: dark)
-          color: white
-        & > span
-          text-transform: capitalize
-          &:first-of-type
-            margin-right:(base-line / 4)
+        user-select: none
       & > a
         display:block
     & > menu

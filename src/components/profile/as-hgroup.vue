@@ -1,15 +1,15 @@
 <template lang="html">
   <hgroup itemscope :itemid="item_id">
-    <span v-if="editable"
-          ref="first_name"
-          contenteditable="true"
-          itemprop="first_name">{{ person.first_name }}</span>
+    <b v-if="editable"
+       ref="first_name"
+       contenteditable="true"
+       itemprop="first_name">{{ person.first_name }}</b>
     <span v-else itemprop="first_name">{{ person.first_name }}</span>
-    <span v-if="editable"
-          ref="last_name"
-          contenteditable="true"
-          itemprop="last_name"
-          @blur="save_last_name">{{ person.last_name }}</span>
+    <b v-if="editable"
+       ref="last_name"
+       contenteditable="true"
+       itemprop="last_name"
+       @blur="save_last_name">{{ person.last_name }}</b>
     <span v-else itemprop="last_name">{{ person.last_name }}</span>
     <link itemprop="avatar" rel="icon" :href="person.avatar">
   </hgroup>
@@ -54,3 +54,21 @@
     }
   }
 </script>
+<style lang="stylus">
+
+  hgroup[itemscope]
+    color: black
+    margin:0
+    @media (prefers-color-scheme: dark)
+      color: white
+    & > b:first-of-type
+    & > span:first-of-type
+      margin-right: (base-line / 4)
+    & > span
+      text-transform: capitalize
+    & > b[itemprop]
+      font-weight: 400
+      &:focus
+        font-weight: 700
+        outline: 0
+</style>
