@@ -1,6 +1,6 @@
 <template lang="html">
   <aside itemscope :itemid="itemid">
-    <meta v-for="person in people" :key="person.id" itemprop="relation" :content="person.id">
+    <meta v-for="person in people" :key="person.id" itemprop="relations" itemscope :itemid="person.id">
   </aside>
 </template>
 <script>
