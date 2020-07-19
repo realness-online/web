@@ -115,6 +115,10 @@
         const mobile = this.$el.querySelector('#mobile')
         if (mobile) mobile.disabled = true
       },
+      enable_input () {
+        const mobile = this.$el.querySelector('#mobile')
+        if (mobile) mobile.disabled = false
+      },
       async modified_check () {
         const me = await itemid.load(this.me)
         if (!me) return true
@@ -150,17 +154,24 @@
         this.working = true
         this.disable_input()
         this.show_code = false
-        await this.authorizer.confirm(this.code)
-        this.$emit('signed-on', this.person)
-        this.working = false
-        this.show_sign_out = true
+        try {
+          await this.authorizer.confirm(this.code)
+          this.$emit('signed-on', this.person)
+          this.show_sign_out = true
+        } catch (e) {
+          if (e.code === 'auth/invalid-verification-code') {
+            this.enable_input()
+            this.show_code = true
+          }
+        } finally {
+          this.working = false
+        }
       },
       sign_out (event) {
         firebase.auth().signOut()
         this.show_sign_out = false
         this.show_authorize = true
-        const mobile = this.$el.querySelector('#mobile')
-        if (mobile) mobile.disabled = false
+        this.enable_input()
       },
       mobile_keypress (event) {
         if (!event.key.match(/^\d$/)) event.preventDefault()
