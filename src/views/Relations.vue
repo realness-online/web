@@ -36,6 +36,7 @@
     mixins: [signed_in],
     data () {
       return {
+        signed_in: true,
         relations: []
       }
     },
