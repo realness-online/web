@@ -41,7 +41,7 @@ export function elements_as_kilobytes (elements) {
 const Paged = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     if (!items) return
-    await this.sync_list()
+    await this.sync()
     if (super.save) super.save(items)
     await this.optimize()
   }
@@ -73,7 +73,7 @@ const Paged = (superclass) => class extends superclass {
       }
     }
   }
-  async sync_list () {
+  async sync () {
     let items; let oldest_at = 0 // the larger the number the more recent it is
     const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)

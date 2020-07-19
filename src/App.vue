@@ -13,6 +13,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import { Statements, Events } from '@/persistance/Storage'
   import developer_tools from '@/components/developer-tools'
   import activity from '@/components/activity/as-table'
   import profile from '@/helpers/profile'
@@ -24,7 +25,7 @@
     data () {
       return {
         status: null,
-        worker: new Worker('/sync.worker.js'),
+        syncer: new Worker('/sync.worker.js'),
         firebase_keys: {
           apiKey: process.env.VUE_APP_API_KEY,
           authDomain: process.env.VUE_APP_AUTH_DOMAIN,
@@ -46,7 +47,7 @@
       }
     },
     created () {
-      this.worker.addEventListener('message', this.worker_message)
+      this.syncer.addEventListener('message', this.worker_message)
 
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
@@ -57,7 +58,7 @@
     beforeDestroy () {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
-      this.worker.terminate()
+      this.syncer.terminate()
     },
     methods: {
       online () {
@@ -76,12 +77,17 @@
         })
         this.status = 'offline'
       },
-      sync (current_user) {
-        // console.log('calling sync', new Date(), current_user)
+      async sync (current_user) {
         if (current_user) {
           const me = profile.from_e64(current_user.phoneNumber)
           localStorage.setItem('me', me)
-          // this.worker.postMessage('sync message')
+          const statements = new Statements()
+          const events = new Events()
+          await Promise.all([
+            statements.sync(),
+            events.sync()
+          ])
+          this.syncer.postMessage('sync')
         } else localStorage.setItem('me', '/+')
       },
       worker_message (message) {

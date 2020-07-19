@@ -16,19 +16,19 @@ describe('@/persistance/Paged.js', () => {
     jest.clearAllMocks()
     localStorage.clear()
   })
-  describe('#sync_list', () => {
+  describe('#sync', () => {
     let cloud_spy, local_spy
     beforeEach(() => {
       cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => Promise.resolve(get_item(statements)))
       local_spy = jest.spyOn(itemid, 'list').mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
     })
     it('Exists', () => {
-      expect(paged.sync_list).toBeDefined()
+      expect(paged.sync).toBeDefined()
     })
     it('Syncs statements from server to local storage', async () => {
       expect(get_item(statements).statements.length).toBe(20)
       expect(get_item(hella_statements).statements.length).toBe(100)
-      const list = await paged.sync_list()
+      const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
       // 100 local statements - 20 were optimized away on another device
@@ -42,14 +42,14 @@ describe('@/persistance/Paged.js', () => {
     it('syncs if there are no server items', async () => {
       cloud_spy = jest.spyOn(itemid, 'load_from_network')
                       .mockImplementationOnce(() => null)
-      const list = await paged.sync_list()
+      const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
       expect(list.length).toBe(100)
     })
     it('syncs if there are no local items', async () => {
       cloud_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
-      const list = await paged.sync_list()
+      const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
       expect(list.length).toBe(20)
