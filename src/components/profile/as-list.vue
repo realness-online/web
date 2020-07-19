@@ -37,7 +37,12 @@
       }
     },
     async created () {
-      this.relations = await itemid.list(`${this.me}/relations`)
+      const relations = await itemid.list(`${this.me}/relations`)
+      console.log(relations)
+      if (relations) {
+        if (Array.isArray(relations)) this.relations = relations
+        else if (relations) this.relations = [relations]
+      }
     },
     methods: {
       async add_relationship (person) {
