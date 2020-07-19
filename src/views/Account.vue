@@ -8,6 +8,7 @@
     <div v-if="signed_in">
       <avatar-as-form :person="person" @new-avatar="new_avatar" />
       <profile-as-figure :person="person" />
+      <button @click="signoff">Sign off</button>
     </div>
     <h1>Statements</h1>
     <as-days v-if="has_statements"
@@ -27,6 +28,8 @@
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import itemid from '@/helpers/itemid'
   import { Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
@@ -74,6 +77,10 @@
       html.style.removeProperty('--slip-color')
     },
     methods: {
+      signoff () {
+        firebase.auth().signOut()
+        this.$router.push({ path: '/sign-on' })
+      },
       async get_all_my_stuff () {
         const [person, statements] = await Promise.all([
           itemid.load(this.me, this.me),
@@ -123,6 +130,10 @@
     & > div
       position: relative
       z-index: 1
+      & > button
+        position: absolute
+        bottom: .05rem
+        right: 1em
     @media (prefers-color-scheme: dark)
       h1, h4, svg.background
         color: red
