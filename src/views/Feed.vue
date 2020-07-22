@@ -91,34 +91,9 @@
         width:100vw
         margin-bottom: 0
     & > section.as-days
-      padding: base-line
-    & > article.day
       padding: 0 base-line
-      display:flex
-      flex-direction: column
-      &.today
-        flex-direction: column-reverse
-        & > header
-          order: 1
-      & > header > h4
-        font-weight: 800
-        margin-top: base-line
-        margin-bottom: 0
-      & > div
-        & > figure > figcaption,
-        & > article > header
-          display: flex
-          justify-content: flex-start
-          flex-direction: row
-          margin: base-line 0
-          & a > svg
-            cursor: pointer
-            shape-outside: circle()
-            border-radius: base-line
-            margin-right: (base-line / 4)
-          & > hgroup
-            margin: 0
-            & > span
-              font-weight: 300
-              display: inline-block
+      & > article.day
+        grid-auto-rows: auto
+        figure.poster > svg.background
+          fill: blue
 </style>
