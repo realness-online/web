@@ -60,18 +60,18 @@
     },
     watch: {
       statements () {
-        this.populate_days()
+        this.process_thoughts_into_days()
       },
       posters () {
-        this.posters.forEach(poster => this.insert_into_day(poster))
+        this.posters.forEach(poster => this.insert_into_day(poster, this.days))
       }
     },
     created () {
-      this.populate_days()
+      this.process_thoughts_into_days()
       this.working = false
     },
     methods: {
-      populate_days () {
+      process_thoughts_into_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
           yield * [...this.entries()].sort(newer_date_first)
@@ -80,7 +80,9 @@
         this.days = days
       },
       insert_into_day (item, days) {
-        const day_name = date_helper.id_as_day(item[0].id)
+        let day_name
+        if (item.id) day_name = date_helper.id_as_day(item.id) // posters
+        else day_name = date_helper.id_as_day(item[0].id) // thoughts
         const day = days.get(day_name)
         if (day && this.is_today(day_name)) day.unshift(item)
         else if (day) day.push(item)

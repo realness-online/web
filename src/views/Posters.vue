@@ -37,8 +37,6 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
-  import 'firebase/auth'
   import itemid from '@/helpers/itemid'
   import { newer_date_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
@@ -60,8 +58,7 @@
         posters: [],
         worker: new Worker('/vector.worker.js'),
         working: false,
-        new_poster: null,
-        storage: firebase.storage().ref()
+        new_poster: null
       }
     },
     computed: {

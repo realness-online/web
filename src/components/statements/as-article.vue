@@ -60,7 +60,7 @@
     },
     async created () {
       if (this.verbose) {
-        this.author = await load(as_author(this.statement.id))
+        this.author = await load(as_author(this.statements[0].id))
       }
     }
   }

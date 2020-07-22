@@ -7,9 +7,13 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <as-days v-if="signed_in" v-slot="item" :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
-      <thought-as-article v-else :statements="item" :verbose="true" @viewed="statement_viewed" />
+    <as-days v-if="signed_in" v-slot="items"
+             :posters="posters"
+             :statements="statements">
+      <div v-for="item in items" :key="item.id">
+        <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
+        <thought-as-article v-else :statements="item" :verbose="true" />
+      </div>
     </as-days>
     <hgroup v-else class="sign-on message">
       <p><sign-on /> and you can check out <icon name="heart" /> who's on here</p>
@@ -38,6 +42,7 @@
     mixins: [signed_in],
     data () {
       return {
+        signed_in: true,
         people: [],
         statements: [],
         posters: []
@@ -57,8 +62,15 @@
             itemid.list(`${relation.id}/statements`, this.me),
             itemid.as_directory(`${relation.id}/posters`, this.me)
           ])
-          this.statements = [...statements, ...this.statements]
-          this.posters = [...posters.items, ...this.posters]
+          if (statements) this.statements = [...statements, ...this.statements]
+          if (posters) {
+            posters.items.forEach(name => {
+              this.posters.push({
+                id: `${relation.id}/posters/${name}`,
+                type: 'posters'
+              })
+            })
+          }
         }))
       }
     }
@@ -78,6 +90,8 @@
         padding: 0 base-line
         width:100vw
         margin-bottom: 0
+    & > section.as-days
+      padding: base-line
     & > article.day
       padding: 0 base-line
       display:flex
