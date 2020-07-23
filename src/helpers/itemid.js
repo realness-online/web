@@ -90,7 +90,7 @@ export function as_path_parts (itemid) {
 }
 export function as_author (itemid) {
   const path = as_path_parts(itemid)
-  if (path[1]) return path[1]
+  if (path[0]) return `/${path[0]}`
   else return null
 }
 export function as_type (itemid) {

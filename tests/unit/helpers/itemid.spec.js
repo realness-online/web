@@ -6,6 +6,7 @@ import itemid, {
   as_storage_path,
   as_directory_id,
   as_directory,
+  as_author,
   as_filename,
   as_type
 } from '@/helpers/itemid'
@@ -174,6 +175,12 @@ describe('@/helpers/itemid', () => {
         const directory = await as_directory('/+/posters/')
         expect(mock_get).toBeCalled()
         expect(directory).toBe(null)
+      })
+    })
+    describe('#as_author', () => {
+      const itemid = '/+16282281824/statements/1583955101461'
+      it('should return an author id for a statement id', () => {
+        expect(as_author(itemid)).toBe('/+16282281824')
       })
     })
   })
