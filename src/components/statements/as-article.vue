@@ -69,5 +69,19 @@
   article.thought
     overflow: hidden
     & > header
-      margin-bottom: (base-line / 2)
+      display: flex
+      justify-content: flex-start
+      flex-direction: row
+      margin: base-line 0
+      & a > svg
+        cursor: pointer
+        shape-outside: circle()
+        border-radius: base-line
+        margin-right: round((base-line / 4), 2)
+      & > hgroup
+        margin: 0
+        & > span
+          margin-right: round((base-line / 4), 2)
+          font-weight: 300
+          display: inline-block
 </style>
