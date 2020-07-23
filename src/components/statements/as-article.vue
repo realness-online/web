@@ -72,7 +72,7 @@
       display: flex
       justify-content: flex-start
       flex-direction: row
-      margin: base-line 0
+      margin: 0 0 base-line 0
       & a > svg
         cursor: pointer
         shape-outside: circle()
