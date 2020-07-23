@@ -111,7 +111,7 @@
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
     & > header
       & > h4
-        font-weight: 800
+        font-weight: 600
       @media (min-width: pad-begins)
         grid-column: 1 / -1
         & > hgroup
