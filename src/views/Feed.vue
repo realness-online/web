@@ -73,7 +73,7 @@
           if (posters) {
             posters.items.forEach(name => {
               this.posters.push({
-                id: `${relation.id}/posters/${name}`,
+                id: `${relation.id}/posters/${name.split('.')[0]}`,
                 type: 'posters'
               })
             })
