@@ -6,8 +6,9 @@ exports[`@/compontent/profile/as-links.vue Renders a list of the person relation
   itemscope="itemscope"
 >
   <meta
-    content="/+14151234356"
-    itemprop="relation"
+    itemid="/+14151234356"
+    itemprop="relations"
+    itemscope="itemscope"
   />
 </aside>
 `;
