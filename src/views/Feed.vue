@@ -11,8 +11,12 @@
              :posters="posters"
              :statements="statements">
       <div v-for="item in items" :key="item.id">
-        <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
-        <thought-as-article v-else :statements="item" :verbose="true" />
+        <poster-as-figure v-if="item.type === 'posters'"
+                          :itemid="item.id"
+                          :verbose="true" />
+        <thought-as-article v-else
+                            :statements="item"
+                            :verbose="true" />
       </div>
     </as-days>
     <hgroup v-else class="sign-on message">
@@ -51,7 +55,10 @@
     async created () {
       console.time('feed-load')
       this.people = await itemid.list(`${this.me}/relations`)
-      this.people.push({ id: this.me })
+      this.people.push({
+        id: this.me,
+        type: 'person'
+      })
       await this.fill_feed()
       console.timeEnd('feed-load')
     },
