@@ -44,8 +44,8 @@ export async function as_directory (itemid, me = localStorage.getItem('me')) {
   if (cached) return cached
   else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
-    console.info('Makes a directory request')
-    const directory = await firebase.storage().ref().child(path).listAll()
+    console.info('Makes a directory request', path)
+    const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
     directory.items.forEach(item => meta.items.push(item.name))
     directory.prefixes.forEach(folder => meta.types.push(folder.name))
     set(path, meta)
