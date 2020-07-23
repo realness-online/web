@@ -90,9 +90,7 @@
       await phone_numbers.prefixes.forEach(async (phone_number, index) => {
         const person = await load(profile.from_e64(phone_number.name))
         console.log(person)
-        const statements = await list(`${person.id}/statements`)
-        if (Array.isArray(statements)) person.statements = statements
-        else person.statements = [statements]
+        person.statements = await list(`${person.id}/statements`)
         this.phonebook.push(person)
       })
       console.timeEnd('admin-load')

@@ -62,7 +62,7 @@
             itemid.list(`${relation.id}/statements`, this.me),
             itemid.as_directory(`${relation.id}/posters`, this.me)
           ])
-          if (statements) this.statements = [...statements, ...this.statements]
+          this.statements = [...statements, ...this.statements]
           if (posters) {
             posters.items.forEach(name => {
               this.posters.push({

@@ -82,11 +82,8 @@
           itemid.list(`${this.me}/relations`, this.me)
         ])
         if (my && my.first_name) this.first_name = my.first_name
-        if (statements) {
-          if (Array.isArray(statements)) this.statements = statements
-          else if (statements) this.statements = [statements]
-        }
-        if (relations) this.relations = relations
+        this.statements = statements
+        this.relations = relations
       },
       done_posting (event) {
         document.querySelector('nav > button').focus()

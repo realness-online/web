@@ -87,10 +87,7 @@
           itemid.list(`${this.me}/statements`, this.me)
         ])
         if (person) this.person = person
-        if (statements) {
-          if (Array.isArray(statements)) this.statements = statements
-          else if (statements) this.statements = [statements]
-        }
+        this.statements = statements
       },
       async new_avatar (avatar_url) {
         this.working = true

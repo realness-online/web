@@ -19,10 +19,15 @@ export async function load (itemid, me = localStorage.getItem('me')) {
   return null
 }
 export async function list (itemid, me = localStorage.getItem('me')) {
-  const list = await load(itemid, me)
-  const type = as_type(itemid)
-  if (list) return list[type]
-  else return null
+  // Returns a list even if loading the item fails
+  try {
+    const item = await load(itemid, me)
+    const type = as_type(itemid)
+    const list = item[type]
+    if (list && Array.isArray(list)) return list
+    else if (list) return [list]
+    else return []
+  } catch { return [] }
 }
 export async function load_from_network (itemid, me = localStorage.getItem('me')) {
   const url = await as_download_url(itemid, me)

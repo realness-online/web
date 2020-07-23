@@ -57,7 +57,7 @@
         itemid.as_directory(`${id}/posters`)
       ])
       if (person) this.person = person
-      if (statements) this.statements = as_thoughts(statements)
+      this.statements = as_thoughts(statements)
       posters.items.forEach(filename => {
         const created_at = filename.split('.')[0]
         const poster = {

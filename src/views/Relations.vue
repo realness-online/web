@@ -42,11 +42,7 @@
     },
     async created () {
       console.info('Views relations')
-      const relations = await itemid.list(`${this.me}/relations`)
-      if (relations) {
-        if (Array.isArray(relations)) this.relations = relations
-        else this.relations = [relations]
-      }
+      this.relations = await itemid.list(`${this.me}/relations`)
       this.relations.forEach(async (relation, index) => {
         const person = await itemid.load(relation.id)
         this.relations.splice(index, 1, person)
