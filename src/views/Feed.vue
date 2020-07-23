@@ -98,9 +98,10 @@
         width:100vw
         margin-bottom: 0
     & > section.as-days
-      padding: 0 base-line
       & > article.day
         grid-auto-rows: auto
+        article.thought
+          padding: 0 base-line
         figure.poster > svg.background
           fill: blue
 </style>
