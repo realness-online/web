@@ -27,7 +27,7 @@
   import profile_as_figure from '@/components/profile/as-figure'
   import avatar from '@/components/avatars/as-svg'
   import as_article from '@/components/statements/as-article'
-  import poster_as_figure from '@/components/feed/as-figure'
+  import poster_as_figure from '@/components/posters/as-figure'
   export default {
     components: {
       avatar,
