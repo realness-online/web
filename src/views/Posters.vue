@@ -87,7 +87,7 @@
     },
     methods: {
       get_id (name) {
-        return `${this.me}/posters/${name.split('.')[0]}`
+        return `${this.me}/posters/${name}`
       },
       vectorize_image (image) {
         this.working = true

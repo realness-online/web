@@ -26,7 +26,7 @@
   </section>
 </template>
 <script>
-  import itemid from '@/helpers/itemid'
+  import { as_directory, list } from '@/helpers/itemid'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
@@ -54,7 +54,7 @@
     },
     async created () {
       console.time('feed-load')
-      this.people = await itemid.list(`${this.me}/relations`)
+      this.people = await list(`${this.me}/relations`)
       this.people.push({
         id: this.me,
         type: 'person'
@@ -64,16 +64,16 @@
     },
     methods: {
       async fill_feed () {
-        await Promise.all(this.people.map(async (relation) => {
+        await Promise.all(this.people.map(async relation => {
           const [statements, posters] = await Promise.all([
-            itemid.list(`${relation.id}/statements`, this.me),
-            itemid.as_directory(`${relation.id}/posters`, this.me)
+            list(`${relation.id}/statements`, this.me),
+            as_directory(`${relation.id}/posters`, this.me)
           ])
           this.statements = [...statements, ...this.statements]
           if (posters) {
-            posters.items.forEach(name => {
+            posters.items.forEach(created_at => {
               this.posters.push({
-                id: `${relation.id}/posters/${name.split('.')[0]}`,
+                id: `${relation.id}/posters/${created_at}`,
                 type: 'posters'
               })
             })

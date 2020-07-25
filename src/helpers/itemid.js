@@ -44,10 +44,10 @@ export async function as_directory (itemid, me = localStorage.getItem('me')) {
   if (cached) return cached
   else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
-    console.info('Makes a directory request', path)
+    console.info(`Makes a directory request for ${path}`)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
-    directory.items.forEach(item => meta.items.push(item.name))
-    directory.prefixes.forEach(folder => meta.types.push(folder.name))
+    directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
+    directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
     set(path, meta)
     return meta
   } else return null
@@ -56,7 +56,7 @@ export async function as_download_url (itemid, me = localStorage.getItem('me')) 
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
-    console.info('Makes a storage request')
+    console.info(`Makes a storage request for ${itemid}`)
     return await storage.child(as_filename(itemid)).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {

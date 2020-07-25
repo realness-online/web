@@ -56,10 +56,10 @@
         itemid.list(`${id}/statements`),
         itemid.as_directory(`${id}/posters`)
       ])
-      if (person) this.person = person
+      if (!person) return
+      this.person = person
       this.statements = as_thoughts(statements)
-      posters.items.forEach(filename => {
-        const created_at = filename.split('.')[0]
+      posters.items.forEach(created_at => {
         const poster = {
           id: `${person.id}/posters/${created_at}`,
           type: 'posters'
