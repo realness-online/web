@@ -1,9 +1,10 @@
 <template lang="html">
   <figure class="poster" :class="{ 'selecting-event': selecting_event }">
-    <icon name="background" />
+    <icon :name="background" />
     <as-svg :itemid="itemid"
             :new_poster="new_poster"
-            @vector-click="vector_click" />
+            @vector-click="vector_click"
+            @vector-loaded="vector_loaded" />
     <figcaption>
       <event-as-fieldset v-if="date_picker"
                          :itemid="itemid"
@@ -50,10 +51,16 @@
       return {
         menu: false,
         poster: null,
-        selecting_event: false
+        selecting_event: false,
+        loaded: false
       }
     },
     computed: {
+      background () {
+        if (this.working) return 'working'
+        if (this.loaded) return 'background'
+        else return 'working'
+      },
       date_picker () {
         if ((this.menu || this.selecting_event) && this.new_poster === null) return true
         else return false
@@ -74,6 +81,9 @@
           this.menu = true
           this.selecting_event = false
         }
+      },
+      vector_loaded () {
+        this.loaded = true
       },
       vector_click (menu) {
         if (this.selecting_event) this.menu = false
@@ -111,5 +121,6 @@
       width: 100%
       height: 100%
     svg.working
+      margin-top: base-line
       max-width: base-line * 6
 </style>
