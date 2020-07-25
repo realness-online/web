@@ -12,7 +12,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
-  import vector_intersection from '@/mixins/vector_intersection'
+  import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
@@ -20,7 +20,7 @@
     components: {
       icon
     },
-    mixins: [vector_intersection, vector_click],
+    mixins: [intersection, vector_click],
     props: {
       person: {
         type: Object,

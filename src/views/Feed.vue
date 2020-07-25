@@ -17,7 +17,8 @@
                           :verbose="true" />
         <thought-as-article v-else
                             :statements="item"
-                            :verbose="true" />
+                            :verbose="true"
+                            @thought-show="thought_shown" />
       </div>
     </as-days>
     <hgroup v-else class="sign-on message">
@@ -28,13 +29,13 @@
 </template>
 <script>
   import { as_directory, list } from '@/helpers/itemid'
+  import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
   import sign_on from '@/components/sign-on'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
-  import signed_in from '@/mixins/signed_in'
   export default {
     components: {
       'sign-on': sign_on,
@@ -67,6 +68,9 @@
       this.working = false
     },
     methods: {
+      thought_shown (event) {
+        console.log('thought-shown', event)
+      },
       slot_key (item) {
         let slot_key = null
         if (Array.isArray(item) && item.length) slot_key = item[0].id

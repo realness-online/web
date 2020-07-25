@@ -23,6 +23,7 @@
 <script>
   import { load, as_author, as_created_at } from '@/helpers/itemid'
   import date_helper from '@/helpers/date'
+  import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
   import profile_as_avatar from '@/components/avatars/as-svg'
   export default {
@@ -30,6 +31,7 @@
       'profile-as-avatar': profile_as_avatar,
       'as-statement': as_statement
     },
+    mixins: [intersection],
     props: {
       statements: {
         type: Array,
@@ -61,6 +63,11 @@
     async created () {
       if (this.verbose) {
         this.author = await load(as_author(this.statements[0].id))
+      }
+    },
+    methods: {
+      show () {
+        this.$emit('thought-show', this.statements)
       }
     }
   }

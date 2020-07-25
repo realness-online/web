@@ -11,13 +11,13 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import vector_intersection from '@/mixins/vector_intersection'
+  import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
     components: { icon },
-    mixins: [vector_intersection, vector_click],
+    mixins: [intersection, vector_click],
     props: {
       event: {
         type: Object,
