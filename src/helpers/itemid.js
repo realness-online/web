@@ -80,7 +80,7 @@ export function as_storage_path (itemid) {
 }
 export function as_directory_id (itemid) {
   const parts = as_path_parts(itemid)
-  return `/${parts[0]}/${parts[1]}`
+  return `/${parts[0]}/${parts[1]}/`
 }
 export function as_filename (itemid) {
   let filename = itemid
