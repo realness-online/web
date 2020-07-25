@@ -2,16 +2,19 @@
   <hgroup itemscope :itemid="item_id">
     <b v-if="editable"
        ref="first_name"
+       :key="person.first_name"
        contenteditable="true"
-       itemprop="first_name">{{ person.first_name }}</b>
+       itemprop="first_name"
+       @blur="save_last_name">{{ person.first_name }}</b>
     <span v-else itemprop="first_name">{{ person.first_name }}</span>
     <b v-if="editable"
        ref="last_name"
+       :key="person.last_name"
        contenteditable="true"
        itemprop="last_name"
        @blur="save_last_name">{{ person.last_name }}</b>
     <span v-else itemprop="last_name">{{ person.last_name }}</span>
-    <link itemprop="avatar" rel="icon" :href="person.avatar">
+    <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
   </hgroup>
 </template>
 <script>
@@ -42,11 +45,22 @@
       if (this.me === this.person.id) this.editable = true
     },
     methods: {
+      async save_first_name (event) {
+        const possibly_changed = this.$refs.first_name.textContent.trim()
+        if (this.person.last_name !== possibly_changed) {
+          this.editable = false
+          this.person.first_name = possibly_changed
+          await this.$nextTick()
+          await new Me().save()
+          this.editable = true
+        }
+      },
       async save_last_name (event) {
         const possibly_changed = this.$refs.last_name.textContent.trim()
         if (this.person.last_name !== possibly_changed) {
           this.editable = false
-          await this.$forceUpdate()
+          this.person.last_name = possibly_changed
+          await this.$nextTick()
           await new Me().save()
           this.editable = true
         }
