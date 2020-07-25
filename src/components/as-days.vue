@@ -41,11 +41,15 @@
         type: Array,
         required: false,
         default: () => []
+      },
+      working: {
+        type: Boolean,
+        required: false,
+        default: false
       }
     },
     data () {
       return {
-        working: true,
         days: new Map()
       }
     },
@@ -65,10 +69,6 @@
       posters () {
         this.posters.forEach(poster => this.insert_into_day(poster, this.days))
       }
-    },
-    created () {
-      this.process_thoughts_into_days()
-      this.working = false
     },
     methods: {
       process_thoughts_into_days () {

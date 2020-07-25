@@ -8,9 +8,10 @@
       <h1>Feed</h1>
     </hgroup>
     <as-days v-if="signed_in" v-slot="items"
+             :working="working"
              :posters="posters"
              :statements="statements">
-      <div v-for="item in items" :key="item.id">
+      <div v-for="item in items" :key="slot_key(item)">
         <poster-as-figure v-if="item.type === 'posters'"
                           :itemid="item.id"
                           :verbose="true" />
@@ -49,10 +50,12 @@
         signed_in: true,
         people: [],
         statements: [],
-        posters: []
+        posters: [],
+        working: true
       }
     },
     async created () {
+      console.clear()
       console.time('feed-load')
       this.people = await list(`${this.me}/relations`)
       this.people.push({
@@ -61,8 +64,15 @@
       })
       await this.fill_feed()
       console.timeEnd('feed-load')
+      this.working = false
     },
     methods: {
+      slot_key (item) {
+        let slot_key = null
+        if (Array.isArray(item) && item.length) slot_key = item[0].id
+        if (item.id) slot_key = item.id
+        return slot_key
+      },
       async fill_feed () {
         await Promise.all(this.people.map(async relation => {
           const [statements, posters] = await Promise.all([
