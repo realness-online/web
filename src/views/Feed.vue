@@ -28,7 +28,12 @@
   </section>
 </template>
 <script>
-  import { as_directory, list } from '@/helpers/itemid'
+  import {
+    list,
+    as_directory,
+    as_author,
+    as_created_at
+  } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -68,8 +73,22 @@
       this.working = false
     },
     methods: {
-      thought_shown (event) {
-        console.log('thought-shown', event)
+      async thought_shown (statements) {
+        const oldest = statements[statements.length - 1]
+        const author = as_author(oldest.id)
+        const author_statements = this.statements.filter(statement => author === as_author(statement.id))
+        const author_oldest = author_statements[author_statements.length - 1]
+        if (oldest.id === author_oldest.id) {
+          const directory = await as_directory(`${author}/statements`)
+          const next = directory.items.find(history => {
+            if (as_created_at(oldest.id) > parseInt(history)) return history
+            else return false
+          })
+          if (next) {
+            const next_statements = await list(`${author}/statements/${next}`)
+            this.statements = [...this.statements, next_statements]
+          }
+        }
       },
       slot_key (item) {
         let slot_key = null
