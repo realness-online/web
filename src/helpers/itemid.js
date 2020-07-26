@@ -4,6 +4,8 @@ import 'firebase/auth'
 import get_item from '@/modules/item'
 import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
+const has_history = ['statements', 'events']
+
 export async function load (itemid, me = localStorage.getItem('me')) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
@@ -85,8 +87,13 @@ export function as_directory_id (itemid) {
 export function as_filename (itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (large.includes(as_type(itemid))) return `${filename}.html`
+  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
   else return `${filename}/index.html`
+}
+export function is_history (itemid) {
+  const parts = as_path_parts(itemid)
+  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
+  return false
 }
 export function as_path_parts (itemid) {
   const path = itemid.split('/')
