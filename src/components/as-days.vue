@@ -64,19 +64,20 @@
     },
     watch: {
       statements () {
-        this.process_thoughts_into_days()
+        this.refill_days()
       },
       posters () {
-        this.posters.forEach(poster => this.insert_into_day(poster, this.days))
+        this.refill_days()
       }
     },
     methods: {
-      process_thoughts_into_days () {
+      refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
           yield * [...this.entries()].sort(newer_date_first)
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
+        this.posters.forEach(poster => this.insert_into_day(poster, days))
         this.days = days
       },
       insert_into_day (item, days) {
