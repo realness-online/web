@@ -11,6 +11,9 @@ export function newer_date_first (first, second) {
 export function older_date_first (first, second) {
   return new Date(first[0]) - new Date(second[0]) // older is smaller
 }
+export function newest_number_first (first, second) {
+   return parseInt(second) - parseInt(first)
+}
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 // If compareFunction(a, b) returns less than 0, sort a to an index lower than b (i.e. a comes first).
 // If compareFunction(a, b) returns greater than 0, sort b to an index lower than a (i.e. b comes first).

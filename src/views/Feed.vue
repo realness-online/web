@@ -33,6 +33,7 @@
     as_directory,
     as_author
   } from '@/helpers/itemid'
+  import { newest_number_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -72,9 +73,6 @@
       this.working = false
     },
     methods: {
-      newest_first (first, second) {
-         return parseInt(second) - parseInt(first)
-      },
       async thought_shown (statements) {
         const oldest = statements[statements.length - 1]
         let author = as_author(oldest.id)
@@ -84,7 +82,7 @@
           author = this.people.find(relation => relation.id === author)
           const directory = await as_directory(`${author.id}/statements`)
           let history = directory.items
-          history.sort(this.newest_first)
+          history.sort(newest_number_first)
           history = history.filter(page => !author.viewed.some(viewed => viewed === page))
           const next = history.shift()
           if (next) {
