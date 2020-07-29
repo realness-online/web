@@ -6,10 +6,10 @@ export function older_item_first (first, second) {
   return as_created_at(first.id) - as_created_at(second.id)
 }
 export function newer_date_first (first, second) {
-  return new Date(second[0]) - new Date(first[0])
+  return new Date(second[0]) - new Date(first[0]) // newer is larger
 }
 export function older_date_first (first, second) {
-  return new Date(first[0]) - new Date(second[0])
+  return new Date(first[0]) - new Date(second[0]) // older is smaller
 }
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 // If compareFunction(a, b) returns less than 0, sort a to an index lower than b (i.e. a comes first).
