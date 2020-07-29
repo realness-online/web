@@ -31,8 +31,7 @@
   import {
     list,
     as_directory,
-    as_author,
-    as_created_at
+    as_author
   } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
@@ -73,20 +72,25 @@
       this.working = false
     },
     methods: {
+      newest_first (first, second) {
+         return parseInt(second) - parseInt(first)
+      },
       async thought_shown (statements) {
         const oldest = statements[statements.length - 1]
-        const author = as_author(oldest.id)
+        let author = as_author(oldest.id)
         const author_statements = this.statements.filter(statement => author === as_author(statement.id))
         const author_oldest = author_statements[author_statements.length - 1]
         if (oldest.id === author_oldest.id) {
-          const directory = await as_directory(`${author}/statements`)
-          const next = directory.items.find(history => {
-            if (as_created_at(oldest.id) > parseInt(history)) return history
-            else return false
-          })
+          author = this.people.find(relation => relation.id === author)
+          const directory = await as_directory(`${author.id}/statements`)
+          let history = directory.items
+          history.sort(this.newest_first)
+          history = history.filter(page => !author.viewed.some(viewed => viewed === page))
+          const next = history.shift()
           if (next) {
-            const next_statements = await list(`${author}/statements/${next}`)
-            this.statements = [...this.statements, next_statements]
+            const next_statements = await list(`${author.id}/statements/${next}`)
+            author.viewed.push(next)
+            this.statements = [...this.statements, ...next_statements]
           }
         }
       },
@@ -102,6 +106,7 @@
             list(`${relation.id}/statements`, this.me),
             as_directory(`${relation.id}/posters`, this.me)
           ])
+          relation.viewed = ['index']
           this.statements = [...statements, ...this.statements]
           if (posters) {
             posters.items.forEach(created_at => {
