@@ -5,7 +5,7 @@
        :key="person.first_name"
        contenteditable="true"
        itemprop="first_name"
-       @blur="save_last_name">{{ person.first_name }}</b>
+       @blur="save_first_name">{{ person.first_name }}</b>
     <span v-else itemprop="first_name">{{ person.first_name }}</span>
     <b v-if="editable"
        ref="last_name"
@@ -42,12 +42,14 @@
       }
     },
     created () {
-      if (this.me === this.person.id) this.editable = true
+      if (this.me === this.person.id) {
+        this.editable = true
+      }
     },
     methods: {
       async save_first_name (event) {
         const possibly_changed = this.$refs.first_name.textContent.trim()
-        if (this.person.last_name !== possibly_changed) {
+        if (this.person.first_name !== possibly_changed) {
           this.editable = false
           this.person.first_name = possibly_changed
           await this.$nextTick()
