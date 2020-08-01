@@ -7,21 +7,27 @@
     </header>
     <div v-if="signed_in">
       <avatar-as-form :person="person" @new-avatar="new_avatar" />
-      <profile-as-figure :person="person" />
-      <button @click="signoff">Sign off</button>
+      <profile-as-figure :person="person">
+        <a @click="settings = !settings">
+          <icon name="gear" />
+        </a>
+      </profile-as-figure>
+      <menu v-if="settings" id="settings">
+        <button @click="signoff">Sign off</button>
+      </menu>
     </div>
     <h1>Statements</h1>
-    <as-days v-if="has_statements"
-             v-slot="thoughts"
+    <as-days v-slot="thoughts"
              itemscope
              :itemid="statements_id"
              :statements="statements">
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :editable="!working" />
+                          :editable="!working"
+                          @thought-show="thought_shown" />
     </as-days>
-    <hgroup v-else class="message">
+    <hgroup v-if="statements.length === 0" class="message">
       <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
@@ -30,7 +36,8 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import itemid from '@/helpers/itemid'
+  import { newest_number_first } from '@/helpers/sorting'
+  import { load, list, as_directory } from '@/helpers/itemid'
   import { Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
@@ -55,26 +62,19 @@
       return {
         person: {},
         statements: [],
+        pages_viewed: ['index'],
         image_file: null,
+        settings: false,
         working: true
       }
     },
     computed: {
-      statements_id () { return `${this.me}/statements` },
-      has_statements () { return this.statements.length > 0 }
+      statements_id () { return `${this.me}/statements` }
     },
     async created () {
       console.info('Views account page')
-      await this.get_all_my_stuff()
+      this.statements = await this.get_all_my_stuff()
       this.working = false
-    },
-    mounted () {
-      const html = document.getElementsByTagName('html')[0]
-      html.style.setProperty('--slip-color', '#52A0D1')
-    },
-    destroyed () {
-      const html = document.getElementsByTagName('html')[0]
-      html.style.removeProperty('--slip-color')
     },
     methods: {
       signoff () {
@@ -83,11 +83,11 @@
       },
       async get_all_my_stuff () {
         const [person, statements] = await Promise.all([
-          itemid.load(this.me, this.me),
-          itemid.list(`${this.me}/statements`, this.me)
+          load(this.me, this.me),
+          list(this.statements_id, this.me)
         ])
         if (person) this.person = person
-        this.statements = statements
+        return statements
       },
       async new_avatar (avatar_url) {
         this.working = true
@@ -96,12 +96,32 @@
         await this.$nextTick()
         await me.save()
         this.working = false
+      },
+      async thought_shown (thought) {
+        const thought_oldest = thought[thought.length - 1]
+        const oldest = this.statements[this.statements.length - 1]
+        if (oldest.id === thought_oldest.id) {
+          const directory = await as_directory(`${this.me}/statements`)
+          let history = directory.items
+          history.sort(newest_number_first)
+          history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
+          const next = history.shift()
+          if (next) {
+            const next_statements = await list(`${this.me}/statements/${next}`)
+            this.pages_viewed.push(next)
+            this.statements = [...this.statements, ...next_statements]
+          }
+        }
       }
     }
   }
 </script>
 <style lang='stylus'>
   section#account
+    @media (prefers-color-scheme: dark)
+      h1, h4, svg.background
+        color: red
+        fill: red
     button, a
       border-color: red
       color: red
@@ -114,8 +134,7 @@
       font-weight: 700
       outline: 0px
     h1
-      width:100vw
-      margin: 0
+      margin: base-line
     h4
       margin: base-line 0 0 0
     & > header
@@ -131,16 +150,9 @@
         position: absolute
         bottom: .05rem
         right: 1em
-    @media (prefers-color-scheme: dark)
-      h1, h4, svg.background
-        color: red
-        fill: red
-    & > h1
-    & > div > figure
-    & > div > form
-      padding: base-line base-line 0 base-line
     & section.as-days
       padding: base-line
+      padding-top: 0
       article.day
         @media (min-width: pad-begins)
           grid-auto-rows: auto
@@ -148,6 +160,31 @@
           grid-auto-rows: auto
 </style>
 <style lang="stylus">
-  section#account.signed-in > header
-    margin-bottom: -(base-line * 4)
+  section#account.signed-in
+    & > header
+      margin-bottom: -(base-line * 4)
+    & > div
+      & > figure
+      & > form
+        background-color: background-black
+        padding: base-line base-line 0 base-line
+      figure.profile > a > svg.gear
+        margin-right: 0
+        fill: red
+        &:active
+          animation-name: rotate
+          transform-origin: center
+          transition-duration: 0.1s
+          transition-timing-function: ease-in-out
+          animation-iteration-count: 0.5
+      menu#settings
+        float:right
+        width: 5rem
+        margin-right: base-line
+        margin-bottom: base-line
+        display:flex
+        justify-content: space-between
+        animation-name: fade-in
+        animation-duration: 0.2s
+        margin-top: base-line
 </style>
