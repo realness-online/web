@@ -14,12 +14,12 @@ const events = [{
 describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
   describe('Renders', () => {
-    it('a fieldset with the default event', () => {
+    it('A fieldset with the default event', () => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('a fieldset with an existing event', () => {
+    it('A fieldset with an existing event', () => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
@@ -31,28 +31,28 @@ describe('@/compontent/events/as-fieldset.vue', () => {
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
     })
     describe('#show_picker', () => {
-      it('is called when the date input is clicked', () => {
+      it('Ideas called when the date input is clicked', () => {
         wrapper.vm.show = false
         wrapper.vm.$refs.day.click()
         expect(wrapper.vm.show).toBe(true)
       })
-      it('shows the picker', () => {
+      it('Shows the picker', () => {
         wrapper.vm.show = false
         wrapper.vm.show_picker()
         expect(wrapper.vm.show).toBe(true)
       })
-      it('tells the world it is showing the picker', () => {
+      it('Tells the world it is showing the picker', () => {
         wrapper.vm.show_picker()
         expect(wrapper.emitted('picker')).toBeTruthy()
       })
     })
     describe('#save', () => {
-      it('is called when save button is pressed', () => {
+      it('Is called when save button is pressed', () => {
         wrapper.vm.show = true
         wrapper.vm.$refs.save.click()
         expect(wrapper.vm.show).toBe(false)
       })
-      it('emits a picker event', async () => {
+      it('Emits a picker event', async () => {
         await wrapper.vm.save()
         expect(wrapper.emitted('picker')).toBeTruthy()
       })
@@ -61,14 +61,14 @@ describe('@/compontent/events/as-fieldset.vue', () => {
         wrapper.vm.save()
         expect(wrapper.vm.events.length).toBe(1)
       })
-      it('hides date picking ui', () => {
+      it('Hides date picking ui', () => {
         wrapper.vm.show = true
         wrapper.vm.save()
         expect(wrapper.vm.show).toBe(false)
       })
     })
     describe('#remove', () => {
-      it('hides the picker', async () => {
+      it('Hides the picker', async () => {
         wrapper.vm.show = true
         wrapper.vm.$refs.remove.click()
         expect(wrapper.vm.show).toBe(false)
@@ -84,7 +84,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
       })
     })
     describe('#update_date', () => {
-      it('updates date from picker', async () => {
+      it('Updates date from picker', async () => {
         wrapper.vm.show_event = true
         await wrapper.vm.$nextTick()
         wrapper.vm.$refs.day.value = '02-01-2020'
@@ -92,7 +92,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
       })
     })
     describe('#update_time', () => {
-      it('updates event time from time picer', async () => {
+      it('Updates event time from time picer', async () => {
         wrapper.vm.show_event = true
         await wrapper.vm.$nextTick()
         wrapper.vm.$refs.time.value = '02:03'
