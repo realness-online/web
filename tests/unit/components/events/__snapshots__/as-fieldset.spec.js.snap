@@ -1,5 +1,81 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing event 1`] = `
+<fieldset
+  class="event"
+>
+  <ol
+    hidden="hidden"
+    itemprop="events"
+  />
+   
+  <label
+    for="day"
+  >
+    Tuesday, December 31
+  </label>
+   
+  <input
+    id="day"
+    required="required"
+    type="date"
+  />
+   
+  <input
+    required="required"
+    type="time"
+  />
+   
+  <menu>
+    <a>
+      <!---->
+    </a>
+     
+    <a>
+      <!---->
+    </a>
+  </menu>
+</fieldset>
+`;
+
+exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default event 1`] = `
+<fieldset
+  class="event"
+>
+  <ol
+    hidden="hidden"
+    itemprop="events"
+  />
+   
+  <label
+    for="day"
+  >
+    Tuesday, December 31
+  </label>
+   
+  <input
+    id="day"
+    required="required"
+    type="date"
+  />
+   
+  <input
+    required="required"
+    type="time"
+  />
+   
+  <menu>
+    <a>
+      <!---->
+    </a>
+     
+    <a>
+      <!---->
+    </a>
+  </menu>
+</fieldset>
+`;
+
 exports[`@/compontent/events/as-fieldset.vue Renders a fieldset with an existing event 1`] = `
 <fieldset
   class="event"
