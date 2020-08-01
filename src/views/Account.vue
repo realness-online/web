@@ -24,8 +24,9 @@
       <thought-as-article v-for="thought in thoughts"
                           :key="thought[0].id"
                           :statements="thought"
-                          :editable="!working"
-                          @thought-show="thought_shown" />
+                          :editable="is_editable(thought)"
+                          @thought-show="thought_shown"
+                          @has-focus="thought_focused" />
     </as-days>
     <hgroup v-if="statements.length === 0" class="message">
       <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
@@ -65,18 +66,30 @@
         pages_viewed: ['index'],
         image_file: null,
         settings: false,
-        working: true
+        working: true,
+        first_page: []
       }
     },
     computed: {
-      statements_id () { return `${this.me}/statements` }
+      statements_id () {
+        return `${this.me}/statements`
+      }
     },
     async created () {
       console.info('Views account page')
       this.statements = await this.get_all_my_stuff()
+      this.first_page = this.statements
       this.working = false
     },
     methods: {
+      is_editable (thought) {
+        if (this.working) return false
+        return thought.some(statement => {
+          return this.first_page.some(s => {
+            return s.id === statement.id
+          })
+        })
+      },
       signoff () {
         firebase.auth().signOut()
         this.$router.push({ path: '/sign-on' })
@@ -112,6 +125,11 @@
             this.statements = [...this.statements, ...next_statements]
           }
         }
+      },
+      thought_focused () {
+        console.log('thought_focused')
+        this.statements = this.first_page()
+        this.pages_viewed = ['index']
       }
     }
   }
