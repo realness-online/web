@@ -2,10 +2,11 @@
   <figure class="profile">
     <as-svg :person="person" @vector-clicked="avatar_click" />
     <figcaption>
-      <as-hgroup :person="person" />
+      <as-hgroup :key="person.id" :person="person" />
       <p v-if="is_me" class="phone">{{ mobile_display }}</p>
       <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
     </figcaption>
+    <slot />
   </figure>
 </template>
 <script>
@@ -77,10 +78,4 @@
         user-select: none
       & > a
         display:block
-    & > menu
-      width: base-line * 2
-      align-self: center
-      svg.gear
-        @media (prefers-color-scheme: dark)
-          fill: red
 </style>
