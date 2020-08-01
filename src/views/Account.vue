@@ -25,8 +25,9 @@
                           :key="thought[0].id"
                           :statements="thought"
                           :editable="is_editable(thought)"
-                          @thought-show="thought_shown"
-                          @has-focus="thought_focused" />
+                          @show="thought_shown"
+                          @focused="thought_focused"
+                          @blurred="thought_blurred" />
     </as-days>
     <hgroup v-if="statements.length === 0" class="message">
       <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
@@ -67,7 +68,8 @@
         image_file: null,
         settings: false,
         working: true,
-        first_page: []
+        first_page: [],
+        pause: false
       }
     },
     computed: {
@@ -111,6 +113,7 @@
         this.working = false
       },
       async thought_shown (thought) {
+        if (this.pause) return
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {
@@ -126,10 +129,15 @@
           }
         }
       },
-      thought_focused () {
-        console.log('thought_focused')
-        this.statements = this.first_page()
+      async thought_focused () {
+        this.statements = await list(this.statements_id, this.me)
         this.pages_viewed = ['index']
+        this.pause = true
+      },
+      thought_blurred () {
+        this.pause = false
+        const oldest = this.statements[this.statements.length - 1]
+        this.thought_shown([oldest])
       }
     }
   }

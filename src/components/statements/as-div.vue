@@ -1,6 +1,6 @@
 <template lang="html">
   <div itemscope :itemid="statement.id">
-    <p v-if="editable" ref="editable" contenteditable="true" itemprop="statement" @blur.prevent="save">{{ statement.statement }}</p>
+    <p v-if="editable" ref="editable" contenteditable="true" itemprop="statement" @focus="focused" @blur.prevent="save">{{ statement.statement }}</p>
     <p v-else itemprop="statement">{{ statement.statement }}</p>
     <meta v-if="statement.why" itemprop="why" :content="statement.why">
     <meta v-if="statement.where" itemprop="where" :content="statement.where">
@@ -21,10 +21,18 @@
       }
     },
     methods: {
-      save (event) {
+      async save (event) {
         const possibly_changed = this.$refs.editable.textContent.trim()
-        if (this.statement.statement !== possibly_changed) new Statements().save()
+        if (this.statement.statement !== possibly_changed) {
+          const statement = new Statements()
+          await statement.save()
+        }
+        this.$emit('blurred', this.statement)
+      },
+      focused (event) {
+        this.$emit('focused', this.statement)
       }
+
     }
   }
 </script>

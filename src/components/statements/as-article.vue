@@ -17,7 +17,9 @@
                   :key="statement.id"
                   itemprop="statements"
                   :statement="statement"
-                  :editable="editable" />
+                  :editable="editable"
+                  @focused="focused"
+                  @blurred="blurred" />
   </article>
 </template>
 <script>
@@ -67,7 +69,13 @@
     },
     methods: {
       show () {
-        this.$emit('thought-show', this.statements)
+        this.$emit('show', this.statements)
+      },
+      focused (statement) {
+        this.$emit('focused', statement)
+      },
+      blurred (statement) {
+        this.$emit('blurred', statement)
       }
     }
   }
