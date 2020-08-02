@@ -69,7 +69,7 @@
         settings: false,
         working: true,
         first_page: [],
-        pause: false
+        currently_focused: null
       }
     },
     computed: {
@@ -113,7 +113,7 @@
         this.working = false
       },
       async thought_shown (thought) {
-        if (this.pause) return
+        if (this.currently_focused) return
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {
@@ -129,15 +129,20 @@
           }
         }
       },
-      async thought_focused () {
+      async thought_focused (statement) {
+        this.currently_focused = statement.id
+        console.log('thought_focused')
         this.statements = await list(this.statements_id, this.me)
         this.pages_viewed = ['index']
-        this.pause = true
       },
-      thought_blurred () {
-        this.pause = false
-        const oldest = this.statements[this.statements.length - 1]
-        this.thought_shown([oldest])
+      thought_blurred (statement) {
+        console.log('thought_blurred')
+        if (this.currently_focused === statement.id) {
+          this.currently_focused = null
+          console.log('okay show it')
+          const oldest = this.statements[this.statements.length - 1]
+          this.thought_shown([oldest])
+        }
       }
     }
   }
