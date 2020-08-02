@@ -25,7 +25,6 @@
 <script>
   import { load, as_author, as_created_at } from '@/helpers/itemid'
   import date_helper from '@/helpers/date'
-  // import debounce from '@/modules/debounce'
   import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
   import profile_as_avatar from '@/components/avatars/as-svg'
@@ -83,7 +82,7 @@
           if (!this.focused) {
             this.$emit('blurred', statement)
           }
-        }, 1000)
+        }, 750)
       }
     }
   }
