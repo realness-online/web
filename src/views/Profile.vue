@@ -1,12 +1,12 @@
 <template lang="html">
-  <section id="profile" ref="profile" class="page">
+  <section id="profile" class="page">
     <header>
       <icon name="nothing" />
       <logo-as-link />
     </header>
-    <avatar :person="person" @loaded="avatar_loaded" />
-    <menu v-if="avatar">
-      <download-vector :vector="avatar" />
+    <avatar :person="person" />
+    <menu v-if="person.avatar">
+      <download-vector :itemid="person.avatar" />
     </menu>
     <profile-as-figure :person="person" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
@@ -16,7 +16,6 @@
                           :verbose="true" />
         <thought-as-article v-else
                             :statements="item"
-                            :verbose="true"
                             @show="thought_shown" />
       </div>
     </as-days>
@@ -82,11 +81,8 @@
         if (item.id) slot_key = item.id
         return slot_key
       },
-      avatar_loaded (avatar) {
-        this.avatar = avatar
-      },
       thought_shown (statement) {
-        console.log('thought_shown', statement)
+        console.log('thought_shown')
       }
     }
   }
@@ -112,28 +108,16 @@
         text-align: right
         & > svg
           fill: red
-    & > figure
-    & > div
-      max-width: page-width
-      margin: auto
-      padding: base-line base-line 0 base-line
-    & > div
-      display:flex
-      flex-direction: column
-      & > section.day
-        display:flex
-        flex-direction: column
-        &.today
-          flex-direction: column-reverse
-          & > header
-            order: 1
-        & > header > h4
-          margin-top: base-line
-        & > div > figure
-          margin-bottom: base-line
-          & > figcaption
-            span, a
-              display:none
-            time
-              margin-bottom: base-line
+    svg.background
+      fill: blue
+    figure.profile
+      padding: base-line
+    section.as-days
+      padding: base-line
+      padding-top: 0
+      article.day
+        @media (min-width: pad-begins)
+          grid-auto-rows: auto
+        @media (min-width: typing-begins)
+          grid-auto-rows: auto
 </style>
