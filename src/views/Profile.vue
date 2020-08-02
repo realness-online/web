@@ -81,7 +81,6 @@
       },
       async thought_shown (thought) {
         const id = profile.from_e64(this.$route.params.phone_number)
-        console.log('thought_shown')
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {
