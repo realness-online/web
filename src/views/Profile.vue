@@ -1,4 +1,4 @@
-’<template lang="html">
+<template lang="html">
   <section id="profile" ref="profile" class="page">
     <header>
       <icon name="nothing" />
@@ -9,17 +9,23 @@
       <download-vector :vector="avatar" />
     </menu>
     <profile-as-figure :person="person" />
-    <as-days v-slot="item" :posters="posters" :statements="statements">
-      <poster-as-figure v-if="item.type === 'posters'" :itemid="item" />
-      <thought-as-article v-else :throught="item" @viewed="statement_viewed" />
+    <as-days v-slot="items" :posters="posters" :statements="statements">
+      <div v-for="item in items" :key="slot_key(item)">
+        <poster-as-figure v-if="item.type === 'posters'"
+                          :itemid="item.id"
+                          :verbose="true" />
+        <thought-as-article v-else
+                            :statements="item"
+                            :verbose="true"
+                            @show="thought_shown" />
+      </div>
     </as-days>
   </section>
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
-  import itemid from '@/helpers/itemid'
-  import as_thoughts from '@/helpers/thoughts'
+  import { load, list, as_directory } from '@/helpers/itemid'
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
@@ -52,25 +58,35 @@
     async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
       const [person, statements, posters] = await Promise.all([
-        itemid.load(id),
-        itemid.list(`${id}/statements`),
-        itemid.as_directory(`${id}/posters`)
+        load(id),
+        list(`${id}/statements`),
+        as_directory(`${id}/posters`)
       ])
-      if (!person) return
-      this.person = person
-      this.statements = as_thoughts(statements)
-      posters.items.forEach(created_at => {
-        const poster = {
-          id: `${person.id}/posters/${created_at}`,
-          type: 'posters'
-        }
-        this.posters.push(poster)
-      })
+      if (person) this.person = person
+      else return
+      if (statements) this.statements = statements
+      if (posters) {
+        posters.items.forEach(created_at => {
+          this.posters.push({
+            id: `${id}/posters/${created_at}`,
+            type: 'posters'
+          })
+        })
+      }
       console.info(`Views ${person.first_name}'s profile`)
     },
     methods: {
+      slot_key (item) {
+        let slot_key = null
+        if (Array.isArray(item) && item.length) slot_key = item[0].id
+        if (item.id) slot_key = item.id
+        return slot_key
+      },
       avatar_loaded (avatar) {
         this.avatar = avatar
+      },
+      thought_shown (statement) {
+        console.log('thought_shown', statement)
       }
     }
   }
