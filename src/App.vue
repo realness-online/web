@@ -71,7 +71,6 @@
       },
       offline () {
         const editable = document.querySelectorAll('[contenteditable]')
-        console.log(editable)
         editable.forEach(element => {
           element.setAttribute('contenteditable', false)
         })
@@ -91,7 +90,7 @@
         } else localStorage.setItem('me', '/+')
       },
       worker_message (message) {
-        console.log('worker message!', message)
+        console.log(message)
       }
     }
   }

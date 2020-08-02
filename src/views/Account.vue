@@ -131,15 +131,12 @@
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
-        console.log('thought_focused')
         this.statements = await list(this.statements_id, this.me)
         this.pages_viewed = ['index']
       },
       thought_blurred (statement) {
-        console.log('thought_blurred')
         if (this.currently_focused === statement.id) {
           this.currently_focused = null
-          console.log('okay show it')
           const oldest = this.statements[this.statements.length - 1]
           this.thought_shown([oldest])
         }

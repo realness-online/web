@@ -35,7 +35,6 @@
         this.$router.push({ path: '/' })
       },
       async save_me (event) {
-        console.log('save me called')
         const me = new Me()
         await this.$nextTick()
         await me.save()
