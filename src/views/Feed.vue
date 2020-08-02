@@ -18,7 +18,7 @@
         <thought-as-article v-else
                             :statements="item"
                             :verbose="true"
-                            @thought-show="thought_shown" />
+                            @show="thought_shown" />
       </div>
     </as-days>
     <hgroup v-else class="sign-on message">
@@ -93,10 +93,8 @@
         }
       },
       slot_key (item) {
-        let slot_key = null
-        if (Array.isArray(item) && item.length) slot_key = item[0].id
-        if (item.id) slot_key = item.id
-        return slot_key
+        if (Array.isArray(item)) return item[0].id
+        return item.id
       },
       async fill_feed () {
         await Promise.all(this.people.map(async relation => {

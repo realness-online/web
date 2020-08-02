@@ -4,16 +4,15 @@
       <icon name="nothing" />
       <logo-as-link />
     </header>
-    <avatar :person="person" />
-    <menu v-if="person.avatar">
+    <avatar v-if="person" :person="person" />
+    <menu v-if="person">
       <download-vector :itemid="person.avatar" />
     </menu>
-    <profile-as-figure :person="person" />
+    <profile-as-figure v-if="person" :person="person" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <div v-for="item in items" :key="slot_key(item)">
         <poster-as-figure v-if="item.type === 'posters'"
-                          :itemid="item.id"
-                          :verbose="true" />
+                          :itemid="item.id" />
         <thought-as-article v-else
                             :statements="item"
                             @show="thought_shown" />
@@ -24,6 +23,7 @@
 <script>
   import signed_in from '@/mixins/signed_in'
   import profile from '@/helpers/profile'
+  import { newest_number_first } from '@/helpers/sorting'
   import { load, list, as_directory } from '@/helpers/itemid'
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
@@ -47,11 +47,11 @@
     mixins: [signed_in],
     data () {
       return {
-        person: {},
-        statements: [],
-        posters: [],
         working: true,
-        avatar: null
+        person: null,
+        statements: [],
+        pages_viewed: ['index'],
+        posters: []
       }
     },
     async created () {
@@ -76,13 +76,26 @@
     },
     methods: {
       slot_key (item) {
-        let slot_key = null
-        if (Array.isArray(item) && item.length) slot_key = item[0].id
-        if (item.id) slot_key = item.id
-        return slot_key
+        if (Array.isArray(item)) return item[0].id
+        return item.id
       },
-      thought_shown (statement) {
+      async thought_shown (thought) {
+        const id = profile.from_e64(this.$route.params.phone_number)
         console.log('thought_shown')
+        const thought_oldest = thought[thought.length - 1]
+        const oldest = this.statements[this.statements.length - 1]
+        if (oldest.id === thought_oldest.id) {
+          const directory = await as_directory(`${id}/statements`)
+          let history = directory.items
+          history.sort(newest_number_first)
+          history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
+          const next = history.shift()
+          if (next) {
+            const next_statements = await list(`${id}/statements/${next}`)
+            this.pages_viewed.push(next)
+            this.statements = [...this.statements, ...next_statements]
+          }
+        }
       }
     }
   }
