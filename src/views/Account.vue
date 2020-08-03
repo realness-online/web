@@ -199,12 +199,13 @@
       figure.profile > a > svg.gear
         margin-right: 0
         fill: red
-        animation-name: rotate
+        animation-name: rotate-back
         transform-origin: center
         transition-duration: 0.1s
+        animation-iteration-count: 0.1
         transition-timing-function: ease-in-out
         &:active
-          animation-name: nothin
+          animation-name: rotate
           animation-iteration-count: 0.5
       menu#settings
         float:right
