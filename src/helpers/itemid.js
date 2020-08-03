@@ -15,8 +15,8 @@ export async function load (itemid, me = localStorage.me) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
   }
-  // item = get_item(await get(itemid))
-  // if (item) return item
+  item = get_item(await get(itemid))
+  if (item) return item
   item = await load_from_network(itemid, me)
   if (item) return item
   return null
