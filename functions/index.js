@@ -5,5 +5,5 @@ admin.initializeApp()
 exports.create_admin = functions.storage.object().onFinalize(file => {
   const claims = {}
   claims.admin = true
-  return admin.auth().setCustomUserClaims('mtHn4Rf4oGbF7qYOiooqBBTgCTt1', claims)
+  return admin.auth().setCustomUserClaims('user-id-goes-here', claims)
 })
