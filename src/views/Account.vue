@@ -188,9 +188,11 @@
           grid-auto-rows: auto
 </style>
 <style lang="stylus">
+  :root
+    --header-margin:  -(base-line * 4)
   section#account.signed-in
     & > header
-      margin-bottom: -(base-line * 4)
+      margin-bottom: calc( var(--header-margin) - env(safe-area-inset-top))
     & > div
       & > figure
       & > form
