@@ -139,7 +139,7 @@
     h1
       width: 100vw
       color: green
-      margin: 0
+      margin: 0 base-line
     svg.working
       margin-bottom: base-line
     & > header
