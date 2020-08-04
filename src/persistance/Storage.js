@@ -13,7 +13,6 @@ export default class Storage {
     this.metadata = { contentType: 'text/html' }
   }
 }
-export class Admin extends Cloud(Storage) {}
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
 export class Me extends Cloud(Local(Storage)) {

@@ -8,7 +8,6 @@ import Navigation from '@/views/Navigation'
 import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
-import Admin from '@/views/Admin'
 import Sign_on from '@/views/Sign-on'
 
 Vue.use(Router)
@@ -26,7 +25,6 @@ export default new Router({
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/admin', component: Admin },
     { path: '/:phone_number', component: Profile, name: 'view-profile' }
   ]
 })
