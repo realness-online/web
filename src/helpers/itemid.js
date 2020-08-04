@@ -42,9 +42,10 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
 }
 export async function as_directory (itemid, me = localStorage.getItem('me')) {
   const path = as_directory_id(itemid)
-  const cached = await get(path)
-  if (cached) return cached
-  else if (navigator.onLine && firebase.auth().currentUser) {
+  // const cached = await get(path)
+  // if (cached) return cached
+  // else
+  if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
     console.info(`Makes a directory request for ${path}`)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
