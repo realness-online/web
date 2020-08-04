@@ -99,7 +99,7 @@
 <style lang="stylus">
   section#navigation.page
     width: 100%
-    padding: base-line
+    padding: 0 base-line
     display: flex
     align-items: center
     margin: auto
