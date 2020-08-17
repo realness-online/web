@@ -14,6 +14,7 @@
              @blur="modified_check">
     </fieldset>
     <fieldset v-if="!show_sign_out" id="phone">
+      <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>
       <input id="mobile" v-model="person.mobile"
              type="tel"
@@ -56,7 +57,7 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import { parseNumber } from 'libphonenumber-js'
+  import { parseNumber, AsYouType } from 'libphonenumber-js'
   import profile from '@/helpers/profile'
   import icon from '@/components/icon'
   import itemid from '@/helpers/itemid'
@@ -82,6 +83,12 @@
         show_captcha: false,
         hide_captcha: false,
         show_code: false
+      }
+    },
+    computed: {
+      mobile_display () {
+        if (this.person.mobile) return new AsYouType('US').input(this.person.mobile)
+        else return 'Mobile'
       }
     },
     created () {
@@ -202,6 +209,10 @@
       fill: red
     fieldset
       margin-bottom: base-line
+      legend
+        color: lighten(black, 30%)
+        &.valid
+          color: green
     input
       color: red
       &:focus
