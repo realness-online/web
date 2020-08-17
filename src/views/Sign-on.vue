@@ -8,7 +8,7 @@
                      @modified="save_me"
                      @signed-on="signed_on" />
     <footer v-if="cleanable">
-      <button @click="clean">Clean</button>
+      <button @click="clean">Wipe</button>
     </footer>
   </section>
 </template>
@@ -70,6 +70,9 @@
 </script>
 <style lang="stylus">
   section#sign-on.page
+    display: flex
+    flex-direction: column
+    justify-content: space-between
     hgroup
       color: red
     svg.background
@@ -77,7 +80,11 @@
     form
     footer
       padding: base-line
+    & > footer > button
+      opacity: 0.5
+      &:hover
+        opacity: 1
     @media (min-width: pad-begins)
       form
-        margin: auto
+        align-self: center
 </style>
