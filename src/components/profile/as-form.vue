@@ -221,10 +221,6 @@
     button#sign-out
       border: none
       padding: 0
-    button#authorize,
-    button#submit-verification
-      color: green
-      border-color: green
     menu
       display: flex
       justify-content: flex-end
