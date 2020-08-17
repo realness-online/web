@@ -124,12 +124,13 @@
       fill: blue
     figure.profile
       padding: base-line
-    section.as-days
-      padding: base-line
-      padding-top: 0
-      article.day
-        @media (min-width: pad-begins)
-          grid-auto-rows: auto
-        @media (min-width: typing-begins)
-          grid-auto-rows: auto
+    & > section.as-days
+      & > article.day
+        grid-auto-rows: auto
+        & > header
+          padding: 0 base-line
+        article.thought
+          padding: 0 base-line
+        figure.poster > svg.background
+          fill: blue
 </style>
