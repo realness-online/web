@@ -5,7 +5,8 @@
              type="text"
              tabindex="1"
              placeholder="First"
-             required>
+             required
+             @blur="modified_check">
       <input id="last-name" v-model="person.last_name"
              type="text"
              tabindex="2"
@@ -92,16 +93,14 @@
       }
     },
     created () {
+      console.info(`Shows ${this.person.first_name} the sign on form`)
       firebase.auth().onAuthStateChanged(user => {
         this.working = false
         if (user) {
           this.show_sign_out = true
           this.person.id = profile.from_e64(user.phoneNumber)
         } else {
-          console.info(`Shows ${this.person.first_name} the sign on form`)
-          if (this.person.id) {
-            this.person.mobile = profile.as_phone_number(this.person.id)
-          }
+          this.person.mobile = profile.as_phone_number(this.person.id)
           this.show_authorize = true
         }
         this.validate_mobile_number()
@@ -128,11 +127,15 @@
       },
       async modified_check () {
         const me = await itemid.load(this.me)
-        if (!me) return true
+        if (!me) {
+          this.$emit('modified')
+          return
+        }
         let modified = false
         if (me.id !== this.person.id) modified = true
         if (me.first_name !== this.person.first_name) modified = true
         if (me.last_name !== this.person.last_name) modified = true
+        if (me.mobile !== this.person.mobile) modified = true
         if (modified) this.$emit('modified', this.person)
       },
       async begin_authorization (event) {
