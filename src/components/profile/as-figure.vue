@@ -34,9 +34,8 @@
         return `sms:${this.person.id}`
       },
       mobile_display () {
-        let phone_number
+        let phone_number = profile.as_phone_number(this.person.id)
         if (this.person.mobile) phone_number = this.person.mobile
-        else phone_number = profile.as_phone_number(this.person.id)
         return new AsYouType('US').input(phone_number)
       }
     },
