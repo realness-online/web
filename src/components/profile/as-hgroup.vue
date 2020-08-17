@@ -1,5 +1,5 @@
 <template lang="html">
-  <hgroup itemscope :itemid="item_id">
+  <hgroup itemscope :itemid="person.id">
     <b v-if="editable"
        ref="first_name"
        :key="person.first_name"
@@ -15,36 +15,30 @@
        @blur="save_last_name">{{ person.last_name }}</b>
     <span v-else itemprop="last_name">{{ person.last_name }}</span>
     <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
+    <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile">
   </hgroup>
 </template>
 <script>
   import { Me } from '@/persistance/Storage'
-  import profile from '@/helpers/profile'
   export default {
     props: {
       person: {
         type: Object,
         required: true
+      },
+      editable: {
+        type: Boolean,
+        required: false,
+        default: false
       }
     },
     data () {
       return {
-        editable: false
+        saving: false
       }
     },
     computed: {
-      item_id () {
-        if (this.person.mobile) {
-          return profile.from_phone_number(this.person.mobile)
-        } else {
-          return this.person.id
-        }
-      }
-    },
-    created () {
-      if (this.me === this.person.id) {
-        this.editable = true
-      }
+      is_me () { return this.me === this.person.id }
     },
     methods: {
       async save_first_name (event) {
@@ -71,7 +65,6 @@
   }
 </script>
 <style lang="stylus">
-
   hgroup[itemscope]
     color: black
     margin:0
