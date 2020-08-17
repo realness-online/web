@@ -48,7 +48,6 @@
     },
     created () {
       this.syncer.addEventListener('message', this.worker_message)
-
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
@@ -64,22 +63,17 @@
       online () {
         this.sync(firebase.auth().currentUser)
         const editable = document.querySelectorAll('[contenteditable]')
-        editable.forEach(element => {
-          element.setAttribute('contenteditable', true)
-        })
+        editable.forEach(e => e.setAttribute('contenteditable', true))
         this.status = null
       },
       offline () {
         const editable = document.querySelectorAll('[contenteditable]')
-        editable.forEach(element => {
-          element.setAttribute('contenteditable', false)
-        })
+        editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'
       },
       async sync (current_user) {
         if (current_user) {
-          const me = profile.from_e64(current_user.phoneNumber)
-          localStorage.setItem('me', me)
+          localStorage.me = profile.from_e64(current_user.phoneNumber)
           const statements = new Statements()
           const events = new Events()
           await Promise.all([
@@ -87,10 +81,10 @@
             events.sync()
           ])
           this.syncer.postMessage('sync')
-        } else localStorage.setItem('me', '/+')
+        }
       },
       worker_message (message) {
-        console.log(message)
+        console.log(`message:${message}`)
       }
     }
   }

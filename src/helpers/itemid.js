@@ -7,7 +7,7 @@ import { set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const has_history = ['statements', 'events']
 
-export async function load (itemid, me = localStorage.getItem('me')) {
+export async function load (itemid, me = localStorage.me) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
   let item
@@ -21,7 +21,7 @@ export async function load (itemid, me = localStorage.getItem('me')) {
   if (item) return item
   return null
 }
-export async function list (itemid, me = localStorage.getItem('me')) {
+export async function list (itemid, me = localStorage.me) {
   // Returns a list even if loading the item fails
   try {
     const item = await load(itemid, me)
@@ -32,7 +32,7 @@ export async function list (itemid, me = localStorage.getItem('me')) {
     else return []
   } catch { return [] }
 }
-export async function load_from_network (itemid, me = localStorage.getItem('me')) {
+export async function load_from_network (itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
     console.info('Loads a storage item')
@@ -41,7 +41,7 @@ export async function load_from_network (itemid, me = localStorage.getItem('me')
     return get_item(server_text, itemid)
   } else return null
 }
-export async function as_directory (itemid, me = localStorage.getItem('me')) {
+export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
   // const cached = await get(path)
   // if (cached) return cached
@@ -56,7 +56,7 @@ export async function as_directory (itemid, me = localStorage.getItem('me')) {
     return meta
   } else return null
 }
-export async function as_download_url (itemid, me = localStorage.getItem('me')) {
+export async function as_download_url (itemid, me = localStorage.me) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {

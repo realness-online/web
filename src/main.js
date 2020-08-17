@@ -2,10 +2,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import './register_service_worker'
-let me = localStorage.getItem('me')
+let me = localStorage.me
 if (!me) {
   me = '/+'
-  localStorage.setItem('me', me)
+  localStorage.me = me
 }
 Vue.config.productionTip = false
 Vue.mixin({

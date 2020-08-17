@@ -16,19 +16,19 @@ export default class Storage {
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
 export class Me extends Cloud(Local(Storage)) {
-  constructor () { super(localStorage.getItem('me')) }
+  constructor () { super(localStorage.me) }
 }
 export class Relations extends Local(Storage) {
-  constructor () { super(`${localStorage.getItem('me')}/relations`) }
+  constructor () { super(`${localStorage.me}/relations`) }
 }
 export class Statements extends Paged(Cloud(Local(Storage))) {
-  constructor () { super(`${localStorage.getItem('me')}/statements`) }
+  constructor () { super(`${localStorage.me}/statements`) }
 }
 export class Events extends Paged(Cloud(Local(Storage))) {
-  constructor () { super(`${localStorage.getItem('me')}/events`) }
+  constructor () { super(`${localStorage.me}/events`) }
 }
 export class Activity extends Cloud(Local(Storage)) {
-  constructor () { super(`${localStorage.getItem('me')}/activity`) }
+  constructor () { super(`${localStorage.me}/activity`) }
 }
 export class History extends Cloud(Storage) {
   async save (items) {
