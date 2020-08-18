@@ -1,7 +1,12 @@
 const path = require('path')
 process.env.VUE_APP_VERSION = require('./package.json').version
+const IS_PROD = ['production', 'prod'].includes(process.env.NODE_ENV)
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
 module.exports = {
+  productionSourceMap: true,
   css: {
+    sourceMap: true,
     loaderOptions: {
       stylus: {
         loader: 'stylus-resources-loader',
@@ -45,6 +50,12 @@ module.exports = {
     }
   },
   configureWebpack: {
+    plugins: [
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        openAnalyzer: false
+      })
+    ],
     optimization: {
       removeAvailableModules: false,
       runtimeChunk: 'single',
