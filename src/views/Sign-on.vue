@@ -7,8 +7,8 @@
     <profile-as-form :person="person"
                      @modified="save_me"
                      @signed-on="signed_on" />
-    <footer v-if="cleanable">
-      <button @click="clean">Wipe</button>
+    <footer>
+      <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
   </section>
 </template>
@@ -63,7 +63,7 @@
       async clean () {
         localStorage.clear()
         await clear()
-        location.reload()
+        this.$router.push({ path: '/' })
       }
     }
   }
