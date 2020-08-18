@@ -27,6 +27,12 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
   <fieldset
     id="phone"
   >
+    <legend
+      class=""
+    >
+      Mobile
+    </legend>
+     
     <label
       for="mobile"
     >
@@ -49,7 +55,9 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
    
   <menu>
     <button
+      disabled="disabled"
       id="authorize"
+      tabindex="5"
     >
       
       Sign on

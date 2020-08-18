@@ -13,7 +13,9 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
    
   <!---->
    
-  <!---->
+  <menu>
+    <!---->
+  </menu>
    
   <!---->
    

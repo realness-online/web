@@ -22,5 +22,10 @@ exports[`@/compontent/profile/as-hgroup.vue Renders a person as a hgroup element
     itemprop="avatar"
     rel="icon"
   />
+   
+  <meta
+    content="4151234356"
+    itemprop="mobile"
+  />
 </hgroup>
 `;

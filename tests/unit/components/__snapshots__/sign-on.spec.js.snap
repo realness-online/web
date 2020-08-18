@@ -2,7 +2,6 @@
 
 exports[`@/components/sign-on Renders sign on button 1`] = `
 <button
-  autofocus="autofocus"
   class="sign-on"
 >
   Sign on
