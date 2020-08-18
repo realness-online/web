@@ -38,12 +38,14 @@
     <menu>
       <button v-if="show_authorize"
               id="authorize"
+              tabindex="5"
               :disabled="disabled_sign_in"
               @click.prevent="begin_authorization">
         Sign on
       </button>
       <button v-if="show_code"
               id="submit-verification"
+              tabindex="6"
               @click.prevent="sign_in_with_code">
         Sign on
       </button>
