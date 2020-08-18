@@ -1,5 +1,5 @@
 <template lang="html">
-  <button class="sign-on" autofocus @click="sign_on"><slot>Sign on</slot></button>
+  <button class="sign-on" @click="sign_on"><slot>Sign on</slot></button>
 </template>
 <script>
   export default {
