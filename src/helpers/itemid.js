@@ -2,8 +2,7 @@ import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
-// import { get, set } from 'idb-keyval'
-import { set } from 'idb-keyval'
+import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const has_history = ['statements', 'events']
 
@@ -43,9 +42,9 @@ export async function load_from_network (itemid, me = localStorage.me) {
 }
 export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
-  // const cached = await get(path)
-  // if (cached) return cached
-  // else
+  const cached = await get(path)
+  if (cached) return cached
+  else
   if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
     console.info(`Makes a directory request for ${path}`)
