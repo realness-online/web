@@ -1,9 +1,9 @@
 const path = require('path')
 process.env.VUE_APP_VERSION = require('./package.json').version
-const IS_PROD = ['production', 'prod'].includes(process.env.NODE_ENV)
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
+  parallel: require('os').cpus().length > 1,
   productionSourceMap: true,
   css: {
     sourceMap: true,
