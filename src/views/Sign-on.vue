@@ -45,7 +45,6 @@
     async created () {
       this.index_db_keys = await keys()
       const person = await load(this.me)
-      console.log(person, this.me, this.index_db_keys.length)
       if (person) this.person = person
     },
     methods: {
@@ -62,6 +61,7 @@
       },
       async clean () {
         localStorage.clear()
+        localStorage.me = '/+'
         await clear()
         this.$router.push({ path: '/' })
       }
