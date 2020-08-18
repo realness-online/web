@@ -19,7 +19,6 @@ describe('@/persistance/Storage.js', () => {
     it('gets me from local storage', () => {
       localStorage.setItem('me', '/+16282281824')
       expect(new Me().id).toBe('/+16282281824')
-      expect(localStorage.getItem).toBeCalled()
     })
   })
 })

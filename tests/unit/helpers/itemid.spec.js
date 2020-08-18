@@ -103,11 +103,11 @@ describe('@/helpers/itemid', () => {
     })
     describe('#as_directory_id', () => {
       it('returns /+/posters for /+/posters/559666932867', () => {
-        expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters')
+        expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters/')
       })
       it('returns /+16282281824/posters for /+/posters/559666932867', () => {
         expect(as_directory_id('/+16282281824/posters/559666932867'))
-        .toBe('/+16282281824/posters')
+        .toBe('/+16282281824/posters/')
       })
     })
     describe('#as_storage_path', () => {

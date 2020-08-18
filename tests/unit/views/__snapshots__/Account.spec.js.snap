@@ -16,14 +16,14 @@ exports[`@/views/Account.vue Renders account information 1`] = `
      
     <!---->
      
-    <button>
-      Sign off
-    </button>
+    <!---->
   </div>
    
   <h1>
     Statements
   </h1>
+   
+  <!---->
    
   <hgroup
     class="message"

@@ -104,7 +104,7 @@
           ])
           relation.viewed = ['index']
           this.statements = [...statements, ...this.statements]
-          if (posters) {
+          if (posters && posters.items) {
             posters.items.forEach(created_at => {
               this.posters.push({
                 id: `${relation.id}/posters/${created_at}`,

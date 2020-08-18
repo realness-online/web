@@ -12,6 +12,5 @@ describe('@/views/Profile.vue', () => {
     const wrapper = shallow(Profile, { mocks: { $route } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
-    wrapper.vm.avatar_loaded()
   })
 })

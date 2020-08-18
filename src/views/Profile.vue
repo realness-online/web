@@ -64,7 +64,7 @@
       if (person) this.person = person
       else return
       if (statements) this.statements = statements
-      if (posters) {
+      if (posters && posters.items) {
         posters.items.forEach(created_at => {
           this.posters.push({
             id: `${id}/posters/${created_at}`,

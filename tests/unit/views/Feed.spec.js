@@ -1,6 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import get_item from '@/modules/item'
-import itemid from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
