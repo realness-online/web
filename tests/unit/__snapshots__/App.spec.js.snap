@@ -8,6 +8,8 @@ exports[`@/App.vue Renders layout of the application 1`] = `
    
   <aside>
     <!---->
+     
+    <!---->
   </aside>
 </main>
 `;

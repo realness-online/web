@@ -2,30 +2,27 @@
 <template lang="html">
   <main id="realness" :class="status">
     <router-view />
-    <aside v-if="production_mode">
-      <activity-as-table />
-    </aside>
-    <aside v-else>
-      <developer-tools />
+    <aside>
+      <activity-as-table v-if="production_mode" />
+      <developer-tools v-else />
+      <sync />
     </aside>
   </main>
 </template>
 <script>
   import * as firebase from 'firebase/app'
-  import 'firebase/auth'
-  import { Statements, Events } from '@/persistance/Storage'
   import developer_tools from '@/components/developer-tools'
+  import sync from '@/components/sync'
   import activity from '@/components/activity/as-table'
-  import profile from '@/helpers/profile'
   export default {
     components: {
+      sync,
       'developer-tools': developer_tools,
       'activity-as-table': activity
     },
     data () {
       return {
         status: null,
-        syncer: new Worker('/sync.worker.js'),
         firebase_keys: {
           apiKey: process.env.VUE_APP_API_KEY,
           authDomain: process.env.VUE_APP_AUTH_DOMAIN,
@@ -47,21 +44,17 @@
       }
     },
     created () {
-      this.syncer.addEventListener('message', this.worker_message)
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
-      firebase.auth().onAuthStateChanged(this.sync)
       if (!navigator.onLine) this.offline()
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
-      this.syncer.terminate()
     },
     methods: {
       online () {
-        this.sync(firebase.auth().currentUser)
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', true))
         this.status = null
@@ -70,21 +63,6 @@
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'
-      },
-      async sync (current_user) {
-        if (current_user) {
-          localStorage.me = profile.from_e64(current_user.phoneNumber)
-          const statements = new Statements()
-          const events = new Events()
-          await Promise.all([
-            statements.sync(),
-            events.sync()
-          ])
-          this.syncer.postMessage('sync')
-        }
-      },
-      worker_message (message) {
-        console.log(`message:${message}`)
       }
     }
   }
