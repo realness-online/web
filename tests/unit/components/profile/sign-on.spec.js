@@ -1,7 +1,7 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
-import sign_on from '@/components/sign-on'
-describe('@/components/sign-on', () => {
+import sign_on from '@/components/profile/sign-on'
+describe('@/components/profile/sign-on', () => {
   it('Renders sign on button', () => {
     const wrapper = shallow(sign_on)
     expect(wrapper.element).toMatchSnapshot()

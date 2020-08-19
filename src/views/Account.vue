@@ -45,7 +45,7 @@
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import profile_as_figure from '@/components/profile/as-figure'
   import avatar_as_form from '@/components/avatars/as-form'
   import thought_as_article from '@/components/statements/as-article'

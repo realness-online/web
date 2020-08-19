@@ -38,7 +38,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
   export default {

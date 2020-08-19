@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/sync Renders sync component 1`] = `
+<div
+  hidden="hidden"
+/>
+`;

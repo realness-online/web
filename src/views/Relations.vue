@@ -20,12 +20,12 @@
   </section>
 </template>
 <script>
+  import itemid from '@/helpers/itemid'
+  import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
-  import sign_on from '@/components/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_list from '@/components/profile/as-list'
-  import signed_in from '@/mixins/signed_in'
-  import itemid from '@/helpers/itemid'
+  import sign_on from '@/components/profile/sign-on'
   export default {
     components: {
       icon,

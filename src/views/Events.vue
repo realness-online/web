@@ -23,7 +23,7 @@
   import { newer_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
     export default {
