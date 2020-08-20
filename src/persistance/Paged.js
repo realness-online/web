@@ -74,27 +74,30 @@ const Paged = (superclass) => class extends superclass {
     }
   }
   async sync () {
-    let items; let oldest_at = 0 // the larger the number the more recent it is
+    let items
+    let oldest_at = 0 // the larger the number the more recent it is
     const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)
     if (!cloud) return local_items
-    const cloud_items = cloud[cloud.type]
-    if (cloud_items && cloud_items.length) {
+    let cloud_items = cloud[cloud.type]
+    if (cloud_items) {
+      if (!Array.isArray(cloud_items)) cloud_items = [cloud_items]
       cloud_items.sort(newer_item_first)
       const oldest_id = cloud_items[cloud_items.length - 1].id
       oldest_at = as_created_at(oldest_id)
     }
-    if (local_items && local_items.length) {
+    if (local_items && local_items.length && cloud_items) {
       local_items.sort(newer_item_first)
       const new_local_stuff = local_items.filter(local_item => {
         const created_at = as_created_at(local_item.id)
-        // local older items are ignored, probably optimized away
-        if (oldest_at > created_at) return false
-        return !cloud_items.some(server_item => {
+        if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
+        return !cloud_items.some(server_item => { // remove local items that are in the cloud
           return local_item.id === server_item.id
         })
       })
-      items = [...new_local_stuff, ...cloud_items]
+      const offline_items = await list(`/+/${this.type}`, '/+')
+      // three distinct lists are recombined into a single synced list
+      items = [...new_local_stuff, ...cloud_items, ...offline_items]
       items.sort(newer_item_first)
     } else items = cloud_items
     return items
