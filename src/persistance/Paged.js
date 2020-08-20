@@ -96,6 +96,10 @@ const Paged = (superclass) => class extends superclass {
         })
       })
       const offline_items = await list(`/+/${this.type}`, '/+')
+      offline_items.forEach(item => {
+        const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+        item.id = `${me}/${this.type}/${as_created_at(item.id)}`
+      })
       // three distinct lists are recombined into a single synced list
       items = [...new_local_stuff, ...cloud_items, ...offline_items]
       items.sort(newer_item_first)
