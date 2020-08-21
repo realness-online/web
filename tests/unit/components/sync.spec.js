@@ -4,6 +4,7 @@ describe('@/components/sync', () => {
   it('Renders sync component', () => {
     const wrapper = shallow(sync)
     expect(wrapper.element).toMatchSnapshot()
+    wrapper.destroy()
   })
   it.todo('Syncronizes localstorage items')
   it.todo('Syncronizes index db items')

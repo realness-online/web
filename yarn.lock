@@ -8331,10 +8331,9 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdom-worker-fix@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/jsdom-worker-fix/-/jsdom-worker-fix-0.1.8.tgz#2cd92b5e1b3e3f9e9b419b30f96f507525733949"
-  integrity sha512-hkbmlBkj66MkSIx3NywyO8lOOpzdleSBz+BaKaL4O4b9feIt1mSYLRl5D1RlbfvQ32OqXuukDNucrftMmkdSfw==
+"jsdom-worker-fix@git://github.com/scott-fryxell/jsdom-worker.git":
+  version "0.1.7"
+  resolved "git://github.com/scott-fryxell/jsdom-worker.git#dfdc14b29bd1f39ee5b8fba4fc83d2db675133de"
   dependencies:
     mitt "^1.1.3"
     uuid-v4 "^0.1.0"

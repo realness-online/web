@@ -3,5 +3,7 @@
 exports[`@/components/sync Renders sync component 1`] = `
 <div
   hidden="hidden"
-/>
+>
+  <!---->
+</div>
 `;
