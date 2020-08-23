@@ -60,6 +60,12 @@
         this.status = null
       },
       offline () {
+        // TODO: this could potentally override
+        // other components intentionally having this set false
+        // we can fix this by setting a class variable for any contenteditable
+        // we change and than only flip those guys back to editable
+        // this is not a big deal now as I remove contenteditable rather than
+        // set it false
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'
