@@ -42,7 +42,7 @@ const Paged = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     if (!items) return
     await this.sync()
-    if (super.save) super.save(items)
+    if (super.save) await super.save(items)
     await this.optimize()
   }
   async optimize () {
