@@ -74,7 +74,7 @@
     },
     computed: {
       statements_id () {
-        return `${this.me}/statements`
+        return `${localStorage.me}/statements`
       }
     },
     async created () {
@@ -98,8 +98,8 @@
       },
       async get_all_my_stuff () {
         const [person, statements] = await Promise.all([
-          load(this.me, this.me),
-          list(this.statements_id, this.me)
+          load(localStorage.me),
+          list(this.statements_id)
         ])
         if (person) this.person = person
         return statements
@@ -117,13 +117,13 @@
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {
-          const directory = await as_directory(`${this.me}/statements`)
+          const directory = await as_directory(`${localStorage.me}/statements`)
           let history = directory.items
           history.sort(newest_number_first)
           history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
           const next = history.shift()
           if (next) {
-            const next_statements = await list(`${this.me}/statements/${next}`)
+            const next_statements = await list(`${localStorage.me}/statements/${next}`)
             this.pages_viewed.push(next)
             this.statements = [...this.statements, ...next_statements]
           }
@@ -131,7 +131,7 @@
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
-        this.statements = await list(this.statements_id, this.me)
+        this.statements = await list(this.statements_id)
         this.pages_viewed = ['index']
       },
       thought_blurred (statement) {

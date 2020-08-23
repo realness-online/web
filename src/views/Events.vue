@@ -52,8 +52,8 @@
     methods: {
       async get_upcoming_events () {
         const [relations, my_events] = await Promise.all([
-          itemid.list(`${this.me}/relations`),
-          itemid.list(`${this.me}/events`)
+          itemid.list(`${localStorage.me}/relations`),
+          itemid.list(`${localStorage.me}/events`)
         ])
         let events = my_events
         await Promise.all(relations.map(async (person) => {

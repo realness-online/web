@@ -37,7 +37,7 @@
       }
     },
     async created () {
-      this.relations = await itemid.list(`${this.me}/relations`)
+      this.relations = await itemid.list(`${localStorage.me}/relations`)
     },
     methods: {
       async add_relationship (person) {

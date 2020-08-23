@@ -38,7 +38,7 @@
       }
     },
     computed: {
-      is_me () { return this.me === this.person.id }
+      is_me () { return localStorage.me === this.person.id }
     },
     methods: {
       async save_first_name (event) {

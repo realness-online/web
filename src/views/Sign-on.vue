@@ -36,7 +36,7 @@
     },
     computed: {
       cleanable () {
-        if (this.me.length > 2) return true
+        if (localStorage.me.length > 2) return true
         if (localStorage.length > 2) return true
         if (this.index_db_keys.length > 0) return true
         else return false
@@ -44,7 +44,7 @@
     },
     async created () {
       this.index_db_keys = await keys()
-      const person = await load(this.me)
+      const person = await load(localStorage.me)
       if (person) this.person = person
     },
     methods: {

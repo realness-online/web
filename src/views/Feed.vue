@@ -63,9 +63,9 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      this.people = await list(`${this.me}/relations`)
+      this.people = await list(`${localStorage.me}/relations`)
       this.people.push({
-        id: this.me,
+        id: localStorage.me,
         type: 'person'
       })
       await this.fill_feed()
@@ -99,8 +99,8 @@
       async fill_feed () {
         await Promise.all(this.people.map(async relation => {
           const [statements, posters] = await Promise.all([
-            list(`${relation.id}/statements`, this.me),
-            as_directory(`${relation.id}/posters`, this.me)
+            list(`${relation.id}/statements`),
+            as_directory(`${relation.id}/posters`)
           ])
           relation.viewed = ['index']
           this.statements = [...statements, ...this.statements]

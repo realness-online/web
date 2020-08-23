@@ -29,7 +29,7 @@
     },
     computed: {
       is_me () {
-        return (this.me === this.person.id)
+        return (localStorage.me === this.person.id)
       }
     },
     methods: {

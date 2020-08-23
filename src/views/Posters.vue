@@ -63,7 +63,7 @@
     },
     computed: {
       as_itemid () {
-        return `${this.me}/posters/${this.new_poster.created_at}`
+        return `${localStorage.me}/posters/${this.new_poster.created_at}`
       },
       friendly () {
         if (this.posters.length === 0 && !this.working && !this.new_poster) return true
@@ -87,7 +87,7 @@
     },
     methods: {
       get_id (name) {
-        return `${this.me}/posters/${name}`
+        return `${localStorage.me}/posters/${name}`
       },
       vectorize_image (image) {
         this.working = true
@@ -95,7 +95,7 @@
       },
       async get_poster_list (user) {
         this.posters = []
-        const directory = await itemid.as_directory(`${this.me}/posters`)
+        const directory = await itemid.as_directory(`${localStorage.me}/posters`)
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
         this.posters.sort(newer_date_first)
       },

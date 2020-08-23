@@ -27,7 +27,7 @@
     },
     computed: {
       is_me () {
-        if (this.me === this.person.id) return true
+        if (localStorage.me === this.person.id) return true
         else return false
       },
       sms_link () {

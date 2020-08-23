@@ -84,7 +84,7 @@
     },
     async created () {
       this.main_event = this.tonight
-      this.events = await itemid.list(`${this.me}/events`)
+      this.events = await itemid.list(`${localStorage.me}/events`)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },

@@ -74,7 +74,7 @@
       }
     },
     async created () {
-      this.events = await list(`${this.me}/events`)
+      this.events = await list(`${localStorage.me}/events`)
     }
   }
 </script>

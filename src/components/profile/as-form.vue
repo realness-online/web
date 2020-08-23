@@ -128,7 +128,7 @@
         if (mobile) mobile.disabled = false
       },
       async modified_check () {
-        const me = await itemid.load(this.me)
+        const me = await itemid.load(localStorage.me)
         if (!me) {
           this.$emit('modified')
           return

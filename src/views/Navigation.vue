@@ -67,7 +67,7 @@
         return this.statements.length > 0
       },
       statements_id () {
-        return `${this.me}/statements`
+        return `${localStorage.me}/statements`
       }
     },
     async created () {
@@ -77,9 +77,9 @@
     methods: {
       async get_all_my_stuff () {
         const [my, statements, relations] = await Promise.all([
-          itemid.load(this.me, this.me),
-          itemid.list(`${this.me}/statements`, this.me),
-          itemid.list(`${this.me}/relations`, this.me)
+          itemid.load(localStorage.me),
+          itemid.list(`${localStorage.me}/statements`),
+          itemid.list(`${localStorage.me}/relations`)
         ])
         if (my && my.first_name) this.first_name = my.first_name
         this.statements = statements
