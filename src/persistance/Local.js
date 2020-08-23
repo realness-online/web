@@ -1,7 +1,16 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+import { get, set } from 'idb-keyval'
+import hash_code from '@/modules/hash'
 const Local = (superclass) => class extends superclass {
-  save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    if (items) localStorage.setItem(this.id, items.outerHTML)
+  async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
+    const index = await get('index')
+    if (items) {
+      const content = items.outerHTML
+      localStorage.setItem(this.id, content)
+      const hash = hash_code(localStorage.getItem(this.id))
+      index[this.id] = hash
+      set('index', index)
+    }
   }
 }
 export default Local
