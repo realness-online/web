@@ -13,7 +13,8 @@
  * @param {string} s a string
  * @return {number} a hash code value for the given string.
  */
-export function hash_code (s) { // Faster version using ES6 Math.imul for fun!
+export default function hash (s) { // Faster version using ES6 Math.imul for fun!
+  if (!s) return 0
   let h
   for (let i = 0; i < s.length; i++) {
     h = Math.imul(31, h) + s.charCodeAt(i) | 0
