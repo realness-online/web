@@ -1,3 +1,4 @@
+import { get, set } from 'idb-keyval'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
@@ -13,7 +14,9 @@ const anonymous_statement = {
 describe('@/persistance/Paged.js', () => {
   let paged
   beforeEach(() => {
-    localStorage.setItem('me', '/+16282281824')
+    get.mockImplementation(_ => Promise.resolve({}))
+    set.mockImplementation(_ => Promise.resolve(null))
+    localStorage.me = '/+16282281824'
     paged = new Statements()
   })
   afterEach(() => {
