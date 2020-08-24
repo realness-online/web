@@ -1,6 +1,7 @@
 <template lang="html">
   <div ref="sync" hidden>
-    <as-days v-slot="thoughts"
+    <as-days v-if="statements"
+             v-slot="thoughts"
              itemscope
              :itemid="statements_id"
              :statements="statements">
@@ -63,20 +64,23 @@
         } else this.syncer.postMessage('signed-out')
       },
       async sync_statements () {
-        const index = get('index')
         const statements = new Statements()
         this.statements = await statements.sync()
         await this.$nextTick()
         const synced_statements = this.$el.querySelector(`[itemid="${this.statements_id}"]`)
         if (synced_statements) {
-          console.log(synced_statements)
-          const hash_code = hash(synced_statements.outerHTML)
-          if (index.statements_hash && index.statements_hash !== hash_code) {
-            statements.save(this.$refs.statement_item)
-            localStorage.removeItem('/+/statements')
-            set('index', index)
-          }
+          const index = await get('index')
+          if (index) {
+            const current_hash = index[this.statements_id]
+            const new_hash = hash(synced_statements.outerHTML)
+            if (current_hash && current_hash !== new_hash) {
+              statements.save(this.$refs.statement_item)
+              localStorage.removeItem('/+/statements')
+              set('index', index)
+            }
+          } else await set('index', {})
         }
+        this.statements = null
       },
       worker_message (message) {
         console.log(`message:${message}`)

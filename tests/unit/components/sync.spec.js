@@ -22,7 +22,7 @@ describe('@/components/sync', () => {
     wrapper = shallow(sync)
     await flushPromises()
   })
-  it.only('Renders sync component', async () => {
+  it('Renders sync component', async () => {
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()
   })
