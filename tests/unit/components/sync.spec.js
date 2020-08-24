@@ -29,6 +29,12 @@ describe('@/components/sync', () => {
   it('Terminates worker on destroy', async () => {
     wrapper.destroy()
   })
+  it('calls sync when service comes back from being offline', () => {
+    const sync_mock = jest.fn()
+    wrapper.vm.sync = sync_mock
+    wrapper.vm.online()
+    expect(sync_mock).toBeCalled()
+  })
   describe('Syncronzing localstorage', () => {
     it.todo('Only checks local storage for current user')
     it.todo('Syncronizes and deletes anonymous content once per session')
