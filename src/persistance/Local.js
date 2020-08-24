@@ -3,7 +3,8 @@ import { get, set } from 'idb-keyval'
 import hash_code from '@/modules/hash'
 const Local = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    const index = await get('index')
+    let index = await get('index')
+    if (!index) index = {}
     if (items) {
       const content = items.outerHTML
       localStorage.setItem(this.id, content)

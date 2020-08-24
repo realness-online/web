@@ -1,11 +1,13 @@
 import { shallow, createLocalVue } from 'vue-test-utils'
 import VueRouter from 'vue-router'
+import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
 const fs = require('fs')
 const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.html', 'utf8')
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
+    get.mockImplementation(_ => Promise.resolve({}))
     localStorage.setItem('me', '/+16282281824')
     person = {
       created_at: '2018-07-15T18:11:31.018Z',
@@ -69,7 +71,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(wrapper.vm.$route.path).toBe('/+16282281823')
     })
     it('When is_me is true should go to the account page', () => {
-      wrapper.vm.me = person.id
+      localStorage.me = person.id
       wrapper.setProps({ person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')

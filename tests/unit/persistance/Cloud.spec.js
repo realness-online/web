@@ -4,7 +4,7 @@ import Local from '@/persistance/Local'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import { del } from 'idb-keyval'
+import { del, get } from 'idb-keyval'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 describe('@/persistance/Cloud.js', () => {
@@ -38,6 +38,7 @@ describe('@/persistance/Cloud.js', () => {
       expect(cloud.to_network).toBeCalled()
     })
     it('calls save on a parent class', async () => {
+      get.mockImplementation(_ => Promise.resolve({}))
       class Whatever extends Cloud(Local(Storage)) {}
       cloud = new Whatever('/+16282281824/whatevers')
       cloud.to_network = jest.fn()

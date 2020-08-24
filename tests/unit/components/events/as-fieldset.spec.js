@@ -1,7 +1,9 @@
 import { shallow } from 'vue-test-utils'
+import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
 import itemid from '@/helpers/itemid'
 import get_item from '@/modules/item'
+
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
@@ -12,6 +14,9 @@ const events = [{
   url: poster.id
 }]
 describe('@/compontent/events/as-fieldset.vue', () => {
+  beforeEach(() => {
+    get.mockImplementation(_ => Promise.resolve({}))
+  })
   let wrapper
   describe('Renders', () => {
     it('A fieldset with the default event', () => {

@@ -14,7 +14,9 @@ exports[`@/views/Sign-on.vue Renders a form for signing on to the app 1`] = `
   <!---->
    
   <footer>
-    <!---->
+    <button>
+      Wipe
+    </button>
   </footer>
 </section>
 `;
