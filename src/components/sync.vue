@@ -1,5 +1,5 @@
 <template lang="html">
-  <div hidden>
+  <div ref="sync" hidden>
     <as-days v-slot="thoughts"
              itemscope
              :itemid="statements_id"
@@ -13,12 +13,13 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
+  import hash from '@/modules/hash'
+  import { set, get } from 'idb-keyval'
   import profile from '@/helpers/profile'
   import as_days from '@/components/as-days'
   import thought_as_article from '@/components/statements/as-article'
   import {
-    Statements,
-    Events
+    Statements
   } from '@/persistance/Storage'
   export default {
     components: {
@@ -38,17 +39,15 @@
         return true
       },
       statements_id () {
-        return `${this.me}/statements`
+        return `${localStorage.me}/statements`
       }
     },
     created () {
-      console.log('sync component loaded')
       firebase.auth().onAuthStateChanged(this.sync)
       this.syncer.addEventListener('message', this.worker_message)
       window.addEventListener('online', this.online)
     },
     beforeDestroy () {
-      console.log('sync component destroyed')
       this.syncer.terminate()
     },
     methods: {
@@ -56,22 +55,28 @@
         this.sync(firebase.auth().currentUser)
       },
       async sync (current_user) {
-        console.log('sync auth state change', current_user)
         if (current_user) {
           localStorage.me = profile.from_e64(current_user.phoneNumber)
           this.syncer.postMessage('signed-in')
-          if (this.statements_changed) this.sync_statements()
+          this.sync_statements()
+          this.syncer.postMessage('local-synced')
         } else this.syncer.postMessage('signed-out')
       },
       async sync_statements () {
+        const index = get('index')
         const statements = new Statements()
         this.statements = await statements.sync()
-        console.log('sync_statements', this.statements)
-      },
-      async sync_events () {
-        const events = new Events()
-        await events.sync()
-        console.log(this.events)
+        await this.$nextTick()
+        const synced_statements = this.$el.querySelector(`[itemid="${this.statements_id}"]`)
+        if (synced_statements) {
+          console.log(synced_statements)
+          const hash_code = hash(synced_statements.outerHTML)
+          if (index.statements_hash && index.statements_hash !== hash_code) {
+            statements.save(this.$refs.statement_item)
+            localStorage.removeItem('/+/statements')
+            set('index', index)
+          }
+        }
       },
       worker_message (message) {
         console.log(`message:${message}`)
