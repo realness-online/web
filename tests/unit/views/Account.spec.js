@@ -27,7 +27,6 @@ describe('@/views/Account.vue', () => {
     wrapper = shallow(Account)
   })
   afterEach(() => {
-    jest.clearAllMocks()
     localStorage.clear()
   })
   it('Renders account information', async () => {

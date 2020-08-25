@@ -5,9 +5,6 @@ describe('@/mixins/vector_click', () => {
   beforeEach(() => {
     wrapper = shallow(vector_mock)
   })
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
   describe('#destroy', () => {
     it('Exists', () => {
       expect(wrapper.destroy).toBeDefined()

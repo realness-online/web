@@ -1,9 +1,6 @@
 import { shallow } from 'vue-test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/vector_click', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
   describe('methods', () => {
     let wrapper
     beforeEach(() => {

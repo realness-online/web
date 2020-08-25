@@ -3,7 +3,6 @@ import Storage, { Me } from '@/persistance/Storage'
 describe('@/persistance/Storage.js', () => {
   beforeEach(() => {
     localStorage.clear()
-    jest.clearAllMocks()
   })
   describe('Storage', () => {
     it('sets the id from the itemid', () => {
