@@ -55,7 +55,7 @@ describe('@/compontent/profile/as-form.vue', () => {
         state_changed({ user: person })
       })
       signOut = jest.fn()
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      jest.spyOn(firebase, 'auth').mockImplementation(_ => {
         return {
           signOut,
           onAuthStateChanged: is_signed_in

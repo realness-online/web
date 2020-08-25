@@ -122,7 +122,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     let wrapper, signInWithPhoneNumber
     beforeEach(() => {
       signInWithPhoneNumber = jest.fn(() => Promise.resolve('success'))
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
+      jest.spyOn(firebase, 'auth').mockImplementation(_ => {
         return {
           signInWithPhoneNumber,
           onAuthStateChanged

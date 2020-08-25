@@ -15,9 +15,9 @@ const statement = {
 describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
-    jest.spyOn(itemid, 'load').mockImplementation(() => person)
-    jest.spyOn(itemid, 'list').mockImplementationOnce(() => [statement])
-    jest.spyOn(itemid, 'list').mockImplementationOnce(() => [person])
+    jest.spyOn(itemid, 'load').mockImplementation(_ => person)
+    jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [statement])
+    jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [person])
     wrapper = shallow(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
@@ -50,7 +50,7 @@ describe('@/views/Navigation.vue', () => {
     })
     describe('#user_name', () => {
       it('Returns \'You\' by default', async () => {
-        jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
+        jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
         wrapper = shallow(Navigation)
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')

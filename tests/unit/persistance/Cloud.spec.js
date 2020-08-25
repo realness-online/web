@@ -54,7 +54,7 @@ describe('@/persistance/Cloud.js', () => {
       expect(firebase.storage().ref().child().delete).toBeCalled()
     })
     it('Only deletes when logged in', async () => {
-      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
+      jest.spyOn(firebase, 'auth').mockImplementationOnce(_ => {
         return { currentUser: null }
       })
       await cloud.delete()
@@ -71,7 +71,7 @@ describe('@/persistance/Cloud.js', () => {
       expect(firebase.storage().ref().child().put).toBeCalled()
     })
     it('Does nothing unless user is signed in', async () => {
-      jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
+      jest.spyOn(firebase, 'auth').mockImplementationOnce(_ => {
         return { currentUser: null }
       })
       await cloud.to_network(statements)

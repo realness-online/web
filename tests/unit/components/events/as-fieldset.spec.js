@@ -20,19 +20,19 @@ describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
   describe('Renders', () => {
     it('A fieldset with the default event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
+      jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [])
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A fieldset with an existing event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
+      jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('methods:', () => {
     beforeEach(() => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
+      jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
       wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
     })
     describe('#show_picker', () => {

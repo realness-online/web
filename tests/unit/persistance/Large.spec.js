@@ -18,7 +18,7 @@ describe('@/persistance/Large.js', () => {
       expect(pic.save).toBeDefined()
     })
     it('retrieves and ads to an already existing directory', async () => {
-      const mock_get = get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+      const mock_get = get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
       await pic.save(poster)
       expect(mock_get).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledTimes(2)

@@ -15,7 +15,7 @@ const events = [{
 describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
-    get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+    get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
     wrapper = shallow(Posters)
     wrapper.vm.events = events
   })
@@ -43,7 +43,7 @@ describe('@/views/Posters.vue', () => {
     })
     describe('get_poster_list', () => {
       it('executes the method', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
             return { items: [] }
         })
         await wrapper.vm.get_poster_list({})

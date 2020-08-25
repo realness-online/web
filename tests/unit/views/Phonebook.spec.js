@@ -8,7 +8,7 @@ const person = {
 }
 describe('@/views/Phonebook', () => {
   it('Render the phonebook', () => {
-    jest.spyOn(itemid, 'load').mockImplementationOnce(() => person)
+    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => person)
     const wrapper = shallow(phonebook)
     expect(wrapper.element).toMatchSnapshot()
   })

@@ -20,8 +20,8 @@ describe('@/views/Events.vue', () => {
   let load
   beforeEach(() => {
     load = jest.spyOn(itemid, 'list')
-               .mockImplementationOnce(() => relations.relations)
-               .mockImplementation(() => events.events)
+               .mockImplementationOnce(_ => relations.relations)
+               .mockImplementation(_ => events.events)
   })
   it('Renders list of upcoming events', () => {
     const wrapper = shallow(Events)
