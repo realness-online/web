@@ -1,9 +1,14 @@
-import { shallow } from 'vue-test-utils'
+import { shallow, mount } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
+import get_item from '@/modules/item'
+import { Statements } from '@/persistance/Storage'
+const fs = require('fs')
+const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements = get_item(statements_html).statements
 describe('@/components/sync', () => {
   let wrapper
   const currentUser = {
@@ -17,33 +22,88 @@ describe('@/components/sync', () => {
       return { onAuthStateChanged }
     })
     localStorage.me = `/${currentUser}`
+    jest.spyOn(Statements.prototype, 'sync').mockImplementation(_ => {
+      return Promise.resolve(statements)
+    })
     get.mockImplementation(_ => Promise.resolve([]))
     set.mockImplementation(_ => Promise.resolve(null))
-    wrapper = shallow(sync)
-    await flushPromises()
   })
-  it('Renders sync component', async () => {
-    expect(wrapper.element).toMatchSnapshot()
-    wrapper.destroy()
+  afterEach(() => {
+    jest.clearAllMocks()
   })
-  it('Terminates worker on destroy', async () => {
-    wrapper.destroy()
-  })
-  it('calls sync when service comes back from being offline', () => {
-    const sync_mock = jest.fn()
-    wrapper.vm.sync = sync_mock
-    wrapper.vm.online()
-    expect(sync_mock).toBeCalled()
+  describe('initial render', () => {
+    beforeEach(async () => {
+      wrapper = shallow(sync)
+      await flushPromises()
+    })
+    it('Renders sync component', async () => {
+      expect(wrapper.element).toMatchSnapshot()
+      wrapper.destroy()
+    })
+    it('Terminates worker on destroy', async () => {
+      wrapper.destroy()
+    })
+    it('calls sync when service comes back from being offline', () => {
+      const sync_mock = jest.fn()
+      wrapper.vm.sync = sync_mock
+      wrapper.vm.online()
+      expect(sync_mock).toBeCalled()
+    })
   })
   describe('Syncronzing localstorage', () => {
-    it.todo('Only checks local storage for current user')
-    it.todo('Syncronizes and deletes anonymous content once per session')
-    describe('Syncronizing models', () => {
-      it.todo('Statements')
-      it.todo('Profile')
-      it.todo('Events')
-      it.todo('Posters')
+    beforeEach(async () => {
+      jest.spyOn(Statements.prototype, 'save').mockImplementation(_ => {
+        return jest.fn(() => Promise.resolve())
+      })
     })
+    it('only syncs if logged in', () => {
+      wrapper = shallow(sync)
+      wrapper.vm.sync_statements = jest.fn()
+      wrapper.vm.sync() // call without current user
+      expect(wrapper.vm.sync_statements).not.toBeCalled()
+    })
+    describe('Statements', () => {
+      const index = {}
+      it('syncs if there is nothing in the index', async () => {
+        wrapper = mount(sync)
+        await flushPromises()
+        wrapper.vm.statements = statements
+        await wrapper.vm.$nextTick()
+        get.mockImplementationOnce(_ => Promise.resolve(null))
+        wrapper.vm.sync_statements()
+        expect(Statements.prototype.save).toBeCalled()
+        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+        expect(set).toBeCalled()
+      })
+      it('syncs if the hash value in the index is different', async () => {
+        wrapper = mount(sync)
+        await flushPromises()
+        index['/+16282281824/statements'] = 666
+        get.mockImplementationOnce(_ => Promise.resolve(index))
+        wrapper.vm.statements = statements
+        await wrapper.vm.$nextTick()
+        wrapper.vm.sync_statements()
+        expect(Statements.prototype.save).toBeCalled()
+        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+        expect(set).toBeCalled()
+      })
+      it('doesn\'t sync if the hash codes are the same', async () => {
+        index['/+16282281824/statements'] = '1673738775'
+        get.mockImplementationOnce(_ => Promise.resolve(index))
+        wrapper = mount(sync)
+        await flushPromises()
+        wrapper.vm.statements = statements
+        await wrapper.vm.$nextTick()
+        wrapper.vm.sync_statements()
+        expect(Statements.prototype.save).not.toBeCalled()
+        expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
+        expect(set).not.toBeCalled()
+        index['/+16282281824/statements'] = null
+      })
+    })
+    it.todo('Profile')
+    it.todo('Events')
+    it.todo('Posters')
   })
   describe('Sync worker', () => {
     describe('Syncronzing IndexDB:', () => {

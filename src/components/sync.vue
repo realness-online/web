@@ -1,7 +1,6 @@
 <template lang="html">
   <div ref="sync" hidden>
-    <as-days v-if="statements"
-             v-slot="thoughts"
+    <as-days v-if="statements" v-slot="thoughts"
              itemscope
              :itemid="statements_id"
              :statements="statements">
@@ -36,16 +35,12 @@
       }
     },
     computed: {
-      statements_changed () {
-        return true
-      },
       statements_id () {
         return `${localStorage.me}/statements`
       }
     },
-    created () {
+    mounted () {
       firebase.auth().onAuthStateChanged(this.sync)
-      this.syncer.addEventListener('message', this.worker_message)
       window.addEventListener('online', this.online)
     },
     beforeDestroy () {
@@ -58,10 +53,8 @@
       async sync (current_user) {
         if (current_user) {
           localStorage.me = profile.from_e64(current_user.phoneNumber)
-          this.syncer.postMessage('signed-in')
           this.sync_statements()
-          this.syncer.postMessage('local-synced')
-        } else this.syncer.postMessage('signed-out')
+        }
       },
       async sync_statements () {
         const statements = new Statements()
@@ -71,19 +64,16 @@
         if (synced_statements) {
           const index = await get('index')
           if (index) {
-            const current_hash = index[this.statements_id]
+            const current_hash = parseInt(index[this.statements_id])
             const new_hash = hash(synced_statements.outerHTML)
-            if (current_hash && current_hash !== new_hash) {
-              statements.save(this.$refs.statement_item)
+            if (current_hash !== new_hash) {
+              statements.save()
               localStorage.removeItem('/+/statements')
               set('index', index)
             }
           } else await set('index', {})
         }
         this.statements = null
-      },
-      worker_message (message) {
-        console.log(`message:${message}`)
       }
     }
   }
