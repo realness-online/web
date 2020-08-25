@@ -6,6 +6,16 @@ import { get, set } from 'idb-keyval'
 const large = ['avatars', 'posters']
 const has_history = ['statements', 'events']
 
+export function type_as_list (item) {
+  // Returns a list even if loading the item fails
+  // the microdata spec requires properties values to
+  // single value and iterable
+  if (!item) return []
+  const list = item[as_type(item.id)]
+  if (list && Array.isArray(list)) return list
+  else if (list) return [list]
+  else return []
+}
 export async function load (itemid, me = localStorage.me) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
@@ -21,13 +31,9 @@ export async function load (itemid, me = localStorage.me) {
   return null
 }
 export async function list (itemid, me = localStorage.me) {
-  // Returns a list even if loading the item fails
   try {
     const item = await load(itemid, me)
-    const type = as_type(itemid)
-    const list = item[type]
-    if (list && Array.isArray(list)) return list
-    else if (list) return [list]
+    if (item) return type_as_list(item)
     else return []
   } catch { return [] }
 }

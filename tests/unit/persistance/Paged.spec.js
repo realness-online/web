@@ -7,10 +7,7 @@ import flushPromises from 'flush-promises'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync('./tests/unit/html/hella_statements.html', 'utf8')
-const anonymous_statement = {
-  id: '/+/statements/1597873107020',
-  statement: "I wasn't me when I wrote this"
-}
+const offline_statements = fs.readFileSync('./tests/unit/html/offline_statements.html', 'utf8')
 describe('@/persistance/Paged.js', () => {
   let paged
   beforeEach(() => {
@@ -20,17 +17,20 @@ describe('@/persistance/Paged.js', () => {
     paged = new Statements()
   })
   afterEach(() => {
-    jest.restoreAllMocks()
     localStorage.clear()
   })
   describe('#sync', () => {
-    let cloud_spy, local_spy, anonymous_spy
-    beforeEach(() => {
+    let cloud_spy, local_spy
+    beforeAll(() => {
       expect(get_item(statements).statements.length).toBe(20)
       expect(get_item(hella_statements).statements.length).toBe(100)
-      cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementation(() => Promise.resolve(get_item(statements)))
-      local_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve(get_item(hella_statements).statements))
-      anonymous_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve([anonymous_statement]))
+    })
+    beforeEach(() => {
+      cloud_spy = jest.spyOn(itemid, 'load_from_network')
+                  .mockImplementation(() => Promise.resolve(get_item(statements)))
+      local_spy = jest.spyOn(itemid, 'list')
+                  .mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
+      localStorage.setItem('/+/statements', offline_statements)
     })
     it('Exists', () => {
       expect(paged.sync).toBeDefined()
@@ -39,13 +39,14 @@ describe('@/persistance/Paged.js', () => {
       const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      expect(anonymous_spy).toBeCalled()
+      // expect(anonymous_spy).toBeCalled()
       // 100 local statements - 20 were optimized away on another device
       // 100 - 20 = 80
       // 20 - 10 = 10
       // 80 + 10 = 90
+      // 90 + 1 = 91
       // 20 optimized away, 70 new local statements, 10 unsynced statements in the cloud
-      // one statement that was made while offline and clean setup
+      // 1 statement that was made while anonymous
       expect(list.length).toBe(91)
     })
     it('syncs if there are no server items', async () => {
@@ -54,17 +55,14 @@ describe('@/persistance/Paged.js', () => {
       const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      expect(anonymous_spy).toBeCalled()
       expect(list.length).toBe(100)
     })
     it('syncs if there are no local items', async () => {
       itemid.list.mockReset()
       local_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve([]))
-      anonymous_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve([anonymous_statement]))
       const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
-      expect(anonymous_spy).toBeCalled()
       expect(list.length).toBe(20)
     })
   })

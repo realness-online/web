@@ -4,11 +4,13 @@ import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import {
+  get_item,
   hydrate,
   get_itemprops
 } from '@/modules/item'
 import {
   list,
+  type_as_list,
   load_from_network,
   as_created_at
 } from '@/helpers/itemid'
@@ -79,14 +81,10 @@ const Paged = (superclass) => class extends superclass {
     const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)
     if (!cloud) return local_items
-    let cloud_items = cloud[cloud.type]
-    if (cloud_items) {
-      if (!Array.isArray(cloud_items)) cloud_items = [cloud_items]
-      cloud_items.sort(newer_item_first)
-      const oldest_id = cloud_items[cloud_items.length - 1].id
-      oldest_at = as_created_at(oldest_id)
-    }
-    if (local_items && local_items.length && cloud_items) {
+    const cloud_items = type_as_list(cloud).sort(newer_item_first)
+    const oldest_id = cloud_items[cloud_items.length - 1].id
+    oldest_at = as_created_at(oldest_id)
+    if (local_items && local_items.length && cloud_items.length) {
       local_items.sort(newer_item_first)
       const new_local_stuff = local_items.filter(local_item => {
         const created_at = as_created_at(local_item.id)
@@ -95,8 +93,10 @@ const Paged = (superclass) => class extends superclass {
           return local_item.id === server_item.id
         })
       })
-      const offline_items = await list(`/+/${this.type}`, '/+')
+      let offline_items = localStorage.getItem(`/+/${this.type}`)
+      offline_items = type_as_list(get_item(offline_items))
       offline_items.forEach(item => {
+        // convert id's to current id
         const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
         item.id = `${me}/${this.type}/${as_created_at(item.id)}`
       })
