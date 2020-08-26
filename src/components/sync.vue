@@ -58,7 +58,8 @@
       async sync (current_user) {
         if (current_user) {
           localStorage.me = profile.from_e64(current_user.phoneNumber)
-          // this.sync_statements()
+          this.sync_statements()
+          this.sync_events()
         }
       },
       async sync_events () {
