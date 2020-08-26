@@ -5,10 +5,17 @@ import sync from '@/components/sync'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import get_item from '@/modules/item'
-import { Statements } from '@/persistance/Storage'
+import {
+  Statements,
+  Events
+} from '@/persistance/Storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const statements = get_item(statements_html).statements
+const events = [{
+  id: '/+16282281824/events/1588035067996',
+  url: '/+16282281824/posters/1585005003428'
+}]
 describe('@/components/sync', () => {
   let wrapper
   const currentUser = {
@@ -24,6 +31,15 @@ describe('@/components/sync', () => {
     localStorage.me = `/${currentUser}`
     jest.spyOn(Statements.prototype, 'sync').mockImplementation(_ => {
       return Promise.resolve(statements)
+    })
+    jest.spyOn(Statements.prototype, 'save').mockImplementation(_ => {
+      return jest.fn(() => Promise.resolve())
+    })
+    jest.spyOn(Events.prototype, 'save').mockImplementation(_ => {
+      return jest.fn(() => Promise.resolve())
+    })
+    jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
+      return Promise.resolve(events)
     })
     get.mockImplementation(_ => Promise.resolve([]))
     set.mockImplementation(_ => Promise.resolve(null))
@@ -51,11 +67,6 @@ describe('@/components/sync', () => {
     })
   })
   describe('Syncronzing localstorage', () => {
-    beforeEach(async () => {
-      jest.spyOn(Statements.prototype, 'save').mockImplementation(_ => {
-        return jest.fn(() => Promise.resolve())
-      })
-    })
     it('only syncs if logged in', () => {
       wrapper = shallow(sync)
       wrapper.vm.sync_statements = jest.fn()
@@ -70,7 +81,7 @@ describe('@/components/sync', () => {
         wrapper.vm.statements = statements
         await wrapper.vm.$nextTick()
         get.mockImplementationOnce(_ => Promise.resolve(null))
-        wrapper.vm.sync_statements()
+        await wrapper.vm.sync_statements()
         expect(Statements.prototype.save).toBeCalled()
         expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
         expect(set).toBeCalled()
@@ -82,7 +93,7 @@ describe('@/components/sync', () => {
         get.mockImplementationOnce(_ => Promise.resolve(index))
         wrapper.vm.statements = statements
         await wrapper.vm.$nextTick()
-        wrapper.vm.sync_statements()
+        await wrapper.vm.sync_statements()
         expect(Statements.prototype.save).toBeCalled()
         expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
         expect(set).toBeCalled()
@@ -101,8 +112,25 @@ describe('@/components/sync', () => {
         index['/+16282281824/statements'] = null
       })
     })
+    describe('Events', () => {
+      beforeEach(async () => {
+      })
+      // const index = {}
+      it('syncs if there is nothing in the index', async () => {
+        wrapper = mount(sync)
+        await flushPromises()
+        wrapper.vm.events = events
+        await wrapper.vm.$nextTick()
+        get.mockImplementationOnce(_ => Promise.resolve(null))
+        await wrapper.vm.sync_events()
+        expect(Events.prototype.save).toBeCalled()
+        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+        expect(set).toBeCalled()
+      })
+      it.todo('syncs if the hash value in the index is different')
+      it.todo('doesn\'t sync if the hash codes are the same')
+    })
     it.todo('Profile')
-    it.todo('Events')
     it.todo('Posters')
   })
   describe('Sync worker', () => {
