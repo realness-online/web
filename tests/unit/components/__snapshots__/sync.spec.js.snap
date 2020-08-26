@@ -5,5 +5,7 @@ exports[`@/components/sync initial render Renders sync component 1`] = `
   hidden="hidden"
 >
   <!---->
+   
+  <!---->
 </div>
 `;
