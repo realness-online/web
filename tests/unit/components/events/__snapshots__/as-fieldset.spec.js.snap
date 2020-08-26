@@ -4,10 +4,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
 <fieldset
   class="event"
 >
-  <ol
-    hidden="hidden"
-    itemprop="events"
-  />
+  <!---->
    
   <label
     for="day"
@@ -42,10 +39,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
 <fieldset
   class="event"
 >
-  <ol
-    hidden="hidden"
-    itemprop="events"
-  />
+  <!---->
    
   <label
     for="day"
