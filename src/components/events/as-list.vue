@@ -7,7 +7,6 @@
     </li>
   </ol>
 </template>
-
 <script>
   export default {
     props: {
