@@ -28,7 +28,7 @@ describe('@/components/sync', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(_ => {
       return { onAuthStateChanged }
     })
-    localStorage.me = `/${currentUser}`
+    localStorage.me = `/${currentUser.phoneNumber}`
     jest.spyOn(Statements.prototype, 'sync').mockImplementation(_ => {
       return Promise.resolve(statements)
     })
@@ -39,7 +39,7 @@ describe('@/components/sync', () => {
       return jest.fn(() => Promise.resolve())
     })
     jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
-      return Promise.resolve(events)
+      return Promise.resolve(null)
     })
     get.mockImplementation(_ => Promise.resolve([]))
     set.mockImplementation(_ => Promise.resolve(null))
@@ -70,68 +70,70 @@ describe('@/components/sync', () => {
     it('only syncs if logged in', () => {
       wrapper = shallow(sync)
       wrapper.vm.sync_statements = jest.fn()
+      wrapper.vm.sync_events = jest.fn()
       wrapper.vm.sync() // call without current user
       expect(wrapper.vm.sync_statements).not.toBeCalled()
+      expect(wrapper.vm.sync_events).not.toBeCalled()
     })
-    describe('Statements', () => {
-      const index = {}
-      it('syncs if there is nothing in the index', async () => {
-        wrapper = mount(sync)
-        await flushPromises()
-        wrapper.vm.statements = statements
-        await wrapper.vm.$nextTick()
-        get.mockImplementationOnce(_ => Promise.resolve(null))
-        await wrapper.vm.sync_statements()
-        expect(Statements.prototype.save).toBeCalled()
-        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-        expect(set).toBeCalled()
+    describe('Paged', () => {
+      describe('Statements', () => {
+        const index = {}
+        it('syncs if there is nothing in the index', async () => {
+          wrapper = mount(sync)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          get.mockImplementationOnce(_ => Promise.resolve(null))
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).toBeCalled()
+          expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+          expect(set).toBeCalled()
+        })
+        it('syncs if the hash value in the index is different', async () => {
+          wrapper = mount(sync)
+          await flushPromises()
+          index['/+16282281824/statements'] = 666
+          get.mockImplementationOnce(_ => Promise.resolve(index))
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).toBeCalled()
+          expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+          expect(set).toBeCalled()
+        })
+        it('doesn\'t sync if the hash codes are the same', async () => {
+          index['/+16282281824/statements'] = '1673738775'
+          get.mockImplementationOnce(_ => Promise.resolve(index))
+          wrapper = mount(sync)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).not.toBeCalled()
+          expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
+          expect(set).not.toBeCalled()
+          index['/+16282281824/statements'] = null
+        })
       })
-      it('syncs if the hash value in the index is different', async () => {
-        wrapper = mount(sync)
-        await flushPromises()
-        index['/+16282281824/statements'] = 666
-        get.mockImplementationOnce(_ => Promise.resolve(index))
-        wrapper.vm.statements = statements
-        await wrapper.vm.$nextTick()
-        await wrapper.vm.sync_statements()
-        expect(Statements.prototype.save).toBeCalled()
-        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-        expect(set).toBeCalled()
-      })
-      it('doesn\'t sync if the hash codes are the same', async () => {
-        index['/+16282281824/statements'] = '1673738775'
-        get.mockImplementationOnce(_ => Promise.resolve(index))
-        wrapper = mount(sync)
-        await flushPromises()
-        wrapper.vm.statements = statements
-        await wrapper.vm.$nextTick()
-        wrapper.vm.sync_statements()
-        expect(Statements.prototype.save).not.toBeCalled()
-        expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
-        expect(set).not.toBeCalled()
-        index['/+16282281824/statements'] = null
+      describe('Events', () => {
+        it('syncs like statements', async () => {
+          jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
+            return Promise.resolve(events)
+          })
+          wrapper = shallow(sync)
+          await flushPromises()
+          wrapper.vm.sync_paged = jest.fn()
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(wrapper.vm.sync_paged).toBeCalled()
+        })
       })
     })
-    describe('Events', () => {
-      beforeEach(async () => {
-      })
-      // const index = {}
-      it('syncs if there is nothing in the index', async () => {
-        wrapper = mount(sync)
-        await flushPromises()
-        wrapper.vm.events = events
-        await wrapper.vm.$nextTick()
-        get.mockImplementationOnce(_ => Promise.resolve(null))
-        await wrapper.vm.sync_events()
-        expect(Events.prototype.save).toBeCalled()
-        expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-        expect(set).toBeCalled()
-      })
-      it.todo('syncs if the hash value in the index is different')
-      it.todo('doesn\'t sync if the hash codes are the same')
+    describe('Large', () => {
+      it.todo('Posters')
+      it.todo('Avatars')
     })
     it.todo('Profile')
-    it.todo('Posters')
   })
   describe('Sync worker', () => {
     describe('Syncronzing IndexDB:', () => {
