@@ -19,6 +19,11 @@
         type: String,
         required: true
       },
+      immediate: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
       new_poster: {
         type: Object,
         required: false,
@@ -39,6 +44,9 @@
         if (this.vector) return this.vector.path
         else return ''
       }
+    },
+    created () {
+      if (this.immediate) this.show()
     },
     methods: {
       async show () {

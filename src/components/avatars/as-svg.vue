@@ -26,6 +26,11 @@
         type: Object,
         required: true
       },
+      immediate: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
       working: {
         type: Boolean,
         default: false
@@ -46,6 +51,9 @@
         if (this.person.avatar) return itemid.as_fragment(this.person.avatar)
         else return `${icons}#silhouette`
       }
+    },
+    created () {
+      if (this.immediate) this.show()
     },
     async mounted () {
       if (this.person.avatar && localStorage.me === this.person.id && localStorage.me.length > 2) {
