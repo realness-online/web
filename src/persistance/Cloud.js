@@ -3,7 +3,6 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'
-import { del } from 'idb-keyval'
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
@@ -22,9 +21,7 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async delete () {
     console.info('Cloud.delete()', this.id)
-    const user = firebase.auth().currentUser
-    if (user && navigator.onLine) {
-      del(this.id)
+    if (firebase.auth().currentUser && navigator.onLine) {
       await firebase.storage().ref().child(as_filename(this.id)).delete()
     }
   }

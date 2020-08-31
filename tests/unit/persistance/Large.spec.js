@@ -1,6 +1,6 @@
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
-import { set, get } from 'idb-keyval'
+import { set, get, del } from 'idb-keyval'
 const fs = require('fs')
 const poster = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 
@@ -33,4 +33,18 @@ describe('@/persistance/Large.js', () => {
       expect(set).not.toBeCalled()
     })
   })
+
+  describe('#save', () => {
+    it('Exists', () => {
+      expect(pic.delete).toBeDefined()
+    })
+    it('Removes item from local directory', async () => {
+      const mock_get = get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+      await pic.delete(poster)
+      expect(mock_get).toHaveBeenCalledTimes(1)
+      expect(del).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(1)
+    })
+  })
+
 })

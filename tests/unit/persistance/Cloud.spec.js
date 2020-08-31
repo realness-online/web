@@ -4,7 +4,7 @@ import Local from '@/persistance/Local'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import { del, get } from 'idb-keyval'
+import { get } from 'idb-keyval'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 describe('@/persistance/Cloud.js', () => {
@@ -50,7 +50,6 @@ describe('@/persistance/Cloud.js', () => {
   describe('#delete', () => {
     it('Deletes a resource on the cloud', async () => {
       await cloud.delete()
-      expect(del).toBeCalled()
       expect(firebase.storage().ref().child().delete).toBeCalled()
     })
     it('Only deletes when logged in', async () => {
@@ -58,7 +57,6 @@ describe('@/persistance/Cloud.js', () => {
         return { currentUser: null }
       })
       await cloud.delete()
-      expect(del).not.toBeCalled()
       expect(firebase.storage().ref().child().delete).not.toBeCalled()
     })
   })
