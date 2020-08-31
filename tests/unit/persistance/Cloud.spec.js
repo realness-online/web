@@ -76,4 +76,4 @@ describe('@/persistance/Cloud.js', () => {
       expect(firebase.storage().ref().child().put).not.toBeCalled()
     })
   })
-  })
+})
