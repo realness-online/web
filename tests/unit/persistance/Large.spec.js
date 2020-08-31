@@ -32,8 +32,7 @@ describe('@/persistance/Large.js', () => {
       expect(set).not.toBeCalled()
     })
   })
-
-  describe('#save', () => {
+  describe('#delete', () => {
     it('Exists', () => {
       expect(pic.delete).toBeDefined()
     })
