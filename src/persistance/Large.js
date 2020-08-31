@@ -14,7 +14,6 @@ const Large = (superclass) => class extends superclass {
     if (super.save) super.save(items)
   }
   async delete () {
-    console.info('Large.delete()', this.id)
     const path = as_directory_id(this.id)
     const directory = await get(path)
     directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
