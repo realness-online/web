@@ -19,6 +19,7 @@ const Large = (superclass) => class extends superclass {
     directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
     del(this.id)
     set(path, directory)
+    if (super.delete) super.delete()
   }
 }
 export default Large
