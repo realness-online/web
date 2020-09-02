@@ -15,15 +15,16 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import hash from '@/modules/hash'
-  import { set, get } from 'idb-keyval'
-  import { as_type } from '@/helpers/itemid'
-  import profile from '@/helpers/profile'
+  import { set, get, del } from 'idb-keyval'
+  import { as_type, get_item, as_created_at } from '@/helpers/itemid'
+  import { from_e64 } from '@/helpers/profile'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
   import thought_as_article from '@/components/statements/as-article'
   import {
     Events,
-    Statements
+    Statements,
+    Posters
   } from '@/persistance/Storage'
 
   export default {
@@ -56,10 +57,32 @@
         this.sync(firebase.auth().currentUser)
       },
       async sync (current_user) {
-        if (current_user) {
-          localStorage.me = profile.from_e64(current_user.phoneNumber)
+        if (navigator.online && current_user) {
+          localStorage.me = from_e64(current_user.phoneNumber)
           this.sync_statements()
           this.sync_events()
+        }
+      },
+      async sync_offline_posters (my) {
+        const posters = []
+        const offline_posters = get('/+/posters/')
+        offline_posters.items.forEach(async (created_at) => {
+          const poster_as_string = await get(`/+/posters/${created_at}`)
+          const poster = get_item(poster_as_string)
+          poster.id = `${from_e64(my.phoneNumber)}/posters/${created_at}`
+          posters.push(poster)
+        })
+        if (posters.length) {
+          this.posters = posters
+          await this.$nextTick()
+          this.posters.forEach(async (poster) => {
+            const created_at = as_created_at(poster.id)
+            const new_poster = new Posters(poster.id)
+            await new_poster.save()
+            del(`/+/posters/${created_at}`)
+            offline_posters.items.filter(when => parseInt(when) !== created_at)
+            set('/+/posters/', offline_posters)
+          })
         }
       },
       async sync_events () {
