@@ -9,6 +9,7 @@
                           :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
+    <person-as-figure v-if="person" :person="person" />
   </div>
 </template>
 <script>
@@ -16,19 +17,21 @@
   import 'firebase/auth'
   import hash from '@/modules/hash'
   import { set, get, del } from 'idb-keyval'
-  import { as_type, get_item, as_created_at } from '@/helpers/itemid'
+  import { as_type, as_created_at } from '@/helpers/itemid'
+  import get_item from '@/modules/item'
   import { from_e64 } from '@/helpers/profile'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
+  import person_as_figure from '@/components/profile/as-figure'
   import thought_as_article from '@/components/statements/as-article'
   import {
     Events,
     Statements,
-    Posters
+    Poster
   } from '@/persistance/Storage'
-
   export default {
     components: {
+      'person-as-figure': person_as_figure,
       'as-days': as_days,
       'events-list': as_list,
       'thought-as-article': thought_as_article
@@ -42,7 +45,7 @@
       }
     },
     mounted () {
-      firebase.auth().onAuthStateChanged(this.sync)
+      firebase.auth().onAuthStateChanged(this.sync_local_storage)
       window.addEventListener('online', this.online)
     },
     beforeDestroy () {
@@ -56,17 +59,24 @@
       online () {
         this.sync(firebase.auth().currentUser)
       },
-      async sync (current_user) {
+      sync_local_storage (current_user) {
         if (navigator.online && current_user) {
+          console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
-          this.sync_statements()
+          this.sync_profile()
+          this.sync_anonymous_posters(current_user)
           this.sync_events()
+          this.sync_statements()
         }
       },
-      async sync_offline_posters (my) {
+      async sync_profile () {
+
+      },
+      async sync_anonymous_posters (my) {
+        const offline_posters = await get('/+/posters/')
+        if (!offline_posters || !offline_posters.items) return
         const posters = []
-        const offline_posters = get('/+/posters/')
-        offline_posters.items.forEach(async (created_at) => {
+        await offline_posters.items.forEach(async (created_at) => {
           const poster_as_string = await get(`/+/posters/${created_at}`)
           const poster = get_item(poster_as_string)
           poster.id = `${from_e64(my.phoneNumber)}/posters/${created_at}`
@@ -74,14 +84,14 @@
         })
         if (posters.length) {
           this.posters = posters
-          await this.$nextTick()
+          // await this.$nextTick()
           this.posters.forEach(async (poster) => {
             const created_at = as_created_at(poster.id)
-            const new_poster = new Posters(poster.id)
+            const new_poster = new Poster(poster.id)
             await new_poster.save()
-            del(`/+/posters/${created_at}`)
+            await del(`/+/posters/${created_at}`)
             offline_posters.items.filter(when => parseInt(when) !== created_at)
-            set('/+/posters/', offline_posters)
+            await set('/+/posters/', offline_posters)
           })
         }
       },
