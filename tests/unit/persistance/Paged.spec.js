@@ -6,8 +6,8 @@ import { itemid_as_kilobytes } from '@/persistance/Paged'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const hella_statements = fs.readFileSync('./tests/unit/html/hella_statements.html', 'utf8')
-const offline_statements = fs.readFileSync('./tests/unit/html/offline_statements.html', 'utf8')
+const hella_statements = fs.readFileSync('./tests/unit/html/statements-hella.html', 'utf8')
+const offline_statements = fs.readFileSync('./tests/unit/html/statements-offline.html', 'utf8')
 describe('@/persistance/Paged.js', () => {
   let paged
   beforeEach(() => {
