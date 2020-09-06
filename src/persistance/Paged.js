@@ -43,7 +43,6 @@ export function elements_as_kilobytes (elements) {
 const Paged = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     if (!items) return
-    await this.sync()
     if (super.save) await super.save(items)
     await this.optimize()
   }
