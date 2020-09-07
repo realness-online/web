@@ -61,9 +61,9 @@ describe('Syncing Edge data', () => {
       it('Terminates worker on destroy', async () => {
         wrapper.destroy()
       })
-      it('calls sync when service comes back from being offline', () => {
+      it('Calls sync when service comes back from being offline', () => {
         const sync_mock = jest.fn()
-        wrapper.vm.sync = sync_mock
+        wrapper.vm.sync_local_storage = sync_mock
         wrapper.vm.online()
         expect(sync_mock).toBeCalled()
       })
@@ -175,8 +175,8 @@ describe('Syncing Edge data', () => {
       it.todo('Checks if a resourse has been updated')
       it.todo('Removes any items that are no longer in sync with what\'s current')
     })
-    it.todo('syncs posters created while signed in but offline')
-    it.todo('syncs directories')
+    it.todo('Syncs posters created while signed in but offline')
+    it.todo('Syncs directories')
     describe('Frequency:', () => {
       it.todo('Checks every 5 minutes for updates from users who have posted recently')
       it.todo('Check once per session for people who haven\'t posted in a while')
