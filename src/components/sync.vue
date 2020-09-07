@@ -57,7 +57,7 @@
         else return `${localStorage.me}`
       },
       online () {
-        this.sync(firebase.auth().currentUser)
+        this.sync_local_storage(firebase.auth().currentUser)
       },
       sync_local_storage (current_user) {
         if (navigator.onLine && current_user) {
