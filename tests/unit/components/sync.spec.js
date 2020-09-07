@@ -69,14 +69,12 @@ describe('Syncing Edge data', () => {
       })
     })
     describe('Syncronzing localstorage', () => {
-      it('syncs everything when logged in', async () => {
+      it('Syncs everything when logged in', async () => {
         wrapper = shallow(sync)
-        navigator.online = true
         await wrapper.vm.sync_local_storage(current_user)
         expect(get).toBeCalled()
-        navigator.online = undefined
       })
-      it('only syncs if logged in', () => {
+      it('Only syncs if logged in', () => {
         wrapper = shallow(sync)
         wrapper.vm.sync_statements = jest.fn()
         wrapper.vm.sync_events = jest.fn()
@@ -162,11 +160,10 @@ describe('Syncing Edge data', () => {
         })
       })
       describe('Profile', () => {
-        it.todo('it is called after sign in')
-        it.todo('uses profile information from the network')
-        it.todo('syncs first and last name if they are empty')
-        it.todo('updated the avatar to the most recent one')
-        it.todo('if the local avatar is newer save to the network')
+        it.todo('Uses profile information from the network')
+        it.todo('Syncs first and last name if they are empty')
+        it.todo('Updated the avatar to the most recent one')
+        it.todo('If the local avatar is newer save to the network')
       })
     })
   })
