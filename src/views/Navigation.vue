@@ -54,7 +54,6 @@
     mixins: [signed_in],
     data () {
       return {
-        relations: [],
         statements: [],
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
@@ -76,14 +75,12 @@
     },
     methods: {
       async get_all_my_stuff () {
-        const [my, statements, relations] = await Promise.all([
+        const [my, statements] = await Promise.all([
           itemid.load(localStorage.me),
-          itemid.list(`${localStorage.me}/statements`),
-          itemid.list(`${localStorage.me}/relations`)
+          itemid.list(`${localStorage.me}/statements`)
         ])
         if (my && my.first_name) this.first_name = my.first_name
         this.statements = statements
-        this.relations = relations
       },
       done_posting (event) {
         document.querySelector('nav > button').focus()
