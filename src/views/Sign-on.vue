@@ -49,9 +49,6 @@
     },
     methods: {
       async signed_on (event) {
-        const me = new Me()
-        await this.$nextTick()
-        await me.save()
         this.$router.push({ path: '/' })
       },
       async save_me (event) {
