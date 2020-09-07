@@ -109,13 +109,20 @@ describe('Syncing Edge data', () => {
             expect(set).toBeCalled()
           })
           it('doesn\'t sync if the hash codes are the same', async () => {
+            const onAuthStateChanged = jest.fn(state_changed => {
+              state_changed(null)
+            })
+            jest.spyOn(firebase, 'auth').mockImplementation(_ => {
+              return { onAuthStateChanged }
+            })
             index['/+16282281824/statements'] = '1673738775'
+            get.mockClear()
             get.mockImplementationOnce(_ => Promise.resolve(index))
             wrapper = mount(sync)
             await flushPromises()
             wrapper.vm.statements = statements
             await wrapper.vm.$nextTick()
-            wrapper.vm.sync_statements()
+            await wrapper.vm.sync_statements()
             expect(Statements.prototype.save).not.toBeCalled()
             expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
             expect(set).not.toBeCalled()
@@ -148,10 +155,12 @@ describe('Syncing Edge data', () => {
             items: ['559666932867']
           }
           wrapper = shallow(sync)
+          get.mockClear()
           get.mockImplementation(itemid => {
             if (itemid === '/+/posters/') return Promise.resolve(posters)
             else return Promise.resolve(offline_poster)
           })
+          expect(get).toHaveBeenCalledTimes(0)
           await wrapper.vm.sync_anonymous_posters(current_user)
           await flushPromises()
           expect(get).toHaveBeenCalledTimes(3)
