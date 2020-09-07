@@ -39,6 +39,7 @@
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
+        person: null,
         posters: null,
         statements: null,
         events: null
