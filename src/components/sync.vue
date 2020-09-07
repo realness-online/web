@@ -60,7 +60,7 @@
         this.sync(firebase.auth().currentUser)
       },
       sync_local_storage (current_user) {
-        if (navigator.online && current_user) {
+        if (navigator.onLine && current_user) {
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
           this.sync_profile()

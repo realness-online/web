@@ -171,7 +171,7 @@ describe('@/helpers/itemid', () => {
         jest.spyOn(firebase, 'auth').mockImplementation(_ => {
           return { currentUser: null }
         })
-        navigator.online = false
+        navigator.onLine = false
         const directory = await as_directory('/+/posters/')
         expect(mock_get).toBeCalled()
         expect(directory).toBe(null)
