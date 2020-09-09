@@ -1,5 +1,5 @@
 import { shallow } from 'vue-test-utils'
-import as_form from '@/components/profile/as-form'
+import as_form from '@/components/profile/as-form-mobile'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 const onAuthStateChanged = jest.fn(state_changed => state_changed())

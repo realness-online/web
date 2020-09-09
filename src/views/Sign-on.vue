@@ -4,9 +4,10 @@
       <profile-as-figure :person="person" />
       <logo-as-link />
     </header>
-    <profile-as-form :person="person"
-                     @modified="save_me"
-                     @signed-on="signed_on" />
+    <mobile-as-form :person="person"
+                    @modified="save_me"
+                    @signed-on="signed_on" />
+    <name-as-form :person="person" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
@@ -17,13 +18,15 @@
   import { load } from '@/helpers/itemid'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
-  import profile_as_form from '@/components/profile/as-form'
+  import mobile_as_form from '@/components/profile/as-form-mobile'
+  import name_as_form from '@/components/profile/as-form-name'
   import { Me } from '@/persistance/Storage'
   export default {
     components: {
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
-      'profile-as-form': profile_as_form
+      'mobile-as-form': mobile_as_form,
+      'name-as-form': name_as_form
     },
     data () {
       return {

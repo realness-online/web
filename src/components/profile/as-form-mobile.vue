@@ -1,19 +1,5 @@
 <template lang="html">
   <form id="profile-form">
-    <fieldset id="name">
-      <input id="first-name" v-model="person.first_name"
-             type="text"
-             tabindex="1"
-             placeholder="First"
-             required
-             @blur="modified_check">
-      <input id="last-name" v-model="person.last_name"
-             type="text"
-             tabindex="2"
-             placeholder="Last"
-             required
-             @blur="modified_check">
-    </fieldset>
     <fieldset v-if="!show_sign_out" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>

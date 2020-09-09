@@ -1,10 +1,10 @@
 import { shallow } from 'vue-test-utils'
-import as_form from '@/components/profile/as-form'
+import as_form from '@/components/profile/as-form-mobile'
 import * as firebase from 'firebase/app'
 import flushPromises from 'flush-promises'
 import 'firebase/auth'
 
-describe('@/compontent/profile/as-form.vue', () => {
+describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     first_name: 'Scott',
     last_name: 'Fryxell',

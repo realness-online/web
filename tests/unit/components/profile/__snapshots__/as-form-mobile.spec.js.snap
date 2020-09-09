@@ -5,26 +5,6 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
   id="profile-form"
 >
   <fieldset
-    id="name"
-  >
-    <input
-      id="first-name"
-      placeholder="First"
-      required="required"
-      tabindex="1"
-      type="text"
-    />
-     
-    <input
-      id="last-name"
-      placeholder="Last"
-      required="required"
-      tabindex="2"
-      type="text"
-    />
-  </fieldset>
-   
-  <fieldset
     id="phone"
   >
     <legend
