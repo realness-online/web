@@ -4,10 +4,10 @@
       <profile-as-figure :person="person" />
       <logo-as-link />
     </header>
-    <mobile-as-form :person="person"
+    <name-as-form v-if="nameless" :person="person" />
+    <mobile-as-form v-else :person="person"
                     @modified="save_me"
                     @signed-on="signed_on" />
-    <name-as-form :person="person" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
@@ -21,6 +21,7 @@
   import mobile_as_form from '@/components/profile/as-form-mobile'
   import name_as_form from '@/components/profile/as-form-name'
   import { Me } from '@/persistance/Storage'
+  import signed_on from '@/mixins/signed_in'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -28,8 +29,10 @@
       'mobile-as-form': mobile_as_form,
       'name-as-form': name_as_form
     },
+    mixins: [signed_on],
     data () {
       return {
+        nameless: false,
         index_db_keys: {},
         person: {
           id: '/+',
@@ -39,6 +42,7 @@
     },
     computed: {
       cleanable () {
+        if (this.signed_in) return false
         if (localStorage.me.length > 2) return true
         if (localStorage.length > 2) return true
         if (this.index_db_keys.length > 0) return true
@@ -52,7 +56,8 @@
     },
     methods: {
       async signed_on (event) {
-        this.$router.push({ path: '/' })
+        this.nameless = true
+        // this.$router.push({ path: '/' })``
       },
       async save_me (event) {
         const me = new Me()
