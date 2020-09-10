@@ -1,5 +1,5 @@
 <template>
-  <form id="profile-form">
+  <form id="profile-name">
     <fieldset id="name">
       <legend>Name</legend>
       <input id="first-name" v-model="person.first_name"
@@ -15,7 +15,9 @@
              required
              @blur="modified_check">
     </fieldset>
-    <button @click="save">Yep, That's my name</button>
+    <menu>
+      <button @click="save">Yep, That's my name</button>
+    </menu>
   </form>
 </template>
 <script>
@@ -30,6 +32,7 @@
     },
     methods: {
       async save () {
+        this.$refs.form.addAttribute()
         const me = new Me()
         await me.save()
       },
@@ -47,3 +50,19 @@
     }
   }
 </script>
+<style lang="stylus">
+  form#profile-name
+    animation-name: slide-in-left
+    &.complete
+      animation-name: slide-out-right
+    fieldset
+      margin-bottom: base-line
+    input#first-name
+      width: 40%
+      margin-right: base-line
+    input#last-name
+      width: 40%
+    menu
+      display: flex
+      justify-content: flex-end
+</style>

@@ -1,5 +1,5 @@
 <template lang="html">
-  <form id="profile-form">
+  <form id="profile-mobile">
     <fieldset v-if="!show_sign_out" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>
@@ -20,8 +20,8 @@
              placeholder="Verification Code"
              @keypress="code_keypress">
     </fieldset>
-    <icon v-show="working" name="working" />
-    <menu>
+    <icon v-if="working" name="working" />
+    <menu v-else>
       <button v-if="show_authorize"
               id="authorize"
               tabindex="5"
@@ -121,8 +121,6 @@
         }
         let modified = false
         if (me.id !== this.person.id) modified = true
-        if (me.first_name !== this.person.first_name) modified = true
-        if (me.last_name !== this.person.last_name) modified = true
         if (me.mobile !== this.person.mobile) modified = true
         if (modified) this.$emit('modified', this.person)
       },
@@ -195,28 +193,12 @@
   }
 </script>
 <style lang="stylus">
-  form#profile-form
+  form#profile-mobile
+    animation-name: slide-in-left
     svg.remove
       fill: red
     fieldset
       margin-bottom: base-line
-      legend
-        color: lighten(black, 30%)
-        &.valid
-          color: green
-    input
-      color: red
-      &:focus
-        outline: 0
-        &::placeholder
-          color: lighten(black, 30%)
-      &::placeholder
-        color: lighten(black, 30%)
-    input#first-name
-      width: 40%
-      margin-right: base-line
-    input#last-name
-      width: 40%
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
