@@ -1,7 +1,7 @@
 <template>
   <form id="profile-name">
     <fieldset id="name">
-      <legend>Name</legend>
+      <legend :class="{ valid: is_valid }">Name</legend>
       <input id="first-name" v-model="person.first_name"
              type="text"
              tabindex="1"
@@ -16,7 +16,7 @@
              @blur="modified_check">
     </fieldset>
     <menu>
-      <button @click="save">Yep, That's my name</button>
+      <button @click.prevent="save">Yep, That's my name</button>
     </menu>
   </form>
 </template>
@@ -30,11 +30,23 @@
         required: true
       }
     },
+    computed: {
+      is_valid () {
+        let length = 0
+        if (this.person.first_name) length = this.person.first_name.length
+        if (this.person.last_name) length += this.person.last_name.length
+        if (length > 2) return true
+        else return false
+      }
+    },
     methods: {
       async save () {
-        this.$refs.form.addAttribute()
-        const me = new Me()
-        await me.save()
+        console.log('save')
+        if (this.is_valid) {
+          const me = new Me()
+          await me.save()
+          this.$emit('saved')
+        }
       },
       async modified_check () {
         const me = await load(localStorage.me)

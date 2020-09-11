@@ -4,7 +4,9 @@
       <profile-as-figure :person="person" />
       <logo-as-link />
     </header>
-    <name-as-form v-if="nameless" :person="person" />
+    <name-as-form v-if="nameless"
+                  :person="person"
+                  @saved="valid_name" />
     <mobile-as-form v-else :person="person"
                     @modified="save_me"
                     @signed-on="signed_on" />
@@ -64,6 +66,9 @@
         const me = new Me()
         await this.$nextTick()
         await me.save()
+      },
+      valid_name () {
+        this.$router.push({ path: '/account' })
       },
       async clean () {
         localStorage.clear()
