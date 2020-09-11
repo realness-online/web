@@ -43,8 +43,6 @@ exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile for
     </button>
      
     <!---->
-     
-    <!---->
   </menu>
 </form>
 `;

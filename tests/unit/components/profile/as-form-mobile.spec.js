@@ -2,6 +2,7 @@ import { shallow } from 'vue-test-utils'
 import as_form from '@/components/profile/as-form-mobile'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
+import flushPromises from 'flush-promises'
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
@@ -179,6 +180,44 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
       expect(stub).not.toBeCalled()
       expect(button.attributes().disabled).toBe(undefined)
+    })
+  })
+  describe('Sign on', () => {
+    let wrapper, button, confirm_spy
+    beforeEach(() => {
+      confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
+      wrapper = shallow(as_form, {
+        propsData: {
+          person: person
+        }
+      })
+      wrapper.setData({
+        show_code: true,
+        authorizer: {
+          confirm: confirm_spy
+        }
+      })
+      button = wrapper.find('#submit-verification')
+    })
+    it('button#submit-verification signs the user in', () => {
+      button.trigger('click')
+      expect(confirm_spy).toBeCalled()
+    })
+    it('Hides input#verification-code when clicked', () => {
+      expect(wrapper.find('#verification-code').exists()).toBe(true)
+      button.trigger('click')
+      expect(wrapper.find('#verification-code').exists()).toBe(false)
+      expect(wrapper.vm.show_code).toBe(false)
+    })
+    it('Renders the sign out button after sign on', async () => {
+      expect(wrapper.vm.show_sign_out).toBe(false)
+      button.trigger('click')
+      await flushPromises()
+      expect(wrapper.vm.show_sign_out).toBe(true)
+    })
+    it('Emits an event when the user is signed on', async () => {
+      await wrapper.vm.sign_in_with_code()
+      expect(wrapper.emitted('signed-on')).toBeTruthy()
     })
   })
 })
