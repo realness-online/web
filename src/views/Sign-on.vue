@@ -56,8 +56,9 @@
     },
     methods: {
       async signed_on (event) {
-        this.nameless = true
-        // this.$router.push({ path: '/' })``
+        const my_profile = await load(localStorage.me)
+        if (my_profile) this.$router.push({ path: '/' })``
+        else this.nameless = true
       },
       async save_me (event) {
         const me = new Me()
