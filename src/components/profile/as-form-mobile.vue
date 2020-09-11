@@ -35,11 +35,6 @@
               @click.prevent="sign_in_with_code">
         Sign on
       </button>
-      <button v-if="show_sign_out"
-              id="sign-out"
-              @click.prevent="sign_out">
-        <icon name="remove" />
-      </button>
     </menu>
   </form>
 </template>
