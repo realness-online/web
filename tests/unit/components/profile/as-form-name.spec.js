@@ -6,14 +6,13 @@ describe('@/compontent/profile/as-form-name.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
-  describe('profile name form', () => {
-    let wrapper
-    beforeEach(() => {
-      wrapper = shallow(as_form, { propsData: { person: person } })
-    })
-    it('Render profile name form', () => {
-      expect(wrapper.element).toMatchSnapshot()
-    })
-    it.todo('requires at least 3 letters total for a name')
+  let wrapper
+  beforeEach(() => {
+    wrapper = shallow(as_form, { propsData: { person: person } })
   })
+  it('Render profile name form', () => {
+    expect(wrapper.element).toMatchSnapshot()
+  })
+  it.todo('requires at least 3 letters total for a name')
+  it.todo('only shows the submit button when input is valid')
 })
