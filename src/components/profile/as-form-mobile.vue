@@ -1,6 +1,6 @@
 <template lang="html">
   <form id="profile-mobile">
-    <fieldset v-if="!show_sign_out" id="phone">
+    <fieldset v-if="show_mobil_input" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>
       <input id="mobile" v-model="person.mobile"
@@ -75,6 +75,11 @@
       }
     },
     computed: {
+      show_mobil_input () {
+        if (this.show_sign_out) return false
+        if (this.working) return false
+        return true
+      },
       mobile_display () {
         if (this.person.mobile) return new AsYouType('US').input(this.person.mobile)
         else return 'Mobile'
@@ -125,7 +130,7 @@
         if (modified) this.$emit('modified', this.person)
       },
       async begin_authorization (event) {
-        this.working = true
+        // this.working = true
         this.disable_input()
         this.show_authorize = false
         this.show_captcha = true
