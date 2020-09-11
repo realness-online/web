@@ -3,7 +3,7 @@ import as_form from '@/components/profile/as-form-mobile'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
-describe('@/compontent/profile/as-form.vue', () => {
+describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     first_name: 'Scott',
     last_name: 'Fryxell',

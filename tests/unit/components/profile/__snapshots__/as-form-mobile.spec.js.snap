@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] = `
+exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile form 1`] = `
 <form
-  id="profile-form"
+  id="profile-mobile"
 >
   <fieldset
     id="phone"
@@ -26,8 +26,6 @@ exports[`@/compontent/profile/as-form.vue profile form Render profile form 1`] =
       type="tel"
     />
   </fieldset>
-   
-  <!---->
    
   <!---->
    
