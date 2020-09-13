@@ -106,9 +106,9 @@
       },
       async new_avatar (avatar_url) {
         this.working = true
-        this.person.avatar = avatar_url
-        const me = new Me()
+        this.$set(this.person, 'avatar', avatar_url)
         await this.$nextTick()
+        const me = new Me()
         await me.save()
         this.working = false
       },
