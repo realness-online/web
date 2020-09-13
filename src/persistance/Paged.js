@@ -81,6 +81,7 @@ const Paged = (superclass) => class extends superclass {
     const cloud = await load_from_network(this.id)
     if (!cloud) return local_items
     const cloud_items = type_as_list(cloud).sort(newer_item_first)
+    if (!cloud_items.length) return null
     const oldest_id = cloud_items[cloud_items.length - 1].id
     oldest_at = as_created_at(oldest_id)
     if (local_items && local_items.length && cloud_items.length) {
