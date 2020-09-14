@@ -67,7 +67,9 @@
         await this.$nextTick()
         await me.save()
       },
-      valid_name () {
+      async valid_name () {
+        const my_profile = await load(localStorage.me)
+        console.log(my_profile, localStorage.me)
         this.$router.push({ path: '/account' })
       },
       async clean () {
