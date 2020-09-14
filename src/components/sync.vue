@@ -48,7 +48,7 @@
         syncer: new Worker('/sync.worker.js'),
         person: null,
         posters: null,
-        statements: null,
+        statements: [],
         events: null
       }
     },
@@ -66,14 +66,13 @@
     },
     methods: {
       async save_statement () {
-        console.log('save_statement', this.statement)
         const itemid = this.itemid('statements')
         this.statements = await list(itemid)
         this.statements.push(this.statement)
         await this.$nextTick()
         const data = new Statements()
         await data.save()
-        this.statements = null
+        this.statements = []
         this.$emit('update:statement', null)
       },
       itemid (type) {
@@ -133,7 +132,7 @@
         this.statements = await statements.sync()
         await this.$nextTick()
         await this.sync_paged(itemid, statements)
-        this.statements = null
+        this.statements = []
       },
       async sync_paged (itemid, paged) {
         const query = `[itemid="${itemid}"]`
