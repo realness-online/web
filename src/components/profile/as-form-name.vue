@@ -18,7 +18,7 @@
     <menu>
       <button ref="button"
               disabled tabindex="3"
-              @click.prevent="save">
+              @click.prevent="valid">
         Yep, That's my name
       </button>
     </menu>
@@ -48,11 +48,9 @@
         if (this.is_valid) this.$refs.button.disabled = false
         else this.$refs.button.disabled = true
       },
-      async save () {
+      async valid () {
         if (this.is_valid) {
-          const me = new Me()
-          await me.save()
-          this.$emit('saved')
+          this.$emit('validated')
         } else this.$refs.button.disabled = false
       },
       async modified_check () {

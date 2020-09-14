@@ -6,7 +6,7 @@
     </header>
     <name-as-form v-if="nameless"
                   :person="person"
-                  @saved="valid_name" />
+                  @validated="new_person" />
     <mobile-as-form v-else :person="person"
                     @signed-on="signed_on" />
     <footer>
@@ -57,10 +57,10 @@
     methods: {
       async signed_on (event) {
         const my_profile = await load(localStorage.me)
-        if (my_profile) this.$router.push({ path: '/' })``
+        if (my_profile) this.$router.push({ path: '/' })
         else this.nameless = true
       },
-      async valid_name () {
+      async new_person () {
         this.$router.push({ path: '/account' })
       },
       async clean () {
