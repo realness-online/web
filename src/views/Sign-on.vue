@@ -8,7 +8,6 @@
                   :person="person"
                   @saved="valid_name" />
     <mobile-as-form v-else :person="person"
-                    @modified="save_me"
                     @signed-on="signed_on" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
@@ -22,7 +21,6 @@
   import profile_as_figure from '@/components/profile/as-figure'
   import mobile_as_form from '@/components/profile/as-form-mobile'
   import name_as_form from '@/components/profile/as-form-name'
-  import { Me } from '@/persistance/Storage'
   import signed_on from '@/mixins/signed_in'
   export default {
     components: {
@@ -62,14 +60,7 @@
         if (my_profile) this.$router.push({ path: '/' })``
         else this.nameless = true
       },
-      async save_me (event) {
-        const me = new Me()
-        await this.$nextTick()
-        await me.save()
-      },
       async valid_name () {
-        const my_profile = await load(localStorage.me)
-        console.log(my_profile, localStorage.me)
         this.$router.push({ path: '/account' })
       },
       async clean () {

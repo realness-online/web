@@ -58,6 +58,8 @@
       async modified_check () {
         const me = await load(localStorage.me)
         if (!me) {
+          const me = new Me()
+          await me.save()
           this.$emit('modified')
           return
         }
@@ -65,7 +67,11 @@
         let modified = false
         if (me.first_name !== this.person.first_name) modified = true
         if (me.last_name !== this.person.last_name) modified = true
-        if (modified) this.$emit('modified', this.person)
+        if (modified) {
+          const me = new Me()
+          await me.save()
+          this.$emit('modified', this.person)
+        }
       }
     }
   }
