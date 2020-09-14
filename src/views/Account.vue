@@ -150,14 +150,19 @@
       h1, h4, svg.background
         color: red
         fill: red
-    button, a
+    a
+    button
       border-color: red
       color: red
       border-color: red
     button.mock
       background-color: red
+      border-width: 1px
       border-radius: 0.2em
-      height: 1.33em
+      height: 1em
+      width: 1.66em
+    a#logo
+      border-bottom: 0
     p[itemprop="statement"]:focus
       font-weight: 700
       outline: 0px
