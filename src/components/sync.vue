@@ -87,9 +87,9 @@
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
           this.sync_profile()
-          this.sync_anonymous_posters(current_user)
           this.sync_events()
           this.sync_statements()
+          this.sync_anonymous_posters(current_user)
         }
       },
       async sync_profile () {
@@ -107,7 +107,6 @@
         })
         if (posters.length) {
           this.posters = posters
-          // await this.$nextTick()
           this.posters.forEach(async (poster) => {
             const created_at = as_created_at(poster.id)
             const new_poster = new Poster(poster.id)
