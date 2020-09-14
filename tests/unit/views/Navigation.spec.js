@@ -2,7 +2,6 @@ import { shallow } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import itemid from '@/helpers/itemid'
-// const six_minutes_ago = Date.now() - (1000 * 60 * 6)
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
@@ -16,8 +15,6 @@ describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(_ => person)
-    jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [statement])
-    jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [person])
     wrapper = shallow(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
@@ -27,15 +24,6 @@ describe('@/views/Navigation.vue', () => {
   })
   it('Renders statements and profile for a person', async () => {
     expect(wrapper.element).toMatchSnapshot()
-    expect(wrapper.find('[itemprop=statements]')).toBeTruthy()
-    expect(wrapper.find('[itemref="profile"]')).toBeTruthy()
-  })
-  it('Add a statement when statement-added is emited', async () => {
-    expect(wrapper.vm.statements.length).toBe(1)
-    wrapper.vm.$emit('statement-added', statement)
-    await flushPromises()
-    wrapper.vm.add_statement(statement)
-    expect(wrapper.vm.statements.length).toBe(2)
   })
   describe('navigating the application', () => {
     describe('handling statement events', () => {

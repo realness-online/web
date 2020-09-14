@@ -30,7 +30,7 @@
                           @blurred="thought_blurred" />
     </as-days>
     <hgroup v-if="statements.length === 0" class="message">
-      <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
+      <p>Say some stuff via the <button class="mock" /> button on the homepage <logo-as-link /></p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>

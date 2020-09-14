@@ -17,7 +17,7 @@
   import 'firebase/auth'
   import hash from '@/modules/hash'
   import { set, get, del } from 'idb-keyval'
-  import { as_type, as_created_at } from '@/helpers/itemid'
+  import { as_type, as_created_at, list } from '@/helpers/itemid'
   import get_item from '@/modules/item'
   import { from_e64 } from '@/helpers/profile'
   import as_days from '@/components/as-days'
@@ -36,6 +36,13 @@
       'events-list': as_list,
       'thought-as-article': thought_as_article
     },
+    props: {
+      statement: {
+        type: Object,
+        required: false,
+        default: null
+      }
+    },
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
@@ -43,6 +50,11 @@
         posters: null,
         statements: null,
         events: null
+      }
+    },
+    watch: {
+      statement () {
+        if (this.statement) this.save_statement()
       }
     },
     mounted () {
@@ -53,6 +65,17 @@
       this.syncer.terminate()
     },
     methods: {
+      async save_statement () {
+        console.log('save_statement', this.statement)
+        const itemid = this.itemid('statements')
+        this.statements = await list(itemid)
+        this.statements.push(this.statement)
+        await this.$nextTick()
+        const data = new Statements()
+        await data.save()
+        this.statements = null
+        this.$emit('update:statement', null)
+      },
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`
         else return `${localStorage.me}`

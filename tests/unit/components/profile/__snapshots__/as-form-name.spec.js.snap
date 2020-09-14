@@ -16,7 +16,6 @@ exports[`@/compontent/profile/as-form-name.vue Render profile name form 1`] = `
     <input
       id="first-name"
       placeholder="First"
-      required="required"
       tabindex="1"
       type="text"
     />
@@ -24,91 +23,19 @@ exports[`@/compontent/profile/as-form-name.vue Render profile name form 1`] = `
     <input
       id="last-name"
       placeholder="Last"
-      required="required"
       tabindex="2"
       type="text"
     />
   </fieldset>
    
   <menu>
-    <button>
-      Yep, That's my name
-    </button>
-  </menu>
-</form>
-`;
-
-exports[`@/compontent/profile/as-form-name.vue profile form Render profile name form 1`] = `
-<form
-  id="profile-name"
->
-  <fieldset
-    id="name"
-  >
-    <legend
-      class="valid"
+    <button
+      disabled="disabled"
+      tabindex="3"
     >
-      Name
-    </legend>
-     
-    <input
-      id="first-name"
-      placeholder="First"
-      required="required"
-      tabindex="1"
-      type="text"
-    />
-     
-    <input
-      id="last-name"
-      placeholder="Last"
-      required="required"
-      tabindex="2"
-      type="text"
-    />
-  </fieldset>
-   
-  <menu>
-    <button>
+      
       Yep, That's my name
-    </button>
-  </menu>
-</form>
-`;
-
-exports[`@/compontent/profile/as-form-name.vue profile name form Render profile name form 1`] = `
-<form
-  id="profile-name"
->
-  <fieldset
-    id="name"
-  >
-    <legend
-      class="valid"
-    >
-      Name
-    </legend>
-     
-    <input
-      id="first-name"
-      placeholder="First"
-      required="required"
-      tabindex="1"
-      type="text"
-    />
-     
-    <input
-      id="last-name"
-      placeholder="Last"
-      required="required"
-      tabindex="2"
-      type="text"
-    />
-  </fieldset>
-   
-  <menu>
-    <button>
-      Yep, That's my name
+    
     </button>
   </menu>
 </form>

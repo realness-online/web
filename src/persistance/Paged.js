@@ -41,11 +41,6 @@ export function elements_as_kilobytes (elements) {
   else return 0
 }
 const Paged = (superclass) => class extends superclass {
-  async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    if (!items) return
-    if (super.save) await super.save(items)
-    await this.optimize()
-  }
   async optimize () {
     // First in first out storage (FIFO)
     if (itemid_as_kilobytes(this.id) > 13) {

@@ -1,11 +1,11 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view />
+    <router-view @statement-added="statement=$event" />
     <aside>
       <activity-as-table v-if="production_mode" />
       <developer-tools v-else />
-      <sync />
+      <sync :statement.sync="statement" />
     </aside>
   </main>
 </template>
@@ -22,6 +22,7 @@
     },
     data () {
       return {
+        statement: null,
         status: null,
         firebase_keys: {
           apiKey: process.env.VUE_APP_API_KEY,
@@ -76,5 +77,5 @@
 <style lang="stylus">
   main.offline
     border: (base-line * .333) solid yellow
-    border-radius: base-line
+    border-radius: (base-line / 6)
 </style>
