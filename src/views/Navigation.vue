@@ -69,7 +69,7 @@
       @media (max-width: pad-begins)
         align-items: flex-start
       & > nav
-        animation-duration: 0.0
+        transition-duration: 0.5s
         min-height: round(base-line * 11)
         height: round(base-line * 11)
         & > button
@@ -96,6 +96,7 @@
         bottom: (base-line / 2)
         left: (base-line / 2)
     & > nav
+      transition-duration: 0s
       display: grid
       grid-gap: base-line
       grid-template-columns: 1fr 1fr
