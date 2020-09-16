@@ -62,6 +62,7 @@
       & > figure
         standard-border: blue
         & > svg
+          border-right-width: (base-line / 10)
           border-radius: 0
 
 </style>

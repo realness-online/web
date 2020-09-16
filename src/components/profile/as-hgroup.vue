@@ -80,6 +80,7 @@
       &:first-of-type
         margin-bottom: (base-line / 3)
     & > b[itemprop]
+      display: block
       font-weight: 400
       &:focus
         font-weight: 700

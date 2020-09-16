@@ -152,7 +152,6 @@
         fill: red
     a
     button
-      border-color: red
       color: red
       border-color: red
     button.mock
@@ -203,17 +202,22 @@
       & > form
         background-color: background-black
         padding: base-line base-line 0 base-line
-      figure.profile > a > svg.gear
-        margin-right: 0
-        fill: red
-        animation-name: rotate-back
-        transform-origin: center
-        transition-duration: 0.1s
-        animation-iteration-count: 0.1
-        transition-timing-function: ease-in-out
-        &:active
-          animation-name: rotate
-          animation-iteration-count: 0.5
+      figure.profile
+        & > svg
+          border-color: red
+        & > figcaption > menu
+          opacity: 1
+          padding: 0
+          &> a > svg.gear
+            fill: red
+            animation-name: rotate-back
+            transform-origin: center
+            transition-duration: 0.1s
+            animation-iteration-count: 0.1
+            transition-timing-function: ease-in-out
+            &:active
+              animation-name: rotate
+              animation-iteration-count: 0.5
       menu#settings
         float:right
         width: 5rem

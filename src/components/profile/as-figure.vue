@@ -69,18 +69,16 @@
       @media (max-width: pad-begins)
         border-top-right-radius: 0.66rem
         border-bottom-right-radius: 0.66rem
-        border: 1px solid blue
-        shape-outside: circle()
+      border: 1px solid blue
       @media (min-width: pad-begins)
         border-radius: 0.66rem
-
       &.background
         fill: blue
     & > figcaption
-      padding: (base-line / 3)
       flex: 1
       display: flex
       & > hgroup
+        padding: (base-line / 3)
         flex: 1
       & > menu
         padding-right: (base-line / 2)
