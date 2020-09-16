@@ -24,26 +24,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
   it('Render a person\'s profile info', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('mobile number', () => {
-    it('Format the mobile number for display', () => {
-      const mobile = wrapper.find('.phone')
-      expect(mobile.text()).toBe('(628) 228-1823')
-    })
-    it('Parse mobile number as it\'s typed in', () => {
-      person.id = '/+1628'
-      wrapper = shallow(as_figure, { propsData: { person: person } })
-      let mobile = wrapper.find('a.phone')
-      expect(mobile.text()).toBe('(628)')
-      person.id = '/+1628228'
-      wrapper = shallow(as_figure, { propsData: { person: person } })
-      mobile = wrapper.find('a.phone')
-      expect(mobile.text()).toBe('(628) 228')
-      person.id = '/+162822818'
-      wrapper = shallow(as_figure, { propsData: { person: person } })
-      mobile = wrapper.find('a.phone')
-      expect(mobile.text()).toBe('(628) 228-18')
-    })
-  })
   describe('rendering avatar', () => {
     it('Render the users avatar', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
