@@ -7,7 +7,7 @@
     </header>
     <div v-if="signed_in">
       <avatar-as-form :person="person" @new-avatar="new_avatar" />
-      <profile-as-figure :person="person">
+      <profile-as-figure :person="person" :editable="true">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>

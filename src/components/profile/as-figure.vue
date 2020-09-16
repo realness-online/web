@@ -2,7 +2,7 @@
   <figure class="profile">
     <as-svg :person="person" @vector-click="avatar_click" />
     <figcaption>
-      <as-hgroup :key="person.id" :person="person" />
+      <as-hgroup :key="person.id" :person="person" :editable="editable" />
       <menu>
         <slot />
       </menu>
@@ -23,6 +23,11 @@
       person: {
         type: Object,
         required: true
+      },
+      editable: {
+        type: Boolean,
+        required: false,
+        default: false
       }
     },
     computed: {
