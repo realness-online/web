@@ -1,17 +1,13 @@
 <template lang="html">
-  <div>
+  <nav class="profile-list">
+    <as-figure v-for="person in people" :key="person.id" :person="person">
+      <as-relationship-options :person="person"
+                               :relations="relations"
+                               @remove="remove_relationship"
+                               @add="add_relationship" />
+    </as-figure>
     <profile-as-links :people="relations" />
-    <nav class="profile-list">
-      <li v-for="person in people" :key="person.id">
-        <as-figure :person="person" />
-        <as-relationship-options :me="me"
-                                 :person="person"
-                                 :relations="relations"
-                                 @remove="remove_relationship"
-                                 @add="add_relationship" />
-      </li>
-    </nav>
-  </div>
+  </nav>
 </template>
 <script>
   import profile_as_links from '@/components/profile/as-links'
@@ -58,24 +54,14 @@
 </script>
 <style lang="stylus">
   nav.profile-list
-    padding: 0 base-line
-    & > li
-      margin-bottom: base-line
-      list-style: none
-      display: flex
-      justify-content: space-between
-      & > figure > figcaption a
-        color:blue
+    display: grid
+    grid-gap: base-line
+    grid-template-columns: repeat(auto-fill, minmax((base-line * 9), 1fr))
     @media (min-width: pad-begins)
-      display: flex
-      flex-direction: row
-      flex-wrap: wrap
-      justify-content: space-between
-      & > li
-        padding: (base-line / 2)
+      padding: 0 base-line
+      & > figure
         standard-border: blue
-        width:49%
-    @media (min-width: typing-begins)
-      & > li
-        width:32%
+        & > svg
+          border-radius: 0
+
 </style>

@@ -6,14 +6,14 @@
        contenteditable="true"
        itemprop="first_name"
        @blur="save_first_name">{{ person.first_name }}</b>
-    <span v-else itemprop="first_name">{{ person.first_name }}</span>
+    <p v-else itemprop="first_name">{{ person.first_name }}</p>
     <b v-if="editable"
        ref="last_name"
        :key="person.last_name"
        contenteditable="true"
        itemprop="last_name"
        @blur="save_last_name">{{ person.last_name }}</b>
-    <span v-else itemprop="last_name">{{ person.last_name }}</span>
+    <p v-else itemprop="last_name">{{ person.last_name }}</p>
     <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
     <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile">
   </hgroup>
@@ -67,14 +67,18 @@
 <style lang="stylus">
   hgroup[itemscope]
     color: black
-    margin:0
+    margin: 0
+    padding: 0
     @media (prefers-color-scheme: dark)
       color: white
     & > b:first-of-type
     & > span:first-of-type
       margin-right: (base-line / 4)
-    & > span
+    & > p
+      margin: 0
       text-transform: capitalize
+      &:first-of-type
+        margin-bottom: (base-line / 3)
     & > b[itemprop]
       font-weight: 400
       &:focus

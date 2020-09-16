@@ -1,10 +1,8 @@
 <template>
-  <menu>
-    <a v-if="!is_me" :class="{relation}" @click="update_relationship">
-      <icon name="add" />
-      <icon name="remove" />
-    </a>
-  </menu>
+  <a v-if="!is_me" class="status" :class="{ relation }" @click="update_relationship">
+    <icon name="add" />
+    <icon name="remove" />
+  </a>
 </template>
 <script>
   import icon from '@/components/icon'
@@ -51,15 +49,11 @@
   }
 </script>
 <style lang="stylus">
-  .profile-list li >  menu
-    display: inline-flex
-    align-items: center
-    margin-left:  (base-line / 2)
-    & > a
-      width: (base-line * 2)
-      height: (base-line * 2)
+    figure.profile > figcaption > menu > a.status
       svg
-        transition: fill
+        width: 1.5rem
+        height: 1.5rem
+        transition: fill, width, height
         transition-duration: 0.5s
         cursor: pointer
         fill: blue
@@ -74,6 +68,6 @@
           width: 0
         svg.remove
           fill: blue
-          width: (base-line * 2)
-          height: (base-line * 2)
+          width: 1.5rem
+          height: 1.5rem
 </style>

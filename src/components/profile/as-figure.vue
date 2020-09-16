@@ -1,12 +1,12 @@
 <template>
   <figure class="profile">
-    <as-svg :person="person" @vector-clicked="avatar_click" />
+    <as-svg :person="person" @vector-click="avatar_click" />
     <figcaption>
       <as-hgroup :key="person.id" :person="person" />
-      <p v-if="is_me" class="phone">{{ mobile_display }}</p>
-      <a v-else class="phone" @click="open_sms_app">{{ mobile_display }}</a>
+      <menu>
+        <slot />
+      </menu>
     </figcaption>
-    <slot />
   </figure>
 </template>
 <script>
@@ -44,9 +44,6 @@
         const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         this.$router.push(route)
-      },
-      open_sms_app (event) {
-        window.open(this.sms_link, '_self')
       }
     }
   }
@@ -61,20 +58,30 @@
     #background
       fill: blue
     & > svg
-      min-height: base-line * 2
-      min-width: base-line * 2
+      width: 4rem
+      height: 4rem
       cursor: pointer
-      border-radius: base-line
-      shape-outside: circle()
-      margin-right: (base-line / 4)
+      @media (max-width: pad-begins)
+        border-top-right-radius: 0.66rem
+        border-bottom-right-radius: 0.66rem
+        border: 1px solid blue
+        shape-outside: circle()
+      @media (min-width: pad-begins)
+        border-radius: 0.66rem
+
       &.background
         fill: blue
     & > figcaption
+      padding: (base-line / 3)
       flex: 1
-      .phone
-        margin-bottom: 0
-        font-weight: 300
-        user-select: none
-      & > a
-        display:block
+      display: flex
+      & > hgroup
+        flex: 1
+      & > menu
+        padding-right: (base-line / 2)
+        padding-left: (base-line / 3)
+        padding-top: (base-line / 2)
+        opacity: 0.66
+        &:hover
+          opacity: 1
 </style>

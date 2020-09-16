@@ -54,31 +54,11 @@
 </script>
 <style lang='stylus'>
   section#directory
-    position: relative
-    min-height: 100vh
     svg.working
       fill: blue
       margin-top: base-line
-    & > header
-      &:focus-within > h1
-        transition-property: all
-        overflow: hidden
-        width:0
-      & > a > svg.finished
-        fill: blue
+    svg.finished
+      fill: blue
     & > hgroup h1
       color: blue
-    nav.profile-list
-      display: flex
-      flex-direction: column-reverse
-      @media (min-width: pad-begins)
-        flex-direction: row
-    & > footer
-      position: fixed
-      bottom: (base-line * 1.5)
-      right: base-line
-      & menu > a
-        standard-button: red
-    & > aside
-      display: none
 </style>
