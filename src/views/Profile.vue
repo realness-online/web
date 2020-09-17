@@ -8,7 +8,7 @@
     <menu v-if="person">
       <download-vector :itemid="person.avatar" />
     </menu>
-    <profile-as-figure v-if="person" :person="person" />
+    <profile-as-figure v-if="person" :person="person" :relations="relations" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <div v-for="item in items" :key="slot_key(item)">
         <poster-as-figure v-if="item.type === 'posters'"
@@ -51,19 +51,22 @@
         person: null,
         statements: [],
         pages_viewed: ['index'],
-        posters: []
+        posters: [],
+        relations: []
       }
     },
     async created () {
       const id = profile.from_e64(this.$route.params.phone_number)
-      const [person, statements, posters] = await Promise.all([
+      const [person, statements, posters, my_relations] = await Promise.all([
         load(id),
         list(`${id}/statements`),
-        as_directory(`${id}/posters`)
+        as_directory(`${id}/posters`),
+        list(`${localStorage.me}/relations`)
       ])
       if (person) this.person = person
       else return
-      if (statements) this.statements = statements
+      this.relations = my_relations
+      this.statements = statements
       if (posters && posters.items) {
         posters.items.forEach(created_at => {
           this.posters.push({
