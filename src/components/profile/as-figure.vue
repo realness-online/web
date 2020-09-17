@@ -4,20 +4,29 @@
     <figcaption>
       <as-hgroup :key="person.id" :person="person" :editable="editable" />
       <menu>
-        <slot />
+        <slot>
+          <profile-as-links :people="relations" />
+          <as-relationship-options :person="person"
+                                   :relations="relations"
+                                   @remove="remove_relationship"
+                                   @add="add_relationship" />
+        </slot>
       </menu>
     </figcaption>
   </figure>
 </template>
 <script>
-  import { AsYouType } from 'libphonenumber-js'
-  import profile from '@/helpers/profile'
+  import { Relations } from '@/persistance/Storage'
+  import profile_as_links from '@/components/profile/as-links'
+  import as_relationship_options from '@/components/profile/as-relationship-options'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
   export default {
     components: {
       'as-svg': as_svg,
-      'as-hgroup': as_hgroup
+      'as-hgroup': as_hgroup,
+      'profile-as-links': profile_as_links,
+      'as-relationship-options': as_relationship_options
     },
     props: {
       person: {
@@ -28,20 +37,22 @@
         type: Boolean,
         required: false,
         default: false
+      },
+      relations: {
+        type: Array,
+        required: false,
+        default: () => []
+      }
+    },
+    data () {
+      return {
+        saving: false
       }
     },
     computed: {
       is_me () {
         if (localStorage.me === this.person.id) return true
         else return false
-      },
-      sms_link () {
-        return `sms:${this.person.id}`
-      },
-      mobile_display () {
-        let phone_number = profile.as_phone_number(this.person.id)
-        if (this.person.mobile) phone_number = this.person.mobile
-        return new AsYouType('US').input(phone_number)
       }
     },
     methods: {
@@ -49,6 +60,24 @@
         const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         this.$router.push(route)
+      },
+      async add_relationship (person) {
+        const relations = this.relations
+        relations.push(person)
+        await this.$nextTick()
+        new Relations().save()
+        this.$emit('update:relations', relations)
+      },
+      async remove_relationship (person) {
+        const relations = this.relations
+        const index = relations.findIndex(p => (p.id === person.id))
+        if (index > -1) {
+          relations.splice(index, 1)
+          await this.$nextTick()
+          new Relations().save()
+          if (!relations.length) localStorage.removeItem(`${localStorage.me}/relations`)
+          this.$emit('update:relations', relations)
+        }
       }
     }
   }
