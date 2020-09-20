@@ -168,13 +168,7 @@ describe('Syncing Edge data', () => {
           expect(set).toBeCalled()
         })
       })
-      describe('Profile', () => {
-        it.todo('Uses profile information from the network')
-        it.todo('Syncs first and last name if they are empty')
-        it.todo('Updated the avatar to the most recent one')
-        it.todo('If the local avatar is newer save to the network')
-      })
-    })
+x    })
   })
   describe('/public/sync.js', () => {
     describe('Syncronzing IndexDB:', () => {
