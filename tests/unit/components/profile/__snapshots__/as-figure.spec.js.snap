@@ -9,7 +9,11 @@ exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] =
   <figcaption>
     <!---->
      
-    <menu />
+    <menu>
+      <!---->
+       
+      <!---->
+    </menu>
   </figcaption>
 </figure>
 `;
