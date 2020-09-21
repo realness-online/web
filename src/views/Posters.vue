@@ -97,7 +97,6 @@
         this.posters = []
         const directory = await itemid.as_directory(`${localStorage.me}/posters`)
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        console.log(this.posters)
         this.posters.sort(newer_id_first)
       },
       brand_new_poster (response) {
