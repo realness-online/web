@@ -79,6 +79,8 @@
     justify-content: space-between
     hgroup
       color: red
+    figure.profile > svg
+      border-color: red
     svg.background
       fill: red
     form
