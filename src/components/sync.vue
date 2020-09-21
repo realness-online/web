@@ -86,14 +86,10 @@
         if (navigator.onLine && current_user) {
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
-          this.sync_profile()
           this.sync_events()
           this.sync_statements()
           this.sync_anonymous_posters(current_user)
         }
-      },
-      async sync_profile () {
-
       },
       async sync_anonymous_posters (my) {
         const offline_posters = await get('/+/posters/')
