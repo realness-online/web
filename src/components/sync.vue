@@ -9,7 +9,11 @@
                           :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
-    <person-as-figure v-if="person" :person="person" />
+    <unsynced-posters v-for="poster in posters"
+                      :key="poster.id"
+                      :immediate="true"
+                      :itemid="poster.id"
+                      :poster="poster" />
   </div>
 </template>
 <script>
@@ -22,7 +26,7 @@
   import { from_e64 } from '@/helpers/profile'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
-  import person_as_figure from '@/components/profile/as-figure'
+  import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
   import {
     Events,
@@ -31,10 +35,10 @@
   } from '@/persistance/Storage'
   export default {
     components: {
-      'person-as-figure': person_as_figure,
       'as-days': as_days,
       'events-list': as_list,
-      'thought-as-article': thought_as_article
+      'thought-as-article': thought_as_article,
+      'unsynced-posters': as_svg
     },
     props: {
       statement: {
@@ -86,31 +90,35 @@
         if (navigator.onLine && current_user) {
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
-          this.sync_events()
-          this.sync_statements()
           this.sync_anonymous_posters(current_user)
+          // this.sync_events()
+          // this.sync_statements()
         }
       },
       async sync_anonymous_posters (my) {
         const offline_posters = await get('/+/posters/')
         if (!offline_posters || !offline_posters.items) return
         const posters = []
-        await offline_posters.items.forEach(async (created_at) => {
+        await Promise.all(offline_posters.items.map(async (created_at) => {
           const poster_as_string = await get(`/+/posters/${created_at}`)
           const poster = get_item(poster_as_string)
           poster.id = `${from_e64(my.phoneNumber)}/posters/${created_at}`
           posters.push(poster)
-        })
+        }))
         if (posters.length) {
           this.posters = posters
-          this.posters.forEach(async (poster) => {
+          await this.$nextTick()
+          await Promise.all(this.posters.map(async (poster) => {
             const created_at = as_created_at(poster.id)
             const new_poster = new Poster(poster.id)
             await new_poster.save()
             await del(`/+/posters/${created_at}`)
-            offline_posters.items.filter(when => parseInt(when) !== created_at)
+            offline_posters.items = offline_posters.items.filter(when => {
+              return parseInt(when) !== created_at
+            })
             await set('/+/posters/', offline_posters)
-          })
+          }))
+          this.posters = []
         }
       },
       async sync_events () {

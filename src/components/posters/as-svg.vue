@@ -9,7 +9,7 @@
     v-html="path" />
 </template>
 <script>
-  import itemid from '@/helpers/itemid'
+  import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   export default {
@@ -24,7 +24,7 @@
         required: false,
         default: false
       },
-      new_poster: {
+      poster: {
         type: Object,
         required: false,
         default: null
@@ -51,8 +51,8 @@
     methods: {
       async show () {
         if (this.vector) return
-        if (this.new_poster) this.vector = this.new_poster
-        else this.vector = await itemid.load(this.itemid)
+        if (this.poster) this.vector = this.poster
+        else this.vector = await load(this.itemid)
         this.$emit('vector-loaded', this.itemid)
       }
     }
