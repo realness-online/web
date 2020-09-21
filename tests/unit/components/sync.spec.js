@@ -115,7 +115,7 @@ describe('Syncing Edge data', () => {
             jest.spyOn(firebase, 'auth').mockImplementation(_ => {
               return { onAuthStateChanged }
             })
-            index['/+16282281824/statements'] = '1673738775'
+            index['/+16282281824/statements'] = '-578232497'
             get.mockClear()
             get.mockImplementationOnce(_ => Promise.resolve(index))
             wrapper = mount(sync)
