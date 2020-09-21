@@ -38,7 +38,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
-  import { newer_date_first } from '@/helpers/sorting'
+  import { newer_id_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -97,7 +97,8 @@
         this.posters = []
         const directory = await itemid.as_directory(`${localStorage.me}/posters`)
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        this.posters.sort(newer_date_first)
+        console.log(this.posters)
+        this.posters.sort(newer_id_first)
       },
       brand_new_poster (response) {
         console.info('creates a poster')
