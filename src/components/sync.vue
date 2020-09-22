@@ -31,7 +31,8 @@
   import {
     Events,
     Statements,
-    Poster
+    Poster,
+    Offline
   } from '@/persistance/Storage'
   export default {
     components: {
@@ -90,10 +91,22 @@
         if (navigator.onLine && current_user) {
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
+          this.sync_offline()
           this.sync_anonymous_posters(current_user)
-          // this.sync_events()
-          // this.sync_statements()
+          this.sync_events()
+          this.sync_statements()
         }
+      },
+      async sync_offline () {
+        const offline = await get('offline')
+        if (!offline) return
+        while (offline.length) {
+          const item = offline.pop()
+          if (item.action === 'save') await new Offline(item.id).save()
+          else if (item.action === 'delete') await new Offline(item.id).delete()
+          else console.info('unknown offline action', item.action, item.id)
+        }
+        await del('offline')
       },
       async sync_anonymous_posters (my) {
         const offline_posters = await get('/+/posters/')

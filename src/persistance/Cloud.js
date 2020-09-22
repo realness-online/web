@@ -5,11 +5,11 @@ import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'
 import { get, set } from 'idb-keyval'
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
-async function sync_later (itemid, action) {
+async function sync_later (id, action) {
   const offline = (await get('offline')) || []
   offline.push({
-    action,
-    itemid
+    id,
+    action
   })
   await set('offline', offline)
 }
@@ -21,7 +21,7 @@ export const Cloud = (superclass) => class extends superclass {
       const path = as_filename(this.id)
       const file = new File([items], path)
       if (user) await storage.ref().child(path).put(file, this.metadata)
-    } else sync_later(this.id, 'to_network')
+    } else sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.info('Cloud.save()', this.id, items)

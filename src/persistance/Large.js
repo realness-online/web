@@ -1,4 +1,4 @@
-  // // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+// https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
 import { as_directory_id, as_path_parts, as_created_at } from '@/helpers/itemid'
 const Large = (superclass) => class extends superclass {

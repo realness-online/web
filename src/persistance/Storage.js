@@ -15,6 +15,7 @@ export default class Storage {
 }
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
+export class Offline extends Cloud(Storage) {}
 export class Me extends Cloud(Local(Storage)) {
   constructor () { super(localStorage.me) }
 }
