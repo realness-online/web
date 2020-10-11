@@ -3,7 +3,6 @@
   "version": "0.7.7",
   "private": false,
   "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
-
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
   "license": "UNLICENSED. When licensed moderators will be responsible for the content created on the networks they are moderating. Though they are free legally to create a service witch frees them from being responcible for the content created, they can not use this software.In this regard moderators run the network, as it it their ass that is on the line.",
   "scripts": {
