@@ -5,13 +5,7 @@
   "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
 
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
-  "license": "UNLICENSED. When licensed moderators will be responsible
-    for the content created on the networks they are moderating. Though they
-    are free legally to create a service witch frees them from being
-    responcible for the content created, they can not use this software.
-    In this regard moderators run the network,
-
-    as it it their ass that is on the line.",
+  "license": "UNLICENSED. When licensed moderators will be responsible for the content created on the networks they are moderating. Though they are free legally to create a service witch frees them from being responcible for the content created, they can not use this software.In this regard moderators run the network, as it it their ass that is on the line.",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -34,8 +28,7 @@
     "libphonenumber-js": "^1.7.44",
     "register-service-worker": "^1.7.1",
     "vue": "2.6.11",
-    "vue-router": "^3.1.5",
-    "webpack-bundle-analyzer": "^3.8.0"
+    "vue-router": "^3.1.5"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.3.0",
@@ -67,7 +60,8 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "vue-template-compiler": "^2.6.11",
-    "vue-test-utils": "^1.0.0-beta.11"
+    "vue-test-utils": "^1.0.0-beta.11",
+    "webpack-bundle-analyzer": "^3.8.0"
   },
   "eslintConfig": {
     "root": true,
@@ -186,5 +180,4 @@
     ],
     "testURL": "http://localhost/"
   },
-  "license": "UNLICENSED"
 }
