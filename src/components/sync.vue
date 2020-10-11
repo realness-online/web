@@ -1,6 +1,6 @@
 <template lang="html">
   <div ref="sync" hidden>
-    <as-days v-if="statements" v-slot="thoughts"
+    <as-days v-if="show_statements" v-slot="thoughts"
              itemscope
              :itemid="itemid('statements')"
              :statements="statements">
@@ -51,10 +51,18 @@
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
+        syncing: false,
         person: null,
         posters: null,
         statements: [],
         events: null
+      }
+    },
+    computed: {
+      show_statements () {
+        if (this.statement) return true
+        else if (this.syncing) return true
+        return false
       }
     },
     watch: {
@@ -74,10 +82,9 @@
         const itemid = this.itemid('statements')
         this.statements = await list(itemid)
         this.statements.push(this.statement)
-        await this.$nextTick()
         const data = new Statements()
+        await this.$nextTick()
         await data.save()
-        this.statements = []
         this.$emit('update:statement', null)
       },
       itemid (type) {
@@ -89,12 +96,14 @@
       },
       sync_local_storage (current_user) {
         if (navigator.onLine && current_user) {
+          this.syncing = true
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
           this.sync_offline()
           this.sync_anonymous_posters(current_user)
           this.sync_events()
           this.sync_statements()
+          this.syncing = false
         }
       },
       async sync_offline () {
