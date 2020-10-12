@@ -96,16 +96,21 @@
       },
       async sync_local_storage (current_user) {
         if (navigator.onLine && current_user) {
+          console.time('syncing:local-storage')
           this.syncing = true
-          console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
-          await Promise.all([
-            this.sync_offline(),
-            this.sync_anonymous_posters(current_user),
-            this.sync_events(),
-            this.sync_statements()
-          ])
+          // await Promise.all([
+          //   this.sync_statements(),
+          //   this.sync_offline(),
+          //   this.sync_anonymous_posters(current_user),
+          //   this.sync_events()
+          // ])
+          this.sync_offline()
+          this.sync_anonymous_posters(current_user)
+          this.sync_events()
+          this.sync_statements()
           this.syncing = false
+          console.timeEnd('syncing:local-storage')
         }
       },
       async sync_offline () {
