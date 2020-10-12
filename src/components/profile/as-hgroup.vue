@@ -71,17 +71,18 @@
     padding: 0
     @media (prefers-color-scheme: dark)
       color: white
-    & > b:first-of-type
-    & > span:first-of-type
-      margin-right: (base-line / 4)
     & > p
       margin: 0
       text-transform: capitalize
       &:first-of-type
         margin-bottom: (base-line / 3)
     & > b[itemprop]
+      margin-left: (base-line / 3)
+      line-height: 1
       display: block
       font-weight: 400
+      &:first-of-type
+        margin-bottom: (base-line )
       &:focus
         font-weight: 700
         outline: 0
