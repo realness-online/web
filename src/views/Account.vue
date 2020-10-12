@@ -216,6 +216,7 @@
             animation-iteration-count: 0.1
             transition-timing-function: ease-in-out
             &:active
+              transition-timing-function: ease-in-out
               animation-name: rotate
               animation-iteration-count: 0.5
       menu#settings
@@ -228,4 +229,8 @@
         animation-name: fade-in
         animation-duration: 0.2s
         margin-top: base-line
+        & > button:hover
+          transition: color
+          transition-duration: 0.5s
+          color: hsla(353, 83%, 57%, 1) // #ec364c
 </style>
