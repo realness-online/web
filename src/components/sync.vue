@@ -94,15 +94,17 @@
       online () {
         this.sync_local_storage(firebase.auth().currentUser)
       },
-      sync_local_storage (current_user) {
+      async sync_local_storage (current_user) {
         if (navigator.onLine && current_user) {
           this.syncing = true
           console.info('Syncronize local storage')
           localStorage.me = from_e64(current_user.phoneNumber)
-          this.sync_offline()
-          this.sync_anonymous_posters(current_user)
-          this.sync_events()
-          this.sync_statements()
+          await Promise.all([
+            this.sync_offline(),
+            this.sync_anonymous_posters(current_user),
+            this.sync_events(),
+            this.sync_statements()
+          ])
           this.syncing = false
         }
       },
