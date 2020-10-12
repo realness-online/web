@@ -163,7 +163,7 @@
         const query = `[itemid="${itemid}"]`
         const elements = this.$el.querySelector(query)
         if (elements) {
-          let index = await get('index')
+          let index = await get('hash-index')
           if (!index) index = {}
           const current_hash = parseInt(index[itemid])
           const new_hash = hash(elements.outerHTML)
@@ -171,7 +171,7 @@
             await paged.save()
             localStorage.removeItem(`/+/${as_type(itemid)}`)
             index[itemid] = new_hash
-            set('index', index)
+            set('hash-index', index)
           }
         }
       }
