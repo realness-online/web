@@ -1,21 +1,11 @@
+// {base_url}/{:author}/{:type}/{:created_at}
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
 import { get, set } from 'idb-keyval'
-const large = ['avatars', 'posters']
-const has_history = ['statements', 'events']
 
-export function type_as_list (item) {
-  // Returns a list even if loading the item fails
-  // the microdata spec requires properties values to
-  // single value and iterable
-  if (!item) return []
-  const list = item[as_type(item.id)]
-  if (list && Array.isArray(list)) return list
-  else if (list) return [list]
-  else return []
-}
+// Expensive to call
 export async function load (itemid, me = localStorage.me) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
@@ -73,6 +63,21 @@ export async function as_download_url (itemid, me = localStorage.me) {
     } else throw e
   }
 }
+
+// Cheap to call
+const large = ['avatars', 'posters']
+const has_history = ['statements', 'events']
+export function is_history (itemid) {
+  const parts = as_path_parts(itemid)
+  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
+  return false
+}
+export function as_filename (itemid) {
+  let filename = itemid
+  if (itemid.startsWith('/+')) filename = `/people${filename}`
+  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
+  else return `${filename}/index.html`
+}
 export function as_storage_path (itemid) {
   const path_parts = as_path_parts(itemid)
   let path = `/${path_parts[0]}`
@@ -89,17 +94,6 @@ export function as_storage_path (itemid) {
 export function as_directory_id (itemid) {
   const parts = as_path_parts(itemid)
   return `/${parts[0]}/${parts[1]}/`
-}
-export function as_filename (itemid) {
-  let filename = itemid
-  if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
-  else return `${filename}/index.html`
-}
-export function is_history (itemid) {
-  const parts = as_path_parts(itemid)
-  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
-  return false
 }
 export function as_path_parts (itemid) {
   const path = itemid.split('/')
@@ -127,6 +121,17 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
+export function type_as_list (item) {
+  // Returns a list even if loading the item fails
+  // the microdata spec requires properties values to
+  // single value and iterable
+  if (!item) return []
+  const list = item[as_type(item.id)]
+  if (list && Array.isArray(list)) return list
+  else if (list) return [list]
+  else return []
+}
+
 export default {
   load,
   list,

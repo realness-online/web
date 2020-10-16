@@ -71,7 +71,8 @@
       }
     },
     mounted () {
-      firebase.auth().onAuthStateChanged(this.sync_local_storage)
+      this.syncer.addEventListener('message', this.worker_message)
+      this.syncer.postMessage({ action: 'initialize', env: process.env })
       window.addEventListener('online', this.online)
     },
     beforeDestroy () {
@@ -94,9 +95,18 @@
       online () {
         this.sync_local_storage(firebase.auth().currentUser)
       },
+      worker_message (message) {
+        console.log('message:', message.data.action)
+        switch (message.data.action) {
+          case 'sync:local-storage':
+            return this.sync_local_storage()
+          default:
+            console.warn('Unhandled worker action: ', message.data.action, message)
+        }
+      },
       async sync_local_storage (current_user) {
         if (navigator.onLine && current_user) {
-          console.time('syncing:local-storage')
+          console.time('sync:local-storage')
           this.syncing = true
           localStorage.me = from_e64(current_user.phoneNumber)
           // await Promise.all([
@@ -110,7 +120,7 @@
           this.sync_events()
           this.sync_statements()
           this.syncing = false
-          console.timeEnd('syncing:local-storage')
+          console.timeEnd('sync:local-storage')
         }
       },
       async sync_offline () {

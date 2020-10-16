@@ -1,5 +1,5 @@
 {
-  "name": "Realness",
+  "name": "@realness.online/web",
   "version": "0.7.7",
   "private": false,
   "description": "Source code for https://realness.online. When licensed moderators will be responsible for the content within their network. In this regard moderators run the network, as it is their ass that is on the line.",
@@ -21,7 +21,6 @@
     "functions:logs": "firebase functions:log"
   },
   "dependencies": {
-    "@realness.online/web-workers": "0.3.8",
     "firebase": "^7.8.2",
     "idb-keyval": "^3.2.0",
     "libphonenumber-js": "^1.7.44",
