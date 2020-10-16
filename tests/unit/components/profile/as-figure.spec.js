@@ -10,7 +10,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
     get.mockImplementation(_ => Promise.resolve({}))
     localStorage.setItem('me', '/+16282281824')
     person = {
-      created_at: '2018-07-15T18:11:31.018Z',
       first_name: 'Scott',
       last_name: 'Fryxell',
       id: '/+16282281823'
