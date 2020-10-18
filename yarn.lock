@@ -9769,10 +9769,9 @@ jscodeshift@^0.7.0:
     temp "^0.8.1"
     write-file-atomic "^2.3.0"
 
-jsdom-worker-fix@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/jsdom-worker-fix/-/jsdom-worker-fix-0.1.8.tgz#2cd92b5e1b3e3f9e9b419b30f96f507525733949"
-  integrity sha512-hkbmlBkj66MkSIx3NywyO8lOOpzdleSBz+BaKaL4O4b9feIt1mSYLRl5D1RlbfvQ32OqXuukDNucrftMmkdSfw==
+"jsdom-worker-fix@git://github.com/scott-fryxell/jsdom-worker.git":
+  version "0.1.7"
+  resolved "git://github.com/scott-fryxell/jsdom-worker.git#dfdc14b29bd1f39ee5b8fba4fc83d2db675133de"
   dependencies:
     mitt "^1.1.3"
     uuid-v4 "^0.1.0"

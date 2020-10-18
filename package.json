@@ -59,7 +59,7 @@
     "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
-    "jsdom-worker-fix": "^0.1.8",
+    "jsdom-worker-fix": "git://github.com/scott-fryxell/jsdom-worker.git",
     "mockdate": "^2.0.5",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
