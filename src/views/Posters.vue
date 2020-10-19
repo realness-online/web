@@ -24,7 +24,6 @@
       <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
                  :itemid="itemid"
-                 :working="working"
                  @remove-poster="remove_poster" />
     </article>
     <hgroup v-if="friendly" class="message">
