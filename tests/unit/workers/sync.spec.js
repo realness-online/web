@@ -2,9 +2,9 @@ import * as sync from '@/workers/sync'
 describe('/workers/sync.js', () => {
   // The application loads the data
   // the syncronizer deletes what's stale
-  it('calls get_index', async () => {
-    const index = await sync.get_index()
-    expect(index).toBeDefined()
+  it('syncronize exists', async () => {
+    await sync.syncronize({ phoneNumber: '+16282281824' })
+    expect(sync.syncronize).toBeDefined()
   })
   describe('Syncronzing IndexDB:', () => {
       it.todo('gets a list of all the people I am interested in and the last time they logged in')
