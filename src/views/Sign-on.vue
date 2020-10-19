@@ -1,7 +1,9 @@
 <template lang="html">
   <section id="sign-on" class="page">
     <header>
-      <profile-as-figure :person="person" />
+      <profile-as-figure :person="person">
+        <p /> <!-- defeat the default slot -->
+      </profile-as-figure>
       <logo-as-link />
     </header>
     <name-as-form v-if="nameless"
