@@ -22,7 +22,7 @@
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
-  import profile from '@/helpers/profile'
+  import { from_e64 } from '@/helpers/profile'
   import { newest_number_first } from '@/helpers/sorting'
   import { load, list, as_directory } from '@/helpers/itemid'
   import icon from '@/components/icon'
@@ -56,7 +56,7 @@
       }
     },
     async created () {
-      const id = profile.from_e64(this.$route.params.phone_number)
+      const id = from_e64(this.$route.params.phone_number)
       const [person, statements, posters, my_relations] = await Promise.all([
         load(id),
         list(`${id}/statements`),
@@ -83,7 +83,7 @@
         return item.id
       },
       async thought_shown (thought) {
-        const id = profile.from_e64(this.$route.params.phone_number)
+        const id = from_e64(this.$route.params.phone_number)
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {

@@ -14,7 +14,7 @@ import {
   load_from_network,
   as_created_at
 } from '@/helpers/itemid'
-import profile from '@/helpers/profile'
+import { from_e64 } from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest (elements, prop_name) {
   const list = get_itemprops(elements)
@@ -59,7 +59,7 @@ const Paged = (superclass) => class extends superclass {
       div.setAttribute('itemscope', '')
       div.setAttribute('itemid', this.id)
       div.appendChild(offload)
-      const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+      const me = from_e64(firebase.auth().currentUser.phoneNumber)
       const id = `${me}/${this.type}/${oldest.getTime()}`
       await this.save(current)
       const history = new History(id)
@@ -92,7 +92,7 @@ const Paged = (superclass) => class extends superclass {
       offline_items = type_as_list(get_item(offline_items))
       offline_items.forEach(item => {
         // convert id's to current id
-        const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+        const me = from_e64(firebase.auth().currentUser.phoneNumber)
         item.id = `${me}/${this.type}/${as_created_at(item.id)}`
       })
       // three distinct lists are recombined into a single synced list

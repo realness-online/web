@@ -42,7 +42,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber, AsYouType } from 'libphonenumber-js'
-  import profile from '@/helpers/profile'
+  import { from_e64, as_phone_number } from '@/helpers/profile'
   import icon from '@/components/icon'
   import itemid from '@/helpers/itemid'
   export default {
@@ -86,9 +86,9 @@
         this.working = false
         if (user) {
           this.show_sign_out = true
-          this.person.id = profile.from_e64(user.phoneNumber)
+          this.person.id = from_e64(user.phoneNumber)
         } else {
-          this.person.mobile = profile.as_phone_number(this.person.id)
+          this.person.mobile = as_phone_number(this.person.id)
           this.show_authorize = true
         }
         this.validate_mobile_number()
