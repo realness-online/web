@@ -19,21 +19,15 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import hash from '@/modules/hash'
-  import { set, get, del } from 'idb-keyval'
-  import { as_type, as_created_at, list } from '@/helpers/itemid'
-  import get_item from '@/modules/item'
+  import { set, get } from 'idb-keyval'
   import { from_e64 } from '@/helpers/profile'
+  import { as_type, list } from '@/helpers/itemid'
+  import hash from '@/modules/hash'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
-  import {
-    Events,
-    Statements,
-    Poster,
-    Offline
-  } from '@/persistance/Storage'
+  import { Events, Statements } from '@/persistance/Storage'
   export default {
     components: {
       'as-days': as_days,
@@ -71,14 +65,21 @@
       }
     },
     mounted () {
-      this.syncer.addEventListener('message', this.worker_message)
-      this.syncer.postMessage({ action: 'initialize', env: process.env })
-      window.addEventListener('online', this.online)
+      firebase.auth().onAuthStateChanged(this.init)
     },
     beforeDestroy () {
       this.syncer.terminate()
     },
     methods: {
+      init (current_user) {
+        console.log('auth state changed')
+        if (navigator.onLine && current_user) {
+          localStorage.me = from_e64(current_user.phoneNumber)
+          this.syncer.addEventListener('message', this.worker_message)
+          this.syncer.postMessage({ action: 'initialize', env: process.env })
+          window.addEventListener('online', this.online)
+        }
+      },
       async save_statement () {
         const itemid = this.itemid('statements')
         this.statements = await list(itemid)
@@ -93,71 +94,26 @@
         else return `${localStorage.me}`
       },
       online () {
-        this.sync_local_storage(firebase.auth().currentUser)
+        this.syncer.postMessage({ action: 'check' })
       },
       worker_message (message) {
-        console.log('message:', message.data.action)
         switch (message.data.action) {
           case 'sync:local-storage':
-            return this.sync_local_storage()
+            return this.sync_local_storage(firebase.auth().currentUser)
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
       },
-      async sync_local_storage (current_user) {
-        if (navigator.onLine && current_user) {
+      async sync_local_storage () {
+        if (navigator.onLine) {
           console.time('sync:local-storage')
           this.syncing = true
-          localStorage.me = from_e64(current_user.phoneNumber)
-          // await Promise.all([
-          //   this.sync_statements(),
-          //   this.sync_offline(),
-          //   this.sync_anonymous_posters(current_user),
-          //   this.sync_events()
-          // ])
-          this.sync_offline()
-          this.sync_anonymous_posters(current_user)
-          this.sync_events()
-          this.sync_statements()
+          await Promise.all([
+            this.sync_events(),
+            this.sync_statements()
+          ])
           this.syncing = false
           console.timeEnd('sync:local-storage')
-        }
-      },
-      async sync_offline () {
-        const offline = await get('offline')
-        if (!offline) return
-        while (offline.length) {
-          const item = offline.pop()
-          if (item.action === 'save') await new Offline(item.id).save()
-          else if (item.action === 'delete') await new Offline(item.id).delete()
-          else console.info('unknown offline action', item.action, item.id)
-        }
-        await del('offline')
-      },
-      async sync_anonymous_posters (my) {
-        const offline_posters = await get('/+/posters/')
-        if (!offline_posters || !offline_posters.items) return
-        const posters = []
-        await Promise.all(offline_posters.items.map(async (created_at) => {
-          const poster_as_string = await get(`/+/posters/${created_at}`)
-          const poster = get_item(poster_as_string)
-          poster.id = `${from_e64(my.phoneNumber)}/posters/${created_at}`
-          posters.push(poster)
-        }))
-        if (posters.length) {
-          this.posters = posters
-          await this.$nextTick()
-          await Promise.all(this.posters.map(async (poster) => {
-            const created_at = as_created_at(poster.id)
-            const new_poster = new Poster(poster.id)
-            await new_poster.save()
-            await del(`/+/posters/${created_at}`)
-            offline_posters.items = offline_posters.items.filter(when => {
-              return parseInt(when) !== created_at
-            })
-            await set('/+/posters/', offline_posters)
-          }))
-          this.posters = []
         }
       },
       async sync_events () {

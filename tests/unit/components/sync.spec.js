@@ -61,114 +61,73 @@ describe('Syncing Edge data', () => {
       it('Terminates worker on destroy', async () => {
         wrapper.destroy()
       })
-      it('Calls sync when service comes back from being offline', () => {
-        const sync_mock = jest.fn()
-        wrapper.vm.sync_local_storage = sync_mock
+      it('Check when service comes back from being offline', () => {
+        const message_mock = jest.fn()
+        wrapper.vm.syncer.postMessage = message_mock
         wrapper.vm.online()
-        expect(sync_mock).toBeCalled()
+        expect(message_mock).toBeCalled()
       })
     })
     describe('Syncronzing localstorage', () => {
-      it('Syncs everything when logged in', async () => {
-        wrapper = shallow(sync)
-        await wrapper.vm.sync_local_storage(current_user)
-        expect(get).toBeCalled()
-      })
-      it('Only syncs if logged in', () => {
-        wrapper = shallow(sync)
-        wrapper.vm.sync_statements = jest.fn()
-        wrapper.vm.sync_events = jest.fn()
-        wrapper.vm.sync_local_storage() // call without current user
-        expect(wrapper.vm.sync_statements).not.toBeCalled()
-        expect(wrapper.vm.sync_events).not.toBeCalled()
-      })
-      describe('Paged', () => {
-        describe('Statements', () => {
-          const index = {}
-          it('syncs if there is nothing in the index', async () => {
-            wrapper = mount(sync)
-            await flushPromises()
-            wrapper.vm.statements = statements
-            await wrapper.vm.$nextTick()
-            get.mockImplementationOnce(_ => Promise.resolve(null))
-            await wrapper.vm.sync_statements()
-            expect(Statements.prototype.save).toBeCalled()
-            expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-            expect(set).toBeCalled()
-          })
-          it('syncs if the hash value in the index is different', async () => {
-            wrapper = mount(sync)
-            await flushPromises()
-            index['/+16282281824/statements'] = 666
-            get.mockImplementationOnce(_ => Promise.resolve(index))
-            wrapper.vm.statements = statements
-            await wrapper.vm.$nextTick()
-            await wrapper.vm.sync_statements()
-            expect(Statements.prototype.save).toBeCalled()
-            expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-            expect(set).toBeCalled()
-          })
-          it('doesn\'t sync if the hash codes are the same', async () => {
-            const onAuthStateChanged = jest.fn(state_changed => {
-              state_changed(null)
-            })
-            jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-              return { onAuthStateChanged }
-            })
-            index['/+16282281824/statements'] = '-578232497'
-            get.mockClear()
-            get.mockImplementationOnce(_ => Promise.resolve(index))
-            wrapper = mount(sync)
-            await flushPromises()
-            wrapper.vm.statements = statements
-            await wrapper.vm.$nextTick()
-            await wrapper.vm.sync_statements()
-            expect(Statements.prototype.save).not.toBeCalled()
-            expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
-            expect(set).not.toBeCalled()
-            index['/+16282281824/statements'] = null
-          })
-        })
-        describe('Events', () => {
-          it('syncs like statements', async () => {
-            jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
-              return Promise.resolve(events)
-            })
-            wrapper = shallow(sync)
-            await flushPromises()
-            wrapper.vm.sync_paged = jest.fn()
-            await wrapper.vm.$nextTick()
-            await wrapper.vm.sync_events()
-            expect(wrapper.vm.sync_paged).toBeCalled()
-          })
-        })
-      })
-      describe('Large', () => {
-        it('Checks for anonymous posters', async () => {
-          wrapper = shallow(sync)
-          await wrapper.vm.sync_anonymous_posters()
-          expect(get).toBeCalled()
-        })
-        it('Syncs anonymous posters', async () => {
-          // /+16282281824/posters/559666932867
-          const posters = {
-            items: ['559666932867']
-          }
-          wrapper = shallow(sync)
-          get.mockClear()
-          get.mockImplementation(itemid => {
-            if (itemid === '/+/posters/') return Promise.resolve(posters)
-            else return Promise.resolve(offline_poster)
-          })
-          expect(get).toHaveBeenCalledTimes(0)
-          await wrapper.vm.sync_anonymous_posters(current_user)
+      describe('Statements', () => {
+        const index = {}
+        it.only('syncs if there is nothing in the index', async () => {
+          wrapper = mount(sync)
           await flushPromises()
-          expect(get).toHaveBeenCalledTimes(3)
-          expect(del).toBeCalled()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          get.mockImplementationOnce(_ => Promise.resolve(null))
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).toBeCalled()
+          expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
           expect(set).toBeCalled()
+        })
+        it('syncs if the hash value in the index is different', async () => {
+          wrapper = mount(sync)
+          await flushPromises()
+          index['/+16282281824/statements'] = 666
+          get.mockImplementationOnce(_ => Promise.resolve(index))
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).toBeCalled()
+          expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
+          expect(set).toBeCalled()
+        })
+        it('doesn\'t sync if the hash codes are the same', async () => {
+          const onAuthStateChanged = jest.fn(state_changed => {
+            state_changed(null)
+          })
+          jest.spyOn(firebase, 'auth').mockImplementation(_ => {
+            return { onAuthStateChanged }
+          })
+          index['/+16282281824/statements'] = '-578232497'
+          get.mockClear()
+          get.mockImplementationOnce(_ => Promise.resolve(index))
+          wrapper = mount(sync)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.save).not.toBeCalled()
+          expect(localStorage.removeItem).not.toBeCalled() // removes anonymously posted stuff
+          expect(set).not.toBeCalled()
+          index['/+16282281824/statements'] = null
+        })
+      })
+      describe('Events', () => {
+        it('syncs like statements', async () => {
+          jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
+            return Promise.resolve(events)
+          })
+          wrapper = shallow(sync)
+          await flushPromises()
+          wrapper.vm.sync_paged = jest.fn()
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(wrapper.vm.sync_paged).toBeCalled()
         })
       })
     })
   })
-
 })
