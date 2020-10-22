@@ -72,7 +72,6 @@
     },
     methods: {
       init (current_user) {
-        console.log('auth state changed')
         if (navigator.onLine && current_user) {
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
