@@ -1,4 +1,7 @@
 import * as sync from '@/workers/sync'
+import { get, set, del } from 'idb-keyval'
+const fs = require('fs')
+const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 describe('/workers/sync.js', () => {
   // The application loads the data
   // the syncronizer deletes what's stale
@@ -10,8 +13,7 @@ describe('/workers/sync.js', () => {
     it.todo('uses firebase to determine the last time a person signed in')
     describe('Large', () => {
       it('Checks for anonymous posters', async () => {
-        wrapper = shallow(sync)
-        await wrapper.vm.sync_anonymous_posters()
+        await sync.sync_anonymous_posters()
         expect(get).toBeCalled()
       })
       it('Syncs anonymous posters', async () => {
@@ -19,15 +21,13 @@ describe('/workers/sync.js', () => {
         const posters = {
           items: ['559666932867']
         }
-        wrapper = shallow(sync)
         get.mockClear()
         get.mockImplementation(itemid => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
           else return Promise.resolve(offline_poster)
         })
         expect(get).toHaveBeenCalledTimes(0)
-        await wrapper.vm.sync_anonymous_posters(current_user)
-        await flushPromises()
+        await sync.sync_anonymous_posters()
         expect(get).toHaveBeenCalledTimes(3)
         expect(del).toBeCalled()
         expect(set).toBeCalled()
