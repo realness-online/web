@@ -95,25 +95,19 @@
       online () {
         this.syncer.postMessage({ action: 'check' })
       },
-      worker_message (message) {
+      async worker_message (message) {
+        console.time('worker:message')
+        this.syncing = true
         switch (message.data.action) {
-          case 'sync:local-storage':
-            return this.sync_local_storage(firebase.auth().currentUser)
+          case 'sync:events':
+            return await this.sync_events()
+          case 'sync:statements':
+            return await this.sync_statements()
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
-      },
-      async sync_local_storage () {
-        if (navigator.onLine) {
-          console.time('sync:local-storage')
-          this.syncing = true
-          await Promise.all([
-            this.sync_events(),
-            this.sync_statements()
-          ])
-          this.syncing = false
-          console.timeEnd('sync:local-storage')
-        }
+        this.syncing = false
+        console.timeEnd('worker:message')
       },
       async sync_events () {
         const itemid = this.itemid('events')

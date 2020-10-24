@@ -1,6 +1,6 @@
 import { shallow, mount } from 'vue-test-utils'
 import flushPromises from 'flush-promises'
-import { get, set, del } from 'idb-keyval'
+import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -12,7 +12,6 @@ import {
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const statements = get_item(statements_html).statements
-const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const events = [{
   id: '/+16282281824/events/1588035067996',
   url: '/+16282281824/posters/1585005003428'
@@ -46,9 +45,7 @@ describe('Syncing Edge data', () => {
       get.mockImplementation(_ => Promise.resolve([]))
       set.mockImplementation(_ => Promise.resolve(null))
     })
-    afterEach(() => {
-      jest.clearAllMocks()
-    })
+    afterEach(() => jest.clearAllMocks())
     describe('Render', () => {
       beforeEach(async () => {
         wrapper = shallow(sync)
@@ -68,28 +65,24 @@ describe('Syncing Edge data', () => {
         expect(message_mock).toBeCalled()
       })
     })
-    describe('Syncronzing localstorage', () => {
-      describe('Statements', () => {
+    describe('methods', () => {
+      describe('#sync_paged', () => {
         const index = {}
-        it.only('syncs if there is nothing in the index', async () => {
-          wrapper = mount(sync)
-          await flushPromises()
-          wrapper.vm.statements = statements
-          await wrapper.vm.$nextTick()
-          get.mockImplementationOnce(_ => Promise.resolve(null))
-          await wrapper.vm.sync_statements()
-          expect(Statements.prototype.save).toBeCalled()
-          expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
-          expect(set).toBeCalled()
-        })
         it('syncs if the hash value in the index is different', async () => {
           wrapper = mount(sync)
           await flushPromises()
           index['/+16282281824/statements'] = 666
           get.mockImplementationOnce(_ => Promise.resolve(index))
+          jest.spyOn(wrapper.vm.$el, 'querySelector')
+          .mockImplementationOnce(_ => {
+            return {
+              outerHTML: statements_html
+            }
+          })
           wrapper.vm.statements = statements
           await wrapper.vm.$nextTick()
           await wrapper.vm.sync_statements()
+          await flushPromises()
           expect(Statements.prototype.save).toBeCalled()
           expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
           expect(set).toBeCalled()
@@ -101,10 +94,16 @@ describe('Syncing Edge data', () => {
           jest.spyOn(firebase, 'auth').mockImplementation(_ => {
             return { onAuthStateChanged }
           })
-          index['/+16282281824/statements'] = '-578232497'
+          index['/+16282281824/statements'] = '-209695279'
           get.mockClear()
           get.mockImplementationOnce(_ => Promise.resolve(index))
           wrapper = mount(sync)
+          jest.spyOn(wrapper.vm.$el, 'querySelector')
+          .mockImplementationOnce(_ => {
+            return {
+              outerHTML: statements_html
+            }
+          })
           await flushPromises()
           wrapper.vm.statements = statements
           await wrapper.vm.$nextTick()
@@ -115,11 +114,21 @@ describe('Syncing Edge data', () => {
           index['/+16282281824/statements'] = null
         })
       })
-      describe('Events', () => {
-        it('syncs like statements', async () => {
-          jest.spyOn(Events.prototype, 'sync').mockImplementation(_ => {
-            return Promise.resolve(events)
-          })
+      describe('#sync_statements', () => {
+        it('Calls Statement.sync', async () => {
+          wrapper = mount(sync)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          get.mockImplementationOnce(_ => Promise.resolve(null))
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.sync).toBeCalled()
+        })
+      })
+      describe('#sync_events', () => {
+        it('Calls Event.sync', async () => {
+          jest.spyOn(Events.prototype, 'sync')
+          .mockImplementationOnce(_ => Promise.resolve(events))
           wrapper = shallow(sync)
           await flushPromises()
           wrapper.vm.sync_paged = jest.fn()
@@ -127,6 +136,48 @@ describe('Syncing Edge data', () => {
           await wrapper.vm.sync_events()
           expect(wrapper.vm.sync_paged).toBeCalled()
         })
+      })
+      describe('#save_statement', () => {
+        it('Triggered when statement is set', () => {
+          wrapper = shallow(sync)
+          const save_spy = jest.spyOn(wrapper.vm, 'save_statement')
+          .mockImplementationOnce(_ => Promise.resolve(events))
+          wrapper.setProps({ statement: 'I like to move it' })
+          expect(save_spy).toBeCalled()
+        })
+        it('Emits an event after it saves the statement', async () => {
+          wrapper = shallow(sync)
+          wrapper.setProps({ statement: 'I like to move it' })
+          await flushPromises()
+          expect(wrapper.emitted('update:statement')).toBeTruthy()
+        })
+      })
+      describe('#worker_message', () => {
+        const event = {}
+        beforeEach(() => {
+          wrapper = shallow(sync)
+          event.data = { action: '' }
+        })
+        it('Calls console.warn if event has unknown action', () => {
+          const spy = jest.spyOn(console, 'warn')
+          .mockImplementationOnce(_ => null)
+          wrapper.vm.worker_message(event)
+          expect(spy).toBeCalled()
+        })
+        it('Calls sync_events via an event', () => {
+          const spy = jest.spyOn(wrapper.vm, 'sync_events')
+          event.data.action = 'sync:events'
+          wrapper.vm.worker_message(event)
+          expect(spy).toBeCalled()
+        })
+        it('Calls sync_statements via an event', () => {
+          const spy = jest.spyOn(wrapper.vm, 'sync_statements')
+          event.data.action = 'sync:statements'
+          wrapper.vm.worker_message(event)
+          expect(spy).toBeCalled()
+        })
+        it.todo('calls optimize_statements via an event')
+        it.todo('calls optimize_events via an event')
       })
     })
   })
