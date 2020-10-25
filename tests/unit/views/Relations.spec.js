@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Relations from '@/views/Relations'
 import * as itemid from '@/helpers/itemid'
 describe('@/views/Relations.vue', () => {
@@ -18,7 +18,7 @@ describe('@/views/Relations.vue', () => {
                           .mockImplementation(_ => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
                          .mockImplementation(_ => Promise.resolve(joe_friday))
-    const wrapper = await shallow(Relations)
+    const wrapper = await shallowMount(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
     expect(load_relations).toBeCalled()
     expect(load_profile).toBeCalled()

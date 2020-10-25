@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import itemid from '@/helpers/itemid'
@@ -7,15 +7,15 @@ const person = {
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-const statement = {
-  id: '/+14151234356/statements/1588445514928',
-  statement: 'I like to move it'
-}
 describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(_ => person)
-    wrapper = shallow(Navigation)
+    wrapper = shallowMount(Navigation, {
+      stubs: {
+        RouterLink: RouterLinkStub
+      }
+    })
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
   })
@@ -39,7 +39,11 @@ describe('@/views/Navigation.vue', () => {
     describe('#user_name', () => {
       it('Returns \'You\' by default', async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
-        wrapper = shallow(Navigation)
+        wrapper = wrapper = shallowMount(Navigation, {
+          stubs: {
+            RouterLink: RouterLinkStub
+          }
+        })
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
       })

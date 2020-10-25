@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -13,7 +13,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallow(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person: person } })
     })
     it('Render profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
@@ -23,7 +23,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     describe('keypress', () => {
       let input, stub, wrapper
       beforeEach(() => {
-        wrapper = shallow(as_form, { propsData: { person: {} } })
+        wrapper = shallowMount(as_form, { propsData: { person: {} } })
         input = wrapper.find('#mobile')
         stub = jest.fn()
       })
@@ -45,7 +45,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     describe('paste', () => {
       let input, wrapper
       beforeEach(() => {
-        wrapper = shallow(as_form, { propsData: { person: {} } })
+        wrapper = shallowMount(as_form, { propsData: { person: {} } })
         input = wrapper.find('#mobile')
       })
       it('Reject invalid mobile number', () => {
@@ -93,7 +93,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('button#authorize', () => {
     let wrapper, button
     beforeEach(() => {
-      wrapper = shallow(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person: person } })
       button = wrapper.find('#authorize')
     })
     it('Enabled with valid mobile number', () => {
@@ -101,7 +101,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
     it('Disabled with invalid mobile number', () => {
       const invalid_person = { mobile: '415123456a' }
-      wrapper = shallow(as_form, { propsData: { person: invalid_person } })
+      wrapper = shallowMount(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
       expect(button.is('[disabled]')).toBe(true)
     })
@@ -129,7 +129,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
           onAuthStateChanged
         }
       })
-      wrapper = shallow(as_form, {
+      wrapper = shallowMount(as_form, {
         propsData: { person: person }
       })
       wrapper.setData({
@@ -148,7 +148,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('input#verification-code', () => {
     let input, stub, wrapper
     beforeEach(() => {
-      wrapper = shallow(as_form, {
+      wrapper = shallowMount(as_form, {
         propsData: { person: person }
       })
       wrapper.setData({
@@ -186,7 +186,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     let wrapper, button, confirm_spy
     beforeEach(() => {
       confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
-      wrapper = shallow(as_form, {
+      wrapper = shallowMount(as_form, {
         propsData: {
           person: person
         }

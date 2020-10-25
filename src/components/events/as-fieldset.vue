@@ -1,6 +1,6 @@
 <template lang="html">
   <fieldset class="event" :class="state">
-    <events-list :events="events" />
+    <events-list :events="events" :itemid="itemid" />
     <label for="day">{{ event_label }}</label>
     <input id="day" ref="day"
            type="date"

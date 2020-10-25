@@ -1,8 +1,8 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import wat from '@/components/statements/as-textarea'
 describe('@/components/statements/as-textarea.vue', () => {
   it('Renders', () => {
-    const wrapper = shallow(wat)
+    const wrapper = shallowMount(wat)
     expect(wrapper.element).toMatchSnapshot()
   })
   it('#wat_focused() exists', () => {
@@ -13,7 +13,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       expect(typeof wat.methods.prepare_statement).toBe('function')
     })
     it('Only triggers a statement event when there is text', () => {
-      const wrapper = shallow(wat, {
+      const wrapper = shallowMount(wat, {
         data: {
           statements: [],
           new_statement: ''
@@ -26,7 +26,7 @@ describe('@/components/statements/as-textarea.vue', () => {
   })
   describe('focus', () => {
     it('Emits a toggle-keyboard event when focused', () => {
-      const wrapper = shallow(wat)
+      const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('toggle-keyboard', spy)
@@ -34,7 +34,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Emits a toggle-keyboard event when loosing focus', () => {
-      const wrapper = shallow(wat)
+      const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('toggle-keyboard', spy)
@@ -42,7 +42,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Emits a statement-added event when there is text', () => {
-      const wrapper = shallow(wat, {
+      const wrapper = shallowMount(wat, {
         data: {
           new_statement: 'I like to move it.'
         }
@@ -54,7 +54,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       expect(spy).toHaveBeenCalledTimes(1)
     })
     it('Does not emit statement-added when there is not text', () => {
-      const wrapper = shallow(wat)
+      const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
       wrapper.vm.$on('statement-added', spy)

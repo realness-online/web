@@ -1,10 +1,10 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import * as firebase from 'firebase/app'
 import App from '@/App'
 describe('@/App.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(App)
+    wrapper = shallowMount(App)
   })
   afterEach(() => {
     firebase.initializeApp.mockClear()
@@ -16,7 +16,7 @@ describe('@/App.vue', () => {
     const $route = {
       path: '/relations'
     }
-    wrapper = shallow(App, {
+    wrapper = shallowMount(App, {
       mocks: {
         $route
       }

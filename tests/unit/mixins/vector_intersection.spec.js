@@ -1,9 +1,9 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/vector_click', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(vector_mock)
+    wrapper = shallowMount(vector_mock)
   })
   describe('#destroy', () => {
     it('Exists', () => {

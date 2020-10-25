@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_options from '@/components/profile/as-relationship-options'
 describe('@/compontent/profile/as-relationship-options.vue', () => {
   let wrapper
@@ -20,7 +20,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     last_name: 'Fryxell'
   }
   beforeEach(() => {
-    wrapper = shallow(as_options, { propsData: { person: me, me: me, relations } })
+    wrapper = shallowMount(as_options, { propsData: { person: me, me: me, relations } })
   })
   it('Render a list of options for this profile', () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -32,7 +32,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     })
     it('Return false if profile is not a relationship', () => {
       me.id = '/+14156661266'
-      wrapper = shallow(as_options, { propsData: { person: me, me, relations } })
+      wrapper = shallowMount(as_options, { propsData: { person: me, me, relations } })
       wrapper.vm.is_relation()
       expect(wrapper.vm.relation).toBe(false)
     })

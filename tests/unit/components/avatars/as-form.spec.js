@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/avatars/as-form'
 import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
@@ -22,7 +22,7 @@ describe('@/components/avatars/as-form.vue', () => {
     jest.spyOn(firebase, 'auth').mockImplementation(_ => {
       return { onAuthStateChanged }
     })
-    wrapper = shallow(as_form, {
+    wrapper = shallowMount(as_form, {
       propsData: { person }
     })
   })

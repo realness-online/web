@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_figure from '@/components/posters/as-figure'
 import get_item from '@/modules/item'
 const fs = require('fs')
@@ -7,14 +7,14 @@ const poster = get_item(poster_html)
 describe('@/compontent/posters/as-figure.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(as_figure, { propsData: { itemid: poster.id } })
+    wrapper = shallowMount(as_figure, { propsData: { itemid: poster.id } })
   })
   describe('Renders', () => {
     it('a poster', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('a new poster', () => {
-      wrapper = shallow(as_figure, { propsData: { new_poster: poster, is_new: true } })
+      wrapper = shallowMount(as_figure, { propsData: { new_poster: poster, is_new: true } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })

@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
 import itemid from '@/helpers/itemid'
@@ -21,19 +21,19 @@ describe('@/compontent/events/as-fieldset.vue', () => {
   describe('Renders', () => {
     it('A fieldset with the default event', () => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [])
-      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+      wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A fieldset with an existing event', () => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
-      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+      wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('methods:', () => {
     beforeEach(() => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
-      wrapper = shallow(as_fieldset, { propsData: { itemid: poster.id } })
+      wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
     })
     describe('#show_picker', () => {
       it('Ideas called when the date input is clicked', () => {

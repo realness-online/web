@@ -4,7 +4,10 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
 <fieldset
   class="event"
 >
-  <!---->
+  <events-list-stub
+    events=""
+    itemid="/+16282281824/posters/559666932867"
+  />
    
   <label
     for="day"
@@ -25,11 +28,15 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
    
   <menu>
     <a>
-      <!---->
+      <icon-stub
+        name="remove"
+      />
     </a>
      
     <a>
-      <!---->
+      <icon-stub
+        name="add"
+      />
     </a>
   </menu>
 </fieldset>
@@ -39,7 +46,10 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
 <fieldset
   class="event"
 >
-  <!---->
+  <events-list-stub
+    events=""
+    itemid="/+16282281824/posters/559666932867"
+  />
    
   <label
     for="day"
@@ -60,11 +70,15 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
    
   <menu>
     <a>
-      <!---->
+      <icon-stub
+        name="remove"
+      />
     </a>
      
     <a>
-      <!---->
+      <icon-stub
+        name="add"
+      />
     </a>
   </menu>
 </fieldset>

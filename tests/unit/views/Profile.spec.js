@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Profile from '@/views/Profile'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
@@ -9,7 +9,7 @@ describe('@/views/Profile.vue', () => {
     fetch.resetMocks()
     fetch.mockResponseOnce(person)
     const $route = { params: { phone_number: '+14151231234' } }
-    const wrapper = shallow(Profile, { mocks: { $route } })
+    const wrapper = shallowMount(Profile, { mocks: { $route } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
   })

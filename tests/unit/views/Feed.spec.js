@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
@@ -20,7 +20,7 @@ describe('@/views/Feed.vue', () => {
     })
   })
   it('Render a feed of a persons friends', async () => {
-    const wrapper = shallow(Feed)
+    const wrapper = shallowMount(Feed)
     expect(relations_spy).toBeCalled()
     expect(statements_spy).toBeCalled()
     expect(wrapper.element).toMatchSnapshot()

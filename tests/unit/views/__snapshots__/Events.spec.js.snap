@@ -6,9 +6,11 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
   id="events"
 >
   <header>
-    <!---->
+    <icon-stub
+      name="nothing"
+    />
      
-    <!---->
+    <logo-as-link-stub />
   </header>
    
   <hgroup>
@@ -16,7 +18,10 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
       Tonight!
     </h1>
      
-    <!---->
+    <icon-stub
+      name="working"
+      style="display: none;"
+    />
   </hgroup>
    
   <hgroup
@@ -37,7 +42,7 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
      
     <p>
       People see them after you 
-      <!---->
+      <sign-on-stub />
     </p>
      
     <h6>

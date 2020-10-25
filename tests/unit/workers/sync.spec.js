@@ -2,18 +2,19 @@ import * as sync from '@/workers/sync'
 import { get, set, del } from 'idb-keyval'
 const fs = require('fs')
 const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
+const user = { phoneNumber: '+16282281824' }
 describe('/workers/sync.js', () => {
   // The application loads the data
   // the syncronizer deletes what's stale
   it('syncronize exists', async () => {
-    await sync.syncronize({ phoneNumber: '+16282281824' })
+    await sync.syncronize(user)
     expect(sync.syncronize).toBeDefined()
   })
   describe('Syncronzing IndexDB:', () => {
     it.todo('uses firebase to determine the last time a person signed in')
-    describe.skip('Large', () => {
+    describe.only('Large', () => {
       it('Checks for anonymous posters', async () => {
-        await sync.sync_anonymous_posters()
+        await sync.sync_anonymous_posters(user)
         expect(get).toBeCalled()
       })
       it('Syncs anonymous posters', async () => {
@@ -27,7 +28,7 @@ describe('/workers/sync.js', () => {
           else return Promise.resolve(offline_poster)
         })
         expect(get).toHaveBeenCalledTimes(0)
-        await sync.sync_anonymous_posters()
+        await sync.sync_anonymous_posters(user)
         expect(get).toHaveBeenCalledTimes(3)
         expect(del).toBeCalled()
         expect(set).toBeCalled()

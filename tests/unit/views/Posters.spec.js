@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
 import itemid from '@/helpers/itemid'
@@ -16,7 +16,7 @@ describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
     get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
-    wrapper = shallow(Posters)
+    wrapper = shallowMount(Posters)
     wrapper.vm.events = events
   })
   describe('Rendering', () => {

@@ -14,59 +14,56 @@ exports[`@/views/Navigation.vue Renders statements and profile for a person 1`] 
   </header>
    
   <nav>
-    <router-link
+    <a
       class="black"
       tabindex="-1"
-      to="/account"
     >
       
       Scott
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="green"
       tabindex="-1"
-      to="/events"
     >
       
       Tonight!
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="green"
       tabindex="-1"
-      to="/posters"
     >
       
       Posters
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="blue"
       tabindex="-1"
-      to="/feed"
     >
       
       Feed
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="blue"
       tabindex="-1"
-      to="/relations"
     >
       
       Relations
     
-    </router-link>
+    </a>
      
     <!---->
      
-    <!---->
+    <statement-as-textarea-stub
+      class="red"
+    />
   </nav>
 </section>
 `;
@@ -85,66 +82,63 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   </header>
    
   <nav>
-    <router-link
+    <a
       class="black"
       tabindex="-1"
-      to="/account"
     >
       
       Scott
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="green"
       tabindex="-1"
-      to="/events"
     >
       
       Tonight!
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="green"
       tabindex="-1"
-      to="/posters"
     >
       
       Posters
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="blue"
       tabindex="-1"
-      to="/feed"
     >
       
       Feed
     
-    </router-link>
+    </a>
      
-    <router-link
+    <a
       class="blue"
       tabindex="-1"
-      to="/relations"
     >
       
       Relations
     
-    </router-link>
+    </a>
      
     <!---->
      
-    <!---->
+    <statement-as-textarea-stub
+      class="red"
+    />
   </nav>
 </section>
 `;
 
 exports[`@/views/Navigation.vue navigating the application handling statement events posting:true should hide main navigation 1`] = `
 <section
-  class="page posting"
+  class="page"
   id="navigation"
 >
   <header>
@@ -156,23 +150,56 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
   </header>
    
   <nav>
-    <!---->
-     
-    <!---->
-     
-    <!---->
-     
-    <!---->
-     
-    <!---->
-     
-    <button
+    <a
+      class="black"
       tabindex="-1"
     >
-      Done
-    </button>
+      
+      Scott
+    
+    </a>
+     
+    <a
+      class="green"
+      tabindex="-1"
+    >
+      
+      Tonight!
+    
+    </a>
+     
+    <a
+      class="green"
+      tabindex="-1"
+    >
+      
+      Posters
+    
+    </a>
+     
+    <a
+      class="blue"
+      tabindex="-1"
+    >
+      
+      Feed
+    
+    </a>
+     
+    <a
+      class="blue"
+      tabindex="-1"
+    >
+      
+      Relations
+    
+    </a>
      
     <!---->
+     
+    <statement-as-textarea-stub
+      class="red"
+    />
   </nav>
 </section>
 `;

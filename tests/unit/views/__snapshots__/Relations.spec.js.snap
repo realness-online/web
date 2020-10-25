@@ -6,9 +6,11 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
   id="relations"
 >
   <header>
-    <!---->
+    <icon-stub
+      name="nothing"
+    />
      
-    <!---->
+    <logo-as-link-stub />
   </header>
    
   <hgroup>
@@ -21,9 +23,11 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
     class="sign-on message"
   >
     <p>
-      <!---->
+      <sign-on-stub />
        and you can check out 
-      <!---->
+      <icon-stub
+        name="heart"
+      />
        who's on here
     
     </p>

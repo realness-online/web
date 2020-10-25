@@ -1,4 +1,4 @@
-import { shallow, mount } from 'vue-test-utils'
+import { shallowMount, mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
@@ -48,7 +48,7 @@ describe('Syncing Edge data', () => {
     afterEach(() => jest.clearAllMocks())
     describe('Render', () => {
       beforeEach(async () => {
-        wrapper = shallow(sync)
+        wrapper = shallowMount(sync)
         await flushPromises()
       })
       it('Renders sync component', async () => {
@@ -129,7 +129,7 @@ describe('Syncing Edge data', () => {
         it('Calls Event.sync', async () => {
           jest.spyOn(Events.prototype, 'sync')
           .mockImplementationOnce(_ => Promise.resolve(events))
-          wrapper = shallow(sync)
+          wrapper = shallowMount(sync)
           await flushPromises()
           wrapper.vm.sync_paged = jest.fn()
           await wrapper.vm.$nextTick()
@@ -139,14 +139,14 @@ describe('Syncing Edge data', () => {
       })
       describe('#save_statement', () => {
         it('Triggered when statement is set', () => {
-          wrapper = shallow(sync)
+          wrapper = shallowMount(sync)
           const save_spy = jest.spyOn(wrapper.vm, 'save_statement')
           .mockImplementationOnce(_ => Promise.resolve(events))
           wrapper.setProps({ statement: 'I like to move it' })
           expect(save_spy).toBeCalled()
         })
         it('Emits an event after it saves the statement', async () => {
-          wrapper = shallow(sync)
+          wrapper = shallowMount(sync)
           wrapper.setProps({ statement: 'I like to move it' })
           await flushPromises()
           expect(wrapper.emitted('update:statement')).toBeTruthy()
@@ -155,7 +155,7 @@ describe('Syncing Edge data', () => {
       describe('#worker_message', () => {
         const event = {}
         beforeEach(() => {
-          wrapper = shallow(sync)
+          wrapper = shallowMount(sync)
           event.data = { action: '' }
         })
         it('Calls console.warn if event has unknown action', () => {

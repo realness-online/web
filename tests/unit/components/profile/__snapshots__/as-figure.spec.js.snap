@@ -4,15 +4,24 @@ exports[`@/compontent/profile/as-figure.vue Render a person's profile info 1`] =
 <figure
   class="profile"
 >
-  <!---->
+  <as-svg-stub
+    person="[object Object]"
+  />
    
   <figcaption>
-    <!---->
+    <as-hgroup-stub
+      person="[object Object]"
+    />
      
     <menu>
-      <!---->
+      <profile-as-links-stub
+        people=""
+      />
        
-      <!---->
+      <as-relationship-options-stub
+        person="[object Object]"
+        relations=""
+      />
     </menu>
   </figcaption>
 </figure>

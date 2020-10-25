@@ -11,6 +11,8 @@ exports[`@/compontent/profile/as-search.vue Render an input for search 1`] = `
     type="search"
   />
    
-  <!---->
+  <icon-stub
+    name="search"
+  />
 </label>
 `;

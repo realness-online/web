@@ -1,4 +1,4 @@
-import { shallow, createLocalVue } from 'vue-test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
@@ -14,7 +14,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       last_name: 'Fryxell',
       id: '/+16282281823'
     }
-    wrapper = shallow(as_figure, {
+    wrapper = shallowMount(as_figure, {
       propsData: {
         person: person
       }
@@ -39,7 +39,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       const localVue = createLocalVue()
       localVue.use(VueRouter)
       router = new VueRouter()
-      wrapper = shallow(as_figure, {
+      wrapper = shallowMount(as_figure, {
         localVue,
         router,
         propsData: { person }

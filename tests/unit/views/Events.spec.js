@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import itemid from '@/helpers/itemid'
 import Events from '@/views/Events'
 const events = {
@@ -24,7 +24,7 @@ describe('@/views/Events.vue', () => {
                .mockImplementation(_ => events.events)
   })
   it('Renders list of upcoming events', () => {
-    const wrapper = shallow(Events)
+    const wrapper = shallowMount(Events)
     expect(wrapper.element).toMatchSnapshot()
     expect(load).toBeCalled()
   })

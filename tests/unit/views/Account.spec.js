@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
@@ -24,7 +24,7 @@ describe('@/views/Account.vue', () => {
     })
     load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
     list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => Promise.resolve([]))
-    wrapper = shallow(Account)
+    wrapper = shallowMount(Account)
   })
   afterEach(() => {
     localStorage.clear()

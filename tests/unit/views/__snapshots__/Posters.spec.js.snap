@@ -7,7 +7,9 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
 >
   <header>
     <a>
-      <!---->
+      <icon-stub
+        name="add"
+      />
     </a>
      
     <input
@@ -15,7 +17,7 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
       type="file"
     />
      
-    <!---->
+    <logo-as-link-stub />
   </header>
    
   <article>
@@ -25,11 +27,16 @@ exports[`@/views/Posters.vue Rendering Renders ui for posters 1`] = `
       </h1>
        
       <hgroup>
-        <!---->
+        <icon-stub
+          name="working"
+          style="display: none;"
+        />
       </hgroup>
     </header>
      
-    <!---->
+    <as-figure-stub
+      itemid="undefined/posters/1555347888"
+    />
   </article>
    
   <!---->
