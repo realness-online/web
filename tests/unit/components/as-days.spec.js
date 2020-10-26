@@ -12,8 +12,8 @@ describe('@/components/as-days', () => {
   it('Renders though is provided nothing', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('Renders a list of statements sorted into the days they were created', () => {
-    wrapper.setProps({ statements })
+  it('Renders a list of statements sorted into the days they were created', async () => {
+    await wrapper.setProps({ statements })
     expect(wrapper.element).toMatchSnapshot()
     expect([...wrapper.vm.days.entries()].length).toBe(3)
   })
