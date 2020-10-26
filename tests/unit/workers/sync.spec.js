@@ -12,7 +12,7 @@ describe('/workers/sync.js', () => {
   })
   describe('Syncronzing IndexDB:', () => {
     it.todo('uses firebase to determine the last time a person signed in')
-    describe.only('Large', () => {
+    describe.skip('Large', () => {
       it('Checks for anonymous posters', async () => {
         await sync.sync_anonymous_posters(user)
         expect(get).toBeCalled()
