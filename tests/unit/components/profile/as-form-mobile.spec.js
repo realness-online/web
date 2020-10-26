@@ -6,6 +6,7 @@ import flushPromises from 'flush-promises'
 const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
+    id: '/+14151234356',
     first_name: 'Scott',
     last_name: 'Fryxell',
     mobile: '4151234356'
@@ -13,7 +14,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallowMount(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person } })
     })
     it('Render profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
@@ -93,7 +94,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('button#authorize', () => {
     let wrapper, button
     beforeEach(() => {
-      wrapper = shallowMount(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person } })
       button = wrapper.find('#authorize')
     })
     it('Enabled with valid mobile number', () => {
@@ -103,17 +104,17 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       const invalid_person = { mobile: '415123456a' }
       wrapper = shallowMount(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
-      expect(button.is('[disabled]')).toBe(true)
+      expect(button.attributes('disabled')).toBeTruthy()
     })
-    it('Starts captcha verification when clicked', () => {
-      button.trigger('click')
+    it('Starts captcha verification when clicked', async () => {
+      await button.trigger('click')
       expect(wrapper.vm.show_captcha).toBe(true)
       const captcha = wrapper.find('#captcha')
       expect(captcha.exists()).toBe(true)
     })
-    it('Is removed after click', () => {
+    it('Is removed after click', async () => {
       expect(button.exists()).toBe(true)
-      button.trigger('click')
+      await button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(false)
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
@@ -130,7 +131,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         }
       })
       wrapper = shallowMount(as_form, {
-        propsData: { person: person }
+        propsData: { person }
       })
       wrapper.setData({
         show_code: true
@@ -149,12 +150,15 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     let input, stub, wrapper
     beforeEach(() => {
       wrapper = shallowMount(as_form, {
-        propsData: { person: person }
+        propsData: { person },
+        data () {
+          return {
+            show_code: true,
+            code: '12345'
+          }
+        }
       })
-      wrapper.setData({
-        show_code: true,
-        code: '12345'
-      })
+
       input = wrapper.find('#verification-code')
       stub = jest.fn()
     })
@@ -187,25 +191,23 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     beforeEach(() => {
       confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
       wrapper = shallowMount(as_form, {
-        propsData: {
-          person: person
-        }
-      })
-      wrapper.setData({
-        show_code: true,
-        authorizer: {
-          confirm: confirm_spy
+        propsData: { person },
+        data () {
+          return {
+            show_code: true,
+            authorizer: { confirm: confirm_spy }
+          }
         }
       })
       button = wrapper.find('#submit-verification')
     })
-    it('button#submit-verification signs the user in', () => {
-      button.trigger('click')
+    it('button#submit-verification signs the user in', async () => {
+      await button.trigger('click')
       expect(confirm_spy).toBeCalled()
     })
-    it('Hides input#verification-code when clicked', () => {
+    it('Hides input#verification-code when clicked', async () => {
       expect(wrapper.find('#verification-code').exists()).toBe(true)
-      button.trigger('click')
+      await button.trigger('click')
       expect(wrapper.find('#verification-code').exists()).toBe(false)
       expect(wrapper.vm.show_code).toBe(false)
     })

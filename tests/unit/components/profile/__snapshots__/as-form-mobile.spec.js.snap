@@ -8,9 +8,9 @@ exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile for
     id="phone"
   >
     <legend
-      class=""
+      class="valid"
     >
-      Mobile
+      (415) 123-4356
     </legend>
      
     <label
@@ -33,7 +33,6 @@ exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile for
    
   <menu>
     <button
-      disabled="disabled"
       id="authorize"
       tabindex="5"
     >
