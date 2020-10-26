@@ -12,6 +12,7 @@ describe('@/App.vue', () => {
   })
   afterEach(() => {
     firebase.initializeApp.mockClear()
+    wrapper.destroy()
   })
   it('Renders layout of the application', () => {
     expect(wrapper.element).toMatchSnapshot()
