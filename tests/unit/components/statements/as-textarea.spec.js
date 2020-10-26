@@ -14,9 +14,11 @@ describe('@/components/statements/as-textarea.vue', () => {
     })
     it('Only triggers a statement event when there is text', () => {
       const wrapper = shallowMount(wat, {
-        data: {
-          statements: [],
-          new_statement: ''
+        data() {
+          return {
+            statements: [],
+            new_statement: ''
+          }
         }
       })
       expect(wrapper.vm.statements.length).toBe(0)
@@ -43,8 +45,10 @@ describe('@/components/statements/as-textarea.vue', () => {
     })
     it('Emits a statement-added event when there is text', () => {
       const wrapper = shallowMount(wat, {
-        data: {
-          new_statement: 'I like to move it.'
+        data() {
+          return {
+            new_statement: 'I like to move it.'
+          }
         }
       })
       const textarea = wrapper.find('#wat')
