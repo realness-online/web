@@ -32,11 +32,11 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
         Zero
       </span>
        public events. You create events from 
-      <router-link
+      <router-link-stub
         to="/posters"
       >
         Posters
-      </router-link>
+      </router-link-stub>
       .
     </p>
      

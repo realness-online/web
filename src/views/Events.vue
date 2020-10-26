@@ -44,7 +44,6 @@
     },
     async created () {
       console.time('events-load')
-      console.info(`Views realness version ${this.version}`)
       this.events = await this.get_upcoming_events()
       this.working = false
       console.timeEnd('events-load')
