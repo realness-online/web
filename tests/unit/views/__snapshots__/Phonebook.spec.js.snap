@@ -10,13 +10,13 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
       name="nothing"
     />
      
-    <router-link
+    <router-link-stub
       to="/relations"
     >
       <icon-stub
         name="finished"
       />
-    </router-link>
+    </router-link-stub>
   </header>
    
   <hgroup>

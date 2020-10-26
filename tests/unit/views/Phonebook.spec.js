@@ -9,7 +9,9 @@ const person = {
 describe('@/views/Phonebook', () => {
   it('Render the phonebook', () => {
     jest.spyOn(itemid, 'load').mockImplementationOnce(_ => person)
-    const wrapper = shallowMount(phonebook)
+    const wrapper = shallowMount(phonebook, {
+      stubs: ['router-link']
+    })
     expect(wrapper.element).toMatchSnapshot()
   })
 })
