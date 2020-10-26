@@ -14,7 +14,13 @@ describe('@/compontent/posters/as-figure.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('a new poster', () => {
-      wrapper = shallowMount(as_figure, { propsData: { new_poster: poster, is_new: true } })
+      wrapper = shallowMount(as_figure, {
+        propsData: {
+          itemid: poster.id,
+          new_poster: poster,
+          is_new: true
+        }
+      })
       expect(wrapper.element).toMatchSnapshot()
     })
   })

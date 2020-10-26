@@ -10,6 +10,7 @@ exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
   />
    
   <as-svg-stub
+    itemid="/+16282281824/posters/559666932867"
     poster="[object Object]"
   />
    
@@ -18,6 +19,7 @@ exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
      
     <poster-menu-stub
       is_new="true"
+      itemid="/+16282281824/posters/559666932867"
     />
   </figcaption>
 </figure>
