@@ -27,8 +27,13 @@ describe('@/compontent/profile/as-figure.vue', () => {
     it('Render the users avatar', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).toBeFalsy()
-      person.avatar = avatar_mock
-      wrapper.setProps({ person: person })
+      const new_person = {
+        first_name: 'Scott',
+        last_name: 'Fryxell',
+        id: '/+16282281823',
+        avatar: avatar_mock
+      }
+      wrapper.setProps({ person: new_person })
       avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).not.toBeTruthy()
     })
@@ -51,7 +56,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
     })
     it('When is_me is true should go to the account page', () => {
       localStorage.me = person.id
-      wrapper.setProps({ person })
       wrapper.vm.avatar_click()
       expect(wrapper.vm.$route.path).toBe('/account')
     })
