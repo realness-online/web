@@ -138,11 +138,11 @@ describe('Syncing Edge data', () => {
         })
       })
       describe('#save_statement', () => {
-        it('Triggered when statement is set', () => {
+        it('Triggered when statement is set', async () => {
           wrapper = shallowMount(sync)
           const save_spy = jest.spyOn(wrapper.vm, 'save_statement')
           .mockImplementationOnce(_ => Promise.resolve(events))
-          wrapper.setProps({ statement: 'I like to move it' })
+          await wrapper.setProps({ statement: 'I like to move it' })
           expect(save_spy).toBeCalled()
         })
         it('Emits an event after it saves the statement', async () => {
