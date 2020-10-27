@@ -42,6 +42,11 @@ export async function syncronize (current_user) {
     console.timeEnd('sync:indexdb')
   }
 }
+
+export async function should_sync () {
+  return true
+}
+
 export async function sync_offline () {
   const offline = await get('offline')
   if (!offline) return

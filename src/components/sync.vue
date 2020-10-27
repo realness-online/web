@@ -79,6 +79,9 @@
           window.addEventListener('online', this.online)
         }
       },
+      online () {
+        this.syncer.postMessage({ action: 'syncronize' })
+      },
       async save_statement () {
         const itemid = this.itemid('statements')
         this.statements = await list(itemid)
@@ -91,9 +94,6 @@
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`
         else return `${localStorage.me}`
-      },
-      online () {
-        this.syncer.postMessage({ action: 'check' })
       },
       async worker_message (message) {
         console.time('worker:message')
