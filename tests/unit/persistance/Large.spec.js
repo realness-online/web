@@ -17,9 +17,9 @@ describe('@/persistance/Large.js', () => {
       expect(pic.save).toBeDefined()
     })
     it('retrieves and ads to an already existing directory', async () => {
-      const mock_get = get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+      get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
       await pic.save(poster)
-      expect(mock_get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledTimes(2)
     })
     it('Saves items to indexdb', async () => {
@@ -37,9 +37,9 @@ describe('@/persistance/Large.js', () => {
       expect(pic.delete).toBeDefined()
     })
     it('Removes item from local directory', async () => {
-      const mock_get = get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+      get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
       await pic.delete(poster)
-      expect(mock_get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
       expect(del).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledTimes(1)
     })
