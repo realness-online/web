@@ -1,11 +1,11 @@
 const get_mock = jest.fn(itemid => {
-  return 'some stufffff!!!!!!!!!!!!!!!'
+  return Promise.resolve({})
 })
 const set_mock = jest.fn((key, value) => {
-  return true
+  return Promise.resolve(null)
 })
 const delete_mock = jest.fn((key) => {
-  return key
+  return Promise.resolve(null)
 })
 const keys_mock = jest.fn(() => {
   return Promise.resolve([])
