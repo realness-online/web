@@ -6,13 +6,65 @@ const user = { phoneNumber: '+16282281824' }
 describe('/workers/sync.js', () => {
   // The application loads the data
   // the syncronizer deletes what's stale
-  it('syncronize exists', async () => {
-    await sync.syncronize(user)
-    expect(sync.syncronize).toBeDefined()
+  describe('methods', () => {
+    describe('#message_listener', () => {
+      it('Exists', () => {
+        expect(sync.message_listener).toBeDefined()
+      })
+      it('Complains without an action', () => {
+        const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+        sync.message_listener({
+          data: {}
+        })
+        expect(spy).toBeCalled()
+      })
+      describe('Actions', () => {
+        it('sync:initialize', () => {
+          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+          sync.message_listener({
+            data: {
+              action: 'sync:initialize',
+              env: {}
+            }
+          })
+          expect(spy).not.toBeCalled()
+        })
+        it('sync:people', () => {
+          get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+          sync.message_listener({
+            data: {
+              action: 'sync:people'
+            }
+          })
+          expect(spy).not.toBeCalled()
+          expect(get).toBeCalled()
+          expect(set).toBeCalled()
+        })
+        it('sync:offline', () => {
+          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+          sync.message_listener({
+            data: {
+              action: 'sync:offline'
+            }
+          })
+          expect(spy).not.toBeCalled()
+        })
+        it('sync:anonymous', () => {
+          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+          sync.message_listener({
+            data: {
+              action: 'sync:anonymous'
+            }
+          })
+          expect(spy).not.toBeCalled()
+        })
+      })
+    })
   })
   describe('Syncronzing IndexDB:', () => {
     it.todo('uses firebase to determine the last time a person signed in')
-    describe('Large', () => {
+    describe.skip('Large', () => {
       it('Checks for anonymous posters', async () => {
         await sync.sync_anonymous_posters(user)
         expect(get).toBeCalled()

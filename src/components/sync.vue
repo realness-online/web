@@ -103,6 +103,8 @@
             return await this.sync_events()
           case 'sync:statements':
             return await this.sync_statements()
+          case 'save:poster':
+            return await this.save_poster(message.data.poster)
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
@@ -140,6 +142,22 @@
             set('hash-index', index)
           }
         }
+      }
+
+      async save_poster (poster) {
+        this.posters = posters
+        await this.$nextTick()
+        await Promise.all(this.posters.map(async (poster) => {
+          const created_at = as_created_at(poster.id)
+          const new_poster = new Poster(poster.id)
+          await new_poster.save()
+          await del(`/+/posters/${created_at}`)
+          offline_posters.items = offline_posters.items.filter(when => {
+            return parseInt(when) !== created_at
+          })
+          await set('/+/posters/', offline_posters)
+        }))
+        this.posters = []
       }
     }
   }
