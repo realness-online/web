@@ -42,29 +42,45 @@ export function initialize (credentials) {
     }
   })
 }
-const five_seconds = 1000 * 5
-// const one_minuite = five_seconds * 12
-// const five_minutes = five_seconds * one_minuite // 300000
-async function is_outdated (itemid, what_I_know) {
-  const path = as_filename(itemid)
-  const meta = await firebase.storage().ref().child(path).get_metadata()
-  console.log(meta)
-  if (meta.updated > what_I_know[itemid].updated) return true
-  else return false
-}
-
-export async function people (me = firebase.auth().currentUser, check_everyone = false) {
+export async function offline (me = firebase.auth().currentUser) {
   if (navigator.onLine && me) {
-    console.time('sync:people')
-    const people = await list_people()
-    await check_people(people, check_everyone)
-    console.timeEnd('sync:people')
-    setTimeout(async () => { // Call myself in the future
-      const is_peering = await get('sync:peer-connected')
-      if (!is_peering) await people()
-    }, five_seconds)
+    const offline = await get('offline')
+    while (offline.length) {
+      const item = offline.pop()
+      if (item.action === 'save') await new Offline(item.id).save()
+      else if (item.action === 'delete') await new Offline(item.id).delete()
+      else console.info('weird:unknown-offline-action', item.action, item.id)
+    }
+    await del('offline')
   }
 }
+export async function anonymous (me = firebase.auth().currentUser) {
+  if (navigator.onLine && me) {
+    const offline_posters = await get('/+/posters/')
+    if (!offline_posters.items) return
+    await Promise.all(offline_posters.items.map(async (created_at) => {
+      const poster_as_string = await get(`/+/posters/${created_at}`)
+      const poster = get_item(poster_as_string)
+      poster.id = `${from_e64(me.phoneNumber)}/posters/${created_at}`
+      self.postMessage({ action: 'save:poster', poster }, '*')
+      await del(`/+/posters/${created_at}`)
+    }))
+    await del('/+/posters/')
+  }
+}
+export async function people (me = firebase.auth().currentUser, check_everyone = false) {
+  if (!navigator.onLine || !me) return
+  console.time('sync:people')
+  const people = await list_people()
+  await check_people(people, check_everyone)
+  console.timeEnd('sync:people')
+  setTimeout(async () => { // Call myself in the future
+    const is_peering = await get('sync:peer-connected')
+    if (!is_peering) await people()
+  }, five_seconds)
+}
+
+// Local functions
 async function list_people () {
   const full_list = await keys()
   return full_list.filter(id => {
@@ -95,32 +111,13 @@ function prune_person (itemid, what_I_know) {
   }
 }
 
-export async function offline (me = firebase.auth().currentUser) {
-  if (navigator.onLine && me) {
-    const offline = await get('offline')
-    if (!offline) return
-    while (offline.length) {
-      const item = offline.pop()
-      if (item.action === 'save') await new Offline(item.id).save()
-      else if (item.action === 'delete') await new Offline(item.id).delete()
-      else console.info('weird:unknown-offline-action', item.action, item.id)
-    }
-    await del('offline')
-  }
-}
-export async function anonymous (me = firebase.auth().currentUser) {
-  const offline_posters = await get('/+/posters/')
-  if (!offline_posters || !offline_posters.items) return
-  const posters = []
-  await Promise.all(offline_posters.items.map(async (created_at) => {
-    const poster_as_string = await get(`/+/posters/${created_at}`)
-    const poster = get_item(poster_as_string)
-    poster.id = `${from_e64(me.phoneNumber)}/posters/${created_at}`
-    posters.push(poster)
-  }))
-  if (posters.length) {
-    posters.each(poster => {
-      self.postMessage({ action: 'save:poster', poster })
-    })
-  }
+const five_seconds = 1000 * 5
+// const one_minuite = five_seconds * 12
+// const five_minutes = five_seconds * one_minuite // 300000
+async function is_outdated (itemid, what_I_know) {
+  const path = as_filename(itemid)
+  const meta = await firebase.storage().ref().child(path).get_metadata()
+  console.log(meta)
+  if (meta.updated > what_I_know[itemid].updated) return true
+  else return false
 }

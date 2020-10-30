@@ -1,9 +1,17 @@
 import * as sync from '@/workers/sync'
 import { get, set, del } from 'idb-keyval'
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+import 'firebase/storage'
+import { Offline } from '@/persistance/Storage'
 const fs = require('fs')
 const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
+
 describe('/workers/sync.js', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
   // The application loads the data
   // the syncronizer deletes what's stale
   describe('methods', () => {
@@ -38,8 +46,6 @@ describe('/workers/sync.js', () => {
             }
           })
           expect(spy).not.toBeCalled()
-          expect(get).toBeCalled()
-          expect(set).toBeCalled()
         })
         it('sync:offline', () => {
           const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
@@ -61,13 +67,70 @@ describe('/workers/sync.js', () => {
         })
       })
     })
-  })
-  describe('Syncronzing IndexDB:', () => {
-    it.todo('uses firebase to determine the last time a person signed in')
-    describe.skip('Large', () => {
-      it('Checks for anonymous posters', async () => {
-        await sync.sync_anonymous_posters(user)
+    describe('#initialize', () => {
+      it.only('Calls sync methods when online and signed in', async () => {
+        firebase.user = user
+        await sync.initialize({})
+        expect(firebase.auth_mock.onAuthStateChanged).toBeCalled()
+        firebase.user = null
+      })
+    })
+    describe('#offline', () => {
+      it('Needs to be signed in', async () => {
+        await sync.offline()
+        expect(get).not.toBeCalled()
+      })
+      it('Needs to be online', () => {
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        sync.offline(auth.currentUser)
+        expect(get).not.toBeCalled()
+      })
+      it('Saves offline content', async () => {
+        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        const spy = jest.spyOn(Offline.prototype, 'save')
+        get.mockImplementation(_ => Promise.resolve([
+          { action: 'save', id: '/+6282281824/posters/1555347888' }
+        ]))
+        await sync.offline()
         expect(get).toBeCalled()
+        expect(spy).toBeCalled()
+        expect(del).toBeCalled()
+      })
+      it('Deletes offline content', async () => {
+        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        const spy = jest.spyOn(Offline.prototype, 'delete')
+        get.mockImplementation(_ => Promise.resolve([
+          { action: 'delete', id: '/+6282281824/posters/1555347888' }
+        ]))
+        await sync.offline()
+        expect(get).toBeCalled()
+        expect(spy).toBeCalled()
+        expect(del).toBeCalled()
+      })
+      it('Logs info when an action is unclear', async () => {
+        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        get.mockImplementation(_ => Promise.resolve([
+          { action: 'weirdo', id: '/+6282281824/posters/1555347888' }
+        ]))
+        await sync.offline()
+
+        expect(console.info).toBeCalled()
+      })
+    })
+    describe('#anonymous', () => {
+      it('Needs to be signed in', async () => {
+        await sync.anonymous()
+        expect(get).not.toBeCalled()
+      })
+      it('Needs to be online', () => {
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        sync.anonymous(auth.currentUser)
+        expect(get).not.toBeCalled()
+      })
+      it('handles no posters', async () => {
+        await sync.anonymous(auth.currentUser)
+        expect(get).toBeCalled()
+        expect(del).not.toBeCalled()
       })
       it('Syncs anonymous posters', async () => {
         // /+16282281824/posters/559666932867
@@ -79,32 +142,18 @@ describe('/workers/sync.js', () => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
           else return Promise.resolve(offline_poster)
         })
-        expect(get).toHaveBeenCalledTimes(0)
-        await sync.sync_anonymous_posters(user)
-        expect(get).toHaveBeenCalledTimes(3)
-        expect(del).toBeCalled()
-        expect(set).toBeCalled()
+        await sync.anonymous(auth.currentUser)
+        expect(get).toHaveBeenCalledTimes(2)
+        expect(del).toHaveBeenCalledTimes(2)
       })
     })
-    it.todo('Syncs posters created while signed in but offline')
-    it.todo('gets a list of my relations')
-    it.todo('knows when each of my relations last logged in')
-    it.todo('Deletes recent users posters directories')
-    it.todo('Keeps track of how old items are')
-    it.todo('Checks if a resourse has been updated')
-    it.todo('Removes any items that are no longer in sync with what is current')
   })
   // these are all post release
-  describe('Frequency:', () => {
-    it.todo('Checks every 5 minutes for updates from users who have posted recently')
-    it.todo('Will rely on peer to peer for updates sooner than five minutes')
-  })
   describe('Pruning the verge', () => {
     it.todo('App is mindfull of how large the local databese is getting')
     it.todo('Removes posters that are no longer in the directory')
     it.todo('Ocasionally prunes people I am not following (from local feed)')
     it.todo('Ocasionally prunes people I am following who haven\'t posted in a while (dead accounts)')
-    it.todo('Deletes older posters and user history to guarantee database tolerances')
   })
   describe('Peer syncing:', () => {
     it.todo('Connects to available peer')
