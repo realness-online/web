@@ -16,7 +16,7 @@
 </template>
 <script>
   import { newer_date_first } from '@/helpers/sorting'
-  import date_helper from '@/helpers/date'
+  import { id_as_day, as_day } from '@/helpers/date'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
   export default {
@@ -82,8 +82,8 @@
       },
       insert_into_day (item, days) {
         let day_name
-        if (item.id) day_name = date_helper.id_as_day(item.id) // posters
-        else day_name = date_helper.id_as_day(item[0].id) // thoughts
+        if (item.id) day_name = id_as_day(item.id) // posters
+        else day_name = id_as_day(item[0].id) // thoughts
         const day = days.get(day_name)
         if (day && this.is_today(day_name)) day.unshift(item)
         else if (day) day.push(item)
@@ -94,7 +94,7 @@
         else return false
       },
       as_day (date) {
-        return date_helper.as_day(date)
+        return as_day(date)
       }
     }
   }
