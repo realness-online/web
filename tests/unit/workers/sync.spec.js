@@ -1,5 +1,5 @@
 import * as sync from '@/workers/sync'
-import { get, set, del } from 'idb-keyval'
+import { get, del, keys } from 'idb-keyval'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -10,6 +10,7 @@ const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
   beforeEach(() => {
+    firebase.user = null
     jest.clearAllMocks()
   })
   // The application loads the data
@@ -68,7 +69,7 @@ describe('/workers/sync.js', () => {
       })
     })
     describe('#initialize', () => {
-      it.only('Calls sync methods when online and signed in', async () => {
+      it('Calls sync methods when online and signed in', async () => {
         firebase.user = user
         await sync.initialize({})
         expect(firebase.auth_mock.onAuthStateChanged).toBeCalled()
@@ -82,11 +83,11 @@ describe('/workers/sync.js', () => {
       })
       it('Needs to be online', () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.offline(auth.currentUser)
+        sync.offline(user)
         expect(get).not.toBeCalled()
       })
       it('Saves offline content', async () => {
-        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'save')
         get.mockImplementation(_ => Promise.resolve([
           { action: 'save', id: '/+6282281824/posters/1555347888' }
@@ -97,7 +98,7 @@ describe('/workers/sync.js', () => {
         expect(del).toBeCalled()
       })
       it('Deletes offline content', async () => {
-        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'delete')
         get.mockImplementation(_ => Promise.resolve([
           { action: 'delete', id: '/+6282281824/posters/1555347888' }
@@ -108,12 +109,11 @@ describe('/workers/sync.js', () => {
         expect(del).toBeCalled()
       })
       it('Logs info when an action is unclear', async () => {
-        jest.spyOn(firebase, 'auth').mockImplementation(_ => auth)
+        firebase.user = user
         get.mockImplementation(_ => Promise.resolve([
           { action: 'weirdo', id: '/+6282281824/posters/1555347888' }
         ]))
         await sync.offline()
-
         expect(console.info).toBeCalled()
       })
     })
@@ -124,11 +124,11 @@ describe('/workers/sync.js', () => {
       })
       it('Needs to be online', () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.anonymous(auth.currentUser)
+        sync.anonymous(user)
         expect(get).not.toBeCalled()
       })
       it('handles no posters', async () => {
-        await sync.anonymous(auth.currentUser)
+        await sync.anonymous(user)
         expect(get).toBeCalled()
         expect(del).not.toBeCalled()
       })
@@ -142,13 +142,32 @@ describe('/workers/sync.js', () => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
           else return Promise.resolve(offline_poster)
         })
-        await sync.anonymous(auth.currentUser)
+        await sync.anonymous(user)
         expect(get).toHaveBeenCalledTimes(2)
         expect(del).toHaveBeenCalledTimes(2)
       })
     })
+    describe('#people', () => {
+      it('Needs to be signed in', () => {
+        sync.people()
+        expect(keys).not.toBeCalled()
+      })
+      it('Prunes people with outdated info', async () => {
+        //  for failure ['/+1/posters/559666932867']
+        const mock_keys = ['/+16282281824']
+        const index = {
+          '/+16282281824': {
+            updated: 'Oct 12, 2020, 10:54:24 AM'
+          }
+        }
+        keys.mockImplementationOnce(() => Promise.resolve(mock_keys))
+        get.mockImplementationOnce(id => Promise.resolve(index))
+        await sync.people(user)
+        expect(keys).toBeCalled()
+        expect(get).toBeCalled()
+      })
+    })
   })
-  // these are all post release
   describe('Pruning the verge', () => {
     it.todo('App is mindfull of how large the local databese is getting')
     it.todo('Removes posters that are no longer in the directory')
