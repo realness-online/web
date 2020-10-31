@@ -15,7 +15,8 @@ function storage () {
             put: put_mock,
             getDownloadURL: getDownloadURL_mock,
             listAll: listAll_mock,
-            delete: delete_mock
+            delete: delete_mock,
+            getMetadata: jest.fn()
           }
         })
       }
