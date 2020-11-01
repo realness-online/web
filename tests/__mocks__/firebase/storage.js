@@ -14,9 +14,7 @@ firebase.storage_mock = {
 const meta_methods = {
   ref: jest.fn(() => {
     return {
-      child: jest.fn(path => {
-        return firebase.storage_mock
-      })
+      child: jest.fn(path => firebase.storage_mock)
     }
   })
 }
