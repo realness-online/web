@@ -69,15 +69,16 @@ export async function anonymous (me = firebase.auth().currentUser) {
   }
 }
 export async function people (me = firebase.auth().currentUser, check_everyone = false) {
-  if (!navigator.onLine || !me) return
-  console.time('sync:people')
-  const people = await list_people()
-  await check_people(people, check_everyone)
-  console.timeEnd('sync:people')
-  setTimeout(async () => { // Call myself in the future
-    const is_peering = await get('sync:peer-connected')
-    if (!is_peering) await people()
-  }, five_seconds)
+  if (navigator.onLine && me) {
+    console.time('sync:people')
+    const people = await list_people()
+    await check_people(people, check_everyone)
+    console.timeEnd('sync:people')
+    setTimeout(async () => { // Call myself in the future
+      const is_peering = await get('sync:peer-connected')
+      if (!is_peering) await people()
+    }, five_seconds)
+  }
 }
 
 // Local functions
@@ -87,27 +88,34 @@ async function list_people () {
     return as_type(id) === 'person'
   })
 }
-async function check_people (people, check_everyone = false) {
+async function check_people (people, check_everyone) {
   const what_I_know = await get('index')
-  people.forEach(async (id) => {
-    const person = get_item(await get(id))
-    if (check_everyone) prune_person(id, what_I_know)
-    else if (is_today(person.last_visit)) prune_person(id, what_I_know)
+  console.log(what_I_know)
+  people.forEach(async (itemid) => {
+    const meta = what_I_know[itemid]
+    if (check_everyone) prune_person(itemid, what_I_know)
+    else if (is_today(meta.updated)) prune_person(itemid, what_I_know)
     // check when each user last updated
   })
 }
-function prune_person (itemid, what_I_know) {
+async function prune_person (itemid, what_I_know) {
   del(`${itemid}/posters/`) // Remove local cache of posters direcrory
-  if (is_outdated(itemid, what_I_know)) {
+  const statements = `${itemid}/statements`
+  const events = `${itemid}/events`
+
+  if (await is_outdated(itemid, what_I_know)) {
+    console.log(itemid, 'is outdated')
     del(itemid)
   }
-  if (is_outdated(`${itemid}/statements`, what_I_know)) {
-    del(`${itemid}/statements`) // Delete statements index
-    del(`${itemid}/statements/`)
+  if (await is_outdated(statements, what_I_know)) {
+    console.log(statements, 'is outdated')
+    del(statements) // Delete statements index
+    del(`${statements}/`)
   }
-  if (is_outdated(`${itemid}/events`, what_I_know)) {
-    del(`${itemid}/events`)
-    del(`${itemid}/events/`)
+  if (await is_outdated(events, what_I_know)) {
+    console.log(events, 'is outdated')
+    del(events)
+    del(`${events}/`)
   }
 }
 
@@ -115,9 +123,15 @@ const five_seconds = 1000 * 5
 // const one_minuite = five_seconds * 12
 // const five_minutes = five_seconds * one_minuite // 300000
 async function is_outdated (itemid, what_I_know) {
+  console.log('fuck you', itemid, what_I_know)
   const path = as_filename(itemid)
-  const meta = await firebase.storage().ref().child(path).get_metadata()
-  console.log(meta)
-  if (meta.updated > what_I_know[itemid].updated) return true
+  const network = await firebase.storage().ref().child(path).getMetadata()
+  console.log(network);
+  const local = what_I_know[itemid]
+  if (!local) what_I_know[itemid] = network
+  const local_time = new Date(what_I_know[itemid].updated).getTime()
+  const network_time = new Date(network.updated).getTime()
+  console.log(network_time > local_time)
+  if (network_time > local_time) return true
   else return false
 }

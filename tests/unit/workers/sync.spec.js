@@ -154,17 +154,59 @@ describe('/workers/sync.js', () => {
       })
       it('Prunes people with outdated info', async () => {
         //  for failure ['/+1/posters/559666932867']
-        const mock_keys = ['/+16282281824']
+        const ids = ['/+16282281824']
         const index = {
           '/+16282281824': {
             updated: 'Oct 12, 2020, 10:54:24 AM'
           }
         }
-        keys.mockImplementationOnce(() => Promise.resolve(mock_keys))
-        get.mockImplementationOnce(id => Promise.resolve(index))
+        const meta = {
+          updated: 'Oct 12, 2020, 10:54:24 AM'
+        }
+        keys.mockImplementationOnce(() => Promise.resolve(ids))
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         await sync.people(user)
         expect(keys).toBeCalled()
         expect(get).toBeCalled()
+      })
+
+      it('Can force a check to happen', async () => {
+        const ids = ['/+16282281824']
+        const index = {
+          '/+16282281824': {
+            updated: 'Oct 12, 2020, 10:54:24 AM'
+          }
+        }
+        const meta = {
+          updated: 'Oct 14, 2020, 10:54:24 AM'
+        }
+        keys.mockImplementationOnce(() => Promise.resolve(ids))
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+        await sync.people(user, true)
+      })
+
+      it('Will check all of the persons files for updates', async () => {
+        const ids = ['/+16282281824']
+        const index = {
+          '/+16282281824': {
+            updated: 'Oct 12, 2020, 10:54:24 AM'
+          },
+          '/+16282281824/statements': {
+            updated: 'Oct 18, 2020, 10:54:24 AM'
+          },
+          '/+16282281824/events': {
+            updated: 'Oct 22, 2020, 10:54:24 AM'
+          }
+        }
+        const meta = {
+          updated: 'Oct 28, 2020, 10:54:24 AM'
+        }
+        keys.mockImplementationOnce(() => Promise.resolve(ids))
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+        await sync.people(user, true)
       })
     })
   })
