@@ -1,9 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
 import flushPromises from 'flush-promises'
-const onAuthStateChanged = jest.fn(state_changed => state_changed())
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     id: '/+14151234356',
@@ -121,15 +118,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
   })
   describe('#text_human_verify_code', () => {
-    let wrapper, signInWithPhoneNumber
+    let wrapper
     beforeEach(() => {
-      signInWithPhoneNumber = jest.fn(() => Promise.resolve('success'))
-      jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-        return {
-          signInWithPhoneNumber,
-          onAuthStateChanged
-        }
-      })
       wrapper = shallowMount(as_form, {
         propsData: { person }
       })

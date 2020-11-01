@@ -4,7 +4,7 @@ import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-const currentUser = {
+const user = {
   phoneNumber: '+16282281824'
 }
 const person = {
@@ -16,15 +16,13 @@ const person = {
 describe('@/components/avatars/as-form.vue', () => {
   let wrapper
   beforeEach(() => {
-    const onAuthStateChanged = jest.fn(state_changed => {
-      state_changed(currentUser)
-    })
-    jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-      return { onAuthStateChanged }
-    })
+    firebase.user = user
     wrapper = shallowMount(as_form, {
       propsData: { person }
     })
+  })
+  afterEach(() => {
+    firebase.user = null
   })
   it('Render avatar manager', () => {
     expect(wrapper.element).toMatchSnapshot()

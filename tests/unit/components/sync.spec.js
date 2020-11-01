@@ -2,8 +2,6 @@ import { shallowMount, mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
 import get_item from '@/modules/item'
 import {
   Statements,
@@ -23,12 +21,6 @@ describe('Syncing Edge data', () => {
       phoneNumber: '+16282281824'
     }
     beforeEach(async () => {
-      const onAuthStateChanged = jest.fn(state_changed => {
-        state_changed(current_user)
-      })
-      jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-        return { onAuthStateChanged }
-      })
       localStorage.me = `/${current_user.phoneNumber}`
       jest.spyOn(Statements.prototype, 'sync').mockImplementation(_ => {
         return Promise.resolve(statements)
@@ -88,12 +80,6 @@ describe('Syncing Edge data', () => {
           expect(set).toBeCalled()
         })
         it('doesn\'t sync if the hash codes are the same', async () => {
-          const onAuthStateChanged = jest.fn(state_changed => {
-            state_changed(null)
-          })
-          jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-            return { onAuthStateChanged }
-          })
           index['/+16282281824/statements'] = '-209695279'
           get.mockClear()
           get.mockImplementationOnce(_ => Promise.resolve(index))
