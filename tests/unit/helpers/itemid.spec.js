@@ -172,11 +172,9 @@ describe('@/helpers/itemid', () => {
         firebase.user = null
       })
       it('Returns null if not online and not found locally directory', async () => {
-        const mock_get = get.mockImplementationOnce(_ => Promise.resolve(null))
-        const online_getter = jest.spyOn(window.navigator, 'onLine', 'get')
-        online_getter.mockReturnValue('false')
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         const directory = await as_directory('/+/posters/')
-        expect(mock_get).toBeCalled()
+        expect(get).toBeCalled()
         expect(directory).toBe(null)
       })
     })
