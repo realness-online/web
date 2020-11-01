@@ -90,7 +90,6 @@ async function list_people () {
 }
 async function check_people (people, check_everyone) {
   const what_I_know = await get('index')
-  console.log(what_I_know)
   people.forEach(async (itemid) => {
     const meta = what_I_know[itemid]
     if (check_everyone) prune_person(itemid, what_I_know)
@@ -104,16 +103,13 @@ async function prune_person (itemid, what_I_know) {
   const events = `${itemid}/events`
 
   if (await is_outdated(itemid, what_I_know)) {
-    console.log(itemid, 'is outdated')
     del(itemid)
   }
   if (await is_outdated(statements, what_I_know)) {
-    console.log(statements, 'is outdated')
     del(statements) // Delete statements index
     del(`${statements}/`)
   }
   if (await is_outdated(events, what_I_know)) {
-    console.log(events, 'is outdated')
     del(events)
     del(`${events}/`)
   }
@@ -123,15 +119,12 @@ const five_seconds = 1000 * 5
 // const one_minuite = five_seconds * 12
 // const five_minutes = five_seconds * one_minuite // 300000
 async function is_outdated (itemid, what_I_know) {
-  console.log('fuck you', itemid, what_I_know)
   const path = as_filename(itemid)
   const network = await firebase.storage().ref().child(path).getMetadata()
-  console.log(network);
   const local = what_I_know[itemid]
   if (!local) what_I_know[itemid] = network
   const local_time = new Date(what_I_know[itemid].updated).getTime()
   const network_time = new Date(network.updated).getTime()
-  console.log(network_time > local_time)
   if (network_time > local_time) return true
   else return false
 }
