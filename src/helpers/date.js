@@ -32,13 +32,13 @@ export function as_time (date, format = format_as_time) {
 export function as_day (date) {
   let day
   if (Date.parse(date) < this_year) {
-    day = this.as_time(date, format_as_day_and_year)
-  } else day = this.as_time(date, format_as_day)
-  if (this.is_same_day(date, new Date())) day = 'Today'
+    day = as_time(date, format_as_day_and_year)
+  } else day = as_time(date, format_as_day)
+  if (is_same_day(date, new Date())) day = 'Today'
   return day
 }
 export function as_day_and_time (date) {
-  return this.as_time(date, format_as_day_and_time)
+  return as_time(date, format_as_day_and_time)
 }
 export function is_same_day (d1, d2) {
   d1 = new Date(d1)
@@ -51,7 +51,7 @@ export function day_name (date) {
   return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
 }
 export function id_as_day (itemid) {
-  return this.day_name(as_created_at(itemid))
+  return day_name(as_created_at(itemid))
 }
 export function is_today (date) {
   return true
