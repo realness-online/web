@@ -1,3 +1,5 @@
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
 import { get, set } from 'idb-keyval'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
@@ -8,6 +10,7 @@ const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync('./tests/unit/html/statements-hella.html', 'utf8')
 const offline_statements = fs.readFileSync('./tests/unit/html/statements-offline.html', 'utf8')
+const user = { phoneNumber: '/+16282281824' }
 describe('@/persistance/Paged.js', () => {
   let paged
   beforeEach(() => {
@@ -36,6 +39,7 @@ describe('@/persistance/Paged.js', () => {
       expect(paged.sync).toBeDefined()
     })
     it('Syncs statements from server to local storage', async () => {
+      firebase.user = user
       const list = await paged.sync()
       expect(cloud_spy).toBeCalled()
       expect(local_spy).toBeCalled()
@@ -48,6 +52,7 @@ describe('@/persistance/Paged.js', () => {
       // 20 optimized away, 70 new local statements, 10 unsynced statements in the cloud
       // 1 statement that was made while anonymous
       expect(list.length).toBe(91)
+      firebase.user = null
     })
     it('syncs if there are no server items', async () => {
       cloud_spy = jest.spyOn(itemid, 'load_from_network')
@@ -75,6 +80,7 @@ describe('@/persistance/Paged.js', () => {
       expect(paged.optimize).toBeDefined()
     })
     it('It optimizes a list of items accross a set of pages', async () => {
+      firebase.user = user
       localStorage.setItem(paged.id, hella_statements)
       const save_spy = jest.spyOn(paged, 'save')
       expect(Object.keys(localStorage.__STORE__).length).toBe(2)
@@ -82,6 +88,7 @@ describe('@/persistance/Paged.js', () => {
       await flushPromises()
       expect(Object.keys(localStorage.__STORE__).length).toBe(2)
       expect(save_spy).toHaveBeenCalledTimes(2)
+      firebase.user = null
     })
     it('It fails gracefully', async () => {
       localStorage.setItem(paged.id, '')
