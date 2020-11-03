@@ -2,24 +2,23 @@
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import { is_today } from '@/helpers/date'
-import { get, del, keys } from 'idb-keyval'
+import { is_fresh } from '@/helpers/date'
+import { get, del, set, keys } from 'idb-keyval'
 import { as_type, as_filename } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import get_item from '@/modules/item'
 import { Offline } from '@/persistance/Storage'
 
 export function message_listener (message) {
-  const me = firebase.auth().currentUser
   switch (message.data.action) {
     case 'sync:initialize':
       return initialize(message.data.env)
     case 'sync:people':
-      return people(me, message.data.check_everyone)
+      return people(firebase.auth().currentUser, message.data.check_everyone)
     case 'sync:offline':
-      return offline(me)
+      return offline(firebase.auth().currentUser)
     case 'sync:anonymous':
-      return anonymous(me)
+      return anonymous(firebase.auth().currentUser)
     default:
       console.warn('Unhandled message from app: ', message.data.action, message)
   }
@@ -45,6 +44,7 @@ export function initialize (credentials) {
 export async function offline (me = firebase.auth().currentUser) {
   if (navigator.onLine && me) {
     const offline = await get('offline')
+    if (!offline) return
     while (offline.length) {
       const item = offline.pop()
       if (item.action === 'save') await new Offline(item.id).save()
@@ -74,14 +74,14 @@ export async function people (me = firebase.auth().currentUser, check_everyone =
     const people = await list_people()
     await check_people(people, check_everyone)
     console.timeEnd('sync:people')
-    setTimeout(async () => { // Call myself in the future
-      const is_peering = await get('sync:peer-connected')
-      if (!is_peering) await people()
-    }, five_seconds)
+    setTimeout(recurse, one_minute)
   }
 }
-
-// Local functions
+async function recurse () {
+  const is_peering = await get('sync:peer-connected')
+  console.log('recurse: should be false', is_peering)
+  if (!is_peering) await people()
+}
 async function list_people () {
   const full_list = await keys()
   return full_list.filter(id => {
@@ -89,42 +89,47 @@ async function list_people () {
   })
 }
 async function check_people (people, check_everyone) {
-  const what_I_know = await get('index')
-  people.forEach(async (itemid) => {
+  let what_I_know = await get('sync:index')
+  if (!what_I_know) what_I_know = {}
+  await Promise.all(people.map(async (itemid) => {
     const meta = what_I_know[itemid]
-    if (check_everyone) prune_person(itemid, what_I_know)
-    else if (is_today(meta.updated)) prune_person(itemid, what_I_know)
-    // check when each user last updated
-  })
+    if (is_fresh(meta.updated)) await prune_person(itemid, what_I_know)
+    else if (check_everyone) await prune_person(itemid, what_I_know)
+  }))
+  await set('index', what_I_know)
 }
 async function prune_person (itemid, what_I_know) {
-  del(`${itemid}/posters/`) // Remove local cache of posters direcrory
-  const statements = `${itemid}/statements`
-  const events = `${itemid}/events`
-
-  if (await is_outdated(itemid, what_I_know)) {
+  if (is_outdated(itemid, what_I_know)) {
     del(itemid)
-  }
-  if (await is_outdated(statements, what_I_know)) {
-    del(statements) // Delete statements index
-    del(`${statements}/`)
-  }
-  if (await is_outdated(events, what_I_know)) {
-    del(events)
-    del(`${events}/`)
-  }
+    const statements = `${itemid}/statements`
+    await del(statements)
+    await del(`${statements}/`)
+    await del(`${itemid}/events`)
+    await del(`${itemid}/posters/`)
+    console.info('is-pruned', itemid)
+  } else console.info('is-sleeping', itemid)
 }
-
 const five_seconds = 1000 * 5
-// const one_minuite = five_seconds * 12
+const one_minute = five_seconds * 12
 // const five_minutes = five_seconds * one_minuite // 300000
 async function is_outdated (itemid, what_I_know) {
-  const path = as_filename(itemid)
-  const network = await firebase.storage().ref().child(path).getMetadata()
-  const local = what_I_know[itemid]
-  if (!local) what_I_know[itemid] = network
-  const local_time = new Date(what_I_know[itemid].updated).getTime()
-  const network_time = new Date(network.updated).getTime()
-  if (network_time > local_time) return true
+  const path = await firebase.storage().ref().child(as_filename(itemid))
+  let network
+  let local = what_I_know[itemid]
+  // console.log(itemid, local)
+  try {
+    console.info('request:metadata', itemid)
+    network = await path.getMetadata()
+  } catch (e) {
+    if (e.code === 'storage/object-not-found') {
+      console.info('not-found', itemid)
+      network = { updated: null } // Explicitly setting null to indicate that this file doesn't exist
+    } else throw e
+  }
+  if (!what_I_know[itemid] || network.updated === null) local = network
+  what_I_know[itemid] = network // now that local and network are known, set the index to network, and save
+  local = new Date(local.updated).getTime()
+  network = new Date(network.updated).getTime()
+  if (network > local) return true
   else return false
 }

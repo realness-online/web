@@ -10,7 +10,10 @@ const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
   beforeEach(() => {
+    jest.useFakeTimers()
     firebase.user = null
+  })
+  afterEach(() => {
     jest.clearAllMocks()
   })
   // The application loads the data
@@ -167,6 +170,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         await sync.people(user)
+        jest.runAllTimers()
         expect(keys).toBeCalled()
         expect(get).toBeCalled()
       })
