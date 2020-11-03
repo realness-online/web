@@ -75,12 +75,12 @@
         if (navigator.onLine && current_user) {
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
-          this.syncer.postMessage({ action: 'initialize', env: process.env })
+          this.syncer.postMessage({ action: 'sync:initialize', env: process.env })
           window.addEventListener('online', this.online)
         }
       },
       online () {
-        this.syncer.postMessage({ action: 'syncronize' })
+        this.syncer.postMessage({ action: 'sync:offline' })
       },
       async save_statement () {
         const itemid = this.itemid('statements')
