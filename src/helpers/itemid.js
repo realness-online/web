@@ -61,6 +61,7 @@ export async function as_download_url (itemid, me = localStorage.me) {
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))
+      set(itemid, null)
       return null
     } else throw e
   }
