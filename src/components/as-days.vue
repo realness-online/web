@@ -16,7 +16,7 @@
 </template>
 <script>
   import { newer_date_first } from '@/helpers/sorting'
-  import { id_as_day, as_day } from '@/helpers/date'
+  import { id_as_day, as_day, is_today } from '@/helpers/date'
   import as_thoughts from '@/helpers/thoughts'
   import icon from '@/components/icon'
   export default {
@@ -54,10 +54,6 @@
       }
     },
     computed: {
-      today_as_date () {
-        const now = new Date()
-        return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
-      },
       thoughts () {
         return as_thoughts(this.statements)
       }
@@ -85,16 +81,15 @@
         if (item.id) day_name = id_as_day(item.id) // posters
         else day_name = id_as_day(item[0].id) // thoughts
         const day = days.get(day_name)
-        if (day && this.is_today(day_name)) day.unshift(item)
+        if (day && is_today(day_name)) day.unshift(item)
         else if (day) day.push(item)
         else days.set(day_name, [item])
       },
-      is_today (a_date) {
-        if (a_date === this.today_as_date) return true
-        else return false
-      },
       as_day (date) {
         return as_day(date)
+      },
+      is_today (date) {
+        return is_today(date)
       }
     }
   }
