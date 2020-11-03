@@ -11,6 +11,7 @@
 </template>
 <script>
   import * as firebase from 'firebase/app'
+  import { del } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'
   import activity from '@/components/activity/as-table'
@@ -45,6 +46,7 @@
       }
     },
     created () {
+      del('sync:peer-connected')
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
