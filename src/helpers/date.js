@@ -42,7 +42,7 @@ export function is_same_day (d1, d2) {
 }
 export function is_fresh (date) {
   const timestamp = Math.round(new Date().getTime() / 1000)
-  const yesterday = timestamp - (4 * 3600)
+  const yesterday = timestamp - (24 * 3600)
   if (yesterday > new Date(date).getTime()) {
     console.log('is-fresh')
     return true
