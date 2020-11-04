@@ -16,6 +16,7 @@
     <p v-else itemprop="last_name">{{ person.last_name }}</p>
     <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
     <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile">
+    <meta v-if="person.visited" itemprop="visited" :content="person.visited">
   </hgroup>
 </template>
 <script>

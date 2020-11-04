@@ -111,7 +111,7 @@ async function prune_person (itemid, what_I_know) {
 }
 const five_seconds = 1000 * 5
 const one_minute = five_seconds * 12
-// const five_minutes = five_seconds * one_minuite // 300000
+const five_minutes = five_seconds * one_minute // 300000
 async function is_outdated (itemid, what_I_know) {
   const path = await firebase.storage().ref().child(as_filename(itemid))
   let network

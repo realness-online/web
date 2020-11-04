@@ -1,5 +1,6 @@
 <template lang="html">
   <div ref="sync" hidden>
+    <as-hgroup v-if="person" :person="person" />
     <as-days v-if="show_statements" v-slot="thoughts"
              itemscope
              :itemid="itemid('statements')"
@@ -20,20 +21,23 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { set, get } from 'idb-keyval'
+  import { Events, Statements, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
-  import { as_type, list } from '@/helpers/itemid'
+  import { as_type, list, load } from '@/helpers/itemid'
+  import { is_fresh } from '@/helpers/date'
   import hash from '@/modules/hash'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
-  import { Events, Statements } from '@/persistance/Storage'
+  import as_hgroup from '@/components/profile/as-hgroup'
   export default {
     components: {
       'as-days': as_days,
       'events-list': as_list,
       'thought-as-article': thought_as_article,
-      'unsynced-posters': as_svg
+      'unsynced-posters': as_svg,
+      'as-hgroup': as_hgroup
     },
     props: {
       statement: {
@@ -77,10 +81,25 @@
           this.syncer.addEventListener('message', this.worker_message)
           this.syncer.postMessage({ action: 'sync:initialize', env: process.env })
           window.addEventListener('online', this.online)
-        }
+          this.update_visit(current_user)
+      }
       },
       online () {
         this.syncer.postMessage({ action: 'sync:offline' })
+        this.update_visist(firebase.auth().currentUser)
+      },
+      async update_visit (current_user) {
+        console.log('update_visit')
+        if (navigator.onLine && current_user) {
+          const person = await load(localStorage.me)
+          if (!is_fresh(person.visited)) {
+            person.visited = new Date().toISOString()
+            this.person = person
+            await this.$nextTick()
+            new Me().save()
+            this.person = null
+          }
+        }
       },
       async save_statement () {
         const itemid = this.itemid('statements')

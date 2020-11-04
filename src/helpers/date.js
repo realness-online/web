@@ -40,10 +40,10 @@ export function is_same_day (d1, d2) {
   return d1.getFullYear() === d2.getFullYear() &&
     d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth()
 }
-export function is_fresh (date) {
+export function is_fresh (date) { // you are only fresh for 4 hours
   const timestamp = Math.round(new Date().getTime() / 1000)
-  const yesterday = timestamp - (24 * 3600)
-  if (yesterday > new Date(date).getTime()) {
+  const four_hours_ago = timestamp - (4 * 3600)
+  if (four_hours_ago < new Date(date).getTime()) {
     console.log('is-fresh')
     return true
   } else {
