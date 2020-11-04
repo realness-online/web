@@ -86,7 +86,7 @@
       },
       online () {
         this.syncer.postMessage({ action: 'sync:offline' })
-        this.update_visist(firebase.auth().currentUser)
+        this.update_visit(firebase.auth().currentUser)
       },
       async update_visit (current_user) {
         console.log('update_visit')
