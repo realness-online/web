@@ -24,6 +24,7 @@
   import mobile_as_form from '@/components/profile/as-form-mobile'
   import name_as_form from '@/components/profile/as-form-name'
   import signed_on from '@/mixins/signed_in'
+  import visit from '@/mixins/visit'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -31,7 +32,7 @@
       'mobile-as-form': mobile_as_form,
       'name-as-form': name_as_form
     },
-    mixins: [signed_on],
+    mixins: [signed_on, visit],
     data () {
       return {
         nameless: false,
@@ -59,8 +60,10 @@
     methods: {
       async signed_on (event) {
         const my_profile = await load(localStorage.me)
-        if (my_profile) this.$router.push({ path: '/' })
-        else this.nameless = true
+        await this.update_visit()
+        if (my_profile) {
+          this.$router.push({ path: '/' })
+        } else this.nameless = true
       },
       async new_person () {
         this.$router.push({ path: '/account' })
