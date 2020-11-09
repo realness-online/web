@@ -98,7 +98,7 @@
       & a > svg
         cursor: pointer
         shape-outside: circle()
-        border-radius: base-line
+        border-radius: (base-line * 2)
         margin-right: round((base-line / 4), 2)
       & > hgroup
         margin: 0
