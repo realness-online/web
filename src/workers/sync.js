@@ -73,7 +73,7 @@ export async function people (me = firebase.auth().currentUser, check_everyone =
     const people = await list_people()
     await check_people(people, check_everyone)
     console.timeEnd('sync:people')
-    setTimeout(recurse, one_minute)
+    setTimeout(recurse, five_minutes)
   }
 }
 async function recurse () {
