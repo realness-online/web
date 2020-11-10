@@ -16,8 +16,9 @@
 </template>
 <script>
   import { newer_date_first } from '@/helpers/sorting'
+  import { as_author } from '@/helpers/itemid'
   import { id_as_day, as_day, is_today } from '@/helpers/date'
-  import as_thoughts from '@/helpers/thoughts'
+  import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
   import icon from '@/components/icon'
   export default {
     components: { icon },
@@ -55,7 +56,13 @@
     },
     computed: {
       thoughts () {
-        return as_thoughts(this.statements)
+        let thoughts = []
+        const people = this.statements_by_people(this.statements)
+        people.forEach(statements => {
+          thoughts = [...thoughts, ...as_thoughts(statements)]
+        })
+        thoughts.sort(thoughts_sort)
+        return thoughts
       }
     },
     watch: {
@@ -67,6 +74,17 @@
       }
     },
     methods: {
+      statements_by_people (statements) {
+        const people = new Map()
+        statements.forEach(item => {
+          const author = as_author(item.id)
+          let statements = people.get(author)
+          if (!statements) statements = []
+          statements.push(item)
+          people.set(author, statements)
+        })
+        return people
+      },
       refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
