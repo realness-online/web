@@ -3,16 +3,25 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'
-import { del } from 'idb-keyval'
+import { get, set } from 'idb-keyval'
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
+async function sync_later (id, action) {
+  const offline = (await get('offline')) || []
+  offline.push({
+    id,
+    action
+  })
+  await set('offline', offline)
+}
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
-    const user = firebase.auth().currentUser
-    const path = as_filename(this.id)
-    if (user && navigator.onLine) {
+    if (navigator.onLine) {
+      const storage = firebase.storage()
+      const user = firebase.auth().currentUser
+      const path = as_filename(this.id)
       const file = new File([items], path)
-      await firebase.storage().ref().child(path).put(file, this.metadata)
-    }
+      if (user) await storage.ref().child(path).put(file, this.metadata)
+    } else sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.info('Cloud.save()', this.id, items)
@@ -22,11 +31,13 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async delete () {
     console.info('Cloud.delete()', this.id)
-    const user = firebase.auth().currentUser
-    if (user && navigator.onLine) {
-      del(this.id)
-      await firebase.storage().ref().child(as_filename(this.id)).delete()
-    }
+    if (navigator.onLine) {
+      const storage = firebase.storage().ref()
+      const user = firebase.auth().currentUser
+      const path = as_filename(this.id)
+      if (user) await storage.child(path).delete()
+    } else sync_later(this.id, 'delete')
+    if (super.delete) super.delete()
   }
 }
 export default Cloud

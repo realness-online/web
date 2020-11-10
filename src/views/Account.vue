@@ -7,7 +7,7 @@
     </header>
     <div v-if="signed_in">
       <avatar-as-form :person="person" @new-avatar="new_avatar" />
-      <profile-as-figure :person="person">
+      <profile-as-figure :person="person" :editable="true">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>
@@ -30,7 +30,7 @@
                           @blurred="thought_blurred" />
     </as-days>
     <hgroup v-if="statements.length === 0" class="message">
-      <p>Say some stuff via the <button class="mock" /> button on the homepage</p>
+      <p>Say some stuff via the <button class="mock" /> button on the homepage <logo-as-link /></p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
@@ -45,7 +45,7 @@
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import profile_as_figure from '@/components/profile/as-figure'
   import avatar_as_form from '@/components/avatars/as-form'
   import thought_as_article from '@/components/statements/as-article'
@@ -74,7 +74,7 @@
     },
     computed: {
       statements_id () {
-        return `${this.me}/statements`
+        return `${localStorage.me}/statements`
       }
     },
     async created () {
@@ -98,17 +98,17 @@
       },
       async get_all_my_stuff () {
         const [person, statements] = await Promise.all([
-          load(this.me, this.me),
-          list(this.statements_id, this.me)
+          load(localStorage.me),
+          list(this.statements_id)
         ])
         if (person) this.person = person
         return statements
       },
       async new_avatar (avatar_url) {
         this.working = true
-        this.person.avatar = avatar_url
-        const me = new Me()
+        this.$set(this.person, 'avatar', avatar_url)
         await this.$nextTick()
+        const me = new Me()
         await me.save()
         this.working = false
       },
@@ -117,13 +117,13 @@
         const thought_oldest = thought[thought.length - 1]
         const oldest = this.statements[this.statements.length - 1]
         if (oldest.id === thought_oldest.id) {
-          const directory = await as_directory(`${this.me}/statements`)
+          const directory = await as_directory(`${localStorage.me}/statements`)
           let history = directory.items
           history.sort(newest_number_first)
           history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
           const next = history.shift()
           if (next) {
-            const next_statements = await list(`${this.me}/statements/${next}`)
+            const next_statements = await list(`${localStorage.me}/statements/${next}`)
             this.pages_viewed.push(next)
             this.statements = [...this.statements, ...next_statements]
           }
@@ -131,7 +131,7 @@
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
-        this.statements = await list(this.statements_id, this.me)
+        this.statements = await list(this.statements_id)
         this.pages_viewed = ['index']
       },
       thought_blurred (statement) {
@@ -150,14 +150,18 @@
       h1, h4, svg.background
         color: red
         fill: red
-    button, a
-      border-color: red
+    a
+    button
       color: red
       border-color: red
     button.mock
       background-color: red
+      border-width: 1px
       border-radius: 0.2em
-      height: 1.33em
+      height: 1em
+      width: 1.66em
+    a#logo
+      border-bottom: 0
     p[itemprop="statement"]:focus
       font-weight: 700
       outline: 0px
@@ -198,17 +202,23 @@
       & > form
         background-color: background-black
         padding: base-line base-line 0 base-line
-      figure.profile > a > svg.gear
-        margin-right: 0
-        fill: red
-        animation-name: rotate-back
-        transform-origin: center
-        transition-duration: 0.1s
-        animation-iteration-count: 0.1
-        transition-timing-function: ease-in-out
-        &:active
-          animation-name: rotate
-          animation-iteration-count: 0.5
+      figure.profile
+        & > svg
+          border-color: red
+        & > figcaption > menu
+          opacity: 1
+          padding: 0
+          &> a > svg.gear
+            fill: red
+            animation-name: rotate-back
+            transform-origin: center
+            transition-duration: 0.1s
+            animation-iteration-count: 0.1
+            transition-timing-function: ease-in-out
+            &:active
+              transition-timing-function: ease-in-out
+              animation-name: rotate
+              animation-iteration-count: 0.5
       menu#settings
         float:right
         width: 5rem
@@ -219,4 +229,8 @@
         animation-name: fade-in
         animation-duration: 0.2s
         margin-top: base-line
+        & > button:hover
+          transition: color
+          transition-duration: 0.5s
+          color: hsla(353, 83%, 57%, 1) // #ec364c
 </style>

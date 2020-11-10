@@ -16,7 +16,7 @@ const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const posterid = '/+16282281824/posters/559666932867'
 const fetch = require('jest-fetch-mock')
-
+const user = { phoneNumber: '/+16282281824' }
 describe('@/helpers/itemid', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -59,9 +59,13 @@ describe('@/helpers/itemid', () => {
       describe('Can\'t find it locally', () => {
         let network_request, poster
         beforeEach(async () => {
+          firebase.user = user
           network_request = fetch.mockResponseOnce(poster_html)
           poster = await itemid.load(posterid, '/+16282281824')
           await flushPromises()
+        })
+        afterEach(() => {
+          firebase.user = null
         })
         it('Try the network', async () => {
           expect(poster.viewbox).toBe('0 0 333 444')
@@ -132,13 +136,12 @@ describe('@/helpers/itemid', () => {
         expect(as_download_url).toBeDefined()
       })
       it('Returns a url', async () => {
+        firebase.user = user
         const url = await as_download_url(posterid)
         expect(url).toBe('/path/to/file.html')
+        firebase.user = null
       })
       it('Returns null if person is not logged in', async () => {
-        jest.spyOn(firebase, 'auth').mockImplementationOnce(() => {
-          return { currentUser: null }
-        })
         const url = await as_download_url(posterid)
         expect(url).toBe(null)
       })
@@ -156,24 +159,22 @@ describe('@/helpers/itemid', () => {
         expect(as_directory).toBeDefined()
       })
       it('Returns a directory when offline', async () => {
-        const mock_get = get.mockImplementationOnce(() => Promise.resolve({ items: ['1555347888'] }))
+        const mock_get = get.mockImplementationOnce(_ => Promise.resolve({ items: ['1555347888'] }))
         await as_directory('/+/posters/')
         expect(mock_get).toBeCalled()
       })
       it('Returns a directory', async () => {
-        const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
+        firebase.user = user
+        const mock_get = get.mockImplementationOnce(_ => Promise.resolve(null))
         await as_directory('/+/posters/')
         expect(mock_get).toBeCalled()
         expect(set).toBeCalled()
+        firebase.user = null
       })
       it('Returns null if not online and not found locally directory', async () => {
-        const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
-        jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-          return { currentUser: null }
-        })
-        navigator.online = false
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         const directory = await as_directory('/+/posters/')
-        expect(mock_get).toBeCalled()
+        expect(get).toBeCalled()
         expect(directory).toBe(null)
       })
     })

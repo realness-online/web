@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import phonebook from '@/views/Phonebook'
 import itemid from '@/helpers/itemid'
 const person = {
@@ -8,8 +8,10 @@ const person = {
 }
 describe('@/views/Phonebook', () => {
   it('Render the phonebook', () => {
-    jest.spyOn(itemid, 'load').mockImplementationOnce(() => person)
-    const wrapper = shallow(phonebook)
+    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => person)
+    const wrapper = shallowMount(phonebook, {
+      stubs: ['router-link']
+    })
     expect(wrapper.element).toMatchSnapshot()
   })
 })

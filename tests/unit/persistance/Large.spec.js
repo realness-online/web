@@ -1,9 +1,8 @@
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
-import { set, get } from 'idb-keyval'
+import { set, get, del } from 'idb-keyval'
 const fs = require('fs')
 const poster = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
-
 describe('@/persistance/Large.js', () => {
   class Picture extends Large(Storage) {}
   let pic
@@ -18,9 +17,9 @@ describe('@/persistance/Large.js', () => {
       expect(pic.save).toBeDefined()
     })
     it('retrieves and ads to an already existing directory', async () => {
-      const mock_get = get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+      get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
       await pic.save(poster)
-      expect(mock_get).toHaveBeenCalledTimes(1)
+      expect(get).toHaveBeenCalledTimes(1)
       expect(set).toHaveBeenCalledTimes(2)
     })
     it('Saves items to indexdb', async () => {
@@ -31,6 +30,18 @@ describe('@/persistance/Large.js', () => {
     it('Only saves if there are items to save', async () => {
       await pic.save()
       expect(set).not.toBeCalled()
+    })
+  })
+  describe('#delete', () => {
+    it('Exists', () => {
+      expect(pic.delete).toBeDefined()
+    })
+    it('Removes item from local directory', async () => {
+      get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+      await pic.delete(poster)
+      expect(get).toHaveBeenCalledTimes(1)
+      expect(del).toHaveBeenCalledTimes(1)
+      expect(set).toHaveBeenCalledTimes(1)
     })
   })
 })

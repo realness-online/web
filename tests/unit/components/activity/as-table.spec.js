@@ -1,9 +1,9 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import table from '@/components/activity/as-table'
-describe('@/components/activity/as-table.js', () => {
+describe('@/components/activity/as-table', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallow(table)
+    wrapper = shallowMount(table)
   })
   afterEach(() => {
     sessionStorage.clear()

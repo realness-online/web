@@ -4,9 +4,6 @@ const fs = require('fs')
 
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 describe('@/helpers/itemid', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
   describe('exports', () => {
     let person
     beforeEach(() => {

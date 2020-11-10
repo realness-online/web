@@ -10,42 +10,41 @@
       <h1>Phonebook</h1>
       <icon v-if="working" name="working" />
     </hgroup>
-    <profile-as-list :people="phonebook" />
+    <nav v-if="signed_in" class="profile-list">
+      <as-figure v-for="person in phonebook"
+                 :key="person.id"
+                 :person="person"
+                 :relations.sync="relations" />
+    </nav>
   </section>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/storage'
-  import { Relations } from '@/persistance/Storage'
-  import itemid from '@/helpers/itemid'
-  import profile from '@/helpers/profile'
+  import { list, load } from '@/helpers/itemid'
+  import { from_e64 } from '@/helpers/profile'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
-  import profile_as_list from '@/components/profile/as-list'
+  import as_figure from '@/components/profile/as-figure'
   export default {
     components: {
-      'profile-as-list': profile_as_list,
+      'as-figure': as_figure,
       icon
     },
     mixins: [signed_in],
     data () {
       return {
         phonebook: [],
+        relations: [],
         working: true
       }
     },
-    watch: {
-      async relations () {
-        console.info('Saves Relations')
-        await this.$nextTick()
-        new Relations().save()
-      }
-    },
     async created () {
+      this.relations = await list(`${localStorage.me}/relations`)
       console.info('Views Phonebook')
       const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
       phone_numbers.prefixes.forEach(async (phone_number) => {
-        const person = await itemid.load(profile.from_e64(phone_number.name))
+        const person = await load(from_e64(phone_number.name))
         if (person) this.phonebook.push(person)
       })
       this.working = false
@@ -54,31 +53,11 @@
 </script>
 <style lang='stylus'>
   section#directory
-    position: relative
-    min-height: 100vh
     svg.working
       fill: blue
       margin-top: base-line
-    & > header
-      &:focus-within > h1
-        transition-property: all
-        overflow: hidden
-        width:0
-      & > a > svg.finished
-        fill: blue
+    svg.finished
+      fill: blue
     & > hgroup h1
       color: blue
-    nav.profile-list
-      display: flex
-      flex-direction: column-reverse
-      @media (min-width: pad-begins)
-        flex-direction: row
-    & > footer
-      position: fixed
-      bottom: (base-line * 1.5)
-      right: base-line
-      & menu > a
-        standard-button: red
-    & > aside
-      display: none
 </style>

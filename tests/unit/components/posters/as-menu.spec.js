@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_menu from '@/components/posters/as-menu'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
@@ -20,7 +20,7 @@ describe('@/compontent/posters/as-menu.vue', () => {
   let wrapper
   beforeEach(() => {
     jest.spyOn(itemid, 'list').mockImplementationOnce(_ => Promise.resolve(events))
-    wrapper = shallow(as_menu, { propsData: { itemid: poster.id } })
+    wrapper = shallowMount(as_menu, { propsData: { itemid: poster.id } })
   })
   describe('Renders', () => {
     it('a poster menu', () => {

@@ -1,4 +1,10 @@
 import { as_created_at } from '@/helpers/itemid'
+export function newer_id_first (first, second) {
+  return as_created_at(second) - as_created_at(first)
+}
+export function older_id_first (first, second) {
+  return as_created_at(first) - as_created_at(second)
+}
 export function newer_item_first (first, second) {
   return as_created_at(second.id) - as_created_at(first.id)
 }

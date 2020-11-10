@@ -11,12 +11,14 @@ export function as_thoughts (sacred_statements) {
     while (is_train_of_thought(thot, statements)) { thot.push(statements.pop()) }
     thoughts.push(thot)
   }
-  thoughts.sort((first, second) => {
-    return as_created_at(first[0].id) - as_created_at(second[0].id)
-  })
   return thoughts
 }
-function is_train_of_thought (thot, statements) {
+
+export function thoughts_sort (first, second) {
+  return as_created_at(first[0].id) - as_created_at(second[0].id)
+}
+
+export function is_train_of_thought (thot, statements) {
   const next_statement = statements[statements.length - 1]
   const nearest_statement = thot[thot.length - 1]
   if (next_statement && nearest_statement) {
@@ -27,4 +29,3 @@ function is_train_of_thought (thot, statements) {
     else return false
   } else return false
 }
-export default as_thoughts

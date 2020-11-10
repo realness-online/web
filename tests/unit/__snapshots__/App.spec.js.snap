@@ -4,10 +4,12 @@ exports[`@/App.vue Renders layout of the application 1`] = `
 <main
   id="realness"
 >
-  <router-view />
+  <router-view-stub />
    
   <aside>
-    <!---->
+    <developer-tools-stub />
+     
+    <sync-stub />
   </aside>
 </main>
 `;

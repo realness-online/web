@@ -20,8 +20,9 @@
       }
     },
     created () {
-      // I want to test it
-      Vue.config.errorHandler = this.on_error
+      if (process.env.NODE_ENV === 'production') {
+        Vue.config.errorHandler = this.on_error
+      }
       console.info = this.info_logger
     },
     methods: {

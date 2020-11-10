@@ -1,12 +1,16 @@
 <template lang="html">
   <section id="sign-on" class="page">
     <header>
-      <profile-as-figure :person="person" />
+      <profile-as-figure :person="person">
+        <p /> <!-- defeat the default slot -->
+      </profile-as-figure>
       <logo-as-link />
     </header>
-    <profile-as-form :person="person"
-                     @modified="save_me"
-                     @signed-on="signed_on" />
+    <name-as-form v-if="nameless"
+                  :person="person"
+                  @validated="new_person" />
+    <mobile-as-form v-else :person="person"
+                    @signed-on="signed_on" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
@@ -17,16 +21,21 @@
   import { load } from '@/helpers/itemid'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
-  import profile_as_form from '@/components/profile/as-form'
-  import { Me } from '@/persistance/Storage'
+  import mobile_as_form from '@/components/profile/as-form-mobile'
+  import name_as_form from '@/components/profile/as-form-name'
+  import signed_on from '@/mixins/signed_in'
+  import visit from '@/mixins/visit'
   export default {
     components: {
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
-      'profile-as-form': profile_as_form
+      'mobile-as-form': mobile_as_form,
+      'name-as-form': name_as_form
     },
+    mixins: [signed_on, visit],
     data () {
       return {
+        nameless: false,
         index_db_keys: {},
         person: {
           id: '/+',
@@ -36,7 +45,8 @@
     },
     computed: {
       cleanable () {
-        if (this.me.length > 2) return true
+        if (this.signed_in) return false
+        if (localStorage.me.length > 2) return true
         if (localStorage.length > 2) return true
         if (this.index_db_keys.length > 0) return true
         else return false
@@ -44,20 +54,19 @@
     },
     async created () {
       this.index_db_keys = await keys()
-      const person = await load(this.me)
+      const person = await load(localStorage.me)
       if (person) this.person = person
     },
     methods: {
       async signed_on (event) {
-        const me = new Me()
-        await this.$nextTick()
-        await me.save()
-        this.$router.push({ path: '/' })
+        const my_profile = await load(localStorage.me)
+        await this.update_visit()
+        if (my_profile) {
+          this.$router.push({ path: '/' })
+        } else this.nameless = true
       },
-      async save_me (event) {
-        const me = new Me()
-        await this.$nextTick()
-        await me.save()
+      async new_person () {
+        this.$router.push({ path: '/account' })
       },
       async clean () {
         localStorage.clear()
@@ -75,6 +84,8 @@
     justify-content: space-between
     hgroup
       color: red
+    figure.profile > svg
+      border-color: red
     svg.background
       fill: red
     form

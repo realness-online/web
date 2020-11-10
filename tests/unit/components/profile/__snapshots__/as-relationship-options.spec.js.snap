@@ -1,13 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`@/compontent/profile/as-relationship-options.vue Render a list of options for this profile 1`] = `
-<menu>
-  <a
-    class="relation"
-  >
-    <!---->
-     
-    <!---->
-  </a>
-</menu>
+<a
+  class="status relation"
+  me="[object Object]"
+>
+  <icon-stub
+    name="add"
+  />
+   
+  <icon-stub
+    name="remove"
+  />
+</a>
 `;

@@ -1,10 +1,10 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
-const currentUser = {
+const user = {
   phoneNumber: '+16282281824'
 }
 const me = {
@@ -15,20 +15,15 @@ const me = {
 describe('@/views/Account.vue', () => {
   let wrapper, load_spy, list_spy
   beforeEach(() => {
+    firebase.user = user
     localStorage.me = '/+'
-    const onAuthStateChanged = jest.fn(state_changed => {
-      state_changed(currentUser)
-    })
-    jest.spyOn(firebase, 'auth').mockImplementation(_ => {
-      return { onAuthStateChanged, currentUser }
-    })
     load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
     list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => Promise.resolve([]))
-    wrapper = shallow(Account)
+    wrapper = shallowMount(Account)
   })
   afterEach(() => {
-    jest.clearAllMocks()
     localStorage.clear()
+    firebase.user = null
   })
   it('Renders account information', async () => {
     await flushPromises()

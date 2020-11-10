@@ -15,6 +15,7 @@ export default class Storage {
 }
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
+export class Offline extends Cloud(Storage) {}
 export class Me extends Cloud(Local(Storage)) {
   constructor () { super(localStorage.me) }
 }
@@ -31,11 +32,10 @@ export class Activity extends Cloud(Local(Storage)) {
   constructor () { super(`${localStorage.me}/activity`) }
 }
 export class History extends Cloud(Storage) {
-  async save (items) {
+  async save (items) { // on purpose doesn't call super.save
     if (!items) return
-    const user = firebase.auth().currentUser
-    const path = `/people/${this.id}.html`
-    if (user && navigator.onLine) {
+    if (firebase.auth().currentUser && navigator.onLine) {
+      const path = `/people/${this.id}.html`
       const file = new File([items.outerHTML], path)
       await firebase.storage().ref().child(path).put(file, this.metadata)
     }

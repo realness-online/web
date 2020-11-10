@@ -6,19 +6,33 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
   id="profile"
 >
   <header>
-    <!---->
+    <icon-stub
+      name="nothing"
+    />
      
-    <!---->
+    <logo-as-link-stub />
   </header>
    
-  <!---->
+  <avatar-stub
+    person="[object Object]"
+  />
    
   <menu>
-    <!---->
+    <download-vector-stub
+      itemid="/+16282281824/avatars/1588451405024"
+    />
   </menu>
    
-  <!---->
+  <profile-as-figure-stub
+    person="[object Object]"
+    relations=""
+  />
    
-  <!---->
+  <as-days-stub
+    avatars=""
+    events=""
+    posters=""
+    statements=""
+  />
 </section>
 `;

@@ -4,10 +4,28 @@ form
   flex-direction: column
   justify-content: space-around
 
+fieldset
+  padding: (base-line / 2 )
+  overflow: hidden
+  standard-border: black
+  @media (prefers-color-scheme: dark)
+    standard-border: red
+  legend
+    color: lighten(black, 30%)
+    &.valid
+      color: green
+
 input
-textarea
-[contenteditable]
-  user-select: text
+  color: red
+  &[type=file]
+    display: none
+  &:focus
+    transition-property: all
+    outline: 0
+    &::placeholder
+      color: lighten(black, 30%)
+  &::placeholder
+    color: lighten(black, 30%)
 
 input
 textarea
@@ -18,9 +36,15 @@ textarea
     user-select: none
     -webkit-text-fill-color: black
     color: black
-button
+
 input
 textarea
+[contenteditable]
+  user-select: text
+
+input
+textarea
+button
   appearance:none
   -webkit-tap-highlight-color: inherit
   outline: inherit
@@ -30,12 +54,6 @@ textarea
   font-size: inherit
   font-weight: inherit
   color: inherit
-
-input[type=file]
-  display:none
-
-input:focus
-  transition-property: all
 
 label
   font-weight: 300
@@ -47,10 +65,3 @@ button
   &:disabled
     opacity: .75
     standard-button: black
-
-fieldset
-  padding: (base-line / 2 )
-  overflow: hidden
-  standard-border: black
-  @media (prefers-color-scheme: dark)
-    standard-border: red

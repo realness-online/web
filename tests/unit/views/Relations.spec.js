@@ -1,6 +1,6 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Relations from '@/views/Relations'
-import itemid from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 describe('@/views/Relations.vue', () => {
   const joe_friday = {
     id: '/+14151234356',
@@ -15,10 +15,10 @@ describe('@/views/Relations.vue', () => {
       relations: [{ id: '/+14151234356' }]
     }
     const load_relations = jest.spyOn(itemid, 'list')
-                          .mockImplementationOnce(() => Promise.resolve(my.relations))
+                          .mockImplementation(_ => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
-                         .mockImplementationOnce(() => Promise.resolve(joe_friday))
-    const wrapper = await shallow(Relations)
+                         .mockImplementation(_ => Promise.resolve(joe_friday))
+    const wrapper = await shallowMount(Relations)
     expect(wrapper.vm.relations.length).toBe(1)
     expect(load_relations).toBeCalled()
     expect(load_profile).toBeCalled()

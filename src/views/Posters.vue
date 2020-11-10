@@ -24,7 +24,6 @@
       <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
                  :itemid="itemid"
-                 :working="working"
                  @remove-poster="remove_poster" />
     </article>
     <hgroup v-if="friendly" class="message">
@@ -38,7 +37,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
-  import { newer_date_first } from '@/helpers/sorting'
+  import { newer_id_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -63,7 +62,7 @@
     },
     computed: {
       as_itemid () {
-        return `${this.me}/posters/${this.new_poster.created_at}`
+        return `${localStorage.me}/posters/${this.new_poster.created_at}`
       },
       friendly () {
         if (this.posters.length === 0 && !this.working && !this.new_poster) return true
@@ -87,7 +86,7 @@
     },
     methods: {
       get_id (name) {
-        return `${this.me}/posters/${name}`
+        return `${localStorage.me}/posters/${name}`
       },
       vectorize_image (image) {
         this.working = true
@@ -95,9 +94,9 @@
       },
       async get_poster_list (user) {
         this.posters = []
-        const directory = await itemid.as_directory(`${this.me}/posters`)
+        const directory = await itemid.as_directory(`${localStorage.me}/posters`)
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        this.posters.sort(newer_date_first)
+        this.posters.sort(newer_id_first)
       },
       brand_new_poster (response) {
         console.info('creates a poster')
@@ -137,11 +136,8 @@
     hgroup.message > p:first-child a
       border-bottom: 0
     h1
-      width: 100vw
       color: green
       margin: 0 base-line
-    svg.working
-      margin-bottom: base-line
     & > header
       justify-content: space-between
     & hgroup

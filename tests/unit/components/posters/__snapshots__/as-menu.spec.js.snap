@@ -3,7 +3,9 @@
 exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
 <menu>
   <a>
-    <!---->
+    <icon-stub
+      name="remove"
+    />
   </a>
    
   <a
@@ -38,6 +40,8 @@ exports[`@/compontent/posters/as-menu.vue Renders a poster menu 1`] = `
    
   <!---->
    
-  <!---->
+  <download-vector-stub
+    itemid="/+16282281824/posters/559666932867"
+  />
 </menu>
 `;

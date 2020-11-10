@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_links from '@/components/profile/as-links'
 describe('@/compontent/profile/as-links.vue', () => {
   let wrapper
@@ -10,7 +10,11 @@ describe('@/compontent/profile/as-links.vue', () => {
     avatar: 'avatars/5553338945763'
   }
   beforeEach(() => {
-    wrapper = shallow(as_links, { propsData: { people: [person] } })
+    localStorage.me = person.id
+    wrapper = shallowMount(as_links, { propsData: { people: [person] } })
+  })
+  afterEach(() => {
+    localStorage.clear()
   })
   it('Renders a list of the person relationships', () => {
     expect(wrapper.element).toMatchSnapshot()

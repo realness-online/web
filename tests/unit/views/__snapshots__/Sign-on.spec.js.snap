@@ -6,15 +6,24 @@ exports[`@/views/Sign-on.vue Renders a form for signing on to the app 1`] = `
   id="sign-on"
 >
   <header>
-    <!---->
+    <profile-as-figure-stub
+      person="[object Object]"
+      relations=""
+    >
+      <p />
+    </profile-as-figure-stub>
      
-    <!---->
+    <logo-as-link-stub />
   </header>
    
-  <!---->
+  <mobile-as-form-stub
+    person="[object Object]"
+  />
    
   <footer>
-    <!---->
+    <button>
+      Wipe
+    </button>
   </footer>
 </section>
 `;

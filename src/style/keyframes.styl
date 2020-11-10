@@ -3,39 +3,50 @@
   50%
     fill: white-background
     stroke: white-background
-
 @keyframes button-click
   100%
     fill: red
     -webkit-tap-highlight-color: red
-
 @keyframes slide-in-down
   from
     transform: translate3d(0, -100%, 0)
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
-
 @keyframes slide-in-up
   from
     transform: translate3d(0, 100%, 0)
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
-
+@keyframes slide-in-left
+  from
+    transform: translate3d(-100%, 0, 0)
+    visibility: visible
+  to
+    transform: translate3d(0, 0, 0)
+@keyframes slide-in-right
+  from
+    transform: translate3d(100%, 0, 0)
+    visibility: visible
+  to
+    transform: translate3d(0, 0, 0)
+@keyframes slide-out-right
+  from
+    transform: translate3d(0, 0, 0)
+  to
+    visibility: hidden
+    transform: translate3d(100%, 0, 0)
 @keyframes rotate
   from
     transform: rotate3d(0, 0, 1, -100deg)
   to
     transform: translate3d(0, 0, 0)
-
 @keyframes rotate-back
   from
     transform: rotate3d(0, 0, 1, 100deg)
   to
     transform: translate3d(0, 0, 0)
-
-
 @keyframes fade-in
   from
     opacity: 0
