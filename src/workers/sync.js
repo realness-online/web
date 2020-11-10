@@ -1,4 +1,3 @@
-
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -79,7 +78,6 @@ export async function people (me = firebase.auth().currentUser, check_everyone =
 }
 async function recurse () {
   const is_peering = await get('sync:peer-connected')
-  console.log('recurse: should be false', is_peering)
   if (!is_peering) await people()
 }
 async function list_people () {
@@ -90,13 +88,15 @@ async function list_people () {
 }
 async function check_people (people, check_everyone) {
   let what_I_know = await get('sync:index')
+  console.log('what_I_know', what_I_know)
   if (!what_I_know) what_I_know = {}
   await Promise.all(people.map(async (itemid) => {
     const meta = what_I_know[itemid]
-    if (is_fresh(meta.updated)) await prune_person(itemid, what_I_know)
+    console.log(meta)
+    if (!meta) await prune_person(itemid, what_I_know)
+    else if (is_fresh(meta.updated)) await prune_person(itemid, what_I_know)
     else if (check_everyone) await prune_person(itemid, what_I_know)
   }))
-  await set('index', what_I_know)
 }
 async function prune_person (itemid, what_I_know) {
   if (is_outdated(itemid, what_I_know)) {
@@ -128,6 +128,8 @@ async function is_outdated (itemid, what_I_know) {
   }
   if (!what_I_know[itemid] || network.updated === null) local = network
   what_I_know[itemid] = network // now that local and network are known, set the index to network, and save
+  console.log('setting', what_I_know)
+  await set('sync:index', what_I_know)
   local = new Date(local.updated).getTime()
   network = new Date(network.updated).getTime()
   if (network > local) return true
