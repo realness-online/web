@@ -10,7 +10,13 @@ exports[`@/components/statements/as-article.vue Render a statement as an article
     </time>
   </header>
    
-  <!---->
-  <!---->
+  <as-statement-stub
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  <as-statement-stub
+    itemprop="statements"
+    statement="[object Object]"
+  />
 </article>
 `;

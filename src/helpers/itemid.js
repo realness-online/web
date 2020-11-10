@@ -1,12 +1,11 @@
+// {base_url}/{:author}/{:type}/{:created_at}
 import * as firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
-// import { get, set } from 'idb-keyval'
-import { set } from 'idb-keyval'
-const large = ['avatars', 'posters']
-const has_history = ['statements', 'events']
+import { get, set } from 'idb-keyval'
 
+// Expensive to call
 export async function load (itemid, me = localStorage.me) {
   const element = document.getElementById(as_query_id(itemid))
   if (element) return get_item(element)
@@ -15,27 +14,23 @@ export async function load (itemid, me = localStorage.me) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
   }
-  // item = get_item(await get(itemid))
-  // if (item) return item
+  item = get_item(await get(itemid))
+  if (item) return item
   item = await load_from_network(itemid, me)
   if (item) return item
   return null
 }
 export async function list (itemid, me = localStorage.me) {
-  // Returns a list even if loading the item fails
   try {
     const item = await load(itemid, me)
-    const type = as_type(itemid)
-    const list = item[type]
-    if (list && Array.isArray(list)) return list
-    else if (list) return [list]
+    if (item) return type_as_list(item)
     else return []
   } catch { return [] }
 }
 export async function load_from_network (itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info('Loads a storage item')
+    console.info('Loads a storage item', itemid)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return get_item(server_text, itemid)
@@ -43,10 +38,11 @@ export async function load_from_network (itemid, me = localStorage.me) {
 }
 export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
-  // const cached = await get(path)
-  // if (cached) return cached
-  // else
-  if (navigator.onLine && firebase.auth().currentUser) {
+  const cached = await get(path)
+  if (cached) {
+    console.info(`Using cache for ${itemid}`)
+    return cached
+  } else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
     console.info(`Makes a directory request for ${path}`)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
@@ -65,9 +61,25 @@ export async function as_download_url (itemid, me = localStorage.me) {
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))
+      set(itemid, null)
       return null
     } else throw e
   }
+}
+
+// Cheap to call
+const large = ['avatars', 'posters']
+const has_history = ['statements', 'events']
+export function is_history (itemid) {
+  const parts = as_path_parts(itemid)
+  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
+  return false
+}
+export function as_filename (itemid) {
+  let filename = itemid
+  if (itemid.startsWith('/+')) filename = `/people${filename}`
+  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
+  else return `${filename}/index.html`
 }
 export function as_storage_path (itemid) {
   const path_parts = as_path_parts(itemid)
@@ -85,17 +97,6 @@ export function as_storage_path (itemid) {
 export function as_directory_id (itemid) {
   const parts = as_path_parts(itemid)
   return `/${parts[0]}/${parts[1]}/`
-}
-export function as_filename (itemid) {
-  let filename = itemid
-  if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
-  else return `${filename}/index.html`
-}
-export function is_history (itemid) {
-  const parts = as_path_parts(itemid)
-  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
-  return false
 }
 export function as_path_parts (itemid) {
   const path = itemid.split('/')
@@ -123,6 +124,17 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
+export function type_as_list (item) {
+  // Returns a list even if loading the item fails
+  // the microdata spec requires properties values to
+  // single value and iterable
+  if (!item) return []
+  const list = item[as_type(item.id)]
+  if (list && Array.isArray(list)) return list
+  else if (list) return [list]
+  else return []
+}
+
 export default {
   load,
   list,

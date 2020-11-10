@@ -38,7 +38,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
   export default {
@@ -63,9 +63,9 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      this.people = await list(`${this.me}/relations`)
+      this.people = await list(`${localStorage.me}/relations`)
       this.people.push({
-        id: this.me,
+        id: localStorage.me,
         type: 'person'
       })
       await this.fill_feed()
@@ -73,6 +73,24 @@
       this.working = false
     },
     methods: {
+      async fill_feed () {
+        await Promise.all(this.people.map(async relation => {
+          const [statements, posters] = await Promise.all([
+            list(`${relation.id}/statements`),
+            as_directory(`${relation.id}/posters`)
+          ])
+          relation.viewed = ['index']
+          this.statements = [...statements, ...this.statements]
+          if (posters && posters.items) {
+            posters.items.forEach(created_at => {
+              this.posters.push({
+                id: `${relation.id}/posters/${created_at}`,
+                type: 'posters'
+              })
+            })
+          }
+        }))
+      },
       async thought_shown (statements) {
         const oldest = statements[statements.length - 1]
         let author = as_author(oldest.id)
@@ -95,24 +113,6 @@
       slot_key (item) {
         if (Array.isArray(item)) return item[0].id
         return item.id
-      },
-      async fill_feed () {
-        await Promise.all(this.people.map(async relation => {
-          const [statements, posters] = await Promise.all([
-            list(`${relation.id}/statements`, this.me),
-            as_directory(`${relation.id}/posters`, this.me)
-          ])
-          relation.viewed = ['index']
-          this.statements = [...statements, ...this.statements]
-          if (posters && posters.items) {
-            posters.items.forEach(created_at => {
-              this.posters.push({
-                id: `${relation.id}/posters/${created_at}`,
-                type: 'posters'
-              })
-            })
-          }
-        }))
       }
     }
   }

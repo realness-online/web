@@ -4,8 +4,8 @@
   </a>
 </template>
 <script>
-  import date_helper from '@/helpers/date'
-  import itemid from '@/helpers/itemid'
+  import { as_day_and_time } from '@/helpers/date'
+  import { load } from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
     components: { icon },
@@ -28,7 +28,7 @@
       }
     },
     async created () {
-      this.vector = await itemid.load(this.itemid)
+      this.vector = await load(this.itemid)
       this.file_name = await this.get_vector_name()
     },
     methods: {
@@ -36,8 +36,8 @@
         const info = this.itemid.split('/')
         const author_id = `/${info[1]}`
         const type = `${info[2]}`
-        const time = date_helper.as_day_and_time(Number(info[3]))
-        const creator = await itemid.load(author_id)
+        const time = as_day_and_time(Number(info[3]))
+        const creator = await load(author_id)
         const name = `${creator.first_name}_${creator.last_name}`
         return `${name}_${type}_${time}.svg`
       }

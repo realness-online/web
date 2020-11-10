@@ -1,0 +1,11 @@
+nav.profile-list
+  display: grid
+  grid-gap: base-line
+  grid-template-columns: repeat(auto-fill, minmax((base-line * 9), 1fr))
+  @media (min-width: pad-begins)
+    padding: 0 base-line
+    & > figure
+      standard-border: blue
+      & > svg
+        border-right-width: (base-line / 10)
+        border-radius: 0

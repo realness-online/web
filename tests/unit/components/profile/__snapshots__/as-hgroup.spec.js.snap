@@ -5,17 +5,17 @@ exports[`@/compontent/profile/as-hgroup.vue Renders a person as a hgroup element
   itemid="/+14151234356"
   itemscope="itemscope"
 >
-  <span
+  <p
     itemprop="first_name"
   >
     Scott
-  </span>
+  </p>
    
-  <span
+  <p
     itemprop="last_name"
   >
     Fryxell
-  </span>
+  </p>
    
   <link
     href="avatars/5553338945763"
@@ -27,5 +27,7 @@ exports[`@/compontent/profile/as-hgroup.vue Renders a person as a hgroup element
     content="4151234356"
     itemprop="mobile"
   />
+   
+  <!---->
 </hgroup>
 `;

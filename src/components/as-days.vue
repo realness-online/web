@@ -16,8 +16,9 @@
 </template>
 <script>
   import { newer_date_first } from '@/helpers/sorting'
-  import date_helper from '@/helpers/date'
-  import as_thoughts from '@/helpers/thoughts'
+  import { as_author } from '@/helpers/itemid'
+  import { id_as_day, as_day, is_today } from '@/helpers/date'
+  import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
   import icon from '@/components/icon'
   export default {
     components: { icon },
@@ -54,12 +55,14 @@
       }
     },
     computed: {
-      today_as_date () {
-        const now = new Date()
-        return `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`
-      },
       thoughts () {
-        return as_thoughts(this.statements)
+        let thoughts = []
+        const people = this.statements_by_people(this.statements)
+        people.forEach(statements => {
+          thoughts = [...thoughts, ...as_thoughts(statements)]
+        })
+        thoughts.sort(thoughts_sort)
+        return thoughts
       }
     },
     watch: {
@@ -71,6 +74,17 @@
       }
     },
     methods: {
+      statements_by_people (statements) {
+        const people = new Map()
+        statements.forEach(item => {
+          const author = as_author(item.id)
+          let statements = people.get(author)
+          if (!statements) statements = []
+          statements.push(item)
+          people.set(author, statements)
+        })
+        return people
+      },
       refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
@@ -82,19 +96,18 @@
       },
       insert_into_day (item, days) {
         let day_name
-        if (item.id) day_name = date_helper.id_as_day(item.id) // posters
-        else day_name = date_helper.id_as_day(item[0].id) // thoughts
+        if (item.id) day_name = id_as_day(item.id) // posters
+        else day_name = id_as_day(item[0].id) // thoughts
         const day = days.get(day_name)
-        if (day && this.is_today(day_name)) day.unshift(item)
+        if (day && is_today(day_name)) day.unshift(item)
         else if (day) day.push(item)
         else days.set(day_name, [item])
       },
-      is_today (a_date) {
-        if (a_date === this.today_as_date) return true
-        else return false
-      },
       as_day (date) {
-        return date_helper.as_day(date)
+        return as_day(date)
+      },
+      is_today (date) {
+        return is_today(date)
       }
     }
   }

@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import as_hgroup from '@/components/profile/as-hgroup'
 describe('@/compontent/profile/as-hgroup.vue', () => {
   let wrapper
@@ -10,7 +10,7 @@ describe('@/compontent/profile/as-hgroup.vue', () => {
     avatar: 'avatars/5553338945763'
   }
   beforeEach(() => {
-    wrapper = shallow(as_hgroup, { propsData: { person } })
+    wrapper = shallowMount(as_hgroup, { propsData: { person } })
   })
   it('Renders a person as a hgroup element', () => {
     expect(wrapper.element).toMatchSnapshot()

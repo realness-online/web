@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import get_item from '@/modules/item'
 import as_article from '@/components/statements/as-article'
@@ -20,7 +20,7 @@ const older_statement = {
 }
 describe('@/components/statements/as-article.vue', () => {
   it('Render a statement as an article element', async () => {
-    const wrapper = shallow(as_article, { propsData: { statements: [statement, older_statement] } })
+    const wrapper = shallowMount(as_article, { propsData: { statements: [statement, older_statement] } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     wrapper.destroy()

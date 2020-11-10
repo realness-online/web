@@ -6,13 +6,17 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
   id="directory"
 >
   <header>
-    <!---->
+    <icon-stub
+      name="nothing"
+    />
      
-    <router-link
+    <router-link-stub
       to="/relations"
     >
-      <!---->
-    </router-link>
+      <icon-stub
+        name="finished"
+      />
+    </router-link-stub>
   </header>
    
   <hgroup>
@@ -20,7 +24,9 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
       Phonebook
     </h1>
      
-    <!---->
+    <icon-stub
+      name="working"
+    />
   </hgroup>
    
   <!---->

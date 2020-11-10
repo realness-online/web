@@ -1,4 +1,4 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
 import itemid from '@/helpers/itemid'
@@ -15,8 +15,8 @@ const events = [{
 describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
-    get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
-    wrapper = shallow(Posters)
+    get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+    wrapper = shallowMount(Posters)
     wrapper.vm.events = events
   })
   describe('Rendering', () => {
@@ -43,7 +43,7 @@ describe('@/views/Posters.vue', () => {
     })
     describe('get_poster_list', () => {
       it('executes the method', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
             return { items: [] }
         })
         await wrapper.vm.get_poster_list({})

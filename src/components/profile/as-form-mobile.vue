@@ -1,20 +1,6 @@
 <template lang="html">
-  <form id="profile-form">
-    <fieldset id="name">
-      <input id="first-name" v-model="person.first_name"
-             type="text"
-             tabindex="1"
-             placeholder="First"
-             required
-             @blur="modified_check">
-      <input id="last-name" v-model="person.last_name"
-             type="text"
-             tabindex="2"
-             placeholder="Last"
-             required
-             @blur="modified_check">
-    </fieldset>
-    <fieldset v-if="!show_sign_out" id="phone">
+  <form id="profile-mobile">
+    <fieldset v-if="show_mobil_input" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>
       <input id="mobile" v-model="person.mobile"
@@ -34,8 +20,8 @@
              placeholder="Verification Code"
              @keypress="code_keypress">
     </fieldset>
-    <icon v-show="working" name="working" />
-    <menu>
+    <icon v-if="working" name="working" />
+    <menu v-else>
       <button v-if="show_authorize"
               id="authorize"
               tabindex="5"
@@ -49,11 +35,6 @@
               @click.prevent="sign_in_with_code">
         Sign on
       </button>
-      <button v-if="show_sign_out"
-              id="sign-out"
-              @click.prevent="sign_out">
-        <icon name="remove" />
-      </button>
     </menu>
   </form>
 </template>
@@ -61,7 +42,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber, AsYouType } from 'libphonenumber-js'
-  import profile from '@/helpers/profile'
+  import { from_e64, as_phone_number } from '@/helpers/profile'
   import icon from '@/components/icon'
   import itemid from '@/helpers/itemid'
   export default {
@@ -89,6 +70,11 @@
       }
     },
     computed: {
+      show_mobil_input () {
+        if (this.show_sign_out) return false
+        if (this.working) return false
+        return true
+      },
       mobile_display () {
         if (this.person.mobile) return new AsYouType('US').input(this.person.mobile)
         else return 'Mobile'
@@ -100,9 +86,9 @@
         this.working = false
         if (user) {
           this.show_sign_out = true
-          this.person.id = profile.from_e64(user.phoneNumber)
+          this.person.id = from_e64(user.phoneNumber)
         } else {
-          this.person.mobile = profile.as_phone_number(this.person.id)
+          this.person.mobile = as_phone_number(this.person.id)
           this.show_authorize = true
         }
         this.validate_mobile_number()
@@ -128,20 +114,18 @@
         if (mobile) mobile.disabled = false
       },
       async modified_check () {
-        const me = await itemid.load(this.me)
+        const me = await itemid.load(localStorage.me)
         if (!me) {
           this.$emit('modified')
           return
         }
         let modified = false
         if (me.id !== this.person.id) modified = true
-        if (me.first_name !== this.person.first_name) modified = true
-        if (me.last_name !== this.person.last_name) modified = true
         if (me.mobile !== this.person.mobile) modified = true
         if (modified) this.$emit('modified', this.person)
       },
       async begin_authorization (event) {
-        this.working = true
+        // this.working = true
         this.disable_input()
         this.show_authorize = false
         this.show_captcha = true
@@ -209,28 +193,12 @@
   }
 </script>
 <style lang="stylus">
-  form#profile-form
+  form#profile-mobile
+    animation-name: slide-in-left
     svg.remove
       fill: red
     fieldset
       margin-bottom: base-line
-      legend
-        color: lighten(black, 30%)
-        &.valid
-          color: green
-    input
-      color: red
-      &:focus
-        outline: 0
-        &::placeholder
-          color: lighten(black, 30%)
-      &::placeholder
-        color: lighten(black, 30%)
-    input#first-name
-      width: 40%
-      margin-right: base-line
-    input#last-name
-      width: 40%
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line

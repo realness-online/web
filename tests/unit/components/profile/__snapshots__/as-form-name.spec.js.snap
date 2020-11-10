@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-form-name.vue Render profile name form 1`] = `
+<form
+  id="profile-name"
+>
+  <fieldset
+    id="name"
+  >
+    <legend
+      class="valid"
+    >
+      Name
+    </legend>
+     
+    <input
+      id="first-name"
+      placeholder="First"
+      tabindex="1"
+      type="text"
+    />
+     
+    <input
+      id="last-name"
+      placeholder="Last"
+      tabindex="2"
+      type="text"
+    />
+  </fieldset>
+   
+  <menu>
+    <button
+      disabled="disabled"
+      tabindex="3"
+    >
+      
+      Yep, That's my name
+    
+    </button>
+  </menu>
+</form>
+`;

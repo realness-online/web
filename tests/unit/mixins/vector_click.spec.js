@@ -1,13 +1,10 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/vector_click', () => {
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
   describe('methods', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallow(vector_mock)
+      wrapper = shallowMount(vector_mock)
     })
     describe('#vector_click', () => {
       it('Exists', () => {
@@ -41,7 +38,7 @@ describe('@/mixins/vector_click', () => {
   describe('computed', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallow(vector_mock)
+      wrapper = shallowMount(vector_mock)
     })
     describe('#aspect_ratio', () => {
       it('Exists', () => {

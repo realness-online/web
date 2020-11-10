@@ -13,7 +13,7 @@
     },
     computed: {
       itemid () {
-        return `${this.me}/relations`
+        return `${localStorage.me}/relations`
       }
     }
   }

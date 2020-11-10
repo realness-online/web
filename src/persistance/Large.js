@@ -1,6 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { set, get } from 'idb-keyval'
-import { as_directory_id, as_path_parts } from '@/helpers/itemid'
+import { set, get, del } from 'idb-keyval'
+import { as_directory_id, as_path_parts, as_created_at } from '@/helpers/itemid'
 const Large = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     const path = as_directory_id(this.id)
@@ -12,6 +12,14 @@ const Large = (superclass) => class extends superclass {
       set(path, directory)
     }
     if (super.save) super.save(items)
+  }
+  async delete () {
+    const path = as_directory_id(this.id)
+    const directory = await get(path)
+    directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
+    del(this.id)
+    set(path, directory)
+    if (super.delete) super.delete()
   }
 }
 export default Large

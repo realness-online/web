@@ -2,7 +2,7 @@
   <figure class="poster" :class="{ 'selecting-event': selecting_event }">
     <icon :name="background" />
     <as-svg :itemid="itemid"
-            :new_poster="new_poster"
+            :poster="new_poster"
             @vector-click="vector_click"
             @vector-loaded="vector_loaded" />
     <figcaption>

@@ -1,7 +1,7 @@
-import { shallow } from 'vue-test-utils'
+import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import download_vector from '@/components/download-vector'
-import itemid from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 import get_item from '@/modules/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -15,9 +15,11 @@ const person = {
 }
 describe('@/components/download-vector', () => {
   it('Renders link to download svg', async () => {
-    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(poster))
-    jest.spyOn(itemid, 'load').mockImplementationOnce(_ => Promise.resolve(person))
-    const wrapper = shallow(download_vector, {
+    jest.spyOn(itemid, 'load').mockImplementation(itemid => {
+      if (itemid === '/+16282281824/posters/559666932867') return Promise.resolve(poster)
+      else return Promise.resolve(person)
+    })
+    const wrapper = shallowMount(download_vector, {
       propsData: {
         itemid: poster.id
       }

@@ -23,7 +23,7 @@
   import { newer_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
-  import sign_on from '@/components/sign-on'
+  import sign_on from '@/components/profile/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/events/as-figure'
     export default {
@@ -44,7 +44,6 @@
     },
     async created () {
       console.time('events-load')
-      console.info(`Views realness version ${this.version}`)
       this.events = await this.get_upcoming_events()
       this.working = false
       console.timeEnd('events-load')
@@ -52,8 +51,8 @@
     methods: {
       async get_upcoming_events () {
         const [relations, my_events] = await Promise.all([
-          itemid.list(`${this.me}/relations`),
-          itemid.list(`${this.me}/events`)
+          itemid.list(`${localStorage.me}/relations`),
+          itemid.list(`${localStorage.me}/events`)
         ])
         let events = my_events
         await Promise.all(relations.map(async (person) => {

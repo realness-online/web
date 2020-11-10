@@ -1,13 +1,6 @@
 <template lang="html">
   <fieldset class="event" :class="state">
-    <ol ref="events" itemprop="events" hidden>
-      <li v-for="event in events" :key="event.id"
-          itemscope
-          itemtype="/events"
-          :itemid="event.id">
-        <link itemprop="url" rel="icon" :href="event.url">
-      </li>
-    </ol>
+    <events-list :events="events" :itemid="itemid" />
     <label for="day">{{ event_label }}</label>
     <input id="day" ref="day"
            type="date"
@@ -28,9 +21,13 @@
 <script>
   import icon from '@/components/icon'
   import itemid from '@/helpers/itemid'
+  import events_list from '@/components/events/as-list'
   import { Events } from '@/persistance/Storage'
   export default {
-    components: { icon },
+    components: {
+      icon,
+      'events-list': events_list
+    },
     props: {
       itemid: {
         type: String,
@@ -84,7 +81,7 @@
     },
     async created () {
       this.main_event = this.tonight
-      this.events = await itemid.list(`${this.me}/events`)
+      this.events = await itemid.list(`${localStorage.me}/events`)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },

@@ -10,7 +10,9 @@
     <hgroup>
       <h1>Relations</h1>
     </hgroup>
-    <profile-as-list v-if="signed_in" :people="relations" />
+    <nav v-if="signed_in" class="profile-list">
+      <as-figure v-for="person in relations" :key="person.id" :person="person" :relations.sync="relations" />
+    </nav>
     <hgroup v-else class="sign-on message">
       <p>
         <sign-on /> and you can check out <icon name="heart" /> who's on here
@@ -20,17 +22,17 @@
   </section>
 </template>
 <script>
-  import icon from '@/components/icon'
-  import sign_on from '@/components/sign-on'
-  import logo_as_link from '@/components/logo-as-link'
-  import profile_as_list from '@/components/profile/as-list'
+  import { list, load } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
-  import itemid from '@/helpers/itemid'
+  import icon from '@/components/icon'
+  import logo_as_link from '@/components/logo-as-link'
+  import as_figure from '@/components/profile/as-figure'
+  import sign_on from '@/components/profile/sign-on'
   export default {
     components: {
       icon,
       'sign-on': sign_on,
-      'profile-as-list': profile_as_list,
+      'as-figure': as_figure,
       'logo-as-link': logo_as_link
     },
     mixins: [signed_in],
@@ -42,9 +44,9 @@
     },
     async created () {
       console.info('Views relations')
-      this.relations = await itemid.list(`${this.me}/relations`)
+      this.relations = await list(`${localStorage.me}/relations`)
       this.relations.forEach(async (relation, index) => {
-        const person = await itemid.load(relation.id)
+        const person = await load(relation.id)
         this.relations.splice(index, 1, person)
       })
     }

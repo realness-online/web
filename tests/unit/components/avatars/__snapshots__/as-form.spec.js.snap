@@ -5,20 +5,26 @@ exports[`@/components/avatars/as-form.vue Render avatar manager 1`] = `
   id="manage-avatar"
 >
   <div>
-    <!---->
+    <avatar-as-svg-stub
+      person="[object Object]"
+    />
   </div>
    
   <menu>
     <a
       id="open_camera"
     >
-      <!---->
+      <icon-stub
+        name="camera"
+      />
     </a>
      
     <a
       id="select_photo"
     >
-      <!---->
+      <icon-stub
+        name="add"
+      />
     </a>
      
     <!---->

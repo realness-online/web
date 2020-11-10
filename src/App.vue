@@ -1,31 +1,30 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view />
-    <aside v-if="production_mode">
-      <activity-as-table />
-    </aside>
-    <aside v-else>
-      <developer-tools />
+    <router-view @statement-added="statement=$event" />
+    <aside>
+      <activity-as-table v-if="production_mode" />
+      <developer-tools v-else />
+      <sync :statement.sync="statement" />
     </aside>
   </main>
 </template>
 <script>
   import * as firebase from 'firebase/app'
-  import 'firebase/auth'
-  import { Statements, Events } from '@/persistance/Storage'
+  import { del } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
+  import sync from '@/components/sync'
   import activity from '@/components/activity/as-table'
-  import profile from '@/helpers/profile'
   export default {
     components: {
+      sync,
       'developer-tools': developer_tools,
       'activity-as-table': activity
     },
     data () {
       return {
+        statement: null,
         status: null,
-        syncer: new Worker('/sync.worker.js'),
         firebase_keys: {
           apiKey: process.env.VUE_APP_API_KEY,
           authDomain: process.env.VUE_APP_AUTH_DOMAIN,
@@ -47,44 +46,32 @@
       }
     },
     created () {
-      this.syncer.addEventListener('message', this.worker_message)
+      del('sync:peer-connected')
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       firebase.initializeApp(this.firebase_keys)
-      firebase.auth().onAuthStateChanged(this.sync)
       if (!navigator.onLine) this.offline()
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
-      this.syncer.terminate()
     },
     methods: {
       online () {
-        this.sync(firebase.auth().currentUser)
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', true))
         this.status = null
       },
       offline () {
+        // TODO: this could potentally override
+        // other components intentionally having this set false
+        // we can fix this by setting a class variable for any contenteditable
+        // we change and than only flip those guys back to editable
+        // this is not a big deal now as I remove contenteditable rather than
+        // set it false
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'
-      },
-      async sync (current_user) {
-        if (current_user) {
-          localStorage.me = profile.from_e64(current_user.phoneNumber)
-          const statements = new Statements()
-          const events = new Events()
-          await Promise.all([
-            statements.sync(),
-            events.sync()
-          ])
-          this.syncer.postMessage('sync')
-        }
-      },
-      worker_message (message) {
-        console.log(`message:${message}`)
       }
     }
   }
@@ -92,5 +79,5 @@
 <style lang="stylus">
   main.offline
     border: (base-line * .333) solid yellow
-    border-radius: base-line
+    border-radius: (base-line / 6)
 </style>

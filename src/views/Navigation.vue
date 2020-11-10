@@ -1,7 +1,7 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
-      <h6 class="app_version">
+      <h6>
         {{ version }}
       </h6>
     </header>
@@ -24,103 +24,79 @@
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea class="red"
                              @toggle-keyboard="posting = !posting"
-                             @statement-added="add_statement" />
+                             @statement-added="$emit('statement-added', $event)" />
     </nav>
-    <footer hidden>
-      <as-days v-slot="thoughts"
-               itemscope
-               :itemid="statements_id"
-               :statements="statements">
-        <thought-as-article v-for="thought in thoughts"
-                            :key="thought[0].id"
-                            :statements="thought" />
-      </as-days>
-    </footer>
   </section>
 </template>
 <script>
-  import { Statements } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import itemid from '@/helpers/itemid'
   import as_textarea from '@/components/statements/as-textarea'
-  import as_days from '@/components/as-days'
-  import thought_as_article from '@/components/statements/as-article'
   export default {
     components: {
-      'as-days': as_days,
-      'thought-as-article': thought_as_article,
       'statement-as-textarea': as_textarea
     },
     mixins: [signed_in],
     data () {
       return {
-        relations: [],
         statements: [],
         version: process.env.VUE_APP_VERSION,
         signed_in: true,
         posting: false,
-        first_name: 'You'
-      }
-    },
-    computed: {
-      has_statements () {
-        return this.statements.length > 0
-      },
-      statements_id () {
-        return `${this.me}/statements`
+        first_name: ''
       }
     },
     async created () {
       console.info('Views the navigation')
-      await this.get_all_my_stuff()
+      const my = await itemid.load(localStorage.me)
+      if (my && my.first_name) this.first_name = my.first_name
+      else this.first_name = 'You'
     },
     methods: {
-      async get_all_my_stuff () {
-        const [my, statements, relations] = await Promise.all([
-          itemid.load(this.me, this.me),
-          itemid.list(`${this.me}/statements`, this.me),
-          itemid.list(`${this.me}/relations`, this.me)
-        ])
-        if (my && my.first_name) this.first_name = my.first_name
-        this.statements = statements
-        this.relations = relations
-      },
       done_posting (event) {
         document.querySelector('nav > button').focus()
-      },
-      async add_statement (statement) {
-        this.statements.push(statement)
-        await this.$nextTick()
-        new Statements().save()
       }
     }
   }
 </script>
 <style lang="stylus">
   section#navigation.page
-    width: 100%
-    padding: 0 base-line
     display: flex
     align-items: center
-    margin: auto
     max-width: page-width
-    height: 100vh
-    @media (max-height: pad-begins) and (orientation: landscape)
-      height: auto
     &.posting
       height: inherit
-      align-items: flex-end
-    &.posting > nav
-      // min-height: round(base-line * 9)
-      // height: round(base-line * 9)
-      & > textarea
-        text-align: inherit
-        margin-top: base-line
-        padding: 0
-        border-radius: 0
+      @media (max-width: pad-begins)
+        align-items: flex-start
+      & > nav
+        transition-duration: 0.5s
+        min-height: round(base-line * 11)
+        height: round(base-line * 11)
+        & > button
+          top: 0
+          width: base-line * 3
+          height: base-line * 1.77
+          display: block
+        & > textarea
+          height: auto
+          text-align: inherit
+          margin-top: base-line
+          padding: 0
+          border-radius: 0
+    @media (max-width: pad-begins)
+      padding: 0 base-line
+    @media (max-height: pad-begins) and (orientation: landscape)
+      height: auto
     & > header
       padding: 0
+      & > h6
+        margin: 0
+        padding: 0
+        position: fixed
+        bottom: (base-line / 2)
+        left: (base-line / 2)
     & > nav
+      transition-duration: 0s
       display: grid
       grid-gap: base-line
       grid-template-columns: 1fr 1fr
@@ -149,16 +125,6 @@
       & > textarea
         padding: base-line
         border-radius: base-line
-      & > button
-        align-self: flex-end
-        width: base-line * 4
-        display: block
       & > textarea
         text-align: right
-    h6.app_version
-      margin: 0
-      padding: 0
-      position: fixed
-      bottom: (base-line / 2)
-      left: (base-line / 2)
 </style>

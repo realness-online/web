@@ -4,15 +4,17 @@ import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import {
+  get_item,
   hydrate,
   get_itemprops
 } from '@/modules/item'
 import {
   list,
+  type_as_list,
   load_from_network,
   as_created_at
 } from '@/helpers/itemid'
-import profile from '@/helpers/profile'
+import { from_e64 } from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest (elements, prop_name) {
   const list = get_itemprops(elements)
@@ -39,12 +41,6 @@ export function elements_as_kilobytes (elements) {
   else return 0
 }
 const Paged = (superclass) => class extends superclass {
-  async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    if (!items) return
-    await this.sync()
-    if (super.save) super.save(items)
-    await this.optimize()
-  }
   async optimize () {
     // First in first out storage (FIFO)
     if (itemid_as_kilobytes(this.id) > 13) {
@@ -63,7 +59,7 @@ const Paged = (superclass) => class extends superclass {
       div.setAttribute('itemscope', '')
       div.setAttribute('itemid', this.id)
       div.appendChild(offload)
-      const me = profile.from_e64(firebase.auth().currentUser.phoneNumber)
+      const me = from_e64(firebase.auth().currentUser.phoneNumber)
       const id = `${me}/${this.type}/${oldest.getTime()}`
       await this.save(current)
       const history = new History(id)
@@ -74,27 +70,33 @@ const Paged = (superclass) => class extends superclass {
     }
   }
   async sync () {
-    let items; let oldest_at = 0 // the larger the number the more recent it is
+    let items
+    let oldest_at = 0 // the larger the number the more recent it is
     const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)
     if (!cloud) return local_items
-    const cloud_items = cloud[cloud.type]
-    if (cloud_items && cloud_items.length) {
-      cloud_items.sort(newer_item_first)
-      const oldest_id = cloud_items[cloud_items.length - 1].id
-      oldest_at = as_created_at(oldest_id)
-    }
-    if (local_items && local_items.length) {
+    const cloud_items = type_as_list(cloud).sort(newer_item_first)
+    if (!cloud_items.length) return null
+    const oldest_id = cloud_items[cloud_items.length - 1].id
+    oldest_at = as_created_at(oldest_id)
+    if (local_items && local_items.length && cloud_items.length) {
       local_items.sort(newer_item_first)
       const new_local_stuff = local_items.filter(local_item => {
         const created_at = as_created_at(local_item.id)
-        // local older items are ignored, probably optimized away
-        if (oldest_at > created_at) return false
-        return !cloud_items.some(server_item => {
+        if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
+        return !cloud_items.some(server_item => { // remove local items that are in the cloud
           return local_item.id === server_item.id
         })
       })
-      items = [...new_local_stuff, ...cloud_items]
+      let offline_items = localStorage.getItem(`/+/${this.type}`)
+      offline_items = type_as_list(get_item(offline_items))
+      offline_items.forEach(item => {
+        // convert id's to current id
+        const me = from_e64(firebase.auth().currentUser.phoneNumber)
+        item.id = `${me}/${this.type}/${as_created_at(item.id)}`
+      })
+      // three distinct lists are recombined into a single synced list
+      items = [...new_local_stuff, ...cloud_items, ...offline_items]
       items.sort(newer_item_first)
     } else items = cloud_items
     return items

@@ -1,13 +1,15 @@
 {
-  "name": "Realness",
+  "name": "@realness.online/web",
   "version": "0.7.7",
   "private": false,
-  "description": "Source code for https://realness.online. this code is open source so that we can keep our commitment to transparency",
-  "author": "Scott Fryxell <sfryxell@me.com>",
+  "description": "Source code for https://realness.online. When licensed moderators will be responsible for the content within their network. In this regard moderators run the network, as it is their ass that is on the line.",
+  "author": "Scott Fryxell <scott.fryxell@hey.com>",
+  "license": "UNLICENSED",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "build:staging": "vue-cli-service build --mode staging",
+    "build:workers": "webpack",
+    "dev:workers": "webpack --watch",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
@@ -20,14 +22,16 @@
     "functions:logs": "firebase functions:log"
   },
   "dependencies": {
-    "@realness.online/web-workers": "0.3.8",
+    "@realness.online/potrace": "2.1.16",
     "firebase": "^7.8.2",
     "idb-keyval": "^3.2.0",
     "libphonenumber-js": "^1.7.44",
+    "pako": "^1.0.10",
     "register-service-worker": "^1.7.1",
-    "vue": "^2.6.12",
+    "svgo": "^1.3.0",
+    "vue": "2.6.12",
     "vue-router": "^3.1.5",
-    "webpack-bundle-analyzer": "^3.8.0"
+    "vue-template-compiler": "2.6.12"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.6",
@@ -54,12 +58,12 @@
     "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
-    "jsdom-worker-fix": "^0.1.8",
-    "mockdate": "^3.0.2",
+    "jsdom-worker-fix": "git://github.com/scott-fryxell/jsdom-worker.git",
+    "mockdate": "^2.0.5",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
-    "vue-template-compiler": "^2.6.12",
-    "vue-test-utils": "^1.0.0-beta.11"
+    "webpack-bundle-analyzer": "^3.8.0",
+    "webpack-cli": "^4.0.0"
   },
   "eslintConfig": {
     "root": true,
@@ -128,7 +132,7 @@
     "bail": 0,
     "verbose": false,
     "collectCoverage": false,
-    "restoreMocks": false,
+    "restoreMocks": true,
     "moduleFileExtensions": [
       "js",
       "jsx",
@@ -177,6 +181,5 @@
       "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
     ],
     "testURL": "http://localhost/"
-  },
-  "license": "UNLICENSED"
+  }
 }

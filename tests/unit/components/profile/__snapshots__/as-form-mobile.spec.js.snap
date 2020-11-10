@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile form 1`] = `
+<form
+  id="profile-mobile"
+>
+  <fieldset
+    id="phone"
+  >
+    <legend
+      class="valid"
+    >
+      (415) 123-4356
+    </legend>
+     
+    <label
+      for="mobile"
+    >
+      1
+    </label>
+     
+    <input
+      id="mobile"
+      placeholder="(555) 555-5555"
+      tabindex="3"
+      type="tel"
+    />
+  </fieldset>
+   
+  <!---->
+   
+  <!---->
+   
+  <menu>
+    <button
+      id="authorize"
+      tabindex="5"
+    >
+      
+      Sign on
+    
+    </button>
+     
+    <!---->
+  </menu>
+</form>
+`;

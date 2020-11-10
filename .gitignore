@@ -7,9 +7,14 @@ node_modules
 /tests/unit/cache/
 /tests/e2e/reports/
 /functions/coverage
+
 /public/vector.worker.js
+/public/vector.worker.js.map
 /public/compression.worker.js
+/public/compression.worker.js.map
 /public/sync.worker.js
+/public/sync.worker.js.map
+
 /public/report.html
 .firebase/
 .firebase/hosting*

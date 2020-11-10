@@ -1,10 +1,9 @@
-import { shallow } from 'vue-test-utils'
-import as_form from '@/components/profile/as-form'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
-const onAuthStateChanged = jest.fn(state_changed => state_changed())
-describe('@/compontent/profile/as-form.vue', () => {
+import { shallowMount } from '@vue/test-utils'
+import as_form from '@/components/profile/as-form-mobile'
+import flushPromises from 'flush-promises'
+describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
+    id: '/+14151234356',
     first_name: 'Scott',
     last_name: 'Fryxell',
     mobile: '4151234356'
@@ -12,7 +11,7 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('profile form', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallow(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person } })
     })
     it('Render profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
@@ -22,7 +21,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     describe('keypress', () => {
       let input, stub, wrapper
       beforeEach(() => {
-        wrapper = shallow(as_form, { propsData: { person: {} } })
+        wrapper = shallowMount(as_form, { propsData: { person: {} } })
         input = wrapper.find('#mobile')
         stub = jest.fn()
       })
@@ -44,7 +43,7 @@ describe('@/compontent/profile/as-form.vue', () => {
     describe('paste', () => {
       let input, wrapper
       beforeEach(() => {
-        wrapper = shallow(as_form, { propsData: { person: {} } })
+        wrapper = shallowMount(as_form, { propsData: { person: {} } })
         input = wrapper.find('#mobile')
       })
       it('Reject invalid mobile number', () => {
@@ -92,7 +91,7 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('button#authorize', () => {
     let wrapper, button
     beforeEach(() => {
-      wrapper = shallow(as_form, { propsData: { person: person } })
+      wrapper = shallowMount(as_form, { propsData: { person } })
       button = wrapper.find('#authorize')
     })
     it('Enabled with valid mobile number', () => {
@@ -100,36 +99,29 @@ describe('@/compontent/profile/as-form.vue', () => {
     })
     it('Disabled with invalid mobile number', () => {
       const invalid_person = { mobile: '415123456a' }
-      wrapper = shallow(as_form, { propsData: { person: invalid_person } })
+      wrapper = shallowMount(as_form, { propsData: { person: invalid_person } })
       button = wrapper.find('#authorize')
-      expect(button.is('[disabled]')).toBe(true)
+      expect(button.attributes('disabled')).toBeTruthy()
     })
-    it('Starts captcha verification when clicked', () => {
-      button.trigger('click')
+    it('Starts captcha verification when clicked', async () => {
+      await button.trigger('click')
       expect(wrapper.vm.show_captcha).toBe(true)
       const captcha = wrapper.find('#captcha')
       expect(captcha.exists()).toBe(true)
     })
-    it('Is removed after click', () => {
+    it('Is removed after click', async () => {
       expect(button.exists()).toBe(true)
-      button.trigger('click')
+      await button.trigger('click')
       expect(wrapper.vm.show_authorize).toBe(false)
       button = wrapper.find('#authorize')
       expect(button.exists()).toBe(false)
     })
   })
   describe('#text_human_verify_code', () => {
-    let wrapper, signInWithPhoneNumber
+    let wrapper
     beforeEach(() => {
-      signInWithPhoneNumber = jest.fn(() => Promise.resolve('success'))
-      jest.spyOn(firebase, 'auth').mockImplementation(() => {
-        return {
-          signInWithPhoneNumber,
-          onAuthStateChanged
-        }
-      })
-      wrapper = shallow(as_form, {
-        propsData: { person: person }
+      wrapper = shallowMount(as_form, {
+        propsData: { person }
       })
       wrapper.setData({
         show_code: true
@@ -147,13 +139,16 @@ describe('@/compontent/profile/as-form.vue', () => {
   describe('input#verification-code', () => {
     let input, stub, wrapper
     beforeEach(() => {
-      wrapper = shallow(as_form, {
-        propsData: { person: person }
+      wrapper = shallowMount(as_form, {
+        propsData: { person },
+        data () {
+          return {
+            show_code: true,
+            code: '12345'
+          }
+        }
       })
-      wrapper.setData({
-        show_code: true,
-        code: '12345'
-      })
+
       input = wrapper.find('#verification-code')
       stub = jest.fn()
     })
@@ -179,6 +174,42 @@ describe('@/compontent/profile/as-form.vue', () => {
       })
       expect(stub).not.toBeCalled()
       expect(button.attributes().disabled).toBe(undefined)
+    })
+  })
+  describe('Sign on', () => {
+    let wrapper, button, confirm_spy
+    beforeEach(() => {
+      confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
+      wrapper = shallowMount(as_form, {
+        propsData: { person },
+        data () {
+          return {
+            show_code: true,
+            authorizer: { confirm: confirm_spy }
+          }
+        }
+      })
+      button = wrapper.find('#submit-verification')
+    })
+    it('button#submit-verification signs the user in', async () => {
+      await button.trigger('click')
+      expect(confirm_spy).toBeCalled()
+    })
+    it('Hides input#verification-code when clicked', async () => {
+      expect(wrapper.find('#verification-code').exists()).toBe(true)
+      await button.trigger('click')
+      expect(wrapper.find('#verification-code').exists()).toBe(false)
+      expect(wrapper.vm.show_code).toBe(false)
+    })
+    it('Renders the sign out button after sign on', async () => {
+      expect(wrapper.vm.show_sign_out).toBe(false)
+      button.trigger('click')
+      await flushPromises()
+      expect(wrapper.vm.show_sign_out).toBe(true)
+    })
+    it('Emits an event when the user is signed on', async () => {
+      await wrapper.vm.sign_in_with_code()
+      expect(wrapper.emitted('signed-on')).toBeTruthy()
     })
   })
 })
