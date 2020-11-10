@@ -1,13 +1,13 @@
 {
   "name": "@realness.online/web",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "private": false,
   "description": "Source code for https://realness.online. When licensed moderators will be responsible for the content within their network. In this regard moderators run the network, as it is their ass that is on the line.",
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
   "license": "UNLICENSED",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "webpack && vue-cli-service build",
     "build:workers": "webpack",
     "dev:workers": "webpack --watch",
     "lint": "vue-cli-service lint",
