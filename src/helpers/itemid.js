@@ -30,7 +30,7 @@ export async function list (itemid, me = localStorage.me) {
 export async function load_from_network (itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info('Loads a storage item')
+    console.info('Loads a storage item', itemid)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return get_item(server_text, itemid)
