@@ -31,11 +31,18 @@ module.exports = {
       msTileImage: 'icons/mstile-150x150.png'
     },
     manifestOptions: {
-      description: 'A social network for the realness in all of us realness.online',
+      short_name: 'Realness`',
+      description: 'A vector network for the realness in all of us realness.online',
       scope: '/',
       orientation: 'portrait',
       background_color: '#52a0d1',
       icons: [
+        {
+          src: '/icons/logo.svg', // inside the scope!
+          sizes: '192x192', // see the size in the devtools, not in editor. I've set up size 1200x1200 in Illustrator, but Chrome says it's 150x150. Also, 'sizes':'any' not work.
+          type: 'image/svg+xml', // not image/svg which is still visible in web
+          purpose: 'any' // not 'maskable any' as you may see there in answers.
+        },
         {
           src: '/icons/android-chrome-192x192.png',
           sizes: '192x192',
