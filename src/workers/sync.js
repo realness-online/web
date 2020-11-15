@@ -33,10 +33,12 @@ export function initialize (credentials) {
     storageBucket: credentials.VUE_APP_STORAGE_BUCKET,
     messagingSenderId: credentials.VUE_APP_MESSAGING_SENDER_ID
   })
-  firebase.auth().onAuthStateChanged(me => {
+  firebase.auth().onAuthStateChanged(async (me) => {
     if (navigator.onLine && me) {
-      people(me, true)
-      offline(me)
+      await people(me, true)
+      self.postMessage({ action: 'sync:statements' })
+      // self.postMessage({ action: 'sync:events' })
+      await offline(me)
     }
   })
 }
@@ -78,7 +80,11 @@ export async function people (me = firebase.auth().currentUser, check_everyone =
 }
 async function recurse () {
   const is_peering = await get('sync:peer-connected')
-  if (!is_peering) await people()
+  if (!is_peering) {
+    await people()
+    self.postMessage({ action: 'sync:statements' })
+    self.postMessage({ action: 'sync:events' })
+  }
 }
 async function list_people () {
   const full_list = await keys()
