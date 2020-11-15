@@ -14,7 +14,14 @@ export async function load (itemid, me = localStorage.me) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
   }
-  item = get_item(await get(itemid))
+  const result = await get(itemid)
+  if (result === null) {
+    // itemid is explicitly set to null to signify non existence
+    // undefined means try and load it
+    console.info('cache:404', itemid)
+    return null
+  }
+  item = get_item(result)
   if (item) return item
   item = await load_from_network(itemid, me)
   if (item) return item
