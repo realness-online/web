@@ -37,7 +37,7 @@ export async function list (itemid, me = localStorage.me) {
 export async function load_from_network (itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info('Loads a storage item', itemid)
+    console.info('request:download', itemid)
     const server_text = await (await fetch(url)).text()
     set(itemid, server_text)
     return get_item(server_text, itemid)
@@ -47,11 +47,11 @@ export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) {
-    console.info(`Using cache for ${itemid}`)
+    console.info('cached:directory', itemid)
     return cached
   } else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
-    console.info(`Makes a directory request for ${path}`)
+    console.info('request:directory', path)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
     directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
     directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
@@ -63,7 +63,7 @@ export async function as_download_url (itemid, me = localStorage.me) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
-    console.info(`Makes a storage request for ${itemid}`)
+    console.info('request:location', itemid)
     return await storage.child(as_filename(itemid)).getDownloadURL()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
