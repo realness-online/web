@@ -134,7 +134,7 @@
       },
       async sync_paged (itemid, paged) {
         const query = `[itemid="${itemid}"]`
-        const elements = this.$el.querySelector(query)
+        const elements = this.$refs.sync.querySelector(query)
         if (elements) {
           let index = await get('hash')
           if (!index) index = {}
