@@ -23,7 +23,7 @@
 <script>
   import signed_in from '@/mixins/signed_in'
   import { from_e64 } from '@/helpers/profile'
-  import { newest_number_first } from '@/helpers/sorting'
+  import intersection_thought from '@/mixins/intersection_thought'
   import { load, list, as_directory } from '@/helpers/itemid'
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
@@ -44,7 +44,7 @@
       'poster-as-figure': poster_as_figure,
       'thought-as-article': as_article
     },
-    mixins: [signed_in],
+    mixins: [signed_in, intersection_thought],
     data () {
       return {
         working: true,
@@ -63,8 +63,14 @@
         as_directory(`${id}/posters`),
         list(`${localStorage.me}/relations`)
       ])
-      if (person) this.person = person
-      else return
+      if (person) {
+        this.person = person
+        this.authors.push({
+          id: person.id,
+          type: 'person',
+          viewed: ['index']
+        })
+      } else return
       this.relations = my_relations
       this.statements = statements
       if (posters && posters.items) {
@@ -76,29 +82,6 @@
         })
       }
       console.info(`Views ${person.first_name}'s profile`)
-    },
-    methods: {
-      slot_key (item) {
-        if (Array.isArray(item)) return item[0].id
-        return item.id
-      },
-      async thought_shown (thought) {
-        const id = from_e64(this.$route.params.phone_number)
-        const thought_oldest = thought[thought.length - 1]
-        const oldest = this.statements[this.statements.length - 1]
-        if (oldest.id === thought_oldest.id) {
-          const directory = await as_directory(`${id}/statements`)
-          let history = directory.items
-          history.sort(newest_number_first)
-          history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
-          const next = history.shift()
-          if (next) {
-            const next_statements = await list(`${id}/statements/${next}`)
-            this.pages_viewed.push(next)
-            this.statements = [...this.statements, ...next_statements]
-          }
-        }
-      }
     }
   }
 </script>
