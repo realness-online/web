@@ -51,8 +51,8 @@
 <style lang="stylus">
     figure.profile > figcaption > menu > a.status
       svg
-        width: 1.5rem
-        height: 1.5rem
+        width: 2rem
+        height: 2rem
         transition: fill, width, height
         transition-duration: 0.5s
         cursor: pointer
