@@ -20,7 +20,7 @@ export async function load (itemid, me = localStorage.me) {
     // undefined means try and load it
     console.info('cache:404', itemid)
     return null
-  }
+  } else console.info('cache:load')
   item = get_item(result)
   if (item) return item
   item = await load_from_network(itemid, me)
@@ -39,7 +39,7 @@ export async function load_from_network (itemid, me = localStorage.me) {
   if (url) {
     console.info('request:download', itemid)
     const server_text = await (await fetch(url)).text()
-    set(itemid, server_text)
+    await set(itemid, server_text)
     return get_item(server_text, itemid)
   } else return null
 }
@@ -47,15 +47,15 @@ export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) {
-    console.info('cached:directory', itemid)
+    console.info('cache:directory')
     return cached
   } else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
-    console.info('request:directory', path)
+    console.info('request:directory', itemid)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
     directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
     directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
-    set(path, meta)
+    await set(path, meta)
     return meta
   } else return null
 }
@@ -68,7 +68,7 @@ export async function as_download_url (itemid, me = localStorage.me) {
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))
-      set(itemid, null)
+      await set(itemid, null)
       return null
     } else throw e
   }

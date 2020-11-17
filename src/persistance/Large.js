@@ -8,8 +8,8 @@ const Large = (superclass) => class extends superclass {
     if (directory && directory.items) directory.items.push(as_path_parts(this.id)[2])
     else directory = { items: [as_path_parts(this.id)[2]] }
     if (items) {
-      set(this.id, items.outerHTML)
-      set(path, directory)
+      await set(this.id, items.outerHTML)
+      await set(path, directory)
     }
     if (super.save) super.save(items)
   }
@@ -17,8 +17,8 @@ const Large = (superclass) => class extends superclass {
     const path = as_directory_id(this.id)
     const directory = await get(path)
     directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
-    del(this.id)
-    set(path, directory)
+    await del(this.id)
+    await set(path, directory)
     if (super.delete) super.delete()
   }
 }
