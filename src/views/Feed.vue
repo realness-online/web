@@ -28,13 +28,9 @@
   </section>
 </template>
 <script>
-  import {
-    list,
-    as_directory,
-    as_author
-  } from '@/helpers/itemid'
-  import { newest_number_first } from '@/helpers/sorting'
+  import { list, as_directory } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
+  import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
@@ -50,11 +46,10 @@
       'poster-as-figure': poster_as_figure,
       icon
     },
-    mixins: [signed_in],
+    mixins: [signed_in, intersection_thought],
     data () {
       return {
         signed_in: true,
-        people: [],
         statements: [],
         posters: [],
         working: true
@@ -63,8 +58,8 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      this.people = await list(`${localStorage.me}/relations`)
-      this.people.push({
+      this.authors = await list(`${localStorage.me}/relations`)
+      this.authors.push({
         id: localStorage.me,
         type: 'person'
       })
@@ -74,11 +69,12 @@
     },
     methods: {
       async fill_feed () {
-        await Promise.all(this.people.map(async relation => {
+        await Promise.all(this.authors.map(async relation => {
           const [statements, posters] = await Promise.all([
             list(`${relation.id}/statements`),
             as_directory(`${relation.id}/posters`)
           ])
+
           relation.viewed = ['index']
           this.statements = [...statements, ...this.statements]
           if (posters && posters.items) {
@@ -90,29 +86,6 @@
             })
           }
         }))
-      },
-      async thought_shown (statements) {
-        const oldest = statements[statements.length - 1]
-        let author = as_author(oldest.id)
-        const author_statements = this.statements.filter(statement => author === as_author(statement.id))
-        const author_oldest = author_statements[author_statements.length - 1]
-        if (oldest.id === author_oldest.id) {
-          author = this.people.find(relation => relation.id === author)
-          const directory = await as_directory(`${author.id}/statements`)
-          let history = directory.items
-          history.sort(newest_number_first)
-          history = history.filter(page => !author.viewed.some(viewed => viewed === page))
-          const next = history.shift()
-          if (next) {
-            const next_statements = await list(`${author.id}/statements/${next}`)
-            author.viewed.push(next)
-            this.statements = [...this.statements, ...next_statements]
-          }
-        }
-      },
-      slot_key (item) {
-        if (Array.isArray(item)) return item[0].id
-        return item.id
       }
     }
   }

@@ -38,10 +38,10 @@
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
-  import { newest_number_first } from '@/helpers/sorting'
-  import { load, list, as_directory } from '@/helpers/itemid'
+  import { load, list } from '@/helpers/itemid'
   import { Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
+  import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
@@ -59,7 +59,7 @@
       'thought-as-article': thought_as_article,
       'avatar-as-form': avatar_as_form
     },
-    mixins: [signed_in],
+    mixins: [signed_in, intersection_thought],
     data () {
       return {
         person: {},
@@ -79,6 +79,11 @@
     },
     async created () {
       console.info('Views account page')
+      this.authors.push({
+        id: localStorage.me,
+        type: 'person',
+        viewed: ['index']
+      })
       this.statements = await this.get_all_my_stuff()
       this.first_page = this.statements
       this.working = false
@@ -111,23 +116,6 @@
         const me = new Me()
         await me.save()
         this.working = false
-      },
-      async thought_shown (thought) {
-        if (this.currently_focused) return
-        const thought_oldest = thought[thought.length - 1]
-        const oldest = this.statements[this.statements.length - 1]
-        if (oldest.id === thought_oldest.id) {
-          const directory = await as_directory(`${localStorage.me}/statements`)
-          let history = directory.items
-          history.sort(newest_number_first)
-          history = history.filter(page => !this.pages_viewed.some(viewed => viewed === page))
-          const next = history.shift()
-          if (next) {
-            const next_statements = await list(`${localStorage.me}/statements/${next}`)
-            this.pages_viewed.push(next)
-            this.statements = [...this.statements, ...next_statements]
-          }
-        }
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
@@ -204,6 +192,7 @@
         padding: base-line base-line 0 base-line
       figure.profile
         & > svg
+          border-radius: 0.66rem
           border-color: red
         & > figcaption > menu
           opacity: 1
