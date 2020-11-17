@@ -55,11 +55,12 @@
     created () {
       if (this.immediate) this.show()
     },
-    async mounted () {
-      if (this.person.avatar && localStorage.me === this.person.id && localStorage.me.length > 2) {
-       this.avatar = await itemid.load(this.person.avatar)
-     }
-    },
+    // async mounted () {
+    //   if (this.person.avatar && localStorage.me === this.person.id && localStorage.me.length > 2) {
+    //     console.log('mounted thing')
+    //     this.avatar = await load(this.person.avatar)
+    //  }
+    // },
     methods: {
       first_instance () {
         if (document.getElementById(this.id)) return false
