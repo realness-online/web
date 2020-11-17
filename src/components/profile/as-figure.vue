@@ -95,10 +95,10 @@
       width: 4rem
       height: 4rem
       cursor: pointer
+      border: 1px solid blue
       @media (max-width: pad-begins)
         border-top-right-radius: 0.66rem
         border-bottom-right-radius: 0.66rem
-      border: 1px solid blue
       @media (min-width: pad-begins)
         border-radius: 0.66rem
       &.background
