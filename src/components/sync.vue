@@ -1,5 +1,5 @@
 <template lang="html">
-  <div ref="sync" hidden>
+  <div v-if="syncing" ref="sync" hidden>
     <as-hgroup v-if="person" :person="person" />
     <as-days v-if="show_statements" v-slot="thoughts"
              itemscope
@@ -141,7 +141,7 @@
           const current_hash = parseInt(index[itemid])
           const new_hash = hash(elements.outerHTML)
           if (current_hash !== new_hash) {
-            await paged.save()
+            await paged.save(elements)
             localStorage.removeItem(`/+/${as_type(itemid)}`)
             index[itemid] = new_hash
             set('hash', index)
