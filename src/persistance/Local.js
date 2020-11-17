@@ -10,7 +10,7 @@ const Local = (superclass) => class extends superclass {
       localStorage.setItem(this.id, content)
       const hash = hash_code(localStorage.getItem(this.id))
       index[this.id] = hash
-      set('hash', index)
+      await set('hash', index)
     }
   }
 }
