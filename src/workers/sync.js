@@ -94,11 +94,9 @@ async function list_people () {
 }
 async function check_people (people, check_everyone) {
   let what_I_know = await get('sync:index')
-  console.log('what_I_know', what_I_know)
   if (!what_I_know) what_I_know = {}
   await Promise.all(people.map(async (itemid) => {
     const meta = what_I_know[itemid]
-    console.log(meta)
     if (!meta) await prune_person(itemid, what_I_know)
     else if (is_fresh(meta.updated)) await prune_person(itemid, what_I_know)
     else if (check_everyone) await prune_person(itemid, what_I_know)
@@ -112,8 +110,8 @@ async function prune_person (itemid, what_I_know) {
     await del(`${statements}/`)
     await del(`${itemid}/events`)
     await del(`${itemid}/posters/`)
-    console.info('is-pruned', itemid)
-  } else console.info('is-sleeping', itemid)
+    console.info('cache:pruned', itemid)
+  } else console.info('cache:kept', itemid)
 }
 const five_seconds = 1000 * 5
 const one_minute = five_seconds * 12
@@ -122,19 +120,17 @@ async function is_outdated (itemid, what_I_know) {
   const path = await firebase.storage().ref().child(as_filename(itemid))
   let network
   let local = what_I_know[itemid]
-  // console.log(itemid, local)
   try {
     console.info('request:metadata', itemid)
     network = await path.getMetadata()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.info('not-found', itemid)
+      console.info('request:not-found', itemid)
       network = { updated: null } // Explicitly setting null to indicate that this file doesn't exist
     } else throw e
   }
   if (!what_I_know[itemid] || network.updated === null) local = network
   what_I_know[itemid] = network // now that local and network are known, set the index to network, and save
-  console.log('setting', what_I_know)
   await set('sync:index', what_I_know)
   local = new Date(local.updated).getTime()
   network = new Date(network.updated).getTime()
