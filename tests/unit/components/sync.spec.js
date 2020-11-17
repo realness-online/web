@@ -9,7 +9,9 @@ import {
 } from '@/persistance/Storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const statements = get_item(statements_html).statements
+const save_poster = get_item(poster_html)
 const events = [{
   id: '/+16282281824/events/1588035067996',
   url: '/+16282281824/posters/1585005003428'
@@ -40,7 +42,11 @@ describe('Syncing Edge data', () => {
     afterEach(() => jest.clearAllMocks())
     describe('Render', () => {
       beforeEach(async () => {
-        wrapper = shallowMount(sync)
+        wrapper = shallowMount(sync, {
+          data () {
+            return { syncing: true }
+          }
+        })
         await flushPromises()
       })
       it('Renders sync component', async () => {
@@ -58,15 +64,29 @@ describe('Syncing Edge data', () => {
       })
     })
     describe('methods', () => {
+      describe('#init', () => {
+        it('connects sync worker to component', async () => {
+          wrapper = shallowMount(sync)
+          await flushPromises()
+          wrapper.vm.init({ phoneNumber: '+16282281824' })
+        })
+      })
       describe('#sync_paged', () => {
         const index = {}
-        it('syncs if the hash value in the index is different', async () => {
-          wrapper = mount(sync)
+        beforeEach(async () => {
+          wrapper = mount(sync, {
+            data () {
+              return {
+                syncing: true
+              }
+            }
+          })
           await flushPromises()
+        })
+        it('syncs if the hash value in the index is different', async () => {
           index['/+16282281824/statements'] = 666
           get.mockImplementationOnce(_ => Promise.resolve(index))
-          jest.spyOn(wrapper.vm.$el, 'querySelector')
-          .mockImplementationOnce(_ => {
+          jest.spyOn(wrapper.vm.$refs.sync, 'querySelector').mockImplementationOnce(_ => {
             return {
               outerHTML: statements_html
             }
@@ -83,8 +103,7 @@ describe('Syncing Edge data', () => {
           index['/+16282281824/statements'] = '-209695279'
           get.mockClear()
           get.mockImplementationOnce(_ => Promise.resolve(index))
-          wrapper = mount(sync)
-          jest.spyOn(wrapper.vm.$el, 'querySelector')
+          jest.spyOn(wrapper.vm.$refs.sync, 'querySelector')
           .mockImplementationOnce(_ => {
             return {
               outerHTML: statements_html
@@ -102,8 +121,6 @@ describe('Syncing Edge data', () => {
       })
       describe('#sync_statements', () => {
         it('Calls Statement.sync', async () => {
-          wrapper = mount(sync)
-          await flushPromises()
           wrapper.vm.statements = statements
           await wrapper.vm.$nextTick()
           get.mockImplementationOnce(_ => Promise.resolve(null))
@@ -150,20 +167,25 @@ describe('Syncing Edge data', () => {
           wrapper.vm.worker_message(event)
           expect(spy).toBeCalled()
         })
-        it('Calls sync_events via an event', () => {
+        it('Calls sync:events via an event', () => {
           const spy = jest.spyOn(wrapper.vm, 'sync_events')
           event.data.action = 'sync:events'
           wrapper.vm.worker_message(event)
           expect(spy).toBeCalled()
         })
-        it('Calls sync_statements via an event', () => {
+        it('Calls sync:statements via an event', () => {
           const spy = jest.spyOn(wrapper.vm, 'sync_statements')
           event.data.action = 'sync:statements'
           wrapper.vm.worker_message(event)
           expect(spy).toBeCalled()
         })
-        it.todo('calls optimize_statements via an event')
-        it.todo('calls optimize_events via an event')
+        it('Calls save:poster via an event', () => {
+          const spy = jest.spyOn(wrapper.vm, 'save_poster')
+          event.data.action = 'save:poster'
+          event.data.poster = save_poster
+          wrapper.vm.worker_message(event)
+          expect(spy).toBeCalled()
+        })
       })
     })
   })
