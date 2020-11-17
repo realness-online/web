@@ -127,11 +127,13 @@
       fill: blue
     figure.profile
       padding: base-line
+      svg
+        border-radius: 0.66rem
     & > section.as-days
       & > article.day
         grid-auto-rows: auto
         & > header
-          padding: 0 base-line
+          padding: base-line
         article.thought
           padding: 0 base-line
         figure.poster > svg.background
