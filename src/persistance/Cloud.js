@@ -24,13 +24,13 @@ export const Cloud = (superclass) => class extends superclass {
     } else sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    console.info('Cloud.save()', this.id, items)
+    console.info('request:save', this.id, items)
     if (!items) return
     if (super.save) super.save(items)
     if (networkable.includes(this.type)) this.to_network(items.outerHTML)
   }
   async delete () {
-    console.info('Cloud.delete()', this.id)
+    console.info('request:delete', this.id)
     if (navigator.onLine) {
       const storage = firebase.storage().ref()
       const user = firebase.auth().currentUser
