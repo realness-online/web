@@ -11,7 +11,7 @@
   </svg>
 </template>
 <script>
-  import itemid from '@/helpers/itemid'
+  import { as_query_id, as_fragment, load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import icon from '@/components/icon'
@@ -43,12 +43,12 @@
     },
     computed: {
       id () {
-        if (this.person.avatar) return itemid.as_query_id(this.person.avatar)
+        if (this.person.avatar) return as_query_id(this.person.avatar)
         else return null
       },
       avatar_link () {
         if (this.working) return `${icons}#working`
-        if (this.person.avatar) return itemid.as_fragment(this.person.avatar)
+        if (this.person.avatar) return as_fragment(this.person.avatar)
         else return `${icons}#silhouette`
       }
     },
@@ -67,7 +67,7 @@
       },
       async show () {
         if (this.first_instance() && this.person.avatar) {
-          this.avatar = await itemid.load(this.person.avatar)
+          this.avatar = await load(this.person.avatar)
           this.$emit('vector-loaded', this.avatar)
         }
       }
