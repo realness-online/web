@@ -15,7 +15,6 @@ export default {
   },
   methods: {
     async update_visit (user) {
-      console.log('update_visit')
       if (navigator.onLine && user) {
         const person = await load(from_e64(user.phoneNumber))
         if (!is_fresh(person.visited)) {
