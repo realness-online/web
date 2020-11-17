@@ -13,7 +13,7 @@ export default {
     intersect () {
       if (this.observer) this.observer.unobserve(this.$el)
       this.observer = new IntersectionObserver(this.check_intersection, {
-        rootMargin: '20px',
+        rootMargin: '16px',
         delay: 50
       })
       this.observer.observe(this.$el)
