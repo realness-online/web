@@ -1,7 +1,7 @@
 <template lang="html">
   <div v-if="syncing" ref="sync" hidden>
     <as-hgroup v-if="person" :person="person" />
-    <as-days v-if="show_statements" v-slot="thoughts"
+    <as-days v-if="statements" v-slot="thoughts"
              itemscope
              :itemid="itemid('statements')"
              :statements="statements">
@@ -55,13 +55,6 @@
         posters: null,
         statements: [],
         events: null
-      }
-    },
-    computed: {
-      show_statements () {
-        if (this.statement) return true
-        else if (this.syncing) return true
-        return false
       }
     },
     watch: {
@@ -130,7 +123,6 @@
         this.statements = await statements.sync()
         await this.$nextTick()
         await this.sync_paged(itemid, statements)
-        this.statements = []
       },
       async sync_paged (itemid, paged) {
         const query = `[itemid="${itemid}"]`
@@ -144,7 +136,7 @@
             await paged.save(elements)
             localStorage.removeItem(`/+/${as_type(itemid)}`)
             index[itemid] = new_hash
-            set('hash', index)
+            await set('hash', index)
           }
         }
       },
