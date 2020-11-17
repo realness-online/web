@@ -10,18 +10,18 @@
                           :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
-    <unsynced-posters v-for="poster in posters"
-                      :key="poster.id"
-                      :immediate="true"
-                      :itemid="poster.id"
-                      :poster="poster" />
+    <unsynced-poster v-if="poster"
+                     :key="poster.id"
+                     :itemid="poster.id"
+                     :poster="poster"
+                     :immediate="true" />
   </div>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { set, get } from 'idb-keyval'
-  import { Events, Statements } from '@/persistance/Storage'
+  import { Events, Statements, Poster } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
   import { as_type, list } from '@/helpers/itemid'
   import hash from '@/modules/hash'
@@ -36,7 +36,7 @@
       'as-days': as_days,
       'events-list': as_list,
       'thought-as-article': thought_as_article,
-      'unsynced-posters': as_svg,
+      'unsynced-poster': as_svg,
       'as-hgroup': as_hgroup
     },
     mixins: [visit],
@@ -52,7 +52,7 @@
         syncer: new Worker('/sync.worker.js'),
         syncing: false,
         person: null,
-        posters: null,
+        poster: null,
         statements: [],
         events: null
       }
@@ -141,19 +141,11 @@
         }
       },
       async save_poster (poster) {
-        // this.posters = posters
-        // await this.$nextTick()
-        // await Promise.all(this.posters.map(async (poster) => {
-        //   const created_at = as_created_at(poster.id)
-        //   const new_poster = new Poster(poster.id)
-        //   await new_poster.save()
-        //   await del(`/+/posters/${created_at}`)
-        //   offline_posters.items = offline_posters.items.filter(when => {
-        //     return parseInt(when) !== created_at
-        //   })
-        //   await set('/+/posters/', offline_posters)
-        // }))
-        this.posters = []
+        this.poster = poster
+        await this.$nextTick()
+        const new_poster = new Poster(poster.id)
+        await new_poster.save()
+        this.posters = null
       }
     }
   }
