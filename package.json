@@ -9,7 +9,7 @@
     "serve": "vue-cli-service serve",
     "build": "webpack && vue-cli-service build",
     "build:workers": "webpack",
-    "dev:workers": "webpack --watch",
+    "dev:workers": "webpack --mode=development --watch",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit",
     "test:unit:watch": "vue-cli-service test:unit --watch",
