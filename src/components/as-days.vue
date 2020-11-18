@@ -122,6 +122,7 @@
       grid-template-rows: (base-line * 2)
       grid-auto-rows: poster-grid-height
     @media (min-width: typing-begins)
+      grid-template-rows: (base-line * 3)
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
     & > header
       & > h4
@@ -129,6 +130,6 @@
         font-weight: 600
       @media (min-width: pad-begins)
         grid-column: 1 / -1
-        & > hgroup
-          margin-top: -(base-line)
+        // & > hgroup
+        //   margin-top: -(base-line)
 </style>
