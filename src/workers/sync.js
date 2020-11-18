@@ -36,8 +36,8 @@ export function initialize (credentials) {
   firebase.auth().onAuthStateChanged(async (me) => {
     if (navigator.onLine && me) {
       await people(me, true)
-      self.postMessage({ action: 'sync:statements' }, '*')
-      self.postMessage({ action: 'sync:events' }, '*')
+      self.postMessage({ action: 'sync:statements' })
+      self.postMessage({ action: 'sync:events' })
       await offline(me)
     }
   })
