@@ -41,8 +41,11 @@
         else return '0 0 0 0'
       },
       path () {
-        if (this.vector) return this.vector.path
-        else return ''
+        if (this.vector) {
+          if (Array.isArray(this.vector.path)) {
+            return this.vector.path.join('\n')
+          } else return this.vector.path
+        } else return ''
       }
     },
     created () {

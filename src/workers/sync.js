@@ -102,6 +102,10 @@ async function check_people (people, check_everyone) {
     else if (check_everyone) await prune_person(itemid, what_I_know)
   }))
 }
+/**
+ * @param {IDBValidKey} itemid
+ * @param {any} what_I_know
+ */
 async function prune_person (itemid, what_I_know) {
   if (is_outdated(itemid, what_I_know)) {
     del(itemid)

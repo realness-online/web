@@ -1,6 +1,5 @@
-import potrace from '@realness.online/potrace'
+import { Jimp, as_paths } from '@realness.online/potrace'
 import SVGO from 'svgo'
-const Jimp = potrace.Jimp
 const svgo_options = {
   multipass: true,
   full: true,
@@ -21,58 +20,32 @@ export async function trace (file, size = 333) {
     image = image.resize(Jimp.AUTO, size)
   } else image = image.resize(size, Jimp.AUTO)
   image = await prepare(image)
-  await make_background(image)
-  await make_foreground(image)
+  await make_paths(image)
 }
 
-export async function make_background (image, turd_size = 300) {
-  console.log('make_background')
-  const trace = new potrace.Potrace()
-  trace.setParameters({ turdSize: turd_size })
-  trace.loadImage(image, error => {
-    if (error) throw error
-    const path = trace.getPathTag()
-    const width = trace._luminanceData.width
-    const height = trace._luminanceData.height
-    const viewbox = `0 0 ${width} ${height}`
-    const created_at = Date.now()
-    const svgo = new SVGO(svgo_options)
-    self.postMessage({ type: 'background', path, viewbox, created_at })
-    svgo.optimize(path).then(smaller_path => {
-      self.postMessage({
-        path: smaller_path.data,
-        type: 'background',
-        viewbox,
-        created_at
-      })
-    })
+export async function make_paths (image) {
+  const poster = await as_paths(image, {
+    // steps: 3,
+    // threshold: 80,
+    turdSize: 600,
+    optTolerance: 0.2,
+    blackOnWhite: true,
+    fillStrategy: 'dominant',
+    rangeDistribution: 'auto'
   })
-}
-export async function make_foreground (image) {
-  console.log('make_forground')
-  const trace = new potrace.Potrace()
-  trace.setParameters({
-    turdSize: 40,
-    threshold: 100
-  })
-  trace.loadImage(image, error => {
-    if (error) throw error
-    const path = trace.getPathTag()
-    const width = trace._luminanceData.width
-    const height = trace._luminanceData.height
-    const viewbox = `0 0 ${width} ${height}`
-    const created_at = Date.now()
-    const svgo = new SVGO(svgo_options)
-    self.postMessage({ type: 'foreground', path, viewbox, created_at })
-    svgo.optimize(path).then(smaller_path => {
-      self.postMessage({
-        type: 'foreground',
-        path: smaller_path.data,
-        viewbox,
-        created_at
-      })
-    })
-  })
+  const viewbox = `0 0 ${poster.width} ${poster.height}`
+  const created_at = Date.now()
+  const svgo = new SVGO(svgo_options)
+  console.log(poster.paths)
+  // console.log('first')
+  // self.postMessage({ path: poster.paths, viewbox, created_at })
+  const shrunk = []
+  await Promise.all(poster.paths.map(async (path) => {
+    const smaller = await svgo.optimize(path)
+    shrunk.push(smaller.data)
+  }))
+  self.postMessage({ path: shrunk, viewbox, created_at })
+  console.log('second', shrunk)
 }
 export async function read_image (file) {
   const reader = new FileReaderSync()
@@ -82,7 +55,8 @@ export async function read_image (file) {
 export async function prepare (image) {
   return image.normalize().threshold({
     max: 200,
-    replace: 200
+    replace: 200,
+    autoGreyscale: false
   })
 }
 export function message_listener (message) {
