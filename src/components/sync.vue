@@ -94,7 +94,6 @@
         else return `${localStorage.me}`
       },
       async worker_message (message) {
-        console.time('worker:message')
         this.syncing = true
         switch (message.data.action) {
           case 'sync:events':
@@ -107,7 +106,6 @@
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
         this.syncing = false
-        console.timeEnd('worker:message')
       },
       async sync_events () {
         const itemid = this.itemid('events')

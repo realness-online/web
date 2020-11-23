@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "private": false,
   "description": "Source code for https://realness.online. When licensed moderators will be responsible for the content within their network. In this regard moderators run the network, as it is their ass that is on the line.",
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
@@ -22,7 +22,7 @@
     "functions:logs": "firebase functions:log"
   },
   "dependencies": {
-    "@realness.online/potrace": "2.1.16",
+    "@realness.online/potrace": "../potrace",
     "firebase": "^7.8.2",
     "idb-keyval": "^3.2.0",
     "libphonenumber-js": "^1.7.44",
