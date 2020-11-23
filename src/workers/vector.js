@@ -55,7 +55,7 @@ export async function read_image (file) {
 export async function prepare (image) {
   return image.normalize().threshold({
     max: 200,
-    replace: 200,
+    replace: 255,
     autoGreyscale: false
   })
 }
