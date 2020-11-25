@@ -99,8 +99,7 @@
         this.posters.sort(newer_id_first)
       },
       brand_new_poster (response) {
-        // console.log(response.data)
-        // console.info('creates a poster')
+        console.info('creates a poster')
         this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
