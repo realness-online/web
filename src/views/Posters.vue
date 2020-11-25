@@ -137,11 +137,10 @@
       border-bottom: 0
     h1
       color: green
-      margin: 0 base-line base-line base-line
+      margin: 0 base-line 0 base-line
     & > header
       justify-content: space-between
     & hgroup
-      margin-top: base-line
       align-self: center
     & hgroup
     & header
