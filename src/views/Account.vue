@@ -195,6 +195,8 @@
           border-radius: 0.66rem
           border-color: red
         & > figcaption > menu
+          display: flex
+          align-items: center
           opacity: 1
           padding: 0
           &> a > svg.gear
