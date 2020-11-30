@@ -27,19 +27,19 @@ describe('@/components/avatars/as-form.vue', () => {
   it('Render avatar manager', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  it('unmounts the worker when destroyed', () => {
+  it('Unmounts the worker when destroyed', () => {
     const mock = jest.fn()
     wrapper.vm.worker = { terminate: mock }
     wrapper.destroy()
     expect(mock).toBeCalled()
   })
   describe('methods', () => {
-    describe('set_current_avatar', () => {
+    describe('#set_current_avatar', () => {
       it('sets a new current avatar', () => {
         wrapper.vm.set_current_avatar({ id: '/+/avatars/1578929551564' })
       })
     })
-    describe('set_new_avatar', () => {
+    describe('#set_new_avatar', () => {
       it('sets a new current avatar', () => {
         wrapper.vm.set_new_avatar({ data: { created_at: 'ummm' } })
       })
