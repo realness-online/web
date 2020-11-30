@@ -133,64 +133,29 @@
   }
 </script>
 <style lang='stylus'>
+  :root
+    --header-margin:  -(base-line * 4)
   section#account
-    @media (prefers-color-scheme: dark)
-      h1, h4, svg.background
-        color: red
-        fill: red
     a
     button
       color: red
       border-color: red
-    button.mock
-      background-color: red
-      border-width: 1px
-      border-radius: 0.2em
-      height: 1em
-      width: 1.66em
-    a#logo
-      border-bottom: 0
-    p[itemprop="statement"]:focus
-      font-weight: 700
-      outline: 0px
-    h1
-      margin: base-line
-    h4
-      margin: base-line 0 0 0
     & > header
       position: relative
       animation: slide-in-down
       animation-delay: 0.33s
       animation-duration: 0.35s
       animation-fill-mode: backwards
-    & > div
+      a#logo
+        border-bottom: 0
+    & > hgroup
       position: relative
       z-index: 1
-      & > button
-        position: absolute
-        bottom: .05rem
-        right: 1em
-    & section.as-days
-      padding: base-line
-      padding-top: 0
-      article.day
-        @media (min-width: pad-begins)
-          grid-auto-rows: auto
-        @media (min-width: typing-begins)
-          grid-auto-rows: auto
-</style>
-<style lang="stylus">
-  :root
-    --header-margin:  -(base-line * 4)
-  section#account.signed-in
-    & > header
-      margin-bottom: calc( var(--header-margin) - env(safe-area-inset-top))
-    & > div
       & > figure
       & > form
         background-color: background-black
         padding: base-line base-line 0 base-line
-      figure.profile
+      & > figure
         & > svg
           border-radius: 0.66rem
           border-color: red
@@ -210,7 +175,7 @@
               transition-timing-function: ease-in-out
               animation-name: rotate
               animation-iteration-count: 0.5
-      menu#settings
+      & > menu
         float:right
         width: 5rem
         margin-right: base-line
@@ -224,4 +189,42 @@
           transition: color
           transition-duration: 0.5s
           color: hsla(353, 83%, 57%, 1) // #ec364c
+      & > button
+        position: absolute
+        bottom: .05rem
+        right: 1em
+      & > h1
+        margin: base-line
+    & > h1
+      padding-left: base-line
+    & > section.as-days
+      padding: base-line
+      padding-top: 0
+      h4
+        margin: base-line 0 0 0
+      article.day
+        @media (min-width: pad-begins)
+          grid-auto-rows: auto
+        @media (min-width: typing-begins)
+          grid-auto-rows: auto
+        p[itemprop="statement"]:focus
+          font-weight: 700
+          outline: 0px
+    & > footer
+      text-align: center
+      padding-left: base-line
+      & > p
+        max-width: inherit
+        & > button
+          background-color: red
+          border-width: 1px
+          border-radius: 0.2em
+          height: 1em
+          width: 1.66em
+    &.signed-in > header
+      margin-bottom: calc( var(--header-margin) - env(safe-area-inset-top))
+    @media (prefers-color-scheme: dark)
+      h1, h4, svg.background
+        color: red
+        fill: red
 </style>
