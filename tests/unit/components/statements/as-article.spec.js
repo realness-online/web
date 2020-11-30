@@ -1,15 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
-import get_item from '@/modules/item'
 import as_article from '@/components/statements/as-article'
-import itemid from '@/helpers/itemid'
-const fs = require('fs')
-const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const person = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+14151234356'
-}
 const statement = {
   statement: 'I am saying it',
   id: '/+14151234356/statements/1557614404580'
