@@ -2,9 +2,6 @@ const path = require('path')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
-  node: {
-    fs: 'empty'
-  },
   entry: {
     vector: path.join(__dirname, './src/workers/vector.js'),
     compression: path.join(__dirname, './src/workers/compression.js'),

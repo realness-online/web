@@ -34,6 +34,8 @@
     "vue-template-compiler": "2.6.12"
   },
   "devDependencies": {
+    "@babel/core": "^7.12.9",
+    "@babel/eslint-parser": "^7.12.1",
     "@vue/cli-plugin-babel": "~4.5.6",
     "@vue/cli-plugin-e2e-cypress": "~4.5.6",
     "@vue/cli-plugin-eslint": "~4.5.6",
@@ -42,16 +44,13 @@
     "@vue/cli-service": "~4.5.6",
     "@vue/eslint-config-standard": "^5.1.2",
     "@vue/test-utils": "^1.1.0",
-    "babel-core": "^6.26.3",
-    "babel-eslint": "^10.0.1",
-    "babel-jest": "^26.3.0",
-    "core-js": "^3.6.4",
-    "eslint": "^7.9.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.14.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-vue": "^6.2.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^7.1.0",
     "fake-indexeddb": "^3.0.0",
     "firebase-tools": "^8.0.1",
     "flush-promises": "^1.0.2",
@@ -62,6 +61,8 @@
     "mockdate": "^2.0.5",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
+    "vue-jest": "^3.0.7",
+    "webpack": "^5.9.0",
     "webpack-bundle-analyzer": "^3.8.0",
     "webpack-cli": "^4.0.0"
   },
@@ -84,6 +85,7 @@
       "parser": "babel-eslint"
     },
     "rules": {
+      "no-import-assign": "off",
       "camelcase": 0,
       "indent": "off",
       "lines-between-class-members": 0,
