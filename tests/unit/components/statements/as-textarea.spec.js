@@ -6,7 +6,7 @@ describe('@/components/statements/as-textarea.vue', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
   it('#wat_focused() exists', () => {
-    expect(typeof wat.methods.wat_focused).toBe('function')
+    expect(typeof wat.methods.focused).toBe('function')
   })
   describe('#prepare_statement', () => {
     it('Exists', () => {
@@ -14,7 +14,7 @@ describe('@/components/statements/as-textarea.vue', () => {
     })
     it('Only triggers a statement event when there is text', () => {
       const wrapper = shallowMount(wat, {
-        data() {
+        data () {
           return {
             statements: [],
             new_statement: ''
@@ -45,7 +45,7 @@ describe('@/components/statements/as-textarea.vue', () => {
     })
     it('Emits a statement-added event when there is text', () => {
       const wrapper = shallowMount(wat, {
-        data() {
+        data () {
           return {
             new_statement: 'I like to move it.'
           }
@@ -53,7 +53,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       })
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
-      wrapper.vm.$on('statement-added', spy)
+      wrapper.vm.$on('update:statement', spy)
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(1)
     })
@@ -61,7 +61,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       const spy = jest.fn()
-      wrapper.vm.$on('statement-added', spy)
+      wrapper.vm.$on('update:statement', spy)
       textarea.trigger('focusout')
       expect(spy).toHaveBeenCalledTimes(0)
     })

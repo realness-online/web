@@ -3,7 +3,7 @@
             cols="1" rows="1"
             placeholder=">"
             @focusout="prepare_statement"
-            @focusin="wat_focused" />
+            @focusin="focused" />
 </template>
 <script>
   export default {
@@ -13,6 +13,10 @@
       }
     },
     methods: {
+      focused (event) {
+        console.info('Displays statement entry form')
+        this.$emit('toggle-keyboard')
+      },
       prepare_statement () {
         this.$emit('toggle-keyboard')
         const statement = {}
@@ -20,12 +24,8 @@
         if (!statement.statement) return
         this.new_statement = ''
         statement.id = `${localStorage.me}/statements/${new Date().getTime()}`
-        this.$emit('statement-added', statement)
+        this.$emit('update:statement', statement)
         console.info('Creates a statement')
-      },
-      wat_focused (event) {
-        console.info('Displays statement entry form')
-        this.$emit('toggle-keyboard')
       }
     }
   }
