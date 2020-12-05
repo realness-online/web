@@ -20,7 +20,6 @@
   </hgroup>
 </template>
 <script>
-  import { Me } from '@/persistance/Storage'
   export default {
     props: {
       person: {
@@ -33,33 +32,21 @@
         default: false
       }
     },
-    data () {
-      return {
-        saving: false
-      }
-    },
-    computed: {
-      is_me () { return localStorage.me === this.person.id }
-    },
     methods: {
       async save_first_name (event) {
         const possibly_changed = this.$refs.first_name.textContent.trim()
         if (this.person.first_name !== possibly_changed) {
-          this.editable = false
-          this.person.first_name = possibly_changed
-          await this.$nextTick()
-          await new Me().save()
-          this.editable = true
+          const updated = { ...this.person }
+          updated.first_name = possibly_changed
+          this.$emit('update:person', updated)
         }
       },
       async save_last_name (event) {
         const possibly_changed = this.$refs.last_name.textContent.trim()
         if (this.person.last_name !== possibly_changed) {
-          this.editable = false
-          this.person.last_name = possibly_changed
-          await this.$nextTick()
-          await new Me().save()
-          this.editable = true
+          const updated = { ...this.person }
+          updated.last_name = possibly_changed
+          this.$emit('update:person', updated)
         }
       }
     }
@@ -72,6 +59,9 @@
     padding: 0
     @media (prefers-color-scheme: dark)
       color: white
+    & > p,
+    & > b
+      text-align: left
     & > p
       margin: 0
       text-transform: capitalize
