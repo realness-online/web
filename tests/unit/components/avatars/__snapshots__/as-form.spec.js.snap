@@ -1,6 +1,46 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/avatars/as-form.vue Render avatar manager 1`] = `
+exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
+<div
+  id="manage-avatar"
+>
+  <div>
+    <avatar-as-svg-stub
+      person="[object Object]"
+    />
+  </div>
+   
+  <menu>
+    <a
+      id="open_camera"
+    >
+      <icon-stub
+        name="camera"
+      />
+    </a>
+     
+    <a
+      id="select_photo"
+    >
+      <icon-stub
+        name="add"
+      />
+    </a>
+     
+    <!---->
+     
+    <!---->
+  </menu>
+   
+  <input
+    accept="image/jpeg"
+    capture="user"
+    type="file"
+  />
+</div>
+`;
+
+exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
 <div
   id="manage-avatar"
 >
