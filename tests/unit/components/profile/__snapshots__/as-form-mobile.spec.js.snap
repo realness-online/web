@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-form-mobile.vue profile form Render profile form 1`] = `
+exports[`@/compontent/profile/as-form-mobile.vue Initial render Render profile form 1`] = `
 <form
   id="profile-mobile"
 >
