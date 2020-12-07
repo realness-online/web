@@ -49,8 +49,15 @@ describe('@/components/avatars/as-form.vue', () => {
         wrapper.vm.working = true
         expect(wrapper.vm.path).toBe(null)
       })
+      it('returns the path if it\'s a string', () => {
+        wrapper.vm.vector = {
+          id: person.avatar,
+          path: '<path itemprop="path" d="1"/>'
+        }
+        expect(wrapper.vm.path).toBe('<path itemprop="path" d="1"/>')
+      })
       it('returns a string of all the paths if avatar.path is an array', () => {
-        wrapper.vm.avatar = {
+        wrapper.vm.vector = {
           id: person.avatar,
           path: [
             '<path itemprop="path" d="1"/>',
@@ -87,7 +94,7 @@ describe('@/components/avatars/as-form.vue', () => {
         jest.spyOn(Avatar.prototype, 'save').mockImplementation(save_spy)
         wrapper.setData({
           avatar_changed: true,
-          avatar: {
+          vector: {
             id: 'avatars/153423367'
           }
         })
