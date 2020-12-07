@@ -1,11 +1,15 @@
 import { shallowMount } from '@vue/test-utils'
 import as_svg from '@/components/avatars/as-svg'
+import get_item from '@/modules/item'
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
-  id: '/+14151234356',
-  avatar: '/+14151234356/avatars/559888845532'
+  id: '/+16282281824',
+  avatar: '/+16282281824/avatars/55446694324'
 }
+const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
+const avatar = get_item(avatar_html)
+
 describe('@/components/avatars/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
@@ -16,22 +20,58 @@ describe('@/components/avatars/as-svg.vue', () => {
   it('Render an avatar', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('methods', () => {
+  describe('computed:', () => {
+    describe('id', () => {
+      it('outputs a null when no avatar exists', () => {
+        const avatar_less = { ...person }
+        avatar_less.avatar = null
+        wrapper = shallowMount(as_svg, {
+          propsData: { person: avatar_less }
+        })
+        expect(wrapper.vm.id).toBe(null)
+      })
+    })
+    describe('avatar_link', () => {
+      it('References the working icon when working', () => {
+        wrapper = shallowMount(as_svg, {
+          propsData: { person, working: true }
+        })
+        expect(wrapper.vm.avatar_link).toBe('#working')
+      })
+    })
+  })
+  describe('methods:', () => {
     describe('#first_instance', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(wrapper.vm.first_instance).toBeDefined()
       })
-      it('checks if item is already on page', () => {
+      it('Checks if item is already on page', () => {
         expect(wrapper.vm.first_instance()).toBe(true)
+      })
+      it('Returns false when it finds itself already rendered', async () => {
+        const element = {}
+        jest.spyOn(document, 'getElementById').mockImplementationOnce(_ => element)
+        expect(wrapper.vm.first_instance()).toBe(false)
       })
     })
     describe('#show', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(wrapper.vm.show).toBeDefined()
       })
-      it('checks if item is already on page', async () => {
+      it('Loads the vector', async () => {
         await wrapper.vm.show()
         expect(wrapper.emitted('vector-loaded')).toBeTruthy()
+      })
+      it('Only loads the vector once', async () => {
+        wrapper.vm.vector = avatar
+        await wrapper.vm.show()
+        expect(wrapper.emitted('vector-loaded')).not.toBeTruthy()
+      })
+      it('Checks for the vector elsewhere', async () => {
+        const element = {}
+        jest.spyOn(document, 'getElementById').mockImplementationOnce(_ => element)
+        await wrapper.vm.show()
+        expect(wrapper.emitted('vector-loaded')).not.toBeTruthy()
       })
     })
   })
