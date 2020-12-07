@@ -1894,12 +1894,7 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@realness.online/potrace@../potrace/":
-  version "2.1.21"
-  dependencies:
-    jimp "^0.9.0"
-
-"@realness.online/potrace@^2.1.21":
+"@realness.online/potrace@2.1.21":
   version "2.1.21"
   resolved "https://registry.yarnpkg.com/@realness.online/potrace/-/potrace-2.1.21.tgz#192f835e26585abfdfa2ac598fd2528fa76166d7"
   integrity sha512-46ZtLNpKTVIoGu4jNToXKPIKp0BtqnWF3m85TddP1X2dzvDIdil6frEn4gmyNchJNLOrr0/oyIYKfPlYijUPKQ==
