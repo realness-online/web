@@ -14,7 +14,7 @@ module.exports = {
     path: path.join(__dirname, './public')
   },
   watchOptions: {
-    ignored: /node_modules|dist|\.js/g
+    ignored: /node_modules/
   },
   resolve: {
     extensions: ['.js', '.json'],
