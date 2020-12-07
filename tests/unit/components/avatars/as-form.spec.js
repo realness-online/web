@@ -11,7 +11,7 @@ const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
   id: '/+14151234356',
-  avatar: 'avatars/1578929551564'
+  avatar: '/+14151234356/avatars/1578929551564'
 }
 describe('@/components/avatars/as-form.vue', () => {
   let wrapper
@@ -33,7 +33,25 @@ describe('@/components/avatars/as-form.vue', () => {
     wrapper.destroy()
     expect(mock).toBeCalled()
   })
-  describe('methods', () => {
+  describe('computed:', () => {
+    describe('.path', () => {
+      it('returns null if the form is working', () => {
+        wrapper.vm.working = true
+        expect(wrapper.vm.path).toBe(null)
+      })
+      it('returns a string of all the paths if avatar.path is an array', () => {
+        wrapper.vm.avatar = {
+          id: person.avatar,
+          path: [
+            '<path itemprop="path" d="1"/>',
+            '<path itemprop="path" d="2"/>'
+          ]
+        }
+        expect(wrapper.vm.path.length).toBe(59)
+      })
+    })
+  })
+  describe('methods:', () => {
     describe('#set_current_avatar', () => {
       it('sets a new current avatar', () => {
         wrapper.vm.set_current_avatar({ id: '/+/avatars/1578929551564' })
