@@ -13,10 +13,10 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
   describe('Rendering', () => {
-    it('a poster', () => {
+    it('A poster', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('can show a poster immediatly', () => {
+    it('Can show a poster immediatly', () => {
       wrapper = shallowMount(as_svg, {
         propsData: { itemid: poster.id, immediate: true }
       })
