@@ -2,7 +2,13 @@
   <div id="manage-avatar">
     <icon v-if="working" name="working" />
     <div v-else>
-      <avatar-as-figure v-if="avatar" :avatar="avatar" />
+      <figure v-if="avatar">
+        <icon name="background" />
+        <svg itemscope itemtype="/avatars"
+             :itemid="avatar.id"
+             :viewBox="avatar.viewbox"
+             v-html="avatar.path" />
+      </figure>
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </div>
     <menu v-if="show_menu">
@@ -27,15 +33,13 @@
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
-  import as_figure from '@/components/avatars/as-figure'
   import signed_in from '@/mixins/signed_in'
   import uploader from '@/mixins/uploader'
   export default {
     components: {
       icon,
       'download-vector': download_vector,
-      'avatar-as-svg': as_svg,
-      'avatar-as-figure': as_figure
+      'avatar-as-svg': as_svg
     },
     mixins: [signed_in, uploader],
     props: {
@@ -47,11 +51,11 @@
     data () {
       return {
         worker: new Worker('/vector.worker.js'),
+        avatar: null,
         current_avatar: null,
         avatar_changed: false,
         working: false,
-        finished: true,
-        avatar: null
+        finished: true
       }
     },
     computed: {
@@ -82,6 +86,7 @@
           path: message.data.path,
           viewbox: message.data.viewbox
         }
+        console.log(this.avatar)
         this.current_avatar = this.avatar
         this.working = false
       },
