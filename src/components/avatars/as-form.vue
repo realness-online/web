@@ -34,6 +34,7 @@
   import download_vector from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
   import signed_in from '@/mixins/signed_in'
+  import vector_path from '@/mixins/vector_path'
   import uploader from '@/mixins/uploader'
   export default {
     components: {
@@ -41,7 +42,7 @@
       'download-vector': download_vector,
       'avatar-as-svg': as_svg
     },
-    mixins: [signed_in, uploader],
+    mixins: [signed_in, uploader, vector_path],
     props: {
       person: {
         type: Object,
@@ -59,11 +60,6 @@
       }
     },
     computed: {
-      path () {
-        if (this.working) return null
-        if (Array.isArray(this.avatar.path)) return this.avatar.path.join('\n')
-        else return this.avatar.path
-      },
       download_vector () {
         if (!this.avatar_changed && this.current_avatar) return true
         else return false
@@ -86,12 +82,12 @@
       },
       set_new_avatar (message) {
         this.avatar_changed = true
-        this.avatar = {
+        this.vector = {
           id: `${this.person.id}/avatars/${message.data.created_at}`,
           path: message.data.path,
           viewbox: message.data.viewbox
         }
-        this.current_avatar = this.avatar
+        this.current_avatar = this.vector
         this.working = false
       },
       vectorize_image (image) {
@@ -101,14 +97,14 @@
       async accept_new_avatar (event) {
         this.finished = false
         await this.$nextTick()
-        const avatar = new Avatar(this.avatar.id)
+        const avatar = new Avatar(this.vector.id)
         await avatar.save()
         const updated = { ...this.person }
-        updated.avatar = this.avatar.id
+        updated.avatar = this.vector.id
         this.$emit('update:person', updated)
         await this.$nextTick()
         this.avatar_changed = false
-        this.avatar = null
+        this.vector = null
         this.finished = true
       }
     }
