@@ -34,7 +34,7 @@
   import download_vector from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
   import signed_in from '@/mixins/signed_in'
-  import vector_path from '@/mixins/vector_path'
+  import vector from '@/mixins/vector'
   import uploader from '@/mixins/uploader'
   export default {
     components: {
@@ -42,7 +42,7 @@
       'download-vector': download_vector,
       'avatar-as-svg': as_svg
     },
-    mixins: [signed_in, uploader, vector_path],
+    mixins: [signed_in, uploader, vector],
     props: {
       person: {
         type: Object,
@@ -52,7 +52,6 @@
     data () {
       return {
         worker: new Worker('/vector.worker.js'),
-        avatar: null,
         current_avatar: null,
         avatar_changed: false,
         working: false,
