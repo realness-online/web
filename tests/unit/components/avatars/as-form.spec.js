@@ -24,14 +24,24 @@ describe('@/components/avatars/as-form.vue', () => {
   afterEach(() => {
     firebase.user = null
   })
-  it('Render avatar manager', () => {
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  it('Unmounts the worker when destroyed', () => {
-    const mock = jest.fn()
-    wrapper.vm.worker = { terminate: mock }
-    wrapper.destroy()
-    expect(mock).toBeCalled()
+  describe('Rendering', () => {
+    it('With an avatar', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('Without an avatar', () => {
+      const avatar_less = { ...person }
+      avatar_less.avatar = null
+      wrapper = shallowMount(as_form, {
+        propsData: { person: avatar_less }
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('Unmounts the worker when destroyed', () => {
+      const mock = jest.fn()
+      wrapper.vm.worker = { terminate: mock }
+      wrapper.destroy()
+      expect(mock).toBeCalled()
+    })
   })
   describe('computed:', () => {
     describe('.path', () => {
