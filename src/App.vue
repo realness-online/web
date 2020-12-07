@@ -1,11 +1,10 @@
-<style src="@/style/index.styl" lang="stylus"></style>
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view @statement-added="statement=$event" />
+    <router-view :statement.sync="statement" :person.sync="me" />
     <aside>
       <activity-as-table v-if="production_mode" />
       <developer-tools v-else />
-      <sync :statement.sync="statement" />
+      <sync :statement.sync="statement" :person="me" />
     </aside>
   </main>
 </template>
@@ -23,6 +22,7 @@
     },
     data () {
       return {
+        me: null,
         statement: null,
         status: null,
         firebase_keys: {
@@ -76,6 +76,7 @@
     }
   }
 </script>
+<style src="@/style/index.styl" lang="stylus"></style>
 <style lang="stylus">
   main.offline
     border: (base-line * .333) solid yellow

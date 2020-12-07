@@ -43,14 +43,4 @@ describe('@/views/Account.vue', () => {
       wrapper.destroy()
     })
   })
-  describe('methods', () => {
-    describe('#new_avatar', () => {
-      it('Handles connecting new avatar to person', async () => {
-        const mock_avatar_url = '/+16282281824/avatars/555666777'
-        await wrapper.vm.new_avatar(mock_avatar_url)
-        await flushPromises()
-        expect(wrapper.vm.person.avatar).toBe(mock_avatar_url)
-      })
-    })
-  })
 })

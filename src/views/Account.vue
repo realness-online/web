@@ -1,13 +1,16 @@
 <template lang="html">
-  <section id="account" :class="{'signed-in': signed_in}" class="page">
+  <section id="account" :class="{ 'signed-in': signed_in }" class="page">
     <header>
       <icon v-if="signed_in" name="nothing" />
       <sign-on v-else />
       <logo-as-link />
     </header>
-    <div v-if="signed_in">
-      <avatar-as-form :person="person" @new-avatar="new_avatar" />
-      <profile-as-figure :person="person" :editable="true">
+    <hgroup v-if="signed_in && !working">
+      <avatar-as-form :person.sync="person"
+                      @update:person="$emit('update:person', $event)" />
+      <profile-as-figure :editable="true"
+                         :person.sync="person"
+                         @update:person="update_person">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>
@@ -15,7 +18,7 @@
       <menu v-if="settings" id="settings">
         <button @click="signoff">Sign off</button>
       </menu>
-    </div>
+    </hgroup>
     <h1>Statements</h1>
     <as-days v-slot="thoughts"
              itemscope
@@ -29,17 +32,16 @@
                           @focused="thought_focused"
                           @blurred="thought_blurred" />
     </as-days>
-    <hgroup v-if="statements.length === 0" class="message">
-      <p>Say some stuff via the <button class="mock" /> button on the homepage <logo-as-link /></p>
+    <footer v-if="statements.length === 0" class="message">
+      <p>Say some stuff via the <button @click="home" /> button on the homepage  <br></p>
       <h6><a>Watch</a> a video and learn some more</h6>
-    </hgroup>
+    </footer>
   </section>
 </template>
 <script>
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { load, list } from '@/helpers/itemid'
-  import { Me } from '@/persistance/Storage'
   import signed_in from '@/mixins/signed_in'
   import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
@@ -78,17 +80,21 @@
       }
     },
     async created () {
-      console.info('Views account page')
+      console.info('views-account-page')
       this.authors.push({
         id: localStorage.me,
         type: 'person',
         viewed: ['index']
       })
-      this.statements = await this.get_all_my_stuff()
+      await this.get_all_my_stuff()
       this.first_page = this.statements
       this.working = false
     },
     methods: {
+      update_person (event) {
+        console.log('Account:update:person', event)
+        this.$emit('update:person', event)
+      },
       is_editable (thought) {
         if (this.working) return false
         return thought.some(statement => {
@@ -101,21 +107,16 @@
         firebase.auth().signOut()
         this.$router.push({ path: '/sign-on' })
       },
+      home () {
+        this.$router.push({ path: '/' })
+      },
       async get_all_my_stuff () {
         const [person, statements] = await Promise.all([
           load(localStorage.me),
           list(this.statements_id)
         ])
         if (person) this.person = person
-        return statements
-      },
-      async new_avatar (avatar_url) {
-        this.working = true
-        this.$set(this.person, 'avatar', avatar_url)
-        await this.$nextTick()
-        const me = new Me()
-        await me.save()
-        this.working = false
+        if (statements.length) this.satements = statements
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id

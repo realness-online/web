@@ -24,7 +24,7 @@
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea class="red"
                              @toggle-keyboard="posting = !posting"
-                             @statement-added="$emit('statement-added', $event)" />
+                             @update:statement="$emit('update:statement', $event)" />
     </nav>
   </section>
 </template>
@@ -47,7 +47,7 @@
       }
     },
     async created () {
-      console.info('Views the navigation')
+      console.info('views:navigation')
       const my = await itemid.load(localStorage.me)
       if (my && my.first_name) this.first_name = my.first_name
       else this.first_name = 'You'
