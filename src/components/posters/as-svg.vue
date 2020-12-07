@@ -12,17 +12,13 @@
   import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
+  import vector from '@/mixins/vector'
   export default {
-    mixins: [intersection, vector_click],
+    mixins: [intersection, vector_click, vector],
     props: {
       itemid: {
         type: String,
         required: true
-      },
-      immediate: {
-        type: Boolean,
-        required: false,
-        default: false
       },
       poster: {
         type: Object,
@@ -30,26 +26,11 @@
         default: null
       }
     },
-    data () {
-      return {
-        vector: null
-      }
-    },
     computed: {
       viewbox () {
         if (this.vector) return this.vector.viewbox
         else return '0 0 0 0'
-      },
-      path () {
-        if (this.vector) {
-          if (Array.isArray(this.vector.path)) {
-            return this.vector.path.join('\n')
-          } else return this.vector.path
-        } else return ''
       }
-    },
-    created () {
-      if (this.immediate) this.show()
     },
     methods: {
       async show () {
