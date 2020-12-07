@@ -7,7 +7,7 @@
         <svg itemscope itemtype="/avatars"
              :itemid="avatar.id"
              :viewBox="avatar.viewbox"
-             v-html="avatar.path" />
+             v-html="path" />
       </figure>
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </div>
@@ -59,6 +59,11 @@
       }
     },
     computed: {
+      path () {
+        if (this.working) return null
+        if (Array.isArray(this.avatar.path)) return this.avatar.path.join('\n')
+        else return this.avatar.path
+      },
       download_vector () {
         if (!this.avatar_changed && this.current_avatar) return true
         else return false
@@ -86,7 +91,6 @@
           path: message.data.path,
           viewbox: message.data.viewbox
         }
-        console.log(this.avatar)
         this.current_avatar = this.avatar
         this.working = false
       },
@@ -99,7 +103,9 @@
         await this.$nextTick()
         const avatar = new Avatar(this.avatar.id)
         await avatar.save()
-        this.$emit('new-avatar', this.avatar.id)
+        const updated = { ...this.person }
+        updated.avatar = this.avatar.id
+        this.$emit('update:person', updated)
         await this.$nextTick()
         this.avatar_changed = false
         this.avatar = null

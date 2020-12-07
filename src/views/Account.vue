@@ -10,7 +10,7 @@
                       @update:person="$emit('update:person', $event)" />
       <profile-as-figure :editable="true"
                          :person.sync="person"
-                         @update:person="update_person">
+                         @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>
@@ -80,7 +80,7 @@
       }
     },
     async created () {
-      console.info('views-account-page')
+      console.info('views:account')
       this.authors.push({
         id: localStorage.me,
         type: 'person',
@@ -91,10 +91,6 @@
       this.working = false
     },
     methods: {
-      update_person (event) {
-        console.log('Account:update:person', event)
-        this.$emit('update:person', event)
-      },
       is_editable (thought) {
         if (this.working) return false
         return thought.some(statement => {
