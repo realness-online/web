@@ -13,7 +13,7 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     <logo-as-link-stub />
   </header>
    
-  <div>
+  <hgroup>
     <avatar-as-form-stub
       person="[object Object]"
     />
@@ -31,7 +31,7 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     </profile-as-figure-stub>
      
     <!---->
-  </div>
+  </hgroup>
    
   <h1>
     Statements
@@ -46,16 +46,14 @@ exports[`@/views/Account.vue Renders account information 1`] = `
     statements=""
   />
    
-  <hgroup
+  <footer
     class="message"
   >
     <p>
       Say some stuff via the 
-      <button
-        class="mock"
-      />
-       button on the homepage 
-      <logo-as-link-stub />
+      <button />
+       button on the homepage  
+      <br />
     </p>
      
     <h6>
@@ -64,6 +62,6 @@ exports[`@/views/Account.vue Renders account information 1`] = `
       </a>
        a video and learn some more
     </h6>
-  </hgroup>
+  </footer>
 </section>
 `;

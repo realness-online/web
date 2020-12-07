@@ -21,7 +21,7 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { set, get } from 'idb-keyval'
-  import { Events, Statements, Poster } from '@/persistance/Storage'
+  import { Events, Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
   import { as_type, list } from '@/helpers/itemid'
   import hash from '@/modules/hash'
@@ -45,21 +45,38 @@
         type: Object,
         required: false,
         default: null
+      },
+      person: {
+        type: Object,
+        required: false,
+        default: null
       }
     },
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
         syncing: false,
-        person: null,
         poster: null,
         statements: [],
         events: null
       }
     },
     watch: {
-      statement () {
-        if (this.statement) this.save_statement()
+      async statement () {
+        console.log('statement changed', this.statement)
+        if (this.statement) {
+          this.syncing = true
+          await this.save_statement()
+          this.syncing = false
+        }
+      },
+      async person () {
+        console.log('sync:person:updated', this.person)
+        if (this.person) {
+          this.syncing = true
+          await this.save_person()
+          this.syncing = false
+        }
       }
     },
     mounted () {
@@ -86,8 +103,14 @@
         this.statements.push(this.statement)
         const data = new Statements()
         await this.$nextTick()
+        console.log(this.statements)
         await data.save()
         this.$emit('update:statement', null)
+      },
+      async save_person () {
+        await this.$nextTick()
+        const me = new Me()
+        await me.save()
       },
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`

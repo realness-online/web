@@ -7,9 +7,9 @@
       <logo-as-link />
     </header>
     <name-as-form v-if="nameless"
-                  :person="person"
-                  @validated="new_person" />
-    <mobile-as-form v-else :person="person"
+                  :person.sync="person"
+                  @valid="new_person" />
+    <mobile-as-form v-else :person.sync="person"
                     @signed-on="signed_on" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
@@ -17,8 +17,11 @@
   </section>
 </template>
 <script>
+  import * as firebase from 'firebase/app'
+  import 'firebase/auth'
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/helpers/itemid'
+  import { Me } from '@/persistance/Storage'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'
   import mobile_as_form from '@/components/profile/as-form-mobile'
@@ -56,16 +59,22 @@
       this.index_db_keys = await keys()
       const person = await load(localStorage.me)
       if (person) this.person = person
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) this.person.mobile = null
+      })
     },
     methods: {
       async signed_on (event) {
+        console.log(event)
         const my_profile = await load(localStorage.me)
-        await this.update_visit()
-        if (my_profile) {
-          this.$router.push({ path: '/' })
-        } else this.nameless = true
+        if (my_profile) this.$router.push({ path: '/' })
+        else this.nameless = true
       },
-      async new_person () {
+      async new_person (event) {
+        this.person.visited = new Date().toISOString()
+        await this.$nextTick()
+        const me = new Me()
+        await me.save()
         this.$router.push({ path: '/account' })
       },
       async clean () {
