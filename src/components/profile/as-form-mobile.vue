@@ -3,14 +3,15 @@
     <fieldset v-if="show_mobil_input" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
       <label for="mobile">1</label>
-      <input id="mobile" v-model="person.mobile"
+      <input id="mobile"
+             ref="mobile"
+             v-model="mobile"
              type="tel"
              tabindex="3"
              placeholder="(555) 555-5555"
              @keypress="mobile_keypress"
-             @keyup="mobile_keyup"
-             @paste.prevent="mobile_paste"
-             @blur="modified_check">
+             @keyup="validate_mobile_number"
+             @paste.prevent="mobile_paste">
     </fieldset>
     <fieldset v-if="show_captcha" id="captcha" :class="{hide_captcha}" />
     <fieldset v-if="show_code">
@@ -42,9 +43,8 @@
   import * as firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber, AsYouType } from 'libphonenumber-js'
-  import { from_e64, as_phone_number } from '@/helpers/profile'
+  import { as_phone_number } from '@/helpers/profile'
   import icon from '@/components/icon'
-  import itemid from '@/helpers/itemid'
   export default {
     components: {
       icon
@@ -57,12 +57,12 @@
     },
     data () {
       return {
+        mobile: null,
         working: true,
         disabled_sign_in: true,
         code: null,
         human: null,
         authorizer: null,
-        show_sign_out: false,
         show_authorize: false,
         show_captcha: false,
         hide_captcha: false,
@@ -71,7 +71,6 @@
     },
     computed: {
       show_mobil_input () {
-        if (this.show_sign_out) return false
         if (this.working) return false
         return true
       },
@@ -80,17 +79,21 @@
         else return 'Mobile'
       }
     },
+    watch: {
+      mobile () {
+        const update = { ...this.person }
+        update.mobile = this.mobile
+        this.$emit('update:person', update)
+      }
+    },
     created () {
-      console.info(`Shows ${this.person.first_name} the sign on form`)
       firebase.auth().onAuthStateChanged(user => {
         this.working = false
-        if (user) {
-          this.show_sign_out = true
-          this.person.id = from_e64(user.phoneNumber)
-        } else {
-          this.person.mobile = as_phone_number(this.person.id)
-          this.show_authorize = true
-        }
+        const updated = { ...this.person }
+        updated.mobile = as_phone_number(this.person.id)
+        if (!updated.mobile.length) updated.mobile = null
+        this.show_authorize = true
+        this.$emit('update:person', updated)
         this.validate_mobile_number()
       })
     },
@@ -106,23 +109,7 @@
         return is_valid
       },
       disable_input () {
-        const mobile = this.$el.querySelector('#mobile')
-        if (mobile) mobile.disabled = true
-      },
-      enable_input () {
-        const mobile = this.$el.querySelector('#mobile')
-        if (mobile) mobile.disabled = false
-      },
-      async modified_check () {
-        const me = await itemid.load(localStorage.me)
-        if (!me) {
-          this.$emit('modified')
-          return
-        }
-        let modified = false
-        if (me.id !== this.person.id) modified = true
-        if (me.mobile !== this.person.mobile) modified = true
-        if (modified) this.$emit('modified', this.person)
+        this.$refs.mobile.disabled = true
       },
       async begin_authorization (event) {
         // this.working = true
@@ -153,34 +140,26 @@
         try {
           await this.authorizer.confirm(this.code)
           this.$emit('signed-on', this.person)
-          this.show_sign_out = true
         } catch (e) {
           if (e.code === 'auth/invalid-verification-code') {
-            this.enable_input()
+            this.$refs.mobile.disabled = false
             this.show_code = true
           }
         } finally {
           this.working = false
         }
       },
-      sign_out (event) {
-        firebase.auth().signOut()
-        this.show_sign_out = false
-        this.show_authorize = true
-        this.enable_input()
-      },
       mobile_keypress (event) {
         if (!event.key.match(/^\d$/)) event.preventDefault()
-      },
-      mobile_keyup (event) {
-        this.validate_mobile_number()
       },
       mobile_paste (event) {
         const past_text = (event.clipboardData).getData('text/plain')
         const phone_number = parseNumber(past_text, 'US').phone
         if (phone_number) {
-          this.person.mobile = phone_number
-          this.validate_mobile_number()
+          const update = { ...this.person }
+          update.mobile = phone_number
+          this.$emit('update:person', update)
+          return this.validate_mobile_number()
         } else return false
       },
       code_keypress (event) {

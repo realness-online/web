@@ -2,18 +2,16 @@
   <form id="profile-name">
     <fieldset id="name">
       <legend :class="{ valid: is_valid }">Name</legend>
-      <input id="first-name" v-model="person.first_name"
+      <input id="first-name" v-model="first_name"
              type="text"
              tabindex="1"
              placeholder="First"
-             @keyup="validate"
-             @blur="modified_check">
-      <input id="last-name" v-model="person.last_name"
+             @keyup="modified_check">
+      <input id="last-name" v-model="last_name"
              type="text"
              tabindex="2"
              placeholder="Last"
-             @keyup="validate"
-             @blur="modified_check">
+             @keyup="modified_check">
     </fieldset>
     <menu>
       <button ref="button"
@@ -25,8 +23,6 @@
   </form>
 </template>
 <script>
-  import { load } from '@/helpers/itemid'
-  import { Me } from '@/persistance/Storage'
   export default {
     props: {
       person: {
@@ -34,41 +30,50 @@
         required: true
       }
     },
+    data () {
+      return {
+        first_name: this.person.first_name,
+        last_name: this.person.last_name
+      }
+    },
     computed: {
       is_valid () {
         let length = 0
         if (this.person.first_name) length = this.person.first_name.length
+        else return false // first name is required
+
         if (this.person.last_name) length += this.person.last_name.length
+        else return false // last name is required
+
         if (length > 2) return true
-        else return false
+        else return false // full name is at least 3 characters
+      }
+    },
+    watch: {
+      person () {
+        this.first_name = this.person.first_name
+        this.last_name = this.person.last_name
       }
     },
     methods: {
-      validate () {
-        if (this.is_valid) this.$refs.button.disabled = false
-        else this.$refs.button.disabled = true
-      },
       async valid () {
-        if (this.is_valid) {
-          this.$emit('validated')
-        } else this.$refs.button.disabled = false
+        if (this.is_valid) this.$emit('valid')
       },
       async modified_check () {
-        const me = await load(localStorage.me)
-        if (!me) {
-          const me = new Me()
-          await me.save()
-          this.$emit('modified')
-          return
-        }
-        if (this.is_valid) this.$refs.button.disabled = false
         let modified = false
-        if (me.first_name !== this.person.first_name) modified = true
-        if (me.last_name !== this.person.last_name) modified = true
+        if (this.is_valid) this.$refs.button.disabled = false
+        else this.$refs.button.disabled = true
+        const updated = { ...this.person }
+        if (this.person.first_name !== this.first_name) {
+          updated.first_name = this.first_name
+          modified = true
+        }
+        if (this.person.last_name !== this.last_name) {
+          updated.last_name = this.last_name
+          modified = true
+        }
         if (modified) {
-          const me = new Me()
-          await me.save()
-          this.$emit('modified', this.person)
+          this.$emit('update:person', updated)
         }
       }
     }
