@@ -2,11 +2,11 @@
   <div id="manage-avatar">
     <icon v-if="working" name="working" />
     <div v-else>
-      <figure v-if="avatar">
+      <figure v-if="vector">
         <icon name="background" />
         <svg itemscope itemtype="/avatars"
-             :itemid="avatar.id"
-             :viewBox="avatar.viewbox"
+             :itemid="vector.id"
+             :viewBox="vector.viewbox"
              v-html="path" />
       </figure>
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
