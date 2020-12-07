@@ -8,7 +8,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     get.mockImplementation(_ => Promise.resolve({}))
-    localStorage.setItem('me', '/+16282281824')
+    localStorage.me = '/+16282281824'
     person = {
       first_name: 'Scott',
       last_name: 'Fryxell',
@@ -20,10 +20,10 @@ describe('@/compontent/profile/as-figure.vue', () => {
       }
     })
   })
-  it('Render a person\'s profile info', () => {
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  describe('rendering avatar', () => {
+  describe('Rendering', () => {
+    it('Render a person\'s profile info', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('Render the users avatar', () => {
       let avatar = wrapper.find('[itemprop=avatar]')
       expect(avatar.empty).toBeFalsy()
@@ -38,26 +38,39 @@ describe('@/compontent/profile/as-figure.vue', () => {
       expect(avatar.empty).not.toBeTruthy()
     })
   })
-  describe('svg.avatar@click', () => {
-    let router
-    beforeEach(() => {
-      const localVue = createLocalVue()
-      localVue.use(VueRouter)
-      router = new VueRouter()
-      wrapper = shallowMount(as_figure, {
-        localVue,
-        router,
-        propsData: { person }
+  describe('Methods:', () => {
+    describe('#avatar_click', () => {
+      let router
+      beforeEach(() => {
+        const localVue = createLocalVue()
+        localVue.use(VueRouter)
+        router = new VueRouter()
+        wrapper = shallowMount(as_figure, {
+          localVue,
+          router,
+          propsData: { person }
+        })
+      })
+      it('Go to the mobile number when clicked', () => {
+        wrapper.vm.avatar_click()
+        expect(wrapper.vm.$route.path).toBe('/+16282281823')
+      })
+      it('When is_me is true should go to the account page', () => {
+        localStorage.me = person.id
+        wrapper.vm.avatar_click()
+        expect(wrapper.vm.$route.path).toBe('/account')
       })
     })
-    it('Go to the mobile number when clicked', () => {
-      wrapper.vm.avatar_click()
-      expect(wrapper.vm.$route.path).toBe('/+16282281823')
+    describe('#add_relationship', () => {
+      it('adds a person to my list of relationships', async () => {
+        await wrapper.vm.add_relationship()
+        expect(wrapper.emitted('update:relations')).toBeTruthy()
+      })
     })
-    it('When is_me is true should go to the account page', () => {
-      localStorage.me = person.id
-      wrapper.vm.avatar_click()
-      expect(wrapper.vm.$route.path).toBe('/account')
+    describe('#remove_relationship', () => {
+      it('Removes a person from my list of relationships', () => {
+        wrapper.vm.remove_relationship()
+      })
     })
   })
 })

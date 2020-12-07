@@ -2,7 +2,10 @@
   <figure class="profile">
     <as-svg :person="person" @vector-click="avatar_click" />
     <figcaption>
-      <as-hgroup :key="person.id" :person="person" :editable="editable" />
+      <as-hgroup :key="person.id"
+                 :person="person"
+                 :editable="editable"
+                 @update:person="$emit('update:person', $event)" />
       <menu>
         <slot>
           <profile-as-links :people="relations" />
