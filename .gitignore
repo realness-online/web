@@ -10,8 +10,10 @@ node_modules
 
 /public/vector.worker.js
 /public/vector.worker.js.map
-/public/compression.worker.js
-/public/compression.worker.js.map
+/public/optimize.worker.js
+/public/optimize.worker.js.map
+/public/compress.worker.js
+/public/compress.worker.js.map
 /public/sync.worker.js
 /public/sync.worker.js.map
 

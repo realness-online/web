@@ -4,7 +4,8 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 module.exports = {
   entry: {
     vector: path.join(__dirname, './src/workers/vector.js'),
-    compression: path.join(__dirname, './src/workers/compression.js'),
+    optimize: path.join(__dirname, './src/workers/optimize.js'),
+    compression: path.join(__dirname, './src/workers/compress.js'),
     sync: path.join(__dirname, './src/workers/sync.js')
   },
   // mode: 'development',
@@ -21,7 +22,13 @@ module.exports = {
     alias: {
       '@': path.resolve('src')
     },
-    plugins: []
+    plugins: [],
+    fallback: {
+      path: false,
+      os: false,
+      stream: false,
+      fs: false
+    }
   },
   module: {
     rules: []
