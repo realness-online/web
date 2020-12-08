@@ -16,7 +16,7 @@ export async function read (file) {
   const reader = new FileReaderSync()
   return await Jimp.read(reader.readAsArrayBuffer(file))
 }
-export async function prepare (image, size) {
+export async function prepare (image, size = 333) {
   if (image.bitmap.width > image.bitmap.height) image = image.resize(Jimp.AUTO, size)
   else image = image.resize(size, Jimp.AUTO)
   return image.normalize().threshold(brighness_options)
@@ -31,8 +31,8 @@ export async function make (image) {
 }
 export async function listen (message) {
   let image = await read(message.data.image)
-  image = await prepare(image, 333)
+  image = await prepare(image)
   const vector = await make(image)
-  self.postMessage(vector)
+  self.postMessage(vector, '*')
 }
 self.addEventListener('message', listen)
