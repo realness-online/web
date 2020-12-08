@@ -17,16 +17,20 @@ describe('/workers/vector.js', () => {
     describe('#listen', () => {
       let read_spy
       let as_paths_spy
+      let postMessage_spy
       beforeEach(() => {
         read_spy = jest.spyOn(potrace.Jimp, 'read')
         read_spy.mockImplementation(_ => Promise.resolve(mock_image))
         as_paths_spy = jest.spyOn(potrace, 'as_paths')
         as_paths_spy.mockImplementation(_ => Promise.resolve(mock_vector))
+        postMessage_spy = jest.spyOn(global, 'postMessage')
+        postMessage_spy.mockImplementation(_ => true)
       })
       it('#Creates a vector from a jpeg', async () => {
         await vector.listen({ data: { image } })
         expect(read_spy).toBeCalled()
         expect(as_paths_spy).toBeCalled()
+        expect(postMessage_spy).toBeCalled()
       })
       it('Can handle different aspect ratios', async () => {
         const wider_image = { ...mock_image }
@@ -35,6 +39,7 @@ describe('/workers/vector.js', () => {
         await vector.listen({ data: { image } })
         expect(read_spy).toBeCalled()
         expect(as_paths_spy).toBeCalled()
+        expect(postMessage_spy).toBeCalled()
       })
     })
   })
