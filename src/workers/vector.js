@@ -33,6 +33,6 @@ export async function listen (message) {
   let image = await read(message.data.image)
   image = await prepare(image)
   const vector = await make(image)
-  self.postMessage(vector, '*')
+  self.postMessage(vector)
 }
 self.addEventListener('message', listen)
