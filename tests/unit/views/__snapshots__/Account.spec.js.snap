@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Account.vue Renders account information 1`] = `
+exports[`@/views/Account.vue Rendering Renders account information 1`] = `
 <section
   class="page signed-in"
   id="account"
@@ -40,7 +40,7 @@ exports[`@/views/Account.vue Renders account information 1`] = `
   <as-days-stub
     avatars=""
     events=""
-    itemid="/+/statements"
+    itemid="/+16282281824/statements"
     itemscope=""
     posters=""
     statements=""
