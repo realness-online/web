@@ -63,7 +63,6 @@
     },
     watch: {
       async statement () {
-        console.log('statement changed', this.statement)
         if (this.statement) {
           this.syncing = true
           await this.save_statement()
@@ -71,7 +70,6 @@
         }
       },
       async person () {
-        console.log('sync:person:updated', this.person)
         if (this.person) {
           this.syncing = true
           await this.save_person()
@@ -103,7 +101,6 @@
         this.statements.push(this.statement)
         const data = new Statements()
         await this.$nextTick()
-        console.log(this.statements)
         await data.save()
         this.$emit('update:statement', null)
       },
