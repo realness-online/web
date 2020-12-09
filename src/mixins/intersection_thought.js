@@ -1,5 +1,5 @@
 import { list, as_directory, as_author } from '@/helpers/itemid'
-import { newest_number_first } from '@/helpers/sorting'
+import { newer_number_first } from '@/helpers/sorting'
 export default {
   data () {
     return {
@@ -17,7 +17,7 @@ export default {
         author = this.authors.find(relation => relation.id === author)
         const directory = await as_directory(`${author.id}/statements`)
         let history = directory.items
-        history.sort(newest_number_first)
+        history.sort(newer_number_first)
         history = history.filter(page => !author.viewed.some(viewed => viewed === page))
         const next = history.shift()
         if (next) {
