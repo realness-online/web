@@ -112,7 +112,7 @@
           list(this.statements_id)
         ])
         if (person) this.person = person
-        if (statements.length) this.satements = statements
+        if (statements.length) this.statements = statements
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
