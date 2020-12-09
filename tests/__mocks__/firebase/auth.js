@@ -9,7 +9,8 @@ firebase.auth_mock = {
     return firebase.user
   },
   onAuthStateChanged: jest.fn(state => state(firebase.user)),
-  signInWithPhoneNumber: jest.fn(() => Promise.resolve('success'))
+  signInWithPhoneNumber: jest.fn(() => Promise.resolve('success')),
+  signOut: jest.fn()
 }
 firebase.auth = jest.fn(() => firebase.auth_mock)
 firebase.auth.RecaptchaVerifier = RecaptchaVerifier
