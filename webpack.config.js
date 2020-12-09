@@ -5,7 +5,7 @@ module.exports = {
   entry: {
     vector: path.join(__dirname, './src/workers/vector.js'),
     optimize: path.join(__dirname, './src/workers/optimize.js'),
-    compression: path.join(__dirname, './src/workers/compress.js'),
+    compress: path.join(__dirname, './src/workers/compress.js'),
     sync: path.join(__dirname, './src/workers/sync.js')
   },
   // mode: 'development',
