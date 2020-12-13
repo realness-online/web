@@ -4,7 +4,7 @@
     <as-svg :itemid="itemid"
             :poster="new_poster"
             @vector-click="vector_click"
-            @vector-loaded="vector_loaded" />
+            @vector-loaded="loaded = true" />
     <figcaption>
       <event-as-fieldset v-if="date_picker"
                          :itemid="itemid"
@@ -81,9 +81,6 @@
           this.menu = true
           this.selecting_event = false
         }
-      },
-      vector_loaded () {
-        this.loaded = true
       },
       vector_click (menu) {
         if (this.selecting_event) this.menu = false
