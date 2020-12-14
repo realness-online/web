@@ -53,6 +53,7 @@
         if (this.vector) return
         if (this.first_instance() && this.person.avatar) {
           this.vector = await load(this.person.avatar)
+          await this.$nextTick()
           this.$emit('vector-loaded', this.vector)
         }
       }

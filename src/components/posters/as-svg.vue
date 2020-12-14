@@ -37,6 +37,7 @@
         if (this.vector) return
         if (this.poster) this.vector = this.poster
         else this.vector = await load(this.itemid)
+        await this.$nextTick()
         this.$emit('vector-loaded', this.itemid)
       }
     }
