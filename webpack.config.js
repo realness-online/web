@@ -1,5 +1,6 @@
 const path = require('path')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const webpack = require('webpack')
 
 module.exports = {
   entry: {
@@ -8,7 +9,6 @@ module.exports = {
     compress: path.join(__dirname, './src/workers/compress.js'),
     sync: path.join(__dirname, './src/workers/sync.js')
   },
-  // mode: 'development',
   mode: 'production',
   output: {
     filename: '[name].worker.js',
@@ -24,10 +24,11 @@ module.exports = {
     },
     plugins: [],
     fallback: {
-      path: false,
-      os: false,
-      stream: false,
-      fs: false
+      path: require.resolve('path-browserify'),
+      os: require.resolve('os-browserify/browser'),
+      stream: require.resolve('stream-browserify'),
+      fs: require.resolve('browserify-fs'),
+      buffer: require.resolve('buffer-browserify')
     }
   },
   module: {
@@ -41,6 +42,12 @@ module.exports = {
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       openAnalyzer: false
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer']
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser'
     })
   ],
   optimization: {
