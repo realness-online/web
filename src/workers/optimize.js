@@ -6,7 +6,7 @@ const options = {
     { cleanupAttrs: true },
     { removeEmptyAttrs: true },
     { removeViewBox: false },
-    { convertPathData: true },
+    { convertPathData: { floatPrecision: 0 } },
     { removeUselessStrokeAndFill: true },
     { cleanupNumericValues: true },
     { sortAttrs: false },
