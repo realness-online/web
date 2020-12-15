@@ -18,7 +18,10 @@ export default {
       else return this.vector.path
     }
   },
-  created () {
+  mounted () {
+    if (this.immediate) this.show()
+  },
+  updated () {
     if (this.immediate) this.show()
   }
 }
