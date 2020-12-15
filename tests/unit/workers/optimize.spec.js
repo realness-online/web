@@ -10,8 +10,11 @@ describe('/workers/vector.js', () => {
         // optimize_spy.mockImplementation(_ => Promise.resolve(vector))
       })
       it('#Optimizes a vector', async () => {
+        const postMessage_spy = jest.spyOn(global, 'postMessage')
+        postMessage_spy.mockImplementation(_ => true)
         await optimize.listen({ data: { vector } })
         expect(optimize_spy).toBeCalled()
+        expect(postMessage_spy).toBeCalled()
       })
     })
   })
