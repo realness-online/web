@@ -19,8 +19,9 @@
                  :itemid="as_itemid"
                  :new_poster="new_poster"
                  :working="working"
-                 @add-poster="add_poster"
-                 @remove-poster="cancel_poster" />
+                 @add-poster="save_poster"
+                 @remove-poster="cancel_poster"
+                 @loaded="optimize" />
       <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
                  :itemid="itemid"
@@ -37,6 +38,7 @@
 </template>
 <script>
   import itemid from '@/helpers/itemid'
+  import get_item from '@/modules/item'
   import { newer_id_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
@@ -55,14 +57,16 @@
       return {
         finished: true,
         posters: [],
-        worker: new Worker('/vector.worker.js'),
+        vectorizer: new Worker('/vector.worker.js'),
+        optimizer: new Worker('/optimize.worker.js'),
         working: false,
         new_poster: null
       }
     },
     computed: {
       as_itemid () {
-        return `${localStorage.me}/posters/${this.new_poster.created_at}`
+        if (this.new_poster.id) return this.new_poster.id
+        else return `${localStorage.me}/posters/${this.new_poster.created_at}`
       },
       friendly () {
         if (this.posters.length === 0 && !this.working && !this.new_poster) return true
@@ -76,21 +80,19 @@
     async created () {
       console.clear()
       console.time('posters-load')
-      console.info('views their posters')
+      console.info('view:posters')
+      this.vectorizer.addEventListener('message', this.vectorized)
+      this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
-      this.worker.addEventListener('message', this.brand_new_poster)
       console.timeEnd('posters-load')
     },
     destroyed () {
-      this.worker.terminate()
+      this.vectorizer.terminate()
+      this.optimizer.terminate()
     },
     methods: {
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
-      },
-      vectorize_image (image) {
-        this.working = true
-        this.worker.postMessage({ image })
       },
       async get_poster_list (user) {
         this.posters = []
@@ -98,22 +100,36 @@
         if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
         this.posters.sort(newer_id_first)
       },
-      brand_new_poster (response) {
-        console.info('creates a poster')
+      vectorize (image) {
+        console.time('vectorize')
+        this.working = true
+        this.vectorizer.postMessage({ image })
+      },
+      async vectorized (response) {
         this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
+        console.timeEnd('vectorize')
+        console.info('create:poster', this.new_poster.id)
       },
-      async add_poster (id) {
+      optimize (vector) {
+        console.time('optimize')
+        this.optimizer.postMessage({ vector })
+      },
+      async optimized (message) {
+        this.new_poster = get_item(message.data.vector)
+        console.timeEnd('optimize')
+      },
+      async save_poster (id) {
         this.working = true
-        console.info(`adds poster ${id}`)
         const poster = new Poster(id)
         await poster.save()
         await this.$nextTick()
         this.posters.unshift(id)
         this.new_poster = null
         this.working = false
+        console.info('save:poster', id)
       },
       async remove_poster (id) {
         this.working = true
@@ -121,6 +137,7 @@
         const poster = new Poster(id)
         await poster.delete()
         this.working = false
+        console.info('delete:poster', id)
       },
       cancel_poster () {
         this.working = true
