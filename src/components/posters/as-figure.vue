@@ -1,10 +1,11 @@
 <template lang="html">
   <figure class="poster" :class="{ 'selecting-event': selecting_event }">
     <icon :name="background" />
-    <as-svg :itemid="itemid"
+    <as-svg ref="poster"
+            :itemid="itemid"
             :poster="new_poster"
             @vector-click="vector_click"
-            @vector-loaded="loaded = true" />
+            @vector-loaded="on_load" />
     <figcaption>
       <event-as-fieldset v-if="date_picker"
                          :itemid="itemid"
@@ -66,21 +67,19 @@
         else return false
       }
     },
-    created () {
-      if (this.new_poster) {
-        this.menu = true
-        this.poster = this.new_poster
+    watch: {
+      new_poster () {
+        if (this.new_poster) {
+          this.menu = true
+          this.poster = this.new_poster
+        }
       }
     },
     methods: {
-      event_picker (selecting) {
-        if (selecting) {
-          this.menu = false
-          this.selecting_event = true
-        } else {
-          this.menu = true
-          this.selecting_event = false
-        }
+      async on_load (poster) {
+        this.loaded = true
+        this.$nextTick()
+        this.$emit('loaded', this.$refs.poster.$el.outerHTML)
       },
       vector_click (menu) {
         if (this.selecting_event) this.menu = false
@@ -95,6 +94,15 @@
         this.selecting_event = false
         this.menu = false
         this.$emit('add-poster', this.itemid)
+      },
+      event_picker (selecting) {
+        if (selecting) {
+          this.menu = false
+          this.selecting_event = true
+        } else {
+          this.menu = true
+          this.selecting_event = false
+        }
       }
     }
   }
