@@ -16,7 +16,7 @@ export default {
         input.addEventListener('change', event => {
           const image = event.target.files[0]
           if (image !== undefined && image.type === 'image/jpeg') {
-            vnode.context.vectorize_image(image)
+            vnode.context.vectorize(image)
           }
         })
       }

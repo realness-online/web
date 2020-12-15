@@ -4,6 +4,7 @@ import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
+const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -38,9 +39,10 @@ describe('@/components/avatars/as-form.vue', () => {
     })
     it('Unmounts the worker when destroyed', () => {
       const mock = jest.fn()
-      wrapper.vm.worker = { terminate: mock }
+      wrapper.vm.vectorizer = { terminate: mock }
+      wrapper.vm.optimizer = { terminate: mock }
       wrapper.destroy()
-      expect(mock).toBeCalled()
+      expect(mock).toHaveBeenCalledTimes(2)
     })
   })
   describe('computed:', () => {
@@ -68,15 +70,77 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
   })
+  describe('watch:', () => {
+    describe('.working', () => {
+      it('posts a message to the optimizer when there a new avatar', async () => {
+        const worker = {
+          postMessage: jest.fn()
+        }
+        await wrapper.setData({
+          optimizer: worker
+        })
+        wrapper.vm.working = true
+        wrapper.vm.vector = { id: 'chill' }
+        await wrapper.vm.$nextTick()
+        expect(worker.postMessage).not.toBeCalled()
+        await wrapper.setData({ working: false })
+        await wrapper.vm.$nextTick()
+        expect(worker.postMessage).toBeCalled()
+      })
+    })
+  })
   describe('methods:', () => {
     describe('#set_current_avatar', () => {
       it('sets a new current avatar', () => {
         wrapper.vm.set_current_avatar({ id: '/+/avatars/1578929551564' })
       })
     })
-    describe('#set_new_avatar', () => {
-      it('sets a new current avatar', () => {
-        wrapper.vm.set_new_avatar({ data: { created_at: 'ummm' } })
+    describe('#vectorize', () => {
+      it('Should vectorize a jpg', () => {
+        const worker = {
+          postMessage: jest.fn()
+        }
+        wrapper.setData({
+          vectorizer: worker
+        })
+        const image = { i: 'would be an image in real life' }
+        wrapper.vm.vectorize(image)
+        expect(wrapper.vm.working).toBe(true)
+        expect(worker.postMessage).toBeCalled()
+      })
+    })
+    describe('#vectorized', () => {
+      const message = {
+        data: {
+          created_at: 'ummm',
+          path: [],
+          viewbox: 'viewbox'
+        }
+      }
+      it('Sets current_avatar to new vector', () => {
+        expect(wrapper.vm.current_avatar).toBe(null)
+        wrapper.vm.vectorized(message)
+        expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/ummm')
+      })
+      it('sets avatar_changed to true', () => {
+        wrapper.vm.avatar_changed = false
+        wrapper.vm.vectorized(message)
+        expect(wrapper.vm.avatar_changed).toBe(true)
+      })
+      it('sets working to false', () => {
+        wrapper.vm.working = true
+        wrapper.vm.vectorized(message)
+        expect(wrapper.vm.working).toBe(false)
+      })
+    })
+    describe('#optimized', () => {
+      it('sets current_avatar with an optimized vector', () => {
+        wrapper.vm.optimized({
+          data: {
+            vector: avatar_html
+          }
+        })
+        expect(wrapper.vm.current_avatar.id).toBe('/+16282281824/avatars/55446694324')
       })
     })
     describe('#open_camera', () => {
@@ -117,20 +181,6 @@ describe('@/components/avatars/as-form.vue', () => {
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(true)
         wrapper.vm.select_photo()
         expect(wrapper.vm.$refs.uploader.hasAttribute('capture')).toBe(false)
-      })
-    })
-    describe('#vectorize_image', () => {
-      it('Should vectorize a jpg', () => {
-        const post_message_spy = jest.fn()
-        wrapper.setData({
-          worker: {
-            postMessage: post_message_spy
-          }
-        })
-        const image = { i: 'would be an image in real life' }
-        wrapper.vm.vectorize_image(image)
-        expect(wrapper.vm.working).toBe(true)
-        expect(post_message_spy).toBeCalled()
       })
     })
   })

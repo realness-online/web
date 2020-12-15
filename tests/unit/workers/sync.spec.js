@@ -10,6 +10,7 @@ const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
   beforeEach(() => {
+    jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null
   })

@@ -4,7 +4,8 @@
     <div v-else>
       <figure v-if="vector">
         <icon name="background" />
-        <svg itemscope itemtype="/avatars"
+        <svg ref="new_avatar" itemscope
+             itemtype="/avatars"
              :itemid="vector.id"
              :viewBox="vector.viewbox"
              v-html="path" />
@@ -29,6 +30,7 @@
 </template>
 <script>
   import { Avatar } from '@/persistance/Storage'
+  import get_item from '@/modules/item'
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
   import download_vector from '@/components/download-vector'
@@ -51,7 +53,8 @@
     },
     data () {
       return {
-        worker: new Worker('/vector.worker.js'),
+        vectorizer: new Worker('/vector.worker.js'),
+        optimizer: new Worker('/optimize.worker.js'),
         current_avatar: null,
         avatar_changed: false,
         working: false,
@@ -68,30 +71,44 @@
         else return false
       }
     },
+    watch: {
+      async working () {
+        if (this.vector && !this.working) {
+          await this.$nextTick()
+          this.optimizer.postMessage({ vector: this.$refs.new_avatar.outerHTML })
+        }
+      }
+    },
     async created () {
-      this.worker.addEventListener('message', this.set_new_avatar)
+      this.vectorizer.addEventListener('message', this.vectorized)
+      this.optimizer.addEventListener('message', this.optimized)
       if (this.person.avatar) this.current_avatar = await itemid.load(this.person.avatar)
     },
     destroyed () {
-      this.worker.terminate()
+      this.vectorizer.terminate()
+      this.optimizer.terminate()
     },
     methods: {
       set_current_avatar (avatar) {
         this.current_avatar = avatar
       },
-      set_new_avatar (message) {
-        this.avatar_changed = true
+      vectorize (image) {
+        this.working = true
+        this.vectorizer.postMessage({ image })
+      },
+      async vectorized (message) {
         this.vector = {
           id: `${this.person.id}/avatars/${message.data.created_at}`,
           path: message.data.path,
           viewbox: message.data.viewbox
         }
         this.current_avatar = this.vector
+        this.avatar_changed = true
         this.working = false
       },
-      vectorize_image (image) {
-        this.working = true
-        this.worker.postMessage({ image })
+      async optimized (message) {
+        this.vector = get_item(message.data.vector)
+        this.current_avatar = this.vector
       },
       async accept_new_avatar (event) {
         this.finished = false
