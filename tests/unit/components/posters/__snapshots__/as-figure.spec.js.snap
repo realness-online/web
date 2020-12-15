@@ -1,9 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
+exports[`@/compontent/posters/as-figure.vue renders: A new poster 1`] = `
 <figure
   class="poster"
-  is_new="true"
 >
   <icon-stub
     name="working"
@@ -25,7 +24,7 @@ exports[`@/compontent/posters/as-figure.vue Renders a new poster 1`] = `
 </figure>
 `;
 
-exports[`@/compontent/posters/as-figure.vue Renders a poster 1`] = `
+exports[`@/compontent/posters/as-figure.vue renders: A poster 1`] = `
 <figure
   class="poster"
 >

@@ -9,22 +9,85 @@ describe('@/compontent/posters/as-figure.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_figure, { propsData: { itemid: poster.id } })
   })
-  describe('Renders', () => {
-    it('a poster', () => {
+  describe('renders:', () => {
+    it('A poster', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('a new poster', () => {
-      wrapper = shallowMount(as_figure, {
-        propsData: {
-          itemid: poster.id,
-          new_poster: poster,
-          is_new: true
-        }
-      })
+    it('A new poster', async () => {
+      await wrapper.setProps({ new_poster: poster })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
+  describe('computed:', () => {
+    describe('background', () => {
+      it('Returns background when figure is working', () => {
+        wrapper.setProps({ working: true })
+        expect(wrapper.vm.background).toBe('working')
+      })
+    })
+    describe('date_picker', () => {
+      it('Is false by default', () => {
+        expect(wrapper.vm.date_picker).toBe(false)
+      })
+      it('Is true when menu is visible', () => {
+        expect(wrapper.vm.date_picker).toBe(false)
+        wrapper.vm.menu = true
+        expect(wrapper.vm.date_picker).toBe(true)
+      })
+      it('Is false when menu is gone', () => {
+        wrapper.vm.menu = true
+        expect(wrapper.vm.date_picker).toBe(true)
+        wrapper.vm.menu = false
+        expect(wrapper.vm.date_picker).toBe(false)
+      })
+      it('Is true when selecting_event', () => {
+        expect(wrapper.vm.date_picker).toBe(false)
+        wrapper.vm.selecting_event = true
+        expect(wrapper.vm.date_picker).toBe(true)
+      })
+    })
+  })
+  describe('watch', () => {
+    describe('new_poster', () => {
+      it('Sets poster to new_poster', async () => {
+        expect(wrapper.vm.menu).toBe(false)
+        const new_poster = { ...poster }
+        new_poster.id = 'new_id'
+        await wrapper.setProps({ new_poster })
+        expect(wrapper.vm.poster.id).toBe('new_id')
+      })
+      it('Sets menu to true', async () => {
+        expect(wrapper.vm.menu).toBe(false)
+        const new_poster = { ...poster }
+        await wrapper.setProps({ new_poster })
+        expect(wrapper.vm.menu).toBe(true)
+      })
+      it('Leaves poster alone when null', async () => {
+        wrapper = shallowMount(as_figure, {
+          propsData: {
+            itemid: poster.id,
+            new_poster: poster
+          }
+        })
+        wrapper.vm.poster = poster
+        await wrapper.setProps({ new_poster: null })
+        expect(wrapper.vm.new_poster).toBe(null)
+        expect(wrapper.vm.poster.id).toBe(poster.id)
+      })
+    })
+  })
   describe('methods:', () => {
+    describe('#on_load', () => {
+      it('Sets loaded to true', () => {
+        wrapper.vm.on_load()
+        expect(wrapper.vm.loaded).toBe(true)
+      })
+      it('Emits an event after rendering svg', () => {
+        wrapper.vm.on_load()
+        expect(wrapper.vm.loaded).toBe(true)
+        expect(wrapper.emitted('loaded')).toBeTruthy()
+      })
+    })
     describe('#vector_click', () => {
       it('Shows the menu', () => {
         expect(wrapper.vm.menu).toBe(false)
@@ -40,11 +103,11 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#add_poster', () => {
-      it('emits add-poster when called', () => {
+      it('Emits add-poster when called', () => {
         wrapper.vm.add_poster()
         expect(wrapper.emitted('add-poster')).toBeTruthy()
       })
-      it('gets rid of all the extra html it can before saving', () => {
+      it('Gets rid of all the extra html it can before saving', () => {
         wrapper.vm.selecting_event = true
         wrapper.vm.menu = true
         expect(wrapper.vm.date_picker).toBe(true)
@@ -55,14 +118,14 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#remove_poster', () => {
-      it('triggers a confirm message before deleting poster', () => {
+      it('Triggers a confirm message before deleting poster', () => {
         const confirm_spy = jest.fn(() => true)
         window.confirm = confirm_spy
         wrapper.vm.remove_poster()
         expect(confirm_spy).toBeCalled()
         expect(wrapper.emitted('remove-poster')).toBeTruthy()
       })
-      it('will not emit remove-poster unless confirmed', () => {
+      it('Will not emit remove-poster unless confirmed', () => {
         const confirm_spy = jest.fn(() => false)
         window.confirm = confirm_spy
         wrapper.vm.remove_poster()
@@ -70,27 +133,28 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.emitted('remove-poster')).toBeFalsy()
       })
     })
-  })
-  describe('computed:', () => {
-    describe('date_picker', () => {
-      it('is false by default', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
+    describe('#event_picker', () => {
+      describe('true', () => {
+        beforeEach(() => {
+          wrapper.vm.event_picker(true)
+        })
+        it('Hides the normal', () => {
+          expect(wrapper.vm.menu).toBe(false)
+        })
+        it('Shows the event picker', () => {
+          expect(wrapper.vm.selecting_event).toBe(true)
+        })
       })
-      it('is true when menu is visible', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-      })
-      it('is false when menu is gone', () => {
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-        wrapper.vm.menu = false
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-      it('is true when selecting_event is true', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.selecting_event = true
-        expect(wrapper.vm.date_picker).toBe(true)
+      describe('false', () => {
+        beforeEach(() => {
+          wrapper.vm.event_picker(false)
+        })
+        it('Shows the normal', () => {
+          expect(wrapper.vm.menu).toBe(true)
+        })
+        it('Hides the event picker', () => {
+          expect(wrapper.vm.selecting_event).toBe(false)
+        })
       })
     })
   })
