@@ -4,8 +4,8 @@ export default {
       observer: null
     }
   },
-   mounted () { this.intersect() },
-   updated () { this.intersect() },
+  mounted () { this.intersect() },
+  updated () { this.intersect() },
   destroyed () {
     if (this.observer) this.observer.unobserve(this.$el)
   },
