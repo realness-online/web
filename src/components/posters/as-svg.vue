@@ -32,6 +32,11 @@
         else return '0 0 0 0'
       }
     },
+    watch: {
+      poster () {
+        if (this.poster) this.vector = this.poster
+      }
+    },
     methods: {
       async show () {
         if (this.vector) return
