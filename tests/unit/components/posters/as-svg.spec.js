@@ -35,19 +35,36 @@ describe('@/components/posters/as-svg.vue', () => {
       })
     })
   })
+  describe('watch:', () => {
+    describe('poster', () => {
+      it('Updates vector when changed', async () => {
+        const other_poster = { ...poster }
+        other_poster.id = '/fake_id'
+        await wrapper.vm.show()
+        await wrapper.setProps({ poster: other_poster })
+        expect(wrapper.vm.vector.id).toBe('/fake_id')
+      })
+      it('Leaves vector alone when poster is null', async () => {
+        await wrapper.setProps({ poster })
+        expect(wrapper.vm.vector.id).toBe(poster.id)
+        await wrapper.setProps({ poster: null })
+        expect(wrapper.vm.vector.id).toBe(poster.id)
+      })
+    })
+  })
   describe('methods', () => {
     describe('#show', () => {
-      it('Sets vector to the poster prop', () => {
-        wrapper = shallowMount(as_svg, {
+      it('Sets vector to the poster prop', async () => {
+        wrapper = await shallowMount(as_svg, {
           propsData: { poster, itemid: poster.id, immediate: true }
-        })
-        wrapper.vm.show()
+        }) // show is called when immediate is true
+        await wrapper.vm.$nextTick()
         expect(wrapper.vm.vector.id).toBe(poster.id)
         expect(wrapper.emitted('vector-loaded')).toBeTruthy()
       })
-      it('Only loads the vector once', () => {
+      it('Only loads the vector once', async () => {
         wrapper.vm.vector = poster
-        wrapper.vm.show()
+        await wrapper.vm.show()
         expect(wrapper.emitted('vector-loaded')).not.toBeTruthy()
       })
     })
