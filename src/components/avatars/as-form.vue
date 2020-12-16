@@ -103,12 +103,13 @@
           viewbox: message.data.viewbox
         }
         this.current_avatar = this.vector
-        this.avatar_changed = true
         this.working = false
       },
       async optimized (message) {
         this.vector = get_item(message.data.vector)
         this.current_avatar = this.vector
+        this.$nextTick()
+        this.avatar_changed = true
       },
       async accept_new_avatar (event) {
         this.finished = false
