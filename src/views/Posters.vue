@@ -109,7 +109,6 @@
         this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
-        this.working = false
         console.timeEnd('vectorize')
         console.info('create:poster', this.new_poster.id)
       },
@@ -119,6 +118,8 @@
       },
       async optimized (message) {
         this.new_poster = get_item(message.data.vector)
+        await this.$nextTick()
+        this.working = false
         console.timeEnd('optimize')
       },
       async save_poster (id) {
