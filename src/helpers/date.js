@@ -43,7 +43,9 @@ export function is_same_day (d1, d2) {
 export function is_fresh (date) { // you are only fresh for 4 hours
   const timestamp = Math.round(new Date().getTime() / 1000)
   const four_hours_ago = timestamp - (4 * 3600)
-  if (four_hours_ago < new Date(date).getTime()) {
+  const one_day_ago = four_hours_ago * 6
+  const three_days_ago = one_day_ago * 3
+  if (three_days_ago < new Date(date).getTime()) {
     console.log('is-fresh')
     return true
   } else {
