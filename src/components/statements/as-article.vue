@@ -58,9 +58,7 @@
     },
     computed: {
       thought_starts_at () {
-        const created_at = as_created_at(this.statements[0].id)
-        if (created_at) return as_time(created_at)
-        else return null
+        return as_time(as_created_at(this.statements[0].id))
       }
     },
     async created () {

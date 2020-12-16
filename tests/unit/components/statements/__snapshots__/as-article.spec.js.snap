@@ -1,6 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/statements/as-article.vue Render a statement as an article element 1`] = `
+exports[`@/components/statements/as-article.vue rendering: Loads the statement author if verbose is true 1`] = `
+<article
+  class="thought"
+>
+  <header>
+    <time>
+      3:40 PM
+    </time>
+  </header>
+   
+  <as-statement-stub
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  <as-statement-stub
+    itemprop="statements"
+    statement="[object Object]"
+  />
+</article>
+`;
+
+exports[`@/components/statements/as-article.vue rendering: Render a statement as an article element 1`] = `
 <article
   class="thought"
 >
