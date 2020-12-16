@@ -41,23 +41,21 @@ describe('@/views/Posters.vue', () => {
   })
   describe('methods:', () => {
     describe('get_id', () => {
-      it('gets the poster id from the directory listing on hte network', () => {
+      it('Gets the poster id from the directory listing on hte network', () => {
         wrapper.vm.get_id(`${poster.id}.html`)
       })
     })
     describe('#vectorize', () => {
-      it('executes the method', () => {
+      it('Executes the method', () => {
         wrapper.vm.vectorize()
       })
     })
     describe('#vectorized', () => {
-      it('gets the poster from the worker', () => {
+      it('Gets the poster from the worker', () => {
         const event = {
           data: poster
         }
-        wrapper.vm.working = true
         wrapper.vm.vectorized(event)
-        expect(wrapper.vm.working).toBe(false)
         expect(wrapper.vm.new_poster.id).toBe(poster.id)
       })
     })
@@ -69,8 +67,10 @@ describe('@/views/Posters.vue', () => {
       })
     })
     describe('#optimized', () => {
-      it('updates new_poster with the optimized vector', () => {
-        wrapper.vm.optimized({ data: { vector: poster_html } })
+      it('Updates new_poster with the optimized vector', async () => {
+        wrapper.vm.working = true
+        await wrapper.vm.optimized({ data: { vector: poster_html } })
+        expect(wrapper.vm.working).toBe(false)
         expect(wrapper.vm.new_poster.id).toBe('/+16282281824/posters/559666932867')
       })
     })
@@ -88,17 +88,17 @@ describe('@/views/Posters.vue', () => {
       })
     })
     describe('#cancel_poster', () => {
-      it('executes the method', () => {
+      it('Executes the method', () => {
         wrapper.vm.cancel_poster(poster.id)
       })
     })
     describe('#save_poster', () => {
-      it('executes the method', async () => {
+      it('Executes the method', async () => {
         await wrapper.vm.save_poster(poster.id)
       })
     })
     describe('#remove_poster', () => {
-      it('executes the method', async () => {
+      it('Executes the method', async () => {
         await wrapper.vm.remove_poster(poster.id)
       })
     })

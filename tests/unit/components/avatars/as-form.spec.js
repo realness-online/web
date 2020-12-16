@@ -122,11 +122,6 @@ describe('@/components/avatars/as-form.vue', () => {
         wrapper.vm.vectorized(message)
         expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/ummm')
       })
-      it('sets avatar_changed to true', () => {
-        wrapper.vm.avatar_changed = false
-        wrapper.vm.vectorized(message)
-        expect(wrapper.vm.avatar_changed).toBe(true)
-      })
       it('sets working to false', () => {
         wrapper.vm.working = true
         wrapper.vm.vectorized(message)
@@ -134,12 +129,18 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
     describe('#optimized', () => {
+      const message = {
+        data: {
+          vector: avatar_html
+        }
+      }
+      it('sets avatar_changed to true', () => {
+        wrapper.vm.avatar_changed = false
+        wrapper.vm.optimized(message)
+        expect(wrapper.vm.avatar_changed).toBe(true)
+      })
       it('sets current_avatar with an optimized vector', () => {
-        wrapper.vm.optimized({
-          data: {
-            vector: avatar_html
-          }
-        })
+        wrapper.vm.optimized(message)
         expect(wrapper.vm.current_avatar.id).toBe('/+16282281824/avatars/55446694324')
       })
     })
