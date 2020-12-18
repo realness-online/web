@@ -116,9 +116,8 @@
         console.time('optimize')
         this.optimizer.postMessage({ vector })
       },
-      async optimized (message) {
+      optimized (message) {
         this.new_poster = get_item(message.data.vector)
-        await this.$nextTick()
         this.working = false
         console.timeEnd('optimize')
       },
