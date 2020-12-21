@@ -1,7 +1,7 @@
 import { Jimp, as_paths } from '@realness.online/potrace'
 const jimp_options = {
   threshold: 255,
-  turdSize: 175,
+  turdSize: 125,
   optTolerance: 0.55,
   blackOnWhite: true,
   fillStrategy: 'median',
