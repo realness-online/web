@@ -25,27 +25,6 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.vm.background).toBe('working')
       })
     })
-    describe('date_picker', () => {
-      it('Is false by default', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-      it('Is true when menu is visible', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-      })
-      it('Is false when menu is gone', () => {
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-        wrapper.vm.menu = false
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-      it('Is true when selecting_event', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.selecting_event = true
-        expect(wrapper.vm.date_picker).toBe(true)
-      })
-    })
   })
   describe('watch', () => {
     describe('new_poster', () => {
@@ -86,75 +65,6 @@ describe('@/compontent/posters/as-figure.vue', () => {
         wrapper.vm.on_load()
         expect(wrapper.vm.loaded).toBe(true)
         expect(wrapper.emitted('loaded')).toBeTruthy()
-      })
-    })
-    describe('#vector_click', () => {
-      it('Shows the menu', () => {
-        expect(wrapper.vm.menu).toBe(false)
-        expect(wrapper.vm.selecting_event).toBe(false)
-        wrapper.vm.vector_click(true)
-        expect(wrapper.vm.menu).toBe(true)
-      })
-      it('Doesn/t show the menu if the event selection has focus', () => {
-        expect(wrapper.vm.menu).toBe(false)
-        wrapper.vm.selecting_event = true
-        wrapper.vm.vector_click()
-        expect(wrapper.vm.menu).toBe(false)
-      })
-    })
-    describe('#add_poster', () => {
-      it('Emits add-poster when called', () => {
-        wrapper.vm.add_poster()
-        expect(wrapper.emitted('add-poster')).toBeTruthy()
-      })
-      it('Gets rid of all the extra html it can before saving', () => {
-        wrapper.vm.selecting_event = true
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-        wrapper.vm.add_poster()
-        expect(wrapper.vm.selecting_event).toBe(false)
-        expect(wrapper.vm.menu).toBe(false)
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-    })
-    describe('#remove_poster', () => {
-      it('Triggers a confirm message before deleting poster', () => {
-        const confirm_spy = jest.fn(() => true)
-        window.confirm = confirm_spy
-        wrapper.vm.remove_poster()
-        expect(confirm_spy).toBeCalled()
-        expect(wrapper.emitted('remove-poster')).toBeTruthy()
-      })
-      it('Will not emit remove-poster unless confirmed', () => {
-        const confirm_spy = jest.fn(() => false)
-        window.confirm = confirm_spy
-        wrapper.vm.remove_poster()
-        expect(confirm_spy).toBeCalled()
-        expect(wrapper.emitted('remove-poster')).toBeFalsy()
-      })
-    })
-    describe('#event_picker', () => {
-      describe('true', () => {
-        beforeEach(() => {
-          wrapper.vm.event_picker(true)
-        })
-        it('Hides the normal', () => {
-          expect(wrapper.vm.menu).toBe(false)
-        })
-        it('Shows the event picker', () => {
-          expect(wrapper.vm.selecting_event).toBe(true)
-        })
-      })
-      describe('false', () => {
-        beforeEach(() => {
-          wrapper.vm.event_picker(false)
-        })
-        it('Shows the normal', () => {
-          expect(wrapper.vm.menu).toBe(true)
-        })
-        it('Hides the event picker', () => {
-          expect(wrapper.vm.selecting_event).toBe(false)
-        })
       })
     })
   })

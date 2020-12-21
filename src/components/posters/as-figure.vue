@@ -1,36 +1,23 @@
 <template lang="html">
-  <figure class="poster" :class="{ 'selecting-event': selecting_event }">
+  <figure class="poster">
     <icon :name="background" />
     <as-svg ref="poster"
             :itemid="itemid"
             :poster="new_poster"
-            @vector-click="vector_click"
+            @vector-click="$emit('vector-click', $event)"
             @vector-loaded="on_load" />
     <figcaption>
-      <event-as-fieldset v-if="date_picker"
-                         :itemid="itemid"
-                         :menu="menu"
-                         @picker="event_picker" />
-      <poster-menu v-if="menu"
-                   :itemid="itemid"
-                   :is_new="new_poster? true : false"
-                   :working="working"
-                   @add-poster="add_poster"
-                   @remove-poster="remove_poster" />
+      <slot />
     </figcaption>
   </figure>
 </template>
 <script>
   import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
-  import as_menu from '@/components/posters/as-menu'
-  import event_as_fieldset from '@/components/events/as-fieldset'
   export default {
     components: {
       icon,
-      'as-svg': as_svg,
-      'poster-menu': as_menu,
-      'event-as-fieldset': event_as_fieldset
+      'as-svg': as_svg
     },
     props: {
       itemid: {
@@ -52,7 +39,6 @@
       return {
         menu: false,
         poster: null,
-        selecting_event: false,
         loaded: false
       }
     },
@@ -61,10 +47,6 @@
         if (this.working) return 'working'
         if (this.loaded) return 'background'
         else return 'working'
-      },
-      date_picker () {
-        if ((this.menu || this.selecting_event) && this.new_poster === null) return true
-        else return false
       }
     },
     watch: {
@@ -80,29 +62,6 @@
         this.loaded = true
         this.$nextTick()
         this.$emit('loaded', this.$refs.poster.$el.outerHTML)
-      },
-      vector_click (menu) {
-        if (this.selecting_event) this.menu = false
-        else this.menu = menu
-      },
-      remove_poster () {
-        const message = 'Delete poster?'
-        if (this.new_poster) this.$emit('remove-poster', this.itemid)
-        else if (window.confirm(message)) this.$emit('remove-poster', this.itemid)
-      },
-      add_poster () {
-        this.selecting_event = false
-        this.menu = false
-        this.$emit('add-poster', this.itemid)
-      },
-      event_picker (selecting) {
-        if (selecting) {
-          this.menu = false
-          this.selecting_event = true
-        } else {
-          this.menu = true
-          this.selecting_event = false
-        }
       }
     }
   }
