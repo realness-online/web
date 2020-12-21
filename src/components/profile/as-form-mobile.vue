@@ -13,7 +13,7 @@
              @keyup="validate_mobile_number"
              @paste.prevent="mobile_paste">
     </fieldset>
-    <fieldset v-if="show_captcha" id="captcha" :class="{hide_captcha}" />
+    <fieldset v-if="show_captcha" id="captcha" :class="{ hide_captcha }" />
     <fieldset v-if="show_code">
       <input id="verification-code" v-model="code"
              type="tel"
