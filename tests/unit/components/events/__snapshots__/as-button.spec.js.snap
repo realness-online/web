@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/compontent/events/as-button.vue Renders A button to manage a poster's events 1`] = `
+<a
+  id="create-event"
+>
+  <svg
+    class="has-event"
+    viewBox="0 0 150 150"
+  >
+    <use
+      href="#date-picker"
+    />
+     
+    <text
+      class="month"
+      text-anchor="middle"
+      x="57"
+      y="24"
+    >
+      February
+    </text>
+     
+    <text
+      text-anchor="middle"
+      x="57"
+      y="84"
+    >
+      1
+    </text>
+  </svg>
+</a>
+`;

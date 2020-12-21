@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import as_menu from '@/components/posters/as-menu'
+import as_button from '@/components/events/as-button'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 const fs = require('fs')
@@ -16,14 +16,14 @@ const events = [{
   id: `${person.id}/events/${new Date(2020, 1, 1).getTime()}`,
   url: poster.id
 }]
-describe('@/compontent/posters/as-menu.vue', () => {
+describe('@/compontent/events/as-button.vue', () => {
   let wrapper
   beforeEach(() => {
     jest.spyOn(itemid, 'list').mockImplementationOnce(_ => Promise.resolve(events))
-    wrapper = shallowMount(as_menu, { propsData: { itemid: poster.id } })
+    wrapper = shallowMount(as_button, { propsData: { itemid: poster.id } })
   })
   describe('Renders', () => {
-    it('a poster menu', () => {
+    it('A button to manage a poster\'s events', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
