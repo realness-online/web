@@ -32,11 +32,6 @@
       itemid: {
         type: String,
         required: true
-      },
-      menu: {
-        type: Boolean,
-        required: false,
-        default: false
       }
     },
     data () {
