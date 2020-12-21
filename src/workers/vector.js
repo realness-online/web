@@ -16,7 +16,7 @@ export async function read (file) {
   const reader = new FileReaderSync()
   return await Jimp.read(reader.readAsArrayBuffer(file))
 }
-export async function prepare (image, size = 444) {
+export async function prepare (image, size = 512) {
   if (image.bitmap.width > image.bitmap.height) image = image.resize(Jimp.AUTO, size)
   else image = image.resize(size, Jimp.AUTO)
   return image.normalize().threshold(brighness_options)
