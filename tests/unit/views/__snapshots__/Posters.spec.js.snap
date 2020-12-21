@@ -35,8 +35,25 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
     </header>
      
     <as-figure-stub
+      class=""
       itemid="/+16282281824/posters/1555347888"
-    />
+    >
+      <menu>
+        <a>
+          <icon-stub
+            name="remove"
+          />
+        </a>
+         
+        <event-as-button-stub
+          itemid="/+16282281824/posters/1555347888"
+        />
+         
+        <download-vector-stub
+          itemid="/+16282281824/posters/1555347888"
+        />
+      </menu>
+    </as-figure-stub>
   </article>
    
   <!---->

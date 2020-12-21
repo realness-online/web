@@ -1,9 +1,7 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <a v-if="add" @click="select_photo">
-        <icon name="add" />
-      </a>
+      <a v-if="add" @click="select_photo"><icon name="add" /></a>
       <icon v-else name="nothing" />
       <input ref="uploader" v-uploader type="file" accept="image/jpeg">
       <logo-as-link />
@@ -15,17 +13,28 @@
           <icon v-show="working" name="working" />
         </hgroup>
       </header>
-      <as-figure v-if="new_poster" class="new"
+      <as-figure v-if="new_poster" :key="as_itemid"
+                 class="new"
                  :itemid="as_itemid"
                  :new_poster="new_poster"
                  :working="working"
-                 @add-poster="save_poster"
-                 @remove-poster="cancel_poster"
-                 @loaded="optimize" />
+                 @loaded="optimize">
+        <menu>
+          <a @click="cancel_poster"><icon name="remove" /></a>
+          <a @click="save_poster"><icon name="finished" /></a>
+        </menu>
+      </as-figure>
       <as-figure v-for="itemid in posters" v-else
                  :key="itemid"
-                 :itemid="itemid"
-                 @remove-poster="remove_poster" />
+                 :class="{ 'selecting-event': selecting_event }"
+                 :itemid="itemid">
+        <event-as-fieldset v-if="date_picker" :itemid="itemid" @picker="event_picker" />
+        <menu v-else>
+          <a @click="remove_poster"><icon name="remove" /></a>
+          <event-as-button :itemid="itemid" />
+          <download-vector :itemid="itemid" />
+        </menu>
+      </as-figure>
     </article>
     <hgroup v-if="friendly" class="message">
       <p>
@@ -44,23 +53,32 @@
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
   import logo_as_link from '@/components/logo-as-link'
+  import event_as_fieldset from '@/components/events/as-fieldset'
+  import event_as_button from '@/components/events/as-button'
+  import download_vector from '@/components/download-vector'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
   export default {
     components: {
       icon,
       'as-figure': as_figure,
-      'logo-as-link': logo_as_link
+      'logo-as-link': logo_as_link,
+      'event-as-fieldset': event_as_fieldset,
+      'event-as-button': event_as_button,
+      'download-vector': download_vector
     },
     mixins: [signed_in, uploader],
     data () {
       return {
+        menu: false,
         finished: true,
         posters: [],
         vectorizer: new Worker('/vector.worker.js'),
         optimizer: new Worker('/optimize.worker.js'),
+        selecting_event: false,
         working: false,
-        new_poster: null
+        new_poster: null,
+        events: []
       }
     },
     computed: {
@@ -75,16 +93,20 @@
       add () {
         if (this.working || this.new_poster) return false
         else return true
+      },
+      date_picker () {
+        if ((this.menu || this.selecting_event) && this.new_poster === null) return true
+        else return false
       }
     },
     async created () {
       console.clear()
-      console.time('posters-load')
+      console.time('posters:load')
       console.info('view:posters')
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
-      console.timeEnd('posters-load')
+      console.timeEnd('posters:load')
     },
     destroyed () {
       this.vectorizer.terminate()
@@ -121,6 +143,10 @@
         this.working = false
         console.timeEnd('optimize')
       },
+      vector_click (menu) {
+        if (this.selecting_event) this.menu = false
+        else this.menu = menu
+      },
       async save_poster (id) {
         this.working = true
         const poster = new Poster(id)
@@ -132,17 +158,35 @@
         console.info('save:poster', id)
       },
       async remove_poster (id) {
-        this.working = true
-        this.posters = this.posters.filter(item => id !== item)
-        const poster = new Poster(id)
-        await poster.delete()
-        this.working = false
-        console.info('delete:poster', id)
+        const message = 'Delete poster?'
+        if (window.confirm(message)) {
+          this.working = true
+          console.log(id)
+          this.posters = this.posters.filter(item => id !== item)
+          const poster = new Poster(id)
+          await poster.delete()
+          this.working = false
+          console.info('delete:poster', id)
+        }
       },
       cancel_poster () {
         this.working = true
         this.new_poster = null
         this.working = false
+      },
+      add_poster () {
+        this.selecting_event = false
+        this.menu = false
+        this.$emit('add-poster', this.itemid)
+      },
+      event_picker (selecting) {
+        if (selecting) {
+          this.menu = false
+          this.selecting_event = true
+        } else {
+          this.menu = true
+          this.selecting_event = false
+        }
       }
     }
   }
