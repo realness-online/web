@@ -71,20 +71,35 @@
     position: relative
     overflow: hidden
     @media (min-width: pad-begins)
+      &.landscape
+        column-span: 2
       &.new
         margin-left: base-line
     &.selecting-event
       & > svg:not(.background)
         opacity: 0.1
+    svg
+      &[itemscope]
+        position: relative
+      &.background
+        fill: green
+        width: 100%
+        height: 100%
+      &.working
+        margin-top: base-line
+        max-width: base-line * 6
     & > figcaption
       position: relative
-    svg[itemscope]
-      position: relative
-    svg.background
-      fill: green
-      width: 100%
-      height: 100%
-    svg.working
-      margin-top: base-line
-      max-width: base-line * 6
+      & > menu
+        padding: base-line
+        margin-top: -(base-line * 4)
+        display: flex
+        justify-content: space-between
+        width: 100%
+        z-index: 4
+        & > a > svg
+          fill: red
+          &.finished
+          &.add
+            fill: blue
 </style>
