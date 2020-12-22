@@ -1,24 +1,26 @@
 <template lang="html">
-  <figure class="poster">
+  <figure class="poster" :class="{ landscape }">
     <icon :name="background" />
     <as-svg ref="poster"
             :itemid="itemid"
             :poster="new_poster"
-            @vector-click="$emit('vector-click', $event)"
+            @vector-click="vector_click"
             @vector-loaded="on_load" />
     <figcaption>
-      <slot />
+      <slot v-if="menu" />
     </figcaption>
   </figure>
 </template>
 <script>
   import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
+  import vector_click from '@/mixins/vector_click'
   export default {
     components: {
       icon,
       'as-svg': as_svg
     },
+    mixins: [vector_click],
     props: {
       itemid: {
         type: String,
@@ -58,9 +60,10 @@
       }
     },
     methods: {
-      async on_load (poster) {
-        this.loaded = true
+      async on_load (vector) {
+        this.vector = vector
         this.$nextTick()
+        this.loaded = true
         this.$emit('loaded', this.$refs.poster.$el.outerHTML)
       }
     }
@@ -72,7 +75,7 @@
     overflow: hidden
     @media (min-width: pad-begins)
       &.landscape
-        column-span: 2
+        grid-column-start: span 2
       &.new
         margin-left: base-line
     &.selecting-event
