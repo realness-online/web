@@ -20,50 +20,32 @@ describe('@/mixins/vector_click', () => {
         expect(wrapper.emitted('vector-click')).toBeTruthy()
       })
     })
-    describe('#ratio', () => {
-      it('Exists', () => {
-        expect(wrapper.vm.ratio).toBeDefined()
-      })
-      it('returns 1.33 as default', () => {
-        expect(wrapper.vm.vector).toBe(null)
-        expect(wrapper.vm.ratio()).toBe(1.33)
-      })
-      it('returns the ratio of width to height', () => {
-        wrapper.vm.vector = { viewbox: '0 0 400 300' }
-        wrapper.vm.ratio()
-        expect(wrapper.vm.ratio()).toBe(0.75)
-      })
     })
-  })
   describe('computed', () => {
     let wrapper
     beforeEach(() => {
       wrapper = shallowMount(vector_mock)
     })
-    describe('#aspect_ratio', () => {
+    describe('#landscape', () => {
+      it('returns false as default', () => {
+        expect(wrapper.vm.vector).toBe(null)
+        expect(wrapper.vm.landscape).toBe(false)
+      })
+      it('returns the ratio of width to height', () => {
+        wrapper.vm.vector = { viewbox: '0 0 400 300' }
+        expect(wrapper.vm.landscape).toBe(true)
+      })
+    })
+      describe('#aspect_ratio', () => {
       it('Exists', () => {
         expect(wrapper.vm.aspect_ratio).toBeDefined()
       })
-      describe('without menu', () => {
-        it('Slices by default', () => {
-          expect(wrapper.vm.aspect_ratio).toBe('xMidYMid slice')
-        })
-        it('Meets if the aspect ratio is less then 1.1', () => {
-          wrapper.vm.vector = { viewbox: '0 0 400 300' }
-          expect(wrapper.vm.aspect_ratio).toBe('xMidYMid meet')
-        })
+      it('Slices by default', () => {
+        expect(wrapper.vm.aspect_ratio).toBe('xMidYMid slice')
       })
-      describe('with menu', () => {
-        beforeEach(() => {
-          wrapper.vm.menu = true
-        })
-        it('Meets by default', () => {
-          expect(wrapper.vm.aspect_ratio).toBe('xMidYMid meet')
-        })
-        it('slices if the aspect ratio is less then 1.1', () => {
-          wrapper.vm.vector = { viewbox: '0 0 400 300' }
-          expect(wrapper.vm.aspect_ratio).toBe('xMidYMid slice')
-        })
+      it('Meets if menu is true', () => {
+        wrapper.vm.menu = true
+        expect(wrapper.vm.aspect_ratio).toBe('xMidYMid meet')
       })
     })
   })
