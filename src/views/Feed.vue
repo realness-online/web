@@ -11,15 +11,17 @@
              :working="working"
              :posters="posters"
              :statements="statements">
-      <div v-for="item in items" :key="slot_key(item)">
+      <template v-for="item in items">
         <poster-as-figure v-if="item.type === 'posters'"
+                          :key="slot_key(item)"
                           :itemid="item.id"
                           :verbose="true" />
         <thought-as-article v-else
+                            :key="slot_key(item)"
                             :statements="item"
                             :verbose="true"
                             @show="thought_shown" />
-      </div>
+      </template>
     </as-days>
     <hgroup v-else class="sign-on message">
       <p><sign-on /> and you can check out <icon name="heart" /> who's on here</p>
@@ -74,7 +76,6 @@
             list(`${relation.id}/statements`),
             as_directory(`${relation.id}/posters`)
           ])
-
           relation.viewed = ['index']
           this.statements = [...statements, ...this.statements]
           if (posters && posters.items) {
