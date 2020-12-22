@@ -21,7 +21,7 @@
                  @loaded="optimize">
         <menu>
           <a @click="cancel_poster"><icon name="remove" /></a>
-          <a @click="save_poster"><icon name="finished" /></a>
+          <a v-if="new_poster.id" @click="save_poster"><icon name="finished" /></a>
         </menu>
       </as-figure>
       <as-figure v-for="itemid in posters" v-else
@@ -30,7 +30,7 @@
                  :itemid="itemid">
         <event-as-fieldset v-if="date_picker" :itemid="itemid" @picker="event_picker" />
         <menu v-else>
-          <a @click="remove_poster"><icon name="remove" /></a>
+          <a @click="remove_poster(itemid)"><icon name="remove" /></a>
           <event-as-button :itemid="itemid" />
           <download-vector :itemid="itemid" />
         </menu>
@@ -131,6 +131,7 @@
         this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
+        this.working = false
         console.timeEnd('vectorize')
         console.info('create:poster', this.new_poster.id)
       },
@@ -140,14 +141,15 @@
       },
       optimized (message) {
         this.new_poster = get_item(message.data.vector)
-        this.working = false
         console.timeEnd('optimize')
       },
       vector_click (menu) {
         if (this.selecting_event) this.menu = false
         else this.menu = menu
       },
-      async save_poster (id) {
+      async save_poster () {
+        const id = this.new_poster.id
+        if (!id) return null
         this.working = true
         const poster = new Poster(id)
         await poster.save()
@@ -161,7 +163,6 @@
         const message = 'Delete poster?'
         if (window.confirm(message)) {
           this.working = true
-          console.log(id)
           this.posters = this.posters.filter(item => id !== item)
           const poster = new Poster(id)
           await poster.delete()
