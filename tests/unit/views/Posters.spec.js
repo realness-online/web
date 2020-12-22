@@ -1,20 +1,21 @@
 import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
-import itemid from '@/helpers/itemid'
+import itemid, { as_author, as_created_at } from '@/helpers/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
-const poster = get_item(poster_html)
-
-const events = [{
-  id: new Date(2020, 1, 1).getTime(),
-  poster: poster.id
-}]
+let poster
+let events
 
 describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
+    poster = get_item(poster_html)
+    events = [{
+      id: new Date(2020, 1, 1).getTime(),
+      poster: poster.id
+    }]
     get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
     wrapper = shallowMount(Posters)
     wrapper.vm.events = events
@@ -76,8 +77,10 @@ describe('@/views/Posters.vue', () => {
         const event = {
           data: poster
         }
+        wrapper.vm.working = true
         wrapper.vm.vectorized(event)
         expect(wrapper.vm.new_poster.id).toBe(poster.id)
+        expect(wrapper.vm.working).toBe(false)
       })
     })
     describe('#optimize', () => {
@@ -89,9 +92,7 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#optimized', () => {
       it('Updates new_poster with the optimized vector', async () => {
-        wrapper.vm.working = true
         await wrapper.vm.optimized({ data: { vector: poster_html } })
-        expect(wrapper.vm.working).toBe(false)
         expect(wrapper.vm.new_poster.id).toBe('/+16282281824/posters/559666932867')
       })
     })
@@ -114,8 +115,23 @@ describe('@/views/Posters.vue', () => {
       })
     })
     describe('#save_poster', () => {
-      it('Executes the method', async () => {
-        await wrapper.vm.save_poster(poster.id)
+      let save_spy
+      beforeEach(() => {
+        save_spy = jest.fn(() => Promise.resolve())
+        jest.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
+      })
+      it('Saves an optimized poster (will have a proper itemid)', async () => {
+        localStorage.me = as_author(poster.id)
+        wrapper.vm.new_poster = poster
+        await wrapper.vm.save_poster()
+        expect(save_spy).toBeCalled()
+      })
+      it('Only save optimized poster (will have undefined id and a created_at)', async () => {
+        poster.created_at = as_created_at(poster.id)
+        poster.id = undefined
+        wrapper.vm.new_poster = poster
+        await wrapper.vm.save_poster()
+        expect(save_spy).not.toBeCalled()
       })
     })
     describe('#remove_poster', () => {
