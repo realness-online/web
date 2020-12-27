@@ -23,23 +23,23 @@ p, textarea:focus, input,  blockquote, form
   max-width: page-width
 
 // ***************** modular-scale ********************************************
-$h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
 $h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
+$h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
 
-$h2-max = round(max-modular ** 3 * 1rem, 3) // 1.953
 $h2-min = round(min-modular ** 3 * 1rem, 3) // 1.424
+$h2-max = round(max-modular ** 3 * 1rem, 3) // 1.953
 
-$h3-max = round(max-modular ** 2 * 1rem, 3) // 1.563
 $h3-min = round(min-modular ** 2 * 1rem, 3) // 1.266
+$h3-max = round(max-modular ** 2 * 1rem, 3) // 1.563
 
-$h4-max = round(max-modular * 1rem, 3) // 1.25
 $h4-min = round(min-modular * 1rem, 3) // 1.125
+$h4-max = round(max-modular * 1rem, 3) // 1.25
 
 $h5-min= 1rem
 $h5-max= 1rem
 
-$h6-max= round(1rem / max-modular, 3) //.8
 $h6-min= round(1rem / min-modular, 3) //.888
+$h6-max= round(1rem / max-modular, 3) //.8
 
 h1
   between: font-size, $h1-min, $h1-max
