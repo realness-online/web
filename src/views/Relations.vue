@@ -43,7 +43,7 @@
       }
     },
     async created () {
-      console.info('Views relations')
+      console.info('views:relations')
       this.relations = await list(`${localStorage.me}/relations`)
       this.relations.forEach(async (relation, index) => {
         const person = await load(relation.id)
