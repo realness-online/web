@@ -5,8 +5,8 @@
 # gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-staging.appspot.com/
 
 # reset development repo with production
-# gsutil -m rm -r gs://realness-development.appspot.com/people
-# gsutil -m cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
+gsutil -m -o GSUtil:parallel_process_count=1 rm -r gs://realness-development.appspot.com/people
+gsutil -m -o GSUtil:parallel_process_count=1 cp -R gs://realness-online.appspot.com/people/ gs://realness-development.appspot.com/
 
 # reset in home directory
 # rm -rf ~/realness.online
