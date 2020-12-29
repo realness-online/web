@@ -23,7 +23,7 @@
         <icon v-if="finished" name="finished" />
         <icon v-else name="working" />
       </a>
-      <download-vector v-if="download_vector" :itemid="current_avatar.id" />
+      <as-download v-if="download_vector" :itemid="current_avatar.id" />
     </menu>
     <input ref="uploader" v-uploader type="file" accept="image/jpeg" capture="user">
   </div>
@@ -33,7 +33,7 @@
   import get_item from '@/modules/item'
   import itemid from '@/helpers/itemid'
   import icon from '@/components/icon'
-  import download_vector from '@/components/download-vector'
+  import as_download from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
   import signed_in from '@/mixins/signed_in'
   import vector from '@/mixins/vector'
@@ -41,7 +41,7 @@
   export default {
     components: {
       icon,
-      'download-vector': download_vector,
+      'as-download': as_download,
       'avatar-as-svg': as_svg
     },
     mixins: [signed_in, uploader, vector],
