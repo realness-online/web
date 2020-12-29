@@ -10,7 +10,7 @@ exports[`@/compontent/profile/as-relationship-options.vue Render a list of optio
   />
    
   <icon-stub
-    name="remove"
+    name="finished"
   />
 </a>
 `;

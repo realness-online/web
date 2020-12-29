@@ -1,7 +1,7 @@
 <template>
   <a v-if="!is_me" class="status" :class="{ relation }" @click="update_relationship">
     <icon name="add" />
-    <icon name="remove" />
+    <icon name="finished" />
   </a>
 </template>
 <script>
@@ -51,23 +51,21 @@
 <style lang="stylus">
     figure.profile > figcaption > menu > a.status
       svg
-        width: 2rem
-        height: 2rem
         transition: fill, width, height
         transition-duration: 0.5s
         cursor: pointer
         fill: blue
-        &.remove
-          fill: red
+        width:  2em
+        height: 2em
+        &.finished
+          fill: green
           height: 0
           width: 0
       &.relation
         svg.add
-          fill: red
           height: 0
           width: 0
-        svg.remove
-          fill: blue
-          width: 1.5rem
-          height: 1.5rem
+        svg.finished
+          width:  2em
+          height: 2em
 </style>
