@@ -154,7 +154,9 @@
         padding: base-line base-line 0 base-line
       & > figure
         & > svg
-          border-radius: 0.66rem
+          width: base-line * 2
+          height: base-line * 2
+          border-radius: base-line * 2
           border-color: red
         & > figcaption > menu
           display: flex
