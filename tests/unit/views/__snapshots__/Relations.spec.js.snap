@@ -10,7 +10,13 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
       name="nothing"
     />
      
-    <logo-as-link-stub />
+    <router-link
+      to="/phone-book"
+    >
+      <icon-stub
+        name="finished"
+      />
+    </router-link>
   </header>
    
   <hgroup>
@@ -19,25 +25,6 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
     </h1>
   </hgroup>
    
-  <hgroup
-    class="sign-on message"
-  >
-    <p>
-      <sign-on-stub />
-       and you can check out 
-      <icon-stub
-        name="heart"
-      />
-       who's on here
-    
-    </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
-  </hgroup>
+  <!---->
 </section>
 `;
