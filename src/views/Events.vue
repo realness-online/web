@@ -13,7 +13,7 @@
     </article>
     <hgroup v-else class="message">
       <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
-      <p>People see them after you <sign-on /></p>
+      <p v-if="!signed_in">People see them after you <sign-on /></p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
