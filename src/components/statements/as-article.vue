@@ -2,13 +2,16 @@
   <article class="thought">
     <header v-if="author">
       <router-link :to="author.id">
-        <profile-as-avatar :person="author" />
+        <as-avatar :person="author" />
       </router-link>
       <hgroup>
         <span>{{ author.first_name }}</span>
         <span>{{ author.last_name }}</span>
         <time>{{ thought_starts_at }}</time>
       </hgroup>
+      <menu>
+        <as-messenger :itemid="author.id" />
+      </menu>
     </header>
     <header v-else>
       <time>{{ thought_starts_at }}</time>
@@ -27,10 +30,12 @@
   import { as_time } from '@/helpers/date'
   import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
-  import profile_as_avatar from '@/components/avatars/as-svg'
+  import as_avatar from '@/components/avatars/as-svg'
+  import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
-      'profile-as-avatar': profile_as_avatar,
+      'as-avatar': as_avatar,
+      'as-messenger': as_messenger,
       'as-statement': as_statement
     },
     mixins: [intersection],
@@ -93,15 +98,22 @@
       justify-content: flex-start
       flex-direction: row
       margin: 0 0 base-line 0
-      & a > svg
+      & > a > svg
         cursor: pointer
         shape-outside: circle()
         border-radius: (base-line * 2)
         margin-right: round((base-line / 4), 2)
       & > hgroup
+        flex:1
         margin: 0
         & > span
           margin-right: round((base-line / 4), 2)
           font-weight: 300
           display: inline-block
+      & > menu > a > svg
+        fill: blue
+        opacity: .25
+        &:hover
+        &:active
+          opacity: 1
 </style>
