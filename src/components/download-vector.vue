@@ -1,5 +1,5 @@
 <template lang="html">
-  <a :href="downloadable" :download="file_name">
+  <a :href="downloadable" :download="file_name" class="download">
     <icon name="download" />
   </a>
 </template>
