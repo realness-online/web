@@ -2,7 +2,7 @@
 
 exports[`@/compontent/events/as-button.vue Renders A button to manage a poster's events 1`] = `
 <a
-  id="create-event"
+  class="event"
 >
   <svg
     class="has-event"

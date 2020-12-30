@@ -1,5 +1,5 @@
 <template lang="html">
-  <a id="create-event">
+  <a class="event">
     <svg viewBox="0 0 150 150" :class="has_event">
       <use :href="date_picker_icon" />
       <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
@@ -52,7 +52,7 @@
   }
 </script>
 <style lang="stylus">
-  a#create-event
+  a.event
     position: relative
     svg
       &.has-event
