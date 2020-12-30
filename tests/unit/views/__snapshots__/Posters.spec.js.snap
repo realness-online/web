@@ -39,7 +39,9 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
       itemid="/+16282281824/posters/1555347888"
     >
       <menu>
-        <a>
+        <a
+          class="remove"
+        >
           <icon-stub
             name="remove"
           />
@@ -49,7 +51,7 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
           itemid="/+16282281824/posters/1555347888"
         />
          
-        <download-vector-stub
+        <as-download-stub
           itemid="/+16282281824/posters/1555347888"
         />
       </menu>

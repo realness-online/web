@@ -30,9 +30,9 @@
                  :itemid="itemid">
         <event-as-fieldset v-if="date_picker" :itemid="itemid" @picker="event_picker" />
         <menu v-else>
-          <a @click="remove_poster(itemid)"><icon name="remove" /></a>
+          <a class="remove" @click="remove_poster(itemid)"><icon name="remove" /></a>
           <event-as-button :itemid="itemid" />
-          <download-vector :itemid="itemid" />
+          <as-download :itemid="itemid" />
         </menu>
       </as-figure>
     </article>
@@ -55,7 +55,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import event_as_fieldset from '@/components/events/as-fieldset'
   import event_as_button from '@/components/events/as-button'
-  import download_vector from '@/components/download-vector'
+  import as_download from '@/components/download-vector'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
   export default {
@@ -65,7 +65,7 @@
       'logo-as-link': logo_as_link,
       'event-as-fieldset': event_as_fieldset,
       'event-as-button': event_as_button,
-      'download-vector': download_vector
+      'as-download': as_download
     },
     mixins: [signed_in, uploader],
     data () {
@@ -195,6 +195,9 @@
 <style lang="stylus">
   section#posters
     padding-bottom: base-line
+    &.selecting-event
+      & > svg:not(.background)
+        opacity: 0.1
     hgroup.message > p:first-child a
       border-bottom: 0
     h1
@@ -209,4 +212,16 @@
       svg, a
         color: green
         fill: green
+    figure.poster
+      & > svg.background
+        fill: green
+      & > figcaption > menu
+        a > svg
+          fill: green
+        a.remove
+          bottom: base-line
+          left: base-line
+        a.event
+          top: base-line
+          left: base-line
 </style>
