@@ -6,14 +6,15 @@
        contenteditable="true"
        itemprop="first_name"
        @blur="save_first_name">{{ person.first_name }}</b>
-    <p v-else itemprop="first_name">{{ person.first_name }}</p>
+    <h3 v-else itemprop="first_name">{{ person.first_name }}</h3>
     <b v-if="editable"
        ref="last_name"
        :key="person.last_name"
        contenteditable="true"
        itemprop="last_name"
        @blur="save_last_name">{{ person.last_name }}</b>
-    <p v-else itemprop="last_name">{{ person.last_name }}</p>
+    <h3 v-else itemprop="last_name">{{ person.last_name }}</h3>
+    <slot />
     <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
     <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile">
     <meta v-if="person.visited" itemprop="visited" :content="person.visited">
@@ -59,10 +60,11 @@
     padding: 0
     @media (prefers-color-scheme: dark)
       color: white
-    & > p,
+    & > h3,
     & > b
       text-align: left
-    & > p
+    & > h3
+      between font-size
       margin: 0
       text-transform: capitalize
       &:first-of-type
@@ -70,10 +72,10 @@
     & > b[itemprop]
       margin-left: (base-line / 3)
       line-height: 1
-      display: block
-      font-weight: 400
+      display: inline-block
+      font-weight: 300
       &:first-of-type
-        margin-bottom: (base-line )
+        margin-bottom: (base-line / 3)
       &:focus
         font-weight: 700
         outline: 0
