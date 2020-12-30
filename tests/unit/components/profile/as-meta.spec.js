@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
-import as_links from '@/components/profile/as-links'
-describe('@/compontent/profile/as-links.vue', () => {
+import as_meta from '@/components/profile/as-meta'
+describe('@/compontent/profile/as-meta.vue', () => {
   let wrapper
   const person = {
     id: '/+14151234356',
@@ -11,7 +11,7 @@ describe('@/compontent/profile/as-links.vue', () => {
   }
   beforeEach(() => {
     localStorage.me = person.id
-    wrapper = shallowMount(as_links, { propsData: { people: [person] } })
+    wrapper = shallowMount(as_meta, { propsData: { people: [person] } })
   })
   afterEach(() => {
     localStorage.clear()
