@@ -18,7 +18,9 @@ describe('@/views/Relations.vue', () => {
                           .mockImplementation(_ => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
                          .mockImplementation(_ => Promise.resolve(joe_friday))
-    const wrapper = await shallowMount(Relations)
+    const wrapper = await shallowMount(Relations, {
+      stubs: ['router-link', 'router-view']
+    })
     expect(wrapper.vm.relations.length).toBe(1)
     expect(load_relations).toBeCalled()
     expect(load_profile).toBeCalled()
