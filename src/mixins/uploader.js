@@ -17,6 +17,7 @@ export default {
           const image = event.target.files[0]
           if (image !== undefined && image.type === 'image/jpeg') {
             vnode.context.vectorize(image)
+            input.value = ''
           }
         })
       }
