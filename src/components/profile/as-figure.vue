@@ -8,11 +8,12 @@
                  @update:person="$emit('update:person', $event)" />
       <menu>
         <slot>
-          <profile-as-links :people="relations" />
+          <profile-as-meta :people="relations" />
           <as-relationship-options :person="person"
                                    :relations="relations"
                                    @remove="remove_relationship"
                                    @add="add_relationship" />
+          <as-messenger :itemid="person.id" />
         </slot>
       </menu>
     </figcaption>
@@ -20,16 +21,18 @@
 </template>
 <script>
   import { Relations } from '@/persistance/Storage'
-  import profile_as_links from '@/components/profile/as-links'
+  import profile_as_meta from '@/components/profile/as-meta'
   import as_relationship_options from '@/components/profile/as-relationship-options'
   import as_svg from '@/components/avatars/as-svg'
   import as_hgroup from '@/components/profile/as-hgroup'
+  import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
       'as-svg': as_svg,
       'as-hgroup': as_hgroup,
-      'profile-as-links': profile_as_links,
-      'as-relationship-options': as_relationship_options
+      'profile-as-meta': profile_as_meta,
+      'as-relationship-options': as_relationship_options,
+      'as-messenger': as_messenger
     },
     props: {
       person: {
@@ -95,10 +98,10 @@
     #background
       fill: blue
     & > svg
-      width: 4rem
-      height: 4rem
+      width: base-line * 6
+      height: base-line * 6
       cursor: pointer
-      border: 1px solid blue
+      // border: 1px solid blue
       @media (max-width: pad-begins)
         border-top-right-radius: 0.66rem
         border-bottom-right-radius: 0.66rem
@@ -109,14 +112,15 @@
     & > figcaption
       flex: 1
       display: flex
-      & > hgroup
-        padding: (base-line / 3)
-        flex: 1
+      justify-content: space-between
+      padding: (base-line / 3)
+      // padding-right: 0
       & > menu
-        padding-right: (base-line / 2)
-        padding-left: (base-line / 3)
-        padding-top: (base-line / 2)
-        opacity: 0.66
+        display: flex
+        flex-direction: column
+        justify-content: space-between
+        & > a > svg
+          fill:blue
         &:hover
           opacity: 1
 </style>
