@@ -10,13 +10,13 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
       name="nothing"
     />
      
-    <router-link
+    <router-link-stub
       to="/phone-book"
     >
       <icon-stub
         name="finished"
       />
-    </router-link>
+    </router-link-stub>
   </header>
    
   <hgroup>

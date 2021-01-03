@@ -10,13 +10,7 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
       name="nothing"
     />
      
-    <router-link-stub
-      to="/relations"
-    >
-      <icon-stub
-        name="finished"
-      />
-    </router-link-stub>
+    <logo-as-link-stub />
   </header>
    
   <hgroup>
@@ -24,11 +18,23 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
       Phonebook
     </h1>
      
-    <icon-stub
-      name="working"
-    />
+    <!---->
   </hgroup>
    
-  <!---->
+  <hgroup
+    class="sign-on message"
+  >
+    <p>
+      <sign-on-stub />
+       and you can check out who's on here 
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
 </section>
 `;
