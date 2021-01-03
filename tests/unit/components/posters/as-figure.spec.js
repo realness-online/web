@@ -56,6 +56,13 @@ describe('@/compontent/posters/as-figure.vue', () => {
     })
   })
   describe('methods:', () => {
+    describe('#open_sms_app', () => {
+      it('opens a window to users default messenger', () => {
+        window.open = jest.fn()
+        wrapper.vm.open_sms_app()
+        expect(window.open).toBeCalled()
+      })
+    })
     describe('#on_load', () => {
       it('Sets loaded to true', () => {
         wrapper.vm.on_load()

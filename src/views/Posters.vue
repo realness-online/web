@@ -20,8 +20,8 @@
                  :working="working"
                  @loaded="optimize">
         <menu>
-          <a @click="cancel_poster"><icon name="remove" /></a>
-          <a v-if="new_poster.id" @click="save_poster"><icon name="finished" /></a>
+          <a class="remove" @click="cancel_poster"><icon name="remove" /></a>
+          <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished" /></a>
         </menu>
       </as-figure>
       <as-figure v-for="itemid in posters" v-else
@@ -221,6 +221,9 @@
         a.remove
           bottom: base-line
           left: base-line
+        a.save
+          bottom: base-line
+          right: base-line
         a.event
           top: base-line
           left: base-line
