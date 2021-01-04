@@ -158,22 +158,29 @@
           height: base-line * 2
           border-radius: base-line * 2
           border-color: red
-        & > figcaption > menu
-          display: flex
-          align-items: center
-          opacity: 1
+        & > figcaption
           padding: 0
-          &> a > svg.gear
-            fill: red
-            animation-name: rotate-back
-            transform-origin: center
-            transition-duration: 0.1s
-            animation-iteration-count: 0.1
-            transition-timing-function: ease-in-out
-            &:active
+          & > hgroup
+            display: flex
+            align-items: center
+            & > b
+             margin-bottom: 0
+          & > menu
+            display: flex
+            align-items: center
+            opacity: 1
+            padding: 0
+            &> a > svg.gear
+              fill: red
+              animation-name: rotate-back
+              transform-origin: center
+              transition-duration: 0.1s
+              animation-iteration-count: 0.1
               transition-timing-function: ease-in-out
-              animation-name: rotate
-              animation-iteration-count: 0.5
+              &:active
+                transition-timing-function: ease-in-out
+                animation-name: rotate
+                animation-iteration-count: 0.5
       & > menu
         float:right
         width: 5rem

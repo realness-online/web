@@ -6,9 +6,9 @@
     </header>
     <avatar v-if="person" :person="person" />
     <menu v-if="person">
-      <download-vector :itemid="person.avatar" />
+      <as-download :itemid="person.avatar" />
     </menu>
-    <profile-as-figure v-if="person" :person="person" :relations="relations" />
+    <as-figure v-if="person" :person="person" :relations="relations" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <div v-for="item in items" :key="slot_key(item)">
         <poster-as-figure v-if="item.type === 'posters'"
@@ -25,21 +25,21 @@
   import { from_e64 } from '@/helpers/profile'
   import intersection_thought from '@/mixins/intersection_thought'
   import { load, list, as_directory } from '@/helpers/itemid'
-  import icon from '@/components/icon'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
-  import download_vector from '@/components/download-vector'
-  import profile_as_figure from '@/components/profile/as-figure'
+  import as_download from '@/components/download-vector'
+  import as_figure from '@/components/profile/as-figure'
   import avatar from '@/components/avatars/as-svg'
   import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
+  import icon from '@/components/icon'
   export default {
     components: {
-      avatar,
       icon,
+      avatar,
       'as-days': as_days,
-      'profile-as-figure': profile_as_figure,
-      'download-vector': download_vector,
+      'as-figure': as_figure,
+      'as-download': as_download,
       'logo-as-link': logo_as_link,
       'poster-as-figure': poster_as_figure,
       'thought-as-article': as_article
@@ -94,6 +94,8 @@
       width:100%
       & > a
         -webkit-tap-highlight-color: blue
+        & > svg
+          fill: red
     & > svg:not(.working)
       width: 100vw
       min-height: 100vh
@@ -105,13 +107,38 @@
       & > a
         text-align: right
         & > svg
-          fill: red
+          fill: blue
     svg.background
       fill: blue
     figure.profile
       padding: base-line
-      svg
+      & > svg
         border-radius: 0.66rem
+        width: base-line * 2.5
+        height: base-line * 2.5
+        border-radius: base-line * 2
+      & > figcaption > menu
+        a.status
+          position: absolute
+          bottom: base-line
+          left: base-line
+          svg.add
+            width: base-line * 2
+            height: base-line * 2
+          &.relation
+            svg.add
+              width: 0
+              height: 0
+            svg.finished
+              width: base-line * 2
+              height: base-line * 2
+        a.phone
+          position: absolute
+          top: base-line
+          left: base-line
+          z-index: 2
+          svg.message
+            fill: blue
     & > section.as-days
       & > article.day
         grid-auto-rows: auto
