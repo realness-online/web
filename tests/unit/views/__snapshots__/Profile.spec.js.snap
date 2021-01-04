@@ -18,12 +18,12 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
   />
    
   <menu>
-    <download-vector-stub
+    <as-download-stub
       itemid="/+16282281824/avatars/1588451405024"
     />
   </menu>
    
-  <profile-as-figure-stub
+  <as-figure-stub
     person="[object Object]"
     relations=""
   />
