@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
-import flushPromises from 'flush-promises'
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     id: '/+14151234356',
@@ -21,8 +20,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     describe('input#mobile', () => {
       describe('keypress', () => {
         let input, stub, wrapper
-        beforeEach(() => {
-          wrapper = shallowMount(as_form, { propsData: { person: {} } })
+        beforeEach(async () => {
+          wrapper = await shallowMount(as_form, { propsData: { person } })
           input = wrapper.find('#mobile')
           stub = jest.fn()
         })
@@ -43,8 +42,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
       describe('paste', () => {
         let input, wrapper
-        beforeEach(() => {
-          wrapper = shallowMount(as_form, { propsData: { person: {} } })
+        beforeEach(async () => {
+          wrapper = await shallowMount(as_form, { propsData: { person } })
           input = wrapper.find('#mobile')
         })
         it('Reject invalid mobile number', () => {
@@ -104,16 +103,16 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
     describe('button#authorize', () => {
       let wrapper, button
-      beforeEach(() => {
-        wrapper = shallowMount(as_form, { propsData: { person } })
+      beforeEach(async () => {
+        wrapper = await shallowMount(as_form, { propsData: { person } })
         button = wrapper.find('#authorize')
       })
       it('Enabled with valid mobile number', () => {
         expect(button.exists()).toBe(true)
       })
-      it('Disabled with invalid mobile number', () => {
+      it('Disabled with invalid mobile number', async () => {
         const invalid_person = { mobile: '415123456a' }
-        wrapper = shallowMount(as_form, { propsData: { person: invalid_person } })
+        wrapper = await shallowMount(as_form, { propsData: { person: invalid_person } })
         button = wrapper.find('#authorize')
         expect(button.attributes('disabled')).toBeTruthy()
       })
@@ -173,9 +172,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
     describe('button#submit-verification', () => {
       let wrapper, button, confirm_spy
-      beforeEach(() => {
+      beforeEach(async () => {
         confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
-        wrapper = shallowMount(as_form, {
+        wrapper = await shallowMount(as_form, {
           propsData: { person },
           data () {
             return {
@@ -202,6 +201,13 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
     })
   })
+  describe('computed', () => {
+    describe('mobile_display', () => {
+      it('', () => {
+
+      })
+    })
+  })
   describe('Methods:', () => {
     describe('#text_human_verify_code', () => {
       let wrapper
@@ -222,13 +228,27 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         expect(wrapper.vm.show_code).toBe(true)
       })
     })
+    describe('#signed_on', () => {
+      let wrapper
+      beforeEach(() => {
+        wrapper = shallowMount(as_form, { propsData: { person } })
+      })
+      it('Emits an event if the user is signed on', () => {
+        wrapper.vm.signed_on({ phoneNumber: '+16282281824' })
+        expect(wrapper.emitted('signed-on'))
+      })
+    })
     it.todo('#enable_input')
     it.todo('#modified_check')
     it.todo('#mobile_keyup')
   })
-  it('Emites updates when mobile number is changed', () => {
-    const wrapper = shallowMount(as_form, { propsData: { person } })
-    wrapper.vm.mobile = '415'
-    expect(wrapper.emitted('update:person')).toBeTruthy()
+  describe('Watchers:', () => {
+    describe('mobile', () => {
+      it('Emites updates when mobile number is changed', async () => {
+        const wrapper = await shallowMount(as_form, { propsData: { person } })
+        wrapper.vm.mobile = '415'
+        expect(wrapper.emitted('update:person')).toBeTruthy()
+      })
+    })
   })
 })
