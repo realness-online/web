@@ -86,23 +86,23 @@
         this.$emit('update:person', update)
       }
     },
-    created () {
-      firebase.auth().onAuthStateChanged(user => {
-        this.working = false
-        const updated = { ...this.person }
-        updated.mobile = as_phone_number(this.person.id)
-        if (!updated.mobile.length) updated.mobile = null
-        this.show_authorize = true
-        this.$emit('update:person', updated)
-        this.validate_mobile_number()
-      })
-    },
     mounted () {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) this.disable_input()
-      })
+      this.working = false
+      const updated = { ...this.person }
+      updated.mobile = as_phone_number(this.person.id)
+      if (!updated.mobile.length) updated.mobile = null
+      this.show_authorize = true
+      this.mobile = updated.mobile
+      this.validate_mobile_number()
+      firebase.auth().onAuthStateChanged(this.signed_on)
     },
     methods: {
+      signed_on (user) {
+        if (user) {
+          this.$emit('signed-on', this.person)
+          this.disable_input()
+        }
+      },
       validate_mobile_number () {
         const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
         this.disabled_sign_in = !is_valid
@@ -145,8 +145,6 @@
             this.$refs.mobile.disabled = false
             this.show_code = true
           }
-        } finally {
-          this.working = false
         }
       },
       mobile_keypress (event) {
