@@ -2,8 +2,7 @@ import { shallowMount, createLocalVue } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
-const fs = require('fs')
-const avatar_mock = fs.readFileSync('./tests/unit/html/avatar.html', 'utf8')
+const avatar_mock = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
