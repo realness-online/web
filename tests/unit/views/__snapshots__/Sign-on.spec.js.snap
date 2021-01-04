@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Sign-on.vue Renders a form for signing on to the app 1`] = `
+exports[`@/views/Sign-on.vue Rendering Renders a form for a new user 1`] = `
 <section
   class="page"
   id="sign-on"
@@ -19,6 +19,29 @@ exports[`@/views/Sign-on.vue Renders a form for signing on to the app 1`] = `
   <mobile-as-form-stub
     person="[object Object]"
   />
+   
+  <!---->
+   
+  <footer>
+    <!---->
+  </footer>
+</section>
+`;
+
+exports[`@/views/Sign-on.vue Rendering Renders a form for a returning user 1`] = `
+<section
+  class="page"
+  id="sign-on"
+>
+  <header>
+    <!---->
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <!---->
+   
+  <!---->
    
   <footer>
     <button>
