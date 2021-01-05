@@ -45,13 +45,8 @@ export function is_fresh (date) { // you are only fresh for 4 hours
   const four_hours_ago = timestamp - (4 * 3600)
   const one_day_ago = four_hours_ago * 6
   const three_days_ago = one_day_ago * 3
-  if (three_days_ago < new Date(date).getTime()) {
-    console.log('is-fresh')
-    return true
-  } else {
-    console.log('not-fresh')
-    return false
-  }
+  if (three_days_ago < new Date(date).getTime()) return true
+  else return false
 }
 export function as_time (date, format = format_as_time) {
   const time = new Date(date)
