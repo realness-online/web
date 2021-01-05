@@ -18,7 +18,7 @@
   </div>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import 'firebase/auth'
   import { set, get } from 'idb-keyval'
   import { Events, Statements, Poster, Me } from '@/persistance/Storage'

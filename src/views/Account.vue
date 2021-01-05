@@ -39,7 +39,7 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import 'firebase/auth'
   import { load, list } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'

@@ -40,7 +40,7 @@
   </form>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import 'firebase/auth'
   import { parseNumber, AsYouType } from 'libphonenumber-js'
   import { as_phone_number } from '@/helpers/profile'

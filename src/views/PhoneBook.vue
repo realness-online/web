@@ -24,7 +24,7 @@
   </section>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import 'firebase/storage'
   import { list, load } from '@/helpers/itemid'
   import logo_as_link from '@/components/logo-as-link'

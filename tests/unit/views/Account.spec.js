@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 const user = {
   phoneNumber: '+16282281824'

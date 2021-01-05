@@ -1,7 +1,7 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import App from '@/App'
 describe('@/App.vue', () => {
   let wrapper

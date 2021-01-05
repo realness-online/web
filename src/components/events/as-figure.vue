@@ -9,7 +9,7 @@
   </figure>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import 'firebase/auth'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'

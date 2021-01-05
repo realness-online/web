@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/avatars/as-form'
 import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
 const user = {
