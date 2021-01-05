@@ -157,6 +157,7 @@
         this.posters.unshift(id)
         this.new_poster = null
         this.working = false
+        this.menu = false
         console.info('save:poster', id)
       },
       async remove_poster (id) {
