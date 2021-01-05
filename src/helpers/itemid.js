@@ -20,7 +20,9 @@ export async function load (itemid, me = localStorage.me) {
     // undefined means try and load it
     console.info('cache:404', itemid)
     return null
-  } else console.info('cache:load')
+  } else if (result === undefined) console.info('cache:miss', itemid)
+  else console.info('cache:hit')
+
   item = get_item(result)
   if (item) return item
   item = await load_from_network(itemid, me)
