@@ -9,7 +9,7 @@
   </main>
 </template>
 <script>
-  import * as firebase from 'firebase/app'
+  import firebase from 'firebase/app'
   import { del } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'

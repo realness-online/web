@@ -1,6 +1,6 @@
 import * as sync from '@/workers/sync'
 import { get, del, keys } from 'idb-keyval'
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { Offline } from '@/persistance/Storage'

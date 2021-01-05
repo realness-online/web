@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import Profile from '@/views/Profile'
 import flushPromises from 'flush-promises'

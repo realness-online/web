@@ -1,5 +1,5 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import { newer_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'

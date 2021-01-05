@@ -1,5 +1,5 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'

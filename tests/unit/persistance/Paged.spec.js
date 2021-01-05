@@ -1,4 +1,4 @@
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import { get, set } from 'idb-keyval'
 import get_item from '@/modules/item'

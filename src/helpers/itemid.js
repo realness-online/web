@@ -1,5 +1,5 @@
 // {base_url}/{:author}/{:type}/{:created_at}
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'

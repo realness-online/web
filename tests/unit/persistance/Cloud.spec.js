@@ -1,7 +1,7 @@
 import Storage from '@/persistance/Storage'
 import Cloud from '@/persistance/Cloud'
 import Local from '@/persistance/Local'
-import * as firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { get } from 'idb-keyval'
