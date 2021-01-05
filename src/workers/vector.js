@@ -8,7 +8,7 @@ const jimp_options = {
   rangeDistribution: 'auto'
 }
 const brighness_options = {
-  max: 210,
+  max: 200,
   replace: 255,
   autoGreyscale: false
 }
@@ -17,9 +17,10 @@ export async function read (file) {
   return await Jimp.read(reader.readAsArrayBuffer(file))
 }
 export async function prepare (image, size = 512) {
+  image.dither565().posterize(10).normalize().threshold(brighness_options)
   if (image.bitmap.width > image.bitmap.height) image = image.resize(Jimp.AUTO, size)
   else image = image.resize(size, Jimp.AUTO)
-  return image.dither565().normalize().threshold(brighness_options).posterize(10)
+  return image
 }
 export async function make (image) {
   const poster = await as_paths(image, jimp_options)

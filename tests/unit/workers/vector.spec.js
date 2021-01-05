@@ -8,7 +8,9 @@ const mock_image = {
   },
   resize: jest.fn(_ => mock_image),
   normalize: jest.fn(_ => mock_image),
-  threshold: jest.fn(_ => mock_image)
+  threshold: jest.fn(_ => mock_image),
+  dither565: jest.fn(_ => mock_image),
+  posterize: jest.fn(_ => mock_image)
 }
 const mock_vector = {}
 
