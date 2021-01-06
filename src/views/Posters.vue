@@ -143,10 +143,6 @@
         this.new_poster = get_item(message.data.vector)
         console.timeEnd('optimize')
       },
-      vector_click (menu) {
-        if (this.selecting_event) this.menu = false
-        else this.menu = menu
-      },
       async save_poster () {
         const id = this.new_poster.id
         if (!id) return null
@@ -175,11 +171,6 @@
         this.working = true
         this.new_poster = null
         this.working = false
-      },
-      add_poster () {
-        this.selecting_event = false
-        this.menu = false
-        this.$emit('add-poster', this.itemid)
       },
       event_picker (selecting) {
         if (selecting) {
