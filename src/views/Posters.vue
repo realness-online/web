@@ -119,7 +119,7 @@
       async get_poster_list (user) {
         this.posters = []
         const directory = await itemid.as_directory(`${localStorage.me}/posters`)
-        if (directory) directory.items.forEach(item => this.posters.push(this.get_id(item)))
+        if (directory && directory.items) directory.items.forEach(item => this.posters.push(this.get_id(item)))
         this.posters.sort(newer_id_first)
       },
       vectorize (image) {
