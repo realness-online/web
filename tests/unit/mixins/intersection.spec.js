@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
-describe('@/mixins/vector_click', () => {
+describe('@/mixins/intersection', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(vector_mock)
@@ -37,6 +37,8 @@ describe('@/mixins/vector_click', () => {
         const mock = jest.fn()
         wrapper.vm.show = mock
         wrapper.vm.check_intersection(intersectings)
+        expect(wrapper.vm.observed).toBe(true)
+        wrapper.vm.observed = false
         expect(mock).toBeCalled()
         wrapper.vm.observer = { unobserve: () => true }
         wrapper.vm.check_intersection(intersectings)
