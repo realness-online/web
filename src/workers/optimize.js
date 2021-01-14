@@ -3,12 +3,21 @@ const options = {
   multipass: true,
   full: true,
   plugins: [
+    {
+      convertPathData: {
+        floatPrecision: 0,
+        transformPrecision: 0,
+        makeArcs: {
+          threshold: 0.5, // coefficient of rounding error
+          tolerance: 25.0 // percentage of radius
+        }
+      }
+    },
+    { cleanupNumericValues: true },
     { cleanupAttrs: true },
     { removeEmptyAttrs: true },
     { removeViewBox: false },
-    { convertPathData: { floatPrecision: 0 } },
     { removeUselessStrokeAndFill: true },
-    { cleanupNumericValues: true },
     { sortAttrs: false },
     { mergePaths: false },
     { removeAttrs: { attrs: '(stroke|fill)' } }
@@ -16,7 +25,13 @@ const options = {
 }
 export async function listen (message) {
   const svgo = new SVGO(options)
+  console.log('before', to_kb(message.data.vector))
   const optimized = await svgo.optimize(message.data.vector)
+  console.log('after', to_kb(optimized.data))
   self.postMessage({ vector: optimized.data })
 }
 self.addEventListener('message', listen)
+
+function to_kb (object) {
+  return `${(object.length / 1024).toFixed(2)}kb`
+}
