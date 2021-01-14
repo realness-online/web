@@ -1,7 +1,8 @@
 export default {
   data () {
     return {
-      observer: null
+      observer: null,
+      observed: false
     }
   },
   mounted () { this.intersect() },
@@ -13,7 +14,7 @@ export default {
     intersect () {
       if (this.observer) this.observer.unobserve(this.$el)
       this.observer = new IntersectionObserver(this.check_intersection, {
-        rootMargin: '16px',
+        rootMargin: '32px',
         delay: 50
       })
       this.observer.observe(this.$el)
@@ -22,7 +23,10 @@ export default {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (this.observer) this.observer.unobserve(this.$el)
-          this.show()
+          if (!this.observed) {
+            this.observed = true
+            this.show()
+          }
         }
       })
     }
