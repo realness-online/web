@@ -19,8 +19,7 @@ const options = {
     { removeViewBox: false },
     { removeUselessStrokeAndFill: true },
     { sortAttrs: false },
-    { mergePaths: false },
-    { removeAttrs: { attrs: '(stroke|fill)' } }
+    { mergePaths: false }
   ]
 }
 export async function listen (message) {
@@ -33,5 +32,5 @@ export async function listen (message) {
 self.addEventListener('message', listen)
 
 function to_kb (object) {
-  return `${(object.length / 1024).toFixed(2)}kb`
+  return (object.length / 1024).toFixed(2)
 }
