@@ -5,6 +5,8 @@ import itemid, { as_author, as_created_at } from '@/helpers/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
+const MockDate = require('mockdate')
+MockDate.set('2020-01-01')
 let poster
 let events
 
@@ -57,8 +59,7 @@ describe('@/views/Posters.vue', () => {
     describe('as_itemid', () => {
       wrapper = shallowMount(Posters)
       localStorage.me = '/+16282281824'
-      wrapper.vm.new_poster = { created_at: 'now' }
-      expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/now')
+      expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
     })
   })
   describe('methods:', () => {
@@ -158,36 +159,20 @@ describe('@/views/Posters.vue', () => {
         expect(delete_spy).not.toBeCalled()
       })
     })
-    describe('#vector_click', () => {
-      it('Shows the menu', () => {
-        expect(wrapper.vm.menu).toBe(false)
-        expect(wrapper.vm.selecting_event).toBe(false)
-        wrapper.vm.vector_click(true)
-        expect(wrapper.vm.menu).toBe(true)
-      })
-      it('Doesn/t show the menu if the event selection has focus', () => {
-        expect(wrapper.vm.menu).toBe(false)
-        wrapper.vm.selecting_event = true
-        wrapper.vm.vector_click()
-        expect(wrapper.vm.menu).toBe(false)
-      })
-    })
-    describe('#add_poster', () => {
-      it('Emits add-poster when called', () => {
-        wrapper.vm.add_poster()
-        expect(wrapper.emitted('add-poster')).toBeTruthy()
-      })
-      it('Gets rid of all the extra html it can before saving', () => {
-        wrapper.vm.selecting_event = true
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-        wrapper.vm.add_poster()
-        expect(wrapper.vm.selecting_event).toBe(false)
-        expect(wrapper.vm.menu).toBe(false)
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-    })
-
+    // describe('#vector_click', () => {
+    //   it('Shows the menu', () => {
+    //     expect(wrapper.vm.menu).toBe(false)
+    //     expect(wrapper.vm.selecting_event).toBe(false)
+    //     wrapper.vm.vector_click(true)
+    //     expect(wrapper.vm.menu).toBe(true)
+    //   })
+    //   it('Doesn/t show the menu if the event selection has focus', () => {
+    //     expect(wrapper.vm.menu).toBe(false)
+    //     wrapper.vm.selecting_event = true
+    //     wrapper.vm.vector_click()
+    //     expect(wrapper.vm.menu).toBe(false)
+    //   })
+    // })
     describe('#event_picker', () => {
       describe('true', () => {
         beforeEach(() => {

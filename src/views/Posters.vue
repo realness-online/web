@@ -13,7 +13,7 @@
           <icon v-show="working" name="working" />
         </hgroup>
       </header>
-      <as-figure v-if="new_poster" :key="as_itemid"
+      <as-figure v-if="new_poster"
                  class="new"
                  :itemid="as_itemid"
                  :new_poster="new_poster"
@@ -83,8 +83,8 @@
     },
     computed: {
       as_itemid () {
-        if (this.new_poster.id) return this.new_poster.id
-        else return `${localStorage.me}/posters/${this.new_poster.created_at}`
+        if (this.new_poster && this.new_poster.id) return this.new_poster.id
+        else return `${localStorage.me}/posters/${Date.now()}`
       },
       friendly () {
         if (this.posters.length === 0 && !this.working && !this.new_poster) return true
