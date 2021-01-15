@@ -12,6 +12,13 @@ const brighness_options = {
   replace: 255,
   autoGreyscale: false
 }
+function to_kb (vector) {
+  let size_of = 0
+  vector.paths.forEach(path => {
+    size_of += path.length
+  })
+  return (size_of / 1024).toFixed(2)
+}
 export async function read (file) {
   const reader = new FileReaderSync()
   return await Jimp.read(reader.readAsArrayBuffer(file))
@@ -26,12 +33,10 @@ export async function prepare (image) {
 }
 export async function make (image) {
   let poster = await as_paths(image, potrace_options)
-  console.log(`${to_kb(poster)}kb`)
   if (to_kb(poster) > 700) {
-    image = await size(image, 416)
+    image = await size(image, 368)
     poster = await as_paths(image, potrace_options)
   }
-  console.log(`${to_kb(poster)}kb`)
   return {
     path: poster.paths,
     viewbox: `0 0 ${poster.width} ${poster.height}`
@@ -45,12 +50,3 @@ export async function listen (message) {
   self.postMessage(vector)
 }
 self.addEventListener('message', listen)
-
-function to_kb (vector) {
-  console.log(vector)
-  let size_of = 0
-  vector.paths.forEach(path => {
-    size_of += path.length
-  })
-  return (size_of / 1024).toFixed(2)
-}
