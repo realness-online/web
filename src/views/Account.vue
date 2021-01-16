@@ -137,8 +137,7 @@
       color: red
       border-color: red
     & > header
-      padding: 0
-      height: 0
+      height: base-line * 3
       & >button.sign-on
         position:absolute
         top: inset(top)
