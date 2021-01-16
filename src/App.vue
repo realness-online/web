@@ -2,7 +2,7 @@
   <main id="realness" :class="status">
     <router-view :statement.sync="statement" :person.sync="me" />
     <aside>
-      <activity-as-table v-if="production_mode" />
+      <activity-as-table v-if="is_production" />
       <developer-tools v-else />
       <sync :statement.sync="statement" :person="me" />
     </aside>
@@ -36,7 +36,7 @@
       }
     },
     computed: {
-      production_mode () {
+      is_production () {
         return process.env.NODE_ENV === 'production'
       }
     },
@@ -45,11 +45,15 @@
         sessionStorage.previous = from.path
       }
     },
-    created () {
+    async created () {
+      if (this.is_production) {
+        const response = await fetch('__/firebase/init.json')
+        firebase.initializeApp(await response.json())
+      } else firebase.initializeApp(this.firebase_keys)
       del('sync:peer-connected')
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
-      firebase.initializeApp(this.firebase_keys)
+
       if (!navigator.onLine) this.offline()
     },
     beforeDestroy () {
