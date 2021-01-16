@@ -7,6 +7,21 @@
   100%
     fill: red
     -webkit-tap-highlight-color: red
+
+@keyframes absolute-slide-down
+  0%
+    opacity: 0
+    top: -(base-line * 2)
+  25%
+    opacity: 1
+  100%
+    top: base-line
+@keyframes absolute-slide-up
+  from
+    bottom: -(base-line * 2)
+  to
+    bottom: base-line
+
 @keyframes slide-in-down
   from
     transform: translate3d(0, -100%, 0)

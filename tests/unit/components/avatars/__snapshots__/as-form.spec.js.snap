@@ -4,11 +4,9 @@ exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
 <div
   id="manage-avatar"
 >
-  <div>
-    <avatar-as-svg-stub
-      person="[object Object]"
-    />
-  </div>
+  <avatar-as-svg-stub
+    person="[object Object]"
+  />
    
   <menu>
     <a
@@ -44,11 +42,9 @@ exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
 <div
   id="manage-avatar"
 >
-  <div>
-    <avatar-as-svg-stub
-      person="[object Object]"
-    />
-  </div>
+  <avatar-as-svg-stub
+    person="[object Object]"
+  />
    
   <menu>
     <a

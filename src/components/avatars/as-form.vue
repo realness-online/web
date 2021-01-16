@@ -1,7 +1,7 @@
 <template lang="html">
   <div id="manage-avatar">
     <icon v-if="working" name="working" />
-    <div v-else>
+    <template v-else>
       <figure v-if="vector">
         <icon name="background" />
         <svg ref="new_avatar" itemscope
@@ -11,7 +11,7 @@
              v-html="path" />
       </figure>
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
-    </div>
+    </template>
     <menu v-if="show_menu">
       <a id="open_camera" @click="open_camera">
         <icon name="camera" />
@@ -132,7 +132,7 @@
     position: relative
     & figure svg[itemscope]
       position: relative
-    & div svg
+    & > svg
       width: 100vw
       min-height: 100vh
       &.background
@@ -141,18 +141,32 @@
       height: 100vh
       width: base-line * 5
     & > menu
-      animation: slide-in-up
-      animation-delay: 0.33s
-      animation-duration: 0.35s
-      animation-fill-mode: backwards
-      position: relative
-      z-index: 1
       display: flex
       justify-content: space-between
-      margin-top: -(base-line * 3)
-      padding: 0 base-line base-line base-line
+      height: 0
+      padding: 0 base-line
       & > a
+        animation: absolute-slide-up
+        animation-delay: 0.33s
+        animation-duration: 0.35s
+        animation-fill-mode: backwards
         cursor: pointer
+        position: absolute
+        &#open_camera
+          animation: absolute-slide-down
+          animation-delay: 0.3s
+          animation-duration: 0.35s
+          animation-fill-mode: backwards
+          position: absolute
+          z-index: 2
+          top: inset(top)
+          left: inset(left)
+        &#select_photo
+          bottom: inset(bottom)
+          left: inset(left)
+        &.download
+          bottom: inset(bottom)
+          right: inset(right)
         & > svg
           fill: blue
         &#accept_changes > svg

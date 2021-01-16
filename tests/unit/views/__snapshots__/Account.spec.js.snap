@@ -6,9 +6,7 @@ exports[`@/views/Account.vue Rendering Renders account information 1`] = `
   id="account"
 >
   <header>
-    <icon-stub
-      name="nothing"
-    />
+    <!---->
      
     <logo-as-link-stub />
   </header>
