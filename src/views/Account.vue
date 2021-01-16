@@ -1,8 +1,7 @@
 <template lang="html">
   <section id="account" :class="{ 'signed-in': signed_in }" class="page">
     <header>
-      <icon v-if="signed_in" name="nothing" />
-      <sign-on v-else />
+      <sign-on v-if="!signed_in" />
       <logo-as-link />
     </header>
     <hgroup v-if="signed_in && !working">
@@ -19,7 +18,7 @@
         <button @click="signoff">Sign off</button>
       </menu>
     </hgroup>
-    <h1>Statements</h1>
+    <h1 v-if="!working">Statements</h1>
     <as-days v-slot="thoughts"
              itemscope
              :itemid="statements_id"
@@ -32,7 +31,7 @@
                           @focused="thought_focused"
                           @blurred="thought_blurred" />
     </as-days>
-    <footer v-if="statements.length === 0" class="message">
+    <footer v-if="statements.length === 0 && !working" class="message">
       <p>Say some stuff via the <button @click="home" /> button on the homepage  <br></p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </footer>
@@ -138,13 +137,21 @@
       color: red
       border-color: red
     & > header
-      position: relative
-      animation: slide-in-down
-      animation-delay: 0.33s
-      animation-duration: 0.35s
-      animation-fill-mode: backwards
-      a#logo
-        border-bottom: 0
+      padding: 0
+      height: 0
+      & >button.sign-on
+        position:absolute
+        top: inset(top)
+        left: inset(left)
+      &> a#logo
+        position: absolute
+        top: inset(top)
+        right: inset(right)
+        z-index: 2
+        animation: absolute-slide-down
+        animation-delay: 0.33s
+        animation-duration: 0.35s
+        animation-fill-mode: backwards
     & > hgroup
       position: relative
       z-index: 1
@@ -218,7 +225,7 @@
           outline: 0px
     & > footer
       text-align: center
-      padding-left: base-line
+      padding: 0 base-line
       & > p
         max-width: inherit
         & > button
@@ -227,8 +234,6 @@
           border-radius: 0.2em
           height: 1em
           width: 1.66em
-    &.signed-in > header
-      margin-bottom: calc( var(--header-margin) - env(safe-area-inset-top))
     @media (prefers-color-scheme: dark)
       h1, h4, svg.background
         color: red

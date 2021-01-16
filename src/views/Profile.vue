@@ -83,7 +83,7 @@
           })
         })
       }
-      console.info(`Views ${person.first_name}'s profile`)
+      console.info('views:profile')
     }
   }
 </script>
@@ -93,6 +93,10 @@
     & > header
       z-index: 2
       position: absolute
+      animation: slide-in-down
+      animation-delay: 1.3s
+      animation-duration: 0.35s
+      animation-fill-mode: backwards
       width:100%
       & > a
         -webkit-tap-highlight-color: blue
@@ -101,15 +105,17 @@
     & > svg:not(.working)
       width: 100vw
       min-height: 100vh
-    & > menu
-      display: flex
-      justify-content: flex-end
-      padding: base-line
-      margin-top -(base-line * 4 )
-      & > a
-        text-align: right
-        & > svg
-          fill: blue
+    & > menu > a.download
+      position: absolute
+      bottom: inset(bottom)
+      right: inset(right)
+      text-align: right
+      animation: absolute-slide-up
+      animation-delay: 1.3s
+      animation-duration: 0.35s
+      animation-fill-mode: backwards
+      & > svg
+        fill: blue
     svg.background
       fill: blue
     figure.profile
@@ -122,8 +128,12 @@
       & > figcaption > menu
         a.status
           position: absolute
-          bottom: base-line
-          left: base-line
+          bottom: inset(bottom)
+          left: inset(left)
+          animation: absolute-slide-up
+          animation-delay: 1.3s
+          animation-duration: 0.35s
+          animation-fill-mode: backwards
           svg.add
             width: base-line * 2
             height: base-line * 2
@@ -136,9 +146,14 @@
               height: base-line * 2
         a.phone
           position: absolute
-          top: base-line
-          left: base-line
+          top: inset(top)
+          left: inset(left)
           z-index: 2
+          animation: absolute-slide-down
+          animation-delay: 1.3s
+          animation-duration: 0.35s
+          animation-fill-mode: backwards
+          position: absolute
           svg.message
             fill: blue
     & > section.as-days
