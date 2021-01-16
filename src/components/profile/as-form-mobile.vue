@@ -42,7 +42,6 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
-  import { parseNumber, AsYouType } from 'libphonenumber-js'
   import { as_phone_number } from '@/helpers/profile'
   import icon from '@/components/icon'
   export default {
@@ -57,6 +56,7 @@
     },
     data () {
       return {
+        validate: null,
         mobile: null,
         working: true,
         disabled_sign_in: true,
@@ -75,7 +75,7 @@
         return true
       },
       mobile_display () {
-        if (this.person.mobile) return new AsYouType('US').input(this.person.mobile)
+        if (this.person.mobile) return new this.validate.AsYouType('US').input(this.person.mobile)
         else return 'Mobile'
       }
     },
@@ -86,7 +86,11 @@
         this.$emit('update:person', update)
       }
     },
-    mounted () {
+    async created () {
+      this.validate = await import('libphonenumber-js')
+      console.log(this.validate)
+    },
+    async mounted () {
       this.working = false
       const updated = { ...this.person }
       updated.mobile = as_phone_number(this.person.id)
@@ -104,7 +108,7 @@
         }
       },
       validate_mobile_number () {
-        const is_valid = !!this.person.mobile && parseNumber(this.person.mobile, 'US').phone
+        const is_valid = !!this.person.mobile && this.validate.parseNumber(this.person.mobile, 'US').phone
         this.disabled_sign_in = !is_valid
         return is_valid
       },
@@ -152,7 +156,7 @@
       },
       mobile_paste (event) {
         const past_text = (event.clipboardData).getData('text/plain')
-        const phone_number = parseNumber(past_text, 'US').phone
+        const phone_number = this.validate.parseNumber(past_text, 'US').phone
         if (phone_number) {
           const update = { ...this.person }
           update.mobile = phone_number
