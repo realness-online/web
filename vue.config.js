@@ -31,7 +31,7 @@ module.exports = {
       msTileImage: 'icons/mstile-150x150.png'
     },
     manifestOptions: {
-      short_name: 'Realness`',
+      short_name: 'Realness',
       description: 'A vector network for the realness in all of us realness.online',
       scope: '/',
       orientation: 'portrait',
