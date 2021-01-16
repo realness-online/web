@@ -60,7 +60,8 @@ module.exports = {
     plugins: [
       new BundleAnalyzerPlugin({
         analyzerMode: 'static',
-        openAnalyzer: false
+        openAnalyzer: false,
+        reportFilename: '../javascript_report.html'
       })
     ],
     optimization: {

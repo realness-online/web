@@ -40,7 +40,8 @@ module.exports = {
   plugins: [
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
-      openAnalyzer: false
+      openAnalyzer: false,
+      reportFilename: '../worker_report.html'
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
