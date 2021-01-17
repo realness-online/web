@@ -14,7 +14,7 @@
     },
     methods: {
       focused (event) {
-        console.info('Displays statement entry form')
+        console.info('display:statement-form')
         this.$emit('toggle-keyboard')
       },
       prepare_statement () {
@@ -25,7 +25,7 @@
         this.new_statement = ''
         statement.id = `${localStorage.me}/statements/${new Date().getTime()}`
         this.$emit('update:statement', statement)
-        console.info('Creates a statement')
+        console.info('creates:statement')
       }
     }
   }
