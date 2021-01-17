@@ -116,7 +116,7 @@
         height: 100%
       &.working
         margin-top: base-line
-        max-width: base-line * 6
+        max-width: round(base-line * 6)
     & > figcaption > menu
       height: 0
       & > a

@@ -139,7 +139,7 @@
         fill: red
     & > svg.working
       height: 100vh
-      width: base-line * 5
+      width: round(base-line * 5)
     & > menu
       display: flex
       justify-content: space-between

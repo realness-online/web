@@ -98,8 +98,8 @@
     #background
       fill: blue
     & > svg
-      width: base-line * 6
-      height: base-line * 6
+      width: round(base-line * 6)
+      height: round(base-line * 6)
       cursor: pointer
       // border: 1px solid blue
       @media (max-width: pad-begins)

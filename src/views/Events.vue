@@ -90,7 +90,7 @@
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
-      grid-template-rows: base-line * 22
+      grid-template-rows: round(base-line * 22)
       & > header
         max-height: base-line * 6
       @media (min-width: pad-begins)
