@@ -107,6 +107,7 @@
         margin-bottom: 0
     & > section.as-days
       & > article.day
+        margin-bottom: base-line
         grid-auto-rows: auto
         & > header
           padding: base-line
