@@ -37,7 +37,7 @@
       const temp = await list(`${localStorage.me}/relations`)
       temp.forEach(async (relation, index) => {
         const person = await load(relation.id)
-        this.relations.splice(index, 1, person)
+        if (person) this.relations.push(person)
       })
     }
   }
