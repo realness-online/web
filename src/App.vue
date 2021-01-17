@@ -1,7 +1,7 @@
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view :statement.sync="statement" :person.sync="me" />
-    <aside>
+    <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
+    <aside v-if="!working">
       <activity-as-table v-if="is_production" />
       <developer-tools v-else />
       <sync :statement.sync="statement" :person="me" />
@@ -22,6 +22,7 @@
     },
     data () {
       return {
+        working: true,
         me: null,
         statement: null,
         status: null,
@@ -50,6 +51,7 @@
         const response = await fetch('__/firebase/init.json')
         firebase.initializeApp(await response.json())
       } else firebase.initializeApp(this.firebase_keys)
+      this.working = false
       del('sync:peer-connected')
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
