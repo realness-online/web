@@ -1,7 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import as_article from '@/components/statements/as-article'
-import * as itemid from '@/helpers/itemid'
 const statement = {
   statement: 'I am saying it',
   id: '/+14151234356/statements/1557614404580'
