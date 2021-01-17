@@ -211,7 +211,7 @@
       & > h1
         margin: base-line
     & > h1
-      padding-left: base-line
+      padding: base-line
     & > section.as-days
       padding: base-line
       padding-top: 0
