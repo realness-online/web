@@ -32,9 +32,10 @@
       }
     },
     async created () {
+      console.clear()
       console.info('views:relations')
-      this.relations = await list(`${localStorage.me}/relations`)
-      this.relations.forEach(async (relation, index) => {
+      const temp = await list(`${localStorage.me}/relations`)
+      temp.forEach(async (relation, index) => {
         const person = await load(relation.id)
         this.relations.splice(index, 1, person)
       })
