@@ -136,21 +136,24 @@
     button
       color: red
       border-color: red
+    &.signed-in > header
+      height: 0
+      padding: 0
     & > header
       height: base-line * 3
-      & >button.sign-on
-        position:absolute
-        top: inset(top)
-        left: inset(left)
-      &> a#logo
+      & > button.sign-on
+      & > a#logo
         position: absolute
         top: inset(top)
-        right: inset(right)
         z-index: 2
         animation: absolute-slide-down
         animation-delay: 0.33s
         animation-duration: 0.35s
         animation-fill-mode: backwards
+      & > button.sign-on
+        left: inset(left)
+      & > a#logo
+        right: inset(right)
     & > hgroup
       position: relative
       z-index: 1
