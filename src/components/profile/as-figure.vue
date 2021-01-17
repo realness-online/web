@@ -101,7 +101,6 @@
       width: round(base-line * 6)
       height: round(base-line * 6)
       cursor: pointer
-      // border: 1px solid blue
       @media (max-width: pad-begins)
         border-top-right-radius: 0.66rem
         border-bottom-right-radius: 0.66rem
