@@ -159,7 +159,6 @@
       z-index: 1
       & > figure
       & > form
-        background-color: background-black
         padding: base-line base-line 0 base-line
       & > figure
         & > svg
