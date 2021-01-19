@@ -92,7 +92,7 @@
 </script>
 <style lang='stylus'>
   article.thought
-    overflow: hidden
+    // overflow: hidden
     & > header
       display: flex
       justify-content: flex-start
