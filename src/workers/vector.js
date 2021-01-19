@@ -7,7 +7,7 @@ const potrace_options = {
   fillStrategy: 'median',
   rangeDistribution: 'auto'
 }
-const brighness_options = {
+const bright = {
   max: 200,
   replace: 255,
   autoGreyscale: false
@@ -29,7 +29,7 @@ export async function size (image, size = 512) {
   return image
 }
 export async function prepare (image) {
-  return image.dither565().posterize(10).normalize().threshold(brighness_options)
+  return image.normalize().dither565().threshold(bright).posterize(10)
 }
 export async function make (image) {
   let poster = await as_paths(image, potrace_options)
