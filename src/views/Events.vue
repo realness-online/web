@@ -72,6 +72,7 @@
 <style lang="stylus">
   section#events
     hgroup.message
+      padding: 0 base-line
       svg, a, button, span
         border-color: green
         fill: green
