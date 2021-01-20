@@ -118,7 +118,6 @@
 </script>
 <style lang="stylus">
   section.as-days > article.day.today
-    // padding-top: base-line * 2
     @media (min-width: pad-begins)
       grid-template-rows: auto
   section.as-days > article.day
@@ -133,11 +132,9 @@
       grid-template-rows: (base-line * 3)
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
     & > header
+      @media (min-width: pad-begins)
+        grid-column: 1 / -1
       & > h4
         margin: 0
         font-weight: 600
-      @media (min-width: pad-begins)
-        grid-column: 1 / -1
-        // & > hgroup
-        //   margin-top: -(base-line)
 </style>

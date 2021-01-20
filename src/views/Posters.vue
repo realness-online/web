@@ -186,6 +186,10 @@
 </script>
 <style lang="stylus">
   section#posters
+    & > article
+      grid-template-rows: (base-line * 3)
+      @media (min-width: pad-begins)
+        grid-template-rows: (base-line * 4)
     padding-bottom: base-line
     &.selecting-event
       & > svg:not(.background)

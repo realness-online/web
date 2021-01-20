@@ -161,6 +161,8 @@
         grid-auto-rows: auto
         & > header
           padding: base-line
+          & > h4
+            color: blue
         article.thought
           padding: 0 base-line
         figure.poster > svg.background
