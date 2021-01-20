@@ -102,7 +102,6 @@
     border-radius: (base-line / 6)
     position: relative
     overflow: hidden
-    margin-bottom: base-line
     @media (min-width: pad-begins)
       &.landscape
         grid-column-start: span 2
