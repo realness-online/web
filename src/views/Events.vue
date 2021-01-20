@@ -78,7 +78,7 @@
         fill: green
         color: green
     h1
-      padding: base-line
+      padding: 0 base-line base-line base-line
       color: green
     & > header
       & > svg
