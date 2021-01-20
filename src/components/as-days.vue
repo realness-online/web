@@ -15,7 +15,7 @@
   </section>
 </template>
 <script>
-  import { newer_date_first, newer_weirdo_first, older_weirdo_first } from '@/helpers/sorting'
+  import { newer_date_first, earlier_weirdo_first, recent_weirdo_first } from '@/helpers/sorting'
   import { as_author } from '@/helpers/itemid'
   import { id_as_day, as_day, is_today } from '@/helpers/date'
   import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
@@ -101,10 +101,10 @@
         const day = days.get(day_name)
         if (day && is_today(day_name)) {
           day.unshift(item)
-          if (day.length > 1) day.sort(older_weirdo_first)
+          if (day.length > 1) day.sort(recent_weirdo_first)
         } else if (day) {
           day.push(item)
-          if (day.length > 1) day.sort(newer_weirdo_first)
+          if (day.length > 1) day.sort(earlier_weirdo_first)
         } else days.set(day_name, [item])
       },
       as_day (date) {
