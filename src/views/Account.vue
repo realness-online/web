@@ -18,7 +18,7 @@
         <button @click="signoff">Sign off</button>
       </menu>
     </hgroup>
-    <h1 v-if="!working">Statements</h1>
+    <h2 v-if="!working">Statements</h2>
     <as-days v-slot="thoughts"
              itemscope
              :itemid="statements_id"
@@ -169,7 +169,7 @@
         & > figcaption
           padding: 0
           & > hgroup
-            display: flex
+            flex-direction: row
             align-items: center
             & > b
              margin-bottom: 0
@@ -178,7 +178,7 @@
             align-items: center
             opacity: 1
             padding: 0
-            &> a > svg.gear
+            & > a > svg.gear
               fill: red
               animation-name: rotate-back
               transform-origin: center
@@ -207,9 +207,7 @@
         position: absolute
         bottom: .05rem
         right: 1em
-      & > h1
-        margin: base-line
-    & > h1
+    & > h2
       padding: base-line
     & > section.as-days
       padding: base-line
@@ -236,7 +234,7 @@
           height: 1em
           width: 1.66em
     @media (prefers-color-scheme: dark)
-      h1, h4, svg.background
+      h2, h4, svg.background
         color: red
         fill: red
 </style>
