@@ -98,8 +98,9 @@
     #background
       fill: blue
     & > svg
-      width: round(base-line * 6)
-      height: round(base-line * 6)
+      margin-right: round((base-line / 3), 3)
+      width: round(base-line * 6, 2)
+      height: round(base-line * 6, 2)
       cursor: pointer
       @media (max-width: pad-begins)
         border-top-right-radius: 0.66rem
@@ -112,14 +113,17 @@
       flex: 1
       display: flex
       justify-content: space-between
-      padding: (base-line / 3)
-      // padding-right: 0
+      & > hgroup
       & > menu
         display: flex
         flex-direction: column
         justify-content: space-between
-        & > a > svg
-          fill:blue
+      &> hgroup
+        justify-content: center
+      & > menu
+        padding: round((base-line / 3), 3)
         &:hover
           opacity: 1
+        & > a > svg
+          fill:blue
 </style>

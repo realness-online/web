@@ -140,7 +140,6 @@
               margin-right: (base-line/3)
             & > h3
             & > time
-              font-weight: 400
               line-height: 1
               color: white
               text-shadow: 0.1px .1px dark-black

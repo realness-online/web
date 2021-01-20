@@ -102,7 +102,7 @@
       display: none
     & > hgroup
       & > h1
-        padding: 0 base-line
+        padding: 0 base-line (base-line * 2) base-line
         width:100vw
         margin-bottom: 0
     & > section.as-days
@@ -111,6 +111,8 @@
         grid-auto-rows: auto
         & > header
           padding: base-line
+          h4
+            color: blue
         article.thought
           padding: 0 base-line
         figure.poster > svg.background
