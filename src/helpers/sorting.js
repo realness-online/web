@@ -11,10 +11,11 @@ export function newer_date_first (first, second) {
 export function newer_number_first (first, second) {
    return parseInt(second) - parseInt(first)
 }
-export function newer_weirdo_first (first, second) {
+export function earlier_weirdo_first (first, second) {
   return newer_id_first(get_id(second), get_id(first))
 }
-export function older_weirdo_first (first, second) {
+// these items are more recent
+export function recent_weirdo_first (first, second) {
   return newer_id_first(get_id(first), get_id(second))
 }
 function get_id (thing) {
