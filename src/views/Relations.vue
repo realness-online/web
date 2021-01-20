@@ -32,10 +32,9 @@
       }
     },
     async created () {
-      console.clear()
       console.info('views:relations')
       const temp = await list(`${localStorage.me}/relations`)
-      temp.forEach(async (relation, index) => {
+      temp.forEach(async relation => {
         const person = await load(relation.id)
         if (person) this.relations.push(person)
       })
