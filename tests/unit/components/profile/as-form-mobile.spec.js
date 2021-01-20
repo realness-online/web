@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
+import flushPromises from 'flush-promises'
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     id: '/+14151234356',
@@ -7,11 +8,12 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     last_name: 'Fryxell',
     mobile: '4151234356'
   }
+  let wrapper
+  beforeEach(async () => {
+    wrapper = await shallowMount(as_form, { propsData: { person } })
+    await flushPromises()
+  })
   describe('Initial render', () => {
-    let wrapper
-    beforeEach(() => {
-      wrapper = shallowMount(as_form, { propsData: { person } })
-    })
     it('Render profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -19,9 +21,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('Elements:', () => {
     describe('input#mobile', () => {
       describe('keypress', () => {
-        let input, stub, wrapper
+        let input, stub
         beforeEach(async () => {
-          wrapper = await shallowMount(as_form, { propsData: { person } })
           input = wrapper.find('#mobile')
           stub = jest.fn()
         })
@@ -41,9 +42,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         })
       })
       describe('paste', () => {
-        let input, wrapper
+        let input
         beforeEach(async () => {
-          wrapper = await shallowMount(as_form, { propsData: { person } })
           input = wrapper.find('#mobile')
         })
         it('Reject invalid mobile number', () => {
@@ -102,9 +102,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
     })
     describe('button#authorize', () => {
-      let wrapper, button
+      let button
       beforeEach(async () => {
-        wrapper = await shallowMount(as_form, { propsData: { person } })
         button = wrapper.find('#authorize')
       })
       it('Enabled with valid mobile number', () => {
@@ -113,6 +112,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       it('Disabled with invalid mobile number', async () => {
         const invalid_person = { mobile: '415123456a' }
         wrapper = await shallowMount(as_form, { propsData: { person: invalid_person } })
+        await flushPromises()
         button = wrapper.find('#authorize')
         expect(button.attributes('disabled')).toBeTruthy()
       })
@@ -132,8 +132,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
     describe('input#verification-code', () => {
       let input, stub, wrapper
-      beforeEach(() => {
-        wrapper = shallowMount(as_form, {
+      beforeEach(async () => {
+        wrapper = await shallowMount(as_form, {
           propsData: { person },
           data () {
             return {
@@ -183,6 +183,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
             }
           }
         })
+        await flushPromises()
         button = wrapper.find('#submit-verification')
       })
       it('button#submit-verification signs the user in', async () => {
@@ -211,8 +212,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('Methods:', () => {
     describe('#text_human_verify_code', () => {
       let wrapper
-      beforeEach(() => {
-        wrapper = shallowMount(as_form, {
+      beforeEach(async () => {
+        wrapper = await shallowMount(as_form, {
           propsData: { person }
         })
         wrapper.setData({
@@ -230,8 +231,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     })
     describe('#signed_on', () => {
       let wrapper
-      beforeEach(() => {
-        wrapper = shallowMount(as_form, { propsData: { person } })
+      beforeEach(async () => {
+        wrapper = await shallowMount(as_form, { propsData: { person } })
       })
       it('Emits an event if the user is signed on', () => {
         wrapper.vm.signed_on({ phoneNumber: '+16282281824' })
@@ -246,6 +247,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     describe('mobile', () => {
       it('Emites updates when mobile number is changed', async () => {
         const wrapper = await shallowMount(as_form, { propsData: { person } })
+        await flushPromises()
         wrapper.vm.mobile = '415'
         expect(wrapper.emitted('update:person')).toBeTruthy()
       })

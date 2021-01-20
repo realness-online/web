@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import Relations from '@/views/Relations'
 import * as itemid from '@/helpers/itemid'
+import flushPromises from 'flush-promises'
 describe('@/views/Relations.vue', () => {
   const joe_friday = {
     id: '/+14151234356',
@@ -15,12 +16,13 @@ describe('@/views/Relations.vue', () => {
       relations: [{ id: '/+14151234356' }]
     }
     const load_relations = jest.spyOn(itemid, 'list')
-                          .mockImplementation(_ => Promise.resolve(my.relations))
+      .mockImplementation(_ => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
-                         .mockImplementation(_ => Promise.resolve(joe_friday))
+    .mockImplementation(_ => Promise.resolve(joe_friday))
     const wrapper = await shallowMount(Relations, {
       stubs: ['router-link', 'router-view']
     })
+    await flushPromises()
     expect(wrapper.vm.relations.length).toBe(1)
     expect(load_relations).toBeCalled()
     expect(load_profile).toBeCalled()

@@ -88,9 +88,6 @@
     },
     async created () {
       this.validate = await import('libphonenumber-js')
-      console.log(this.validate)
-    },
-    async mounted () {
       this.working = false
       const updated = { ...this.person }
       updated.mobile = as_phone_number(this.person.id)
