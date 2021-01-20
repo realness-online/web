@@ -7,7 +7,7 @@
              :key="date"
              :class="{today: is_today(date)}"
              class="day">
-      <header>
+      <header v-if="!is_today(date)">
         <h4>{{ as_day(date) }}</h4>
       </header>
       <slot v-for="item in day" :item="item" />
@@ -117,6 +117,10 @@
   }
 </script>
 <style lang="stylus">
+  section.as-days > article.day.today
+    // padding-top: base-line * 2
+    @media (min-width: pad-begins)
+      grid-template-rows: auto
   section.as-days > article.day
   section#posters > article
     display: grid
