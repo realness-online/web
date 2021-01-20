@@ -19,27 +19,21 @@ module.exports = {
     workboxOptions: {
       swSrc: 'src/service.worker.js'
     },
-    themeColor: '#52a0d1',
-    msTileColor: '#52a0d1',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black-translucent',
     iconPaths: {
-      favicon32: 'icons/favicon-32x32.png',
-      favicon16: 'icons/favicon-16x16.png',
-      appleTouchIcon: 'icons/apple-touch-icon.png',
-      maskIcon: 'icons/safari-pinned-tab.svg',
-      msTileImage: 'icons/mstile-150x150.png'
+      appleTouchIcon: 'icons/apple-touch-icon.png'
     },
     manifestOptions: {
       short_name: 'Realness',
-      description: 'A vector network for the realness in all of us realness.online',
+      description: 'realness.online – A chill vector space for the realness in all of us',
       scope: '/',
       orientation: 'portrait',
       background_color: '#52a0d1',
       icons: [
         {
           src: '/icons/logo.svg', // inside the scope!
-          sizes: '192x192', // see the size in the devtools, not in editor. I've set up size 1200x1200 in Illustrator, but Chrome says it's 150x150. Also, 'sizes':'any' not work.
+          sizes: '192x192',
           type: 'image/svg+xml', // not image/svg which is still visible in web
           purpose: 'any' // not 'maskable any' as you may see there in answers.
         },
