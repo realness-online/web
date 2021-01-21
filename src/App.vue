@@ -2,8 +2,7 @@
   <main id="realness" :class="status">
     <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
     <aside v-if="!working">
-      <activity-as-table v-if="is_production" />
-      <developer-tools v-else />
+      <developer-tools v-if="!is_production" />
       <sync :statement.sync="statement" :person="me" />
     </aside>
   </main>
@@ -13,12 +12,10 @@
   import { del } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'
-  import activity from '@/components/activity/as-table'
   export default {
     components: {
       sync,
-      'developer-tools': developer_tools,
-      'activity-as-table': activity
+      'developer-tools': developer_tools
     },
     data () {
       return {
@@ -51,12 +48,11 @@
         const response = await fetch('__/firebase/init.json')
         firebase.initializeApp(await response.json())
       } else firebase.initializeApp(this.firebase_keys)
-      this.working = false
-      del('sync:peer-connected')
+      if (navigator.onLine) del('sync:peer-connected')
+      else this.offline()
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
-
-      if (!navigator.onLine) this.offline()
+      this.working = false
     },
     beforeDestroy () {
       window.removeEventListener('online', this.online)
@@ -69,12 +65,6 @@
         this.status = null
       },
       offline () {
-        // TODO: this could potentally override
-        // other components intentionally having this set false
-        // we can fix this by setting a class variable for any contenteditable
-        // we change and than only flip those guys back to editable
-        // this is not a big deal now as I remove contenteditable rather than
-        // set it false
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'
