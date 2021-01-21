@@ -1,29 +1,44 @@
 import {
-  newer_number_first,
-  newer_weirdo_first
+  recent_number_first,
+  recent_weirdo_first,
+  earlier_weirdo_first
 } from '@/helpers/sorting'
 describe('@/helpers/sorting', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
-  describe('#newer_number_first', () => {
+  describe('#recent_number_first', () => {
     it('puts the larger number first', () => {
-      const list = [449666932867, 559666932867]
-      list.sort(newer_number_first)
-      expect(list[0]).toBe(559666932867)
+      const list = [5596668999, 55966690000]
+      list.sort(recent_number_first)
+      expect(list[0]).toBe(55966690000)
     })
   })
-  describe('#newer_weirdo_first', () => {
-    it('sorts lists of items or items', () => {
+  describe('#earlier_weirdo_first', () => {
+    it('Sorts lists of items or item', () => {
       const list = [
         { id: '/+16282281824/posters/559666932867' },
         [
           { id: '/+16282281824/posters/559666922867' },
-          { id: '/+16282281824/posters/559666933867' }
+          { id: '/+16282281824/posters/559666930000' }
         ]
       ]
-      list.sort(newer_weirdo_first)
+      list.sort(earlier_weirdo_first)
       expect(Array.isArray(list[0])).toBe(true)
+    })
+  })
+  describe('#recent_weirdo_first', () => {
+    it('Sorts lists of items or item', () => {
+      const list = [
+        [
+          { id: '/+16282281824/posters/559666922867' },
+          { id: '/+16282281824/posters/559666930000' }
+        ],
+        { id: '/+16282281824/posters/559666932867' }
+      ]
+      list.sort(recent_weirdo_first)
+      console.log(list[0])
+      expect(Array.isArray(list[0])).toBe(false)
     })
   })
 })

@@ -48,7 +48,7 @@
 <script>
   import itemid from '@/helpers/itemid'
   import get_item from '@/modules/item'
-  import { newer_id_first } from '@/helpers/sorting'
+  import { recent_id_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -120,7 +120,7 @@
         this.posters = []
         const directory = await itemid.as_directory(`${localStorage.me}/posters`)
         if (directory && directory.items) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        this.posters.sort(newer_id_first)
+        this.posters.sort(recent_id_first)
       },
       vectorize (image) {
         console.time('vectorize')
