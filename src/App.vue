@@ -76,5 +76,5 @@
 <style lang="stylus">
   main.offline
     border: (base-line * .333) solid yellow
-    border-radius: (base-line / 6)
+    border-radius: round((base-line / 6), 2)
 </style>

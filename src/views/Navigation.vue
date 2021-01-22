@@ -93,8 +93,8 @@
         margin: 0
         padding: 0
         position: fixed
-        bottom: (base-line / 2)
-        left: (base-line / 2)
+        bottom: round((base-line / 2 ), 2)
+        left: round((base-line / 2 ), 2)
     & > nav
       transition-duration: 0s
       display: grid
