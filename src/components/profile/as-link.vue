@@ -40,11 +40,11 @@
   a.profile
     display: inline-flex
     shape-outside: circle()
-    margin-right: (base-line / 3)
+    margin-right: round((base-line / 3), 2)
     & > svg
       fill: dark-black
-      border-radius: base-line * 2
-      margin-right: (base-line / 6)
+      border-radius: round((base-line * 2), 2)
+      margin-right: round((base-line / 6), 2)
     & > svg > svg.background
       fill: blue
     & > hgroup

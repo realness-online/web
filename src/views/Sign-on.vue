@@ -105,7 +105,7 @@
         height: base-line * 2
         border-color: red
       & > figcaption
-        padding: 0 0 0 (base-line / 4 )
+        padding: 0 0 0 round((base-line / 4 ), 2)
     svg.background
       fill: red
     form

@@ -61,7 +61,7 @@
         fill: white
         font-size: base-line * 2
       text.month
-        font-size: (base-line / 2)
+        font-size: round((base-line / 2), 2)
         font-weight: 900
       rect, path
         stroke: darken(black, 5%)
