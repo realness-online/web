@@ -1,6 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/as-days Renders a list of statements sorted into the days they were created 1`] = `
+exports[`@/components/as-days Rendering with nothing 1`] = `
+<section
+  class="as-days"
+/>
+`;
+
+exports[`@/components/as-days Rendering with posters and statements sorted into the days they were created 1`] = `
 <section
   class="as-days"
 >
@@ -34,11 +40,15 @@ exports[`@/components/as-days Renders a list of statements sorted into the days 
     </header>
      
   </article>
+  <article
+    class="day"
+  >
+    <header>
+      <h4>
+        Saturday, September 26, 1987
+      </h4>
+    </header>
+     
+  </article>
 </section>
-`;
-
-exports[`@/components/as-days Renders though is provided nothing 1`] = `
-<section
-  class="as-days"
-/>
 `;
