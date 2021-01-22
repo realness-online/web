@@ -37,7 +37,6 @@ describe('@/helpers/sorting', () => {
         { id: '/+16282281824/posters/559666932867' }
       ]
       list.sort(recent_weirdo_first)
-      console.log(list[0])
       expect(Array.isArray(list[0])).toBe(false)
     })
   })
