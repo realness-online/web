@@ -7,7 +7,8 @@
 <script>
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
+  import visit from '@/mixins/visit'
   export default {
-    mixins: [intersection, vector_click]
+    mixins: [intersection, vector_click, visit]
   }
 </script>
