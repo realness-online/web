@@ -102,9 +102,10 @@
     border-radius: round((base-line / 6), 2)
     position: relative
     overflow: hidden
-    @media (min-width: pad-begins)
+    @media (orientation: landscape)
       &.landscape
         grid-column-start: span 2
+    @media (min-width: pad-begins)
       &.new
         margin-left: base-line
     svg
