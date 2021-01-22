@@ -1,10 +1,10 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import { get, set } from 'idb-keyval'
-import get_item from '@/modules/item'
+import get_item, { hydrate } from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
-import { itemid_as_kilobytes } from '@/persistance/Paged'
+import { itemid_as_kilobytes, elements_as_kilobytes, is_fat } from '@/persistance/Paged'
 import flushPromises from 'flush-promises'
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
@@ -62,7 +62,7 @@ describe('@/persistance/Paged.js', () => {
       expect(local_spy).toBeCalled()
       expect(list.length).toBe(100)
     })
-    it('syncs if there are no local items', async () => {
+    it('Syncs if there are no local items', async () => {
       itemid.list.mockReset()
       local_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(_ => Promise.resolve([]))
       const list = await paged.sync()
@@ -107,6 +107,16 @@ describe('@/persistance/Paged.js', () => {
     })
     it('returns zero if nothing in storage', () => {
       expect(itemid_as_kilobytes(paged.id)).toBe(0)
+    })
+  })
+  describe('#is_fat', () => {
+    it('only prunes for older then today', () => {
+      expect(is_fat(hydrate(offline_statements), 'statements')).toBe(false)
+    })
+  })
+  describe('#elements_as_kilobytes', () => {
+    it('returns zero when there are no elements', () => {
+      expect(elements_as_kilobytes()).toBe(0)
     })
   })
 })

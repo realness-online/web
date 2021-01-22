@@ -1,6 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import firebase from 'firebase/app'
-import { newer_item_first } from '@/helpers/sorting'
+import { recent_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import {
@@ -19,11 +19,11 @@ import { History } from '@/persistance/Storage'
 function get_oldest (elements, prop_name) {
   const list = get_itemprops(elements)
   const props = list[prop_name]
-  props.sort(newer_item_first)
+  props.sort(recent_item_first)
   const oldest = props[props.length - 1]
   return new Date(as_created_at(oldest.id))
 }
-function is_fat (items, prop_name) {
+export function is_fat (items, prop_name) {
   const today = new Date().setHours(0, 0, 0, 0)
   if (
     (elements_as_kilobytes(items) > 5) &&
@@ -75,12 +75,11 @@ const Paged = (superclass) => class extends superclass {
     const local_items = await list(this.id)
     const cloud = await load_from_network(this.id)
     if (!cloud) return local_items
-    const cloud_items = type_as_list(cloud).sort(newer_item_first)
-    if (!cloud_items.length) return null
+    const cloud_items = type_as_list(cloud).sort(recent_item_first)
     const oldest_id = cloud_items[cloud_items.length - 1].id
     oldest_at = as_created_at(oldest_id)
     if (local_items && local_items.length && cloud_items.length) {
-      local_items.sort(newer_item_first)
+      local_items.sort(recent_item_first)
       const new_local_stuff = local_items.filter(local_item => {
         const created_at = as_created_at(local_item.id)
         if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
@@ -97,7 +96,7 @@ const Paged = (superclass) => class extends superclass {
       })
       // three distinct lists are recombined into a single synced list
       items = [...new_local_stuff, ...cloud_items, ...offline_items]
-      items.sort(newer_item_first)
+      items.sort(recent_item_first)
     } else items = cloud_items
     return items
   }
