@@ -1,8 +1,6 @@
 <template lang="html">
   <section class="as-days">
-    <header v-if="working">
-      <icon name="working" />
-    </header>
+    <header v-if="working"><icon name="working" /></header>
     <article v-for="[date, day] in days" v-else
              :key="date"
              :class="{today: is_today(date)}"
@@ -15,7 +13,7 @@
   </section>
 </template>
 <script>
-  import { newer_date_first, earlier_weirdo_first, recent_weirdo_first } from '@/helpers/sorting'
+  import { recent_date_first, earlier_weirdo_first, recent_weirdo_first } from '@/helpers/sorting'
   import { as_author } from '@/helpers/itemid'
   import { id_as_day, as_day, is_today } from '@/helpers/date'
   import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
@@ -88,7 +86,7 @@
       refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
-          yield * [...this.entries()].sort(newer_date_first)
+          yield * [...this.entries()].sort(recent_date_first)
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.posters.forEach(poster => this.insert_into_day(poster, days))
@@ -101,10 +99,10 @@
         const day = days.get(day_name)
         if (day && is_today(day_name)) {
           day.unshift(item)
-          if (day.length > 1) day.sort(recent_weirdo_first)
+          day.sort(recent_weirdo_first)
         } else if (day) {
           day.push(item)
-          if (day.length > 1) day.sort(earlier_weirdo_first)
+          day.sort(earlier_weirdo_first)
         } else days.set(day_name, [item])
       },
       as_day (date) {
