@@ -13,10 +13,10 @@
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </template>
     <menu v-if="show_menu">
-      <a id="open_camera" @click="open_camera">
+      <a v-if="!avatar_changed" id="open_camera" @click="open_camera">
         <icon name="camera" />
       </a>
-      <a id="select_photo" @click="select_photo">
+      <a v-if="!avatar_changed" id="select_photo" @click="select_photo">
         <icon name="add" />
       </a>
       <a v-if="avatar_changed" id="accept_changes" @click="accept_new_avatar">
@@ -98,7 +98,7 @@
       },
       async vectorized (message) {
         this.vector = {
-          id: `${this.person.id}/avatars/${message.data.created_at}`,
+          id: `${this.person.id}/avatars/${Date.now()}`,
           path: message.data.path,
           viewbox: message.data.viewbox
         }
@@ -130,8 +130,13 @@
 <style lang="stylus">
   div#manage-avatar
     position: relative
-    & figure svg[itemscope]
+    & figure svg
       position: relative
+      width: 100vw
+      min-height: 100vh
+      &.background
+        position: absolute;
+        fill: red
     & > svg
       width: 100vw
       min-height: 100vh
@@ -169,8 +174,13 @@
           right: inset(right)
         & > svg
           fill: blue
-        &#accept_changes > svg
-          fill: green
+        &#accept_changes
+          position: absolute
+          z-index: 2
+          bottom: inset(top)
+          left: inset(left)
+          & > svg
+            fill: green
         @media (min-width: pad-begins)
           &#open_camera
             display: none

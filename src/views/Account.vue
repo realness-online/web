@@ -140,7 +140,8 @@
       height: 0
       padding: 0
     & > header
-      height: base-line * 3
+      height: 0
+      padding: 0
       & > button.sign-on
       & > a#logo
         position: absolute
