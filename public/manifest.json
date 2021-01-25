@@ -1,0 +1,12 @@
+{
+  "short_name":"Realness",
+  "start_url": ".",
+  "scope": "/",
+  "orientation":"portrait",
+  "display": "standalone",
+  "description":"realness.online A chill vector space for the realness in all of us",
+  "icons":[
+    { "src":"/192.png", "sizes":"192x192", "type":"image/png" },
+    { "src":"/512.png", "sizes":"512x512", "type":"image/png" }
+  ]
+}

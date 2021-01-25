@@ -1,4 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet">
+  <style>
+    #background {
+      fill: hsla( 57, 13%, 69%, 0.9);
+    }
+    @media (prefers-color-scheme: dark) {
+      #background {
+        fill: hsla(228, 9.8%, 10%, 1);
+      }
+    }
+  </style>
   <symbol id="background">
     <rect width="100%" height="100%"/>
   </symbol>
@@ -10,7 +20,7 @@
   <symbol id="silhouette" viewBox="0 0 16 16" preserveAspectRatio="xMidYMid slice">
     <path d="M14 12.5c-1-.4-2.4-1.5-4.5-1.9.5-.6 1-1.5 1.4-2.6.2-.6.2-1.2.2-1.9 0-.6.1-1.5 0-1.9C10.6 2.5 9.4 2 8 2s-2.6.5-3 2.2c-.1.5 0 1.4 0 1.9 0 .8 0 1.3.2 1.9.4 1.1.8 2 1.4 2.6C4.4 11 3 12 2 12.5c-2 .9-2 1.9-2 1.9V16h16v-1.6c0-.1 0-1-2-1.9z"/>
   </symbol>
-  <symbol id="realness" viewBox="0 0 192 192">
+  <symbol id="realness" viewBox="0 0 192 192" preserveAspectRatio="xMidYMid meet">
     <rect fill-opacity=".73" fill="#5A585A" width="88.615" height="53.76" rx="8"/>
     <rect fill-opacity=".8" fill="#4E8D53" x="103.385" width="88.615" height="53.76" rx="8"/>
     <rect fill-opacity=".8" fill="#4E8D53" y="69.12" width="88.615" height="53.76" rx="8"/>
@@ -61,20 +71,8 @@
   <symbol id="message" viewBox="0 0 67 102" preserveAspectRatio="xMinYMax meet">
     <path d="M8.05 65.33l45.4-.3h.16l.23.02.26.04c.44.07.86.2 1.25.4l.29.15.18.11.22.15.11.09a4.7 4.7 0 011.16 1.32l.1.2 12.76 28.52a3 3 0 005.7-.72l4.75-27.35A26 26 0 0081 63.5V8a8 8 0 00-8-8H8a8 8 0 00-8 8v49.33a8 8 0 008.05 8z" />
   </symbol>
-  <g fill="hsla(136, 0%, 0%, 0.9)" stroke="hsla(136, 0%, 0%, 0.2)">
-    <use href="#background" height="100vh"/>
-    <use href="#date-picker" height="100vh"/>
-    <use href="#silhouette" height="100vh"/>
-    <use href="#realness" height="100vh"/>
-    <use href="#search" height="100vh"/>
-    <use href="#hamburger" height="100vh"/>
-    <use href="#heart" height="100vh"/>
-    <use href="#add" height="100vh"/>
-    <use href="#remove" height="100vh"/>
-    <use href="#finished" height="100vh"/>
-    <use href="#download" height="100vh"/>
-    <use href="#camera" height="100vh"/>
-    <use href="#working" height="100vh"/>
-    <use href="#message" height="100vh"/>
+  <g>
+    <use href="#background" />
+    <use href="#realness" />
   </g>
 </svg>
