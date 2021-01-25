@@ -1,7 +1,6 @@
 {
   "projects": {
     "default": "realness-online",
-    "staging": "realness-staging",
     "production": "realness-online",
     "development": "realness-development"
   }
