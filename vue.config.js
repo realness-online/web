@@ -15,6 +15,7 @@ module.exports = {
     }
   },
   pwa: {
+    name: 'Realness',
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
       swSrc: 'src/workers/service.worker.js'
@@ -23,15 +24,19 @@ module.exports = {
     msTileColor: '#52a0d1',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black-translucent',
-    iconPaths: { favicon32: 'favicon.ico', favicon16: 'favicon.ico' },
+    iconPaths: {
+      favicon32: 'favicon.ico',
+      appleTouchIcon: '180.png',
+      favicon16: null,
+      maskIcon: null,
+      msTileImage: null
+    },
     manifestOptions: {
-      short_name: 'Realness`',
       description: 'realness.online – A chill vector space for the realness in all of us',
       scope: '/',
       orientation: 'portrait',
       background_color: '#52a0d1',
       icons: [
-        { src: 'icons.svg', type: 'image/svg+xml', purpose: 'any' },
         { src: '192.png', sizes: '192x192', type: 'image/png' },
         { src: '512.png', sizes: '512x512', type: 'image/png' }
       ]
