@@ -23,7 +23,7 @@ module.exports = {
     msTileColor: '#52a0d1',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black-translucent',
-    iconPaths: { favicon32: 'favicon.ico' },
+    iconPaths: { favicon32: 'favicon.ico', favicon16: 'favicon.ico' },
     manifestOptions: {
       short_name: 'Realness`',
       description: 'realness.online – A chill vector space for the realness in all of us',
@@ -31,7 +31,7 @@ module.exports = {
       orientation: 'portrait',
       background_color: '#52a0d1',
       icons: [
-        { src: '192.png', sizes: '192x192', type: 'image/png' },
+        { src: 'icons.svg', type: 'image/svg+xml', purpose: 'any' },
         { src: '192.png', sizes: '192x192', type: 'image/png' },
         { src: '512.png', sizes: '512x512', type: 'image/png' }
       ]
