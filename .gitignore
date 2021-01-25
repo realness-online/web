@@ -7,7 +7,6 @@ node_modules
 /tests/unit/cache/
 /tests/e2e/reports/
 /functions/coverage
-.firebaserc
 /public/vector.worker.js
 /public/vector.worker.js.map
 /public/optimize.worker.js
@@ -45,3 +44,5 @@ worker_report.html
 *.sln
 *.sw*
 firebase-debug.log
+
+.firebaserc
