@@ -18,6 +18,23 @@ module.exports = {
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
       swSrc: 'src/workers/service.worker.js'
+    },
+    themeColor: '#52a0d1',
+    msTileColor: '#52a0d1',
+    appleMobileWebAppCapable: 'yes',
+    appleMobileWebAppStatusBarStyle: 'black-translucent',
+    iconPaths: { favicon32: 'favicon.ico' },
+    manifestOptions: {
+      short_name: 'Realness`',
+      description: 'realness.online – A chill vector space for the realness in all of us',
+      scope: '/',
+      orientation: 'portrait',
+      background_color: '#52a0d1',
+      icons: [
+        { src: '192.png', sizes: '192x192', type: 'image/png' },
+        { src: '192.png', sizes: '192x192', type: 'image/png' },
+        { src: '512.png', sizes: '512x512', type: 'image/png' }
+      ]
     }
   },
   configureWebpack: {
@@ -29,7 +46,8 @@ module.exports = {
       })
     ],
     optimization: {
-      removeAvailableModules: false,
+      moduleIds: 'named',
+      removeAvailableModules: true,
       runtimeChunk: 'single',
       splitChunks: {
         maxSize: 350000,
