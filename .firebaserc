@@ -1,7 +1,0 @@
-{
-  "projects": {
-    "default": "realness-online",
-    "production": "realness-online",
-    "development": "realness-development"
-  }
-}
