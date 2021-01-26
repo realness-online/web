@@ -110,9 +110,10 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
     describe('#vectorized', () => {
+      const MockDate = require('mockdate')
+      MockDate.set('2020-01-01', new Date().getTimezoneOffset())
       const message = {
         data: {
-          created_at: 'ummm',
           path: [],
           viewbox: 'viewbox'
         }
@@ -120,7 +121,7 @@ describe('@/components/avatars/as-form.vue', () => {
       it('Sets current_avatar to new vector', () => {
         expect(wrapper.vm.current_avatar).toBe(null)
         wrapper.vm.vectorized(message)
-        expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/ummm')
+        expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/1577836800000')
       })
       it('sets working to false', () => {
         wrapper.vm.working = true
