@@ -7,7 +7,7 @@
     <hgroup>
       <h1>Feed</h1>
     </hgroup>
-    <as-days v-if="signed_in" v-slot="items"
+    <as-days v-slot="items"
              :working="working"
              :posters="posters"
              :statements="statements">
@@ -23,13 +23,15 @@
                             @show="thought_shown" />
       </template>
     </as-days>
-    <hgroup v-else class="sign-on message">
+    <hgroup v-if="statements.length === 0 && !working" class="sign-on message">
       <p><sign-on /> and you can check out <icon name="heart" /> who's on here</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
 </template>
 <script>
+  import firebase from 'firebase/app'
+  import 'firebase/auth'
   import { list, as_directory } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
   import intersection_thought from '@/mixins/intersection_thought'
@@ -60,14 +62,16 @@
     async created () {
       console.clear()
       console.time('feed-load')
-      this.authors = await list(`${localStorage.me}/relations`)
-      this.authors.push({
-        id: localStorage.me,
-        type: 'person'
+      firebase.auth().onAuthStateChanged(async user => {
+        if (user) this.authors = await list(`${localStorage.me}/relations`)
+        this.authors.push({
+          id: localStorage.me,
+          type: 'person'
+        })
+        await this.fill_feed()
+        console.timeEnd('feed-load')
+        this.working = false
       })
-      await this.fill_feed()
-      console.timeEnd('feed-load')
-      this.working = false
     },
     methods: {
       async fill_feed () {
@@ -102,9 +106,9 @@
       display: none
     & > hgroup
       & > h1
-        padding: 0 base-line (base-line * 2) base-line
-        width:100vw
-        margin-bottom: 0
+        // padding: 0 base-line (base-line * 2) base-line
+        // width:100vw
+        // margin-bottom: 0
     & > section.as-days
       & > article.day
         margin-bottom: base-line
