@@ -30,6 +30,7 @@
         required: true
       }
     },
+    emits: ['valid', 'update:person'],
     data () {
       return {
         first_name: this.person.first_name,

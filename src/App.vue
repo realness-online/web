@@ -1,9 +1,9 @@
 <template lang="html">
   <main id="realness" :class="status">
-    <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
+    <router-view v-if="!working" v-model:statement="statement" v-model:person="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
-      <sync :statement.sync="statement" :person="me" />
+      <sync v-model:statement="statement" :person="me" />
     </aside>
   </main>
 </template>
@@ -54,7 +54,7 @@
       window.addEventListener('offline', this.offline)
       this.working = false
     },
-    beforeDestroy () {
+    beforeUnmount () {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
     },

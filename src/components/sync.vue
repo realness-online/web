@@ -52,6 +52,7 @@
         default: null
       }
     },
+    emits: ['update:statement'],
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
@@ -80,7 +81,7 @@
     mounted () {
       firebase.auth().onAuthStateChanged(this.init)
     },
-    beforeDestroy () {
+    beforeUnmount () {
       this.syncer.terminate()
     },
     methods: {

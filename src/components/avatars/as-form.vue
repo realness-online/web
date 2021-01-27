@@ -51,6 +51,7 @@
         required: true
       }
     },
+    emits: ['update:person'],
     data () {
       return {
         vectorizer: new Worker('/vector.worker.js'),
@@ -84,7 +85,7 @@
       this.optimizer.addEventListener('message', this.optimized)
       if (this.person.avatar) this.current_avatar = await itemid.load(this.person.avatar)
     },
-    destroyed () {
+    beforeUnmount () {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },

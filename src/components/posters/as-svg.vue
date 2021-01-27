@@ -26,6 +26,7 @@
         default: null
       }
     },
+    emits: ['vector-loaded'],
     computed: {
       viewbox () {
         if (this.vector) return this.vector.viewbox

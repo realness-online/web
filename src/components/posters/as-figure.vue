@@ -53,6 +53,7 @@
         default: false
       }
     },
+    emits: ['loaded'],
     data () {
       return {
         menu: false,

@@ -108,7 +108,7 @@
       await this.get_poster_list()
       console.timeEnd('posters:load')
     },
-    destroyed () {
+    unmounted () {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },

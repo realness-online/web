@@ -7,7 +7,7 @@ export default {
   },
   mounted () { this.intersect() },
   updated () { this.intersect() },
-  destroyed () {
+  unmounted () {
     if (this.observer) this.observer.unobserve(this.$el)
   },
   methods: {

@@ -18,9 +18,7 @@
   import icon from '@/components/icon'
   import icons from '@/icons.svg'
   export default {
-    components: {
-      icon
-    },
+    components: { icon },
     mixins: [intersection, vector_click, vector],
     props: {
       person: {
@@ -32,6 +30,7 @@
         default: false
       }
     },
+    emits: ['vector-loaded'],
     computed: {
       id () {
         if (this.person.avatar) return as_query_id(this.person.avatar)

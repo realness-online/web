@@ -7,6 +7,7 @@
 </template>
 <script>
   export default {
+    emits: ['toggle-keyboard', 'update:statement'],
     data () {
       return {
         new_statement: ''

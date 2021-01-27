@@ -10,7 +10,7 @@
       <h1>Relations</h1>
     </hgroup>
     <nav v-if="signed_in" class="profile-list">
-      <as-figure v-for="person in relations" :key="person.id" :person="person" :relations.sync="relations" />
+      <as-figure v-for="person in relations" :key="person.id" v-model:relations="relations" :person="person" />
     </nav>
   </section>
 </template>

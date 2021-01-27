@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router'
 import Events from '@/views/Events'
 import Feed from '@/views/Feed'
 import Posters from '@/views/Posters'
@@ -10,21 +9,22 @@ import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
 
-Vue.use(Router)
-export default new Router({
-  mode: 'history',
-  el: '#loading-realness',
-  base: process.env.BASE_URL,
-  routes: [
-    { path: '/', component: Navigation },
-    { path: '/sign-on', component: Sign_on },
-    { path: '/events', component: Events },
-    { path: '/feed', component: Feed },
-    { path: '/posters', component: Posters },
-    { path: '/relations', component: Relations },
-    { path: '/phone-book', component: PhoneBook },
-    { path: '/profile', component: Profile },
-    { path: '/account', component: Account },
-    { path: '/:phone_number', component: Profile, name: 'view-profile' }
-  ]
+const routes = [
+  { path: '/', component: Navigation },
+  { path: '/sign-on', component: Sign_on },
+  { path: '/events', component: Events },
+  { path: '/feed', component: Feed },
+  { path: '/posters', component: Posters },
+  { path: '/relations', component: Relations },
+  { path: '/phone-book', component: PhoneBook },
+  { path: '/profile', component: Profile },
+  { path: '/account', component: Account },
+  { path: '/:phone_number', component: Profile, name: 'view-profile' }
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
 })
+
+export default router

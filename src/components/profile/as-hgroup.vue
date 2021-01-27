@@ -33,6 +33,7 @@
         default: false
       }
     },
+    emits: ['update:person'],
     methods: {
       async save_first_name (event) {
         const possibly_changed = this.$refs.first_name.textContent.trim()

@@ -21,14 +21,14 @@ module.exports = {
     alias: {
       '@': path.resolve('src')
     },
-    plugins: [],
-    fallback: {
-      path: require.resolve('path-browserify'),
-      os: require.resolve('os-browserify/browser'),
-      stream: require.resolve('stream-browserify'),
-      fs: require.resolve('browserify-fs'),
-      buffer: require.resolve('buffer-browserify')
-    }
+    plugins: []
+    // fallback: {
+    //   path: require.resolve('path-browserify'),
+    //   os: require.resolve('os-browserify/browser'),
+    //   stream: require.resolve('stream-browserify'),
+    //   fs: require.resolve('browserify-fs'),
+    //   buffer: require.resolve('buffer-browserify')
+    // }
   },
   module: {
     rules: []

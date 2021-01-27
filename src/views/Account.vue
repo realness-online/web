@@ -5,10 +5,10 @@
       <logo-as-link />
     </header>
     <hgroup v-if="signed_in && !working">
-      <avatar-as-form :person.sync="person"
+      <avatar-as-form v-model:person="person"
                       @update:person="$emit('update:person', $event)" />
-      <profile-as-figure :editable="true"
-                         :person.sync="person"
+      <profile-as-figure v-model:person="person"
+                         :editable="true"
                          @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
           <icon name="gear" />
@@ -61,6 +61,7 @@
       'avatar-as-form': avatar_as_form
     },
     mixins: [signed_in, intersection_thought],
+    emits: ['update:person'],
     data () {
       return {
         person: {},
