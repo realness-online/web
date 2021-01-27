@@ -3,6 +3,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const webpack = require('webpack')
 
 module.exports = {
+  node: {
+    fs: 'empty'
+  },
   entry: {
     vector: path.join(__dirname, './src/workers/vector.js'),
     optimize: path.join(__dirname, './src/workers/optimize.js'),
@@ -20,11 +23,18 @@ module.exports = {
     extensions: ['.js', '.json'],
     alias: {
       '@': path.resolve('src')
-    },
-    plugins: []
+    }
+    // fallback: {
+    //   path: false,
+    //   os: false,
+    //   stream: false,
+    //   fs: false,
+    //   buffer: false
+    // },
+    // plugins: []
     // fallback: {
     //   path: require.resolve('path-browserify'),
-    //   os: require.resolve('os-browserify/browser'),
+    //   os: require.resolve('os-browserify/browser'), },
     //   stream: require.resolve('stream-browserify'),
     //   fs: require.resolve('browserify-fs'),
     //   buffer: require.resolve('buffer-browserify')
