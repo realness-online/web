@@ -24,21 +24,6 @@ module.exports = {
     alias: {
       '@': path.resolve('src')
     }
-    // fallback: {
-    //   path: false,
-    //   os: false,
-    //   stream: false,
-    //   fs: false,
-    //   buffer: false
-    // },
-    // plugins: []
-    // fallback: {
-    //   path: require.resolve('path-browserify'),
-    //   os: require.resolve('os-browserify/browser'), },
-    //   stream: require.resolve('stream-browserify'),
-    //   fs: require.resolve('browserify-fs'),
-    //   buffer: require.resolve('buffer-browserify')
-    // }
   },
   module: {
     rules: []
@@ -52,12 +37,6 @@ module.exports = {
       analyzerMode: 'static',
       openAnalyzer: false,
       reportFilename: '../worker_report.html'
-    }),
-    new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer']
-    }),
-    new webpack.ProvidePlugin({
-      process: 'process/browser'
     })
   ],
   optimization: {
