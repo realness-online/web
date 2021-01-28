@@ -136,5 +136,4 @@
         grid-column: 1 / -1
       & > h4
         margin: 0
-        font-weight: 600
 </style>
