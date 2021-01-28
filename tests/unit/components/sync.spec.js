@@ -1,4 +1,4 @@
-import { shallowMount, mount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
@@ -42,7 +42,7 @@ describe('Syncing Edge data', () => {
     afterEach(() => jest.clearAllMocks())
     describe('Render', () => {
       beforeEach(async () => {
-        wrapper = shallowMount(sync, {
+        wrapper = mount(sync, {
           data () {
             return { syncing: true }
           }
@@ -51,10 +51,10 @@ describe('Syncing Edge data', () => {
       })
       it('Renders sync component', async () => {
         expect(wrapper.element).toMatchSnapshot()
-        wrapper.destroy()
+        wrapper.unmount()
       })
       it('Terminates worker on destroy', async () => {
-        wrapper.destroy()
+        wrapper.unmount()
       })
       it('Check when service comes back from being offline', () => {
         const message_mock = jest.fn()
@@ -66,7 +66,7 @@ describe('Syncing Edge data', () => {
     describe('methods', () => {
       describe('#init', () => {
         it('connects sync worker to component', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = mount(sync)
           await flushPromises()
           wrapper.vm.init({ phoneNumber: '+16282281824' })
         })
@@ -132,7 +132,7 @@ describe('Syncing Edge data', () => {
         it('Calls Event.sync', async () => {
           jest.spyOn(Events.prototype, 'sync')
           .mockImplementationOnce(_ => Promise.resolve(events))
-          wrapper = shallowMount(sync)
+          wrapper = mount(sync)
           await flushPromises()
           wrapper.vm.sync_paged = jest.fn()
           await wrapper.vm.$nextTick()
@@ -142,14 +142,14 @@ describe('Syncing Edge data', () => {
       })
       describe('#save_statement', () => {
         it('Triggered when statement is set', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = mount(sync)
           const save_spy = jest.spyOn(wrapper.vm, 'save_statement')
           .mockImplementationOnce(_ => Promise.resolve(events))
           await wrapper.setProps({ statement: 'I like to move it' })
           expect(save_spy).toBeCalled()
         })
         it('Emits an event after it saves the statement', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = mount(sync)
           wrapper.setProps({ statement: 'I like to move it' })
           await flushPromises()
           expect(wrapper.emitted('update:statement')).toBeTruthy()
@@ -158,7 +158,7 @@ describe('Syncing Edge data', () => {
       describe('#worker_message', () => {
         const event = {}
         beforeEach(() => {
-          wrapper = shallowMount(sync)
+          wrapper = mount(sync)
           event.data = { action: '' }
         })
         it('Calls console.warn if event has unknown action', () => {

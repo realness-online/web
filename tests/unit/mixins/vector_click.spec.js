@@ -1,10 +1,10 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/vector_click', () => {
   describe('methods', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallowMount(vector_mock)
+      wrapper = mount(vector_mock)
     })
     describe('#vector_click', () => {
       it('Exists', () => {
@@ -24,7 +24,7 @@ describe('@/mixins/vector_click', () => {
   describe('computed', () => {
     let wrapper
     beforeEach(() => {
-      wrapper = shallowMount(vector_mock)
+      wrapper = mount(vector_mock)
     })
     describe('#landscape', () => {
       it('returns false as default', () => {

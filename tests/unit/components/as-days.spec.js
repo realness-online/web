@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_days from '@/components/as-days'
 import get_item from '@/modules/item'
 import * as as_date from '@/helpers/date'
@@ -11,7 +11,7 @@ const statements = get_item(statements_html).statements
 describe('@/components/as-days', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_days)
+    wrapper = mount(as_days)
   })
   describe('Rendering', () => {
     it('with nothing', () => {

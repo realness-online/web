@@ -2,10 +2,13 @@
 
 exports[`@/components/activity/as-table a table of activity  1`] = `
 <table
-  hidden="hidden"
-  itemscope="itemscope"
+  hidden=""
+  itemscope=""
   itemtype="/activity"
 >
-  <tbody />
+  <tbody>
+    
+    
+  </tbody>
 </table>
 `;

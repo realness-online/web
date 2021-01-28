@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-name'
 const person = {
   first_name: 'Yu',
@@ -8,7 +8,7 @@ const person = {
 describe('@/compontent/profile/as-form-name.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_form, { propsData: { person } })
+    wrapper = mount(as_form, { props: { person } })
   })
   it('Render profile name form', () => {
     expect(wrapper.element).toMatchSnapshot()

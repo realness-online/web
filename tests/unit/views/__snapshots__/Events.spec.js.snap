@@ -9,55 +9,47 @@ exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
     <icon-stub
       name="nothing"
     />
-     
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
     <h1>
       Tonight!
     </h1>
-     
     <icon-stub
       name="working"
       style="display: none;"
     />
   </hgroup>
-   
   <hgroup
     class="message"
   >
     <h3>
       Events have been disabled
     </h3>
-     
     <p>
       See you when the covid recedes
     </p>
   </hgroup>
-   
   <hgroup
     class="message"
-    hidden="hidden"
+    hidden=""
   >
     <p>
       <span>
         Zero
       </span>
        public events. You create events from 
-      <router-link-stub
+      <router-link
         to="/posters"
       >
         Posters
-      </router-link-stub>
+      </router-link>
       .
     </p>
-     
     <p>
       People see them after you 
       <sign-on-stub />
     </p>
-     
     <h6>
       <a>
         Watch

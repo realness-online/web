@@ -34,15 +34,15 @@ exports[`@/views/Sign-on.vue Rendering Renders a form for a returning user 1`] =
   id="sign-on"
 >
   <header>
-    <!---->
-     
+    <profile-as-figure-stub
+      person="[object Object]"
+    />
     <logo-as-link-stub />
   </header>
-   
-  <!---->
-   
-  <!---->
-   
+  <mobile-as-form-stub
+    person="[object Object]"
+  />
+  <!--v-if-->
   <footer>
     <button>
       Wipe

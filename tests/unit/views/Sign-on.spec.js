@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import * as itemid from '@/helpers/itemid'
 import { clear } from 'idb-keyval'
@@ -25,7 +25,7 @@ describe('@/views/Sign-on.vue', () => {
         { path: '/account', name: 'account' }
       ]
     })
-    wrapper = await shallowMount(Sign_on, { localVue, router })
+    wrapper = await mount(Sign_on, { localVue, router })
   })
   afterEach(() => {
     wrapper = null
@@ -41,7 +41,7 @@ describe('@/views/Sign-on.vue', () => {
       jest.spyOn(itemid, 'load').mockImplementation(itemid => {
         return Promise.resolve(person)
       })
-      wrapper = await shallowMount(Sign_on)
+      wrapper = await mount(Sign_on)
       expect(wrapper.element).toMatchSnapshot()
     })
   })
@@ -53,13 +53,13 @@ describe('@/views/Sign-on.vue', () => {
       })
       it('Is cleanable if me is defined', async () => {
         localStorage.me = '/+1628228184'
-        wrapper = await shallowMount(Sign_on, { localVue, router })
+        wrapper = await mount(Sign_on, { localVue, router })
         expect(wrapper.vm.cleanable).toBe(true)
       })
       it('Is cleanable if there are a couple items in localStorage', async () => {
         localStorage.statements = 'some statements would be here'
         localStorage.person = 'a profile would be here'
-        wrapper = await shallowMount(Sign_on, { localVue, router })
+        wrapper = await mount(Sign_on, { localVue, router })
         expect(wrapper.vm.cleanable).toBe(true)
       })
       it('Is cleanable is there are items in local database', () => {

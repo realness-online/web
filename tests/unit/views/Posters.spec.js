@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
 import itemid, { as_author, as_created_at } from '@/helpers/itemid'
@@ -19,7 +19,7 @@ describe('@/views/Posters.vue', () => {
       poster: poster.id
     }]
     get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
-    wrapper = shallowMount(Posters)
+    wrapper = mount(Posters)
     wrapper.vm.events = events
   })
   describe('rendering:', () => {
@@ -30,7 +30,7 @@ describe('@/views/Posters.vue', () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })
@@ -57,7 +57,7 @@ describe('@/views/Posters.vue', () => {
       })
     })
     describe('as_itemid', () => {
-      wrapper = shallowMount(Posters)
+      wrapper = mount(Posters)
       localStorage.me = '/+16282281824'
       expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
     })

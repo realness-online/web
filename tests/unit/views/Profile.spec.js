@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import Profile from '@/views/Profile'
@@ -14,7 +14,7 @@ describe('@/views/Profile.vue', () => {
     fetch.resetMocks()
     fetch.mockResponseOnce(person)
     const $route = { params: { phone_number: '+14151231234' } }
-    const wrapper = shallowMount(Profile, { mocks: { $route } })
+    const wrapper = mount(Profile, { mocks: { $route } })
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
     firebase.user = null

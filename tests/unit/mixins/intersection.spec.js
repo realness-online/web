@@ -1,22 +1,22 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/intersection', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(vector_mock)
+    wrapper = mount(vector_mock)
   })
-  describe('#destroy', () => {
+  describe('#unmount', () => {
     it('Exists', () => {
-      expect(wrapper.destroy).toBeDefined()
+      expect(wrapper.unmount).toBeDefined()
     })
     it('resets the observer', () => {
       const mock = jest.fn()
       wrapper.vm.observer = { unobserve: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toBeCalled()
     })
     it('does nothing if null observer', () => {
-      wrapper.destroy()
+      wrapper.unmount()
     })
   })
   describe('methods', () => {

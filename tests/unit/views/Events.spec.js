@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import itemid, { as_type, as_author } from '@/helpers/itemid'
 import Events from '@/views/Events'
 describe('@/views/Events.vue', () => {
@@ -23,7 +23,7 @@ describe('@/views/Events.vue', () => {
   })
   afterEach(() => jest.resetAllMocks())
   it('Renders list of upcoming events', () => {
-    const wrapper = shallowMount(Events, {
+    const wrapper = mount(Events, {
       stubs: ['router-link']
     })
     expect(wrapper.element).toMatchSnapshot()

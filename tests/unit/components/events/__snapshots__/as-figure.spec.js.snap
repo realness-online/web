@@ -7,7 +7,6 @@ exports[`@/components/events/as-figure.js Renders a figure element of an event 1
   <icon-stub
     name="background"
   />
-   
-  <!---->
+  <!--v-if-->
 </figure>
 `;

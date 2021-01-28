@@ -2,21 +2,15 @@
 
 exports[`Syncing Edge data @/components/sync Render Renders sync component 1`] = `
 <div
-  hidden="hidden"
+  hidden=""
 >
-  <!---->
-   
+  <!--v-if-->
   <as-days-stub
-    avatars=""
-    events=""
     itemid="/+16282281824/statements"
     itemscope=""
-    posters=""
     statements=""
   />
-   
-  <!---->
-   
-  <!---->
+  <!--v-if-->
+  <!--v-if-->
 </div>
 `;

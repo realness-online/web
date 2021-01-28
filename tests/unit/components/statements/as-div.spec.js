@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import as_statement from '@/components/statements/as-div'
 import get_item from '@/modules/item'
@@ -8,20 +8,20 @@ describe('@/components/statements/as-div.vue', () => {
   let wrapper
   const statements = get_item(statements_as_html)
   beforeEach(() => {
-    wrapper = shallowMount(as_statement, { propsData: { statement: statements.statements[0] } })
+    wrapper = mount(as_statement, { props: { statement: statements.statements[0] } })
   })
   describe('rendering:', () => {
     it('Render a statement', async () => {
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
+      wrapper.unmount()
     })
   })
   describe('methods', () => {
     describe('#save', () => {
       it('Saves a statement', async () => {
-        wrapper = shallowMount(as_statement, {
-           propsData: {
+        wrapper = mount(as_statement, {
+           props: {
              editable: true,
              statement: statements.statements[0]
            }
@@ -34,8 +34,8 @@ describe('@/components/statements/as-div.vue', () => {
         expect(Statements.prototype.save).toBeCalled()
       })
       it('Doe nothing if the statement is the same', async () => {
-        wrapper = shallowMount(as_statement, {
-           propsData: {
+        wrapper = mount(as_statement, {
+           props: {
              editable: true,
              statement: statements.statements[0]
            }

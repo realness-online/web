@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import * as itemid from '@/helpers/itemid'
 import vector_mock from './mixin_mock'
 const person = {
@@ -11,7 +11,7 @@ const person = {
 describe('@/mixins/visit', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(vector_mock)
+    wrapper = mount(vector_mock)
   })
   describe('methods', () => {
     describe('#visit', () => {

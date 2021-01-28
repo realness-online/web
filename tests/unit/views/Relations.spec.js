@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import Relations from '@/views/Relations'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
@@ -19,7 +19,7 @@ describe('@/views/Relations.vue', () => {
       .mockImplementation(_ => Promise.resolve(my.relations))
     const load_profile = jest.spyOn(itemid, 'load')
     .mockImplementation(_ => Promise.resolve(joe_friday))
-    const wrapper = await shallowMount(Relations, {
+    const wrapper = await mount(Relations, {
       stubs: ['router-link', 'router-view']
     })
     await flushPromises()

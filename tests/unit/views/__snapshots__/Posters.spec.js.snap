@@ -11,21 +11,17 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
         name="add"
       />
     </a>
-     
     <input
       accept="image/jpeg"
       type="file"
     />
-     
     <logo-as-link-stub />
   </header>
-   
   <article>
     <header>
       <h1>
         Posters
       </h1>
-       
       <hgroup>
         <icon-stub
           name="working"
@@ -33,31 +29,13 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
         />
       </hgroup>
     </header>
-     
+    
     <as-figure-stub
       class=""
       itemid="/+16282281824/posters/1555347888"
-    >
-      <menu>
-        <a
-          class="remove"
-        >
-          <icon-stub
-            name="remove"
-          />
-        </a>
-         
-        <event-as-button-stub
-          itemid="/+16282281824/posters/1555347888"
-        />
-         
-        <as-download-stub
-          itemid="/+16282281824/posters/1555347888"
-        />
-      </menu>
-    </as-figure-stub>
+    />
+    
   </article>
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;

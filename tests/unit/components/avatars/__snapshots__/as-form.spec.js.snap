@@ -4,10 +4,11 @@ exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
 <div
   id="manage-avatar"
 >
+  
   <avatar-as-svg-stub
     person="[object Object]"
   />
-   
+  
   <menu>
     <a
       id="open_camera"
@@ -16,7 +17,6 @@ exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
         name="camera"
       />
     </a>
-     
     <a
       id="select_photo"
     >
@@ -24,12 +24,9 @@ exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
         name="add"
       />
     </a>
-     
-    <!---->
-     
-    <!---->
+    <!--v-if-->
+    <!--v-if-->
   </menu>
-   
   <input
     accept="image/jpeg"
     capture="user"
@@ -42,10 +39,11 @@ exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
 <div
   id="manage-avatar"
 >
+  
   <avatar-as-svg-stub
     person="[object Object]"
   />
-   
+  
   <menu>
     <a
       id="open_camera"
@@ -54,7 +52,6 @@ exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
         name="camera"
       />
     </a>
-     
     <a
       id="select_photo"
     >
@@ -62,12 +59,9 @@ exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
         name="add"
       />
     </a>
-     
-    <!---->
-     
-    <!---->
+    <!--v-if-->
+    <!--v-if-->
   </menu>
-   
   <input
     accept="image/jpeg"
     capture="user"

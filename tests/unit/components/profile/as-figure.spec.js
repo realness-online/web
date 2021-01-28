@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { mount, createLocalVue } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
@@ -13,8 +13,8 @@ describe('@/compontent/profile/as-figure.vue', () => {
       last_name: 'Fryxell',
       id: '/+16282281823'
     }
-    wrapper = shallowMount(as_figure, {
-      propsData: {
+    wrapper = mount(as_figure, {
+      props: {
         person: person
       }
     })
@@ -44,10 +44,10 @@ describe('@/compontent/profile/as-figure.vue', () => {
         const localVue = createLocalVue()
         localVue.use(VueRouter)
         router = new VueRouter()
-        wrapper = shallowMount(as_figure, {
+        wrapper = mount(as_figure, {
           localVue,
           router,
-          propsData: { person }
+          props: { person }
         })
       })
       it('Go to the mobile number when clicked', () => {

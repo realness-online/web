@@ -1,4 +1,4 @@
-import { shallowMount, RouterLinkStub } from '@vue/test-utils'
+import { mount, RouterLinkStub } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import itemid from '@/helpers/itemid'
@@ -11,7 +11,7 @@ describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(_ => person)
-    wrapper = shallowMount(Navigation, {
+    wrapper = mount(Navigation, {
       stubs: {
         RouterLink: RouterLinkStub
       }
@@ -20,7 +20,7 @@ describe('@/views/Navigation.vue', () => {
     await flushPromises()
   })
   afterEach(() => {
-    wrapper.destroy()
+    wrapper.unmount()
   })
   it('Renders statements and profile for a person', async () => {
     expect(wrapper.element).toMatchSnapshot()
@@ -39,7 +39,7 @@ describe('@/views/Navigation.vue', () => {
     describe('#user_name', () => {
       it('Returns \'You\' by default', async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
-        wrapper = wrapper = shallowMount(Navigation, {
+        wrapper = wrapper = mount(Navigation, {
           stubs: {
             RouterLink: RouterLinkStub
           }

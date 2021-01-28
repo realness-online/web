@@ -9,18 +9,14 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
     <icon-stub
       name="nothing"
     />
-     
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
     <h1>
       Phonebook
     </h1>
-     
-    <!---->
+    <!--v-if-->
   </hgroup>
-   
   <hgroup
     class="sign-on message"
   >
@@ -28,7 +24,6 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
       <sign-on-stub />
        and you can check out who's on here 
     </p>
-     
     <h6>
       <a>
         Watch

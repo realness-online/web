@@ -7,60 +7,46 @@ exports[`@/views/Navigation.vue Renders statements and profile for a person 1`] 
 >
   <header>
     <h6>
-      
       1.0.0
-    
     </h6>
   </header>
-   
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Tonight!
-    
-    </a>
-     
-    <a
+       Tonight! 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      People
-    
-    </a>
-     
-    <!---->
-     
+       People 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />
@@ -75,60 +61,46 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
 >
   <header>
     <h6>
-      
       1.0.0
-    
     </h6>
   </header>
-   
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Tonight!
-    
-    </a>
-     
-    <a
+       Tonight! 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      People
-    
-    </a>
-     
-    <!---->
-     
+       People 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />
@@ -143,60 +115,46 @@ exports[`@/views/Navigation.vue navigating the application handling statement ev
 >
   <header>
     <h6>
-      
       1.0.0
-    
     </h6>
   </header>
-   
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Tonight!
-    
-    </a>
-     
-    <a
+       Tonight! 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      People
-    
-    </a>
-     
-    <!---->
-     
+       People 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />

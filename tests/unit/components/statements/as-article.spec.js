@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import as_article from '@/components/statements/as-article'
 const statement = {
@@ -12,19 +12,19 @@ const older_statement = {
 describe('@/components/statements/as-article.vue', () => {
   let wrapper
   beforeEach(async () => {
-    wrapper = await shallowMount(as_article, {
-      propsData: { statements: [statement, older_statement] }
+    wrapper = await mount(as_article, {
+      props: { statements: [statement, older_statement] }
     })
     await flushPromises()
   })
   describe('rendering:', () => {
     it('Render a statement as an article element', async () => {
       expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
+      wrapper.unmount()
     })
     it('Loads the statement author if verbose is true', async () => {
-      wrapper = await shallowMount(as_article, {
-        propsData: {
+      wrapper = await mount(as_article, {
+        props: {
           verbose: true,
           statements: [statement, older_statement]
         }

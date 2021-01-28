@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_figure from '@/components/posters/as-figure'
 import get_item from '@/modules/item'
 const fs = require('fs')
@@ -7,7 +7,7 @@ const poster = get_item(poster_html)
 describe('@/compontent/posters/as-figure.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_figure, { propsData: { itemid: poster.id } })
+    wrapper = mount(as_figure, { props: { itemid: poster.id } })
   })
   describe('renders:', () => {
     it('A poster', () => {
@@ -42,8 +42,8 @@ describe('@/compontent/posters/as-figure.vue', () => {
         expect(wrapper.vm.menu).toBe(true)
       })
       it('Leaves poster alone when null', async () => {
-        wrapper = shallowMount(as_figure, {
-          propsData: {
+        wrapper = mount(as_figure, {
+          props: {
             itemid: poster.id,
             new_poster: poster
           }

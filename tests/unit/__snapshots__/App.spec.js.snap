@@ -2,13 +2,12 @@
 
 exports[`@/App.vue Rendering layout of the application 1`] = `
 <main
+  class=""
   id="realness"
 >
-  <router-view-stub />
-   
+  <router-view />
   <aside>
     <developer-tools-stub />
-     
     <sync-stub />
   </aside>
 </main>

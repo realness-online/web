@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import phonebook from '@/views/Phonebook'
 import itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
@@ -11,7 +11,7 @@ const person = {
 describe('@/views/Phonebook', () => {
   it('Render the phonebook', async () => {
     jest.spyOn(itemid, 'load').mockImplementationOnce(_ => person)
-    const wrapper = await shallowMount(phonebook, {
+    const wrapper = await mount(phonebook, {
       stubs: ['router-link']
     })
     await flushPromises()

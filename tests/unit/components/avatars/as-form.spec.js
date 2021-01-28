@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_form from '@/components/avatars/as-form'
 import { Avatar } from '@/persistance/Storage'
 import flushPromises from 'flush-promises'
@@ -18,8 +18,8 @@ describe('@/components/avatars/as-form.vue', () => {
   let wrapper
   beforeEach(() => {
     firebase.user = user
-    wrapper = shallowMount(as_form, {
-      propsData: { person }
+    wrapper = mount(as_form, {
+      props: { person }
     })
   })
   afterEach(() => {
@@ -32,8 +32,8 @@ describe('@/components/avatars/as-form.vue', () => {
     it('Without an avatar', () => {
       const avatar_less = { ...person }
       avatar_less.avatar = null
-      wrapper = shallowMount(as_form, {
-        propsData: { person: avatar_less }
+      wrapper = mount(as_form, {
+        props: { person: avatar_less }
       })
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -41,7 +41,7 @@ describe('@/components/avatars/as-form.vue', () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })

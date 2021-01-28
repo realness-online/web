@@ -4,6 +4,8 @@ exports[`@/components/profile/sign-on Renders sign on button 1`] = `
 <button
   class="sign-on"
 >
+  
   Sign on
+  
 </button>
 `;

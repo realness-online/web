@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_svg from '@/components/avatars/as-svg'
 import get_item from '@/modules/item'
 const person = {
@@ -13,8 +13,8 @@ const avatar = get_item(avatar_html)
 describe('@/components/avatars/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_svg, {
-      propsData: { person }
+    wrapper = mount(as_svg, {
+      props: { person }
     })
   })
   it('Render an avatar', () => {
@@ -25,16 +25,16 @@ describe('@/components/avatars/as-svg.vue', () => {
       it('outputs a null when no avatar exists', () => {
         const avatar_less = { ...person }
         avatar_less.avatar = null
-        wrapper = shallowMount(as_svg, {
-          propsData: { person: avatar_less }
+        wrapper = mount(as_svg, {
+          props: { person: avatar_less }
         })
         expect(wrapper.vm.id).toBe(null)
       })
     })
     describe('avatar_link', () => {
       it('References the working icon when working', () => {
-        wrapper = shallowMount(as_svg, {
-          propsData: { person, working: true }
+        wrapper = mount(as_svg, {
+          props: { person, working: true }
         })
         expect(wrapper.vm.avatar_link).toBe('#working')
       })

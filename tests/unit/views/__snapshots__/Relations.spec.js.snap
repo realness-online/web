@@ -9,22 +9,19 @@ exports[`@/views/Relations.vue Render relationship information 1`] = `
     <icon-stub
       name="nothing"
     />
-     
-    <router-link-stub
+    <router-link
       to="/phone-book"
     >
       <icon-stub
         name="finished"
       />
-    </router-link-stub>
+    </router-link>
   </header>
-   
   <hgroup>
     <h1>
       Relations
     </h1>
   </hgroup>
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;

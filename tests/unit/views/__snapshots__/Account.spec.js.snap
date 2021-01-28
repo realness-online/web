@@ -2,58 +2,40 @@
 
 exports[`@/views/Account.vue Rendering Renders account information 1`] = `
 <section
-  class="page signed-in"
+  class="signed-in page"
   id="account"
 >
   <header>
-    <!---->
-     
+    <!--v-if-->
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
     <avatar-as-form-stub
       person="[object Object]"
     />
-     
     <profile-as-figure-stub
       editable="true"
       person="[object Object]"
-      relations=""
-    >
-      <a>
-        <icon-stub
-          name="gear"
-        />
-      </a>
-    </profile-as-figure-stub>
-     
-    <!---->
+    />
+    <!--v-if-->
   </hgroup>
-   
   <h2>
     Statements
   </h2>
-   
   <as-days-stub
-    avatars=""
-    events=""
     itemid="/+16282281824/statements"
     itemscope=""
-    posters=""
     statements=""
   />
-   
   <footer
     class="message"
   >
     <p>
       Say some stuff via the 
       <button />
-       button on the homepage  
+       button on the homepage 
       <br />
     </p>
-     
     <h6>
       <a>
         Watch

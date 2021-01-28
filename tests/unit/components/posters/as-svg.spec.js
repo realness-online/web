@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_svg from '@/components/posters/as-svg'
 import get_item from '@/modules/item'
 const fs = require('fs')
@@ -8,8 +8,8 @@ const poster = get_item(poster_html)
 describe('@/components/posters/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_svg, {
-      propsData: { itemid: poster.id }
+    wrapper = mount(as_svg, {
+      props: { itemid: poster.id }
     })
   })
   describe('Rendering', () => {
@@ -17,8 +17,8 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Can show a poster immediatly', () => {
-      wrapper = shallowMount(as_svg, {
-        propsData: { itemid: poster.id, immediate: true }
+      wrapper = mount(as_svg, {
+        props: { itemid: poster.id, immediate: true }
       })
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -55,8 +55,8 @@ describe('@/components/posters/as-svg.vue', () => {
   describe('methods', () => {
     describe('#show', () => {
       it('Sets vector to the poster prop', async () => {
-        wrapper = await shallowMount(as_svg, {
-          propsData: { poster, itemid: poster.id, immediate: true }
+        wrapper = await mount(as_svg, {
+          props: { poster, itemid: poster.id, immediate: true }
         }) // show is called when immediate is true
         await wrapper.vm.$nextTick()
         expect(wrapper.vm.vector.id).toBe(poster.id)

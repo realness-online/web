@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_meta from '@/components/profile/as-meta'
 describe('@/compontent/profile/as-meta.vue', () => {
   let wrapper
@@ -11,7 +11,7 @@ describe('@/compontent/profile/as-meta.vue', () => {
   }
   beforeEach(() => {
     localStorage.me = person.id
-    wrapper = shallowMount(as_meta, { propsData: { people: [person] } })
+    wrapper = mount(as_meta, { props: { people: [person] } })
   })
   afterEach(() => {
     localStorage.clear()

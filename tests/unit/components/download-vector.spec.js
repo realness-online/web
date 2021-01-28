@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import download_vector from '@/components/download-vector'
 import * as itemid from '@/helpers/itemid'
@@ -19,8 +19,8 @@ describe('@/components/download-vector', () => {
       if (itemid === '/+16282281824/posters/559666932867') return Promise.resolve(poster)
       else return Promise.resolve(person)
     })
-    const wrapper = shallowMount(download_vector, {
-      propsData: {
+    const wrapper = mount(download_vector, {
+      props: {
         itemid: poster.id
       }
     })

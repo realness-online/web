@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import as_figure from '@/components/events/as-figure'
 import get_item from '@/modules/item'
 const fs = require('fs')
@@ -16,7 +16,7 @@ const event = {
 describe('@/components/events/as-figure.js', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_figure, { propsData: { event } })
+    wrapper = mount(as_figure, { props: { event } })
   })
   it('Renders a figure element of an event', () => {
     expect(wrapper.element).toMatchSnapshot()

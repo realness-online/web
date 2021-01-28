@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { mount, createLocalVue } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
@@ -20,7 +20,7 @@ describe('@/views/Account.vue', () => {
     localStorage.me = '/+16282281824'
     load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
     list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => Promise.resolve([]))
-    wrapper = shallowMount(Account)
+    wrapper = mount(Account)
   })
   afterEach(() => {
     localStorage.clear()
@@ -51,7 +51,7 @@ describe('@/views/Account.vue', () => {
           { path: '/signon', name: 'signon' }
         ]
       })
-      wrapper = shallowMount(Account, { localVue, router })
+      wrapper = mount(Account, { localVue, router })
     })
     describe('#is_editable', () => {
       it('returns true if statements are the first page', () => {

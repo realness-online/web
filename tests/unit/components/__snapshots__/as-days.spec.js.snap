@@ -3,13 +3,17 @@
 exports[`@/components/as-days Rendering with nothing 1`] = `
 <section
   class="as-days"
-/>
+>
+  
+  
+</section>
 `;
 
 exports[`@/components/as-days Rendering with posters and statements sorted into the days they were created 1`] = `
 <section
   class="as-days"
 >
+  
   <article
     class="day"
   >
@@ -18,7 +22,10 @@ exports[`@/components/as-days Rendering with posters and statements sorted into 
         Monday, September 30, 2019
       </h4>
     </header>
-     
+    
+    
+    
+    
   </article>
   <article
     class="day"
@@ -28,7 +35,10 @@ exports[`@/components/as-days Rendering with posters and statements sorted into 
         Tuesday, September 24, 2019
       </h4>
     </header>
-     
+    
+    
+    
+    
   </article>
   <article
     class="day"
@@ -38,7 +48,10 @@ exports[`@/components/as-days Rendering with posters and statements sorted into 
         Sunday, September 22, 2019
       </h4>
     </header>
-     
+    
+    
+    
+    
   </article>
   <article
     class="day"
@@ -48,7 +61,11 @@ exports[`@/components/as-days Rendering with posters and statements sorted into 
         Saturday, September 26, 1987
       </h4>
     </header>
-     
+    
+    
+    
+    
   </article>
+  
 </section>
 `;
