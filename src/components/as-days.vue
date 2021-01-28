@@ -115,9 +115,11 @@
   }
 </script>
 <style lang="stylus">
-  section.as-days > article.day.today
+  section.as-days > article.today.day
     @media (min-width: pad-begins)
       grid-template-rows: auto
+  section.as-days > article.day
+    margin-top: base-line
   section.as-days > article.day
   section#posters > article
     display: grid

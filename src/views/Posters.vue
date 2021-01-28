@@ -187,10 +187,8 @@
 <style lang="stylus">
   section#posters
     & > article
-      grid-template-rows: (base-line * 3)
       @media (min-width: pad-begins)
         grid-template-rows: (base-line * 4)
-    padding-bottom: base-line
     &.selecting-event
       & > svg:not(.background)
         opacity: 0.1
@@ -198,7 +196,7 @@
       border-bottom: 0
     h1
       color: green
-      margin: 0 base-line 0 base-line
+      padding-left: base-line
     & > header
       justify-content: space-between
     & hgroup
