@@ -19,24 +19,14 @@ exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
     </h1>
   </hgroup>
    
-  <hgroup
-    class="sign-on message"
-  >
-    <p>
-      <sign-on-stub />
-       and you can check out 
-      <icon-stub
-        name="heart"
-      />
-       who's on here
-    </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
-  </hgroup>
+  <as-days-stub
+    avatars=""
+    events=""
+    posters=""
+    statements=""
+    working="true"
+  />
+   
+  <!---->
 </section>
 `;
