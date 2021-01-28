@@ -22,21 +22,11 @@ describe('@/views/Navigation.vue', () => {
   afterEach(() => {
     wrapper.destroy()
   })
-  it('Renders statements and profile for a person', async () => {
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  describe('navigating the application', () => {
-    describe('handling statement events', () => {
-      it('posting:false should render the main navigation', () => {
-        expect(wrapper.vm.posting).toBe(false)
-        expect(wrapper.element).toMatchSnapshot()
-      })
-      it('posting:true should hide main navigation', () => {
-        wrapper.setData({ posting: true })
-        expect(wrapper.element).toMatchSnapshot()
-      })
+  describe('Rendering', () => {
+    it('displays statements and profile for a person', async () => {
+      expect(wrapper.element).toMatchSnapshot()
     })
-    describe('#user_name', () => {
+    describe('rendering first_name', () => {
       it('Returns \'You\' by default', async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
         wrapper = wrapper = shallowMount(Navigation, {
@@ -49,6 +39,25 @@ describe('@/views/Navigation.vue', () => {
       })
       it('Returns the users first name if set', () => {
         expect(wrapper.vm.first_name).toBe('Scott')
+      })
+    })
+    describe('handling statement events', () => {
+      it('posting:false should render the main navigation', () => {
+        expect(wrapper.vm.posting).toBe(false)
+        expect(wrapper.element).toMatchSnapshot()
+      })
+      it('posting:true should hide main navigation', () => {
+        wrapper.setData({ posting: true })
+        expect(wrapper.element).toMatchSnapshot()
+      })
+    })
+  })
+  describe('methods', () => {
+    describe('#done_posting', () => {
+      it('sets the focus on the post statement button', () => {
+        const focus_mock = jest.spyOn(wrapper.vm.$refs.nav, 'focus')
+        wrapper.vm.done_posting()
+        expect(focus_mock).toBeCalled()
       })
     })
   })

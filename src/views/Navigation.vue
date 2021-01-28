@@ -5,7 +5,7 @@
         {{ version }}
       </h6>
     </header>
-    <nav>
+    <nav ref="nav">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
       </router-link>
@@ -54,7 +54,8 @@
     },
     methods: {
       done_posting (event) {
-        document.querySelector('nav > button').focus()
+        // focus somewhere else to commit statement
+        this.$refs.nav.focus()
       }
     }
   }
