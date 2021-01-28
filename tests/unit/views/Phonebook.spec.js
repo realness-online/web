@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import phonebook from '@/views/Phonebook'
+import phonebook from '@/views/PhoneBook'
 import itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 

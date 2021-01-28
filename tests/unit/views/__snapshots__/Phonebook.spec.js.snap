@@ -26,7 +26,7 @@ exports[`@/views/Phonebook Render the phonebook 1`] = `
   >
     <p>
       <sign-on-stub />
-       and you can check out who's on here 
+       Check out who else is on here
     </p>
      
     <h6>
