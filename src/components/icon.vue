@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <svg :class="name"><use :xlink:href="icon_location" /></svg>
 </template>
 <script>

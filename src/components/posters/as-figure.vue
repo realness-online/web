@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <figure class="poster" :class="{ landscape }">
     <icon :name="background" />
     <as-svg ref="poster"

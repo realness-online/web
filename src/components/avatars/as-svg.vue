@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <svg @click="vector_click">
     <defs>
       <symbol v-if="vector" :id="id"

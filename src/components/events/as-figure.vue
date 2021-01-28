@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <figure class="events">
     <icon name="background" />
     <svg v-if="poster"

@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <svg
     itemscope
     itemtype="/posters"

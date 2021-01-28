@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <button class="sign-on" @click="sign_on"><slot>Sign on</slot></button>
 </template>
 <script>

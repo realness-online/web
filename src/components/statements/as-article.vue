@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <article class="thought">
     <header v-if="author">
       <router-link :to="author.id">

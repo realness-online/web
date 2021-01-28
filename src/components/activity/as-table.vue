@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <table hidden itemscope itemtype="/activity">
     <tbody>
       <tr v-for="[message, created_at] in activity" :key="created_at">

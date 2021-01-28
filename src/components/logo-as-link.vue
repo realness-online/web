@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <router-link id="logo" to="/">
     <icon name="realness" />
   </router-link>

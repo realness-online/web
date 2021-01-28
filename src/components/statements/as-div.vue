@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <div itemscope :itemid="statement.id">
     <p v-if="editable" ref="editable" contenteditable="true" itemprop="statement" @focus="focused" @blur.prevent="save">{{ statement.statement }}</p>
     <p v-else itemprop="statement">{{ statement.statement }}</p>

@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <form id="profile-mobile">
     <fieldset v-if="show_mobil_input" id="phone">
       <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
