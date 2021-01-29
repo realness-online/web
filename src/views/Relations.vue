@@ -50,4 +50,6 @@
           fill: blue
         &.working
           margin-bottom: base-line
+    & > nav
+      margin-top: base-line * 2
 </style>
