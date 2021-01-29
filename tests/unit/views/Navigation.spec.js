@@ -29,11 +29,7 @@ describe('@/views/Navigation.vue', () => {
     describe('rendering first_name', () => {
       it('Returns \'You\' by default', async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
-        wrapper = wrapper = shallowMount(Navigation, {
-          stubs: {
-            RouterLink: RouterLinkStub
-          }
-        })
+        wrapper = shallowMount(Navigation, { stubs: { RouterLink: RouterLinkStub } })
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
       })
