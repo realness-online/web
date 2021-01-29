@@ -18,7 +18,7 @@
         <button @click="signoff">Sign off</button>
       </menu>
     </hgroup>
-    <h2 v-if="!working">Statements</h2>
+    <h1 v-if="!working">Statements</h1>
     <as-days v-slot="thoughts"
              itemscope
              :itemid="statements_id"
@@ -111,7 +111,7 @@
           list(this.statements_id)
         ])
         if (person) this.person = person
-        if (statements.length) this.statements = statements
+        this.statements = statements
       },
       async thought_focused (statement) {
         this.currently_focused = statement.id
@@ -140,8 +140,6 @@
       height: 0
       padding: 0
     & > header
-      height: 0
-      padding: 0
       & > button.sign-on
       & > a#logo
         position: absolute
@@ -153,6 +151,7 @@
         animation-fill-mode: backwards
       & > button.sign-on
         left: inset(left)
+        height: round(base-line * 2, 2)
       & > a#logo
         right: inset(right)
     & > hgroup
@@ -208,7 +207,7 @@
         position: absolute
         bottom: .05rem
         right: 1em
-    & > h2
+    & > h1
       padding: base-line
     & > section.as-days
       padding: base-line
@@ -235,7 +234,7 @@
           height: 1em
           width: 1.66em
     @media (prefers-color-scheme: dark)
-      h2, h4, svg.background
+      h1, h4, svg.background
         color: red
         fill: red
 </style>
