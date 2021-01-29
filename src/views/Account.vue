@@ -137,6 +137,8 @@
       border-color: red
     &.signed-in
       padding-top: 0
+      & > h1
+        margin-top: base-line
       & > header
         height: 0
         padding: 0
@@ -205,6 +207,7 @@
         bottom: .05rem
         right: 1em
     & > h1
+      margin-top: base-line * 2
       padding: base-line
     & > section.as-days
       padding: base-line
