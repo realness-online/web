@@ -31,9 +31,9 @@ exports[`@/views/Account.vue Rendering Renders account information 1`] = `
     <!---->
   </hgroup>
    
-  <h2>
+  <h1>
     Statements
-  </h2>
+  </h1>
    
   <as-days-stub
     avatars=""

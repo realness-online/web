@@ -105,6 +105,14 @@ describe('@/views/Account.vue', () => {
         wrapper.vm.thought_blurred(statement)
         expect(wrapper.vm.thought_shown).toBeCalled()
       })
+      it('Only Runs when focused', () => {
+        const statement = { id: '/+16282281824/statements/1569168047725' }
+        wrapper.vm.thought_shown = jest.spyOn(wrapper.vm, 'thought_shown')
+        wrapper.vm.thought_shown.mockImplementationOnce(() => true)
+        wrapper.vm.currently_focused = '/some/one/else'
+        wrapper.vm.thought_blurred(statement)
+        expect(wrapper.vm.thought_shown).not.toBeCalled()
+      })
     })
     describe('#thought_shown', () => {
       const statements = [
@@ -129,6 +137,13 @@ describe('@/views/Account.vue', () => {
       it('determines the slot key of an array of items', () => {
         const key = wrapper.vm.slot_key([item])
         expect(key).toBe('/+16282281824/statements/1569168047725')
+      })
+    })
+    describe('#get_all_my_stuff', () => {
+      it('handles empty person', () => {
+        load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
+        wrapper.vm.get_all_my_stuff()
+        expect(load_spy).toBeCalled()
       })
     })
   })
