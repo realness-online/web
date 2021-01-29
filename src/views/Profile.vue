@@ -85,51 +85,48 @@
 </script>
 <style lang='stylus'>
   section#profile
-    padding-bottom: base-line
+    padding: 0
     & > header
-      z-index: 2
-      position: absolute
-      animation: slide-in-down
-      animation-delay: 1.3s
-      animation-duration: 0.35s
-      animation-fill-mode: backwards
-      width:100%
+      height: 0
+      padding: 0
       & > a
         -webkit-tap-highlight-color: blue
-        & > svg
-          fill: red
+        z-index: 2
+        top: inset(top)
+        right: inset(right)
+        position: absolute
     & > svg:not(.working)
       width: 100vw
-      min-height: 100vh
+      min-height: 100.5vh
     & > menu > a.download
       position: absolute
-      bottom: inset(bottom)
-      right: inset(right)
-      text-align: right
+      z-index: 2
+      bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
+      left: inset(left)
       animation: absolute-slide-up
-      animation-delay: 1.3s
+      animation-delay: 1.33s
       animation-duration: 0.35s
       animation-fill-mode: backwards
+      animation-timing-function: linear
       & > svg
         fill: blue
-    svg.background
-      fill: blue
-    figure.profile
+    & > figure.profile
       padding: base-line
       & > svg
-        border-radius: 0.66rem
-        width: base-line * 2.5
-        height: base-line * 2.5
-        border-radius: base-line * 2
+        border-radius: 0.66em
+        width: base-line * 2
+        height: base-line * 2
+        border-radius: base-line
       & > figcaption > menu
         a.status
           position: absolute
-          bottom: inset(bottom)
+          top: inset(top)
           left: inset(left)
-          animation: absolute-slide-up
-          animation-delay: 1.3s
+          animation: absolute-slide-down
+          animation-delay: 1.33s
           animation-duration: 0.35s
           animation-fill-mode: backwards
+          animation-timing-function: linear
           svg.add
             width: base-line * 2
             height: base-line * 2
@@ -142,16 +139,13 @@
               height: base-line * 2
         a.phone
           position: absolute
-          top: inset(top)
-          left: inset(left)
-          z-index: 2
-          animation: absolute-slide-down
-          animation-delay: 1.3s
+          right: inset(right)
+          bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
+          animation: absolute-slide-up
+          animation-delay: 1.33s
           animation-duration: 0.35s
           animation-fill-mode: backwards
-          position: absolute
-          svg.message
-            fill: blue
+          animation-timing-function: linear
     & > section.as-days
       & > article.day
         grid-auto-rows: auto

@@ -129,6 +129,7 @@
 </script>
 <style lang="stylus">
   div#manage-avatar
+    overflow: hidden
     position: relative
     & figure svg
       position: relative
@@ -152,21 +153,21 @@
       padding: 0 base-line
       & > a
         animation: absolute-slide-up
-        animation-delay: 0.33s
+        animation-delay: 0.44s
         animation-duration: 0.35s
         animation-fill-mode: backwards
         cursor: pointer
         position: absolute
-        &#open_camera
+        &#select_photo
           animation: absolute-slide-down
-          animation-delay: 0.3s
+          animation-delay: 0.44s
           animation-duration: 0.35s
           animation-fill-mode: backwards
           position: absolute
           z-index: 2
           top: inset(top)
           left: inset(left)
-        &#select_photo
+        &#open_camera
           bottom: inset(bottom)
           left: inset(left)
         &.download

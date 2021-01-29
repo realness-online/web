@@ -70,11 +70,11 @@
       &:first-of-type
         margin-bottom: (base-line / 3)
     & > b[itemprop]
-      margin-left: (base-line / 3)
       line-height: 1
       display: inline-block
       font-weight: 300
       &:first-of-type
+        margin-right: round((base-line / 3), 2)
         margin-bottom: (base-line / 3)
       &:focus
         font-weight: 700

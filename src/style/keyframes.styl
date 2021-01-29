@@ -7,20 +7,16 @@
   100%
     fill: red
     -webkit-tap-highlight-color: red
-
 @keyframes absolute-slide-down
-  0%
-    opacity: 0
+  from
     top: -25em
-  25%
-    opacity: 1
-  100%
+  to
     top: inset(top)
 @keyframes absolute-slide-up
   from
-    bottom: -(base-line * 2)
+    bottom: -25em
   to
-    bottom: base-line
+    bottom: inset(bottom)
 
 @keyframes slide-in-down
   from
