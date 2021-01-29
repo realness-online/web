@@ -18,7 +18,7 @@
                  :relations.sync="relations" />
     </nav>
     <hgroup v-else class="sign-on message">
-      <p> <sign-on /> and you can check out who's on here </p>
+      <p><sign-on /> Check out who else is on here</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
@@ -64,11 +64,13 @@
 </script>
 <style lang='stylus'>
   section#directory
+    nav.profile-list
+      margin-top: base-line * 2
     svg.working
       fill: blue
       margin-top: base-line
     svg.heart
       fill: blue
-    & > hgroup h1
+    & > hgroup > h1
       color: blue
 </style>
