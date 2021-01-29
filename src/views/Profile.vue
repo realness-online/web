@@ -65,24 +65,20 @@
         as_directory(`${id}/posters`),
         list(`${localStorage.me}/relations`)
       ])
-      if (person) {
-        this.person = person
-        this.authors.push({
-          id: person.id,
-          type: 'person',
-          viewed: ['index']
-        })
-      } else return
+      this.person = person
+      this.authors.push({
+        id: person.id,
+        type: 'person',
+        viewed: ['index']
+      })
       this.relations = my_relations
       this.statements = statements
-      if (posters && posters.items) {
-        posters.items.forEach(created_at => {
-          this.posters.push({
-            id: `${id}/posters/${created_at}`,
-            type: 'posters'
-          })
+      posters.items.forEach(created_at => {
+        this.posters.push({
+          id: `${id}/posters/${created_at}`,
+          type: 'posters'
         })
-      }
+      })
       console.info('views:profile')
     }
   }
