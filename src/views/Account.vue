@@ -65,6 +65,7 @@
       return {
         person: {},
         statements: [],
+        signed_in: true,
         pages_viewed: ['index'],
         image_file: null,
         settings: false,
@@ -129,26 +130,22 @@
   }
 </script>
 <style lang='stylus'>
-  :root
-    --header-margin:  -(base-line * 4)
   section#account
     a
     button
       color: red
       border-color: red
-    &.signed-in > header
-      height: 0
-      padding: 0
+    &.signed-in
+      padding-top: 0
+      & > header
+        height: 0
+        padding: 0
     & > header
       & > button.sign-on
       & > a#logo
         position: absolute
         top: inset(top)
         z-index: 2
-        animation: absolute-slide-down
-        animation-delay: 0.33s
-        animation-duration: 0.35s
-        animation-fill-mode: backwards
       & > button.sign-on
         left: inset(left)
         height: round(base-line * 2, 2)
