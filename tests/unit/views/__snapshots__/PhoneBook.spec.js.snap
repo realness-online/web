@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/PhoneBook render Displays the phonebook when signed in 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <router-link-stub
+      to="/relations"
+    >
+      <icon-stub
+        name="heart"
+      />
+    </router-link-stub>
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <hgroup>
+    <h1>
+      Phonebook
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <nav
+    class="profile-list"
+  >
+    <as-figure-stub
+      person="[object Object]"
+      relations=""
+    />
+  </nav>
+</section>
+`;
+
+exports[`@/views/PhoneBook render Handles when a person not loading 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <router-link-stub
+      to="/relations"
+    >
+      <icon-stub
+        name="heart"
+      />
+    </router-link-stub>
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <hgroup>
+    <h1>
+      Phonebook
+    </h1>
+     
+    <!---->
+  </hgroup>
+   
+  <nav
+    class="profile-list"
+  />
+</section>
+`;
+
+exports[`@/views/PhoneBook render Lets you know to sign in 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <hgroup>
+    <h1>
+      Phonebook
+    </h1>
+     
+    <icon-stub
+      name="working"
+    />
+  </hgroup>
+   
+  <hgroup
+    class="sign-on message"
+  >
+    <p>
+      <sign-on-stub />
+       Check out who else is on here
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
+</section>
+`;
