@@ -43,6 +43,7 @@
 </script>
 <style lang='stylus'>
   section#relations
+    padding-bottom: base-line * 2
     & > header
       margin: auto
       svg
