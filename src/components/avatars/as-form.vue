@@ -181,9 +181,9 @@
           left: inset(left)
           & > svg
             fill: green
-        // @media (min-width: pad-begins)
-        //   &#open_camera
-        //     display: none
+        @media (min-width: typing-begins)
+          &#open_camera
+            display: none
     & > input[type=file]
       display: none
 </style>
