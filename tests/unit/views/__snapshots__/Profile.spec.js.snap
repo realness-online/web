@@ -13,15 +13,21 @@ exports[`@/views/Profile.vue Handles there not being posters 1`] = `
     <logo-as-link-stub />
   </header>
    
-  <avatar-stub
-    person="[object Object]"
-  />
-   
-  <menu>
-    <as-download-stub
-      itemid="/+16282281824/avatars/1588451405024"
+  <div>
+    <avatar-stub
+      person="[object Object]"
     />
-  </menu>
+     
+    <menu>
+      <as-download-stub
+        itemid="/+16282281824/avatars/1588451405024"
+      />
+       
+      <as-messenger-stub
+        itemid="/+16282281824"
+      />
+    </menu>
+  </div>
    
   <as-figure-stub
     person="[object Object]"
@@ -50,15 +56,21 @@ exports[`@/views/Profile.vue Shows profile information for a phone number 1`] = 
     <logo-as-link-stub />
   </header>
    
-  <avatar-stub
-    person="[object Object]"
-  />
-   
-  <menu>
-    <as-download-stub
-      itemid="/+16282281824/avatars/1588451405024"
+  <div>
+    <avatar-stub
+      person="[object Object]"
     />
-  </menu>
+     
+    <menu>
+      <as-download-stub
+        itemid="/+16282281824/avatars/1588451405024"
+      />
+       
+      <as-messenger-stub
+        itemid="/+16282281824"
+      />
+    </menu>
+  </div>
    
   <as-figure-stub
     person="[object Object]"

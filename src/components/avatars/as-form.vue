@@ -155,20 +155,22 @@
         animation: absolute-slide-up
         animation-delay: 0.77s
         animation-duration: 0.35s
-        animation-fill-mode: forwards
+        animation-fill-mode: both
         cursor: pointer
+        position: absolute
         &#select_photo
           animation: absolute-slide-down
           animation-delay: 0.77s
           animation-duration: 0.35s
-          animation-fill-mode: forwards
+          animation-fill-mode: both
           z-index: 2
+          top: inset(top, -(base-line * 2))
           left: inset(left)
         &#open_camera
-          bottom: inset(bottom)
+          bottom: inset(bottom, -(base-line * 2))
           left: inset(left)
         &.download
-          bottom: inset(bottom)
+          bottom: inset(bottom, -(base-line * 2))
           right: inset(right)
         & > svg
           fill: red
@@ -179,9 +181,9 @@
           left: inset(left)
           & > svg
             fill: green
-        @media (min-width: pad-begins)
-          &#open_camera
-            display: none
+        // @media (min-width: pad-begins)
+        //   &#open_camera
+        //     display: none
     & > input[type=file]
       display: none
 </style>

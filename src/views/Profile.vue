@@ -4,10 +4,13 @@
       <icon name="nothing" />
       <logo-as-link />
     </header>
-    <avatar v-if="person" :person="person" />
-    <menu v-if="person">
-      <as-download :itemid="person.avatar" />
-    </menu>
+    <div>
+      <avatar v-if="person" :person="person" />
+      <menu v-if="person">
+        <as-download :itemid="person.avatar" />
+        <as-messenger :itemid="person.id" />
+      </menu>
+    </div>
     <as-figure v-if="person" :person="person" :relations="relations" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <template v-for="item in items">
@@ -31,6 +34,7 @@
   import logo_as_link from '@/components/logo-as-link'
   import as_download from '@/components/download-vector'
   import as_figure from '@/components/profile/as-figure'
+  import as_messenger from '@/components/profile/as-messenger'
   import avatar from '@/components/avatars/as-svg'
   import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
@@ -41,6 +45,7 @@
       avatar,
       'as-days': as_days,
       'as-figure': as_figure,
+      'as-messenger': as_messenger,
       'as-download': as_download,
       'logo-as-link': logo_as_link,
       'poster-as-figure': poster_as_figure,
@@ -95,22 +100,25 @@
         top: inset(top)
         right: inset(right)
         position: absolute
-    & > svg:not(.working)
-      width: 100vw
-      min-height: 100.5vh
-    & > menu
-      height:0
-      overflow-y: hidden
-      & > a.download
-        z-index: 2
-        bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
-        left: inset(left)
+    & > div
+      position: relative
+      overflow: hidden
+      & > svg
+        width: 100vw
+        min-height: 100.5vh
+      & > menu
+        width: 100%
+        display: flex
+        justify-content: space-between
+        z-index: 1
+        position: absolute
+        bottom: -(base-line * 2)
+        padding: 0 base-line
         animation: absolute-slide-up
         animation-delay: 1.33s
         animation-duration: 0.35s
-        animation-fill-mode: forwards
-        animation-timing-function: linear
-        & > svg
+        animation-fill-mode: both
+        & > a > svg
           fill: blue
     & > figure.profile
       padding: base-line
@@ -121,13 +129,13 @@
         border-radius: base-line
       & > figcaption > menu
         a.status
-          top: inset(top)
+          top: inset(top, -(base-line * 2))
           left: inset(left)
+          position: absolute
           animation: absolute-slide-down
           animation-delay: 1.33s
           animation-duration: 0.35s
-          animation-fill-mode: forwards
-          animation-timing-function: linear
+          animation-fill-mode: both
           svg.add
             width: base-line * 2
             height: base-line * 2
@@ -139,13 +147,7 @@
               width: base-line * 2
               height: base-line * 2
         a.phone
-          right: inset(right)
-          bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
-          animation: absolute-slide-up
-          animation-delay: 1.33s
-          animation-duration: 0.35s
-          animation-fill-mode: forwards
-          animation-timing-function: linear
+          display:none
     & > section.as-days
       & > article.day
         grid-auto-rows: auto
