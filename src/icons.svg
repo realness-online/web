@@ -2,10 +2,12 @@
   <style>
     #background {
       fill: hsla( 57, 13%, 69%, 0.9);
+      fill: transparent;
     }
     @media (prefers-color-scheme: dark) {
       #background {
         fill: hsla(228, 9.8%, 10%, 1);
+        fill: transparent;
       }
     }
   </style>
