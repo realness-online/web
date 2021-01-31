@@ -3,7 +3,7 @@
     <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
-      <sync :statement.sync="statement" :person="me" />
+      <sync :statement.sync="statement" :person="me" :config="firebase_keys" />
     </aside>
   </main>
 </template>
@@ -46,8 +46,9 @@
     async created () {
       if (this.is_production) {
         const response = await fetch('__/firebase/init.json')
-        firebase.initializeApp(await response.json())
-      } else firebase.initializeApp(this.firebase_keys)
+        this.firebase_keys = await response.json()
+      }
+      firebase.initializeApp(this.firebase_keys)
       if (navigator.onLine) del('sync:peer-connected')
       else this.offline()
       window.addEventListener('online', this.online)
