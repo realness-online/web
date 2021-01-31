@@ -115,13 +115,8 @@
   }
 </script>
 <style lang="stylus">
-  section.as-days > article.today.day
-    @media (min-width: pad-begins)
-      grid-template-rows: auto
   section.as-days > article.day
     margin-top: base-line
-  section.as-days > article.day
-  section#posters > article
     display: grid
     grid-gap: base-line
     grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
@@ -131,6 +126,9 @@
     @media (min-width: typing-begins)
       grid-template-rows: (base-line * 3)
       grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+    &.today
+      @media (min-width: pad-begins)
+        grid-template-rows: auto
     & > header
       @media (min-width: pad-begins)
         grid-column: 1 / -1
