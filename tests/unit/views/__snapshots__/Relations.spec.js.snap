@@ -1,5 +1,34 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`@/views/Relations.vue Fails gracefully when relations has been deleted 1`] = `
+<section
+  class="page"
+  id="relations"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+     
+    <router-link-stub
+      to="/phone-book"
+    >
+      <icon-stub
+        name="finished"
+      />
+    </router-link-stub>
+  </header>
+   
+  <hgroup>
+    <h1>
+      Relations
+    </h1>
+  </hgroup>
+   
+  <!---->
+</section>
+`;
+
 exports[`@/views/Relations.vue Render relationship information 1`] = `
 <section
   class="page"
