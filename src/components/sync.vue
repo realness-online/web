@@ -37,6 +37,10 @@
     },
     mixins: [visit],
     props: {
+      config: {
+        type: Object,
+        required: true
+      },
       statement: {
         type: Object,
         required: false,
@@ -92,7 +96,7 @@
         if (navigator.onLine && current_user) {
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
-          this.syncer.postMessage({ action: 'sync:initialize', env: process.env })
+          this.syncer.postMessage({ action: 'sync:initialize', config: this.config })
           window.addEventListener('online', this.online)
         }
       },
