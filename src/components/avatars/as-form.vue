@@ -174,7 +174,7 @@
           bottom: inset(bottom)
           right: inset(right)
         & > svg
-          fill: blue
+          fill: red
         &#accept_changes
           position: absolute
           z-index: 2
