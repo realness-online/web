@@ -98,18 +98,20 @@
     & > svg:not(.working)
       width: 100vw
       min-height: 100.5vh
-    & > menu > a.download
-      position: absolute
-      z-index: 2
-      bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
-      left: inset(left)
-      animation: absolute-slide-up
-      animation-delay: 1.33s
-      animation-duration: 0.35s
-      animation-fill-mode: backwards
-      animation-timing-function: linear
-      & > svg
-        fill: blue
+    & > menu
+      height:0
+      overflow-y: hidden
+      & > a.download
+        z-index: 2
+        bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
+        left: inset(left)
+        animation: absolute-slide-up
+        animation-delay: 1.33s
+        animation-duration: 0.35s
+        animation-fill-mode: forwards
+        animation-timing-function: linear
+        & > svg
+          fill: blue
     & > figure.profile
       padding: base-line
       & > svg
@@ -119,13 +121,12 @@
         border-radius: base-line
       & > figcaption > menu
         a.status
-          position: absolute
           top: inset(top)
           left: inset(left)
           animation: absolute-slide-down
           animation-delay: 1.33s
           animation-duration: 0.35s
-          animation-fill-mode: backwards
+          animation-fill-mode: forwards
           animation-timing-function: linear
           svg.add
             width: base-line * 2
@@ -138,13 +139,12 @@
               width: base-line * 2
               height: base-line * 2
         a.phone
-          position: absolute
           right: inset(right)
           bottom: s('calc(%s - env(safe-area-inset-top))', base-line)
           animation: absolute-slide-up
           animation-delay: 1.33s
           animation-duration: 0.35s
-          animation-fill-mode: backwards
+          animation-fill-mode: forwards
           animation-timing-function: linear
     & > section.as-days
       & > article.day
