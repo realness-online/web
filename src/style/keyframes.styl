@@ -9,13 +9,19 @@
     -webkit-tap-highlight-color: red
 @keyframes absolute-slide-down
   from
-    top: -25em
+    transform: translate3d(0, -100%, 0)
+    visibility: visible
   to
+    transform: translate3d(0, 0, 0)
+    position: absolute
     top: inset(top)
 @keyframes absolute-slide-up
   from
-    bottom: -25em
+    transform: translate3d(0, 100%, 0)
+    visibility: visible
   to
+    transform: translate3d(0, 0, 0)
+    position: absolute
     bottom: inset(bottom)
 
 @keyframes slide-in-down
