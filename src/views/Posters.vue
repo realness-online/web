@@ -6,13 +6,11 @@
       <input ref="uploader" v-uploader type="file" accept="image/jpeg">
       <logo-as-link />
     </header>
-    <article>
-      <header>
-        <h1>Posters</h1>
-        <hgroup v-show="!new_poster">
-          <icon v-show="working" name="working" />
-        </hgroup>
-      </header>
+    <hgroup>
+      <h1>Posters</h1>
+    </hgroup>
+    <icon v-if="working" name="working" />
+    <article v-else>
       <as-figure v-if="new_poster"
                  class="new"
                  :itemid="as_itemid"
@@ -186,39 +184,45 @@
 </script>
 <style lang="stylus">
   section#posters
-    & > article
-      @media (min-width: pad-begins)
-        grid-template-rows: (base-line * 4)
     &.selecting-event
       & > svg:not(.background)
         opacity: 0.1
-    hgroup.message > p:first-child a
-      border-bottom: 0
-    h1
-      color: green
-      padding-left: base-line
     & > header
       justify-content: space-between
-    & hgroup
+    & > hgroup
+      margin: base-line auto (base-line * 2) auto
       align-self: center
+      &.message > p:first-child a
+        border-bottom: 0
+      & > h1
+          color: green
     & hgroup
     & header
       svg, a
         color: green
         fill: green
-    figure.poster
-      & > svg.background
-        fill: green
-      & > figcaption > menu
-        a > svg
+    & > article
+      display: grid
+      grid-gap: base-line
+      grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
+      @media (min-width: pad-begins)
+        grid-auto-rows: poster-grid-height
+      @media (min-width: typing-begins)
+        grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+      & > figure.poster
+        & > svg.background
           fill: green
-        a.remove
-          bottom: base-line
-          left: base-line
-        a.save
-          bottom: base-line
-          right: base-line
-        a.event
-          top: base-line
-          left: base-line
+        & > figcaption > menu
+          a > svg
+            fill: green
+          a.remove
+            bottom: base-line
+            left: base-line
+          a.save
+            bottom: base-line
+            right: base-line
+          a.event
+            top: base-line
+            left: base-line
+
 </style>

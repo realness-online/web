@@ -20,20 +20,13 @@ exports[`@/views/Posters.vue rendering: Renders UI for posters 1`] = `
     <logo-as-link-stub />
   </header>
    
+  <hgroup>
+    <h1>
+      Posters
+    </h1>
+  </hgroup>
+   
   <article>
-    <header>
-      <h1>
-        Posters
-      </h1>
-       
-      <hgroup>
-        <icon-stub
-          name="working"
-          style="display: none;"
-        />
-      </hgroup>
-    </header>
-     
     <as-figure-stub
       class=""
       itemid="/+16282281824/posters/1555347888"
