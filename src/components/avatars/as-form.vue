@@ -153,19 +153,16 @@
       padding: 0 base-line
       & > a
         animation: absolute-slide-up
-        animation-delay: 0.44s
+        animation-delay: 0.77s
         animation-duration: 0.35s
-        animation-fill-mode: backwards
+        animation-fill-mode: forwards
         cursor: pointer
-        position: absolute
         &#select_photo
           animation: absolute-slide-down
-          animation-delay: 0.44s
+          animation-delay: 0.77s
           animation-duration: 0.35s
-          animation-fill-mode: backwards
-          position: absolute
+          animation-fill-mode: forwards
           z-index: 2
-          top: inset(top)
           left: inset(left)
         &#open_camera
           bottom: inset(bottom)
