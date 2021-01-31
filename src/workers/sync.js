@@ -106,16 +106,19 @@ async function check_people (people, check_everyone) {
  * @param {IDBValidKey} itemid
  * @param {any} what_I_know
  */
-async function prune_person (itemid, what_I_know) {
-  if (is_outdated(itemid, what_I_know)) {
-    del(itemid)
-    const statements = `${itemid}/statements`
+async function prune_person (itemid, index) {
+  if (await is_outdated(itemid, index)) {
+    await del(itemid)
+    await del(`${itemid}/posters/`)
+  }
+  const statements = `${itemid}/statements`
+  if (await is_outdated(statements, index)) {
     await del(statements)
     await del(`${statements}/`)
-    await del(`${itemid}/events`)
-    await del(`${itemid}/posters/`)
-    console.info('cache:pruned', itemid)
-  } else console.info('cache:kept', itemid)
+  }
+  const events = `${itemid}/events`
+  if (await is_outdated(events, index)) await del(events)
+  console.info('cache:pruned', itemid)
 }
 const five_seconds = 1000 * 5
 const one_minute = five_seconds * 12
