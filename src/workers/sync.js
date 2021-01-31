@@ -25,6 +25,16 @@ export function message_listener (message) {
 self.addEventListener('message', message_listener) // set up communictaion
 
 export function initialize (credentials) {
+  firebase.auth().onAuthStateChanged(async (me) => {
+    console.log('sync:worker:onAuthStateChanged')
+    if (navigator.onLine && me) {
+      await people(me, true)
+      self.postMessage({ action: 'sync:statements' })
+      self.postMessage({ action: 'sync:events' })
+      await offline(me)
+    }
+  })
+  console.log('initialize')
   firebase.initializeApp({
     apiKey: credentials.VUE_APP_API_KEY,
     authDomain: credentials.VUE_APP_AUTH_DOMAIN,
@@ -32,14 +42,6 @@ export function initialize (credentials) {
     projectId: credentials.VUE_APP_PROJECT_ID,
     storageBucket: credentials.VUE_APP_STORAGE_BUCKET,
     messagingSenderId: credentials.VUE_APP_MESSAGING_SENDER_ID
-  })
-  firebase.auth().onAuthStateChanged(async (me) => {
-    if (navigator.onLine && me) {
-      await people(me, true)
-      self.postMessage({ action: 'sync:statements' })
-      self.postMessage({ action: 'sync:events' })
-      await offline(me)
-    }
   })
 }
 export async function offline (me = firebase.auth().currentUser) {
@@ -70,6 +72,7 @@ export async function anonymous (me = firebase.auth().currentUser) {
   }
 }
 export async function people (me = firebase.auth().currentUser, check_everyone = false) {
+  console.log('people', me)
   if (navigator.onLine && me) {
     console.time('sync:people')
     const people = await list_people()
