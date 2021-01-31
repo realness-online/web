@@ -66,13 +66,14 @@
     align-items: center
     max-width: page-width
     &.posting
+      margin-top: inset(top)
       height: inherit
       @media (max-width: pad-begins)
         align-items: flex-start
       & > nav
         transition-duration: 0.5s
-        min-height: round(base-line * 11)
-        height: round(base-line * 11)
+        min-height: round(base-line * 10)
+        height: round(base-line * 10)
         & > button
           top: 0
           width: base-line * 3
@@ -103,7 +104,7 @@
       grid-template-columns: 1fr 1fr
       grid-template-rows: repeat(1fr)
       align-items: stretch
-      min-height: round(base-line * 18)
+      min-height: round(base-line * 19, 2)
       max-height: page-width
       height: 100vmin
       width: 100vw
@@ -113,7 +114,7 @@
         border-width: 1px
         border-style: solid
         &:focus
-          color:transparent
+          color: transparent
           transition-duration: 0.6s
           transition: all
           outline: none

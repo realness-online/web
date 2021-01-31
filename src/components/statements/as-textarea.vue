@@ -34,13 +34,12 @@
   textarea#wat
     resize: none
     appearance: none
-    transition-property: all
     transition-duration: 0.4s
     user-select: text
     border-style: solid
     caret-color: red
     cursor: pointer
-    transition-property: border-width, border-radius, text-align, background-color
+    transition-property: border-width, border-radius, text-align
     color: black
     @media (prefers-color-scheme: dark)
       color: white
@@ -61,7 +60,7 @@
       background-color: transparent
       outline: 0
       transition-duration: .3s
-      transition-property: all
+      transition-property: border-width, border-radius, text-align
       line-height: base-line
       &::placeholder
         color: red
