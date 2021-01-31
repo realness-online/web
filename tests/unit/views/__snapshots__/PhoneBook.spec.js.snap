@@ -95,7 +95,7 @@ exports[`@/views/PhoneBook render Lets you know to sign in 1`] = `
   >
     <p>
       <sign-on-stub />
-       Check out who else is on here
+       Check out who's here
     </p>
      
     <h6>

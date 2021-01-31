@@ -13,7 +13,7 @@
     </article>
     <hgroup v-else class="message">
       <h3>Events have been disabled</h3>
-      <p>See you when the covid recedes</p>
+      <p>See you after covid</p>
     </hgroup>
     <hgroup class="message" hidden>
       <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
