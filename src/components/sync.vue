@@ -2,18 +2,14 @@
   <div v-if="syncing" ref="sync" hidden>
     <as-hgroup v-if="person" :person="person" />
     <as-days v-if="statements" v-slot="thoughts"
-             itemscope
-             :itemid="itemid('statements')"
+             itemscope :itemid="itemid('statements')"
              :statements="statements">
-      <thought-as-article v-for="thought in thoughts"
-                          :key="thought[0].id"
+      <thought-as-article v-for="thought in thoughts" :key="thought[0].id"
                           :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
-    <unsynced-poster v-if="poster"
-                     :key="poster.id"
-                     :itemid="poster.id"
-                     :poster="poster"
+    <unsynced-poster v-if="poster" :key="poster.id"
+                     :itemid="poster.id" :poster="poster"
                      :immediate="true" />
   </div>
 </template>
@@ -65,14 +61,22 @@
       async statement () {
         if (this.statement) {
           this.syncing = true
-          await this.save_statement()
+          const itemid = this.itemid('statements')
+          this.statements = await list(itemid)
+          this.statements.push(this.statement)
+          const data = new Statements()
+          await this.$nextTick()
+          await data.save()
+          this.$emit('update:statement', null)
           this.syncing = false
         }
       },
       async person () {
         if (this.person) {
           this.syncing = true
-          await this.save_person()
+          await this.$nextTick()
+          const me = new Me()
+          await me.save()
           this.syncing = false
         }
       }
@@ -94,20 +98,6 @@
       },
       online () {
         this.syncer.postMessage({ action: 'sync:offline' })
-      },
-      async save_statement () {
-        const itemid = this.itemid('statements')
-        this.statements = await list(itemid)
-        this.statements.push(this.statement)
-        const data = new Statements()
-        await this.$nextTick()
-        await data.save()
-        this.$emit('update:statement', null)
-      },
-      async save_person () {
-        await this.$nextTick()
-        const me = new Me()
-        await me.save()
       },
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`
@@ -163,7 +153,7 @@
         await this.$nextTick()
         const new_poster = new Poster(poster.id)
         await new_poster.save()
-        this.posters = null
+        this.poster = null
       }
     }
   }

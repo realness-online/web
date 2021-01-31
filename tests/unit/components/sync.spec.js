@@ -4,6 +4,7 @@ import { get, set } from 'idb-keyval'
 import sync from '@/components/sync'
 import get_item from '@/modules/item'
 import {
+  Me,
   Statements,
   Events
 } from '@/persistance/Storage'
@@ -16,6 +17,13 @@ const events = [{
   id: '/+16282281824/events/1588035067996',
   url: '/+16282281824/posters/1585005003428'
 }]
+const person = {
+  first_name: 'Scott',
+  last_name: 'Fryxell',
+  id: '/+14151234356',
+  avatar: '/+14151234356/avatars/1578929551564'
+}
+
 describe('Syncing Edge data', () => {
   describe('@/components/sync', () => {
     let wrapper
@@ -40,6 +48,42 @@ describe('Syncing Edge data', () => {
       set.mockImplementation(_ => Promise.resolve(null))
     })
     afterEach(() => jest.clearAllMocks())
+    describe('Watchers', () => {
+      describe('statement', () => {
+        it('Does nothing unless there is a statement', async () => {
+          wrapper = shallowMount(sync)
+          wrapper.setProps({ statement: 'I like to move it' })
+          await flushPromises()
+          jest.clearAllMocks()
+          const save_spy = jest.spyOn(Statements.prototype, 'save')
+          wrapper.setProps({ statement: null })
+          expect(save_spy).not.toBeCalled()
+        })
+        it('Triggered when statement is set', async () => {
+          wrapper = shallowMount(sync)
+          await wrapper.setProps({ statement: 'I like to move it' })
+          await flushPromises()
+          expect(wrapper.emitted('update:statement')).toBeTruthy()
+        })
+      })
+      describe('person', () => {
+        it('Does nothing unless there is a person', async () => {
+          wrapper.setProps({ person })
+          await flushPromises()
+          wrapper.setProps({ person: null })
+          const save_spy = jest.spyOn(Me.prototype, 'save')
+          expect(wrapper.emitted('update:person')).not.toBeTruthy()
+          expect(save_spy).not.toBeCalled()
+        })
+        it('Triggered when statement is set', async () => {
+          const save_spy = jest.spyOn(Me.prototype, 'save')
+          wrapper = shallowMount(sync)
+          await wrapper.setProps({ person })
+          await flushPromises()
+          expect(save_spy).toBeCalled()
+        })
+      })
+    })
     describe('Render', () => {
       beforeEach(async () => {
         wrapper = shallowMount(sync, {
@@ -140,21 +184,6 @@ describe('Syncing Edge data', () => {
           expect(wrapper.vm.sync_paged).toBeCalled()
         })
       })
-      describe('#save_statement', () => {
-        it('Triggered when statement is set', async () => {
-          wrapper = shallowMount(sync)
-          const save_spy = jest.spyOn(wrapper.vm, 'save_statement')
-          .mockImplementationOnce(_ => Promise.resolve(events))
-          await wrapper.setProps({ statement: 'I like to move it' })
-          expect(save_spy).toBeCalled()
-        })
-        it('Emits an event after it saves the statement', async () => {
-          wrapper = shallowMount(sync)
-          wrapper.setProps({ statement: 'I like to move it' })
-          await flushPromises()
-          expect(wrapper.emitted('update:statement')).toBeTruthy()
-        })
-      })
       describe('#worker_message', () => {
         const event = {}
         beforeEach(() => {
@@ -185,6 +214,13 @@ describe('Syncing Edge data', () => {
           event.data.poster = save_poster
           wrapper.vm.worker_message(event)
           expect(spy).toBeCalled()
+        })
+      })
+      describe('itemid', () => {
+        it('Returns the user itemid when called without type', async () => {
+          wrapper = shallowMount(sync)
+          await flushPromises()
+          expect(wrapper.vm.itemid()).toBe('/+16282281824')
         })
       })
     })
