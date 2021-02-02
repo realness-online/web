@@ -24,6 +24,8 @@ const person = {
   avatar: '/+14151234356/avatars/1578929551564'
 }
 
+const fake_props = { propsData: { config: {} } }
+
 describe('Syncing Edge data', () => {
   describe('@/components/sync', () => {
     let wrapper
@@ -51,7 +53,7 @@ describe('Syncing Edge data', () => {
     describe('Watchers', () => {
       describe('statement', () => {
         it('Does nothing unless there is a statement', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           wrapper.setProps({ statement: 'I like to move it' })
           await flushPromises()
           jest.clearAllMocks()
@@ -60,7 +62,7 @@ describe('Syncing Edge data', () => {
           expect(save_spy).not.toBeCalled()
         })
         it('Triggered when statement is set', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           await wrapper.setProps({ statement: 'I like to move it' })
           await flushPromises()
           expect(wrapper.emitted('update:statement')).toBeTruthy()
@@ -77,7 +79,7 @@ describe('Syncing Edge data', () => {
         })
         it('Triggered when statement is set', async () => {
           const save_spy = jest.spyOn(Me.prototype, 'save')
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           await wrapper.setProps({ person })
           await flushPromises()
           expect(save_spy).toBeCalled()
@@ -87,6 +89,7 @@ describe('Syncing Edge data', () => {
     describe('Render', () => {
       beforeEach(async () => {
         wrapper = shallowMount(sync, {
+          propsData: { config: {} },
           data () {
             return { syncing: true }
           }
@@ -110,7 +113,7 @@ describe('Syncing Edge data', () => {
     describe('methods', () => {
       describe('#init', () => {
         it('connects sync worker to component', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           await flushPromises()
           wrapper.vm.init({ phoneNumber: '+16282281824' })
         })
@@ -176,7 +179,7 @@ describe('Syncing Edge data', () => {
         it('Calls Event.sync', async () => {
           jest.spyOn(Events.prototype, 'sync')
           .mockImplementationOnce(_ => Promise.resolve(events))
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           await flushPromises()
           wrapper.vm.sync_paged = jest.fn()
           await wrapper.vm.$nextTick()
@@ -187,7 +190,7 @@ describe('Syncing Edge data', () => {
       describe('#worker_message', () => {
         const event = {}
         beforeEach(() => {
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           event.data = { action: '' }
         })
         it('Calls console.warn if event has unknown action', () => {
@@ -218,7 +221,7 @@ describe('Syncing Edge data', () => {
       })
       describe('itemid', () => {
         it('Returns the user itemid when called without type', async () => {
-          wrapper = shallowMount(sync)
+          wrapper = shallowMount(sync, fake_props)
           await flushPromises()
           expect(wrapper.vm.itemid()).toBe('/+16282281824')
         })
