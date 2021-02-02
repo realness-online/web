@@ -38,6 +38,15 @@ describe('@/persistance/Paged.js', () => {
     it('Exists', () => {
       expect(paged.sync).toBeDefined()
     })
+    it('Fails gracefully if their are no cloud items', async () => {
+      const empty_cloud = {
+        id: '/+16282281824/statements'
+      }
+      cloud_spy.mockImplementationOnce(_ => Promise.resolve(empty_cloud))
+      firebase.user = user
+      const list = await paged.sync()
+      expect(list.length).toBe(100)
+    })
     it('Syncs statements from server to local storage', async () => {
       firebase.user = user
       const list = await paged.sync()
