@@ -11,21 +11,22 @@ import { Offline } from '@/persistance/Storage'
 export function message_listener (message) {
   switch (message.data.action) {
     case 'sync:initialize':
-      return initialize(message.data.env)
+      return initialize(message.data.config)
     case 'sync:people':
       return people(firebase.auth().currentUser, message.data.check_everyone)
     case 'sync:offline':
       return offline(firebase.auth().currentUser)
     case 'sync:anonymous':
       return anonymous(firebase.auth().currentUser)
-    default:
-      console.warn('Unhandled message from app: ', message.data.action, message)
+    // default:
+    //   console.warn('Unhandled message from app: ', message.data.action, message)
   }
 }
 self.addEventListener('message', message_listener) // set up communictaion
 
 export function initialize (credentials) {
-  firebase.auth().onAuthStateChanged(async (me) => {
+  firebase.initializeApp(credentials)
+  firebase.auth().onAuthStateChanged(async me => {
     console.log('sync:worker:onAuthStateChanged')
     if (navigator.onLine && me) {
       await people(me, true)
@@ -33,15 +34,6 @@ export function initialize (credentials) {
       self.postMessage({ action: 'sync:events' })
       await offline(me)
     }
-  })
-  console.log('initialize')
-  firebase.initializeApp({
-    apiKey: credentials.VUE_APP_API_KEY,
-    authDomain: credentials.VUE_APP_AUTH_DOMAIN,
-    databaseUrl: credentials.VUE_APP_DATABASE_URL,
-    projectId: credentials.VUE_APP_PROJECT_ID,
-    storageBucket: credentials.VUE_APP_STORAGE_BUCKET,
-    messagingSenderId: credentials.VUE_APP_MESSAGING_SENDER_ID
   })
 }
 export async function offline (me = firebase.auth().currentUser) {
@@ -72,7 +64,6 @@ export async function anonymous (me = firebase.auth().currentUser) {
   }
 }
 export async function people (me = firebase.auth().currentUser, check_everyone = false) {
-  console.log('people', me)
   if (navigator.onLine && me) {
     console.time('sync:people')
     const people = await list_people()
@@ -82,12 +73,9 @@ export async function people (me = firebase.auth().currentUser, check_everyone =
   }
 }
 async function recurse () {
-  const is_peering = await get('sync:peer-connected')
-  if (!is_peering) {
-    await people()
-    self.postMessage({ action: 'sync:statements' }, '*')
-    self.postMessage({ action: 'sync:events' }, '*')
-  }
+  await people()
+  self.postMessage({ action: 'sync:statements' }, '*')
+  self.postMessage({ action: 'sync:events' }, '*')
 }
 async function list_people () {
   const full_list = await keys()
