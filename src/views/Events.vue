@@ -47,10 +47,10 @@
       }
     },
     async created () {
-      console.time('events-load')
+      console.time('views:Events')
       this.events = await this.get_upcoming_events()
       this.working = false
-      console.timeEnd('events-load')
+      console.timeEnd('views:Events')
     },
     methods: {
       async get_upcoming_events () {

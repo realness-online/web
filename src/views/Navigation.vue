@@ -47,7 +47,7 @@
       }
     },
     async created () {
-      console.info('views:navigation')
+      console.info('views:Navigation')
       const my = await itemid.load(localStorage.me)
       if (my && my.first_name) this.first_name = my.first_name
       else this.first_name = 'You'

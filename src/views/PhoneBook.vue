@@ -49,7 +49,7 @@
       }
     },
     async created () {
-      console.info('views:Phonebook')
+      console.info('views:PhoneBook')
       this.relations = await list(`${localStorage.me}/relations`)
       if (this.signed_in) {
         const phone_numbers = await firebase.storage().ref().child('/people/').listAll()

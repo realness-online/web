@@ -80,7 +80,7 @@
       }
     },
     async created () {
-      console.info('views:account')
+      console.info('views:Account')
       this.authors.push({
         id: localStorage.me,
         type: 'person',

@@ -98,13 +98,11 @@
       }
     },
     async created () {
-      console.clear()
-      console.time('posters:load')
-      console.info('view:posters')
+      console.time('view:Posters')
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
-      console.timeEnd('posters:load')
+      console.timeEnd('view:Posters')
     },
     destroyed () {
       this.vectorizer.terminate()
