@@ -84,7 +84,7 @@
           type: 'posters'
         })
       })
-      console.info('views:profile')
+      console.info('views:Profile')
     }
   }
 </script>
