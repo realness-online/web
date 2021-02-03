@@ -3,13 +3,12 @@
     <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
-      <sync :statement.sync="statement" :person="me" :config="firebase_keys" />
+      <sync :statement.sync="statement" :person.sync="me" :config="firebase_keys" />
     </aside>
   </main>
 </template>
 <script>
   import firebase from 'firebase/app'
-  import { del } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'
   export default {
@@ -49,8 +48,6 @@
         this.firebase_keys = await response.json()
       }
       firebase.initializeApp(this.firebase_keys)
-      if (navigator.onLine) del('sync:peer-connected')
-      else this.offline()
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       this.working = false
