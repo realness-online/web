@@ -102,8 +102,11 @@
     border-radius: round((base-line / 6), 2)
     position: relative
     overflow: hidden
+    &.landscape
+      min-height: poster-grid-height
     @media (orientation: landscape)
       &.landscape
+        min-height: inherit
         grid-column-start: span 2
     @media (min-width: pad-begins)
       &.new
