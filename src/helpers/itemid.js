@@ -18,10 +18,10 @@ export async function load (itemid, me = localStorage.me) {
   if (result === null) {
     // itemid is explicitly set to null to signify non existence
     // undefined means try and load it
-    console.info('cache:404', itemid)
+    // console.info('cache:404', itemid)
     return null
   } else if (result === undefined) console.info('cache:miss', itemid)
-  else console.info('cache:hit')
+  // else console.info('cache:hit')
 
   item = get_item(result)
   if (item) return item
@@ -39,7 +39,7 @@ export async function list (itemid, me = localStorage.me) {
 export async function load_from_network (itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
-    console.info('request:download', itemid)
+    console.info('download', itemid)
     const server_text = await (await fetch(url)).text()
     await set(itemid, server_text)
     return get_item(server_text, itemid)
@@ -48,10 +48,8 @@ export async function load_from_network (itemid, me = localStorage.me) {
 export async function as_directory (itemid, me = localStorage.me) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
-  if (cached) {
-    console.info('cache:directory')
-    return cached
-  } else if (navigator.onLine && firebase.auth().currentUser) {
+  if (cached) return cached
+  else if (navigator.onLine && firebase.auth().currentUser) {
     const meta = { items: [], types: [] } // folders are types in our vocabulary
     console.info('request:directory', itemid)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()

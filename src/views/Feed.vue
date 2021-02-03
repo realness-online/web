@@ -60,8 +60,7 @@
       }
     },
     async created () {
-      console.clear()
-      console.time('feed-load')
+      console.time('views:Feed')
       firebase.auth().onAuthStateChanged(async user => {
         if (user) this.authors = await list(`${localStorage.me}/relations`)
         this.authors.push({
@@ -69,7 +68,7 @@
           type: 'person'
         })
         await this.fill_feed()
-        console.timeEnd('feed-load')
+        console.timeEnd('views:Feed')
         this.working = false
       })
     },
