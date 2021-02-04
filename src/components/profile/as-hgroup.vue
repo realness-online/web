@@ -77,6 +77,6 @@
         margin-right: round((base-line / 3), 2)
         margin-bottom: (base-line / 3)
       &:focus
-        font-weight: 700
+        font-weight: 400
         outline: 0
 </style>

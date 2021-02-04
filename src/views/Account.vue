@@ -220,7 +220,7 @@
         @media (min-width: typing-begins)
           grid-auto-rows: auto
         p[itemprop="statement"]:focus
-          font-weight: 700
+          font-weight: bolder
           outline: 0px
     & > footer
       text-align: center
