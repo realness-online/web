@@ -8,7 +8,6 @@ const current_user = { phoneNumber: '+16282281824' }
 describe('@/mixins/visit', () => {
   let wrapper
   let person
-  let load_spy
   beforeEach(() => {
     firebase.user = current_user
     person = {

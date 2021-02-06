@@ -96,7 +96,11 @@
         if (navigator.onLine && current_user) {
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
-          this.syncer.postMessage({ action: 'sync:initialize', config: this.config })
+          this.syncer.postMessage({
+            action: 'sync:initialize',
+            last_sync: localStorage.sync_time,
+            config: this.config
+          })
           window.addEventListener('online', this.online)
         }
       },
@@ -110,6 +114,8 @@
       async worker_message (message) {
         this.syncing = true
         switch (message.data.action) {
+          case 'sync:happened':
+            return (localStorage.sync_time = new Date().toISOString())
           case 'sync:events':
             return await this.sync_events()
           case 'sync:statements':

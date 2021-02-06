@@ -3,14 +3,16 @@ import { get, del, keys } from 'idb-keyval'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
+import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
 const fs = require('fs')
 const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
+  let post_message_spy
   beforeEach(() => {
-    jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
+    post_message_spy = jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null
   })
@@ -76,19 +78,26 @@ describe('/workers/sync.js', () => {
       it('Calls sync methods when online and signed in', async () => {
         firebase.user = user
         await sync.initialize({})
-        expect(firebase.auth_mock.onAuthStateChanged).toBeCalled()
+        expect(firebase.initializeApp).toBeCalled()
+        firebase.user = null
+      })
+      it.skip('Calls recurse if when time elapses', async () => {
+        firebase.user = user
+        await sync.initialize({}, new Date(2020, 1, 1))
+        expect(firebase.initializeApp).toBeCalled()
         firebase.user = null
       })
     })
     describe('#offline', () => {
-      it('Needs to be signed in', async () => {
-        await sync.offline()
-        expect(get).not.toBeCalled()
-      })
       it('Needs to be online', () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.offline(user)
+        sync.offline()
         expect(get).not.toBeCalled()
+      })
+      it('Handles a lack of offline content gracefylly', async () => {
+        get.mockImplementation(_ => Promise.resolve(undefined))
+        await sync.offline()
+        expect(del).not.toBeCalled()
       })
       it('Saves offline content', async () => {
         firebase.user = user
@@ -132,7 +141,8 @@ describe('/workers/sync.js', () => {
         expect(get).not.toBeCalled()
       })
       it('handles no posters', async () => {
-        await sync.anonymous(user)
+        firebase.user = user
+        await sync.anonymous()
         expect(get).toBeCalled()
         expect(del).not.toBeCalled()
       })
@@ -146,15 +156,18 @@ describe('/workers/sync.js', () => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
           else return Promise.resolve(offline_poster)
         })
-        await sync.anonymous(user)
+        firebase.user = user
+        await sync.anonymous()
+        await flushPromises()
         expect(get).toHaveBeenCalledTimes(2)
         expect(del).toHaveBeenCalledTimes(2)
       })
     })
     describe('#people', () => {
-      it('Needs to be signed in', () => {
-        sync.people()
-        expect(keys).not.toBeCalled()
+      it('Runs when online', async () => {
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        await sync.people()
+        expect(get).not.toBeCalled()
       })
       it('Prunes people with outdated info', async () => {
         //  for failure ['/+1/posters/559666932867']
@@ -170,12 +183,11 @@ describe('/workers/sync.js', () => {
         keys.mockImplementationOnce(() => Promise.resolve(ids))
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        await sync.people(user)
+        await sync.people()
         jest.runAllTimers()
         expect(keys).toBeCalled()
         expect(get).toBeCalled()
       })
-
       it('Can force a check to happen', async () => {
         const ids = ['/+16282281824']
         const index = {
@@ -189,9 +201,8 @@ describe('/workers/sync.js', () => {
         keys.mockImplementationOnce(() => Promise.resolve(ids))
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        await sync.people(user, true)
+        await sync.people(true)
       })
-
       it('Will check all of the persons files for updates', async () => {
         const ids = ['/+16282281824']
         const index = {
@@ -212,6 +223,87 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         await sync.people(user, true)
+      })
+    })
+    describe('#recurse', () => {
+      it('Fails gracefully when offline', async () => {
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        await sync.recurse()
+        expect(post_message_spy).not.toBeCalled()
+      })
+      it('Fails gracefully when user is signed out', async () => {
+        firebase.user = null
+        await sync.recurse()
+        expect(post_message_spy).not.toBeCalled()
+      })
+      it('Runs when user is signed in', async () => {
+        const meta = { updated: 'Oct 13, 2020, 12:00:00 PM' }
+        const updated = 'Oct 12, 2020, 10:54:24 AM'
+        const index = {
+          '/+16282281824': { updated },
+          '/+16282281824/statements': { updated },
+          '/+16282281824/events': { updated }
+        }
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+        firebase.user = user
+        await sync.recurse()
+        await flushPromises()
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
+      })
+      it('Works without an existing index', async () => {
+        jest.clearAllMocks()
+        const meta = { updated: 'Oct 13, 2020, 12:00:00 PM' }
+        get.mockImplementation(_ => Promise.resolve(undefined))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+        firebase.user = user
+        await sync.recurse()
+        await flushPromises()
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
+      })
+      it('Runs events and statments checks if user is outdated', async () => {
+        const updated = 'Oct 12, 2020, 10:54:24 AM'
+        const index = {
+          '/+16282281824': { updated },
+          '/+16282281824/statements': { updated },
+          '/+16282281824/events': { updated }
+        }
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
+        firebase.user = user
+        await sync.recurse()
+        await flushPromises()
+        expect(post_message_spy).toHaveBeenCalledTimes(1)
+      })
+      it('Tells the app to sync statements apropriatly', async () => {
+        const updated = 'Oct 12, 2020, 10:54:24 AM'
+        const outdated = 'Oct 11, 2020, 10:54:24 AM'
+        const index = {
+          '/+16282281824': { updated: outdated },
+          '/+16282281824/statements': { updated: outdated },
+          '/+16282281824/events': { updated }
+        }
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
+        firebase.user = user
+        await sync.recurse()
+        await flushPromises()
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
+      })
+      it('Tells the app to sync events apropriatly', async () => {
+        const updated = 'Oct 12, 2020, 10:54:24 AM'
+        const outdated = 'Oct 11, 2020, 10:54:24 AM'
+        const index = {
+          '/+16282281824': { updated: outdated },
+          '/+16282281824/statements': { updated },
+          '/+16282281824/events': { updated: outdated }
+        }
+        get.mockImplementation(_ => Promise.resolve(index))
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
+        firebase.user = user
+        await sync.recurse()
+        await flushPromises()
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
     })
   })

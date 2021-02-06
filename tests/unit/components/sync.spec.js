@@ -23,9 +23,7 @@ const person = {
   id: '/+14151234356',
   avatar: '/+14151234356/avatars/1578929551564'
 }
-
 const fake_props = { propsData: { config: {} } }
-
 describe('Syncing Edge data', () => {
   describe('@/components/sync', () => {
     let wrapper
@@ -110,7 +108,7 @@ describe('Syncing Edge data', () => {
         expect(message_mock).toBeCalled()
       })
     })
-    describe('methods', () => {
+    describe('Methods', () => {
       describe('#init', () => {
         it('connects sync worker to component', async () => {
           wrapper = shallowMount(sync, fake_props)
@@ -122,6 +120,7 @@ describe('Syncing Edge data', () => {
         const index = {}
         beforeEach(async () => {
           wrapper = mount(sync, {
+            propsData: { config: {} },
             data () {
               return {
                 syncing: true
