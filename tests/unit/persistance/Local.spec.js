@@ -31,5 +31,12 @@ describe('@/persistance/Local.js', () => {
       local.save()
       expect(localStorage.setItem).not.toBeCalled()
     })
+    it('Creates and index of item hashes', async () => {
+      mock_get.mockImplementationOnce(_ => Promise.resolve(null))
+      await local.save({ outerHTML: preferences })
+      expect(mock_get).toBeCalled()
+      expect(mock_set).toBeCalled()
+      expect(localStorage.setItem).toBeCalled()
+    })
   })
 })
