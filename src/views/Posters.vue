@@ -74,7 +74,7 @@
         vectorizer: new Worker('/vector.worker.js'),
         optimizer: new Worker('/optimize.worker.js'),
         selecting_event: false,
-        working: false,
+        working: true,
         new_poster: null,
         events: []
       }
@@ -103,6 +103,7 @@
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
       console.timeEnd('view:Posters')
+      this.working = false
     },
     destroyed () {
       this.vectorizer.terminate()
