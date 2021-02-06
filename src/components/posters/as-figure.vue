@@ -103,7 +103,11 @@
     position: relative
     overflow: hidden
     &.landscape
+      transition-duration: 0
       min-height: poster-grid-height
+      & > svg[itemscope]
+        transition-duration: 0
+        height: -webkit-fill-available
     @media (orientation: landscape)
       &.landscape
         min-height: inherit
