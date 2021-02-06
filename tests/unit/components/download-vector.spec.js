@@ -27,4 +27,17 @@ describe('@/components/download-vector', () => {
     await flushPromises()
     expect(wrapper.element).toMatchSnapshot()
   })
+  it('Handles downloads from anonymous users', async () => {
+    jest.spyOn(itemid, 'load').mockImplementation(itemid => {
+      if (itemid === '/+16282281824/posters/559666932867') return Promise.resolve(poster)
+      else return Promise.resolve(null)
+    })
+    const wrapper = shallowMount(download_vector, {
+      propsData: {
+        itemid: poster.id
+      }
+    })
+    await flushPromises()
+    expect(wrapper.element).toMatchSnapshot()
+  })
 })
