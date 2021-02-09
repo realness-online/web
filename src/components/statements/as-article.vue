@@ -91,29 +91,27 @@
   }
 </script>
 <style lang='stylus'>
-  article.thought
-    // overflow: hidden
-    & > header
-      display: flex
-      justify-content: flex-start
-      flex-direction: row
-      margin: 0 0 base-line 0
-      & > a > svg
-        cursor: pointer
-        shape-outside: circle()
-        border-radius: (base-line * 2)
+  article.thought > header
+    display: flex
+    justify-content: flex-start
+    flex-direction: row
+    margin: 0 0 base-line 0
+    & > a > svg
+      cursor: pointer
+      shape-outside: circle()
+      border-radius: (base-line * 2)
+      margin-right: round((base-line / 4), 2)
+    & > hgroup
+      flex:1
+      margin: 0
+      & > span
         margin-right: round((base-line / 4), 2)
-      & > hgroup
-        flex:1
-        margin: 0
-        & > span
-          margin-right: round((base-line / 4), 2)
-          font-weight: 300
-          display: inline-block
-      & > menu > a > svg
-        fill: blue
-        opacity: .25
-        &:hover
-        &:active
-          opacity: 1
+        font-weight: 300
+        display: inline-block
+    & > menu > a > svg
+      fill: blue
+      opacity: .25
+      &:hover
+      &:active
+        opacity: 1
 </style>
