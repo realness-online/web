@@ -74,8 +74,8 @@
       display: inline-block
       font-weight: 300
       &:first-of-type
-        margin-right: round((base-line / 3), 2)
-        margin-bottom: (base-line / 3)
+        margin-right: round((base-line / 6), 2)
+        margin-bottom: round((base-line / 3), 2)
       &:focus
         font-weight: 400
         outline: 0
