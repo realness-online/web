@@ -37,8 +37,8 @@
     position: relative
     & > *
       fill: blue
-      height: (base-line * 2)
-      width: (base-line * 2)
+      height: base-line * 2
+      width: base-line * 2
     svg
       position: absolute
       top: 0
@@ -56,7 +56,7 @@
       &:focus
         transition-delay: 0.15s
         standard-border: blue
-        padding: (base-line / 2 )
+        padding: round((base-line / 2 ), 2)
         width: inherit
         &::placeholder
           color:blue
