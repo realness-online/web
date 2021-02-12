@@ -68,7 +68,7 @@
       margin: 0
       text-transform: capitalize
       &:first-of-type
-        margin-bottom: (base-line / 3)
+        margin-bottom: round((base-line / 6), 2)
     & > b[itemprop]
       line-height: 1
       display: inline-block
