@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Syncing Edge data @/components/sync Render Renders sync component 1`] = `
+exports[`@/components/sync Render Renders sync component 1`] = `
 <div
   hidden="hidden"
 >

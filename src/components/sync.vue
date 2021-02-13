@@ -86,14 +86,15 @@
       }
     },
     mounted () {
-      firebase.auth().onAuthStateChanged(this.init)
+      firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
     beforeDestroy () {
       this.syncer.terminate()
     },
     methods: {
-      init (current_user) {
+      auth_state_changed (current_user) {
         if (navigator.onLine && current_user) {
+          console.info('syncing:started')
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
           this.syncer.postMessage({
