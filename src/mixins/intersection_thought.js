@@ -16,6 +16,7 @@ export default {
       if (oldest.id === author_oldest.id) {
         author = this.authors.find(relation => relation.id === author)
         const directory = await as_directory(`${author.id}/statements`)
+        if (!directory) return
         let history = directory.items
         history.sort(recent_number_first)
         history = history.filter(page => !author.viewed.some(viewed => viewed === page))
