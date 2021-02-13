@@ -13,7 +13,7 @@
             <time>{{ posted_at }}</time>
           </as-link>
           <as-download :itemid="itemid" />
-          <as-messenger :itemid="itemid" />
+          <as-messenger v-if="signed_in" :itemid="itemid" />
         </menu>
       </slot>
     </figcaption>
@@ -25,6 +25,7 @@
   import { as_time } from '@/helpers/date'
   import as_svg from '@/components/posters/as-svg'
   import vector_click from '@/mixins/vector_click'
+  import signed_in from '@/mixins/signed_in'
   import as_download from '@/components/download-vector'
   import as_messenger from '@/components/profile/as-messenger'
   import as_link from '@/components/profile/as-link'
@@ -36,7 +37,7 @@
       'as-messenger': as_messenger,
       'as-download': as_download
     },
-    mixins: [vector_click],
+    mixins: [vector_click, signed_in],
     props: {
       itemid: {
         type: String,
