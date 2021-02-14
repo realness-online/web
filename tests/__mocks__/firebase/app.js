@@ -1,3 +1,4 @@
 export default {
-  initializeApp: jest.fn()
+  initializeApp: jest.fn(),
+  apps: []
 }
