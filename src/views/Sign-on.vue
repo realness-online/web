@@ -24,7 +24,6 @@
   import mobile_as_form from '@/components/profile/as-form-mobile'
   import name_as_form from '@/components/profile/as-form-name'
   import signed_on from '@/mixins/signed_in'
-  import visit from '@/mixins/visit'
   export default {
     components: {
       'logo-as-link': logo_as_link,
@@ -32,7 +31,7 @@
       'mobile-as-form': mobile_as_form,
       'name-as-form': name_as_form
     },
-    mixins: [signed_on, visit],
+    mixins: [signed_on],
     data () {
       return {
         nameless: false,
