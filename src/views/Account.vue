@@ -133,6 +133,7 @@
   section#account
     a
     button
+    time
       color: red
       border-color: red
     &.signed-in
