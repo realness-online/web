@@ -11,7 +11,7 @@ const Large = (superclass) => class extends superclass {
       await set(this.id, items.outerHTML)
       await set(path, directory)
     }
-    if (super.save) super.save(items)
+    if (super.save) await super.save(items)
   }
   async delete () {
     const path = as_directory_id(this.id)
@@ -19,7 +19,7 @@ const Large = (superclass) => class extends superclass {
     directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
     await del(this.id)
     await set(path, directory)
-    if (super.delete) super.delete()
+    if (super.delete) await super.delete()
   }
 }
 export default Large
