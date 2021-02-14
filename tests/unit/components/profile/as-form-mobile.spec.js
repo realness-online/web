@@ -229,16 +229,6 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         expect(wrapper.vm.show_code).toBe(true)
       })
     })
-    describe('#signed_on', () => {
-      let wrapper
-      beforeEach(async () => {
-        wrapper = await shallowMount(as_form, { propsData: { person } })
-      })
-      it('Emits an event if the user is signed on', () => {
-        wrapper.vm.signed_on({ phoneNumber: '+16282281824' })
-        expect(wrapper.emitted('signed-on'))
-      })
-    })
     it.todo('#enable_input')
     it.todo('#modified_check')
     it.todo('#mobile_keyup')
