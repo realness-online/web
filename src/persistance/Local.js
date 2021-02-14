@@ -6,7 +6,6 @@ const Local = (superclass) => class extends superclass {
     let index = await get('hash')
     if (!index) index = {}
     if (items) {
-      console.log('local:save')
       const content = items.outerHTML
       localStorage.setItem(this.id, content)
       const hash = hash_code(localStorage.getItem(this.id))
