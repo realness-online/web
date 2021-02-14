@@ -6,11 +6,8 @@
       </profile-as-figure>
       <logo-as-link />
     </header>
-    <mobile-as-form v-if="person && !nameless" :person.sync="person"
-                    @signed-on="signed_on" />
-    <name-as-form v-if="nameless"
-                  :person.sync="person"
-                  @valid="new_person" />
+    <mobile-as-form v-if="person && !nameless" :person.sync="person" @signed-on="signed_on" />
+    <name-as-form v-if="nameless" :person.sync="person" @valid="new_person" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
