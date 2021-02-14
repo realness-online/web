@@ -95,15 +95,8 @@
       this.show_authorize = true
       this.mobile = updated.mobile
       this.validate_mobile_number()
-      firebase.auth().onAuthStateChanged(this.signed_on)
     },
     methods: {
-      signed_on (user) {
-        if (user) {
-          this.$emit('signed-on', this.person)
-          this.disable_input()
-        }
-      },
       validate_mobile_number () {
         const is_valid = !!this.person.mobile && this.validate.parseNumber(this.person.mobile, 'US').phone
         this.disabled_sign_in = !is_valid
