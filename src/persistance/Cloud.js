@@ -26,8 +26,8 @@ export const Cloud = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.info('request:save', this.id, items)
     if (!items) return
-    if (super.save) super.save(items)
-    if (networkable.includes(this.type)) this.to_network(items.outerHTML)
+    if (super.save) await super.save(items)
+    if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
   }
   async delete () {
     console.info('request:delete', this.id)
@@ -37,7 +37,7 @@ export const Cloud = (superclass) => class extends superclass {
       const path = as_filename(this.id)
       if (user) await storage.child(path).delete()
     } else sync_later(this.id, 'delete')
-    if (super.delete) super.delete()
+    if (super.delete) await super.delete()
   }
 }
 export default Cloud
