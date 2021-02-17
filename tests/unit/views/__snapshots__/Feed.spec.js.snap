@@ -1,6 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Feed.vue Render a feed of a persons friends 1`] = `
+exports[`@/views/Feed.vue Render a feed of statements 1`] = `
+<section
+  class="page"
+  id="feed"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <hgroup>
+    <h1>
+      Feed
+    </h1>
+  </hgroup>
+   
+  <as-days-stub
+    avatars=""
+    events=""
+    posters=""
+    statements=""
+    working="true"
+  />
+   
+  <!---->
+</section>
+`;
+
+exports[`@/views/Feed.vue Render a feed of statements and posters 1`] = `
 <section
   class="page"
   id="feed"
