@@ -17,16 +17,17 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { set, get } from 'idb-keyval'
+  import { visit_interval } from '@/workers/sync'
   import { Events, Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
-  import { as_type, list } from '@/helpers/itemid'
+  import { as_type, list, load } from '@/helpers/itemid'
+  import get_item from '@/modules/item'
   import hash from '@/modules/hash'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
   import as_hgroup from '@/components/profile/as-hgroup'
-  import visit from '@/mixins/visit'
   export default {
     components: {
       'as-days': as_days,
@@ -35,7 +36,6 @@
       'unsynced-poster': as_svg,
       'as-hgroup': as_hgroup
     },
-    mixins: [visit],
     props: {
       config: {
         type: Object,
@@ -85,16 +85,15 @@
         }
       }
     },
-    mounted () {
+    created () {
       firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
     beforeDestroy () {
       this.syncer.terminate()
     },
     methods: {
-      auth_state_changed (current_user) {
+      async auth_state_changed (current_user) {
         if (navigator.onLine && current_user) {
-          console.info('syncing:started')
           localStorage.me = from_e64(current_user.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
           this.syncer.postMessage({
@@ -112,17 +111,27 @@
         if (type) return `${localStorage.me}/${type}`
         else return `${localStorage.me}`
       },
+      async update_visit () {
+        const me = await load(localStorage.me)
+        const visit_digit = new Date(me.visited).getTime()
+        if (me && visit_interval() > visit_digit) {
+          me.visited = new Date().toISOString()
+          this.$emit('update:person', me)
+        }
+      },
       async worker_message (message) {
         this.syncing = true
         switch (message.data.action) {
           case 'sync:happened':
-            return (localStorage.sync_time = new Date().toISOString())
+            this.update_visit()
+            localStorage.sync_time = new Date().toISOString()
+            return
           case 'sync:events':
             return await this.sync_events()
           case 'sync:statements':
             return await this.sync_statements()
           case 'save:poster':
-            return await this.save_poster(message.data.poster)
+            return await this.save_poster(message.data)
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
@@ -159,10 +168,11 @@
           }
         }
       },
-      async save_poster (poster) {
-        this.poster = poster
+      async save_poster (data) {
+        this.poster = get_item(data.outerHTML)
+        this.poster.id = data.id
         await this.$nextTick()
-        const new_poster = new Poster(poster.id)
+        const new_poster = new Poster(this.poster.id)
         await new_poster.save()
         this.poster = null
       }

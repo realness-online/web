@@ -16,11 +16,11 @@ export async function load (itemid, me = localStorage.me) {
   }
   const result = await get(itemid)
   if (result === null) {
+    return null
     // itemid is explicitly set to null to signify non existence
     // undefined means try and load it
     // console.info('cache:404', itemid)
-    return null
-  } else if (result === undefined) console.info('cache:miss', itemid)
+  } // else if (result === undefined) console.info('cache:miss', itemid)
   // else console.info('cache:hit')
 
   item = get_item(result)
