@@ -4,6 +4,7 @@ import * as itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+const posters_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 describe('@/views/Feed.vue', () => {
   let relations_spy, statements_spy
   beforeEach(() => {
@@ -15,11 +16,20 @@ describe('@/views/Feed.vue', () => {
       const statements = get_item(statements_html)
       return Promise.resolve(statements.statements)
     })
-    jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
-      return { items: [] }
+    jest.spyOn(itemid, 'as_directory').mockImplementation(_ => {
+      return { items: ['559666932867'] }
     })
   })
-  it('Render a feed of a persons friends', async () => {
+  it('Render a feed of statements and posters', async () => {
+    const wrapper = shallowMount(Feed)
+    expect(relations_spy).toBeCalled()
+    expect(statements_spy).toBeCalled()
+    expect(wrapper.element).toMatchSnapshot()
+  })
+  it('Render a feed of statements', async () => {
+    jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+      return null
+    })
     const wrapper = shallowMount(Feed)
     expect(relations_spy).toBeCalled()
     expect(statements_spy).toBeCalled()
