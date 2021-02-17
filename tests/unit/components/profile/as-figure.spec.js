@@ -15,7 +15,13 @@ describe('@/compontent/profile/as-figure.vue', () => {
     }
     wrapper = shallowMount(as_figure, {
       propsData: {
-        person: person
+        person: person,
+        relations: [
+          { id: '/+16282281823' },
+          { id: '/+16282281824' },
+          { id: '/+14155551243' },
+          { id: '/+14154314233' }
+        ]
       }
     })
   })
@@ -67,8 +73,21 @@ describe('@/compontent/profile/as-figure.vue', () => {
       })
     })
     describe('#remove_relationship', () => {
-      it('Removes a person from my list of relationships', () => {
-        wrapper.vm.remove_relationship()
+      it('Removes a person from my list of relationships', async () => {
+        await wrapper.vm.remove_relationship(person)
+        expect(wrapper.emitted('update:relations')).toBeTruthy()
+      })
+      it('Does nothing if relationsship is not there', async () => {
+        const not_relation = { ...person }
+        not_relation.id = '/+13042901453'
+        await wrapper.vm.remove_relationship(not_relation)
+        expect(wrapper.emitted('update:relations')).not.toBeTruthy()
+      })
+      it('Removes relations from local storage entirely with last realtionship', async () => {
+        wrapper.setProps({ relations: [{ id: '/+16282281823' }] })
+        await wrapper.vm.remove_relationship(person)
+        expect(wrapper.emitted('update:relations')).toBeTruthy()
+        expect(localStorage.relations).toBe(undefined)
       })
     })
   })

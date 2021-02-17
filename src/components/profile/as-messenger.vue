@@ -19,6 +19,7 @@
     },
     methods: {
       open_sms_app (event) {
+       console.log(this.itemid)
        window.open(`sms:${as_phone_number(as_author(this.itemid))}`, '_self')
      }
    }

@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/components/profile/as-messenger Renders messenger button to message people directly 1`] = `
+<a
+  class="phone"
+>
+  <icon-stub
+    name="message"
+  />
+</a>
+`;
