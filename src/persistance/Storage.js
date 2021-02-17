@@ -6,6 +6,7 @@ import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
 import { as_type } from '@/helpers/itemid'
+import { get } from 'idb-keyval'
 export default class Storage {
   constructor (itemid) {
     this.id = itemid
@@ -15,7 +16,12 @@ export default class Storage {
 }
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
-export class Offline extends Cloud(Storage) {}
+export class Offline extends Cloud(Storage) {
+  async save () {
+    const outerHTML = await get(this.id)
+    if (outerHTML) await super.save({ outerHTML })
+  }
+}
 export class Me extends Cloud(Local(Storage)) {
   constructor () { super(localStorage.me) }
 }
