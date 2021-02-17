@@ -5,8 +5,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
-const fs = require('fs')
-const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
+const offline_poster = require('fs').readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
@@ -25,13 +24,6 @@ describe('/workers/sync.js', () => {
     describe('#message_listener', () => {
       it('Exists', () => {
         expect(sync.message_listener).toBeDefined()
-      })
-      it('Complains without an action', () => {
-        const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
-        sync.message_listener({
-          data: {}
-        })
-        expect(spy).toBeCalled()
       })
       describe('Actions', () => {
         it('sync:initialize', () => {

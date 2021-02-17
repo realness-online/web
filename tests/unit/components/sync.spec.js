@@ -12,7 +12,6 @@ const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const statements = get_item(statements_html).statements
-const save_poster = get_item(poster_html)
 const events = [{
   id: '/+16282281824/events/1588035067996',
   url: '/+16282281824/posters/1585005003428'
@@ -167,6 +166,15 @@ describe('@/components/sync', () => {
     })
     describe('#sync_statements', () => {
       it('Calls Statement.sync', async () => {
+        wrapper = mount(sync, {
+          propsData: { config: {} },
+          data () {
+            return {
+              syncing: true
+            }
+          }
+        })
+        await flushPromises()
         wrapper.vm.statements = statements
         await wrapper.vm.$nextTick()
         get.mockImplementationOnce(_ => Promise.resolve(null))
@@ -212,15 +220,20 @@ describe('@/components/sync', () => {
       })
       it('Calls save:poster via an event', () => {
         const spy = jest.spyOn(wrapper.vm, 'save_poster')
+        event.data.id = '/+16282281824/posters/559666932867'
         event.data.action = 'save:poster'
-        event.data.poster = save_poster
+        event.data.outerHTML = poster_html
+
         wrapper.vm.worker_message(event)
         expect(spy).toBeCalled()
       })
       it('Calls sync:happened via an event', () => {
         event.data.action = 'sync:happened'
+        expect(localStorage.sync_time).toBe(undefined)
+        wrapper.vm.update_visit = jest.fn()
         wrapper.vm.worker_message(event)
-        expect(localStorage.sync_time).toBeTruthy()
+        expect(localStorage.sync_time).not.toBe(undefined)
+        expect(wrapper.vm.update_visit).toBeCalled()
       })
     })
     describe('itemid', () => {
