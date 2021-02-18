@@ -3,7 +3,6 @@ import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 import * as itemid from '@/helpers/itemid'
 import sync from '@/components/sync'
-import { one_hour } from '@/workers/sync'
 import get_item from '@/modules/item'
 import {
   Me,
