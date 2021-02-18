@@ -24,9 +24,9 @@ const options = {
 }
 export async function listen (message) {
   const svgo = new SVGO(options)
-  console.log('before', to_kb(message.data.vector))
+  console.log('before', `${to_kb(message.data.vector)}kb`)
   const optimized = await svgo.optimize(message.data.vector)
-  console.log('after', to_kb(optimized.data))
+  console.log('after', `${to_kb(optimized.data)}kb`)
   self.postMessage({ vector: optimized.data })
 }
 self.addEventListener('message', listen)
