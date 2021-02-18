@@ -15,6 +15,7 @@ describe('@/persistance/Cloud.js', () => {
     cloud = new Preferences('/+16282281824/preferences')
   })
   afterEach(() => {
+    firebase.user = null
     jest.clearAllMocks()
     localStorage.clear()
   })
@@ -39,7 +40,7 @@ describe('@/persistance/Cloud.js', () => {
       expect(cloud.to_network).toBeCalled()
     })
     it('calls save on a parent class', async () => {
-      get.mockImplementation(_ => Promise.resolve({}))
+      get.mockImplementationOnce(_ => Promise.resolve({}))
       class Whatever extends Cloud(Local(Storage)) {}
       cloud = new Whatever('/+16282281824/whatevers')
       cloud.to_network = jest.fn()
@@ -53,15 +54,15 @@ describe('@/persistance/Cloud.js', () => {
       firebase.user = user
       await cloud.delete()
       expect(firebase.storage().ref().child().delete).toBeCalled()
-      firebase.user = null
     })
     it('Only deletes when logged in', async () => {
+      firebase.user = null
       await cloud.delete()
       expect(firebase.storage().ref().child().delete).not.toBeCalled()
     })
   })
   describe('#to_network', () => {
-    it('Efirebase.user = userxists', () => {
+    it('firebase.user = userxists', () => {
       expect(cloud.to_network).toBeDefined()
     })
     it('Persist a file in a persons home directory', async () => {

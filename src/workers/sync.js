@@ -7,8 +7,8 @@ import { as_type, as_filename } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
 const five_minutes = 300000
-const one_hour = five_minutes * 12
-let recurse_id
+export const one_hour = five_minutes * 12
+const timeouts = []
 export async function message_listener (message) {
   switch (message.data.action) {
     case 'sync:initialize':
@@ -28,7 +28,7 @@ export async function initialize (credentials, last_sync) {
       const time_left = five_minutes - synced
       if (time_left < 0) recurse()
       else setTimeout(recurse, time_left)
-    } else clearTimeout(recurse_id)
+    } else timeouts.forEach(id => clearTimeout(id))
   })
 }
 export async function recurse () {
@@ -43,7 +43,7 @@ export async function recurse () {
   await offline()
   await people(my_itemid)
   post('sync:happened')
-  recurse_id = setTimeout(recurse, five_minutes)
+  timeouts.push(setTimeout(recurse, five_minutes))
 }
 export async function offline () {
   if (navigator.onLine) {
@@ -64,9 +64,10 @@ export async function anonymous () {
   const offline_posters = await get('/+/posters/')
   if (!offline_posters || !offline_posters.items) return
   await Promise.all(offline_posters.items.map(async (created_at) => {
+    const poster_string = await get(`/+/posters/${created_at}`)
     post('save:poster', {
       id: `${from_e64(me.phoneNumber)}/posters/${created_at}`,
-      outerHTML: await get(`/+/posters/${created_at}`)
+      outerHTML: poster_string
     })
     await del(`/+/posters/${created_at}`)
   }))

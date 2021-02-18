@@ -15,13 +15,13 @@ async function sync_later (id, action) {
 }
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
-    if (navigator.onLine) {
+    const user = firebase.auth().currentUser
+    if (navigator.onLine && user) {
       const storage = firebase.storage()
-      const user = firebase.auth().currentUser
       const path = as_filename(this.id)
       const file = new File([items], path)
       if (user) await storage.ref().child(path).put(file, this.metadata)
-    } else sync_later(this.id, 'save')
+    } else await sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.info('request:save', this.id, items)
@@ -31,12 +31,12 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async delete () {
     console.info('request:delete', this.id)
-    if (navigator.onLine) {
+    const user = firebase.auth().currentUser
+    if (navigator.onLine && user) {
       const storage = firebase.storage().ref()
-      const user = firebase.auth().currentUser
       const path = as_filename(this.id)
-      if (user) await storage.child(path).delete()
-    } else sync_later(this.id, 'delete')
+      await storage.child(path).delete()
+    } else await sync_later(this.id, 'delete')
     if (super.delete) await super.delete()
   }
 }
