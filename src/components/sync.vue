@@ -16,7 +16,7 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
-  import { set, get } from 'idb-keyval'
+  import { set, get, del } from 'idb-keyval'
   import { visit_interval } from '@/workers/sync'
   import { Events, Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
@@ -175,6 +175,7 @@
         await this.$nextTick()
         const new_poster = new Poster(this.poster.id)
         await new_poster.save()
+        await del(`${localStorage.me}/posters/`)
         this.poster = null
       }
     }
