@@ -1,7 +1,9 @@
 import { shallowMount, mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
+import * as itemid from '@/helpers/itemid'
 import sync from '@/components/sync'
+import { one_hour } from '@/workers/sync'
 import get_item from '@/modules/item'
 import {
   Me,
@@ -16,12 +18,6 @@ const events = [{
   id: '/+16282281824/events/1588035067996',
   url: '/+16282281824/posters/1585005003428'
 }]
-const person = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+14151234356',
-  avatar: '/+14151234356/avatars/1578929551564'
-}
 const fake_props = { propsData: { config: {} } }
 
 describe('@/components/sync', () => {
@@ -29,7 +25,15 @@ describe('@/components/sync', () => {
   const current_user = {
     phoneNumber: '+16282281824'
   }
+  let person
+
   beforeEach(async () => {
+    person = {
+      first_name: 'Scott',
+      last_name: 'Fryxell',
+      id: '/+14151234356',
+      avatar: '/+14151234356/avatars/1578929551564'
+    }
     localStorage.me = `/${current_user.phoneNumber}`
     jest.spyOn(Statements.prototype, 'sync').mockImplementation(_ => {
       return Promise.resolve(statements)
@@ -108,9 +112,31 @@ describe('@/components/sync', () => {
     })
   })
   describe('Methods', () => {
+    describe('#update_visit', () => {
+      it('Emits an update event for first visit', async () => {
+        const load_mock = jest.spyOn(itemid, 'load')
+        .mockImplementation(_ => Promise.resolve(person))
+        wrapper = await shallowMount(sync, fake_props)
+        await flushPromises()
+        await wrapper.vm.update_visit()
+        expect(load_mock).toBeCalled()
+        expect(wrapper.emitted('update:person')).toBeTruthy()
+      })
+      it('Updated event after proper interval', async () => {
+        const too_soon = new Date().getTime() - 10000
+        person.visited = new Date(too_soon)
+        const load_mock = jest.spyOn(itemid, 'load')
+        .mockImplementation(_ => Promise.resolve(person))
+        wrapper = await shallowMount(sync, fake_props)
+        await flushPromises()
+        await wrapper.vm.update_visit()
+        expect(load_mock).toBeCalled()
+        expect(wrapper.emitted('update:person')).not.toBeTruthy()
+      })
+    })
     describe('#auth_state_changed', () => {
       it('connects sync worker to component', async () => {
-        wrapper = shallowMount(sync, fake_props)
+        wrapper = await shallowMount(sync, fake_props)
         await flushPromises()
         wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
       })
@@ -220,10 +246,11 @@ describe('@/components/sync', () => {
       })
       it('Calls save:poster via an event', () => {
         const spy = jest.spyOn(wrapper.vm, 'save_poster')
-        event.data.id = '/+16282281824/posters/559666932867'
         event.data.action = 'save:poster'
-        event.data.outerHTML = poster_html
-
+        event.data.param = {
+          id: '/+16282281824/posters/559666932867',
+          outerHTML: poster_html
+        }
         wrapper.vm.worker_message(event)
         expect(spy).toBeCalled()
       })
@@ -236,9 +263,10 @@ describe('@/components/sync', () => {
         expect(wrapper.vm.update_visit).toBeCalled()
       })
     })
-    describe('itemid', () => {
+    describe('#itemid', () => {
       it('Returns the user itemid when called without type', async () => {
-        wrapper = shallowMount(sync, fake_props)
+        expect(localStorage.me).toBe(`/${current_user.phoneNumber}`)
+        wrapper = await shallowMount(sync, fake_props)
         await flushPromises()
         expect(wrapper.vm.itemid()).toBe('/+16282281824')
       })

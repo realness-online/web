@@ -109,10 +109,11 @@
       },
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`
-        else return `${localStorage.me}`
+        else return localStorage.me
       },
       async update_visit () {
         const me = await load(localStorage.me)
+        if (!me.visited) me.visited = null
         const visit_digit = new Date(me.visited).getTime()
         if (me && visit_interval() > visit_digit) {
           me.visited = new Date().toISOString()
@@ -131,7 +132,7 @@
           case 'sync:statements':
             return await this.sync_statements()
           case 'save:poster':
-            return await this.save_poster(message.data)
+            return await this.save_poster(message.data.param)
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
