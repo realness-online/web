@@ -2,9 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import Feed from '@/views/Feed'
-const fs = require('fs')
-const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const posters_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
+const statements_html = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
 describe('@/views/Feed.vue', () => {
   let relations_spy, statements_spy
   beforeEach(() => {
