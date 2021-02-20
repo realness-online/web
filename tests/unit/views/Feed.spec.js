@@ -18,19 +18,21 @@ describe('@/views/Feed.vue', () => {
       return { items: ['559666932867'] }
     })
   })
-  it('Render a feed of statements and posters', async () => {
-    const wrapper = shallowMount(Feed)
-    expect(relations_spy).toBeCalled()
-    expect(statements_spy).toBeCalled()
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  it('Render a feed of statements', async () => {
-    jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
-      return null
+  describe('Renders', () => {
+    it('A feed of statements', async () => {
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+        return null
+      })
+      const wrapper = shallowMount(Feed)
+      expect(relations_spy).toBeCalled()
+      expect(statements_spy).toBeCalled()
+      expect(wrapper.element).toMatchSnapshot()
     })
-    const wrapper = shallowMount(Feed)
-    expect(relations_spy).toBeCalled()
-    expect(statements_spy).toBeCalled()
-    expect(wrapper.element).toMatchSnapshot()
+    it('A feed of statements and posters', async () => {
+      const wrapper = shallowMount(Feed)
+      expect(relations_spy).toBeCalled()
+      expect(statements_spy).toBeCalled()
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

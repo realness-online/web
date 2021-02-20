@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/download-vector Handles downloads from anonymous users 1`] = `
+exports[`@/components/download-vector Renders Handles downloads from anonymous users 1`] = `
 <a
   class="download"
   download="posters_Saturday, September 26, 8:02 AM.svg"
@@ -12,7 +12,7 @@ exports[`@/components/download-vector Handles downloads from anonymous users 1`]
 </a>
 `;
 
-exports[`@/components/download-vector Renders link to download svg 1`] = `
+exports[`@/components/download-vector Renders Link to download svg 1`] = `
 <a
   class="download"
   download="Scott_Fryxell_posters_Saturday, September 26, 8:02 AM.svg"

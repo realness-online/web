@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/as-days Renders with nothing 1`] = `
+exports[`@/components/as-days Renders With nothing 1`] = `
 <section
   class="as-days"
 />
 `;
 
-exports[`@/components/as-days Renders with posters and statements sorted into the days they were created 1`] = `
+exports[`@/components/as-days Renders With posters and statements sorted into the days they were created 1`] = `
 <section
   class="as-days"
 >

@@ -2,14 +2,14 @@ import * as optimize from '@/workers/optimize'
 import SVGO from 'svgo'
 const vector = require('fs').readFileSync('./tests/unit/html/vector.html')
 describe('/workers/vector.js', () => {
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#listen', () => {
       let optimize_spy
       beforeEach(() => {
         optimize_spy = jest.spyOn(SVGO.prototype, 'optimize')
         // optimize_spy.mockImplementation(_ => Promise.resolve(vector))
       })
-      it('#Optimizes a vector', async () => {
+      it('Optimizes a vector', async () => {
         const postMessage_spy = jest.spyOn(global, 'postMessage')
         postMessage_spy.mockImplementation(_ => true)
         await optimize.listen({ data: { vector } })

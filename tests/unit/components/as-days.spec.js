@@ -14,23 +14,23 @@ describe('@/components/as-days', () => {
     wrapper = shallowMount(as_days)
   })
   describe('Renders', () => {
-    it('with nothing', () => {
+    it('With nothing', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('with posters and statements sorted into the days they were created', async () => {
+    it('With posters and statements sorted into the days they were created', async () => {
       await wrapper.setProps({ statements, posters: [poster] })
       expect(wrapper.element).toMatchSnapshot()
       expect([...wrapper.vm.days.entries()].length).toBe(4)
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#insert_into_day', () => {
       let other_poster
       beforeEach(() => {
         other_poster = { ...poster }
         other_poster.id = '/+16282281824/posters/559666932000'
       })
-      it('adds poster to the same day', async () => {
+      it('Adds poster to the same day', async () => {
         jest.spyOn(sorting, 'earlier_weirdo_first')
         await wrapper.setProps({ statements, posters: [poster, other_poster] })
         expect(wrapper.vm.days.get('9/26/1987').length).toBe(2)

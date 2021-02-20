@@ -17,12 +17,14 @@ describe('@/components/avatars/as-svg.vue', () => {
       propsData: { person }
     })
   })
-  it('Render an avatar', () => {
-    expect(wrapper.element).toMatchSnapshot()
+  describe('Renders', () => {
+    it('An avatar', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
   describe('Computed', () => {
     describe('.id', () => {
-      it('outputs a null when no avatar exists', () => {
+      it('Outputs a null when no avatar exists', () => {
         const avatar_less = { ...person }
         avatar_less.avatar = null
         wrapper = shallowMount(as_svg, {

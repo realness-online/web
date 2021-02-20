@@ -4,16 +4,16 @@ const fs = require('fs')
 
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 describe('@/helpers/itemid', () => {
-  describe('exports', () => {
+  describe('Methods', () => {
     let person
     beforeEach(() => {
       person = get_item(statements_html)
     })
     describe('#as_thoughts', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(as_thoughts).toBeDefined()
       })
-      it('returns 3 thoughts', () => {
+      it('Returns three thoughts', () => {
         const thoughts = as_thoughts(person.statements)
         expect(thoughts.length).toBe(3)
       })

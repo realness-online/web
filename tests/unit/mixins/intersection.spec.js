@@ -9,22 +9,22 @@ describe('@/mixins/intersection', () => {
     it('Exists', () => {
       expect(wrapper.destroy).toBeDefined()
     })
-    it('resets the observer', () => {
+    it('Resets the observer', () => {
       const mock = jest.fn()
       wrapper.vm.observer = { unobserve: mock }
       wrapper.destroy()
       expect(mock).toBeCalled()
     })
-    it('does nothing if null observer', () => {
+    it('Does nothing if null observer', () => {
       wrapper.destroy()
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#intersect', () => {
       it('Exists', () => {
         expect(wrapper.vm.intersect).toBeDefined()
       })
-      it('resets the observer', () => {
+      it('Resets the observer', () => {
         wrapper.vm.intersect()
       })
     })
@@ -32,7 +32,7 @@ describe('@/mixins/intersection', () => {
       it('Exists', () => {
         expect(wrapper.vm.check_intersection).toBeDefined()
       })
-      it('checks entries', () => {
+      it('Checks entries', () => {
         const intersectings = [{ isIntersecting: true }, { isIntersecting: false }]
         const mock = jest.fn()
         wrapper.vm.show = mock

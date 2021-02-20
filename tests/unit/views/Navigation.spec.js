@@ -23,7 +23,7 @@ describe('@/views/Navigation.vue', () => {
     wrapper.destroy()
   })
   describe('Renders', () => {
-    it('displays statements and profile for a person', async () => {
+    it('Displays statements and profile for a person', async () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     describe('first_name', () => {
@@ -50,7 +50,7 @@ describe('@/views/Navigation.vue', () => {
   })
   describe('Methods', () => {
     describe('#done_posting', () => {
-      it('sets the focus on the post statement button', () => {
+      it('Sets the focus on the post statement button', () => {
         const focus_mock = jest.spyOn(wrapper.vm.$refs.nav, 'focus')
         wrapper.vm.done_posting()
         expect(focus_mock).toBeCalled()

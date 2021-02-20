@@ -50,6 +50,30 @@ describe('@/components/sync', () => {
     set.mockImplementation(_ => Promise.resolve(null))
   })
   afterEach(() => jest.clearAllMocks())
+  describe('Render', () => {
+    beforeEach(async () => {
+      wrapper = shallowMount(sync, {
+        propsData: { config: {} },
+        data () {
+          return { syncing: true }
+        }
+      })
+      await flushPromises()
+    })
+    it('Renders sync component', async () => {
+      expect(wrapper.element).toMatchSnapshot()
+      wrapper.destroy()
+    })
+    it('Terminates worker on destroy', async () => {
+      wrapper.destroy()
+    })
+    it('Check when service comes back from being offline', () => {
+      const message_mock = jest.fn()
+      wrapper.vm.syncer.postMessage = message_mock
+      wrapper.vm.online()
+      expect(message_mock).toBeCalled()
+    })
+  })
   describe('Watchers', () => {
     describe('statement', () => {
       it('Does nothing unless there is a statement', async () => {
@@ -86,30 +110,6 @@ describe('@/components/sync', () => {
       })
     })
   })
-  describe('Render', () => {
-    beforeEach(async () => {
-      wrapper = shallowMount(sync, {
-        propsData: { config: {} },
-        data () {
-          return { syncing: true }
-        }
-      })
-      await flushPromises()
-    })
-    it('Renders sync component', async () => {
-      expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
-    })
-    it('Terminates worker on destroy', async () => {
-      wrapper.destroy()
-    })
-    it('Check when service comes back from being offline', () => {
-      const message_mock = jest.fn()
-      wrapper.vm.syncer.postMessage = message_mock
-      wrapper.vm.online()
-      expect(message_mock).toBeCalled()
-    })
-  })
   describe('Methods', () => {
     describe('#update_visit', () => {
       it('Emits an update event for first visit', async () => {
@@ -134,7 +134,7 @@ describe('@/components/sync', () => {
       })
     })
     describe('#auth_state_changed', () => {
-      it('connects sync worker to component', async () => {
+      it('Connects sync worker to component', async () => {
         wrapper = await shallowMount(sync, fake_props)
         await flushPromises()
         wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
@@ -153,7 +153,7 @@ describe('@/components/sync', () => {
         })
         await flushPromises()
       })
-      it('syncs if the hash value in the index is different', async () => {
+      it('Syncs if the hash value in the index is different', async () => {
         index['/+16282281824/statements'] = 666
         get.mockImplementationOnce(_ => Promise.resolve(index))
         jest.spyOn(wrapper.vm.$refs.sync, 'querySelector').mockImplementationOnce(_ => {
@@ -169,7 +169,7 @@ describe('@/components/sync', () => {
         expect(localStorage.removeItem).toBeCalled() // removes anonymously posted stuff
         expect(set).toBeCalled()
       })
-      it('doesn\'t sync if the hash codes are the same', async () => {
+      it('Doesn\'t sync if the hash codes are the same', async () => {
         index['/+16282281824/statements'] = '-209695279'
         get.mockClear()
         get.mockImplementationOnce(_ => Promise.resolve(index))

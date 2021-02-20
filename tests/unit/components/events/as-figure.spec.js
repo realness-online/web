@@ -14,11 +14,10 @@ const event = {
   url: `${author.id}/${poster.id}`
 }
 describe('@/components/events/as-figure.js', () => {
-  let wrapper
-  beforeEach(() => {
-    wrapper = shallowMount(as_figure, { propsData: { event } })
-  })
-  it('Renders a figure element of an event', () => {
-    expect(wrapper.element).toMatchSnapshot()
+  describe('Renders', () => {
+    it('A figure element of an event', () => {
+      const wrapper = shallowMount(as_figure, { propsData: { event } })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

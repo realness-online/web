@@ -22,11 +22,13 @@ describe('@/views/Events.vue', () => {
     })
   })
   afterEach(() => jest.resetAllMocks())
-  it('Renders list of upcoming events', () => {
-    const wrapper = shallowMount(Events, {
-      stubs: ['router-link']
+  describe('Renders', () => {
+    it('List of upcoming events', () => {
+      const wrapper = shallowMount(Events, {
+        stubs: ['router-link']
+      })
+      expect(wrapper.element).toMatchSnapshot()
+      expect(load).toBeCalled()
     })
-    expect(wrapper.element).toMatchSnapshot()
-    expect(load).toBeCalled()
   })
 })

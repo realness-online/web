@@ -23,7 +23,7 @@ describe('@/views/Posters.vue', () => {
     wrapper.vm.events = events
   })
   describe('Renders', () => {
-    it('Renders UI for posters', () => {
+    it('UI for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Unmounts the worker when destroyed', () => {

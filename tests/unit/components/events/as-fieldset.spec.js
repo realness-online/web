@@ -30,7 +30,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     beforeEach(() => {
       jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
       wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
@@ -61,7 +61,7 @@ describe('@/compontent/events/as-fieldset.vue', () => {
         await wrapper.vm.save()
         expect(wrapper.emitted('picker')).toBeTruthy()
       })
-      it('removes any existing events', () => {
+      it('Removes any existing events', () => {
         expect(wrapper.vm.events.length).toBe(1)
         wrapper.vm.save()
         expect(wrapper.vm.events.length).toBe(1)

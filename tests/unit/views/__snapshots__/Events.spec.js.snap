@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Events.vue Renders list of upcoming events 1`] = `
+exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
 <section
   class="page"
   id="events"

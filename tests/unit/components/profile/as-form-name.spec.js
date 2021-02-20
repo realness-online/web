@@ -10,10 +10,12 @@ describe('@/compontent/profile/as-form-name.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_form, { propsData: { person } })
   })
-  it('Render profile name form', () => {
-    expect(wrapper.element).toMatchSnapshot()
+  describe('Renders', () => {
+    it('Profile name form', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     describe('#valid', () => {
       it('3 character full names are valid', () => {
         wrapper.vm.valid()

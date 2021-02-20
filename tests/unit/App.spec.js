@@ -21,7 +21,7 @@ describe('@/App.vue', () => {
     process.env = node_env
   })
   describe('Renders', () => {
-    it('layout of the application', () => {
+    it('Layout of the application', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Initialises firebase', () => {

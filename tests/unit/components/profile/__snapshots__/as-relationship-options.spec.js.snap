@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-relationship-options.vue Render a list of options for this profile 1`] = `
+exports[`@/compontent/profile/as-relationship-options.vue Renders A list of options for this profile 1`] = `
 <a
   class="status relation"
   me="[object Object]"

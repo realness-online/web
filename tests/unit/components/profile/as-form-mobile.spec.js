@@ -18,7 +18,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Elements:', () => {
+  describe('Elements', () => {
     describe('input#mobile', () => {
       describe('keypress', () => {
         let input, stub
@@ -186,7 +186,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         await flushPromises()
         button = wrapper.find('#submit-verification')
       })
-      it('button#submit-verification signs the user in', async () => {
+      it('Signs the user in', async () => {
         await button.trigger('click')
         expect(confirm_spy).toBeCalled()
       })
@@ -202,14 +202,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
     })
   })
-  describe('Computed', () => {
-    describe('.mobile_display', () => {
-      it('', () => {
-
-      })
-    })
-  })
-  describe('Methods:', () => {
+  describe('Methods', () => {
     describe('#text_human_verify_code', () => {
       let wrapper
       beforeEach(async () => {
@@ -229,11 +222,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         expect(wrapper.vm.show_code).toBe(true)
       })
     })
-    it.todo('#enable_input')
-    it.todo('#modified_check')
-    it.todo('#mobile_keyup')
   })
-  describe('Watchers:', () => {
+  describe('Watchers', () => {
     describe('mobile', () => {
       it('Emites updates when mobile number is changed', async () => {
         const wrapper = await shallowMount(as_form, { propsData: { person } })

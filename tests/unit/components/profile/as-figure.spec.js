@@ -67,7 +67,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       })
     })
     describe('#add_relationship', () => {
-      it('adds a person to my list of relationships', async () => {
+      it('Adds a person to my list of relationships', async () => {
         await wrapper.vm.add_relationship()
         expect(wrapper.emitted('update:relations')).toBeTruthy()
       })

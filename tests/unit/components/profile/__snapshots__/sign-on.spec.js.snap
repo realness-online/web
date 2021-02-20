@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/profile/sign-on Renders sign on button 1`] = `
+exports[`@/components/profile/sign-on Renders Sign on button 1`] = `
 <button
   class="sign-on"
 >

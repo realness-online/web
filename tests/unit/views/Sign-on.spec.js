@@ -101,7 +101,7 @@ describe('@/views/Sign-on.vue', () => {
       })
     })
     describe('#clean', () => {
-      it('wipes out the local storage', async () => {
+      it('Wipes out the local storage', async () => {
         const local_clear_spy = jest.spyOn(localStorage, 'clear')
         await wrapper.vm.clean()
         expect(local_clear_spy).toBeCalled()

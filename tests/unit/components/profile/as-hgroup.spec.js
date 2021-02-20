@@ -9,11 +9,13 @@ const person = {
 }
 describe('@/compontent/profile/as-hgroup.vue', () => {
   let wrapper
-  it('Renders a person as a hgroup element', () => {
-    wrapper = shallowMount(as_hgroup, { propsData: { person } })
-    expect(wrapper.element).toMatchSnapshot()
+  describe('Renders', () => {
+    it('A person as a hgroup element', () => {
+      wrapper = shallowMount(as_hgroup, { propsData: { person } })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     beforeEach(() => {
       wrapper = shallowMount(as_hgroup, {
         propsData: {
