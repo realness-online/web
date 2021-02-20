@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
+exports[`@/components/avatars/as-form.vue Renders With an avatar 1`] = `
 <div
   id="manage-avatar"
 >
@@ -38,7 +38,7 @@ exports[`@/components/avatars/as-form.vue Rendering With an avatar 1`] = `
 </div>
 `;
 
-exports[`@/components/avatars/as-form.vue Rendering Without an avatar 1`] = `
+exports[`@/components/avatars/as-form.vue Renders Without an avatar 1`] = `
 <div
   id="manage-avatar"
 >

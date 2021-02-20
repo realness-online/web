@@ -25,7 +25,7 @@ describe('@/components/avatars/as-form.vue', () => {
   afterEach(() => {
     firebase.user = null
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('With an avatar', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -45,7 +45,7 @@ describe('@/components/avatars/as-form.vue', () => {
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })
-  describe('computed:', () => {
+  describe('Computed', () => {
     describe('.path', () => {
       it('returns null if the form is working', () => {
         wrapper.vm.working = true
@@ -70,7 +70,7 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
   })
-  describe('watch:', () => {
+  describe('Watchers', () => {
     describe('.working', () => {
       it('posts a message to the optimizer when there a new avatar', async () => {
         const worker = {
@@ -89,7 +89,7 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     describe('#set_current_avatar', () => {
       it('sets a new current avatar', () => {
         wrapper.vm.set_current_avatar({ id: '/+/avatars/1578929551564' })

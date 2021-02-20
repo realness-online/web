@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/vector_click', () => {
-  describe('methods', () => {
+  describe('Methods', () => {
     let wrapper
     beforeEach(() => {
       wrapper = shallowMount(vector_mock)
@@ -21,12 +21,12 @@ describe('@/mixins/vector_click', () => {
       })
     })
     })
-  describe('computed', () => {
+  describe('Computed', () => {
     let wrapper
     beforeEach(() => {
       wrapper = shallowMount(vector_mock)
     })
-    describe('#landscape', () => {
+    describe('.landscape', () => {
       it('returns false as default', () => {
         expect(wrapper.vm.vector).toBe(null)
         expect(wrapper.vm.landscape).toBe(false)
@@ -36,7 +36,7 @@ describe('@/mixins/vector_click', () => {
         expect(wrapper.vm.landscape).toBe(true)
       })
     })
-      describe('#aspect_ratio', () => {
+    describe('.aspect_ratio', () => {
       it('Exists', () => {
         expect(wrapper.vm.aspect_ratio).toBeDefined()
       })

@@ -12,7 +12,7 @@ describe('@/components/posters/as-svg.vue', () => {
       propsData: { itemid: poster.id }
     })
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('A poster', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -23,8 +23,8 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('computed:', () => {
-    describe('viewbox', () => {
+  describe('Computed:', () => {
+    describe('.viewbox', () => {
       it('Returns the vector\'s viewbox', () => {
         wrapper.vm.vector = poster
         expect(wrapper.vm.viewbox).toBe('0 0 333 444')
@@ -35,7 +35,7 @@ describe('@/components/posters/as-svg.vue', () => {
       })
     })
   })
-  describe('watch:', () => {
+  describe('Watchers', () => {
     describe('poster', () => {
       it('Updates vector when changed', async () => {
         const other_poster = { ...poster }
@@ -52,7 +52,7 @@ describe('@/components/posters/as-svg.vue', () => {
       })
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#show', () => {
       it('Sets vector to the poster prop', async () => {
         wrapper = await shallowMount(as_svg, {

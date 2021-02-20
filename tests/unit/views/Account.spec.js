@@ -26,7 +26,7 @@ describe('@/views/Account.vue', () => {
     localStorage.clear()
     firebase.user = null
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('Renders account information', async () => {
       await flushPromises()
       expect(load_spy).toBeCalled()
@@ -34,14 +34,14 @@ describe('@/views/Account.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('computed:', () => {
-    describe('#statements_id', () => {
+  describe('Computed', () => {
+    describe('.statements_id', () => {
       it('give the current users id', async () => {
         expect(wrapper.vm.statements_id).toBe('/+16282281824/statements')
       })
     })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     beforeEach(() => {
       const localVue = createLocalVue()
       localVue.use(VueRouter)
@@ -90,13 +90,13 @@ describe('@/views/Account.vue', () => {
         expect(wrapper.vm.$route.path).toBe('/')
       })
     })
-    describe('thought_focused', () => {
+    describe('#thought_focused', () => {
       it('run when an editable statement is focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
         wrapper.vm.thought_focused(statement)
       })
     })
-    describe('thought_blurred', () => {
+    describe('#thought_blurred', () => {
       it('Run when an editable statement is focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
         wrapper.vm.thought_shown = jest.spyOn(wrapper.vm, 'thought_shown')

@@ -25,7 +25,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       }
     })
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('Render a person\'s profile info', () => {
       expect(wrapper.element).toMatchSnapshot()
     })

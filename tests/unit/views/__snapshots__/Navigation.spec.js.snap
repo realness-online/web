@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Navigation.vue Rendering displays statements and profile for a person 1`] = `
+exports[`@/views/Navigation.vue Renders displays statements and profile for a person 1`] = `
 <section
   class="page"
   id="navigation"
@@ -68,7 +68,7 @@ exports[`@/views/Navigation.vue Rendering displays statements and profile for a 
 </section>
 `;
 
-exports[`@/views/Navigation.vue Rendering handling statement events posting:false should render the main navigation 1`] = `
+exports[`@/views/Navigation.vue Renders handling statement events posting:false should render the main navigation 1`] = `
 <section
   class="page"
   id="navigation"
@@ -136,7 +136,7 @@ exports[`@/views/Navigation.vue Rendering handling statement events posting:fals
 </section>
 `;
 
-exports[`@/views/Navigation.vue Rendering handling statement events posting:true should hide main navigation 1`] = `
+exports[`@/views/Navigation.vue Renders handling statement events posting:true should hide main navigation 1`] = `
 <section
   class="page"
   id="navigation"

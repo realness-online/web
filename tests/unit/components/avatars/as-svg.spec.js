@@ -20,8 +20,8 @@ describe('@/components/avatars/as-svg.vue', () => {
   it('Render an avatar', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
-  describe('computed:', () => {
-    describe('id', () => {
+  describe('Computed', () => {
+    describe('.id', () => {
       it('outputs a null when no avatar exists', () => {
         const avatar_less = { ...person }
         avatar_less.avatar = null
@@ -31,7 +31,7 @@ describe('@/components/avatars/as-svg.vue', () => {
         expect(wrapper.vm.id).toBe(null)
       })
     })
-    describe('avatar_link', () => {
+    describe('.avatar_link', () => {
       it('References the working icon when working', () => {
         wrapper = shallowMount(as_svg, {
           propsData: { person, working: true }
@@ -40,7 +40,7 @@ describe('@/components/avatars/as-svg.vue', () => {
       })
     })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     describe('#first_instance', () => {
       it('Exists', () => {
         expect(wrapper.vm.first_instance).toBeDefined()

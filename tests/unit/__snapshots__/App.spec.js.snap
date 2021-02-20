@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/App.vue Rendering layout of the application 1`] = `
+exports[`@/App.vue Renders layout of the application 1`] = `
 <main
   id="realness"
 >

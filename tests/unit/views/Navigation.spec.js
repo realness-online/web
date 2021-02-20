@@ -22,11 +22,11 @@ describe('@/views/Navigation.vue', () => {
   afterEach(() => {
     wrapper.destroy()
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('displays statements and profile for a person', async () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    describe('rendering first_name', () => {
+    describe('first_name', () => {
       it('Returns \'You\' by default', async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
         wrapper = shallowMount(Navigation, { stubs: { RouterLink: RouterLinkStub } })
@@ -48,7 +48,7 @@ describe('@/views/Navigation.vue', () => {
       })
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#done_posting', () => {
       it('sets the focus on the post statement button', () => {
         const focus_mock = jest.spyOn(wrapper.vm.$refs.nav, 'focus')

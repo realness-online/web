@@ -22,7 +22,7 @@ describe('@/views/Posters.vue', () => {
     wrapper = shallowMount(Posters)
     wrapper.vm.events = events
   })
-  describe('rendering:', () => {
+  describe('Renders', () => {
     it('Renders UI for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -34,8 +34,8 @@ describe('@/views/Posters.vue', () => {
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })
-  describe('computed', () => {
-    describe('date_picker', () => {
+  describe('Computed', () => {
+    describe('.date_picker', () => {
       it('Is false by default', () => {
         expect(wrapper.vm.date_picker).toBe(false)
       })
@@ -56,14 +56,14 @@ describe('@/views/Posters.vue', () => {
         expect(wrapper.vm.date_picker).toBe(true)
       })
     })
-    describe('as_itemid', () => {
+    describe('.as_itemid', () => {
       wrapper = shallowMount(Posters)
       localStorage.me = '/+16282281824'
       expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
     })
   })
-  describe('methods:', () => {
-    describe('get_id', () => {
+  describe('Methods', () => {
+    describe('#get_id', () => {
       it('Gets the poster id from the directory listing on hte network', () => {
         wrapper.vm.get_id(`${poster.id}.html`)
       })

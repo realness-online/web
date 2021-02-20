@@ -20,7 +20,7 @@ describe('@/App.vue', () => {
   afterAll(() => {
     process.env = node_env
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('layout of the application', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
