@@ -10,14 +10,14 @@ describe('@/components/statements/as-div.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_statement, { propsData: { statement: statements.statements[0] } })
   })
-  describe('rendering:', () => {
+  describe('Renders:', () => {
     it('Render a statement', async () => {
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       wrapper.destroy()
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#save', () => {
       it('Saves a statement', async () => {
         wrapper = shallowMount(as_statement, {

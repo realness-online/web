@@ -13,7 +13,7 @@ describe('@/components/as-days', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_days)
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('with nothing', () => {
       expect(wrapper.element).toMatchSnapshot()
     })

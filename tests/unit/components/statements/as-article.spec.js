@@ -17,7 +17,7 @@ describe('@/components/statements/as-article.vue', () => {
     })
     await flushPromises()
   })
-  describe('rendering:', () => {
+  describe('Renders:', () => {
     it('Render a statement as an article element', async () => {
       expect(wrapper.element).toMatchSnapshot()
       wrapper.destroy()
@@ -32,7 +32,7 @@ describe('@/components/statements/as-article.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#show', () => {
       it('Emits and event', () => {
         wrapper.vm.show()

@@ -13,8 +13,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     wrapper = await shallowMount(as_form, { propsData: { person } })
     await flushPromises()
   })
-  describe('Initial render', () => {
-    it('Render profile form', () => {
+  describe('Renders', () => {
+    it('Profile form', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
@@ -202,8 +202,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
     })
   })
-  describe('computed', () => {
-    describe('mobile_display', () => {
+  describe('Computed', () => {
+    describe('.mobile_display', () => {
       it('', () => {
 
       })

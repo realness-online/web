@@ -9,7 +9,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_figure, { propsData: { itemid: poster.id } })
   })
-  describe('renders:', () => {
+  describe('Renders', () => {
     it('A poster', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -18,15 +18,15 @@ describe('@/compontent/posters/as-figure.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('computed:', () => {
-    describe('background', () => {
+  describe('Computed', () => {
+    describe('.background', () => {
       it('Returns background when figure is working', () => {
         wrapper.setProps({ working: true })
         expect(wrapper.vm.background).toBe('working')
       })
     })
   })
-  describe('watch', () => {
+  describe('Watchers', () => {
     describe('new_poster', () => {
       it('Sets poster to new_poster', async () => {
         expect(wrapper.vm.menu).toBe(false)
@@ -55,7 +55,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
   })
-  describe('methods:', () => {
+  describe('Methods', () => {
     describe('#open_sms_app', () => {
       it('opens a window to users default messenger', () => {
         window.open = jest.fn()

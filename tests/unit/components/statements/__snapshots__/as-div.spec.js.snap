@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/statements/as-div.vue rendering: Render a statement 1`] = `
+exports[`@/components/statements/as-div.vue Renders: Render a statement 1`] = `
 <div
   itemid="/+16282281824/statements/1569909292018"
   itemscope="itemscope"

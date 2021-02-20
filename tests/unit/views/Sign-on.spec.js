@@ -32,7 +32,7 @@ describe('@/views/Sign-on.vue', () => {
     localStorage.clear()
     jest.clearAllMocks()
   })
-  describe('Rendering', () => {
+  describe('Renders', () => {
     it('Renders a form for a new user', async () => {
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -45,7 +45,7 @@ describe('@/views/Sign-on.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Computed:', () => {
+  describe('Computed', () => {
     describe('.cleanable', () => {
       it('Is cleanable if they are signed out', () => {
         wrapper.vm.signed_in = true
@@ -68,8 +68,8 @@ describe('@/views/Sign-on.vue', () => {
       })
     })
   })
-  describe('Methods:', () => {
-    describe('auth_state', () => {
+  describe('Methods', () => {
+    describe('#auth_state', () => {
       it('Sets mobile to null if the user is signed in', () => {
         wrapper.vm.person = { mobile: '1112223333' }
         wrapper.vm.auth_state({ phoneMumber: '+16282281824' })
