@@ -16,7 +16,9 @@ describe('@/compontent/profile/as-meta.vue', () => {
   afterEach(() => {
     localStorage.clear()
   })
-  it('Renders a list of the person relationships', () => {
-    expect(wrapper.element).toMatchSnapshot()
+  describe('Renders', () => {
+    it('A list of the person relationships', () => {
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

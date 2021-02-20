@@ -27,11 +27,11 @@ describe('@/mixins/vector_click', () => {
       wrapper = shallowMount(vector_mock)
     })
     describe('.landscape', () => {
-      it('returns false as default', () => {
+      it('Returns false as default', () => {
         expect(wrapper.vm.vector).toBe(null)
         expect(wrapper.vm.landscape).toBe(false)
       })
-      it('returns the ratio of width to height', () => {
+      it('Returns the ratio of width to height', () => {
         wrapper.vm.vector = { viewbox: '0 0 400 300' }
         expect(wrapper.vm.landscape).toBe(true)
       })

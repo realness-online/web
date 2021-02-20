@@ -9,30 +9,32 @@ const fetch = require('jest-fetch-mock')
 const user = { phoneNumber: '/+16282281824' }
 
 describe('@/views/Profile.vue', () => {
-  it('Shows profile information for a phone number', async () => {
-    firebase.user = user
-    fetch.resetMocks()
-    fetch.mockResponseOnce(person)
-    jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
-      return { items: ['559666932867'] }
+  describe('Renders', () => {
+    it('Shows profile information for a phone number', async () => {
+      firebase.user = user
+      fetch.resetMocks()
+      fetch.mockResponseOnce(person)
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+        return { items: ['559666932867'] }
+      })
+      const $route = { params: { phone_number: '+14151231234' } }
+      const wrapper = shallowMount(Profile, { mocks: { $route } })
+      await flushPromises()
+      expect(wrapper.element).toMatchSnapshot()
+      firebase.user = null
     })
-    const $route = { params: { phone_number: '+14151231234' } }
-    const wrapper = shallowMount(Profile, { mocks: { $route } })
-    await flushPromises()
-    expect(wrapper.element).toMatchSnapshot()
-    firebase.user = null
-  })
-  it('Handles there not being posters', async () => {
-    firebase.user = user
-    fetch.resetMocks()
-    fetch.mockResponseOnce(person)
-    jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
-      return { items: [] }
+    it('Handles there not being posters', async () => {
+      firebase.user = user
+      fetch.resetMocks()
+      fetch.mockResponseOnce(person)
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+        return { items: [] }
+      })
+      const $route = { params: { phone_number: '+14151231234' } }
+      const wrapper = shallowMount(Profile, { mocks: { $route } })
+      await flushPromises()
+      expect(wrapper.element).toMatchSnapshot()
+      firebase.user = null
     })
-    const $route = { params: { phone_number: '+14151231234' } }
-    const wrapper = shallowMount(Profile, { mocks: { $route } })
-    await flushPromises()
-    expect(wrapper.element).toMatchSnapshot()
-    firebase.user = null
   })
 })

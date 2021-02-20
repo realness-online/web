@@ -47,18 +47,18 @@ describe('@/components/avatars/as-form.vue', () => {
   })
   describe('Computed', () => {
     describe('.path', () => {
-      it('returns null if the form is working', () => {
+      it('Returns null if the form is working', () => {
         wrapper.vm.working = true
         expect(wrapper.vm.path).toBe(null)
       })
-      it('returns the path if it\'s a string', () => {
+      it('Returns the path if it\'s a string', () => {
         wrapper.vm.vector = {
           id: person.avatar,
           path: '<path itemprop="path" d="1"/>'
         }
         expect(wrapper.vm.path).toBe('<path itemprop="path" d="1"/>')
       })
-      it('returns a string of all the paths if avatar.path is an array', () => {
+      it('Returns a string of all the paths if avatar.path is an array', () => {
         wrapper.vm.vector = {
           id: person.avatar,
           path: [
@@ -71,8 +71,8 @@ describe('@/components/avatars/as-form.vue', () => {
     })
   })
   describe('Watchers', () => {
-    describe('.working', () => {
-      it('posts a message to the optimizer when there a new avatar', async () => {
+    describe('working', () => {
+      it('Posts a message to the optimizer when there a new avatar', async () => {
         const worker = {
           postMessage: jest.fn()
         }
@@ -91,7 +91,7 @@ describe('@/components/avatars/as-form.vue', () => {
   })
   describe('Methods', () => {
     describe('#set_current_avatar', () => {
-      it('sets a new current avatar', () => {
+      it('Sets a new current avatar', () => {
         wrapper.vm.set_current_avatar({ id: '/+/avatars/1578929551564' })
       })
     })
@@ -123,7 +123,7 @@ describe('@/components/avatars/as-form.vue', () => {
         wrapper.vm.vectorized(message)
         expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/1577836800000')
       })
-      it('sets working to false', () => {
+      it('Sets working to false', () => {
         wrapper.vm.working = true
         wrapper.vm.vectorized(message)
         expect(wrapper.vm.working).toBe(false)
@@ -135,12 +135,12 @@ describe('@/components/avatars/as-form.vue', () => {
           vector: avatar_html
         }
       }
-      it('sets avatar_changed to true', () => {
+      it('Sets avatar_changed to true', () => {
         wrapper.vm.avatar_changed = false
         wrapper.vm.optimized(message)
         expect(wrapper.vm.avatar_changed).toBe(true)
       })
-      it('sets current_avatar with an optimized vector', () => {
+      it('Sets current_avatar with an optimized vector', () => {
         wrapper.vm.optimized(message)
         expect(wrapper.vm.current_avatar.id).toBe('/+16282281824/avatars/55446694324')
       })

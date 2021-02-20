@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Posters.vue Renders Renders UI for posters 1`] = `
+exports[`@/views/Posters.vue Renders UI for posters 1`] = `
 <section
   class="page"
   id="posters"

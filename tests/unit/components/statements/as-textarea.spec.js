@@ -1,32 +1,36 @@
 import { shallowMount } from '@vue/test-utils'
 import wat from '@/components/statements/as-textarea'
 describe('@/components/statements/as-textarea.vue', () => {
-  it('Renders', () => {
-    const wrapper = shallowMount(wat)
-    expect(wrapper.element).toMatchSnapshot()
-  })
-  it('#wat_focused() exists', () => {
-    expect(typeof wat.methods.focused).toBe('function')
-  })
-  describe('#prepare_statement', () => {
-    it('Exists', () => {
-      expect(typeof wat.methods.prepare_statement).toBe('function')
+  describe('Renders', () => {
+    it('A texarea for statement input', () => {
+      const wrapper = shallowMount(wat)
+      expect(wrapper.element).toMatchSnapshot()
     })
-    it('Only triggers a statement event when there is text', () => {
-      const wrapper = shallowMount(wat, {
-        data () {
-          return {
-            statements: [],
-            new_statement: ''
-          }
-        }
+  })
+  describe('Methods', () => {
+    it('#wat_focused', () => {
+      expect(typeof wat.methods.focused).toBe('function')
+    })
+    describe('#prepare_statement', () => {
+      it('Exists', () => {
+        expect(typeof wat.methods.prepare_statement).toBe('function')
       })
-      expect(wrapper.vm.statements.length).toBe(0)
-      wrapper.vm.prepare_statement()
-      expect(wrapper.vm.statements.length).toBe(0)
+      it('Only triggers a statement event when there is text', () => {
+        const wrapper = shallowMount(wat, {
+          data () {
+            return {
+              statements: [],
+              new_statement: ''
+            }
+          }
+        })
+        expect(wrapper.vm.statements.length).toBe(0)
+        wrapper.vm.prepare_statement()
+        expect(wrapper.vm.statements.length).toBe(0)
+      })
     })
   })
-  describe('focus', () => {
+  describe('Events', () => {
     it('Emits a toggle-keyboard event when focused', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')

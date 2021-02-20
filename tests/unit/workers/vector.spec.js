@@ -18,7 +18,7 @@ const mock_vector = {
 }
 
 describe('/workers/vector.js', () => {
-  describe('methods', () => {
+  describe('Methods', () => {
     let as_paths_spy
     beforeEach(() => {
       as_paths_spy = jest.spyOn(potrace, 'as_paths')
@@ -34,7 +34,7 @@ describe('/workers/vector.js', () => {
         postMessage_spy = jest.spyOn(global, 'postMessage')
         .mockImplementation(_ => true)
       })
-      it('#Creates a vector from a jpeg', async () => {
+      it('Creates a vector from a jpeg', async () => {
         await vector.listen({ data: { image } })
         expect(read_spy).toBeCalled()
         expect(as_paths_spy).toBeCalled()

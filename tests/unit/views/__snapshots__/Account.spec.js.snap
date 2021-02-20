@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Account.vue Renders Renders account information 1`] = `
+exports[`@/views/Account.vue Renders Account information 1`] = `
 <section
   class="page signed-in"
   id="account"

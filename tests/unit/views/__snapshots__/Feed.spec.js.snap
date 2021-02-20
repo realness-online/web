@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Feed.vue Render a feed of statements 1`] = `
+exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
 <section
   class="page"
   id="feed"
@@ -31,7 +31,7 @@ exports[`@/views/Feed.vue Render a feed of statements 1`] = `
 </section>
 `;
 
-exports[`@/views/Feed.vue Render a feed of statements and posters 1`] = `
+exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
 <section
   class="page"
   id="feed"

@@ -19,61 +19,63 @@ describe('@/persistance/Cloud.js', () => {
     jest.clearAllMocks()
     localStorage.clear()
   })
-  describe('#save', () => {
-    it('Exists', () => {
-      expect(cloud.save).toBeDefined()
+  describe('Methods', () => {
+    describe('#save', () => {
+      it('Exists', () => {
+        expect(cloud.save).toBeDefined()
+      })
+      it('Only saves if their are items', async () => {
+        cloud.to_network = jest.fn()
+        await cloud.save()
+        expect(cloud.to_network).not.toBeCalled()
+      })
+      it('Only saves certain types', async () => {
+        cloud.to_network = jest.fn()
+        await cloud.save(statements)
+        expect(cloud.to_network).not.toBeCalled()
+      })
+      it('Saves items on the server', async () => {
+        cloud.to_network = jest.fn()
+        cloud.type = 'avatars'
+        await cloud.save(statements)
+        expect(cloud.to_network).toBeCalled()
+      })
+      it('Calls save on a parent class', async () => {
+        get.mockImplementationOnce(_ => Promise.resolve({}))
+        class Whatever extends Cloud(Local(Storage)) {}
+        cloud = new Whatever('/+16282281824/whatevers')
+        cloud.to_network = jest.fn()
+        cloud.type = 'avatars'
+        await cloud.save(statements)
+        expect(cloud.to_network).toBeCalled()
+      })
     })
-    it('Only saves if their are items', async () => {
-      cloud.to_network = jest.fn()
-      await cloud.save()
-      expect(cloud.to_network).not.toBeCalled()
+    describe('#delete', () => {
+      it('Deletes a resource on the cloud', async () => {
+        firebase.user = user
+        await cloud.delete()
+        expect(firebase.storage().ref().child().delete).toBeCalled()
+      })
+      it('Only deletes when logged in', async () => {
+        firebase.user = null
+        await cloud.delete()
+        expect(firebase.storage().ref().child().delete).not.toBeCalled()
+      })
     })
-    it('Only saves certain types', async () => {
-      cloud.to_network = jest.fn()
-      await cloud.save(statements)
-      expect(cloud.to_network).not.toBeCalled()
-    })
-    it('Saves items on the server', async () => {
-      cloud.to_network = jest.fn()
-      cloud.type = 'avatars'
-      await cloud.save(statements)
-      expect(cloud.to_network).toBeCalled()
-    })
-    it('calls save on a parent class', async () => {
-      get.mockImplementationOnce(_ => Promise.resolve({}))
-      class Whatever extends Cloud(Local(Storage)) {}
-      cloud = new Whatever('/+16282281824/whatevers')
-      cloud.to_network = jest.fn()
-      cloud.type = 'avatars'
-      await cloud.save(statements)
-      expect(cloud.to_network).toBeCalled()
-    })
-  })
-  describe('#delete', () => {
-    it('Deletes a resource on the cloud', async () => {
-      firebase.user = user
-      await cloud.delete()
-      expect(firebase.storage().ref().child().delete).toBeCalled()
-    })
-    it('Only deletes when logged in', async () => {
-      firebase.user = null
-      await cloud.delete()
-      expect(firebase.storage().ref().child().delete).not.toBeCalled()
-    })
-  })
-  describe('#to_network', () => {
-    it('firebase.user = userxists', () => {
-      expect(cloud.to_network).toBeDefined()
-    })
-    it('Persist a file in a persons home directory', async () => {
-      firebase.user = user
-      await cloud.to_network(statements)
-      expect(firebase.storage().ref().child().put).toBeCalled()
-      firebase.user = null
-    })
-    it('Does nothing unless user is signed in', async () => {
-      await cloud.to_network(statements)
-      expect(firebase.storage().ref().child().put).not.toBeCalled()
+    describe('#to_network', () => {
+      it('firebase.user = userxists', () => {
+        expect(cloud.to_network).toBeDefined()
+      })
+      it('Persist a file in a persons home directory', async () => {
+        firebase.user = user
+        await cloud.to_network(statements)
+        expect(firebase.storage().ref().child().put).toBeCalled()
+        firebase.user = null
+      })
+      it('Does nothing unless user is signed in', async () => {
+        await cloud.to_network(statements)
+        expect(firebase.storage().ref().child().put).not.toBeCalled()
+      })
     })
   })
 })

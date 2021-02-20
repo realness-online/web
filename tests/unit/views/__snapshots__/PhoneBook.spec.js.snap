@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/PhoneBook render Displays the phonebook when signed in 1`] = `
+exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
 <section
   class="page"
   id="directory"
@@ -36,7 +36,7 @@ exports[`@/views/PhoneBook render Displays the phonebook when signed in 1`] = `
 </section>
 `;
 
-exports[`@/views/PhoneBook render Handles when a person not loading 1`] = `
+exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
 <section
   class="page"
   id="directory"
@@ -67,7 +67,7 @@ exports[`@/views/PhoneBook render Handles when a person not loading 1`] = `
 </section>
 `;
 
-exports[`@/views/PhoneBook render Lets you know to sign in 1`] = `
+exports[`@/views/PhoneBook Renders Lets you know to sign in 1`] = `
 <section
   class="page"
   id="directory"

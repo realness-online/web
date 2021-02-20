@@ -23,7 +23,7 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Computed:', () => {
+  describe('Computed', () => {
     describe('.viewbox', () => {
       it('Returns the vector\'s viewbox', () => {
         wrapper.vm.vector = poster

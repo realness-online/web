@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Navigation.vue Renders displays statements and profile for a person 1`] = `
+exports[`@/views/Navigation.vue Renders Displays statements and profile for a person 1`] = `
 <section
   class="page"
   id="navigation"

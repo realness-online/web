@@ -18,7 +18,7 @@ describe('@/views/PhoneBook', () => {
     jest.clearAllMocks()
     firebase.user = null
   })
-  describe('render', () => {
+  describe('Renders', () => {
     it('Lets you know to sign in', async () => {
       wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
       expect(wrapper.vm.signed_in).toBe(false)

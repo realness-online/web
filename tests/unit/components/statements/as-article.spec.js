@@ -17,7 +17,7 @@ describe('@/components/statements/as-article.vue', () => {
     })
     await flushPromises()
   })
-  describe('Renders:', () => {
+  describe('Renders', () => {
     it('Render a statement as an article element', async () => {
       expect(wrapper.element).toMatchSnapshot()
       wrapper.destroy()

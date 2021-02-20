@@ -86,53 +86,53 @@ describe('@/helpers/itemid', () => {
   })
   describe('exports', () => {
     describe('#as_type', () => {
-      it('gives person for /+', () => {
+      it('Gives person for /+', () => {
         expect(as_type('/+')).toBe('person')
       })
-      it('gives person for /+14156281828', () => {
+      it('Gives person for /+14156281828', () => {
         expect(as_type('/+14156281828')).toBe('person')
       })
-      it('gives person for /+14156281828/', () => {
+      it('Gives person for /+14156281828/', () => {
         expect(as_type('/+14156281828/')).toBe('person')
       })
-      it('gives avatars for /+14156281828/avatars', () => {
+      it('Gives avatars for /+14156281828/avatars', () => {
         expect(as_type('/+14156281828/avatars/559666932867')).toBe('avatars')
       })
-      it('gives avatars for /+14156281828/avatars/', () => {
+      it('Gives avatars for /+14156281828/avatars/', () => {
         expect(as_type('/+14156281828/avatars/559666932867')).toBe('avatars')
       })
-      it('gives avatars for /+14156281828/avatars/559666932867', () => {
+      it('Gives avatars for /+14156281828/avatars/559666932867', () => {
         expect(as_type('/+14156281828/avatars/559666932867')).toBe('avatars')
       })
     })
     describe('#as_directory_id', () => {
-      it('returns /+/posters for /+/posters/559666932867', () => {
+      it('Returns /+/posters for /+/posters/559666932867', () => {
         expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters/')
       })
-      it('returns /+16282281824/posters for /+/posters/559666932867', () => {
+      it('Returns /+16282281824/posters for /+/posters/559666932867', () => {
         expect(as_directory_id('/+16282281824/posters/559666932867'))
         .toBe('/+16282281824/posters/')
       })
     })
     describe('#as_storage_path', () => {
-      it('gives null for empty string', () => {
+      it('Gives null for empty string', () => {
         expect(as_storage_path('')).toBe(null)
       })
-      it('gives person for /+14156281828', () => {
+      it('Gives person for /+14156281828', () => {
         expect(as_storage_path('/+14156281828'))
         .toBe('/people/+14156281828')
       })
-      it('gives avatars for /+14156281828/avatars', () => {
+      it('Gives avatars for /+14156281828/avatars', () => {
         expect(as_storage_path('/+14156281828/avatars'))
         .toBe('/people/+14156281828/avatars')
       })
-      it('gives /people/+14156281828/avatars for /+14156281828/avatars/559666932867', () => {
+      it('Gives /people/+14156281828/avatars for /+14156281828/avatars/559666932867', () => {
         expect(as_storage_path('/+14156281828/avatars/559666932867'))
         .toBe('/people/+14156281828/avatars')
       })
     })
     describe('#as_download_url', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(as_download_url).toBeDefined()
       })
       it('Returns a url', async () => {
@@ -147,15 +147,15 @@ describe('@/helpers/itemid', () => {
       })
     })
     describe('#as_filename', () => {
-      it('returns /people/+16282281824/index.html for /+16282281824', () => {
+      it('Returns /people/+16282281824/index.html for /+16282281824', () => {
         expect(as_filename('/+16282281824')).toBe('/people/+16282281824/index.html')
       })
-      it('returns /activity/index.html for /activity', () => {
+      it('Returns /activity/index.html for /activity', () => {
         expect(as_filename('/activity')).toBe('/activity/index.html')
       })
     })
     describe('#as_directory', () => {
-      it('exists', () => {
+      it('Exists', () => {
         expect(as_directory).toBeDefined()
       })
       it('Returns a directory when offline', async () => {
@@ -180,7 +180,7 @@ describe('@/helpers/itemid', () => {
     })
     describe('#as_author', () => {
       const itemid = '/+16282281824/statements/1583955101461'
-      it('should return an author id for a statement id', () => {
+      it('Should return an author id for a statement id', () => {
         expect(as_author(itemid)).toBe('/+16282281824')
       })
     })

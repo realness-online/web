@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/compontent/profile/as-hgroup.vue Renders a person as a hgroup element 1`] = `
+exports[`@/compontent/profile/as-hgroup.vue Renders A person as a hgroup element 1`] = `
 <hgroup
   itemid="/+14151234356"
   itemscope="itemscope"
