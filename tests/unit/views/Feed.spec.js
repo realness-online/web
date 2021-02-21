@@ -25,9 +25,8 @@ describe('@/views/Feed.vue', () => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
-    jest.spyOn(itemid, 'as_directory').mockImplementation(_ => {
-      return { items: ['559666932867'] }
-    })
+    jest.spyOn(itemid, 'as_directory')
+    .mockImplementation(_ => Promise.resolve({ items: ['559666932867'] }))
   })
   afterEach(() => {
     firebase.user = undefined
@@ -44,12 +43,13 @@ describe('@/views/Feed.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(2)
     })
-    it('A nice message if the a new person', async () => {
+    it('A fiendly explanatory message if new person', async () => {
+      list_spy.mockImplementation(_ => Promise.resolve([]))
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => Promise.resolve({ items: [] }))
       firebase.user = undefined
       const wrapper = await shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      expect(list_spy).not.toBeCalled()
     })
     it('A feed of statements', async () => {
       jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
