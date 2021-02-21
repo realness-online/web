@@ -7,7 +7,8 @@ import 'firebase/auth'
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',
-  id: '/+14151234356'
+  id: '/+14151234356',
+  visited: new Date().toISOString()
 }
 describe('@/views/PhoneBook', () => {
   let wrapper
