@@ -27,9 +27,10 @@
   import firebase from 'firebase/app'
   import 'firebase/storage'
   import { list, load } from '@/helpers/itemid'
-  import logo_as_link from '@/components/logo-as-link'
   import { from_e64 } from '@/helpers/profile'
+  import { is_fresh } from '@/helpers/date'
   import signed_in from '@/mixins/signed_in'
+  import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
   import as_figure from '@/components/profile/as-figure'
   import sign_on from '@/components/profile/sign-on'
@@ -55,7 +56,7 @@
         const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
         phone_numbers.prefixes.forEach(async (phone_number) => {
           const person = await load(from_e64(phone_number.name))
-          if (person) this.phonebook.push(person)
+          if (person && is_fresh(person.visited)) this.phonebook.push(person)
         })
       }
       this.working = false
