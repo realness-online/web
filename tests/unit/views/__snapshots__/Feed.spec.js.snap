@@ -60,6 +60,59 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
 </section>
 `;
 
+exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`] = `
+<section
+  class="page"
+  id="feed"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+     
+    <logo-as-link-stub />
+  </header>
+   
+  <hgroup>
+    <h1>
+      Feed
+    </h1>
+  </hgroup>
+   
+  <as-days-stub
+    avatars=""
+    events=""
+    posters=""
+    statements=""
+  />
+   
+  <hgroup
+    class="sign-on message"
+  >
+    <p>
+      A feed of statements and posters
+    </p>
+     
+    <p>
+      If you 
+      <sign-on-stub />
+       you can check out 
+      <icon-stub
+        name="heart"
+      />
+       who else is on here
+    </p>
+     
+    <h6>
+      <a>
+        Watch
+      </a>
+       a video and learn some more
+    </h6>
+  </hgroup>
+</section>
+`;
+
 exports[`@/views/Feed.vue Renders A fresh Feed 1`] = `
 <section
   class="page"
@@ -84,37 +137,6 @@ exports[`@/views/Feed.vue Renders A fresh Feed 1`] = `
     events=""
     posters=""
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
-  />
-   
-  <!---->
-</section>
-`;
-
-exports[`@/views/Feed.vue Renders A nice message if the a new person 1`] = `
-<section
-  class="page"
-  id="feed"
->
-  <header>
-    <icon-stub
-      name="nothing"
-    />
-     
-    <logo-as-link-stub />
-  </header>
-   
-  <hgroup>
-    <h1>
-      Feed
-    </h1>
-  </hgroup>
-   
-  <as-days-stub
-    avatars=""
-    events=""
-    posters=""
-    statements=""
-    working="true"
   />
    
   <!---->
