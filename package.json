@@ -8,7 +8,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "webpack && vue-cli-service build",
-    "deploy": "yarn lint && vue-cli-service test:unit --coverage --verbose && yarn build && firebase deploy --only hosting,storage",
+    "deploy": "yarn lint && vue-cli-service test:unit --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "deploy:development": "yarn build && firebase use development && deploy --only hosting,storage  --use development",
     "lint": "vue-cli-service lint",
     "test": "vue-cli-service test:unit",
