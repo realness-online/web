@@ -71,12 +71,13 @@
     async created () {
       console.time('views:Feed')
       firebase.auth().onAuthStateChanged(async user => {
-        if (!user) return
-        const authors = await list(`${localStorage.me}/relations`)
-        await Promise.all(authors.map(async (a) => {
-          const person = await load(a.id)
-          if (is_fresh(person.visited)) this.authors.push(person)
-        }))
+        if (user) {
+          const authors = await list(`${localStorage.me}/relations`)
+          await Promise.all(authors.map(async (a) => {
+            const person = await load(a.id)
+            if (is_fresh(person.visited)) this.authors.push(person)
+          }))
+        }
         this.authors.push({
           id: localStorage.me,
           type: 'person'
