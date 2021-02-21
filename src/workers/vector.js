@@ -33,7 +33,7 @@ export async function prepare (image) {
 }
 export async function make (image) {
   let poster = await as_paths(image, potrace_options)
-  if (to_kb(poster) > 700) {
+  if (to_kb(poster) > 600) {
     image = await size(image, 368)
     poster = await as_paths(image, potrace_options)
   }
