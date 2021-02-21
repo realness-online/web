@@ -1,38 +1,70 @@
 import { shallowMount } from '@vue/test-utils'
+import firebase from 'firebase/app'
+import 'firebase/auth'
 import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
+import flushPromises from 'flush-promises'
 import Feed from '@/views/Feed'
 const statements_html = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+const person = {
+  first_name: 'Scott',
+  last_name: 'Fryxell',
+  id: '/+16282281824',
+  visited: new Date().toISOString()
+}
+const relations = [
+  { id: '/+14153731893' }
+]
 describe('@/views/Feed.vue', () => {
-  let relations_spy, statements_spy
+  let list_spy
   beforeEach(() => {
-    localStorage.setItem('me', '/+16282281824')
-    relations_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(_ => {
-      return []
-    })
-    statements_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => {
-      const statements = get_item(statements_html)
-      return Promise.resolve(statements.statements)
+    firebase.user = { phoneNumber: '+16282281824' }
+    localStorage.me = '/+16282281824'
+    jest.spyOn(itemid, 'load').mockImplementation(_ => person)
+    list_spy = jest.spyOn(itemid, 'list').mockImplementation(id => {
+      if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
+      else return Promise.resolve(get_item(statements_html).statements)
     })
     jest.spyOn(itemid, 'as_directory').mockImplementation(_ => {
       return { items: ['559666932867'] }
     })
   })
+  afterEach(() => {
+    firebase.user = undefined
+    localStorage.me = undefined
+    jest.clearAllMocks()
+  })
   describe('Renders', () => {
+    it('A fresh Feed', async () => {
+      const stale_person = { person }
+      stale_person.visited = undefined
+      jest.spyOn(itemid, 'load').mockImplementation(_ => stale_person)
+      const wrapper = await shallowMount(Feed)
+      await flushPromises()
+      expect(wrapper.element).toMatchSnapshot()
+      expect(list_spy).toHaveBeenCalledTimes(2)
+    })
+    it('A nice message if the a new person', async () => {
+      firebase.user = undefined
+      const wrapper = await shallowMount(Feed)
+      await flushPromises()
+      expect(wrapper.element).toMatchSnapshot()
+      expect(list_spy).not.toBeCalled()
+    })
     it('A feed of statements', async () => {
       jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
         return null
       })
-      const wrapper = shallowMount(Feed)
-      expect(relations_spy).toBeCalled()
-      expect(statements_spy).toBeCalled()
+      const wrapper = await shallowMount(Feed)
+      await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
+      expect(list_spy).toHaveBeenCalledTimes(3)
     })
     it('A feed of statements and posters', async () => {
-      const wrapper = shallowMount(Feed)
-      expect(relations_spy).toBeCalled()
-      expect(statements_spy).toBeCalled()
+      const wrapper = await shallowMount(Feed)
+      await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
+      expect(list_spy).toHaveBeenCalledTimes(3)
     })
   })
 })
