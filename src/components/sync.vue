@@ -127,8 +127,8 @@
             this.update_visit()
             localStorage.sync_time = new Date().toISOString()
             return
-          case 'sync:events':
-            return await this.sync_events()
+          // case 'sync:events':
+          //   return await this.sync_events()
           case 'sync:statements':
             return await this.sync_statements()
           case 'save:poster':
@@ -136,16 +136,15 @@
           default:
             console.warn('Unhandled worker action: ', message.data.action, message)
         }
-        this.syncing = false
       },
-      async sync_events () {
-        const itemid = this.itemid('events')
-        const events = new Events()
-        this.events = await events.sync()
-        await this.$nextTick()
-        await this.sync_paged(itemid, events)
-        this.events = null
-      },
+      // async sync_events () {
+      //   const itemid = this.itemid('events')
+      //   const events = new Events()
+      //   this.events = await events.sync()
+      //   await this.$nextTick()
+      //   await this.sync_paged(itemid, events)
+      //   this.events = null
+      // },
       async sync_statements () {
         const itemid = this.itemid('statements')
         const statements = new Statements()
