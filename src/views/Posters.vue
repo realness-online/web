@@ -213,7 +213,7 @@
           fill: green
         & > figcaption > menu
           a > svg
-            fill: green
+            fill: red
           a.remove
             bottom: base-line
             left: base-line
