@@ -27,7 +27,7 @@ describe('@/mixins/visit', () => {
       it('Exists', () => {
         expect(wrapper.vm.update_visit).toBeDefined()
       })
-      it('updates the user with a visit', async () => {
+      it('Updates the user with a visit', async () => {
         const load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(person))
         await wrapper.vm.update_visit()
         await flushPromises()
