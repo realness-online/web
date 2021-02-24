@@ -37,8 +37,8 @@ export async function recurse () {
   const my_itemid = from_e64(me.phoneNumber)
   if (await is_outdated(my_itemid)) await del(my_itemid)
   if (await is_outdated(`${my_itemid}/statements`)) post('sync:statements')
-  if (await is_outdated(`${my_itemid}/events`)) post('sync:events')
-  await del(`${my_itemid}/posters/`)
+  // if (await is_outdated(`${my_itemid}/events`)) post('sync:events')
+  await del(`${my_itemid}/posters/`) // this sucks. 9/10 times there wont be a difference
   await anonymous()
   await offline()
   await people(my_itemid)
@@ -74,7 +74,7 @@ export async function anonymous () {
   await del('/+/posters/')
 }
 export async function people (my_itemid) {
-  if (navigator.onLine) {
+  if (navigator.onLine, firebase.auth().currentUser) {
     let index = await get('sync:index')
     if (!index) index = {}
     const people = await list_people(my_itemid)
@@ -103,25 +103,24 @@ async function prune_person (itemid, index) {
     check_my_babies(itemid, index)
   } else if (index[itemid].updated < visit_interval()) {
     console.log('calling check_my_babies', itemid)
+    // Only delete poster directory for visit_interval
     await check_my_babies(itemid, index)
   }
 }
 async function check_my_babies (itemid, index) {
-  // Only delete poster directory for an hour; trusting last_visit
-  await del(`${itemid}/posters/`)
-  console.info('cache:pruned', 'posters directory')
-  const events = `${itemid}/events`
+  await del(`${itemid}/posters/`); console.info('cache:pruned', 'posters directory')
   const statements = `${itemid}/statements`
   if (await is_outdated(statements)) {
     await del(`${statements}/`)
     await del(statements)
     console.info('cache:pruned', statements)
   }
-  if (await is_outdated(events)) {
-    await del(events)
-    await del(`${events}/`)
-    console.info('cache:pruned', events)
-  }
+  // const events = `${itemid}/events`
+  // if (await is_outdated(events)) {
+  //   await del(events)
+  //   await del(`${events}/`)
+  //   console.info('cache:pruned', events)
+  // }
 }
 async function is_outdated (itemid) {
   let index = await get('sync:index')
