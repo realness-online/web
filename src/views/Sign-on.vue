@@ -49,6 +49,7 @@
       }
     },
     async created () {
+      console.info('views:Sign-on')
       const person = await load(localStorage.me)
       const new_person = {
         id: '/+',
