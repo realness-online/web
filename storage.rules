@@ -6,7 +6,7 @@ service firebase.storage {
       match /{mobile}/{all_files=**} {
 	      allow read: if request.auth != null;
         allow write, delete: if request.auth.token.phone_number == mobile;
-        allow write, delete: if request.auth.token.admin == true;
+        // allow write, delete: if request.auth.token.admin == true;
       }
     }
   }
