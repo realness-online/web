@@ -4,14 +4,15 @@ import 'firebase/auth'
 import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'
 import { get, set } from 'idb-keyval'
+import hash from 'object-hash'
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 async function sync_later (id, action) {
-  const offline = (await get('offline')) || []
+  const offline = (await get('sync:offline')) || []
   offline.push({
     id,
     action
   })
-  await set('offline', offline)
+  await set('sync:offline', offline)
 }
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
@@ -19,8 +20,10 @@ export const Cloud = (superclass) => class extends superclass {
     if (navigator.onLine && user) {
       const storage = firebase.storage()
       const path = as_filename(this.id)
-      const file = new File([items], path)
-      if (user) await storage.ref().child(path).put(file, this.metadata)
+      this.metadata.customMetadata = {
+        md5: hash(items, { encoding: 'base64', algorithm: 'md5' })
+      }
+      await storage.ref().child(path).putString(items, 'raw', this.metadata)
     } else await sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {

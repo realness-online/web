@@ -201,6 +201,7 @@
         color: green
         fill: green
     & > article
+      padding-bottom: base-line * 3
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
@@ -223,5 +224,4 @@
           a.event
             top: base-line
             left: base-line
-
 </style>

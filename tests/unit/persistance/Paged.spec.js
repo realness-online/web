@@ -46,7 +46,7 @@ describe('@/persistance/Paged.js', () => {
         cloud_spy.mockImplementationOnce(_ => Promise.resolve(empty_cloud))
         firebase.user = user
         const list = await paged.sync()
-        expect(list.length).toBe(100)
+        expect(list.length).toBe(101)
       })
       it('Syncs statements from server to local storage', async () => {
         firebase.user = user
@@ -65,20 +65,22 @@ describe('@/persistance/Paged.js', () => {
         firebase.user = null
       })
       it('Syncs if there are no server items', async () => {
+        firebase.user = user
         cloud_spy = jest.spyOn(itemid, 'load_from_network')
                         .mockImplementationOnce(_ => null)
         const list = await paged.sync()
         expect(cloud_spy).toBeCalled()
         expect(local_spy).toBeCalled()
-        expect(list.length).toBe(100)
+        expect(list.length).toBe(101)
       })
       it('Syncs if there are no local items', async () => {
+        firebase.user = user
         itemid.list.mockReset()
         local_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(_ => Promise.resolve([]))
         const list = await paged.sync()
         expect(cloud_spy).toBeCalled()
         expect(local_spy).toBeCalled()
-        expect(list.length).toBe(20)
+        expect(list.length).toBe(21)
       })
     })
     describe('#optimize', () => {

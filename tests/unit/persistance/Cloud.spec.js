@@ -5,8 +5,8 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { get } from 'idb-keyval'
-const fs = require('fs')
-const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+import flushPromises from 'flush-promises'
+const statements = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
 const user = { phoneNumber: '/+16282281824' }
 describe('@/persistance/Cloud.js', () => {
   class Preferences extends Cloud(Storage) {}
@@ -17,6 +17,8 @@ describe('@/persistance/Cloud.js', () => {
   afterEach(() => {
     firebase.user = null
     jest.clearAllMocks()
+    jest.restoreAllMocks()
+    // jest.resetAllMocks()
     localStorage.clear()
   })
   describe('Methods', () => {
@@ -41,7 +43,6 @@ describe('@/persistance/Cloud.js', () => {
         expect(cloud.to_network).toBeCalled()
       })
       it('Calls save on a parent class', async () => {
-        get.mockImplementationOnce(_ => Promise.resolve({}))
         class Whatever extends Cloud(Local(Storage)) {}
         cloud = new Whatever('/+16282281824/whatevers')
         cloud.to_network = jest.fn()
@@ -54,11 +55,14 @@ describe('@/persistance/Cloud.js', () => {
       it('Deletes a resource on the cloud', async () => {
         firebase.user = user
         await cloud.delete()
+        await flushPromises()
         expect(firebase.storage().ref().child().delete).toBeCalled()
       })
       it('Only deletes when logged in', async () => {
         firebase.user = null
+        get.mockImplementation(_ => Promise.resolve([]))
         await cloud.delete()
+        await flushPromises()
         expect(firebase.storage().ref().child().delete).not.toBeCalled()
       })
     })

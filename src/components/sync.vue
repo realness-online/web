@@ -16,13 +16,13 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
-  import { set, get, del } from 'idb-keyval'
-  import { visit_interval } from '@/workers/sync'
-  import { Events, Statements, Poster, Me } from '@/persistance/Storage'
+  import { del } from 'idb-keyval'
+  import { one_hour, fresh_metadata, is_outdated } from '@/workers/sync'
+  import { Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
-  import { as_type, list, load } from '@/helpers/itemid'
+  import { list, load } from '@/helpers/itemid'
   import get_item from '@/modules/item'
-  import hash from '@/modules/hash'
+  import hash from 'object-hash'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'
   import as_svg from '@/components/posters/as-svg'
@@ -55,7 +55,7 @@
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
-        syncing: false,
+        syncing: true,
         poster: null,
         statements: [],
         events: null
@@ -64,7 +64,6 @@
     watch: {
       async statement () {
         if (this.statement) {
-          this.syncing = true
           const itemid = this.itemid('statements')
           this.statements = await list(itemid)
           this.statements.push(this.statement)
@@ -72,36 +71,45 @@
           await this.$nextTick()
           await data.save()
           this.$emit('update:statement', null)
-          this.syncing = false
         }
       },
       async person () {
         if (this.person) {
-          this.syncing = true
+          console.log(new Date(this.person.visited))
           await this.$nextTick()
           const me = new Me()
           await me.save()
-          this.syncing = false
         }
       }
     },
     created () {
+      document.addEventListener('visibilitychange', this.visibility_change)
       firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
     beforeDestroy () {
       this.syncer.terminate()
     },
     methods: {
-      async auth_state_changed (current_user) {
-        if (navigator.onLine && current_user) {
-          localStorage.me = from_e64(current_user.phoneNumber)
+      visibility_change () {
+        const message = { action: 'sync:play', last_sync: localStorage.sync_time }
+        if (document.hidden) message.action = 'sync:pause'
+        this.syncer.postMessage(message)
+      },
+      async auth_state_changed (me) {
+        console.log('auth_state_changed')
+        if (me && navigator.onLine) {
+          localStorage.me = from_e64(me.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
+          window.addEventListener('online', this.online)
           this.syncer.postMessage({
             action: 'sync:initialize',
             last_sync: localStorage.sync_time,
             config: this.config
           })
-          window.addEventListener('online', this.online)
+        } else {
+          this.syncer.removeEventListener('message', this.worker_message)
+          window.removeEventListener('online', this.online)
+          this.syncer.postMessage({ action: 'sync:pause' })
         }
       },
       online () {
@@ -111,60 +119,43 @@
         if (type) return `${localStorage.me}/${type}`
         else return localStorage.me
       },
-      async update_visit () {
+      async worker_message (message) {
+        switch (message.data.action) {
+          case 'sync:me': return await this.sync_me()
+          case 'sync:statements': return await this.sync_statements()
+          case 'save:poster': return await this.save_poster(message.data.param)
+          case 'sync:happened':return await this.sync_happened()
+          default: console.warn('Unhandled worker action: ', message.data.action)
+        }
+      },
+      async sync_happened () {
+        localStorage.sync_time = new Date().toISOString()
         const me = await load(localStorage.me)
         if (!me.visited) me.visited = null
-        const visit_digit = new Date(me.visited).getTime()
-        if (me && visit_interval() > visit_digit) {
+        const visit_gap = Date.now() - new Date(me.visited).getTime()
+        if (me && visit_gap > one_hour) {
           me.visited = new Date().toISOString()
           this.$emit('update:person', me)
         }
       },
-      async worker_message (message) {
-        this.syncing = true
-        switch (message.data.action) {
-          case 'sync:happened':
-            this.update_visit()
-            localStorage.sync_time = new Date().toISOString()
-            return
-          // case 'sync:events':
-          //   return await this.sync_events()
-          case 'sync:statements':
-            return await this.sync_statements()
-          case 'save:poster':
-            return await this.save_poster(message.data.param)
-          default:
-            console.warn('Unhandled worker action: ', message.data.action, message)
-        }
+      async sync_me () {
+        if (await is_outdated(this.itemid())) del(this.itemid())
       },
-      // async sync_events () {
-      //   const itemid = this.itemid('events')
-      //   const events = new Events()
-      //   this.events = await events.sync()
-      //   await this.$nextTick()
-      //   await this.sync_paged(itemid, events)
-      //   this.events = null
-      // },
       async sync_statements () {
-        const itemid = this.itemid('statements')
         const statements = new Statements()
-        this.statements = await statements.sync()
-        await this.$nextTick()
-        await this.sync_paged(itemid, statements)
-      },
-      async sync_paged (itemid, paged) {
-        const query = `[itemid="${itemid}"]`
-        const elements = this.$refs.sync.querySelector(query)
-        if (elements) {
-          let index = await get('hash')
-          if (!index) index = {}
-          const current_hash = parseInt(index[itemid])
-          const new_hash = hash(elements.outerHTML)
-          if (current_hash !== new_hash) {
-            await paged.save(elements)
-            localStorage.removeItem(`/+/${as_type(itemid)}`)
-            index[itemid] = new_hash
-            await set('hash', index)
+        const itemid = this.itemid('statements')
+        const network = (await fresh_metadata(this.itemid('statements'))).customMetadata
+        const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
+        if (network.md5 && elements) {
+          const local = {
+            md5: hash(elements.outerHTML, { encoding: 'base64', algorithm: 'md5' })
+          }
+          if (network.md5 === local.md5) return
+          this.statements = await statements.sync()
+          if (this.statements.length) {
+            await this.$nextTick()
+            await statements.save(elements)
+            localStorage.removeItem('/+/statements')
           }
         }
       },

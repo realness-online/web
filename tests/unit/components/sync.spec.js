@@ -140,7 +140,7 @@ describe('@/components/sync', () => {
         wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
       })
     })
-    describe('#sync_paged', () => {
+    describe.only('#sync_paged', () => {
       const index = {}
       beforeEach(async () => {
         wrapper = mount(sync, {
