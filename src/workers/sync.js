@@ -6,48 +6,57 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_type, as_filename } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
-const five_minutes = 300000
-export const one_hour = five_minutes * 12
+const five_minutes = 30000
+export const one_hour = 300000 * 12
 const timeouts = []
+export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 export async function message_listener (message) {
   switch (message.data.action) {
     case 'sync:initialize':
-      return await initialize(message.data.config, new Date(message.data.last_sync))
-    case 'sync:offline':
-      return offline()
+      return await initialize(message.data.config, message.data.last_sync)
+    case 'sync:offline': return await offline()
+    case 'sync:play': return await play(message.data.last_sync)
+    case 'sync:pause': return pause()
   }
 }
 self.addEventListener('message', message_listener)
 export async function initialize (credentials, last_sync) {
   if (firebase.apps.length === 0) firebase.initializeApp(credentials)
   firebase.auth().onAuthStateChanged(async me => {
-    if (me) {
-      let synced
-      if (last_sync) synced = Date.now() - last_sync.getTime()
-      else synced = five_minutes
-      const time_left = five_minutes - synced
-      if (time_left < 0) recurse()
-      else setTimeout(recurse, time_left)
-    } else timeouts.forEach(id => clearTimeout(id))
+    if (me) play(last_sync); else pause()
   })
 }
+export async function play (last_sync = 0) {
+  last_sync = new Date(last_sync)
+  let synced
+  if (last_sync) synced = Date.now() - last_sync.getTime()
+  else synced = five_minutes
+  const time_left = five_minutes - synced
+  if (time_left < 0) await recurse()
+  else setTimeout(recurse, time_left)
+}
+export function pause () {
+  timeouts.forEach(id => clearTimeout(id))
+}
 export async function recurse () {
+  clearTimeout(timeouts.pop())
+  console.log('recurse', timeouts.length)
+  // pause()
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
   const my_itemid = from_e64(me.phoneNumber)
-  if (await is_outdated(my_itemid)) await del(my_itemid)
-  if (await is_outdated(`${my_itemid}/statements`)) post('sync:statements')
-  // if (await is_outdated(`${my_itemid}/events`)) post('sync:events')
+  post('sync:me')
+  post('sync:statements')
   await del(`${my_itemid}/posters/`) // this sucks. 9/10 times there wont be a difference
-  await anonymous()
+  await anonymous_posters()
   await offline()
   await people(my_itemid)
   post('sync:happened')
-  timeouts.push(setTimeout(recurse, five_minutes))
+  if (timeouts.length === 0) timeouts.push(setTimeout(recurse, five_minutes))
 }
 export async function offline () {
   if (navigator.onLine) {
-    const offline = await get('offline')
+    const offline = await get('sync:offline')
     if (!offline) return
     while (offline.length) {
       const item = offline.pop()
@@ -55,10 +64,10 @@ export async function offline () {
       else if (item.action === 'delete') await new Offline(item.id).delete()
       else console.info('weird:unknown-offline-action', item.action, item.id)
     }
-    await del('offline')
+    await del('sync:offline')
   }
 }
-export async function anonymous () {
+export async function anonymous_posters () {
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
   const offline_posters = await get('/+/posters/')
@@ -74,9 +83,8 @@ export async function anonymous () {
   await del('/+/posters/')
 }
 export async function people (my_itemid) {
-  if (navigator.onLine, firebase.auth().currentUser) {
-    let index = await get('sync:index')
-    if (!index) index = {}
+  if (navigator.onLine && firebase.auth().currentUser) {
+    let index = (await get('sync:index')) || {}
     const people = await list_people(my_itemid)
     index = await check_people(people, index)
     set('sync:index', index)
@@ -101,9 +109,8 @@ async function prune_person (itemid, index) {
     await del(itemid)
     console.info('cache:pruned', itemid)
     check_my_babies(itemid, index)
-  } else if (index[itemid].updated < visit_interval()) {
+  } else if (index[itemid].updated < visit_interval()) { // Only delete poster directory for visit_interval
     console.log('calling check_my_babies', itemid)
-    // Only delete poster directory for visit_interval
     await check_my_babies(itemid, index)
   }
 }
@@ -115,16 +122,15 @@ async function check_my_babies (itemid, index) {
     await del(statements)
     console.info('cache:pruned', statements)
   }
-  // const events = `${itemid}/events`
-  // if (await is_outdated(events)) {
-  //   await del(events)
-  //   await del(`${events}/`)
-  //   console.info('cache:pruned', events)
-  // }
 }
-async function is_outdated (itemid) {
-  let index = await get('sync:index')
-  if (!index) index = {}
+export async function is_outdated (itemid) { // always checks the network
+  const index = (await get('sync:index')) || {}
+  const local = index[itemid].updated
+  const network = (await fresh_metadata(itemid)).updated
+  return new Date(network).getTime() > new Date(local).getTime()
+}
+export async function fresh_metadata (itemid) {
+  const index = (await get('sync:index')) || {}
   const path = await firebase.storage().ref().child(as_filename(itemid))
   let network
   try {
@@ -132,21 +138,17 @@ async function is_outdated (itemid) {
     network = await path.getMetadata()
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      network = { updated: null } // Explicitly setting null to indicate that this file doesn't exist
+      network = does_not_exist
     } else throw e
   }
-  let local = index[itemid]
   index[itemid] = network
   await set('sync:index', index)
-  if (network.updated === null) return false
-  if (!local || network.updated === null) return true
-  local = new Date(local.updated).getTime()
-  network = new Date(network.updated).getTime()
-  return network > local
+  return network
 }
 function post (action, param) {
   self.postMessage({ action, param })
 }
 export function visit_interval () {
+  console.log((Date.now() - one_hour))
   return (Date.now() - one_hour)
 }

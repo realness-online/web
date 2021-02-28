@@ -122,19 +122,19 @@ describe('/workers/sync.js', () => {
         expect(console.info).toBeCalled()
       })
     })
-    describe('#anonymous', () => {
+    describe('#anonymous_posters', () => {
       it('Needs to be signed in', async () => {
-        await sync.anonymous()
+        await sync.anonymous_posters()
         expect(get).not.toBeCalled()
       })
       it('Needs to be online', () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.anonymous(user)
+        sync.anonymous_posters(user)
         expect(get).not.toBeCalled()
       })
       it('handles no posters', async () => {
         firebase.user = user
-        await sync.anonymous()
+        await sync.anonymous_posters()
         expect(get).toBeCalled()
         expect(del).not.toBeCalled()
       })
@@ -149,7 +149,7 @@ describe('/workers/sync.js', () => {
           else return Promise.resolve(offline_poster)
         })
         firebase.user = user
-        await sync.anonymous()
+        await sync.anonymous_posters()
         await flushPromises()
         expect(get).toHaveBeenCalledTimes(2)
         expect(del).toHaveBeenCalledTimes(2)
@@ -162,6 +162,7 @@ describe('/workers/sync.js', () => {
         expect(get).not.toBeCalled()
       })
       it('Prunes people with outdated info', async () => {
+        firebase.user = user
         //  for failure ['/+1/posters/559666932867']
         const ids = ['/+16282281824']
         const index = {
@@ -241,7 +242,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Works without an existing index', async () => {
         jest.clearAllMocks()
@@ -251,7 +252,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Runs events and statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -265,7 +266,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(1)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Tells the app to sync statements apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'

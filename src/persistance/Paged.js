@@ -70,35 +70,35 @@ const Paged = (superclass) => class extends superclass {
     }
   }
   async sync () {
-    let items
     let oldest_at = 0 // the larger the number the more recent it is
-    const local_items = await list(this.id)
-    const cloud = await load_from_network(this.id)
-    if (!cloud) return local_items
-    const cloud_items = type_as_list(cloud).sort(recent_item_first)
-    if (cloud_items.length === 0) return local_items
-    const oldest_id = cloud_items[cloud_items.length - 1].id
-    oldest_at = as_created_at(oldest_id)
-    if (local_items && local_items.length && cloud_items.length) {
-      local_items.sort(recent_item_first)
-      const new_local_stuff = local_items.filter(local_item => {
-        const created_at = as_created_at(local_item.id)
-        if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
-        return !cloud_items.some(server_item => { // remove local items that are in the cloud
-          return local_item.id === server_item.id
-        })
+    let cloud = await load_from_network(this.id)
+    if (cloud) cloud = type_as_list(cloud).sort(recent_item_first)
+    else cloud = []
+    if (cloud.length > 0) {
+      const oldest_id = cloud[cloud.length - 1].id
+      oldest_at = as_created_at(oldest_id)
+    }
+    let local = await list(this.id)
+    local.sort(recent_item_first)
+    local = local.filter(local_item => {
+      const created_at = as_created_at(local_item.id)
+      if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
+      return !cloud.some(server_item => { // remove local items that are in the cloud
+        return local_item.id === server_item.id
       })
-      let offline_items = localStorage.getItem(`/+/${this.type}`)
-      offline_items = type_as_list(get_item(offline_items))
-      offline_items.forEach(item => {
-        // convert id's to current id
-        const me = from_e64(firebase.auth().currentUser.phoneNumber)
-        item.id = `${me}/${this.type}/${as_created_at(item.id)}`
-      })
-      // three distinct lists are recombined into a single synced list
-      items = [...new_local_stuff, ...cloud_items, ...offline_items]
-      items.sort(recent_item_first)
-    } else items = cloud_items
+    })
+
+    let offline = localStorage.getItem(`/+/${this.type}`)
+    offline = type_as_list(get_item(offline))
+    offline.forEach(item => {
+      // convert id's to current id
+      const me = from_e64(firebase.auth().currentUser.phoneNumber)
+      item.id = `${me}/${this.type}/${as_created_at(item.id)}`
+    })
+    // three distinct lists are recombined into a single synced list
+    const items = [...local, ...cloud, ...offline]
+    items.sort(recent_item_first)
+
     return items
   }
 }

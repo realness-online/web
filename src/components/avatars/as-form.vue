@@ -173,7 +173,7 @@
           bottom: inset(bottom, -(base-line * 2))
           right: inset(right)
         & > svg
-          fill: red
+          fill: blue
         &#accept_changes
           position: absolute
           z-index: 2

@@ -3,26 +3,19 @@ import firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
+import does_not_exist from '@/workers/sync'
 import { get, set } from 'idb-keyval'
-
 // Expensive to call
 export async function load (itemid, me = localStorage.me) {
-  const element = document.getElementById(as_query_id(itemid))
-  if (element) return get_item(element)
+  // const element = document.getElementById(as_query_id(itemid))
+  // if (element) return get_item(element)
   let item
   if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
   }
   const result = await get(itemid)
-  if (result === null) {
-    return null
-    // itemid is explicitly set to null to signify non existence
-    // undefined means try and load it
-    // console.info('cache:404', itemid)
-  } // else if (result === undefined) console.info('cache:miss', itemid)
-  // else console.info('cache:hit')
-
+  if (result === null) return null
   item = get_item(result)
   if (item) return item
   item = await load_from_network(itemid, me)
@@ -68,7 +61,9 @@ export async function as_download_url (itemid, me = localStorage.me) {
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))
-      await set(itemid, null)
+      const index = (await get('sync:index')) || {}
+      index[itemid] = does_not_exist
+      await set('sync:index', index)
       return null
     } else throw e
   }

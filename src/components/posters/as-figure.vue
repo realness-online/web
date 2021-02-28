@@ -113,8 +113,8 @@
         min-height: inherit
         grid-column-start: span 2
     @media (min-width: pad-begins)
-      &.new
-        margin-left: base-line
+      &.new:not(.landscape)
+        grid-column: 2
     svg
       z-index: 1
       &[itemscope]
@@ -134,21 +134,22 @@
           top: base-line
           right: base-line
           & > svg
-            fill: blue
+            fill: red
         &.download
           bottom: base-line
           right: base-line
           & > svg
-            fill: blue
+            fill: red
         &.profile
           top: base-line
           left: base-line
+          svg.background
+            fill: red
           & > hgroup
             & > h3:first-of-type
-              margin-right: (base-line/3)
+              margin-right: (base-line / 3)
             & > h3
             & > time
               line-height: 1
-              color: white
-              text-shadow: 0.1px .1px dark-black
+              color: green
 </style>
