@@ -73,12 +73,12 @@ describe('@/persistance/Cloud.js', () => {
       it('Persist a file in a persons home directory', async () => {
         firebase.user = user
         await cloud.to_network(statements)
-        expect(firebase.storage().ref().child().put).toBeCalled()
+        expect(firebase.storage().ref().child().putString).toBeCalled()
         firebase.user = null
       })
       it('Does nothing unless user is signed in', async () => {
         await cloud.to_network(statements)
-        expect(firebase.storage().ref().child().put).not.toBeCalled()
+        expect(firebase.storage().ref().child().putString).not.toBeCalled()
       })
     })
   })

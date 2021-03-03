@@ -5,7 +5,7 @@ const mock_dir = {
   path: '/a/fake/path'
 }
 firebase.storage_mock = {
-  put: jest.fn(_ => Promise.resolve()),
+  putString: jest.fn(_ => Promise.resolve()),
   getDownloadURL: jest.fn(_ => Promise.resolve('/path/to/file.html')),
   listAll: jest.fn(_ => Promise.resolve(mock_dir)),
   delete: jest.fn(_ => Promise.resolve()),
