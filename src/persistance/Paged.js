@@ -78,6 +78,7 @@ const Paged = (superclass) => class extends superclass {
       const oldest_id = cloud[cloud.length - 1].id
       oldest_at = as_created_at(oldest_id)
     }
+
     let local = await list(this.id)
     local.sort(recent_item_first)
     local = local.filter(local_item => {
@@ -95,6 +96,7 @@ const Paged = (superclass) => class extends superclass {
       const me = from_e64(firebase.auth().currentUser.phoneNumber)
       item.id = `${me}/${this.type}/${as_created_at(item.id)}`
     })
+
     // three distinct lists are recombined into a single synced list
     const items = [...local, ...cloud, ...offline]
     items.sort(recent_item_first)
