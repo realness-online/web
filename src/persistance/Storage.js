@@ -42,8 +42,7 @@ export class History extends Cloud(Storage) {
     if (!items) return
     if (firebase.auth().currentUser && navigator.onLine) {
       const path = `/people/${this.id}.html`
-      const file = new File([items.outerHTML], path)
-      await firebase.storage().ref().child(path).put(file, this.metadata)
+      await firebase.storage().ref().child(path).putString(items.outerHTML, 'raw', this.metadata)
     }
   }
 }
