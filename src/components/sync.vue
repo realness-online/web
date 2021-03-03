@@ -17,7 +17,7 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { del } from 'idb-keyval'
-  import { one_hour, fresh_metadata, is_outdated } from '@/workers/sync'
+  import { one_hour, fresh_metadata } from '@/workers/sync'
   import { Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
   import { list, load } from '@/helpers/itemid'
@@ -58,7 +58,8 @@
         syncing: true,
         poster: null,
         statements: [],
-        events: null
+        events: null,
+        options: { encoding: 'base64', algorithm: 'md5' }
       }
     },
     watch: {
@@ -75,7 +76,6 @@
       },
       async person () {
         if (this.person) {
-          console.log(new Date(this.person.visited))
           await this.$nextTick()
           const me = new Me()
           await me.save()
@@ -96,7 +96,6 @@
         this.syncer.postMessage(message)
       },
       async auth_state_changed (me) {
-        console.log('auth_state_changed')
         if (me && navigator.onLine) {
           localStorage.me = from_e64(me.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
@@ -139,18 +138,25 @@
         }
       },
       async sync_me () {
-        if (await is_outdated(this.itemid())) del(this.itemid())
+        const id = this.itemid()
+        const network = (await fresh_metadata(id)).customMetadata
+        const my_info = localStorage.getItem(id)
+        if (!my_info || network.md5 == null) return
+        const md5 = hash(my_info, this.options)
+        if (md5 !== network.md5) {
+          console.log('sync_me: remove local')
+          localStorage.removeItem(id)
+          del(id)
+        }
       },
       async sync_statements () {
         const statements = new Statements()
         const itemid = this.itemid('statements')
-        const network = (await fresh_metadata(this.itemid('statements'))).customMetadata
+        const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
         if (network.md5 && elements) {
-          const local = {
-            md5: hash(elements.outerHTML, { encoding: 'base64', algorithm: 'md5' })
-          }
-          if (network.md5 === local.md5) return
+          const md5 = hash(elements.outerHTML, this.options)
+          if (md5 === network.md5) return
           this.statements = await statements.sync()
           if (this.statements.length) {
             await this.$nextTick()
