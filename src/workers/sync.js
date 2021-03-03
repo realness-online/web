@@ -6,8 +6,8 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_type, as_filename } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
-const five_minutes = 30000
-export const one_hour = 300000 * 12
+const five_minutes = 300000
+export const one_hour = five_minutes * 12
 const timeouts = []
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 export async function message_listener (message) {
