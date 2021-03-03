@@ -40,8 +40,6 @@ export function pause () {
 }
 export async function recurse () {
   clearTimeout(timeouts.pop())
-  console.log('recurse', timeouts.length)
-  // pause()
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
   const my_itemid = from_e64(me.phoneNumber)
@@ -110,7 +108,6 @@ async function prune_person (itemid, index) {
     console.info('cache:pruned', itemid)
     check_my_babies(itemid, index)
   } else if (index[itemid].updated < visit_interval()) { // Only delete poster directory for visit_interval
-    console.log('calling check_my_babies', itemid)
     await check_my_babies(itemid, index)
   }
 }
@@ -149,6 +146,5 @@ function post (action, param) {
   self.postMessage({ action, param })
 }
 export function visit_interval () {
-  console.log((Date.now() - one_hour))
   return (Date.now() - one_hour)
 }
