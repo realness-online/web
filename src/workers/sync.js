@@ -8,7 +8,7 @@ import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
 const five_minutes = 300000
 export const one_hour = five_minutes * 12
-const timeouts = []
+export const timeouts = []
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 export async function message_listener (message) {
   switch (message.data.action) {
@@ -23,33 +23,33 @@ self.addEventListener('message', message_listener)
 export async function initialize (credentials, last_sync) {
   if (firebase.apps.length === 0) firebase.initializeApp(credentials)
   firebase.auth().onAuthStateChanged(async me => {
-    if (me) play(last_sync); else pause()
+    if (me) play(last_sync)
+    else pause()
   })
 }
-export async function play (last_sync = 0) {
-  last_sync = new Date(last_sync)
+export async function play (last_sync) {
   let synced
-  if (last_sync) synced = Date.now() - last_sync.getTime()
+  if (last_sync) synced = Date.now() - new Date(last_sync).getTime()
   else synced = five_minutes
   const time_left = five_minutes - synced
-  if (time_left < 0) await recurse()
+  if (time_left <= 0) await recurse()
   else setTimeout(recurse, time_left)
 }
 export function pause () {
-  timeouts.forEach(id => clearTimeout(id))
+  clearTimeout(timeouts.pop())
 }
 export async function recurse () {
   clearTimeout(timeouts.pop())
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
   const my_itemid = from_e64(me.phoneNumber)
-  post('sync:me')
-  post('sync:statements')
   await del(`${my_itemid}/posters/`) // this sucks. 9/10 times there wont be a difference
   await anonymous_posters()
   await offline()
-  await people(my_itemid)
+  post('sync:me')
+  post('sync:statements')
   post('sync:happened')
+  await people(my_itemid)
   if (timeouts.length === 0) timeouts.push(setTimeout(recurse, five_minutes))
 }
 export async function offline () {
@@ -106,12 +106,12 @@ async function prune_person (itemid, index) {
   if (await is_outdated(itemid)) {
     await del(itemid)
     console.info('cache:pruned', itemid)
-    check_my_babies(itemid, index)
+    check_person_babies(itemid, index)
   } else if (index[itemid].updated < visit_interval()) { // Only delete poster directory for visit_interval
-    await check_my_babies(itemid, index)
+    await check_person_babies(itemid, index)
   }
 }
-async function check_my_babies (itemid, index) {
+async function check_person_babies (itemid, index) {
   await del(`${itemid}/posters/`); console.info('cache:pruned', 'posters directory')
   const statements = `${itemid}/statements`
   if (await is_outdated(statements)) {
