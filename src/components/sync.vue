@@ -144,7 +144,6 @@
         if (!my_info || network.md5 == null) return
         const md5 = hash(my_info, this.options)
         if (md5 !== network.md5) {
-          console.log('sync_me: remove local')
           localStorage.removeItem(id)
           del(id)
         }
