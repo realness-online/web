@@ -23,17 +23,6 @@ describe('@/helpers/itemid', () => {
   })
   describe('default itemid', () => {
     describe('#load', () => {
-      it('Item is on the page', async () => {
-        const get_id_spy = jest.fn(() => poster_html)
-        const keeps = document.getElementById
-        document.getElementById = get_id_spy
-        const poster = (await itemid.load(posterid))
-        await flushPromises()
-        expect(get_id_spy).toBeCalled()
-        expect(poster.viewbox).toBe('0 0 333 444')
-        expect(poster.id).toBe(posterid)
-        document.getElementById = keeps
-      })
       describe('It\'s someone elses stuff', () => {
         beforeEach(async () => {
           await itemid.load(posterid, '/+14152281824')

@@ -7,8 +7,6 @@ import does_not_exist from '@/workers/sync'
 import { get, set } from 'idb-keyval'
 // Expensive to call
 export async function load (itemid, me = localStorage.me) {
-  // const element = document.getElementById(as_query_id(itemid))
-  // if (element) return get_item(element)
   let item
   if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
