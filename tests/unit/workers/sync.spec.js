@@ -1,4 +1,4 @@
-import * as sync from '@/workers/sync'
+// import * as sync from '@/workers/sync'
 import { get, del, keys } from 'idb-keyval'
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -10,7 +10,9 @@ const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
   let post_message_spy
-  beforeEach(() => {
+  let sync
+  beforeEach(async () => {
+    sync = await import('@/workers/sync')
     post_message_spy = jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null
@@ -36,16 +38,6 @@ describe('/workers/sync.js', () => {
           })
           expect(spy).not.toBeCalled()
         })
-        it('sync:people', () => {
-          get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
-          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
-          sync.message_listener({
-            data: {
-              action: 'sync:people'
-            }
-          })
-          expect(spy).not.toBeCalled()
-        })
         it('sync:offline', () => {
           const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
           sync.message_listener({
@@ -55,11 +47,21 @@ describe('/workers/sync.js', () => {
           })
           expect(spy).not.toBeCalled()
         })
-        it('sync:anonymous', () => {
+        it('sync:play', () => {
+          get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
           const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
           sync.message_listener({
             data: {
-              action: 'sync:anonymous'
+              action: 'sync:play'
+            }
+          })
+          expect(spy).not.toBeCalled()
+        })
+        it('sync:pause', () => {
+          const spy = jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
+          sync.message_listener({
+            data: {
+              action: 'sync:pause'
             }
           })
           expect(spy).not.toBeCalled()
@@ -67,6 +69,14 @@ describe('/workers/sync.js', () => {
       })
     })
     describe('#initialize', () => {
+      it('initializes one instance of firebase', async () => {
+        firebase.apps.push('new_app')
+        firebase.user = user
+        await sync.initialize({})
+        expect(firebase.initializeApp).not.toBeCalled()
+        firebase.user = null
+        firebase.apps.pop()
+      })
       it('Calls sync methods when online and signed in', async () => {
         firebase.user = user
         await sync.initialize({})
@@ -196,8 +206,11 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         await sync.people(true)
+        expect(keys).toBeCalled()
+        expect(get).toBeCalled()
+        // expect(firebase.storage_mock.getMetadata).toBeCalled()
       })
-      it('Will check all of the persons files for updates', async () => {
+      it('Check for updates to related files', async () => {
         const ids = ['/+16282281824']
         const index = {
           '/+16282281824': {
@@ -216,7 +229,7 @@ describe('/workers/sync.js', () => {
         keys.mockImplementationOnce(() => Promise.resolve(ids))
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        await sync.people(user, true)
+        await sync.people(user)
       })
     })
     describe('#recurse', () => {
@@ -255,12 +268,11 @@ describe('/workers/sync.js', () => {
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
-      it('Runs events and statments checks if user is outdated', async () => {
+      it('Runs statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
         const index = {
           '/+16282281824': { updated },
-          '/+16282281824/statements': { updated },
-          '/+16282281824/events': { updated }
+          '/+16282281824/statements': { updated }
         }
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
@@ -284,27 +296,30 @@ describe('/workers/sync.js', () => {
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
-      it('Tells the app to sync events apropriatly', async () => {
-        const updated = 'Oct 12, 2020, 10:54:24 AM'
-        const outdated = 'Oct 11, 2020, 10:54:24 AM'
-        const index = {
-          '/+16282281824': { updated: outdated },
-          '/+16282281824/statements': { updated },
-          '/+16282281824/events': { updated: outdated }
-        }
-        get.mockImplementation(_ => Promise.resolve(index))
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
+    })
+    describe('#play', () => {
+      afterEach(() => {
+        sync.pause()
+      })
+      it('Starts syncing without a last_sync', async () => {
         firebase.user = user
-        await sync.recurse()
-        await flushPromises()
+        await sync.play()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
-    })
-    describe('#check_my_babies', () => {
-      it('Checks if a person has updated statements', async () => {
-        await sync.check_my_babies('/+16282281824')
-        expect(del).toBeCalled()
+      it('Sets a timer for the remaining time until sync', async () => {
+        firebase.user = user
+        await sync.play(new Date().toISOString())
+        expect(post_message_spy).not.toBeCalled()
       })
+    })
+  })
+  describe('#pause', () => {
+    it('Clears out any running timers', async () => {
+      expect(sync.timeouts.length).toBe(0)
+      sync.timeouts.push(122)
+      expect(sync.timeouts.length).toBe(1)
+      sync.pause()
+      expect(sync.timeouts.length).toBe(0)
     })
   })
   describe('Pruning the verge', () => {
