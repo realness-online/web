@@ -17,7 +17,7 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { del } from 'idb-keyval'
-  import { one_hour, fresh_metadata } from '@/workers/sync'
+  import { one_hour, fresh_metadata, hash_options } from '@/workers/sync'
   import { Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
   import { list, load } from '@/helpers/itemid'
@@ -142,7 +142,7 @@
         const network = (await fresh_metadata(id)).customMetadata
         const my_info = localStorage.getItem(id)
         if (!my_info || network.md5 == null) return
-        const md5 = hash(my_info, this.options)
+        const md5 = hash(my_info, hash_options)
         if (md5 !== network.md5) {
           localStorage.removeItem(id)
           del(id)
@@ -154,7 +154,7 @@
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
         if (network.md5 && elements) {
-          const md5 = hash(elements.outerHTML, this.options)
+          const md5 = hash(elements.outerHTML, hash_options)
           if (md5 === network.md5) return
           this.statements = await statements.sync()
           if (this.statements.length) {
