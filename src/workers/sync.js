@@ -6,9 +6,11 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_type, as_filename } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
+import hash from 'object-hash'
 const five_minutes = 300000
 export const one_hour = five_minutes * 12
 export const timeouts = []
+export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 export async function message_listener (message) {
   switch (message.data.action) {
@@ -82,10 +84,7 @@ export async function anonymous_posters () {
 }
 export async function people (my_itemid) {
   if (navigator.onLine && firebase.auth().currentUser) {
-    let index = (await get('sync:index')) || {}
-    const people = await list_people(my_itemid)
-    index = await check_people(people, index)
-    set('sync:index', index)
+    await check_people(await list_people(my_itemid))
   }
 }
 async function list_people (my_itemid) {
@@ -95,24 +94,27 @@ async function list_people (my_itemid) {
     return as_type(id) === 'person'
   })
 }
-async function check_people (people, index) {
+async function check_people (people) {
+  const index = (await get('sync:index')) || {}
   await Promise.all(people.map(async (itemid) => {
     const meta = index[itemid]
-    if (meta && is_fresh(meta.updated)) await prune_person(itemid, index)
+    if (meta && is_fresh(meta.updated)) await prune_person(itemid)
+    else if (get_random_int(5) === 0) await prune_person(itemid) // once in a while check an outdated person I'm following
   }))
-  return index
 }
-async function prune_person (itemid, index) {
+async function prune_person (itemid) {
+  const index = (await get('sync:index')) || {}
   if (await is_outdated(itemid)) {
     await del(itemid)
     console.info('cache:pruned', itemid)
-    check_person_babies(itemid, index)
+    check_children(itemid)
   } else if (index[itemid].updated < visit_interval()) { // Only delete poster directory for visit_interval
-    await check_person_babies(itemid, index)
+    await check_children(itemid)
   }
 }
-async function check_person_babies (itemid, index) {
-  await del(`${itemid}/posters/`); console.info('cache:pruned', 'posters directory')
+async function check_children (itemid) {
+  await del(`${itemid}/posters/`)
+  console.info('cache:pruned', 'posters directory')
   const statements = `${itemid}/statements`
   if (await is_outdated(statements)) {
     await del(`${statements}/`)
@@ -121,10 +123,11 @@ async function check_person_babies (itemid, index) {
   }
 }
 export async function is_outdated (itemid) { // always checks the network
-  const index = (await get('sync:index')) || {}
-  const local = index[itemid].updated
-  const network = (await fresh_metadata(itemid)).updated
-  return new Date(network).getTime() > new Date(local).getTime()
+  const local = await get(itemid)
+  if (!local) return false
+  const md5 = hash(local, hash_options)
+  const network = (await fresh_metadata(itemid)).customMetadata
+  return !(md5 === network.md5)
 }
 export async function fresh_metadata (itemid) {
   const index = (await get('sync:index')) || {}
@@ -147,4 +150,8 @@ function post (action, param) {
 }
 export function visit_interval () {
   return (Date.now() - one_hour)
+}
+
+function get_random_int (max) {
+  return Math.floor(Math.random() * Math.floor(max))
 }

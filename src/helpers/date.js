@@ -41,12 +41,9 @@ export function is_same_day (d1, d2) {
     d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth()
 }
 export function is_fresh (date) {
-  const timestamp = Math.round(new Date().getTime() / 1000)
-  const four_hours_ago = timestamp - (4 * 3600)
-  const one_day_ago = four_hours_ago * 6
-  const three_days_ago = one_day_ago + 3
-  const thirteen_days_ago = three_days_ago + 10
-  if (thirteen_days_ago < new Date(date).getTime()) return true
+  const expires = new Date()
+  expires.setDate(expires.getDate() - 13)
+  if (new Date(date) > expires) return true
   else return false
 }
 export function as_time (date, format = format_as_time) {

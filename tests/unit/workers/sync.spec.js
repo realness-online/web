@@ -6,16 +6,17 @@ import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
 const offline_poster = require('fs').readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
+const person_html = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 
 describe('/workers/sync.js', () => {
   let post_message_spy
   let sync
   beforeEach(async () => {
-    sync = await import('@/workers/sync')
     post_message_spy = jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null
+    sync = await import('@/workers/sync')
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -167,69 +168,62 @@ describe('/workers/sync.js', () => {
       })
     })
     describe('#people', () => {
+      beforeEach(async () => {
+        firebase.user = user
+        //  for failure ['/+1/posters/559666932867']
+        const MockDate = require('mockdate')
+        MockDate.set('2020-01-01')
+        const ids = ['/+16282281824']
+        const meta = {
+          updated: new Date().toISOString(),
+          customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+        }
+        MockDate.reset()
+        const index = {
+          '/+16282281824': meta
+        }
+        keys.mockImplementation(_ => Promise.resolve(ids))
+        get.mockImplementation(query => {
+          if (query === 'sync:index') return index
+          if (query === '/+16282281824') return Promise.resolve(person_html)
+          else return Promise.resolve()
+        })
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+      })
       it('Runs when online', async () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync.people()
         expect(get).not.toBeCalled()
       })
       it('Prunes people with outdated info', async () => {
-        firebase.user = user
-        //  for failure ['/+1/posters/559666932867']
-        const ids = ['/+16282281824']
-        const index = {
-          '/+16282281824': {
-            updated: 'Oct 12, 2020, 10:54:24 AM'
-          }
-        }
-        const meta = {
-          updated: 'Oct 12, 2020, 10:54:24 AM'
-        }
-        keys.mockImplementationOnce(() => Promise.resolve(ids))
-        get.mockImplementation(_ => Promise.resolve(index))
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         await sync.people()
         jest.runAllTimers()
         expect(keys).toBeCalled()
         expect(get).toBeCalled()
       })
-      it('Can force a check to happen', async () => {
-        const ids = ['/+16282281824']
+      it('Checks on people who have visited recently', async () => {
         const index = {
           '/+16282281824': {
-            updated: 'Oct 12, 2020, 10:54:24 AM'
+            updated: new Date().toISOString()
           }
         }
-        const meta = {
-          updated: 'Oct 14, 2020, 10:54:24 AM'
-        }
-        keys.mockImplementationOnce(() => Promise.resolve(ids))
-        get.mockImplementation(_ => Promise.resolve(index))
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        await sync.people(true)
+        get.mockImplementationOnce(query => {
+          if (query === 'sync:index') return index
+          else return Promise.resolve(person_html)
+        })
+        await sync.people()
+        jest.runAllTimers()
         expect(keys).toBeCalled()
         expect(get).toBeCalled()
-        // expect(firebase.storage_mock.getMetadata).toBeCalled()
       })
-      it('Check for updates to related files', async () => {
-        const ids = ['/+16282281824']
-        const index = {
-          '/+16282281824': {
-            updated: 'Oct 12, 2020, 10:54:24 AM'
-          },
-          '/+16282281824/statements': {
-            updated: 'Oct 18, 2020, 10:54:24 AM'
-          },
-          '/+16282281824/events': {
-            updated: 'Oct 22, 2020, 10:54:24 AM'
-          }
-        }
-        const meta = {
-          updated: 'Oct 28, 2020, 10:54:24 AM'
-        }
-        keys.mockImplementationOnce(() => Promise.resolve(ids))
-        get.mockImplementation(_ => Promise.resolve(index))
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        await sync.people(user)
+      it('Randomly checks on a stale person', async () => {
+        const random = Math.random
+        Math.random = jest.fn(_ => 0)
+        await sync.people()
+        jest.runAllTimers()
+        expect(keys).toBeCalled()
+        expect(get).toBeCalled()
+        Math.random = random
       })
     })
     describe('#recurse', () => {
@@ -251,7 +245,10 @@ describe('/workers/sync.js', () => {
           '/+16282281824/statements': { updated },
           '/+16282281824/events': { updated }
         }
-        get.mockImplementation(_ => Promise.resolve(index))
+        get.mockImplementation(id => {
+          if (id === 'sync:index') return Promise.resolve(index)
+          else return Promise.resolve(null)
+        })
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         firebase.user = user
         await sync.recurse()
@@ -312,21 +309,21 @@ describe('/workers/sync.js', () => {
         expect(post_message_spy).not.toBeCalled()
       })
     })
-  })
-  describe('#pause', () => {
-    it('Clears out any running timers', async () => {
-      expect(sync.timeouts.length).toBe(0)
-      sync.timeouts.push(122)
-      expect(sync.timeouts.length).toBe(1)
-      sync.pause()
-      expect(sync.timeouts.length).toBe(0)
+    describe('#pause', () => {
+      it('Clears out any running timers', async () => {
+        expect(sync.timeouts.length).toBe(0)
+        sync.timeouts.push(122)
+        expect(sync.timeouts.length).toBe(1)
+        sync.pause()
+        expect(sync.timeouts.length).toBe(0)
+      })
     })
   })
   describe('Pruning the verge', () => {
-    it.todo('App is mindfull of how large the local databese is getting')
-    it.todo('Removes posters that are no longer in the directory')
-    it.todo('Ocasionally prunes people I am not following (from local feed)')
-    it.todo('Ocasionally prunes people I am following who haven\'t posted in a while (dead accounts)')
+    it.todo('Is mindfull of how large the local databese is getting')
+    it.todo('Cleans up old posters')
+    it.todo('Prunes people I am no longer following')
+    it.todo('Prunes people I am following who haven\'t posted in a while')
   })
   describe('Peer syncing:', () => {
     it.todo('Contacts a signaling server to determine available peers')
