@@ -20,7 +20,7 @@ describe('/workers/sync.js', () => {
   })
   // The application loads the data
   // the syncronizer deletes what's stale
-  describe('methods', () => {
+  describe('Methods', () => {
     describe('#message_listener', () => {
       it('Exists', () => {
         expect(sync.message_listener).toBeDefined()
@@ -82,6 +82,7 @@ describe('/workers/sync.js', () => {
     })
     describe('#offline', () => {
       it('Needs to be online', () => {
+        get.mockRestore()
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         sync.offline()
         expect(get).not.toBeCalled()
@@ -242,7 +243,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
       it('Works without an existing index', async () => {
         jest.clearAllMocks()
@@ -252,7 +253,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
       it('Runs events and statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -266,7 +267,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
       it('Tells the app to sync statements apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -281,7 +282,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
       it('Tells the app to sync events apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -296,7 +297,13 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.recurse()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(post_message_spy).toHaveBeenCalledTimes(3)
+      })
+    })
+    describe('#check_my_babies', () => {
+      it('Checks if a person has updated statements', async () => {
+        await sync.check_my_babies('/+16282281824')
+        expect(del).toBeCalled()
       })
     })
   })
