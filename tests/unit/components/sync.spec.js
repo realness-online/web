@@ -198,7 +198,7 @@ describe('@/components/sync', () => {
         await wrapper.vm.sync_statements()
         expect(Statements.prototype.sync).not.toBeCalled()
       })
-      it('Syncs when there is a network file to sync with', async () => {
+      it('Syncs without a network file to sync with', async () => {
         jest.spyOn(sync_worker, 'fresh_metadata')
         .mockImplementation(_ => Promise.resolve({
            customMetadata: { md5: null }
@@ -209,7 +209,7 @@ describe('@/components/sync', () => {
         await wrapper.vm.$nextTick()
         // get.mockImplementationOnce(_ => Promise.resolve(null))
         await wrapper.vm.sync_statements()
-        expect(Statements.prototype.sync).not.toBeCalled()
+        expect(Statements.prototype.sync).toBeCalled()
       })
       it('Saves synced statements', async () => {
         jest.spyOn(sync_worker, 'fresh_metadata')
