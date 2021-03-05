@@ -153,9 +153,8 @@
         const itemid = this.itemid('statements')
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
-        if (network.md5 && elements) {
-          const md5 = hash(elements.outerHTML, hash_options)
-          if (md5 === network.md5) return
+        const md5 = hash(elements.outerHTML, hash_options)
+        if (!network || network.md5 !== md5) {
           this.statements = await statements.sync()
           if (this.statements.length) {
             await this.$nextTick()
