@@ -127,6 +127,7 @@ export async function is_outdated (itemid) { // always checks the network
   if (!local) return false
   const md5 = hash(local, hash_options)
   const network = (await fresh_metadata(itemid)).customMetadata
+  if (!network) return true // temporary as soon all content will have cutom metadata
   return !(md5 === network.md5)
 }
 export async function fresh_metadata (itemid) {
