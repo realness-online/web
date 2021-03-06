@@ -3,10 +3,10 @@
     cursor: pointer
     &:focus
       outline:none
-    &::-webkit-details-marker
+    &::marker
       display:none
   & > *:not(summary)
-    animation-name: slideOutLeft    
+    animation-name: slideOutLeft
   &[open]
     border: none
     border-color: transparent
