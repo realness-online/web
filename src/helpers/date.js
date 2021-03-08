@@ -40,7 +40,7 @@ export function is_same_day (d1, d2) {
   return d1.getFullYear() === d2.getFullYear() &&
     d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth()
 }
-export function is_fresh (date) {
+export function is_fresh (date = 0) {
   const expires = new Date()
   expires.setDate(expires.getDate() - 13)
   if (new Date(date) > expires) return true
