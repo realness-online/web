@@ -103,36 +103,29 @@ async function check_people (people) {
   }))
 }
 async function prune_person (itemid) {
-  const index = (await get('sync:index')) || {}
-  if (await is_outdated(itemid)) {
+  const network = await fresh_metadata(itemid)
+  if (network.customMetadata.md5 !== await local_md5(itemid)) {
     await del(itemid)
-    console.info('cache:pruned', itemid)
     check_children(itemid)
-  } else if (index[itemid].updated < visit_interval()) { // Only delete poster directory for visit_interval
-    await check_children(itemid)
-  }
+  } else if (network.updated < visit_interval()) await check_children(itemid) // Only delete poster directory for visit_interval
 }
 async function check_children (itemid) {
   await del(`${itemid}/posters/`)
-  console.info('cache:pruned', 'posters directory')
   const statements = `${itemid}/statements`
-  if (await is_outdated(statements)) {
+  const network = await fresh_metadata(statements)
+  if (network.customMetadata.md5 !== await local_md5(statements)) {
     await del(`${statements}/`)
     await del(statements)
-    console.info('cache:pruned', statements)
   }
 }
-export async function is_outdated (itemid) { // always checks the network
+export async function local_md5 (itemid) { // always checks the network
   const local = await get(itemid)
-  if (!local) return false
-  const md5 = hash(local, hash_options)
-  const network = (await fresh_metadata(itemid)).customMetadata
-  if (!network) return true // temporary as soon all content will have cutom metadata
-  return !(md5 === network.md5)
+  if (!local) return null
+  return hash(local, hash_options)
 }
 export async function fresh_metadata (itemid) {
   const index = (await get('sync:index')) || {}
-  const path = await firebase.storage().ref().child(as_filename(itemid))
+  const path = firebase.storage().ref().child(as_filename(itemid))
   let network
   try {
     console.info('request:metadata', itemid)
@@ -142,6 +135,7 @@ export async function fresh_metadata (itemid) {
       network = does_not_exist
     } else throw e
   }
+  if (!network) throw new Error(`unable to create metadata for ${itemid}`)
   index[itemid] = network
   await set('sync:index', index)
   return network
