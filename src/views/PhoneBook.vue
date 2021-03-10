@@ -17,7 +17,7 @@
                  :person="person"
                  :relations.sync="relations" />
     </nav>
-    <hgroup v-else class="sign-on message">
+    <hgroup v-if="!working && !signed_in" class="sign-on message">
       <p><sign-on /> Check out who's here</p>
       <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
@@ -51,15 +51,17 @@
     },
     async created () {
       console.info('views:PhoneBook')
-      this.relations = await list(`${localStorage.me}/relations`)
-      if (this.signed_in) {
-        const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
-        phone_numbers.prefixes.forEach(async (phone_number) => {
-          const person = await load(from_e64(phone_number.name))
-          if (person && is_fresh(person.visited)) this.phonebook.push(person)
-        })
-      }
-      this.working = false
+      firebase.auth().onAuthStateChanged(async user => {
+        this.relations = await list(`${localStorage.me}/relations`)
+        if (user) {
+          const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
+          phone_numbers.prefixes.forEach(async (phone_number) => {
+            const person = await load(from_e64(phone_number.name))
+            if (person && is_fresh(person.visited)) this.phonebook.push(person)
+          })
+        }
+        this.working = false
+      })
     }
   }
 </script>
