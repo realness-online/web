@@ -33,6 +33,8 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
       relations=""
     />
   </nav>
+   
+  <!---->
 </section>
 `;
 
@@ -64,6 +66,8 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
   <nav
     class="profile-list"
   />
+   
+  <!---->
 </section>
 `;
 
@@ -90,20 +94,8 @@ exports[`@/views/PhoneBook Renders Lets you know to sign in 1`] = `
     />
   </hgroup>
    
-  <hgroup
-    class="sign-on message"
-  >
-    <p>
-      <sign-on-stub />
-       Check out who's here
-    </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
-  </hgroup>
+  <!---->
+   
+  <!---->
 </section>
 `;
