@@ -30,7 +30,7 @@
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
-  import itemid from '@/helpers/itemid'
+  import { load } from '@/helpers/itemid'
   import as_textarea from '@/components/statements/as-textarea'
   export default {
     components: {
@@ -48,7 +48,7 @@
     },
     async created () {
       console.info('views:Navigation')
-      const my = await itemid.load(localStorage.me)
+      const my = await load(localStorage.me)
       if (my && my.first_name) this.first_name = my.first_name
       else this.first_name = 'You'
     },

@@ -73,7 +73,7 @@
       firebase.auth().onAuthStateChanged(async user => {
         if (user) {
           const authors = await list(`${localStorage.me}/relations`)
-          await Promise.all(authors.map(async (a) => {
+          await Promise.all(authors.map(async a => {
             const person = await load(a.id)
             if (is_fresh(person.visited)) this.authors.push(person)
           }))
@@ -118,11 +118,6 @@
       fill: transparent
     & > nav
       display: none
-    & > hgroup
-      & > h1
-        // padding: 0 base-line (base-line * 2) base-line
-        // width:100vw
-        // margin-bottom: 0
     & > section.as-days
       & > article.day
         margin-bottom: base-line

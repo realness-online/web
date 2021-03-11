@@ -23,7 +23,7 @@
   </section>
 </template>
 <script>
-  import itemid from '@/helpers/itemid'
+  import { list } from '@/helpers/itemid'
   import { recent_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
@@ -47,20 +47,20 @@
       }
     },
     async created () {
-      console.time('views:Events')
+      console.info('views:events')
       this.events = await this.get_upcoming_events()
       this.working = false
-      console.timeEnd('views:Events')
     },
     methods: {
       async get_upcoming_events () {
         const [relations, my_events] = await Promise.all([
-          itemid.list(`${localStorage.me}/relations`),
-          itemid.list(`${localStorage.me}/events`)
+          list(`${localStorage.me}/relations`),
+          list(`${localStorage.me}/events`)
         ])
         let events = my_events
-        await Promise.all(relations.map(async (person) => {
-          const relation_events = await itemid.list(`${person.id}/events`)
+        console.log(relations)
+        await Promise.all(relations.map(async person => {
+          const relation_events = await list(`${person.id}/events`)
           events = [...relation_events, ...events]
         }))
         events.sort(recent_item_first)

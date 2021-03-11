@@ -134,12 +134,3 @@ export function type_as_list (item) {
   else if (list) return [list]
   else return []
 }
-
-export default {
-  load,
-  list,
-  as_directory,
-  as_created_at,
-  as_fragment,
-  as_query_id
-}

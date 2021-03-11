@@ -44,7 +44,7 @@
   </section>
 </template>
 <script>
-  import itemid from '@/helpers/itemid'
+  import { as_directory } from '@/helpers/itemid'
   import get_item from '@/modules/item'
   import { recent_id_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
@@ -115,7 +115,7 @@
       },
       async get_poster_list (user) {
         this.posters = []
-        const directory = await itemid.as_directory(`${localStorage.me}/posters`)
+        const directory = await as_directory(`${localStorage.me}/posters`)
         if (directory && directory.items) directory.items.forEach(item => this.posters.push(this.get_id(item)))
         this.posters.sort(recent_id_first)
       },

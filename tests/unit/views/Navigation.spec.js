@@ -1,7 +1,7 @@
 import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
-import itemid from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

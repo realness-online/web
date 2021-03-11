@@ -1,14 +1,17 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import itemid, {
+import {
   as_download_url,
   as_storage_path,
   as_directory_id,
   as_directory,
   as_author,
   as_filename,
-  as_type
+  as_type,
+  load,
+  as_query_id,
+  as_fragment
 } from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
@@ -25,7 +28,7 @@ describe('@/helpers/itemid', () => {
     describe('#load', () => {
       describe('It\'s someone elses stuff', () => {
         beforeEach(async () => {
-          await itemid.load(posterid, '/+14152281824')
+          await load(posterid, '/+14152281824')
         })
         it('It tries indexdb', () => {
           expect(get).toBeCalled()
@@ -36,11 +39,11 @@ describe('@/helpers/itemid', () => {
       })
       describe('It\'s my stuff', () => {
         it('It tries local storage first', () => {
-          itemid.load(posterid, '/+16282281824')
+          load(posterid, '/+16282281824')
           expect(localStorage.getItem).toHaveBeenCalledTimes(1)
         })
         it('It tries indexdb', () => {
-          itemid.load(posterid, '/+16282281824')
+          load(posterid, '/+16282281824')
           expect(localStorage.getItem).toHaveBeenCalledTimes(1)
           expect(get).toHaveBeenCalledTimes(1)
         })
@@ -50,7 +53,7 @@ describe('@/helpers/itemid', () => {
         beforeEach(async () => {
           firebase.user = user
           network_request = fetch.mockResponseOnce(poster_html)
-          poster = await itemid.load(posterid, '/+16282281824')
+          poster = await load(posterid, '/+16282281824')
           await flushPromises()
         })
         afterEach(() => {
@@ -67,10 +70,10 @@ describe('@/helpers/itemid', () => {
       })
     })
     describe('#as_query_id', () => {
-      expect(itemid.as_query_id(posterid)).toBe('16282281824-posters-559666932867')
+      expect(as_query_id(posterid)).toBe('16282281824-posters-559666932867')
     })
     describe('#as_fragment', () => {
-      expect(itemid.as_fragment(posterid)).toBe('#16282281824-posters-559666932867')
+      expect(as_fragment(posterid)).toBe('#16282281824-posters-559666932867')
     })
   })
   describe('exports', () => {
