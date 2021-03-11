@@ -20,7 +20,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import itemid from '@/helpers/itemid'
+  import { list } from '@/helpers/itemid'
   import events_list from '@/components/events/as-list'
   import { Events } from '@/persistance/Storage'
   export default {
@@ -76,7 +76,7 @@
     },
     async created () {
       this.main_event = this.tonight
-      this.events = await itemid.list(`${localStorage.me}/events`)
+      this.events = await list(`${localStorage.me}/events`)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },

@@ -13,7 +13,7 @@
   import 'firebase/auth'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
-  import itemid from '@/helpers/itemid'
+  import { load } from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
     components: { icon },
@@ -32,7 +32,7 @@
     },
     methods: {
       async show () {
-        this.poster = await itemid.load(this.events.url)
+        this.poster = await load(this.events.url)
       }
     }
   }

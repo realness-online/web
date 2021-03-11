@@ -31,7 +31,7 @@
 <script>
   import { Avatar } from '@/persistance/Storage'
   import get_item from '@/modules/item'
-  import itemid from '@/helpers/itemid'
+  import { load } from '@/helpers/itemid'
   import icon from '@/components/icon'
   import as_download from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'
@@ -82,7 +82,7 @@
     async created () {
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
-      if (this.person.avatar) this.current_avatar = await itemid.load(this.person.avatar)
+      if (this.person.avatar) this.current_avatar = await load(this.person.avatar)
     },
     destroyed () {
       this.vectorizer.terminate()

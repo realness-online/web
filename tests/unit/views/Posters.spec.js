@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/modules/item'
-import itemid, { as_author, as_created_at } from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -122,13 +122,13 @@ describe('@/views/Posters.vue', () => {
         jest.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
       })
       it('Saves an optimized poster (will have a proper itemid)', async () => {
-        localStorage.me = as_author(poster.id)
+        localStorage.me = itemid.as_author(poster.id)
         wrapper.vm.new_poster = poster
         await wrapper.vm.save_poster()
         expect(save_spy).toBeCalled()
       })
       it('Only save optimized poster (will have undefined id and a created_at)', async () => {
-        poster.created_at = as_created_at(poster.id)
+        poster.created_at = itemid.as_created_at(poster.id)
         poster.id = undefined
         wrapper.vm.new_poster = poster
         await wrapper.vm.save_poster()

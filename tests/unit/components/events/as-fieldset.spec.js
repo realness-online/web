@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
-import itemid from '@/helpers/itemid'
+import * as itemid from '@/helpers/itemid'
 import get_item from '@/modules/item'
 
 const fs = require('fs')
