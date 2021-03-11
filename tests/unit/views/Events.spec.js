@@ -6,7 +6,6 @@ describe('@/views/Events.vue', () => {
   beforeEach(() => {
     localStorage.me = '/+'
     list = jest.spyOn(itemid, 'list').mockImplementation(id => {
-      console.log('mock list', id)
       if (itemid.as_type(id) === 'relations') {
         return [
           { id: '/+14153451275' },
