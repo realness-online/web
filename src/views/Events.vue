@@ -58,7 +58,6 @@
           list(`${localStorage.me}/events`)
         ])
         let events = my_events
-        console.log(relations)
         await Promise.all(relations.map(async person => {
           const relation_events = await list(`${person.id}/events`)
           events = [...relation_events, ...events]
