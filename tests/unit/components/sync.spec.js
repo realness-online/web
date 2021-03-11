@@ -119,11 +119,10 @@ describe('@/components/sync', () => {
         expect(wrapper.vm.syncer.postMessage).toBeCalled()
         expect(message.action).toBe('sync:play')
       })
-      it('Tells the sync worker to pause when the UI is hidden', async () => {
-        let message
+      it('Is chill when the UI is hidden', async () => {
         wrapper = await shallowMount(sync, fake_props)
         wrapper.vm.syncer = {
-          postMessage: jest.fn(m => { message = m })
+          postMessage: jest.fn()
         }
         Object.defineProperty(window.document, 'hidden', {
           value: true
@@ -131,8 +130,7 @@ describe('@/components/sync', () => {
         wrapper.vm.visibility_change()
         await flushPromises()
         expect(document.hidden).toBe(true)
-        expect(wrapper.vm.syncer.postMessage).toBeCalled()
-        expect(message.action).toBe('sync:pause')
+        expect(wrapper.vm.syncer.postMessage).not.toBeCalled()
       })
     })
     describe('#auth_state_changed', () => {

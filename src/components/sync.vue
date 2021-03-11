@@ -128,6 +128,8 @@
         }
       },
       async sync_happened () {
+        const statements = new Statements()
+        await statements.optimize()
         localStorage.sync_time = new Date().toISOString()
         const me = await load(localStorage.me)
         if (!me.visited) me.visited = null
