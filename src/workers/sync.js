@@ -2,8 +2,8 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { is_fresh } from '@/helpers/date'
-import { get, del, set } from 'idb-keyval'
-import { as_filename } from '@/helpers/itemid'
+import { get, del, set, keys } from 'idb-keyval'
+import { as_filename, as_type } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
 import hash from 'object-hash'
@@ -45,6 +45,7 @@ export async function sync (relations) {
   post('sync:statements')
   post('sync:happened')
   await people(relations)
+  prune_strangers(relations)
   console.timeEnd('runs:sync')
 }
 export async function offline () {
@@ -85,22 +86,17 @@ export async function people (relations = []) {
     }))
   }
 }
-// prune_strangers(my_itemid, relations)
-// async function prune_strangers (my_itemid, relations) {
-//   console.log('prune_strangers', my_itemid, relations)
-//   const full_list = await keys()
-//   const remove_list = full_list.filter(id => {
-//     if (as_type(id) === 'person') {
-//       return relations.some(relation => {
-//         return !(relation.id === id)
-//       })
-//     } else return false
-//   })
-//   remove_list.forEach(stranger => {
-//     console.log(stranger)
-//     del(stranger.id)
-//   })
-// }
+export async function prune_strangers (relations = []) {
+  const full_list = await keys()
+  const remove_list = full_list.filter(id => {
+    if (as_type(id) === 'person') {
+      return relations.some(relation => {
+        return !(relation.id === id)
+      })
+    } else return false
+  })
+  remove_list.forEach(stranger => del(stranger.id))
+}
 async function prune_person (itemid) {
   const network = await fresh_metadata(itemid)
   if (!network.customMetadata) return

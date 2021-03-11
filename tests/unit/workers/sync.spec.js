@@ -350,6 +350,20 @@ describe('/workers/sync.js', () => {
         expect(post_message_spy).not.toBeCalled()
       })
     })
+    describe('#prune_strangers', () => {
+      it('removes people I am not follwing from the local db', () => {
+        const id = '/+16282281824'
+        firebase.user = user
+        const relations = [{ id }]
+        keys.mockImplementation(_ => Promise.resolve([
+          id,
+          '/+14153721982/posters/12338658w498',
+          '/+14153721982'
+        ]))
+        // When viewing hte phone book you will downloadthe list of available users
+        sync.prune_strangers(relations)
+      })
+    })
   })
   describe('Pruning the verge', () => {
     it.todo('Is mindfull of how large the local databese is getting')
