@@ -70,7 +70,7 @@ describe('/workers/sync.js', () => {
       })
     })
     describe('#initialize', () => {
-      it('initializes one instance of firebase', async () => {
+      it('Initializes one instance of firebase', async () => {
         firebase.apps.push('new_app')
         firebase.user = user
         await sync.initialize({})
@@ -81,12 +81,6 @@ describe('/workers/sync.js', () => {
       it('Calls sync methods when online and signed in', async () => {
         firebase.user = user
         await sync.initialize({})
-        expect(firebase.initializeApp).toBeCalled()
-        firebase.user = null
-      })
-      it.skip('Calls recurse if when time elapses', async () => {
-        firebase.user = user
-        await sync.initialize({}, new Date(2020, 1, 1))
         expect(firebase.initializeApp).toBeCalled()
         firebase.user = null
       })
@@ -144,7 +138,7 @@ describe('/workers/sync.js', () => {
         sync.anonymous_posters(user)
         expect(get).not.toBeCalled()
       })
-      it('handles no posters', async () => {
+      it('Handles no posters', async () => {
         firebase.user = user
         await sync.anonymous_posters()
         expect(get).toBeCalled()
@@ -168,24 +162,27 @@ describe('/workers/sync.js', () => {
       })
     })
     describe('#people', () => {
+      const id = '/+16282281824'
+      let relations
+      let random
+      afterEach(() => {
+        Math.random = random
+      })
       beforeEach(async () => {
+        random = Math.random
+        Math.random = jest.fn(_ => 1)
+        relations = [{ id }]
         firebase.user = user
-        //  for failure ['/+1/posters/559666932867']
-        const MockDate = require('mockdate')
-        MockDate.set('2020-01-01')
-        const ids = ['/+16282281824']
+        keys.mockImplementation(_ => Promise.resolve([id]))
         const meta = {
           updated: new Date().toISOString(),
           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
         }
-        MockDate.reset()
-        const index = {
-          '/+16282281824': meta
-        }
-        keys.mockImplementation(_ => Promise.resolve(ids))
+        const index = {}
+        index[id] = meta
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
-          if (query === '/+16282281824') return Promise.resolve(person_html)
+          if (query === id) return Promise.resolve(person_html)
           else return Promise.resolve()
         })
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
@@ -196,45 +193,92 @@ describe('/workers/sync.js', () => {
         expect(get).not.toBeCalled()
       })
       it('Prunes people with outdated info', async () => {
-        await sync.people()
+        await sync.people(relations)
+        await flushPromises()
         jest.runAllTimers()
-        expect(keys).toBeCalled()
         expect(get).toBeCalled()
+        expect(del).toBeCalled()
       })
-      it('Checks on people who have visited recently', async () => {
+      it('Ignores people who are no longer using the sercvice', async () => {
+        const MockDate = require('mockdate')
+        MockDate.set('2020-01-01')
         const index = {
           '/+16282281824': {
             updated: new Date().toISOString()
           }
         }
+        MockDate.reset()
         get.mockImplementationOnce(query => {
           if (query === 'sync:index') return index
           else return Promise.resolve(person_html)
         })
-        await sync.people()
+        await sync.people(relations)
         jest.runAllTimers()
-        expect(keys).toBeCalled()
         expect(get).toBeCalled()
       })
       it('Randomly checks on a stale person', async () => {
-        const random = Math.random
+        const MockDate = require('mockdate')
+        MockDate.set('2020-01-01')
+        const index = {
+          '/+16282281824': {
+            updated: new Date().toISOString()
+          }
+        }
+        MockDate.reset()
+        get.mockImplementationOnce(query => {
+          if (query === 'sync:index') return index
+          else return Promise.resolve(person_html)
+        })
+
         Math.random = jest.fn(_ => 0)
-        await sync.people()
+        await sync.people(relations)
         jest.runAllTimers()
-        expect(keys).toBeCalled()
         expect(get).toBeCalled()
         Math.random = random
       })
+      it('Checks on a recent users children for a reasonable interval', async () => {
+        const updated = new Date()
+        updated.setMinutes(updated.getMinutes() - 55)
+        const meta = {
+          updated,
+          customMetadata: { md5: '8ae9Lz4qKYqoyofDaaY0Nw==' }
+        }
+        const index = {}
+        index[id] = meta
+        get.mockImplementationOnce(query => {
+          if (query === 'sync:index') return index
+          if (query === id) return Promise.resolve(person_html)
+          else return Promise.resolve()
+        })
+        firebase.storage_mock.getMetadata.mockImplementationOnce(_ => Promise.resolve(meta))
+        await sync.people(relations)
+        await flushPromises()
+        jest.runAllTimers()
+        expect(get).toBeCalled()
+        expect(del).toHaveBeenCalledTimes(3)
+      })
+      it('Works without an existing index', async () => {
+        get.mockImplementationOnce(query => {
+          if (query === 'sync:index') return undefined
+          if (query === id) return Promise.resolve(person_html)
+          else return Promise.resolve()
+        })
+        await sync.people(relations)
+        await flushPromises()
+        jest.runAllTimers()
+        expect(get).toBeCalled()
+        expect(del).not.toBeCalled()
+      })
     })
-    describe('#recurse', () => {
+    describe('#sync', () => {
       it('Fails gracefully when offline', async () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        await sync.recurse()
+        await sync.sync()
         expect(post_message_spy).not.toBeCalled()
       })
       it('Fails gracefully when user is signed out', async () => {
         firebase.user = null
-        await sync.recurse()
+        await sync.sync()
         expect(post_message_spy).not.toBeCalled()
       })
       it('Runs when user is signed in', async () => {
@@ -251,7 +295,7 @@ describe('/workers/sync.js', () => {
         })
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         firebase.user = user
-        await sync.recurse()
+        await sync.sync()
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
@@ -261,7 +305,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(undefined))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
         firebase.user = user
-        await sync.recurse()
+        await sync.sync()
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
@@ -274,7 +318,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
         firebase.user = user
-        await sync.recurse()
+        await sync.sync()
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
@@ -289,15 +333,12 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve(index))
         firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve({ updated }))
         firebase.user = user
-        await sync.recurse()
+        await sync.sync()
         await flushPromises()
         expect(post_message_spy).toHaveBeenCalledTimes(3)
       })
     })
     describe('#play', () => {
-      afterEach(() => {
-        sync.pause()
-      })
       it('Starts syncing without a last_sync', async () => {
         firebase.user = user
         await sync.play()
@@ -305,17 +346,8 @@ describe('/workers/sync.js', () => {
       })
       it('Sets a timer for the remaining time until sync', async () => {
         firebase.user = user
-        await sync.play(new Date().toISOString())
+        await sync.play({ last_sync: new Date().toISOString() })
         expect(post_message_spy).not.toBeCalled()
-      })
-    })
-    describe('#pause', () => {
-      it('Clears out any running timers', async () => {
-        expect(sync.timeouts.length).toBe(0)
-        sync.timeouts.push(122)
-        expect(sync.timeouts.length).toBe(1)
-        sync.pause()
-        expect(sync.timeouts.length).toBe(0)
       })
     })
   })
@@ -323,7 +355,6 @@ describe('/workers/sync.js', () => {
     it.todo('Is mindfull of how large the local databese is getting')
     it.todo('Cleans up old posters')
     it.todo('Prunes people I am no longer following')
-    it.todo('Prunes people I am following who haven\'t posted in a while')
   })
   describe('Peer syncing:', () => {
     it.todo('Contacts a signaling server to determine available peers')
