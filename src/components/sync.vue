@@ -90,25 +90,30 @@
       this.syncer.terminate()
     },
     methods: {
-      visibility_change () {
-        const message = { action: 'sync:play', last_sync: localStorage.sync_time }
-        if (document.hidden) message.action = 'sync:pause'
-        this.syncer.postMessage(message)
+      async visibility_change () {
+        const relations = await list(`${localStorage.me}/relations`)
+        const message = {
+          action: 'sync:play',
+          last_sync: localStorage.sync_time,
+          relations
+        }
+        if (!document.hidden) this.syncer.postMessage(message)
       },
       async auth_state_changed (me) {
         if (me && navigator.onLine) {
           localStorage.me = from_e64(me.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
           window.addEventListener('online', this.online)
+          const relations = await list(`${localStorage.me}/relations`)
           this.syncer.postMessage({
             action: 'sync:initialize',
             last_sync: localStorage.sync_time,
-            config: this.config
+            config: this.config,
+            relations
           })
         } else {
           this.syncer.removeEventListener('message', this.worker_message)
           window.removeEventListener('online', this.online)
-          this.syncer.postMessage({ action: 'sync:pause' })
         }
       },
       online () {
