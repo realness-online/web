@@ -4,9 +4,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 module.exports = {
   parallel: require('os').cpus().length > 1,
-  productionSourceMap: true,
+  productionSourceMap: false,
   css: {
-    sourceMap: true,
+    sourceMap: false,
     loaderOptions: {
       stylus: {
         loader: 'stylus-resources-loader',
