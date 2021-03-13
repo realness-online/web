@@ -23,3 +23,6 @@ By moderating an instance of realness you become part of a chain of reponsibilit
 It is the explicit goal of realness to create a democratic enviroment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done. 
 
 Currently [package.json](package.json) has the licence field marked as UNLISENCED – We need to figure that license out. 
+
+
+
