@@ -29,7 +29,6 @@ Add a project from the [firebase console](https://console.firebase.google.com). 
 
 ```
 https://${project-name}.web.app
-
 ```
 Once your project is created you will want to enable phone authentication and file storage.
 
@@ -50,7 +49,6 @@ yarn global add firebase-tools
 firebase login
 
 yarn deploy
-
 ```
 
 ## Support
