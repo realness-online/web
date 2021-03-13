@@ -10,7 +10,9 @@ You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/
 
 ## Install
 
-``` shell
+### Checkout and install requirements
+
+```
 git clone git@github.com:realness-online/web.git
 
 cd web
@@ -18,6 +20,24 @@ cd web
 yarn install
 
 ```
+
+
+### configure firebase
+
+You will need to configure Auth and file storage in order for realness to work.
+
+
+At this point if you have a firebase instance configured you can
+
+### deploy to firebase
+
+
+```
+yarn deploy
+
+```
+
+
 ## Support
 
 We invite you to [Join](https://realness.online) realness if you are interested in technical support for Moderating your own instance of realness.
