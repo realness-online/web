@@ -33,7 +33,6 @@ https://${project-name}.web.app
 ```
 Once your project is created you will want to enable phone authentication and file storage.
 
-
 #### Enable phone authentication
 ![Authentication](http://lost.svg)
 
@@ -41,8 +40,9 @@ Once your project is created you will want to enable phone authentication and fi
 
 Accept the default security rules (they will be properly configured when you deploy). and pick your region.
 
-
 ### Deploy to firebase
+
+Install firebase-tools log in and then your ready to deploy.
 
 ```
 yarn global add firebase-tools
@@ -55,7 +55,7 @@ yarn deploy
 
 ## Support
 
-We invite you to [Join](https://realness.online) realness if you are interested in technical support for Moderating your own instance of realness.
+We invite you to [Join realness online](https://realness.online) if you are interested in technical support for Moderating your own instance of realness web.
 
 ## License
 
