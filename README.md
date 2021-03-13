@@ -12,6 +12,8 @@ You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/
 
 ### Checkout and install requirements
 
+from your favorite terminal
+
 ```
 git clone git@github.com:realness-online/web.git
 
@@ -21,22 +23,31 @@ yarn install
 
 ```
 
+### Configure firebase
 
-### configure firebase
+Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be it's url for your social network
 
-You will need to configure Auth and file storage in order for realness to work.
+```
+https://${project-name}.web.app
 
+```
+Once your project is created you will want to enable phone authentication and file storage.
 
-At this point if you have a firebase instance configured you can
+Accept the default security rules (they will be properly configured when you deploy). and pick your region.
 
-### deploy to firebase
+Now that you are properly configured you can deploy
+
+### Deploy to firebase
 
 
 ```
+yarn global add firebase-tools
+
+firebase login
+
 yarn deploy
 
 ```
-
 
 ## Support
 
