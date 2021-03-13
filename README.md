@@ -1,4 +1,4 @@
-# Realness
+# Realness web
 
 ![realness online](https://realness.online/180.png)
 
@@ -6,10 +6,18 @@ Realness web is the source code for [realness.online](https://realness.online). 
 
 Moderating an instance of Realness is managed via the [firebase console](https://firebase.google.com)
 
-You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/architecure), technical [highlights](docs/highlights), or dive right in and get started...
+You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/architecure), [technical highlights](docs/highlights), or dive right in and get started
 
 ## Install
 
+``` shell
+git clone git@github.com:realness-online/web.git
+
+cd web
+
+yarn install
+
+```
 ## Support
 
 We invite you to [Join](https://realness.online) realness if you are interested in technical support for Moderating your own instance of realness.
