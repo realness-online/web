@@ -10,7 +10,7 @@ You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/
 
 ## Install
 
-### Checkout and install requirements
+### Clone and install
 
 from your favorite terminal
 
@@ -33,12 +33,16 @@ https://${project-name}.web.app
 ```
 Once your project is created you will want to enable phone authentication and file storage.
 
+
+#### Enable phone authentication
+![Authentication](http://lost.svg)
+
+#### Enable Storage
+
 Accept the default security rules (they will be properly configured when you deploy). and pick your region.
 
-Now that you are properly configured you can deploy
 
 ### Deploy to firebase
-
 
 ```
 yarn global add firebase-tools
