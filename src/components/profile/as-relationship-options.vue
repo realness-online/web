@@ -1,5 +1,5 @@
 <template>
-  <a v-if="!is_me" class="status" :class="{ relation }" @click="update_relationship">
+  <a class="status" :class="{ relation }" @click="update_relationship">
     <icon name="add" />
     <icon name="finished" />
   </a>
@@ -23,11 +23,6 @@
     data () {
       return {
         relation: this.is_relation()
-      }
-    },
-    computed: {
-      is_me () {
-        return (localStorage.me === this.person.id)
       }
     },
     methods: {

@@ -6,7 +6,7 @@
                  :person="person"
                  :editable="editable"
                  @update:person="$emit('update:person', $event)" />
-      <menu>
+      <menu v-if="!is_me">
         <slot>
           <profile-as-meta :people="relations" />
           <as-relationship-options :person="person"
