@@ -15,15 +15,15 @@ You can learn more about the [philosopy](docs/philosophy.md), [architecture](doc
 From your favorite terminal
 
 ``` bash
-git clone git@github.com:realness-online/web.git
+$ git clone git@github.com:realness-online/web.git
 
-cd web
+$ cd web
 
-yarn install
+$ yarn install
 
-yarn build
+$ yarn build
 
-yarn serve
+$ yarn serve
 
 ```
 Visit [localhost:8080](http://localhost:8080/). Large parts of the app work without having to configure firebase.
@@ -49,11 +49,11 @@ Accept the default security rules (they will be [properly configured]() when you
 Install firebase-tools log in and then your ready to deploy.
 
 ``` bash
-yarn global add firebase-tools
+$ yarn global add firebase-tools
 
-firebase login
+$ firebase login
 
-yarn deploy
+$ yarn deploy
 ```
 
 # DONE!
