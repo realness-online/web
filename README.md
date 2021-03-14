@@ -14,17 +14,16 @@ You can learn more about the [philosopy](docs/philosophy.md), [architecture](doc
 
 From your favorite terminal
 
-``` bash
-$ git clone git@github.com:realness-online/web.git
+```bash
+git clone git@github.com:realness-online/web.git
 
-$ cd web
+cd web
 
-$ yarn install
+yarn install
 
-$ yarn build
+yarn build
 
-$ yarn serve
-
+yarn serve
 ```
 Visit [localhost:8080](http://localhost:8080/). Large parts of the app work without having to configure firebase.
 
@@ -32,7 +31,7 @@ Visit [localhost:8080](http://localhost:8080/). Large parts of the app work with
 
 Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be it's url for your social network
 
-``` http
+```
 https://${project-name}.web.app
 ```
 Once your project is created you will want to enable phone authentication and file storage.
@@ -48,17 +47,17 @@ Accept the default security rules (they will be [properly configured]() when you
 
 Install firebase-tools log in and then your ready to deploy.
 
-``` bash
-$ yarn global add firebase-tools
+```bash
+yarn global add firebase-tools
 
-$ firebase login
+firebase login
 
-$ yarn deploy
+yarn deploy
 ```
 
 # DONE!
 
-Visit [https://${project-name}.web.app](${name}.wep.app). You can sign in and invite your friends.
+Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign in and invite your friends.
 
 ## Sign in via localhost
 
