@@ -4,15 +4,15 @@
 
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and maintain your own social networks.
 
-Moderating an instance of Realness is managed via the [firebase console](https://firebase.google.com)
+You can moderate an instance of Realness via the [firebase console](https://firebase.google.com)
 
-You can learn more about the [philosopy](docs/architecture.md), [architecture](docs/philosophy.md), [technical highlights](docs/highlights.md), or dive right in and get started
+You can learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), [technical highlights](docs/highlights.md), or dive right in and get started
 
 ## Install
 
 ### Clone and install
 
-from your favorite terminal
+From your favorite terminal
 
 ```
 git clone git@github.com:realness-online/web.git
@@ -36,7 +36,7 @@ https://${project-name}.web.app
 Once your project is created you will want to enable phone authentication and file storage.
 
 #### Enable phone authentication
-![Authentication](http://lost.svg)
+![Authentication](docs/auth.jpg)
 
 #### Enable Storage
 
