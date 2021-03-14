@@ -21,7 +21,7 @@ cd web
 
 yarn install
 
-yarn build
+yarn workers
 
 yarn serve
 ```
@@ -76,7 +76,7 @@ Restart your local server and localhost will have the same functionality as when
 
 ## Contributing
 
-Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [contribution guidlines](docs/contributing.md).
+Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md).
 
 ## Support
 
@@ -92,4 +92,4 @@ By moderating an instance of realness you become part of a chain of responsibili
 
 It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
 
-Currently [package.json](package.json) has the licence field marked as UNLISENCED – We need to figure that license out.
+Currently [package.json](package.json) has the license field marked as UNLICENSED – We need to figure that license out.
