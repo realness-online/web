@@ -76,11 +76,11 @@ Restart your local server and localhost has the same functionality as when you d
 
 ## Contributing
 
-Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help contribute to realness. Please read our [contribution guidlines](docs/contributing.md).
+Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [contribution guidlines](docs/contributing.md).
 
 ## Support
 
-We invite you to [Join realness online](https://realness.online) if you are interested in technical support for Moderating your own instance of realness web.
+We invite you to [Join realness online](https://realness.online) if you are interested in contributing or technical support for Moderating your own instance of realness web.
 
 ## License
 
