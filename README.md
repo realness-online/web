@@ -14,12 +14,14 @@ You can learn more about the [philosopy](docs/philosophy.md), [architecture](doc
 
 From your favorite terminal
 
-```
+``` bash
 git clone git@github.com:realness-online/web.git
 
 cd web
 
 yarn install
+
+yarn build
 
 yarn serve
 
@@ -30,7 +32,7 @@ Visit [localhost:8080](http://localhost:8080/). Large parts of the app work with
 
 Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be it's url for your social network
 
-```
+``` http
 https://${project-name}.web.app
 ```
 Once your project is created you will want to enable phone authentication and file storage.
@@ -46,7 +48,7 @@ Accept the default security rules (they will be [properly configured]() when you
 
 Install firebase-tools log in and then your ready to deploy.
 
-```
+``` bash
 yarn global add firebase-tools
 
 firebase login
@@ -54,12 +56,13 @@ firebase login
 yarn deploy
 ```
 
-Visit [https://${project-name}.web.app](). You can should be able to sign in and invite friends.
+# DONE!
 
+Visit [https://${project-name}.web.app](${name}.wep.app). You can sign in and invite your friends.
 
 ## Sign in via localhost
 
-if you want a fully functioning localhost save a file named env.local to the root of your project with your projects keys
+For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys.
 
 ```
 VUE_APP_API_KEY=${firebase.apiKey}
@@ -71,6 +74,10 @@ VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
 ```
 
 Restart your local server and localhost has the same functionality as when you deploy.
+
+## Contributing
+
+Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help contribute to realness. Please read our [contribution guidlines](docs/contributing.md).
 
 ## Support
 
