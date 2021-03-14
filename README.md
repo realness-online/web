@@ -6,7 +6,7 @@ Realness web is the source code for [realness.online](https://realness.online). 
 
 Moderating an instance of Realness is managed via the [firebase console](https://firebase.google.com)
 
-You can learn more about the [philosopy](/docs/philosophy), [architecture](docs/architecure), [technical highlights](docs/highlights), or dive right in and get started
+You can learn more about the [philosopy](https://github.com/realness-online/web/blob/documentation/docs/architecture.md), [architecture](https://github.com/realness-online/web/blob/documentation/docs/philosophy.md), [technical highlights](https://github.com/realness-online/web/blob/documentation/docs/highlights.md), or dive right in and get started
 
 ## Install
 
@@ -21,7 +21,10 @@ cd web
 
 yarn install
 
+yarn serve
+
 ```
+Visit [localhost:8080](http://localhost:8080/). Large parts of the app work without having to configure firebase.
 
 ### Configure firebase
 
@@ -37,7 +40,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 #### Enable Storage
 
-Accept the default security rules (they will be properly configured when you deploy). and pick your region.
+Accept the default security rules (they will be [properly configured]() when you deploy). and pick your region.
 
 ### Deploy to firebase
 
@@ -50,6 +53,24 @@ firebase login
 
 yarn deploy
 ```
+
+Visit [https://${project-name}.web.app](). You can should be able to sign in and invite friends.
+
+
+## Sign in via localhost
+
+if you want a fully functioning localhost save a file named env.local to the root of your project with your projects keys
+
+```
+VUE_APP_API_KEY=${firebase.apiKey}
+VUE_APP_AUTH_DOMAIN=${firebase.authDomain}
+VUE_APP_DATABASE_URL=${firebase.databaseUrl}
+VUE_APP_PROJECT_ID=${firebase.projectId}
+VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
+VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
+```
+
+Restart your local server and localhost has the same functionality as when you deploy.
 
 ## Support
 
