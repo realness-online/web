@@ -72,7 +72,7 @@ VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
 VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
 ```
 
-Restart your local server and localhost has the same functionality as when you deploy.
+Restart your local server and localhost will have the same functionality as when you deploy.
 
 ## Contributing
 
@@ -80,16 +80,16 @@ Moderators are ideal committers. Setting up an instance of realness is also sett
 
 ## Support
 
-We invite you to [Join realness online](https://realness.online) if you are interested in contributing or technical support for Moderating your own instance of realness web.
+We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating your own instance of realness web.
 
 ## License
 
 One instance of realness per human person. This human person is the Moderator of their instance of Realness.
 
-A moderator takes responsibility for the content that is created within their intance of realness.
+A moderator takes responsibility for the content that is created within their instance of realness.
 
-By moderating an instance of realness you become part of a chain of reponsibility that is diffuse. Each realness instance has a seperate moderator for it's users to negotiate norms with. This way, Human beings can move between networks naturally; Choosing a realness that is a good fit for them.
+By moderating an instance of realness you become part of a chain of responsibility that is diffuse. Each instance of realness is a unique opportunity users to negotiate norms. This way, Human beings can move between networks naturally; Choosing a realness that is a good fit for them.
 
-It is the explicit goal of realness to create a democratic enviroment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
+It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
 
 Currently [package.json](package.json) has the licence field marked as UNLISENCED – We need to figure that license out.
