@@ -1,4 +1,4 @@
-# Realness web: A Chill Vector Space
+# Realness: A Chill Vector Space
 
 ![realness online](src/icons.svg)
 
@@ -76,7 +76,7 @@ VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
 VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
 ```
 
-Restart your local server and localhost will have the same functionality as when you deploy
+Restart your local server and localhost will have the same functionality as when you deploy. take a look at our [development setup](docs/setup.md)
 
 ## Contributing
 
@@ -84,15 +84,15 @@ Moderators are ideal committers. Setting up an instance of realness is also sett
 
 ## Support
 
-We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating your own instance of realness web
+We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating
 
 ## License
 
-One instance of realness per human person. This human person is the Moderator of their instance of Realness.
+One instance of realness per human person. This human person is the moderator.
 
 A moderator takes responsibility for the content that is created within their instance of Realness.
 
-By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity for users to negotiate norms with their moderator. This way, Human beings can move between networks naturally; Choosing a Realness that is a good fit for them.
+By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity for users to negotiate norms with their moderator. This way, human beings can move between networks naturally; choosing a Realness that is a good fit for them.
 
 It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
 
