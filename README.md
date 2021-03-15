@@ -1,6 +1,6 @@
 # Realness web
 
-![realness online](src/icons.svg) A Chill Vector Space
+![realness online](src/icons.svg) <b style="vertical-align:middle">A Chill Vector Space<b>
 
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and maintain your own social networks.
 
