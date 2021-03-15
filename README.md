@@ -59,7 +59,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 ### Deploy to firebase
 
-Install firebase-tools log in and then your ready to deploy.
+Install firebase-tools, login, and deploy.
 
 ``` bash
 yarn global add firebase-tools
