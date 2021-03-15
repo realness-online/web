@@ -43,13 +43,13 @@ Once your project is created you will want to enable phone authentication and fi
 
 - Click get started form storage screen
 
-- Accept the default security rules (they will be
+- Accept the default security rules (they will be configured with deploy)
 
-- Pick your region.
+- Pick your region
 
 ### Deploy to firebase
 
-Install firebase-tools, login, and deploy.
+Install firebase-tools, login, and deploy
 
 ``` bash
 yarn global add firebase-tools
@@ -61,11 +61,11 @@ yarn deploy
 
 # DONE!
 
-Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign in and invite your friends.
+Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign in and invite your friends
 
 ## Sign in via localhost
 
-For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys.
+For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys
 
 ``` bash
 VUE_APP_API_KEY=${firebase.apiKey}
@@ -76,15 +76,15 @@ VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
 VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
 ```
 
-Restart your local server and localhost will have the same functionality as when you deploy.
+Restart your local server and localhost will have the same functionality as when you deploy
 
 ## Contributing
 
-Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md).
+Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
 
 ## Support
 
-We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating your own instance of realness web.
+We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating your own instance of realness web
 
 ## License
 
