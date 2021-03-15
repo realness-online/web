@@ -1,12 +1,12 @@
 # Realness web
 
-![realness online](https://realness.online/180.png)
+![realness online](src/icons.svg) A Chill Vector Space
 
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and maintain your own social networks.
 
-You can moderate an instance of Realness via the [firebase console](https://firebase.google.com)
+You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
 
-You can learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), [technical highlights](docs/highlights.md), or dive right in and get started
+Learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), [technical highlights](docs/highlights.md), or dive in and setup a Realness of your own.
 
 ## Install
 
@@ -21,12 +21,7 @@ cd web
 
 yarn install
 
-yarn workers
-
-yarn serve
 ```
-Visit [localhost:8080](http://localhost:8080/). Large parts of the app work without having to configure firebase.
-
 ### Configure firebase
 
 Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be it's url for your social network
@@ -37,11 +32,22 @@ https://${project-name}.web.app
 Once your project is created you will want to enable phone authentication and file storage.
 
 #### Enable phone authentication
-![Authentication](docs/auth.jpg)
+![Authentication](docs/auth-1.jpg)
+
+![Authentication](docs/auth-2.jpg)
+
+![Authentication](docs/auth-3.jpg)
 
 #### Enable Storage
 
 Accept the default security rules (they will be [properly configured](storage.rules) when you deploy). and pick your region.
+
+![storage](docs/storage-1.jpg)
+
+![storage](docs/storage-2.jpg)
+
+![storage](docs/storage-3.jpg)
+
 
 ### Deploy to firebase
 
@@ -86,10 +92,10 @@ We invite you to [Join realness online](https://realness.online) if you are inte
 
 One instance of realness per human person. This human person is the Moderator of their instance of Realness.
 
-A moderator takes responsibility for the content that is created within their instance of realness.
+A moderator takes responsibility for the content that is created within their instance of Realness.
 
-By moderating an instance of realness you become part of a chain of responsibility that is diffuse. Each instance of realness is a unique opportunity users to negotiate norms. This way, Human beings can move between networks naturally; Choosing a realness that is a good fit for them.
+By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity users to negotiate norms with their moderator. This way, Human beings can move between networks naturally; Choosing a Realness that is a good fit for them.
 
 It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
 
-Currently [package.json](package.json) has the license field marked as UNLICENSED – We need to figure that license out.
+Currently [package.json](package.json) has the license field marked as UNLICENSED – This is because we are in an alpha phase of the product roadmap. We need to figure this license out.
