@@ -40,7 +40,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 #### Enable Storage
 
-Accept the default security rules (they will be [properly configured](storage.rules) when you deploy). and pick your region.
+Accept the default security rules (they will be [properly configured](storage.rules) when you deploy) and pick your region.
 
 ![storage](docs/storage-1.jpg)
 
