@@ -33,29 +33,19 @@ Once your project is created you will want to enable phone authentication and fi
 
 #### Enable phone authentication
 
-![Authentication](docs/auth-1.jpg)
+- Click getting started from the authentication screen
 
 - Edit the configuration for phone
 
-![Authentication](docs/auth-2.jpg)
-
 - Enable and save
-
-![Authentication](docs/auth-3.jpg)
 
 #### Enable Storage
 
+- Click get started form storage screen
 
-![storage](docs/storage-1.jpg)
-
-- Accept the default security rules (they will be [properly configured](storage.rules) when you deploy)
-
-![storage](docs/storage-2.jpg)
+- Accept the default security rules (they will be
 
 - Pick your region.
-
-![storage](docs/storage-3.jpg)
-
 
 ### Deploy to firebase
 
