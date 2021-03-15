@@ -14,7 +14,7 @@ Learn more about the [philosopy](docs/philosophy.md), [architecture](docs/archit
 
 From your favorite terminal
 
-```bash
+``` bash
 git clone git@github.com:realness-online/web.git
 
 cd web
@@ -61,7 +61,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 Install firebase-tools log in and then your ready to deploy.
 
-```bash
+``` bash
 yarn global add firebase-tools
 
 firebase login
@@ -77,7 +77,7 @@ Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign i
 
 For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys.
 
-```
+``` bash
 VUE_APP_API_KEY=${firebase.apiKey}
 VUE_APP_AUTH_DOMAIN=${firebase.authDomain}
 VUE_APP_DATABASE_URL=${firebase.databaseUrl}
@@ -102,7 +102,7 @@ One instance of realness per human person. This human person is the Moderator of
 
 A moderator takes responsibility for the content that is created within their instance of Realness.
 
-By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity users to negotiate norms with their moderator. This way, Human beings can move between networks naturally; Choosing a Realness that is a good fit for them.
+By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity for users to negotiate norms with their moderator. This way, Human beings can move between networks naturally; Choosing a Realness that is a good fit for them.
 
 It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
 
