@@ -127,6 +127,12 @@
       & > textarea
         padding: base-line
         border-radius: base-line
+        @media (prefers-color-scheme: light)
+          color: #fff
       & > textarea
         text-align: right
+        &::placeholder
+          @media (prefers-color-scheme: light)
+            color: #fff
+
 </style>

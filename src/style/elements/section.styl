@@ -7,11 +7,13 @@ section.page
     justify-content: space-between
     z-index: 2
     h1
-      color: blue
       line-height: 1.33
       @media (min-width: display-begins)
         line-height: .66
+      @media (prefers-color-scheme: dark)
+        color: blue
   & > hgroup
     text-align: center
     h1
-      color: blue
+      @media (prefers-color-scheme: dark)
+        color: blue

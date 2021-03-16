@@ -1,14 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
   <style>
     #background {
-      fill: hsla( 57, 13%, 69%, 0.9);
       fill: transparent;
-    }
-    @media (prefers-color-scheme: dark) {
-      #background {
-        fill: hsla(228, 9.8%, 10%, 1);
-        fill: transparent;
-      }
     }
   </style>
   <use href="#background" />
@@ -66,12 +59,12 @@
   <symbol id="message" viewBox="0 0 67 100" preserveAspectRatio="xMinYMax meet">
     <path d="M8.05 65.33l45.4-.3h.16l.23.02.26.04c.44.07.86.2 1.25.4l.29.15.18.11.22.15.11.09a4.7 4.7 0 011.16 1.32l.1.2 12.76 28.52a3 3 0 005.7-.72l4.75-27.35A26 26 0 0081 63.5V8a8 8 0 00-8-8H8a8 8 0 00-8 8v49.33a8 8 0 008.05 8z" />
   </symbol>
-  <svg id="realness" fill-opacity=".69" viewBox="0 0 192 192" preserveAspectRatio="xMidYMid meet">
-    <rect fill="#5A585A" width="88" height="54" rx="8"/>
-    <rect fill="#4E8D53" width="88" height="54" rx="8" x="104"/>
-    <rect fill="#4E8D53" width="88" height="54" rx="8"         y="69"/>
-    <rect fill="#52A0D1" width="88" height="54" rx="8" x="104" y="69"/>
-    <rect fill="#52A0D1" width="88" height="54" rx="8"         y="138"/>
-    <rect fill="#EC364C" width="88" height="54" rx="8" x="104" y="138"/>
+  <svg id="realness" viewBox="0 0 192 192" preserveAspectRatio="xMidYMid meet">
+    <rect fill="hsla(300,  1%, 33%, 0.69)" width="88" height="54" rx="8"/>
+    <rect fill="hsla(136, 47%, 57%, 0.69)" width="88" height="54" rx="8" x="104"/>
+    <rect fill="hsla(136, 47%, 57%, 0.69)" width="88" height="54" rx="8"         y="69"/>
+    <rect fill="hsla(203, 58%, 57%, 0.69)" width="88" height="54" rx="8" x="104" y="69"/>
+    <rect fill="hsla(203, 58%, 57%, 0.69)" width="88" height="54" rx="8"         y="138"/>
+    <rect fill="hsla(353, 83%, 57%, 0.69)" width="88" height="54" rx="8" x="104" y="138"/>
   </svg>
 </svg>

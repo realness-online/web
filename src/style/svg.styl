@@ -8,9 +8,7 @@ svg
   outline:none
   display: block
   stroke-width: 0
-  fill: black
-  @media (prefers-color-scheme: dark)
-    fill: dark-black
+  fill: dark-black
   &:active
     animation-name: button-click
     animation-timing-function: ease-in-out
@@ -22,7 +20,9 @@ svg
     transition-duration: 0.2s
     transition-timing-function: ease
 svg.background
-  fill: blue
+  fill: transparent
+  @media (prefers-color-scheme: dark)
+    fill: blue
 svg.background
 use.working
   position: absolute
