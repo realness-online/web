@@ -125,9 +125,11 @@
         & > header
           padding: base-line
           h4
-            color: blue
+            @media (prefers-color-scheme: dark)
+              color: blue
         article.thought
           padding: 0 base-line
         figure.poster > svg.background
-          fill: blue
+          @media (prefers-color-scheme: dark)
+            fill: blue
 </style>

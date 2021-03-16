@@ -194,6 +194,7 @@
       &.message > p:first-child a
         border-bottom: 0
       & > h1
+        @media (prefers-color-scheme: dark)
           color: green
     & hgroup
     & header
@@ -211,10 +212,12 @@
         grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
       & > figure.poster
         & > svg.background
-          fill: green
+          @media (prefers-color-scheme: dark)
+            fill: green
         & > figcaption > menu
           a > svg
-            fill: red
+            @media (prefers-color-scheme: dark)
+              fill: green
           a.remove
             bottom: base-line
             left: base-line

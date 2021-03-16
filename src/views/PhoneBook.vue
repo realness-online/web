@@ -71,10 +71,12 @@
     nav.profile-list
       margin-top: base-line * 2
     svg.working
-      fill: blue
       margin-top: base-line
+      @media (prefers-color-scheme: dark)
+        fill: blue
     svg.heart
-      fill: blue
+        fill: blue
     & > hgroup > h1
-      color: blue
+      @media (prefers-color-scheme: dark)
+        color: blue
 </style>

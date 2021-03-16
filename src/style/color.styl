@@ -4,67 +4,68 @@
 html
   color: black
   background-color: white-background
-  background: radial-gradient(white, green), url('/blue-noise.png')
   @media (prefers-color-scheme: dark)
+    background: radial-gradient(white, green), url('/blue-noise.png')
     color: white
     background-color: var(--slip-color)
 body
   @media (prefers-color-scheme: dark)
     background-color: background-black
 .orange
-  background-color:orange
-  border-color:orange
-  color:lighten(orange, 70%)
+  background-color: orange
+  border-color: orange
   -webkit-tap-highlight-color: orange
+  color: lighten(orange, 70%)
   &::placeholder
-    color:lighten(orange, 90%)
+    color: lighten(orange, 90%)
 .yellow
-  background-color:yellow
-  border-color:darken(yellow, 13%)
-  color:black
+  background-color: yellow
+  border-color: darken(yellow, 13%)
+  color: black
   -webkit-tap-highlight-color: yellow
-  &::placeholder
-    color:black
+  @media (prefers-color-scheme: dark)
+    &::placeholder
+      color: black
 .red
-  background-color:red
-  border-color:red
-  color:lighten(red, 85%)
+  background-color: red
+  border-color: red
+  color: lighten(red, 85%)
   -webkit-tap-highlight-color: red
   &::placeholder
-    color:lighten(red, 85%)
+    color: lighten(red, 85%)
   @media (prefers-color-scheme: dark)
     background-color: darken(red, 15%)
     color: white
     border-color: darken(red, 10%)
 .green
-  background-color:green
-  border-color:green
-  color:lighten(green, 75%)
+  background-color: green
+  border-color: green
+  color: lighten(green, 75%)
   -webkit-tap-highlight-color: green
   &::placeholder
-    color:lighten(green, 75%)
+    color: lighten(green, 75%)
   @media (prefers-color-scheme: dark)
     background-color: darken(green, 30%)
     color: white
     border-color: darken(green, 20%)
 .blue
-  background-color:blue
-  border-color:blue
+  background-color: blue
+  border-color: blue
   color:lighten(blue, 95%)
   -webkit-tap-highlight-color: blue
   &::placeholder
-    color:lighten(blue, 95%)
+    color: lighten(blue, 95%)
   @media (prefers-color-scheme: dark)
     background-color: darken(blue, 33%)
     color: white
     border-color: darken(blue, 25%)
 .black
-  background-color:black
+  background-color: black
   border-color: black
-  color:lighten(black, 65%)
+  color: lighten(black, 65%)
   -webkit-tap-highlight-color: black
   &::placeholder
-    color:lighten(black, 65%)
+    color: lighten(black, 65%)
   @media (prefers-color-scheme: dark)
     background-color: darken(black, 45%)
     color: white

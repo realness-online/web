@@ -134,12 +134,14 @@
           top: base-line
           right: base-line
           & > svg
-            fill: red
+            @media (prefers-color-scheme: dark)
+              fill: red
         &.download
           bottom: base-line
           right: base-line
           & > svg
-            fill: red
+            @media (prefers-color-scheme: dark)
+              fill: red
         &.profile
           top: base-line
           left: base-line
