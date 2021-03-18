@@ -1,13 +1,15 @@
 # Philosophy
 
-Realness is a social network that's more tool than a popularity contest. It uses your phone number so you get built-in messaging and group text.  All of your information stays on your device. Statements and vector Posters you create are what is shared,
+Realness is a social network that's more tool than popularity contest. It uses your phone number so you get built-in messaging and group text.  All of your information stays on your device. You create Statements and Posters to keep the people close to you informed. Realness tries to be as small as possible so that you can trust the affection it makes you feel.
 
 Realness is run by Moderators. Everyone can become a moderator.  Becoming a moderator means taking responsibility for and becoming more aware of how the internet is built and run. We believe this is critical knowledge that supports the fundamental needs of citizens in a democracy. Freedom, with clear areas of personal responsibility.
 
+## Perspective
+
 Realness has strongly held opinions about two questions
 
-###### How is the contact with the people we care about supposed to go?
-###### What about the internet we are on the hook to understand?
+##### How is the contact with the people we care about supposed to go?
+##### What about the internet we are on the hook to understand?
 
 ## What you can do with Realness
 
@@ -20,6 +22,10 @@ Realness has strongly held opinions about two questions
 - You can contact a Moderator you probably know in real life to get your questions answered
 
 There are no likes. There are no friend counts. There are no comments.
+
+Every positive decision made has been in support of natural, supportive human relationships online.
+
+The choice to use Vector graphics (SVG if your nasty) to downplay visible importance to stress creativity and make more room for a sense of genuine belonging.
 
 You text when your friends post something that moves you.
 
