@@ -8,8 +8,8 @@ Realness is run by Moderators. Everyone can become a moderator.  Becoming a mode
 
 Realness has strongly held opinions about two questions
 
-##### How is the contact with the people we care about supposed to go?
-##### What about the internet we are on the hook to understand?
+#### How is the contact with the people we care about supposed to go?
+#### What about the internet we are on the hook to understand?
 
 ## What you can do with Realness
 
