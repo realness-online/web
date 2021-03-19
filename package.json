@@ -2,7 +2,7 @@
   "name": "@realness.online/web",
   "version": "0.9.26",
   "private": false,
-  "description": "Source code for https://realness.online. When licensed moderators will be responsible for the content within their network. In this regard moderators run the network, as it is their ass that is on the line.",
+  "description": "Source code for realness.online",
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
   "license": "UNLICENSED",
   "scripts": {
