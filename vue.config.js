@@ -1,7 +1,6 @@
 const path = require('path')
 process.env.VUE_APP_VERSION = require('./package.json').version
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
-
 module.exports = {
   parallel: require('os').cpus().length > 1,
   productionSourceMap: false,
@@ -33,7 +32,7 @@ module.exports = {
       msTileImage: null
     },
     manifestOptions: {
-      description: 'realness.online – A chill vector space for the realness in all of us',
+      description: 'Realness – A Chill Vector Space',
       scope: '/',
       orientation: 'portrait',
       background_color: '#52a0d1',
