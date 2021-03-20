@@ -117,6 +117,8 @@
 <style lang="stylus">
   section.as-days
     margin-bottom: base-line * 2
+    & > header > svg.working
+      margin-top: base-line * 2
     & > article.day
       margin-top: base-line
       display: grid
