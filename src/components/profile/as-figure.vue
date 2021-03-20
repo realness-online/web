@@ -62,7 +62,7 @@
       }
     },
     methods: {
-      avatar_click (event) {
+      avatar_click () {
         const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         this.$router.push(route)

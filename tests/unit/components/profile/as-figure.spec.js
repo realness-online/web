@@ -18,7 +18,6 @@ describe('@/compontent/profile/as-figure.vue', () => {
         person: person,
         relations: [
           { id: '/+16282281823' },
-          { id: '/+16282281824' },
           { id: '/+14155551243' },
           { id: '/+14154314233' }
         ]
@@ -46,7 +45,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   describe('Methods:', () => {
     describe('#avatar_click', () => {
       let router
-      beforeEach(() => {
+      it('Go to the mobile number when clicked', () => {
         const localVue = createLocalVue()
         localVue.use(VueRouter)
         router = new VueRouter()
@@ -55,13 +54,19 @@ describe('@/compontent/profile/as-figure.vue', () => {
           router,
           propsData: { person }
         })
-      })
-      it('Go to the mobile number when clicked', () => {
         wrapper.vm.avatar_click()
         expect(wrapper.vm.$route.path).toBe('/+16282281823')
       })
       it('When is_me is true should go to the account page', () => {
-        localStorage.me = person.id
+        const localVue = createLocalVue()
+        localVue.use(VueRouter)
+        router = new VueRouter()
+        localStorage.me = '/+16282281823'
+        wrapper = shallowMount(as_figure, {
+          localVue,
+          router,
+          propsData: { person }
+        })
         wrapper.vm.avatar_click()
         expect(wrapper.vm.$route.path).toBe('/account')
       })
