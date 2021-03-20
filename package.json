@@ -169,9 +169,9 @@
     "collectCoverageFrom": [
       "src/**/*.{js,vue}",
       "!src/main.js",
-      "!src/workers/service.worker.js",
+      "!src/workers/service.js",
       "!src/workers/register_service_worker.js",
-      "!src/router.js",
+      "!src/views/router.js",
       "!**/node_modules/**"
     ],
     "coverageThreshold": {

@@ -16,7 +16,7 @@
   import vector_click from '@/mixins/vector_click'
   import vector from '@/mixins/vector'
   import icon from '@/components/icon'
-  import icons from '@/icons.svg'
+  import icons from '@/style/icons.svg'
   export default {
     components: {
       icon

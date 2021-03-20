@@ -8,7 +8,7 @@
   </a>
 </template>
 <script>
-  import icons from '@/icons.svg'
+  import icons from '@/style/icons.svg'
   import { as_created_at, list } from '@/helpers/itemid'
   export default {
     props: {

@@ -1,13 +1,14 @@
 
-![realness online](../src/icons.svg)
 
 # Realness – Architecture
 
-The server is as static as possible leaving all of the heavy lifting to be done at the edge on the device. The application is a serverless, progressive web app with performance on par with native applicaions. 
+![Realness](../src/style/icons.svg)
+
+The server is as static as possible leaving all of the heavy lifting to be done at the edge on the device. The application is a serverless, progressive web app with performance on par with native applicaions.
 
 ## Birds Eye View
 
-We make heavy use of Vue.js, Firebase Auth and Storage, and Stylus for the user experience. Data is stored first to localStorage with large files and relationship data living in indexdb. The server is a directory of html files based on phone numbers. 
+We make heavy use of Vue.js, Firebase Auth and Storage, and Stylus for the user experience. Data is stored first to localStorage with large files and relationship data living in indexdb. The server is a directory of html files based on phone numbers.
 
 - It's production ready
 - It's fast to use
@@ -15,20 +16,25 @@ We make heavy use of Vue.js, Firebase Auth and Storage, and Stylus for the user 
 - The data it makes is yours
 
 ### Data structure
+
+Each user has their own directory of html files that is their activity. A `Profile` has an `Avatar`, many `Statements`, many `Relationships`, many `Events`, and many `Posters`
+
 ```
-/people/${phone-number}/index.html 
-											 /avatars/${created-at}.html
-										 	 /posters/${created-at}.html
-											 /statements/index.html
-	 										 /events/index.html
+index.html
+statements/index.html
+events/index.html
+avatars/${created-at}.html
+posters/${created-at}.html
 ```
+
+Relationships are exclusive to the device. a person's feed is created on the client. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
 
 ## Code Map
 
 ### `src/persistance`
-The object model is a `Profile` an `Avatar`, many `Statements`, many `Relationships`, many `Events`, and many `Posters`
 
-Realness doesn't store relationship information on the server, so a person's feed is created on the client. [Feed.js](https://github.com/scott-fryxell/realness/blob/master/src/views/Feed.vue) makes heavy use of HTTP2 streams. I am able to pull potentially hundreds of files into the client as one query. It's an interesting algorithm that loads up to date profile and statement information from a simple list of phone numbers. Feed is performant  (sorting the feed by date is currently averaging 5 milliseconds) and has plenty of headroom for optimization as the user base grows.
+`Storage.js` defines the object model. utilizing
+
 
 
 `src/modules`
