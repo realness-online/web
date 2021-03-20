@@ -16,9 +16,7 @@ module.exports = {
   pwa: {
     name: 'Realness',
     workboxPluginMode: 'InjectManifest',
-    workboxOptions: {
-      swSrc: 'src/workers/service.worker.js'
-    },
+    workboxOptions: { swSrc: 'src/workers/service.js' },
     assetsVersion: '2',
     themeColor: '#52a0d1',
     msTileColor: '#52a0d1',

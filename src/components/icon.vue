@@ -2,7 +2,7 @@
   <svg :class="name"><use :xlink:href="icon_location" /></svg>
 </template>
 <script>
-  import icons from '@/icons.svg'
+  import icons from '@/style/icons.svg'
   export default {
     props: {
       name: {
