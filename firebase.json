@@ -44,7 +44,7 @@
         ]
       },
       {
-        "source": "/service.js",
+        "source": "/service.worker.js",
         "headers": [
           {
             "key": "Cache-Control",
