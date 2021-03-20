@@ -1,15 +1,9 @@
 # Philosophy
+How is the contact with the people we care about supposed to go?  What about the internet we are on the hook to understand?
 
-Realness is a social network that's more tool than popularity contest. It uses your phone number so you get built-in messaging and group text.  All of your information stays on your device. You create Statements and Posters to keep the people close to you informed. Realness tries to be as small as possible so that you can trust the affection it makes you feel.
+It uses your phone number so you get built-in messaging and group text.  All of your information stays on your device. You create Statements and Posters to keep the people close to you informed. Realness tries to be as small as possible so that you can trust the affection it makes you feel.
 
 Realness is run by Moderators. Everyone can become a moderator.  Becoming a moderator means taking responsibility for and becoming more aware of how the internet is built and run. We believe this is critical knowledge that supports the fundamental needs of citizens in a democracy. Freedom, with clear areas of personal responsibility.
-
-## Perspective
-
-Realness has strongly held opinions about two questions
-
-#### How is the contact with the people we care about supposed to go?
-#### What about the internet we are on the hook to understand?
 
 ## What you can do with Realness
 
