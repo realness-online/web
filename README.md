@@ -6,7 +6,7 @@ Realness web is the source code for [realness.online](https://realness.online). 
 
 You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
 
-Learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), or how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
+Learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
 
 ## Install
 
