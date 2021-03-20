@@ -15,12 +15,12 @@ exports[`@/compontent/profile/as-figure.vue Renders Render a person's profile in
      
     <menu>
       <profile-as-meta-stub
-        people="[object Object],[object Object],[object Object],[object Object]"
+        people="[object Object],[object Object],[object Object]"
       />
        
       <as-relationship-options-stub
         person="[object Object]"
-        relations="[object Object],[object Object],[object Object],[object Object]"
+        relations="[object Object],[object Object],[object Object]"
       />
        
       <as-messenger-stub
