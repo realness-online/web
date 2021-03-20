@@ -44,7 +44,7 @@
         ]
       },
       {
-        "source": "/service.worker.js",
+        "source": "/service.js",
         "headers": [
           {
             "key": "Cache-Control",
@@ -53,12 +53,5 @@
         ]
       }
     ]
-  },
-  "functions": {
-    "emulators": {
-      "functions": {
-        "port": 5001
-      }
-    }
   }
 }
