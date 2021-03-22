@@ -4,14 +4,15 @@
 
 ![Realness](../src/style/icons.svg)
 
-The server is as static as possible leaving all of the heavy lifting to be done at the edge on the device. The application is a serverless, progressive web app with performance on par with native applicaions.
+Most of the application is a static Progressive web app.  All of the heavy lifting is done at the edge on device. The server handles authorization and storage.
 
 ## Birds Eye View
 
-We make heavy use of Vue.js, Firebase Auth and Storage, and Stylus for the user experience. Data is stored first to localStorage with large files and relationship data living in indexdb. The server is a directory of html files based on phone numbers.
+We use Vue.js, workers, Firebase Auth & Storage, Stylus, and a ton CSS queries. Data is stored to localStorage with large files and relationship data stored to indexdb.
 
-- It's production ready
-- It's fast to use
+## Goals
+- It's best practices
+- It's fast
 - It's cheap to run
 - The data it makes is yours
 
@@ -29,60 +30,60 @@ posters/${created-at}.html
 
 Relationships are exclusive to the device. a person's feed is created on the client. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
 
-## Code Map
+# Code Map
+All of the root files are for building realness. `workers.config` builds the workers, `vue.config` is build instructions for the web application.
 
-### `src/persistance`
+running `yarn deploy` will fully exersize the application giving you reports on code coverage, linting, and reporting on what files are being created and their sizes.
 
-`Storage.js` defines the object model. utilizing
+## `public/`
+Contains static files that get merged into the `dist` directory with the built files.
+
+## `src/` = `@`
+
+`src` is the application that gets built. Inside javascript is represented by `@`. Overall, most of the application is in `@/components`, `@/modules/Item` reads From HTML,  `@/persistance/Storage` saves the state of the HTML, which means the `@/style` has to be query driven.
+
+The `@/App` is loaded by `@/main.js` from `public/index.html`
+
+### `@/persistance`
+
+All `Storage` objects can be `Local`, saved in the `Cloud`.
+They can be `Large` or `Paged` across documents.
+
+###`@/modules`
+
+`Item` parses [HTML](https://www.w3.org/TR/microdata/) into JavaScript objects.
+
+
+### `@/helpers`
+
+`itemid` is utility method for getting information based on [itemId]((https://www.w3.org/TR/microdata/)). This is my favorite class. It's where CSS, JavaScript and HTML play each of their parts perfectly.
+
+The other utility methods are standard.
+
+### `@/compoonents`
+Most of the application is componentst
 
 
 
-`src/modules`
+### `@/style`
+As the html is persisted it is critical that no markup is added to assist rendering. This has force the heavy use of CSS queries to style the application.
 
-`Item` parses HTML into javascript objects Via [microdata](https://www.w3.org/TR/microdata/).
+#### `elements` contains the baseline look and feel for the application.
 
-`Item` to populate VUE objects in the UI and `persistance/Storage` to save them to localStorage. Item.js and Storage.js together are my answer to flux and Vuex. Javascript functions as a controller preserving MVC pattern. All Models are described in HTML. State is defined as the rendered document and so is clear safely abstracted away.
+`Typography` is the UI foundation for realness. It orchestrates the visual language. Structured HTML  naturally aligns and is consistently rendered because of all the work that was done here.
 
-Defining my object model has allowed me to take utilize document and DOM to give meliable state managment without the overhead  vuex/redux like functionality
+`icons` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
 
-and yet via it's access to a declaritive framework (html with microdata) provides me with a rich enviroment to describe my objects fully down to being able to make type desisions based on attributes.
+### `package.json`
 
-### `src/style'
+`yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to see exactly what lines of code are being covered by tests.
 
-`Typography.styl` is the UI foundation for realness. It sets up a baseline look and feel that allows me to add UI elements and trust they will align in a consistent and natural way. Text is readable and flows well: there is heavy use of a [mixin](https://github.com/scott-fryxell/realness/blob/master/src/style/mixins/between.styl) I wrote that uses the slope-intercept form to scale UI elements to the display size (font size, line length, form inputs, images, menus etc).
+## Development setup
 
-## Why
-A [lessons learned](http://facebook.com) re-imagining of how we can build web apps that benifit all participants
+I normally have three tabs on terminal running
 
-A critical goal for the applicaytion is to slowly transition moderators into confident software engineers.
+- `yarn serve` runs the client code
+- `yarn workers:dev` runs my workers which do the heavy lifting
+- `yarn test --watch --coverage --verbose` gives me visibility
 
-The application is intended to be a best proactices, production ready, living example of the power of edge computing.
-
-Realness is cheap to run and fast to use. It has been designed to run first in the browser; there is extensive caching and the app works without a network connection.
-
-The goal is to support  one hundred active daily users without triggering firebase billing.
-
-- It's real
-- It's fast
-- It's cheap
-- It's yours
-
-# Deploy
-
-Deploying an instance of realness
-Currently test coverage is at 90%. Deploying the application runs linting and testing with failures if code coverage drops. It's desigend to be a developemnt daily driver.
-
-The application is architected around the interplay between HTML, CSS, javascript,
-
-### [HTML]() a declarative language
-HTML is a declarative language and It's combined with a basic file system is how information is used internally and stored on the server.
-
-The application types are defined with the microdata format which makes them easy to query with CSS.
-
-`Item` is the interface between the html and javascipt objects Realness needs to control the flow of information.
-
-This use of HTML has forced me to write the minimal amoubnt of html possible. as the html is the database. This Has the advantage of making the HTML pretty easy to understand.
-
-Matching files to functionality is natural and understanding a complex datasctructure is possible without an overwhelming preamble.
-
-Javascript has almost no awareness of the object model. It's focus is to orchestrate the interplay between the different pieces of data through [Vue](https://vuejs.org) components.
+Which will give me coverage for the files I've edited. I can see all files with ever test run if I switch to `--watchAll`
