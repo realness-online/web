@@ -4,7 +4,7 @@
 
 ![Realness](../src/style/icons.svg)
 
-Most of the application is a static Progressive web app.  All of the heavy lifting is done at the edge on device. The server handles authorization and storage.
+Most of the application is a static progressive web app. All of the heavy lifting is done at the edge on device. The server handles authorization and storage.
 
 ## Birds Eye View
 
@@ -18,7 +18,7 @@ We use Vue.js, workers, Firebase Auth & Storage, Stylus, and a ton CSS queries. 
 
 ### Data structure
 
-Each user has their own directory of html files that is their activity. A `Profile` has an `Avatar`, many `Statements`, many `Relationships`, many `Events`, and many `Posters`
+Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has an `Avatar`, many `Statements`, many `Relationships`, many `Events`, and many `Posters`
 
 ```
 index.html
@@ -28,12 +28,12 @@ avatars/${created-at}.html
 posters/${created-at}.html
 ```
 
-Relationships are exclusive to the device. a person's feed is created on the client. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
+Relationships are exclusive to the device, and so a person's feed is created on the client. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
 
 # Code Map
 All of the root files are for building realness. `workers.config` builds the workers, `vue.config` is build instructions for the web application.
 
-running `yarn deploy` will fully exersize the application giving you reports on code coverage, linting, and reporting on what files are being created and their sizes.
+Running `yarn deploy` will fully exersize the application creating reports on code coverage, linting, and reporting on what files are being created and their sizes.
 
 ## `public/`
 Contains static files that get merged into the `dist` directory with the built files.
