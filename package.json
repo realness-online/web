@@ -170,7 +170,6 @@
       "src/**/*.{js,vue}",
       "!src/main.js",
       "!src/workers/service.js",
-      "!src/workers/register_service_worker.js",
       "!src/views/router.js",
       "!**/node_modules/**"
     ],
