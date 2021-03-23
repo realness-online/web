@@ -41,7 +41,7 @@ module.exports = {
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       openAnalyzer: false,
-      reportFilename: '../worker_report.html'
+      reportFilename: '../artifacts/worker_report.html'
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']

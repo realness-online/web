@@ -45,7 +45,7 @@ module.exports = {
       new BundleAnalyzerPlugin({
         analyzerMode: 'static',
         openAnalyzer: false,
-        reportFilename: '../javascript_report.html'
+        reportFilename: '../artifacts/vue_report.html'
       })
     ],
     optimization: {
