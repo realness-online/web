@@ -1,3 +1,19 @@
+## Sign in via localhost
+
+For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys
+
+``` bash
+VUE_APP_API_KEY=${firebase.apiKey}
+VUE_APP_AUTH_DOMAIN=${firebase.authDomain}
+VUE_APP_DATABASE_URL=${firebase.databaseUrl}
+VUE_APP_PROJECT_ID=${firebase.projectId}
+VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
+VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
+```
+
+Restart your local server and localhost will have the same functionality as when you deploy. take a look at our [development setup](docs/setup.md)
+
+
 # Realness web Contributing Guide
 
 ## Pull Request Guidelines
