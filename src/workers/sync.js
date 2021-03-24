@@ -44,7 +44,7 @@ export async function sync (relations) {
   post('sync:statements')
   post('sync:happened')
   await people(relations)
-  prune_strangers(relations)
+  prune_strangers(my_itemid, relations)
   console.timeEnd('runs:sync')
 }
 export async function offline () {
@@ -82,26 +82,33 @@ export async function people (relations = []) {
     }))
   }
 }
-export async function prune_strangers (relations = []) {
+export async function prune_strangers (my_itemid, relations = []) {
   const full_list = await keys()
-  const remove_list = full_list.filter(id => {
+  const strangers = full_list.filter(id => {
     if (as_type(id) === 'person') {
-      return relations.some(relation => {
-        return !(relation.id === id)
-      })
+      return is_stranger(id, relations)
     } else return false
   })
-  remove_list.forEach(id => {
-    console.log(id)
-    del(id)
+  strangers.forEach(id => {
+    if (id !== my_itemid) {
+      console.log(id)
+      del(id)
+    }
   })
+}
+function is_stranger (id, relations) {
+  const is_friend = relations.some(relation => {
+    if (relation.id === id) return true
+    else return false
+  })
+  return !is_friend
 }
 async function prune_person (itemid) {
   const network = await fresh_metadata(itemid)
   if (!network.customMetadata) return
   const md5 = await local_md5(itemid)
   if (network.customMetadata.md5 !== md5) {
-    console.log(`local:${md5}`, `network:${network.customMetadata.md5}`)
+    console.log(itemid, `local:${md5}`, `network:${network.customMetadata.md5}`)
     await del(itemid)
     check_children(itemid)
   } else if (new Date(network.updated).getTime() > visit_interval()) {

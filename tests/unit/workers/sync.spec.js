@@ -346,10 +346,11 @@ describe('/workers/sync.js', () => {
         keys.mockImplementation(_ => Promise.resolve([
           id,
           '/+14153721982/posters/12338658w498',
-          '/+14153721982'
+          '/+14153721982',
+          '/+14155551960'
         ]))
         // When viewing hte phone book you will downloadthe list of available users
-        sync.prune_strangers(relations)
+        sync.prune_strangers('/+16282281824', relations)
       })
     })
   })
