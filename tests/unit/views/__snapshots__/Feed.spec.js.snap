@@ -113,7 +113,7 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
 </section>
 `;
 
-exports[`@/views/Feed.vue Renders A fresh Feed 1`] = `
+exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
 <section
   class="page"
   id="feed"
