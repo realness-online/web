@@ -18,8 +18,7 @@ module.exports = {
     name: 'Realness',
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      swSrc: 'src/workers/service.worker.js',
-      skipWaiting: true
+      swSrc: 'src/workers/service.worker.js'
     },
     assetsVersion: '2',
     themeColor: '#52a0d1',
