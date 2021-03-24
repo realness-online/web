@@ -257,18 +257,6 @@ describe('/workers/sync.js', () => {
         expect(get).toBeCalled()
         expect(del).toHaveBeenCalledTimes(3)
       })
-      it('Works without an existing index', async () => {
-        get.mockImplementationOnce(query => {
-          if (query === 'sync:index') return undefined
-          if (query === id) return Promise.resolve(person_html)
-          else return Promise.resolve()
-        })
-        await sync.people(relations)
-        await flushPromises()
-        jest.runAllTimers()
-        expect(get).toBeCalled()
-        expect(del).not.toBeCalled()
-      })
     })
     describe('#sync', () => {
       it('Fails gracefully when offline', async () => {
