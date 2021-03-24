@@ -1,7 +1,6 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import { is_fresh } from '@/helpers/date'
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_type } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
@@ -78,11 +77,8 @@ export async function anonymous_posters () {
 }
 export async function people (relations = []) {
   if (navigator.onLine && firebase.auth().currentUser) {
-    const index = (await get('sync:index')) || {}
     await Promise.all(relations.map(async relation => {
-      const meta = index[relation.id]
-      if (meta && is_fresh(meta.updated)) await prune_person(relation.id)
-      else if (get_random_int(5) === 0) await prune_person(relation.id) // Once in a while check an outdated person I am following
+      await prune_person(relation.id)
     }))
   }
 }
@@ -144,7 +140,4 @@ function post (action, param) {
 }
 export function visit_interval () {
   return (Date.now() - one_hour)
-}
-function get_random_int (max) {
-  return Math.floor(Math.random() * Math.floor(max))
 }
