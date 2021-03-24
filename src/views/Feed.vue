@@ -34,7 +34,6 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { list, as_directory, load } from '@/helpers/itemid'
-  import { is_fresh } from '@/helpers/date'
   import signed_in from '@/mixins/signed_in'
   import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
@@ -75,7 +74,7 @@
           const authors = await list(`${localStorage.me}/relations`)
           await Promise.all(authors.map(async a => {
             const person = await load(a.id)
-            if (is_fresh(person.visited)) this.authors.push(person)
+            if (person) this.authors.push(person)
           }))
         }
         this.authors.push({

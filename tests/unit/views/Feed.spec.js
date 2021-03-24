@@ -34,10 +34,10 @@ describe('@/views/Feed.vue', () => {
     jest.clearAllMocks()
   })
   describe('Renders', () => {
-    it('A fresh Feed', async () => {
+    it('Handles a removed relation', async () => {
       const stale_person = { person }
       stale_person.visited = undefined
-      jest.spyOn(itemid, 'load').mockImplementation(_ => stale_person)
+      jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
       const wrapper = await shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
