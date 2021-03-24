@@ -99,7 +99,9 @@ export async function prune_strangers (relations = []) {
 async function prune_person (itemid) {
   const network = await fresh_metadata(itemid)
   if (!network.customMetadata) return
-  if (network.customMetadata.md5 !== await local_md5(itemid)) {
+  const md5 = await local_md5(itemid)
+  if (network.customMetadata.md5 !== md5) {
+    console.log(`local:${md5}`, `network:${network.customMetadata.md5}`)
     await del(itemid)
     check_children(itemid)
   } else if (new Date(network.updated).getTime() > visit_interval()) {
