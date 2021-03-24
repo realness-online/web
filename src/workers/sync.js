@@ -91,7 +91,7 @@ export async function prune_strangers (relations = []) {
       })
     } else return false
   })
-  remove_list.forEach(stranger => del(stranger.id))
+  remove_list.forEach(id => del(id))
 }
 async function prune_person (itemid) {
   const network = await fresh_metadata(itemid)
