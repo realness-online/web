@@ -6,8 +6,8 @@
                  :person="person"
                  :editable="editable"
                  @update:person="$emit('update:person', $event)" />
-      <menu v-if="!is_me">
-        <slot>
+      <menu>
+        <slot v-if="!is_me">
           <profile-as-meta :people="relations" />
           <as-relationship-options :person="person"
                                    :relations="relations"
@@ -15,6 +15,7 @@
                                    @add="add_relationship" />
           <as-messenger :itemid="person.id" />
         </slot>
+        <slot v-else />
       </menu>
     </figcaption>
   </figure>
