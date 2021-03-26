@@ -14,6 +14,7 @@
       <template v-for="item in items">
         <poster-as-figure v-if="item.type === 'posters'"
                           :key="slot_key(item)"
+                          :immediate="should_immediate()"
                           :itemid="item.id"
                           :verbose="true" />
         <thought-as-article v-else
@@ -57,7 +58,8 @@
         signed_in: true,
         statements: [],
         posters: [],
-        working: true
+        working: true,
+        count: 0
       }
     },
     computed: {
@@ -87,6 +89,12 @@
       })
     },
     methods: {
+      should_immediate (index) {
+        if (this.count < 3) {
+          this.count++
+          return true
+        } else return false
+      },
       async fill_feed () {
         await Promise.all(this.authors.map(async relation => {
           const [statements, posters] = await Promise.all([
