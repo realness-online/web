@@ -1,5 +1,6 @@
 const path = require('path')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
 
 module.exports = {
@@ -36,7 +37,7 @@ module.exports = {
   stats: {
     colors: true
   },
-  devtool: 'source-map',
+  devtool: false,
   plugins: [
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
@@ -51,6 +52,12 @@ module.exports = {
     })
   ],
   optimization: {
-    usedExports: true
+    usedExports: true,
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false
+      })
+    ]
   }
 }
