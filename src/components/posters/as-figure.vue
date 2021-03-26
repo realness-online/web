@@ -4,6 +4,7 @@
     <as-svg ref="poster"
             :itemid="itemid"
             :poster="new_poster"
+            :immediate="immediate"
             @vector-click="vector_click"
             @vector-loaded="on_load" />
     <figcaption>
@@ -49,6 +50,11 @@
         default: null
       },
       working: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
+      immediate: {
         type: Boolean,
         required: false,
         default: false
