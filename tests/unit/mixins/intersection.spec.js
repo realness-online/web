@@ -37,8 +37,6 @@ describe('@/mixins/intersection', () => {
         const mock = jest.fn()
         wrapper.vm.show = mock
         wrapper.vm.check_intersection(intersectings)
-        expect(wrapper.vm.observed).toBe(true)
-        wrapper.vm.observed = false
         expect(mock).toBeCalled()
         wrapper.vm.observer = { unobserve: () => true }
         wrapper.vm.check_intersection(intersectings)

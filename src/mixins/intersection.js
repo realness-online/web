@@ -1,33 +1,28 @@
 export default {
   data () {
     return {
-      observer: null,
       observed: false
     }
   },
-  mounted () { this.intersect() },
-  updated () { this.intersect() },
+  mounted () {
+    this.intersect()
+  },
   destroyed () {
     if (this.observer) this.observer.unobserve(this.$el)
   },
   methods: {
     intersect () {
-      if (this.observer) this.observer.unobserve(this.$el)
       this.observer = new IntersectionObserver(this.check_intersection, {
         rootMargin: '32px 0px 0px 0px',
-        delay: 50,
         threshold: 0
       })
       this.observer.observe(this.$el)
     },
     check_intersection (entries) {
-      entries.forEach(entry => {
+      entries.forEach(async entry => {
         if (entry.isIntersecting) {
-          if (this.observer) this.observer.unobserve(this.$el)
-          if (!this.observed) {
-            this.observed = true
-            this.show()
-          }
+          await this.show()
+          this.observer.unobserve(this.$el)
         }
       })
     }
