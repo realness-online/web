@@ -20,7 +20,7 @@ module.exports = {
       swSrc: 'src/workers/service.js',
       swDest: 'service.worker.js'
     },
-    assetsVersion: '2',
+    assetsVersion: '3',
     themeColor: '#52a0d1',
     msTileColor: '#52a0d1',
     appleMobileWebAppCapable: 'yes',
