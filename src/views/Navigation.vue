@@ -77,7 +77,9 @@
         & > button
           top: 0
           width: base-line * 3
-          height: base-line * 1.77
+          height: base-line * 1.66
+          line-height: 0
+          padding: 0
           display: block
         & > textarea
           height: auto
