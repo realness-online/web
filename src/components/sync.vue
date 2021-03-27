@@ -139,6 +139,7 @@
         const me = await load(localStorage.me)
         if (!me.visited) me.visited = null
         const visit_gap = Date.now() - new Date(me.visited).getTime()
+        console.log('visit_gap:', visit_gap, 'dummy')
         if (me && visit_gap > one_hour) {
           me.visited = new Date().toISOString()
           this.$emit('update:person', me)
@@ -148,6 +149,7 @@
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
         const my_info = localStorage.getItem(id)
+        console.log(my_info)
         if (!my_info || network.md5 == null) return
         const md5 = hash(my_info, hash_options)
         if (md5 !== network.md5) {
@@ -161,7 +163,8 @@
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
         const md5 = hash(elements.outerHTML, hash_options)
-        console.log(`local:${md5}`, `network:${network.md5}`)
+        if (network) console.trace(`local:${md5}`, `network:${network.md5}`)
+        else console.log(`local:${md5}`, 'no network')
         if (!network || network.md5 !== md5) {
           this.statements = await statements.sync()
           if (this.statements.length) {
