@@ -49,7 +49,8 @@ The `@/App` is loaded by `@/main.js` from `public/index.html`
 All `Storage` objects can be `Local`, saved in the `Cloud`.
 They can be `Large` or `Paged` across documents.
 
-###`@/modules`
+
+### `@/modules`
 
 `Item` parses [HTML](https://www.w3.org/TR/microdata/) into JavaScript objects.
 
@@ -60,10 +61,11 @@ They can be `Large` or `Paged` across documents.
 
 The other utility methods are standard.
 
-### `@/compoonents`
-Most of the application is componentst
+### `@/workers`
 
+### `@/views`
 
+### `@/components`
 
 ### `@/style`
 As the html is persisted it is critical that no markup is added to assist rendering. This has force the heavy use of CSS queries to style the application.
@@ -73,17 +75,3 @@ As the html is persisted it is critical that no markup is added to assist render
 `Typography` is the UI foundation for realness. It orchestrates the visual language. Structured HTML  naturally aligns and is consistently rendered because of all the work that was done here.
 
 `icons` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
-
-### `package.json`
-
-`yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to see exactly what lines of code are being covered by tests.
-
-## Development setup
-
-I normally have three tabs on terminal running
-
-- `yarn serve` runs the client code
-- `yarn workers:dev` runs my workers which do the heavy lifting
-- `yarn test --watch --coverage --verbose` gives me visibility
-
-Which will give me coverage for the files I've edited. I can see all files with ever test run if I switch to `--watchAll`
