@@ -154,9 +154,27 @@
         & > header
           padding: base-line
           & > h4
-            color: blue
+            @media (prefers-color-scheme: dark)
+              color: blue
         article.thought
           padding: 0 base-line
-        figure.poster > svg.background
-          fill: blue
+        figure.poster
+          @media (prefers-color-scheme: dark)
+            & > svg.background
+              fill: blue
+          & > figcaption > menu
+            & > a.download svg
+              fill: blue
+            & > a.phone
+              display: none
+            & > a.profile
+              & > hgroup
+                & > time
+                  font-size: 1.33rem
+                  color: blue
+                & > h3
+                  display: none
+              & > svg
+                display: none
+
 </style>

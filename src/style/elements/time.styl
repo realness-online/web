@@ -1,9 +1,10 @@
 time
   font-weight: 300
-  color: blue
   display: block
   cursor: default
   transition: opacity 0.25s
+  @media (prefers-color-scheme: dark)
+    color: blue
   &:active
     transition: all 0.24s
     color: red

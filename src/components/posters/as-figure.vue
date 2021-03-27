@@ -159,5 +159,6 @@
             & > h3
             & > time
               line-height: 1
-              color: green
+              @media (prefers-color-scheme: dark)
+                color: green
 </style>
