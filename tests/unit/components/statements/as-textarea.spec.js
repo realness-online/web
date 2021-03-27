@@ -15,6 +15,32 @@ describe('@/components/statements/as-textarea.vue', () => {
       it('Exists', () => {
         expect(typeof wat.methods.prepare_statement).toBe('function')
       })
+      it('Will ignore a statement that contains a http://', () => {
+        const wrapper = shallowMount(wat, {
+          data () {
+            return {
+              statements: [],
+              new_statement: 'http://example.com'
+            }
+          }
+        })
+        expect(wrapper.vm.statements.length).toBe(0)
+        wrapper.vm.prepare_statement()
+        expect(wrapper.vm.statements.length).toBe(0)
+      })
+      it('Will ignore a statement that contains a https://', () => {
+        const wrapper = shallowMount(wat, {
+          data () {
+            return {
+              statements: [],
+              new_statement: 'https://example.com'
+            }
+          }
+        })
+        expect(wrapper.vm.statements.length).toBe(0)
+        wrapper.vm.prepare_statement()
+        expect(wrapper.vm.statements.length).toBe(0)
+      })
       it('Only triggers a statement event when there is text', () => {
         const wrapper = shallowMount(wat, {
           data () {
