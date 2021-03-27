@@ -1,6 +1,16 @@
-## Sign in via localhost
+# Realness – Contributing
 
-For a fully functioning localhost save a file named ```env.local``` to the root of your project with your projects keys
+![Realness](../src/style/icons.svg)
+
+### `package.json`
+
+`yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to see exactly what lines of code are being covered by tests.
+
+## Development setup
+
+## Setup localhost
+
+For a fully functioning localhost save a file named `env.local` to the root of your project with your projects keys
 
 ``` bash
 VUE_APP_API_KEY=${firebase.apiKey}
@@ -14,7 +24,14 @@ VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
 Restart your local server and localhost will have the same functionality as when you deploy. take a look at our [development setup](docs/setup.md)
 
 
-# Realness web Contributing Guide
+I normally have three tabs on terminal running
+
+- `yarn serve` runs the client code
+- `yarn workers:dev` runs my workers which do the heavy lifting
+- `yarn test --watch --coverage --verbose` gives me visibility
+
+Which will give me coverage for the files I've edited. I can see all files with ever test run if I switch to `--watchAll`
+
 
 ## Pull Request Guidelines
 

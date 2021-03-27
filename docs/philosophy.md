@@ -1,4 +1,7 @@
-# Philosophy
+# Realness – Contributing
+
+![Realness](../src/style/icons.svg)
+
 How is the contact with the people we care about supposed to go?  What about the internet are we on the hook to understand?
 
 It uses your phone number so you get built in messaging and group text.  Your information stays on your device. Realness tries to be as small as possible so that you can trust the affection it makes you feel.
