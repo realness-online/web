@@ -90,10 +90,7 @@ export async function prune_strangers (my_itemid, relations = []) {
     } else return false
   })
   strangers.forEach(id => {
-    if (id !== my_itemid) {
-      console.log(id)
-      del(id)
-    }
+    if (id !== my_itemid) del(id)
   })
 }
 function is_stranger (id, relations) {
