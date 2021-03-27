@@ -6,6 +6,7 @@
             @focusin="focused" />
 </template>
 <script>
+  const links = ['http://', 'https://']
   export default {
     data () {
       return {
@@ -23,6 +24,10 @@
         statement.statement = this.new_statement && this.new_statement.trim()
         if (!statement.statement) return
         this.new_statement = ''
+        const has_link = links.some(link => {
+          return statement.statement.includes(link)
+        })
+        if (has_link) return
         statement.id = `${localStorage.me}/statements/${new Date().getTime()}`
         this.$emit('update:statement', statement)
         console.info('creates:statement')
