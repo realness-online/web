@@ -191,8 +191,7 @@
                 animation-iteration-count: 0.5
       & > menu
         float:right
-        width: 5rem
-        margin-right: base-line
+        width: 6rem
         margin-bottom: base-line
         display:flex
         justify-content: space-between
