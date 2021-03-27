@@ -5,6 +5,7 @@ import 'firebase/storage'
 import { as_filename } from '@/helpers/itemid'
 import { get, set } from 'idb-keyval'
 import hash from 'object-hash'
+import { hash_options } from '@/workers/sync'
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 async function sync_later (id, action) {
   const offline = (await get('sync:offline')) || []
@@ -21,13 +22,13 @@ export const Cloud = (superclass) => class extends superclass {
       const storage = firebase.storage()
       const path = as_filename(this.id)
       this.metadata.customMetadata = {
-        md5: hash(items, { encoding: 'base64', algorithm: 'md5' })
+        md5: hash(items, hash_options)
       }
       await storage.ref().child(path).putString(items, 'raw', this.metadata)
     } else await sync_later(this.id, 'save')
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
-    console.info('request:save', this.id, items)
+    console.trace('request:save', this.id, items)
     if (!items) return
     if (super.save) await super.save(items)
     if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
