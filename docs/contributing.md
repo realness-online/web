@@ -7,7 +7,7 @@ You should deploy your own instance of realness and understand the [philosopy](p
 
 `yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to see exactly what lines of code are being covered by tests. and whats in the built files
 
-## scripts
+## Scripts
 
 I normally have three tabs on terminal running the following scripts
 
