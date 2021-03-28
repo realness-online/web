@@ -4,11 +4,11 @@
 
 ![Realness](../src/style/icons.svg)
 
-Most of the application is a static progressive web app. All of the heavy lifting is done at the edge on device. The server handles authorization and storage.
+Realness is a progressive web app. It is serverless and static. All of the heavy lifting is done at the edge on device.
 
 ## Birds Eye View
 
-We use Vue.js, workers, Firebase Auth & Storage, Stylus, and a ton CSS queries. Data is stored to localStorage with large files and relationship data stored to indexdb.
+We use Vue.js, workers, Firebase Auth & Storage, Design is applied with Stylus via CSS queries. Data you create is stored in localStorage. Large files and information about the people you follow is stored with indexdb.
 
 ## Goals
 - It's best practices
@@ -33,7 +33,7 @@ Relationships are exclusive to the device, and so a person's feed is created on 
 # Code Map
 All of the root files are for building realness. `workers.config` builds the workers, `vue.config` is build instructions for the web application.
 
-Running `yarn deploy` will fully exersize the application creating reports on code coverage, linting, and reporting on what files are being created and their sizes.
+Running `yarn deploy` will fully exercise the application creating reports on code coverage, linting, and reporting on what files are being created and their sizes.
 
 ## `public/`
 Contains static files that get merged into the `dist` directory with the built files.
@@ -42,26 +42,19 @@ Contains static files that get merged into the `dist` directory with the built f
 
 `src` is the application that gets built. Inside javascript is represented by `@`. Overall, most of the application is in `@/components`, `@/modules/Item` reads From HTML,  `@/persistance/Storage` saves the state of the HTML, which means the `@/style` has to be query driven.
 
-The `@/App` is loaded by `@/main.js` from `public/index.html`
-
-```
-App
-  View
-    Components
-```
+The `@/App` is loaded by `@/main.js` from `public/index.html` and is organized `App > views > components`
 
 ### `@/views`
-Each view of the application is represented here. The application has views which contain components
 
+Each view of the application is represented here.
 
 ### `@/components`
 
-At the root are global components that are common. Each folder represents components for persisted data. Generally, they are named for the html structure they represent. `@/components/profile/as-figure`
+At the root are global components. Each folder represents components for persisted data. Generally, they are named for the html structure they represent. `@/components/profile/as-figure` as an example.
 
 ### `@/persistance`
 
-All `Storage` objects can be `Local`, saved in the `Cloud`.
-They can be `Large` or `Paged` across documents.
+All `Storage` objects can be `Local`, saved in the `Cloud`. They can be `Large` or `Paged` across documents.
 
 
 ### `@/modules`
@@ -71,14 +64,13 @@ They can be `Large` or `Paged` across documents.
 
 ### `@/helpers`
 
-`itemid` is utility method for getting information based on [itemId]((https://www.w3.org/TR/microdata/)). This is my favorite class. It's where CSS, JavaScript and HTML play each of their parts perfectly.
+`itemid` is utility method for getting information based on [itemId](https://www.w3.org/TR/microdata/). This is my favorite class. It's where CSS, JavaScript and HTML play each of their parts perfectly.
 
 The other utility methods are standard.
 
-
 ### `@/workers`
 
-All threadblocking activity has been relegated to workers built via `workers.config.js`.
+All thread-blocking activity is isolated into workers built via `workers.config.js`.
 
 `vector` converts a jpg into a vector graphic. `optimize` will then optimize the vector (often by 10x). `service` is about caching all built resources on the client. and `sync` handles checking and removing stale files
 
