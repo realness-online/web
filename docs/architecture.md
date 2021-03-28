@@ -28,7 +28,7 @@ avatars/${created-at}.html
 posters/${created-at}.html
 ```
 
-Relationships are exclusive to the device, and so a person's feed is created on the client. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
+Relationships are exclusive to the device, so a person's feed is constructed there. The app makes heavy use of HTTP2 streams, able to pull hundreds of files into the client as one query.
 
 # Code Map
 All of the root files are for building realness. `workers.config` builds the workers, `vue.config` is build instructions for the web application.
