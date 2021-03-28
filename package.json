@@ -7,18 +7,12 @@
   "license": "UNLICENSED",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "yarn workers:build && vue-cli-service build",
-    "deploy": "yarn lint && vue-cli-service test:unit --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
-    "deploy:development": "yarn build && firebase use development && deploy --only hosting,storage  --use development",
     "lint": "vue-cli-service lint",
     "test": "vue-cli-service test:unit",
-    "workers:build": "webpack --config workers.config.js",
-    "workers:dev": "webpack --mode=development --watch --config worker.config.js",
-    "functions:serve": "firebase serve --only functions",
-    "functions:shell": "firebase functions:shell",
-    "functions:start": "yarn shell",
-    "functions:deploy": "firebase deploy --only functions",
-    "functions:logs": "firebase functions:log"
+    "workers": "webpack --config workers.config.js",
+    "workers:dev": "yarn workers --mode=development --watch",
+    "build": "yarn workers:build && vue-cli-service build",
+    "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
   },
   "dependencies": {
     "@realness.online/potrace": "2.1.22",
