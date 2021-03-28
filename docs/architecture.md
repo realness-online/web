@@ -10,7 +10,7 @@ Realness is a progressive web app. It is serverless and static. All of the heavy
 
 We use Vue.js, workers, Firebase Auth & Storage, Design is applied with Stylus via CSS queries. Data you create is stored in localStorage. Large files and information about the people you follow is stored with indexdb.
 
-## Goals
+## Highlights
 - It's best practices
 - It's fast
 - It's cheap to run
