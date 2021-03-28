@@ -18,7 +18,7 @@ We use Vue.js, workers, Firebase Auth & Storage, Design is applied with Stylus v
 
 ### Data structure
 
-Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has an `Avatar`, many `Statements`, many `Relationships`, many `Events`, and many `Posters`
+Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Avatars`,  `Statements`, `Relationships`, `Events`, and `Posters`
 
 ```
 index.html
