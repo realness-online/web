@@ -68,17 +68,15 @@ All `Storage` objects can be `Local`, saved in the `Cloud`. They can be `Large` 
 
 The other utility methods are standard.
 
+### `@/style`
+As the html is persisted – it is critical that no markup is added to assist design. This has forced a reliance on structure and the heavy use of CSS queries to style the application.
+
+`Typography` is the UI foundation for realness. It orchestrates the visual language. Structured HTML  naturally aligns and is consistently rendered because of all the work that was done here.
+
+`icons.svg` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
+
 ### `@/workers`
 
 All thread-blocking activity is isolated into workers built via `workers.config.js`.
 
 `vector` converts a jpg into a vector graphic. `optimize` will then optimize the vector (often by 10x). `service` is about caching all built resources on the client. and `sync` handles checking and removing stale files
-
-### `@/style`
-As the html is persisted it is critical that no markup is added to assist rendering. This has force the heavy use of CSS queries to style the application.
-
-#### `elements` contains the baseline look and feel for the application.
-
-`Typography` is the UI foundation for realness. It orchestrates the visual language. Structured HTML  naturally aligns and is consistently rendered because of all the work that was done here.
-
-`icons.svg` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
