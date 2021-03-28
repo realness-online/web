@@ -79,4 +79,4 @@ As the html is persisted – it is critical that no markup is added to assist de
 
 All thread-blocking activity is isolated into workers built via `workers.config.js`.
 
-`vector` converts a jpg into a vector graphic. `optimize` will then optimize the vector (often by 10x). `service` is about caching all built resources on the client. and `sync` handles checking and removing stale files
+`vector` converts a jpg into a vector graphic. `optimize` will then optimize the vector (often by 10x). `service` is about caching all built resources on the client. and `sync` handles checking for and removing stale information about you and your relationships
