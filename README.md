@@ -2,9 +2,7 @@
 
 ![Realness](src/style/icons.svg)
 
-Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and maintain your own social networks.
-
-You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
+Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
 
 Learn more about the [philosopy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
 
@@ -64,7 +62,7 @@ Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign i
 
 ## Contributing
 
-Moderators are ideal committers. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
+Moderators are ideal contributors. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
 
 ## Support
 

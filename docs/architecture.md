@@ -4,11 +4,11 @@
 
 ![Realness](../src/style/icons.svg)
 
-Realness is a progressive web app. It is serverless and static. All of the heavy lifting is done at the edge on device.
+Realness is a progressive web app. It is serverless and static. All of the heavy lifting is done at the edge on device. You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
 
 ## Birds Eye View
 
-We use Vue.js, workers, Firebase Auth & Storage, Design is applied with Stylus via CSS queries. Data you create is stored in localStorage. Large files and information about the people you follow is stored with indexdb.
+We use Vue.js, workers, Firebase Auth & Storage primarily. Design is applied with Stylus via CSS queries. Data you create is stored in localStorage. Large files and information about the people you follow is stored with indexdb.
 
 ## Highlights
 - It's best practices
