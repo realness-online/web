@@ -44,6 +44,20 @@ Contains static files that get merged into the `dist` directory with the built f
 
 The `@/App` is loaded by `@/main.js` from `public/index.html`
 
+```
+App
+  View
+    Components
+```
+
+### `@/views`
+Each view of the application is represented here. The application has views which contain components
+
+
+### `@/components`
+
+At the root are global components that are common. Each folder represents components for persisted data. Generally, they are named for the html structure they represent. `@/components/profile/as-figure`
+
 ### `@/persistance`
 
 All `Storage` objects can be `Local`, saved in the `Cloud`.
@@ -61,11 +75,12 @@ They can be `Large` or `Paged` across documents.
 
 The other utility methods are standard.
 
+
 ### `@/workers`
 
-### `@/views`
+All threadblocking activity has been relegated to workers built via `workers.config.js`.
 
-### `@/components`
+`vector` converts a jpg into a vector graphic. `optimize` will then optimize the vector (often by 10x). `service` is about caching all built resources on the client. and `sync` handles checking and removing stale files
 
 ### `@/style`
 As the html is persisted it is critical that no markup is added to assist rendering. This has force the heavy use of CSS queries to style the application.
@@ -74,4 +89,4 @@ As the html is persisted it is critical that no markup is added to assist render
 
 `Typography` is the UI foundation for realness. It orchestrates the visual language. Structured HTML  naturally aligns and is consistently rendered because of all the work that was done here.
 
-`icons` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
+`icons.svg` contains all of the graphics. The realness logo is rendered by default allowing it to serve as the applications favicon.
