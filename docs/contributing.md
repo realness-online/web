@@ -3,15 +3,17 @@
 
 ![Realness](../src/style/icons.svg)
 
-You should deploy your own instance of realness and understand the [philosopy](philosophy.md) and [architecture](architecture.md) and get a development setup going before contributing
+You should deploy your own instance of realness and understand the [philosopy](philosophy.md) and [architecture](architecture.md) before contributing
 
-`yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to see exactly what lines of code are being covered by tests. and whats in the built files
+`yarn deploy` runs linting and tests that global code coverages requirements are met. Artifacts are created that you can use to understand and what is going on
+
+`/artifacts/unit/coverage/lcov-report/index.html` will be particularly useful for understanding what code is being tested
 
 ## Scripts
 
 I normally have three tabs on terminal running the following scripts
 
-- `yarn serve` runs the client code
+- `yarn serve` runs the client code on `http://localhost:8080`
 - `yarn workers:dev` keeps the workers current
 - `yarn test --watch --coverage --verbose` runs tests with code coverage on whats been changed
 
@@ -53,4 +55,6 @@ Start your local server and localhost will have the same functionality as when y
 
 ### Committing Changes
 
-Commit messages should follow the [commit message convention](./COMMIT_CONVENTION.md) so that changelogs can be automatically generated. Commit messages will be automatically validated upon commit. If you are not familiar with the commit message convention, you can use `npm run commit` instead of `git commit`, which provides an interactive CLI for generating proper commit messages.
+- todo: review this in the vue repository
+
+Commit messages should follow the [commit message convention](./COMMIT_CONVENTION.md) so that changelogs can be automatically generated. Commit messages will be automatically validated upon commit. If you are not familiar with the commit message convention, you can use `yarn commit` instead of `git commit`, which provides an interactive CLI for generating proper commit messages.
