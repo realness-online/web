@@ -11,7 +11,7 @@
     "test": "vue-cli-service test:unit",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch",
-    "build": "yarn workers:build && vue-cli-service build",
+    "build": "yarn workers && vue-cli-service build",
     "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version"
   },
   "dependencies": {
