@@ -87,6 +87,9 @@
           margin-top: base-line
           padding: 0
           border-radius: 0
+          &::placeholder
+            @media (prefers-color-scheme: light)
+              color: red
     @media (max-width: pad-begins)
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
@@ -129,12 +132,12 @@
       & > textarea
         padding: base-line
         border-radius: base-line
-        @media (prefers-color-scheme: light)
-          color: #fff
       & > textarea
         text-align: right
         &::placeholder
           @media (prefers-color-scheme: light)
             color: #fff
-
+      & > a
+        @media (prefers-color-scheme: light)
+          color: #fff
 </style>
