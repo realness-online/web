@@ -45,12 +45,13 @@
     caret-color: red
     cursor: pointer
     transition-property: color, border-radius, text-align
-    color: black
+    color: red
     @media (prefers-color-scheme: dark)
       color: white
     &::placeholder
       transition-property: all
       font-family: inherit
+      color: red
     &:focus
     &:active
       font-size: 1.25em
