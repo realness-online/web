@@ -187,7 +187,7 @@ describe('@/components/sync', () => {
       it('Only syncs when the network and local statements differ', async () => {
         jest.spyOn(sync_worker, 'fresh_metadata')
         .mockImplementation(_ => Promise.resolve({
-           customMetadata: { md5: 'MuWitqM+87rpdNO7nuoljg==' }
+           customMetadata: { md5: 'eL7hc0lLvyQjuL+5Gst2Aw==' }
         }))
         wrapper = await mount(sync, fake_props)
         await flushPromises()

@@ -12,7 +12,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
   <label
     for="day"
   >
-    Tuesday, December 31
+    Wednesday, January 1
   </label>
    
   <input
@@ -54,7 +54,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
   <label
     for="day"
   >
-    Tuesday, December 31
+    Wednesday, January 1
   </label>
    
   <input

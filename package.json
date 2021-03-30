@@ -8,7 +8,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "lint": "vue-cli-service lint",
-    "test": "vue-cli-service test:unit",
+    "test": "TZ=UTC vue-cli-service test:unit",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch",
     "build": "yarn workers && vue-cli-service build",
