@@ -6,7 +6,7 @@ exports[`@/components/statements/as-article.vue Renders Loads the statement auth
 >
   <header>
     <time>
-      3:40 PM
+      10:40 PM
     </time>
   </header>
    
@@ -27,7 +27,7 @@ exports[`@/components/statements/as-article.vue Renders Render a statement as an
 >
   <header>
     <time>
-      3:40 PM
+      10:40 PM
     </time>
   </header>
    
