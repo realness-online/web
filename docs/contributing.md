@@ -17,7 +17,7 @@ I normally have three tabs on terminal running the following scripts
 - `yarn workers:dev` keeps the workers current
 - `yarn test --watch --coverage --verbose` runs tests with code coverage on whats been changed
 
-replace `--watch` with `--watchAll` to get full coverage data with each change. There are some other scripts available in the `scripts` section of the `package.json` file.
+replace `--watch` with `--watchAll` to get full coverage data with each change.
 
 ### Config
 For a fully functioning localhost save a file named `.env.local` to the root of your project with your projects keys
