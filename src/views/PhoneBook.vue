@@ -29,6 +29,7 @@
   import { list, load } from '@/helpers/itemid'
   import { from_e64 } from '@/helpers/profile'
   import { is_fresh } from '@/helpers/date'
+  import { recent_visit_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import logo_as_link from '@/components/logo-as-link'
   import icon from '@/components/icon'
@@ -60,6 +61,7 @@
             if (person && is_fresh(person.visited)) this.phonebook.push(person)
           })
         }
+        this.phonebook.sort(recent_visit_first)
         this.working = false
       })
     }
