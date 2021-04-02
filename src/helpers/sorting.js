@@ -8,7 +8,6 @@ export function recent_item_first (first, second) {
 export function recent_visit_first (first, second) {
   return new Date(first.visited) - as_created_at(second.visited)
 }
-
 export function recent_date_first (first, second) {
   return new Date(second[0]) - new Date(first[0]) // newer is larger
 }
