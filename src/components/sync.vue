@@ -139,7 +139,6 @@
         const me = await load(localStorage.me)
         if (!me.visited) me.visited = null
         const visit_gap = Date.now() - new Date(me.visited).getTime()
-        console.log('visit_gap:', visit_gap, 'dummy')
         if (me && visit_gap > one_hour) {
           me.visited = new Date().toISOString()
           this.$emit('update:person', me)
@@ -149,7 +148,6 @@
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
         const my_info = localStorage.getItem(id)
-        console.log(my_info)
         if (!my_info || network.md5 == null) return
         const md5 = hash(my_info, hash_options)
         if (md5 !== network.md5) {
