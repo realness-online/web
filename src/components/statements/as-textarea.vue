@@ -51,7 +51,7 @@
     &::placeholder
       transition-property: all
       font-family: inherit
-      color: red
+      color: white
     &:focus
     &:active
       font-size: 1.25em
