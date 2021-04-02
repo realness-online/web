@@ -56,10 +56,10 @@
         this.relations = await list(`${localStorage.me}/relations`)
         if (user) {
           const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
-          phone_numbers.prefixes.forEach(async (phone_number) => {
+          await Promise.all(phone_numbers.prefixes.map(async phone_number => {
             const person = await load(from_e64(phone_number.name))
             if (person && is_fresh(person.visited)) this.phonebook.push(person)
-          })
+          }))
         }
         this.phonebook.sort(recent_visit_first)
         this.working = false
