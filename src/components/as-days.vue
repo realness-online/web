@@ -18,6 +18,8 @@
   import { id_as_day, as_day, is_today } from '@/helpers/date'
   import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
   import icon from '@/components/icon'
+  const page_size = 5
+  let ending_index = 0
   export default {
     components: { icon },
     props: {
@@ -49,7 +51,8 @@
     },
     data () {
       return {
-        days: new Map()
+        days: new Map(),
+        observer: null
       }
     },
     computed: {
@@ -69,9 +72,28 @@
       },
       posters () {
         this.refill_days()
+      },
+      days () {
+        if (this.days.size > page_size && !this.observer) {
+          this.observer = new IntersectionObserver(this.check_intersection, {
+            rootMargin: '0px',
+            threshold: 0.75
+          })
+          console.log(this.$el)
+          this.observer.observe(this.$el)
+        }
       }
     },
     methods: {
+      check_intersection (entries) {
+        console.trace('check_intersection')
+        entries.forEach(async entry => {
+          if (entry.isIntersecting) {
+            ending_index += page_size
+            console.log('intersecting', ending_index)
+          }
+        })
+      },
       statements_by_people (statements) {
         const people = new Map()
         statements.forEach(item => {
@@ -86,7 +108,9 @@
       refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
-          yield * [...this.entries()].sort(recent_date_first)
+          let page = [...this.entries()].sort(recent_date_first)
+          page = page.slice(0, ending_index)
+          yield * page
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.posters.forEach(poster => this.insert_into_day(poster, days))
