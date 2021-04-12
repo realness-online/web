@@ -15,7 +15,11 @@ export default {
       bind (input, binding, vnode) {
         input.addEventListener('change', event => {
           const image = event.target.files[0]
-          if (image !== undefined && image.type === 'image/jpeg') {
+          if (image === undefined) return
+          const is_image = ['image/jpeg', 'image/png'].some(type => {
+            return (image.type === type)
+          })
+          if (is_image) {
             vnode.context.vectorize(image)
             input.value = ''
           }
