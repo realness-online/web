@@ -25,7 +25,7 @@
       </a>
       <as-download v-if="download_vector" :itemid="current_avatar.id" />
     </menu>
-    <input ref="uploader" v-uploader type="file" accept="image/jpeg" capture="user">
+    <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" capture="user">
   </div>
 </template>
 <script>

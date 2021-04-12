@@ -3,7 +3,7 @@
     <header>
       <a v-if="add" @click="select_photo"><icon name="add" /></a>
       <icon v-else name="nothing" />
-      <input ref="uploader" v-uploader type="file" accept="image/jpeg">
+      <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png">
       <logo-as-link />
     </header>
     <hgroup>
