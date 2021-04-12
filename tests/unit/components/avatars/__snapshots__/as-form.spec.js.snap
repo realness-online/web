@@ -31,7 +31,7 @@ exports[`@/components/avatars/as-form.vue Renders With an avatar 1`] = `
   </menu>
    
   <input
-    accept="image/jpeg"
+    accept="image/jpeg,image/png"
     capture="user"
     type="file"
   />
@@ -69,7 +69,7 @@ exports[`@/components/avatars/as-form.vue Renders Without an avatar 1`] = `
   </menu>
    
   <input
-    accept="image/jpeg"
+    accept="image/jpeg,image/png"
     capture="user"
     type="file"
   />

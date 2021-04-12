@@ -13,7 +13,7 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
     </a>
      
     <input
-      accept="image/jpeg"
+      accept="image/jpeg,image/png"
       type="file"
     />
      
