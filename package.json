@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "0.9.31",
+  "version": "0.9.32",
   "private": false,
   "description": "Source code for realness.online",
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
@@ -169,10 +169,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 97,
-        "branches": 91,
+        "statements": 96,
+        "branches": 90,
         "functions": 98,
-        "lines": 98
+        "lines": 97
       }
     },
     "moduleNameMapper": {
