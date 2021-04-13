@@ -3,7 +3,7 @@
     <as-hgroup v-if="person" :person="person" />
     <as-days v-if="statements" v-slot="thoughts"
              itemscope :itemid="itemid('statements')"
-             :statements="statements">
+             :statements="statements" :paginate="false">
       <thought-as-article v-for="thought in thoughts" :key="thought[0].id"
                           :statements="thought" />
     </as-days>
@@ -65,6 +65,8 @@
     watch: {
       async statement () {
         if (this.statement) {
+          this.syncing = true
+          await this.$nextTick()
           const itemid = this.itemid('statements')
           this.statements = await list(itemid)
           this.statements.push(this.statement)
@@ -72,13 +74,16 @@
           await this.$nextTick()
           await data.save()
           this.$emit('update:statement', null)
+          this.syncing = false
         }
       },
       async person () {
         if (this.person) {
+          this.syncing = true
           await this.$nextTick()
           const me = new Me()
           await me.save()
+          this.syncing = false
         }
       }
     },
@@ -124,13 +129,15 @@
         else return localStorage.me
       },
       async worker_message (message) {
+        this.syncing = true
         switch (message.data.action) {
-          case 'sync:me': return await this.sync_me()
-          case 'sync:statements': return await this.sync_statements()
-          case 'save:poster': return await this.save_poster(message.data.param)
-          case 'sync:happened':return await this.sync_happened()
+          case 'sync:me': await this.sync_me(); break
+          case 'sync:statements': await this.sync_statements(); break
+          case 'save:poster': await this.save_poster(message.data.param); break
+          case 'sync:happened': await this.sync_happened(); break
           default: console.warn('Unhandled worker action: ', message.data.action)
         }
+        this.syncing = false
       },
       async sync_happened () {
         const statements = new Statements()
@@ -161,8 +168,6 @@
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
         const md5 = hash(elements.outerHTML, hash_options)
-        if (network) console.trace(`local:${md5}`, `network:${network.md5}`)
-        else console.log(`local:${md5}`, 'no network')
         if (!network || network.md5 !== md5) {
           this.statements = await statements.sync()
           if (this.statements.length) {
