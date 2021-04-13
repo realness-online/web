@@ -1,7 +1,7 @@
 <template lang="html">
   <section class="as-days">
     <header v-if="working"><icon name="working" /></header>
-    <article v-for="[date, day] in days" v-else
+    <article v-for="[date, day] in filtered_days" v-else
              :key="date"
              :class="{today: is_today(date)}"
              class="day">
@@ -19,7 +19,6 @@
   import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
   import icon from '@/components/icon'
   const page_size = 5
-  let ending_index = 0
   export default {
     components: { icon },
     props: {
@@ -52,10 +51,15 @@
     data () {
       return {
         days: new Map(),
+        page: 1,
         observer: null
       }
     },
     computed: {
+      filtered_days () {
+        console.log('page', this.page)
+        return [...this.days].slice(0, this.page * page_size)
+      },
       thoughts () {
         let thoughts = []
         const people = this.statements_by_people(this.statements)
@@ -72,25 +76,37 @@
       },
       posters () {
         this.refill_days()
-      },
-      days () {
-        if (this.days.size > page_size && !this.observer) {
-          this.observer = new IntersectionObserver(this.check_intersection, {
-            rootMargin: '0px',
-            threshold: 0.75
-          })
-          console.log(this.$el)
-          this.observer.observe(this.$el)
-        }
       }
+    },
+    mounted () {
+      this.observer = new IntersectionObserver(this.check_intersection, {
+        root: null,
+        threshold: 0.1
+      })
+    },
+    async updated () {
+      console.log('updated')
+      await this.$nextTick()
+      const element = this.$el.querySelector('article.day:last-of-type')
+      console.log(element)
+      if (element) this.observer.observe(element)
     },
     methods: {
       check_intersection (entries) {
-        console.trace('check_intersection')
         entries.forEach(async entry => {
+          // console.log(entry.boundingClientRect)
+          // console.log(entry.intersectionRatio)
+          // console.log(entry.intersectionRect)
+          // console.log(entry.isIntersecting)
+          // console.log(entry.rootBounds)
+          // console.log(entry.target)
+          // console.log(entry.time)
           if (entry.isIntersecting) {
-            ending_index += page_size
-            console.log('intersecting', ending_index)
+            this.observer.unobserve(entry.target)
+            const pages = this.days.size / page_size
+            console.log(pages)
+            this.page += 1
+            console.log('intersecting')
           }
         })
       },
@@ -108,8 +124,7 @@
       refill_days () {
         const days = new Map()
         days[Symbol.iterator] = function * () {
-          let page = [...this.entries()].sort(recent_date_first)
-          page = page.slice(0, ending_index)
+          const page = [...this.entries()].sort(recent_date_first)
           yield * page
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
