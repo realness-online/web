@@ -42,6 +42,11 @@
         required: false,
         default: () => []
       },
+      paginate: {
+        type: Boolean,
+        required: false,
+        default: true
+      },
       working: {
         type: Boolean,
         required: false,
@@ -57,8 +62,8 @@
     },
     computed: {
       filtered_days () {
-        console.log('page', this.page)
-        return [...this.days].slice(0, this.page * page_size)
+        if (this.paginate) return [...this.days].slice(0, this.page * page_size)
+        else return this.days
       },
       thoughts () {
         let thoughts = []

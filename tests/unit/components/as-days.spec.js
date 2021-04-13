@@ -43,5 +43,26 @@ describe('@/components/as-days', () => {
         expect(sorting.recent_weirdo_first).toBeCalled()
       })
     })
+    describe('#check_intersection', () => {
+      it('waits for day to intersect', () => {
+        wrapper.vm.check_intersection([{ isIntersecting: false }])
+      })
+      it('Increases the number of visible days', () => {
+        expect(wrapper.vm.page).toBe(1)
+        wrapper.vm.days = new Set()
+        for (let i = 0; i < 6; i++) {
+          wrapper.vm.days.add({})
+        }
+        console.log(wrapper.vm.days.size)
+        wrapper.vm.check_intersection([{ isIntersecting: true }])
+        expect(wrapper.vm.page).toBe(2)
+      })
+      it('Paginates when there are more then 5 days', () => {
+        expect(wrapper.vm.page).toBe(1)
+        wrapper.vm.days = new Set()
+        wrapper.vm.check_intersection([{ isIntersecting: true }])
+        expect(wrapper.vm.page).toBe(1)
+      })
+    })
   })
 })
