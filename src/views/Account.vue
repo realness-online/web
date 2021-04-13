@@ -21,6 +21,7 @@
     <h1 v-if="!working">Statements</h1>
     <as-days v-slot="thoughts"
              itemscope
+             :paginate="false"
              :itemid="statements_id"
              :statements="statements">
       <thought-as-article v-for="thought in thoughts"
