@@ -37,6 +37,7 @@ exports[`@/views/Profile.vue Renders Handles there not being posters 1`] = `
   <as-days-stub
     avatars=""
     events=""
+    paginate="true"
     posters=""
     statements=""
   />
@@ -80,6 +81,7 @@ exports[`@/views/Profile.vue Renders Shows profile information for a phone numbe
   <as-days-stub
     avatars=""
     events=""
+    paginate="true"
     posters=""
     statements=""
   />
