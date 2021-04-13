@@ -81,32 +81,20 @@
     mounted () {
       this.observer = new IntersectionObserver(this.check_intersection, {
         root: null,
-        threshold: 0.1
+        threshold: 0.25
       })
     },
-    async updated () {
-      console.log('updated')
-      await this.$nextTick()
+    updated () {
       const element = this.$el.querySelector('article.day:last-of-type')
-      console.log(element)
       if (element) this.observer.observe(element)
     },
     methods: {
       check_intersection (entries) {
         entries.forEach(async entry => {
-          // console.log(entry.boundingClientRect)
-          // console.log(entry.intersectionRatio)
-          // console.log(entry.intersectionRect)
-          // console.log(entry.isIntersecting)
-          // console.log(entry.rootBounds)
-          // console.log(entry.target)
-          // console.log(entry.time)
           if (entry.isIntersecting) {
             this.observer.unobserve(entry.target)
             const pages = this.days.size / page_size
-            console.log(pages)
-            this.page += 1
-            console.log('intersecting')
+            if (this.page < pages) this.page += 1
           }
         })
       },
