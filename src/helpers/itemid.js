@@ -33,7 +33,7 @@ export async function load_from_network (itemid, me = localStorage.me) {
     console.info('download', itemid)
     const server_text = await (await fetch(url)).text()
     await set(itemid, server_text)
-    return get_item(server_text, itemid)
+    return get_item(server_text)
   } else return null
 }
 export async function as_directory (itemid, me = localStorage.me) {
