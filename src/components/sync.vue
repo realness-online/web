@@ -129,7 +129,6 @@
         else return localStorage.me
       },
       async worker_message (message) {
-        this.syncing = true
         switch (message.data.action) {
           case 'sync:me': await this.sync_me(); break
           case 'sync:statements': await this.sync_statements(); break
@@ -137,7 +136,6 @@
           case 'sync:happened': await this.sync_happened(); break
           default: console.warn('Unhandled worker action: ', message.data.action)
         }
-        this.syncing = false
       },
       async sync_happened () {
         const statements = new Statements()
