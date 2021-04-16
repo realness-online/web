@@ -90,14 +90,16 @@
       this.syncer.terminate()
     },
     methods: {
-      async visibility_change () {
-        const relations = await list(`${localStorage.me}/relations`)
-        const message = {
-          action: 'sync:play',
-          last_sync: localStorage.sync_time,
-          relations
+      async visibility_change (event) {
+        if (document.visibilityState === 'visible') {
+          const relations = await list(`${localStorage.me}/relations`)
+          const message = {
+            action: 'sync:play',
+            last_sync: localStorage.sync_time,
+            relations
+          }
+          this.syncer.postMessage(message)
         }
-        if (!document.hidden) this.syncer.postMessage(message)
       },
       async auth_state_changed (me) {
         if (me && navigator.onLine) {
