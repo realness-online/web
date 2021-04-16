@@ -177,7 +177,7 @@
         &#accept_changes
           position: absolute
           z-index: 2
-          bottom: inset(top)
+          bottom: inset(bottom)
           left: inset(left)
           & > svg
             fill: green
