@@ -1,5 +1,5 @@
 <template lang="html">
-  <div v-if="syncing" ref="sync" hidden>
+  <div ref="sync" hidden>
     <as-hgroup v-if="person" :person="person" />
     <as-days v-if="statements" v-slot="thoughts"
              itemscope :itemid="itemid('statements')"
@@ -55,7 +55,6 @@
     data () {
       return {
         syncer: new Worker('/sync.worker.js'),
-        syncing: true,
         poster: null,
         statements: [],
         events: null,
@@ -65,7 +64,6 @@
     watch: {
       async statement () {
         if (this.statement) {
-          this.syncing = true
           await this.$nextTick()
           const itemid = this.itemid('statements')
           this.statements = await list(itemid)
@@ -74,16 +72,13 @@
           await this.$nextTick()
           await data.save()
           this.$emit('update:statement', null)
-          this.syncing = false
         }
       },
       async person () {
         if (this.person) {
-          this.syncing = true
           await this.$nextTick()
           const me = new Me()
           await me.save()
-          this.syncing = false
         }
       }
     },
