@@ -11,6 +11,7 @@ export async function load (itemid, me = localStorage.me) {
   if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
     if (item) return get_item(item)
+    else if (as_type(itemid) === 'relations') return []
   }
   const result = await get(itemid)
   if (result === null) return null
