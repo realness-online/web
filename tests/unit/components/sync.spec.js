@@ -124,12 +124,13 @@ describe('@/components/sync', () => {
         wrapper.vm.syncer = {
           postMessage: jest.fn()
         }
-        Object.defineProperty(window.document, 'hidden', {
-          value: true
+        Object.defineProperty(window.document, 'visibilityState', {
+          value: 'hidden'
         })
+        // document.visibilityState
         wrapper.vm.visibility_change()
         await flushPromises()
-        expect(document.hidden).toBe(true)
+        expect(document.visibilityState).toBe('hidden')
         expect(wrapper.vm.syncer.postMessage).not.toBeCalled()
       })
     })
