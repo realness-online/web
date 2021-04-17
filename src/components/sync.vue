@@ -16,7 +16,7 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
-  import { del } from 'idb-keyval'
+  import { del, get } from 'idb-keyval'
   import { one_hour, fresh_metadata, hash_options } from '@/workers/sync'
   import { Statements, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
@@ -149,7 +149,8 @@
       async sync_me () {
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
-        const my_info = localStorage.getItem(id)
+        let my_info = localStorage.getItem(id)
+        if (!my_info) my_info = await get(id)
         if (!my_info || network.md5 == null) return
         const md5 = hash(my_info, hash_options)
         if (md5 !== network.md5) {
