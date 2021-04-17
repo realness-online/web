@@ -20,25 +20,11 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
      
     <icon-stub
       name="working"
-      style="display: none;"
     />
   </hgroup>
    
   <hgroup
     class="message"
-  >
-    <h3>
-      Events have been disabled
-    </h3>
-     
-    <p>
-      See you after covid
-    </p>
-  </hgroup>
-   
-  <hgroup
-    class="message"
-    hidden="hidden"
   >
     <p>
       <span>

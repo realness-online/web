@@ -8,14 +8,10 @@
       <h1>Tonight!</h1>
       <icon v-show="working" name="working" />
     </hgroup>
-    <article v-if="events.length" id="tonight" hidden>
+    <article v-if="events.length" id="tonight">
       <event-as-figure v-for="event in events" :key="event.url" :event="event" />
     </article>
     <hgroup v-else class="message">
-      <h3>Events have been disabled</h3>
-      <p>See you after covid</p>
-    </hgroup>
-    <hgroup class="message" hidden>
       <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
       <p v-if="!signed_in">People see them after you <sign-on /></p>
       <h6><a>Watch</a> a video and learn some more</h6>
@@ -42,7 +38,7 @@
       return {
         events: [],
         upcoming: [],
-        working: false,
+        working: true,
         days: new Map()
       }
     },
