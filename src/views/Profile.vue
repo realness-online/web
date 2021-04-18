@@ -147,7 +147,7 @@
               width: base-line * 2
               height: base-line * 2
         a.phone
-          display:none
+          display: none
     & > section.as-days
       & > article.day
         grid-auto-rows: auto
