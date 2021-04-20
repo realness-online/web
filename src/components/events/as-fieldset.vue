@@ -1,20 +1,19 @@
 <template lang="html">
-  <fieldset class="event" :class="state">
+  <fieldset class="event">
     <events-list :events="events" :itemid="itemid" />
     <label for="day">{{ event_label }}</label>
     <input id="day" ref="day"
            type="date"
            required
            :value="event_day"
-           @input="update_date"
-           @click="show_picker">
+           @input="update_date">
     <input ref="time" type="time"
            required
            :value="event_time"
            @input="update_time">
     <menu>
-      <a ref="remove" @click="remove"><icon name="remove" /></a>
-      <a ref="save" @click="save"><icon name="add" /></a>
+      <a @click="remove"><icon name="remove" /></a>
+      <a @click="save"><icon name="add" /></a>
     </menu>
   </fieldset>
 </template>
@@ -37,14 +36,10 @@
     data () {
       return {
         main_event: null,
-        show: false,
         events: []
       }
     },
     computed: {
-      state () {
-        return { picker: this.show }
-      },
       event_time () {
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9 ? minutes : `0${minutes}`
@@ -81,10 +76,6 @@
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
     methods: {
-      show_picker () {
-        this.show = true
-        this.$emit('picker', true)
-      },
       async save () {
         this.show = false
         this.events = this.events.filter(event => event.url !== this.itemid)
@@ -94,7 +85,10 @@
         })
         await this.$nextTick()
         new Events().save(this.$refs.events)
-        this.$emit('picker', false)
+        this.$emit('picker', {
+          picker: false,
+          itemid: this.itemid
+        })
       },
       async remove () {
         this.show = false
@@ -102,7 +96,10 @@
         this.events = this.events.filter(event => event.url !== this.itemid)
         await this.$nextTick()
         new Events().save(this.$refs.events)
-        this.$emit('picker', false)
+        this.$emit('picker', {
+          picker: false,
+          itemid: this.itemid
+        })
       },
       update_date () {
         const date_list = this.$refs.day.value.split('-')
@@ -129,6 +126,8 @@
     padding: 0
     ol, label, input, menu
       display: none
+    input[type="time"]::-webkit-calendar-picker-indicator
+      visibility: hidden
     input[type="date"]
       display: block
       position: absolute
@@ -138,18 +137,21 @@
       z-index: 1
       width: base-line * 2
       height: base-line * 2
+      // &::-webkit-datetime-edit-fields-wrapper
+      // &::-webkit-datetime-edit-text
+      // &::-webkit-datetime-edit-month-field
+      // &::-webkit-datetime-edit-day-field
+      // &::-webkit-datetime-edit-year-field
+      // &::-webkit-inner-spin-button
       &::-webkit-date-edit
-      &::-webkit-datetime-edit-fields-wrapper
-      &::-webkit-datetime-edit-text
-      &::-webkit-datetime-edit-month-field
-      &::-webkit-datetime-edit-day-field
-      &::-webkit-datetime-edit-year-field
-      &::-webkit-inner-spin-button
       &::-webkit-calendar-picker-indicator
+      &::-webkit-input-placeholder
+      &::-webkit-time-picker-indicator
+        visibility: hidden
         display: none
 </style>
 <style lang="stylus">
-  fieldset.event.picker
+  fieldset.event
     position: relative
     margin-top: -(round(base-line * 10, 2))
     label, input[type="time"], menu
@@ -164,10 +166,12 @@
       font-weight: 800
       font-size: base-line
     input[type="date"]
+      font-weight: 900
       position: static
       width: auto
       height: base-line
       left: base-line
+      color: red
       margin: 0 0 base-line base-line
       @media (min-width: typing-begins)
         top: base-line

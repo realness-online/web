@@ -22,15 +22,16 @@
           <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished" /></a>
         </menu>
       </as-figure>
-      <as-figure v-for="itemid in posters" v-else
-                 :key="itemid"
-                 :class="{ 'selecting-event': selecting_event }"
-                 :itemid="itemid">
-        <event-as-fieldset v-if="date_picker" :itemid="itemid" @picker="event_picker" />
+      <as-figure v-for="poster in posters" v-else
+                 :key="poster.id"
+                 :itemid="poster.id"
+                 :class="{ 'selecting-event': poster.picker }"
+                 @vector-click="menu_toggle(poster.id)">
+        <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
         <menu v-else>
-          <a class="remove" @click="remove_poster(itemid)"><icon name="remove" /></a>
-          <event-as-button :itemid="itemid" />
-          <as-download :itemid="itemid" />
+          <a class="remove" @click="remove_poster(poster.id)"><icon name="remove" /></a>
+          <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
+          <as-download :itemid="poster.id" />
         </menu>
       </as-figure>
     </article>
@@ -44,9 +45,11 @@
   </section>
 </template>
 <script>
+  import firebase from 'firebase/app'
+  import 'firebase/auth'
   import { as_directory } from '@/helpers/itemid'
   import get_item from '@/modules/item'
-  import { recent_id_first } from '@/helpers/sorting'
+  import { recent_item_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
@@ -68,12 +71,10 @@
     mixins: [signed_in, uploader],
     data () {
       return {
-        menu: false,
         finished: true,
         posters: [],
         vectorizer: new Worker('/vector.worker.js'),
         optimizer: new Worker('/optimize.worker.js'),
-        selecting_event: false,
         working: true,
         new_poster: null,
         events: []
@@ -91,33 +92,43 @@
       add () {
         if (this.working || this.new_poster) return false
         else return true
-      },
-      date_picker () {
-        if ((this.menu || this.selecting_event) && this.new_poster === null) return true
-        else return false
       }
     },
     async created () {
       console.time('view:Posters')
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
-      await this.get_poster_list()
-      console.timeEnd('view:Posters')
-      this.working = false
+      firebase.auth().onAuthStateChanged(async user => {
+        await this.get_poster_list()
+        console.timeEnd('view:Posters')
+        this.working = false
+      })
     },
     destroyed () {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },
     methods: {
+      menu_toggle (itemid) {
+        const poster = this.posters.find(poster => poster.id === itemid)
+        poster.menu = !poster.menu
+      },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
       },
       async get_poster_list (user) {
         this.posters = []
         const directory = await as_directory(`${localStorage.me}/posters`)
-        if (directory && directory.items) directory.items.forEach(item => this.posters.push(this.get_id(item)))
-        this.posters.sort(recent_id_first)
+        if (directory && directory.items) {
+          directory.items.forEach(item => {
+            this.posters.push({
+              id: this.get_id(item),
+              menu: false,
+              picker: false
+            })
+          })
+        }
+        this.posters.sort(recent_item_first)
       },
       vectorize (image) {
         console.time('vectorize')
@@ -147,17 +158,20 @@
         const poster = new Poster(id)
         await poster.save()
         await this.$nextTick()
-        this.posters.unshift(id)
+        this.posters.unshift({
+          id: id,
+          menu: false,
+          picker: false
+        })
         this.new_poster = null
         this.working = false
-        this.menu = false
         console.info('save:poster', id)
       },
       async remove_poster (id) {
         const message = 'Delete poster?'
         if (window.confirm(message)) {
           this.working = true
-          this.posters = this.posters.filter(item => id !== item)
+          this.posters = this.posters.filter(item => id !== item.id)
           const poster = new Poster(id)
           await poster.delete()
           this.working = false
@@ -169,23 +183,15 @@
         this.new_poster = null
         this.working = false
       },
-      event_picker (selecting) {
-        if (selecting) {
-          this.menu = false
-          this.selecting_event = true
-        } else {
-          this.menu = true
-          this.selecting_event = false
-        }
+      picker (itemid) {
+        const poster = this.posters.find(poster => poster.id === itemid)
+        poster.picker = !poster.picker
       }
     }
   }
 </script>
 <style lang="stylus">
   section#posters
-    &.selecting-event
-      & > svg:not(.background)
-        opacity: 0.1
     & > header
       justify-content: space-between
     & > hgroup
@@ -211,13 +217,16 @@
       @media (min-width: typing-begins)
         grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
       & > figure.poster
+        &.selecting-event
+          & > svg:not(.background)
+            opacity: 0.1
         & > svg.background
           @media (prefers-color-scheme: dark)
             fill: green
         & > figcaption > menu
           a > svg
             @media (prefers-color-scheme: dark)
-              fill: green
+              fill: red
           a.remove
             bottom: base-line
             left: base-line

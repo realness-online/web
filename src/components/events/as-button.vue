@@ -1,5 +1,5 @@
 <template lang="html">
-  <a class="event">
+  <a class="event" @click="on_click()">
     <svg viewBox="0 0 150 150" :class="has_event">
       <use :href="date_picker_icon" />
       <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
@@ -48,7 +48,16 @@
     },
     async created () {
       this.events = await list(`${localStorage.me}/events`)
+    },
+    methods: {
+      on_click () {
+        this.$emit('picker', {
+          picker: true,
+          itemid: this.itemid
+        })
+      }
     }
+
   }
 </script>
 <style lang="stylus">
