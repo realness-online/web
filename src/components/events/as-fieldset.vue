@@ -120,42 +120,13 @@
 <style lang="stylus">
   fieldset.event
     display: flex
-    justify-content: space-around
+    justify-content:flex-end
     flex-direction: column
     border: none
     padding: 0
-    ol, label, input, menu
-      display: none
-    input[type="time"]::-webkit-calendar-picker-indicator
-      visibility: hidden
-    input[type="date"]
-      display: block
-      position: absolute
-      top: -(base-line * 3)
-      left: s('calc( 50% - %s)', base-line)
-      color: transparent
-      z-index: 1
-      width: base-line * 2
-      height: base-line * 2
-      // &::-webkit-datetime-edit-fields-wrapper
-      // &::-webkit-datetime-edit-text
-      // &::-webkit-datetime-edit-month-field
-      // &::-webkit-datetime-edit-day-field
-      // &::-webkit-datetime-edit-year-field
-      // &::-webkit-inner-spin-button
-      &::-webkit-date-edit
-      &::-webkit-calendar-picker-indicator
-      &::-webkit-input-placeholder
-      &::-webkit-time-picker-indicator
-        visibility: hidden
-        display: none
-</style>
-<style lang="stylus">
-  fieldset.event
-    position: relative
-    margin-top: -(round(base-line * 10, 2))
-    label, input[type="time"], menu
-      display: block
+    position: absolute
+    top: 0; bottom: 0; left: 0; right: 0;
+    z-index:2
     label
       z-index: 2
       cursor: pointer
@@ -165,26 +136,36 @@
       color: red
       font-weight: 800
       font-size: base-line
+    input
+      width: base-line * 8
+      &::-webkit-calendar-picker-indicator
+        visibility: hidden
+      &:focus
+        outline: .11em dotted green
+        &::-webkit-calendar-picker-indicator
+          padding-top: 3px
+          visibility: visible
     input[type="date"]
+      display: block
+      color: transparent
+      z-index: 1
       font-weight: 900
       position: static
-      width: auto
       height: base-line
       left: base-line
+      top: base-line
       color: red
       margin: 0 0 base-line base-line
-      @media (min-width: typing-begins)
-        top: base-line
-        &::-webkit-datetime-edit-fields-wrapper
-        &::-webkit-datetime-edit-text
-        &::-webkit-datetime-edit-month-field
-        &::-webkit-datetime-edit-day-field
-        &::-webkit-datetime-edit-year-field
-        &::-webkit-calendar-picker-indicator
-          display:inline-block
-          color: red
-          font-weight: 800
-          font-family: Lato
+      &::-webkit-datetime-edit-fields-wrapper
+      &::-webkit-datetime-edit-text
+      &::-webkit-datetime-edit-month-field
+      &::-webkit-datetime-edit-day-field
+      &::-webkit-datetime-edit-year-field
+        display:inline-block
+        color: red
+        fill: red
+        font-weight: 800
+        font-family: Lato
     input[type="time"]
       height: base-line
       margin-left: base-line
