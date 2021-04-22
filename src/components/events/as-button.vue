@@ -9,7 +9,7 @@
 </template>
 <script>
   import icons from '@/style/icons.svg'
-  import { as_created_at, list } from '@/helpers/itemid'
+  import { list } from '@/helpers/itemid'
   export default {
     props: {
       itemid: {
@@ -30,15 +30,17 @@
       day () {
         const event = this.events.find(event => event.url === this.itemid)
         if (event) {
-          const event_at = as_created_at(event.id)
-          return new Date(event_at).toLocaleString('en-US', { day: 'numeric' })
+          const when = new Date(parseInt(event.id))
+          return when.toLocaleString('en-US', { day: 'numeric' })
         } else return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month () {
-        const event = this.events.find(event => event.url === this.itemid)
+        const event = this.events.find(event => {
+          return event.url === this.itemid
+        })
         if (event) {
-          const event_at = as_created_at(event.id)
-          return new Date(event_at).toLocaleString('en-US', { month: 'long' })
+          const when = new Date(parseInt(event.id))
+          return when.toLocaleString('en-US', { month: 'long' })
         } else return new Date().toLocaleString('en-US', { month: 'long' })
       },
       has_event () {
