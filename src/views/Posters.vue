@@ -225,6 +225,8 @@
             fill: green
         & > figcaption > menu
           a > svg
+            &.has-event
+              fill:blue
             @media (prefers-color-scheme: dark)
               fill: red
           a.remove
