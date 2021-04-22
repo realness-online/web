@@ -1,38 +1,31 @@
 <template lang="html">
   <figure class="events">
     <icon name="background" />
-    <svg v-if="poster"
-         :viewBox="poster.viewbox"
+    <svg v-if="vector"
+         :viewBox="vector.viewbox"
          :preserveAspectRatio="aspect_ratio"
          @click="vector_click"
-         v-html="poster.path" />
+         v-html="path" />
   </figure>
 </template>
 <script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
+  import vector from '@/mixins/vector'
   import { load } from '@/helpers/itemid'
   import icon from '@/components/icon'
   export default {
     components: { icon },
-    mixins: [intersection, vector_click],
+    mixins: [intersection, vector_click, vector],
     props: {
       event: {
         type: Object,
         required: true
       }
     },
-    data () {
-      return {
-        storage: firebase.storage().ref(),
-        poster: null
-      }
-    },
     methods: {
       async show () {
-        this.poster = await load(this.events.url)
+        this.vector = await load(this.event.url)
       }
     }
   }
