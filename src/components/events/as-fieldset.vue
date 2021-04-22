@@ -1,6 +1,6 @@
 <template lang="html">
   <fieldset class="event">
-    <events-list :events="events" :itemid="itemid" />
+    <events-list ref="events" :events="events" :itemid="events_id()" />
     <label for="day">{{ event_label }}</label>
     <input id="day" ref="day"
            type="date"
@@ -72,10 +72,14 @@
     async created () {
       this.main_event = this.tonight
       this.events = await list(`${localStorage.me}/events`)
+      console.log(this.itemid, this.events)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
     methods: {
+      events_id () {
+        return `${localStorage.me}/events`
+      },
       async save () {
         this.show = false
         this.events = this.events.filter(event => event.url !== this.itemid)
@@ -84,7 +88,7 @@
           url: this.itemid
         })
         await this.$nextTick()
-        new Events().save(this.$refs.events)
+        new Events().save(this.$refs.events.$el)
         this.$emit('picker', {
           picker: false,
           itemid: this.itemid
