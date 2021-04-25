@@ -53,7 +53,6 @@ describe('@/components/as-days', () => {
         for (let i = 0; i < 6; i++) {
           wrapper.vm.days.add({})
         }
-        console.log(wrapper.vm.days.size)
         wrapper.vm.check_intersection([{ isIntersecting: true }])
         expect(wrapper.vm.page).toBe(2)
       })

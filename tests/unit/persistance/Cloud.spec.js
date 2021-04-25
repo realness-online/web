@@ -6,7 +6,9 @@ import 'firebase/auth'
 import 'firebase/storage'
 import { get } from 'idb-keyval'
 import flushPromises from 'flush-promises'
-const statements = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements = {
+  outerHTML: require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+}
 const user = { phoneNumber: '/+16282281824' }
 describe('@/persistance/Cloud.js', () => {
   class Preferences extends Cloud(Storage) {}
