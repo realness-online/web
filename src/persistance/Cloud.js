@@ -29,7 +29,7 @@ export const Cloud = (superclass) => class extends superclass {
   }
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
     console.trace('request:save', this.id, items)
-    if (!items) return
+    if (!items || !items.outerHTML) return
     if (super.save) await super.save(items)
     if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
   }
