@@ -18,7 +18,7 @@ describe('@/views/Posters.vue', () => {
       id: new Date(2020, 1, 1).getTime(),
       poster: poster.id
     }]
-    get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+    get.mockImplementation(_ => Promise.resolve({ items: ['559666932867'] }))
     wrapper = shallowMount(Posters)
     wrapper.vm.events = events
   })
@@ -35,27 +35,6 @@ describe('@/views/Posters.vue', () => {
     })
   })
   describe('Computed', () => {
-    describe('.date_picker', () => {
-      it('Is false by default', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-      it('Is true when menu is visible', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-      })
-      it('Is false when menu is gone', () => {
-        wrapper.vm.menu = true
-        expect(wrapper.vm.date_picker).toBe(true)
-        wrapper.vm.menu = false
-        expect(wrapper.vm.date_picker).toBe(false)
-      })
-      it('Is true when selecting_event', () => {
-        expect(wrapper.vm.date_picker).toBe(false)
-        wrapper.vm.selecting_event = true
-        expect(wrapper.vm.date_picker).toBe(true)
-      })
-    })
     describe('.as_itemid', () => {
       wrapper = shallowMount(Posters)
       localStorage.me = '/+16282281824'
@@ -124,6 +103,7 @@ describe('@/views/Posters.vue', () => {
       it('Saves an optimized poster (will have a proper itemid)', async () => {
         localStorage.me = itemid.as_author(poster.id)
         wrapper.vm.new_poster = poster
+        wrapper.vm.new_poster.id = '/+16282281824/posters/559667032867'
         await wrapper.vm.save_poster()
         expect(save_spy).toBeCalled()
       })
@@ -159,42 +139,14 @@ describe('@/views/Posters.vue', () => {
         expect(delete_spy).not.toBeCalled()
       })
     })
-    // describe('#vector_click', () => {
-    //   it('Shows the menu', () => {
-    //     expect(wrapper.vm.menu).toBe(false)
-    //     expect(wrapper.vm.selecting_event).toBe(false)
-    //     wrapper.vm.vector_click(true)
-    //     expect(wrapper.vm.menu).toBe(true)
-    //   })
-    //   it('Doesn/t show the menu if the event selection has focus', () => {
-    //     expect(wrapper.vm.menu).toBe(false)
-    //     wrapper.vm.selecting_event = true
-    //     wrapper.vm.vector_click()
-    //     expect(wrapper.vm.menu).toBe(false)
-    //   })
-    // })
-    describe('#event_picker', () => {
-      describe('true', () => {
-        beforeEach(() => {
-          wrapper.vm.event_picker(true)
-        })
-        it('Hides the normal', () => {
-          expect(wrapper.vm.menu).toBe(false)
-        })
-        it('Shows the event picker', () => {
-          expect(wrapper.vm.selecting_event).toBe(true)
-        })
+    describe('#picker', () => {
+      it('Toggles the picker property on a poster', () => {
+        wrapper.vm.picker(poster.id)
       })
-      describe('false', () => {
-        beforeEach(() => {
-          wrapper.vm.event_picker(false)
-        })
-        it('Shows the normal', () => {
-          expect(wrapper.vm.menu).toBe(true)
-        })
-        it('Hides the event picker', () => {
-          expect(wrapper.vm.selecting_event).toBe(false)
-        })
+    })
+    describe('#menu_toggle', () => {
+      it('Toggles the picker property on a poster', () => {
+        wrapper.vm.menu_toggle(poster.id)
       })
     })
   })

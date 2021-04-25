@@ -29,7 +29,7 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
   <article>
     <as-figure-stub
       class=""
-      itemid="/+16282281824/posters/1555347888"
+      itemid="/+16282281824/posters/559666932867"
     >
       <menu>
         <a
@@ -41,11 +41,11 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
         </a>
          
         <event-as-button-stub
-          itemid="/+16282281824/posters/1555347888"
+          itemid="/+16282281824/posters/559666932867"
         />
          
         <as-download-stub
-          itemid="/+16282281824/posters/1555347888"
+          itemid="/+16282281824/posters/559666932867"
         />
       </menu>
     </as-figure-stub>
