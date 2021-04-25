@@ -109,10 +109,6 @@
       this.optimizer.terminate()
     },
     methods: {
-      menu_toggle (itemid) {
-        const poster = this.posters.find(poster => poster.id === itemid)
-        poster.menu = !poster.menu
-      },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
       },
@@ -182,6 +178,10 @@
         this.working = true
         this.new_poster = null
         this.working = false
+      },
+      menu_toggle (itemid) {
+        const poster = this.posters.find(poster => poster.id === itemid)
+        poster.menu = !poster.menu
       },
       picker (itemid) {
         const poster = this.posters.find(poster => poster.id === itemid)
