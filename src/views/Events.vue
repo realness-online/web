@@ -59,6 +59,8 @@
           events = [...relation_events, ...events]
         }))
         events.sort(recent_item_first)
+        const now = new Date().getTime()
+        events = events.filter(event => event.id > now)
         return events
       }
     }
@@ -85,8 +87,7 @@
     & > article
       display: grid
       grid-gap: base-line
-      grid-template-columns: repeat(auto-fit, minmax(poster-min-width, 1fr))
-      grid-template-rows: round(base-line * 22)
+      grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
       & > header
         max-height: base-line * 6
       @media (min-width: pad-begins)
