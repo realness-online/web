@@ -6,7 +6,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
 >
   <events-list-stub
     events=""
-    itemid="/+16282281824/posters/559666932867"
+    itemid="/+16282281824/events"
   />
    
   <label
@@ -48,7 +48,7 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
 >
   <events-list-stub
     events=""
-    itemid="/+16282281824/posters/559666932867"
+    itemid="/+16282281824/events"
   />
    
   <label
