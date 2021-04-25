@@ -15,7 +15,7 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
    
   <hgroup>
     <h1>
-      Tonight!
+      Events
     </h1>
      
     <icon-stub

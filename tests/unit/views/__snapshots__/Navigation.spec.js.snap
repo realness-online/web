@@ -28,7 +28,7 @@ exports[`@/views/Navigation.vue Renders Displays statements and profile for a pe
       tabindex="-1"
     >
       
-      Tonight!
+      Events
     
     </a>
      
@@ -96,7 +96,7 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:false 
       tabindex="-1"
     >
       
-      Tonight!
+      Events
     
     </a>
      
@@ -164,7 +164,7 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:true s
       tabindex="-1"
     >
       
-      Tonight!
+      Events
     
     </a>
      

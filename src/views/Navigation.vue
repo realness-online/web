@@ -10,7 +10,7 @@
         {{ first_name }}
       </router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
-        Tonight!
+        Events
       </router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
         Posters

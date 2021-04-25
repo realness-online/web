@@ -5,11 +5,11 @@
       <logo-as-link />
     </header>
     <hgroup>
-      <h1>Tonight!</h1>
+      <h1>Events</h1>
       <icon v-show="working" name="working" />
     </hgroup>
     <article v-if="events.length" id="tonight">
-      <event-as-figure v-for="event in events" :key="event.url" :event="event" />
+      <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
     </article>
     <hgroup v-else class="message">
       <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
@@ -25,12 +25,12 @@
   import icon from '@/components/icon'
   import sign_on from '@/components/profile/sign-on'
   import logo_as_link from '@/components/logo-as-link'
-  import as_figure from '@/components/events/as-figure'
+  import as_figure from '@/components/posters/as-figure'
     export default {
     components: {
       'sign-on': sign_on,
       'logo-as-link': logo_as_link,
-      'event-as-figure': as_figure,
+      'as-figure': as_figure,
       icon
     },
     mixins: [signed_in],
@@ -85,13 +85,26 @@
       & > a
         -webkit-tap-highlight-color: green
     & > article
+      padding-bottom: base-line * 3
       display: grid
       grid-gap: base-line
       grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
+      @media (min-width: pad-begins)
+        grid-auto-rows: poster-grid-height
+      @media (min-width: typing-begins)
+        grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+      & > figure
+        & > svg.background
+          fill:green
+        & > figcaption menu a
+          svg.background
+            fill: red
+          hgroup > h3,
+          hgroup > time
+            color: red
       & > header
         max-height: base-line * 6
       @media (min-width: pad-begins)
-        padding: 0 base-line
         & > header > h1
           padding: 0
 </style>
