@@ -7,11 +7,6 @@ const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01', new Date().getTimezoneOffset())
-const person = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+16282281824'
-}
 const events = [{
   id: `${new Date(2020, 1, 1).getTime()}`,
   url: poster.id
