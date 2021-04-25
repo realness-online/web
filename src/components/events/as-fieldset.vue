@@ -72,7 +72,6 @@
     async created () {
       this.main_event = this.tonight
       this.events = await list(`${localStorage.me}/events`)
-      console.log(this.itemid, this.events)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
@@ -99,7 +98,7 @@
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.url !== this.itemid)
         await this.$nextTick()
-        new Events().save(this.$refs.events)
+        new Events().save(this.$refs.events.$el)
         this.$emit('picker', {
           picker: false,
           itemid: this.itemid

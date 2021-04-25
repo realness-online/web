@@ -13,7 +13,7 @@ const person = {
   id: '/+16282281824'
 }
 const events = [{
-  id: `${person.id}/events/${new Date(2020, 1, 1).getTime()}`,
+  id: `${new Date(2020, 1, 1).getTime()}`,
   url: poster.id
 }]
 describe('@/compontent/events/as-button.vue', () => {
