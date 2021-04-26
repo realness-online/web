@@ -255,7 +255,7 @@ describe('/workers/sync.js', () => {
         await flushPromises()
         jest.runAllTimers()
         expect(get).toBeCalled()
-        expect(del).toHaveBeenCalledTimes(3)
+        expect(del).toHaveBeenCalledTimes(5)
       })
     })
     describe('#sync', () => {
@@ -285,7 +285,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(4)
       })
       it('Works without an existing index', async () => {
         jest.clearAllMocks()
@@ -295,7 +295,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(4)
       })
       it('Runs statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -308,7 +308,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(4)
       })
       it('Tells the app to sync statements apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -323,14 +323,14 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(4)
       })
     })
     describe('#play', () => {
       it('Starts syncing without a last_sync', async () => {
         firebase.user = user
         await sync.play()
-        expect(post_message_spy).toHaveBeenCalledTimes(3)
+        expect(post_message_spy).toHaveBeenCalledTimes(4)
       })
       it('Sets a timer for the remaining time until sync', async () => {
         firebase.user = user

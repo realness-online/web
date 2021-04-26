@@ -18,7 +18,7 @@
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
   import { one_hour, fresh_metadata, hash_options } from '@/workers/sync'
-  import { Statements, Poster, Me } from '@/persistance/Storage'
+  import { Statements, Events, Poster, Me } from '@/persistance/Storage'
   import { from_e64 } from '@/helpers/profile'
   import { list, load } from '@/helpers/itemid'
   import get_item from '@/modules/item'
@@ -129,6 +129,7 @@
         switch (message.data.action) {
           case 'sync:me': await this.sync_me(); break
           case 'sync:statements': await this.sync_statements(); break
+          case 'sync:events': await this.sync_events(); break
           case 'save:poster': await this.save_poster(message.data.param); break
           case 'sync:happened': await this.sync_happened(); break
           default: console.warn('Unhandled worker action: ', message.data.action)
@@ -170,6 +171,22 @@
             await this.$nextTick()
             await statements.save(elements)
             localStorage.removeItem('/+/statements')
+          }
+        }
+      },
+      async sync_events () {
+        const events = new Events()
+        const itemid = this.itemid('events')
+        const network = (await fresh_metadata(itemid)).customMetadata
+        const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
+        const md5 = hash(elements.outerHTML, hash_options)
+        if (!network || network.md5 !== md5) {
+          console.log(md5)
+          this.events = await events.sync()
+          if (this.events.length) {
+            await this.$nextTick()
+            await events.save(elements)
+            localStorage.removeItem('/+/events')
           }
         }
       },
