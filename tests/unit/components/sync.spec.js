@@ -7,13 +7,16 @@ import sync from '@/components/sync'
 import get_item from '@/modules/item'
 import {
   Me,
-  Statements
+  Statements,
+  Events
 } from '@/persistance/Storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
+const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
+const events = get_item(events_html).events
 const fake_props = { propsData: { config: {} } }
 
 describe('@/components/sync', () => {
@@ -35,6 +38,12 @@ describe('@/components/sync', () => {
     .mockImplementation(_ => Promise.resolve(statements))
     jest.spyOn(Statements.prototype, 'save')
     .mockImplementation(_ => Promise.resolve())
+
+    jest.spyOn(Events.prototype, 'sync')
+    .mockImplementation(_ => Promise.resolve(events))
+    jest.spyOn(Events.prototype, 'save')
+    .mockImplementation(_ => Promise.resolve())
+
     get.mockImplementation(_ => Promise.resolve([]))
     set.mockImplementation(_ => Promise.resolve(null))
   })
@@ -225,6 +234,62 @@ describe('@/components/sync', () => {
         expect(Statements.prototype.save).toBeCalled()
       })
     })
+    describe('#sync_events', () => {
+      it('Syncs when there are items to sync', async () => {
+        jest.spyOn(Events.prototype, 'sync')
+        .mockImplementationOnce(_ => Promise.resolve([]))
+        jest.spyOn(sync_worker, 'fresh_metadata')
+        .mockImplementation(_ => Promise.resolve({
+           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+        }))
+        wrapper = await mount(sync, fake_props)
+        await flushPromises()
+        wrapper.vm.events = events
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.sync_events()
+        expect(Events.prototype.sync).toBeCalled()
+        expect(Events.prototype.save).not.toBeCalled()
+      })
+      it('Only syncs when the network and local statements differ', async () => {
+        jest.spyOn(sync_worker, 'fresh_metadata')
+        .mockImplementation(_ => Promise.resolve({
+           customMetadata: { md5: 'QguENXotCF+R2U6/yNGaVw==' }
+        }))
+        wrapper = await mount(sync, fake_props)
+        await flushPromises()
+        wrapper.vm.events = events
+        await wrapper.vm.$nextTick()
+        await wrapper.vm.sync_events()
+        expect(Events.prototype.sync).not.toBeCalled()
+      })
+      it('Syncs without a network file to sync with', async () => {
+        jest.spyOn(sync_worker, 'fresh_metadata')
+        .mockImplementation(_ => Promise.resolve({
+           customMetadata: { md5: null }
+        }))
+        wrapper = await mount(sync, fake_props)
+        await flushPromises()
+        wrapper.vm.events = events
+        await wrapper.vm.$nextTick()
+        // get.mockImplementationOnce(_ => Promise.resolve(null))
+        await wrapper.vm.sync_events()
+        expect(Events.prototype.sync).toBeCalled()
+      })
+      it('Saves synced events', async () => {
+        jest.spyOn(sync_worker, 'fresh_metadata')
+        .mockImplementation(_ => Promise.resolve({
+           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+        }))
+        wrapper = await mount(sync, fake_props)
+        await flushPromises()
+        wrapper.vm.events = events
+        await wrapper.vm.$nextTick()
+        get.mockImplementationOnce(_ => Promise.resolve(null))
+        await wrapper.vm.sync_events()
+        expect(Events.prototype.sync).toBeCalled()
+        expect(Events.prototype.save).toBeCalled()
+      })
+    })
     describe('#worker_message', () => {
       const event = {}
       beforeEach(() => {
@@ -241,6 +306,13 @@ describe('@/components/sync', () => {
         const spy = jest.spyOn(wrapper.vm, 'sync_statements')
         .mockImplementationOnce(_ => Promise.resolve())
         event.data.action = 'sync:statements'
+        wrapper.vm.worker_message(event)
+        expect(spy).toBeCalled()
+      })
+      it('Calls sync:events via an event', () => {
+        const spy = jest.spyOn(wrapper.vm, 'sync_events')
+        .mockImplementationOnce(_ => Promise.resolve())
+        event.data.action = 'sync:events'
         wrapper.vm.worker_message(event)
         expect(spy).toBeCalled()
       })

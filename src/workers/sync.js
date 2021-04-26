@@ -42,6 +42,7 @@ export async function sync (relations) {
   await offline()
   post('sync:me')
   post('sync:statements')
+  post('sync:events')
   post('sync:happened')
   await people(relations)
   prune_strangers(my_itemid, relations)
@@ -105,7 +106,6 @@ async function prune_person (itemid) {
   if (!network.customMetadata) return
   const md5 = await local_md5(itemid)
   if (network.customMetadata.md5 !== md5) {
-    console.log(itemid, `local:${md5}`, `network:${network.customMetadata.md5}`)
     await del(itemid)
     check_children(itemid)
   } else if (new Date(network.updated).getTime() > visit_interval()) {
@@ -120,6 +120,11 @@ async function check_children (itemid) {
   if (network.customMetadata.md5 !== await local_md5(statements)) {
     await del(`${statements}/`)
     await del(statements)
+  }
+  const events = `${itemid}/events`
+  if (network.customMetadata.md5 !== await local_md5(events)) {
+    await del(`${events}/`)
+    await del(events)
   }
 }
 export async function local_md5 (itemid) { // always checks the network
