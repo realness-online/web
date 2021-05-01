@@ -38,7 +38,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 #### Enable Storage
 
-- Click get started form storage screen
+- Click to get started from storage tab
 
 - Accept the default security rules (they will be configured with deploy)
 
@@ -76,6 +76,6 @@ A moderator takes responsibility for the content that is created within their in
 
 By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity for users to negotiate norms with their moderator. This way, human beings can move between networks naturally; choosing a Realness that is a good fit for them.
 
-It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear who's ass is on the line for what gets said, organized, and done.
+It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear whose ass is on the line for what gets said, organized, and done.
 
 Currently [package.json](package.json) has the license field marked as UNLICENSED – This is because we are in an alpha phase of the product roadmap. We need to figure this license out.
