@@ -13,13 +13,14 @@ Realness believes moderators should be at the center of social networking. Moder
 
 ## What you can do with Realness
 
-- You sign up with your phone number
 - You can post statements that become trains of thought as you add to them
-- You turn pictures into vector graphics that you use as posters and avatars
+- You can develop your pictures into vector graphics that you use as posters
+- You can download the posters that you create
+- You can sign up with your phone number, and create an avatar
 - You can look for people you may know on Realness
 - You can add those people  
-- You can view a list of upcoming events made from uploaded posters
 - You can view a feed of what those people want to say
+- You can view a list of upcoming events
 - You can contact a Moderator you probably know in real life to get your questions answered
 
 There are no likes. There are no friend counts. There are no comments. And the application is not playing engagement games with your mind.
