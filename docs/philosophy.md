@@ -5,9 +5,11 @@
 - How is the contact with the people we care about supposed to go?  
 - What about the internet are we on the hook to understand?
 
-It uses your phone number so you get built in messaging and group text.  Your information stays on your device. Realness tries to be as small as possible so that you can trust the affection it makes you feel.
+Realness tries to be as small as possible so that you can trust the affection it generates. The server knows your phone number and the content you create. Statements, Posters, Events, Avatars. Your relationships remain on device. Images that you upload to create Posters and Avatars, are converted on device and then discarded.
 
-Realness is run by Moderators. Just like keeping the data out on the phone. We believe moderators are a more natural focus for the app. Everyone can become a moderator. Becoming a moderator means taking responsibility for how the internet is built and run. We believe realness is a natural form of social networking that supports the fundamental needs of citizens in a democracy. We are all Freedom, with clear areas of personal responsibility.
+We get Messaging and group chat for free since we authorize with phone numbers. Your phone number is the shared with a third party for authorization.
+
+Realness believes moderators should be at the center of social networking. Moderators keep it human. Everyone can become a moderator. Moderating an instance of realness will improve internet literacy. We believe realness is a natural form of social networking that supports the fundamental needs of citizens in a democracy. The hope is that having an ecosystem of moderators relieves some of the pressure to pick a side. Within realness we are free to accept each other as different and yet share an ethos of community responsibility.
 
 ## What you can do with Realness
 
@@ -16,6 +18,7 @@ Realness is run by Moderators. Just like keeping the data out on the phone. We b
 - You turn pictures into vector graphics that you use as posters and avatars
 - You can look for people you may know on Realness
 - You can add those people  
+- You can view a list of upcoming events made from uploaded posters
 - You can view a feed of what those people want to say
 - You can contact a Moderator you probably know in real life to get your questions answered
 
@@ -25,4 +28,4 @@ You text when your friends post something that moves you.
 
 Realness tries to stay as background as a phone number. We trust that the love between family, friends, and community is enough to bind us together.
 
-## Realness is your tool. Moderators are your friends.
+###### Realness is your tool. Moderators are your friends.
