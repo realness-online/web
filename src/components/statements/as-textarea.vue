@@ -2,6 +2,7 @@
   <textarea id="wat" v-model="new_statement"
             cols="1" rows="1"
             placeholder=">"
+            spellcheck="true"
             @focusout="prepare_statement"
             @focusin="focused" />
 </template>
