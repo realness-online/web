@@ -53,4 +53,9 @@
           margin-bottom: base-line
     & > nav
       margin-top: base-line * 2
+      & hgroup > h3
+        max-width: base-line * 6
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
 </style>

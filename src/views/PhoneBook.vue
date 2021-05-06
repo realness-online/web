@@ -72,13 +72,15 @@
     padding-bottom: base-line * 2
     nav.profile-list
       margin-top: base-line * 2
+      & hgroup > h3
+        max-width: base-line * 6
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
     svg.working
       margin-top: base-line
       @media (prefers-color-scheme: dark)
         fill: blue
     svg.heart
         fill: blue
-    & > hgroup > h1
-      @media (prefers-color-scheme: dark)
-        color: blue
 </style>
