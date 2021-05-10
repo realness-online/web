@@ -98,7 +98,7 @@
         -webkit-tap-highlight-color: blue
         z-index: 2
         top: inset(top)
-        right: inset(right)
+        right: base-line
         position: absolute
     & > div
       position: relative
@@ -113,6 +113,7 @@
         z-index: 1
         position: absolute
         bottom: -(base-line * 2)
+        bottom: 0
         padding: 0 base-line
         animation: absolute-slide-up
         animation-delay: 1.33s
@@ -129,8 +130,6 @@
         border-radius: base-line
       & > figcaption > menu
         a.status
-          top: inset(top, -(base-line * 2))
-          left: inset(left)
           position: absolute
           animation: absolute-slide-down
           animation-delay: 1.33s
