@@ -152,7 +152,7 @@
       display: block
       color: transparent
       z-index: 1
-      font-weight: 900
+      font-weight: 800
       position: static
       height: base-line
       left: base-line
@@ -177,7 +177,7 @@
       z-index: 3
       cursor: pointer
       color:red
-      font-weight: 900
+      font-weight: 800
       margin-bottom: base-line
     menu
       padding: base-line
