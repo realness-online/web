@@ -35,15 +35,6 @@
         ]
       },
       {
-        "source": "*.svg",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000"
-          }
-        ]
-      },
-      {
         "source": "/service.worker.js",
         "headers": [
           {
