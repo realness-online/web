@@ -9,6 +9,7 @@
 </template>
 <script>
   import firebase from 'firebase/app'
+  import { get, set } from 'idb-keyval'
   import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'
   export default {
@@ -45,9 +46,9 @@
     async created () {
       if (this.is_production) {
         const response = await fetch('__/firebase/init.json')
-        this.firebase_keys = await response.json()
-      }
-      firebase.initializeApp(this.firebase_keys)
+        await set('firebase_keys', await response.json())
+      } else set('firebase_keys', this.firebase_keys)
+      firebase.initializeApp(await get('firebase_keys'))
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       this.working = false
