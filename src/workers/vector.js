@@ -47,6 +47,9 @@ export async function listen (message) {
   image = await prepare(image)
   image = await size(image)
   const vector = await make(image)
-  self.postMessage(vector)
+  console.log(image)
+  image = await image.getBufferAsync(Jimp.MIME_JPEG)
+  console.log(image)
+  self.postMessage({ vector: vector, image: image })
 }
 self.addEventListener('message', listen)
