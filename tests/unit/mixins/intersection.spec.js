@@ -20,14 +20,6 @@ describe('@/mixins/intersection', () => {
     })
   })
   describe('Methods', () => {
-    describe('#intersect', () => {
-      it('Exists', () => {
-        expect(wrapper.vm.intersect).toBeDefined()
-      })
-      it('Resets the observer', () => {
-        wrapper.vm.intersect()
-      })
-    })
     describe('#check_intersection', () => {
       it('Exists', () => {
         expect(wrapper.vm.check_intersection).toBeDefined()
