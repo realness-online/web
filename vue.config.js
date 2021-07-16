@@ -3,13 +3,13 @@ process.env.VUE_APP_VERSION = require('./package.json').version
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 module.exports = {
   parallel: require('os').cpus().length > 1,
-  productionSourceMap: false,
+  productionSourceMap: true,
   css: {
-    sourceMap: false,
+    sourceMap: true,
     loaderOptions: {
       stylus: {
         loader: 'stylus-resources-loader',
-        import: [path.resolve(__dirname, 'src/style/variables.styl')]
+        import: [path.resolve('./src/style/variables.styl')]
       }
     }
   },
