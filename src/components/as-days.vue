@@ -159,10 +159,10 @@
       margin-top: base-line
       display: grid
       grid-gap: base-line
-      grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
+      grid-template-columns: repeat(auto-fill, minmax(poster-min-width + base-line, 1fr))
       @media (min-width: pad-begins)
         grid-template-rows: (base-line * 2)
-        grid-auto-rows: poster-grid-height
+        grid-auto-rows: poster-grid-height dense
       @media (min-width: typing-begins)
         grid-template-rows: (base-line * 3)
         grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
