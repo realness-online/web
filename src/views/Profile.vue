@@ -149,7 +149,6 @@
           display: none
     & > section.as-days
       & > article.day
-        grid-auto-rows: auto
         & > header
           padding: base-line
           & > h4

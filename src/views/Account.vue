@@ -216,10 +216,6 @@
       h4
         margin: base-line 0 0 0
       article.day
-        @media (min-width: pad-begins)
-          grid-auto-rows: auto
-        @media (min-width: typing-begins)
-          grid-auto-rows: auto
         p[itemprop="statement"]:focus
           font-weight: bolder
           outline: 0px
