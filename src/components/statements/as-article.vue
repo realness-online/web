@@ -1,5 +1,5 @@
 <template lang="html">
-  <article class="thought">
+  <article class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id">
         <as-avatar :person="author" />
@@ -57,6 +57,7 @@
     },
     data () {
       return {
+        all: null,
         author: null,
         focused: false
       }
@@ -72,6 +73,10 @@
       }
     },
     methods: {
+      click (event) {
+        if (this.all) this.all = null
+        else this.all = 'all'
+      },
       show () {
         this.$emit('show', this.statements)
       },
@@ -92,11 +97,13 @@
 </script>
 <style lang='stylus'>
   article.thought
-    max-height: base-line * 21
     display: -webkit-box
     -webkit-box-orient: vertical
-    -webkit-line-clamp: 13
-    overflow:hidden;
+    -webkit-line-clamp: 11
+    overflow: hidden
+    text-overflow: ellipsis
+    &:focus-within, &.all
+      -webkit-line-clamp: 400
     & > header
       display: flex
       justify-content: flex-start
