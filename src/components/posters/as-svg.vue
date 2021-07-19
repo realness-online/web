@@ -53,5 +53,4 @@
     display: block
     height: 100%
     width: 100%
-    max-height: poster-feed-height
 </style>

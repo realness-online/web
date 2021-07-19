@@ -110,12 +110,10 @@
     position: relative
     overflow: hidden
     &.landscape
-      min-height: poster-grid-height
       & > svg[itemscope]
-        height: poster-grid-height
-        transition-property: none
-    @media (orientation: landscape), (min-width: page-width)
-      &.landscape
+        min-height: poster-grid-height
+        transition-property: all
+      @media (orientation: landscape), (min-width: page-width)
         min-height: inherit
         grid-column-start: span 2
     @media (min-width: pad-begins)
