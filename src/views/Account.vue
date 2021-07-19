@@ -216,6 +216,7 @@
       h4
         margin: base-line 0 0 0
       article.day
+        grid-auto-rows: auto
         p[itemprop="statement"]:focus
           font-weight: bolder
           outline: 0px
