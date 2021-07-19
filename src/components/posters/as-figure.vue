@@ -114,7 +114,7 @@
       & > svg[itemscope]
         height: poster-grid-height
         transition-property: none
-    @media (orientation: landscape)
+    @media (orientation: landscape), (min-width: page-width)
       &.landscape
         min-height: inherit
         grid-column-start: span 2
