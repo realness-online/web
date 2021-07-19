@@ -86,13 +86,7 @@
         -webkit-tap-highlight-color: green
     & > article
       padding-bottom: base-line * 3
-      display: grid
-      grid-gap: base-line
-      grid-template-columns: repeat(auto-fill, minmax(poster-min-width, 1fr))
-      @media (min-width: pad-begins)
-        grid-auto-rows: poster-grid-height dense
-      @media (min-width: typing-begins)
-        grid-template-columns: repeat(auto-fill, minmax((poster-min-width * base-line), 1fr))
+      standard-grid: howdy
       & > figure
         & > svg.background
           fill:green
