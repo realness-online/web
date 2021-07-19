@@ -152,15 +152,13 @@
 </script>
 <style lang="stylus">
   section.as-days
+    padding: 0 base-line
     margin-bottom: base-line * 2
     & > header > svg.working
       margin-top: base-line * 2
     & > article.day
       margin-top: base-line
       standard-grid: hi
-      &.today
-        @media (min-width: pad-begins)
-          grid-template-rows: auto
       & > header
         @media (min-width: pad-begins)
           grid-column: 1 / -1

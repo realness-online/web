@@ -211,15 +211,12 @@
       margin-top: base-line * 2
       padding: base-line
     & > section.as-days
-      padding: base-line
       padding-top: 0
       h4
         margin: base-line 0 0 0
-      article.day
-        grid-auto-rows: auto
-        p[itemprop="statement"]:focus
-          font-weight: bolder
-          outline: 0px
+      article.day p[itemprop="statement"]:focus
+        font-weight: bolder
+        outline: 0px
     & > footer
       text-align: center
       padding: 0 base-line

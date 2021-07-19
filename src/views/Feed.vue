@@ -121,15 +121,8 @@
     & > section.as-days
       & > article.day
         margin-bottom: base-line
-        grid-auto-rows: auto
-        & > header
-          padding: base-line
-          h4
-            @media (prefers-color-scheme: dark)
-              color: blue
-        article.thought
-          padding: 0 base-line
-        figure.poster > svg.background
-          @media (prefers-color-scheme: dark)
-            fill: blue
+        @media (prefers-color-scheme: dark)
+          & > header h4, figure.poster > svg.background
+            color: blue
+
 </style>
