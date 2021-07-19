@@ -18,3 +18,11 @@ standard-button($color=currentColor, $dark-color=white)
     color: transparent
   @media (prefers-color-scheme: dark)
     color: $dark-color
+
+standard-grid($nothin=hi)
+  display: grid
+  grid-gap: base-line
+  grid-template-columns: repeat(auto-fill, minmax(poster-min-width + base-line, 1fr))
+  grid-auto-flow: dense
+  @media (min-width: pad-begins)
+    grid-auto-rows: poster-grid-height
