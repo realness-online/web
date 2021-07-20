@@ -29,7 +29,10 @@ export async function size (image, size = 512) {
   return image
 }
 export async function prepare (image) {
-  return image.normalize().dither565().threshold(bright).posterize(10)
+  return image.normalize().color([
+    { apply: 'brighten', params: [8] },
+    { apply: 'shade', params: [35] }
+  ]).contrast(0.35).dither565().threshold(bright).posterize(10)
 }
 export async function make (image) {
   let poster = await as_paths(image, potrace_options)
