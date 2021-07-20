@@ -166,11 +166,9 @@
       async remove_poster (id) {
         const message = 'Delete poster?'
         if (window.confirm(message)) {
-          this.working = true
           this.posters = this.posters.filter(item => id !== item.id)
           const poster = new Poster(id)
           await poster.delete()
-          this.working = false
           console.info('delete:poster', id)
         }
       },
