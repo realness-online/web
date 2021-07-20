@@ -8,7 +8,7 @@ const potrace_options = {
   rangeDistribution: 'auto'
 }
 const bright = {
-  max: 200,
+  max: 175,
   replace: 255,
   autoGreyscale: false
 }
@@ -29,10 +29,9 @@ export async function size (image, size = 512) {
   return image
 }
 export async function prepare (image) {
-  return image.normalize().color([
-    { apply: 'brighten', params: [8] },
-    { apply: 'shade', params: [35] }
-  ]).contrast(0.35).dither565().threshold(bright).posterize(10)
+  return image.normalize().posterize(13).contrast(0.35).color([
+    { apply: 'shade', params: [3] }
+  ]).dither565().threshold(bright)
 }
 export async function make (image) {
   let poster = await as_paths(image, potrace_options)
