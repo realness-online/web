@@ -1,10 +1,5 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <header>
-      <h6>
-        {{ version }}
-      </h6>
-    </header>
     <nav ref="nav">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
@@ -26,6 +21,10 @@
                              @toggle-keyboard="posting = !posting"
                              @update:statement="$emit('update:statement', $event)" />
     </nav>
+    <footer>
+      <h6>{{ version }}</h6>
+      <a href="https://github.com/realness-online/web" rel="external">?</a>
+    </footer>
   </section>
 </template>
 <script>
@@ -94,14 +93,6 @@
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
       height: auto
-    & > header
-      padding: 0
-      & > h6
-        margin: 0
-        padding: 0
-        position: fixed
-        bottom: round((base-line / 2 ), 2)
-        left: round((base-line / 2 ), 2)
     & > nav
       transition-duration: 0s
       display: grid
@@ -140,4 +131,17 @@
       & > a
         @media (prefers-color-scheme: light)
           color: #fff
+    & > footer
+      padding: 0
+      & > h6
+      & > a
+        margin: 0
+        padding: 0
+        position: fixed
+        bottom: round((base-line / 2 ), 2)
+      & > h6
+        left: round((base-line / 2 ), 2)
+      & > a
+        right: round((base-line / 2 ), 2)
+
 </style>
