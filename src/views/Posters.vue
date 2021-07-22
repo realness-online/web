@@ -77,7 +77,6 @@
         optimizer: new Worker('/optimize.worker.js'),
         working: true,
         new_poster: null,
-        image: null,
         events: []
       }
     },
@@ -133,8 +132,7 @@
         this.vectorizer.postMessage({ image })
       },
       async vectorized (response) {
-        this.new_poster = response.data.vector
-        this.image = response.data.image
+        this.new_poster = response.data
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
