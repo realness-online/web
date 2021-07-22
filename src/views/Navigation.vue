@@ -89,21 +89,24 @@
           &::placeholder
             @media (prefers-color-scheme: light)
               color: red
-    @media (max-width: pad-begins)
+    @media (max-width: pad-begins) and (orientation: portrait)
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
       height: auto
+      max-width: none
     & > nav
       transition-duration: 0s
       display: grid
       grid-gap: base-line
       grid-template-columns: 1fr 1fr
-      grid-template-rows: repeat(1fr)
       align-items: stretch
       min-height: round(base-line * 19, 2)
       max-height: page-width
       height: 100vmin
       width: 100vw
+      @media (max-height: pad-begins) and (orientation: landscape)
+        min-height: auto
+        padding: base-line (base-line * 4)
       & > a
         text-transform: capitalize
         text-align: left
@@ -138,10 +141,10 @@
         margin: 0
         padding: 0
         position: fixed
-        bottom: round((base-line / 2 ), 2)
+        bottom: base-line
       & > h6
-        left: round((base-line / 2 ), 2)
+        left: base-line
       & > a
-        right: round((base-line / 2 ), 2)
+        right: base-line
 
 </style>
