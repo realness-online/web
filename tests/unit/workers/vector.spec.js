@@ -11,7 +11,9 @@ const mock_image = {
   normalize: jest.fn(_ => mock_image),
   threshold: jest.fn(_ => mock_image),
   dither565: jest.fn(_ => mock_image),
-  posterize: jest.fn(_ => mock_image)
+  posterize: jest.fn(_ => mock_image),
+  contrast: jest.fn(_ => mock_image),
+  color: jest.fn(_ => mock_image)
 }
 const mock_vector = {
   paths: [poster_html]
