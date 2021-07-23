@@ -1,7 +1,9 @@
 <template>
-  <section id="feed" class="page">
+  <section id="feed" class="page" :class="{ fullscreen }">
     <header>
-      <icon name="nothing" />
+      <a ref="play" name="finished" @click="go_big">
+        <icon name="finished" />
+      </a>
       <logo-as-link />
     </header>
     <hgroup>
@@ -54,6 +56,7 @@
     mixins: [signed_in, intersection_thought],
     data () {
       return {
+        fullscreen: true,
         signed_in: true,
         statements: [],
         posters: [],
@@ -88,6 +91,11 @@
       })
     },
     methods: {
+      go_big (event) {
+        this.fullscreen = !this.fullscreen
+        console.log('fullscreen')
+        this.$el.requestFullscreen()
+      },
       async fill_feed () {
         await Promise.all(this.authors.map(async relation => {
           const [statements, posters] = await Promise.all([
@@ -110,12 +118,47 @@
   }
 </script>
 <style lang="stylus">
+  section#feed:fullscreen
+    flex-direction: row
+    // align-items: center
+    overflow-x: auto
+    display: flex;
+    padding: 0
+    & > header
+    & > hgroup
+    article.day > header
+    article.thought
+      display: none
+    section.as-days
+      white-space: nowrap;
+      overflow-x: auto;
+      scroll-behavior: smooth
+      scroll-snap-type: both mandatory
+      padding:0
+      & > article.day
+        scroll-behavior: smooth
+        scroll-snap-type: both mandatory
+        scroll-snap-align: start
+        // animation: resize 3000ms ease infinite both
+        display: flex
+        flex-direction: row
+        // align-items: center
+        grid-gap:0
+        margin: 0
+        figure.poster
+          scroll-behavior: smooth
+          scroll-snap-align: start
+          border-radius: 0
+          min-height: 100vh
+          min-width: 50vw
+          &.landscape
+            min-width: 100vw
   section#feed
     position: relative
     display: flex
     flex-direction: column
     & > header > svg
-      fill: transparent
+      fill: red
     & > nav
       display: none
     & > section.as-days
