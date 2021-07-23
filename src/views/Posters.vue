@@ -132,7 +132,7 @@
         this.vectorizer.postMessage({ image })
       },
       async vectorized (response) {
-        this.new_poster = response.data
+        this.new_poster = response.data.vector
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false

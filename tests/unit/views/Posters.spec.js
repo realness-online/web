@@ -55,7 +55,7 @@ describe('@/views/Posters.vue', () => {
     describe('#vectorized', () => {
       it('Gets the poster from the worker', () => {
         const event = {
-          data: poster
+          data: { vector: poster }
         }
         wrapper.vm.working = true
         wrapper.vm.vectorized(event)
