@@ -2,7 +2,7 @@
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
       <a ref="play" name="finished" @click="go_big">
-        <icon name="finished" />
+        <icon name="play" />
       </a>
       <logo-as-link />
     </header>
@@ -118,47 +118,43 @@
   }
 </script>
 <style lang="stylus">
-  section#feed:fullscreen
-    flex-direction: row
-    // align-items: center
-    overflow-x: auto
-    display: flex;
-    padding: 0
-    & > header
-    & > hgroup
-    article.day > header
-    article.thought
-      display: none
-    section.as-days
-      white-space: nowrap;
-      overflow-x: auto;
-      scroll-behavior: smooth
-      scroll-snap-type: both mandatory
-      padding:0
-      & > article.day
-        scroll-behavior: smooth
-        scroll-snap-type: both mandatory
-        scroll-snap-align: start
-        // animation: resize 3000ms ease infinite both
-        display: flex
-        flex-direction: row
-        // align-items: center
-        grid-gap:0
-        margin: 0
-        figure.poster
-          scroll-behavior: smooth
-          scroll-snap-align: start
-          border-radius: 0
-          min-height: 100vh
-          min-width: 50vw
-          &.landscape
-            min-width: 100vw
   section#feed
     position: relative
     display: flex
     flex-direction: column
-    & > header > svg
-      fill: red
+    &:fullscreen
+      flex-direction: row
+      overflow-x: auto
+      display: flex;
+      padding: 0
+      & > header
+      & > hgroup
+      article.day > header
+      article.thought
+        display: none
+      section.as-days
+        white-space: nowrap;
+        overflow-x: auto;
+        scroll-behavior: smooth
+        scroll-snap-type: both mandatory
+        padding:0
+        & > article.day
+          scroll-behavior: smooth
+          scroll-snap-type: both mandatory
+          scroll-snap-align: start end
+          display: flex
+          flex-direction: row
+          grid-gap:0
+          margin: 0
+          figure.poster
+            scroll-behavior: smooth
+            scroll-snap-align: center
+            border-radius: 0
+            min-height: 100vh
+            min-width: 100vw
+    & > header  svg
+      fill: blue
+      stroke: blue
     & > nav
       display: none
     & > section.as-days
@@ -167,5 +163,4 @@
         @media (prefers-color-scheme: dark)
           & > header h4, figure.poster > svg.background
             color: blue
-
 </style>
