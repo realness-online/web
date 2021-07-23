@@ -4,7 +4,7 @@
     <article v-for="[date, day] in filtered_days" v-else
              :key="date"
              :class="{today: is_today(date)}"
-             class="day">
+             class="day" tabindex="0">
       <header v-if="!is_today(date)">
         <h4>{{ as_day(date) }}</h4>
       </header>
