@@ -1,7 +1,7 @@
 <template>
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
-      <a ref="play" name="finished" @click="go_big">
+      <a ref="play" class="play" @click="go_big">
         <icon name="play" />
       </a>
       <logo-as-link />
@@ -93,8 +93,11 @@
     methods: {
       go_big (event) {
         this.fullscreen = !this.fullscreen
-        console.log('fullscreen')
-        this.$el.requestFullscreen()
+        try {
+          this.$el.requestFullscreen()
+        } catch (e) {
+          this.$el.webkitRequestFullScreen()
+        }
       },
       async fill_feed () {
         await Promise.all(this.authors.map(async relation => {
@@ -119,10 +122,13 @@
 </script>
 <style lang="stylus">
   section#feed
+
     position: relative
     display: flex
     flex-direction: column
     &:fullscreen
+    &:full-screen
+      background-color: background-black
       flex-direction: row
       overflow-x: auto
       display: flex;
@@ -137,7 +143,8 @@
         overflow-x: auto;
         scroll-behavior: smooth
         scroll-snap-type: both mandatory
-        padding:0
+        padding: 0
+        margin: 0
         & > article.day
           scroll-behavior: smooth
           scroll-snap-type: both mandatory
@@ -150,11 +157,14 @@
             scroll-behavior: smooth
             scroll-snap-align: center
             border-radius: 0
-            min-height: 100vh
             min-width: 100vw
-    & > header  svg
-      fill: blue
-      stroke: blue
+    & > header
+      @media (max-width: page-width), (max-height: page-width)
+        a.play
+          visibility: hidden
+      svg
+        fill: blue
+        stroke: blue
     & > nav
       display: none
     & > section.as-days

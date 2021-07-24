@@ -181,7 +181,6 @@
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
         const md5 = hash(elements.outerHTML, hash_options)
         if (!network || network.md5 !== md5) {
-          console.log(md5)
           this.events = await events.sync()
           if (this.events.length) {
             await this.$nextTick()
