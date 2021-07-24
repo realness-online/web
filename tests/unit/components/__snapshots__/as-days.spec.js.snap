@@ -12,6 +12,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
 >
   <article
     class="day"
+    tabindex="0"
   >
     <header>
       <h4>
@@ -22,6 +23,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
   </article>
   <article
     class="day"
+    tabindex="0"
   >
     <header>
       <h4>
@@ -32,6 +34,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
   </article>
   <article
     class="day"
+    tabindex="0"
   >
     <header>
       <h4>
@@ -42,6 +45,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
   </article>
   <article
     class="day"
+    tabindex="0"
   >
     <header>
       <h4>
