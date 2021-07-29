@@ -126,10 +126,10 @@
       "hotkeys": {
         "OBSBasic.SelectScene": [],
         "libobs.hide_scene_item.background black": [],
-        "libobs.hide_scene_item.full run": [],
+        "libobs.hide_scene_item.back-left-corner": [],
         "libobs.hide_scene_item.harvey milk": [],
         "libobs.show_scene_item.background black": [],
-        "libobs.show_scene_item.full run": [],
+        "libobs.show_scene_item.back-left-corner": [],
         "libobs.show_scene_item.harvey milk": []
       },
       "id": "scene",
@@ -237,7 +237,7 @@
             },
             "id": 4,
             "locked": true,
-            "name": "full run",
+            "name": "back-left-corner",
             "pos": {
               "x": 0,
               "y": 0
@@ -595,7 +595,7 @@
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "file": "~/GitHub/realness/web/public/blue-noise.png"
+        "file": "blue-noise.png"
       },
       "sync": 0,
       "versioned_id": "image_source",
@@ -690,7 +690,7 @@
       "mixers": 0,
       "monitoring_type": 0,
       "muted": false,
-      "name": "realnes online straight",
+      "name": "wordmark straight",
       "prev_ver": 452984833,
       "private_settings": {},
       "push-to-mute": false,
@@ -698,7 +698,7 @@
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "file": "/Users/scott/Desktop/realness-logo-straight.png"
+        "file": "../wordmark.pxd/straight.png"
       },
       "sync": 0,
       "versioned_id": "image_source",
@@ -715,7 +715,7 @@
       "mixers": 0,
       "monitoring_type": 0,
       "muted": false,
-      "name": "logo stacked",
+      "name": "workdmark stacked",
       "prev_ver": 452984833,
       "private_settings": {},
       "push-to-mute": false,
@@ -723,7 +723,7 @@
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "file": "/Users/scott/Desktop/realness-logo-text.png"
+        "file": "../wordmark.pxd/stackd.png"
       },
       "sync": 0,
       "versioned_id": "image_source",
@@ -957,7 +957,7 @@
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "local_file": "/Users/scott/Dropbox/Movies/samples/harvey-milk.mp4",
+        "local_file": "harvey-milk.mp4",
         "looping": true
       },
       "sync": 0,
@@ -1078,7 +1078,7 @@
       "mixers": 255,
       "monitoring_type": 0,
       "muted": false,
-      "name": "full run",
+      "name": "back-left-corner",
       "prev_ver": 452984833,
       "private_settings": {
         "mixer_hidden": true
@@ -1088,11 +1088,11 @@
       "push-to-talk": false,
       "push-to-talk-delay": 0,
       "settings": {
-        "buffering_mb": 2,
+        "buffering_mb": 20,
         "clear_on_media_end": true,
         "is_local_file": true,
         "linear_alpha": false,
-        "local_file": "/Users/scott/Dropbox/Movies/samples/blc-full-run.mp4",
+        "local_file": "back-left-corner.mp4",
         "looping": true,
         "reconnect_delay_sec": 10,
         "restart_on_activate": true,
@@ -1116,10 +1116,10 @@
           }
         ],
         "libobs.hide_scene_item.background red": [],
-        "libobs.hide_scene_item.full run": [],
+        "libobs.hide_scene_item.back-left-corner": [],
         "libobs.hide_scene_item.harvey milk": [],
         "libobs.show_scene_item.background red": [],
-        "libobs.show_scene_item.full run": [],
+        "libobs.show_scene_item.back-left-corner": [],
         "libobs.show_scene_item.harvey milk": []
       },
       "id": "scene",
@@ -1227,7 +1227,7 @@
             },
             "id": 1,
             "locked": true,
-            "name": "full run",
+            "name": "back-left-corner",
             "pos": {
               "x": 0,
               "y": 0
@@ -2369,11 +2369,11 @@
       "hotkeys": {
         "OBSBasic.SelectScene": [],
         "libobs.hide_scene_item.background black": [],
-        "libobs.hide_scene_item.full run": [],
+        "libobs.hide_scene_item.back-left-corner": [],
         "libobs.hide_scene_item.harvey milk": [],
         "libobs.hide_scene_item.realness green": [],
         "libobs.show_scene_item.background black": [],
-        "libobs.show_scene_item.full run": [],
+        "libobs.show_scene_item.back-left-corner": [],
         "libobs.show_scene_item.harvey milk": [],
         "libobs.show_scene_item.realness green": []
       },
@@ -2517,7 +2517,7 @@
             },
             "id": 5,
             "locked": true,
-            "name": "full run",
+            "name": "back-left-corner",
             "pos": {
               "x": 0,
               "y": 0
@@ -2550,11 +2550,11 @@
         "OBSBasic.SelectScene": [],
         "libobs.hide_scene_item.background blue": [],
         "libobs.hide_scene_item.foreground blue": [],
-        "libobs.hide_scene_item.full run": [],
+        "libobs.hide_scene_item.back-left-corner": [],
         "libobs.hide_scene_item.harvey milk": [],
         "libobs.show_scene_item.background blue": [],
         "libobs.show_scene_item.foreground blue": [],
-        "libobs.show_scene_item.full run": [],
+        "libobs.show_scene_item.back-left-corner": [],
         "libobs.show_scene_item.harvey milk": []
       },
       "id": "scene",
@@ -2662,7 +2662,7 @@
             },
             "id": 5,
             "locked": true,
-            "name": "full run",
+            "name": "back-left-corner",
             "pos": {
               "x": 0,
               "y": 0
