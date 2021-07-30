@@ -1,12 +1,11 @@
 <template lang="html">
-  <svg
-    itemscope
-    itemtype="/posters"
-    :itemid="itemid"
-    :viewBox="viewbox"
-    :preserveAspectRatio="aspect_ratio"
-    @click="vector_click"
-    v-html="path" />
+  <svg :itemid="itemid" itemscope itemtype="/posters"
+       :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
+    <g v-for="(symbol, index) in path" :key="index">
+      <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
+      <use :href="symbol_fragment(index)" />
+    </g>
+  </svg>
 </template>
 <script>
   import { load } from '@/helpers/itemid'
@@ -24,12 +23,6 @@
         type: Object,
         required: false,
         default: null
-      }
-    },
-    computed: {
-      viewbox () {
-        if (this.vector) return this.vector.viewbox
-        else return '0 0 0 0'
       }
     },
     watch: {

@@ -1,13 +1,10 @@
 <template lang="html">
-  <svg @click="vector_click">
-    <defs>
-      <symbol v-if="vector" :id="id"
-              :viewBox="vector.viewbox"
-              :preserveAspectRatio="aspect_ratio"
-              v-html="path" />
-    </defs>
+  <svg :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
     <icon v-if="!working" name="background" />
-    <use :href="avatar_link" />
+    <g v-for="(symbol, index) in path" :key="index">
+      <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
+      <use :href="symbol_fragment(index)" />
+    </g>
   </svg>
 </template>
 <script>
