@@ -100,7 +100,7 @@
         {
           "singleline": 6,
           "multiline": {
-            "max": 2,
+            "max": 3,
             "allowFirstLine": true
           }
         }
