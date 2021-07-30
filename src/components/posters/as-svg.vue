@@ -5,7 +5,7 @@
       <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
       <use :href="symbol_fragment(index)" />
     </g>
-    <defs v-if="animation" v-html="animation" />
+    <defs v-if="vector && vector.animation" v-html="vector.animation.go" />
   </svg>
 </template>
 <script>
@@ -38,9 +38,9 @@
         else this.vector = await load(this.itemid)
         await this.$nextTick()
         this.$emit('vector-loaded', this.vector)
-        this.animation = await this.load_animation()
-        console.log(this.animation)
-        this.$emit('animation-loaded', this.animation)
+        this.vector.animation = await load()
+        console.log(this.vector.animation.id)
+        this.$emit('animation-loaded', this.vector.animation)
       }
     }
   }
