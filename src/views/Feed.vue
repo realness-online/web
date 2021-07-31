@@ -157,6 +157,7 @@
             scroll-snap-align: center
             border-radius: 0
             min-width: 100vw
+            height: 100vh
     & > header
       @media (max-width: page-width), (max-height: page-width)
         a.play
