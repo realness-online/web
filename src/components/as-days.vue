@@ -159,6 +159,8 @@
     & > article.day
       margin-top: base-line
       standard-grid: hi
+      &:focus
+        outline: none
       & > header
         @media (min-width: pad-begins)
           grid-column: 1 / -1
