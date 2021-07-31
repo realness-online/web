@@ -69,7 +69,7 @@ export async function as_download_url (itemid, me = localStorage.me) {
 }
 
 // Cheap to call
-const large = ['avatars', 'posters']
+const created_at = ['avatars', 'posters', 'animations']
 const has_history = ['statements', 'events']
 export function is_history (itemid) {
   const parts = as_path_parts(itemid)
@@ -79,7 +79,7 @@ export function is_history (itemid) {
 export function as_filename (itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (large.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
+  if (created_at.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
   else return `${filename}/index.html`
 }
 export function as_storage_path (itemid) {
