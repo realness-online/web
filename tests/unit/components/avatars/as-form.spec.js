@@ -56,17 +56,7 @@ describe('@/components/avatars/as-form.vue', () => {
           id: person.avatar,
           path: '<path itemprop="path" d="1"/>'
         }
-        expect(wrapper.vm.path).toBe('<path itemprop="path" d="1"/>')
-      })
-      it('Returns a string of all the paths if avatar.path is an array', () => {
-        wrapper.vm.vector = {
-          id: person.avatar,
-          path: [
-            '<path itemprop="path" d="1"/>',
-            '<path itemprop="path" d="2"/>'
-          ]
-        }
-        expect(wrapper.vm.path.length).toBe(59)
+        expect(Array.isArray(wrapper.vm.path)).toBe(true)
       })
     })
   })
