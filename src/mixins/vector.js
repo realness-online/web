@@ -1,9 +1,9 @@
-import { as_query_id, load_content } from '@/helpers/itemid'
+import { as_query_id, load } from '@/helpers/itemid'
 export default {
   data () {
     return {
       vector: null,
-      layers_like_fonts: ['thin', 'light', 'regular', 'bold'],
+      layers_like_fonts: ['light', 'regular', 'bold'],
       animation: null
     }
   },
@@ -21,6 +21,10 @@ export default {
       if (Array.isArray(this.vector.path)) return this.vector.path
       else return [this.vector.path]
     },
+    all_id () {
+      if (this.vector) return `${as_query_id(this.vector.id)}_all`
+      else return 'all'
+    },
     viewbox () {
       if (this.vector) return this.vector.viewbox
       else return '0 0 0 0'
@@ -29,11 +33,10 @@ export default {
   methods: {
     async load_animation () {
       const animation_id = this.vector.id.replace('posters', 'animations')
-      console.log(animation_id)
-      return await load_content(animation_id)
+      return await load(animation_id)
     },
     symbol_id (index) {
-      return `${as_query_id(this.vector.id)}_${this.layers_like_fonts[index]}`
+      return `${as_query_id(this.vector.id)}-${this.layers_like_fonts[index]}`
     },
     symbol_fragment (index) {
       return `#${this.symbol_id(index)}`
