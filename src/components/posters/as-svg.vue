@@ -38,7 +38,6 @@
     },
     methods: {
       async show () {
-        console.log('poster show')
         if (this.vector) return
         if (this.poster) this.vector = this.poster
         else this.vector = await load(this.itemid)
@@ -47,7 +46,6 @@
         this.$emit('vector-loaded', this.vector)
 
         this.animation = await this.load_animation()
-        console.log(this.animation)
       }
     }
   }

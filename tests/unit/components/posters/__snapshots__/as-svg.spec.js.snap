@@ -7,7 +7,29 @@ exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
   itemtype="/posters"
   preserveAspectRatio="xMidYMid slice"
   viewBox="0 0 0 0"
-/>
+>
+  <defs>
+     
+    <symbol
+      id="all"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <use
+        href="#16282281824-posters-1626744577826-light"
+      />
+       
+      <use
+        href="#16282281824-posters-1626744577826-regular"
+      />
+       
+      <use
+        href="#16282281824-posters-1626744577826-bold"
+      />
+    </symbol>
+  </defs>
+    
+  <!---->
+</svg>
 `;
 
 exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`] = `
@@ -17,5 +39,27 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   itemtype="/posters"
   preserveAspectRatio="xMidYMid slice"
   viewBox="0 0 0 0"
-/>
+>
+  <defs>
+     
+    <symbol
+      id="all"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <use
+        href="#16282281824-posters-1626744577826-light"
+      />
+       
+      <use
+        href="#16282281824-posters-1626744577826-regular"
+      />
+       
+      <use
+        href="#16282281824-posters-1626744577826-bold"
+      />
+    </symbol>
+  </defs>
+    
+  <!---->
+</svg>
 `;
