@@ -1,17 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`@/components/avatars/as-svg.vue Renders An avatar 1`] = `
-<svg>
-  <defs>
-    <!---->
-  </defs>
-   
+<svg
+  preserveAspectRatio="xMidYMid slice"
+  viewBox="0 0 0 0"
+>
   <icon-stub
     name="background"
   />
    
-  <use
-    href="#16282281824-avatars-55446694324"
-  />
 </svg>
 `;

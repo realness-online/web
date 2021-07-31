@@ -32,10 +32,12 @@ export default {
   },
   methods: {
     async load_animation () {
+      if (!this.vector) return
       const animation_id = this.vector.id.replace('posters', 'animations')
       return await load(animation_id)
     },
     symbol_id (index) {
+      if (!this.vector) return
       return `${as_query_id(this.vector.id)}-${this.layers_like_fonts[index]}`
     },
     symbol_fragment (index) {
