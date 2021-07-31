@@ -122,7 +122,6 @@
 </script>
 <style lang="stylus">
   section#feed
-
     position: relative
     display: flex
     flex-direction: column
