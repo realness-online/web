@@ -18,6 +18,8 @@
       <input id="verification-code" v-model="code"
              type="tel"
              tabindex="4"
+             required
+             autocomplete="one-time-code"
              placeholder="Verification Code"
              @keypress="code_keypress">
     </fieldset>
