@@ -1,7 +1,7 @@
 <template lang="html">
   <article class="thought" :class="all" @click="click">
     <header v-if="author">
-      <router-link :to="author.id">
+      <router-link :to="author.id" tabindex="-1">
         <as-avatar :person="author" />
       </router-link>
       <hgroup>

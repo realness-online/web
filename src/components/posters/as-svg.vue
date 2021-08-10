@@ -1,5 +1,6 @@
 <template lang="html">
   <svg :itemid="itemid" itemscope itemtype="/posters"
+       tabindex="0"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
     <defs>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
