@@ -5,9 +5,9 @@
     <defs>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
       <symbol :id="all_id" :preserveAspectRatio="aspect_ratio">
-        <use href="#16282281824-posters-1626744577826-light" />
-        <use href="#16282281824-posters-1626744577826-regular" />
-        <use href="#16282281824-posters-1626744577826-bold" />
+        <use :href="symbol_fragment(0)" />
+        <use :href="symbol_fragment(1)" />
+        <use :href="symbol_fragment(2)" />
       </symbol>
     </defs>
     <use v-for="(symbol, index) in path" :key="index" :href="symbol_fragment(index)" :viewBox="viewbox" v-html="symbol" />
