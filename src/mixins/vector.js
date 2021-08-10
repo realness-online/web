@@ -22,8 +22,11 @@ export default {
       else return [this.vector.path]
     },
     all_id () {
-      if (this.vector) return `${as_query_id(this.vector.id)}_all`
+      if (this.vector) return `${as_query_id(this.vector.id)}-all`
       else return 'all'
+    },
+    all_fragment () {
+      return `#${this.all_id()}`
     },
     viewbox () {
       if (this.vector) return this.vector.viewbox
