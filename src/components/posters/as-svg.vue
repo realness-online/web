@@ -4,13 +4,11 @@
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
     <defs>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
-      <symbol :id="all_id" :preserveAspectRatio="aspect_ratio">
-        <use :href="symbol_fragment(0)" />
-        <use :href="symbol_fragment(1)" />
-        <use :href="symbol_fragment(2)" />
+      <symbol :id="all_id" :preserveAspectRatio="aspect_ratio" :viewBox="viewbox">
+        <use v-for="(symbol, index) in path" :key="index" :href="symbol_fragment(index)" />
       </symbol>
     </defs>
-    <use v-for="(symbol, index) in path" :key="index" :href="symbol_fragment(index)" :viewBox="viewbox" v-html="symbol" />
+    <use :href="all_fragment" :viewBox="viewbox" />
     <g v-if="animation" v-html="animation.go" />
   </svg>
 </template>
