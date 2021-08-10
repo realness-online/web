@@ -26,7 +26,7 @@ export default {
       else return 'all'
     },
     all_fragment () {
-      return `#${this.all_id()}`
+      return `#${this.all_id}`
     },
     viewbox () {
       if (this.vector) return this.vector.viewbox
