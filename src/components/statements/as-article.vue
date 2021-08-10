@@ -102,8 +102,8 @@
     -webkit-line-clamp: 11
     overflow: hidden
     text-overflow: ellipsis
-    &:focus-within, &.all
-      -webkit-line-clamp: 400
+    // &:focus-within, &.all
+    //   -webkit-line-clamp: 400
     & > header
       display: flex
       justify-content: flex-start
