@@ -136,6 +136,7 @@
         }
       },
       async sync_happened () {
+        console.log('sync_happened')
         const statements = new Statements()
         await statements.optimize()
         localStorage.sync_time = new Date().toISOString()
@@ -148,6 +149,7 @@
         }
       },
       async sync_me () {
+        console.log('sync_me')
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
         let my_info = localStorage.getItem(id)
@@ -160,6 +162,7 @@
         }
       },
       async sync_statements () {
+        console.log('sync_statements')
         const statements = new Statements()
         const itemid = this.itemid('statements')
         const network = (await fresh_metadata(itemid)).customMetadata
@@ -175,10 +178,12 @@
         }
       },
       async sync_events () {
+        console.log('sync_events')
         const events = new Events()
         const itemid = this.itemid('events')
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
+        if (!elements) return
         const md5 = hash(elements.outerHTML, hash_options)
         if (!network || network.md5 !== md5) {
           this.events = await events.sync()
@@ -190,6 +195,7 @@
         }
       },
       async save_poster (data) {
+        console.log('sync_events')
         this.poster = get_item(data.outerHTML)
         this.poster.id = data.id
         await this.$nextTick()

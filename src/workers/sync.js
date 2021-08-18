@@ -45,7 +45,7 @@ export async function sync (relations) {
   post('sync:events')
   post('sync:happened')
   await people(relations)
-  prune_strangers(my_itemid, relations)
+  await prune_strangers(my_itemid, relations)
   console.timeEnd('runs:sync')
 }
 export async function offline () {
