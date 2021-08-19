@@ -20,11 +20,14 @@ export async function message_listener (message) {
     case 'sync:play': return await play(message.data)
   }
 }
+
 self.addEventListener('message', message_listener)
+
 export async function initialize (data) {
   if (firebase.apps.length === 0) firebase.initializeApp(data.config)
   firebase.auth().onAuthStateChanged(async me => { if (me) await play(data) })
 }
+
 export async function play (data = { last_sync: 0 }) {
   let synced
   if (data.last_sync) synced = Date.now() - new Date(data.last_sync).getTime()
@@ -32,22 +35,22 @@ export async function play (data = { last_sync: 0 }) {
   const time_left = three_minutes - synced
   if (time_left <= 0) await sync(data.relations)
 }
+
 export async function sync (relations) {
-  console.time('runs:sync')
+  post('sync:started')
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
   const my_itemid = from_e64(me.phoneNumber)
-  await del(`${my_itemid}/posters/`) // this sucks. 9/10 times there wont be a difference
   await anonymous_posters()
   await offline()
   post('sync:me')
   post('sync:statements')
   post('sync:events')
-  post('sync:happened')
   await people(relations)
   await prune_strangers(my_itemid, relations)
-  console.timeEnd('runs:sync')
+  post('sync:happened')
 }
+
 export async function offline () {
   if (navigator.onLine) {
     const offline = await get('sync:offline')
@@ -61,6 +64,7 @@ export async function offline () {
     await del('sync:offline')
   }
 }
+
 export async function anonymous_posters () {
   const me = firebase.auth().currentUser
   if (!navigator.onLine || !me) return
@@ -76,6 +80,7 @@ export async function anonymous_posters () {
   }))
   await del('/+/posters/')
 }
+
 export async function people (relations = []) {
   if (navigator.onLine && firebase.auth().currentUser) {
     await Promise.all(relations.map(async relation => {
@@ -83,6 +88,7 @@ export async function people (relations = []) {
     }))
   }
 }
+
 export async function prune_strangers (my_itemid, relations = []) {
   const full_list = await keys()
   const strangers = full_list.filter(id => {
@@ -94,6 +100,7 @@ export async function prune_strangers (my_itemid, relations = []) {
     if (id !== my_itemid) del(id)
   })
 }
+
 function is_stranger (id, relations) {
   const is_friend = relations.some(relation => {
     if (relation.id === id) return true
@@ -101,6 +108,7 @@ function is_stranger (id, relations) {
   })
   return !is_friend
 }
+
 async function prune_person (itemid) {
   const network = await fresh_metadata(itemid)
   if (!network.customMetadata) return
@@ -109,10 +117,10 @@ async function prune_person (itemid) {
     await del(itemid)
     check_children(itemid)
   } else if (new Date(network.updated).getTime() > visit_interval()) {
-    // Only delete poster directory for visit_interval
     await check_children(itemid)
   }
 }
+
 async function check_children (itemid) {
   await del(`${itemid}/posters/`)
   const statements = `${itemid}/statements`
@@ -127,11 +135,13 @@ async function check_children (itemid) {
     await del(events)
   }
 }
+
 export async function local_md5 (itemid) { // always checks the network
   const local = await get(itemid)
   if (!local) return null
   return hash(local, hash_options)
 }
+
 export async function fresh_metadata (itemid) {
   const index = (await get('sync:index')) || {}
   const path = firebase.storage().ref().child(as_filename(itemid))
@@ -149,9 +159,11 @@ export async function fresh_metadata (itemid) {
   await set('sync:index', index)
   return network
 }
+
 function post (action, param) {
   self.postMessage({ action, param })
 }
+
 export function visit_interval () {
   return (Date.now() - one_hour)
 }
