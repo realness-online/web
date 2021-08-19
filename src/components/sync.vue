@@ -127,11 +127,15 @@
       },
       async worker_message (message) {
         switch (message.data.action) {
+          case 'sync:started': this.$emit('active', true); break
           case 'sync:me': await this.sync_me(); break
           case 'sync:statements': await this.sync_statements(); break
           case 'sync:events': await this.sync_events(); break
           case 'save:poster': await this.save_poster(message.data.param); break
-          case 'sync:happened': await this.sync_happened(); break
+          case 'sync:happened':
+            await this.sync_happened()
+            this.$emit('active', false)
+          break
           default: console.warn('Unhandled worker action: ', message.data.action)
         }
       },
@@ -195,7 +199,7 @@
         }
       },
       async save_poster (data) {
-        console.log('sync_events')
+        console.log('save_poster')
         this.poster = get_item(data.outerHTML)
         this.poster.id = data.id
         await this.$nextTick()

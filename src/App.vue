@@ -3,7 +3,7 @@
     <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
-      <sync :statement.sync="statement" :person.sync="me" :config="firebase_keys" />
+      <sync :statement.sync="statement" :person.sync="me" :config="firebase_keys" @active="sync_active" />
     </aside>
   </main>
 </template>
@@ -58,6 +58,11 @@
       window.removeEventListener('offline', this.offline)
     },
     methods: {
+      sync_active (active) {
+        console.log('sync_active')
+        if (active) this.status = 'syncing'
+        else this.status = null
+      },
       online () {
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', true))
@@ -74,6 +79,9 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <style lang="stylus">
   main.offline
-    border: (base-line * .333) solid yellow
-    border-radius: round((base-line / 6), 2)
+    border-left: (base-line * .333) solid yellow
+    border-right: (base-line * .333) solid yellow
+  main.syncing
+    border-left: (base-line * .333) solid green
+    border-right: (base-line * .333) solid green
 </style>
