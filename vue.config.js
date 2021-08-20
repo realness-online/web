@@ -20,9 +20,9 @@ module.exports = {
       swSrc: 'src/workers/service.js',
       swDest: 'service.worker.js'
     },
-    assetsVersion: '3',
-    themeColor: '#52a0d1',
-    msTileColor: '#52a0d1',
+    assetsVersion: '4',
+    themeColor: '#151518',
+    msTileColor: '#151518',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black-translucent',
     iconPaths: {
@@ -36,7 +36,7 @@ module.exports = {
       description: 'Realness – A Chill Vector Space',
       scope: '/',
       orientation: 'portrait',
-      background_color: '#52a0d1',
+      background_color: '#151518',
       icons: [
         { src: '192.png', sizes: '192x192', type: 'image/png' },
         { src: '512.png', sizes: '512x512', type: 'image/png' }
