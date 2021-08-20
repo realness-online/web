@@ -145,6 +145,7 @@
       & > h6
         left: base-line
       & > a
+        color: white
         right: base-line
 
 </style>
