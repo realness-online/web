@@ -262,12 +262,12 @@ describe('/workers/sync.js', () => {
       it('Fails gracefully when offline', async () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync.sync()
-        expect(post_message_spy).not.toBeCalled()
+        expect(post_message_spy).toHaveBeenCalledTimes(1)
       })
       it('Fails gracefully when user is signed out', async () => {
         firebase.user = null
         await sync.sync()
-        expect(post_message_spy).not.toBeCalled()
+        expect(post_message_spy).toHaveBeenCalledTimes(1)
       })
       it('Runs when user is signed in', async () => {
         const meta = { updated: 'Oct 13, 2020, 12:00:00 PM' }
@@ -285,7 +285,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(4)
+        expect(post_message_spy).toHaveBeenCalledTimes(5)
       })
       it('Works without an existing index', async () => {
         jest.clearAllMocks()
@@ -295,7 +295,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(4)
+        expect(post_message_spy).toHaveBeenCalledTimes(5)
       })
       it('Runs statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -308,7 +308,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(4)
+        expect(post_message_spy).toHaveBeenCalledTimes(5)
       })
       it('Tells the app to sync statements apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -323,14 +323,14 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(4)
+        expect(post_message_spy).toHaveBeenCalledTimes(5)
       })
     })
     describe('#play', () => {
       it('Starts syncing without a last_sync', async () => {
         firebase.user = user
         await sync.play()
-        expect(post_message_spy).toHaveBeenCalledTimes(4)
+        expect(post_message_spy).toHaveBeenCalledTimes(5)
       })
       it('Sets a timer for the remaining time until sync', async () => {
         firebase.user = user
