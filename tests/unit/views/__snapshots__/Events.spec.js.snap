@@ -43,13 +43,6 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
       People see them after you 
       <sign-on-stub />
     </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
   </hgroup>
 </section>
 `;

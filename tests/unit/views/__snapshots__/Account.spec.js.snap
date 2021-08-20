@@ -53,13 +53,6 @@ exports[`@/views/Account.vue Renders Account information 1`] = `
        button on the homepage  
       <br />
     </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
   </footer>
 </section>
 `;

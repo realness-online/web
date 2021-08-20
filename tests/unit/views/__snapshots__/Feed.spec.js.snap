@@ -17,11 +17,9 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     <logo-as-link-stub />
   </header>
    
-  <hgroup>
-    <h1>
-      Feed
-    </h1>
-  </hgroup>
+  <h1>
+    Feed
+  </h1>
    
   <as-days-stub
     avatars=""
@@ -52,11 +50,9 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     <logo-as-link-stub />
   </header>
    
-  <hgroup>
-    <h1>
-      Feed
-    </h1>
-  </hgroup>
+  <h1>
+    Feed
+  </h1>
    
   <as-days-stub
     avatars=""
@@ -87,11 +83,9 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
     <logo-as-link-stub />
   </header>
    
-  <hgroup>
-    <h1>
-      Feed
-    </h1>
-  </hgroup>
+  <h1>
+    Feed
+  </h1>
    
   <as-days-stub
     avatars=""
@@ -117,13 +111,6 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
       />
        who else is on here
     </p>
-     
-    <h6>
-      <a>
-        Watch
-      </a>
-       a video and learn some more
-    </h6>
   </hgroup>
 </section>
 `;
@@ -145,11 +132,9 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
     <logo-as-link-stub />
   </header>
    
-  <hgroup>
-    <h1>
-      Feed
-    </h1>
-  </hgroup>
+  <h1>
+    Feed
+  </h1>
    
   <as-days-stub
     avatars=""
