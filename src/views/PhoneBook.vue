@@ -19,7 +19,6 @@
     </nav>
     <hgroup v-if="!working && !signed_in" class="sign-on message">
       <p><sign-on /> Check out who's here</p>
-      <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
 </template>

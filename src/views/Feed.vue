@@ -28,7 +28,6 @@
     <hgroup v-if="show_message" class="sign-on message">
       <p>A feed of statements and posters</p>
       <p>If you <sign-on /> you can check out <icon name="heart" /> who else is on here</p>
-      <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
 </template>

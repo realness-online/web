@@ -37,10 +37,9 @@
     </article>
     <hgroup v-if="friendly" class="message">
       <p>
-        Click the <a @click="select_photo"><icon name="add" /></a> button to turn any picture you
-        have into a Poster
+        Click the <a @click="select_photo"><icon name="add" /></a> button to
+        turn any picture you have into a Poster
       </p>
-      <h6><a>Watch</a> a video and learn some more</h6>
     </hgroup>
   </section>
 </template>

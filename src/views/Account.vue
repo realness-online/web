@@ -34,7 +34,6 @@
     </as-days>
     <footer v-if="statements.length === 0 && !working" class="message">
       <p>Say some stuff via the <button @click="home" /> button on the homepage  <br></p>
-      <h6><a>Watch</a> a video and learn some more</h6>
     </footer>
   </section>
 </template>
