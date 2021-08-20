@@ -6,9 +6,7 @@
       </a>
       <logo-as-link />
     </header>
-    <hgroup>
-      <h1>Feed</h1>
-    </hgroup>
+    <h1>Feed</h1>
     <as-days v-slot="items"
              :working="working"
              :posters="posters"
@@ -166,6 +164,9 @@
       svg
         fill: blue
         stroke: blue
+    & > h1
+      margin: base-line
+      color: blue
     & > nav
       display: none
     & > section.as-days
