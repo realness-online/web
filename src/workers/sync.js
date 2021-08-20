@@ -2,7 +2,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_type } from '@/helpers/itemid'
+import { as_filename, as_author } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { Offline } from '@/persistance/Storage'
 import hash from 'object-hash'
@@ -16,7 +16,7 @@ export const does_not_exist = { updated: null, customMetadata: { md5: null } } /
 export async function message_listener (message) {
   switch (message.data.action) {
     case 'sync:initialize': return await initialize(message.data)
-    case 'sync:offline': return await offline()
+    case 'sync:offline': return await offline_actions()
     case 'sync:play': return await play(message.data)
   }
 }
@@ -37,21 +37,15 @@ export async function play (data = { last_sync: 0 }) {
 }
 
 export async function sync (relations) {
-  post('sync:started')
-  const me = firebase.auth().currentUser
-  if (!navigator.onLine || !me) return
-  const my_itemid = from_e64(me.phoneNumber)
+  if (!navigator.onLine || !firebase.auth().currentUser) return
+  post('prune:started')
   await anonymous_posters()
-  await offline()
-  post('sync:me')
-  post('sync:statements')
-  post('sync:events')
-  await people(relations)
-  await prune_strangers(my_itemid, relations)
-  post('sync:happened')
+  await offline_actions()
+  await prune(relations)
+  post('prune:happened')
 }
 
-export async function offline () {
+export async function offline_actions () {
   if (navigator.onLine) {
     const offline = await get('sync:offline')
     if (!offline) return
@@ -81,23 +75,23 @@ export async function anonymous_posters () {
   await del('/+/posters/')
 }
 
-export async function people (relations = []) {
-  if (navigator.onLine && firebase.auth().currentUser) {
-    await Promise.all(relations.map(async relation => {
-      await prune_person(relation.id)
-    }))
-  }
-}
-
-export async function prune_strangers (my_itemid, relations = []) {
-  const full_list = await keys()
-  const strangers = full_list.filter(id => {
-    if (as_type(id) === 'person') {
-      return is_stranger(id, relations)
-    } else return false
+export async function prune (relations = []) {
+  let everything = await keys()
+  everything.each(async id => {
+    console.log(id)
+    if (is_stranger(as_author(id), relations)) {
+      await del(id)
+    }
   })
-  strangers.forEach(id => {
-    if (id !== my_itemid) del(id)
+
+  // get the keys again to check if what's left is outdated or removed
+  everything = await keys()
+  everything.each(id => {
+    console.log(id)
+    if (as_author(id)) {
+      // console.log(id)
+      // if it's a directory just delete it
+    }
   })
 }
 
@@ -109,32 +103,31 @@ function is_stranger (id, relations) {
   return !is_friend
 }
 
-async function prune_person (itemid) {
-  const network = await fresh_metadata(itemid)
-  if (!network.customMetadata) return
-  const md5 = await local_md5(itemid)
-  if (network.customMetadata.md5 !== md5) {
-    await del(itemid)
-    check_children(itemid)
-  } else if (new Date(network.updated).getTime() > visit_interval()) {
-    await check_children(itemid)
-  }
-}
+// async function prune_person (itemid) {
+//   const network = await fresh_metadata(itemid)
+//   if (!network.customMetadata) return
+//   const md5 = await local_md5(itemid)
+//   if (network.customMetadata.md5 !== md5) {
+//     await del(itemid)
+//   } else if (new Date(network.updated).getTime() > visit_interval()) {
+//     await check_children(itemid)
+//   }
+// }
 
-async function check_children (itemid) {
-  await del(`${itemid}/posters/`)
-  const statements = `${itemid}/statements`
-  const network = await fresh_metadata(statements)
-  if (network.customMetadata.md5 !== await local_md5(statements)) {
-    await del(`${statements}/`)
-    await del(statements)
-  }
-  const events = `${itemid}/events`
-  if (network.customMetadata.md5 !== await local_md5(events)) {
-    await del(`${events}/`)
-    await del(events)
-  }
-}
+// async function check_children (itemid) {
+//   await del(`${itemid}/posters/`)
+//   const statements = `${itemid}/statements`
+//   const network = await fresh_metadata(statements)
+//   if (network.customMetadata.md5 !== await local_md5(statements)) {
+//     await del(`${statements}/`)
+//     await del(statements)
+//   }
+//   const events = `${itemid}/events`
+//   if (network.customMetadata.md5 !== await local_md5(events)) {
+//     await del(`${events}/`)
+//     await del(events)
+//   }
+// }
 
 export async function local_md5 (itemid) { // always checks the network
   const local = await get(itemid)
