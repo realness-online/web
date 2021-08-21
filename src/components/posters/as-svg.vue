@@ -1,7 +1,9 @@
 <template lang="html">
   <svg :itemid="itemid" itemscope itemtype="/posters"
-       tabindex="0"
-       :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
+       tabindex="0" :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
+       @focus="focus_poster()"
+       @blur="blur_poster()"
+       @click="vector_click">
     <defs>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
       <symbol :id="all_id" :preserveAspectRatio="aspect_ratio" :viewBox="viewbox">
@@ -36,6 +38,12 @@
       }
     },
     methods: {
+      async focus_poster () {
+        this.animation = await this.load_animation()
+      },
+      async blur_poster () {
+        this.animation = null
+      },
       async show () {
         if (this.vector) return
         if (this.poster) this.vector = this.poster
@@ -43,8 +51,6 @@
 
         await this.$nextTick()
         this.$emit('vector-loaded', this.vector)
-
-        this.animation = await this.load_animation()
       }
     }
   }
