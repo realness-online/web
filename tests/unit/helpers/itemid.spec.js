@@ -96,7 +96,6 @@ describe('@/helpers/itemid', () => {
     expect(as_fragment(posterid)).toBe('#16282281824-posters-559666932867')
   })
   describe('#as_path_parts', () => {
-    const itemid = '/+16282281824/statements/1583955101461'
     it('can handle a link without a slash', () => {
       const result = as_path_parts('what')
       expect(result.length).toBe(1)
@@ -145,7 +144,7 @@ describe('@/helpers/itemid', () => {
   describe('#is_history', () => {
     const itemid = '/+16282281824/statements/1583955101461'
     it('can handle a link without a slash', () => {
-      const result = is_history('/+16282281824/statements/1620997322670')
+      const result = is_history(itemid)
       expect(result).toBe(true)
     })
   })
@@ -194,7 +193,6 @@ describe('@/helpers/itemid', () => {
     })
   })
   describe('#type_as_list', () => {
-    const itemid = '/+16282281824/statements/1583955101461'
     it('return an empty list when called improperly', () => {
       const better_be_array = type_as_list()
       expect(Array.isArray(better_be_array)).toBe(true)
