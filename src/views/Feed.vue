@@ -130,7 +130,7 @@
       display: flex;
       padding: 0
       & > header
-      & > hgroup
+      & > h1
       article.day > header
       article.thought
         display: none
