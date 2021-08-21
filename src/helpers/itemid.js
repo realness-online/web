@@ -14,6 +14,7 @@ export async function load (itemid, me = localStorage.me) {
     else if (as_type(itemid) === 'relations') return []
   }
   const result = await get(itemid)
+
   if (result === null) return null
   item = get_item(result)
   if (item) return item
@@ -101,7 +102,7 @@ export function as_directory_id (itemid) {
 }
 export function as_path_parts (itemid) {
   const path = itemid.split('/')
-  if (~path[0].length) path.shift()
+  if (path[0].length === 0) path.shift()
   return path
 }
 export function as_author (itemid) {
@@ -125,6 +126,7 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
+
 export function type_as_list (item) {
   // Returns a list even if loading the item fails
   // the microdata spec requires properties values to
