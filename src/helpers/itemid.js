@@ -14,8 +14,6 @@ export async function load (itemid, me = localStorage.me) {
     else if (as_type(itemid) === 'relations') return []
   }
   const result = await get(itemid)
-
-  if (result === null) return null
   item = get_item(result)
   if (item) return item
   item = await load_from_network(itemid, me)
