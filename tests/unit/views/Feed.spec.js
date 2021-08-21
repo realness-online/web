@@ -67,4 +67,18 @@ describe('@/views/Feed.vue', () => {
       expect(list_spy).toHaveBeenCalledTimes(3)
     })
   })
+  describe('Methods', () => {
+    describe('goBig', () => {
+      it('Enters fullscreen mode', async () => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+          return null
+        })
+        const wrapper = await shallowMount(Feed)
+        await flushPromises()
+        expect(() => {
+          wrapper.vm.go_big()
+        }).toThrow()
+      })
+    })
+  })
 })
