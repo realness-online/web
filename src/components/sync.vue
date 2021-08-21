@@ -92,7 +92,7 @@
     methods: {
       async visibility_change (event) {
         if (document.visibilityState === 'visible') {
-          const relations = await list(`${localStorage.me}/relations`)
+          const relations = await this.preserve()
           const message = {
             action: 'sync:play',
             last_sync: localStorage.sync_time,
@@ -101,12 +101,20 @@
           this.syncer.postMessage(message)
         }
       },
+      async preserve () {
+        const who_to_keep = await list(`${localStorage.me}/relations`)
+        who_to_keep.push({
+          id: localStorage.me,
+          type: 'person'
+        })
+        return who_to_keep
+      },
       async auth_state_changed (me) {
         if (me && navigator.onLine) {
           localStorage.me = from_e64(me.phoneNumber)
           this.syncer.addEventListener('message', this.worker_message)
           window.addEventListener('online', this.online)
-          const relations = await list(`${localStorage.me}/relations`)
+          const relations = await this.preserve()
           this.syncer.postMessage({
             action: 'sync:initialize',
             last_sync: localStorage.sync_time,
@@ -127,12 +135,12 @@
       },
       async worker_message (message) {
         switch (message.data.action) {
-          case 'sync:started': this.$emit('active', true); break
-          case 'sync:me': await this.sync_me(); break
-          case 'sync:statements': await this.sync_statements(); break
-          case 'sync:events': await this.sync_events(); break
           case 'save:poster': await this.save_poster(message.data.param); break
+          case 'sync:started': this.$emit('active', true); break
           case 'sync:happened':
+            await this.sync_me()
+            await this.sync_statements()
+            await this.sync_events()
             await this.sync_happened()
             this.$emit('active', false)
           break
