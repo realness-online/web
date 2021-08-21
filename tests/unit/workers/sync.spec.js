@@ -85,16 +85,16 @@ describe('/workers/sync.js', () => {
         firebase.user = null
       })
     })
-    describe('#offline', () => {
+    describe('#offline_actions', () => {
       it('Needs to be online', () => {
         get.mockRestore()
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.offline()
+        sync.offline_actions()
         expect(get).not.toBeCalled()
       })
       it('Handles a lack of offline content gracefylly', async () => {
         get.mockImplementation(_ => Promise.resolve(undefined))
-        await sync.offline()
+        await sync.offline_actions()
         expect(del).not.toBeCalled()
       })
       it('Saves offline content', async () => {
@@ -103,7 +103,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve([
           { action: 'save', id: '/+6282281824/posters/1555347888' }
         ]))
-        await sync.offline()
+        await sync.offline_actions()
         expect(get).toBeCalled()
         expect(spy).toBeCalled()
         expect(del).toBeCalled()
@@ -114,7 +114,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve([
           { action: 'delete', id: '/+6282281824/posters/1555347888' }
         ]))
-        await sync.offline()
+        await sync.offline_actions()
         expect(get).toBeCalled()
         expect(spy).toBeCalled()
         expect(del).toBeCalled()
@@ -124,7 +124,7 @@ describe('/workers/sync.js', () => {
         get.mockImplementation(_ => Promise.resolve([
           { action: 'weirdo', id: '/+6282281824/posters/1555347888' }
         ]))
-        await sync.offline()
+        await sync.offline_actions()
         expect(console.info).toBeCalled()
       })
     })
@@ -161,7 +161,7 @@ describe('/workers/sync.js', () => {
         expect(del).toHaveBeenCalledTimes(2)
       })
     })
-    describe('#people', () => {
+    describe('#prune', () => {
       const id = '/+16282281824'
       let relations
       let random
@@ -189,11 +189,11 @@ describe('/workers/sync.js', () => {
       })
       it('Runs when online', async () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        await sync.people()
+        await sync.prune()
         expect(get).not.toBeCalled()
       })
-      it('Prunes people with outdated info', async () => {
-        await sync.people(relations)
+      it('Prunes items with outdated info', async () => {
+        await sync.prune(relations)
         await flushPromises()
         jest.runAllTimers()
         expect(get).toBeCalled()
@@ -212,7 +212,7 @@ describe('/workers/sync.js', () => {
           if (query === 'sync:index') return index
           else return Promise.resolve(person_html)
         })
-        await sync.people(relations)
+        await sync.prune(relations)
         jest.runAllTimers()
         expect(get).toBeCalled()
       })
@@ -231,43 +231,22 @@ describe('/workers/sync.js', () => {
         })
 
         Math.random = jest.fn(_ => 0)
-        await sync.people(relations)
+        await sync.prune(relations)
         jest.runAllTimers()
         expect(get).toBeCalled()
         Math.random = random
-      })
-      it('Checks on a recent users children for a reasonable interval', async () => {
-        const updated = new Date()
-        updated.setMinutes(updated.getMinutes() - 55)
-        const meta = {
-          updated,
-          customMetadata: { md5: '8ae9Lz4qKYqoyofDaaY0Nw==' }
-        }
-        const index = {}
-        index[id] = meta
-        get.mockImplementationOnce(query => {
-          if (query === 'sync:index') return index
-          if (query === id) return Promise.resolve(person_html)
-          else return Promise.resolve()
-        })
-        firebase.storage_mock.getMetadata.mockImplementationOnce(_ => Promise.resolve(meta))
-        await sync.people(relations)
-        await flushPromises()
-        jest.runAllTimers()
-        expect(get).toBeCalled()
-        expect(del).toHaveBeenCalledTimes(5)
       })
     })
     describe('#sync', () => {
       it('Fails gracefully when offline', async () => {
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync.sync()
-        expect(post_message_spy).toHaveBeenCalledTimes(1)
+        expect(post_message_spy).toHaveBeenCalledTimes(0)
       })
       it('Fails gracefully when user is signed out', async () => {
         firebase.user = null
         await sync.sync()
-        expect(post_message_spy).toHaveBeenCalledTimes(1)
+        expect(post_message_spy).toHaveBeenCalledTimes(0)
       })
       it('Runs when user is signed in', async () => {
         const meta = { updated: 'Oct 13, 2020, 12:00:00 PM' }
@@ -285,7 +264,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(5)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Works without an existing index', async () => {
         jest.clearAllMocks()
@@ -295,7 +274,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(5)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Runs statments checks if user is outdated', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -308,7 +287,7 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(5)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Tells the app to sync statements apropriatly', async () => {
         const updated = 'Oct 12, 2020, 10:54:24 AM'
@@ -323,34 +302,19 @@ describe('/workers/sync.js', () => {
         firebase.user = user
         await sync.sync()
         await flushPromises()
-        expect(post_message_spy).toHaveBeenCalledTimes(5)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
     })
     describe('#play', () => {
       it('Starts syncing without a last_sync', async () => {
         firebase.user = user
         await sync.play()
-        expect(post_message_spy).toHaveBeenCalledTimes(5)
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
       })
       it('Sets a timer for the remaining time until sync', async () => {
         firebase.user = user
         await sync.play({ last_sync: new Date().toISOString() })
         expect(post_message_spy).not.toBeCalled()
-      })
-    })
-    describe('#prune_strangers', () => {
-      it('removes people I am not follwing from the local db', () => {
-        const id = '/+16282281824'
-        firebase.user = user
-        const relations = [{ id }]
-        keys.mockImplementation(_ => Promise.resolve([
-          id,
-          '/+14153721982/posters/12338658w498',
-          '/+14153721982',
-          '/+14155551960'
-        ]))
-        // When viewing hte phone book you will downloadthe list of available users
-        sync.prune_strangers('/+16282281824', relations)
       })
     })
   })

@@ -302,20 +302,6 @@ describe('@/components/sync', () => {
         wrapper.vm.worker_message(event)
         expect(spy).toBeCalled()
       })
-      it('Calls sync:statements via an event', () => {
-        const spy = jest.spyOn(wrapper.vm, 'sync_statements')
-        .mockImplementationOnce(_ => Promise.resolve())
-        event.data.action = 'sync:statements'
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
-      })
-      it('Calls sync:events via an event', () => {
-        const spy = jest.spyOn(wrapper.vm, 'sync_events')
-        .mockImplementationOnce(_ => Promise.resolve())
-        event.data.action = 'sync:events'
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
-      })
       it('Calls save:poster via an event', () => {
         const spy = jest.spyOn(wrapper.vm, 'save_poster')
         event.data.action = 'save:poster'
@@ -326,19 +312,25 @@ describe('@/components/sync', () => {
         wrapper.vm.worker_message(event)
         expect(spy).toBeCalled()
       })
-      it('Calls sync:happened via an event', () => {
-        const spy = jest.spyOn(wrapper.vm, 'sync_happened')
-        .mockImplementationOnce(_ => Promise.resolve())
-        event.data.action = 'sync:happened'
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
+      it('Calls sync:started via an event', async () => {
+        event.data.action = 'sync:started'
+        await wrapper.vm.worker_message(event)
+        expect(wrapper.emitted('active')).toBeTruthy()
+        expect(wrapper.emitted('active')[0][0]).toBe(true)
       })
-      it('Calls sync:me via an event', () => {
-        const spy = jest.spyOn(wrapper.vm, 'sync_me')
-        .mockImplementationOnce(_ => Promise.resolve())
-        event.data.action = 'sync:me'
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
+      it('Calls sync:happened via an event', async () => {
+        const sync_me_spy = jest.spyOn(wrapper.vm, 'sync_me').mockImplementationOnce(_ => Promise.resolve())
+        const sync_statements_spy = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementationOnce(_ => Promise.resolve())
+        const sync_sync_events_spy = jest.spyOn(wrapper.vm, 'sync_events').mockImplementationOnce(_ => Promise.resolve())
+        const sync_happened_spy = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementationOnce(_ => Promise.resolve())
+        event.data.action = 'sync:happened'
+        await wrapper.vm.worker_message(event)
+        expect(sync_me_spy).toBeCalled()
+        expect(sync_statements_spy).toBeCalled()
+        expect(sync_sync_events_spy).toBeCalled()
+        expect(sync_happened_spy).toBeCalled()
+        expect(wrapper.emitted('active')).toBeTruthy()
+        expect(wrapper.emitted('active')[0][0]).toBe(false)
       })
     })
     describe('#itemid', () => {

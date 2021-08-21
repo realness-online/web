@@ -38,11 +38,11 @@ export async function play (data = { last_sync: 0 }) {
 
 export async function sync (relations) {
   if (!navigator.onLine || !firebase.auth().currentUser) return
-  post('prune:started')
+  post('sync:started')
   await anonymous_posters()
   await offline_actions()
   await prune(relations)
-  post('prune:happened')
+  post('sync:happened')
 }
 
 export async function offline_actions () {
@@ -76,21 +76,20 @@ export async function anonymous_posters () {
 }
 
 export async function prune (relations = []) {
-  let everything = await keys()
-  everything.each(async id => {
-    console.log(id)
-    if (is_stranger(as_author(id), relations)) {
-      await del(id)
-    }
-  })
-
-  // get the keys again to check if what's left is outdated or removed
-  everything = await keys()
-  everything.each(id => {
-    console.log(id)
-    if (as_author(id)) {
-      // console.log(id)
-      // if it's a directory just delete it
+  const everything = await keys()
+  everything.forEach(async itemid => {
+    // console.log(id)
+    if (!as_author(itemid)) return // items have authors
+    if (is_stranger(as_author(itemid), relations)) {
+      await del(itemid)
+    } else {
+      const network = await fresh_metadata(itemid)
+      if (!network.customMetadata) return
+      const md5 = await local_md5(itemid)
+      if (network.customMetadata.md5 !== md5) {
+        console.log('outdated', itemid)
+        await del(itemid)
+      }
     }
   })
 }
@@ -102,32 +101,6 @@ function is_stranger (id, relations) {
   })
   return !is_friend
 }
-
-// async function prune_person (itemid) {
-//   const network = await fresh_metadata(itemid)
-//   if (!network.customMetadata) return
-//   const md5 = await local_md5(itemid)
-//   if (network.customMetadata.md5 !== md5) {
-//     await del(itemid)
-//   } else if (new Date(network.updated).getTime() > visit_interval()) {
-//     await check_children(itemid)
-//   }
-// }
-
-// async function check_children (itemid) {
-//   await del(`${itemid}/posters/`)
-//   const statements = `${itemid}/statements`
-//   const network = await fresh_metadata(statements)
-//   if (network.customMetadata.md5 !== await local_md5(statements)) {
-//     await del(`${statements}/`)
-//     await del(statements)
-//   }
-//   const events = `${itemid}/events`
-//   if (network.customMetadata.md5 !== await local_md5(events)) {
-//     await del(`${events}/`)
-//     await del(events)
-//   }
-// }
 
 export async function local_md5 (itemid) { // always checks the network
   const local = await get(itemid)
@@ -147,7 +120,7 @@ export async function fresh_metadata (itemid) {
       network = does_not_exist
     } else throw e
   }
-  if (!network) throw new Error(`unable to create metadata for ${itemid}`)
+  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
   index[itemid] = network
   await set('sync:index', index)
   return network
