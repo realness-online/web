@@ -2,7 +2,7 @@ import { shallowMount, mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/helpers/itemid'
-import * as sync_worker from '@/workers/sync'
+import * as sync_worker from '@/persistance/Cloud'
 import sync from '@/components/sync'
 import get_item from '@/modules/item'
 import {
@@ -150,6 +150,25 @@ describe('@/components/sync', () => {
         wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
       })
     })
+    describe('#itemid', () => {
+      it('Returns the user itemid when called without type', async () => {
+        expect(localStorage.me).toBe(`/${current_user.phoneNumber}`)
+        wrapper = await shallowMount(sync, fake_props)
+        await flushPromises()
+        expect(wrapper.vm.itemid()).toBe('/+16282281824')
+      })
+    })
+    describe('#play', () => {
+      it('Starts syncing without a last_sync', async () => {
+        await wrapper.vm.play()
+        expect(post_message_spy).toHaveBeenCalledTimes(2)
+      })
+      it('Sets a timer for the remaining time until sync', async () => {
+        localStorage.last_sync = new Date().toISOString()
+        await wrapper.vm.play()
+        expect(post_message_spy).not.toBeCalled()
+      })
+    })
     describe('#sync_me', () => {
       it('Syncs when the hash between server and local are off', async () => {
         localStorage.setItem(person.id, person_html)
@@ -290,55 +309,37 @@ describe('@/components/sync', () => {
         expect(Events.prototype.save).toBeCalled()
       })
     })
-    describe('#worker_message', () => {
-      const event = {}
-      beforeEach(() => {
-        wrapper = shallowMount(sync, fake_props)
-        event.data = { action: '' }
+    describe('#sync_anonymous_posters', () => {
+      it('Needs to be signed in', async () => {
+        await sync_anonymous_posters()
+        expect(get).not.toBeCalled()
       })
-      it('Calls console.warn if event has unknown action', () => {
-        const spy = jest.spyOn(console, 'warn')
-        .mockImplementationOnce(_ => null)
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
+      it('Needs to be online', () => {
+        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        sync.anonymous_posters(user)
+        expect(get).not.toBeCalled()
       })
-      it('Calls save:poster via an event', () => {
-        const spy = jest.spyOn(wrapper.vm, 'save_poster')
-        event.data.action = 'save:poster'
-        event.data.param = {
-          id: '/+16282281824/posters/559666932867',
-          outerHTML: poster_html
+      it('Handles no posters', async () => {
+        firebase.user = user
+        await sync.anonymous_posters()
+        expect(get).toBeCalled()
+        expect(del).not.toBeCalled()
+      })
+      it('Syncs anonymous posters', async () => {
+        // /+16282281824/posters/559666932867
+        const posters = {
+          items: ['559666932867']
         }
-        wrapper.vm.worker_message(event)
-        expect(spy).toBeCalled()
-      })
-      it('Calls sync:started via an event', async () => {
-        event.data.action = 'sync:started'
-        await wrapper.vm.worker_message(event)
-        expect(wrapper.emitted('active')).toBeTruthy()
-        expect(wrapper.emitted('active')[0][0]).toBe(true)
-      })
-      it('Calls sync:happened via an event', async () => {
-        const sync_me_spy = jest.spyOn(wrapper.vm, 'sync_me').mockImplementationOnce(_ => Promise.resolve())
-        const sync_statements_spy = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementationOnce(_ => Promise.resolve())
-        const sync_sync_events_spy = jest.spyOn(wrapper.vm, 'sync_events').mockImplementationOnce(_ => Promise.resolve())
-        const sync_happened_spy = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementationOnce(_ => Promise.resolve())
-        event.data.action = 'sync:happened'
-        await wrapper.vm.worker_message(event)
-        expect(sync_me_spy).toBeCalled()
-        expect(sync_statements_spy).toBeCalled()
-        expect(sync_sync_events_spy).toBeCalled()
-        expect(sync_happened_spy).toBeCalled()
-        expect(wrapper.emitted('active')).toBeTruthy()
-        expect(wrapper.emitted('active')[0][0]).toBe(false)
-      })
-    })
-    describe('#itemid', () => {
-      it('Returns the user itemid when called without type', async () => {
-        expect(localStorage.me).toBe(`/${current_user.phoneNumber}`)
-        wrapper = await shallowMount(sync, fake_props)
+        get.mockClear()
+        get.mockImplementation(itemid => {
+          if (itemid === '/+/posters/') return Promise.resolve(posters)
+          else return Promise.resolve(offline_poster)
+        })
+        firebase.user = user
+        await sync.anonymous_posters()
         await flushPromises()
-        expect(wrapper.vm.itemid()).toBe('/+16282281824')
+        expect(get).toHaveBeenCalledTimes(2)
+        expect(del).toHaveBeenCalledTimes(2)
       })
     })
     describe('#sync_happened', () => {

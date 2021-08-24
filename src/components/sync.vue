@@ -17,8 +17,16 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
-  import { one_hour, fresh_metadata, hash_options } from '@/workers/sync'
+  import {
+    three_minutes,
+    one_hour,
+    fresh_metadata,
+    hash_options,
+    prune,
+    sync_offline_actions
+  } from '@/persistance/Sync'
   import { Statements, Events, Poster, Me } from '@/persistance/Storage'
+
   import { from_e64 } from '@/helpers/profile'
   import { list, load } from '@/helpers/itemid'
   import get_item from '@/modules/item'
@@ -54,11 +62,9 @@
     },
     data () {
       return {
-        syncer: new Worker('/sync.worker.js'),
         poster: null,
         statements: [],
-        events: null,
-        options: { encoding: 'base64', algorithm: 'md5' }
+        events: null
       }
     },
     watch: {
@@ -86,65 +92,40 @@
       document.addEventListener('visibilitychange', this.visibility_change)
       firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
-    beforeDestroy () {
-      this.syncer.terminate()
-    },
     methods: {
       async visibility_change (event) {
-        if (document.visibilityState === 'visible') {
-          const relations = await this.preserve()
-          const message = {
-            action: 'sync:play',
-            last_sync: localStorage.sync_time,
-            relations
-          }
-          this.syncer.postMessage(message)
-        }
-      },
-      async preserve () {
-        const who_to_keep = await list(`${localStorage.me}/relations`)
-        who_to_keep.push({
-          id: localStorage.me,
-          type: 'person'
-        })
-        return who_to_keep
+        if (document.visibilityState === 'visible') await this.play()
       },
       async auth_state_changed (me) {
         if (me && navigator.onLine) {
           localStorage.me = from_e64(me.phoneNumber)
-          this.syncer.addEventListener('message', this.worker_message)
-          window.addEventListener('online', this.online)
-          const relations = await this.preserve()
-          this.syncer.postMessage({
-            action: 'sync:initialize',
-            last_sync: localStorage.sync_time,
-            config: this.config,
-            relations
-          })
-        } else {
-          this.syncer.removeEventListener('message', this.worker_message)
-          window.removeEventListener('online', this.online)
-        }
-      },
-      online () {
-        this.syncer.postMessage({ action: 'sync:offline' })
+          window.addEventListener('online', this.play)
+          this.play()
+        } else window.removeEventListener('online', this.play)
       },
       itemid (type) {
         if (type) return `${localStorage.me}/${type}`
         else return localStorage.me
       },
-      async worker_message (message) {
-        switch (message.data.action) {
-          case 'save:poster': await this.save_poster(message.data.param); break
-          case 'sync:started': this.$emit('active', true); break
-          case 'sync:happened':
-            await this.sync_me()
-            await this.sync_statements()
-            await this.sync_events()
+      async play () {
+        console.log('play')
+        await sync_offline_actions()
+        let synced
+        if (localStorage.last_sync) {
+          synced = Date.now() - new Date(localStorage.last_sync).getTime()
+        } else synced = three_minutes
+        const time_left = three_minutes - synced
+        if (time_left <= 0) {
+          this.$emit('active', true)
+          await Promise.all([
+            await prune(),
+            await this.sync_me(),
+            await this.sync_statements(),
+            await this.sync_events(),
+            await this.sync_anonymous_posters(),
             await this.sync_happened()
-            this.$emit('active', false)
-          break
-          default: console.warn('Unhandled worker action: ', message.data.action)
+          ])
+          this.$emit('active', false)
         }
       },
       async sync_happened () {
@@ -206,10 +187,26 @@
           }
         }
       },
-      async save_poster (data) {
+      async sync_anonymous_posters () {
+        console.log('sync_anonymous_posters')
+        const me = firebase.auth().currentUser
+        if (!navigator.onLine || !me) return
+        const offline_posters = await get('/+/posters/')
+        if (!offline_posters || !offline_posters.items) return
+        await Promise.all(offline_posters.items.map(async (created_at) => {
+          const poster_string = await get(`/+/posters/${created_at}`)
+          this.save_poster({
+            id: `${from_e64(me.phoneNumber)}/posters/${created_at}`,
+            outerHTML: poster_string
+          })
+          await del(`/+/posters/${created_at}`)
+        }))
+        await del('/+/posters/')
+      },
+      async save_poster (poster) {
         console.log('save_poster')
-        this.poster = get_item(data.outerHTML)
-        this.poster.id = data.id
+        this.poster = get_item(poster.outerHTML)
+        this.poster.id = poster.id
         await this.$nextTick()
         const new_poster = new Poster(this.poster.id)
         await new_poster.save()

@@ -2,12 +2,14 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import { as_filename } from '@/helpers/itemid'
-import { get, set } from 'idb-keyval'
 import hash from 'object-hash'
-import { hash_options } from '@/workers/sync'
+import { get, del, set, keys } from 'idb-keyval'
+import { as_filename, as_author, list } from '@/helpers/itemid'
+
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
-async function sync_later (id, action) {
+export const hash_options = { encoding: 'base64', algorithm: 'md5' }
+
+export async function sync_later (id, action) {
   const offline = (await get('sync:offline')) || []
   offline.push({
     id,
@@ -15,6 +17,7 @@ async function sync_later (id, action) {
   })
   await set('sync:offline', offline)
 }
+
 export const Cloud = (superclass) => class extends superclass {
   async to_network (items) {
     const user = firebase.auth().currentUser
