@@ -2,7 +2,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import { load } from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
-import { visit_interval } from '@/workers/sync'
+import { visit_interval } from '@/persistance/Cloud'
 export default {
   created () { this.update_visit() },
   methods: {
