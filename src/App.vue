@@ -3,7 +3,7 @@
     <router-view v-if="!working" :statement.sync="statement" :person.sync="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
-      <sync :statement.sync="statement" :person.sync="me" :config="firebase_keys" @active="sync_active" />
+      <sync :statement.sync="statement" :person.sync="me" @active="sync_active" />
     </aside>
   </main>
 </template>
@@ -46,9 +46,9 @@
     async created () {
       if (this.is_production) {
         const response = await fetch('__/firebase/init.json')
-        await set('firebase_keys', await response.json())
-      } else set('firebase_keys', this.firebase_keys)
-      firebase.initializeApp(await get('firebase_keys'))
+        await set('firebase-keys', await response.json())
+      } else set('firebase-keys', this.firebase_keys)
+      firebase.initializeApp(await get('firebase-keys'))
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
       this.working = false
@@ -59,7 +59,6 @@
     },
     methods: {
       sync_active (active) {
-        console.log('sync_active')
         if (active) this.status = 'syncing'
         else this.status = null
       },

@@ -5,7 +5,6 @@ import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
 import { prune, sync, sync_offline_actions } from '@/persistance/Sync'
-const offline_poster = require('fs').readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const person_html = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 

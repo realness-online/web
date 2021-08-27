@@ -9,9 +9,7 @@ exports[`@/App.vue Renders Layout of the application 1`] = `
   <aside>
     <developer-tools-stub />
      
-    <sync-stub
-      config="[object Object]"
-    />
+    <sync-stub />
   </aside>
 </main>
 `;

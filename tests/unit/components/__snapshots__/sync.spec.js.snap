@@ -2,6 +2,7 @@
 
 exports[`@/components/sync Render Renders sync component 1`] = `
 <div
+  config="[object Object]"
   hidden="hidden"
 >
   <!---->

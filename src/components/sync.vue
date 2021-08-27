@@ -45,10 +45,6 @@
       'as-hgroup': as_hgroup
     },
     props: {
-      config: {
-        type: Object,
-        required: true
-      },
       statement: {
         type: Object,
         required: false,
@@ -189,14 +185,13 @@
       },
       async sync_anonymous_posters () {
         console.log('sync_anonymous_posters')
-        const me = firebase.auth().currentUser
-        if (!navigator.onLine || !me) return
         const offline_posters = await get('/+/posters/')
         if (!offline_posters || !offline_posters.items) return
         await Promise.all(offline_posters.items.map(async (created_at) => {
+          console.log('poster', created_at)
           const poster_string = await get(`/+/posters/${created_at}`)
           this.save_poster({
-            id: `${from_e64(me.phoneNumber)}/posters/${created_at}`,
+            id: `${localStorage.me}/posters/${created_at}`,
             outerHTML: poster_string
           })
           await del(`/+/posters/${created_at}`)
