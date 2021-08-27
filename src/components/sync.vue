@@ -24,7 +24,7 @@
     hash_options,
     prune,
     sync_offline_actions
-  } from '@/persistance/Sync'
+  } from '@/persistance/Cloud.sync'
   import { Statements, Events, Poster, Me } from '@/persistance/Storage'
 
   import { from_e64 } from '@/helpers/profile'
