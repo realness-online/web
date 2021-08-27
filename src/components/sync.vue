@@ -188,7 +188,6 @@
         const offline_posters = await get('/+/posters/')
         if (!offline_posters || !offline_posters.items) return
         await Promise.all(offline_posters.items.map(async (created_at) => {
-          console.log('poster', created_at)
           const poster_string = await get(`/+/posters/${created_at}`)
           this.save_poster({
             id: `${localStorage.me}/posters/${created_at}`,
