@@ -47,4 +47,5 @@ export const Cloud = (superclass) => class extends superclass {
     if (super.delete) await super.delete()
   }
 }
+
 export default Cloud

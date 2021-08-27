@@ -2,28 +2,32 @@ import { shallowMount, mount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/helpers/itemid'
-import * as sync_worker from '@/persistance/Cloud'
+import * as sync_worker from '@/persistance/Sync'
 import sync from '@/components/sync'
 import get_item from '@/modules/item'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+import 'firebase/storage'
 import {
   Me,
   Statements,
-  Events
+  Events,
+  Poster
 } from '@/persistance/Storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
+const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
 const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
 const fake_props = { propsData: { config: {} } }
-
+const current_user = {
+  phoneNumber: '+16282281824'
+}
 describe('@/components/sync', () => {
   let wrapper
-  const current_user = {
-    phoneNumber: '+16282281824'
-  }
   let person
   beforeEach(async () => {
     person = {
@@ -43,36 +47,16 @@ describe('@/components/sync', () => {
     .mockImplementation(_ => Promise.resolve(events))
     jest.spyOn(Events.prototype, 'save')
     .mockImplementation(_ => Promise.resolve())
-
-    get.mockImplementation(_ => Promise.resolve([]))
     set.mockImplementation(_ => Promise.resolve(null))
+    wrapper = await shallowMount(sync, fake_props)
   })
   afterEach(() => {
     jest.clearAllMocks()
     localStorage.clear()
   })
   describe('Render', () => {
-    beforeEach(async () => {
-      wrapper = shallowMount(sync, {
-        propsData: { config: {} },
-        data () {
-          return { syncing: true }
-        }
-      })
-      await flushPromises()
-    })
-    it('Renders sync component', async () => {
+    it('Renders sync component', () => {
       expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
-    })
-    it('Terminates worker on destroy', async () => {
-      wrapper.destroy()
-    })
-    it('Check when service comes back from being offline', () => {
-      const message_mock = jest.fn()
-      wrapper.vm.syncer.postMessage = message_mock
-      wrapper.vm.online()
-      expect(message_mock).toBeCalled()
     })
   })
   describe('Watchers', () => {
@@ -116,17 +100,12 @@ describe('@/components/sync', () => {
   })
   describe('Methods', () => {
     describe('#visibility_change', () => {
-      it('Tells the sync worker to sync when the UI is visible', async () => {
+      it('plays the sync when visible', async () => {
         let message
         wrapper = await shallowMount(sync, fake_props)
-        wrapper.vm.syncer = {
-          postMessage: jest.fn(m => { message = m })
-        }
-        wrapper.vm.visibility_change()
-        await flushPromises()
-        expect(document.hidden).toBe(false)
-        expect(wrapper.vm.syncer.postMessage).toBeCalled()
-        expect(message.action).toBe('sync:play')
+        const play = jest.spyOn(wrapper.vm, 'play').mockImplementation(_ => Promise.resolve())
+        await wrapper.vm.visibility_change()
+        expect(play).toBeCalled()
       })
       it('Is chill when the UI is hidden', async () => {
         wrapper = await shallowMount(sync, fake_props)
@@ -137,8 +116,7 @@ describe('@/components/sync', () => {
           value: 'hidden'
         })
         // document.visibilityState
-        wrapper.vm.visibility_change()
-        await flushPromises()
+        await wrapper.vm.visibility_change()
         expect(document.visibilityState).toBe('hidden')
         expect(wrapper.vm.syncer.postMessage).not.toBeCalled()
       })
@@ -146,8 +124,10 @@ describe('@/components/sync', () => {
     describe('#auth_state_changed', () => {
       it('Connects sync worker to component', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        await flushPromises()
-        wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
+        const play = jest.spyOn(wrapper.vm, 'play')
+        .mockImplementation(_ => Promise.resolve())
+        await wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
+        expect(play).toBeCalled()
       })
     })
     describe('#itemid', () => {
@@ -159,14 +139,30 @@ describe('@/components/sync', () => {
       })
     })
     describe('#play', () => {
+      let sync_offline_actions_sync
+      beforeEach(() => {
+        sync_offline_actions_sync = jest.spyOn(sync_worker, 'sync_offline_actions')
+        .mockImplementation(_ => Promise.resolve())
+      })
       it('Starts syncing without a last_sync', async () => {
+        const sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(_ => Promise.resolve())
+        const sync_statements = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementation(_ => Promise.resolve())
+        const sync_events = jest.spyOn(wrapper.vm, 'sync_events').mockImplementation(_ => Promise.resolve())
+        const sync_anonymous_posters = jest.spyOn(wrapper.vm, 'sync_anonymous_posters').mockImplementation(_ => Promise.resolve())
+        const sync_happened = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementation(_ => Promise.resolve())
         await wrapper.vm.play()
-        expect(post_message_spy).toHaveBeenCalledTimes(2)
+        expect(sync_offline_actions_sync).toBeCalled()
+        expect(sync_me).toBeCalled()
+        expect(sync_statements).toBeCalled()
+        expect(sync_events).toBeCalled()
+        expect(sync_anonymous_posters).toBeCalled()
+        expect(sync_happened).toBeCalled()
+        expect(wrapper.emitted('active').length).toBe(2)
       })
       it('Sets a timer for the remaining time until sync', async () => {
         localStorage.last_sync = new Date().toISOString()
         await wrapper.vm.play()
-        expect(post_message_spy).not.toBeCalled()
+        expect(sync_offline_actions_sync).toHaveBeenCalledTimes(1)
       })
     })
     describe('#sync_me', () => {
@@ -234,7 +230,6 @@ describe('@/components/sync', () => {
         await flushPromises()
         wrapper.vm.statements = statements
         await wrapper.vm.$nextTick()
-        // get.mockImplementationOnce(_ => Promise.resolve(null))
         await wrapper.vm.sync_statements()
         expect(Statements.prototype.sync).toBeCalled()
       })
@@ -247,7 +242,6 @@ describe('@/components/sync', () => {
         await flushPromises()
         wrapper.vm.statements = statements
         await wrapper.vm.$nextTick()
-        get.mockImplementationOnce(_ => Promise.resolve(null))
         await wrapper.vm.sync_statements()
         expect(Statements.prototype.sync).toBeCalled()
         expect(Statements.prototype.save).toBeCalled()
@@ -290,7 +284,6 @@ describe('@/components/sync', () => {
         await flushPromises()
         wrapper.vm.events = events
         await wrapper.vm.$nextTick()
-        // get.mockImplementationOnce(_ => Promise.resolve(null))
         await wrapper.vm.sync_events()
         expect(Events.prototype.sync).toBeCalled()
       })
@@ -303,25 +296,15 @@ describe('@/components/sync', () => {
         await flushPromises()
         wrapper.vm.events = events
         await wrapper.vm.$nextTick()
-        get.mockImplementationOnce(_ => Promise.resolve(null))
         await wrapper.vm.sync_events()
         expect(Events.prototype.sync).toBeCalled()
         expect(Events.prototype.save).toBeCalled()
       })
     })
     describe('#sync_anonymous_posters', () => {
-      it('Needs to be signed in', async () => {
-        await sync_anonymous_posters()
-        expect(get).not.toBeCalled()
-      })
-      it('Needs to be online', () => {
-        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
-        sync.anonymous_posters(user)
-        expect(get).not.toBeCalled()
-      })
       it('Handles no posters', async () => {
-        firebase.user = user
-        await sync.anonymous_posters()
+        // get.mockImplementationOnce(_ => Promise.resolve())
+        await wrapper.vm.sync_anonymous_posters()
         expect(get).toBeCalled()
         expect(del).not.toBeCalled()
       })
@@ -330,15 +313,17 @@ describe('@/components/sync', () => {
         const posters = {
           items: ['559666932867']
         }
-        get.mockClear()
         get.mockImplementation(itemid => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
-          else return Promise.resolve(offline_poster)
+          else if (itemid === '/+/posters/559666932867') return Promise.resolve(offline_poster)
+          else return Promise.resolve([])
         })
-        firebase.user = user
-        await sync.anonymous_posters()
+        await flushPromises()
+        const save_poster_spy = jest.spyOn(wrapper.vm, 'save_poster').mockImplementation(_ => Promise.resolve())
+        await wrapper.vm.sync_anonymous_posters()
         await flushPromises()
         expect(get).toHaveBeenCalledTimes(2)
+        expect(save_poster_spy).toHaveBeenCalledTimes(1)
         expect(del).toHaveBeenCalledTimes(2)
       })
     })
@@ -371,6 +356,20 @@ describe('@/components/sync', () => {
         await flushPromises()
         expect(localStorage.sync_time).not.toBe(undefined)
         expect(wrapper.emitted('update:person')).not.toBeTruthy()
+      })
+    })
+    describe('#save_poster', () => {
+      it('saves a poster that is passed to it as a variable', async () => {
+        wrapper = await shallowMount(sync, fake_props)
+        const mock_poster = {
+          id: `${localStorage.me}/posters/${15323457857456}`,
+          outerHTML: poster_html
+        }
+        const poster_save_spy = jest.spyOn(Poster.prototype, 'save')
+        .mockImplementation(_ => Promise.resolve())
+        await wrapper.vm.save_poster(mock_poster)
+        expect(del).toBeCalled()
+        expect(poster_save_spy).toBeCalled()
       })
     })
   })
