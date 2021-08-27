@@ -4,7 +4,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
-import { prune, sync, sync_offline_actions } from '@/persistance/Sync'
+import { prune, sync, sync_offline_actions } from '@/persistance/Cloud.sync'
 const person_html = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 
