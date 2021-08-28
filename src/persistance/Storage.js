@@ -16,12 +16,6 @@ export default class Storage {
 }
 export class Avatar extends Large(Cloud(Storage)) {}
 export class Poster extends Large(Cloud(Storage)) {}
-export class Offline extends Cloud(Storage) {
-  async save () {
-    const outerHTML = await get(this.id)
-    if (outerHTML) await super.save({ outerHTML })
-  }
-}
 export class Me extends Cloud(Local(Storage)) {
   constructor () { super(localStorage.me) }
 }
@@ -33,6 +27,12 @@ export class Statements extends Paged(Cloud(Local(Storage))) {
 }
 export class Events extends Paged(Cloud(Local(Storage))) {
   constructor () { super(`${localStorage.me}/events`) }
+}
+export class Offline extends Cloud(Storage) {
+  async save () {
+    const outerHTML = await get(this.id)
+    if (outerHTML) await super.save({ outerHTML })
+  }
 }
 export class History extends Cloud(Storage) {
   async save (items) { // on purpose doesn't call super.save

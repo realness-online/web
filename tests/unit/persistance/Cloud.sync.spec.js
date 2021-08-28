@@ -1,13 +1,21 @@
-import { get, del, keys } from 'idb-keyval'
+import { get, del, keys, set } from 'idb-keyval'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
-import { prune, sync, sync_offline_actions } from '@/persistance/Cloud.sync'
+import {
+  prune,
+  sync,
+  sync_offline_actions,
+  sync_later,
+  visit_interval
+} from '@/persistance/Cloud.sync'
+import * as itemid from '@/helpers/itemid'
 const person_html = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
-
+const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
+const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
 describe('/persistance/Cloud.js', () => {
   let post_message_spy
   beforeEach(async () => {
@@ -17,6 +25,7 @@ describe('/persistance/Cloud.js', () => {
   })
   afterEach(() => {
     jest.clearAllMocks()
+    get.mockClear()
     localStorage.clear()
   })
   // The application loads the data
@@ -24,7 +33,6 @@ describe('/persistance/Cloud.js', () => {
   describe('Methods', () => {
     describe('#sync_offline_actions', () => {
       it('Needs to be online', async () => {
-        get.mockRestore()
         jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync_offline_actions()
         expect(get).not.toBeCalled()
@@ -69,41 +77,37 @@ describe('/persistance/Cloud.js', () => {
       const id = '/+16282281824'
       let relations
       let random
-      afterEach(() => {
-        Math.random = random
-      })
+      let list_spy
       beforeEach(async () => {
-        random = Math.random
-        Math.random = jest.fn(_ => 1)
         relations = [{ id }]
         firebase.user = user
-        keys.mockImplementation(_ => Promise.resolve([id]))
+        keys.mockImplementation(_ => Promise.resolve([id, 'random:key', '/+16781435566']))
         const meta = {
           updated: new Date().toISOString(),
-          customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          customMetadata: { md5: local_diferent_network }
         }
         const index = {}
         index[id] = meta
+        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
+        list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => relations)
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
           if (query === id) return Promise.resolve(person_html)
           else return Promise.resolve()
         })
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
       })
-      it('Runs when online', async () => {
-        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+      it('Gets all my relations', async () => {
         await prune()
-        expect(get).not.toBeCalled()
+        expect(keys).toBeCalled()
+        expect(list_spy).toBeCalled()
       })
       it('Prunes items with outdated info', async () => {
         await prune()
-        await flushPromises()
         jest.runAllTimers()
         expect(keys).toBeCalled()
         expect(del).toBeCalled()
       })
-      it('Ignores people who are no longer using the sercvice', async () => {
+      it('Prunes people I am not following', async () => {
         const MockDate = require('mockdate')
         MockDate.set('2020-01-01')
         const index = {
@@ -117,8 +121,37 @@ describe('/persistance/Cloud.js', () => {
           else return Promise.resolve(person_html)
         })
         await prune()
-        jest.runAllTimers()
         expect(keys).toBeCalled()
+      })
+      it('Handles absence of custom metadata', async () => {
+        del.mockClear()
+        const bad_meta = {
+          updated: new Date().toISOString()
+        }
+        firebase.storage_mock.getMetadata
+        .mockImplementation(_ => Promise.resolve(bad_meta))
+        await prune()
+        expect(del).not.toBeCalled()
+      })
+      it('Leaves properly synced local files alone', async () => {
+        firebase.storage_mock.getMetadata
+        .mockImplementation(_ => Promise.resolve({
+          updated: new Date().toISOString(),
+          customMetadata: { md5: local_matches_network }
+        }))
+        await prune()
+        expect(del).not.toBeCalled()
+      })
+    })
+    describe('#sync_later', () => {
+      it('Stores local actions to be synced with the cloud', async () => {
+        await sync_later('/+16282281824/posters/559666932867')
+        expect(set).toBeCalled()
+      })
+    })
+    describe('#visit_interval', () => {
+      it('Returns a Date object', () => {
+        expect(visit_interval()).not.toBe(null)
       })
     })
   })

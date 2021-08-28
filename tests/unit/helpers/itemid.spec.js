@@ -35,6 +35,9 @@ describe('@/helpers/itemid', () => {
     it('Should return null for an empty id', () => {
       expect(as_author('/')).toBe(null)
     })
+    it('Should return null for non author string', () => {
+      expect(as_author('sync:index')).toBe(null)
+    })
   })
   describe('#as_directory', () => {
     it('Exists', () => {
