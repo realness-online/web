@@ -6,9 +6,7 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list } from '@/helpers/itemid'
 import { Offline } from '@/persistance/Storage'
 
-// const one_minute = 60000
 export const three_minutes = 180000
-// const five_minutes = 300000
 export const one_hour = 3600000
 export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
@@ -44,6 +42,7 @@ export async function sync_offline_actions () {
   }
 }
 export async function prune () {
+  console.log('prune')
   const relations = await list(`${localStorage.me}/relations`)
   const everything = await keys()
   everything.forEach(async itemid => {
@@ -51,7 +50,7 @@ export async function prune () {
     if (await is_stranger(as_author(itemid), relations)) await del(itemid)
     else {
       const network = await fresh_metadata(itemid)
-      if (!network.customMetadata) return
+      if (!network.customMetadata) return null
       const md5 = await local_md5(itemid)
       if (network.customMetadata.md5 !== md5) {
         console.log('outdated', itemid)

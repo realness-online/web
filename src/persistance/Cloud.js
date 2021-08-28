@@ -3,8 +3,8 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import hash from 'object-hash'
-import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, list } from '@/helpers/itemid'
+import { get, set } from 'idb-keyval'
+import { as_filename } from '@/helpers/itemid'
 
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }

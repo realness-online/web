@@ -105,7 +105,8 @@ export function as_path_parts (itemid) {
 }
 export function as_author (itemid) {
   const path = as_path_parts(itemid)
-  if (path[0]) return `/${path[0]}`
+  const author = path[0] || ''
+  if (author.startsWith('+1')) return `/${path[0]}`
   else return null
 }
 export function as_type (itemid) {
@@ -124,7 +125,6 @@ export function as_query_id (itemid) {
 export function as_fragment (itemid) {
   return `#${as_query_id(itemid)}`
 }
-
 export function type_as_list (item) {
   // Returns a list even if loading the item fails
   // the microdata spec requires properties values to
