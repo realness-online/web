@@ -107,8 +107,8 @@
         console.log('play')
         await sync_offline_actions()
         let synced
-        if (localStorage.last_sync) {
-          synced = Date.now() - new Date(localStorage.last_sync).getTime()
+        if (localStorage.sync_time) {
+          synced = Date.now() - new Date(localStorage.sync_time).getTime()
         } else synced = three_minutes
         const time_left = three_minutes - synced
         if (time_left <= 0) {
