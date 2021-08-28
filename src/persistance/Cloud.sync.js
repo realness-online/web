@@ -22,6 +22,10 @@ export async function sync_later (id, action) {
 }
 export async function is_stranger (id) {
   const relations = await list(`${localStorage.me}/relations`)
+  relations.push({
+    id: localStorage.me,
+    type: 'person'
+  })
   const is_friend = relations.some(relation => {
     if (relation.id === id) return true
     else return false
@@ -48,6 +52,7 @@ export async function prune () {
   everything.forEach(async itemid => {
     if (!as_author(itemid)) return // items have authors
     if (await is_stranger(as_author(itemid), relations)) await del(itemid)
+    if (await itemid.endsWith('/')) await del(itemid) // is a directory
     else {
       const network = await fresh_metadata(itemid)
       if (!network.customMetadata) return null

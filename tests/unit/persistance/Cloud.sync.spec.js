@@ -19,6 +19,7 @@ const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
 describe('/persistance/Cloud.js', () => {
   let post_message_spy
   beforeEach(async () => {
+    localStorage.me = '/+16282281824'
     post_message_spy = jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null

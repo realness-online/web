@@ -140,16 +140,21 @@ describe('@/components/sync', () => {
     })
     describe('#play', () => {
       let sync_offline_actions_sync
+      let sync_me
+      let sync_statements
+      let sync_events
+      let sync_anonymous_posters
+      let sync_happened
       beforeEach(() => {
         sync_offline_actions_sync = jest.spyOn(sync_worker, 'sync_offline_actions')
         .mockImplementation(_ => Promise.resolve())
+        sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(_ => Promise.resolve())
+        sync_statements = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementation(_ => Promise.resolve())
+        sync_events = jest.spyOn(wrapper.vm, 'sync_events').mockImplementation(_ => Promise.resolve())
+        sync_anonymous_posters = jest.spyOn(wrapper.vm, 'sync_anonymous_posters').mockImplementation(_ => Promise.resolve())
+        sync_happened = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementation(_ => Promise.resolve())
       })
       it('Starts syncing without a last_sync', async () => {
-        const sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(_ => Promise.resolve())
-        const sync_statements = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementation(_ => Promise.resolve())
-        const sync_events = jest.spyOn(wrapper.vm, 'sync_events').mockImplementation(_ => Promise.resolve())
-        const sync_anonymous_posters = jest.spyOn(wrapper.vm, 'sync_anonymous_posters').mockImplementation(_ => Promise.resolve())
-        const sync_happened = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementation(_ => Promise.resolve())
         await wrapper.vm.play()
         expect(sync_offline_actions_sync).toBeCalled()
         expect(sync_me).toBeCalled()
