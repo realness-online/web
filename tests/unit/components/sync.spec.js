@@ -5,9 +5,6 @@ import * as itemid from '@/helpers/itemid'
 import * as sync_worker from '@/persistance/Cloud.sync'
 import sync from '@/components/sync'
 import get_item from '@/modules/item'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
 import {
   Me,
   Statements,
@@ -101,7 +98,6 @@ describe('@/components/sync', () => {
   describe('Methods', () => {
     describe('#visibility_change', () => {
       it('plays the sync when visible', async () => {
-        let message
         wrapper = await shallowMount(sync, fake_props)
         const play = jest.spyOn(wrapper.vm, 'play').mockImplementation(_ => Promise.resolve())
         await wrapper.vm.visibility_change()
