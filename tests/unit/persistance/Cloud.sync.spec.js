@@ -2,11 +2,9 @@ import { get, del, keys, set } from 'idb-keyval'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
-import flushPromises from 'flush-promises'
 import { Offline } from '@/persistance/Storage'
 import {
   prune,
-  sync,
   sync_offline_actions,
   sync_later,
   visit_interval
@@ -17,10 +15,8 @@ const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
 const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
 describe('/persistance/Cloud.js', () => {
-  let post_message_spy
   beforeEach(async () => {
     localStorage.me = '/+16282281824'
-    post_message_spy = jest.spyOn(global, 'postMessage').mockImplementation(_ => true)
     jest.useFakeTimers()
     firebase.user = null
   })
@@ -77,7 +73,6 @@ describe('/persistance/Cloud.js', () => {
     describe('#prune', () => {
       const id = '/+16282281824'
       let relations
-      let random
       let list_spy
       beforeEach(async () => {
         relations = [{ id }]
