@@ -47,6 +47,7 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
+  import { del } from 'idb-keyval'
   import { as_directory } from '@/helpers/itemid'
   import get_item from '@/modules/item'
   import { recent_item_first } from '@/helpers/sorting'
@@ -161,6 +162,9 @@
         })
         this.new_poster = null
         this.working = false
+        del(`${localStorage.me}/posters/`)
+        // Creating a poster during a sync will sometimes
+        // create a directory with only the poster you just createed
         console.info('save:poster', id)
       },
       async remove_poster (id) {
