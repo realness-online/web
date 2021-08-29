@@ -146,7 +146,7 @@
         const network = (await fresh_metadata(id)).customMetadata
         let my_info = localStorage.getItem(id)
         if (!my_info) my_info = await get(id)
-        if (!my_info || network.md5 == null) return
+        if (!my_info || !network) return
         const md5 = hash(my_info, hash_options)
         if (md5 !== network.md5) {
           localStorage.removeItem(id)
