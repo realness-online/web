@@ -55,7 +55,7 @@ export async function prune () {
     if (await itemid.endsWith('/')) await del(itemid) // is a directory
     else {
       const network = await fresh_metadata(itemid)
-      if (!network.customMetadata) return null
+      if (!network || !network.customMetadata) return null
       const md5 = await local_md5(itemid)
       if (network.customMetadata.md5 !== md5) {
         console.log('outdated', itemid)

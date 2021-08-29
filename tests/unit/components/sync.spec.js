@@ -11,6 +11,9 @@ import {
   Events,
   Poster
 } from '@/persistance/Storage'
+import firebase from 'firebase/app'
+import 'firebase/auth'
+import 'firebase/storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
@@ -20,6 +23,7 @@ const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
 const fake_props = { propsData: { config: {} } }
+
 const current_user = {
   phoneNumber: '+16282281824'
 }
@@ -50,6 +54,7 @@ describe('@/components/sync', () => {
   afterEach(() => {
     jest.clearAllMocks()
     localStorage.clear()
+    firebase.user = null
   })
   describe('Render', () => {
     it('Renders sync component', () => {
@@ -142,13 +147,16 @@ describe('@/components/sync', () => {
       let sync_anonymous_posters
       let sync_happened
       beforeEach(() => {
-        sync_offline_actions_sync = jest.spyOn(sync_worker, 'sync_offline_actions')
-        .mockImplementation(_ => Promise.resolve())
+        sync_offline_actions_sync = jest.spyOn(sync_worker, 'sync_offline_actions').mockImplementation(_ => Promise.resolve())
         sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(_ => Promise.resolve())
         sync_statements = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementation(_ => Promise.resolve())
         sync_events = jest.spyOn(wrapper.vm, 'sync_events').mockImplementation(_ => Promise.resolve())
         sync_anonymous_posters = jest.spyOn(wrapper.vm, 'sync_anonymous_posters').mockImplementation(_ => Promise.resolve())
         sync_happened = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementation(_ => Promise.resolve())
+        firebase.user = current_user
+        jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve({
+          id: '/+16282281824'
+        }))
       })
       it('Starts syncing without a last_sync', async () => {
         await wrapper.vm.play()
@@ -196,10 +204,8 @@ describe('@/components/sync', () => {
     })
     describe('#sync_statements', () => {
       it('Syncs when there are items to sync', async () => {
-        jest.spyOn(Statements.prototype, 'sync')
-        .mockImplementationOnce(_ => Promise.resolve([]))
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(_ => Promise.resolve({
+        jest.spyOn(Statements.prototype, 'sync').mockImplementationOnce(_ => Promise.resolve([]))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(_ => Promise.resolve({
            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
         }))
         wrapper = await mount(sync, fake_props)
