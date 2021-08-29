@@ -109,6 +109,9 @@
     border-radius: round((base-line / 6), 2)
     position: relative
     overflow: hidden
+    @media (max-width: pad-begins)
+      margin-left: -(base-line)
+      margin-right: -(base-line)
     &.landscape
       & > svg[itemscope]
         min-height: poster-grid-height
