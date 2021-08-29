@@ -162,7 +162,7 @@
         a.play
           visibility: hidden
       svg
-        fill: blue
+        fill: background-black
         stroke: blue
     & > h1
       margin: base-line
