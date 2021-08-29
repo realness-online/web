@@ -5,8 +5,12 @@ export default {
       this.$refs.uploader.removeAttribute('capture')
       this.$refs.uploader.click()
     },
-    open_camera (event) {
+    open_selfie_camera (event) {
       this.$refs.uploader.setAttribute('capture', 'user')
+      this.$refs.uploader.click()
+    },
+    open_camera (event) {
+      this.$refs.uploader.setAttribute('capture', 'environment')
       this.$refs.uploader.click()
     }
   },

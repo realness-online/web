@@ -13,7 +13,7 @@
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </template>
     <menu v-if="show_menu">
-      <a v-if="!avatar_changed" id="open_camera" @click="open_camera">
+      <a v-if="!avatar_changed" id="open_camera" @click="open_selfie_camera">
         <icon name="camera" />
       </a>
       <a v-if="!avatar_changed" id="select_photo" @click="select_photo">

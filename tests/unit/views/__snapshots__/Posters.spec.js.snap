@@ -12,6 +12,14 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
       />
     </a>
      
+    <a
+      id="camera"
+    >
+      <icon-stub
+        name="camera"
+      />
+    </a>
+     
     <input
       accept="image/jpeg,image/png"
       type="file"
