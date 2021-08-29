@@ -199,7 +199,7 @@
       a#camera
         position: fixed
         bottom: base-line
-        left: base-line
+        left: s('calc( 50% - %s)', base-line )
         z-index: 4
     & > hgroup
       margin: base-line auto (base-line * 2) auto
