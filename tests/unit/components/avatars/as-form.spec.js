@@ -144,6 +144,15 @@ describe('@/components/avatars/as-form.vue', () => {
         expect(mock_click).toBeCalled()
       })
     })
+    describe('#open_selfie_camera', () => {
+      it('Should open the file dialog', () => {
+        // wrapper.setProps({ view_avatar: true })
+        const mock_click = jest.fn()
+        wrapper.vm.$refs.uploader.click = mock_click
+        wrapper.vm.open_selfie_camera()
+        expect(mock_click).toBeCalled()
+      })
+    })
     describe('#accept_new_avatar', () => {
       it('Should update the avatar', async () => {
         const save_spy = jest.fn(() => Promise.resolve())
