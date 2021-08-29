@@ -105,6 +105,8 @@
       },
       async play () {
         console.log('play')
+        const me = await load(localStorage.me) // check if new user
+        if (!me || !firebase.auth().currentUser) return null // let's wait to sync
         await sync_offline_actions()
         let synced
         if (localStorage.sync_time) {
@@ -130,6 +132,7 @@
         await statements.optimize()
         localStorage.sync_time = new Date().toISOString()
         const me = await load(localStorage.me)
+        if (!me) return // new user let's wait
         if (!me.visited) me.visited = null
         const visit_gap = Date.now() - new Date(me.visited).getTime()
         if (me && visit_gap > one_hour) {
@@ -156,6 +159,7 @@
         const itemid = this.itemid('statements')
         const network = (await fresh_metadata(itemid)).customMetadata
         const elements = this.$refs.sync.querySelector(`[itemid="${itemid}"]`)
+        if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
         const md5 = hash(elements.outerHTML, hash_options)
         if (!network || network.md5 !== md5) {
           this.statements = await statements.sync()
