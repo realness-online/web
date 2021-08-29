@@ -3,6 +3,7 @@
     <header>
       <a v-if="add" @click="select_photo"><icon name="add" /></a>
       <icon v-else name="nothing" />
+      <a v-if="add" id="camera" @click="open_camera"><icon name="camera" /></a>
       <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png">
       <logo-as-link />
     </header>
@@ -191,6 +192,11 @@
   section#posters
     & > header
       justify-content: space-between
+      a#camera
+        position: fixed
+        bottom: base-line
+        left: base-line
+        z-index: 4
     & > hgroup
       margin: base-line auto (base-line * 2) auto
       align-self: center
