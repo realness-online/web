@@ -122,6 +122,10 @@
     position: relative
     display: flex
     flex-direction: column
+    @media (max-width: pad-begins)
+      figure.poster
+        margin-left: -(base-line)
+        margin-right: -(base-line)
     &:fullscreen
     &:full-screen
       background-color: background-black
