@@ -3,7 +3,7 @@ import firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
-import { does_not_exist } from '@/persistance/Cloud'
+import { does_not_exist } from '@/persistance/Cloud.sync'
 import { get, set } from 'idb-keyval'
 // Expensive to call
 export async function load (itemid, me = localStorage.me) {
