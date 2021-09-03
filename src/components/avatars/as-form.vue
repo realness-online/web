@@ -97,17 +97,17 @@
         this.vectorizer.postMessage({ image })
       },
       async vectorized (message) {
-        this.vector = {
-          id: `${this.person.id}/avatars/${Date.now()}`,
-          path: message.data.path,
-          viewbox: message.data.viewbox
-        }
-        this.current_avatar = this.vector
+        const { vector } = message.data
+        vector.id = `${this.person.id}/avatars/${Date.now()}`
+        this.vector = vector // remind myself why did I did this
+        this.current_avatar = vector // is it because of the temporary nature of trying out avatars?
         this.working = false
       },
       async optimized (message) {
-        this.vector = get_item(message.data.vector)
-        this.current_avatar = this.vector
+        let { vector } = message.data
+        vector = get_item(vector)
+        this.vector = vector
+        this.current_avatar = vector
         this.$nextTick()
         this.avatar_changed = true
       },
