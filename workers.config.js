@@ -1,5 +1,5 @@
 const path = require('path')
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
 
@@ -38,11 +38,11 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      openAnalyzer: false,
-      reportFilename: '../artifacts/worker_report.html'
-    }),
+    // new BundleAnalyzerPlugin({
+    //   analyzerMode: 'static',
+    //   openAnalyzer: false,
+    //   reportFilename: '../artifacts/worker_report.html'
+    // }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
     }),
