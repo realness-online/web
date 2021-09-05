@@ -53,6 +53,23 @@ describe('/workers/vector.js', () => {
       })
     })
     describe('#make', () => {
+      it('limits vectors to three layers', async () => {
+        const mock_vector = {
+          paths: [
+            '',
+            'mock-content',
+            'mock-content',
+            'mock-content',
+            'mock-content',
+            'mock-content'
+          ]
+        }
+        as_paths_spy = jest.spyOn(potrace, 'as_paths')
+        .mockImplementationOnce(_ => Promise.resolve(mock_vector))
+        const made_vector = await vector.make(mock_image)
+        expect(made_vector.path.length).toBe(3)
+        expect(made_vector.path[0]).toBe('mock-content')
+      })
       it('Handles large vectors', async () => {
         const large = {
           paths: []
