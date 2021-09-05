@@ -4,15 +4,15 @@
   "private": false,
   "description": "Source code for realness.online",
   "author": "Scott Fryxell <scott.fryxell@hey.com>",
-  "license": "UNLICENSED",
   "scripts": {
     "serve": "vue-cli-service serve",
+    "build": "yarn workers && vue-cli-service build",
+    "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
+    "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "test": "TZ=UTC vue-cli-service test:unit",
     "workers": "webpack --config workers.config.js",
-    "workers:dev": "yarn workers --mode=development --watch",
-    "build": "yarn workers && vue-cli-service build",
-    "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version"
+    "workers:dev": "yarn workers --mode=development --watch"
   },
   "dependencies": {
     "@realness.online/potrace": "2.1.22",
@@ -31,7 +31,7 @@
     "@babel/core": "^7.12.9",
     "@babel/eslint-parser": "^7.12.1",
     "@vue/cli-plugin-babel": "~4.5.6",
-    "@vue/cli-plugin-e2e-cypress": "~4.5.6",
+    "@vue/cli-plugin-e2e-cypress": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.6",
     "@vue/cli-plugin-pwa": "~4.5.6",
     "@vue/cli-plugin-unit-jest": "~4.5.6",
@@ -185,5 +185,6 @@
       "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
     ],
     "testURL": "http://localhost/"
-  }
+  },
+  "license": "UNLICENSED"
 }
