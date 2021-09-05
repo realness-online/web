@@ -40,7 +40,7 @@ export async function make (image) {
     poster = await as_paths(image, potrace_options)
   }
   if (poster.paths[0] === '') poster.paths.shift()
-  if (poster.paths.length > 3) poster.paths.shift()
+  while (poster.paths.length > 3) poster.paths.shift()
   return {
     path: poster.paths,
     viewbox: `0 0 ${poster.width} ${poster.height}`
