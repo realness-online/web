@@ -79,13 +79,11 @@ describe('@/App.vue', () => {
     })
     describe('#sync_active', () => {
       it('Sets Status to active whebn syncing', () => {
-        const elements = [{ setAttribute: jest.fn() }]
         wrapper.vm.status = 'offline'
         wrapper.vm.sync_active(true)
         expect(wrapper.vm.status).toBe('syncing')
       })
       it('Sets Status to null when not syncing', () => {
-        const elements = [{ setAttribute: jest.fn() }]
         wrapper.vm.status = 'offline'
         wrapper.vm.sync_active(false)
         expect(wrapper.vm.status).toBe(null)

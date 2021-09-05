@@ -46,7 +46,6 @@ export async function sync_offline_actions () {
   }
 }
 export async function prune () {
-  console.log('prune')
   const relations = await list(`${localStorage.me}/relations`)
   const everything = await keys()
   everything.forEach(async itemid => {
