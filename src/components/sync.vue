@@ -104,7 +104,6 @@
         else return localStorage.me
       },
       async play () {
-        console.log('play')
         const me = await load(localStorage.me) // check if new user
         if (!me || !firebase.auth().currentUser) return null // let's wait to sync
         await sync_offline_actions()
@@ -127,7 +126,6 @@
         }
       },
       async sync_happened () {
-        console.log('sync_happened')
         const statements = new Statements()
         await statements.optimize()
         localStorage.sync_time = new Date().toISOString()
@@ -141,7 +139,6 @@
         }
       },
       async sync_me () {
-        console.log('sync_me')
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
         let my_info = localStorage.getItem(id)
@@ -154,7 +151,6 @@
         }
       },
       async sync_statements () {
-        console.log('sync_statements')
         const statements = new Statements()
         const itemid = this.itemid('statements')
         const network = (await fresh_metadata(itemid)).customMetadata
@@ -171,7 +167,6 @@
         }
       },
       async sync_events () {
-        console.log('sync_events')
         const events = new Events()
         const itemid = this.itemid('events')
         const network = (await fresh_metadata(itemid)).customMetadata
@@ -188,7 +183,6 @@
         }
       },
       async sync_anonymous_posters () {
-        console.log('sync_anonymous_posters')
         const offline_posters = await get('/+/posters/')
         if (!offline_posters || !offline_posters.items) return
         await Promise.all(offline_posters.items.map(async (created_at) => {
@@ -202,7 +196,6 @@
         await del('/+/posters/')
       },
       async save_poster (poster) {
-        console.log('save_poster')
         this.poster = get_item(poster.outerHTML)
         this.poster.id = poster.id
         await this.$nextTick()
