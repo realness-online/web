@@ -4,11 +4,13 @@
     <template v-else>
       <figure v-if="vector">
         <icon name="background" />
-        <svg ref="new_avatar" itemscope
-             itemtype="/avatars"
-             :itemid="vector.id"
-             :viewBox="vector.viewbox"
-             v-html="path" />
+        <svg ref="new_avatar" itemscope itemtype="/avatars"
+             :itemid="vector.id" :viewBox="vector.viewbox">
+          <g v-for="(symbol, index) in path" :key="index">
+            <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
+            <use :href="symbol_fragment(index)" />
+          </g>
+        </svg>
       </figure>
       <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
     </template>
@@ -96,11 +98,12 @@
         this.working = true
         this.vectorizer.postMessage({ image })
       },
-      async vectorized (message) {
+      vectorized (message) {
         const { vector } = message.data
+        vector.type = 'avatars'
         vector.id = `${this.person.id}/avatars/${Date.now()}`
-        this.vector = vector // remind myself why did I did this
-        this.current_avatar = vector // is it because of the temporary nature of trying out avatars?
+        this.vector = vector
+        this.current_avatar = this.vector
         this.working = false
       },
       async optimized (message) {

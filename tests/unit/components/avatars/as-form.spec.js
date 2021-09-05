@@ -100,14 +100,19 @@ describe('@/components/avatars/as-form.vue', () => {
       })
     })
     describe('#vectorized', () => {
-      const MockDate = require('mockdate')
-      MockDate.set('2020-01-01', new Date().getTimezoneOffset())
-      const message = {
-        data: {
-          path: [],
-          viewbox: 'viewbox'
+      let message
+      beforeEach(() => {
+        const MockDate = require('mockdate')
+        MockDate.set('2020-01-01', new Date().getTimezoneOffset())
+        message = {
+          data: {
+            vector: {
+              path: [],
+              viewbox: 'viewbox'
+            }
+          }
         }
-      }
+      })
       it('Sets current_avatar to new vector', () => {
         expect(wrapper.vm.current_avatar).toBe(null)
         wrapper.vm.vectorized(message)
