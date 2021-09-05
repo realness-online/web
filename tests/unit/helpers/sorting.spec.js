@@ -1,4 +1,5 @@
 import {
+  recent_visit_first,
   recent_number_first,
   recent_weirdo_first,
   earlier_weirdo_first
@@ -26,6 +27,22 @@ describe('@/helpers/sorting', () => {
         ]
         list.sort(earlier_weirdo_first)
         expect(Array.isArray(list[0])).toBe(true)
+      })
+    })
+    describe('#recent_visit_first', () => {
+      it('sorts item by recent visit', () => {
+        const list = [
+          {
+             id: '/+14155556666',
+             visited: '1230847276509'
+          },
+          {
+             id: '/+16282281824',
+             visited: '1630847276509' // more recent
+          }
+        ]
+        list.sort(recent_visit_first)
+        expect(list[0].id).toBe('/+14155556666')
       })
     })
     describe('#recent_weirdo_first', () => {
