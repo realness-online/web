@@ -37,7 +37,7 @@ context('Network Requests', () => {
       method: 'POST',
       delay: 1000,
       status: 422,
-      response: {},
+      response: {}
     })
 
     // any route commands will now inherit the above options
@@ -56,7 +56,6 @@ context('Network Requests', () => {
       })
   })
 
-
   it('cy.request() - verify response using BDD syntax', () => {
     cy.request('https://jsonplaceholder.cypress.io/comments')
     .then((response) => {
@@ -74,8 +73,8 @@ context('Network Requests', () => {
       url: 'https://jsonplaceholder.cypress.io/comments',
       qs: {
         postId: 1,
-        id: 3,
-      },
+        id: 3
+      }
     })
     .its('body')
     .should('be.an', 'array')
@@ -83,7 +82,7 @@ context('Network Requests', () => {
     .its('0') // yields first element of the array
     .should('contain', {
       postId: 1,
-      id: 3,
+      id: 3
     })
   })
 
@@ -101,7 +100,7 @@ context('Network Requests', () => {
         cy.request('POST', 'https://jsonplaceholder.cypress.io/posts', {
           userId: user.id,
           title: 'Cypress Test Runner',
-          body: 'Fast, easy and reliable testing for anything that runs in a browser.',
+          body: 'Fast, easy and reliable testing for anything that runs in a browser.'
         })
       })
       // note that the value here is the returned value of the 2nd request
@@ -110,7 +109,7 @@ context('Network Requests', () => {
         expect(response).property('status').to.equal(201) // new entity created
         expect(response).property('body').to.contain({
           id: 101, // there are already 100 posts, so new entity gets id 101
-          title: 'Cypress Test Runner',
+          title: 'Cypress Test Runner'
         })
         // we don't know the user id here - since it was in above closure
         // so in this test just confirm that the property is there
@@ -133,7 +132,7 @@ context('Network Requests', () => {
         cy.request('POST', 'https://jsonplaceholder.cypress.io/posts', {
           userId: this.user.id,
           title: 'Cypress Test Runner',
-          body: 'Fast, easy and reliable testing for anything that runs in a browser.',
+          body: 'Fast, easy and reliable testing for anything that runs in a browser.'
         })
         .its('body').as('post') // save the new post from the response
       })
@@ -148,7 +147,7 @@ context('Network Requests', () => {
   it('cy.route() - route responses to matching requests', () => {
     // https://on.cypress.io/route
 
-    let message = 'whoa, this comment does not exist'
+    const message = 'whoa, this comment does not exist'
 
     cy.server()
 
@@ -180,7 +179,7 @@ context('Network Requests', () => {
       url: 'comments/*',
       status: 404,
       response: { error: message },
-      delay: 500,
+      delay: 500
     }).as('putComment')
 
     // we have code that puts a comment when
