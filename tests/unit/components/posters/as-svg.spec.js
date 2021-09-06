@@ -31,7 +31,7 @@ describe('@/components/posters/as-svg.vue', () => {
       })
       it('Always returns a value', () => {
         expect(wrapper.vm.vector).toBe(null)
-        expect(wrapper.vm.viewbox).toBe('0 0 0 0')
+        expect(wrapper.vm.viewbox).toBe('0 0 16 16')
       })
     })
   })

@@ -33,12 +33,12 @@ describe('@/components/avatars/as-svg.vue', () => {
         expect(wrapper.vm.id).toBe(null)
       })
     })
-    describe('.avatar_link', () => {
+    describe('.silhouette', () => {
       it('References the working icon when working', () => {
         wrapper = shallowMount(as_svg, {
           propsData: { person, working: true }
         })
-        expect(wrapper.vm.avatar_link).toBe('#working')
+        expect(wrapper.vm.silhouette).toBe('#working')
       })
     })
   })
