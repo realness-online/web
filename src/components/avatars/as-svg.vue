@@ -1,10 +1,14 @@
 <template lang="html">
   <svg :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
-    <icon v-if="!working" name="background" />
-    <g v-for="(symbol, index) in path" :key="index">
-      <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
-      <use :href="symbol_fragment(index)" />
-    </g>
+    <icon v-if="working" name="working" />
+    <icon v-else name="background" />
+    <template v-if="person.avatar">
+      <g v-for="(symbol, index) in path" :key="index">
+        <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
+        <use :xlink:href="symbol_fragment(index)" />
+      </g>
+    </template>
+    <use v-else :href="silhouette" />
   </svg>
 </template>
 <script>
@@ -34,7 +38,7 @@
         if (this.person.avatar) return as_query_id(this.person.avatar)
         else return null
       },
-      avatar_link () {
+      silhouette () {
         if (this.working) return `${icons}#working`
         if (this.person.avatar) return as_fragment(this.person.avatar)
         else return `${icons}#silhouette`

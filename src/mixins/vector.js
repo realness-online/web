@@ -30,7 +30,7 @@ export default {
     },
     viewbox () {
       if (this.vector) return this.vector.viewbox
-      else return '0 0 0 0'
+      else return '0 0 16 16' // this is the viewbox for silhouette
     }
   },
   methods: {

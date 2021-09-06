@@ -5,11 +5,8 @@
       <logo-as-link />
     </header>
     <hgroup v-if="signed_in && !working">
-      <avatar-as-form :person.sync="person"
-                      @update:person="$emit('update:person', $event)" />
-      <profile-as-figure :editable="true"
-                         :person.sync="person"
-                         @update:person="$emit('update:person', $event)">
+      <avatar-as-form :person.sync="person" @update:person="$emit('update:person', $event)" />
+      <profile-as-figure :editable="true" :person.sync="person" @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>

@@ -3,7 +3,7 @@
 exports[`@/components/avatars/as-svg.vue Renders An avatar 1`] = `
 <svg
   preserveAspectRatio="xMidYMid slice"
-  viewBox="0 0 0 0"
+  viewBox="0 0 16 16"
 >
   <icon-stub
     name="background"
