@@ -59,7 +59,7 @@
     },
     methods: {
       sync_active (active) {
-        if (active) this.status = 'syncing'
+        if (active) this.status = 'working'
         else this.status = null
       },
       online () {
@@ -77,10 +77,15 @@
 </script>
 <style src="@/style/index.styl" lang="stylus"></style>
 <style lang="stylus">
+  main
+    border: (base-line / 16) solid background-black
+    border-radius (base-line / 16)
   main.offline
-    border-left: (base-line * .333) solid yellow
-    border-right: (base-line * .333) solid yellow
-  main.syncing
-    border-left: (base-line * .333) solid green
-    border-right: (base-line * .333) solid green
+    border-color: yellow
+  main.working
+    border-color: green
+    animation-name: pulsing
+    animation-duration: 8s
+    animation-delay: 200ms
+    animation-iteration-count: infinite
 </style>
