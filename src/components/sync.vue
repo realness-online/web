@@ -18,7 +18,7 @@
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
   import {
-    three_minutes,
+    five_minutes,
     one_hour,
     fresh_metadata,
     hash_options,
@@ -110,8 +110,8 @@
         let synced
         if (localStorage.sync_time) {
           synced = Date.now() - new Date(localStorage.sync_time).getTime()
-        } else synced = three_minutes
-        const time_left = three_minutes - synced
+        } else synced = five_minutes
+        const time_left = five_minutes - synced
         if (time_left <= 0) {
           this.$emit('active', true)
           await Promise.all([
