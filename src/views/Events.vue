@@ -2,10 +2,10 @@
   <section id="events" class="page">
     <header>
       <icon name="nothing" />
+      <h1>Events</h1>
       <logo-as-link />
     </header>
     <hgroup>
-      <h1>Events</h1>
       <icon v-show="working" name="working" />
     </hgroup>
     <article v-if="events.length" id="tonight">
@@ -74,7 +74,6 @@
         fill: green
         color: green
     h1
-      padding: 0 base-line base-line base-line
       color: green
     & > header
       & > svg
@@ -84,7 +83,7 @@
       & > a
         -webkit-tap-highlight-color: green
     & > article
-      padding-bottom: base-line * 3
+      padding: 0 base-line base-line base-line
       standard-grid: howdy
       & > figure
         & > svg.background

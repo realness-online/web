@@ -2,13 +2,11 @@
   <section id="relations" class="page">
     <header>
       <icon name="nothing" />
+      <h1>Relations</h1>
       <router-link to="/phone-book">
         <icon name="finished" />
       </router-link>
     </header>
-    <hgroup>
-      <h1>Relations</h1>
-    </hgroup>
     <nav v-if="signed_in" class="profile-list">
       <as-figure v-for="person in relations" :key="person.id" :person="person" :relations.sync="relations" />
     </nav>

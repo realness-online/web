@@ -1,12 +1,13 @@
 <template>
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
-      <a ref="play" class="play" @click="go_big">
-        <icon name="play" />
-      </a>
+      <icon name="nothing" />
+      <hgroup>
+        <h1>Feed</h1>
+        <a ref="play" class="play" @click="go_big"><icon name="play" /></a>
+      </hgroup>
       <logo-as-link />
     </header>
-    <h1>Feed</h1>
     <as-days v-slot="items"
              :working="working"
              :posters="posters"
@@ -134,7 +135,7 @@
       display: flex;
       padding: 0
       & > header
-      & > h1
+      & > hgroup
       article.day > header
       article.thought
         display: none
@@ -161,16 +162,27 @@
             height: 100vh
             figcaption
               display: none
-    & > header
-      @media (max-width: page-width), (max-height: page-width)
-        a.play
-          visibility: hidden
-      svg
-        fill: background-black
-        stroke: blue
-    & > h1
-      margin: base-line
-      color: blue
+    & header
+      justify-content: space-between
+      & > hgroup
+        display: flex
+        justify-content: flex-start
+        & > h1
+          width:auto
+          color: blue
+        & > a:hover > svg
+          stroke: green
+          transition-timing-function: ease-out
+        & > a
+          @media (max-width: page-width), (max-height: page-width)
+            visibility: hidden
+          & > svg
+            margin-left: base-line * .33
+            margin-top: base-line * .33
+            width: base-line * .66
+            height: base-line * .66
+            fill: transparent
+            stroke: blue
     & > nav
       display: none
     & > section.as-days
