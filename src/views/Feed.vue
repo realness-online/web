@@ -162,11 +162,11 @@
             height: 100vh
             figcaption
               display: none
-    & header
+    & > header
       justify-content: space-between
       & > hgroup
         display: flex
-        justify-content: flex-start
+        align-items: baseline
         & > h1
           width:auto
           color: blue
@@ -178,7 +178,6 @@
             visibility: hidden
           & > svg
             margin-left: base-line * .33
-            margin-top: base-line * .33
             width: base-line * .66
             height: base-line * .66
             fill: transparent
