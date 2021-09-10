@@ -85,7 +85,7 @@
   main.working
     border-color: green
     animation-name: pulsing
-    animation-duration: 8s
+    animation-duration: 5s
     animation-delay: 200ms
     animation-iteration-count: infinite
 </style>
