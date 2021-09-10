@@ -3,13 +3,11 @@
     <header>
       <a v-if="add" @click="select_photo"><icon name="add" /></a>
       <icon v-else name="nothing" />
+      <h1>Posters</h1>
       <a v-if="add" id="camera" @click="open_camera"><icon name="camera" /></a>
       <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png">
       <logo-as-link />
     </header>
-    <hgroup>
-      <h1>Posters</h1>
-    </hgroup>
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure v-if="new_poster"
@@ -196,27 +194,26 @@
   section#posters
     & > header
       justify-content: space-between
+      & > h1
+        margin-bottom: base-line * 2
+        @media (prefers-color-scheme: dark)
+          color: green
       a#camera
         position: fixed
         bottom: base-line
         left: s('calc( 50% - %s)', base-line )
         z-index: 4
+        @media (min-width: typing-begins)
+          visibility: hidden
         & > svg
-          stroke: red
-          stroke-width: (base-line / 2)
-    & > hgroup
-      margin: base-line auto (base-line * 2) auto
-      align-self: center
-      &.message > p:first-child a
-        border-bottom: 0
-      & > h1
-        @media (prefers-color-scheme: dark)
-          color: green
-    & hgroup
+          stroke spin(green, 3deg)
+          stroke-width 10px
     & header
       svg, a
         color: green
         fill: green
+        stroke spin(green, 33deg)
+        stroke-width 1px
     & > article
       padding-bottom: base-line * 3
       standard-grid: gentle
@@ -229,10 +226,15 @@
             fill: green
         & > figcaption > menu
           a > svg
-            &.has-event
-              fill:blue
             @media (prefers-color-scheme: dark)
-              fill: red
+              fill: spin(green, 3deg)
+              stroke spin(green, 3deg)
+              stroke-width 1px
+            &.has-event
+              fill: spin(green, 66deg)
+              stroke spin(green, 3deg)
+              stroke-width 1px
+
           a.remove
             bottom: base-line
             left: base-line

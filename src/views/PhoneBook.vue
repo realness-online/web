@@ -5,10 +5,10 @@
         <icon name="heart" />
       </router-link>
       <icon v-else name="nothing" />
+      <h1>Recent</h1>
       <logo-as-link />
     </header>
     <hgroup>
-      <h1>Phonebook</h1>
       <icon v-if="working" name="working" />
     </hgroup>
     <nav v-if="signed_in" class="profile-list">
@@ -70,7 +70,7 @@
   section#directory
     padding-bottom: base-line * 2
     nav.profile-list
-      margin-top: base-line * 2
+      margin-top: base-line
       & hgroup > h3
         max-width: base-line * 6
         white-space: nowrap

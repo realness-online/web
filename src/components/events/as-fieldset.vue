@@ -186,5 +186,7 @@
       width: 100%
       z-index: 4
       svg
-        fill:red
+        fill: red
+        stroke spin(green, 3deg)
+        stroke-width 1px
 </style>
