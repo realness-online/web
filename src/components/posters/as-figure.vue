@@ -134,29 +134,25 @@
       & > a
         z-index: 2
         position: absolute
+        @media (prefers-color-scheme: dark)
+          &.phone > svg
+          &.download > svg
+            fill: spin(blue, 3deg)
         &.phone
           top: base-line
           right: base-line
-          & > svg
-            @media (prefers-color-scheme: dark)
-              fill: red
         &.download
           bottom: base-line
           right: base-line
-          & > svg
-            @media (prefers-color-scheme: dark)
-              fill: red
         &.profile
           top: base-line
           left: base-line
-          svg.background
-            fill: red
           & > hgroup
             & > h3:first-of-type
               margin-right: (base-line / 3)
             & > h3
             & > time
+              color: spin(blue, 3deg)
+              text-shadow: 1px 1px 3px spin(black, 21deg)
               line-height: 1
-              @media (prefers-color-scheme: dark)
-                color: green
 </style>
