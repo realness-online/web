@@ -5,7 +5,7 @@
     <template v-if="person.avatar">
       <g v-for="(symbol, index) in path" :key="index">
         <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
-        <use :xlink:href="symbol_fragment(index)" />
+        <use :href="symbol_fragment(index)" />
       </g>
     </template>
     <use v-else :href="silhouette" />
