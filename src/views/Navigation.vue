@@ -14,7 +14,7 @@
         Feed
       </router-link>
       <router-link v-if="!posting" to="/phone-book" class="blue" tabindex="-1">
-        People
+        Relations
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea class="red"
