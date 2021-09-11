@@ -43,6 +43,8 @@
     margin-right: round((base-line / 3), 2)
     & > svg
       fill: dark-black
+      width: base-line * 2
+      height: base-line * 2
       border-radius: round((base-line * 2), 2)
       margin-right: round((base-line / 6), 2)
     & > svg > svg.background

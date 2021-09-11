@@ -103,6 +103,8 @@
       flex-direction: row
       margin: 0 0 base-line 0
       & > a > svg
+        width: base-line * 2
+        height: base-line * 2
         cursor: pointer
         shape-outside: circle()
         border-radius: (base-line * 2)
