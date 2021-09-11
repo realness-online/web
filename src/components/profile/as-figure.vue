@@ -122,7 +122,7 @@
       &> hgroup
         justify-content: center
       & > menu
-        padding: base-line * 0.33
+        padding: base-line
         &:hover
           opacity: 1
         & > a > svg
