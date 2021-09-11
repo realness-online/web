@@ -1,9 +1,9 @@
 <template>
   <section id="events" class="page">
     <header>
-      <icon name="nothing" />
-      <h1>Events</h1>
       <logo-as-link />
+      <h1>Events</h1>
+      <icon name="nothing" />
     </header>
     <hgroup>
       <icon v-show="working" name="working" />
