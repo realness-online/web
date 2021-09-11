@@ -201,7 +201,7 @@
       a#camera
         position: fixed
         bottom: base-line
-        left: s('calc( 50% - %s)', base-line )
+        left: s('calc( 50% - %s)', (base-line / 2) )
         z-index: 4
         @media (min-width: typing-begins)
           visibility: hidden
