@@ -50,8 +50,8 @@
         transition-duration: 0.5s
         cursor: pointer
         fill: blue
-        width:  2em
-        height: 2em
+        width:  base-line
+        height: base-line
         &.finished
           fill: green
           height: 0
@@ -61,6 +61,6 @@
           height: 0
           width: 0
         svg.finished
-          width:  2em
-          height: 2em
+          width:  base-line
+          height: base-line
 </style>
