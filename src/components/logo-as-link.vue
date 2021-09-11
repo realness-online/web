@@ -10,9 +10,6 @@
   }
 </script>
 <style lang="stylus">
-  svg.realness
-    width: base-line * 2
-    height: base-line * 2
-    &:active
-      transition-duration: 0.1s
+  svg.realness:active
+    transition-duration: 0.1s
 </style>

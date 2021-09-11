@@ -65,15 +65,21 @@
 <style lang="stylus">
   a.event
     position: relative
-    svg
+    & > svg
+      width: base-line * 2
+      height: base-line * 2
       &.has-event
         fill: blue
+        text
+          fill: #fff
       text
         fill: white
         font-size: base-line * 2
       text.month
-        font-size: round((base-line / 2), 2)
-        font-weight: 900
+        font-size: base-line * .5
+        font-weight: 300
+        letter-spacing: .02em
+        fill: #fff
       rect, path
         stroke: darken(black, 5%)
         stroke-width: 0.5px
