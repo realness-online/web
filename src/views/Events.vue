@@ -80,8 +80,6 @@
         width: base-line * 2
         height: base-line * 2
         fill: transparent
-      & > a
-        -webkit-tap-highlight-color: green
     & > article
       padding: 0 base-line base-line base-line
       standard-grid: howdy
