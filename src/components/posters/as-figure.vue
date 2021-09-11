@@ -153,6 +153,6 @@
             & > h3
             & > time
               color: spin(blue, 3deg)
-              text-shadow: 1px 1px 3px spin(black, 21deg)
+              text-shadow: 1px 1px 6px spin(black, 21deg)
               line-height: 1
 </style>
