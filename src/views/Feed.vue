@@ -1,12 +1,12 @@
 <template>
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
-      <icon name="nothing" />
+      <logo-as-link />
       <hgroup>
         <h1>Feed</h1>
         <a ref="play" class="play" @click="go_big"><icon name="play" /></a>
       </hgroup>
-      <logo-as-link />
+      <icon name="nothing" />
     </header>
     <as-days v-slot="items"
              :working="working"
@@ -177,9 +177,9 @@
           @media (max-width: page-width), (max-height: page-width)
             visibility: hidden
           & > svg
-            margin-left: base-line * .33
-            width: base-line * .66
-            height: base-line * .66
+            margin-left: base-line * .5
+            width: base-line * .85
+            height: base-line * .85
             fill: transparent
             stroke: blue
     & > nav
