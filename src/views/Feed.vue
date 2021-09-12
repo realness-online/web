@@ -2,11 +2,10 @@
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
       <logo-as-link />
-      <hgroup>
-        <h1>Feed</h1>
-        <a ref="play" class="play" @click="go_big"><icon name="play" /></a>
-      </hgroup>
-      <icon name="nothing" />
+      <h1>Feed</h1>
+      <a @click="go_big">
+        <icon name="fullscreen" />
+      </a>
     </header>
     <as-days v-slot="items"
              :working="working"
@@ -163,25 +162,17 @@
             figcaption
               display: none
     & > header
-      justify-content: space-between
-      & > hgroup
-        display: flex
-        align-items: baseline
-        & > h1
-          width:auto
-          color: blue
-        & > a:hover > svg
-          stroke: green
-          transition-timing-function: ease-out
-        & > a
-          @media (max-width: page-width), (max-height: page-width)
-            visibility: hidden
-          & > svg
-            margin-left: base-line * .5
-            width: base-line * .85
-            height: base-line * .85
-            fill: transparent
-            stroke: blue
+      & > h1
+        width:auto
+        color: blue
+      & > a:hover > svg
+        fill: green
+        transition-timing-function: ease-out
+      & > a
+        @media (max-width: page-width), (max-height: page-width)
+          visibility: hidden
+        & > svg
+          fill: blue
     & > nav
       display: none
     & > section.as-days
