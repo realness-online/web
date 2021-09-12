@@ -12,7 +12,9 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
       Feed
     </h1>
      
-    <a>
+    <a
+      class="fullscreen"
+    >
       <icon-stub
         name="fullscreen"
       />
@@ -43,7 +45,9 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
       Feed
     </h1>
      
-    <a>
+    <a
+      class="fullscreen"
+    >
       <icon-stub
         name="fullscreen"
       />
@@ -74,7 +78,9 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
       Feed
     </h1>
      
-    <a>
+    <a
+      class="fullscreen"
+    >
       <icon-stub
         name="fullscreen"
       />
@@ -121,7 +127,9 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
       Feed
     </h1>
      
-    <a>
+    <a
+      class="fullscreen"
+    >
       <icon-stub
         name="fullscreen"
       />
