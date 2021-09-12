@@ -84,13 +84,15 @@
       standard-grid: howdy
       & > figure
         & > svg.background
-          fill:green
+          fill: spin(green, 3deg)
         & > figcaption menu a
+          svg.message
+          svg.download
           svg.background
-            fill: red
+            fill: spin(green, 3deg)
           hgroup > h3,
           hgroup > time
-            color: red
+            color: spin(green, 3deg)
       & > header
         max-height: base-line * 6
       @media (min-width: pad-begins)
