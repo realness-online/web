@@ -6,20 +6,26 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
   id="feed"
 >
   <header>
-    <a
-      class="play"
-    >
-      <icon-stub
-        name="play"
-      />
-    </a>
-     
     <logo-as-link-stub />
+     
+    <hgroup>
+      <h1>
+        Feed
+      </h1>
+       
+      <a
+        class="play"
+      >
+        <icon-stub
+          name="play"
+        />
+      </a>
+    </hgroup>
+     
+    <icon-stub
+      name="nothing"
+    />
   </header>
-   
-  <h1>
-    Feed
-  </h1>
    
   <as-days-stub
     avatars=""
@@ -39,20 +45,26 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
   id="feed"
 >
   <header>
-    <a
-      class="play"
-    >
-      <icon-stub
-        name="play"
-      />
-    </a>
-     
     <logo-as-link-stub />
+     
+    <hgroup>
+      <h1>
+        Feed
+      </h1>
+       
+      <a
+        class="play"
+      >
+        <icon-stub
+          name="play"
+        />
+      </a>
+    </hgroup>
+     
+    <icon-stub
+      name="nothing"
+    />
   </header>
-   
-  <h1>
-    Feed
-  </h1>
    
   <as-days-stub
     avatars=""
@@ -72,20 +84,26 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
   id="feed"
 >
   <header>
-    <a
-      class="play"
-    >
-      <icon-stub
-        name="play"
-      />
-    </a>
-     
     <logo-as-link-stub />
+     
+    <hgroup>
+      <h1>
+        Feed
+      </h1>
+       
+      <a
+        class="play"
+      >
+        <icon-stub
+          name="play"
+        />
+      </a>
+    </hgroup>
+     
+    <icon-stub
+      name="nothing"
+    />
   </header>
-   
-  <h1>
-    Feed
-  </h1>
    
   <as-days-stub
     avatars=""
@@ -121,20 +139,26 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
   id="feed"
 >
   <header>
-    <a
-      class="play"
-    >
-      <icon-stub
-        name="play"
-      />
-    </a>
-     
     <logo-as-link-stub />
+     
+    <hgroup>
+      <h1>
+        Feed
+      </h1>
+       
+      <a
+        class="play"
+      >
+        <icon-stub
+          name="play"
+        />
+      </a>
+    </hgroup>
+     
+    <icon-stub
+      name="nothing"
+    />
   </header>
-   
-  <h1>
-    Feed
-  </h1>
    
   <as-days-stub
     avatars=""

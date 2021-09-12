@@ -5,7 +5,7 @@ exports[`@/components/icon Renders An icon 1`] = `
   class="realness"
 >
   <use
-    xlink:href="#realness"
+    href="#realness"
   />
 </svg>
 `;

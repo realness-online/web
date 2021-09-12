@@ -81,7 +81,7 @@ describe('@/App.vue', () => {
       it('Sets Status to active whebn syncing', () => {
         wrapper.vm.status = 'offline'
         wrapper.vm.sync_active(true)
-        expect(wrapper.vm.status).toBe('syncing')
+        expect(wrapper.vm.status).toBe('working')
       })
       it('Sets Status to null when not syncing', () => {
         wrapper.vm.status = 'offline'

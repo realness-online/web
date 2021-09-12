@@ -10,6 +10,10 @@ exports[`@/views/Relations.vue Renders Fails gracefully when relations has been 
       name="nothing"
     />
      
+    <h1>
+      Relations
+    </h1>
+     
     <router-link-stub
       to="/phone-book"
     >
@@ -18,12 +22,6 @@ exports[`@/views/Relations.vue Renders Fails gracefully when relations has been 
       />
     </router-link-stub>
   </header>
-   
-  <hgroup>
-    <h1>
-      Relations
-    </h1>
-  </hgroup>
    
   <!---->
 </section>
@@ -39,6 +37,10 @@ exports[`@/views/Relations.vue Renders Relationship information 1`] = `
       name="nothing"
     />
      
+    <h1>
+      Relations
+    </h1>
+     
     <router-link-stub
       to="/phone-book"
     >
@@ -47,12 +49,6 @@ exports[`@/views/Relations.vue Renders Relationship information 1`] = `
       />
     </router-link-stub>
   </header>
-   
-  <hgroup>
-    <h1>
-      Relations
-    </h1>
-  </hgroup>
    
   <!---->
 </section>
