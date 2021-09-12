@@ -171,8 +171,7 @@
             & > b
              margin-bottom: 0
           & > menu
-            display: flex
-            align-items: center
+            justify-content: center
             opacity: 1
             padding: 0
             & > a > svg.gear
