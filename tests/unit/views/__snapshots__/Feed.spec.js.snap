@@ -8,23 +8,15 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
   <header>
     <logo-as-link-stub />
      
-    <hgroup>
-      <h1>
-        Feed
-      </h1>
-       
-      <a
-        class="play"
-      >
-        <icon-stub
-          name="play"
-        />
-      </a>
-    </hgroup>
+    <h1>
+      Feed
+    </h1>
      
-    <icon-stub
-      name="nothing"
-    />
+    <a>
+      <icon-stub
+        name="fullscreen"
+      />
+    </a>
   </header>
    
   <as-days-stub
@@ -47,23 +39,15 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
   <header>
     <logo-as-link-stub />
      
-    <hgroup>
-      <h1>
-        Feed
-      </h1>
-       
-      <a
-        class="play"
-      >
-        <icon-stub
-          name="play"
-        />
-      </a>
-    </hgroup>
+    <h1>
+      Feed
+    </h1>
      
-    <icon-stub
-      name="nothing"
-    />
+    <a>
+      <icon-stub
+        name="fullscreen"
+      />
+    </a>
   </header>
    
   <as-days-stub
@@ -86,23 +70,15 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
   <header>
     <logo-as-link-stub />
      
-    <hgroup>
-      <h1>
-        Feed
-      </h1>
-       
-      <a
-        class="play"
-      >
-        <icon-stub
-          name="play"
-        />
-      </a>
-    </hgroup>
+    <h1>
+      Feed
+    </h1>
      
-    <icon-stub
-      name="nothing"
-    />
+    <a>
+      <icon-stub
+        name="fullscreen"
+      />
+    </a>
   </header>
    
   <as-days-stub
@@ -141,23 +117,15 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
   <header>
     <logo-as-link-stub />
      
-    <hgroup>
-      <h1>
-        Feed
-      </h1>
-       
-      <a
-        class="play"
-      >
-        <icon-stub
-          name="play"
-        />
-      </a>
-    </hgroup>
+    <h1>
+      Feed
+    </h1>
      
-    <icon-stub
-      name="nothing"
-    />
+    <a>
+      <icon-stub
+        name="fullscreen"
+      />
+    </a>
   </header>
    
   <as-days-stub
