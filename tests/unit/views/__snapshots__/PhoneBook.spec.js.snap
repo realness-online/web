@@ -14,14 +14,14 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
       />
     </router-link-stub>
      
+    <h1>
+      Recent
+    </h1>
+     
     <logo-as-link-stub />
   </header>
    
   <hgroup>
-    <h1>
-      Phonebook
-    </h1>
-     
     <!---->
   </hgroup>
    
@@ -52,14 +52,14 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
       />
     </router-link-stub>
      
+    <h1>
+      Recent
+    </h1>
+     
     <logo-as-link-stub />
   </header>
    
   <hgroup>
-    <h1>
-      Phonebook
-    </h1>
-     
     <!---->
   </hgroup>
    
@@ -81,14 +81,14 @@ exports[`@/views/PhoneBook Renders Lets you know to sign in 1`] = `
       name="nothing"
     />
      
+    <h1>
+      Recent
+    </h1>
+     
     <logo-as-link-stub />
   </header>
    
   <hgroup>
-    <h1>
-      Phonebook
-    </h1>
-     
     <icon-stub
       name="working"
     />

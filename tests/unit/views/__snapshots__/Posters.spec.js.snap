@@ -12,6 +12,10 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
       />
     </a>
      
+    <h1>
+      Posters
+    </h1>
+     
     <a
       id="camera"
     >
@@ -27,12 +31,6 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
      
     <logo-as-link-stub />
   </header>
-   
-  <hgroup>
-    <h1>
-      Posters
-    </h1>
-  </hgroup>
    
   <article>
     <as-figure-stub

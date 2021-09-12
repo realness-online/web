@@ -6,18 +6,18 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
   id="events"
 >
   <header>
-    <icon-stub
-      name="nothing"
-    />
-     
     <logo-as-link-stub />
-  </header>
-   
-  <hgroup>
+     
     <h1>
       Events
     </h1>
      
+    <icon-stub
+      name="nothing"
+    />
+  </header>
+   
+  <hgroup>
     <icon-stub
       name="working"
     />
