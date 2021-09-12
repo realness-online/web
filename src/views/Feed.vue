@@ -3,7 +3,7 @@
     <header>
       <logo-as-link />
       <h1>Feed</h1>
-      <a @click="go_big">
+      <a class="fullscreen" @click="go_big">
         <icon name="fullscreen" />
       </a>
     </header>
@@ -169,8 +169,9 @@
         fill: green
         transition-timing-function: ease-out
       & > a
-        @media (max-width: page-width), (max-height: page-width)
-          visibility: hidden
+        &.fullscreen
+          @media (max-width: page-width), (max-height: page-width)
+            visibility: hidden
         & > svg
           fill: blue
     & > nav
