@@ -10,6 +10,7 @@
     "test:e2e": "vue-cli-service test:e2e",
     "lint": "vue-cli-service lint",
     "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
+    "release": "gh release create $npm_package_version && yarn deploy --mode=development --watch",
     "test": "TZ=UTC vue-cli-service test:unit",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch"
