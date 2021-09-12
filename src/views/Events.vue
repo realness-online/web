@@ -81,7 +81,6 @@
         height: base-line * 2
         fill: transparent
     & > article
-      padding: 0 base-line base-line base-line
       standard-grid: howdy
       & > figure
         & > svg.background
