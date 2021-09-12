@@ -7,10 +7,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "yarn workers && vue-cli-service build",
-    "cypress": "cypress open",
-    "cypress:headless": "cypress run --browser chrome --headless",
-    "test:e2e": "start-server-and-test start 8080 cypress",
-    "test:e2e:ci": "start-server-and-test start 8080 cypress:headless",
+    "test:e2e": "cypress open",
+    "test:e2e:ci": "cypress run --browser chrome --headless",
     "lint": "vue-cli-service lint",
     "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "release": "gh release create $npm_package_version && yarn deploy --mode=development --watch",
