@@ -152,6 +152,7 @@
               margin-right: (base-line / 3)
             & > h3
             & > time
+              font-weight: normal
               color: spin(blue, 3deg)
               text-shadow: 1px 1px 6px spin(black, 21deg)
               line-height: 1
