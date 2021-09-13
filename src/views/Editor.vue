@@ -32,6 +32,8 @@
 </script>
 <style lang="stylus">
   section#editor
+    svg.background
+      fill: green
     & > svg
       position: fixed
       top: 0
@@ -44,9 +46,10 @@
     & > header > svg
     & > menu > svg
       cursor: pointer
-      fill: spin(green, 3deg)
+      &.opacity
+        fill: spin(green, 3deg)
       &.grid
-        border:1px solid green
+        border:1px solid black
         border-radius: base-line * .1
     & > header > h1
       color: green
