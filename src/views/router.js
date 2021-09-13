@@ -9,6 +9,7 @@ import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
+import Editor from '@/views/Editor'
 
 Vue.use(Router)
 export default new Router({
@@ -21,10 +22,11 @@ export default new Router({
     { path: '/events', component: Events },
     { path: '/feed', component: Feed },
     { path: '/posters', component: Posters },
+    { path: '/posters/:id', component: Editor },
     { path: '/relations', component: Relations },
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },
     { path: '/account', component: Account },
-    { path: '/:phone_number', component: Profile, name: 'view-profile' }
+    { path: '/:phone_number', component: Profile }
   ]
 })

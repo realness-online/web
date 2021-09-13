@@ -8,6 +8,23 @@
   <symbol id="background">
     <rect width="100%" height="100%"/>
   </symbol>
+  <symbol id="description">
+    <rect width="100%" height="100%"/>
+  </symbol>
+  <symbol id="opacity" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="60"/>
+    <circle cx="60" cy="60" r="30"/>
+    <circle cx="60" cy="60" r="15"/>
+  </symbol>
+  <symbol id="point" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="8"/>
+  </symbol>
+  <symbol id="grid" viewBox="0 0 120 90">
+    <rect id="vanishing-point" width="1" height="1" x="30" y="30" />
+    <rect id="foreground" width="100%" height="1" y="45" />
+    <rect id="left" width="1" height="100%" x="30" />
+    <rect id="right" width="1" height="100%" x="90" />
+  </symbol>
   <symbol id="date-picker" viewBox="0 0 150 150">
     <rect x="1" y="1" rx="8" width="114" height="114"/>
     <path d="M130.019 110.44H117.56V97.98a3.558 3.558 0 00-3.56-3.56 3.56 3.56 0 00-3.559 3.56v12.46h-12.46a3.558 3.558 0 100 7.119h12.46v12.46a3.56 3.56 0 107.119 0v-12.46h12.459a3.559 3.559 0 100-7.119z"/>

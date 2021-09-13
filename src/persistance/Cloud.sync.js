@@ -7,7 +7,7 @@ import { as_filename, as_author, list } from '@/helpers/itemid'
 import { Offline } from '@/persistance/Storage'
 
 export const three_minutes = 180000
-export const five_minutes = 300000
+export const five_minutes = 3600000
 export const one_hour = 3600000
 export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }

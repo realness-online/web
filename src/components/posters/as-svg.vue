@@ -1,6 +1,6 @@
 <template lang="html">
   <svg :itemid="itemid" itemscope itemtype="/posters"
-       tabindex="0" :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
+       :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
        @blur="blur_poster()"
        @click="vector_click">
@@ -10,16 +10,19 @@
         <use v-for="(symbol, index) in path" :key="index" :href="symbol_fragment(index)" />
       </symbol>
     </defs>
-    <use :href="all_fragment" :viewBox="viewbox" />
+    <icon name="background" />
+    <use v-for="(symbol, index) in path" :key="index" tabindex="0" :href="symbol_fragment(index)" />
     <g v-if="animation" v-html="animation.go" />
   </svg>
 </template>
 <script>
+  import icon from '@/components/icon'
   import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import vector from '@/mixins/vector'
   export default {
+    components: { icon },
     mixins: [intersection, vector_click, vector],
     props: {
       itemid: {
@@ -60,4 +63,8 @@
     display: block
     height: 100%
     width: 100%
+    & use:focus
+      outline: none
+      stroke: spin(blue, 3deg)
+      stroke-width: 2px
 </style>
