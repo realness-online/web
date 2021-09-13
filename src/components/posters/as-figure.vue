@@ -1,6 +1,5 @@
 <template lang="html">
   <figure class="poster" :class="{ landscape }">
-    <icon :name="background" />
     <as-svg ref="poster"
             :itemid="itemid"
             :poster="new_poster"
@@ -21,7 +20,6 @@
   </figure>
 </template>
 <script>
-  import icon from '@/components/icon'
   import { as_author, load, as_created_at } from '@/helpers/itemid'
   import { as_time } from '@/helpers/date'
   import as_svg from '@/components/posters/as-svg'
@@ -32,7 +30,6 @@
   import as_link from '@/components/profile/as-link'
   export default {
     components: {
-      icon,
       'as-svg': as_svg,
       'as-link': as_link,
       'as-messenger': as_messenger,

@@ -1,7 +1,7 @@
 <template>
   <section id="feed" class="page" :class="{ fullscreen }">
     <header>
-      <logo-as-link />
+      <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
       <a class="fullscreen" @click="go_big">
         <icon name="fullscreen" />

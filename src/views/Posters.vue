@@ -1,12 +1,12 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <a v-if="add" @click="select_photo"><icon name="add" /></a>
+      <a v-if="add" tabindex="-1" @click="select_photo"><icon name="add" /></a>
       <icon v-else name="nothing" />
       <h1>Posters</h1>
       <a v-if="add" id="camera" @click="open_camera"><icon name="camera" /></a>
       <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png">
-      <logo-as-link />
+      <logo-as-link tabindex="-1" />
     </header>
     <icon v-if="working" name="working" />
     <article v-else>
