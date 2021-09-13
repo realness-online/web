@@ -9,8 +9,8 @@
     <menu>
       <icon name="description" />
       <icon name="opacity" />
-      <icon name="point" />
       <icon name="grid" />
+      <icon name="animation" />
     </menu>
   </section>
 </template>
@@ -45,7 +45,6 @@
     & > menu > svg
       cursor: pointer
       fill: spin(green, 3deg)
-      &.point
       &.grid
         border:1px solid green
         border-radius: base-line * .1
