@@ -34,6 +34,7 @@
   import 'firebase/auth'
   import { list, as_directory, load } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
+  import fullscreen from '@/mixins/fullscreen'
   import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
@@ -50,10 +51,9 @@
       'poster-as-figure': poster_as_figure,
       icon
     },
-    mixins: [signed_in, intersection_thought],
+    mixins: [signed_in, intersection_thought, fullscreen],
     data () {
       return {
-        fullscreen: true,
         signed_in: true,
         statements: [],
         posters: [],
@@ -88,14 +88,6 @@
       })
     },
     methods: {
-      go_big (event) {
-        this.fullscreen = !this.fullscreen
-        try {
-          this.$el.requestFullscreen()
-        } catch (e) {
-          this.$el.webkitRequestFullScreen()
-        }
-      },
       async fill_feed () {
         await Promise.all(this.authors.map(async relation => {
           const [statements, posters] = await Promise.all([
