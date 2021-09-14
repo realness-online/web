@@ -53,7 +53,6 @@
         if (this.poster) this.vector = this.poster
       }
     },
-
     methods: {
       up (event) {
         console.log('up', event)
