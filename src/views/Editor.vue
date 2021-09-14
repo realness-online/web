@@ -1,28 +1,38 @@
 <template lang="html">
   <section id="editor" class="page">
     <header>
-      <icon name="remove" />
       <h1>Edit</h1>
-      <icon name="finished" />
+      <router-link class="remove" to="/posters">
+        <icon name="remove" tabindex="-1" />
+      </router-link>
+      <a class="fullscreen" @click="go_big">
+        <icon name="fullscreen" tabindex="-1" />
+      </a>
+      <icon name="finished" tabindex="-1" />
     </header>
-    <as-svg :itemid="itemid" :immediate="true" :tabable="true" />
+    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" />
     <menu>
-      <icon name="description" />
-      <icon name="opacity" />
-      <icon name="grid" />
-      <icon name="animation" />
+      <icon name="description" tabindex="-1" />
+      <icon name="opacity" tabindex="-1" />
+      <icon name="grid" tabindex="-1" />
+      <icon name="animation" tabindex="-1" />
     </menu>
+    <aside>
+      <p><kbd>ctrl+</kbd></p>
+    </aside>
   </section>
 </template>
 
 <script>
   import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
+  import fullscreen from '@/mixins/fullscreen'
   export default {
     components: {
       icon,
       'as-svg': as_svg
     },
+    mixins: [fullscreen],
     data () {
       return {
         itemid: `${localStorage.me}/posters/${this.$route.params.id}`
@@ -32,8 +42,10 @@
 </script>
 <style lang="stylus">
   section#editor
-    svg.background
-      fill: green
+    &:fullscreen
+    &:full-screen
+      & > header > a.fullscreen
+        visibility: hidden
     & > svg
       position: fixed
       top: 0
@@ -43,14 +55,18 @@
     & > header
       position: relative;
       z-index:2
-    & > header > svg
+    & > header > a  > svg
     & > menu > svg
       cursor: pointer
+      stroke-width: base-line * 0.1
+      stroke: spin(green, 3deg)
+      stroke-opacity: 0.25
+      fill-opacity: 0.25
+      &.remove
       &.opacity
+      &.fullscreen
         fill: spin(green, 3deg)
-      &.grid
-        border:1px solid black
-        border-radius: base-line * .1
+        fill-opacity: inherit
     & > header > h1
       color: green
     & > menu
