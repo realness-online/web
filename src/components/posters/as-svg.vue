@@ -1,20 +1,18 @@
 <template lang="html">
-  <svg :itemid="itemid" itemscope itemtype="/posters"
+  <svg v-hotkey="keymap" :itemid="itemid" itemscope
+       itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
        @blur="blur_poster()"
        @click="vector_click">
     <defs>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
-      <symbol :id="all_id" :preserveAspectRatio="aspect_ratio" :viewBox="viewbox">
-        <use v-for="(symbol, index) in path" :key="index" :href="symbol_fragment(index)" />
-      </symbol>
     </defs>
-    <icon name="background" />
-    <use v-for="(symbol, index) in path" :key="index" tabindex="0" :href="symbol_fragment(index)" />
-    <g v-if="animation" v-html="animation.go" />
+    <icon name="background" tabindex="1" />
+    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabindex(index)" :href="symbol_fragment(index)" />
   </svg>
 </template>
+
 <script>
   import icon from '@/components/icon'
   import { load } from '@/helpers/itemid'
@@ -25,6 +23,11 @@
     components: { icon },
     mixins: [intersection, vector_click, vector],
     props: {
+      tabable: {
+        type: Boolean,
+        required: false,
+        defauls: false
+      },
       itemid: {
         type: String,
         required: true
@@ -35,12 +38,38 @@
         default: null
       }
     },
+    computed: {
+      keymap () {
+        return {
+          'shift+up': this.shift_up,
+          'shift+down': this.shift_down,
+          down: this.down,
+          up: this.up
+        }
+      }
+    },
     watch: {
       poster () {
         if (this.poster) this.vector = this.poster
       }
     },
+
     methods: {
+      up (event) {
+        console.log('up', event)
+      },
+      down (event) {
+        console.log('down', event)
+      },
+      shift_up (event) {
+        console.log('shift_up', event)
+      },
+      shift_down (event) {
+        console.log('shift_down', event)
+      },
+      tabindex (index) {
+        return index + 2
+      },
       async focus_poster () {
         this.animation = await this.load_animation()
       },
@@ -63,6 +92,8 @@
     display: block
     height: 100%
     width: 100%
+    & svg:focus
+      fill: white
     & use:focus
       outline: none
       stroke: spin(blue, 3deg)
