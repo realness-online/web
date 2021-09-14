@@ -48,13 +48,18 @@
         visibility: hidden
     & > svg
       position: fixed
+      z-index: 1
       top: 0
       bottom: 0
       left: 0
       right: 0
     & > header
-      position: relative;
-      z-index:2
+      & > h1
+      & > a
+        position: sticky
+        z-index: 2
+      & > a
+        height: base-line
     & > header > a  > svg
     & > menu > svg
       cursor: pointer
