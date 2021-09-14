@@ -1,4 +1,11 @@
 export default {
+  props: {
+    slice: {
+      type: Boolean,
+      required: false,
+      default: true
+    }
+  },
   data () {
     return {
       vector: null,
@@ -13,7 +20,7 @@ export default {
   },
   computed: {
     aspect_ratio () {
-      if (this.menu) return 'xMidYMid meet'
+      if (this.menu || !this.slice) return 'xMidYMid meet'
       else return 'xMidYMid slice'
     },
     landscape () {
