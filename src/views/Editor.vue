@@ -8,7 +8,9 @@
       <a class="fullscreen" @click="go_big">
         <icon name="fullscreen" tabindex="-1" />
       </a>
-      <icon name="finished" tabindex="-1" />
+      <a @click="save">
+        <icon name="finished" tabindex="-1" />
+      </a>
     </header>
     <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" />
     <menu>
@@ -36,6 +38,11 @@
     data () {
       return {
         itemid: `${localStorage.me}/posters/${this.$route.params.id}`
+      }
+    },
+    methods: {
+      save () {
+        console.log('save')
       }
     }
   }
