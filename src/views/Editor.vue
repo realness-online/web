@@ -12,7 +12,7 @@
         <icon name="finished" tabindex="-1" />
       </a>
     </header>
-    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" />
+    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" />
     <menu>
       <icon name="description" tabindex="-1" />
       <icon name="opacity" tabindex="-1" />
