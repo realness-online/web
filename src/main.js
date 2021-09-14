@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './views/router'
 import { register } from 'register-service-worker'
+import VueHotkey from 'v-hotkey'
 const me = localStorage.me
 if (!me) localStorage.me = '/+'
 if (process.env.NODE_ENV === 'production') {
@@ -16,6 +17,7 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 Vue.config.productionTip = false
+Vue.use(VueHotkey)
 new Vue({
   router,
   render: h => h(App)
