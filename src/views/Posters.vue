@@ -28,8 +28,13 @@
                  @vector-click="menu_toggle(poster.id)">
         <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
         <menu v-else>
-          <a class="remove" @click="remove_poster(poster.id)"><icon name="remove" /></a>
           <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
+          <router-link class="gear" :to="edit_poster(poster.id)">
+            <icon name="gear" />
+          </router-link>
+          <a class="remove" @click="remove_poster(poster.id)">
+            <icon name="remove" />
+          </a>
           <as-download :itemid="poster.id" />
         </menu>
       </as-figure>
@@ -46,7 +51,7 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { del } from 'idb-keyval'
-  import { as_directory } from '@/helpers/itemid'
+  import { as_directory, as_created_at } from '@/helpers/itemid'
   import get_item from '@/modules/item'
   import { recent_item_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
@@ -80,6 +85,7 @@
       }
     },
     computed: {
+
       as_itemid () {
         if (this.new_poster && this.new_poster.id) return this.new_poster.id
         else return `${localStorage.me}/posters/${Date.now()}`
@@ -108,6 +114,9 @@
       this.optimizer.terminate()
     },
     methods: {
+      edit_poster (itemid) { // The editor is the author
+        return `/posters/${as_created_at(itemid)}`
+      },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
       },
@@ -231,10 +240,12 @@
               stroke spin(green, 3deg)
               stroke-width 1px
             &.has-event
-              fill: spin(green, 66deg)
+              fill: spin(green, 45deg)
               stroke spin(green, 3deg)
               stroke-width 1px
-
+          a.gear
+            top: base-line
+            right: base-line
           a.remove
             bottom: base-line
             left: base-line
