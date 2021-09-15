@@ -26,6 +26,7 @@
 </template>
 
 <script>
+  import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_svg from '@/components/posters/as-svg'
   import fullscreen from '@/mixins/fullscreen'
@@ -41,8 +42,11 @@
       }
     },
     methods: {
-      save () {
+      async save () {
         console.log('save')
+        const poster = new Poster(this.itemid)
+        await poster.save()
+        await this.$nextTick()
       }
     }
   }
@@ -77,6 +81,7 @@
       &.remove
       &.opacity
       &.fullscreen
+      &.finished
         fill: spin(green, 3deg)
         fill-opacity: inherit
     & > header > h1
