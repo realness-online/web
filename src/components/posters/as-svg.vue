@@ -26,7 +26,7 @@
       tabable: {
         type: Boolean,
         required: false,
-        defauls: false
+        default: false
       },
       itemid: {
         type: String,
@@ -54,20 +54,37 @@
       }
     },
     methods: {
+      change_opacity (direction = 'up', resolution = 0.100) {
+        // const focused_on = this.$el.querySelector('symbol')
+        if (!document.activeElement) return
+        let fragment = document.activeElement.getAttribute('href')
+        fragment = fragment.substring(1)
+        const symbols = this.$el.querySelectorAll('symbol')
+        symbols.forEach(symbol => {
+          const id = symbol.getAttribute('id')
+          if (id === fragment) {
+            const path = symbol.querySelector('path')
+            let opacity = parseFloat(path.getAttribute('fill-opacity'))
+            if (direction === 'down') opacity += resolution
+            else opacity -= resolution
+            // hardcode upper and lower limits
+            if (opacity >= 1) opacity = 1
+            else if (opacity <= 0.1) opacity = 0.025
+            path.setAttribute('fill-opacity', opacity)
+          }
+        })
+      },
       up (event) {
-        console.log('up', event)
+        this.change_opacity()
       },
       down (event) {
-        console.log('down', event)
+        this.change_opacity('down')
       },
       shift_up (event) {
-        console.log('shift_up', event)
+        this.change_opacity('up', 0.025)
       },
       shift_down (event) {
-        console.log('shift_down', event)
-      },
-      tabindex (index) {
-        return index + 2
+        this.change_opacity('down', 0.02)
       },
       async focus_poster () {
         this.animation = await this.load_animation()
