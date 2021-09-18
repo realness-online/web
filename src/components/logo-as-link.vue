@@ -1,5 +1,5 @@
 <template lang="html">
-  <router-link id="logo" to="/">
+  <router-link id="logo" to="/" tabindex="-1">
     <icon name="realness" />
   </router-link>
 </template>
