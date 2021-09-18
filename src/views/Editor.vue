@@ -44,7 +44,8 @@
         console.log('save')
         const poster = new Poster(this.itemid)
         await poster.save()
-        await this.$nextTick()
+        const route = { path: '/posters' }
+        this.$router.push(route)
       }
     }
   }
