@@ -54,7 +54,7 @@
       }
     },
     methods: {
-      change_opacity (direction = 'up', resolution = 0.100) {
+      change_opacity (direction = 'up', resolution = 0.05) {
         // const focused_on = this.$el.querySelector('symbol')
         if (!document.activeElement) return
         let fragment = document.activeElement.getAttribute('href')
@@ -69,7 +69,7 @@
             else opacity -= resolution
             // hardcode upper and lower limits
             if (opacity >= 1) opacity = 1
-            else if (opacity <= 0.1) opacity = 0.025
+            else if (opacity <= 0.025) opacity = 0.025
             path.setAttribute('fill-opacity', opacity)
           }
         })
@@ -81,10 +81,10 @@
         this.change_opacity('down')
       },
       shift_up (event) {
-        this.change_opacity('up', 0.025)
+        this.change_opacity('up', 0.03)
       },
       shift_down (event) {
-        this.change_opacity('down', 0.02)
+        this.change_opacity('down', 0.03)
       },
       async focus_poster () {
         this.animation = await this.load_animation()
