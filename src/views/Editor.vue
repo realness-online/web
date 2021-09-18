@@ -13,8 +13,7 @@
     </header>
     <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" />
     <menu>
-      <icon name="description" tabindex="-1" />
-      <icon name="opacity" tabindex="-1" />
+      <icon name="opacity" tabindex="-1" class="selected" />
       <icon name="grid" tabindex="-1" />
       <icon name="animation" tabindex="-1" />
     </menu>
