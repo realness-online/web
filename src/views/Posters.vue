@@ -234,15 +234,9 @@
           @media (prefers-color-scheme: dark)
             fill: green
         & > figcaption > menu
-          a > svg
-            @media (prefers-color-scheme: dark)
-              fill: spin(green, 3deg)
-              stroke spin(green, 3deg)
-              stroke-width 1px
-            &.has-event
-              fill: spin(green, 45deg)
-              stroke spin(green, 3deg)
-              stroke-width 1px
+          @media (prefers-color-scheme: dark)
+              & > a >  svg
+                fill: spin(green, 3deg)
           a.gear
             top: base-line
             right: base-line
