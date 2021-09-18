@@ -47,14 +47,14 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
           itemid="/+16282281824/posters/559666932867"
         />
          
-        <router-link
+        <router-link-stub
           class="gear"
           to="/posters/559666932867"
         >
           <icon-stub
             name="gear"
           />
-        </router-link>
+        </router-link-stub>
          
         <a
           class="remove"
