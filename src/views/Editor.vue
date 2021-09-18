@@ -1,7 +1,6 @@
 <template lang="html">
   <section id="editor" class="page">
     <header>
-      <h1>Edit</h1>
       <router-link class="remove" to="/posters">
         <icon name="remove" tabindex="-1" />
       </router-link>
