@@ -6,7 +6,7 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
   id="editor"
 >
   <header>
-    <router-link
+    <router-link-stub
       class="remove"
       to="/posters"
     >
@@ -14,7 +14,7 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
         name="remove"
         tabindex="-1"
       />
-    </router-link>
+    </router-link-stub>
      
     <a
       class="fullscreen"

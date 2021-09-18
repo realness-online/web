@@ -19,7 +19,9 @@ describe('@/views/Posters.vue', () => {
       poster: poster.id
     }]
     get.mockImplementation(_ => Promise.resolve({ items: ['559666932867'] }))
-    wrapper = shallowMount(Posters)
+    wrapper = shallowMount(Posters, {
+      stubs: ['router-link', 'router-view']
+    })
     wrapper.vm.events = events
   })
   describe('Renders', () => {

@@ -9,7 +9,8 @@ describe('@/components/posters/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(as_svg, {
-      propsData: { itemid: poster.id }
+      propsData: { itemid: poster.id },
+      stubs: ['router-link', 'router-view']
     })
   })
   describe('Renders', () => {
