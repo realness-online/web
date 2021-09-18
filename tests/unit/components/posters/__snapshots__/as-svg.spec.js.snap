@@ -6,24 +6,14 @@ exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
   itemscope="itemscope"
   itemtype="/posters"
   preserveAspectRatio="xMidYMid slice"
-  tabindex="0"
   viewBox="0 0 16 16"
 >
-  <defs>
-     
-    <symbol
-      id="all"
-      preserveAspectRatio="xMidYMid slice"
-      viewBox="0 0 16 16"
-    />
-  </defs>
+  <defs />
    
-  <use
-    href="#all"
-    viewBox="0 0 16 16"
+  <icon-stub
+    name="background"
   />
    
-  <!---->
 </svg>
 `;
 
@@ -33,23 +23,13 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   itemscope="itemscope"
   itemtype="/posters"
   preserveAspectRatio="xMidYMid slice"
-  tabindex="0"
   viewBox="0 0 16 16"
 >
-  <defs>
-     
-    <symbol
-      id="all"
-      preserveAspectRatio="xMidYMid slice"
-      viewBox="0 0 16 16"
-    />
-  </defs>
+  <defs />
    
-  <use
-    href="#all"
-    viewBox="0 0 16 16"
+  <icon-stub
+    name="background"
   />
    
-  <!---->
 </svg>
 `;

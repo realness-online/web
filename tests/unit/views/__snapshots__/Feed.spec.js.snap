@@ -2,11 +2,13 @@
 
 exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
 <section
-  class="page fullscreen"
+  class="page"
   id="feed"
 >
   <header>
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
      
     <h1>
       Feed
@@ -35,11 +37,13 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
 
 exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
 <section
-  class="page fullscreen"
+  class="page"
   id="feed"
 >
   <header>
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
      
     <h1>
       Feed
@@ -68,11 +72,13 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
 
 exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`] = `
 <section
-  class="page fullscreen"
+  class="page"
   id="feed"
 >
   <header>
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
      
     <h1>
       Feed
@@ -117,11 +123,13 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
 
 exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
 <section
-  class="page fullscreen"
+  class="page"
   id="feed"
 >
   <header>
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
      
     <h1>
       Feed
