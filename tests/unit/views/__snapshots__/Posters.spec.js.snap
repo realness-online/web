@@ -6,7 +6,9 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
   id="posters"
 >
   <header>
-    <a>
+    <a
+      tabindex="-1"
+    >
       <icon-stub
         name="add"
       />
@@ -29,15 +31,31 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
       type="file"
     />
      
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
   </header>
    
   <article>
     <as-figure-stub
       class=""
       itemid="/+16282281824/posters/559666932867"
+      slice="true"
     >
       <menu>
+        <event-as-button-stub
+          itemid="/+16282281824/posters/559666932867"
+        />
+         
+        <router-link
+          class="gear"
+          to="/posters/559666932867"
+        >
+          <icon-stub
+            name="gear"
+          />
+        </router-link>
+         
         <a
           class="remove"
         >
@@ -45,10 +63,6 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
             name="remove"
           />
         </a>
-         
-        <event-as-button-stub
-          itemid="/+16282281824/posters/559666932867"
-        />
          
         <as-download-stub
           itemid="/+16282281824/posters/559666932867"

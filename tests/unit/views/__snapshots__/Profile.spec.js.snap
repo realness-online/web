@@ -16,6 +16,7 @@ exports[`@/views/Profile.vue Renders Handles there not being posters 1`] = `
   <div>
     <avatar-stub
       person="[object Object]"
+      slice="true"
     />
      
     <menu>
@@ -60,6 +61,7 @@ exports[`@/views/Profile.vue Renders Shows profile information for a phone numbe
   <div>
     <avatar-stub
       person="[object Object]"
+      slice="true"
     />
      
     <menu>
