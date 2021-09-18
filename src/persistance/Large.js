@@ -3,6 +3,7 @@ import { set, get, del } from 'idb-keyval'
 import { as_directory_id, as_path_parts, as_created_at } from '@/helpers/itemid'
 const Large = (superclass) => class extends superclass {
   async save (items = document.querySelector(`[itemid="${this.id}"]`)) {
+    if (!items) return
     const exist = await get(this.id)
     await set(this.id, items.outerHTML)
     if (!exist) {

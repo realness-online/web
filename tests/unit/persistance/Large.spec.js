@@ -18,15 +18,18 @@ describe('@/persistance/Large.js', () => {
         expect(pic.save).toBeDefined()
       })
       it('Retrieves and ads to an already existing directory', async () => {
-        get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementation(itemid => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementationOnce(_ => Promise.resolve(null))
         await pic.save(poster)
-        expect(get).toHaveBeenCalledTimes(1)
+        expect(get).toHaveBeenCalledTimes(2)
         expect(set).toHaveBeenCalledTimes(2)
       })
-      it('Saves items to indexdb', async () => {
+      it('Updates item in indexdb', async () => {
+        get.mockImplementation(itemid => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementationOnce(_ => Promise.resolve(new Object()))
         await pic.save(poster)
-        expect(get).toBeCalled() // checks locally for directory
-        expect(set).toHaveBeenCalledTimes(2) // sets directory and poster
+        expect(get).toHaveBeenCalledTimes(1)
+        expect(set).toHaveBeenCalledTimes(1)
       })
       it('Only saves if there are items to save', async () => {
         await pic.save()
