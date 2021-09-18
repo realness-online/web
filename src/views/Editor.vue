@@ -73,24 +73,39 @@
     & > header > a  > svg
     & > menu > svg
       cursor: pointer
-      stroke-width: base-line * 0.1
-      stroke: spin(green, 3deg)
-      stroke-opacity: 0.25
-      fill-opacity: 0.25
+      stroke-width: 0
+      fill: green
+      &:hover
+        fill: red
+        border-color: red
       &.remove
       &.opacity
       &.fullscreen
       &.finished
-        fill: spin(green, 3deg)
         fill-opacity: inherit
     & > header > h1
       color: green
     & > menu
       position: fixed
+      z-index: 2
       bottom: base-line
       left: base-line
       right: base-line
       display: flex
       justify-content: space-between
+      & > svg
+        position: relative;
+        z-index: 2
+        &.selected
+          stroke: red
+          fill red
+        &.grid
+          border: 1px solid green
+          border-radius: base-line * 0.15
+          transition: border-color
+          &:hover
+            transition: border-color
+            fill: green
+            border-color: red
 
 </style>
