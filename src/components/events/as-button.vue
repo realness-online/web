@@ -69,8 +69,9 @@
       width: base-line * 2
       height: base-line * 2
       &.has-event
-        fill: blue
+        fill: red !important
         text
+          color: #fff
           fill: #fff
       text
         fill: white
