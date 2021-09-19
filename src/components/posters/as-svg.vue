@@ -64,7 +64,7 @@
         event.stopPropagation()
         this.$refs.background.$el.focus()
       },
-      change_opacity (direction = 'up', type = 'fill', resolution = 0.05) {
+      change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
         console.log(direction, type, resolution)
         // const focused_on = this.$el.querySelector('symbol')
         if (!document.activeElement) return
@@ -89,10 +89,10 @@
         this.change_opacity('down')
       },
       tiny_fill_up (event) {
-        this.change_opacity('up', 'fill', 0.03)
+        this.change_opacity('up', 'fill', 0.01)
       },
       tiny_fill_down (event) {
-        this.change_opacity('down', 'fill', 0.03)
+        this.change_opacity('down', 'fill', 0.01)
       },
       up_stroke (event) {
         this.change_opacity('up', 'stroke')
@@ -101,10 +101,10 @@
         this.change_opacity('down', 'stroke')
       },
       tiny_up_stroke (event) {
-        this.change_opacity('up', 'stroke', 0.03)
+        this.change_opacity('up', 'stroke', 0.01)
       },
       tiny_down_stroke (event) {
-        this.change_opacity('down', 'stroke', 0.03)
+        this.change_opacity('down', 'stroke', 0.01)
       },
       async focus_poster () {
         this.animation = await this.load_animation()
