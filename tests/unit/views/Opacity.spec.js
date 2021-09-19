@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import Editor from '@/views/Editor'
+import Opacity from '@/views/Opacity'
 import Events from '@/views/Events'
 const user = { phoneNumber: '/+16282281824' }
 
-describe('@/views/Editor.vue', () => {
+describe('@/views/Opacity.vue', () => {
   describe('Renders', () => {
     it('Shows an editor for a poster or an avatar', async () => {
       firebase.user = user
