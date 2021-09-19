@@ -103,8 +103,6 @@
       &.fullscreen
       &.finished
         fill-opacity: inherit
-      // &.circle
-      //   fill: url(#r)
     & > header > h1
       color: green
     & > menu
