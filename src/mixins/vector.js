@@ -22,8 +22,8 @@ export default {
       else return [this.vector.path]
     },
     all_id () {
-      if (this.vector) return `${as_query_id(this.vector.id)}-all`
-      else return 'all'
+      if (this.vector) return as_query_id(this.vector.id)
+      else return 'new-poster'
     },
     all_fragment () {
       return `#${this.all_id}`
