@@ -41,10 +41,14 @@
     computed: {
       keymap () {
         return {
-          'shift+up': this.shift_up,
-          'shift+down': this.shift_down,
-          down: this.down,
-          up: this.up
+          up: () => this.change_opacity(),
+          down: this.fill_down,
+          'shift+up': this.tiny_fill_up,
+          'shift+down': this.tiny_fill_down,
+          left: this.up_stroke,
+          right: this.down_stroke,
+          'shift+left': this.tiny_up_stroke,
+          'shift+right': this.tiny_down_stroke
         }
       }
     },
@@ -54,7 +58,14 @@
       }
     },
     methods: {
-      change_opacity (direction = 'up', resolution = 0.05) {
+      begin_again (event) {
+        console.log('begin_again', event)
+        event.preventDefault()
+        event.stopPropagation()
+        this.$refs.background.$el.focus()
+      },
+      change_opacity (direction = 'up', type = 'fill', resolution = 0.05) {
+        console.log(direction, type, resolution)
         // const focused_on = this.$el.querySelector('symbol')
         if (!document.activeElement) return
         let fragment = document.activeElement.getAttribute('href')
@@ -64,27 +75,36 @@
           const id = symbol.getAttribute('id')
           if (id === fragment) {
             const path = symbol.querySelector('path')
-            let opacity = parseFloat(path.getAttribute('fill-opacity'))
+            let opacity = parseFloat(path.getAttribute(`${type}-opacity`))
             if (direction === 'down') opacity += resolution
             else opacity -= resolution
             // hardcode upper and lower limits
             if (opacity >= 1) opacity = 1
             else if (opacity <= 0.025) opacity = 0.025
-            path.setAttribute('fill-opacity', opacity)
+            path.setAttribute(`${type}-opacity`, opacity)
           }
         })
       },
-      up (event) {
-        this.change_opacity()
-      },
-      down (event) {
+      fill_down (event) {
         this.change_opacity('down')
       },
-      shift_up (event) {
-        this.change_opacity('up', 0.03)
+      tiny_fill_up (event) {
+        this.change_opacity('up', 'fill', 0.03)
       },
-      shift_down (event) {
-        this.change_opacity('down', 0.03)
+      tiny_fill_down (event) {
+        this.change_opacity('down', 'fill', 0.03)
+      },
+      up_stroke (event) {
+        this.change_opacity('up', 'stroke')
+      },
+      down_stroke (event) {
+        this.change_opacity('down', 'stroke')
+      },
+      tiny_up_stroke (event) {
+        this.change_opacity('up', 'stroke', 0.03)
+      },
+      tiny_down_stroke (event) {
+        this.change_opacity('down', 'stroke', 0.03)
       },
       async focus_poster () {
         this.animation = await this.load_animation()
