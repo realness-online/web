@@ -75,12 +75,17 @@
           const id = symbol.getAttribute('id')
           if (id === fragment) {
             const path = symbol.querySelector('path')
-            let opacity = parseFloat(path.getAttribute(`${type}-opacity`))
+            let opacity = path.getAttribute(`${type}-opacity`)
+            if (!opacity) opacity = 1
+            opacity = parseFloat(opacity)
+            opacity = opacity * 100
+            opacity = Math.round(opacity)
+            opacity = opacity / 100
+            console.log(opacity)
             if (direction === 'down') opacity += resolution
             else opacity -= resolution
-            // hardcode upper and lower limits
-            if (opacity >= 1) opacity = 1
-            else if (opacity <= 0.025) opacity = 0.025
+            if (opacity > 1) opacity = 1
+            else if (opacity < 0) opacity = 0
             path.setAttribute(`${type}-opacity`, opacity)
           }
         })
