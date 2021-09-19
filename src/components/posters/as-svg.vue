@@ -136,8 +136,6 @@
       outline: none
       &:last-of-type
         stroke: white
-        stroke-opacity:0.5
       &:focus
-        stroke-width: 2px
-
+        stroke-width: 1px
 </style>
