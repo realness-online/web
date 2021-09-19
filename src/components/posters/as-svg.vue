@@ -45,10 +45,10 @@
           down: this.fill_down,
           'shift+up': this.tiny_fill_up,
           'shift+down': this.tiny_fill_down,
-          left: this.up_stroke,
-          right: this.down_stroke,
-          'shift+left': this.tiny_up_stroke,
-          'shift+right': this.tiny_down_stroke
+          left: this.down_stroke,
+          right: this.up_stroke,
+          'shift+left': this.tiny_down_stroke,
+          'shift+right': this.tiny_up_stroke
         }
       }
     },
