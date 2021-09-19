@@ -160,12 +160,8 @@
       & > a:hover > svg
         fill: green
         transition-timing-function: ease-out
-      & > a
-        &.fullscreen
-          @media (max-width: page-width), (max-height: page-width)
-            visibility: hidden
-        & > svg
-          fill: blue
+      & > a > svg
+        fill: blue
     & > nav
       display: none
     & > section.as-days
