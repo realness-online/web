@@ -1,14 +1,14 @@
 <template lang="html">
-  <section id="editor" class="page">
+  <section id="editor" v-hotkey="keymap" class="page">
     <header>
       <h4>Opacity</h4>
       <a class="fullscreen" @click="go_big">
         <icon name="fullscreen" />
       </a>
       <icon name="nothing" />
-      <router-link class="remove" to="/posters">
+      <a @click="back">
         <icon name="remove" />
-      </router-link>
+      </a>
       <a @click="save">
         <icon name="finished" />
       </a>
@@ -54,24 +54,32 @@
         itemid: `${localStorage.me}/posters/${this.$route.params.id}`
       }
     },
+    computed: {
+      keymap () {
+        return {
+          enter: this.save,
+          'shift+enter': this.back
+        }
+      }
+    },
     methods: {
+      back () {
+        let me = localStorage.me
+        me = me.substring(2)
+        const path = `/posters#${me}-posters-${this.$route.params.id}`
+        const route = { path }
+        this.$router.push(route)
+      },
       async save () {
-        console.log('save')
         const poster = new Poster(this.itemid)
         await poster.save()
-        const route = { path: '/posters' }
-        this.$router.push(route)
+        this.back()
       }
     }
   }
 </script>
 <style lang="stylus">
   section#editor
-    &:fullscreen
-    &:full-screen
-      & > header
-        & > a.fullscreen
-          visibility: hidden
     & > header > h4
       margin: 0
       color: red

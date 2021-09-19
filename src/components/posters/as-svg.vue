@@ -1,5 +1,6 @@
 <template lang="html">
-  <svg v-hotkey="keymap" :itemid="itemid" itemscope
+  <svg v-hotkey="keymap" :itemid="itemid"
+       itemscope
        itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
@@ -131,6 +132,7 @@
 <style lang="stylus">
   svg[itemtype="/posters"]
     display: block
+    min-height: 512px
     height: 100%
     width: 100%
     & svg:focus

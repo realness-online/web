@@ -1,5 +1,5 @@
 <template lang="html">
-  <figure class="poster" :class="{ landscape }">
+  <figure :id="query_id" class="poster" :class="{ landscape }">
     <as-svg ref="poster"
             :itemid="itemid"
             :poster="new_poster"
@@ -20,7 +20,7 @@
   </figure>
 </template>
 <script>
-  import { as_author, load, as_created_at } from '@/helpers/itemid'
+  import { as_query_id, as_author, load, as_created_at } from '@/helpers/itemid'
   import { as_time } from '@/helpers/date'
   import as_svg from '@/components/posters/as-svg'
   import vector_click from '@/mixins/vector_click'
@@ -66,6 +66,9 @@
       }
     },
     computed: {
+      query_id () {
+        return as_query_id(this.itemid)
+      },
       posted_at () {
         return as_time(as_created_at(this.itemid))
       },
@@ -88,6 +91,10 @@
         }
       }
     },
+    mounted () {
+      const fragment = window.location.hash.substring(1)
+      if (this.query_id === fragment) this.$refs.poster.$el.scrollIntoView()
+    },
     methods: {
       async on_load (vector) {
         this.vector = vector
@@ -106,17 +113,17 @@
     border-radius: round((base-line / 6), 2)
     position: relative
     overflow: hidden
+    grid-row-start: span 2
     &.landscape
-      & > svg[itemscope]
-        min-height: poster-grid-height
-        transition-property: all
       @media (orientation: landscape), (min-width: page-width)
-        min-height: inherit
         grid-column-start: span 2
-    @media (min-width: pad-begins)
-      &.new:not(.landscape)
-        grid-column: 2
+    // @media (min-width: pad-begins)
+    //   &.new:not(.landscape)
+    //     grid-column: 2
+    //     grid-row: 2
     svg
+      &[itemscope]
+        transition-property: all
       z-index: 1
       &[itemscope]
         position: relative
