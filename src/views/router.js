@@ -9,7 +9,7 @@ import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
-import Editor from '@/views/Editor'
+import Opacity from '@/views/Opacity'
 
 Vue.use(Router)
 export default new Router({
@@ -22,7 +22,7 @@ export default new Router({
     { path: '/events', component: Events },
     { path: '/feed', component: Feed },
     { path: '/posters', component: Posters },
-    { path: '/posters/:id', component: Editor },
+    { path: '/posters/:id/opacity', component: Opacity },
     { path: '/relations', component: Relations },
     { path: '/phone-book', component: PhoneBook },
     { path: '/profile', component: Profile },

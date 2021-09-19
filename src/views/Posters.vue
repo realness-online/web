@@ -115,7 +115,7 @@
     },
     methods: {
       edit_poster (itemid) { // The editor is the author
-        return `/posters/${as_created_at(itemid)}`
+        return `/posters/${as_created_at(itemid)}/opacity`
       },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`

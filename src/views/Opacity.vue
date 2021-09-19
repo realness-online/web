@@ -1,21 +1,36 @@
 <template lang="html">
   <section id="editor" class="page">
     <header>
-      <router-link class="remove" to="/posters">
-        <icon name="remove" tabindex="-1" />
-      </router-link>
+      <h4>Opacity</h4>
       <a class="fullscreen" @click="go_big">
-        <icon name="fullscreen" tabindex="-1" />
+        <icon name="fullscreen" />
       </a>
+      <icon name="nothing" />
+      <router-link class="remove" to="/posters">
+        <icon name="remove" />
+      </router-link>
       <a @click="save">
-        <icon name="finished" tabindex="-1" />
+        <icon name="finished" />
       </a>
     </header>
     <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" />
     <menu>
-      <icon name="opacity" tabindex="-1" class="selected" />
-      <icon name="grid" tabindex="-1" />
-      <icon name="animation" tabindex="-1" />
+      <icon name="grid" />
+      <icon name="opacity" class="selected" />
+      <icon name="color" />
+      <svg viewBox="0 0 120 120">
+        <linearGradient id="r">
+          <stop offset="0" stop-color="red" />
+          <stop offset="0.2857" stop-color="#ff0" />
+          <stop offset="0.4286" stop-color="#0f0" />
+          <stop offset="0.5714" stop-color="cyan" />
+          <stop offset="0.7142" stop-color="blue" />
+          <stop offset="0.8571" stop-color="#f0f" />
+          <stop offset="1" stop-color="red" />
+        </linearGradient>
+        <circle cy="60" cx="60" r="60" fill="url(#r)" fill-opacity="0.66" />
+      </svg>
+      <icon name="animation" />
     </menu>
     <aside>
       <p><kbd>ctrl+</kbd></p>
@@ -54,8 +69,14 @@
   section#editor
     &:fullscreen
     &:full-screen
-      & > header > a.fullscreen
-        visibility: hidden
+      & > header
+        & > a.fullscreen
+          visibility: hidden
+    & > header > h4
+      margin: 0
+      color: green
+      position: relative
+      z-index: 2
     & > svg
       position: fixed
       z-index: 1
@@ -73,7 +94,6 @@
     & > header > a  > svg
     & > menu > svg
       cursor: pointer
-      stroke-width: 0
       fill: green
       &:hover
         fill: red
@@ -83,6 +103,8 @@
       &.fullscreen
       &.finished
         fill-opacity: inherit
+      // &.circle
+      //   fill: url(#r)
     & > header > h1
       color: green
     & > menu
