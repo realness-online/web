@@ -114,13 +114,13 @@
     position: relative
     overflow: hidden
     grid-row-start: span 2
-    &.landscape
-      @media (orientation: landscape), (min-width: page-width)
+    @media (orientation: landscape), (min-width: page-width)
+      &.landscape
         grid-column-start: span 2
-    // @media (min-width: pad-begins)
-    //   &.new:not(.landscape)
-    //     grid-column: 2
-    //     grid-row: 2
+    @media (min-width: pad-begins)
+      &.new:not(.landscape)
+        grid-column: 2
+        grid-row: 2
     svg
       &[itemscope]
         transition-property: all
