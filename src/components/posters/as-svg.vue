@@ -113,7 +113,7 @@
         this.change_opacity('down', 'stroke', 0.01)
       },
       async focus_poster () {
-        this.animation = await this.load_animation()
+        // this.animation = await this.load_animation()
       },
       async blur_poster () {
         this.animation = null
