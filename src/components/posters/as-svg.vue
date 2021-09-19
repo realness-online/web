@@ -66,8 +66,6 @@
         this.$refs.background.$el.focus()
       },
       change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
-        console.log(direction, type, resolution)
-        // const focused_on = this.$el.querySelector('symbol')
         if (!document.activeElement) return
         let fragment = document.activeElement.getAttribute('href')
         fragment = fragment.substring(1)
@@ -77,16 +75,20 @@
           if (id === fragment) {
             const path = symbol.querySelector('path')
             let opacity = path.getAttribute(`${type}-opacity`)
-            if (!opacity) opacity = 1
+
+            if (!opacity || opacity === 'NaN') opacity = 1
+
             opacity = parseFloat(opacity)
-            opacity = opacity * 100
+            opacity = opacity * 10000
             opacity = Math.round(opacity)
-            opacity = opacity / 100
-            console.log(opacity)
+            opacity = opacity / 10000
+
             if (direction === 'down') opacity += resolution
             else opacity -= resolution
+
             if (opacity > 1) opacity = 1
             else if (opacity < 0) opacity = 0
+
             path.setAttribute(`${type}-opacity`, opacity)
           }
         })
