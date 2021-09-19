@@ -74,7 +74,7 @@
           visibility: hidden
     & > header > h4
       margin: 0
-      color: green
+      color: red
       position: relative
       z-index: 2
     & > svg
