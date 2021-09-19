@@ -130,8 +130,14 @@
     width: 100%
     & svg:focus
       fill: white
-    & use:focus
+    & > use
+      stroke: background-black
+      stroke-width: 0.5px
       outline: none
-      stroke: spin(blue, 3deg)
-      stroke-width: 2px
+      &:last-of-type
+        stroke: white
+        stroke-opacity:0.5
+      &:focus
+        stroke-width: 2px
+
 </style>
