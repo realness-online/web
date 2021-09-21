@@ -58,7 +58,8 @@
       keymap () {
         return {
           enter: this.save,
-          esc: this.back
+          esc: this.back,
+          f: this.go_big
         }
       }
     },
@@ -80,6 +81,11 @@
 </script>
 <style lang="stylus">
   section#editor
+    &:fullscreen
+    &:full-screen
+      & > header
+      & > menu
+        visibility: hidden
     & > header > h4
       margin: 0
       color: red
