@@ -58,12 +58,6 @@
       }
     },
     methods: {
-      begin_again (event) {
-        console.log('begin_again', event)
-        event.preventDefault()
-        event.stopPropagation()
-        this.$refs.background.$el.focus()
-      },
       change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
         if (!document.activeElement) return
         let fragment = document.activeElement.getAttribute('href')
