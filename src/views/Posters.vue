@@ -39,17 +39,9 @@
         </menu>
       </as-figure>
     </article>
-    <hgroup v-if="friendly" class="message">
-      <p>
-        Click the <a @click="select_photo"><icon name="add" /></a> button to
-        turn any picture you have into a Poster
-      </p>
-    </hgroup>
   </section>
 </template>
 <script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
   import { del } from 'idb-keyval'
   import { as_directory, as_created_at } from '@/helpers/itemid'
   import get_item from '@/modules/item'
