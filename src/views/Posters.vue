@@ -79,13 +79,12 @@
         posters: [],
         vectorizer: new Worker('/vector.worker.js'),
         optimizer: new Worker('/optimize.worker.js'),
-        working: true,
+        working: false,
         new_poster: null,
         events: []
       }
     },
     computed: {
-
       as_itemid () {
         if (this.new_poster && this.new_poster.id) return this.new_poster.id
         else return `${localStorage.me}/posters/${Date.now()}`
@@ -103,11 +102,7 @@
       console.time('view:Posters')
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
-      firebase.auth().onAuthStateChanged(async user => {
-        await this.get_poster_list()
-        console.timeEnd('view:Posters')
-        this.working = false
-      })
+      await this.get_poster_list()
     },
     destroyed () {
       this.vectorizer.terminate()
