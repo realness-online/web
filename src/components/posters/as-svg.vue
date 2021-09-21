@@ -69,8 +69,7 @@
             const path = symbol.querySelector('path')
             let opacity = path.getAttribute(`${type}-opacity`)
 
-            if (!opacity || opacity === 'NaN') opacity = 1
-
+            if (!opacity || opacity === 'NaN') opacity = 0.5
             opacity = parseFloat(opacity)
             opacity = opacity * 10000
             opacity = Math.round(opacity)
