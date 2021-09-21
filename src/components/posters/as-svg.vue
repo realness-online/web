@@ -13,7 +13,6 @@
     <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : false" :href="symbol_fragment(index)" />
   </svg>
 </template>
-
 <script>
   import icon from '@/components/icon'
   import { load } from '@/helpers/itemid'
@@ -142,6 +141,7 @@
     & > use
       stroke: background-black
       stroke-width: 0.5px
+      stroke-opacity: 0.5
       outline: none
       &:last-of-type
         stroke: white
