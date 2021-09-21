@@ -18,7 +18,6 @@
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
   import {
-    five_minutes,
     one_hour,
     fresh_metadata,
     hash_options,
