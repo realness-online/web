@@ -58,7 +58,7 @@
       keymap () {
         return {
           enter: this.save,
-          'shift+enter': this.back
+          esc: this.back
         }
       }
     },
