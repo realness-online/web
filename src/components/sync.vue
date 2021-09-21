@@ -110,8 +110,8 @@
         let synced
         if (localStorage.sync_time) {
           synced = Date.now() - new Date(localStorage.sync_time).getTime()
-        } else synced = five_minutes
-        const time_left = five_minutes - synced
+        } else synced = one_hour
+        const time_left = one_hour - synced
         if (time_left <= 0) {
           this.$emit('active', true)
           await Promise.all([
