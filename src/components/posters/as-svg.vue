@@ -1,7 +1,6 @@
 <template lang="html">
-  <svg v-hotkey="keymap" :itemid="itemid"
-       itemscope
-       itemtype="/posters"
+  <svg v-hotkey="keymap" v-finger:pressMove="move_opacity" v-finger:swipe="swipe_layer"
+       :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
        @blur="blur_poster()"
@@ -18,10 +17,11 @@
   import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
+  import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
   export default {
     components: { icon },
-    mixins: [intersection, vector_click, vector],
+    mixins: [intersection, vector_click, vector, finger],
     props: {
       tabable: {
         type: Boolean,
@@ -58,6 +58,12 @@
       }
     },
     methods: {
+      swipe_layer () {
+        this.$emit('change-opacity')
+      },
+      move_opacity () {
+        this.$emit('change-opacity')
+      },
       change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
         if (!document.activeElement) return
         let fragment = document.activeElement.getAttribute('href')

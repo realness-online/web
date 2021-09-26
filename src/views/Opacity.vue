@@ -13,7 +13,9 @@
         <icon name="finished" />
       </a>
     </header>
-    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" @change-opacity="audio_notice" />
+    <as-svg :itemid="itemid" :immediate="true"
+            :tabindex="-1" :slice="false" :tabable="true"
+            @change-opacity="audio_notice" />
     <audio src="/notice.mp4" />
     <menu>
       <icon name="grid" />
