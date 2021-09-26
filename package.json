@@ -17,6 +17,7 @@
     "workers:dev": "yarn workers --mode=development --watch"
   },
   "dependencies": {
+    "@gauseen/vue-finger": "^0.2.0",
     "@realness.online/potrace": "2.1.22",
     "firebase": "^8.2.1",
     "idb-keyval": "^5.0.2",

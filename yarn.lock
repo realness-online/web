@@ -1184,6 +1184,13 @@
   resolved "https://registry.yarnpkg.com/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.4.1.tgz#600f2275ff54739ad5ac0102f1467b8963cd5f71"
   integrity sha512-0yPjzuzGMkW1GkrC8yWsiN7vt1OzkMIi9HgxRmKREZl2wnNPOKo/yScTjXf/O57HM8dltqxPF6jlNLFVtc2qdw==
 
+"@gauseen/vue-finger@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@gauseen/vue-finger/-/vue-finger-0.2.0.tgz#c026614575b3de22e79826c10396a497c5e13bc5"
+  integrity sha512-AgH34akXUX+cDzb6aukpUN16AtZmTk5RbetHW6sUx6MAonuFJs9MaeQ3tXNz4ZCkE8SxnS8IUqs7SYJZA4itvA==
+  dependencies:
+    alloyfinger "^0.1.16"
+
 "@google-cloud/paginator@^3.0.0":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@google-cloud/paginator/-/paginator-3.0.5.tgz#9d6b96c421a89bd560c1bc2c197c7611ef21db6c"
@@ -3338,6 +3345,11 @@ ajv@^7.0.2:
     json-schema-traverse "^1.0.0"
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
+
+alloyfinger@^0.1.16:
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/alloyfinger/-/alloyfinger-0.1.16.tgz#8d5d46073cf1fedba5f446e666bc4b3925b8b8b5"
+  integrity sha512-AfsLALs929WQsjSk1pbysoiVU3bgm/4k1wdZDtMQ7uI7b8XweqCCnUiBYqqdp8uPZ1fBq/+LCJhgUlhd90FssQ==
 
 alphanum-sort@^1.0.0:
   version "1.0.2"
