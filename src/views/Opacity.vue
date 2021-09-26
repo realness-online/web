@@ -13,7 +13,8 @@
         <icon name="finished" />
       </a>
     </header>
-    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" />
+    <as-svg :itemid="itemid" :immediate="true" :tabindex="-1" :slice="false" :tabable="true" @change-opacity="audio_notice" />
+    <audio src="/notice.mp4" />
     <menu>
       <icon name="grid" />
       <icon name="opacity" class="selected" />
@@ -64,6 +65,10 @@
       }
     },
     methods: {
+      audio_notice (event) {
+        const audio = this.$el.getElementsByTagName('audio')[0]
+        audio.play()
+      },
       back () {
         let me = localStorage.me
         me = me.substring(2)
