@@ -35,6 +35,7 @@
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
   import as_hgroup from '@/components/profile/as-hgroup'
+  const eight_hours = one_hour * 8
   export default {
     components: {
       'as-days': as_days,
@@ -109,8 +110,8 @@
         let synced
         if (localStorage.sync_time) {
           synced = Date.now() - new Date(localStorage.sync_time).getTime()
-        } else synced = one_hour
-        const time_left = one_hour - synced
+        } else synced = eight_hours
+        const time_left = eight_hours - synced
         if (time_left <= 0) {
           this.$emit('active', true)
           await Promise.all([
