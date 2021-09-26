@@ -82,6 +82,7 @@
             else if (opacity < 0) opacity = 0
 
             path.setAttribute(`${type}-opacity`, opacity)
+            this.$emit('change-opacity')
           }
         })
       },
