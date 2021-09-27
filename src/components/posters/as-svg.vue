@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg v-hotkey="keymap" v-finger:pressMove="move_opacity" v-finger:swipe="swipe_layer"
+  <svg v-hotkey="keymap" v-finger:pressMove="press_move" v-finger:swipe="swipe"
        :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
@@ -58,11 +58,22 @@
       }
     },
     methods: {
-      swipe_layer () {
-        this.$emit('change-opacity')
-      },
-      move_opacity () {
-        this.$emit('change-opacity')
+      // swipe (event) {
+      //   this.change_opacity('up', 'fill', 0.01)
+      //   console.log('swipe: ', event.direction)
+      //   switch (event.direction) {
+      //     case 'left': this.next(); break
+      //     case 'right': this.previous(); break
+      //     default:
+      //   }
+      //   this.$emit('change-opacity')
+      // },
+      press_move (evt) {
+        this.$emit('pressed')
+        // console.log('pressMove X: ', evt.deltaX)
+        // console.log('pressMove Y: ', evt.deltaY)
+        if (evt.deltaY > 0) this.change_opacity('down', 'fill', 0.03)
+        else this.change_opacity('up', 'fill', 0.03)
       },
       change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
         if (!document.activeElement) return
