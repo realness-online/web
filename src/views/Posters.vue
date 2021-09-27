@@ -198,7 +198,6 @@
 </script>
 <style lang="stylus">
   section#posters
-    padding: 0 base-line
     & > header
       justify-content: space-between
       & > h1
