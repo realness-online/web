@@ -117,6 +117,8 @@
     @media (orientation: landscape), (min-width: page-width)
       &.landscape
         grid-column-start: span 2
+        &.new
+          grid-column-start: span 3
     @media (min-width: pad-begins)
       &.new:not(.landscape)
         grid-column: 2
