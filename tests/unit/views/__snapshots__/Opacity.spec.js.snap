@@ -1,34 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`] = `
+exports[`@/views/Opacity.vue Renders Shows an editor for a poster or an avatar 1`] = `
 <section
   class="page"
   id="editor"
 >
   <header>
-    <router-link-stub
-      class="remove"
-      to="/posters"
-    >
-      <icon-stub
-        name="remove"
-        tabindex="-1"
-      />
-    </router-link-stub>
+    <h4>
+      Opacity
+    </h4>
      
     <a
       class="fullscreen"
     >
       <icon-stub
         name="fullscreen"
-        tabindex="-1"
+      />
+    </a>
+     
+    <icon-stub
+      name="nothing"
+    />
+     
+    <a>
+      <icon-stub
+        name="remove"
       />
     </a>
      
     <a>
       <icon-stub
         name="finished"
-        tabindex="-1"
       />
     </a>
   </header>
@@ -40,21 +42,74 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
     tabindex="-1"
   />
    
+  <audio
+    src="/notice.mp4"
+  />
+   
   <menu>
+    <icon-stub
+      name="grid"
+    />
+     
     <icon-stub
       class="selected"
       name="opacity"
-      tabindex="-1"
     />
      
-    <icon-stub
-      name="grid"
-      tabindex="-1"
-    />
+    <svg
+      class="color"
+      viewBox="0 0 120 120"
+    >
+      <lineargradient
+        id="r"
+      >
+        <stop
+          offset="0"
+          stop-color="red"
+        />
+         
+        <stop
+          offset="0.2857"
+          stop-color="#ff0"
+        />
+         
+        <stop
+          offset="0.4286"
+          stop-color="#0f0"
+        />
+         
+        <stop
+          offset="0.5714"
+          stop-color="cyan"
+        />
+         
+        <stop
+          offset="0.7142"
+          stop-color="blue"
+        />
+         
+        <stop
+          offset="0.8571"
+          stop-color="#f0f"
+        />
+         
+        <stop
+          offset="1"
+          stop-color="red"
+        />
+      </lineargradient>
+       
+      <circle
+        cx="60"
+        cy="60"
+        fill="url(#r)"
+        fill-opacity="0.66"
+        r="60"
+      />
+    </svg>
      
     <icon-stub
       name="animation"
-      tabindex="-1"
     />
   </menu>
    
