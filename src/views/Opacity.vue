@@ -93,6 +93,11 @@
       & > header
       & > menu
         visibility: hidden
+    & > header
+      position: fixed;
+      top: env(safe-area-inset-top)
+      left: env(safe-area-inset-left)
+      right: env(safe-area-inset-left)
     & > header > h4
       margin: 0
       color: red
