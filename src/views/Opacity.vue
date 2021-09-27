@@ -20,8 +20,7 @@
     <menu>
       <icon name="grid" />
       <icon name="opacity" class="selected" />
-      <icon name="color" />
-      <svg viewBox="0 0 120 120">
+      <svg class="color" viewBox="0 0 120 120">
         <linearGradient id="r">
           <stop offset="0" stop-color="red" />
           <stop offset="0.2857" stop-color="#ff0" />
