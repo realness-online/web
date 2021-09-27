@@ -1,5 +1,5 @@
 <template lang="html">
-  <svg v-hotkey="keymap" v-finger:pressMove="press_move" v-finger:swipe="swipe"
+  <svg v-hotkey="keymap" v-finger:pressMove="press_move"
        :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"

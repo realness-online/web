@@ -10,7 +10,7 @@ describe('@/views/Opacity.vue', () => {
     it('Shows an editor for a poster or an avatar', async () => {
       firebase.user = user
       const $route = { params: { phone_number: '+14151231234' } }
-      const wrapper = await shallowMount(Editor, {
+      const wrapper = await shallowMount(Opacity, {
         mocks: { $route },
         stubs: ['router-link', 'router-view']
       })

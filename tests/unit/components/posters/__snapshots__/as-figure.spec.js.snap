@@ -3,6 +3,7 @@
 exports[`@/compontent/posters/as-figure.vue Renders A new poster 1`] = `
 <figure
   class="poster"
+  id="16282281824-posters-559666932867"
 >
   <as-svg-stub
     itemid="/+16282281824/posters/559666932867"
@@ -33,6 +34,7 @@ exports[`@/compontent/posters/as-figure.vue Renders A new poster 1`] = `
 exports[`@/compontent/posters/as-figure.vue Renders A poster 1`] = `
 <figure
   class="poster"
+  id="16282281824-posters-559666932867"
 >
   <as-svg-stub
     itemid="/+16282281824/posters/559666932867"
