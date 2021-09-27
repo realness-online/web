@@ -9,7 +9,12 @@
 
 html *
   transition-timing-function: ease-out
-  transition-duration: 0.25s
-  transition-property: border, margin, padding, width, height, opacity, fill, stroke
+  transition-duration: 0.5s, 0s, 0.25s // first two durations accomodate hidden attribute transition
+  transition-property: opacity, visibility border, margin, padding, width, height, fill, stroke
   animation-duration: 0.5s
   animation-fill-mode: forwards
+
+[hidden]
+  opacity: 0
+  visibility: hidden
+  transition-delay: 0s, 0.5s
