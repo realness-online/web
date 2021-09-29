@@ -75,7 +75,7 @@
         me = me.substring(2)
         const path = `/posters#${me}-posters-${this.$route.params.id}`
         const route = { path }
-        this.$router.push(route)
+        this.$router.replace(route)
       },
       async save () {
         const poster = new Poster(this.itemid)
@@ -152,5 +152,4 @@
             transition: border-color
             fill: green
             border-color: red
-
 </style>
