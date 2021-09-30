@@ -2,7 +2,6 @@ import { shallowMount } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import Opacity from '@/views/Opacity'
-import Events from '@/views/Events'
 const user = { phoneNumber: '/+16282281824' }
 
 describe('@/views/Opacity.vue', () => {
