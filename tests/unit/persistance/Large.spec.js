@@ -26,7 +26,7 @@ describe('@/persistance/Large.js', () => {
       })
       it('Updates item in indexdb', async () => {
         get.mockImplementation(itemid => Promise.resolve({ items: ['1555347888'] }))
-        get.mockImplementationOnce(_ => Promise.resolve(new Object()))
+        get.mockImplementationOnce(_ => Promise.resolve({}))
         await pic.save(poster)
         expect(get).toHaveBeenCalledTimes(1)
         expect(set).toHaveBeenCalledTimes(1)
