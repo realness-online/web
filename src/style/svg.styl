@@ -10,16 +10,18 @@ svg
   display: block
   stroke-width: 0
   fill: dark-black
-  // &:active
-  //   animation-name: button-click
-  //   animation-timing-function: ease-in-out
-  //   animation-fill-mode: none
-  //   animation-direction: alternate-reverse
-  //   animation-iteration-count: infinite
-  //   transition-property: padding, fill
-  //   padding: 2px
-  //   transition-duration: 0.2s
-  //   transition-timing-function: ease
+  use
+  & use:active
+    stroke-width: 2px
+    webkit-user-select: all
+    animation-name: press-hold
+    animation-timing-function: ease-in-out
+    animation-fill-mode: none
+    animation-direction: alternate-reverse
+    transition-property: padding, fill
+    padding: 2px
+    transition-duration: 0.1s
+    transition-timing-function: ease-in
 svg.background
   fill: transparent
   @media (prefers-color-scheme: dark)
