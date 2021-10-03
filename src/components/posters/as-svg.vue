@@ -95,8 +95,8 @@
             if (direction === 'down') opacity += resolution
             else opacity -= resolution
 
-            if (opacity > 1) opacity = 1
-            else if (opacity < 0) opacity = 0
+            if (opacity > 0.9) opacity = 0.8
+            else if (opacity < 0) opacity = 0.025
 
             path.setAttribute(`${type}-opacity`, opacity)
             this.$emit('change-opacity')
