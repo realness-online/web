@@ -147,15 +147,17 @@
     min-height: 512px
     height: 100%
     width: 100%
+    &.as-line-work
+      fill: transparent
     & svg:focus
       fill: white
     & > use
       stroke: background-black
-      stroke-width: 0.5px
+      stroke-width: 1px
       stroke-opacity: 0.5
       outline: none
-      &:last-of-type
-        stroke: white
       &:focus
-        stroke-width: 1px
+        animation-name: press
+      &:active
+        animation-name: press-hold
 </style>
