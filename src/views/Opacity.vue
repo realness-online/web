@@ -17,7 +17,7 @@
             :tabindex="-1" :slice="false" :tabable="true" />
     <menu>
       <icon name="grid" />
-      <svg class="color" viewBox="0 0 120 120">
+      <svg class="color selected" viewBox="0 0 120 120">
         <linearGradient id="r">
           <stop offset="0" stop-color="red" />
           <stop offset="0.2857" stop-color="#ff0" />
@@ -27,7 +27,7 @@
           <stop offset="0.8571" stop-color="#f0f" />
           <stop offset="1" stop-color="red" />
         </linearGradient>
-        <circle cy="60" cx="60" r="60" fill="url(#r)" fill-opacity="1" />
+        <circle cy="60" cx="60" r="60" fill="url(#r)" fill-opacity="0.66" />
         <icon name="opacity" />
       </svg>
       <icon name="animation" />
@@ -114,9 +114,11 @@
     & > menu > svg
       cursor: pointer
       fill: green
+      .selected
+        fill:red
       &:hover
         fill: red
-      & > svg.opacity
+      &.color > svg.opacity
         fill: background-black
         &:hover
           fill:transparent
