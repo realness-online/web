@@ -83,8 +83,7 @@
   section#editor
     &:fullscreen
     &:full-screen
-      & > header
-      & > menu
+      & > header > a.fullscreen
         visibility: hidden
     & > header
       position: fixed;
