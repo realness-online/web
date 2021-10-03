@@ -159,5 +159,6 @@
       &:focus
         animation-name: press
       &:active
+        stroke: red
         animation-name: press-hold
 </style>
