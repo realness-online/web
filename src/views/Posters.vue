@@ -104,12 +104,12 @@
       menu_keymap (itemid) {
         return {
           enter: () => {
-            this.$router.push({ path: this.edit_poster(itemid) })
+            this.$router.replace({ path: this.edit_poster(itemid) })
           }
         }
       },
       edit_poster (itemid) { // The editor is the author
-        return `/posters/${as_created_at(itemid)}/opacity`
+        return `/posters/${as_created_at(itemid)}/editor`
       },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
