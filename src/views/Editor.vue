@@ -60,8 +60,8 @@
     },
     computed: {
       page_title () {
-        if (this.stroke) return 'Stroke Opacity'
-        if (this.fill) return 'Fill Opacity'
+        if (this.stroke) return 'Stroke'
+        if (this.fill) return 'Fill'
         if (this.animation) return 'Animation'
         return 'Grid'
       },
