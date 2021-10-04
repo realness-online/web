@@ -2,7 +2,7 @@
   <figure id="edit-fill" v-hotkey="keymap" v-finger:pressMove="press_move">
     <as-svg :itemid="itemid" :immediate="true"
             :tabindex="-1" :slice="false" :tabable="true"
-            @focused-on="focused_on" />
+            @focus="focus" />
     <figcaption>
       <input v-model="color" :tabindex="-1" type="color">
       <as-svg :tabindex="-1" :itemid="itemid" class="as-line-art" />
@@ -26,8 +26,8 @@
     },
     data () {
       return {
-        color: '',
-        focused_layer_id: ''
+        color: '#151518',
+        focused_layer: ''
       }
     },
     computed: {
@@ -40,8 +40,13 @@
         }
       }
     },
+    watch: {
+      color () {
+        this.change_color(this.focused_layer, this.color)
+      }
+    },
     methods: {
-      focused_on (id) {
+      focus (id) {
         this.focused_layer = id
       },
       press_move (evt) {
@@ -71,11 +76,6 @@
       left: 0
       right: 0
     & > figcaption
-      width: 100%
-      z-index: 0
-      position: fixed
-      bottom: base-line * 2
-      right: 0
       border:none
       padding: 0
       height:auto
@@ -83,9 +83,17 @@
       display: flex
       justify-content: space-between
       & > input
+        position:fixed
+        z-index: 1
+        bottom: base-line * 3
+        left: base-line
         width: base-line * 2
         height: base-line * 2
       & > svg
+        position:fixed
+        z-index: 1
+        bottom: base-line * 3
+        right: base-line
         width: base-line * 2
         height: base-line * 2
         fill: transparent
