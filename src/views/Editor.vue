@@ -1,28 +1,19 @@
 <template lang="html">
-  <section id="opacity" v-hotkey="keymap" class="page">
+  <section id="editor" v-hotkey="keymap" class="page">
     <header>
-      <h4>Opacity</h4>
-      <a class="fullscreen" @click="go_big">
-        <icon name="fullscreen" />
-      </a>
+      <h4>{{ page_title }}</h4>
+      <a class="fullscreen" @click="go_big"><icon name="fullscreen" /></a>
       <icon name="nothing" />
-      <a @click="back">
-        <icon name="remove" />
-      </a>
-      <a @click="save">
-        <icon name="finished" />
-      </a>
+      <a @click="back"><icon name="remove" /></a>
+      <a @click="save"><icon name="finished" /></a>
     </header>
-    <as-svg :itemid="itemid" :immediate="true"
-            :tabindex="-1" :slice="false" :tabable="true" />
-    <fieldset>
-      <input v-model="color" :tabindex="-1" type="color">
-      <as-svg :tabindex="-1" :itemid="itemid" class="as-line-art" />
-    </fieldset>
+    <as-fill v-if="fill" :itemid="itemid" />
+    <as-stroke v-if="stroke" :itemid="itemid" />
+    <as-animation v-if="animation" :itemid="itemid" />
+    <as-grid v-if="grid" :itemid="itemid" />
     <footer>
       <menu>
-        <icon name="grid" />
-        <svg class="color selected" viewBox="0 0 120 120">
+        <svg :class="{ selected: color }" class="color" viewBox="0 0 120 120">
           <linearGradient id="r">
             <stop offset="0" stop-color="red" />
             <stop offset="0.2857" stop-color="#ff0" />
@@ -35,56 +26,55 @@
           <circle cy="60" cx="60" r="60" fill="url(#r)" fill-opacity="0.66" />
           <icon name="opacity" />
         </svg>
-        <icon name="animation" />
+        <icon :class="{ selected: animation }" name="animation" />
+        <icon :class="{ selected: grid }" name="grid" />
       </menu>
     </footer>
   </section>
 </template>
-
 <script>
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
-  import as_svg from '@/components/posters/as-svg'
+  import as_fill_figure from '@/components/posters/as-fill-figure'
+  import as_stroke_figure from '@/components/posters/as-stroke-figure'
+  import as_grid from '@/components/posters/as-grid'
+  import as_animation from '@/components/posters/as-animation'
   import fullscreen from '@/mixins/fullscreen'
   export default {
     components: {
       icon,
-      'as-svg': as_svg
+      'as-fill': as_fill_figure,
+      'as-stroke': as_stroke_figure,
+      'as-grid': as_grid,
+      'as-animation': as_animation
     },
     mixins: [fullscreen],
     data () {
       return {
         itemid: `${localStorage.me}/posters/${this.$route.params.id}`,
-        color: '#000'
+        fill: true,
+        stroke: false,
+        animation: false,
+        grid: false
       }
     },
     computed: {
+      page_title () {
+        if (this.stroke) return 'Stroke Opacity'
+        if (this.fill) return 'Fill Opacity'
+        if (this.animation) return 'Animation'
+        return 'Grid'
+      },
+      color () {
+        if (this.stroke || this.fill) return true
+        else return false
+      },
       keymap () {
         return {
           enter: this.save,
           esc: this.back,
           f: this.go_big
         }
-      }
-    },
-    watch: {
-      color () {
-        const type = 'fill'
-        if (!document.activeElement) return
-        console.log(document.activeElement)
-        let fragment = document.activeElement.getAttribute('href')
-        console.log(fragment)
-        fragment = fragment.substring(1)
-        const symbols = this.$el.querySelectorAll('symbol')
-        symbols.forEach(symbol => {
-          const id = symbol.getAttribute('id')
-          if (id === fragment) {
-            const path = symbol.querySelector('path')
-            // const color = path.getAttribute(type)
-            path.setAttribute(type, this.color)
-            this.$emit(`change-${type}`)
-          }
-        })
       }
     },
     methods: {
@@ -104,7 +94,7 @@
   }
 </script>
 <style lang="stylus">
-  section#opacity
+  section#editor
     &:fullscreen
     &:full-screen
       & > header > a.fullscreen
@@ -125,39 +115,6 @@
         position: relative
         z-index: 2
         text-shadow: 1px 1px 1px background-black
-    & > svg
-      position: fixed
-      z-index: 1
-      top: 0
-      bottom: 0
-      left: 0
-      right: 0
-    & > fieldset
-      width: 100%
-      z-index: 4
-      position: fixed
-      bottom: base-line * 2
-      right: 0
-      border:none
-      padding: 0
-      height:auto
-      padding: base-line
-      display: flex
-      // flex-direction: column
-      justify-content: space-between
-    & > fieldset > input
-      width: base-line * 2
-      height: base-line * 2
-    & > fieldset > svg
-      width: base-line * 2
-      height: base-line * 2
-      fill: transparent
-      border: black
-      border-radius:2rem
-      min-height: auto
-      stroke-width: base-line
-      stroke-opacity: 1
-      stroke:white
     & > header > a  > svg
     & > footer > menu > svg
       cursor: pointer
