@@ -147,7 +147,7 @@
     min-height: 512px
     height: 100%
     width: 100%
-    &.as-line-work
+    &.as-line-art
       fill: transparent
     & svg:focus
       fill: white
