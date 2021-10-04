@@ -8,7 +8,7 @@
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
     </defs>
     <icon name="background" :tabindex="tabable ? 0 : false" />
-    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : false" :href="symbol_fragment(index)" />
+    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : false" :href="symbol_fragment(index)" @focus="focus(index)" />
   </svg>
 </template>
 <script>
@@ -42,8 +42,8 @@
       }
     },
     methods: {
-      async focus_poster () {
-        // this.animation = await this.load_animation()
+      async focus (id) {
+        this.$emit('focus', this.symbol_id(id))
       },
       async blur_poster () {
         this.animation = null

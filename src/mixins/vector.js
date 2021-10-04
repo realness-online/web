@@ -34,21 +34,15 @@ export default {
     }
   },
   methods: {
-    change_color () {
-      const type = 'fill'
-      if (!document.activeElement) return
-      console.log(document.activeElement)
-      let fragment = document.activeElement.getAttribute('href')
-      console.log(fragment)
-      fragment = fragment.substring(1)
+    change_color (id, type = 'fill') {
       const symbols = this.$el.querySelectorAll('symbol')
       symbols.forEach(symbol => {
-        const id = symbol.getAttribute('id')
-        if (id === fragment) {
+        const symbol_id = symbol.getAttribute('id')
+        if (id === symbol_id) {
           const path = symbol.querySelector('path')
-          // const color = path.getAttribute(type)
-          path.setAttribute(type, this.color)
+          path.setAttribute('fill', this.color)
           this.$emit(`change-${type}`)
+          path.focus()
         }
       })
     },
