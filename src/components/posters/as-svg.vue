@@ -1,6 +1,5 @@
 <template lang="html">
-  <svg v-hotkey="keymap" v-finger:pressMove="press_move"
-       :itemid="itemid" itemscope itemtype="/posters"
+  <svg :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus_poster()"
        @blur="blur_poster()"
@@ -17,11 +16,10 @@
   import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
-  import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
   export default {
     components: { icon },
-    mixins: [intersection, vector_click, vector, finger],
+    mixins: [intersection, vector_click, vector],
     props: {
       tabable: {
         type: Boolean,
@@ -38,92 +36,12 @@
         default: null
       }
     },
-    computed: {
-      keymap () {
-        return {
-          up: () => this.change_opacity(),
-          down: this.fill_down,
-          'shift+up': this.tiny_fill_up,
-          'shift+down': this.tiny_fill_down,
-          left: this.down_stroke,
-          right: this.up_stroke,
-          'shift+left': this.tiny_down_stroke,
-          'shift+right': this.tiny_up_stroke
-        }
-      }
-    },
     watch: {
       poster () {
         if (this.poster) this.vector = this.poster
       }
     },
     methods: {
-      // swipe (event) {
-      //   this.change_opacity('up', 'fill', 0.01)
-      //   console.log('swipe: ', event.direction)
-      //   switch (event.direction) {
-      //     case 'left': this.next(); break
-      //     case 'right': this.previous(); break
-      //     default:
-      //   }
-      //   this.$emit('change-opacity')
-      // },
-      press_move (evt) {
-        this.$emit('pressed')
-        // console.log('pressMove X: ', evt.deltaX)
-        // console.log('pressMove Y: ', evt.deltaY)
-        if (evt.deltaY > 0) this.change_opacity('down', 'fill', 0.03)
-        else this.change_opacity('up', 'fill', 0.03)
-      },
-      change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
-        if (!document.activeElement) return
-        let fragment = document.activeElement.getAttribute('href')
-        fragment = fragment.substring(1)
-        const symbols = this.$el.querySelectorAll('symbol')
-        symbols.forEach(symbol => {
-          const id = symbol.getAttribute('id')
-          if (id === fragment) {
-            const path = symbol.querySelector('path')
-            let opacity = path.getAttribute(`${type}-opacity`)
-
-            if (!opacity || opacity === 'NaN') opacity = 0.5
-            opacity = parseFloat(opacity)
-            opacity = opacity * 10000
-            opacity = Math.round(opacity)
-            opacity = opacity / 10000
-
-            if (direction === 'down') opacity += resolution
-            else opacity -= resolution
-
-            if (opacity > 0.9) opacity = 0.8
-            else if (opacity < 0) opacity = 0.025
-
-            path.setAttribute(`${type}-opacity`, opacity)
-            this.$emit('change-opacity')
-          }
-        })
-      },
-      fill_down (event) {
-        this.change_opacity('down')
-      },
-      tiny_fill_up (event) {
-        this.change_opacity('up', 'fill', 0.01)
-      },
-      tiny_fill_down (event) {
-        this.change_opacity('down', 'fill', 0.01)
-      },
-      up_stroke (event) {
-        this.change_opacity('up', 'stroke')
-      },
-      down_stroke (event) {
-        this.change_opacity('down', 'stroke')
-      },
-      tiny_up_stroke (event) {
-        this.change_opacity('up', 'stroke', 0.01)
-      },
-      tiny_down_stroke (event) {
-        this.change_opacity('down', 'stroke', 0.01)
-      },
       async focus_poster () {
         // this.animation = await this.load_animation()
       },

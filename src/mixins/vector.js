@@ -34,6 +34,52 @@ export default {
     }
   },
   methods: {
+    change_color () {
+      const type = 'fill'
+      if (!document.activeElement) return
+      console.log(document.activeElement)
+      let fragment = document.activeElement.getAttribute('href')
+      console.log(fragment)
+      fragment = fragment.substring(1)
+      const symbols = this.$el.querySelectorAll('symbol')
+      symbols.forEach(symbol => {
+        const id = symbol.getAttribute('id')
+        if (id === fragment) {
+          const path = symbol.querySelector('path')
+          // const color = path.getAttribute(type)
+          path.setAttribute(type, this.color)
+          this.$emit(`change-${type}`)
+        }
+      })
+    },
+    change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
+      if (!document.activeElement) return
+      let fragment = document.activeElement.getAttribute('href')
+      fragment = fragment.substring(1)
+      const symbols = this.$el.querySelectorAll('symbol')
+      symbols.forEach(symbol => {
+        const id = symbol.getAttribute('id')
+        if (id === fragment) {
+          const path = symbol.querySelector('path')
+          let opacity = path.getAttribute(`${type}-opacity`)
+
+          if (!opacity || opacity === 'NaN') opacity = 0.5
+          opacity = parseFloat(opacity)
+          opacity = opacity * 10000
+          opacity = Math.round(opacity)
+          opacity = opacity / 10000
+
+          if (direction === 'down') opacity += resolution
+          else opacity -= resolution
+
+          if (opacity > 0.9) opacity = 0.8
+          else if (opacity < 0) opacity = 0.025
+
+          path.setAttribute(`${type}-opacity`, opacity)
+          this.$emit('change-opacity')
+        }
+      })
+    },
     async load_animation () {
       if (!this.vector) return
       const animation_id = this.vector.id.replace('posters', 'animations')
