@@ -13,19 +13,7 @@
     <as-grid v-if="grid" :itemid="itemid" />
     <footer>
       <menu>
-        <svg :class="{ selected: color }" class="color" viewBox="0 0 120 120">
-          <linearGradient id="r">
-            <stop offset="0" stop-color="red" />
-            <stop offset="0.2857" stop-color="#ff0" />
-            <stop offset="0.4286" stop-color="#0f0" />
-            <stop offset="0.5714" stop-color="cyan" />
-            <stop offset="0.7142" stop-color="blue" />
-            <stop offset="0.8571" stop-color="#f0f" />
-            <stop offset="1" stop-color="red" />
-          </linearGradient>
-          <circle cy="60" cx="60" r="60" fill="url(#r)" fill-opacity="0.66" />
-          <icon name="opacity" />
-        </svg>
+        <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: animation }" name="animation" />
         <icon :class="{ selected: grid }" name="grid" />
       </menu>
@@ -100,15 +88,14 @@
       & > header > a.fullscreen
         visibility: hidden
     & > header
+      background: transparent-black
+      border-radius: 1rem
+      z-index: 2
       position: fixed;
-      top: env(safe-area-inset-top)
-      left: env(safe-area-inset-left)
-      right: env(safe-area-inset-left)
-    & > header
-      & > a
-        position: sticky
-        z-index: 2
-        height: base-line
+      padding: 0
+      top: inset(top, base-line)
+      left: inset(left, base-line)
+      right: inset(right, base-line)
       & > h4
         margin: 0
         color: red
@@ -132,6 +119,7 @@
       &.finished
         fill-opacity: inherit
     & > footer > menu
+      background-color: transparent-black
       position: fixed
       z-index: 2
       bottom: base-line

@@ -10,10 +10,14 @@ svg
   display: block
   stroke-width: 0
   fill: dark-black
+  &[itemscope].as-line-art
+    fill: blue !important
+    & > use#regular
+      fill: transparent !important
   use
   & use:active
     stroke-width: 2px
-    webkit-user-select: all
+    -webkit-user-select: all
     animation-name: active
     animation-timing-function: ease-in-out
     animation-fill-mode: none
