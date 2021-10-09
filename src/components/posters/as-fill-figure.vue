@@ -2,10 +2,10 @@
   <figure id="edit-fill" v-hotkey="keymap" v-finger:pressMove="press_move">
     <as-svg :itemid="itemid" :immediate="true"
             :tabindex="-1" :slice="false" :tabable="true"
-            @focus="focus" />
+            class="as-line-art" @focus="focus" />
     <figcaption>
-      <input v-model="color" :tabindex="-1" type="color">
       <as-svg :tabindex="-1" :itemid="itemid" class="as-line-art" />
+      <input v-model="color" :tabindex="-1" type="color">
     </figcaption>
   </figure>
 </template>
@@ -27,7 +27,7 @@
     data () {
       return {
         color: '#151518',
-        focused_layer: ''
+        focus_id: ''
       }
     },
     computed: {
@@ -42,12 +42,13 @@
     },
     watch: {
       color () {
-        this.change_color(this.focused_layer, this.color)
+        this.change_color(this.focus_id)
       }
     },
     methods: {
       focus (id) {
-        this.focused_layer = id
+        this.focus_id = id
+        this.color = this.get_color(this.focus_id)
       },
       press_move (evt) {
         this.$emit('pressed')
@@ -70,30 +71,31 @@
   figure#edit-fill
     & > svg
       position: fixed
-      z-index: 1
+      z-index: 0
       top: 0
       bottom: 0
       left: 0
       right: 0
     & > figcaption
+      position relative
+      z-index: 0
       border:none
       padding: 0
       height:auto
-      padding: base-line
       display: flex
       justify-content: space-between
       & > input
         position:fixed
-        z-index: 1
+        z-index: 2
         bottom: base-line * 3
-        left: base-line
+        right: base-line
         width: base-line * 2
         height: base-line * 2
       & > svg
         position:fixed
-        z-index: 1
+        z-index: 4
         bottom: base-line * 3
-        right: base-line
+        left: base-line
         width: base-line * 2
         height: base-line * 2
         fill: transparent
@@ -103,5 +105,4 @@
         stroke-width: base-line
         stroke-opacity: 1
         stroke:white
-
 </style>

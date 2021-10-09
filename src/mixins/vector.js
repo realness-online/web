@@ -28,23 +28,30 @@ export default {
     all_fragment () {
       return `#${this.all_id}`
     },
+    background_id () {
+      if (this.vector) return `${as_query_id(this.vector.id)}-background`
+      else return 'new-poster'
+    },
+    background_fragment () {
+      return `#${this.background_id}`
+    },
     viewbox () {
       if (this.vector) return this.vector.viewbox
       else return '0 0 16 16' // this is the viewbox for silhouette
     }
   },
   methods: {
+    get_path_element (id) {
+      return document.getElementById(id).querySelector('*')
+    },
+    get_color (id, type = 'fill') {
+      return this.get_path_element(id).getAttribute(`${type}`)
+    },
     change_color (id, type = 'fill') {
-      const symbols = this.$el.querySelectorAll('symbol')
-      symbols.forEach(symbol => {
-        const symbol_id = symbol.getAttribute('id')
-        if (id === symbol_id) {
-          const path = symbol.querySelector('path')
-          path.setAttribute('fill', this.color)
-          this.$emit(`change-${type}`)
-          path.focus()
-        }
-      })
+      const path = this.get_path_element(id)
+      path.setAttribute(type, this.color)
+      path.focus()
+      this.$emit(`change-${type}`)
     },
     change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
       if (!document.activeElement) return

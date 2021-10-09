@@ -1,24 +1,21 @@
 <template lang="html">
   <svg :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
-       @focus="focus_poster()"
-       @blur="blur_poster()"
-       @click="vector_click">
+       @focus="focus()" @blur="blur()" @click="vector_click">
     <defs>
+      <symbol :id="background_id"><rect width="100%" height="100%" /></symbol>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
     </defs>
-    <icon name="background" :tabindex="tabable ? 0 : false" />
+    <use class="background" :href="background_fragment" :tabindex="tabable ? 0 : false" @focus="focus('background')" />
     <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : false" :href="symbol_fragment(index)" @focus="focus(index)" />
   </svg>
 </template>
 <script>
-  import icon from '@/components/icon'
   import { load } from '@/helpers/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import vector from '@/mixins/vector'
   export default {
-    components: { icon },
     mixins: [intersection, vector_click, vector],
     props: {
       tabable: {
@@ -43,9 +40,10 @@
     },
     methods: {
       async focus (id) {
-        this.$emit('focus', this.symbol_id(id))
+        if (id === 'background') this.$emit('focus', this.background_id)
+        else this.$emit('focus', this.symbol_id(id))
       },
-      async blur_poster () {
+      async blur () {
         this.animation = null
       },
       async show () {
@@ -65,8 +63,6 @@
     min-height: 512px
     height: 100%
     width: 100%
-    &.as-line-art
-      fill: transparent
     & svg:focus
       fill: white
     & > use
@@ -79,4 +75,8 @@
       &:active
         stroke: red
         animation-name: press-hold
+      &.background
+        fill:white
+        // @media (prefers-color-scheme: dark)
+        //   fill: blue
 </style>
