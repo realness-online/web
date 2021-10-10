@@ -56,6 +56,7 @@
         default: null
       }
     },
+    emits: ['update:statement'],
     data () {
       return {
         poster: null,
