@@ -88,8 +88,8 @@
     },
     "extends": [
       "eslint:recommended",
-      "plugin:vue/recommended",
-      "@vue/standard"
+      "plugin:vue/base",
+      "plugin:vue/vue3-recommended"
     ],
     "parserOptions": {
       "parser": "babel-eslint"
