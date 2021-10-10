@@ -1,6 +1,6 @@
 const path = require('path')
 process.env.VUE_APP_VERSION = require('./package.json').version
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
   parallel: require('os').cpus().length > 1,
@@ -45,13 +45,13 @@ module.exports = {
     }
   },
   configureWebpack: {
-    plugins: [
-      new BundleAnalyzerPlugin({
-        analyzerMode: 'static',
-        openAnalyzer: false,
-        reportFilename: '../artifacts/vue_report.html'
-      })
-    ],
+    // plugins: [
+    //   new BundleAnalyzerPlugin({
+    //     analyzerMode: 'static',
+    //     openAnalyzer: false,
+    //     reportFilename: '../artifacts/vue_report.html'
+    //   })
+    // ],
     optimization: {
       moduleIds: 'named',
       removeAvailableModules: true,
