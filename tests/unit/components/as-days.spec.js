@@ -37,7 +37,7 @@ describe('@/components/as-days', () => {
         expect(sorting.earlier_weirdo_first).toBeCalled()
       })
       it('Sorts todays items by most recent', async () => {
-        jest.spyOn(as_date, 'is_today').mockImplementation(_ => true)
+        jest.spyOn(as_date, 'is_today').mockImplementation(() => true)
         jest.spyOn(sorting, 'recent_weirdo_first')
         await wrapper.setProps({ statements, posters: [poster, other_poster] })
         expect(sorting.recent_weirdo_first).toBeCalled()

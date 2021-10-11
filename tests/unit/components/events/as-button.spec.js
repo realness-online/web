@@ -14,7 +14,7 @@ const events = [{
 describe('@/compontent/events/as-button.vue', () => {
   let wrapper
   beforeEach(() => {
-    jest.spyOn(itemid, 'list').mockImplementationOnce(_ => Promise.resolve(events))
+    jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve(events))
     wrapper = shallowMount(as_button, { propsData: { itemid: poster.id } })
   })
   describe('Renders', () => {

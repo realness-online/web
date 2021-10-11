@@ -20,13 +20,13 @@ describe('@/views/Feed.vue', () => {
   beforeEach(() => {
     firebase.user = { phoneNumber: '+16282281824' }
     localStorage.me = '/+16282281824'
-    jest.spyOn(itemid, 'load').mockImplementation(_ => person)
+    jest.spyOn(itemid, 'load').mockImplementation(() => person)
     list_spy = jest.spyOn(itemid, 'list').mockImplementation(id => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
     jest.spyOn(itemid, 'as_directory')
-    .mockImplementation(_ => Promise.resolve({ items: ['559666932867'] }))
+    .mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
   })
   afterEach(() => {
     firebase.user = undefined
@@ -37,22 +37,22 @@ describe('@/views/Feed.vue', () => {
     it('Handles a removed relation', async () => {
       const stale_person = { person }
       stale_person.visited = undefined
-      jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
+      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
       const wrapper = await shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(2)
     })
     it('A fiendly explanatory message if new person', async () => {
-      list_spy.mockImplementation(_ => Promise.resolve([]))
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => Promise.resolve({ items: [] }))
+      list_spy.mockImplementation(() => Promise.resolve([]))
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => Promise.resolve({ items: [] }))
       firebase.user = undefined
       const wrapper = await shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A feed of statements', async () => {
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return null
       })
       const wrapper = await shallowMount(Feed)
@@ -70,7 +70,7 @@ describe('@/views/Feed.vue', () => {
   describe('Methods', () => {
     describe('goBig', () => {
       it('Enters fullscreen mode', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
           return null
         })
         const wrapper = await shallowMount(Feed)

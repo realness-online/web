@@ -10,7 +10,7 @@ const person = {
 describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
-    jest.spyOn(itemid, 'load').mockImplementation(_ => person)
+    jest.spyOn(itemid, 'load').mockImplementation(() => person)
     wrapper = shallowMount(Navigation, {
       stubs: {
         RouterLink: RouterLinkStub
@@ -28,7 +28,7 @@ describe('@/views/Navigation.vue', () => {
     })
     describe('first_name', () => {
       it('Returns \'You\' by default', async () => {
-        jest.spyOn(itemid, 'load').mockImplementationOnce(_ => null)
+        jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
         wrapper = shallowMount(Navigation, { stubs: { RouterLink: RouterLinkStub } })
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')

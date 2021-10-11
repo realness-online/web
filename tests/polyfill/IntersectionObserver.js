@@ -2,8 +2,8 @@ class IntersectionObserver {
   // constructor(callback, options) {
   //   // console.log('IntersectionObserver')
   // }
-  unobserve (element) {}
-  observe (element) {}
+  unobserve () {}
+  observe () {}
   disconnect () {}
 }
 global.IntersectionObserver = IntersectionObserver

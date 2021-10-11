@@ -7,22 +7,18 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
 >
   <header>
     <logo-as-link-stub />
-     
     <h1>
       Events
     </h1>
-     
     <icon-stub
       name="nothing"
     />
   </header>
-   
   <hgroup>
     <icon-stub
       name="working"
     />
   </hgroup>
-   
   <hgroup
     class="message"
   >
@@ -31,14 +27,13 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
         Zero
       </span>
        public events. You create events from 
-      <router-link-stub
+      <router-link
         to="/posters"
       >
         Posters
-      </router-link-stub>
+      </router-link>
       .
     </p>
-     
     <p>
       People see them after you 
       <sign-on-stub />

@@ -19,7 +19,7 @@ const user = {
 describe('@/compontent/events/as-fieldset.vue', () => {
   beforeEach(() => {
     firebase.user = user
-    get.mockImplementation(_ => Promise.resolve({}))
+    get.mockImplementation(() => Promise.resolve({}))
     localStorage.me = '/+16282281824'
   })
   afterEach(() => {
@@ -29,20 +29,20 @@ describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
   describe('Renders', () => {
     it('A fieldset with the default event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(_ => [])
+      jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
       wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A fieldset with an existing event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
+      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
     beforeEach(() => {
-      jest.spyOn(itemid, 'list').mockImplementation(_ => events)
-      // jest.spyOn(itemid, 'list').mockImplementationOnce(_ => events)
+      jest.spyOn(itemid, 'list').mockImplementation(() => events)
+      // jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallowMount(as_fieldset, { propsData: { itemid: poster.id } })
     })
     describe('#save', () => {

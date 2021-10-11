@@ -3,12 +3,14 @@
 exports[`@/compontent/profile/as-meta.vue Renders A list of the person relationships 1`] = `
 <aside
   itemid="/+14151234356/relations"
-  itemscope="itemscope"
+  itemscope=""
 >
+  
   <meta
     itemid="/+14151234356"
     itemprop="relations"
-    itemscope="itemscope"
+    itemscope=""
   />
+  
 </aside>
 `;

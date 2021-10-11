@@ -18,15 +18,15 @@ describe('@/persistance/Large.js', () => {
         expect(pic.save).toBeDefined()
       })
       it('Retrieves and ads to an already existing directory', async () => {
-        get.mockImplementation(itemid => Promise.resolve({ items: ['1555347888'] }))
-        get.mockImplementationOnce(_ => Promise.resolve(null))
+        get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementationOnce(() => Promise.resolve(null))
         await pic.save(poster)
         expect(get).toHaveBeenCalledTimes(2)
         expect(set).toHaveBeenCalledTimes(2)
       })
       it('Updates item in indexdb', async () => {
-        get.mockImplementation(itemid => Promise.resolve({ items: ['1555347888'] }))
-        get.mockImplementationOnce(_ => Promise.resolve({}))
+        get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementationOnce(() => Promise.resolve({}))
         await pic.save(poster)
         expect(get).toHaveBeenCalledTimes(1)
         expect(set).toHaveBeenCalledTimes(1)
@@ -41,7 +41,7 @@ describe('@/persistance/Large.js', () => {
         expect(pic.delete).toBeDefined()
       })
       it('Removes item from local directory', async () => {
-        get.mockImplementation(_ => Promise.resolve({ items: ['1555347888'] }))
+        get.mockImplementation(() => Promise.resolve({ items: ['1555347888'] }))
         await pic.delete(poster)
         expect(get).toHaveBeenCalledTimes(1)
         expect(del).toHaveBeenCalledTimes(1)

@@ -7,11 +7,11 @@ describe('/workers/vector.js', () => {
       let optimize_spy
       beforeEach(() => {
         optimize_spy = jest.spyOn(SVGO.prototype, 'optimize')
-        // optimize_spy.mockImplementation(_ => Promise.resolve(vector))
+        // optimize_spy.mockImplementation(() => Promise.resolve(vector))
       })
       it('Optimizes a vector', async () => {
         const postMessage_spy = jest.spyOn(global, 'postMessage')
-        postMessage_spy.mockImplementation(_ => true)
+        postMessage_spy.mockImplementation(() => true)
         await optimize.listen({ data: { vector } })
         expect(optimize_spy).toBeCalled()
         expect(postMessage_spy).toBeCalled()

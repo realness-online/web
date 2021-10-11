@@ -6,27 +6,26 @@ exports[`@/compontent/profile/as-figure.vue Renders Render a person's profile in
 >
   <as-svg-stub
     person="[object Object]"
-    slice="true"
+    working="false"
   />
-   
   <figcaption>
     <as-hgroup-stub
+      editable="false"
       person="[object Object]"
     />
-     
     <menu>
+      
       <profile-as-meta-stub
         people="[object Object],[object Object],[object Object]"
       />
-       
       <as-relationship-options-stub
         person="[object Object]"
         relations="[object Object],[object Object],[object Object]"
       />
-       
       <as-messenger-stub
         itemid="/+16282281823"
       />
+      
     </menu>
   </figcaption>
 </figure>

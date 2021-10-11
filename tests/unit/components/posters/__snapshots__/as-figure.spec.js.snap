@@ -6,27 +6,23 @@ exports[`@/compontent/posters/as-figure.vue Renders A new poster 1`] = `
   id="16282281824-posters-559666932867"
 >
   <as-svg-stub
+    immediate="false"
     itemid="/+16282281824/posters/559666932867"
     poster="[object Object]"
-    slice="true"
+    tabable="false"
   />
-   
   <figcaption>
+    
     <menu>
       <as-link-stub
         itemid="/+16282281824/posters/559666932867"
-      >
-        <time>
-          3:02 PM
-        </time>
-      </as-link-stub>
-       
+      />
       <as-download-stub
         itemid="/+16282281824/posters/559666932867"
       />
-       
-      <!---->
+      <!--v-if-->
     </menu>
+    
   </figcaption>
 </figure>
 `;
@@ -37,12 +33,12 @@ exports[`@/compontent/posters/as-figure.vue Renders A poster 1`] = `
   id="16282281824-posters-559666932867"
 >
   <as-svg-stub
+    immediate="false"
     itemid="/+16282281824/posters/559666932867"
-    slice="true"
+    tabable="false"
   />
-   
   <figcaption>
-    <!---->
+    <!--v-if-->
   </figcaption>
 </figure>
 `;

@@ -7,13 +7,13 @@ const mock_image = {
     width: 333,
     height: 444
   },
-  resize: jest.fn(_ => mock_image),
-  normalize: jest.fn(_ => mock_image),
-  threshold: jest.fn(_ => mock_image),
-  dither565: jest.fn(_ => mock_image),
-  posterize: jest.fn(_ => mock_image),
-  contrast: jest.fn(_ => mock_image),
-  color: jest.fn(_ => mock_image)
+  resize: jest.fn(() => mock_image),
+  normalize: jest.fn(() => mock_image),
+  threshold: jest.fn(() => mock_image),
+  dither565: jest.fn(() => mock_image),
+  posterize: jest.fn(() => mock_image),
+  contrast: jest.fn(() => mock_image),
+  color: jest.fn(() => mock_image)
 }
 const mock_vector = {
   paths: [poster_html]
@@ -24,7 +24,7 @@ describe('/workers/vector.js', () => {
     let as_paths_spy
     beforeEach(() => {
       as_paths_spy = jest.spyOn(potrace, 'as_paths')
-      .mockImplementation(_ => Promise.resolve(mock_vector))
+      .mockImplementation(() => Promise.resolve(mock_vector))
     })
     describe('#listen', () => {
       let read_spy
@@ -32,9 +32,9 @@ describe('/workers/vector.js', () => {
 
       beforeEach(() => {
         read_spy = jest.spyOn(potrace.Jimp, 'read')
-        .mockImplementation(_ => Promise.resolve(mock_image))
+        .mockImplementation(() => Promise.resolve(mock_image))
         postMessage_spy = jest.spyOn(global, 'postMessage')
-        .mockImplementation(_ => true)
+        .mockImplementation(() => true)
       })
       it('Creates a vector from a jpeg', async () => {
         await vector.listen({ data: { image } })
@@ -45,7 +45,7 @@ describe('/workers/vector.js', () => {
       it('Can handle different aspect ratios', async () => {
         const wider_image = { ...mock_image }
         wider_image.bitmap.width = 666
-        read_spy.mockImplementationOnce(_ => Promise.resolve(wider_image))
+        read_spy.mockImplementationOnce(() => Promise.resolve(wider_image))
         await vector.listen({ data: { image } })
         expect(read_spy).toBeCalled()
         expect(as_paths_spy).toBeCalled()
@@ -65,7 +65,7 @@ describe('/workers/vector.js', () => {
           ]
         }
         as_paths_spy = jest.spyOn(potrace, 'as_paths')
-        .mockImplementationOnce(_ => Promise.resolve(mock_vector))
+        .mockImplementationOnce(() => Promise.resolve(mock_vector))
         const made_vector = await vector.make(mock_image)
         expect(made_vector.path.length).toBe(3)
         expect(made_vector.path[0]).toBe('mock-content')
@@ -79,7 +79,7 @@ describe('/workers/vector.js', () => {
         }
         large.paths.push(image)
         as_paths_spy = jest.spyOn(potrace, 'as_paths')
-        .mockImplementationOnce(_ => Promise.resolve(large))
+        .mockImplementationOnce(() => Promise.resolve(large))
         await vector.make(mock_image)
         expect(mock_image.resize).toBeCalled()
       })
