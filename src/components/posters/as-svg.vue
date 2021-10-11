@@ -77,8 +77,7 @@
         animation-name: press-hold
       &.background
         fill:white
-        @media (prefers-color-scheme: dark)
-          fill: blue
-          &:focus
-            fill:white
+        &:focus
+          fill:blue
+
 </style>
