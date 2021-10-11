@@ -50,7 +50,6 @@ export default {
     change_color (id, type = 'fill') {
       const path = this.get_path_element(id)
       path.setAttribute(type, this.color)
-      path.focus()
       this.$emit(`change-${type}`)
     },
     change_opacity (direction = 'up', type = 'fill', resolution = 0.025) {
