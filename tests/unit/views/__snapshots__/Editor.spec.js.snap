@@ -46,7 +46,9 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
   <!---->
    
   <footer>
-    <menu>
+    <menu
+      style="visibility: hidden;"
+    >
       <icon-stub
         class="selected"
         name="edit-color"
