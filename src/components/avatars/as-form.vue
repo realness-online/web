@@ -114,7 +114,7 @@
         this.$nextTick()
         this.avatar_changed = true
       },
-      async accept_new_avatar (event) {
+      async accept_new_avatar () {
         this.finished = false
         await this.$nextTick()
         const avatar = new Avatar(this.vector.id)

@@ -114,7 +114,7 @@
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
       },
-      async get_poster_list (user) {
+      async get_poster_list () {
         this.posters = []
         const directory = await as_directory(`${localStorage.me}/posters`)
         if (directory && directory.items) {
