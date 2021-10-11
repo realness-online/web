@@ -5,7 +5,7 @@
             @focus="focus" />
     <figcaption>
       <as-svg style="visibility:hidden;" :itemid="itemid" class="as-line-art" />
-      <input v-model="color" :tabindex="-1" type="color">
+      <input v-model="color" :tabindex="-1" type="color" @blur="re_focus">
     </figcaption>
   </figure>
 </template>
@@ -46,6 +46,9 @@
       }
     },
     methods: {
+      re_focus () {
+        document.getElementById(this.focus_id).focus()
+      },
       focus (id) {
         this.focus_id = id
         this.color = this.get_color(this.focus_id)
