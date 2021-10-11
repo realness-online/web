@@ -17,6 +17,7 @@
         required: true
       }
     },
+    emits: ['picker'],
     data () {
       return {
         accept: true,
@@ -59,7 +60,6 @@
         })
       }
     }
-
   }
 </script>
 <style lang="stylus">

@@ -36,6 +36,7 @@
       'statement-as-textarea': as_textarea
     },
     mixins: [signed_in],
+    emits: ['update:person', 'update:statement'],
     data () {
       return {
         statements: [],

@@ -20,6 +20,7 @@
         required: true
       }
     },
+    emits: ['remove', 'add'],
     data () {
       return {
         relation: this.is_relation()

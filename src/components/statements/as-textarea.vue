@@ -9,6 +9,7 @@
 <script>
   const links = ['http://', 'https://']
   export default {
+    emits: ['toggle-keyboard', 'update:statement'],
     data () {
       return {
         new_statement: ''

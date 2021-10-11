@@ -24,6 +24,7 @@
         type: String
       }
     },
+    emits: ['pressed'],
     data () {
       return {
         color: '#151518',

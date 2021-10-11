@@ -33,6 +33,7 @@
         required: true
       }
     },
+    emits: ['picker'],
     data () {
       return {
         main_event: null,

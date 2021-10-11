@@ -58,6 +58,7 @@
       'avatar-as-form': avatar_as_form
     },
     mixins: [signed_in, intersection_thought],
+    emits: ['update:person'],
     data () {
       return {
         person: {},
