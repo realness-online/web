@@ -2,7 +2,7 @@
   <figure id="edit-fill" v-hotkey="keymap" v-finger:pressMove="press_move">
     <as-svg :itemid="itemid" :immediate="true"
             :tabindex="-1" :slice="false" :tabable="true"
-            class="as-line-art" @focus="focus" />
+            @focus="focus" />
     <figcaption>
       <as-svg style="visibility:hidden;" :itemid="itemid" class="as-line-art" />
       <input v-model="color" :tabindex="-1" type="color">
