@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="profile" class="page">
     <header>
       <icon name="nothing" />

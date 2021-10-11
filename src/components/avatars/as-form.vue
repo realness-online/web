@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <div id="manage-avatar">
     <icon v-if="working" name="working" />
     <template v-else>

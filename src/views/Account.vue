@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="account" :class="{ 'signed-in': signed_in }" class="page">
     <header>
       <sign-on v-if="!signed_in" />

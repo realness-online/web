@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <fieldset class="event">
     <events-list ref="events" :events="events" :itemid="events_id()" />
     <label for="day">{{ event_label }}</label>

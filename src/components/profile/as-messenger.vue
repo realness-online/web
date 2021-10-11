@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <a class="phone" @click="open_sms_app">
     <icon name="message" />
   </a>

@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <svg :itemid="itemid" itemscope itemtype="/posters"
        :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
        @focus="focus()" @blur="blur()" @click="vector_click">

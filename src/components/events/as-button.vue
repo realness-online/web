@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <a class="event" @click="on_click()">
     <svg viewBox="0 0 150 150" :class="has_event">
       <use :href="date_picker_icon" />

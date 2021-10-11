@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section class="as-days">
     <header v-if="working"><icon name="working" /></header>
     <article v-for="[date, day] in filtered_days" v-else

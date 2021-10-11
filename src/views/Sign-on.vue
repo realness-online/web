@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="sign-on" class="page">
     <header>
       <profile-as-figure v-if="person" :person="person">

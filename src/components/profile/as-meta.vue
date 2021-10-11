@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <aside itemscope :itemid="itemid">
     <meta v-for="person in people" :key="person.id" itemprop="relations" itemscope :itemid="person.id">
   </aside>

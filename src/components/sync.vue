@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <div ref="sync" hidden>
     <as-hgroup v-if="person" :person="person" />
     <as-days v-if="statements" v-slot="thoughts"

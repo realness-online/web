@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <textarea id="wat" v-model="new_statement"
             cols="1" rows="1"
             placeholder=">"

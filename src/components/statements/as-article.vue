@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <article class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">

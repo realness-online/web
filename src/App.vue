@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <main id="realness" :class="status">
     <router-view v-if="!working" v-model:statement="statement" v-model:person="me" />
     <aside v-if="!working">

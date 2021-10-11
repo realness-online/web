@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <div itemscope :itemid="statement.id">
     <p v-if="editable" ref="editable"
        spellcheck="true" contenteditable="true"

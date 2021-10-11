@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <hgroup itemscope :itemid="person.id">
     <b v-if="editable"
        ref="first_name"
