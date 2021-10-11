@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`] = `
+<section
+  class="page"
+  id="editor"
+>
+  <header>
+    <h4>
+      Fill
+    </h4>
+     
+    <a
+      class="fullscreen"
+    >
+      <icon-stub
+        name="fullscreen"
+      />
+    </a>
+     
+    <icon-stub
+      name="nothing"
+    />
+     
+    <a>
+      <icon-stub
+        name="remove"
+      />
+    </a>
+     
+    <a>
+      <icon-stub
+        name="finished"
+      />
+    </a>
+  </header>
+   
+  <as-fill-stub
+    itemid="undefined/posters/undefined"
+  />
+   
+  <!---->
+   
+  <!---->
+   
+  <!---->
+   
+  <footer>
+    <menu>
+      <icon-stub
+        class="selected"
+        name="edit-color"
+      />
+       
+      <icon-stub
+        class=""
+        name="animation"
+      />
+       
+      <icon-stub
+        class=""
+        name="grid"
+      />
+    </menu>
+  </footer>
+</section>
+`;

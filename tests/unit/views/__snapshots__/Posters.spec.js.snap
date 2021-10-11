@@ -49,7 +49,7 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
          
         <router-link-stub
           class="gear"
-          to="/posters/559666932867/opacity"
+          to="/posters/559666932867/editor"
         >
           <icon-stub
             name="gear"
