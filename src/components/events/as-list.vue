@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <ol itemscope :itemid="itemid" hidden>
     <li v-for="event in events" :key="event.id"
         itemprop="events" itemscope

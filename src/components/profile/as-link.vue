@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <router-link v-if="person" :to="author" class="profile">
     <as-avatar :person="person" />
     <as-hgroup :person="person">

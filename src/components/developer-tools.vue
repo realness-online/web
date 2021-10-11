@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="developer-tools" />
 </template>
 <script>

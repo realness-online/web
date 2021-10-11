@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <section id="editor" v-hotkey="keymap" class="page">
     <header>
       <h4>{{ page_title }}</h4>

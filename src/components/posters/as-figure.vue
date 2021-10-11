@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <figure :id="query_id" class="poster" :class="{ landscape }">
     <as-svg ref="poster"
             :itemid="itemid"

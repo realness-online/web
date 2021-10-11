@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <svg :viewBox="viewbox" :preserveAspectRatio="aspect_ratio" @click="vector_click">
     <icon v-if="working" name="working" />
     <icon v-else name="background" />

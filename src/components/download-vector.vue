@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <a :href="downloadable" :download="file_name" class="download">
     <icon name="download" />
   </a>
