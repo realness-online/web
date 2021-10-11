@@ -8,10 +8,21 @@ exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
   preserveAspectRatio="xMidYMid slice"
   viewBox="0 0 16 16"
 >
-  <defs />
+  <defs>
+    <symbol
+      id="new-poster"
+    >
+      <rect
+        height="100%"
+        width="100%"
+      />
+    </symbol>
+     
+  </defs>
    
-  <icon-stub
-    name="background"
+  <use
+    class="background"
+    href="#new-poster"
   />
    
 </svg>
@@ -25,10 +36,21 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   preserveAspectRatio="xMidYMid slice"
   viewBox="0 0 16 16"
 >
-  <defs />
+  <defs>
+    <symbol
+      id="new-poster"
+    >
+      <rect
+        height="100%"
+        width="100%"
+      />
+    </symbol>
+     
+  </defs>
    
-  <icon-stub
-    name="background"
+  <use
+    class="background"
+    href="#new-poster"
   />
    
 </svg>
