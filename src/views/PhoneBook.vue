@@ -14,8 +14,8 @@
     <nav v-if="signed_in" class="profile-list">
       <as-figure v-for="person in phonebook"
                  :key="person.id"
-                 :person="person"
-                 :relations.sync="relations" />
+                 v-model:relations="relations"
+                 :person="person" />
     </nav>
     <hgroup v-if="!working && !signed_in" class="sign-on message">
       <p><sign-on /> Check out who's here</p>
