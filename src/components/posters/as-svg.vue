@@ -33,6 +33,7 @@
         default: null
       }
     },
+    emits: ['focus', 'vector-loaded'],
     watch: {
       poster () {
         if (this.poster) this.vector = this.poster

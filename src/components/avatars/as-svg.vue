@@ -33,6 +33,7 @@
         default: false
       }
     },
+    emits: ['vector-loaded'],
     computed: {
       id () {
         if (this.person.avatar) return as_query_id(this.person.avatar)

@@ -25,6 +25,7 @@
         default: false
       }
     },
+    emits: ['blurred', 'focused'],
     methods: {
       async save (event) {
         const possibly_changed = this.$refs.editable.textContent.trim()

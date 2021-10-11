@@ -55,6 +55,7 @@
         default: false
       }
     },
+    emits: ['show', 'focused', 'blurred'],
     data () {
       return {
         all: null,

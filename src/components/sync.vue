@@ -56,7 +56,7 @@
         default: null
       }
     },
-    emits: ['update:statement'],
+    emits: ['update:statement', 'update:person', 'active'],
     data () {
       return {
         poster: null,

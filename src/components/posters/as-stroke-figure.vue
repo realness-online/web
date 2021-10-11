@@ -21,6 +21,7 @@
         type: String
       }
     },
+    emits: ['pressed'],
     computed: {
       keymap () {
         return {

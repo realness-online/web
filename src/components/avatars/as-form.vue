@@ -53,6 +53,7 @@
         required: true
       }
     },
+    emits: ['update:person'],
     data () {
       return {
         vectorizer: new Worker('/vector.worker.js'),
