@@ -52,7 +52,7 @@ describe('@/components/avatars/as-svg.vue', () => {
       })
       it('Returns false when it finds itself already rendered', async () => {
         const element = {}
-        jest.spyOn(document, 'getElementById').mockImplementationOnce(_ => element)
+        jest.spyOn(document, 'getElementById').mockImplementationOnce(() => element)
         expect(wrapper.vm.first_instance()).toBe(false)
       })
     })
@@ -71,7 +71,7 @@ describe('@/components/avatars/as-svg.vue', () => {
       })
       it('Checks for the vector elsewhere', async () => {
         const element = {}
-        jest.spyOn(document, 'getElementById').mockImplementationOnce(_ => element)
+        jest.spyOn(document, 'getElementById').mockImplementationOnce(() => element)
         await wrapper.vm.show()
         expect(wrapper.emitted('vector-loaded')).not.toBeTruthy()
       })

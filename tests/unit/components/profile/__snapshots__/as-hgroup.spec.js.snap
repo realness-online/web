@@ -3,31 +3,29 @@
 exports[`@/compontent/profile/as-hgroup.vue Renders A person as a hgroup element 1`] = `
 <hgroup
   itemid="/+14151234356"
-  itemscope="itemscope"
+  itemscope=""
 >
   <h3
     itemprop="first_name"
   >
     Scott
   </h3>
-   
   <h3
     itemprop="last_name"
   >
     Fryxell
   </h3>
-    
+  
+  
   <link
     href="avatars/5553338945763"
     itemprop="avatar"
     rel="icon"
   />
-   
   <meta
     content="4151234356"
     itemprop="mobile"
   />
-   
-  <!---->
+  <!--v-if-->
 </hgroup>
 `;

@@ -10,7 +10,6 @@ exports[`@/compontent/profile/as-search.vue Renders An input for search 1`] = `
     placeholder="Search phonebook"
     type="search"
   />
-   
   <icon-stub
     name="search"
   />

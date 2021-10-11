@@ -18,7 +18,7 @@ describe('@/views/Posters.vue', () => {
       id: new Date(2020, 1, 1).getTime(),
       poster: poster.id
     }]
-    get.mockImplementation(_ => Promise.resolve({ items: ['559666932867'] }))
+    get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
     wrapper = shallowMount(Posters, {
       stubs: ['router-link', 'router-view']
     })
@@ -80,14 +80,14 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#get_poster_list', () => {
       it('Adds posters', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
             return { items: ['1576588885385'] }
         })
         await wrapper.vm.get_poster_list({})
         expect(wrapper.vm.posters.length).toBe(1)
       })
       it('Handles an empty poster list', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => null)
+        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => null)
         await wrapper.vm.get_poster_list({})
       })
     })

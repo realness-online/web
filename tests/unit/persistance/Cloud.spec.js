@@ -62,7 +62,7 @@ describe('@/persistance/Cloud.js', () => {
       })
       it('Only deletes when logged in', async () => {
         firebase.user = null
-        get.mockImplementation(_ => Promise.resolve([]))
+        get.mockImplementation(() => Promise.resolve([]))
         await cloud.delete()
         await flushPromises()
         expect(firebase.storage().ref().child().delete).not.toBeCalled()

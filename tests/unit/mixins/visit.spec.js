@@ -28,14 +28,14 @@ describe('@/mixins/visit', () => {
         expect(wrapper.vm.update_visit).toBeDefined()
       })
       it('Updates the user with a visit', async () => {
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(person))
+        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.update_visit()
         await flushPromises()
         expect(load_spy).toBeCalled()
         expect(wrapper.emitted('update:person')).toBeTruthy()
       })
       it('Does nothing unless there is a person', async () => {
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
+        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.update_visit()
         await flushPromises()
         expect(load_spy).toBeCalled()
@@ -43,7 +43,7 @@ describe('@/mixins/visit', () => {
       })
       it('Waits a proper interval before update to visit', async () => {
         person.visited = new Date().toISOString()
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(person))
+        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.update_visit()
         await flushPromises()
         expect(load_spy).toBeCalled()

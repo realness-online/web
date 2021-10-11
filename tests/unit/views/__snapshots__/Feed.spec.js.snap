@@ -9,11 +9,9 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     <logo-as-link-stub
       tabindex="-1"
     />
-     
     <h1>
       Feed
     </h1>
-     
     <a
       class="fullscreen"
     >
@@ -22,16 +20,15 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
       />
     </a>
   </header>
-   
   <as-days-stub
     avatars=""
     events=""
     paginate="true"
     posters=""
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+    working="false"
   />
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;
 
@@ -44,11 +41,9 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     <logo-as-link-stub
       tabindex="-1"
     />
-     
     <h1>
       Feed
     </h1>
-     
     <a
       class="fullscreen"
     >
@@ -57,16 +52,15 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
       />
     </a>
   </header>
-   
   <as-days-stub
     avatars=""
     events=""
     paginate="true"
     posters=""
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+    working="false"
   />
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;
 
@@ -79,11 +73,9 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
     <logo-as-link-stub
       tabindex="-1"
     />
-     
     <h1>
       Feed
     </h1>
-     
     <a
       class="fullscreen"
     >
@@ -92,22 +84,20 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
       />
     </a>
   </header>
-   
   <as-days-stub
     avatars=""
     events=""
     paginate="true"
     posters=""
     statements=""
+    working="false"
   />
-   
   <hgroup
     class="sign-on message"
   >
     <p>
       A feed of statements and posters
     </p>
-     
     <p>
       If you 
       <sign-on-stub />
@@ -130,11 +120,9 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
     <logo-as-link-stub
       tabindex="-1"
     />
-     
     <h1>
       Feed
     </h1>
-     
     <a
       class="fullscreen"
     >
@@ -143,15 +131,14 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
       />
     </a>
   </header>
-   
   <as-days-stub
     avatars=""
     events=""
     paginate="true"
     posters=""
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+    working="false"
   />
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;

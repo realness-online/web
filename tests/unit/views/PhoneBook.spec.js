@@ -13,7 +13,7 @@ const person = {
 describe('@/views/PhoneBook', () => {
   let wrapper
   beforeEach(async () => {
-    // jest.spyOn(itemid, 'load').mockImplementation(_ => person)
+    // jest.spyOn(itemid, 'load').mockImplementation(() => person)
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -32,8 +32,8 @@ describe('@/views/PhoneBook', () => {
         path: '/but/fake/path'
       }
       firebase.user = person
-      firebase.storage_mock.listAll.mockImplementation(_ => Promise.resolve(mock_dir))
-      jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(person))
+      firebase.storage_mock.listAll.mockImplementation(() => Promise.resolve(mock_dir))
+      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
       wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)
@@ -46,8 +46,8 @@ describe('@/views/PhoneBook', () => {
         path: '/but/fake/path'
       }
       firebase.user = person
-      firebase.storage_mock.listAll.mockImplementation(_ => Promise.resolve(mock_dir))
-      jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
+      firebase.storage_mock.listAll.mockImplementation(() => Promise.resolve(mock_dir))
+      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
       wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)

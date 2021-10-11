@@ -18,8 +18,8 @@ describe('@/views/Account.vue', () => {
   beforeEach(() => {
     firebase.user = user
     localStorage.me = '/+16282281824'
-    load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(me))
-    list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => Promise.resolve([]))
+    load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(me))
+    list_spy = jest.spyOn(itemid, 'list').mockImplementation(() => Promise.resolve([]))
     wrapper = shallowMount(Account)
   })
   afterEach(() => {
@@ -121,7 +121,7 @@ describe('@/views/Account.vue', () => {
         { id: '/+16282281824/statements/1569909311638' }
       ]
       it('Checks if it\'s time to load more thoughts', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementation(_ => {
+        jest.spyOn(itemid, 'as_directory').mockImplementation(() => {
           return { items: ['index', '1569909311638'] }
         })
         wrapper.vm.statements = statements
@@ -141,7 +141,7 @@ describe('@/views/Account.vue', () => {
     })
     describe('#get_all_my_stuff', () => {
       it('Handles empty person', () => {
-        load_spy = jest.spyOn(itemid, 'load').mockImplementation(_ => Promise.resolve(null))
+        load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
         wrapper.vm.get_all_my_stuff()
         expect(load_spy).toBeCalled()
       })

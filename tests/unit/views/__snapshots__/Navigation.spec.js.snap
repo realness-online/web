@@ -6,63 +6,50 @@ exports[`@/views/Navigation.vue Renders Displays statements and profile for a pe
   id="navigation"
 >
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Events
-    
-    </a>
-     
-    <a
+       Events 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      Relations
-    
-    </a>
-     
-    <!---->
-     
+       Relations 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />
   </nav>
-   
   <footer>
     <h6>
       1.0.0
     </h6>
-     
     <a
       href="https://github.com/realness-online/web"
       rel="external"
@@ -79,63 +66,50 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:false 
   id="navigation"
 >
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Events
-    
-    </a>
-     
-    <a
+       Events 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      Relations
-    
-    </a>
-     
-    <!---->
-     
+       Relations 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />
   </nav>
-   
   <footer>
     <h6>
       1.0.0
     </h6>
-     
     <a
       href="https://github.com/realness-online/web"
       rel="external"
@@ -152,63 +126,50 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:true s
   id="navigation"
 >
   <nav>
-    <a
+    <router-link
       class="black"
       tabindex="-1"
+      to="/account"
     >
-      
       Scott
-    
-    </a>
-     
-    <a
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/events"
     >
-      
-      Events
-    
-    </a>
-     
-    <a
+       Events 
+    </router-link>
+    <router-link
       class="green"
       tabindex="-1"
+      to="/posters"
     >
-      
-      Posters
-    
-    </a>
-     
-    <a
+       Posters 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/feed"
     >
-      
-      Feed
-    
-    </a>
-     
-    <a
+       Feed 
+    </router-link>
+    <router-link
       class="blue"
       tabindex="-1"
+      to="/phone-book"
     >
-      
-      Relations
-    
-    </a>
-     
-    <!---->
-     
+       Relations 
+    </router-link>
+    <!--v-if-->
     <statement-as-textarea-stub
       class="red"
     />
   </nav>
-   
   <footer>
     <h6>
       1.0.0
     </h6>
-     
     <a
       href="https://github.com/realness-online/web"
       rel="external"

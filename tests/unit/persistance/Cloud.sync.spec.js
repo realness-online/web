@@ -35,14 +35,14 @@ describe('/persistance/Cloud.js', () => {
         expect(get).not.toBeCalled()
       })
       it('Handles a lack of offline content gracefylly', async () => {
-        get.mockImplementation(_ => Promise.resolve(undefined))
+        get.mockImplementation(() => Promise.resolve(undefined))
         await sync_offline_actions()
         expect(del).not.toBeCalled()
       })
       it('Saves offline content', async () => {
         firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'save')
-        get.mockImplementation(_ => Promise.resolve([
+        get.mockImplementation(() => Promise.resolve([
           { action: 'save', id: '/+6282281824/posters/1555347888' }
         ]))
         await sync_offline_actions()
@@ -53,7 +53,7 @@ describe('/persistance/Cloud.js', () => {
       it('Deletes offline content', async () => {
         firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'delete')
-        get.mockImplementation(_ => Promise.resolve([
+        get.mockImplementation(() => Promise.resolve([
           { action: 'delete', id: '/+6282281824/posters/1555347888' }
         ]))
         await sync_offline_actions()
@@ -63,7 +63,7 @@ describe('/persistance/Cloud.js', () => {
       })
       it('Logs info when an action is unclear', async () => {
         firebase.user = user
-        get.mockImplementation(_ => Promise.resolve([
+        get.mockImplementation(() => Promise.resolve([
           { action: 'weirdo', id: '/+6282281824/posters/1555347888' }
         ]))
         await sync_offline_actions()
@@ -77,15 +77,15 @@ describe('/persistance/Cloud.js', () => {
       beforeEach(async () => {
         relations = [{ id }]
         firebase.user = user
-        keys.mockImplementation(_ => Promise.resolve([id, 'random:key', '/+16781435566']))
+        keys.mockImplementation(() => Promise.resolve([id, 'random:key', '/+16781435566']))
         const meta = {
           updated: new Date().toISOString(),
           customMetadata: { md5: local_diferent_network }
         }
         const index = {}
         index[id] = meta
-        firebase.storage_mock.getMetadata.mockImplementation(_ => Promise.resolve(meta))
-        list_spy = jest.spyOn(itemid, 'list').mockImplementation(_ => relations)
+        firebase.storage_mock.getMetadata.mockImplementation(() => Promise.resolve(meta))
+        list_spy = jest.spyOn(itemid, 'list').mockImplementation(() => relations)
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
           if (query === id) return Promise.resolve(person_html)
@@ -125,13 +125,13 @@ describe('/persistance/Cloud.js', () => {
           updated: new Date().toISOString()
         }
         firebase.storage_mock.getMetadata
-        .mockImplementation(_ => Promise.resolve(bad_meta))
+        .mockImplementation(() => Promise.resolve(bad_meta))
         await prune()
         expect(del).not.toBeCalled()
       })
       it('Leaves properly synced local files alone', async () => {
         firebase.storage_mock.getMetadata
-        .mockImplementation(_ => Promise.resolve({
+        .mockImplementation(() => Promise.resolve({
           updated: new Date().toISOString(),
           customMetadata: { md5: local_matches_network }
         }))

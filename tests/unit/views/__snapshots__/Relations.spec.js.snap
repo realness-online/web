@@ -9,21 +9,18 @@ exports[`@/views/Relations.vue Renders Fails gracefully when relations has been 
     <icon-stub
       name="nothing"
     />
-     
     <h1>
       Relations
     </h1>
-     
-    <router-link-stub
+    <router-link
       to="/phone-book"
     >
       <icon-stub
         name="finished"
       />
-    </router-link-stub>
+    </router-link>
   </header>
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;
 
@@ -36,20 +33,17 @@ exports[`@/views/Relations.vue Renders Relationship information 1`] = `
     <icon-stub
       name="nothing"
     />
-     
     <h1>
       Relations
     </h1>
-     
-    <router-link-stub
+    <router-link
       to="/phone-book"
     >
       <icon-stub
         name="finished"
       />
-    </router-link-stub>
+    </router-link>
   </header>
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;

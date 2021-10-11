@@ -6,7 +6,7 @@ const avatar_mock = require('fs').readFileSync('./tests/unit/html/avatar.html', 
 describe('@/compontent/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
-    get.mockImplementation(_ => Promise.resolve({}))
+    get.mockImplementation(() => Promise.resolve({}))
     localStorage.me = '/+16282281824'
     person = {
       first_name: 'Scott',

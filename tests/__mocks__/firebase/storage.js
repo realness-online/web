@@ -5,17 +5,17 @@ const mock_dir = {
   path: '/a/fake/path'
 }
 firebase.storage_mock = {
-  putString: jest.fn(_ => Promise.resolve()),
-  getDownloadURL: jest.fn(_ => Promise.resolve('/path/to/file.html')),
-  listAll: jest.fn(_ => Promise.resolve(mock_dir)),
-  delete: jest.fn(_ => Promise.resolve()),
-  getMetadata: jest.fn(_ => Promise.resolve())
+  putString: jest.fn(() => Promise.resolve()),
+  getDownloadURL: jest.fn(() => Promise.resolve('/path/to/file.html')),
+  listAll: jest.fn(() => Promise.resolve(mock_dir)),
+  delete: jest.fn(() => Promise.resolve()),
+  getMetadata: jest.fn(() => Promise.resolve())
 }
 const meta_methods = {
   ref: jest.fn(() => {
     return {
-      child: jest.fn(path => firebase.storage_mock)
+      child: jest.fn(() => firebase.storage_mock)
     }
   })
 }
-firebase.storage = jest.fn(_ => meta_methods)
+firebase.storage = jest.fn(() => meta_methods)

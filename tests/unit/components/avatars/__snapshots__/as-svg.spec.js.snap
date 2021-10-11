@@ -8,6 +8,7 @@ exports[`@/components/avatars/as-svg.vue Renders An avatar 1`] = `
   <icon-stub
     name="background"
   />
-   
+  
+  
 </svg>
 `;

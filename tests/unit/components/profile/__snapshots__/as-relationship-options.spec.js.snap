@@ -8,7 +8,6 @@ exports[`@/compontent/profile/as-relationship-options.vue Renders A list of opti
   <icon-stub
     name="add"
   />
-   
   <icon-stub
     name="finished"
   />

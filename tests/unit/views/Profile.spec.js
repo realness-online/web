@@ -14,7 +14,7 @@ describe('@/views/Profile.vue', () => {
       firebase.user = user
       fetch.resetMocks()
       fetch.mockResponseOnce(person)
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return { items: ['559666932867'] }
       })
       const $route = { params: { phone_number: '+14151231234' } }
@@ -27,7 +27,7 @@ describe('@/views/Profile.vue', () => {
       firebase.user = user
       fetch.resetMocks()
       fetch.mockResponseOnce(person)
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(_ => {
+      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return { items: [] }
       })
       const $route = { params: { phone_number: '+14151231234' } }

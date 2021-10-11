@@ -44,13 +44,13 @@ describe('@/helpers/itemid', () => {
       expect(as_directory).toBeDefined()
     })
     it('Returns a directory when offline', async () => {
-      const mock_get = get.mockImplementationOnce(_ => Promise.resolve({ items: ['1555347888'] }))
+      const mock_get = get.mockImplementationOnce(() => Promise.resolve({ items: ['1555347888'] }))
       await as_directory('/+/posters/')
       expect(mock_get).toBeCalled()
     })
     it('Returns a directory', async () => {
       firebase.user = user
-      const mock_get = get.mockImplementationOnce(_ => Promise.resolve(null))
+      const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
       await as_directory('/+/posters/')
       expect(mock_get).toBeCalled()
       expect(set).toBeCalled()

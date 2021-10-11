@@ -8,31 +8,26 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with an existing
     events=""
     itemid="/+16282281824/events"
   />
-   
   <label
     for="day"
   >
     Wednesday, January 1
   </label>
-   
   <input
     id="day"
-    required="required"
+    required=""
     type="date"
   />
-   
   <input
-    required="required"
+    required=""
     type="time"
   />
-   
   <menu>
     <a>
       <icon-stub
         name="remove"
       />
     </a>
-     
     <a>
       <icon-stub
         name="add"
@@ -50,31 +45,26 @@ exports[`@/compontent/events/as-fieldset.vue Renders A fieldset with the default
     events=""
     itemid="/+16282281824/events"
   />
-   
   <label
     for="day"
   >
     Wednesday, January 1
   </label>
-   
   <input
     id="day"
-    required="required"
+    required=""
     type="date"
   />
-   
   <input
-    required="required"
+    required=""
     type="time"
   />
-   
   <menu>
     <a>
       <icon-stub
         name="remove"
       />
     </a>
-     
     <a>
       <icon-stub
         name="add"

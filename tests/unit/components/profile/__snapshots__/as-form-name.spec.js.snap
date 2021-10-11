@@ -12,14 +12,12 @@ exports[`@/compontent/profile/as-form-name.vue Renders Profile name form 1`] = `
     >
       Name
     </legend>
-     
     <input
       id="first-name"
       placeholder="First"
       tabindex="1"
       type="text"
     />
-     
     <input
       id="last-name"
       placeholder="Last"
@@ -27,15 +25,12 @@ exports[`@/compontent/profile/as-form-name.vue Renders Profile name form 1`] = `
       type="text"
     />
   </fieldset>
-   
   <menu>
     <button
-      disabled="disabled"
+      disabled=""
       tabindex="3"
     >
-      
-      Yep, That's my name
-    
+       Yep, That's my name 
     </button>
   </menu>
 </form>

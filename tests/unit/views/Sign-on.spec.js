@@ -38,7 +38,7 @@ describe('@/views/Sign-on.vue', () => {
     })
     it('Renders a form for a returning user', async () => {
       localStorage.me = '/+6282281823'
-      jest.spyOn(itemid, 'load').mockImplementation(itemid => {
+      jest.spyOn(itemid, 'load').mockImplementation(() => {
         return Promise.resolve(person)
       })
       wrapper = await shallowMount(Sign_on)

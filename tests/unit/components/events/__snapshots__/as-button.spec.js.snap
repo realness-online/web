@@ -11,7 +11,6 @@ exports[`@/compontent/events/as-button.vue Renders A button to manage a poster's
     <use
       href="#date-picker"
     />
-     
     <text
       class="month"
       text-anchor="middle"
@@ -20,7 +19,6 @@ exports[`@/compontent/events/as-button.vue Renders A button to manage a poster's
     >
       February
     </text>
-     
     <text
       text-anchor="middle"
       x="57"

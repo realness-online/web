@@ -6,35 +6,33 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
   id="directory"
 >
   <header>
-    <router-link-stub
+    <router-link
       to="/relations"
     >
       <icon-stub
         name="heart"
       />
-    </router-link-stub>
-     
+    </router-link>
     <h1>
       Recent
     </h1>
-     
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
-    <!---->
+    <!--v-if-->
   </hgroup>
-   
   <nav
     class="profile-list"
   >
+    
     <as-figure-stub
+      editable="false"
       person="[object Object]"
       relations=""
     />
+    
   </nav>
-   
-  <!---->
+  <!--v-if-->
 </section>
 `;
 
@@ -44,30 +42,28 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
   id="directory"
 >
   <header>
-    <router-link-stub
+    <router-link
       to="/relations"
     >
       <icon-stub
         name="heart"
       />
-    </router-link-stub>
-     
+    </router-link>
     <h1>
       Recent
     </h1>
-     
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
-    <!---->
+    <!--v-if-->
   </hgroup>
-   
   <nav
     class="profile-list"
-  />
-   
-  <!---->
+  >
+    
+    
+  </nav>
+  <!--v-if-->
 </section>
 `;
 
@@ -80,22 +76,17 @@ exports[`@/views/PhoneBook Renders Lets you know to sign in 1`] = `
     <icon-stub
       name="nothing"
     />
-     
     <h1>
       Recent
     </h1>
-     
     <logo-as-link-stub />
   </header>
-   
   <hgroup>
     <icon-stub
       name="working"
     />
   </hgroup>
-   
-  <!---->
-   
-  <!---->
+  <!--v-if-->
+  <!--v-if-->
 </section>
 `;
