@@ -85,6 +85,7 @@
       display: flex
       justify-content: space-between
       & > input
+        border: 2px solid red
         position:fixed
         z-index: 2
         bottom: base-line * 3
