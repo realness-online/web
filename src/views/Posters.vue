@@ -96,7 +96,7 @@
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
     },
-    destroyed () {
+    unmounted () {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },
