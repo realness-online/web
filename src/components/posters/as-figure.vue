@@ -103,7 +103,7 @@
         this.loaded = true
         this.$emit('loaded', this.$refs.poster.$el.outerHTML)
       },
-      open_sms_app (event) {
+      open_sms_app () {
         window.open(this.sms_link, '_self')
       }
     }

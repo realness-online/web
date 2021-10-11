@@ -27,7 +27,7 @@
     },
     emits: ['blurred', 'focused'],
     methods: {
-      async save (event) {
+      async save () {
         const possibly_changed = this.$refs.editable.textContent.trim()
         if (this.statement.statement !== possibly_changed) {
           const statement = new Statements()
@@ -35,7 +35,7 @@
         }
         this.$emit('blurred', this.statement)
       },
-      focused (event) {
+      focused () {
         this.$emit('focused', this.statement)
       }
     }

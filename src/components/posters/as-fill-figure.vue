@@ -59,13 +59,13 @@
         if (evt.deltaY > 0) this.change_opacity('down', 'fill', 0.03)
         else this.change_opacity('up', 'fill', 0.03)
       },
-      fill_down (event) {
+      fill_down () {
         this.change_opacity('down')
       },
-      tiny_fill_up (event) {
+      tiny_fill_up () {
         this.change_opacity('up', 'fill', 0.01)
       },
-      tiny_fill_down (event) {
+      tiny_fill_down () {
         this.change_opacity('down', 'fill', 0.01)
       }
     }

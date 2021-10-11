@@ -108,7 +108,7 @@
       disable_input () {
         this.$refs.mobile.disabled = true
       },
-      async begin_authorization (event) {
+      async begin_authorization () {
         // this.working = true
         this.disable_input()
         this.show_authorize = false
@@ -120,7 +120,7 @@
         })
         this.human.verify()
       },
-      async text_human_verify_code (response) {
+      async text_human_verify_code () {
         this.working = false
         this.show_code = true
         this.show_captcha = false
@@ -130,7 +130,7 @@
         this.$el.querySelector('#verification-code').scrollIntoView(false)
         this.$el.querySelector('#verification-code').focus()
       },
-      async sign_in_with_code (event) {
+      async sign_in_with_code () {
         this.working = true
         this.disable_input()
         this.show_code = false

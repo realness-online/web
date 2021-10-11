@@ -35,7 +35,7 @@
     },
     emits: ['update:person'],
     methods: {
-      async save_first_name (event) {
+      async save_first_name () {
         const possibly_changed = this.$refs.first_name.textContent.trim()
         if (this.person.first_name !== possibly_changed) {
           const updated = { ...this.person }
@@ -43,7 +43,7 @@
           this.$emit('update:person', updated)
         }
       },
-      async save_last_name (event) {
+      async save_last_name () {
         const possibly_changed = this.$refs.last_name.textContent.trim()
         if (this.person.last_name !== possibly_changed) {
           const updated = { ...this.person }
