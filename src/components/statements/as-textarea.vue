@@ -16,7 +16,7 @@
       }
     },
     methods: {
-      focused (event) {
+      focused () {
         console.info('display:statement-form')
         this.$emit('toggle-keyboard')
       },

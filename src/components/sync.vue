@@ -90,7 +90,7 @@
       firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
     methods: {
-      async visibility_change (event) {
+      async visibility_change () {
         if (document.visibilityState === 'visible') await this.play()
       },
       async auth_state_changed (me) {

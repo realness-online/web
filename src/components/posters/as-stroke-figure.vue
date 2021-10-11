@@ -33,21 +33,21 @@
       }
     },
     methods: {
-      press_move (evt) {
+      press_move (event) {
         this.$emit('pressed')
-        if (evt.deltaY > 0) this.change_opacity('down', 'stroke', 0.03)
+        if (event.deltaY > 0) this.change_opacity('down', 'stroke', 0.03)
         else this.change_opacity('up', 'stroke', 0.03)
       },
-      up_stroke (event) {
+      up_stroke () {
         this.change_opacity('up', 'stroke')
       },
-      down_stroke (event) {
+      down_stroke () {
         this.change_opacity('down', 'stroke')
       },
-      tiny_up_stroke (event) {
+      tiny_up_stroke () {
         this.change_opacity('up', 'stroke', 0.01)
       },
-      tiny_down_stroke (event) {
+      tiny_down_stroke () {
         this.change_opacity('down', 'stroke', 0.01)
       }
     }

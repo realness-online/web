@@ -22,10 +22,10 @@
       }
     },
     methods: {
-      search_mode (event) {
+      search_mode () {
         this.searching = true
       },
-      view_friends_mode (event) {
+      view_friends_mode () {
         this.query = ''
         this.searching = false
       }

@@ -53,7 +53,7 @@
       else this.first_name = 'You'
     },
     methods: {
-      done_posting (event) {
+      done_posting () {
         // focus somewhere else to commit statement
         this.$refs.nav.focus()
       }

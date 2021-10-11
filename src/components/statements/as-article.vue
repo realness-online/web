@@ -74,7 +74,7 @@
       }
     },
     methods: {
-      click (event) {
+      click () {
         if (this.all) this.all = null
         else this.all = 'all'
       },

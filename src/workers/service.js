@@ -9,6 +9,6 @@ self.addEventListener('install', event => {
     // but It works pretty good right now that eventually the changes roll out
   })
 })
-self.addEventListener('activate', event => {
+self.addEventListener('activate', () => {
   clients.claim()
 })
