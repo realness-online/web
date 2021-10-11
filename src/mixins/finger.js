@@ -21,7 +21,7 @@ export const gestures = [
 export default {
   directives: {
     finger: {
-      bind (el, binding, vnode) {
+      bind (el, binding) {
         const { value: callback, arg } = binding
         if (!gestures.includes(arg)) throw new Error(`${arg} gesture is not supported`)
         if (typeof callback !== 'function') throw new Error('The v-finger value should be a function')

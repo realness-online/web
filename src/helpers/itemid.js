@@ -36,7 +36,7 @@ export async function load_from_network (itemid, me = localStorage.me) {
     return get_item(server_text)
   } else return null
 }
-export async function as_directory (itemid, me = localStorage.me) {
+export async function as_directory (itemid) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) return cached
@@ -50,7 +50,7 @@ export async function as_directory (itemid, me = localStorage.me) {
     return meta
   } else return null
 }
-export async function as_download_url (itemid, me = localStorage.me) {
+export async function as_download_url (itemid) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
