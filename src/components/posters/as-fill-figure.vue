@@ -4,7 +4,7 @@
             :tabindex="-1" :slice="false" :tabable="true"
             class="as-line-art" @focus="focus" />
     <figcaption>
-      <as-svg :tabindex="-1" :itemid="itemid" class="as-line-art" />
+      <as-svg style="visibility:hidden;" :itemid="itemid" class="as-line-art" />
       <input v-model="color" :tabindex="-1" type="color">
     </figcaption>
   </figure>
