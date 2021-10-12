@@ -9,7 +9,6 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
     <h4>
       Fill
     </h4>
-     
     <a
       class="fullscreen"
     >
@@ -17,34 +16,26 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
         name="fullscreen"
       />
     </a>
-     
     <icon-stub
       name="nothing"
     />
-     
     <a>
       <icon-stub
         name="remove"
       />
     </a>
-     
     <a>
       <icon-stub
         name="finished"
       />
     </a>
   </header>
-   
   <as-fill-stub
-    itemid="undefined/posters/undefined"
+    itemid="/+16282281824/posters/559666932867"
   />
-   
-  <!---->
-   
-  <!---->
-   
-  <!---->
-   
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
   <footer>
     <menu
       style="visibility: hidden;"
@@ -53,12 +44,10 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
         class="selected"
         name="edit-color"
       />
-       
       <icon-stub
         class=""
         name="animation"
       />
-       
       <icon-stub
         class=""
         name="grid"

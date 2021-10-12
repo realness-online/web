@@ -14,6 +14,7 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     </h1>
     <a
       class="fullscreen"
+      tabindex="-1"
     >
       <icon-stub
         name="fullscreen"
@@ -28,7 +29,6 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     working="false"
   />
-  <!--v-if-->
 </section>
 `;
 
@@ -46,6 +46,7 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     </h1>
     <a
       class="fullscreen"
+      tabindex="-1"
     >
       <icon-stub
         name="fullscreen"
@@ -60,7 +61,6 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     working="false"
   />
-  <!--v-if-->
 </section>
 `;
 
@@ -78,6 +78,7 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
     </h1>
     <a
       class="fullscreen"
+      tabindex="-1"
     >
       <icon-stub
         name="fullscreen"
@@ -92,22 +93,6 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
     statements=""
     working="false"
   />
-  <hgroup
-    class="sign-on message"
-  >
-    <p>
-      A feed of statements and posters
-    </p>
-    <p>
-      If you 
-      <sign-on-stub />
-       you can check out 
-      <icon-stub
-        name="heart"
-      />
-       who else is on here
-    </p>
-  </hgroup>
 </section>
 `;
 
@@ -125,6 +110,7 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
     </h1>
     <a
       class="fullscreen"
+      tabindex="-1"
     >
       <icon-stub
         name="fullscreen"
@@ -139,6 +125,5 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
     statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     working="false"
   />
-  <!--v-if-->
 </section>
 `;
