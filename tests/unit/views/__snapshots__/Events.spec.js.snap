@@ -11,33 +11,21 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
       Events
     </h1>
     <icon-stub
-      name="nothing"
-    />
-  </header>
-  <hgroup>
-    <icon-stub
       name="working"
     />
-  </hgroup>
-  <hgroup
+  </header>
+  <p
     class="message"
   >
-    <p>
-      <span>
-        Zero
-      </span>
-       public events. You create events from 
-      <router-link
-        to="/posters"
-      >
-        Posters
-      </router-link>
-      .
-    </p>
-    <p>
-      People see them after you 
-      <sign-on-stub />
-    </p>
-  </hgroup>
+    <span>
+      Zero
+    </span>
+     public events. You create events from 
+    <router-link
+      to="/posters"
+    >
+      Posters
+    </router-link>
+  </p>
 </section>
 `;

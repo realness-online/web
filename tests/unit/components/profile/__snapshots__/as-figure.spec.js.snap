@@ -9,7 +9,7 @@ exports[`@/compontent/profile/as-figure.vue Renders Render a person's profile in
     working="false"
   />
   <figcaption>
-    <as-hgroup-stub
+    <as-address-stub
       editable="false"
       person="[object Object]"
     />

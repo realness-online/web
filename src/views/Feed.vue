@@ -3,7 +3,7 @@
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
-      <a class="fullscreen" @click="go_big">
+      <a tabindex="-1" class="fullscreen" @click="go_big">
         <icon name="fullscreen" />
       </a>
     </header>
@@ -23,10 +23,6 @@
                             @show="thought_shown" />
       </template>
     </as-days>
-    <hgroup v-if="show_message" class="sign-on message">
-      <p>A feed of statements and posters</p>
-      <p>If you <sign-on /> you can check out <icon name="heart" /> who else is on here</p>
-    </hgroup>
   </section>
 </template>
 <script>
@@ -39,12 +35,10 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
-  import sign_on from '@/components/profile/sign-on'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
   export default {
     components: {
-      'sign-on': sign_on,
       'as-days': as_days,
       'logo-as-link': logo_as_link,
       'thought-as-article': thought_as_article,
@@ -126,7 +120,6 @@
       display: flex;
       padding: 0
       & > header
-      & > hgroup
       article.day > header
       article.thought
         display: none

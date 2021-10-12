@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import as_hgroup from '@/components/profile/as-hgroup'
+import as_address from '@/components/profile/as-address'
 const person = {
   id: '/+14151234356',
   first_name: 'Scott',
@@ -7,18 +7,18 @@ const person = {
   mobile: '4151234356',
   avatar: 'avatars/5553338945763'
 }
-describe('@/compontent/profile/as-hgroup.vue', () => {
+describe('@/compontent/profile/as-address.vue', () => {
   let wrapper
   describe('Renders', () => {
-    it('A person as a hgroup element', () => {
-      wrapper = shallowMount(as_hgroup, { propsData: { person } })
+    it('A person as an address element', () => {
+      wrapper = shallowMount(as_address, { props: { person } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
     beforeEach(() => {
-      wrapper = shallowMount(as_hgroup, {
-        propsData: {
+      wrapper = shallowMount(as_address, {
+        props: {
           person,
           editable: true
         }

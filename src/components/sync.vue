@@ -1,6 +1,6 @@
 <template>
   <div ref="sync" hidden>
-    <as-hgroup v-if="person" :person="person" />
+    <as-address v-if="person" :person="person" />
     <as-days v-if="statements" v-slot="thoughts"
              itemscope :itemid="itemid('statements')"
              :statements="statements" :paginate="false">
@@ -34,7 +34,7 @@
   import as_list from '@/components/events/as-list'
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
-  import as_hgroup from '@/components/profile/as-hgroup'
+  import as_address from '@/components/profile/as-address'
   const eight_hours = one_hour * 8
   export default {
     components: {
@@ -42,7 +42,7 @@
       'events-list': as_list,
       'thought-as-article': thought_as_article,
       'unsynced-poster': as_svg,
-      'as-hgroup': as_hgroup
+      'as-address': as_address
     },
     props: {
       statement: {

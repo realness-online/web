@@ -158,7 +158,7 @@
           & > a.phone
             display: none
           & > a.profile
-            & > hgroup
+            & > address
               & > time
                 font-size: max-font
                 color: blue

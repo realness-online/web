@@ -8,18 +8,16 @@
       <h1>Recent</h1>
       <logo-as-link />
     </header>
-    <hgroup>
-      <icon v-if="working" name="working" />
-    </hgroup>
+    <icon v-if="working" name="working" />
     <nav v-if="signed_in" class="profile-list">
       <as-figure v-for="person in phonebook"
                  :key="person.id"
                  v-model:relations="relations"
                  :person="person" />
     </nav>
-    <hgroup v-if="!working && !signed_in" class="sign-on message">
-      <p><sign-on /> Check out who's here</p>
-    </hgroup>
+    <p v-if="!working && !signed_in" class="sign-on message">
+      <sign-on /> Check out who's here
+    </p>
   </section>
 </template>
 <script>
@@ -71,7 +69,7 @@
     padding-bottom: base-line * 2
     nav.profile-list
       margin-top: base-line
-      & hgroup > h3
+      & address > h3
         max-width: base-line * 6
         white-space: nowrap
         overflow: hidden

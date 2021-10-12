@@ -2,10 +2,10 @@
   <figure class="profile">
     <as-svg :person="person" @vector-click="avatar_click" />
     <figcaption>
-      <as-hgroup :key="person.id"
-                 :person="person"
-                 :editable="editable"
-                 @update:person="$emit('update:person', $event)" />
+      <as-address :key="person.id"
+                  :person="person"
+                  :editable="editable"
+                  @update:person="$emit('update:person', $event)" />
       <menu>
         <slot v-if="!is_me">
           <profile-as-meta :people="relations" />
@@ -25,12 +25,12 @@
   import profile_as_meta from '@/components/profile/as-meta'
   import as_relationship_options from '@/components/profile/as-relationship-options'
   import as_svg from '@/components/avatars/as-svg'
-  import as_hgroup from '@/components/profile/as-hgroup'
+  import as_address from '@/components/profile/as-address'
   import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
       'as-svg': as_svg,
-      'as-hgroup': as_hgroup,
+      'as-address': as_address,
       'profile-as-meta': profile_as_meta,
       'as-relationship-options': as_relationship_options,
       'as-messenger': as_messenger
@@ -115,12 +115,12 @@
       flex: 1
       display: flex
       justify-content: space-between
-      & > hgroup
+      & > address
       & > menu
         display: flex
         flex-direction: column
         justify-content: space-between
-      &> hgroup
+      & > address
         justify-content: center
       & > menu
         padding: base-line

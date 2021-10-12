@@ -154,7 +154,7 @@
         &.profile
           top: base-line
           left: base-line
-          & > hgroup
+          & > address
             & > h3:first-of-type
               margin-right: (base-line / 3)
             & > h3

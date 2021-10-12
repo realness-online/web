@@ -18,9 +18,7 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
     </h1>
     <logo-as-link-stub />
   </header>
-  <hgroup>
-    <!--v-if-->
-  </hgroup>
+  <!--v-if-->
   <nav
     class="profile-list"
   >
@@ -54,9 +52,7 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
     </h1>
     <logo-as-link-stub />
   </header>
-  <hgroup>
-    <!--v-if-->
-  </hgroup>
+  <!--v-if-->
   <nav
     class="profile-list"
   >
@@ -81,11 +77,9 @@ exports[`@/views/PhoneBook Renders Lets you know to sign in 1`] = `
     </h1>
     <logo-as-link-stub />
   </header>
-  <hgroup>
-    <icon-stub
-      name="working"
-    />
-  </hgroup>
+  <icon-stub
+    name="working"
+  />
   <!--v-if-->
   <!--v-if-->
 </section>

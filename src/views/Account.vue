@@ -4,7 +4,7 @@
       <sign-on v-if="!signed_in" />
       <logo-as-link />
     </header>
-    <hgroup v-if="signed_in && !working">
+    <address v-if="signed_in && !working">
       <avatar-as-form v-model:person="person" @update:person="$emit('update:person', $event)" />
       <profile-as-figure v-model:person="person" :editable="true" @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
@@ -14,7 +14,7 @@
       <menu v-if="settings" id="settings">
         <button @click="signoff">Sign off</button>
       </menu>
-    </hgroup>
+    </address>
     <h1 v-if="!working">Statements</h1>
     <as-days v-slot="thoughts"
              itemscope
@@ -152,7 +152,7 @@
         height: round(base-line * 2, 2)
       & > a#logo
         right: inset(right)
-    & > hgroup
+    & > address
       position: relative
       z-index: 1
       & > figure
@@ -166,7 +166,7 @@
           border-color: red
         & > figcaption
           padding: 0
-          & > hgroup
+          & > address
             flex-direction: row
             align-items: center
             & > b
