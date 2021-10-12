@@ -17,15 +17,16 @@ exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
         width="100%"
       />
     </symbol>
-
+    
+    
   </defs>
-
   <use
     class="background"
     href="#new-poster"
+    tabindex="false"
   />
-
-
+  
+  
 </svg>
 `;
 
@@ -46,14 +47,15 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
         width="100%"
       />
     </symbol>
-
+    
+    
   </defs>
-
   <use
     class="background"
     href="#new-poster"
+    tabindex="false"
   />
-
-
+  
+  
 </svg>
 `;
