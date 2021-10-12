@@ -1,19 +1,19 @@
 <template>
   <router-link v-if="person" :to="author" class="profile">
     <as-avatar :person="person" />
-    <as-hgroup :person="person">
+    <as-address :person="person">
       <slot />
-    </as-hgroup>
+    </as-address>
   </router-link>
 </template>
 <script>
   import { load, as_author } from '@/helpers/itemid'
   import as_svg from '@/components/avatars/as-svg'
-  import as_hgroup from '@/components/profile/as-hgroup'
+  import as_address from '@/components/profile/as-address'
   export default {
     components: {
       'as-avatar': as_svg,
-      'as-hgroup': as_hgroup
+      'as-address': as_address
     },
     props: {
       itemid: {
@@ -50,7 +50,7 @@
       margin-right: round((base-line / 6), 2)
     & > svg > svg.background
       fill: blue
-    & > hgroup
+    & > address
       & > time
         color: red
       & > h3

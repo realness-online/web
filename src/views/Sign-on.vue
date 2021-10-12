@@ -92,8 +92,6 @@
     display: flex
     flex-direction: column
     justify-content: space-between
-    hgroup
-      color: red
     figure.profile
       align-items: center
       & > svg

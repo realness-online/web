@@ -1,5 +1,5 @@
 <template>
-  <hgroup itemscope :itemid="person.id">
+  <address itemscope itemtype="/people" :itemid="person.id">
     <b v-if="editable"
        ref="first_name"
        :key="person.first_name"
@@ -18,7 +18,7 @@
     <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar">
     <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile">
     <meta v-if="person.visited" itemprop="visited" :content="person.visited">
-  </hgroup>
+  </address>
 </template>
 <script>
   export default {
@@ -55,7 +55,7 @@
   }
 </script>
 <style lang="stylus">
-  hgroup[itemscope]
+  address[itemscope]
     color: black
     margin: 0
     padding: 0

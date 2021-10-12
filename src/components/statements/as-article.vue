@@ -4,11 +4,11 @@
       <router-link :to="author.id" tabindex="-1">
         <as-avatar :person="author" />
       </router-link>
-      <hgroup>
+      <address>
         <span>{{ author.first_name }}</span>
         <span>{{ author.last_name }}</span>
         <time>{{ thought_starts_at }}</time>
-      </hgroup>
+      </address>
       <menu>
         <as-messenger :itemid="author.id" />
       </menu>
@@ -110,7 +110,7 @@
         shape-outside: circle()
         border-radius: (base-line * 2)
         margin-right: round((base-line / 4), 2)
-      & > hgroup
+      & > address
         flex:1
         margin: 0
         & > span

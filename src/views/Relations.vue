@@ -51,7 +51,7 @@
           margin-bottom: base-line
     & > nav
       margin-top: base-line * 2
-      & hgroup > h3
+      & address > h3
         max-width: base-line * 6
         white-space: nowrap
         overflow: hidden

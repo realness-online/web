@@ -3,18 +3,15 @@
     <header>
       <logo-as-link />
       <h1>Events</h1>
-      <icon name="nothing" />
-    </header>
-    <hgroup>
       <icon v-show="working" name="working" />
-    </hgroup>
+    </header>
     <article v-if="events.length" id="tonight">
       <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
     </article>
-    <hgroup v-else class="message">
-      <p><span>Zero</span> public events. You create events from <router-link to="/posters">Posters</router-link>.</p>
-      <p v-if="!signed_in">People see them after you <sign-on /></p>
-    </hgroup>
+    <p v-else class="message">
+      <span>Zero</span> public events.
+      You create events from <router-link to="/posters">Posters</router-link>
+    </p>
   </section>
 </template>
 <script>
@@ -22,12 +19,10 @@
   import { recent_item_first } from '@/helpers/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
-  import sign_on from '@/components/profile/sign-on'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/posters/as-figure'
     export default {
     components: {
-      'sign-on': sign_on,
       'logo-as-link': logo_as_link,
       'as-figure': as_figure,
       icon
@@ -67,7 +62,7 @@
 </script>
 <style lang="stylus">
   section#events
-    hgroup.message
+    p.message
       padding: 0 base-line
       svg, a, button, span
         border-color: green
@@ -90,8 +85,8 @@
           svg.download
           svg.background
             fill: spin(green, 3deg)
-          hgroup > h3,
-          hgroup > time
+          address > h3,
+          address > time
             color: spin(green, 3deg)
       & > header
         max-height: base-line * 6
