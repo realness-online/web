@@ -37,11 +37,11 @@ describe('@/components/avatars/as-form.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Unmounts the worker when destroyed', () => {
+    it('Unmounts the worker when unmounted', () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })
