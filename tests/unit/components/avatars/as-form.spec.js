@@ -19,7 +19,7 @@ describe('@/components/avatars/as-form.vue', () => {
   beforeEach(() => {
     firebase.user = user
     wrapper = shallowMount(as_form, {
-      propsData: { person }
+      props: { person }
     })
   })
   afterEach(() => {
@@ -33,7 +33,7 @@ describe('@/components/avatars/as-form.vue', () => {
       const avatar_less = { ...person }
       avatar_less.avatar = null
       wrapper = shallowMount(as_form, {
-        propsData: { person: avatar_less }
+        props: { person: avatar_less }
       })
       expect(wrapper.element).toMatchSnapshot()
     })

@@ -11,7 +11,7 @@ describe('@/compontent/profile/as-meta.vue', () => {
   }
   beforeEach(() => {
     localStorage.me = person.id
-    wrapper = shallowMount(as_meta, { propsData: { people: [person] } })
+    wrapper = shallowMount(as_meta, { props: { people: [person] } })
   })
   afterEach(() => {
     localStorage.clear()

@@ -15,7 +15,7 @@ describe('@/compontent/events/as-button.vue', () => {
   let wrapper
   beforeEach(() => {
     jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve(events))
-    wrapper = shallowMount(as_button, { propsData: { itemid: poster.id } })
+    wrapper = shallowMount(as_button, { props: { itemid: poster.id } })
   })
   describe('Renders', () => {
     it('A button to manage a poster\'s events', () => {

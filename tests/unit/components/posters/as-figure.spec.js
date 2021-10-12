@@ -7,7 +7,7 @@ const poster = get_item(poster_html)
 describe('@/compontent/posters/as-figure.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_figure, { propsData: { itemid: poster.id } })
+    wrapper = shallowMount(as_figure, { props: { itemid: poster.id } })
   })
   describe('Renders', () => {
     it('A poster', () => {
@@ -43,7 +43,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
       it('Leaves poster alone when null', async () => {
         wrapper = shallowMount(as_figure, {
-          propsData: {
+          props: {
             itemid: poster.id,
             new_poster: poster
           }

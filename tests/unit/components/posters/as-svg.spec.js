@@ -9,7 +9,7 @@ describe('@/components/posters/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(as_svg, {
-      propsData: { itemid: poster.id },
+      props: { itemid: poster.id },
       stubs: ['router-link', 'router-view']
     })
   })
@@ -19,7 +19,7 @@ describe('@/components/posters/as-svg.vue', () => {
     })
     it('Can show a poster immediatly', () => {
       wrapper = shallowMount(as_svg, {
-        propsData: { itemid: poster.id, immediate: true }
+        props: { itemid: poster.id, immediate: true }
       })
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -57,7 +57,7 @@ describe('@/components/posters/as-svg.vue', () => {
     describe('#show', () => {
       it('Sets vector to the poster prop', async () => {
         wrapper = await shallowMount(as_svg, {
-          propsData: { poster, itemid: poster.id, immediate: true }
+          props: { poster, itemid: poster.id, immediate: true }
         }) // show is called when immediate is true
         await wrapper.vm.$nextTick()
         expect(wrapper.vm.vector.id).toBe(poster.id)

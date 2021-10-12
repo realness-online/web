@@ -10,7 +10,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   }
   let wrapper
   beforeEach(async () => {
-    wrapper = await shallowMount(as_form, { propsData: { person } })
+    wrapper = await shallowMount(as_form, { props: { person } })
     await flushPromises()
   })
   describe('Renders', () => {
@@ -111,7 +111,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
       it('Disabled with invalid mobile number', async () => {
         const invalid_person = { mobile: '415123456a' }
-        wrapper = await shallowMount(as_form, { propsData: { person: invalid_person } })
+        wrapper = await shallowMount(as_form, { props: { person: invalid_person } })
         await flushPromises()
         button = wrapper.find('#authorize')
         expect(button.attributes('disabled')).toBeTruthy()
@@ -134,7 +134,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       let input, stub, wrapper
       beforeEach(async () => {
         wrapper = await shallowMount(as_form, {
-          propsData: { person },
+          props: { person },
           data () {
             return {
               show_code: true,
@@ -175,7 +175,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       beforeEach(async () => {
         confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
         wrapper = await shallowMount(as_form, {
-          propsData: { person },
+          props: { person },
           data () {
             return {
               show_code: true,
@@ -207,7 +207,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       let wrapper
       beforeEach(async () => {
         wrapper = await shallowMount(as_form, {
-          propsData: { person }
+          props: { person }
         })
         wrapper.setData({
           show_code: true
@@ -226,7 +226,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
   describe('Watchers', () => {
     describe('mobile', () => {
       it('Emites updates when mobile number is changed', async () => {
-        const wrapper = await shallowMount(as_form, { propsData: { person } })
+        const wrapper = await shallowMount(as_form, { props: { person } })
         await flushPromises()
         wrapper.vm.mobile = '415'
         expect(wrapper.emitted('update:person')).toBeTruthy()

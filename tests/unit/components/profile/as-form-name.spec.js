@@ -8,7 +8,7 @@ const person = {
 describe('@/compontent/profile/as-form-name.vue', () => {
   let wrapper
   beforeEach(() => {
-    wrapper = shallowMount(as_form, { propsData: { person } })
+    wrapper = shallowMount(as_form, { props: { person } })
   })
   describe('Renders', () => {
     it('Profile name form', () => {

@@ -5,7 +5,7 @@ describe('@/components/icon', () => {
   describe('Renders', () => {
     it('An icon', () => {
       const wrapper = shallowMount(icon, {
-        propsData: { name: 'realness' }
+        props: { name: 'realness' }
       })
       expect(wrapper.element).toMatchSnapshot()
     })

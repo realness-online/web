@@ -8,7 +8,7 @@ describe('@/components/statements/as-div.vue', () => {
   let wrapper
   const statements = get_item(statements_as_html)
   beforeEach(() => {
-    wrapper = shallowMount(as_statement, { propsData: { statement: statements.statements[0] } })
+    wrapper = shallowMount(as_statement, { props: { statement: statements.statements[0] } })
   })
   describe('Renders', () => {
     it('A statement', async () => {
@@ -21,7 +21,7 @@ describe('@/components/statements/as-div.vue', () => {
     describe('#save', () => {
       it('Saves a statement', async () => {
         wrapper = shallowMount(as_statement, {
-           propsData: {
+           props: {
              editable: true,
              statement: statements.statements[0]
            }
@@ -35,7 +35,7 @@ describe('@/components/statements/as-div.vue', () => {
       })
       it('Doe nothing if the statement is the same', async () => {
         wrapper = shallowMount(as_statement, {
-           propsData: {
+           props: {
              editable: true,
              statement: statements.statements[0]
            }

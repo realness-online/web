@@ -13,7 +13,7 @@ describe('@/components/statements/as-article.vue', () => {
   let wrapper
   beforeEach(async () => {
     wrapper = await shallowMount(as_article, {
-      propsData: { statements: [statement, older_statement] }
+      props: { statements: [statement, older_statement] }
     })
     await flushPromises()
   })
@@ -24,7 +24,7 @@ describe('@/components/statements/as-article.vue', () => {
     })
     it('Loads the statement author if verbose is true', async () => {
       wrapper = await shallowMount(as_article, {
-        propsData: {
+        props: {
           verbose: true,
           statements: [statement, older_statement]
         }
