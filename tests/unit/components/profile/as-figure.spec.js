@@ -14,7 +14,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
       id: '/+16282281823'
     }
     wrapper = shallowMount(as_figure, {
-      propsData: {
+      props: {
         person: person,
         relations: [
           { id: '/+16282281823' },

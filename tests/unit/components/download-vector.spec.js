@@ -21,7 +21,7 @@ describe('@/components/download-vector', () => {
         else return Promise.resolve(person)
       })
       const wrapper = shallowMount(download_vector, {
-        propsData: {
+        props: {
           itemid: poster.id
         }
       })
@@ -34,7 +34,7 @@ describe('@/components/download-vector', () => {
         else return Promise.resolve(null)
       })
       const wrapper = shallowMount(download_vector, {
-        propsData: {
+        props: {
           itemid: poster.id
         }
       })

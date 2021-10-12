@@ -14,7 +14,7 @@ describe('@/components/avatars/as-svg.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(as_svg, {
-      propsData: { person }
+      props: { person }
     })
   })
   describe('Renders', () => {
@@ -28,7 +28,7 @@ describe('@/components/avatars/as-svg.vue', () => {
         const avatar_less = { ...person }
         avatar_less.avatar = null
         wrapper = shallowMount(as_svg, {
-          propsData: { person: avatar_less }
+          props: { person: avatar_less }
         })
         expect(wrapper.vm.id).toBe(null)
       })
@@ -36,7 +36,7 @@ describe('@/components/avatars/as-svg.vue', () => {
     describe('.silhouette', () => {
       it('References the working icon when working', () => {
         wrapper = shallowMount(as_svg, {
-          propsData: { person, working: true }
+          props: { person, working: true }
         })
         expect(wrapper.vm.silhouette).toBe('#working')
       })

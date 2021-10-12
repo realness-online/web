@@ -22,7 +22,7 @@ const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
-const fake_props = { propsData: { config: {} } }
+const fake_props = { props: { config: {} } }
 
 const current_user = {
   phoneNumber: '+16282281824'
@@ -82,7 +82,7 @@ describe('@/components/sync', () => {
     describe('person', () => {
       it('Does nothing unless there is a person', async () => {
         const props = { ...fake_props }
-        props.propsData.person = person
+        props.props.person = person
         wrapper = shallowMount(sync, props)
         await flushPromises()
         wrapper.setProps({ person: null })

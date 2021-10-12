@@ -4,7 +4,7 @@ describe('@/components/profile/as-link', () => {
   describe('Renders', () => {
     it('Messenger button to message people directly', () => {
       const wrapper = shallowMount(as_link, {
-        propsData: { itemid: '/+16282281824' }
+        props: { itemid: '/+16282281824' }
       })
       expect(wrapper.element).toMatchSnapshot()
     })
