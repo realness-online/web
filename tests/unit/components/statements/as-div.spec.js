@@ -14,7 +14,7 @@ describe('@/components/statements/as-div.vue', () => {
     it('A statement', async () => {
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
+      wrapper.unmount()
     })
   })
   describe('Methods', () => {

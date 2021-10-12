@@ -20,7 +20,7 @@ describe('@/components/statements/as-article.vue', () => {
   describe('Renders', () => {
     it('Render a statement as an article element', async () => {
       expect(wrapper.element).toMatchSnapshot()
-      wrapper.destroy()
+      wrapper.unmount()
     })
     it('Loads the statement author if verbose is true', async () => {
       wrapper = await shallowMount(as_article, {

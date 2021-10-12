@@ -15,7 +15,7 @@ describe('@/App.vue', () => {
   })
   afterEach(() => {
     firebase.initializeApp.mockClear()
-    wrapper.destroy()
+    wrapper.unmounted()
   })
   afterAll(() => {
     process.env = node_env

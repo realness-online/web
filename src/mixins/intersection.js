@@ -10,7 +10,7 @@ export default {
   mounted () {
     this.observer.observe(this.$el)
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.observer.unobserve(this.$el)
   },
   methods: {

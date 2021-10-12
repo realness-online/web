@@ -5,18 +5,18 @@ describe('@/mixins/intersection', () => {
   beforeEach(() => {
     wrapper = shallowMount(vector_mock)
   })
-  describe('#destroy', () => {
+  describe('#unmount', () => {
     it('Exists', () => {
-      expect(wrapper.destroy).toBeDefined()
+      expect(wrapper.unmount).toBeDefined()
     })
     it('Resets the observer', () => {
       const mock = jest.fn()
       wrapper.vm.observer = { unobserve: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toBeCalled()
     })
     it('Does nothing if null observer', () => {
-      wrapper.destroy()
+      wrapper.unmount()
     })
   })
   describe('Methods', () => {

@@ -32,7 +32,7 @@ describe('@/views/Posters.vue', () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
-      wrapper.destroy()
+      wrapper.unmount()
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })

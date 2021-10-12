@@ -20,7 +20,7 @@ describe('@/views/Navigation.vue', () => {
     await flushPromises()
   })
   afterEach(() => {
-    wrapper.destroy()
+    wrapper.unmount()
   })
   describe('Renders', () => {
     it('Displays statements and profile for a person', async () => {
