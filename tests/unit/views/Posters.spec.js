@@ -20,7 +20,9 @@ describe('@/views/Posters.vue', () => {
     }]
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
     wrapper = shallowMount(Posters, {
-      stubs: ['router-link', 'router-view']
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
     })
     wrapper.vm.events = events
   })
@@ -28,7 +30,7 @@ describe('@/views/Posters.vue', () => {
     it('UI for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Unmounts the worker when destroyed', () => {
+    it('Unmounts the worker when destroyed', async () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
@@ -38,7 +40,11 @@ describe('@/views/Posters.vue', () => {
   })
   describe('Computed', () => {
     describe('.as_itemid', () => {
-      wrapper = shallowMount(Posters)
+      wrapper = shallowMount(Posters, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       localStorage.me = '/+16282281824'
       expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
     })

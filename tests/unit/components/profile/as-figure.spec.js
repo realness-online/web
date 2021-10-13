@@ -1,5 +1,6 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils'
-import VueRouter from 'vue-router'
+import { createRouter } from 'vue-router'
+
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
 const avatar_mock = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
@@ -28,47 +29,35 @@ describe('@/compontent/profile/as-figure.vue', () => {
     it('Render a person\'s profile info', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Render the users avatar', () => {
-      let avatar = wrapper.find('[itemprop=avatar]')
-      expect(avatar.empty).toBeFalsy()
-      const new_person = {
-        first_name: 'Scott',
-        last_name: 'Fryxell',
-        id: '/+16282281823',
-        avatar: avatar_mock
-      }
-      wrapper.setProps({ person: new_person })
-      avatar = wrapper.find('[itemprop=avatar]')
-      expect(avatar.empty).not.toBeTruthy()
-    })
   })
   describe('Methods:', () => {
     describe('#avatar_click', () => {
       let router
       it('Go to the mobile number when clicked', () => {
-        const localVue = createLocalVue()
-        localVue.use(VueRouter)
-        router = new VueRouter()
+        const $router = { push: jest.fn() }
         wrapper = shallowMount(as_figure, {
-          localVue,
-          router,
-          propsData: { person }
+          global: {
+            mocks: { $router }
+          },
+          props: { person }
         })
         wrapper.vm.avatar_click()
-        expect(wrapper.vm.$route.path).toBe('/+16282281823')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/+16282281823" })
+        // expect(wrapper.vm.$route.path).toBe('/+16282281823')
       })
       it('When is_me is true should go to the account page', () => {
-        const localVue = createLocalVue()
-        localVue.use(VueRouter)
-        router = new VueRouter()
+        const $router = { push: jest.fn() }
         localStorage.me = '/+16282281823'
         wrapper = shallowMount(as_figure, {
-          localVue,
-          router,
-          propsData: { person }
+          global: {
+            mocks: { $router }
+          },
+          props: { person }
         })
         wrapper.vm.avatar_click()
-        expect(wrapper.vm.$route.path).toBe('/account')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/account" })
       })
     })
     describe('#add_relationship', () => {

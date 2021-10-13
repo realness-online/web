@@ -87,7 +87,7 @@
       this.optimizer.addEventListener('message', this.optimized)
       if (this.person.avatar) this.current_avatar = await load(this.person.avatar)
     },
-    unmounted () {
+    unmount () {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },

@@ -10,12 +10,14 @@ describe('@/App.vue', () => {
     jest.resetModules()
     process.env = { ...node_env }
     wrapper = await shallowMount(App, {
-      stubs: ['router-link', 'router-view']
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
     })
   })
   afterEach(() => {
     firebase.initializeApp.mockClear()
-    wrapper.unmounted()
+    wrapper.unmount()
   })
   afterAll(() => {
     process.env = node_env
@@ -30,30 +32,22 @@ describe('@/App.vue', () => {
     it('Initialises firebase in production', async () => {
       process.env.NODE_ENV = 'production'
       fetch.mockResponseOnce('{}')
-      wrapper = await shallowMount(App, { stubs: ['router-link', 'router-view'] })
+      wrapper = await shallowMount(App, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       expect(firebase.initializeApp).toHaveBeenCalled()
       expect(fetch.mock.calls.length).toBe(1)
       expect(fetch.mock.calls[0][0]).toBe('__/firebase/init.json')
     })
     it('Calls offline is app is initialized offline', async () => {
       jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
-      wrapper = await shallowMount(App, { stubs: ['router-link', 'router-view'] })
-    })
-  })
-  describe('Routing', () => {
-    it('Sets previously visited page in sessionStorage', async () => {
-      const localVue = createLocalVue()
-      localVue.use(VueRouter)
-      const router = new VueRouter({
-        routes: [
-          { path: '/relations', name: 'relations' },
-          { path: '/magic', name: 'magic' }
-        ]
+      wrapper = await shallowMount(App, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
       })
-      wrapper = shallowMount(App, { localVue, router })
-      await router.push({ name: 'relations' })
-      await router.push({ name: 'magic' })
-      expect(sessionStorage.previous).toBe('/relations')
     })
   })
   describe('Methods', () => {

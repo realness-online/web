@@ -1,5 +1,4 @@
-import { shallowMount, mount } from '@vue/test-utils'
-import flushPromises from 'flush-promises'
+import { shallowMount, mount, flushPromises } from '@vue/test-utils'
 import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/helpers/itemid'
 import * as sync_worker from '@/persistance/Cloud.sync'
@@ -22,8 +21,17 @@ const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
-const fake_props = { props: { config: {} } }
-
+const fake_props = {
+  global: {
+    stubs: ['router-link', 'router-view']
+  },
+  props: { config: {} }
+}
+const statement = {
+  id:"/+16282281824",
+  type:'statements',
+  statement: 'I like to move it'
+}
 const current_user = {
   phoneNumber: '+16282281824'
 }
@@ -40,14 +48,13 @@ describe('@/components/sync', () => {
     }
     localStorage.me = `/${current_user.phoneNumber}`
     jest.spyOn(Statements.prototype, 'sync')
-    .mockImplementation(() => Promise.resolve(statements))
+      .mockImplementation(() => Promise.resolve(statements))
     jest.spyOn(Statements.prototype, 'save')
-    .mockImplementation(() => Promise.resolve())
-
+      .mockImplementation(() => Promise.resolve())
     jest.spyOn(Events.prototype, 'sync')
-    .mockImplementation(() => Promise.resolve(events))
+      .mockImplementation(() => Promise.resolve(events))
     jest.spyOn(Events.prototype, 'save')
-    .mockImplementation(() => Promise.resolve())
+      .mockImplementation(() => Promise.resolve())
     set.mockImplementation(() => Promise.resolve(null))
     wrapper = await shallowMount(sync, fake_props)
   })
@@ -65,7 +72,7 @@ describe('@/components/sync', () => {
     describe('statement', () => {
       it('Does nothing unless there is a statement', async () => {
         wrapper = shallowMount(sync, fake_props)
-        wrapper.setProps({ statement: 'I like to move it' })
+        wrapper.setProps({ statement  })
         await flushPromises()
         jest.clearAllMocks()
         const save_spy = jest.spyOn(Statements.prototype, 'save')
@@ -74,7 +81,7 @@ describe('@/components/sync', () => {
       })
       it('Triggered when statement is set', async () => {
         wrapper = shallowMount(sync, fake_props)
-        await wrapper.setProps({ statement: 'I like to move it' })
+        await wrapper.setProps({ statement })
         await flushPromises()
         expect(wrapper.emitted('update:statement')).toBeTruthy()
       })
@@ -192,7 +199,7 @@ describe('@/components/sync', () => {
         localStorage.setItem(person.id, person_html)
         jest.spyOn(sync_worker, 'fresh_metadata')
         .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '8ae9Lz4qKYqoyofDaaY0Nw==' }
+           customMetadata: { md5: 'zLEGcdAG1gQg/uS89iaOYQ==' }
         }))
         wrapper = await mount(sync, fake_props)
         await flushPromises()
@@ -219,7 +226,7 @@ describe('@/components/sync', () => {
       it('Only syncs when the network and local statements differ', async () => {
         jest.spyOn(sync_worker, 'fresh_metadata')
         .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: 'eL7hc0lLvyQjuL+5Gst2Aw==' }
+           customMetadata: { md5: 'x5qk/9QmVjFHtJtL6pznJQ==' }
         }))
         wrapper = await mount(sync, fake_props)
         await flushPromises()
@@ -273,7 +280,7 @@ describe('@/components/sync', () => {
       it('Only syncs when the network and local statements differ', async () => {
         jest.spyOn(sync_worker, 'fresh_metadata')
         .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: 'QguENXotCF+R2U6/yNGaVw==' }
+           customMetadata: { md5: 'mxtr7zxj/Srcm5KRfn8pcA==' }
         }))
         wrapper = await mount(sync, fake_props)
         await flushPromises()

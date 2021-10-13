@@ -12,20 +12,15 @@ const person = {
 }
 describe('@/views/Sign-on.vue', () => {
   let wrapper
-  let router
-  let localVue
+  let $router
   beforeEach(async () => {
     localStorage.me = '/+'
-    localVue = createLocalVue()
-    localVue.use(VueRouter)
-    router = new VueRouter({
-      routes: [
-        { path: '/', name: 'home' },
-        { path: '/signon', name: 'signon' },
-        { path: '/account', name: 'account' }
-      ]
+    $router = { push: jest.fn() }
+    wrapper = shallowMount(Sign_on, {
+      global: {
+        mocks: { $router }
+      }
     })
-    wrapper = await shallowMount(Sign_on, { localVue, router })
   })
   afterEach(() => {
     wrapper = null
@@ -53,13 +48,11 @@ describe('@/views/Sign-on.vue', () => {
       })
       it('Is cleanable if me is defined', async () => {
         localStorage.me = '/+1628228184'
-        wrapper = await shallowMount(Sign_on, { localVue, router })
         expect(wrapper.vm.cleanable).toBe(true)
       })
       it('Is cleanable if there are a couple items in localStorage', async () => {
         localStorage.statements = 'some statements would be here'
         localStorage.person = 'a profile would be here'
-        wrapper = await shallowMount(Sign_on, { localVue, router })
         expect(wrapper.vm.cleanable).toBe(true)
       })
       it('Is cleanable is there are items in local database', () => {
@@ -78,26 +71,26 @@ describe('@/views/Sign-on.vue', () => {
     })
     describe('#signed_on', () => {
       it('Loads the profile', async () => {
-        wrapper.vm.$router.push({ path: 'sign-on' })
         const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.signed_on()
         expect(load_spy).toBeCalled()
-        expect(wrapper.vm.$route.path).toBe('/')
+        expect(wrapper.vm.nameless).toBe(false)
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/" })
       })
       it('Sets nameless to true if no profile is found', async () => {
-        wrapper.vm.$router.push({ path: 'sign-on' })
         const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.signed_on()
         expect(load_spy).toBeCalled()
         expect(wrapper.vm.nameless).toBe(true)
-        expect(wrapper.vm.$route.path).toBe('/sign-on')
       })
-      })
+    })
     describe('#new_person', () => {
       it('Takes them to the account page', async () => {
         await wrapper.vm.new_person()
         expect(wrapper.vm.person.visited).toBeTruthy()
-        expect(wrapper.vm.$route.path).toBe('/account')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/account" })
       })
     })
     describe('#clean', () => {
@@ -107,7 +100,8 @@ describe('@/views/Sign-on.vue', () => {
         expect(local_clear_spy).toBeCalled()
         expect(clear).toBeCalled()
         expect(localStorage.me).toBe('/+')
-        expect(wrapper.vm.$route.path).toBe('/')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/" })
       })
     })
   })

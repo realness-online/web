@@ -60,18 +60,14 @@ describe('@/components/statements/as-textarea.vue', () => {
     it('Emits a toggle-keyboard event when focused', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
-      const spy = jest.fn()
-      wrapper.vm.$on('toggle-keyboard', spy)
       textarea.trigger('focusin')
-      expect(spy).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
     })
     it('Emits a toggle-keyboard event when loosing focus', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
-      const spy = jest.fn()
-      wrapper.vm.$on('toggle-keyboard', spy)
       textarea.trigger('focusout')
-      expect(spy).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
     })
     it('Emits a statement-added event when there is text', () => {
       const wrapper = shallowMount(wat, {
@@ -82,18 +78,14 @@ describe('@/components/statements/as-textarea.vue', () => {
         }
       })
       const textarea = wrapper.find('#wat')
-      const spy = jest.fn()
-      wrapper.vm.$on('update:statement', spy)
       textarea.trigger('focusout')
-      expect(spy).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('update:statement')).toBeTruthy()
     })
     it('Does not emit statement-added when there is not text', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
-      const spy = jest.fn()
-      wrapper.vm.$on('update:statement', spy)
       textarea.trigger('focusout')
-      expect(spy).toHaveBeenCalledTimes(0)
+      expect(wrapper.emitted('update:statement')).toBeTruthy()
     })
   })
 })

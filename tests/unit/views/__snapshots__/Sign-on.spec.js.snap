@@ -7,23 +7,18 @@ exports[`@/views/Sign-on.vue Renders Renders a form for a new user 1`] = `
 >
   <header>
     <profile-as-figure-stub
+      editable="false"
       person="[object Object]"
       relations=""
-    >
-      <p />
-    </profile-as-figure-stub>
-     
+    />
     <logo-as-link-stub />
   </header>
-   
   <mobile-as-form-stub
     person="[object Object]"
   />
-   
-  <!---->
-   
+  <!--v-if-->
   <footer>
-    <!---->
+    <!--v-if-->
   </footer>
 </section>
 `;
@@ -34,16 +29,10 @@ exports[`@/views/Sign-on.vue Renders Renders a form for a returning user 1`] = `
   id="sign-on"
 >
   <header>
-    <profile-as-figure-stub
-      editable="false"
-      person="[object Object]"
-      relations=""
-    />
+    <!--v-if-->
     <logo-as-link-stub />
   </header>
-  <mobile-as-form-stub
-    person="[object Object]"
-  />
+  <!--v-if-->
   <!--v-if-->
   <footer>
     <button>
