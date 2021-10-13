@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
@@ -42,16 +42,14 @@ describe('@/views/Account.vue', () => {
     })
   })
   describe('Methods', () => {
+    let $router
     beforeEach(() => {
-      const localVue = createLocalVue()
-      localVue.use(VueRouter)
-      const router = new VueRouter({
-        routes: [
-          { path: '/', name: 'home' },
-          { path: '/signon', name: 'signon' }
-        ]
+      $router = { push: jest.fn() }
+      wrapper = shallowMount(Account, {
+        global: {
+          mocks: { $router}
+        }
       })
-      wrapper = shallowMount(Account, { localVue, router })
     })
     describe('#is_editable', () => {
       it('Returns true if statements are the first page', () => {
@@ -81,13 +79,15 @@ describe('@/views/Account.vue', () => {
       it('Signs the user out', () => {
         wrapper.vm.signoff()
         expect(firebase.auth().signOut).toBeCalled()
-        expect(wrapper.vm.$route.path).toBe('/sign-on')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/sign-on" })
       })
     })
     describe('#home', () => {
       it('Takes the user to the homepage', () => {
         wrapper.vm.home()
-        expect(wrapper.vm.$route.path).toBe('/')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/" })
       })
     })
     describe('#thought_focused', () => {

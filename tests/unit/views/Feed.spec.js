@@ -68,7 +68,7 @@ describe('@/views/Feed.vue', () => {
     })
   })
   describe('Methods', () => {
-    describe('goBig', () => {
+    describe('fullscreen', () => {
       it('Enters fullscreen mode', async () => {
         jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
           return null
@@ -76,7 +76,7 @@ describe('@/views/Feed.vue', () => {
         const wrapper = await shallowMount(Feed)
         await flushPromises()
         expect(() => {
-          wrapper.vm.go_big()
+          wrapper.vm.fullscreen()
         }).toThrow()
       })
     })

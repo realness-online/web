@@ -1,5 +1,4 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils'
-import VueRouter from 'vue-router'
 import sign_on from '@/components/profile/sign-on'
 describe('@/components/profile/sign-on', () => {
   describe('Renders', () => {
@@ -11,15 +10,15 @@ describe('@/components/profile/sign-on', () => {
   describe('Methods', () => {
     describe('#sign_on', () => {
       it('Takes you to the sign-on page when clicked', () => {
-        const localVue = createLocalVue()
-        localVue.use(VueRouter)
-        const router = new VueRouter()
+        const $router = { push: jest.fn() }
         const wrapper = shallowMount(sign_on, {
-          localVue,
-          router
+          global: {
+            mocks: { $router }
+          }
         })
         wrapper.vm.sign_on()
-        expect(wrapper.vm.$route.path).toBe('/sign-on')
+        expect($router.push).toHaveBeenCalledTimes(1)
+        expect($router.push).toHaveBeenCalledWith({ path: "/sign-on" })
       })
     })
   })
