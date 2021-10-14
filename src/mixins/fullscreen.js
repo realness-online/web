@@ -1,12 +1,12 @@
 export default {
   data () {
     return {
-      fullscreen: false
+      is_fullscreen: false
     }
   },
   methods: {
-    go_big () {
-      this.fullscreen = !this.fullscreen
+    fullscreen () {
+      this.is_fullscreen = !this.is_fullscreen
       try {
         this.$el.requestFullscreen()
       } catch (e) {

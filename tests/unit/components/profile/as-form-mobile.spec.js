@@ -1,6 +1,6 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
-import flushPromises from 'flush-promises'
+
 describe('@/compontent/profile/as-form-mobile.vue', () => {
   const person = {
     id: '/+14151234356',
@@ -114,7 +114,8 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         wrapper = await shallowMount(as_form, { props: { person: invalid_person } })
         await flushPromises()
         button = wrapper.find('#authorize')
-        expect(button.attributes('disabled')).toBeTruthy()
+        expect(wrapper.vm.disabled_sign_in).toBe(true)
+        expect(button.attributes('disabled')).toBe('')
       })
       it('Starts captcha verification when clicked', async () => {
         await button.trigger('click')

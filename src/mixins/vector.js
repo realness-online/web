@@ -4,7 +4,8 @@ export default {
     return {
       vector: null,
       layers_like_fonts: ['light', 'regular', 'bold'],
-      animation: null
+      animation: null,
+      working: false
     }
   },
   props: {

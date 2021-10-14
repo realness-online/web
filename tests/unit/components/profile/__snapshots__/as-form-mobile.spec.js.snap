@@ -20,7 +20,6 @@ exports[`@/compontent/profile/as-form-mobile.vue Renders Profile form 1`] = `
     <input
       id="mobile"
       placeholder="(555) 555-5555"
-      tabindex="3"
       type="tel"
     />
   </fieldset>
@@ -29,7 +28,6 @@ exports[`@/compontent/profile/as-form-mobile.vue Renders Profile form 1`] = `
   <menu>
     <button
       id="authorize"
-      tabindex="5"
     >
        Sign on 
     </button>

@@ -85,7 +85,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       textarea.trigger('focusout')
-      expect(wrapper.emitted('update:statement')).toBeTruthy()
+      expect(wrapper.emitted('update:statement')).toBe(undefined)
     })
   })
 })

@@ -27,7 +27,7 @@
                  :class="{ 'selecting-event': poster.picker }"
                  @vector-click="menu_toggle(poster.id)">
         <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
-        <menu v-else v-hotkey="menu_keymap(poster.id)">
+        <menu v-else @keydown.enter="enter_edit_mode(poster.id)">
           <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
           <router-link class="gear" :to="edit_poster(poster.id)">
             <icon name="gear" />
@@ -101,12 +101,8 @@
       this.optimizer.terminate()
     },
     methods: {
-      menu_keymap (itemid) {
-        return {
-          enter: () => {
-            this.$router.replace({ path: this.edit_poster(itemid) })
-          }
-        }
+      enter_edit_mode (itemid) {
+        this.$router.replace({ path: this.edit_poster(itemid) })
       },
       edit_poster (itemid) { // The editor is the author
         return `/posters/${as_created_at(itemid)}/editor`

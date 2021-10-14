@@ -6,41 +6,31 @@ exports[`@/views/Navigation.vue Renders Displays statements and profile for a pe
   id="navigation"
 >
   <nav>
-    <router-link
+    <router-link-stub
       class="black"
       tabindex="-1"
       to="/account"
-    >
-      Scott
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/events"
-    >
-       Events 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/posters"
-    >
-       Posters 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/feed"
-    >
-       Feed 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/phone-book"
-    >
-       Relations 
-    </router-link>
+    />
     <!--v-if-->
     <statement-as-textarea-stub
       class="red"
@@ -66,41 +56,31 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:false 
   id="navigation"
 >
   <nav>
-    <router-link
+    <router-link-stub
       class="black"
       tabindex="-1"
       to="/account"
-    >
-      Scott
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/events"
-    >
-       Events 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/posters"
-    >
-       Posters 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/feed"
-    >
-       Feed 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/phone-book"
-    >
-       Relations 
-    </router-link>
+    />
     <!--v-if-->
     <statement-as-textarea-stub
       class="red"
@@ -126,41 +106,31 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:true s
   id="navigation"
 >
   <nav>
-    <router-link
+    <router-link-stub
       class="black"
       tabindex="-1"
       to="/account"
-    >
-      Scott
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/events"
-    >
-       Events 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="green"
       tabindex="-1"
       to="/posters"
-    >
-       Posters 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/feed"
-    >
-       Feed 
-    </router-link>
-    <router-link
+    />
+    <router-link-stub
       class="blue"
       tabindex="-1"
       to="/phone-book"
-    >
-       Relations 
-    </router-link>
+    />
     <!--v-if-->
     <statement-as-textarea-stub
       class="red"

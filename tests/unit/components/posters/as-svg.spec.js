@@ -1,8 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import as_svg from '@/components/posters/as-svg'
 import get_item from '@/modules/item'
-const fs = require('fs')
-const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
+const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 
 describe('@/components/posters/as-svg.vue', () => {
@@ -10,7 +9,9 @@ describe('@/components/posters/as-svg.vue', () => {
   beforeEach(() => {
     wrapper = shallowMount(as_svg, {
       props: { itemid: poster.id },
-      stubs: ['router-link', 'router-view']
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
     })
   })
   describe('Renders', () => {

@@ -21,7 +21,7 @@ describe('@/views/PhoneBook', () => {
   })
   describe('Renders', () => {
     it('Lets you know to sign in', async () => {
-      wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
+      wrapper = await shallowMount(phonebook, { global: { stubs: ['router-link', 'router-view'] } })
       expect(wrapper.vm.signed_in).toBe(false)
       expect(wrapper.element).toMatchSnapshot()
     })
@@ -34,7 +34,7 @@ describe('@/views/PhoneBook', () => {
       firebase.user = person
       firebase.storage_mock.listAll.mockImplementation(() => Promise.resolve(mock_dir))
       jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
-      wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
+      wrapper = await shallowMount(phonebook, { global: { stubs: ['router-link', 'router-view'] } })
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)
       expect(wrapper.element).toMatchSnapshot()
@@ -48,7 +48,7 @@ describe('@/views/PhoneBook', () => {
       firebase.user = person
       firebase.storage_mock.listAll.mockImplementation(() => Promise.resolve(mock_dir))
       jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
-      wrapper = await shallowMount(phonebook, { stubs: ['router-link'] })
+      wrapper = await shallowMount(phonebook, { global: { stubs: ['router-link', 'router-view'] } })
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)
       expect(wrapper.element).toMatchSnapshot()

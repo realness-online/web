@@ -1,7 +1,6 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_form from '@/components/avatars/as-form'
 import { Avatar } from '@/persistance/Storage'
-import flushPromises from 'flush-promises'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
@@ -37,11 +36,12 @@ describe('@/components/avatars/as-form.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Destroys the worker when unmounted', () => {
+    it('Destroys the worker when unmounted', async () => {
       const mock = jest.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
-      wrapper.unmount()
+      await wrapper.unmount()
+      await flushPromises()
       expect(mock).toHaveBeenCalledTimes(2)
     })
   })

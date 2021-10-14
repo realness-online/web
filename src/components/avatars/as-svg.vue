@@ -27,10 +27,6 @@
       person: {
         type: Object,
         required: true
-      },
-      working: {
-        type: Boolean,
-        default: false
       }
     },
     emits: ['vector-loaded'],
