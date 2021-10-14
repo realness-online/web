@@ -22,15 +22,7 @@
         working: true,
         me: null,
         statement: null,
-        status: null,
-        firebase_keys: {
-          apiKey: process.env.VUE_APP_API_KEY,
-          authDomain: process.env.VUE_APP_AUTH_DOMAIN,
-          databaseUrl: process.env.VUE_APP_DATABASE_URL,
-          projectId: process.env.VUE_APP_PROJECT_ID,
-          storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
-          messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
-        }
+        status: null
       }
     },
     computed: {
@@ -38,16 +30,21 @@
         return process.env.NODE_ENV === 'production'
       }
     },
-    watch: {
-      '$route' (to, from) {
-        sessionStorage.previous = from.path
-      }
-    },
     async created () {
       if (this.is_production) {
         const response = await fetch('__/firebase/init.json')
         await set('firebase-keys', await response.json())
-      } else set('firebase-keys', this.firebase_keys)
+      } else {
+        const keys = {
+          apiKey: process.env.VUE_APP_API_KEY,
+          authDomain: process.env.VUE_APP_AUTH_DOMAIN,
+          databaseUrl: process.env.VUE_APP_DATABASE_URL,
+          projectId: process.env.VUE_APP_PROJECT_ID,
+          storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
+          messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID
+        }
+        await set('firebase-keys', keys)
+      }
       firebase.initializeApp(await get('firebase-keys'))
       window.addEventListener('online', this.online)
       window.addEventListener('offline', this.offline)
@@ -80,12 +77,12 @@
   main
     border: (base-line / 16) solid background-black
     border-radius (base-line / 16)
-  main.offline
-    border-color: yellow
-  main.working
-    border-color: green
-    animation-name: pulsing
-    animation-duration: 5s
-    animation-delay: 200ms
-    animation-iteration-count: infinite
+    &.offline
+      border-color: yellow
+    &.working
+      border-color: green
+      animation-name: pulsing
+      animation-duration: 5s
+      animation-delay: 200ms
+      animation-iteration-count: infinite
 </style>
