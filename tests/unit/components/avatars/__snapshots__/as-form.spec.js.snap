@@ -7,7 +7,6 @@ exports[`@/components/avatars/as-form.vue Renders With an avatar 1`] = `
   
   <avatar-as-svg-stub
     person="[object Object]"
-    working="false"
   />
   
   <menu>
@@ -43,7 +42,6 @@ exports[`@/components/avatars/as-form.vue Renders Without an avatar 1`] = `
   
   <avatar-as-svg-stub
     person="[object Object]"
-    working="false"
   />
   
   <menu>

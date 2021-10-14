@@ -3,20 +3,14 @@
     <fieldset id="name">
       <legend :class="{ valid: is_valid }">Name</legend>
       <input id="first-name" v-model="first_name"
-             type="text"
-             tabindex="1"
-             placeholder="First"
+             type="text" placeholder="First"
              @keyup="modified_check">
       <input id="last-name" v-model="last_name"
-             type="text"
-             tabindex="2"
-             placeholder="Last"
+             type="text" placeholder="Last"
              @keyup="modified_check">
     </fieldset>
     <menu>
-      <button ref="button"
-              disabled tabindex="3"
-              @click.prevent="valid">
+      <button ref="button" disabled @click.prevent="valid">
         Yep, That's my name
       </button>
     </menu>

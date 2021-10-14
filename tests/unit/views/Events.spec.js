@@ -24,7 +24,9 @@ describe('@/views/Events.vue', () => {
   describe('Renders', () => {
     it('List of upcoming events', async () => {
       const wrapper = await shallowMount(Events, {
-        stubs: ['router-link']
+        global: {
+          stubs: ['router-link']
+        }
       })
       expect(wrapper.element).toMatchSnapshot()
       expect(list).toBeCalled()

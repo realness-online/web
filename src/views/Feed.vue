@@ -1,9 +1,9 @@
 <template>
-  <section id="feed" class="page" :class="{ fullscreen }">
+  <section id="feed" class="page" @keydown.f="fullscreen">
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
-      <a tabindex="-1" class="fullscreen" @click="go_big">
+      <a tabindex="-1" class="fullscreen" @click="fullscreen">
         <icon name="fullscreen" />
       </a>
     </header>

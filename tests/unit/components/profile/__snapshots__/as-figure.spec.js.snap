@@ -6,7 +6,6 @@ exports[`@/compontent/profile/as-figure.vue Renders Render a person's profile in
 >
   <as-svg-stub
     person="[object Object]"
-    working="false"
   />
   <figcaption>
     <as-address-stub

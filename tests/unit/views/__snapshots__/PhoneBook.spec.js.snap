@@ -6,13 +6,9 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
   id="directory"
 >
   <header>
-    <router-link
+    <router-link-stub
       to="/relations"
-    >
-      <icon-stub
-        name="heart"
-      />
-    </router-link>
+    />
     <h1>
       Recent
     </h1>
@@ -40,13 +36,9 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
   id="directory"
 >
   <header>
-    <router-link
+    <router-link-stub
       to="/relations"
-    >
-      <icon-stub
-        name="heart"
-      />
-    </router-link>
+    />
     <h1>
       Recent
     </h1>

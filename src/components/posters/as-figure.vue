@@ -144,7 +144,7 @@
         @media (prefers-color-scheme: dark)
           &.phone > svg
           &.download > svg
-            fill: spin(blue, 3deg)
+            fill: blue
         &.phone
           top: base-line
           right: base-line
@@ -159,7 +159,6 @@
               margin-right: (base-line / 3)
             & > h3
             & > time
-              color: spin(blue, 3deg)
-              text-shadow: 1px 1px 6px spin(black, 21deg)
+              color: blue
               line-height: 1
 </style>

@@ -12,13 +12,9 @@ exports[`@/views/Relations.vue Renders Fails gracefully when relations has been 
     <h1>
       Relations
     </h1>
-    <router-link
+    <router-link-stub
       to="/phone-book"
-    >
-      <icon-stub
-        name="finished"
-      />
-    </router-link>
+    />
   </header>
   <!--v-if-->
 </section>
@@ -36,13 +32,9 @@ exports[`@/views/Relations.vue Renders Relationship information 1`] = `
     <h1>
       Relations
     </h1>
-    <router-link
+    <router-link-stub
       to="/phone-book"
-    >
-      <icon-stub
-        name="finished"
-      />
-    </router-link>
+    />
   </header>
   <!--v-if-->
 </section>

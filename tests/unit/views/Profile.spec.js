@@ -18,7 +18,7 @@ describe('@/views/Profile.vue', () => {
         return { items: ['559666932867'] }
       })
       const $route = { params: { phone_number: '+14151231234' } }
-      const wrapper = shallowMount(Profile, { mocks: { $route } })
+      const wrapper = shallowMount(Profile, { global: { mocks: { $route } } })
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       firebase.user = null
@@ -31,7 +31,7 @@ describe('@/views/Profile.vue', () => {
         return { items: [] }
       })
       const $route = { params: { phone_number: '+14151231234' } }
-      const wrapper = shallowMount(Profile, { mocks: { $route } })
+      const wrapper = shallowMount(Profile, { global: { mocks: { $route } } } )
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       firebase.user = null

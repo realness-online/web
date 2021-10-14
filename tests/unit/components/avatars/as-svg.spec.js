@@ -36,8 +36,9 @@ describe('@/components/avatars/as-svg.vue', () => {
     describe('.silhouette', () => {
       it('References the working icon when working', () => {
         wrapper = shallowMount(as_svg, {
-          props: { person, working: true }
+          props: { person }
         })
+        wrapper.setData({ working: true})
         expect(wrapper.vm.silhouette).toBe('#working')
       })
     })

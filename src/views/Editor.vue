@@ -1,8 +1,11 @@
 <template>
-  <section id="editor" v-hotkey="keymap" class="page">
+  <section id="editor" class="page"
+           @keydown.esc="back"
+           @keydown.f="fullscreen"
+           @keydown.enter="save">
     <header>
       <h4>{{ page_title }}</h4>
-      <a class="fullscreen" @click="go_big"><icon name="fullscreen" /></a>
+      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
       <icon name="nothing" />
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
@@ -56,13 +59,6 @@
       color () {
         if (this.stroke || this.fill) return true
         else return false
-      },
-      keymap () {
-        return {
-          enter: this.save,
-          esc: this.back,
-          f: this.go_big
-        }
       }
     },
     methods: {
