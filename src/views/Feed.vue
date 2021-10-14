@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" class="page" @keydown.f="fullscreen">
+  <section id="feed" v-hotkey="keymap" class="page">
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
@@ -56,6 +56,11 @@
       }
     },
     computed: {
+      keymap () {
+        return {
+          'f': this.fullscreen
+        }
+      },
       show_message () {
         if (this.working) return false
         if (this.statements.length === 0 && this.posters.length === 0) return true

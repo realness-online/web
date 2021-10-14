@@ -27,7 +27,7 @@
                  :class="{ 'selecting-event': poster.picker }"
                  @vector-click="menu_toggle(poster.id)">
         <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
-        <menu v-else @keydown.enter="enter_edit_mode(poster.id)">
+        <menu v-else v-hotkey="menu_keymap(poster.id)">
           <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
           <router-link class="gear" :to="edit_poster(poster.id)">
             <icon name="gear" />
@@ -101,8 +101,12 @@
       this.optimizer.terminate()
     },
     methods: {
-      enter_edit_mode (itemid) {
-        this.$router.replace({ path: this.edit_poster(itemid) })
+      menu_keymap (itemid) {
+        return {
+          enter: () => {
+            this.$router.replace({ path: this.edit_poster(itemid) })
+          }
+        }
       },
       edit_poster (itemid) { // The editor is the author
         return `/posters/${as_created_at(itemid)}/editor`
@@ -203,7 +207,7 @@
       a#camera
         position: fixed
         bottom: base-line
-        left: s('calc( 50% - %s)', (base-line / 2) )
+        left: s('calc( 50% - %s)', (base-line * 1.25) )
         z-index: 4
         @media (min-width: typing-begins)
           visibility: hidden
@@ -214,8 +218,6 @@
       svg, a
         color: green
         fill: green
-        stroke spin(green, 33deg)
-        stroke-width 1px
     & > article
       padding-bottom: base-line * 3
       standard-grid: gentle

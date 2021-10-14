@@ -1,8 +1,5 @@
 <template>
-  <section id="editor" class="page"
-           @keydown.esc="back"
-           @keydown.f="fullscreen"
-           @keydown.enter="save">
+  <section id="editor" v-hotkey="keymap" class="page">
     <header>
       <h4>{{ page_title }}</h4>
       <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
@@ -50,6 +47,13 @@
       }
     },
     computed: {
+      keymap () {
+        return {
+          enter: this.save,
+          esc: this.back,
+          f: this.fullscreen
+        }
+      },
       page_title () {
         if (this.stroke) return 'Stroke'
         if (this.fill) return 'Fill'
