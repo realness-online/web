@@ -3,14 +3,14 @@
     <b v-if="editable"
        ref="first_name"
        :key="person.first_name"
-       contenteditable="true"
+       :contenteditable="true"
        itemprop="first_name"
        @blur="save_first_name">{{ person.first_name }}</b>
     <h3 v-else itemprop="first_name">{{ person.first_name }}</h3>
     <b v-if="editable"
        ref="last_name"
        :key="person.last_name"
-       contenteditable="true"
+       :contenteditable="true"
        itemprop="last_name"
        @blur="save_last_name">{{ person.last_name }}</b>
     <h3 v-else itemprop="last_name">{{ person.last_name }}</h3>

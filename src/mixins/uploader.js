@@ -16,7 +16,7 @@ export default {
   },
   directives: {
     uploader: {
-      bind (input, binding, vnode) {
+      beforeMount (input, binding, vnode) {
         /* istanbul ignore next */
         input.addEventListener('change', event => {
           const image = event.target.files[0]
