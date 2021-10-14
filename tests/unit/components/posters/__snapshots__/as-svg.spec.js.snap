@@ -23,7 +23,6 @@ exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
   <use
     class="background"
     href="#new-poster"
-    tabindex="false"
   />
   
   
@@ -53,7 +52,6 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   <use
     class="background"
     href="#new-poster"
-    tabindex="false"
   />
   
   

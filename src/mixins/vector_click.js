@@ -6,6 +6,7 @@ export default {
       default: true
     }
   },
+  emits: ['vector-click'],
   data () {
     return {
       vector: null,

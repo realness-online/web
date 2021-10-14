@@ -3,8 +3,9 @@
     <header>
       <logo-as-link />
       <h1>Events</h1>
-      <icon v-show="working" name="working" />
+      <icon name="nothing" />
     </header>
+    <icon v-show="working" name="working" />
     <article v-if="events.length" id="tonight">
       <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
     </article>
@@ -21,7 +22,7 @@
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_figure from '@/components/posters/as-figure'
-    export default {
+  export default {
     components: {
       'logo-as-link': logo_as_link,
       'as-figure': as_figure,

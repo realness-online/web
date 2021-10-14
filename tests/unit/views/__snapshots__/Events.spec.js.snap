@@ -11,9 +11,12 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
       Events
     </h1>
     <icon-stub
-      name="working"
+      name="nothing"
     />
   </header>
+  <icon-stub
+    name="working"
+  />
   <p
     class="message"
   >
