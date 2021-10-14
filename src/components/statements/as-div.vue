@@ -1,7 +1,7 @@
 <template>
   <div itemscope :itemid="statement.id">
     <p v-if="editable" ref="editable"
-       spellcheck="true" contenteditable="true"
+       :spellcheck="true" :contenteditable="true"
        itemprop="statement" @focus="focused"
        @blur.prevent="save">
       {{ statement.statement }}
