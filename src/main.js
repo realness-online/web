@@ -1,10 +1,14 @@
-import { createApp } from 'vue'
+import { createApp, configureCompat } from 'vue'
 import VueHotkey from 'v-hotkey'
 import App from './App.vue'
 import router from './router'
 import './workers/register_service_worker'
 const me = localStorage.me
 if (!me) localStorage.me = '/+'
+
+configureCompat({
+  WATCH_ARRAY: false
+})
 
 createApp(App).use(router).directive('hotkey', {
   beforeMount: VueHotkey.directive.bind,
