@@ -1,16 +1,16 @@
 import codes from './codes'
-import { splitCombination, returnCharCode } from '../helpers'
+import { split_combination, return_char_code } from './helpers'
 
 const noop = () => {}
 
-const defaultModifiers = {
+const default_modifiers = {
   ctrlKey: false,
   altKey: false,
   shiftKey: false,
   metaKey: false
 }
 
-const alternativeKeyNames = {
+const alternative_key_names = {
   option: 'alt',
   command: 'meta',
   return: 'enter',
@@ -19,23 +19,16 @@ const alternativeKeyNames = {
   mod: /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? 'meta' : 'ctrl'
 }
 
-/**
- *
- * @param {Object} combinations
- * @param {Object} alias
- * @returns {Object}
- */
-export const getKeyMap = (combinations, alias) => {
+export const get_key_map = (combinations, alias) => {
   const result = []
-
   Object.keys(combinations).forEach(combination => {
     const { keyup, keydown } = combinations[combination]
     const callback = {
       keydown: keydown || (keyup ? noop : combinations[combination]),
       keyup: keyup || noop
     }
-    const keys = splitCombination(combination)
-    const { code, modifiers } = resolveCodesAndModifiers(keys, alias)
+    const keys = split_combination(combination)
+    const { code, modifiers } = resolve_codes_and_modifiers(keys, alias)
 
     result.push({
       code,
@@ -43,22 +36,15 @@ export const getKeyMap = (combinations, alias) => {
       callback
     })
   })
-
   return result
 }
 
-/**
- *
- * @param {Array} keys
- * @param {Object} alias
- * @returns {Object}
- */
-const resolveCodesAndModifiers = (keys, alias) => {
-  let modifiers = { ...defaultModifiers }
+const resolve_codes_and_modifiers = (keys, alias) => {
+  let modifiers = { ...default_modifiers }
   if (keys.length > 1) {
     return keys.reduce((acc, key) => {
-      key = alternativeKeyNames[key] || key
-      if (defaultModifiers.hasOwnProperty(`${key}Key`)) {
+      key = alternative_key_names[key] || key
+      if (default_modifiers.hasOwnProperty(`${key}Key`)) {
         acc.modifiers = { ...acc.modifiers, [`${key}Key`]: true }
       } else {
         acc.code = alias[key] || searchKeyCode(key)
@@ -67,8 +53,8 @@ const resolveCodesAndModifiers = (keys, alias) => {
     }, { modifiers })
   }
 
-  const key = alternativeKeyNames[keys[0]] || keys[0]
-  if (defaultModifiers.hasOwnProperty(`${key}Key`)) {
+  const key = alternative_key_names[keys[0]] || keys[0]
+  if (default_modifiers.hasOwnProperty(`${key}Key`)) {
     modifiers = { ...modifiers, [`${key}Key`]: true }
   }
   const code = alias[key] || searchKeyCode(key)
@@ -79,8 +65,4 @@ const resolveCodesAndModifiers = (keys, alias) => {
   }
 }
 
-/**
- *
- * @param {String} key
- */
-const searchKeyCode = key => codes[key.toLowerCase()] || returnCharCode(key)
+const search_key_Code = key => codes[key.toLowerCase()] || return_char_code(key)
