@@ -80,11 +80,17 @@
       }
     },
     watch: {
-      statements () {
-        this.refill_days()
+      statements: {
+        handler() {
+          this.refill_days()
+        },
+        deep: true
       },
-      posters () {
-        this.refill_days()
+      posters: {
+        handler() {
+          this.refill_days()
+        },
+        deep: true
       }
     },
     mounted () {
