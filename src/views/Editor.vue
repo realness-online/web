@@ -1,6 +1,6 @@
 <template>
-  <section id="editor" v-hotkey="keymap" class="page">
-    <header>
+  <section id="editor" class="page">
+    <header v-hotkey="keymap">
       <h4>{{ page_title }}</h4>
       <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
       <icon name="nothing" />
