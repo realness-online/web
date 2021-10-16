@@ -229,9 +229,10 @@
           @media (prefers-color-scheme: dark)
             fill: green
         & > figcaption > menu
-          @media (prefers-color-scheme: dark)
-              & > a >  svg
-                fill: spin(green, 3deg)
+          & > a >  svg
+            fill: green
+            stroke: black
+            stroke-width: 1px
           a.gear
             top: base-line
             right: base-line
