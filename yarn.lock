@@ -15611,7 +15611,7 @@ uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-v-hotkey@^0.9.0:
+"v-hotkey@git@github.com:realness-online/v-hotkey.git":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/v-hotkey/-/v-hotkey-0.9.0.tgz#3e6c17128a2faa5f2a80a2f06f6c062b83c5d3e1"
   integrity sha512-PVbU9cw5oyoOr6y5q0nN9xmndzpCsLDhXRgVP80WRMvM1Eqkai3ViuJs/D+qFhRht6u5LyM10eBEZ5hq+3qLTg==
@@ -15751,6 +15751,11 @@ vue-template-es2015-compiler@^1.6.0, vue-template-es2015-compiler@^1.9.0:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
+
+vue3-keypress@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/vue3-keypress/-/vue3-keypress-4.0.1.tgz#161959779dda7a0bb86902fac594c75117a0dca4"
+  integrity sha512-oKxLpVsQq1iosuwi38fbH+K2NL2HqbFT8U7yE1fzxcUB0Mup1vS7OcnNMqkgv+FHFJTNvlYAOwLctVK/ahz6Ng==
 
 vue@^3.1.0-0:
   version "3.2.20"
