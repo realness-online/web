@@ -5,6 +5,7 @@ import { from_e64 } from '@/helpers/profile'
 import { visit_interval } from '@/persistance/Cloud.sync'
 export default {
   created () { this.update_visit() },
+  emits: ['update:person'],
   methods: {
     update_visit () {
       firebase.auth().onAuthStateChanged(async user => {
