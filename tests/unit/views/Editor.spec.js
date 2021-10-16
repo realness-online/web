@@ -6,14 +6,14 @@ const user = { phoneNumber: '16282281824' }
 
 describe('@/views/Editor.vue', () => {
   describe('Renders', () => {
-    it('Shows an editor for a poster or an avatar', async () => {
+    it.skip('Shows an editor for a poster or an avatar', async () => {
       firebase.user = user
       localStorage.me = `/+${user.phoneNumber}`
       const $route = { params: { id: '559666932867' } }
       const wrapper = await shallowMount(Editor, {
         global: {
           mocks: { $route },
-          stubs: ['router-link', 'router-view']
+          stubs: ['router-link']
         }
       })
       expect(wrapper.element).toMatchSnapshot()
