@@ -66,8 +66,8 @@
   a.event
     position: relative
     & > svg
-      width: base-line * 2
-      height: base-line * 2
+      width: base-line * 1.9
+      height: base-line * 1.9
       &.has-event
         fill: red !important
         text
