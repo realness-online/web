@@ -6,8 +6,8 @@
       <symbol :id="background_id"><rect width="100%" height="100%" /></symbol>
       <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
     </defs>
-    <use class="background" :href="background_fragment" :tabindex="tabable ? 0 : undefined" @focus="focus('background')" />
-    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : undefined" :href="symbol_fragment(index)" @focus="focus(index)" />
+    <use class="background" :href="background_fragment" :tabindex="tabable ? 0 : -1" @focus="focus('background')" />
+    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : -1" :href="symbol_fragment(index)" @focus="focus(index)" />
   </svg>
 </template>
 <script>
@@ -64,6 +64,8 @@
     min-height: 512px
     height: 100%
     width: 100%
+    &:focus
+      border:2px solid green
     & svg:focus
       fill: white
     & > use
@@ -74,7 +76,8 @@
       &:focus
         animation-name: press
       &:active
-        stroke: red
+        stroke: white
+        fill: red
         animation-name: press-hold
       &.background
         fill:white
