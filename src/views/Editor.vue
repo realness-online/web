@@ -1,7 +1,7 @@
 <template>
   <section id="editor" class="page">
-    <header v-hotkey="keymap">
-      <h4>{{ page_title }}</h4>
+    <header>
+      <h1>{{ page_title }}</h1>
       <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
       <icon name="nothing" />
       <a @click="back"><icon name="remove" /></a>
@@ -96,7 +96,7 @@
       top: inset(top, base-line)
       left: inset(left, base-line)
       right: inset(right, base-line)
-      & > h4
+      & > h1
         margin: 0
         color: red
         position: relative
