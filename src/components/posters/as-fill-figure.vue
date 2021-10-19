@@ -1,5 +1,5 @@
 <template>
-  <figure id="edit-fill" v-hotkey="keymap" v-finger:pressMove="press_move">
+  <figure id="edit-fill" v-finger:pressMove="press_move">
     <as-svg :itemid="itemid" :immediate="true"
             :tabindex="-1" :slice="false" :tabable="true"
             @focus="focus" />
