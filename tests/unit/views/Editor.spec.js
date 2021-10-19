@@ -6,7 +6,7 @@ const user = { phoneNumber: '16282281824' }
 
 describe('@/views/Editor.vue', () => {
   describe('Renders', () => {
-    it.skip('Shows an editor for a poster or an avatar', async () => {
+    it('Shows an editor for a poster or an avatar', async () => {
       firebase.user = user
       localStorage.me = `/+${user.phoneNumber}`
       const $route = { params: { id: '559666932867' } }
