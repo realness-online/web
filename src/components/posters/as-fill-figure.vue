@@ -25,6 +25,9 @@
       }
     },
     emits: ['pressed'],
+    setup() {
+      console.log('as-fill-figure')
+    },
     data () {
       return {
         color: '#151518',
