@@ -27,7 +27,10 @@
   import as_stroke_figure from '@/components/posters/as-stroke-figure'
   import as_grid from '@/components/posters/as-grid'
   import as_animation from '@/components/posters/as-animation'
-  import fullscreen from '@/mixins/fullscreen'
+  import use_fullscreen from '@/composables/use-fullscreen'
+  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
+  import { useKeypress as use_keypress } from 'vue3-keypress'
+  import { ref } from "vue"
   export default {
     components: {
       icon,
@@ -36,10 +39,42 @@
       'as-grid': as_grid,
       'as-animation': as_animation
     },
-    mixins: [fullscreen],
+    async setup() {
+      const route = use_route()
+      const router = use_router()
+      const itemid = `${localStorage.me}/posters/${route.params.id}`
+      const is_active = ref('true')
+      const back = () => {
+        console.log('back')
+        const me = localStorage.me.substring(2)
+        router.replace({
+          path: `/posters#${me}-posters-${route.params.id}`
+        })
+      }
+      const save = async () => {
+        console.log('save')
+        const poster = new Poster(itemid)
+        poster.id
+        await poster.save()
+        back()
+      }
+      use_keypress({
+        keyEvent: "keydown",
+        isActive: is_active,
+        keyBinds: [
+          { keyCode: "f", success: use_fullscreen},
+          { keyCode: "enter", success: save },
+          { keyCode: "esc", success: back }
+        ]
+      })
+      return {
+        back,
+        save,
+        itemid
+      }
+    },
     data () {
       return {
-        itemid: `${localStorage.me}/posters/${this.$route.params.id}`,
         fill: true,
         stroke: false,
         animation: false,
@@ -47,13 +82,6 @@
       }
     },
     computed: {
-      keymap () {
-        return {
-          enter: this.save,
-          esc: this.back,
-          f: this.fullscreen
-        }
-      },
       page_title () {
         if (this.stroke) return 'Stroke'
         if (this.fill) return 'Fill'
@@ -63,20 +91,6 @@
       color () {
         if (this.stroke || this.fill) return true
         else return false
-      }
-    },
-    methods: {
-      back () {
-        let me = localStorage.me
-        me = me.substring(2)
-        const path = `/posters#${me}-posters-${this.$route.params.id}`
-        const route = { path }
-        this.$router.replace(route)
-      },
-      async save () {
-        const poster = new Poster(this.itemid)
-        await poster.save()
-        this.back()
       }
     }
   }
