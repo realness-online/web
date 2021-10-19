@@ -39,7 +39,7 @@
       'as-grid': as_grid,
       'as-animation': as_animation
     },
-    async setup() {
+    setup() {
       const route = use_route()
       const router = use_router()
       const itemid = `${localStorage.me}/posters/${route.params.id}`
@@ -102,6 +102,7 @@
       & > header > a.fullscreen
         visibility: hidden
     & > header
+      align-items: center
       background: transparent-black
       border-radius: 1rem
       z-index: 2
