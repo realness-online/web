@@ -30,7 +30,8 @@
   import use_fullscreen from '@/composables/use-fullscreen'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { useKeypress as use_keypress } from 'vue3-keypress'
-  import { ref } from "vue"
+  import { ref } from 'vue'
+
   export default {
     components: {
       icon,
@@ -39,7 +40,7 @@
       'as-grid': as_grid,
       'as-animation': as_animation
     },
-    setup() {
+    setup () {
       const route = use_route()
       const router = use_router()
       const itemid = `${localStorage.me}/posters/${route.params.id}`
@@ -54,17 +55,16 @@
       const save = async () => {
         console.log('save')
         const poster = new Poster(itemid)
-        poster.id
         await poster.save()
         back()
       }
       use_keypress({
-        keyEvent: "keydown",
+        keyEvent: 'keydown',
         isActive: is_active,
         keyBinds: [
-          { keyCode: "f", success: use_fullscreen},
-          { keyCode: "enter", success: save },
-          { keyCode: "esc", success: back }
+          { keyCode: 'f', success: use_fullscreen },
+          { keyCode: 'enter', success: save },
+          { keyCode: 'esc', success: back }
         ]
       })
       return {

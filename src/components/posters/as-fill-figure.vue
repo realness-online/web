@@ -15,7 +15,7 @@
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
   import { useKeypress as use_keypress } from 'vue3-keypress'
-  import { ref } from "vue"
+  import { ref } from 'vue'
   export default {
     components: {
       'as-svg': as_svg
@@ -28,19 +28,18 @@
       }
     },
     emits: ['pressed'],
-    setup() {
+    setup () {
       const is_active = ref('true')
       use_keypress({
-        keyEvent: "keydown",
+        keyEvent: 'keydown',
         isActive: is_active,
         keyBinds: [
-          { success: up, keyCode: "up"},
-          { success: tiny_up, keyCode: "up", modifiers: ["shiftKey"] },
-          { success: down, keyCode: "down" },
-          { success: tiny_down, keyCode: "down", modifiers: ["shiftKey"] }
+          { success: up, keyCode: 'up' },
+          { success: tiny_up, keyCode: 'up', modifiers: ['shiftKey'] },
+          { success: down, keyCode: 'down' },
+          { success: tiny_down, keyCode: 'down', modifiers: ['shiftKey'] }
         ]
       })
-
     },
     data () {
       return {

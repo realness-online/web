@@ -13,5 +13,5 @@ configureCompat({
 createApp(App).use(router).directive('hotkey', {
   beforeMount: VueHotkey.directive.bind,
   updated: VueHotkey.directive.componentUpdated,
-  unmounted: VueHotkey.directive.unbind,
+  unmounted: VueHotkey.directive.unbind
 }).mount('body')

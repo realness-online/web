@@ -51,7 +51,7 @@
         default: () => []
       }
     },
-    emits: ['update:person','update:relations'],
+    emits: ['update:person', 'update:relations'],
     data () {
       return {
         saving: false

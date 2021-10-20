@@ -52,7 +52,7 @@
         required: true
       }
     },
-    emits: ['update:person','signed-on'],
+    emits: ['update:person', 'signed-on'],
     data () {
       return {
         validate: null,
