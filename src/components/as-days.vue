@@ -81,13 +81,13 @@
     },
     watch: {
       statements: {
-        handler() {
+        handler () {
           this.refill_days()
         },
         deep: true
       },
       posters: {
-        handler() {
+        handler () {
           this.refill_days()
         },
         deep: true

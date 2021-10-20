@@ -58,7 +58,7 @@
     computed: {
       keymap () {
         return {
-          'f': this.fullscreen
+          f: this.fullscreen
         }
       },
       show_message () {
