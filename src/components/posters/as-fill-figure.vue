@@ -11,8 +11,11 @@
 </template>
 <script>
   import as_svg from '@/components/posters/as-svg'
+  import { change_opacity } from '@/composables/use-opacity-editor'
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
+  import { useKeypress as use_keypress } from 'vue3-keypress'
+  import { ref } from "vue"
   export default {
     components: {
       'as-svg': as_svg
@@ -26,22 +29,23 @@
     },
     emits: ['pressed'],
     setup() {
-      console.log('as-fill-figure')
+      const is_active = ref('true')
+      use_keypress({
+        keyEvent: "keydown",
+        isActive: is_active,
+        keyBinds: [
+          { success: up, keyCode: "up"},
+          { success: tiny_up, keyCode: "up", modifiers: ["shiftKey"] },
+          { success: down, keyCode: "down" },
+          { success: tiny_down, keyCode: "down", modifiers: ["shiftKey"] }
+        ]
+      })
+
     },
     data () {
       return {
         color: '#151518',
         focus_id: ''
-      }
-    },
-    computed: {
-      keymap () {
-        return {
-          up: () => this.change_opacity(),
-          down: this.fill_down,
-          'shift+up': this.tiny_fill_up,
-          'shift+down': this.tiny_fill_down
-        }
       }
     },
     watch: {
@@ -61,15 +65,6 @@
         this.$emit('pressed')
         if (evt.deltaY > 0) this.change_opacity('down', 'fill', 0.03)
         else this.change_opacity('up', 'fill', 0.03)
-      },
-      fill_down () {
-        this.change_opacity('down')
-      },
-      tiny_fill_up () {
-        this.change_opacity('up', 'fill', 0.01)
-      },
-      tiny_fill_down () {
-        this.change_opacity('down', 'fill', 0.01)
       }
     }
   }
