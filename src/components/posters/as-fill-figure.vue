@@ -83,6 +83,8 @@
       bottom: 0
       left: 0
       right: 0
+      @media (orientation: landscape) and (max-height: page-width)
+        position: relative
     & > figcaption
       position relative
       z-index: 0
@@ -91,14 +93,15 @@
       height:auto
       display: flex
       justify-content: space-between
-      & > input
-        border: 2px solid red
-        position:fixed
+      & > input[type="color"]
+        border: 2px solid green
+        border-radius: base-line
+        position: fixed
         z-index: 2
-        bottom: base-line * 3
-        right: base-line
-        width: base-line * 2
-        height: base-line * 2
+        bottom: inset(bottom)
+        right: inset(right, base-line)
+        width: base-line * 1.75
+        height: base-line * 1.75
       & > svg
         position:fixed
         z-index: 4
