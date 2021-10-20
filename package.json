@@ -88,6 +88,7 @@
     },
     "extends": [
       "eslint:recommended",
+      "@vue/standard",
       "plugin:vue/base",
       "plugin:vue/vue3-recommended"
     ],
