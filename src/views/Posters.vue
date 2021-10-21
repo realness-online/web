@@ -22,21 +22,10 @@
         </menu>
       </as-figure>
       <as-figure v-for="poster in posters" v-else
-                 :key="poster.id"
-                 :itemid="poster.id"
+                 :key="poster.id" :itemid="poster.id"
                  :class="{ 'selecting-event': poster.picker }"
                  @vector-click="menu_toggle(poster.id)">
-        <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
-        <menu v-else v-hotkey="menu_keymap(poster.id)">
-          <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
-          <router-link class="gear" :to="edit_poster(poster.id)">
-            <icon name="gear" />
-          </router-link>
-          <a class="remove" @click="remove_poster(poster.id)">
-            <icon name="remove" />
-          </a>
-          <as-download :itemid="poster.id" />
-        </menu>
+        <as-author-menu :poster="poster" />
       </as-figure>
     </article>
   </section>
@@ -49,20 +38,17 @@
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
+  import as_author_menu from '@/components/posters/as-author-menu'
   import logo_as_link from '@/components/logo-as-link'
-  import event_as_fieldset from '@/components/events/as-fieldset'
-  import event_as_button from '@/components/events/as-button'
-  import as_download from '@/components/download-vector'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
+
   export default {
     components: {
       icon,
       'as-figure': as_figure,
       'logo-as-link': logo_as_link,
-      'event-as-fieldset': event_as_fieldset,
-      'event-as-button': event_as_button,
-      'as-download': as_download
+      'as-author-menu': as_author_menu
     },
     mixins: [signed_in, uploader],
     data () {
@@ -101,13 +87,6 @@
       this.optimizer.terminate()
     },
     methods: {
-      menu_keymap (itemid) {
-        return {
-          enter: () => {
-            this.$router.replace({ path: this.edit_poster(itemid) })
-          }
-        }
-      },
       edit_poster (itemid) { // The editor is the author
         return `/posters/${as_created_at(itemid)}/editor`
       },
