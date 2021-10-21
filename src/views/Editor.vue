@@ -27,9 +27,9 @@
   import as_stroke_figure from '@/components/posters/as-stroke-figure'
   import as_grid from '@/components/posters/as-grid'
   import as_animation from '@/components/posters/as-animation'
-  import use_fullscreen from '@/composables/use-fullscreen'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { useKeypress as use_keypress } from 'vue3-keypress'
+  import { useFullscreen as use_fullscreen } from '@vueuse/core'
   import { ref } from 'vue'
 
   export default {
@@ -58,11 +58,12 @@
         await poster.save()
         back()
       }
+      const { toggle } = use_fullscreen()
       use_keypress({
         keyEvent: 'keydown',
         isActive: is_active,
         keyBinds: [
-          { keyCode: 'f', success: use_fullscreen },
+          { keyCode: 'f', success: toggle },
           { keyCode: 'enter', success: save },
           { keyCode: 'esc', success: back }
         ]

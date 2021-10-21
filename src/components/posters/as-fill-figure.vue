@@ -11,7 +11,14 @@
 </template>
 <script>
   import as_svg from '@/components/posters/as-svg'
-  import { change_opacity } from '@/composables/use-opacity-editor'
+  import {
+    change_opacity,
+    fill_more,
+    fill_less,
+    fill_more_subtle,
+    fill_less_subtle
+  } from '@/use/opacity-editor'
+  import { change_color, get_color } from '@/use/color-editor'
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
   import { useKeypress as use_keypress } from 'vue3-keypress'
@@ -34,10 +41,10 @@
         keyEvent: 'keydown',
         isActive: is_active,
         keyBinds: [
-          { success: up, keyCode: 'up' },
-          { success: tiny_up, keyCode: 'up', modifiers: ['shiftKey'] },
-          { success: down, keyCode: 'down' },
-          { success: tiny_down, keyCode: 'down', modifiers: ['shiftKey'] }
+          { success: fill_more, keyCode: 'up' },
+          { success: fill_less, keyCode: 'down' },
+          { success: fill_more_subtle, keyCode: 'up', modifiers: ['shiftKey'] },
+          { success: fill_less_subtle, keyCode: 'down', modifiers: ['shiftKey'] }
         ]
       })
     },
@@ -49,7 +56,7 @@
     },
     watch: {
       color () {
-        this.change_color(this.focus_id)
+        change_color(this.focus_id)
       }
     },
     methods: {
@@ -58,12 +65,11 @@
       },
       focus (id) {
         this.focus_id = id
-        this.color = this.get_color(this.focus_id)
+        this.color = get_color(this.focus_id)
       },
       press_move (evt) {
-        this.$emit('pressed')
-        if (evt.deltaY > 0) this.change_opacity('down', 'fill', 0.03)
-        else this.change_opacity('up', 'fill', 0.03)
+        if (evt.deltaY > 0) change_opacity('down', 'fill', 0.03)
+        else change_opacity('up', 'fill', 0.03)
       }
     }
   }
