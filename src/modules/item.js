@@ -1,10 +1,10 @@
 import { as_type } from '@/helpers/itemid'
-export function hydrate (item_as_string) {
+export function hydrate(item_as_string) {
   if (item_as_string) {
     return document.createRange().createContextualFragment(item_as_string)
   } else return null
 }
-export function get_item (elements, itemid) {
+export function get_item(elements, itemid) {
   if (!elements) return null
   if (typeof elements === 'string') elements = hydrate(elements)
   let main_element = elements.querySelector(`[itemid="${itemid}"]`)
@@ -12,10 +12,10 @@ export function get_item (elements, itemid) {
   if (!main_element) return null
   return make_item(main_element)
 }
-export function make_item (element) {
+export function make_item(element) {
   return { ...get_meta(element), ...get_itemprops(element) }
 }
-export function get_meta (item) {
+export function get_meta(item) {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')
@@ -24,7 +24,7 @@ export function get_meta (item) {
   if (type) meta.type = type
   return meta
 }
-export function get_itemprops (item) {
+export function get_itemprops(item) {
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
@@ -50,7 +50,7 @@ export function get_itemprops (item) {
   }
   return props
 }
-export function itemprop_value (element) {
+export function itemprop_value(element) {
   if (element.hasAttribute('content')) return element.getAttribute('content')
   if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
   switch (element.tagName.toLowerCase()) {

@@ -1,5 +1,5 @@
 export default {
-  data () {
+  data() {
     return {
       observer: new IntersectionObserver(this.check_intersection, {
         rootMargin: '32px 0px 0px 0px',
@@ -7,14 +7,14 @@ export default {
       })
     }
   },
-  mounted () {
+  mounted() {
     this.observer.observe(this.$el)
   },
-  beforeUnmount () {
+  beforeUnmount() {
     this.observer.unobserve(this.$el)
   },
   methods: {
-    check_intersection (entries) {
+    check_intersection(entries) {
       const entry = entries[0]
       if (entry.isIntersecting) {
         this.show()

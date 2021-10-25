@@ -10,8 +10,8 @@
       <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
     </article>
     <p v-else class="message">
-      <span>Zero</span> public events.
-      You create events from <router-link to="/posters">Posters</router-link>
+      <span>Zero</span> public events. You create events from
+      <router-link to="/posters">Posters</router-link>
     </p>
   </section>
 </template>
@@ -29,7 +29,7 @@
       icon
     },
     mixins: [signed_in],
-    data () {
+    data() {
       return {
         events: [],
         upcoming: [],
@@ -37,22 +37,24 @@
         days: new Map()
       }
     },
-    async created () {
+    async created() {
       console.info('views:events')
       this.events = await this.get_upcoming_events()
       this.working = false
     },
     methods: {
-      async get_upcoming_events () {
+      async get_upcoming_events() {
         const [relations, my_events] = await Promise.all([
           list(`${localStorage.me}/relations`),
           list(`${localStorage.me}/events`)
         ])
         let events = my_events
-        await Promise.all(relations.map(async person => {
-          const relation_events = await list(`${person.id}/events`)
-          events = [...relation_events, ...events]
-        }))
+        await Promise.all(
+          relations.map(async person => {
+            const relation_events = await list(`${person.id}/events`)
+            events = [...relation_events, ...events]
+          })
+        )
         events.sort(recent_item_first)
         const now = new Date().getTime()
         events = events.filter(event => event.id > now)

@@ -1,11 +1,12 @@
 <template>
   <figure :id="query_id" class="poster" :class="{ landscape }">
-    <as-svg ref="poster"
-            :itemid="itemid"
-            :poster="new_poster"
-            :immediate="immediate"
-            @vector-click="vector_click"
-            @vector-loaded="on_load" />
+    <as-svg
+      ref="poster"
+      :itemid="itemid"
+      :poster="new_poster"
+      :immediate="immediate"
+      @vector-click="vector_click"
+      @vector-loaded="on_load" />
     <figcaption>
       <slot v-if="menu">
         <menu>
@@ -58,7 +59,7 @@
       }
     },
     emits: ['loaded'],
-    data () {
+    data() {
       return {
         menu: false,
         poster: null,
@@ -67,43 +68,43 @@
       }
     },
     computed: {
-      query_id () {
+      query_id() {
         return as_query_id(this.itemid)
       },
-      posted_at () {
+      posted_at() {
         return as_time(as_created_at(this.itemid))
       },
-      background () {
+      background() {
         if (this.working) return 'working'
         if (this.loaded) return 'background'
         else return 'working'
       }
     },
     watch: {
-      async menu () {
+      async menu() {
         if (this.menu && !this.person) {
           this.person = await load(as_author(this.itemid))
         }
       },
-      new_poster () {
+      new_poster() {
         if (this.new_poster) {
           this.menu = true
           this.poster = this.new_poster
         }
       }
     },
-    mounted () {
+    mounted() {
       const fragment = window.location.hash.substring(1)
       if (this.query_id === fragment) this.$refs.poster.$el.scrollIntoView()
     },
     methods: {
-      async on_load (vector) {
+      async on_load(vector) {
         this.vector = vector
         this.$nextTick()
         this.loaded = true
         this.$emit('loaded', this.$refs.poster.$el.outerHTML)
       },
-      open_sms_app () {
+      open_sms_app() {
         window.open(this.sms_link, '_self')
       }
     }

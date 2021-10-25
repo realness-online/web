@@ -4,8 +4,12 @@
     <template v-else>
       <figure v-if="vector">
         <icon name="background" />
-        <svg ref="new_avatar" itemscope itemtype="/avatars"
-             :itemid="vector.id" :viewBox="vector.viewbox">
+        <svg
+          ref="new_avatar"
+          itemscope
+          itemtype="/avatars"
+          :itemid="vector.id"
+          :viewBox="vector.viewbox">
           <g v-for="(symbol, index) in path" :key="index">
             <symbol :id="symbol_id(index)" :viewBox="viewbox" v-html="symbol" />
             <use :href="symbol_fragment(index)" />
@@ -27,7 +31,7 @@
       </a>
       <as-download v-if="download_vector" :itemid="current_avatar.id" />
     </menu>
-    <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" capture="user">
+    <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" capture="user" />
   </div>
 </template>
 <script>
@@ -54,7 +58,7 @@
       }
     },
     emits: ['update:person'],
-    data () {
+    data() {
       return {
         vectorizer: new Worker('/vector.worker.js'),
         optimizer: new Worker('/optimize.worker.js'),
@@ -65,41 +69,41 @@
       }
     },
     computed: {
-      download_vector () {
+      download_vector() {
         if (!this.avatar_changed && this.current_avatar) return true
         else return false
       },
-      show_menu () {
+      show_menu() {
         if (this.signed_in && !this.working) return true
         else return false
       }
     },
     watch: {
-      async working () {
+      async working() {
         if (this.vector && !this.working) {
           await this.$nextTick()
           this.optimizer.postMessage({ vector: this.$refs.new_avatar.outerHTML })
         }
       }
     },
-    async created () {
+    async created() {
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
       if (this.person.avatar) this.current_avatar = await load(this.person.avatar)
     },
-    unmounted () {
+    unmounted() {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },
     methods: {
-      set_current_avatar (avatar) {
+      set_current_avatar(avatar) {
         this.current_avatar = avatar
       },
-      vectorize (image) {
+      vectorize(image) {
         this.working = true
         this.vectorizer.postMessage({ image })
       },
-      vectorized (message) {
+      vectorized(message) {
         const { vector } = message.data
         vector.type = 'avatars'
         vector.id = `${this.person.id}/avatars/${Date.now()}`
@@ -107,7 +111,7 @@
         this.current_avatar = this.vector
         this.working = false
       },
-      async optimized (message) {
+      async optimized(message) {
         let { vector } = message.data
         vector = get_item(vector)
         this.vector = vector
@@ -115,7 +119,7 @@
         this.$nextTick()
         this.avatar_changed = true
       },
-      async accept_new_avatar () {
+      async accept_new_avatar() {
         this.finished = false
         await this.$nextTick()
         const avatar = new Avatar(this.vector.id)

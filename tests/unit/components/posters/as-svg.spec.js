@@ -27,7 +27,7 @@ describe('@/components/posters/as-svg.vue', () => {
   })
   describe('Computed', () => {
     describe('.viewbox', () => {
-      it('Returns the vector\'s viewbox', () => {
+      it("Returns the vector's viewbox", () => {
         wrapper.vm.vector = poster
         expect(wrapper.vm.viewbox).toBe('0 0 333 444')
       })

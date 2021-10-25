@@ -10,14 +10,13 @@
     </header>
     <icon v-if="working" name="working" />
     <nav v-if="signed_in" class="profile-list">
-      <as-figure v-for="person in phonebook"
-                 :key="person.id"
-                 v-model:relations="relations"
-                 :person="person" />
+      <as-figure
+        v-for="person in phonebook"
+        :key="person.id"
+        v-model:relations="relations"
+        :person="person" />
     </nav>
-    <p v-if="!working && !signed_in" class="sign-on message">
-      <sign-on /> Check out who's here
-    </p>
+    <p v-if="!working && !signed_in" class="sign-on message"><sign-on /> Check out who's here</p>
   </section>
 </template>
 <script>
@@ -40,23 +39,25 @@
       'sign-on': sign_on
     },
     mixins: [signed_in],
-    data () {
+    data() {
       return {
         phonebook: [],
         relations: [],
         working: true
       }
     },
-    async created () {
+    async created() {
       console.info('views:PhoneBook')
       firebase.auth().onAuthStateChanged(async user => {
         this.relations = await list(`${localStorage.me}/relations`)
         if (user) {
           const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
-          await Promise.all(phone_numbers.prefixes.map(async phone_number => {
-            const person = await load(from_e64(phone_number.name))
-            if (person && is_fresh(person.visited)) this.phonebook.push(person)
-          }))
+          await Promise.all(
+            phone_numbers.prefixes.map(async phone_number => {
+              const person = await load(from_e64(phone_number.name))
+              if (person && is_fresh(person.visited)) this.phonebook.push(person)
+            })
+          )
         }
         this.phonebook.sort(recent_visit_first)
         this.working = false
@@ -64,7 +65,7 @@
     }
   }
 </script>
-<style lang='stylus'>
+<style lang="stylus">
   section#directory
     padding-bottom: base-line * 2
     nav.profile-list

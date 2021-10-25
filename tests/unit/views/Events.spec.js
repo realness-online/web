@@ -7,16 +7,14 @@ describe('@/views/Events.vue', () => {
     localStorage.me = '/+'
     list = jest.spyOn(itemid, 'list').mockImplementation(id => {
       if (itemid.as_type(id) === 'relations') {
-        return [
-          { id: '/+14153451275' },
-          { id: '/+17075539126' },
-          { id: '/+15104512765' }
-        ]
+        return [{ id: '/+14153451275' }, { id: '/+17075539126' }, { id: '/+15104512765' }]
       } else {
-        return [{
-          id: `${itemid.as_author(id)}/events/${Date.now()}`,
-          url: `${itemid.as_author(id)}/posters/${Date.now()}`
-        }]
+        return [
+          {
+            id: `${itemid.as_author(id)}/events/${Date.now()}`,
+            url: `${itemid.as_author(id)}/posters/${Date.now()}`
+          }
+        ]
       }
     })
   })

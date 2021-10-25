@@ -1,16 +1,22 @@
 <template>
   <div ref="sync" hidden>
     <as-address v-if="person" :person="person" />
-    <as-days v-if="statements" v-slot="thoughts"
-             itemscope :itemid="itemid('statements')"
-             :statements="statements" :paginate="false">
-      <thought-as-article v-for="thought in thoughts" :key="thought[0].id"
-                          :statements="thought" />
+    <as-days
+      v-if="statements"
+      v-slot="thoughts"
+      itemscope
+      :itemid="itemid('statements')"
+      :statements="statements"
+      :paginate="false">
+      <thought-as-article v-for="thought in thoughts" :key="thought[0].id" :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
-    <unsynced-poster v-if="poster" :key="poster.id"
-                     :itemid="poster.id" :poster="poster"
-                     :immediate="true" />
+    <unsynced-poster
+      v-if="poster"
+      :key="poster.id"
+      :itemid="poster.id"
+      :poster="poster"
+      :immediate="true" />
   </div>
 </template>
 <script>
@@ -57,7 +63,7 @@
       }
     },
     emits: ['update:statement', 'update:person', 'active'],
-    data () {
+    data() {
       return {
         poster: null,
         statements: [],
@@ -65,7 +71,7 @@
       }
     },
     watch: {
-      async statement () {
+      async statement() {
         if (this.statement) {
           await this.$nextTick()
           const itemid = this.itemid('statements')
@@ -77,7 +83,7 @@
           this.$emit('update:statement', null)
         }
       },
-      async person () {
+      async person() {
         if (this.person) {
           await this.$nextTick()
           const me = new Me()
@@ -85,26 +91,26 @@
         }
       }
     },
-    created () {
+    created() {
       document.addEventListener('visibilitychange', this.visibility_change)
       firebase.auth().onAuthStateChanged(this.auth_state_changed)
     },
     methods: {
-      async visibility_change () {
+      async visibility_change() {
         if (document.visibilityState === 'visible') await this.play()
       },
-      async auth_state_changed (me) {
+      async auth_state_changed(me) {
         if (me && navigator.onLine) {
           localStorage.me = from_e64(me.phoneNumber)
           window.addEventListener('online', this.play)
           this.play()
         } else window.removeEventListener('online', this.play)
       },
-      itemid (type) {
+      itemid(type) {
         if (type) return `${localStorage.me}/${type}`
         else return localStorage.me
       },
-      async play () {
+      async play() {
         const me = await load(localStorage.me) // check if new user
         if (!me || !firebase.auth().currentUser) return null // let's wait to sync
         await sync_offline_actions()
@@ -126,7 +132,7 @@
           this.$emit('active', false)
         }
       },
-      async sync_happened () {
+      async sync_happened() {
         const statements = new Statements()
         await statements.optimize()
         localStorage.sync_time = new Date().toISOString()
@@ -139,7 +145,7 @@
           this.$emit('update:person', me)
         }
       },
-      async sync_me () {
+      async sync_me() {
         const id = this.itemid()
         const network = (await fresh_metadata(id)).customMetadata
         let my_info = localStorage.getItem(id)
@@ -151,7 +157,7 @@
           del(id)
         }
       },
-      async sync_statements () {
+      async sync_statements() {
         const statements = new Statements()
         const itemid = this.itemid('statements')
         const network = (await fresh_metadata(itemid)).customMetadata
@@ -167,7 +173,7 @@
           }
         }
       },
-      async sync_events () {
+      async sync_events() {
         const events = new Events()
         const itemid = this.itemid('events')
         const network = (await fresh_metadata(itemid)).customMetadata
@@ -183,20 +189,22 @@
           }
         }
       },
-      async sync_anonymous_posters () {
+      async sync_anonymous_posters() {
         const offline_posters = await get('/+/posters/')
         if (!offline_posters || !offline_posters.items) return
-        await Promise.all(offline_posters.items.map(async (created_at) => {
-          const poster_string = await get(`/+/posters/${created_at}`)
-          this.save_poster({
-            id: `${localStorage.me}/posters/${created_at}`,
-            outerHTML: poster_string
+        await Promise.all(
+          offline_posters.items.map(async created_at => {
+            const poster_string = await get(`/+/posters/${created_at}`)
+            this.save_poster({
+              id: `${localStorage.me}/posters/${created_at}`,
+              outerHTML: poster_string
+            })
+            await del(`/+/posters/${created_at}`)
           })
-          await del(`/+/posters/${created_at}`)
-        }))
+        )
         await del('/+/posters/')
       },
-      async save_poster (poster) {
+      async save_poster(poster) {
         this.poster = get_item(poster.outerHTML)
         this.poster.id = poster.id
         await this.$nextTick()

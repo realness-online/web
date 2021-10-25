@@ -1,5 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
-import VueRouter from 'vue-router'
+import { shallowMount } from '@vue/test-utils'
 import * as itemid from '@/helpers/itemid'
 import { clear } from 'idb-keyval'
 import Sign_on from '@/views/Sign-on'
@@ -71,12 +70,14 @@ describe('@/views/Sign-on.vue', () => {
     })
     describe('#signed_on', () => {
       it('Loads the profile', async () => {
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
+        const load_spy = jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.signed_on()
         expect(load_spy).toBeCalled()
         expect(wrapper.vm.nameless).toBe(false)
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/' })
       })
       it('Sets nameless to true if no profile is found', async () => {
         const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
@@ -90,7 +91,7 @@ describe('@/views/Sign-on.vue', () => {
         await wrapper.vm.new_person()
         expect(wrapper.vm.person.visited).toBeTruthy()
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/account" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/account' })
       })
     })
     describe('#clean', () => {
@@ -101,7 +102,7 @@ describe('@/views/Sign-on.vue', () => {
         expect(clear).toBeCalled()
         expect(localStorage.me).toBe('/+')
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/' })
       })
     })
   })

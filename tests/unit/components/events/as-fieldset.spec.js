@@ -9,10 +9,12 @@ const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 
 const poster = get_item(poster_html)
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01', new Date().getTimezoneOffset())
-const events = [{
-  when: `${new Date(2020, 1, 1).getTime()}`,
-  url: poster.id
-}]
+const events = [
+  {
+    when: `${new Date(2020, 1, 1).getTime()}`,
+    url: poster.id
+  }
+]
 const user = {
   phoneNumber: '+16282281824'
 }

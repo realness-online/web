@@ -12,7 +12,7 @@
     <as-animation v-if="animation" :itemid="itemid" />
     <as-grid v-if="grid" :itemid="itemid" />
     <footer>
-      <menu style="visibility:hidden;">
+      <menu style="visibility: hidden">
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: animation }" name="animation" />
         <icon :class="{ selected: grid }" name="grid" />
@@ -40,7 +40,7 @@
       'as-grid': as_grid,
       'as-animation': as_animation
     },
-    setup () {
+    setup() {
       const route = use_route()
       const router = use_router()
       const itemid = `${localStorage.me}/posters/${route.params.id}`
@@ -74,7 +74,7 @@
         itemid
       }
     },
-    data () {
+    data() {
       return {
         fill: true,
         stroke: false,
@@ -83,13 +83,13 @@
       }
     },
     computed: {
-      page_title () {
+      page_title() {
         if (this.stroke) return 'Stroke'
         if (this.fill) return 'Fill'
         if (this.animation) return 'Animation'
         return 'Grid'
       },
-      color () {
+      color() {
         if (this.stroke || this.fill) return true
         else return false
       }

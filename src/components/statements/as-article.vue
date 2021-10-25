@@ -16,13 +16,14 @@
     <header v-else>
       <time>{{ thought_starts_at }}</time>
     </header>
-    <as-statement v-for="statement in statements"
-                  :key="statement.id"
-                  itemprop="statements"
-                  :statement="statement"
-                  :editable="editable"
-                  @focused="has_focus"
-                  @blurred="has_blurred" />
+    <as-statement
+      v-for="statement in statements"
+      :key="statement.id"
+      itemprop="statements"
+      :statement="statement"
+      :editable="editable"
+      @focused="has_focus"
+      @blurred="has_blurred" />
   </article>
 </template>
 <script>
@@ -56,7 +57,7 @@
       }
     },
     emits: ['show', 'focused', 'blurred'],
-    data () {
+    data() {
       return {
         all: null,
         author: null,
@@ -64,28 +65,28 @@
       }
     },
     computed: {
-      thought_starts_at () {
+      thought_starts_at() {
         return as_time(as_created_at(this.statements[0].id))
       }
     },
-    async created () {
+    async created() {
       if (this.verbose) {
         this.author = await load(as_author(this.statements[0].id))
       }
     },
     methods: {
-      click () {
+      click() {
         if (this.all) this.all = null
         else this.all = 'all'
       },
-      show () {
+      show() {
         this.$emit('show', this.statements)
       },
-      has_focus (statement) {
+      has_focus(statement) {
         this.focused = true
         this.$emit('focused', statement)
       },
-      has_blurred (statement) {
+      has_blurred(statement) {
         this.focused = false
         setTimeout(() => {
           if (!this.focused) {
@@ -96,7 +97,7 @@
     }
   }
 </script>
-<style lang='stylus'>
+<style lang="stylus">
   article.thought
     & > header
       display: flex

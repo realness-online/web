@@ -17,7 +17,7 @@
       sync,
       'developer-tools': developer_tools
     },
-    data () {
+    data() {
       return {
         working: true,
         me: null,
@@ -26,11 +26,11 @@
       }
     },
     computed: {
-      is_production () {
+      is_production() {
         return process.env.NODE_ENV === 'production'
       }
     },
-    async created () {
+    async created() {
       if (this.is_production) {
         const response = await fetch('__/firebase/init.json')
         await set('firebase-keys', await response.json())
@@ -50,21 +50,21 @@
       window.addEventListener('offline', this.offline)
       this.working = false
     },
-    beforeUnMount () {
+    beforeUnMount() {
       window.removeEventListener('online', this.online)
       window.removeEventListener('offline', this.offline)
     },
     methods: {
-      sync_active (active) {
+      sync_active(active) {
         if (active) this.status = 'working'
         else this.status = null
       },
-      online () {
+      online() {
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', true))
         this.status = null
       },
-      offline () {
+      offline() {
         const editable = document.querySelectorAll('[contenteditable]')
         editable.forEach(e => e.setAttribute('contenteditable', false))
         this.status = 'offline'

@@ -49,7 +49,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Reject invalid mobile number', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData: function () { return 'abc-123-1234' }
+              getData: function () {
+                return 'abc-123-1234'
+              }
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()
@@ -58,7 +60,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Accept 6282281824', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData () { return '4151234567' }
+              getData() {
+                return '4151234567'
+              }
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()
@@ -69,7 +73,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Accept (628) 228-1824', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData () { return '(628) 228-1824‬' }
+              getData() {
+                return '(628) 228-1824‬'
+              }
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()
@@ -80,7 +86,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Accept 628.228.1824', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData () { return '628.228.1824' }
+              getData() {
+                return '628.228.1824'
+              }
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()
@@ -91,7 +99,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Accept 628-228-1824', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData () { return '628-228-1824' }
+              getData() {
+                return '628-228-1824'
+              }
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()
@@ -136,7 +146,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       beforeEach(async () => {
         wrapper = await shallowMount(as_form, {
           props: { person },
-          data () {
+          data() {
             return {
               show_code: true,
               code: '12345'
@@ -177,7 +187,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
         wrapper = await shallowMount(as_form, {
           props: { person },
-          data () {
+          data() {
             return {
               show_code: true,
               authorizer: { confirm: confirm_spy }

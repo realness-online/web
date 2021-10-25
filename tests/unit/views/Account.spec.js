@@ -1,5 +1,4 @@
 import { shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router'
 import Account from '@/views/Account'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
@@ -47,7 +46,7 @@ describe('@/views/Account.vue', () => {
       $router = { push: jest.fn() }
       wrapper = shallowMount(Account, {
         global: {
-          mocks: { $router}
+          mocks: { $router }
         }
       })
     })
@@ -80,14 +79,14 @@ describe('@/views/Account.vue', () => {
         wrapper.vm.signoff()
         expect(firebase.auth().signOut).toBeCalled()
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/sign-on" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/sign-on' })
       })
     })
     describe('#home', () => {
       it('Takes the user to the homepage', () => {
         wrapper.vm.home()
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/' })
       })
     })
     describe('#thought_focused', () => {
@@ -120,7 +119,7 @@ describe('@/views/Account.vue', () => {
         { id: '/+16282281824/statements/1569909292018' },
         { id: '/+16282281824/statements/1569909311638' }
       ]
-      it('Checks if it\'s time to load more thoughts', async () => {
+      it("Checks if it's time to load more thoughts", async () => {
         jest.spyOn(itemid, 'as_directory').mockImplementation(() => {
           return { items: ['index', '1569909311638'] }
         })

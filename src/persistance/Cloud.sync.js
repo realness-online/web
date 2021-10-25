@@ -13,7 +13,7 @@ export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
-export async function sync_later (id, action) {
+export async function sync_later(id, action) {
   const offline = (await get('sync:offline')) || []
   offline.push({
     id,
@@ -21,7 +21,7 @@ export async function sync_later (id, action) {
   })
   await set('sync:offline', offline)
 }
-export async function is_stranger (id) {
+export async function is_stranger(id) {
   const relations = await list(`${localStorage.me}/relations`)
   relations.push({
     id: localStorage.me,
@@ -33,7 +33,7 @@ export async function is_stranger (id) {
   })
   return !is_friend
 }
-export async function sync_offline_actions () {
+export async function sync_offline_actions() {
   if (navigator.onLine) {
     const offline = await get('sync:offline')
     if (!offline) return
@@ -46,13 +46,14 @@ export async function sync_offline_actions () {
     await del('sync:offline')
   }
 }
-export async function prune () {
+export async function prune() {
   const relations = await list(`${localStorage.me}/relations`)
   const everything = await keys()
   everything.forEach(async itemid => {
     if (!as_author(itemid)) return // items have authors
     if (await is_stranger(as_author(itemid), relations)) await del(itemid)
-    if (await itemid.endsWith('/')) await del(itemid) // is a directory
+    if (await itemid.endsWith('/')) await del(itemid)
+    // is a directory
     else {
       const network = await fresh_metadata(itemid)
       if (!network || !network.customMetadata) return null
@@ -64,12 +65,13 @@ export async function prune () {
     }
   })
 }
-export async function local_md5 (itemid) { // always checks the network
+export async function local_md5(itemid) {
+  // always checks the network
   const local = await get(itemid)
   if (!local) return null
   return hash(local, hash_options)
 }
-export async function fresh_metadata (itemid) {
+export async function fresh_metadata(itemid) {
   const index = (await get('sync:index')) || {}
   const path = firebase.storage().ref().child(as_filename(itemid))
   let network
@@ -86,6 +88,6 @@ export async function fresh_metadata (itemid) {
   await set('sync:index', index)
   return network
 }
-export function visit_interval () {
-  return (Date.now() - one_hour)
+export function visit_interval() {
+  return Date.now() - one_hour
 }

@@ -1,4 +1,4 @@
-import { shallowMount, RouterLinkStub } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
 import * as itemid from '@/helpers/itemid'
@@ -26,9 +26,9 @@ describe('@/views/Navigation.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     describe('first_name', () => {
-      it('Returns \'You\' by default', async () => {
+      it("Returns 'You' by default", async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
-        wrapper = shallowMount(Navigation, { global:stubs })
+        wrapper = shallowMount(Navigation, { global: stubs })
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
       })

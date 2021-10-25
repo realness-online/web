@@ -94,10 +94,9 @@
     },
     "extends": [
       "eslint:recommended",
-      "@vue/standard",
-      "@vue/prettier",
       "plugin:vue/base",
-      "plugin:vue/vue3-recommended"
+      "plugin:vue/vue3-recommended",
+      "@vue/prettier"
     ],
     "parserOptions": {
       "parser": "babel-eslint"
@@ -107,6 +106,11 @@
       "camelcase": 0,
       "indent": "off",
       "lines-between-class-members": 0,
+      "space-before-function-paren": ["error", {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always"
+      }],
       "vue/no-v-html": "off",
       "vue/prop-name-casing": [
         "error",

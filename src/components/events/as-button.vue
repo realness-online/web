@@ -18,24 +18,24 @@
       }
     },
     emits: ['picker'],
-    data () {
+    data() {
       return {
         accept: true,
         events: []
       }
     },
     computed: {
-      date_picker_icon () {
+      date_picker_icon() {
         return `${icons}#date-picker`
       },
-      day () {
+      day() {
         const event = this.events.find(event => event.url === this.itemid)
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { day: 'numeric' })
         } else return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
-      month () {
+      month() {
         const event = this.events.find(event => {
           return event.url === this.itemid
         })
@@ -44,16 +44,16 @@
           return when.toLocaleString('en-US', { month: 'long' })
         } else return new Date().toLocaleString('en-US', { month: 'long' })
       },
-      has_event () {
+      has_event() {
         const exists = this.events.some(event => event.url === this.itemid)
         return exists ? 'has-event' : null
       }
     },
-    async created () {
+    async created() {
       this.events = await list(`${localStorage.me}/events`)
     },
     methods: {
-      on_click () {
+      on_click() {
         this.$emit('picker', {
           picker: true,
           itemid: this.itemid

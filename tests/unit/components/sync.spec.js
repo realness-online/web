@@ -4,12 +4,7 @@ import * as itemid from '@/helpers/itemid'
 import * as sync_worker from '@/persistance/Cloud.sync'
 import sync from '@/components/sync'
 import get_item from '@/modules/item'
-import {
-  Me,
-  Statements,
-  Events,
-  Poster
-} from '@/persistance/Storage'
+import { Me, Statements, Events, Poster } from '@/persistance/Storage'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -28,8 +23,8 @@ const fake_props = {
   props: { config: {} }
 }
 const statement = {
-  id:"/+16282281824",
-  type:'statements',
+  id: '/+16282281824',
+  type: 'statements',
   statement: 'I like to move it'
 }
 const current_user = {
@@ -47,14 +42,10 @@ describe('@/components/sync', () => {
       visited: '2020-03-03T17:37:22.943Z'
     }
     localStorage.me = `/${current_user.phoneNumber}`
-    jest.spyOn(Statements.prototype, 'sync')
-      .mockImplementation(() => Promise.resolve(statements))
-    jest.spyOn(Statements.prototype, 'save')
-      .mockImplementation(() => Promise.resolve())
-    jest.spyOn(Events.prototype, 'sync')
-      .mockImplementation(() => Promise.resolve(events))
-    jest.spyOn(Events.prototype, 'save')
-      .mockImplementation(() => Promise.resolve())
+    jest.spyOn(Statements.prototype, 'sync').mockImplementation(() => Promise.resolve(statements))
+    jest.spyOn(Statements.prototype, 'save').mockImplementation(() => Promise.resolve())
+    jest.spyOn(Events.prototype, 'sync').mockImplementation(() => Promise.resolve(events))
+    jest.spyOn(Events.prototype, 'save').mockImplementation(() => Promise.resolve())
     set.mockImplementation(() => Promise.resolve(null))
     wrapper = await shallowMount(sync, fake_props)
   })
@@ -72,7 +63,7 @@ describe('@/components/sync', () => {
     describe('statement', () => {
       it('Does nothing unless there is a statement', async () => {
         wrapper = shallowMount(sync, fake_props)
-        wrapper.setProps({ statement  })
+        wrapper.setProps({ statement })
         await flushPromises()
         jest.clearAllMocks()
         const save_spy = jest.spyOn(Statements.prototype, 'save')
@@ -132,8 +123,7 @@ describe('@/components/sync', () => {
     describe('#auth_state_changed', () => {
       it('Connects sync worker to component', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        const play = jest.spyOn(wrapper.vm, 'play')
-        .mockImplementation(() => Promise.resolve())
+        const play = jest.spyOn(wrapper.vm, 'play').mockImplementation(() => Promise.resolve())
         await wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
         expect(play).toBeCalled()
       })
@@ -154,16 +144,28 @@ describe('@/components/sync', () => {
       let sync_anonymous_posters
       let sync_happened
       beforeEach(() => {
-        sync_offline_actions_sync = jest.spyOn(sync_worker, 'sync_offline_actions').mockImplementation(() => Promise.resolve())
+        sync_offline_actions_sync = jest
+          .spyOn(sync_worker, 'sync_offline_actions')
+          .mockImplementation(() => Promise.resolve())
         sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(() => Promise.resolve())
-        sync_statements = jest.spyOn(wrapper.vm, 'sync_statements').mockImplementation(() => Promise.resolve())
-        sync_events = jest.spyOn(wrapper.vm, 'sync_events').mockImplementation(() => Promise.resolve())
-        sync_anonymous_posters = jest.spyOn(wrapper.vm, 'sync_anonymous_posters').mockImplementation(() => Promise.resolve())
-        sync_happened = jest.spyOn(wrapper.vm, 'sync_happened').mockImplementation(() => Promise.resolve())
+        sync_statements = jest
+          .spyOn(wrapper.vm, 'sync_statements')
+          .mockImplementation(() => Promise.resolve())
+        sync_events = jest
+          .spyOn(wrapper.vm, 'sync_events')
+          .mockImplementation(() => Promise.resolve())
+        sync_anonymous_posters = jest
+          .spyOn(wrapper.vm, 'sync_anonymous_posters')
+          .mockImplementation(() => Promise.resolve())
+        sync_happened = jest
+          .spyOn(wrapper.vm, 'sync_happened')
+          .mockImplementation(() => Promise.resolve())
         firebase.user = current_user
-        jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve({
-          id: '/+16282281824'
-        }))
+        jest.spyOn(itemid, 'load').mockImplementation(() =>
+          Promise.resolve({
+            id: '/+16282281824'
+          })
+        )
       })
       it('Starts syncing without a last_sync', async () => {
         await wrapper.vm.play()
@@ -184,10 +186,11 @@ describe('@/components/sync', () => {
     describe('#sync_me', () => {
       it('Syncs when the hash between server and local are off', async () => {
         localStorage.setItem(person.id, person_html)
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         await wrapper.vm.$nextTick()
@@ -197,10 +200,11 @@ describe('@/components/sync', () => {
       })
       it('Leaves localStorage alone if the hash are equal', async () => {
         localStorage.setItem(person.id, person_html)
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: 'zLEGcdAG1gQg/uS89iaOYQ==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: 'zLEGcdAG1gQg/uS89iaOYQ==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         await wrapper.vm.$nextTick()
@@ -212,9 +216,11 @@ describe('@/components/sync', () => {
     describe('#sync_statements', () => {
       it('Syncs when there are items to sync', async () => {
         jest.spyOn(Statements.prototype, 'sync').mockImplementationOnce(() => Promise.resolve([]))
-        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.statements = statements
@@ -224,10 +230,11 @@ describe('@/components/sync', () => {
         expect(Statements.prototype.save).not.toBeCalled()
       })
       it('Only syncs when the network and local statements differ', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: 'x5qk/9QmVjFHtJtL6pznJQ==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: 'x5qk/9QmVjFHtJtL6pznJQ==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.statements = statements
@@ -236,10 +243,11 @@ describe('@/components/sync', () => {
         expect(Statements.prototype.sync).not.toBeCalled()
       })
       it('Syncs without a network file to sync with', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: null }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: null }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.statements = statements
@@ -248,10 +256,11 @@ describe('@/components/sync', () => {
         expect(Statements.prototype.sync).toBeCalled()
       })
       it('Saves synced statements', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.statements = statements
@@ -263,12 +272,12 @@ describe('@/components/sync', () => {
     })
     describe('#sync_events', () => {
       it('Syncs when there are items to sync', async () => {
-        jest.spyOn(Events.prototype, 'sync')
-        .mockImplementationOnce(() => Promise.resolve([]))
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
-        }))
+        jest.spyOn(Events.prototype, 'sync').mockImplementationOnce(() => Promise.resolve([]))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.events = events
@@ -278,10 +287,11 @@ describe('@/components/sync', () => {
         expect(Events.prototype.save).not.toBeCalled()
       })
       it('Only syncs when the network and local statements differ', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: 'mxtr7zxj/Srcm5KRfn8pcA==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: 'mxtr7zxj/Srcm5KRfn8pcA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.events = events
@@ -290,10 +300,11 @@ describe('@/components/sync', () => {
         expect(Events.prototype.sync).not.toBeCalled()
       })
       it('Syncs without a network file to sync with', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: null }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: null }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.events = events
@@ -302,10 +313,11 @@ describe('@/components/sync', () => {
         expect(Events.prototype.sync).toBeCalled()
       })
       it('Saves synced events', async () => {
-        jest.spyOn(sync_worker, 'fresh_metadata')
-        .mockImplementation(() => Promise.resolve({
-           customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
-        }))
+        jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+          Promise.resolve({
+            customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+          })
+        )
         wrapper = await mount(sync, fake_props)
         await flushPromises()
         wrapper.vm.events = events
@@ -333,7 +345,9 @@ describe('@/components/sync', () => {
           else return Promise.resolve([])
         })
         await flushPromises()
-        const save_poster_spy = jest.spyOn(wrapper.vm, 'save_poster').mockImplementation(() => Promise.resolve())
+        const save_poster_spy = jest
+          .spyOn(wrapper.vm, 'save_poster')
+          .mockImplementation(() => Promise.resolve())
         await wrapper.vm.sync_anonymous_posters()
         await flushPromises()
         expect(get).toHaveBeenCalledTimes(2)
@@ -379,8 +393,9 @@ describe('@/components/sync', () => {
           id: `${localStorage.me}/posters/${15323457857456}`,
           outerHTML: poster_html
         }
-        const poster_save_spy = jest.spyOn(Poster.prototype, 'save')
-        .mockImplementation(() => Promise.resolve())
+        const poster_save_spy = jest
+          .spyOn(Poster.prototype, 'save')
+          .mockImplementation(() => Promise.resolve())
         await wrapper.vm.save_poster(mock_poster)
         expect(del).toBeCalled()
         expect(poster_save_spy).toBeCalled()

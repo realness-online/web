@@ -1,11 +1,13 @@
 <template>
   <label for="search">
-    <input id="search" v-model="query"
-           type="search"
-           placeholder="Search phonebook"
-           autocomplete="off"
-           @focusout="view_friends_mode"
-           @focusin="search_mode">
+    <input
+      id="search"
+      v-model="query"
+      type="search"
+      placeholder="Search phonebook"
+      autocomplete="off"
+      @focusout="view_friends_mode"
+      @focusin="search_mode" />
     <icon name="search" />
   </label>
 </template>
@@ -15,17 +17,17 @@
     components: {
       icon
     },
-    data () {
+    data() {
       return {
         searching: false,
         query: ''
       }
     },
     methods: {
-      search_mode () {
+      search_mode() {
         this.searching = true
       },
-      view_friends_mode () {
+      view_friends_mode() {
         this.query = ''
         this.searching = false
       }

@@ -2,17 +2,19 @@
   <figure class="profile">
     <as-svg :person="person" @vector-click="avatar_click" />
     <figcaption>
-      <as-address :key="person.id"
-                  :person="person"
-                  :editable="editable"
-                  @update:person="$emit('update:person', $event)" />
+      <as-address
+        :key="person.id"
+        :person="person"
+        :editable="editable"
+        @update:person="$emit('update:person', $event)" />
       <menu>
         <slot v-if="!is_me">
           <profile-as-meta :people="relations" />
-          <as-relationship-options :person="person"
-                                   :relations="relations"
-                                   @remove="remove_relationship"
-                                   @add="add_relationship" />
+          <as-relationship-options
+            :person="person"
+            :relations="relations"
+            @remove="remove_relationship"
+            @add="add_relationship" />
           <as-messenger :itemid="person.id" />
         </slot>
         <slot v-else />
@@ -52,33 +54,33 @@
       }
     },
     emits: ['update:person', 'update:relations'],
-    data () {
+    data() {
       return {
         saving: false
       }
     },
     computed: {
-      is_me () {
+      is_me() {
         if (localStorage.me === this.person.id) return true
         else return false
       }
     },
     methods: {
-      avatar_click () {
+      avatar_click() {
         const route = { path: this.person.id }
         if (this.is_me) route.path = '/account'
         this.$router.push(route)
       },
-      async add_relationship (person) {
+      async add_relationship(person) {
         const relations = this.relations
         relations.push(person)
         await this.$nextTick()
         new Relations().save()
         this.$emit('update:relations', relations)
       },
-      async remove_relationship (person) {
+      async remove_relationship(person) {
         const relations = this.relations
-        const index = relations.findIndex(p => (p.id === person.id))
+        const index = relations.findIndex(p => p.id === person.id)
         if (index > -1) {
           relations.splice(index, 1)
           await this.$nextTick()

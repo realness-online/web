@@ -51,7 +51,7 @@ describe('@/components/avatars/as-form.vue', () => {
         wrapper.vm.working = true
         expect(wrapper.vm.path).toBe(null)
       })
-      it('Returns the path if it\'s a string', () => {
+      it("Returns the path if it's a string", () => {
         wrapper.vm.vector = {
           id: person.avatar,
           path: '<path itemprop="path" d="1"/>'

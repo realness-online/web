@@ -18,9 +18,9 @@
       }
     },
     methods: {
-      open_sms_app () {
-       window.open(`sms:${as_phone_number(as_author(this.itemid))}`, '_self')
-     }
-   }
+      open_sms_app() {
+        window.open(`sms:${as_phone_number(as_author(this.itemid))}`, '_self')
+      }
+    }
   }
 </script>

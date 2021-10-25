@@ -38,7 +38,7 @@ describe('@/components/avatars/as-svg.vue', () => {
         wrapper = shallowMount(as_svg, {
           props: { person }
         })
-        wrapper.setData({ working: true})
+        wrapper.setData({ working: true })
         expect(wrapper.vm.silhouette).toBe('#working')
       })
     })

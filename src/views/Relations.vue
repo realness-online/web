@@ -8,7 +8,11 @@
       </router-link>
     </header>
     <nav v-if="signed_in" class="profile-list">
-      <as-figure v-for="person in relations" :key="person.id" v-model:relations="relations" :person="person" />
+      <as-figure
+        v-for="person in relations"
+        :key="person.id"
+        v-model:relations="relations"
+        :person="person" />
     </nav>
   </section>
 </template>
@@ -23,13 +27,13 @@
       'as-figure': as_figure
     },
     mixins: [signed_in],
-    data () {
+    data() {
       return {
         signed_in: true,
         relations: []
       }
     },
-    async created () {
+    async created() {
       console.info('views:Relations')
       const temp = await list(`${localStorage.me}/relations`)
       temp.forEach(async relation => {
@@ -39,7 +43,7 @@
     }
   }
 </script>
-<style lang='stylus'>
+<style lang="stylus">
   section#relations
     padding-bottom: base-line * 2
     & > header
