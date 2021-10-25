@@ -137,7 +137,7 @@
       text-align: left
       line-height: base-line
       margin: 0 0 base-line base-line
-      color: spin(green, 3deg)
+      color: green
       font-weight: 800
       font-size: base-line
     input
@@ -158,7 +158,7 @@
       height: base-line
       left: base-line
       top: base-line
-      color: spin(green, 3deg)
+      color: green
       margin: 0 0 base-line base-line
       &::-webkit-datetime-edit-fields-wrapper
       &::-webkit-datetime-edit-text
@@ -166,8 +166,8 @@
       &::-webkit-datetime-edit-day-field
       &::-webkit-datetime-edit-year-field
         display:inline-block
-        color: spin(green, 3deg)
-        fill: spin(green, 3deg)
+        color: green
+        fill: green
         font-weight: 800
         font-family: Lato
     input[type="time"]
@@ -177,7 +177,7 @@
       line-height: 1
       z-index: 3
       cursor: pointer
-      color:spin(green, 3deg)
+      color: green
       font-weight: 800
       margin-bottom: base-line
     menu
@@ -187,7 +187,7 @@
       width: 100%
       z-index: 4
       svg
-        fill: spin(green, 3deg)
-        stroke spin(green, 3deg)
+        fill: green
+        stroke: green
         stroke-width 1px
 </style>
