@@ -37,15 +37,13 @@
       }
     },
     setup (props) {
-      console.log('setup', props.poster.id)
-      const is_active = ref(true)
       const router = use_router()
       const edit_poster = (itemid) => `/posters/${as_created_at(itemid)}/editor`
       const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
 
       use_keypress({
         keyEvent: 'keydown',
-        isActive: is_active,
+        isActive: ref(true),
         keyBinds: [{ keyCode: 'enter', success: open_editor }]
       })
 
