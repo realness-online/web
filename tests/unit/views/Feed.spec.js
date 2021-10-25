@@ -12,9 +12,7 @@ const person = {
   id: '/+16282281824',
   visited: new Date().toISOString()
 }
-const relations = [
-  { id: '/+14153731893' }
-]
+const relations = [{ id: '/+14153731893' }]
 describe('@/views/Feed.vue', () => {
   let list_spy
   beforeEach(() => {
@@ -25,8 +23,9 @@ describe('@/views/Feed.vue', () => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
-    jest.spyOn(itemid, 'as_directory')
-    .mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
+    jest
+      .spyOn(itemid, 'as_directory')
+      .mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
   })
   afterEach(() => {
     firebase.user = undefined
@@ -45,7 +44,9 @@ describe('@/views/Feed.vue', () => {
     })
     it('A fiendly explanatory message if new person', async () => {
       list_spy.mockImplementation(() => Promise.resolve([]))
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => Promise.resolve({ items: [] }))
+      jest
+        .spyOn(itemid, 'as_directory')
+        .mockImplementationOnce(() => Promise.resolve({ items: [] }))
       firebase.user = undefined
       const wrapper = await shallowMount(Feed)
       await flushPromises()

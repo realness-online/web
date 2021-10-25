@@ -2,15 +2,8 @@
   <fieldset class="event">
     <events-list ref="events" :events="events" :itemid="events_id()" />
     <label for="day">{{ event_label }}</label>
-    <input id="day" ref="day"
-           type="date"
-           required
-           :value="event_day"
-           @input="update_date">
-    <input ref="time" type="time"
-           required
-           :value="event_time"
-           @input="update_time">
+    <input id="day" ref="day" type="date" required :value="event_day" @input="update_date" />
+    <input ref="time" type="time" required :value="event_time" @input="update_time" />
     <menu>
       <a @click="remove"><icon name="remove" /></a>
       <a @click="save"><icon name="add" /></a>
@@ -34,20 +27,20 @@
       }
     },
     emits: ['picker'],
-    data () {
+    data() {
       return {
         main_event: null,
         events: []
       }
     },
     computed: {
-      event_time () {
+      event_time() {
         let minutes = this.main_event.getMinutes()
         minutes = minutes > 9 ? minutes : `0${minutes}`
         const time_value = `${this.main_event.getHours()}:${minutes}`
         return time_value
       },
-      event_day () {
+      event_day() {
         const year = this.main_event.getFullYear()
         let month = this.main_event.getMonth() + 1
         let day = this.main_event.getDate()
@@ -56,31 +49,31 @@
         const day_value = `${year}-${month}-${day}`
         return day_value
       },
-      event_label () {
+      event_label() {
         return this.main_event.toLocaleString('en-US', {
           weekday: 'long',
           month: 'long',
           day: 'numeric'
         })
       },
-      tonight () {
+      tonight() {
         const tonight = new Date()
         tonight.setHours(21)
         tonight.setMinutes(0)
         return tonight
       }
     },
-    async created () {
+    async created() {
       this.main_event = this.tonight
       this.events = await list(`${localStorage.me}/events`)
       const my_event = this.events.find(event => event.url === this.itemid)
       if (my_event) this.main_event = new Date(parseInt(my_event.id))
     },
     methods: {
-      events_id () {
+      events_id() {
         return `${localStorage.me}/events`
       },
-      async save () {
+      async save() {
         this.show = false
         this.events = this.events.filter(event => event.url !== this.itemid)
         this.events.push({
@@ -94,7 +87,7 @@
           itemid: this.itemid
         })
       },
-      async remove () {
+      async remove() {
         this.show = false
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.url !== this.itemid)
@@ -105,14 +98,14 @@
           itemid: this.itemid
         })
       },
-      update_date () {
+      update_date() {
         const date_list = this.$refs.day.value.split('-')
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
         const day = parseInt(date_list[2])
         this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
-      update_time () {
+      update_time() {
         const time_list = this.$refs.time.value.split(':')
         const hour = parseInt(time_list[0])
         const minute = parseInt(time_list[1])

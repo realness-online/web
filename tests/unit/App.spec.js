@@ -1,5 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
-import VueRouter from 'vue-router'
+import { shallowMount } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import App from '@/App'
 const fetch = require('jest-fetch-mock')

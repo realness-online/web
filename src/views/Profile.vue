@@ -14,13 +14,8 @@
     <as-figure v-if="person" :person="person" :relations="relations" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <template v-for="item in items">
-        <poster-as-figure v-if="item.type === 'posters'"
-                          :key="slot_key(item)"
-                          :itemid="item.id" />
-        <thought-as-article v-else
-                            :key="slot_key(item)"
-                            :statements="item"
-                            @show="thought_shown" />
+        <poster-as-figure v-if="item.type === 'posters'" :key="slot_key(item)" :itemid="item.id" />
+        <thought-as-article v-else :key="slot_key(item)" :statements="item" @show="thought_shown" />
       </template>
     </as-days>
   </section>
@@ -52,7 +47,7 @@
       'thought-as-article': as_article
     },
     mixins: [signed_in, intersection_thought],
-    data () {
+    data() {
       return {
         working: true,
         person: null,
@@ -62,7 +57,7 @@
         relations: []
       }
     },
-    async created () {
+    async created() {
       const id = from_e64(this.$route.params.phone_number)
       const [person, statements, posters, my_relations] = await Promise.all([
         load(id),
@@ -88,7 +83,7 @@
     }
   }
 </script>
-<style lang='stylus'>
+<style lang="stylus">
   section#profile
     padding: 0
     & > header
@@ -166,5 +161,4 @@
                 display: none
             & > svg
               display: none
-
 </style>

@@ -6,7 +6,10 @@
     </header>
     <address v-if="signed_in && !working">
       <avatar-as-form v-model:person="person" @update:person="$emit('update:person', $event)" />
-      <profile-as-figure v-model:person="person" :editable="true" @update:person="$emit('update:person', $event)">
+      <profile-as-figure
+        v-model:person="person"
+        :editable="true"
+        @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
           <icon name="gear" />
         </a>
@@ -16,21 +19,23 @@
       </menu>
     </address>
     <h1 v-if="!working">Statements</h1>
-    <as-days v-slot="thoughts"
-             itemscope
-             :paginate="false"
-             :itemid="statements_id"
-             :statements="statements">
-      <thought-as-article v-for="thought in thoughts"
-                          :key="thought[0].id"
-                          :statements="thought"
-                          :editable="is_editable(thought)"
-                          @show="thought_shown"
-                          @focused="thought_focused"
-                          @blurred="thought_blurred" />
+    <as-days
+      v-slot="thoughts"
+      itemscope
+      :paginate="false"
+      :itemid="statements_id"
+      :statements="statements">
+      <thought-as-article
+        v-for="thought in thoughts"
+        :key="thought[0].id"
+        :statements="thought"
+        :editable="is_editable(thought)"
+        @show="thought_shown"
+        @focused="thought_focused"
+        @blurred="thought_blurred" />
     </as-days>
     <footer v-if="statements.length === 0 && !working" class="message">
-      <p>Say some stuff via the <button @click="home" /> button on the homepage  <br></p>
+      <p>Say some stuff via the <button @click="home" /> button on the homepage <br /></p>
     </footer>
   </section>
 </template>
@@ -59,7 +64,7 @@
     },
     mixins: [signed_in, intersection_thought],
     emits: ['update:person'],
-    data () {
+    data() {
       return {
         person: {},
         statements: [],
@@ -73,11 +78,11 @@
       }
     },
     computed: {
-      statements_id () {
+      statements_id() {
         return `${localStorage.me}/statements`
       }
     },
-    async created () {
+    async created() {
       console.info('views:Account')
       this.authors.push({
         id: localStorage.me,
@@ -89,7 +94,7 @@
       this.working = false
     },
     methods: {
-      is_editable (thought) {
+      is_editable(thought) {
         if (this.working) return false
         return thought.some(statement => {
           return this.first_page.some(s => {
@@ -97,14 +102,14 @@
           })
         })
       },
-      signoff () {
+      signoff() {
         firebase.auth().signOut()
         this.$router.push({ path: '/sign-on' })
       },
-      home () {
+      home() {
         this.$router.push({ path: '/' })
       },
-      async get_all_my_stuff () {
+      async get_all_my_stuff() {
         const [person, statements] = await Promise.all([
           load(localStorage.me),
           list(this.statements_id)
@@ -112,12 +117,12 @@
         if (person) this.person = person
         this.statements = statements
       },
-      async thought_focused (statement) {
+      async thought_focused(statement) {
         this.currently_focused = statement.id
         this.statements = await list(this.statements_id)
         this.pages_viewed = ['index']
       },
-      thought_blurred (statement) {
+      thought_blurred(statement) {
         if (this.currently_focused === statement.id) {
           this.currently_focused = null
           const oldest = this.statements[this.statements.length - 1]
@@ -127,7 +132,7 @@
     }
   }
 </script>
-<style lang='stylus'>
+<style lang="stylus">
   section#account
     a
     button

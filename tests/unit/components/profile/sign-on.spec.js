@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import sign_on from '@/components/profile/sign-on'
 describe('@/components/profile/sign-on', () => {
   describe('Renders', () => {
@@ -18,7 +18,7 @@ describe('@/components/profile/sign-on', () => {
         })
         wrapper.vm.sign_on()
         expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: "/sign-on" })
+        expect($router.push).toHaveBeenCalledWith({ path: '/sign-on' })
       })
     })
   })

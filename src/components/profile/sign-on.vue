@@ -4,7 +4,7 @@
 <script>
   export default {
     methods: {
-      sign_on () {
+      sign_on() {
         this.$router.push({ path: '/sign-on' })
       }
     }

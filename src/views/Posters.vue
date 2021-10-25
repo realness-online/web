@@ -5,26 +5,30 @@
       <icon v-else name="nothing" />
       <h1>Posters</h1>
       <a v-if="add" id="camera" @click="open_camera"><icon name="camera" /></a>
-      <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png">
+      <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
     <icon v-if="working" name="working" />
     <article v-else>
-      <as-figure v-if="new_poster"
-                 class="new"
-                 :itemid="as_itemid"
-                 :new_poster="new_poster"
-                 :working="working"
-                 @loaded="optimize">
+      <as-figure
+        v-if="new_poster"
+        class="new"
+        :itemid="as_itemid"
+        :new_poster="new_poster"
+        :working="working"
+        @loaded="optimize">
         <menu>
           <a class="remove" @click="cancel_poster"><icon name="remove" /></a>
           <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished" /></a>
         </menu>
       </as-figure>
-      <as-figure v-for="poster in posters" v-else
-                 :key="poster.id" :itemid="poster.id"
-                 :class="{ 'selecting-event': poster.picker }"
-                 @vector-click="menu_toggle(poster.id)">
+      <as-figure
+        v-for="poster in posters"
+        v-else
+        :key="poster.id"
+        :itemid="poster.id"
+        :class="{ 'selecting-event': poster.picker }"
+        @vector-click="menu_toggle(poster.id)">
         <as-author-menu :poster="poster" />
       </as-figure>
     </article>
@@ -51,7 +55,7 @@
       'as-author-menu': as_author_menu
     },
     mixins: [signed_in, uploader],
-    data () {
+    data() {
       return {
         finished: true,
         posters: [],
@@ -63,33 +67,33 @@
       }
     },
     computed: {
-      as_itemid () {
+      as_itemid() {
         if (this.new_poster && this.new_poster.id) return this.new_poster.id
         else return `${localStorage.me}/posters/${Date.now()}`
       },
-      friendly () {
+      friendly() {
         if (this.posters.length === 0 && !this.working && !this.new_poster) return true
         else return false
       },
-      add () {
+      add() {
         if (this.working || this.new_poster) return false
         else return true
       }
     },
-    async created () {
+    async created() {
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
     },
-    unmounted () {
+    unmounted() {
       this.vectorizer.terminate()
       this.optimizer.terminate()
     },
     methods: {
-      get_id (name) {
+      get_id(name) {
         return `${localStorage.me}/posters/${name}`
       },
-      async get_poster_list () {
+      async get_poster_list() {
         this.posters = []
         const directory = await as_directory(`${localStorage.me}/posters`)
         if (directory && directory.items) {
@@ -103,23 +107,23 @@
         }
         this.posters.sort(recent_item_first)
       },
-      vectorize (image) {
+      vectorize(image) {
         this.working = true
         this.vectorizer.postMessage({ image })
       },
-      async vectorized (response) {
+      async vectorized(response) {
         this.new_poster = response.data.vector
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
       },
-      optimize (vector) {
+      optimize(vector) {
         this.optimizer.postMessage({ vector })
       },
-      optimized (message) {
+      optimized(message) {
         this.new_poster = get_item(message.data.vector)
       },
-      async save_poster () {
+      async save_poster() {
         const id = this.new_poster.id
         if (!id) return null
         this.working = true
@@ -138,7 +142,7 @@
         // create a directory with only the poster you just createed
         console.info('save:poster', id)
       },
-      async remove_poster (id) {
+      async remove_poster(id) {
         const message = 'Delete poster?'
         if (window.confirm(message)) {
           this.posters = this.posters.filter(item => id !== item.id)
@@ -147,19 +151,19 @@
           console.info('delete:poster', id)
         }
       },
-      cancel_poster () {
+      cancel_poster() {
         this.working = true
         this.new_poster = null
         this.working = false
       },
-      menu_toggle (itemid) {
+      menu_toggle(itemid) {
         this.posters.forEach(poster => {
           if (poster.menu) poster.menu = false
         })
         const poster = this.posters.find(poster => poster.id === itemid)
         poster.menu = !poster.menu
       },
-      picker (itemid) {
+      picker(itemid) {
         const poster = this.posters.find(poster => poster.id === itemid)
         poster.picker = !poster.picker
       }

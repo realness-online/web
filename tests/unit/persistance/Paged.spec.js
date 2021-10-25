@@ -33,10 +33,12 @@ describe('@/persistance/Paged.js', () => {
         expect(get_item(hella_statements).statements.length).toBe(100)
       })
       beforeEach(() => {
-        cloud_spy = jest.spyOn(itemid, 'load_from_network')
-                    .mockImplementation(() => Promise.resolve(get_item(statements)))
-        local_spy = jest.spyOn(itemid, 'list')
-                    .mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
+        cloud_spy = jest
+          .spyOn(itemid, 'load_from_network')
+          .mockImplementation(() => Promise.resolve(get_item(statements)))
+        local_spy = jest
+          .spyOn(itemid, 'list')
+          .mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
         localStorage.setItem('/+/statements', offline_statements)
       })
       it('Exists', () => {
@@ -69,8 +71,7 @@ describe('@/persistance/Paged.js', () => {
       })
       it('Syncs if there are no server items', async () => {
         firebase.user = user
-        cloud_spy = jest.spyOn(itemid, 'load_from_network')
-                        .mockImplementationOnce(() => null)
+        cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementationOnce(() => null)
         const list = await paged.sync()
         expect(cloud_spy).toBeCalled()
         expect(local_spy).toBeCalled()
@@ -89,7 +90,9 @@ describe('@/persistance/Paged.js', () => {
     describe('#optimize', () => {
       beforeEach(() => {
         localStorage.setItem(paged.id, hella_statements)
-        jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(get_item(hella_statements)))
+        jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(get_item(hella_statements)))
       })
       it('Exists', () => {
         expect(paged.optimize).toBeDefined()

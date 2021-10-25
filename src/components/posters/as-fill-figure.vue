@@ -1,11 +1,15 @@
 <template>
   <figure id="edit-fill" v-finger:pressMove="press_move">
-    <as-svg :itemid="itemid" :immediate="true"
-            :tabindex="-1" :slice="false" :tabable="true"
-            @focus="focus" />
+    <as-svg
+      :itemid="itemid"
+      :immediate="true"
+      :tabindex="-1"
+      :slice="false"
+      :tabable="true"
+      @focus="focus" />
     <figcaption>
-      <as-svg style="visibility:hidden;" :itemid="itemid" class="as-line-art" />
-      <input v-model="color" :tabindex="-1" type="color" @blur="re_focus">
+      <as-svg style="visibility: hidden" :itemid="itemid" class="as-line-art" />
+      <input v-model="color" :tabindex="-1" type="color" @blur="re_focus" />
     </figcaption>
   </figure>
 </template>
@@ -18,6 +22,7 @@
     fill_more_subtle,
     fill_less_subtle
   } from '@/use/opacity-editor'
+
   import { change_color, get_color } from '@/use/color-editor'
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
@@ -35,7 +40,7 @@
       }
     },
     emits: ['pressed'],
-    setup () {
+    setup() {
       const is_active = ref('true')
       use_keypress({
         keyEvent: 'keydown',
@@ -48,26 +53,26 @@
         ]
       })
     },
-    data () {
+    data() {
       return {
         color: '#151518',
         focus_id: ''
       }
     },
     watch: {
-      color () {
+      color() {
         change_color(this.focus_id)
       }
     },
     methods: {
-      re_focus () {
+      re_focus() {
         document.getElementById(this.focus_id).focus()
       },
-      focus (id) {
+      focus(id) {
         this.focus_id = id
         this.color = get_color(this.focus_id)
       },
-      press_move (evt) {
+      press_move(evt) {
         if (evt.deltaY > 0) change_opacity('down', 'fill', 0.03)
         else change_opacity('up', 'fill', 0.03)
       }

@@ -21,17 +21,17 @@
         required: true
       }
     },
-    data () {
+    data() {
       return {
         person: null
       }
     },
     computed: {
-      author () {
+      author() {
         return as_author(this.itemid)
       }
     },
-    async created () {
+    async created() {
       this.person = await load(this.author)
     }
   }

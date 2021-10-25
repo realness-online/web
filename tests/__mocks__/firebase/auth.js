@@ -1,11 +1,11 @@
 import firebase from 'firebase/app'
 const RecaptchaVerifier = class {
-  verify () {
+  verify() {
     // console.log('RecaptchaVerifier.verify');
   }
 }
 firebase.auth_mock = {
-  get currentUser () {
+  get currentUser() {
     return firebase.user
   },
   onAuthStateChanged: jest.fn(state => state(firebase.user)),

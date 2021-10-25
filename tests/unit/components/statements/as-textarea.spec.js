@@ -17,7 +17,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       })
       it('Will ignore a statement that contains a http://', () => {
         const wrapper = shallowMount(wat, {
-          data () {
+          data() {
             return {
               statements: [],
               new_statement: 'http://example.com'
@@ -30,7 +30,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       })
       it('Will ignore a statement that contains a https://', () => {
         const wrapper = shallowMount(wat, {
-          data () {
+          data() {
             return {
               statements: [],
               new_statement: 'https://example.com'
@@ -43,7 +43,7 @@ describe('@/components/statements/as-textarea.vue', () => {
       })
       it('Only triggers a statement event when there is text', () => {
         const wrapper = shallowMount(wat, {
-          data () {
+          data() {
             return {
               statements: [],
               new_statement: ''
@@ -71,7 +71,7 @@ describe('@/components/statements/as-textarea.vue', () => {
     })
     it('Emits a statement-added event when there is text', () => {
       const wrapper = shallowMount(wat, {
-        data () {
+        data() {
           return {
             new_statement: 'I like to move it.'
           }

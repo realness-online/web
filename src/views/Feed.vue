@@ -7,20 +7,19 @@
         <icon name="fullscreen" />
       </a>
     </header>
-    <as-days v-slot="items"
-             :working="working"
-             :posters="posters"
-             :statements="statements">
+    <as-days v-slot="items" :working="working" :posters="posters" :statements="statements">
       <template v-for="item in items">
-        <poster-as-figure v-if="item.type === 'posters'"
-                          :key="slot_key(item)"
-                          :itemid="item.id"
-                          :verbose="true" />
-        <thought-as-article v-else
-                            :key="slot_key(item)"
-                            :statements="item"
-                            :verbose="true"
-                            @show="thought_shown" />
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :key="slot_key(item)"
+          :itemid="item.id"
+          :verbose="true" />
+        <thought-as-article
+          v-else
+          :key="slot_key(item)"
+          :statements="item"
+          :verbose="true"
+          @show="thought_shown" />
       </template>
     </as-days>
   </section>
@@ -49,20 +48,18 @@
       icon
     },
     mixins: [signed_in, intersection_thought],
-    setup () {
+    setup() {
       const { toggle } = use_fullscreen()
       use_keypress({
         keyEvent: 'keydown',
         isActive: ref(true),
-        keyBinds: [
-          { keyCode: 'enter', success: toggle }
-        ]
+        keyBinds: [{ keyCode: 'enter', success: toggle }]
       })
       return {
         fullscreen: toggle
       }
     },
-    data () {
+    data() {
       return {
         signed_in: true,
         statements: [],
@@ -72,21 +69,23 @@
       }
     },
     computed: {
-      show_message () {
+      show_message() {
         if (this.working) return false
         if (this.statements.length === 0 && this.posters.length === 0) return true
         return false
       }
     },
-    async created () {
+    async created() {
       console.time('views:Feed')
       firebase.auth().onAuthStateChanged(async user => {
         if (user) {
           const authors = await list(`${localStorage.me}/relations`)
-          await Promise.all(authors.map(async a => {
-            const person = await load(a.id)
-            if (person) this.authors.push(person)
-          }))
+          await Promise.all(
+            authors.map(async a => {
+              const person = await load(a.id)
+              if (person) this.authors.push(person)
+            })
+          )
         }
         this.authors.push({
           id: localStorage.me,
@@ -98,23 +97,25 @@
       })
     },
     methods: {
-      async fill_feed () {
-        await Promise.all(this.authors.map(async relation => {
-          const [statements, posters] = await Promise.all([
-            list(`${relation.id}/statements`),
-            as_directory(`${relation.id}/posters`)
-          ])
-          relation.viewed = ['index']
-          this.statements = [...statements, ...this.statements]
-          if (posters && posters.items) {
-            posters.items.forEach(created_at => {
-              this.posters.push({
-                id: `${relation.id}/posters/${created_at}`,
-                type: 'posters'
+      async fill_feed() {
+        await Promise.all(
+          this.authors.map(async relation => {
+            const [statements, posters] = await Promise.all([
+              list(`${relation.id}/statements`),
+              as_directory(`${relation.id}/posters`)
+            ])
+            relation.viewed = ['index']
+            this.statements = [...statements, ...this.statements]
+            if (posters && posters.items) {
+              posters.items.forEach(created_at => {
+                this.posters.push({
+                  id: `${relation.id}/posters/${created_at}`,
+                  type: 'posters'
+                })
               })
-            })
-          }
-        }))
+            }
+          })
+        )
       }
     }
   }

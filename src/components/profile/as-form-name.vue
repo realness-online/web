@@ -2,17 +2,21 @@
   <form id="profile-name">
     <fieldset id="name">
       <legend :class="{ valid: is_valid }">Name</legend>
-      <input id="first-name" v-model="first_name"
-             type="text" placeholder="First"
-             @keyup="modified_check">
-      <input id="last-name" v-model="last_name"
-             type="text" placeholder="Last"
-             @keyup="modified_check">
+      <input
+        id="first-name"
+        v-model="first_name"
+        type="text"
+        placeholder="First"
+        @keyup="modified_check" />
+      <input
+        id="last-name"
+        v-model="last_name"
+        type="text"
+        placeholder="Last"
+        @keyup="modified_check" />
     </fieldset>
     <menu>
-      <button ref="button" disabled @click.prevent="valid">
-        Yep, That's my name
-      </button>
+      <button ref="button" disabled @click.prevent="valid">Yep, That's my name</button>
     </menu>
   </form>
 </template>
@@ -25,14 +29,14 @@
       }
     },
     emits: ['valid', 'update:person'],
-    data () {
+    data() {
       return {
         first_name: this.person.first_name,
         last_name: this.person.last_name
       }
     },
     computed: {
-      is_valid () {
+      is_valid() {
         let length = 0
         if (this.person.first_name) length = this.person.first_name.length
         else return false // first name is required
@@ -45,16 +49,16 @@
       }
     },
     watch: {
-      person () {
+      person() {
         this.first_name = this.person.first_name
         this.last_name = this.person.last_name
       }
     },
     methods: {
-      async valid () {
+      async valid() {
         if (this.is_valid) this.$emit('valid')
       },
-      async modified_check () {
+      async modified_check() {
         let modified = false
         if (this.is_valid) this.$refs.button.disabled = false
         else this.$refs.button.disabled = true

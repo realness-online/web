@@ -1,9 +1,14 @@
 <template>
   <figure v-finger:pressMove="press_move">
-    <as-svg :itemid="itemid" :immediate="true" class="as-line-art"
-            :tabindex="-1" :slice="false" :tabable="true" />
+    <as-svg
+      :itemid="itemid"
+      :immediate="true"
+      class="as-line-art"
+      :tabindex="-1"
+      :slice="false"
+      :tabable="true" />
     <figcaption>
-      <input v-model="color" :tabindex="-1" type="color">
+      <input v-model="color" :tabindex="-1" type="color" />
       <as-svg :tabindex="-1" :itemid="itemid" />
     </figcaption>
   </figure>
@@ -23,7 +28,7 @@
     },
     emits: ['pressed'],
     computed: {
-      keymap () {
+      keymap() {
         return {
           down: this.down_stroke,
           up: this.up_stroke,
@@ -33,26 +38,25 @@
       }
     },
     methods: {
-      press_move (event) {
+      press_move(event) {
         this.$emit('pressed')
         if (event.deltaY > 0) this.change_opacity('down', 'stroke', 0.03)
         else this.change_opacity('up', 'stroke', 0.03)
       },
-      up_stroke () {
+      up_stroke() {
         this.change_opacity('up', 'stroke')
       },
-      down_stroke () {
+      down_stroke() {
         this.change_opacity('down', 'stroke')
       },
-      tiny_up_stroke () {
+      tiny_up_stroke() {
         this.change_opacity('up', 'stroke', 0.01)
       },
-      tiny_down_stroke () {
+      tiny_down_stroke() {
         this.change_opacity('down', 'stroke', 0.01)
       }
     }
   }
 </script>
 
-<style lang="stylus">
-</style>
+<style lang="stylus"></style>

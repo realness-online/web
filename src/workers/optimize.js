@@ -22,7 +22,7 @@ const options = {
     { mergePaths: false }
   ]
 }
-export async function listen (message) {
+export async function listen(message) {
   const svgo = new SVGO(options)
   console.log('before', `${to_kb(message.data.vector)}kb`)
   const optimized = await svgo.optimize(message.data.vector)
@@ -31,6 +31,6 @@ export async function listen (message) {
 }
 self.addEventListener('message', listen)
 
-function to_kb (object) {
+function to_kb(object) {
   return (object.length / 1024).toFixed(2)
 }

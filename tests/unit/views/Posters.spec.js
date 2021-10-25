@@ -14,10 +14,12 @@ describe('@/views/Posters.vue', () => {
   let wrapper
   beforeEach(() => {
     poster = get_item(poster_html)
-    events = [{
-      id: new Date(2020, 1, 1).getTime(),
-      poster: poster.id
-    }]
+    events = [
+      {
+        id: new Date(2020, 1, 1).getTime(),
+        poster: poster.id
+      }
+    ]
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
     wrapper = shallowMount(Posters, {
       global: {
@@ -87,7 +89,7 @@ describe('@/views/Posters.vue', () => {
     describe('#get_poster_list', () => {
       it('Adds posters', async () => {
         jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
-            return { items: ['1576588885385'] }
+          return { items: ['1576588885385'] }
         })
         await wrapper.vm.get_poster_list({})
         expect(wrapper.vm.posters.length).toBe(1)

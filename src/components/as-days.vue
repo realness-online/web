@@ -1,10 +1,12 @@
 <template>
   <section class="as-days">
     <header v-if="working"><icon name="working" /></header>
-    <article v-for="[date, day] in filtered_days" v-else
-             :key="date"
-             :class="{today: is_today(date)}"
-             class="day">
+    <article
+      v-for="[date, day] in filtered_days"
+      v-else
+      :key="date"
+      :class="{ today: is_today(date) }"
+      class="day">
       <header v-if="!is_today(date)">
         <h4>{{ as_day(date) }}</h4>
       </header>
@@ -13,11 +15,7 @@
   </section>
 </template>
 <script>
-  import {
-    recent_date_first,
-    earlier_weirdo_first,
-    recent_weirdo_first
-  } from '@/helpers/sorting'
+  import { recent_date_first, earlier_weirdo_first, recent_weirdo_first } from '@/helpers/sorting'
   import { as_author } from '@/helpers/itemid'
   import { id_as_day, as_day, is_today } from '@/helpers/date'
   import { as_thoughts, thoughts_sort } from '@/helpers/thoughts'
@@ -57,7 +55,7 @@
         default: false
       }
     },
-    data () {
+    data() {
       return {
         days: new Map(),
         page: 1,
@@ -65,11 +63,11 @@
       }
     },
     computed: {
-      filtered_days () {
+      filtered_days() {
         if (this.paginate) return [...this.days].slice(0, this.page * page_size)
         else return this.days
       },
-      thoughts () {
+      thoughts() {
         let thoughts = []
         const people = this.statements_by_people(this.statements)
         people.forEach(statements => {
@@ -81,30 +79,30 @@
     },
     watch: {
       statements: {
-        handler () {
+        handler() {
           this.refill_days()
         },
         deep: true
       },
       posters: {
-        handler () {
+        handler() {
           this.refill_days()
         },
         deep: true
       }
     },
-    mounted () {
+    mounted() {
       this.observer = new IntersectionObserver(this.check_intersection, {
         root: null,
         threshold: 0.25
       })
     },
-    updated () {
+    updated() {
       const element = this.$el.querySelector('article.day:last-of-type')
       if (element) this.observer.observe(element)
     },
     methods: {
-      check_intersection (entries) {
+      check_intersection(entries) {
         entries.forEach(async entry => {
           if (entry.isIntersecting) {
             this.observer.unobserve(entry.target)
@@ -113,7 +111,7 @@
           }
         })
       },
-      statements_by_people (statements) {
+      statements_by_people(statements) {
         const people = new Map()
         statements.forEach(item => {
           const author = as_author(item.id)
@@ -124,19 +122,20 @@
         })
         return people
       },
-      refill_days () {
+      refill_days() {
         const days = new Map()
-        days[Symbol.iterator] = function * () {
+        days[Symbol.iterator] = function* () {
           const page = [...this.entries()].sort(recent_date_first)
-          yield * page
+          yield* page
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.posters.forEach(poster => this.insert_into_day(poster, days))
         this.days = days
       },
-      insert_into_day (item, days) {
+      insert_into_day(item, days) {
         let day_name
-        if (item.id) day_name = id_as_day(item.id) // posters
+        if (item.id) day_name = id_as_day(item.id)
+        // posters
         else day_name = id_as_day(item[0].id) // thoughts
         const day = days.get(day_name)
         if (day && is_today(day_name)) {
@@ -147,10 +146,10 @@
           day.sort(earlier_weirdo_first)
         } else days.set(day_name, [item])
       },
-      as_day (date) {
+      as_day(date) {
         return as_day(date)
       },
-      is_today (date) {
+      is_today(date) {
         return is_today(date)
       }
     }

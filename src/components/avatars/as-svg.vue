@@ -31,23 +31,23 @@
     },
     emits: ['vector-loaded'],
     computed: {
-      id () {
+      id() {
         if (this.person.avatar) return as_query_id(this.person.avatar)
         else return null
       },
-      silhouette () {
+      silhouette() {
         if (this.working) return `${icons}#working`
         if (this.person.avatar) return as_fragment(this.person.avatar)
         else return `${icons}#silhouette`
       }
     },
     methods: {
-      first_instance () {
+      first_instance() {
         const element = document.getElementById(this.id)
         if (element) return false
         else return true
       },
-      async show () {
+      async show() {
         if (this.vector) return
         if (this.first_instance() && this.person.avatar) {
           this.vector = await load(this.person.avatar)

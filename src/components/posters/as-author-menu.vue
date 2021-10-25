@@ -36,9 +36,9 @@
         required: true
       }
     },
-    setup (props) {
+    setup(props) {
       const router = use_router()
-      const edit_poster = (itemid) => `/posters/${as_created_at(itemid)}/editor`
+      const edit_poster = itemid => `/posters/${as_created_at(itemid)}/editor`
       const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
 
       use_keypress({
@@ -54,5 +54,4 @@
   }
 </script>
 
-<style lang="stylus">
-</style>
+<style lang="stylus"></style>

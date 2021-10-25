@@ -33,12 +33,12 @@ describe('@/helpers/sorting', () => {
       it('sorts item by recent visit', () => {
         const list = [
           {
-             id: '/+14155556666',
-             visited: '1230847276509'
+            id: '/+14155556666',
+            visited: '1230847276509'
           },
           {
-             id: '/+16282281824',
-             visited: '1630847276509' // more recent
+            id: '/+16282281824',
+            visited: '1630847276509' // more recent
           }
         ]
         list.sort(recent_visit_first)

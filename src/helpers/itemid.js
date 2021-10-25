@@ -6,7 +6,7 @@ import get_item from '@/modules/item'
 import { does_not_exist } from '@/persistance/Cloud.sync'
 import { get, set } from 'idb-keyval'
 // Expensive to call
-export async function load (itemid, me = localStorage.me) {
+export async function load(itemid, me = localStorage.me) {
   let item
   if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
@@ -20,14 +20,16 @@ export async function load (itemid, me = localStorage.me) {
   if (item) return item
   return null
 }
-export async function list (itemid, me = localStorage.me) {
+export async function list(itemid, me = localStorage.me) {
   try {
     const item = await load(itemid, me)
     if (item) return type_as_list(item)
     else return []
-  } catch { return [] }
+  } catch {
+    return []
+  }
 }
-export async function load_from_network (itemid, me = localStorage.me) {
+export async function load_from_network(itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
   if (url) {
     console.info('download', itemid)
@@ -36,7 +38,7 @@ export async function load_from_network (itemid, me = localStorage.me) {
     return get_item(server_text)
   } else return null
 }
-export async function as_directory (itemid) {
+export async function as_directory(itemid) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) return cached
@@ -50,7 +52,7 @@ export async function as_directory (itemid) {
     return meta
   } else return null
 }
-export async function as_download_url (itemid) {
+export async function as_download_url(itemid) {
   if (!firebase.auth().currentUser) return null
   const storage = firebase.storage().ref()
   try {
@@ -70,18 +72,18 @@ export async function as_download_url (itemid) {
 // Cheap to call
 const created_at = ['avatars', 'posters', 'animations']
 const has_history = ['statements', 'events']
-export function is_history (itemid) {
+export function is_history(itemid) {
   const parts = as_path_parts(itemid)
   if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
   return false
 }
-export function as_filename (itemid) {
+export function as_filename(itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
   if (created_at.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
   else return `${filename}/index.html`
 }
-export function as_storage_path (itemid) {
+export function as_storage_path(itemid) {
   const path_parts = as_path_parts(itemid)
   let path = `/${path_parts[0]}`
   if (itemid.startsWith('/+')) path = `/people${path}`
@@ -94,38 +96,38 @@ export function as_storage_path (itemid) {
       return `${path}/${path_parts[1]}`
   }
 }
-export function as_directory_id (itemid) {
+export function as_directory_id(itemid) {
   const parts = as_path_parts(itemid)
   return `/${parts[0]}/${parts[1]}/`
 }
-export function as_path_parts (itemid) {
+export function as_path_parts(itemid) {
   const path = itemid.split('/')
   if (path[0].length === 0) path.shift()
   return path
 }
-export function as_author (itemid) {
+export function as_author(itemid) {
   const path = as_path_parts(itemid)
   const author = path[0] || ''
   if (author.startsWith('+1')) return `/${path[0]}`
   else return null
 }
-export function as_type (itemid) {
+export function as_type(itemid) {
   const path = as_path_parts(itemid)
   if (path[1]) return path[1]
   if (itemid.startsWith('/+')) return 'person'
   else return null
 }
-export function as_created_at (itemid) {
+export function as_created_at(itemid) {
   const path = as_path_parts(itemid)
   return parseInt(path[2])
 }
-export function as_query_id (itemid) {
+export function as_query_id(itemid) {
   return itemid.substring(2).replace('/', '-').replace('/', '-')
 }
-export function as_fragment (itemid) {
+export function as_fragment(itemid) {
   return `#${as_query_id(itemid)}`
 }
-export function type_as_list (item) {
+export function type_as_list(item) {
   // Returns a list even if loading the item fails
   // the microdata spec requires properties values to
   // single value and iterable

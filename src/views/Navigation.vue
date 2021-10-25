@@ -4,22 +4,17 @@
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
       </router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
-        Events
-      </router-link>
-      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
-        Posters
-      </router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
-        Feed
-      </router-link>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1"> Events </router-link>
+      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1"> Posters </router-link>
+      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1"> Feed </router-link>
       <router-link v-if="!posting" to="/phone-book" class="blue" tabindex="-1">
         Relations
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea class="red"
-                             @toggle-keyboard="posting = !posting"
-                             @update:statement="$emit('update:statement', $event)" />
+      <statement-as-textarea
+        class="red"
+        @toggle-keyboard="posting = !posting"
+        @update:statement="$emit('update:statement', $event)" />
     </nav>
     <footer>
       <h6>{{ version }}</h6>
@@ -37,7 +32,7 @@
     },
     mixins: [signed_in],
     emits: ['update:person', 'update:statement'],
-    data () {
+    data() {
       return {
         statements: [],
         version: process.env.VUE_APP_VERSION,
@@ -46,14 +41,14 @@
         first_name: ''
       }
     },
-    async created () {
+    async created() {
       console.info('views:Navigation')
       const my = await load(localStorage.me)
       if (my && my.first_name) this.first_name = my.first_name
       else this.first_name = 'You'
     },
     methods: {
-      done_posting () {
+      done_posting() {
         // focus somewhere else to commit statement
         this.$refs.nav.focus()
       }
@@ -148,5 +143,4 @@
       & > a
         color: white
         right: base-line
-
 </style>

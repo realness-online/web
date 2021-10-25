@@ -21,10 +21,10 @@ describe('@/components/statements/as-div.vue', () => {
     describe('#save', () => {
       it('Saves a statement', async () => {
         wrapper = shallowMount(as_statement, {
-           props: {
-             editable: true,
-             statement: statements.statements[0]
-           }
+          props: {
+            editable: true,
+            statement: statements.statements[0]
+          }
         })
         jest.spyOn(Statements.prototype, 'save').mockImplementation(() => {
           return jest.fn(() => Promise.resolve())
@@ -35,10 +35,10 @@ describe('@/components/statements/as-div.vue', () => {
       })
       it('Doe nothing if the statement is the same', async () => {
         wrapper = shallowMount(as_statement, {
-           props: {
-             editable: true,
-             statement: statements.statements[0]
-           }
+          props: {
+            editable: true,
+            statement: statements.statements[0]
+          }
         })
         jest.spyOn(Statements.prototype, 'save').mockImplementation(() => {
           return jest.fn(() => Promise.resolve())

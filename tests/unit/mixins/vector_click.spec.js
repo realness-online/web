@@ -20,7 +20,7 @@ describe('@/mixins/vector_click', () => {
         expect(wrapper.emitted('vector-click')).toBeTruthy()
       })
     })
-    })
+  })
   describe('Computed', () => {
     let wrapper
     beforeEach(() => {

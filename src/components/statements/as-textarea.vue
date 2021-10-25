@@ -1,26 +1,29 @@
 <template>
-  <textarea id="wat" v-model="new_statement"
-            cols="1" rows="1"
-            placeholder=">"
-            :spellcheck="true"
-            @focusout="prepare_statement"
-            @focusin="focused" />
+  <textarea
+    id="wat"
+    v-model="new_statement"
+    cols="1"
+    rows="1"
+    placeholder=">"
+    :spellcheck="true"
+    @focusout="prepare_statement"
+    @focusin="focused" />
 </template>
 <script>
   const links = ['http://', 'https://']
   export default {
     emits: ['toggle-keyboard', 'update:statement'],
-    data () {
+    data() {
       return {
         new_statement: ''
       }
     },
     methods: {
-      focused () {
+      focused() {
         console.info('display:statement-form')
         this.$emit('toggle-keyboard')
       },
-      prepare_statement () {
+      prepare_statement() {
         this.$emit('toggle-keyboard')
         const statement = {}
         statement.statement = this.new_statement && this.new_statement.trim()

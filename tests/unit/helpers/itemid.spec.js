@@ -68,8 +68,7 @@ describe('@/helpers/itemid', () => {
       expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters/')
     })
     it('Returns /+16282281824/posters for /+/posters/559666932867', () => {
-      expect(as_directory_id('/+16282281824/posters/559666932867'))
-      .toBe('/+16282281824/posters/')
+      expect(as_directory_id('/+16282281824/posters/559666932867')).toBe('/+16282281824/posters/')
     })
   })
   describe('#as_download_url', () => {
@@ -112,16 +111,15 @@ describe('@/helpers/itemid', () => {
       expect(as_storage_path('')).toBe(null)
     })
     it('Gives person for /+14156281828', () => {
-      expect(as_storage_path('/+14156281828'))
-      .toBe('/people/+14156281828')
+      expect(as_storage_path('/+14156281828')).toBe('/people/+14156281828')
     })
     it('Gives avatars for /+14156281828/avatars', () => {
-      expect(as_storage_path('/+14156281828/avatars'))
-      .toBe('/people/+14156281828/avatars')
+      expect(as_storage_path('/+14156281828/avatars')).toBe('/people/+14156281828/avatars')
     })
     it('Gives /people/+14156281828/avatars for /+14156281828/avatars/559666932867', () => {
-      expect(as_storage_path('/+14156281828/avatars/559666932867'))
-      .toBe('/people/+14156281828/avatars')
+      expect(as_storage_path('/+14156281828/avatars/559666932867')).toBe(
+        '/people/+14156281828/avatars'
+      )
     })
   })
   describe('#as_type', () => {
@@ -152,7 +150,7 @@ describe('@/helpers/itemid', () => {
     })
   })
   describe('#load', () => {
-    describe('It\'s someone elses stuff', () => {
+    describe("It's someone elses stuff", () => {
       beforeEach(async () => {
         await load(posterid, '/+14152281824')
       })
@@ -163,7 +161,7 @@ describe('@/helpers/itemid', () => {
         expect(localStorage.getItem).not.toBeCalled()
       })
     })
-    describe('It\'s my stuff', () => {
+    describe("It's my stuff", () => {
       it('It tries local storage first', () => {
         load(posterid, '/+16282281824')
         expect(localStorage.getItem).toHaveBeenCalledTimes(1)
@@ -174,7 +172,7 @@ describe('@/helpers/itemid', () => {
         expect(get).toHaveBeenCalledTimes(1)
       })
     })
-    describe('Can\'t find it locally', () => {
+    describe("Can't find it locally", () => {
       let network_request, poster
       beforeEach(async () => {
         firebase.user = user

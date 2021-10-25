@@ -2,7 +2,8 @@
   <section id="sign-on" class="page">
     <header>
       <profile-as-figure v-if="person" :person="person">
-        <p /> <!-- defeat the default slot -->
+        <p />
+        <!-- defeat the default slot -->
       </profile-as-figure>
       <logo-as-link />
     </header>
@@ -32,7 +33,7 @@
       'name-as-form': name_as_form
     },
     mixins: [signed_on],
-    data () {
+    data() {
       return {
         nameless: false,
         index_db_keys: [],
@@ -40,7 +41,7 @@
       }
     },
     computed: {
-      cleanable () {
+      cleanable() {
         if (this.signed_in) return false
         if (localStorage.me.length > 2) return true
         if (localStorage.length > 2) return true
@@ -48,7 +49,7 @@
         else return false
       }
     },
-    async created () {
+    async created() {
       console.info('views:Sign-on')
       const person = await load(localStorage.me)
       const new_person = {
@@ -61,15 +62,15 @@
       firebase.auth().onAuthStateChanged(this.auth_state)
     },
     methods: {
-      auth_state (user) {
+      auth_state(user) {
         if (user) this.person.mobile = null
       },
-      async signed_on () {
+      async signed_on() {
         const my_profile = await load(localStorage.me)
         if (my_profile) this.$router.push({ path: '/' })
         else this.nameless = true
       },
-      async new_person () {
+      async new_person() {
         this.person.visited = new Date().toISOString()
         this.person.id = localStorage.me
         await this.$nextTick()
@@ -78,7 +79,7 @@
         await this.$nextTick()
         this.$router.push({ path: '/account' })
       },
-      async clean () {
+      async clean() {
         localStorage.clear()
         localStorage.me = '/+'
         await clear()

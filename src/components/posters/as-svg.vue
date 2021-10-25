@@ -1,13 +1,33 @@
 <template>
-  <svg :itemid="itemid" itemscope itemtype="/posters"
-       :viewBox="viewbox" :preserveAspectRatio="aspect_ratio"
-       @focus="focus()" @blur="blur()" @click="vector_click">
+  <svg
+    :itemid="itemid"
+    itemscope
+    itemtype="/posters"
+    :viewBox="viewbox"
+    :preserveAspectRatio="aspect_ratio"
+    @focus="focus()"
+    @blur="blur()"
+    @click="vector_click">
     <defs>
       <symbol :id="background_id"><rect width="100%" height="100%" /></symbol>
-      <symbol v-for="(symbol, index) in path" :id="symbol_id(index)" :key="index" :viewBox="viewbox" v-html="symbol" />
+      <symbol
+        v-for="(symbol, index) in path"
+        :id="symbol_id(index)"
+        :key="index"
+        :viewBox="viewbox"
+        v-html="symbol" />
     </defs>
-    <use class="background" :href="background_fragment" :tabindex="tabable ? 0 : -1" @focus="focus('background')" />
-    <use v-for="(symbol, index) in path" :key="index" :tabindex="tabable ? 0 : -1" :href="symbol_fragment(index)" @focus="focus(index)" />
+    <use
+      class="background"
+      :href="background_fragment"
+      :tabindex="tabable ? 0 : -1"
+      @focus="focus('background')" />
+    <use
+      v-for="(symbol, index) in path"
+      :key="index"
+      :tabindex="tabable ? 0 : -1"
+      :href="symbol_fragment(index)"
+      @focus="focus(index)" />
   </svg>
 </template>
 <script>
@@ -35,19 +55,19 @@
     },
     emits: ['focus', 'vector-loaded'],
     watch: {
-      poster () {
+      poster() {
         if (this.poster) this.vector = this.poster
       }
     },
     methods: {
-      async focus (id) {
+      async focus(id) {
         if (id === 'background') this.$emit('focus', this.background_id)
         else this.$emit('focus', this.symbol_id(id))
       },
-      async blur () {
+      async blur() {
         this.animation = null
       },
-      async show () {
+      async show() {
         if (this.vector) return
         if (this.poster) this.vector = this.poster
         else this.vector = await load(this.itemid)
@@ -83,5 +103,4 @@
         fill:white
         &:focus
           fill:blue
-
 </style>
