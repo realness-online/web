@@ -32,7 +32,7 @@
 </template>
 <script>
   import { del } from 'idb-keyval'
-  import { as_directory, as_created_at } from '@/helpers/itemid'
+  import { as_directory } from '@/helpers/itemid'
   import get_item from '@/modules/item'
   import { recent_item_first } from '@/helpers/sorting'
   import { Poster } from '@/persistance/Storage'
@@ -77,7 +77,6 @@
       }
     },
     async created () {
-      console.time('view:Posters')
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
       await this.get_poster_list()
@@ -87,9 +86,6 @@
       this.optimizer.terminate()
     },
     methods: {
-      edit_poster (itemid) { // The editor is the author
-        return `/posters/${as_created_at(itemid)}/editor`
-      },
       get_id (name) {
         return `${localStorage.me}/posters/${name}`
       },
@@ -108,7 +104,6 @@
         this.posters.sort(recent_item_first)
       },
       vectorize (image) {
-        console.time('vectorize')
         this.working = true
         this.vectorizer.postMessage({ image })
       },
@@ -117,16 +112,12 @@
         this.new_poster.type = 'posters'
         this.new_poster.id = this.as_itemid
         this.working = false
-        console.timeEnd('vectorize')
-        console.info('create:poster', this.new_poster.id)
       },
       optimize (vector) {
-        console.time('optimize')
         this.optimizer.postMessage({ vector })
       },
       optimized (message) {
         this.new_poster = get_item(message.data.vector)
-        console.timeEnd('optimize')
       },
       async save_poster () {
         const id = this.new_poster.id
@@ -190,38 +181,30 @@
         z-index: 4
         @media (min-width: typing-begins)
           visibility: hidden
-        & > svg
-          stroke spin(green, 3deg)
-          stroke-width 10px
     & header
       svg, a
         color: green
         fill: green
     & > article
-      padding-bottom: base-line * 3
       standard-grid: gentle
+      padding-bottom: base-line * 3
       & > figure.poster
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1
-        & > svg.background
-          @media (prefers-color-scheme: dark)
-            fill: green
-        & > figcaption > menu
-          & > a >  svg
-            fill: green
-            stroke: black
-            stroke-width: 1px
-          a.gear
+        & > figcaption > menu > a
+          &.gear
             top: base-line
             right: base-line
-          a.remove
+          &.remove
             bottom: base-line
             left: base-line
-          a.save
+          &.save
             bottom: base-line
             right: base-line
-          a.event
+          &.event
             top: base-line
             left: base-line
+          & > svg
+            fill: green
 </style>
