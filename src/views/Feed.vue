@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" v-hotkey="keymap" class="page">
+  <section id="feed" class="page">
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
@@ -30,13 +30,16 @@
   import 'firebase/auth'
   import { list, as_directory, load } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
-  import fullscreen from '@/mixins/fullscreen'
+
   import intersection_thought from '@/mixins/intersection_thought'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
   import thought_as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
+  import { useKeypress as use_keypress } from 'vue3-keypress'
+  import { useFullscreen as use_fullscreen } from '@vueuse/core'
+  import { ref } from 'vue'
   export default {
     components: {
       'as-days': as_days,
@@ -45,7 +48,20 @@
       'poster-as-figure': poster_as_figure,
       icon
     },
-    mixins: [signed_in, intersection_thought, fullscreen],
+    mixins: [signed_in, intersection_thought],
+    setup () {
+      const { toggle } = use_fullscreen()
+      use_keypress({
+        keyEvent: 'keydown',
+        isActive: ref(true),
+        keyBinds: [
+          { keyCode: 'enter', success: toggle }
+        ]
+      })
+      return {
+        fullscreen: toggle
+      }
+    },
     data () {
       return {
         signed_in: true,
@@ -56,11 +72,6 @@
       }
     },
     computed: {
-      keymap () {
-        return {
-          f: this.fullscreen
-        }
-      },
       show_message () {
         if (this.working) return false
         if (this.statements.length === 0 && this.posters.length === 0) return true

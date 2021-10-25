@@ -1,5 +1,5 @@
 <template>
-  <figure v-hotkey="keymap" v-finger:pressMove="press_move">
+  <figure v-finger:pressMove="press_move">
     <as-svg :itemid="itemid" :immediate="true" class="as-line-art"
             :tabindex="-1" :slice="false" :tabable="true" />
     <figcaption>
