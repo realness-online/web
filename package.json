@@ -220,5 +220,8 @@
     ],
     "testURL": "http://localhost/"
   },
+  "babel": {
+    "presets": ["@vue/cli-plugin-babel/preset"]
+  },
   "license": "UNLICENSED"
 }
