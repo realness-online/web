@@ -15,4 +15,4 @@ export function get_path_attribute(id, type = 'fill') {
   return this.get_path_element(id).getAttribute(`${type}`)
 }
 
-export default get_color
+export default change_color
