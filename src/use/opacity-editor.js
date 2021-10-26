@@ -32,3 +32,5 @@ export function change_opacity(direction = 'more', type = 'fill', resolution = 0
     path.setAttribute(`${type}-opacity`, opacity)
   }
 }
+
+export default change_opacity
