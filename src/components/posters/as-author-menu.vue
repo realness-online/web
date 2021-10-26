@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
   <menu v-else>
     <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
