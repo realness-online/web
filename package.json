@@ -12,7 +12,7 @@
     "deploy": "yarn lint && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "release": "gh release create $npm_package_version && yarn deploy",
     "test": "TZ=UTC vue-cli-service test:unit",
-    "test:e2e:ci": "cypress run --browser chrome --headless",
+    "test:e2e:ci": "cypress run --browser chrome --headless --config-file e2e/cypress.json",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch"
   },
