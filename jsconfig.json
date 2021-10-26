@@ -5,6 +5,8 @@
       "@/*": ["./src/*"],
     }
   },
-  "allowJs": true,
+  "target": "es2020",
+  "checkJs": true,
+  "module": "es6",
   "exclude": ["node_modules", "dist", "artifacts"]
 }
