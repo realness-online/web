@@ -29,7 +29,7 @@
     "object-hash": "^2.1.1",
     "register-service-worker": "^1.7.1",
     "svgo": "^1.3.0",
-    "vue": "^3.1.0-0",
+    "vue": "^3.2.0",
     "vue-router": "^4.0.3",
     "vue3-keypress": "^4.0.1"
   },
@@ -106,11 +106,14 @@
       "camelcase": 0,
       "indent": "off",
       "lines-between-class-members": 0,
-      "space-before-function-paren": ["error", {
-        "anonymous": "always",
-        "named": "never",
-        "asyncArrow": "always"
-      }],
+      "space-before-function-paren": [
+        "error",
+        {
+          "anonymous": "always",
+          "named": "never",
+          "asyncArrow": "always"
+        }
+      ],
       "vue/no-v-html": "off",
       "vue/prop-name-casing": [
         "error",
