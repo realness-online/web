@@ -27,7 +27,7 @@ exports[`@/compontent/profile/as-form-name.vue Renders Profile name form 1`] = `
     <button
       disabled=""
     >
-       Yep, That's my name 
+      Yep, That's my name
     </button>
   </menu>
 </form>
