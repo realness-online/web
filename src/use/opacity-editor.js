@@ -11,7 +11,7 @@ export function fill_less_subtle() {
 export function fill_more_subtle() {
   change_opacity('less', 'fill', 0.01)
 }
-export default function change_opacity(direction = 'more', type = 'fill', resolution = 0.025) {
+export function change_opacity(direction = 'more', type = 'fill', resolution = 0.025) {
   if (!document.activeElement) return
   const id = document.activeElement.getAttribute('href').substring(1)
   const path = get_path_element(id)
