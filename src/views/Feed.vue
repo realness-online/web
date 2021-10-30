@@ -3,7 +3,8 @@
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
-      <a tabindex="-1" class="fullscreen" @click="fullscreen">
+      <icon v-if="is_fullscreen" name="nothing" />
+      <a v-else tabindex="-1" @click="fullscreen">
         <icon name="fullscreen" />
       </a>
     </header>
@@ -24,41 +25,15 @@
     </as-days>
   </section>
 </template>
+
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { list, as_directory, load } from '@/helpers/itemid'
   import signed_in from '@/mixins/signed_in'
-
   import intersection_thought from '@/mixins/intersection_thought'
-  import icon from '@/components/icon'
-  import logo_as_link from '@/components/logo-as-link'
-  import as_days from '@/components/as-days'
-  import thought_as_article from '@/components/statements/as-article'
-  import poster_as_figure from '@/components/posters/as-figure'
-  import { useKeypress as use_keypress } from 'vue3-keypress'
-  import { useFullscreen as use_fullscreen } from '@vueuse/core'
-  import { ref } from 'vue'
   export default {
-    components: {
-      'as-days': as_days,
-      'logo-as-link': logo_as_link,
-      'thought-as-article': thought_as_article,
-      'poster-as-figure': poster_as_figure,
-      icon
-    },
     mixins: [signed_in, intersection_thought],
-    setup() {
-      const { toggle } = use_fullscreen()
-      use_keypress({
-        keyEvent: 'keydown',
-        isActive: ref(true),
-        keyBinds: [{ keyCode: 'enter', success: toggle }]
-      })
-      return {
-        fullscreen: toggle
-      }
-    },
     data() {
       return {
         signed_in: true,
@@ -120,6 +95,24 @@
     }
   }
 </script>
+
+<script setup>
+  import icon from '@/components/icon'
+  import logoAsLink from '@/components/logo-as-link'
+  import asDays from '@/components/as-days'
+  import thoughtAsArticle from '@/components/statements/as-article'
+  import posterAsFigure from '@/components/posters/as-figure'
+
+  import { watch } from 'vue'
+  import { useFullscreen as use_fullscreen, useMagicKeys as use_magic_keys } from '@vueuse/core'
+
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
+  const { f } = use_magic_keys()
+  watch(f, v => {
+    if (v) fullscreen()
+  })
+</script>
+
 <style lang="stylus">
   section#feed
     position: relative
