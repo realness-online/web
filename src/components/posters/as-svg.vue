@@ -1,5 +1,7 @@
 <template>
+  <icon v-if="working" name="working" />
   <svg
+    v-else
     :itemid="itemid"
     itemscope
     itemtype="/posters"
@@ -35,7 +37,11 @@
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import vector from '@/mixins/vector'
+  import icon from '@/components/icon'
   export default {
+    components: {
+      icon
+    },
     mixins: [intersection, vector_click, vector],
     props: {
       tabable: {
@@ -54,6 +60,11 @@
       }
     },
     emits: ['focus', 'vector-loaded'],
+    data() {
+      return {
+        working: true
+      }
+    },
     watch: {
       poster() {
         if (this.poster) this.vector = this.poster
@@ -71,7 +82,7 @@
         if (this.vector) return
         if (this.poster) this.vector = this.poster
         else this.vector = await load(this.itemid)
-
+        this.working = false
         await this.$nextTick()
         this.$emit('vector-loaded', this.vector)
       }
