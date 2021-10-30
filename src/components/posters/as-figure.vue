@@ -135,6 +135,7 @@
         width: 100%
         height: 100%
       &.working
+        min-height: 512px
         margin-top: base-line
         max-width: round(base-line * 6)
     & > figcaption > menu
