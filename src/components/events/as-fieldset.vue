@@ -181,6 +181,4 @@
       z-index: 4
       svg
         fill: green
-        stroke: green
-        stroke-width 1px
 </style>
