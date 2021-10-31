@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" class="page">
+  <section id="feed" ref="feed" class="page">
     <header>
       <logo-as-link tabindex="-1" />
       <h1>Feed</h1>
@@ -103,10 +103,12 @@
   import thoughtAsArticle from '@/components/statements/as-article'
   import posterAsFigure from '@/components/posters/as-figure'
 
-  import { watch } from 'vue'
+  import { watch, ref } from 'vue'
   import { useFullscreen as use_fullscreen, useMagicKeys as use_magic_keys } from '@vueuse/core'
 
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
+  const feed = ref(null)
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen(feed)
+
   const { f } = use_magic_keys()
   watch(f, v => {
     if (v) fullscreen()
