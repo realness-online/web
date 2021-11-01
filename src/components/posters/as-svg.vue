@@ -1,5 +1,5 @@
 <template>
-  <icon v-if="working" name="working" />
+  <icon v-if="working" name="working" tabindex="0" />
   <svg
     v-else
     :itemid="itemid"
@@ -96,7 +96,7 @@
     height: 100%
     width: 100%
     &:focus
-      border:2px solid green
+      border:2px solid red
     & svg:focus
       fill: white
     & > use
