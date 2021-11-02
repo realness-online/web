@@ -6,22 +6,21 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
   id="feed"
 >
   <header>
-    <logo-as-link-stub
+    <anonymous-stub
       tabindex="-1"
     />
     <h1>
       Feed
     </h1>
     <a
-      class="fullscreen"
       tabindex="-1"
     >
-      <icon-stub
+      <anonymous-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <as-days-stub
+  <anonymous-stub
     avatars=""
     events=""
     paginate="true"
@@ -38,22 +37,21 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
   id="feed"
 >
   <header>
-    <logo-as-link-stub
+    <anonymous-stub
       tabindex="-1"
     />
     <h1>
       Feed
     </h1>
     <a
-      class="fullscreen"
       tabindex="-1"
     >
-      <icon-stub
+      <anonymous-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <as-days-stub
+  <anonymous-stub
     avatars=""
     events=""
     paginate="true"
@@ -70,22 +68,21 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
   id="feed"
 >
   <header>
-    <logo-as-link-stub
+    <anonymous-stub
       tabindex="-1"
     />
     <h1>
       Feed
     </h1>
     <a
-      class="fullscreen"
       tabindex="-1"
     >
-      <icon-stub
+      <anonymous-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <as-days-stub
+  <anonymous-stub
     avatars=""
     events=""
     paginate="true"
@@ -102,22 +99,21 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
   id="feed"
 >
   <header>
-    <logo-as-link-stub
+    <anonymous-stub
       tabindex="-1"
     />
     <h1>
       Feed
     </h1>
     <a
-      class="fullscreen"
       tabindex="-1"
     >
-      <icon-stub
+      <anonymous-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <as-days-stub
+  <anonymous-stub
     avatars=""
     events=""
     paginate="true"
