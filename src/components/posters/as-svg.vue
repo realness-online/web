@@ -91,6 +91,7 @@
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
+    aspect-ratio: 16 / 9
     display: block
     min-height: 512px
     height: 100%
@@ -112,6 +113,4 @@
         animation-name: press-hold
       &.background
         fill:white
-        &:focus
-          fill:blue
 </style>
