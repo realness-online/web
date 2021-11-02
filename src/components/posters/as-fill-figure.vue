@@ -99,14 +99,15 @@
       display: flex
       justify-content: space-between
       & > input[type="color"]
-        border: 2px solid green
-        border-radius: base-line
         position: fixed
         z-index: 2
         bottom: inset(bottom)
         right: inset(right, base-line)
         width: base-line * 1.75
         height: base-line * 1.75
+        &::-webkit-color-swatch
+          border: 2px solid green
+          border-radius: 32px
       & > svg
         position:fixed
         z-index: 4
