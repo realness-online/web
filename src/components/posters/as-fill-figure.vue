@@ -105,6 +105,9 @@
         right: inset(right, base-line)
         width: base-line * 1.75
         height: base-line * 1.75
+        &::-moz-color-swatch
+          border: 2px solid green
+          border-radius: 32px
         &::-webkit-color-swatch
           border: 2px solid green
           border-radius: 32px
