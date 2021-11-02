@@ -14,24 +14,11 @@
   </figure>
 </template>
 <script>
-  import as_svg from '@/components/posters/as-svg'
-  import {
-    change_opacity,
-    fill_more,
-    fill_less,
-    fill_more_subtle,
-    fill_less_subtle
-  } from '@/use/opacity-editor'
-
-  import { change_color, get_color } from '@/use/color-editor'
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
-  import { useKeypress as use_keypress } from 'vue3-keypress'
-  import { ref } from 'vue'
+  import { change_opacity } from '@/use/opacity-editor'
+  import { change_color, get_color } from '@/use/color-editor'
   export default {
-    components: {
-      'as-svg': as_svg
-    },
     mixins: [vector, finger],
     props: {
       itemid: {
@@ -40,19 +27,6 @@
       }
     },
     emits: ['pressed'],
-    setup() {
-      const is_active = ref('true')
-      use_keypress({
-        keyEvent: 'keydown',
-        isActive: is_active,
-        keyBinds: [
-          { success: fill_more, keyCode: 'up' },
-          { success: fill_less, keyCode: 'down' },
-          { success: fill_more_subtle, keyCode: 'up', modifiers: ['shiftKey'] },
-          { success: fill_less_subtle, keyCode: 'down', modifiers: ['shiftKey'] }
-        ]
-      })
-    },
     data() {
       return {
         color: '#151518',
@@ -78,6 +52,18 @@
       }
     }
   }
+</script>
+<script setup>
+  import asSvg from '@/components/posters/as-svg'
+  import { fill_more, fill_less, fill_more_subtle, fill_less_subtle } from '@/use/opacity-editor'
+  import { useMagicKeys, whenever } from '@vueuse/core'
+
+  const keys = useMagicKeys()
+
+  whenever(keys.up, fill_more)
+  whenever(keys.up_shift, fill_more_subtle)
+  whenever(keys.down, fill_less)
+  whenever(keys.down_shift, fill_less_subtle)
 </script>
 <style lang="stylus">
   figure#edit-fill
