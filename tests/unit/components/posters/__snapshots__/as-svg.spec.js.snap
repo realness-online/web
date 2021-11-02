@@ -1,61 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
-<svg
-  itemid="/+16282281824/posters/559666932867"
-  itemscope=""
-  itemtype="/posters"
-  preserveAspectRatio="xMidYMid slice"
-  viewBox="0 0 16 16"
->
-  <defs>
-    <symbol
-      id="new-poster"
-    >
-      <rect
-        height="100%"
-        width="100%"
-      />
-    </symbol>
-    
-    
-  </defs>
-  <use
-    class="background"
-    href="#new-poster"
-    tabindex="-1"
-  />
-  
-  
-</svg>
+<icon-stub
+  name="working"
+/>
 `;
 
 exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`] = `
-<svg
-  itemid="/+16282281824/posters/559666932867"
-  itemscope=""
-  itemtype="/posters"
-  preserveAspectRatio="xMidYMid slice"
-  viewBox="0 0 16 16"
->
-  <defs>
-    <symbol
-      id="new-poster"
-    >
-      <rect
-        height="100%"
-        width="100%"
-      />
-    </symbol>
-    
-    
-  </defs>
-  <use
-    class="background"
-    href="#new-poster"
-    tabindex="-1"
-  />
-  
-  
-</svg>
+<icon-stub
+  name="working"
+/>
 `;
