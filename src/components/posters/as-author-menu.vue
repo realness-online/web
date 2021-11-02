@@ -12,46 +12,29 @@
   </menu>
 </template>
 
-<script>
-  import { ref } from 'vue'
-  import { useKeypress as use_keypress } from 'vue3-keypress'
-  import { useRouter as use_router } from 'vue-router'
-
+<script setup>
   import icon from '@/components/icon'
-  import event_as_fieldset from '@/components/events/as-fieldset'
-  import event_as_button from '@/components/events/as-button'
-  import as_download from '@/components/download-vector'
+  import eventAsFieldset from '@/components/events/as-fieldset'
+  import eventAsButton from '@/components/events/as-button'
+  import asDownload from '@/components/download-vector'
+
+  import { useRouter as use_router } from 'vue-router'
+  import { watch } from 'vue'
+  import { useMagicKeys as use_magic_keys } from '@vueuse/core'
   import { as_created_at } from '@/helpers/itemid'
 
-  export default {
-    components: {
-      icon,
-      'event-as-fieldset': event_as_fieldset,
-      'event-as-button': event_as_button,
-      'as-download': as_download
-    },
-    props: {
-      poster: {
-        type: Object,
-        required: true
-      }
-    },
-    setup(props) {
-      const router = use_router()
-      const edit_poster = itemid => `/posters/${as_created_at(itemid)}/editor`
-      const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
-
-      use_keypress({
-        keyEvent: 'keydown',
-        isActive: ref(true),
-        keyBinds: [{ keyCode: 'enter', success: open_editor }]
-      })
-
-      return {
-        edit_poster
-      }
+  const props = defineProps({
+    poster: {
+      type: Object,
+      required: true
     }
-  }
-</script>
+  })
+  const router = use_router()
+  const edit_poster = itemid => `/posters/${as_created_at(itemid)}/editor`
+  const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
 
-<style lang="stylus"></style>
+  const { enter } = use_magic_keys()
+  watch(enter, v => {
+    if (v) open_editor()
+  })
+</script>
