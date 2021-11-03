@@ -57,9 +57,7 @@
   import asSvg from '@/components/posters/as-svg'
   import { fill_more, fill_less, fill_more_subtle, fill_less_subtle } from '@/use/opacity-editor'
   import { useMagicKeys, whenever } from '@vueuse/core'
-
   const keys = useMagicKeys()
-
   whenever(keys.up, fill_more)
   whenever(keys.up_shift, fill_more_subtle)
   whenever(keys.down, fill_less)
@@ -77,11 +75,11 @@
       @media (orientation: landscape) and (max-height: page-width)
         position: relative
     & > figcaption
-      position relative
+      position: relative
       z-index: 0
-      border:none
+      border: none
       padding: 0
-      height:auto
+      height: auto
       display: flex
       justify-content: space-between
       & > input[type="color"]
@@ -93,12 +91,12 @@
         height: base-line * 1.75
         &::-moz-color-swatch
           border: 2px solid green
-          border-radius: 32px
+          border-radius: 16px
         &::-webkit-color-swatch
           border: 2px solid green
-          border-radius: 32px
+          border-radius: 16px
       & > svg
-        position:fixed
+        position: fixed
         z-index: 4
         bottom: base-line * 3
         left: base-line
@@ -106,9 +104,9 @@
         height: base-line * 2
         fill: transparent
         border: black
-        border-radius:2rem
+        border-radius: 2rem
         min-height: auto
         stroke-width: base-line
         stroke-opacity: 1
-        stroke:white
+        stroke: white
 </style>
