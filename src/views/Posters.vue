@@ -46,7 +46,6 @@
   import logo_as_link from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'
-
   export default {
     components: {
       icon,
