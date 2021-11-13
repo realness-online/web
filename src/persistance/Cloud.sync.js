@@ -51,7 +51,7 @@ export async function prune() {
   const everything = await keys()
   everything.forEach(async itemid => {
     if (!as_author(itemid)) return // items have authors
-    if (await is_stranger(as_author(itemid), relations)) await del(itemid)
+    if (await is_stranger(as_author(itemid), relations)) await del(itemid) // only relations are cached
     if (await itemid.endsWith('/')) await del(itemid)
     // is a directory
     else {
