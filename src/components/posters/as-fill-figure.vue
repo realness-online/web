@@ -35,7 +35,7 @@
     },
     watch: {
       color() {
-        change_color(this.focus_id)
+        change_color(this.focus_id, this.color)
       }
     },
     methods: {
