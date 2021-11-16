@@ -75,7 +75,7 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 <style lang="stylus">
   main
-    border: (base-line / 16) solid background-black
+    border: (base-line / 16) solid black-background
     border-radius (base-line / 16)
     &.offline
       border-color: yellow

@@ -43,7 +43,7 @@
     margin-right: round((base-line / 3), 2)
     & > svg
       shape-outside: circle()
-      fill: dark-black
+      fill: black-dark
       width: base-line * 2
       height: base-line * 2
       border-radius: round((base-line * 2), 2)

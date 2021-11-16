@@ -101,7 +101,7 @@
     & svg:focus
       fill: white
     & > use
-      stroke: background-black
+      stroke: black-background
       stroke-width: 1px
       stroke-opacity: 0.5
       outline: none
@@ -111,6 +111,4 @@
         stroke: white
         fill: red
         animation-name: press-hold
-      &.background
-        fill:white
 </style>
