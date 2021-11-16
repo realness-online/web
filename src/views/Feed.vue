@@ -126,7 +126,7 @@
         margin-right: -(base-line)
     &:fullscreen
     &:full-screen
-      background-color: background-black
+      background-color: black-background
       flex-direction: row
       overflow-x: auto
       display: flex;

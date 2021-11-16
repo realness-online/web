@@ -94,7 +94,7 @@
         visibility: hidden
     & > header
       align-items: center
-      background: transparent-black
+      background: black-transparent
       border-radius: 1rem
       z-index: 2
       position: fixed;
@@ -107,7 +107,7 @@
         color: red
         position: relative
         z-index: 2
-        text-shadow: 1px 1px 1px background-black
+        text-shadow: 1px 1px 1px black-background
     & > header > a  > svg
     & > footer > menu > svg
       cursor: pointer
@@ -117,7 +117,7 @@
       &:hover
         fill: red
       &.color > svg.opacity
-        fill: background-black
+        fill: black-background
         &:hover
           fill:transparent
       &.remove
@@ -125,7 +125,7 @@
       &.finished
         fill-opacity: inherit
     & > footer > menu
-      background-color: transparent-black
+      background-color: black-transparent
       position: fixed
       z-index: 2
       bottom: base-line
