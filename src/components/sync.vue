@@ -24,6 +24,7 @@
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
   import {
+    three_minutes,
     one_hour,
     fresh_metadata,
     hash_options,
@@ -31,7 +32,6 @@
     sync_offline_actions
   } from '@/persistance/Cloud.sync'
   import { Statements, Events, Poster, Me } from '@/persistance/Storage'
-
   import { from_e64 } from '@/helpers/profile'
   import { list, load } from '@/helpers/itemid'
   import get_item from '@/modules/item'
@@ -41,7 +41,6 @@
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
   import as_address from '@/components/profile/as-address'
-  const eight_hours = one_hour * 8
   export default {
     components: {
       'as-days': as_days,
@@ -117,19 +116,19 @@
         let synced
         if (localStorage.sync_time) {
           synced = Date.now() - new Date(localStorage.sync_time).getTime()
-        } else synced = eight_hours
-        const time_left = eight_hours - synced
+        } else synced = three_minutes
+        const time_left = three_minutes - synced
         if (time_left <= 0) {
-          this.$emit('active', true)
-          await Promise.all([
-            await prune(),
-            await this.sync_me(),
-            await this.sync_statements(),
-            await this.sync_events(),
-            await this.sync_anonymous_posters(),
+          setTimeout(async () => {
+            this.$emit('active', true)
+            await prune()
+            await this.sync_me()
+            await this.sync_statements()
+            await this.sync_events()
+            await this.sync_anonymous_posters()
             await this.sync_happened()
-          ])
-          this.$emit('active', false)
+            this.$emit('active', false)
+          }, 1000)
         }
       },
       async sync_happened() {
