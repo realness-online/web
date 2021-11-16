@@ -1,4 +1,5 @@
 @require 'mixins'
+
 // https://nice-converter.com/color/hsla-to-rgba
 black             = hsla(300,  1%, 33%, 0.69)
 black-dark        = hsla(300,  1%, 2%, 0.99)
@@ -38,3 +39,36 @@ poster-min-width = round(base-line * 10, 0)
 poster-grid-height = round(base-line * 22, 0)
 
 poster-feed-height = round((page-width), 2)
+
+:root
+  --black: black
+  --black-dark: hsla(300,  1%, 2%, 0.99)
+  --black-background: black-background
+  --black-transparent: black-transparent
+
+  --white: white
+  --white-text: white-text
+  --white-background: white-background
+
+  --blue: blue
+  --green: green
+  --red: red
+  --yellow: yellow
+  --orange: orange
+
+  --base-line: base-line
+
+  --min-modular: min-modular
+  --max-modular: max-modular
+
+  --min-font: min-font
+  --max-font: max-font
+
+  --pad-begins: pad-begins
+  --typing-begins: typing-begins
+  --display-begins: display-begins
+  --page-width: page-width
+
+  --poster-min-width: poster-min-width
+  --poster-grid-height: poster-grid-height
+  --poster-feed-height: poster-feed-height
