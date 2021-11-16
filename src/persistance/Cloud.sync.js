@@ -53,15 +53,11 @@ export async function prune() {
     if (!as_author(itemid)) return // items have authors
     if (await is_stranger(as_author(itemid), relations)) await del(itemid) // only relations are cached
     if (await itemid.endsWith('/')) await del(itemid)
-    // is a directory
     else {
       const network = await fresh_metadata(itemid)
       if (!network || !network.customMetadata) return null
       const md5 = await local_md5(itemid)
-      if (network.customMetadata.md5 !== md5) {
-        console.log('outdated', itemid)
-        await del(itemid)
-      }
+      if (network.customMetadata.md5 !== md5) await del(itemid)
     }
   })
 }
