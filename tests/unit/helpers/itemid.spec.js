@@ -7,6 +7,7 @@ import {
   as_author,
   as_directory,
   as_directory_id,
+  load_directory_from_network,
   as_download_url,
   as_fragment,
   as_filename,
@@ -19,8 +20,7 @@ import {
   type_as_list
 } from '@/helpers/itemid'
 describe('@/helpers/itemid', () => {
-  const fs = require('fs')
-  const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
+  const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
   const posterid = '/+16282281824/posters/559666932867'
   const fetch = require('jest-fetch-mock')
   const user = { phoneNumber: '/+16282281824' }
@@ -60,7 +60,8 @@ describe('@/helpers/itemid', () => {
       jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
       const directory = await as_directory('/+/posters/')
       expect(get).toBeCalled()
-      expect(directory).toBe(null)
+      expect(directory.items.length).toBe(0)
+      expect(directory.types.length).toBe(0)
     })
   })
   describe('#as_directory_id', () => {
@@ -69,6 +70,14 @@ describe('@/helpers/itemid', () => {
     })
     it('Returns /+16282281824/posters for /+/posters/559666932867', () => {
       expect(as_directory_id('/+16282281824/posters/559666932867')).toBe('/+16282281824/posters/')
+    })
+  })
+  describe('#load_directory_from_network', () => {
+    it('Returns an empty directory object', async () => {
+      const itemid = '/+16282281824/statements/1583955101461'
+      const directory = await load_directory_from_network(itemid)
+      expect(directory.items.length).toBe(0)
+      expect(directory.types.length).toBe(0)
     })
   })
   describe('#as_download_url', () => {
@@ -194,7 +203,7 @@ describe('@/helpers/itemid', () => {
     })
   })
   describe('#type_as_list', () => {
-    it('return an empty list when called improperly', () => {
+    it('Return an empty list when called improperly', () => {
       const better_be_array = type_as_list()
       expect(Array.isArray(better_be_array)).toBe(true)
     })
