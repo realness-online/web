@@ -4,7 +4,13 @@ import 'firebase/storage'
 import 'firebase/auth'
 import get_item from '@/modules/item'
 import { does_not_exist } from '@/persistance/Cloud.sync'
-import { get, set } from 'idb-keyval'
+import { get, set, keys } from 'idb-keyval'
+class Directory {
+  constructor() {
+    this.items = []
+    this.types = [] // folders are types in our vocabulary
+  }
+}
 // Expensive to call
 export async function load(itemid, me = localStorage.me) {
   let item
@@ -38,19 +44,27 @@ export async function load_from_network(itemid, me = localStorage.me) {
     return get_item(server_text)
   } else return null
 }
-export async function as_directory(itemid) {
-  const path = as_directory_id(itemid)
-  const cached = await get(path)
-  if (cached) return cached
-  else if (navigator.onLine && firebase.auth().currentUser) {
-    const meta = { items: [], types: [] } // folders are types in our vocabulary
+export async function load_directory_from_network(itemid) {
+  if (navigator.onLine && firebase.auth().currentUser) {
+    const path = as_directory_id(itemid)
+    const meta = new Directory()
     console.info('request:directory', itemid)
     const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
     directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
     directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
     await set(path, meta)
     return meta
-  } else return null
+  }
+}
+export async function as_directory(itemid) {
+  const path = as_directory_id(itemid)
+  const cached = await get(path)
+  if (cached) return cached
+  const directory = await build_local_directory(itemid)
+  setTimeout(() => {
+    load_directory_from_network(itemid)
+  }, 2000) // seperate thread
+  return directory
 }
 export async function as_download_url(itemid) {
   if (!firebase.auth().currentUser) return null
@@ -95,6 +109,17 @@ export function as_storage_path(itemid) {
     default:
       return `${path}/${path_parts[1]}`
   }
+}
+export async function build_local_directory(itemid) {
+  const path = as_directory_id(itemid)
+  const directory = new Directory()
+  const everything = await keys()
+  everything.forEach(itemid => {
+    if (as_directory_id(itemid) === path) {
+      directory.items.push(as_created_at(itemid))
+    }
+  })
+  return directory
 }
 export function as_directory_id(itemid) {
   const parts = as_path_parts(itemid)
