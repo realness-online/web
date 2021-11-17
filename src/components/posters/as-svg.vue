@@ -20,13 +20,15 @@
         v-html="symbol" />
     </defs>
     <use
-      class="background"
+      itemprop="background"
       :href="background_fragment"
       :tabindex="tabable ? 0 : -1"
+      fill="var(--white)"
       @focus="focus('background')" />
     <use
       v-for="(symbol, index) in path"
       :key="index"
+      :itemprop="layers_like_fonts[index]"
       :tabindex="tabable ? 0 : -1"
       :href="symbol_fragment(index)"
       @focus="focus(index)" />
