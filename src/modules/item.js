@@ -54,10 +54,12 @@ export function itemprop_value(element) {
   if (element.hasAttribute('content')) return element.getAttribute('content')
   if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
   switch (element.tagName.toLowerCase()) {
+    case 'script':
+    case 'style':
+      return ''
     case 'a':
     case 'area':
     case 'link':
-    case 'use':
       return element.getAttribute('href')
     case 'audio':
     case 'iframe':
@@ -76,6 +78,7 @@ export function itemprop_value(element) {
     case 'svg':
     case 'path':
     case 'symbol':
+    case 'use':
       return element.outerHTML
     case 'g':
     case 'defs':
