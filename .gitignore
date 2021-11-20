@@ -1,6 +1,5 @@
 .DS_Store
 node_modules
-/dist
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 /tests/unit/coverage/
@@ -16,9 +15,20 @@ node_modules
 /public/sync.worker.js
 /public/sync.worker.js.map
 
+/.editorconfig
+
+/artifacts/
+/dist
 /public/report.html
 .firebase/
 .firebase/hosting*
+firebase-debug.log
+.firebaserc
+
+/.vscode/
+/jsconfig.json
+/tsconfig.json
+
 
 # local env files
 .env.local
@@ -43,8 +53,3 @@ worker_report.html
 *.njsproj
 *.sln
 *.sw*
-firebase-debug.log
-
-.firebaserc
-
-artifacts/
