@@ -49,9 +49,8 @@
 <script setup>
   import { ref } from 'vue'
   import asSvg from '@/components/posters/as-svg'
-  import { fill_opacity } from '@/use/posters/fill'
+  import { fill_opacity } from '@/use/path_style'
   import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
-
   const figure = ref(null)
   const { distanceY } = usePointerSwipe(figure, {
     onSwipe(e) {
@@ -59,7 +58,6 @@
       else fill_opacity('less', 0.03)
     }
   })
-
   const keys = useMagicKeys()
   whenever(keys.up, () => fill_opacity())
   whenever(keys.up_shift, () => fill_opacity('more', 0.01))
