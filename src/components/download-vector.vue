@@ -39,7 +39,8 @@
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
         const facts = `${type}_${time}.svg`
-        if (creator) return `${creator.first_name}_${creator.last_name}_${facts}`
+        if (creator)
+          return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
       }
     }

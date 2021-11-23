@@ -25,7 +25,10 @@ describe('@/mixins/intersection', () => {
         expect(wrapper.vm.check_intersection).toBeDefined()
       })
       it('Checks entries', () => {
-        const intersectings = [{ isIntersecting: true }, { isIntersecting: false }]
+        const intersectings = [
+          { isIntersecting: true },
+          { isIntersecting: false }
+        ]
         const mock = jest.fn()
         wrapper.vm.show = mock
         wrapper.vm.check_intersection(intersectings)

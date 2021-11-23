@@ -14,8 +14,15 @@
     <as-figure v-if="person" :person="person" :relations="relations" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <template v-for="item in items">
-        <poster-as-figure v-if="item.type === 'posters'" :key="slot_key(item)" :itemid="item.id" />
-        <thought-as-article v-else :key="slot_key(item)" :statements="item" @show="thought_shown" />
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :key="slot_key(item)"
+          :itemid="item.id" />
+        <thought-as-article
+          v-else
+          :key="slot_key(item)"
+          :statements="item"
+          @show="thought_shown" />
       </template>
     </as-days>
   </section>

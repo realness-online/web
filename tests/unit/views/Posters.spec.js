@@ -4,7 +4,10 @@ import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
-const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
+const poster_html = require('fs').readFileSync(
+  './tests/unit/html/poster.html',
+  'utf8'
+)
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01')
 let poster
@@ -83,7 +86,9 @@ describe('@/views/Posters.vue', () => {
     describe('#optimized', () => {
       it('Updates new_poster with the optimized vector', async () => {
         await wrapper.vm.optimized({ data: { vector: poster_html } })
-        expect(wrapper.vm.new_poster.id).toBe('/+16282281824/posters/559666932867')
+        expect(wrapper.vm.new_poster.id).toBe(
+          '/+16282281824/posters/559666932867'
+        )
       })
     })
     describe('#get_poster_list', () => {

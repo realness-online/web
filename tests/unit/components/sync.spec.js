@@ -9,9 +9,15 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 const fs = require('fs')
-const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements_html = fs.readFileSync(
+  './tests/unit/html/statements.html',
+  'utf8'
+)
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
-const offline_poster = fs.readFileSync('./tests/unit/html/poster-offline.html', 'utf8')
+const offline_poster = fs.readFileSync(
+  './tests/unit/html/poster-offline.html',
+  'utf8'
+)
 const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
@@ -42,10 +48,18 @@ describe('@/components/sync', () => {
       visited: '2020-03-03T17:37:22.943Z'
     }
     localStorage.me = `/${current_user.phoneNumber}`
-    jest.spyOn(Statements.prototype, 'sync').mockImplementation(() => Promise.resolve(statements))
-    jest.spyOn(Statements.prototype, 'save').mockImplementation(() => Promise.resolve())
-    jest.spyOn(Events.prototype, 'sync').mockImplementation(() => Promise.resolve(events))
-    jest.spyOn(Events.prototype, 'save').mockImplementation(() => Promise.resolve())
+    jest
+      .spyOn(Statements.prototype, 'sync')
+      .mockImplementation(() => Promise.resolve(statements))
+    jest
+      .spyOn(Statements.prototype, 'save')
+      .mockImplementation(() => Promise.resolve())
+    jest
+      .spyOn(Events.prototype, 'sync')
+      .mockImplementation(() => Promise.resolve(events))
+    jest
+      .spyOn(Events.prototype, 'save')
+      .mockImplementation(() => Promise.resolve())
     set.mockImplementation(() => Promise.resolve(null))
     wrapper = await shallowMount(sync, fake_props)
   })
@@ -102,7 +116,9 @@ describe('@/components/sync', () => {
     describe('#visibility_change', () => {
       it('plays the sync when visible', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        const play = jest.spyOn(wrapper.vm, 'play').mockImplementation(() => Promise.resolve())
+        const play = jest
+          .spyOn(wrapper.vm, 'play')
+          .mockImplementation(() => Promise.resolve())
         await wrapper.vm.visibility_change()
         expect(play).toBeCalled()
       })
@@ -123,7 +139,9 @@ describe('@/components/sync', () => {
     describe('#auth_state_changed', () => {
       it('Connects sync worker to component', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        const play = jest.spyOn(wrapper.vm, 'play').mockImplementation(() => Promise.resolve())
+        const play = jest
+          .spyOn(wrapper.vm, 'play')
+          .mockImplementation(() => Promise.resolve())
         await wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
         expect(play).toBeCalled()
       })
@@ -147,7 +165,9 @@ describe('@/components/sync', () => {
         sync_offline_actions_sync = jest
           .spyOn(sync_worker, 'sync_offline_actions')
           .mockImplementation(() => Promise.resolve())
-        sync_me = jest.spyOn(wrapper.vm, 'sync_me').mockImplementation(() => Promise.resolve())
+        sync_me = jest
+          .spyOn(wrapper.vm, 'sync_me')
+          .mockImplementation(() => Promise.resolve())
         sync_statements = jest
           .spyOn(wrapper.vm, 'sync_statements')
           .mockImplementation(() => Promise.resolve())
@@ -215,7 +235,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_statements', () => {
       it('Syncs when there are items to sync', async () => {
-        jest.spyOn(Statements.prototype, 'sync').mockImplementationOnce(() => Promise.resolve([]))
+        jest
+          .spyOn(Statements.prototype, 'sync')
+          .mockImplementationOnce(() => Promise.resolve([]))
         jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
           Promise.resolve({
             customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
@@ -272,7 +294,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_events', () => {
       it('Syncs when there are items to sync', async () => {
-        jest.spyOn(Events.prototype, 'sync').mockImplementationOnce(() => Promise.resolve([]))
+        jest
+          .spyOn(Events.prototype, 'sync')
+          .mockImplementationOnce(() => Promise.resolve([]))
         jest.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
           Promise.resolve({
             customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
@@ -341,7 +365,8 @@ describe('@/components/sync', () => {
         }
         get.mockImplementation(itemid => {
           if (itemid === '/+/posters/') return Promise.resolve(posters)
-          else if (itemid === '/+/posters/559666932867') return Promise.resolve(offline_poster)
+          else if (itemid === '/+/posters/559666932867')
+            return Promise.resolve(offline_poster)
           else return Promise.resolve([])
         })
         await flushPromises()
@@ -357,7 +382,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_happened', () => {
       it('Updates visit', async () => {
-        jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
+        jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()
@@ -367,7 +394,9 @@ describe('@/components/sync', () => {
       })
       it('Updates visit for the first time', async () => {
         person.visited = undefined
-        jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
+        jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()
@@ -377,7 +406,9 @@ describe('@/components/sync', () => {
       })
       it('Updates the visit once per hour', async () => {
         person.visited = new Date().toISOString()
-        jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
+        jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()

@@ -20,7 +20,10 @@ import {
   type_as_list
 } from '@/helpers/itemid'
 describe('@/helpers/itemid', () => {
-  const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
+  const poster_html = require('fs').readFileSync(
+    './tests/unit/html/poster.html',
+    'utf8'
+  )
   const posterid = '/+16282281824/posters/559666932867'
   const fetch = require('jest-fetch-mock')
   const user = { phoneNumber: '/+16282281824' }
@@ -44,7 +47,9 @@ describe('@/helpers/itemid', () => {
       expect(as_directory).toBeDefined()
     })
     it('Returns a directory when offline', async () => {
-      const mock_get = get.mockImplementationOnce(() => Promise.resolve({ items: ['1555347888'] }))
+      const mock_get = get.mockImplementationOnce(() =>
+        Promise.resolve({ items: ['1555347888'] })
+      )
       await as_directory('/+/posters/')
       expect(mock_get).toBeCalled()
     })
@@ -69,7 +74,9 @@ describe('@/helpers/itemid', () => {
       expect(as_directory_id('/+/posters/559666932867')).toBe('/+/posters/')
     })
     it('Returns /+16282281824/posters for /+/posters/559666932867', () => {
-      expect(as_directory_id('/+16282281824/posters/559666932867')).toBe('/+16282281824/posters/')
+      expect(as_directory_id('/+16282281824/posters/559666932867')).toBe(
+        '/+16282281824/posters/'
+      )
     })
   })
   describe('#load_directory_from_network', () => {
@@ -97,7 +104,9 @@ describe('@/helpers/itemid', () => {
   })
   describe('#as_filename', () => {
     it('Returns /people/+16282281824/index.html for /+16282281824', () => {
-      expect(as_filename('/+16282281824')).toBe('/people/+16282281824/index.html')
+      expect(as_filename('/+16282281824')).toBe(
+        '/people/+16282281824/index.html'
+      )
     })
     it('Returns /activity/index.html for /activity', () => {
       expect(as_filename('/activity')).toBe('/activity/index.html')
@@ -123,7 +132,9 @@ describe('@/helpers/itemid', () => {
       expect(as_storage_path('/+14156281828')).toBe('/people/+14156281828')
     })
     it('Gives avatars for /+14156281828/avatars', () => {
-      expect(as_storage_path('/+14156281828/avatars')).toBe('/people/+14156281828/avatars')
+      expect(as_storage_path('/+14156281828/avatars')).toBe(
+        '/people/+14156281828/avatars'
+      )
     })
     it('Gives /people/+14156281828/avatars for /+14156281828/avatars/559666932867', () => {
       expect(as_storage_path('/+14156281828/avatars/559666932867')).toBe(

@@ -3,7 +3,10 @@ import as_form from '@/components/avatars/as-form'
 import { Avatar } from '@/persistance/Storage'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
+const avatar_html = require('fs').readFileSync(
+  './tests/unit/html/avatar.html',
+  'utf8'
+)
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -116,7 +119,9 @@ describe('@/components/avatars/as-form.vue', () => {
       it('Sets current_avatar to new vector', () => {
         expect(wrapper.vm.current_avatar).toBe(null)
         wrapper.vm.vectorized(message)
-        expect(wrapper.vm.current_avatar.id).toBe('/+14151234356/avatars/1577836800000')
+        expect(wrapper.vm.current_avatar.id).toBe(
+          '/+14151234356/avatars/1577836800000'
+        )
       })
       it('Sets working to false', () => {
         wrapper.vm.working = true
@@ -137,7 +142,9 @@ describe('@/components/avatars/as-form.vue', () => {
       })
       it('Sets current_avatar with an optimized vector', () => {
         wrapper.vm.optimized(message)
-        expect(wrapper.vm.current_avatar.id).toBe('/+16282281824/avatars/55446694324')
+        expect(wrapper.vm.current_avatar.id).toBe(
+          '/+16282281824/avatars/55446694324'
+        )
       })
     })
     describe('#open_camera', () => {

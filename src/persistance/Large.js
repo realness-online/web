@@ -10,7 +10,8 @@ const Large = superclass =>
       if (!exist) {
         const path = as_directory_id(this.id)
         let directory = await get(path)
-        if (directory && directory.items) directory.items.push(as_path_parts(this.id)[2])
+        if (directory && directory.items)
+          directory.items.push(as_path_parts(this.id)[2])
         else directory = { items: [as_path_parts(this.id)[2]] }
         if (items) {
           await set(path, directory)
@@ -21,7 +22,9 @@ const Large = superclass =>
     async delete() {
       const path = as_directory_id(this.id)
       const directory = await get(path)
-      directory.items = directory.items.filter(id => parseInt(id) !== as_created_at(this.id))
+      directory.items = directory.items.filter(
+        id => parseInt(id) !== as_created_at(this.id)
+      )
       await del(this.id)
       await set(path, directory)
       if (super.delete) await super.delete()

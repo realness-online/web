@@ -3,9 +3,17 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { Offline } from '@/persistance/Storage'
-import { prune, sync_offline_actions, sync_later, visit_interval } from '@/persistance/Cloud.sync'
+import {
+  prune,
+  sync_offline_actions,
+  sync_later,
+  visit_interval
+} from '@/persistance/Cloud.sync'
 import * as itemid from '@/helpers/itemid'
-const person_html = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
+const person_html = require('fs').readFileSync(
+  './tests/unit/html/person.html',
+  'utf8'
+)
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
 const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
@@ -38,7 +46,9 @@ describe('/persistance/Cloud.js', () => {
         firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'save')
         get.mockImplementation(() =>
-          Promise.resolve([{ action: 'save', id: '/+6282281824/posters/1555347888' }])
+          Promise.resolve([
+            { action: 'save', id: '/+6282281824/posters/1555347888' }
+          ])
         )
         await sync_offline_actions()
         expect(get).toBeCalled()
@@ -49,7 +59,9 @@ describe('/persistance/Cloud.js', () => {
         firebase.user = user
         const spy = jest.spyOn(Offline.prototype, 'delete')
         get.mockImplementation(() =>
-          Promise.resolve([{ action: 'delete', id: '/+6282281824/posters/1555347888' }])
+          Promise.resolve([
+            { action: 'delete', id: '/+6282281824/posters/1555347888' }
+          ])
         )
         await sync_offline_actions()
         expect(get).toBeCalled()
@@ -59,7 +71,9 @@ describe('/persistance/Cloud.js', () => {
       it('Logs info when an action is unclear', async () => {
         firebase.user = user
         get.mockImplementation(() =>
-          Promise.resolve([{ action: 'weirdo', id: '/+6282281824/posters/1555347888' }])
+          Promise.resolve([
+            { action: 'weirdo', id: '/+6282281824/posters/1555347888' }
+          ])
         )
         await sync_offline_actions()
         expect(console.info).toBeCalled()
@@ -72,15 +86,21 @@ describe('/persistance/Cloud.js', () => {
       beforeEach(async () => {
         relations = [{ id }]
         firebase.user = user
-        keys.mockImplementation(() => Promise.resolve([id, 'random:key', '/+16781435566']))
+        keys.mockImplementation(() =>
+          Promise.resolve([id, 'random:key', '/+16781435566'])
+        )
         const meta = {
           updated: new Date().toISOString(),
           customMetadata: { md5: local_diferent_network }
         }
         const index = {}
         index[id] = meta
-        firebase.storage_mock.getMetadata.mockImplementation(() => Promise.resolve(meta))
-        list_spy = jest.spyOn(itemid, 'list').mockImplementation(() => relations)
+        firebase.storage_mock.getMetadata.mockImplementation(() =>
+          Promise.resolve(meta)
+        )
+        list_spy = jest
+          .spyOn(itemid, 'list')
+          .mockImplementation(() => relations)
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
           if (query === id) return Promise.resolve(person_html)
@@ -119,7 +139,9 @@ describe('/persistance/Cloud.js', () => {
         const bad_meta = {
           updated: new Date().toISOString()
         }
-        firebase.storage_mock.getMetadata.mockImplementation(() => Promise.resolve(bad_meta))
+        firebase.storage_mock.getMetadata.mockImplementation(() =>
+          Promise.resolve(bad_meta)
+        )
         await prune()
         expect(del).not.toBeCalled()
       })
@@ -156,6 +178,8 @@ describe('/persistance/Cloud.js', () => {
     it.todo('Shares updates with peers')
     it.todo('User can choose to share activity with peer network')
     it.todo('User can choose to share relations with peer network')
-    it.todo('User can share relations with their other devises for a few minutes')
+    it.todo(
+      'User can share relations with their other devises for a few minutes'
+    )
   })
 })

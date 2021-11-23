@@ -5,7 +5,10 @@ import get_item from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import flushPromises from 'flush-promises'
 import Feed from '@/views/Feed'
-const statements_html = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements_html = require('fs').readFileSync(
+  './tests/unit/html/statements.html',
+  'utf8'
+)
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

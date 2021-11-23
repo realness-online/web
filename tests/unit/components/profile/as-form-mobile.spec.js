@@ -121,7 +121,9 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
       })
       it('Disabled with invalid mobile number', async () => {
         const invalid_person = { mobile: '415123456a' }
-        wrapper = await shallowMount(as_form, { props: { person: invalid_person } })
+        wrapper = await shallowMount(as_form, {
+          props: { person: invalid_person }
+        })
         await flushPromises()
         button = wrapper.find('#authorize')
         expect(wrapper.vm.disabled_sign_in).toBe(true)

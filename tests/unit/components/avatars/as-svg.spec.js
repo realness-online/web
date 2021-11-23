@@ -7,7 +7,10 @@ const person = {
   id: '/+16282281824',
   avatar: '/+16282281824/avatars/55446694324'
 }
-const avatar_html = require('fs').readFileSync('./tests/unit/html/avatar.html', 'utf8')
+const avatar_html = require('fs').readFileSync(
+  './tests/unit/html/avatar.html',
+  'utf8'
+)
 const avatar = get_item(avatar_html)
 
 describe('@/components/avatars/as-svg.vue', () => {
@@ -53,7 +56,9 @@ describe('@/components/avatars/as-svg.vue', () => {
       })
       it('Returns false when it finds itself already rendered', async () => {
         const element = {}
-        jest.spyOn(document, 'getElementById').mockImplementationOnce(() => element)
+        jest
+          .spyOn(document, 'getElementById')
+          .mockImplementationOnce(() => element)
         expect(wrapper.vm.first_instance()).toBe(false)
       })
     })
@@ -72,7 +77,9 @@ describe('@/components/avatars/as-svg.vue', () => {
       })
       it('Checks for the vector elsewhere', async () => {
         const element = {}
-        jest.spyOn(document, 'getElementById').mockImplementationOnce(() => element)
+        jest
+          .spyOn(document, 'getElementById')
+          .mockImplementationOnce(() => element)
         await wrapper.vm.show()
         expect(wrapper.emitted('vector-loaded')).not.toBeTruthy()
       })

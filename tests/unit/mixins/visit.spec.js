@@ -37,7 +37,9 @@ describe('@/mixins/visit', () => {
         expect(wrapper.emitted('update:person')).toBeTruthy()
       })
       it('Does nothing unless there is a person', async () => {
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+        const load_spy = jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.update_visit()
         await flushPromises()
         expect(load_spy).toBeCalled()

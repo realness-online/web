@@ -16,7 +16,9 @@
         @keyup="modified_check" />
     </fieldset>
     <menu>
-      <button ref="button" disabled @click.prevent="valid">Yep, That's my name</button>
+      <button ref="button" disabled @click.prevent="valid">
+        Yep, That's my name
+      </button>
     </menu>
   </form>
 </template>

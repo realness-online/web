@@ -3,12 +3,17 @@ import flushPromises from 'flush-promises'
 import as_statement from '@/components/statements/as-div'
 import get_item from '@/modules/item'
 import { Statements } from '@/persistance/Storage'
-const statements_as_html = require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements_as_html = require('fs').readFileSync(
+  './tests/unit/html/statements.html',
+  'utf8'
+)
 describe('@/components/statements/as-div.vue', () => {
   let wrapper
   const statements = get_item(statements_as_html)
   beforeEach(() => {
-    wrapper = shallowMount(as_statement, { props: { statement: statements.statements[0] } })
+    wrapper = shallowMount(as_statement, {
+      props: { statement: statements.statements[0] }
+    })
   })
   describe('Renders', () => {
     it('A statement', async () => {

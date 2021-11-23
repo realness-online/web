@@ -1,7 +1,10 @@
 import Storage from '@/persistance/Storage'
 import Local from '@/persistance/Local'
 const fs = require('fs')
-const preferences = fs.readFileSync('./tests/unit/html/preferences.html', 'utf8')
+const preferences = fs.readFileSync(
+  './tests/unit/html/preferences.html',
+  'utf8'
+)
 describe('@/persistance/Local.js', () => {
   class Preferences extends Local(Storage) {}
   let local

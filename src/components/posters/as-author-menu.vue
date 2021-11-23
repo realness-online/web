@@ -1,5 +1,8 @@
 <template>
-  <event-as-fieldset v-if="poster.picker" :itemid="poster.id" @picker="picker(poster.id)" />
+  <event-as-fieldset
+    v-if="poster.picker"
+    :itemid="poster.id"
+    @picker="picker(poster.id)" />
   <menu v-else>
     <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
     <router-link class="gear" :to="edit_poster(poster.id)">
@@ -31,7 +34,8 @@
   })
   const router = use_router()
   const edit_poster = itemid => `/posters/${as_created_at(itemid)}/editor`
-  const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
+  const open_editor = () =>
+    router.replace({ path: edit_poster(props.poster.id) })
 
   const { enter } = use_magic_keys()
   watch(enter, v => {

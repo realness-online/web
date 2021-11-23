@@ -5,7 +5,11 @@
       <icon v-else name="nothing" />
       <h1>Posters</h1>
       <a v-if="add" id="camera" @click="open_camera"><icon name="camera" /></a>
-      <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" />
+      <input
+        ref="uploader"
+        v-uploader
+        type="file"
+        accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
     <icon v-if="working" name="working" />
@@ -19,7 +23,7 @@
         @loaded="optimize">
         <menu>
           <a class="remove" @click="cancel_poster"><icon name="remove" /></a>
-          <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished" /></a>
+          <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished"/></a>
         </menu>
       </as-figure>
       <as-figure
@@ -71,7 +75,8 @@
         else return `${localStorage.me}/posters/${Date.now()}`
       },
       friendly() {
-        if (this.posters.length === 0 && !this.working && !this.new_poster) return true
+        if (this.posters.length === 0 && !this.working && !this.new_poster)
+          return true
         else return false
       },
       add() {

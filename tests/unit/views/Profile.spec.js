@@ -4,7 +4,10 @@ import 'firebase/auth'
 import Profile from '@/views/Profile'
 import flushPromises from 'flush-promises'
 import * as itemid from '@/helpers/itemid'
-const person = require('fs').readFileSync('./tests/unit/html/person.html', 'utf8')
+const person = require('fs').readFileSync(
+  './tests/unit/html/person.html',
+  'utf8'
+)
 const fetch = require('jest-fetch-mock')
 const user = { phoneNumber: '/+16282281824' }
 

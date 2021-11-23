@@ -6,12 +6,22 @@ import { get, set } from 'idb-keyval'
 import get_item, { hydrate } from '@/modules/item'
 import * as itemid from '@/helpers/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
-import { itemid_as_kilobytes, elements_as_kilobytes, is_fat } from '@/persistance/Paged'
+import {
+  itemid_as_kilobytes,
+  elements_as_kilobytes,
+  is_fat
+} from '@/persistance/Paged'
 
 const fs = require('fs')
 const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
-const hella_statements = fs.readFileSync('./tests/unit/html/statements-hella.html', 'utf8')
-const offline_statements = fs.readFileSync('./tests/unit/html/statements-offline.html', 'utf8')
+const hella_statements = fs.readFileSync(
+  './tests/unit/html/statements-hella.html',
+  'utf8'
+)
+const offline_statements = fs.readFileSync(
+  './tests/unit/html/statements-offline.html',
+  'utf8'
+)
 const user = { phoneNumber: '/+16282281824' }
 
 describe('@/persistance/Paged.js', () => {
@@ -38,7 +48,9 @@ describe('@/persistance/Paged.js', () => {
           .mockImplementation(() => Promise.resolve(get_item(statements)))
         local_spy = jest
           .spyOn(itemid, 'list')
-          .mockImplementation(() => Promise.resolve(get_item(hella_statements).statements))
+          .mockImplementation(() =>
+            Promise.resolve(get_item(hella_statements).statements)
+          )
         localStorage.setItem('/+/statements', offline_statements)
       })
       it('Exists', () => {
@@ -71,7 +83,9 @@ describe('@/persistance/Paged.js', () => {
       })
       it('Syncs if there are no server items', async () => {
         firebase.user = user
-        cloud_spy = jest.spyOn(itemid, 'load_from_network').mockImplementationOnce(() => null)
+        cloud_spy = jest
+          .spyOn(itemid, 'load_from_network')
+          .mockImplementationOnce(() => null)
         const list = await paged.sync()
         expect(cloud_spy).toBeCalled()
         expect(local_spy).toBeCalled()
@@ -80,7 +94,9 @@ describe('@/persistance/Paged.js', () => {
       it('Syncs if there are no local items', async () => {
         firebase.user = user
         itemid.list.mockReset()
-        local_spy = jest.spyOn(itemid, 'list').mockImplementationOnce(() => Promise.resolve([]))
+        local_spy = jest
+          .spyOn(itemid, 'list')
+          .mockImplementationOnce(() => Promise.resolve([]))
         const list = await paged.sync()
         expect(cloud_spy).toBeCalled()
         expect(local_spy).toBeCalled()

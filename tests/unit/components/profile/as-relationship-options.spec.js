@@ -20,7 +20,9 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
     last_name: 'Fryxell'
   }
   beforeEach(() => {
-    wrapper = shallowMount(as_options, { props: { person: me, me: me, relations } })
+    wrapper = shallowMount(as_options, {
+      props: { person: me, me: me, relations }
+    })
   })
   describe('Renders', () => {
     it('A list of options for this profile', () => {
@@ -35,7 +37,9 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
       })
       it('Return false if profile is not a relationship', () => {
         me.id = '/+14156661266'
-        wrapper = shallowMount(as_options, { props: { person: me, me, relations } })
+        wrapper = shallowMount(as_options, {
+          props: { person: me, me, relations }
+        })
         wrapper.vm.is_relation()
         expect(wrapper.vm.relation).toBe(false)
       })

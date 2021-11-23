@@ -21,7 +21,11 @@
     </b>
     <h3 v-else itemprop="last_name">{{ person.last_name }}</h3>
     <slot />
-    <link :key="person.avatar" itemprop="avatar" rel="icon" :href="person.avatar" />
+    <link
+      :key="person.avatar"
+      itemprop="avatar"
+      rel="icon"
+      :href="person.avatar" />
     <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile" />
     <meta v-if="person.visited" itemprop="visited" :content="person.visited" />
   </address>

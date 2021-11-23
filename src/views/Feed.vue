@@ -8,7 +8,11 @@
         <icon name="fullscreen" />
       </a>
     </header>
-    <as-days v-slot="items" :working="working" :posters="posters" :statements="statements">
+    <as-days
+      v-slot="items"
+      :working="working"
+      :posters="posters"
+      :statements="statements">
       <template v-for="item in items">
         <poster-as-figure
           v-if="item.type === 'posters'"
@@ -46,7 +50,8 @@
     computed: {
       show_message() {
         if (this.working) return false
-        if (this.statements.length === 0 && this.posters.length === 0) return true
+        if (this.statements.length === 0 && this.posters.length === 0)
+          return true
         return false
       }
     },
@@ -104,10 +109,14 @@
   import posterAsFigure from '@/components/posters/as-figure'
 
   import { watch, ref } from 'vue'
-  import { useFullscreen as use_fullscreen, useMagicKeys as use_magic_keys } from '@vueuse/core'
+  import {
+    useFullscreen as use_fullscreen,
+    useMagicKeys as use_magic_keys
+  } from '@vueuse/core'
 
   const feed = ref(null)
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen(feed)
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } =
+    use_fullscreen(feed)
 
   const { f } = use_magic_keys()
   watch(f, v => {
