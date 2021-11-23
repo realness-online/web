@@ -17,8 +17,12 @@ describe('@/views/Account.vue', () => {
   beforeEach(() => {
     firebase.user = user
     localStorage.me = '/+16282281824'
-    load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(me))
-    list_spy = jest.spyOn(itemid, 'list').mockImplementation(() => Promise.resolve([]))
+    load_spy = jest
+      .spyOn(itemid, 'load')
+      .mockImplementation(() => Promise.resolve(me))
+    list_spy = jest
+      .spyOn(itemid, 'list')
+      .mockImplementation(() => Promise.resolve([]))
     wrapper = shallowMount(Account)
   })
   afterEach(() => {
@@ -140,7 +144,9 @@ describe('@/views/Account.vue', () => {
     })
     describe('#get_all_my_stuff', () => {
       it('Handles empty person', () => {
-        load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+        load_spy = jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(null))
         wrapper.vm.get_all_my_stuff()
         expect(load_spy).toBeCalled()
       })

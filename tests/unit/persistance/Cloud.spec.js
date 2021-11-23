@@ -7,7 +7,10 @@ import 'firebase/storage'
 import { get } from 'idb-keyval'
 import flushPromises from 'flush-promises'
 const statements = {
-  outerHTML: require('fs').readFileSync('./tests/unit/html/statements.html', 'utf8')
+  outerHTML: require('fs').readFileSync(
+    './tests/unit/html/statements.html',
+    'utf8'
+  )
 }
 const user = { phoneNumber: '/+16282281824' }
 describe('@/persistance/Cloud.js', () => {

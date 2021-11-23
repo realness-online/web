@@ -16,7 +16,10 @@
           </g>
         </svg>
       </figure>
-      <avatar-as-svg v-else :person="person" @vector-loaded="set_current_avatar" />
+      <avatar-as-svg
+        v-else
+        :person="person"
+        @vector-loaded="set_current_avatar" />
     </template>
     <menu v-if="show_menu">
       <a v-if="!avatar_changed" id="open_camera" @click="open_selfie_camera">
@@ -31,7 +34,12 @@
       </a>
       <as-download v-if="download_vector" :itemid="current_avatar.id" />
     </menu>
-    <input ref="uploader" v-uploader type="file" accept="image/jpeg,image/png" capture="user" />
+    <input
+      ref="uploader"
+      v-uploader
+      type="file"
+      accept="image/jpeg,image/png"
+      capture="user" />
   </div>
 </template>
 <script>
@@ -82,14 +90,17 @@
       async working() {
         if (this.vector && !this.working) {
           await this.$nextTick()
-          this.optimizer.postMessage({ vector: this.$refs.new_avatar.outerHTML })
+          this.optimizer.postMessage({
+            vector: this.$refs.new_avatar.outerHTML
+          })
         }
       }
     },
     async created() {
       this.vectorizer.addEventListener('message', this.vectorized)
       this.optimizer.addEventListener('message', this.optimized)
-      if (this.person.avatar) this.current_avatar = await load(this.person.avatar)
+      if (this.person.avatar)
+        this.current_avatar = await load(this.person.avatar)
     },
     unmounted() {
       this.vectorizer.terminate()

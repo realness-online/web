@@ -21,7 +21,9 @@ export default {
         if (!directory) return
         let history = directory.items
         history.sort(recent_number_first)
-        history = history.filter(page => !author.viewed.some(viewed => viewed === page))
+        history = history.filter(
+          page => !author.viewed.some(viewed => viewed === page)
+        )
         const next = history.shift()
         if (next) {
           const next_statements = await list(`${author.id}/statements/${next}`)

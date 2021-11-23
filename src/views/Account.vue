@@ -5,7 +5,9 @@
       <logo-as-link />
     </header>
     <address v-if="signed_in && !working">
-      <avatar-as-form v-model:person="person" @update:person="$emit('update:person', $event)" />
+      <avatar-as-form
+        v-model:person="person"
+        @update:person="$emit('update:person', $event)" />
       <profile-as-figure
         v-model:person="person"
         :editable="true"
@@ -35,7 +37,10 @@
         @blurred="thought_blurred" />
     </as-days>
     <footer v-if="statements.length === 0 && !working" class="message">
-      <p>Say some stuff via the <button @click="home" /> button on the homepage <br /></p>
+      <p>
+        Say some stuff via the <button @click="home" /> button on the homepage
+        <br />
+      </p>
     </footer>
   </section>
 </template>

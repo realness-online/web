@@ -4,7 +4,12 @@ import { recent_item_first } from '@/helpers/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
 import { get_item, hydrate, get_itemprops } from '@/modules/item'
-import { list, type_as_list, load_from_network, as_created_at } from '@/helpers/itemid'
+import {
+  list,
+  type_as_list,
+  load_from_network,
+  as_created_at
+} from '@/helpers/itemid'
 import { from_e64 } from '@/helpers/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest(elements, prop_name) {
@@ -16,7 +21,8 @@ function get_oldest(elements, prop_name) {
 }
 export function is_fat(items, prop_name) {
   const today = new Date().setHours(0, 0, 0, 0)
-  if (elements_as_kilobytes(items) > 5 && get_oldest(items, prop_name) < today) return true
+  if (elements_as_kilobytes(items) > 5 && get_oldest(items, prop_name) < today)
+    return true
   // only count stuff before today
   else return false
 }

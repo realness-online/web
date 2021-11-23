@@ -80,7 +80,9 @@ describe('@/views/Sign-on.vue', () => {
         expect($router.push).toHaveBeenCalledWith({ path: '/' })
       })
       it('Sets nameless to true if no profile is found', async () => {
-        const load_spy = jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+        const load_spy = jest
+          .spyOn(itemid, 'load')
+          .mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.signed_on()
         expect(load_spy).toBeCalled()
         expect(wrapper.vm.nameless).toBe(true)

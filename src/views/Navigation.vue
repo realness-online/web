@@ -4,9 +4,15 @@
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
       </router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1"> Events </router-link>
-      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1"> Posters </router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1"> Feed </router-link>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
+        Events
+      </router-link>
+      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
+        Posters
+      </router-link>
+      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
+        Feed
+      </router-link>
       <router-link v-if="!posting" to="/phone-book" class="blue" tabindex="-1">
         Relations
       </router-link>

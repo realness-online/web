@@ -1,6 +1,9 @@
 <template>
   <main id="realness" :class="status">
-    <router-view v-if="!working" v-model:statement="statement" v-model:person="me" />
+    <router-view
+      v-if="!working"
+      v-model:statement="statement"
+      v-model:person="me" />
     <aside v-if="!working">
       <developer-tools v-if="!is_production" />
       <sync v-model:statement="statement" :person="me" @active="sync_active" />

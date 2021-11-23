@@ -1,7 +1,10 @@
 import * as vector from '@/workers/vector'
 import * as potrace from '@realness.online/potrace'
 const image = require('fs').readFileSync('./tests/unit/workers/house.jpeg')
-const poster_html = require('fs').readFileSync('./tests/unit/html/poster.html', 'utf8')
+const poster_html = require('fs').readFileSync(
+  './tests/unit/html/poster.html',
+  'utf8'
+)
 const mock_image = {
   bitmap: {
     width: 333,
@@ -35,7 +38,9 @@ describe('/workers/vector.js', () => {
         read_spy = jest
           .spyOn(potrace.Jimp, 'read')
           .mockImplementation(() => Promise.resolve(mock_image))
-        postMessage_spy = jest.spyOn(global, 'postMessage').mockImplementation(() => true)
+        postMessage_spy = jest
+          .spyOn(global, 'postMessage')
+          .mockImplementation(() => true)
       })
       it('Creates a vector from a jpeg', async () => {
         await vector.listen({ data: { image } })

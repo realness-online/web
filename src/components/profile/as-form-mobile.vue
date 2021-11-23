@@ -1,7 +1,9 @@
 <template>
   <form id="profile-mobile">
     <fieldset v-if="show_mobil_input" id="phone">
-      <legend :class="{ valid: validate_mobile_number() }">{{ mobile_display }}</legend>
+      <legend :class="{ valid: validate_mobile_number() }">
+        {{ mobile_display }}
+      </legend>
       <label for="mobile">1</label>
       <input
         id="mobile"
@@ -33,7 +35,10 @@
         @click.prevent="begin_authorization">
         Sign on
       </button>
-      <button v-if="show_code" id="submit-verification" @click.prevent="sign_in_with_code">
+      <button
+        v-if="show_code"
+        id="submit-verification"
+        @click.prevent="sign_in_with_code">
         Sign on
       </button>
     </menu>
@@ -76,7 +81,8 @@
         return true
       },
       mobile_display() {
-        if (this.person.mobile) return new this.validate.AsYouType('US').input(this.person.mobile)
+        if (this.person.mobile)
+          return new this.validate.AsYouType('US').input(this.person.mobile)
         else return 'Mobile'
       }
     },
@@ -100,7 +106,8 @@
     methods: {
       validate_mobile_number() {
         const is_valid =
-          !!this.person.mobile && this.validate.parseNumber(this.person.mobile, 'US').phone
+          !!this.person.mobile &&
+          this.validate.parseNumber(this.person.mobile, 'US').phone
         this.disabled_sign_in = !is_valid
         return is_valid
       },

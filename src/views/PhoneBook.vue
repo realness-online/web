@@ -16,7 +16,9 @@
         v-model:relations="relations"
         :person="person" />
     </nav>
-    <p v-if="!working && !signed_in" class="sign-on message"><sign-on /> Check out who's here</p>
+    <p v-if="!working && !signed_in" class="sign-on message">
+      <sign-on /> Check out who's here
+    </p>
   </section>
 </template>
 <script>
@@ -51,11 +53,16 @@
       firebase.auth().onAuthStateChanged(async user => {
         this.relations = await list(`${localStorage.me}/relations`)
         if (user) {
-          const phone_numbers = await firebase.storage().ref().child('/people/').listAll()
+          const phone_numbers = await firebase
+            .storage()
+            .ref()
+            .child('/people/')
+            .listAll()
           await Promise.all(
             phone_numbers.prefixes.map(async phone_number => {
               const person = await load(from_e64(phone_number.name))
-              if (person && is_fresh(person.visited)) this.phonebook.push(person)
+              if (person && is_fresh(person.visited))
+                this.phonebook.push(person)
             })
           )
         }

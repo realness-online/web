@@ -8,7 +8,10 @@
       :itemid="itemid('statements')"
       :statements="statements"
       :paginate="false">
-      <thought-as-article v-for="thought in thoughts" :key="thought[0].id" :statements="thought" />
+      <thought-as-article
+        v-for="thought in thoughts"
+        :key="thought[0].id"
+        :statements="thought" />
     </as-days>
     <events-list v-if="events" :events="events" :itemid="itemid('events')" />
     <unsynced-poster

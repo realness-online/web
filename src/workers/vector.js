@@ -25,7 +25,8 @@ export async function read(file) {
   return await Jimp.read(reader.readAsArrayBuffer(file))
 }
 export async function size(image, size = 512) {
-  if (image.bitmap.width > image.bitmap.height) image = image.resize(Jimp.AUTO, size)
+  if (image.bitmap.width > image.bitmap.height)
+    image = image.resize(Jimp.AUTO, size)
   else image = image.resize(size, Jimp.AUTO)
   return image
 }

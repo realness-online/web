@@ -7,7 +7,10 @@
       </profile-as-figure>
       <logo-as-link />
     </header>
-    <mobile-as-form v-if="person && !nameless" v-model:person="person" @signed-on="signed_on" />
+    <mobile-as-form
+      v-if="person && !nameless"
+      v-model:person="person"
+      @signed-on="signed_on" />
     <name-as-form v-if="nameless" v-model:person="person" @valid="new_person" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>

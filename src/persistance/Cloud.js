@@ -35,7 +35,8 @@ export const Cloud = superclass =>
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
+      if (networkable.includes(this.type))
+        await this.to_network(items.outerHTML)
     }
     async delete() {
       console.info('request:delete', this.id)

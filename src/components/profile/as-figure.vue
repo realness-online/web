@@ -85,7 +85,8 @@
           relations.splice(index, 1)
           await this.$nextTick()
           new Relations().save()
-          if (!relations.length) localStorage.removeItem(`${localStorage.me}/relations`)
+          if (!relations.length)
+            localStorage.removeItem(`${localStorage.me}/relations`)
           this.$emit('update:relations', relations)
         }
       }

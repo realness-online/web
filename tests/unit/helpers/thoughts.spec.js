@@ -2,7 +2,10 @@ import { as_thoughts } from '@/helpers/thoughts'
 import { get_item } from '@/modules/item'
 const fs = require('fs')
 
-const statements_html = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+const statements_html = fs.readFileSync(
+  './tests/unit/html/statements.html',
+  'utf8'
+)
 describe('@/helpers/itemid', () => {
   describe('Methods', () => {
     let person

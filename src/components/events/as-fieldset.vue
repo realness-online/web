@@ -2,8 +2,19 @@
   <fieldset class="event">
     <events-list ref="events" :events="events" :itemid="events_id()" />
     <label for="day">{{ event_label }}</label>
-    <input id="day" ref="day" type="date" required :value="event_day" @input="update_date" />
-    <input ref="time" type="time" required :value="event_time" @input="update_time" />
+    <input
+      id="day"
+      ref="day"
+      type="date"
+      required
+      :value="event_day"
+      @input="update_date" />
+    <input
+      ref="time"
+      type="time"
+      required
+      :value="event_time"
+      @input="update_time" />
     <menu>
       <a @click="remove"><icon name="remove" /></a>
       <a @click="save"><icon name="add" /></a>
@@ -103,7 +114,9 @@
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
         const day = parseInt(date_list[2])
-        this.main_event = new Date(this.main_event.setFullYear(year, month, day))
+        this.main_event = new Date(
+          this.main_event.setFullYear(year, month, day)
+        )
       },
       update_time() {
         const time_list = this.$refs.time.value.split(':')
