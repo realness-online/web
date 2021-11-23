@@ -3,11 +3,13 @@
 exports[`@/components/posters/as-svg.vue Renders A poster 1`] = `
 <icon-stub
   name="working"
+  tabindex="0"
 />
 `;
 
 exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`] = `
 <icon-stub
   name="working"
+  tabindex="0"
 />
 `;

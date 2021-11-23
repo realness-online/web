@@ -49,7 +49,11 @@ export async function load_directory_from_network(itemid) {
     const path = as_directory_id(itemid)
     const meta = new Directory()
     console.info('request:directory', itemid)
-    const directory = await firebase.storage().ref().child(`people/${path}`).listAll()
+    const directory = await firebase
+      .storage()
+      .ref()
+      .child(`people/${path}`)
+      .listAll()
     directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
     directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
     await set(path, meta)
@@ -89,12 +93,13 @@ const has_history = ['statements', 'events']
 export function is_history(itemid) {
   const parts = as_path_parts(itemid)
   if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
-  return false
+  else return false
 }
 export function as_filename(itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (created_at.includes(as_type(itemid)) || is_history(itemid)) return `${filename}.html`
+  if (created_at.includes(as_type(itemid)) || is_history(itemid))
+    return `${filename}.html`
   else return `${filename}/index.html`
 }
 export function as_storage_path(itemid) {

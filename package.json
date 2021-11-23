@@ -100,7 +100,6 @@
     },
     "extends": [
       "eslint:recommended",
-      "plugin:vue/base",
       "plugin:vue/vue3-recommended",
       "@vue/prettier"
     ],
@@ -108,6 +107,7 @@
       "parser": "babel-eslint"
     },
     "rules": {
+      "semi": [ "error", "never" ],
       "no-import-assign": "off",
       "camelcase": 0,
       "indent": "off",
@@ -126,16 +126,6 @@
         "snake_case"
       ],
       "vue/singleline-html-element-content-newline": "off",
-      "vue/max-attributes-per-line": [
-        "error",
-        {
-          "singleline": 6,
-          "multiline": {
-            "max": 3,
-            "allowFirstLine": true
-          }
-        }
-      ],
       "vue/html-closing-bracket-spacing": [
         "error",
         {
