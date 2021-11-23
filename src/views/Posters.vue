@@ -23,7 +23,9 @@
         @loaded="optimize">
         <menu>
           <a class="remove" @click="cancel_poster"><icon name="remove" /></a>
-          <a v-if="new_poster.id" class="save" @click="save_poster"><icon name="finished"/></a>
+          <a v-if="new_poster.id" class="save" @click="save_poster">
+            <icon name="finished" />
+          </a>
         </menu>
       </as-figure>
       <as-figure
