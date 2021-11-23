@@ -23,8 +23,12 @@
 </template>
 <script setup>
   import { defineProps, defineEmits, watch, computed } from 'vue'
-  import { load, as_author, as_created_at } from '@/helpers/itemid'
-  import { as_poster, is_vector, is_vector_id, is_focus_path, loaded, } from '@/use/vector'
+  import {
+    as_poster,
+    is_vector,
+    is_vector_id,
+    is_focus_path
+  } from '@/use/vector'
   import icon from '@/components/icon'
 
   const emit = defineEmits({ focus: is_focus_path })
@@ -36,7 +40,7 @@
     },
     itemid: {
       type: String,
-      required: true
+      required: true,
       validator: is_vector_id
     },
     poster: {
@@ -52,18 +56,12 @@
     else return undefined
   })
   const focusable = computed(() => {
-      if (!props.tabable) return 0
+    if (!props.tabable) return 0
     else return undefined
   })
-
   const focus = async layer => {
     emit('focus', layer)
   }
-  watch({
-    poster() {
-      if (props.poster) vector = props.poster
-    }
-  })
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]

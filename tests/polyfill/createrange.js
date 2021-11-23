@@ -1,4 +1,4 @@
-global.Range = function Range() { }
+global.Range = function Range() {}
 
 const createContextualFragment = html => {
   const div = document.createElement('div')
@@ -12,8 +12,8 @@ Range.prototype.createContextualFragment = html =>
 // HACK: Polyfil that allows codemirror to render in a JSDOM env.
 global.window.document.createRange = function createRange() {
   return {
-    setEnd: () => { },
-    setStart: () => { },
+    setEnd: () => {},
+    setStart: () => {},
     getBoundingClientRect: () => {
       return { right: 0 }
     },

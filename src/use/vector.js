@@ -15,8 +15,9 @@ export const is_vector = vector => {
   if (typeof vector != 'object') return false
   if (!is_vector_id(vector?.id)) return false
   if (vector?.viewbox || vector?.height || vector?.width) return false
-  if (vector?.background || vector?.bold || vector?.regular || vector?.light) return false
-  if (vector?.type === "posters" || vector.type === "avatars") return true
+  if (vector?.background || vector?.bold || vector?.regular || vector?.light)
+    return false
+  if (vector?.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
 
@@ -50,7 +51,7 @@ export function as_poster() {
   const menu = ref(false)
 
   const aspect_ratio = computed(() => {
-    if (menu.value || !slice) return 'xMidYMid meet'
+    if (menu.value || !props.slice) return 'xMidYMid meet'
     else return 'xMidYMid slice'
   })
   const landscape = computed(() => {
