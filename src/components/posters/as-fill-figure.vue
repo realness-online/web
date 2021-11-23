@@ -1,5 +1,5 @@
 <template>
-  <figure id="edit-fill" v-finger:pressMove="press_move">
+  <figure id="edit-fill" ref="figure">
     <as-svg
       :itemid="itemid"
       :immediate="true"
@@ -8,7 +8,6 @@
       :tabable="true"
       @focus="focus" />
     <figcaption>
-      <as-svg style="visibility: hidden" :itemid="itemid" class="as-line-art" />
       <input v-model="color" :tabindex="-1" type="color" @blur="re_focus" />
     </figcaption>
   </figure>
@@ -16,8 +15,6 @@
 <script>
   import finger from '@/mixins/finger'
   import vector from '@/mixins/vector'
-  import { change_opacity } from '@/use/opacity-editor'
-  import { change_color, get_color } from '@/use/color-editor'
   export default {
     mixins: [vector, finger],
     props: {
@@ -35,7 +32,7 @@
     },
     watch: {
       color() {
-        change_color(this.focus_id, this.color)
+        document.getElementById(this.focus_id).style.fill = this.color
       }
     },
     methods: {
@@ -44,24 +41,30 @@
       },
       focus(id) {
         this.focus_id = id
-        this.color = get_color(this.focus_id)
-      },
-      press_move(evt) {
-        if (evt.deltaY > 0) change_opacity('down', 'fill', 0.03)
-        else change_opacity('up', 'fill', 0.03)
+        this.color = document.getElementById(this.focus_id).style.fill
       }
     }
   }
 </script>
 <script setup>
+  import { ref } from 'vue'
   import asSvg from '@/components/posters/as-svg'
-  import { fill_more, fill_less, fill_more_subtle, fill_less_subtle } from '@/use/opacity-editor'
-  import { useMagicKeys, whenever } from '@vueuse/core'
+  import { fill_opacity } from '@/use/posters/fill'
+  import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
+
+  const figure = ref(null)
+  const { distanceY } = usePointerSwipe(figure, {
+    onSwipe(e) {
+      if (distanceY.value < 0) fill_opacity('more', 0.03)
+      else fill_opacity('less', 0.03)
+    }
+  })
+
   const keys = useMagicKeys()
-  whenever(keys.up, fill_more)
-  whenever(keys.up_shift, fill_more_subtle)
-  whenever(keys.down, fill_less)
-  whenever(keys.down_shift, fill_less_subtle)
+  whenever(keys.up, () => fill_opacity())
+  whenever(keys.up_shift, () => fill_opacity('more', 0.01))
+  whenever(keys.down, () => fill_opacity('less'))
+  whenever(keys.down_shift, () => fill_opacity('less', 0.01))
 </script>
 <style lang="stylus">
   figure#edit-fill

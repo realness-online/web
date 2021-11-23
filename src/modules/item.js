@@ -1,8 +1,6 @@
 import { as_type } from '@/helpers/itemid'
-export function hydrate(item_as_string) {
-  if (item_as_string) {
-    return document.createRange().createContextualFragment(item_as_string)
-  } else return null
+export function hydrate(item_as_string = new String()) {
+  return document.createRange().createContextualFragment(item_as_string)
 }
 export function get_item(elements, itemid) {
   if (!elements) return null
@@ -29,7 +27,8 @@ export function get_itemprops(item) {
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
     let value
-    if (prop.closest('[itemscope]').isSameNode(item)) value = itemprop_value(prop)
+    if (prop.closest('[itemscope]').isSameNode(item))
+      value = itemprop_value(prop)
     else if (prop.hasAttribute('itemscope')) value = make_item(prop)
     if (value) {
       const name = prop.getAttribute('itemprop')
@@ -46,21 +45,22 @@ export function get_itemprops(item) {
     case 'marker':
     case 'view':
     case 'pattern':
-      props.viewbox = item.getAttribute('viewBox')
+      props.viewbox = item.viewBox
   }
   return props
 }
 export function itemprop_value(element) {
-  if (element.hasAttribute('content')) return element.getAttribute('content')
-  if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
+  if (element?.content) return element.content
+  if (element?.datetime) return element.datetime
   switch (element.tagName.toLowerCase()) {
     case 'script':
     case 'style':
-      return ''
+      return undefined
     case 'a':
     case 'area':
     case 'link':
-      return element.getAttribute('href')
+    case 'use':
+      return element.href
     case 'audio':
     case 'iframe':
     case 'source':
@@ -68,23 +68,21 @@ export function itemprop_value(element) {
     case 'video':
     case 'img':
     case 'embed':
-      return element.getAttribute('src')
+      return element.src
     case 'data':
     case 'meter':
     case 'input':
     case 'textarea':
     case 'select':
       return element.value
-    case 'svg':
     case 'path':
-    case 'symbol':
-    case 'use':
-      return element.outerHTML
+    case 'rect':
+      return element
     case 'g':
     case 'defs':
       return element.innerHTML
     case 'object':
-      return element.getAttribute('data')
+      return element.data
     default:
       return element.textContent.trim()
   }

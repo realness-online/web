@@ -1,99 +1,74 @@
 <template>
-  <icon v-if="working" name="working" tabindex="0" />
+  <icon v-if="working" name="working" :tabindex="focusable" />
   <svg
     v-else
-    :itemid="itemid"
+    :id="id"
     itemscope
     itemtype="/posters"
+    :itemid="itemid"
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
-    @focus="focus()"
-    @blur="blur()"
-    @click="vector_click">
-    <defs>
-      <symbol :id="background_id"><rect width="100%" height="100%" /></symbol>
-      <symbol
-        v-for="(symbol, index) in path"
-        :id="symbol_id(index)"
-        :key="index"
-        :viewBox="viewbox"
-        v-html="symbol" />
-    </defs>
-    <use
+    :tabindex="focusable"
+    @click="click">
+    <rect
       itemprop="background"
-      :href="background_fragment"
-      :tabindex="tabable ? 0 : -1"
-      fill="var(--white)"
+      width="100%"
+      height="100%"
+      :tabindex="tabindex"
       @focus="focus('background')" />
-    <use
-      v-for="(symbol, index) in path"
-      :key="index"
-      :itemprop="layers_like_fonts[index]"
-      :tabindex="tabable ? 0 : -1"
-      :href="symbol_fragment(index)"
-      @focus="focus(index)" />
+    <path itemprop="bold" :tabindex="tabindex" @focus="focus('bold')" />
+    <path itemprop="regular" :tabindex="tabindex" @focus="focus('regular')" />
+    <path itemprop="light" :tabindex="tabindex" @focus="focus('light')" />
   </svg>
 </template>
-<script>
-  import { load } from '@/helpers/itemid'
-  import intersection from '@/mixins/intersection'
-  import vector_click from '@/mixins/vector_click'
-  import vector from '@/mixins/vector'
+<script setup>
+  import { defineProps, defineEmits, watch, computed } from 'vue'
+  import { load, as_author, as_created_at } from '@/helpers/itemid'
+  import { as_poster, is_vector, is_vector_id, is_focus_path, loaded, } from '@/use/vector'
   import icon from '@/components/icon'
-  export default {
-    components: {
-      icon
+
+  const emit = defineEmits({ focus: is_focus_path })
+  const props = defineProps({
+    tabable: {
+      type: Boolean,
+      required: false,
+      default: false
     },
-    mixins: [intersection, vector_click, vector],
-    props: {
-      tabable: {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      itemid: {
-        type: String,
-        required: true
-      },
-      poster: {
-        type: Object,
-        required: false,
-        default: null
-      }
+    itemid: {
+      type: String,
+      required: true
+      validator: is_vector_id
     },
-    emits: ['focus', 'vector-loaded'],
-    data() {
-      return {
-        working: true
-      }
-    },
-    watch: {
-      poster() {
-        if (this.poster) this.vector = this.poster
-      }
-    },
-    methods: {
-      async focus(id) {
-        if (id === 'background') this.$emit('focus', this.background_id)
-        else this.$emit('focus', this.symbol_id(id))
-      },
-      async blur() {
-        this.animation = null
-      },
-      async show() {
-        if (this.vector) return
-        if (this.poster) this.vector = this.poster
-        else this.vector = await load(this.itemid)
-        this.working = false
-        await this.$nextTick()
-        this.$emit('vector-loaded', this.vector)
-      }
+    poster: {
+      type: Object,
+      required: false,
+      default: null,
+      validator: is_vector
     }
+  })
+  const { id, itemid, viewbox, aspect_ratio, click, vector } = as_poster()
+  const tabindex = computed(() => {
+    if (props.tabable) return 0
+    else return undefined
+  })
+  const focusable = computed(() => {
+      if (!props.tabable) return 0
+    else return undefined
+  })
+
+  const focus = async layer => {
+    emit('focus', layer)
   }
+  watch({
+    poster() {
+      if (props.poster) vector = props.poster
+    }
+  })
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
     aspect-ratio: 16 / 9
+    aspect-ratio: 1 / 1
     display: block
     min-height: 512px
     height: 100%
