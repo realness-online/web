@@ -2,8 +2,6 @@ import { as_query_id, load, as_author, as_created_at } from '@/helpers/itemid'
 import {
   ref,
   computed,
-  defineProps,
-  defineEmits,
   onMounted,
   onUpdated
 } from 'vue'
@@ -25,27 +23,7 @@ export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
 }
-export function as_poster() {
-  const props = defineProps({
-    immediate: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    slice: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
-    working: {
-      type: Boolean,
-      required: false,
-      default: true
-    }
-  })
-  const emit = defineEmits({
-    click: is_click
-  })
+export function as_poster(props) {
   const vector = ref(null)
   const working = ref(true)
   const menu = ref(false)
@@ -62,13 +40,13 @@ export function as_poster() {
     return width > height
   })
   const path = computed(() => {
-    if (props.working || vector) return null
+    if (working || vector) return null
     // then always return a list
     if (Array.isArray(vector.value.path)) return vector.value.path
     else return [vector.value.path]
   })
   const viewbox = computed(() => {
-    if (this.vector) return this.vector.viewbox
+    if (vector) return vector.viewbox
     else return '0 0 16 16' // this is the viewbox for silhouette
   })
   const id = computed(() => {
@@ -82,8 +60,7 @@ export function as_poster() {
   const show = async () => {
     if (!vector.value) await load(props.itemid)
     working.value = false
-    await nextTick()
-    emit('vector-loaded', vector.value)
+    // emit('loaded', vector.value)
   }
   const call_show = () => {
     if (props.immediate) show()

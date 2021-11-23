@@ -27,12 +27,25 @@
     as_poster,
     is_vector,
     is_vector_id,
+    is_click,
     is_focus_path
   } from '@/use/vector'
   import icon from '@/components/icon'
-
-  const emit = defineEmits({ focus: is_focus_path })
+  const emit = defineEmits({
+    focus: is_focus_path,
+    click: is_click
+  })
   const props = defineProps({
+    immediate: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    slice: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
     tabable: {
       type: Boolean,
       required: false,
@@ -50,7 +63,15 @@
       validator: is_vector
     }
   })
-  const { id, itemid, viewbox, aspect_ratio, click, vector } = as_poster()
+  const {
+    id,
+    itemid,
+    viewbox,
+    aspect_ratio,
+    click,
+    vector,
+    working
+  } = as_poster(props)
   const tabindex = computed(() => {
     if (props.tabable) return 0
     else return undefined
