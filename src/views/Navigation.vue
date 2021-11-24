@@ -30,7 +30,7 @@
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
-  import { load } from '@/helpers/itemid'
+  import { load } from '@/use/itemid'
   import as_textarea from '@/components/statements/as-textarea'
   export default {
     components: {

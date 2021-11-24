@@ -4,8 +4,8 @@
   </a>
 </template>
 <script>
-  import { as_day_and_time } from '@/helpers/date'
-  import { load } from '@/helpers/itemid'
+  import { as_day_and_time } from '@/use/date'
+  import { load } from '@/use/itemid'
   import icon from '@/components/icon'
   export default {
     components: { icon },

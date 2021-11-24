@@ -21,8 +21,8 @@
   </figure>
 </template>
 <script>
-  import { as_query_id, as_author, load, as_created_at } from '@/helpers/itemid'
-  import { as_time } from '@/helpers/date'
+  import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
+  import { as_time } from '@/use/date'
   import as_svg from '@/components/posters/as-svg'
   import vector_click from '@/mixins/vector_click'
   import signed_in from '@/mixins/signed_in'

@@ -23,7 +23,7 @@
 </template>
 <script>
   import icon from '@/components/icon'
-  import { list } from '@/helpers/itemid'
+  import { list } from '@/use/itemid'
   import events_list from '@/components/events/as-list'
   import { Events } from '@/persistance/Storage'
   export default {

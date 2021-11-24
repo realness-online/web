@@ -4,8 +4,8 @@
   </a>
 </template>
 <script>
-  import { as_author } from '@/helpers/itemid'
-  import { as_phone_number } from '@/helpers/profile'
+  import { as_author } from '@/use/itemid'
+  import { as_phone_number } from '@/use/profile'
   import icon from '@/components/icon'
   export default {
     components: {

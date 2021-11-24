@@ -17,7 +17,7 @@
   </section>
 </template>
 <script>
-  import { list, load } from '@/helpers/itemid'
+  import { list, load } from '@/use/itemid'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import as_figure from '@/components/profile/as-figure'

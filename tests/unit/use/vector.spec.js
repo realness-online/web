@@ -1,6 +1,6 @@
 import { as_poster } from '@/use/vector'
 import { ref } from 'vue'
-import get_item from '@/modules/item'
+import get_item from '@/use/item'
 const poster_html = require('fs').readFileSync(
   './tests/unit/html/poster.html',
   'utf8'

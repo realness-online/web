@@ -1,16 +1,16 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import firebase from 'firebase/app'
-import { recent_item_first } from '@/helpers/sorting'
+import { recent_item_first } from '@/use/sorting'
 import 'firebase/storage'
 import 'firebase/auth'
-import { get_item, hydrate, get_itemprops } from '@/modules/item'
+import { get_item, hydrate, get_itemprops } from '@/use/item'
 import {
   list,
   type_as_list,
   load_from_network,
   as_created_at
-} from '@/helpers/itemid'
-import { from_e64 } from '@/helpers/profile'
+} from '@/use/itemid'
+import { from_e64 } from '@/use/profile'
 import { History } from '@/persistance/Storage'
 function get_oldest(elements, prop_name) {
   const list = get_itemprops(elements)

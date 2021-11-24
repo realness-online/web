@@ -62,9 +62,9 @@ All `Storage` objects can be `Local`, saved in the `Cloud`. They can be `Large` 
 `Item` parses [HTML](https://www.w3.org/TR/microdata/) into JavaScript objects.
 
 
-### `@/helpers`
+### `@/use/itemid`
 
-`itemid` is utility method for getting information based on [itemId](https://www.w3.org/TR/microdata/). This is my favorite class. It's where CSS, JavaScript and HTML play each of their parts perfectly.
+a utility method for getting information based on [itemId](https://www.w3.org/TR/microdata/). This is my favorite class. It's where CSS, JavaScript and HTML play each of their parts perfectly.
 
 The other utility methods are standard.
 

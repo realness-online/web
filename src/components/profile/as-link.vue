@@ -7,7 +7,7 @@
   </router-link>
 </template>
 <script>
-  import { load, as_author } from '@/helpers/itemid'
+  import { load, as_author } from '@/use/itemid'
   import as_svg from '@/components/avatars/as-svg'
   import as_address from '@/components/profile/as-address'
   export default {

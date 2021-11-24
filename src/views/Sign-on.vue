@@ -21,7 +21,7 @@
   import firebase from 'firebase/app'
   import 'firebase/auth'
   import { keys, clear } from 'idb-keyval'
-  import { load } from '@/helpers/itemid'
+  import { load } from '@/use/itemid'
   import { Me } from '@/persistance/Storage'
   import logo_as_link from '@/components/logo-as-link'
   import profile_as_figure from '@/components/profile/as-figure'

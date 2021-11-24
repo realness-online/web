@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import Navigation from '@/views/Navigation'
-import * as itemid from '@/helpers/itemid'
+import * as itemid from '@/use/itemid'
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

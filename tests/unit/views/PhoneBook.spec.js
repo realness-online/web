@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import phonebook from '@/views/PhoneBook'
-import * as itemid from '@/helpers/itemid'
+import * as itemid from '@/use/itemid'
 import flushPromises from 'flush-promises'
 import firebase from 'firebase/app'
 import 'firebase/auth'

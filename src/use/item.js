@@ -1,4 +1,4 @@
-import { as_type } from '@/helpers/itemid'
+import { as_type } from '@/use/itemid'
 export function hydrate(item_as_string = new String()) {
   return document.createRange().createContextualFragment(item_as_string)
 }

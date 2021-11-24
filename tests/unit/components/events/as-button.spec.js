@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import as_button from '@/components/events/as-button'
-import get_item from '@/modules/item'
-import * as itemid from '@/helpers/itemid'
+import get_item from '@/use/item'
+import * as itemid from '@/use/itemid'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)

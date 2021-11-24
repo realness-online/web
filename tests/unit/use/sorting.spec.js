@@ -3,8 +3,8 @@ import {
   recent_number_first,
   recent_weirdo_first,
   earlier_weirdo_first
-} from '@/helpers/sorting'
-describe('@/helpers/sorting', () => {
+} from '@/use/sorting'
+describe('@/use/sorting', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })

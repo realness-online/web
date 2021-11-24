@@ -27,8 +27,8 @@
   </article>
 </template>
 <script>
-  import { load, as_author, as_created_at } from '@/helpers/itemid'
-  import { as_time } from '@/helpers/date'
+  import { load, as_author, as_created_at } from '@/use/itemid'
+  import { as_time } from '@/use/date'
   import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
   import as_avatar from '@/components/avatars/as-svg'
