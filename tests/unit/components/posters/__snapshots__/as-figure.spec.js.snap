@@ -9,6 +9,7 @@ exports[`@/compontent/posters/as-figure.vue Renders A new poster 1`] = `
     immediate="false"
     itemid="/+16282281824/posters/559666932867"
     poster="[object Object]"
+    slice="true"
     tabable="false"
   />
   <figcaption>
@@ -35,6 +36,7 @@ exports[`@/compontent/posters/as-figure.vue Renders A poster 1`] = `
   <as-svg-stub
     immediate="false"
     itemid="/+16282281824/posters/559666932867"
+    slice="true"
     tabable="false"
   />
   <figcaption>

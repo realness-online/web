@@ -37,7 +37,7 @@ exports[`@/views/Account.vue Renders Account information 1`] = `
     class="message"
   >
     <p>
-      Say some stuff via the 
+       Say some stuff via the 
       <button />
        button on the homepage 
       <br />
