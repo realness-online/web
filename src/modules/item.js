@@ -50,8 +50,8 @@ export function get_itemprops(item) {
   return props
 }
 export function itemprop_value(element) {
-  if (element?.content) return element.content
-  if (element?.datetime) return element.datetime
+  if (element.hasAttribute('content')) return element.getAttribute('content')
+  if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
   switch (element.tagName.toLowerCase()) {
     case 'script':
     case 'style':

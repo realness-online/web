@@ -22,18 +22,19 @@
   </svg>
 </template>
 <script setup>
-  import { defineProps, defineEmits, watch, computed } from 'vue'
+  import { onMounted, onUpdated } from 'vue'
   import {
     as_poster,
     is_vector,
     is_vector_id,
     is_click,
-    is_focus_path
+    is_focus
   } from '@/use/vector'
   import icon from '@/components/icon'
   const emit = defineEmits({
-    focus: is_focus_path,
-    click: is_click
+    focus: is_focus,
+    click: is_click,
+    loaded: is_vector
   })
   const props = defineProps({
     immediate: {
@@ -69,20 +70,14 @@
     viewbox,
     aspect_ratio,
     click,
-    vector,
-    working
-  } = as_poster(props)
-  const tabindex = computed(() => {
-    if (props.tabable) return 0
-    else return undefined
-  })
-  const focusable = computed(() => {
-    if (!props.tabable) return 0
-    else return undefined
-  })
-  const focus = async layer => {
-    emit('focus', layer)
-  }
+    working,
+    should_show,
+    focus,
+    tabindex,
+    focusable
+  } = as_poster(props, emit)
+  onMounted(should_show)
+  onUpdated(should_show)
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
