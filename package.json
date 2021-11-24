@@ -36,6 +36,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/eslint-parser": "^7.12.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.16.0",
     "@testing-library/cypress": "^8.0.1",
     "@testing-library/vue": "^5.8.2",
     "@vue/cli-plugin-babel": "~4.5.13",
@@ -107,7 +108,10 @@
       "parser": "babel-eslint"
     },
     "rules": {
-      "semi": [ "error", "never" ],
+      "semi": [
+        "error",
+        "never"
+      ],
       "no-import-assign": "off",
       "camelcase": 0,
       "indent": "off",
@@ -217,7 +221,12 @@
     "testURL": "http://localhost/"
   },
   "babel": {
-    "presets": ["@vue/cli-plugin-babel/preset"]
+    "presets": [
+      "@vue/cli-plugin-babel/preset"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-optional-chaining"
+    ]
   },
   "license": "UNLICENSED"
 }
