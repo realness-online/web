@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import get_item from '@/modules/item'
-import * as itemid from '@/helpers/itemid'
+import get_item from '@/use/item'
+import * as itemid from '@/use/itemid'
 import flushPromises from 'flush-promises'
 import Feed from '@/views/Feed'
 const statements_html = require('fs').readFileSync(

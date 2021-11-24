@@ -5,7 +5,7 @@ import Local from '@/persistance/Local'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
-import { as_type } from '@/helpers/itemid'
+import { as_type } from '@/use/itemid'
 import { get } from 'idb-keyval'
 export default class Storage {
   constructor(itemid) {

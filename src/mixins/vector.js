@@ -1,4 +1,4 @@
-import { as_query_id, load } from '@/helpers/itemid'
+import { as_query_id, load } from '@/use/itemid'
 export default {
   data() {
     return {

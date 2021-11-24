@@ -9,7 +9,7 @@
 </template>
 <script>
   import icons from '@/style/icons.svg'
-  import { list } from '@/helpers/itemid'
+  import { list } from '@/use/itemid'
   export default {
     props: {
       itemid: {

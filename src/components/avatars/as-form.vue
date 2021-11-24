@@ -44,8 +44,8 @@
 </template>
 <script>
   import { Avatar } from '@/persistance/Storage'
-  import get_item from '@/modules/item'
-  import { load } from '@/helpers/itemid'
+  import get_item from '@/use/item'
+  import { load } from '@/use/itemid'
   import icon from '@/components/icon'
   import as_download from '@/components/download-vector'
   import as_svg from '@/components/avatars/as-svg'

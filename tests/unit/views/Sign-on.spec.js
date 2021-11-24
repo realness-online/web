@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import * as itemid from '@/helpers/itemid'
+import * as itemid from '@/use/itemid'
 import { clear } from 'idb-keyval'
 import Sign_on from '@/views/Sign-on'
 const person = {

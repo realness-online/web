@@ -4,7 +4,7 @@ import 'firebase/auth'
 import 'firebase/storage'
 import hash from 'object-hash'
 import { get, set } from 'idb-keyval'
-import { as_filename } from '@/helpers/itemid'
+import { as_filename } from '@/use/itemid'
 
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }

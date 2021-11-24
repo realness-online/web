@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_svg from '@/components/avatars/as-svg'
-import get_item from '@/modules/item'
+import get_item from '@/use/item'
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

@@ -9,7 +9,7 @@ import {
   sync_later,
   visit_interval
 } from '@/persistance/Cloud.sync'
-import * as itemid from '@/helpers/itemid'
+import * as itemid from '@/use/itemid'
 const person_html = require('fs').readFileSync(
   './tests/unit/html/person.html',
   'utf8'

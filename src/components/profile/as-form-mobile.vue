@@ -47,7 +47,7 @@
 <script>
   import firebase from 'firebase/app'
   import 'firebase/auth'
-  import { as_phone_number } from '@/helpers/profile'
+  import { as_phone_number } from '@/use/profile'
   import icon from '@/components/icon'
   export default {
     components: {

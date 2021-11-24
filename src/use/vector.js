@@ -1,4 +1,4 @@
-import { as_query_id, load, as_author, as_created_at } from '@/helpers/itemid'
+import { as_query_id, load, as_author, as_created_at } from '@/use/itemid'
 import { ref, computed, watchEffect } from 'vue'
 
 const path_names = ['background', 'bold', 'regular', 'light']

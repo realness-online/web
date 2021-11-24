@@ -16,8 +16,8 @@
   </section>
 </template>
 <script>
-  import { list } from '@/helpers/itemid'
-  import { recent_item_first } from '@/helpers/sorting'
+  import { list } from '@/use/itemid'
+  import { recent_item_first } from '@/use/sorting'
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'

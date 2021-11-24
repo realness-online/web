@@ -3,8 +3,8 @@ import 'firebase/auth'
 import flushPromises from 'flush-promises'
 import { get, set } from 'idb-keyval'
 
-import get_item, { hydrate } from '@/modules/item'
-import * as itemid from '@/helpers/itemid'
+import get_item, { hydrate } from '@/use/item'
+import * as itemid from '@/use/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
 import {
   itemid_as_kilobytes,

@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import { load } from '@/helpers/itemid'
-import { from_e64 } from '@/helpers/profile'
+import { load } from '@/use/itemid'
+import { from_e64 } from '@/use/profile'
 import { visit_interval } from '@/persistance/Cloud.sync'
 export default {
   created() {

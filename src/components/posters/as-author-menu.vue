@@ -24,7 +24,7 @@
   import { useRouter as use_router } from 'vue-router'
   import { watch } from 'vue'
   import { useMagicKeys as use_magic_keys } from '@vueuse/core'
-  import { as_created_at } from '@/helpers/itemid'
+  import { as_created_at } from '@/use/itemid'
 
   const props = defineProps({
     poster: {

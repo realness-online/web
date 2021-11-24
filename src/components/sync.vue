@@ -35,9 +35,9 @@
     sync_offline_actions
   } from '@/persistance/Cloud.sync'
   import { Statements, Events, Poster, Me } from '@/persistance/Storage'
-  import { from_e64 } from '@/helpers/profile'
-  import { list, load } from '@/helpers/itemid'
-  import get_item from '@/modules/item'
+  import { from_e64 } from '@/use/profile'
+  import { list, load } from '@/use/itemid'
+  import get_item from '@/use/item'
   import hash from 'object-hash'
   import as_days from '@/components/as-days'
   import as_list from '@/components/events/as-list'

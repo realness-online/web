@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
-import get_item from '@/modules/item'
-import * as itemid from '@/helpers/itemid'
+import get_item from '@/use/item'
+import * as itemid from '@/use/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 const poster_html = require('fs').readFileSync(

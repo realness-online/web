@@ -15,7 +15,7 @@
   </svg>
 </template>
 <script>
-  import { as_query_id, as_fragment, load } from '@/helpers/itemid'
+  import { as_query_id, as_fragment, load } from '@/use/itemid'
   import intersection from '@/mixins/intersection'
   import vector_click from '@/mixins/vector_click'
   import vector from '@/mixins/vector'

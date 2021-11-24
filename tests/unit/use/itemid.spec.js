@@ -18,8 +18,8 @@ import {
   is_history,
   load,
   type_as_list
-} from '@/helpers/itemid'
-describe('@/helpers/itemid', () => {
+} from '@/use/itemid'
+describe('@/use/itemid', () => {
   const poster_html = require('fs').readFileSync(
     './tests/unit/html/poster.html',
     'utf8'

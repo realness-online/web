@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils'
 import as_days from '@/components/as-days'
-import get_item from '@/modules/item'
-import * as as_date from '@/helpers/date'
-import * as sorting from '@/helpers/sorting'
+import get_item from '@/use/item'
+import * as as_date from '@/use/date'
+import * as sorting from '@/use/sorting'
 const fs = require('fs')
 const statements_html = fs.readFileSync(
   './tests/unit/html/statements.html',

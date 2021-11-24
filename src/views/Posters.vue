@@ -42,9 +42,9 @@
 </template>
 <script>
   import { del } from 'idb-keyval'
-  import { as_directory } from '@/helpers/itemid'
-  import get_item from '@/modules/item'
-  import { recent_item_first } from '@/helpers/sorting'
+  import { as_directory } from '@/use/itemid'
+  import get_item from '@/use/item'
+  import { recent_item_first } from '@/use/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'

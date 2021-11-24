@@ -29,9 +29,9 @@
 </template>
 <script>
   import signed_in from '@/mixins/signed_in'
-  import { from_e64 } from '@/helpers/profile'
+  import { from_e64 } from '@/use/profile'
   import intersection_thought from '@/mixins/intersection_thought'
-  import { load, list, as_directory } from '@/helpers/itemid'
+  import { load, list, as_directory } from '@/use/itemid'
   import as_days from '@/components/as-days'
   import logo_as_link from '@/components/logo-as-link'
   import as_download from '@/components/download-vector'

@@ -1,5 +1,5 @@
-import { as_created_at } from '@/helpers/itemid'
-import { recent_item_first } from '@/helpers/sorting'
+import { as_created_at } from '@/use/itemid'
+import { recent_item_first } from '@/use/sorting'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 export function as_thoughts(sacred_statements) {
   const statements = [...sacred_statements]

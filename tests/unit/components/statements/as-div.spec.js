@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import flushPromises from 'flush-promises'
 import as_statement from '@/components/statements/as-div'
-import get_item from '@/modules/item'
+import get_item from '@/use/item'
 import { Statements } from '@/persistance/Storage'
 const statements_as_html = require('fs').readFileSync(
   './tests/unit/html/statements.html',

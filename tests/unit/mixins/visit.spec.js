@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import * as itemid from '@/helpers/itemid'
+import * as itemid from '@/use/itemid'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import vector_mock from './mixin_mock'

@@ -1,5 +1,5 @@
-import { list, as_directory, as_author } from '@/helpers/itemid'
-import { recent_number_first } from '@/helpers/sorting'
+import { list, as_directory, as_author } from '@/use/itemid'
+import { recent_number_first } from '@/use/sorting'
 export default {
   data() {
     return {

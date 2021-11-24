@@ -1,7 +1,7 @@
-import { get_item, hydrate } from '@/modules/item'
+import { get_item, hydrate } from '@/use/item'
 const fs = require('fs')
 const html_item = fs.readFileSync('./tests/unit/html/Item.html', 'utf8')
-describe('@/modules/item.js', () => {
+describe('@/use/item.js', () => {
   let item
   describe('Methods', () => {
     describe('get_item()', () => {
