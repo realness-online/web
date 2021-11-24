@@ -45,7 +45,7 @@ export function get_itemprops(item) {
     case 'marker':
     case 'view':
     case 'pattern':
-      props.viewbox = item.viewBox
+      props.viewbox = item.getAttribute('viewBox')
   }
   return props
 }
@@ -60,7 +60,7 @@ export function itemprop_value(element) {
     case 'area':
     case 'link':
     case 'use':
-      return element.href
+      return element.getAttribute('href')
     case 'audio':
     case 'iframe':
     case 'source':
@@ -68,13 +68,13 @@ export function itemprop_value(element) {
     case 'video':
     case 'img':
     case 'embed':
-      return element.src
+      return element.getAttribute('src')
     case 'data':
     case 'meter':
     case 'input':
     case 'textarea':
     case 'select':
-      return element.value
+      return element.getAttribute('value')
     case 'path':
     case 'rect':
       return element
