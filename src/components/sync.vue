@@ -27,7 +27,6 @@
   import 'firebase/auth'
   import { del, get } from 'idb-keyval'
   import {
-    three_minutes,
     one_hour,
     fresh_metadata,
     hash_options,
@@ -44,6 +43,7 @@
   import as_svg from '@/components/posters/as-svg'
   import thought_as_article from '@/components/statements/as-article'
   import as_address from '@/components/profile/as-address'
+  const eight_hours = one_hour * 4
   export default {
     components: {
       'as-days': as_days,
@@ -119,8 +119,8 @@
         let synced
         if (localStorage.sync_time) {
           synced = Date.now() - new Date(localStorage.sync_time).getTime()
-        } else synced = three_minutes
-        const time_left = three_minutes - synced
+        } else synced = eight_hours
+        const time_left = eight_hours - synced
         if (time_left <= 0) {
           setTimeout(async () => {
             this.$emit('active', true)
