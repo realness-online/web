@@ -17,8 +17,9 @@
 html
   font-family: 'Lato'
   between: font-size
-  font-smoothing: antialiased
   text-rendering: optimizeLegibility
+  @media (prefers-color-scheme: dark)
+    font-smoothing: antialiased //https://usabilitypost.com/2012/11/05/stop-fixing-font-smoothing/
 p, textarea:focus, input,  blockquote, form
   max-width: page-width
 
