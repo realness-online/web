@@ -7,22 +7,30 @@ export const is_focus = layer => path_names.any(name => name === layer)
 export const is_vector = vector => {
   if (typeof vector != 'object') return false
   if (!is_vector_id(vector?.id)) return false
+  if (vector?.path) return false
   if (!vector?.viewbox) return false
   if (!vector?.height || !vector?.width) return false
-  if (
-    !vector?.background ||
-    !vector?.bold ||
-    !vector?.regular ||
-    !vector?.light
-  )
-    return false
-  if (vector?.type === 'posters' || vector.type === 'avatars') return true
+  if (!vector?.bold) return false
+  if (vector?.type === '/posters' || vector.type === '/avatars') return true
   else return false
 }
 
 export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
+}
+
+function migrate_poster(poster) {
+  const dimensions = poster.viewbox.split(' ')
+  poster.width = dimensions[2]
+  poster.height = dimensions[3]
+  if (Array.isArray(poster?.path)) {
+    poster.light = poster.path[0]
+    poster.regular = poster.path[1]
+    poster.bold = poster.path[2]
+  } else poster.bold = poster.path
+  poster.path = undefined
+  return poster
 }
 export function as_poster(props, emit) {
   const vector = ref(null)
@@ -59,7 +67,11 @@ export function as_poster(props, emit) {
   })
   const click = () => emit('click', menu)
   const show = async () => {
-    if (!vector.value) await load(props.itemid)
+    if (!vector.value) {
+      let poster = await load(props.itemid)
+      if (poster?.path) poster = migrate_poster(poster)
+      vector.value = poster
+    }
     working.value = false
     emit('loaded', vector.value)
   }
