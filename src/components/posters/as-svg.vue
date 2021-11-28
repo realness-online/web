@@ -10,18 +10,30 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <rect
-      itemprop="background"
-      width="100%"
-      height="100%"
-      :tabindex="tabindex"
+    <as-background
+      :rect="vector.background"
+      :tabable="tabable"
       @focus="focus('background')" />
-    <path itemprop="bold" :tabindex="tabindex" @focus="focus('bold')" />
-    <path itemprop="regular" :tabindex="tabindex" @focus="focus('regular')" />
-    <path itemprop="light" :tabindex="tabindex" @focus="focus('light')" />
+    <as-path
+      :path="vector.light"
+      itemprop="light"
+      :tabable="tabable"
+      @focus="focus('light')" />
+    <as-path
+      :path="vector.regular"
+      itemprop="regular"
+      :tabable="tabable"
+      @focus="focus('regular')" />
+    <as-path
+      :path="vector.bold"
+      itemprop="bold"
+      :tabable="tabable"
+      @focus="focus('bold')" />
   </svg>
 </template>
 <script setup>
+  import AsPath from '@/components/posters/as-path'
+  import AsBackground from '@/components/posters/as-background'
   import { onMounted, onUpdated } from 'vue'
   import {
     as_poster,
@@ -73,8 +85,8 @@
     working,
     should_show,
     focus,
-    tabindex,
-    focusable
+    focusable,
+    vector
   } = as_poster(props, emit)
   onMounted(should_show)
   onUpdated(should_show)
