@@ -14,18 +14,18 @@ export const is_vector = vector => {
   if (!vector?.bold?.style?.d) return false
   if (vector?.type === '/posters' || vector.type === '/avatars') return true
   else return false
-};
+}
 
 export const is_path = path => {
   if (typeof vector != 'object') return false
   if (path instanceof SVGPathElement) return true
   else return false
-};
+}
 
 export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
-};
+}
 
 function migrate_poster(poster) {
   const dimensions = poster.viewbox.split(' ')
@@ -36,7 +36,6 @@ function migrate_poster(poster) {
     poster.regular = poster.path[1]
     poster.bold = poster.path[2]
   } else poster.bold = poster.path
-
 
   poster.path = undefined
   return poster
@@ -49,31 +48,31 @@ export function as_poster(props, emit) {
   const aspect_ratio = computed(() => {
     if (menu.value || !props.slice) return 'xMidYMid meet'
     else return 'xMidYMid slice'
-  });
+  })
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
     const width = parseInt(numbers[2])
     const height = parseInt(numbers[3])
     return width > height
-  });
+  })
   const path = computed(() => {
     if (working.value || vector) return null
     // then always return a list
     if (Array.isArray(vector.value.path)) return vector.value.path
     else return [vector.value.path]
-  });
+  })
   const viewbox = computed(() => {
     if (vector.value) return vector.value.viewbox
     else return '0 0 16 16' // this is the viewbox for silhouette
-  });
+  })
   const id = computed(() => {
     if (vector.value) return as_query_id(vector.value.id)
     else return 'new-poster'
-  });
+  })
   const fragment = computed(() => {
     return `#${id.value}`
-  });
+  })
   const click = () => emit('click', menu)
   const show = async () => {
     if (!vector.value) {
@@ -83,25 +82,25 @@ export function as_poster(props, emit) {
     }
     working.value = false
     emit('loaded', vector.value)
-  };
+  }
 
   const tabindex = computed(() => {
     if (props.tabable) return 0
     else return undefined
-  });
+  })
   const focusable = computed(() => {
     if (!props.tabable) return 0
     else return undefined
-  });
+  })
   const focus = async layer => {
     emit('focus', layer)
-  };
+  }
   const should_show = () => {
     if (props.immediate) show()
-  };
+  }
   watchEffect(() => {
     if (props.poster && !vector.value) vector.value = props.poster
-  });
+  })
 
   return {
     vector,
