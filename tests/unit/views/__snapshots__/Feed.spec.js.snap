@@ -6,7 +6,7 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
   id="feed"
 >
   <header>
-    <anonymous-stub
+    <logo-as-link-stub
       tabindex="-1"
     />
     <h1>
@@ -15,12 +15,12 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     <a
       tabindex="-1"
     >
-      <anonymous-stub
+      <icon-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <anonymous-stub
+  <as-days-stub
     avatars=""
     events=""
     paginate="true"
@@ -37,7 +37,7 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
   id="feed"
 >
   <header>
-    <anonymous-stub
+    <logo-as-link-stub
       tabindex="-1"
     />
     <h1>
@@ -46,12 +46,12 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     <a
       tabindex="-1"
     >
-      <anonymous-stub
+      <icon-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <anonymous-stub
+  <as-days-stub
     avatars=""
     events=""
     paginate="true"
@@ -68,7 +68,7 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
   id="feed"
 >
   <header>
-    <anonymous-stub
+    <logo-as-link-stub
       tabindex="-1"
     />
     <h1>
@@ -77,12 +77,12 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
     <a
       tabindex="-1"
     >
-      <anonymous-stub
+      <icon-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <anonymous-stub
+  <as-days-stub
     avatars=""
     events=""
     paginate="true"
@@ -99,7 +99,7 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
   id="feed"
 >
   <header>
-    <anonymous-stub
+    <logo-as-link-stub
       tabindex="-1"
     />
     <h1>
@@ -108,12 +108,12 @@ exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
     <a
       tabindex="-1"
     >
-      <anonymous-stub
+      <icon-stub
         name="fullscreen"
       />
     </a>
   </header>
-  <anonymous-stub
+  <as-days-stub
     avatars=""
     events=""
     paginate="true"
