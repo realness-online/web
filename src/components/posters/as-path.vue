@@ -8,14 +8,9 @@
       validate: is_path
     }
   })
-  const vector = ref(props.path.getAttribute('d'))
-  const style = {
-    fill: props.path.getAttribute('fill'),
-    'fill-opacity': props.path.getAttribute('fill-opacity'),
-    'fill-rule': 'evenodd'
-  }
+  const d = ref(props.path.getAttribute('d'))
+  const style = ref(props.path.getAttribute('style'))
 </script>
-
 <template>
-  <path ref="path" :style="style" :d="vector" />
+  <path :d="d" :style="style" />
 </template>

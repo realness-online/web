@@ -3,7 +3,7 @@ import { ref, computed, watchEffect } from 'vue'
 
 const path_names = ['background', 'bold', 'regular', 'light']
 export const is_click = menu => typeof menu === 'boolean'
-export const is_focus = layer => path_names.any(name => name === layer)
+export const is_focus = layer => path_names.some(name => name === layer)
 export const is_vector = vector => {
   if (typeof vector != 'object') return false
   if (!is_vector_id(vector?.id)) return false
@@ -11,7 +11,7 @@ export const is_vector = vector => {
   if (!vector?.viewbox) return false
   if (!vector?.height || !vector?.width) return false
   if (!vector?.bold) return false
-  if (!vector?.bold?.style?.d) return false
+  if (!vector?.bold?.style) return false
   if (vector?.type === '/posters' || vector.type === '/avatars') return true
   else return false
 }
@@ -27,15 +27,28 @@ export const is_vector_id = itemid => {
   else return false
 }
 
-function migrate_poster(poster) {
+function migrate_path(path) {
+  const style = path.style
+  const fill = path.getAttribute('fill')
+  const opacity = path.getAttribute('fill-opacity')
+  const rule = path.getAttribute('fill-rule')
+  if (fill) style.fill = fill
+  if (opacity) style.fillOpacity = opacity
+  if (rule) style.fillRule = rule
+  return path
+}
+
+export function migrate_poster(poster) {
   const dimensions = poster.viewbox.split(' ')
   poster.width = dimensions[2]
   poster.height = dimensions[3]
   if (Array.isArray(poster?.path)) {
-    poster.light = poster.path[0]
-    poster.regular = poster.path[1]
-    poster.bold = poster.path[2]
-  } else poster.bold = poster.path
+    poster.light = migrate_path(poster.path[0])
+    poster.regular = migrate_path(poster.path[1])
+    poster.bold = migrate_path(poster.path[2])
+  } else {
+    poster.bold = migrate_path(poster.path)
+  }
 
   poster.path = undefined
   return poster
@@ -74,6 +87,7 @@ export function as_poster(props, emit) {
     return `#${id.value}`
   })
   const click = () => emit('click', menu)
+
   const show = async () => {
     if (!vector.value) {
       let poster = await load(props.itemid)
@@ -81,9 +95,9 @@ export function as_poster(props, emit) {
       vector.value = poster
     }
     working.value = false
+    console.log(vector.value)
     emit('loaded', vector.value)
   }
-
   const tabindex = computed(() => {
     if (props.tabable) return 0
     else return undefined
