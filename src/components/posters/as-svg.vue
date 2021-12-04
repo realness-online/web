@@ -15,19 +15,21 @@
       :tabable="tabable"
       @focus="focus('background')" />
     <as-path
+      v-if="vector.light"
       :path="vector.light"
       itemprop="light"
-      :tabable="tabable"
+      :tabindex="tabindex"
       @focus="focus('light')" />
     <as-path
+      v-if="vector.regular"
       :path="vector.regular"
       itemprop="regular"
-      :tabable="tabable"
+      :tabindex="tabindex"
       @focus="focus('regular')" />
     <as-path
       :path="vector.bold"
       itemprop="bold"
-      :tabable="tabable"
+      :tabindex="tabindex"
       @focus="focus('bold')" />
   </svg>
 </template>
@@ -86,6 +88,7 @@
     should_show,
     focus,
     focusable,
+    tabindex,
     vector
   } = as_poster(props, emit)
   onMounted(should_show)

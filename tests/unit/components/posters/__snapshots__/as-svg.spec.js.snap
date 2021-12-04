@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`@/components/posters/as-svg.vue Renders A working icon initially 1`] = `
-<anonymous-stub
+<icon-stub
   name="working"
   tabindex="0"
 />
@@ -16,19 +16,14 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   tabindex="0"
   viewBox="0 0 333 444"
 >
-  <rect
-    height="100%"
-    itemprop="background"
-    width="100%"
+  <as-background-stub
+    tabable="false"
   />
-  <path
+  <!--v-if-->
+  <!--v-if-->
+  <as-path-stub
     itemprop="bold"
-  />
-  <path
-    itemprop="regular"
-  />
-  <path
-    itemprop="light"
+    path="[object SVGElement]"
   />
 </svg>
 `;
