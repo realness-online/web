@@ -7,27 +7,42 @@ exports[`@/views/Navigation.vue Renders Displays statements and profile for a pe
 >
   <nav>
     <router-link-stub
+      ariacurrentvalue="page"
       class="black"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/account"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/events"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/posters"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/feed"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/phone-book"
     />
@@ -57,27 +72,42 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:false 
 >
   <nav>
     <router-link-stub
+      ariacurrentvalue="page"
       class="black"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/account"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/events"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/posters"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/feed"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/phone-book"
     />
@@ -107,27 +137,42 @@ exports[`@/views/Navigation.vue Renders handling statement events posting:true s
 >
   <nav>
     <router-link-stub
+      ariacurrentvalue="page"
       class="black"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/account"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/events"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="green"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/posters"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/feed"
     />
     <router-link-stub
+      ariacurrentvalue="page"
       class="blue"
+      custom="false"
+      replace="false"
       tabindex="-1"
       to="/phone-book"
     />

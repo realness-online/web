@@ -80,6 +80,7 @@
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
     "vue-jest": "^5.0.0-alpha.10",
+    "vue-router-mock": "^0.1.2",
     "webpack": "^5.9.0",
     "webpack-bundle-analyzer": "^4.3.0",
     "webpack-cli": "^4.0.0"
@@ -180,6 +181,7 @@
       "jest-localstorage-mock",
       "jsdom-worker-fix"
     ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/unit/router.js"],
     "transform": {
       "^.+\\.vue$": "vue-jest",
       ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",

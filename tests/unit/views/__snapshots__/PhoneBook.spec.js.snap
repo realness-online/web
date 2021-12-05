@@ -7,6 +7,9 @@ exports[`@/views/PhoneBook Renders Displays the phonebook when signed in 1`] = `
 >
   <header>
     <router-link-stub
+      ariacurrentvalue="page"
+      custom="false"
+      replace="false"
       to="/relations"
     />
     <h1>
@@ -37,6 +40,9 @@ exports[`@/views/PhoneBook Renders Handles when a person not loading 1`] = `
 >
   <header>
     <router-link-stub
+      ariacurrentvalue="page"
+      custom="false"
+      replace="false"
       to="/relations"
     />
     <h1>

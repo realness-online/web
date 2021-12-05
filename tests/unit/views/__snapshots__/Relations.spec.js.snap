@@ -13,6 +13,9 @@ exports[`@/views/Relations.vue Renders Fails gracefully when relations has been 
       Relations
     </h1>
     <router-link-stub
+      ariacurrentvalue="page"
+      custom="false"
+      replace="false"
       to="/phone-book"
     />
   </header>
@@ -33,6 +36,9 @@ exports[`@/views/Relations.vue Renders Relationship information 1`] = `
       Relations
     </h1>
     <router-link-stub
+      ariacurrentvalue="page"
+      custom="false"
+      replace="false"
       to="/phone-book"
     />
   </header>
