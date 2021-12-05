@@ -27,7 +27,7 @@ describe('@/use/item.js', () => {
         expect(item.nickname).toBe('scoot')
         expect(item.url).toBe('/people/scott')
         expect(item.style).toBe('/people/666/style.css')
-        expect(item.third_vector).toBe('<svg itemprop="third_vector"></svg>')
+        expect(item.third_vector instanceof SVGElement).toBe(true)
       })
       it('Fails without an itemid', () => {
         item = get_item(`
