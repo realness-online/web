@@ -55,8 +55,13 @@ describe('@/use/itemid', () => {
     })
     it('Returns a directory', async () => {
       firebase.user = user
+      jest.useFakeTimers()
+
       const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
       await as_directory('/+/posters/')
+
+      jest.runAllTimers()
+      await flushPromises()
       expect(mock_get).toBeCalled()
       expect(set).toBeCalled()
       firebase.user = null

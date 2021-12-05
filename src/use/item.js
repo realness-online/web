@@ -1,5 +1,6 @@
 import { as_type } from '@/use/itemid'
 export function hydrate(item_as_string = new String()) {
+  if (!item_as_string.length) return null
   return document.createRange().createContextualFragment(item_as_string)
 }
 export function get_item(elements, itemid) {
