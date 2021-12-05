@@ -86,10 +86,12 @@ describe('@/use/itemid', () => {
   })
   describe('#load_directory_from_network', () => {
     it('Returns an empty directory object', async () => {
+      firebase.user = user
       const itemid = '/+16282281824/statements/1583955101461'
       const directory = await load_directory_from_network(itemid)
       expect(directory.items.length).toBe(0)
       expect(directory.types.length).toBe(0)
+      firebase.user = null
     })
   })
   describe('#as_download_url', () => {
