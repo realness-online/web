@@ -76,6 +76,7 @@ export function itemprop_value(element) {
     case 'textarea':
     case 'select':
       return element.getAttribute('value')
+    case 'svg':
     case 'path':
     case 'rect':
       return element
