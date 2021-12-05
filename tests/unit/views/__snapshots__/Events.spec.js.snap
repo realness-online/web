@@ -25,6 +25,9 @@ exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
     </span>
      public events. You create events from 
     <router-link-stub
+      ariacurrentvalue="page"
+      custom="false"
+      replace="false"
       to="/posters"
     />
   </p>
