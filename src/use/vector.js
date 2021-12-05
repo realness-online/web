@@ -12,7 +12,7 @@ export const is_vector = vector => {
   if (!vector?.height || !vector?.width) return false
   if (!vector?.bold) return false
   if (!vector?.bold?.style) return false
-  if (vector?.type === '/posters' || vector.type === '/avatars') return true
+  if (vector?.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
 
