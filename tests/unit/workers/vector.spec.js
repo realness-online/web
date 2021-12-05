@@ -1,5 +1,6 @@
 import * as vector from '@/workers/vector'
-import * as potrace from '@realness.online/potrace'
+import potrace from '@realness.online/potrace'
+import Jimp from 'jimp'
 const image = require('fs').readFileSync('./tests/unit/workers/house.jpeg')
 const poster_html = require('fs').readFileSync(
   './tests/unit/html/poster.html',
@@ -8,8 +9,10 @@ const poster_html = require('fs').readFileSync(
 const mock_image = {
   bitmap: {
     width: 333,
-    height: 444
+    height: 444,
+    data: [0.3, 0.4, 0.5]
   },
+  scan: jest.fn(() => mock_image),
   resize: jest.fn(() => mock_image),
   normalize: jest.fn(() => mock_image),
   threshold: jest.fn(() => mock_image),
@@ -36,7 +39,7 @@ describe('/workers/vector.js', () => {
 
       beforeEach(() => {
         read_spy = jest
-          .spyOn(potrace.Jimp, 'read')
+          .spyOn(Jimp, 'read')
           .mockImplementation(() => Promise.resolve(mock_image))
         postMessage_spy = jest
           .spyOn(global, 'postMessage')
