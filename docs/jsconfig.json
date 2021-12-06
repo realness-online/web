@@ -2,11 +2,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     }
   },
-  "target": "es2020",
+  "target": "esnext",
+  "module": "esnext",
   "checkJs": true,
-  "module": "es6",
+  "importHelpers": true,
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true,
+  "sourceMap": true,
   "exclude": ["node_modules", "dist", "artifacts"]
 }
