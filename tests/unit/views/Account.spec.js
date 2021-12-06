@@ -1,7 +1,6 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'
-import flushPromises from 'flush-promises'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 const user = {

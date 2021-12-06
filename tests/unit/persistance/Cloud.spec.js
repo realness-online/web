@@ -5,7 +5,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
 import { get } from 'idb-keyval'
-import flushPromises from 'flush-promises'
+import { flushPromises } from '@vue/test-utils'
 const statements = {
   outerHTML: require('fs').readFileSync(
     './tests/unit/html/statements.html',

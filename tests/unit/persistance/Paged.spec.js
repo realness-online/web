@@ -1,6 +1,6 @@
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import flushPromises from 'flush-promises'
+import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 
 import get_item, { hydrate } from '@/use/item'
