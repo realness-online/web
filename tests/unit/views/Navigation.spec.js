@@ -6,14 +6,11 @@ const person = {
   last_name: 'Fryxell',
   id: '/+14151234356'
 }
-const stubs = {
-  stubs: ['router-link', 'router-view']
-}
 describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     jest.spyOn(itemid, 'load').mockImplementation(() => person)
-    wrapper = shallowMount(Navigation, { global: stubs })
+    wrapper = shallowMount(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
   })
@@ -27,7 +24,7 @@ describe('@/views/Navigation.vue', () => {
     describe('first_name', () => {
       it("Returns 'You' by default", async () => {
         jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
-        wrapper = shallowMount(Navigation, { global: stubs })
+        wrapper = shallowMount(Navigation)
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
       })

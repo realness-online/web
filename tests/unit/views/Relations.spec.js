@@ -21,11 +21,7 @@ describe('@/views/Relations.vue', () => {
       const load_profile = jest
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(joe_friday))
-      const wrapper = await shallowMount(Relations, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
-      })
+      const wrapper = await shallowMount(Relations)
       await flushPromises()
       expect(wrapper.vm.relations.length).toBe(1)
       expect(load_relations).toBeCalled()
@@ -44,11 +40,7 @@ describe('@/views/Relations.vue', () => {
       const load_profile = jest
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(null))
-      const wrapper = await shallowMount(Relations, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
-      })
+      const wrapper = await shallowMount(Relations)
       await flushPromises()
       expect(wrapper.vm.relations.length).toBe(0)
       expect(load_relations).toBeCalled()
