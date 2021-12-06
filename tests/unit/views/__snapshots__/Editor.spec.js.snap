@@ -6,9 +6,9 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
   id="editor"
 >
   <header>
-    <h4>
+    <h1>
       Fill
-    </h4>
+    </h1>
     <a
       class="fullscreen"
     >

@@ -1,3 +1,58 @@
+<script setup>
+  import icon from '@/components/icon'
+  import asFill from '@/components/posters/as-fill-figure'
+  import asStroke from '@/components/posters/as-stroke-figure'
+  import asAnimation from '@/components/posters/as-animation'
+  import asGrid from '@/components/posters/as-grid'
+
+  import { Poster } from '@/persistance/Storage'
+  import { useFullscreen, useMagicKeys } from '@vueuse/core'
+  import { useRoute, useRouter } from 'vue-router'
+  import { watch, computed, ref } from 'vue'
+
+  const fill = ref(true)
+  const stroke = ref(false)
+  const animation = ref(false)
+  const grid = ref(false)
+  const route = useRoute()
+  const router = useRouter()
+  const itemid = `${localStorage.me}/posters/${route.params.id}`
+
+  const page_title = computed(() => {
+    if (stroke.value) return 'Stroke'
+    if (fill.value) return 'Fill'
+    if (animation.value) return 'Animation'
+    return 'Grid'
+  })
+  const color = computed(() => {
+    if (stroke.value || fill.value) return true
+    else return false
+  })
+  const back = () => {
+    console.log('back')
+    const me = localStorage.me.substring(2)
+    router.replace({
+      path: `/posters#${me}-posters-${route.params.id}`
+    })
+  }
+  const save = async () => {
+    console.log('save')
+    const poster = new Poster(itemid)
+    await poster.save()
+    back()
+  }
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } = useFullscreen()
+  const { f, enter, escape } = useMagicKeys()
+  watch(enter, v => {
+    if (v) save()
+  })
+  watch(escape, v => {
+    if (v) back()
+  })
+  watch(f, v => {
+    if (v) fullscreen()
+  })
+</script>
 <template>
   <section id="editor" class="page">
     <header v-if="!is_fullscreen">
@@ -20,72 +75,6 @@
     </footer>
   </section>
 </template>
-<script>
-  export default {
-    data() {
-      return {
-        fill: true,
-        stroke: false,
-        animation: false,
-        grid: false
-      }
-    },
-    computed: {
-      page_title() {
-        if (this.stroke) return 'Stroke'
-        if (this.fill) return 'Fill'
-        if (this.animation) return 'Animation'
-        return 'Grid'
-      },
-      color() {
-        if (this.stroke || this.fill) return true
-        else return false
-      }
-    }
-  }
-</script>
-<script setup>
-  import icon from '@/components/icon'
-  import asFill from '@/components/posters/as-fill-figure'
-  import asStroke from '@/components/posters/as-stroke-figure'
-  import asAnimation from '@/components/posters/as-animation'
-  import asGrid from '@/components/posters/as-grid'
-
-  import { Poster } from '@/persistance/Storage'
-  import { useFullscreen, useMagicKeys } from '@vueuse/core'
-  import { useRoute, useRouter } from 'vue-router'
-  import { watch } from 'vue'
-
-  const route = useRoute()
-  const router = useRouter()
-  const itemid = `${localStorage.me}/posters/${route.params.id}`
-  const back = () => {
-    console.log('back')
-    const me = localStorage.me.substring(2)
-    router.replace({
-      path: `/posters#${me}-posters-${route.params.id}`
-    })
-  }
-  const save = async () => {
-    console.log('save')
-    const poster = new Poster(itemid)
-    await poster.save()
-    back()
-  }
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = useFullscreen()
-  const { f, enter, escape } = useMagicKeys()
-
-  watch(enter, v => {
-    if (v) save()
-  })
-  watch(escape, v => {
-    if (v) back()
-  })
-  watch(f, v => {
-    if (v) fullscreen()
-  })
-</script>
-
 <style lang="stylus">
   section#editor
     &:fullscreen
