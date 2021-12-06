@@ -20,13 +20,11 @@ describe('@/views/PhoneBook', () => {
   })
   describe('Renders', () => {
     it('Lets you know to sign in', async () => {
-      wrapper = await shallowMount(phonebook, {
-        global: { stubs: ['router-link', 'router-view'] }
-      })
+      wrapper = await shallowMount(PhoneBook)
       expect(wrapper.vm.signed_in).toBe(false)
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Displays the phonebook when signed in', async () => {
+    it('Displays the PhoneBook when signed in', async () => {
       const mock_dir = {
         prefixes: ['+16282281824'],
         items: [],
@@ -39,9 +37,7 @@ describe('@/views/PhoneBook', () => {
       jest
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(person))
-      wrapper = await shallowMount(phonebook, {
-        global: { stubs: ['router-link', 'router-view'] }
-      })
+      wrapper = await shallowMount(PhoneBook)
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)
       expect(wrapper.element).toMatchSnapshot()
@@ -57,9 +53,7 @@ describe('@/views/PhoneBook', () => {
         Promise.resolve(mock_dir)
       )
       jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
-      wrapper = await shallowMount(phonebook, {
-        global: { stubs: ['router-link', 'router-view'] }
-      })
+      wrapper = await shallowMount(PhoneBook)
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)
       expect(wrapper.element).toMatchSnapshot()

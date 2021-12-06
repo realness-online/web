@@ -25,11 +25,7 @@ describe('@/views/Posters.vue', () => {
     ]
     localStorage.me = '/+16282281824'
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
-    wrapper = shallowMount(Posters, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
+    wrapper = shallowMount(Posters)
     wrapper.vm.events = events
   })
   afterEach(() => {

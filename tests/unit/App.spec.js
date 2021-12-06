@@ -8,11 +8,7 @@ describe('@/App.vue', () => {
   beforeEach(async () => {
     jest.resetModules()
     process.env = { ...node_env }
-    wrapper = await shallowMount(App, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
+    wrapper = await shallowMount(App)
   })
   afterEach(() => {
     firebase.initializeApp.mockClear()
@@ -31,22 +27,14 @@ describe('@/App.vue', () => {
     it('Initialises firebase in production', async () => {
       process.env.NODE_ENV = 'production'
       fetch.mockResponseOnce('{}')
-      wrapper = await shallowMount(App, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
-      })
+      wrapper = await shallowMount(App)
       expect(firebase.initializeApp).toHaveBeenCalled()
       expect(fetch.mock.calls.length).toBe(1)
       expect(fetch.mock.calls[0][0]).toBe('__/firebase/init.json')
     })
     it('Calls offline is app is initialized offline', async () => {
       jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
-      wrapper = await shallowMount(App, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
-      })
+      wrapper = await shallowMount(App)
     })
   })
   describe('Methods', () => {

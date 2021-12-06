@@ -12,7 +12,6 @@ describe('@/components/statements/as-article.vue', () => {
   let wrapper
   beforeEach(async () => {
     wrapper = await shallowMount(as_article, {
-      global: { stubs: ['router-link', 'router-view'] },
       props: { statements: [statement, older_statement] }
     })
     await flushPromises()
@@ -24,7 +23,6 @@ describe('@/components/statements/as-article.vue', () => {
     })
     it('Loads the statement author if verbose is true', async () => {
       wrapper = await shallowMount(as_article, {
-        global: { stubs: ['router-link', 'router-view'] },
         props: {
           verbose: true,
           statements: [statement, older_statement]
