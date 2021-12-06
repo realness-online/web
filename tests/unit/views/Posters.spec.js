@@ -23,6 +23,7 @@ describe('@/views/Posters.vue', () => {
         poster: poster.id
       }
     ]
+    localStorage.me = '/+16282281824'
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
     wrapper = shallowMount(Posters, {
       global: {
@@ -30,6 +31,9 @@ describe('@/views/Posters.vue', () => {
       }
     })
     wrapper.vm.events = events
+  })
+  afterEach(() => {
+    localStorage.me = undefined
   })
   describe('Renders', () => {
     it('UI for posters', () => {
@@ -45,13 +49,11 @@ describe('@/views/Posters.vue', () => {
   })
   describe('Computed', () => {
     describe('.as_itemid', () => {
-      wrapper = shallowMount(Posters, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
+      it('returns itemid for new poster', () => {
+        wrapper = shallowMount(Posters)
+        localStorage.me = '/+16282281824'
+        expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
       })
-      localStorage.me = '/+16282281824'
-      expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
     })
   })
   describe('Methods', () => {
