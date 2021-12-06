@@ -15,13 +15,11 @@ export const is_vector = vector => {
   if (vector?.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
-
 export const is_path = path => {
   if (typeof vector != 'object') return false
   if (path instanceof SVGPathElement) return true
   else return false
 }
-
 export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
@@ -37,7 +35,6 @@ function migrate_path(path) {
   if (rule) style.fillRule = rule
   return path
 }
-
 export function migrate_poster(poster) {
   const dimensions = poster.viewbox.split(' ')
   poster.width = dimensions[2]
@@ -53,6 +50,7 @@ export function migrate_poster(poster) {
   poster.path = undefined
   return poster
 }
+
 export function as_poster(props, emit) {
   const vector = ref(null)
   const working = ref(true)
@@ -95,7 +93,6 @@ export function as_poster(props, emit) {
       vector.value = poster
     }
     working.value = false
-    console.log(vector.value)
     emit('loaded', vector.value)
   }
   const tabindex = computed(() => {
@@ -115,7 +112,6 @@ export function as_poster(props, emit) {
   watchEffect(() => {
     if (props.poster && !vector.value) vector.value = props.poster
   })
-
   return {
     vector,
     click,
