@@ -1,9 +1,8 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
 import * as itemid from '@/use/itemid'
 import get_item from '@/use/item'
-import flushPromises from 'flush-promises'
 import firebase from 'firebase/app'
 const poster_html = require('fs').readFileSync(
   './tests/unit/html/poster.html',

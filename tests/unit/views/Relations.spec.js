@@ -1,7 +1,6 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import Relations from '@/views/Relations'
 import * as itemid from '@/use/itemid'
-import flushPromises from 'flush-promises'
 describe('@/views/Relations.vue', () => {
   const joe_friday = {
     id: '/+14151234356',

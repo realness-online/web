@@ -1,5 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
-import flushPromises from 'flush-promises'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import Navigation from '@/views/Navigation'
 import * as itemid from '@/use/itemid'
 const person = {

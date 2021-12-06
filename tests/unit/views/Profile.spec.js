@@ -1,8 +1,7 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import Profile from '@/views/Profile'
-import flushPromises from 'flush-promises'
 import * as itemid from '@/use/itemid'
 const person = require('fs').readFileSync(
   './tests/unit/html/person.html',

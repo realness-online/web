@@ -1,5 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
-import flushPromises from 'flush-promises'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_statement from '@/components/statements/as-div'
 import get_item from '@/use/item'
 import { Statements } from '@/persistance/Storage'

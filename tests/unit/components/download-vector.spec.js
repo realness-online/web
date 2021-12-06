@@ -1,5 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
-import flushPromises from 'flush-promises'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import download_vector from '@/components/download-vector'
 import * as itemid from '@/use/itemid'
 import get_item from '@/use/item'
