@@ -188,7 +188,10 @@ describe('@/components/sync', () => {
         )
       })
       it('Starts syncing without a last_sync', async () => {
+        jest.useFakeTimers()
         await wrapper.vm.play()
+        jest.runAllTimers()
+        await flushPromises()
         expect(sync_offline_actions_sync).toBeCalled()
         expect(sync_me).toBeCalled()
         expect(sync_statements).toBeCalled()
