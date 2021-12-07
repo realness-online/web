@@ -25,7 +25,6 @@
   import { watch } from 'vue'
   import { useMagicKeys as use_magic_keys } from '@vueuse/core'
   import { as_created_at } from '@/use/itemid'
-
   const props = defineProps({
     poster: {
       type: Object,

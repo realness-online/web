@@ -35,7 +35,6 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
   />
   <!--v-if-->
   <!--v-if-->
-  <!--v-if-->
   <footer>
     <menu
       style="visibility: hidden;"
