@@ -15,6 +15,12 @@ export const is_vector = vector => {
   if (vector?.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
+export const is_rect = rect => {
+  if (typeof rect != 'object') return false
+  if (rect instanceof SVGRectElement) return true
+  else return false
+}
+
 export const is_path = path => {
   if (typeof vector != 'object') return false
   if (path instanceof SVGPathElement) return true
@@ -29,9 +35,11 @@ function migrate_path(path) {
   const fill = path.getAttribute('fill')
   const opacity = path.getAttribute('fill-opacity')
   const rule = path.getAttribute('fill-rule')
+
   if (fill) style.fill = fill
   if (opacity) style.fillOpacity = opacity
   if (rule) style.fillRule = rule
+
   return path
 }
 export function migrate_poster(poster) {

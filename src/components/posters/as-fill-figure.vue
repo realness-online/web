@@ -3,16 +3,17 @@
   import asSvg from '@/components/posters/as-svg'
   import { fill_opacity, path_query } from '@/use/path-style'
   import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
+  import { is_vector_id } from '@/use/vector'
   const figure = ref(null)
   const color = ref('#151518')
   const focus_id = ref(null)
   defineProps({
     itemid: {
       required: true,
-      type: String
+      type: String,
+      validator: is_vector_id
     }
   })
-  defineEmits(['pressed'])
   const re_focus = () => {
     path_query(focus_id.value).focus()
   }
@@ -72,7 +73,7 @@
         z-index: 2
         bottom: inset(bottom)
         right: inset(right, base-line)
-        width: base-line * 1.75
+        width: base-line * 1.5
         height: base-line * 1.75
         &::-moz-color-swatch
           border: 2px solid green
