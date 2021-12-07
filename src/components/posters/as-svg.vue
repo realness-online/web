@@ -36,7 +36,7 @@
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import { onMounted, onUpdated } from 'vue'
+  import { onMounted } from 'vue'
   import {
     as_poster,
     is_vector,
@@ -92,7 +92,6 @@
     vector
   } = as_poster(props, emit)
   onMounted(should_show)
-  onUpdated(should_show)
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
