@@ -101,19 +101,20 @@
     min-height: 512px
     height: 100%
     width: 100%
-    &:focus
-      border:2px solid red
-    & svg:focus
-      fill: white
-    & > use
-      stroke: black-background
+    &::focus
+      border: 2px solid red
+    & > rect[itemprop]
+    & > path[itemprop]
+      stroke: background-black
       stroke-width: 1px
       stroke-opacity: 0.5
       outline: none
       &:focus
+        outline: none
+        stroke: red
         animation-name: press
       &:active
-        stroke: white
-        fill: red
-        animation-name: press-hold
+        outline: none
+        stroke: red
+        animation-name: press
 </style>

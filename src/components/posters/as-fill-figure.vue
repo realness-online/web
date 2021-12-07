@@ -73,8 +73,8 @@
         z-index: 2
         bottom: inset(bottom)
         right: inset(right, base-line)
-        width: base-line * 1.5
-        height: base-line * 1.75
+        width: base-line * 2
+        height: base-line * 2
         &::-moz-color-swatch
           border: 2px solid green
           border-radius: 16px

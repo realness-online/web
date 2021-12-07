@@ -126,14 +126,12 @@
         grid-column: 2
         grid-row: 2
     svg
-      &[itemscope]
-        transition-property: all
       z-index: 1
       &[itemscope]
+        transition-property: all
+
+      &[itemscope]
         position: relative
-      &.background
-        width: 100%
-        height: 100%
       &.working
         min-height: 512px
         margin-top: base-line
@@ -158,7 +156,7 @@
           left: base-line
           & > address
             & > h3:first-of-type
-              margin-right: (base-line / 3)
+              margin-right: base-line * .333
             & > h3
             & > time
               color: blue
