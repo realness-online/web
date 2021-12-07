@@ -1,3 +1,39 @@
+<script setup>
+  import { ref } from 'vue'
+  import asSvg from '@/components/posters/as-svg'
+  import { fill_opacity, path_query } from '@/use/path-style'
+  import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
+  const figure = ref(null)
+  const color = ref('#151518')
+  const focus_id = ref(null)
+  defineProps({
+    itemid: {
+      required: true,
+      type: String
+    }
+  })
+  defineEmits(['pressed'])
+  const re_focus = () => {
+    path_query(focus_id.value).focus()
+  }
+  const focus = id => {
+    focus_id.value = id
+    let element = path_query(focus_id.value)
+    color.value = element.style.fill
+  }
+  const { distanceY } = usePointerSwipe(figure, {
+    onSwipe() {
+      if (distanceY.value < 0) fill_opacity('more', 0.03)
+      else fill_opacity('less', 0.03)
+    }
+  })
+  const keys = useMagicKeys()
+  whenever(keys.up, () => fill_opacity())
+  whenever(keys.up_shift, () => fill_opacity('more', 0.01))
+  whenever(keys.down, () => fill_opacity('less'))
+  whenever(keys.down_shift, () => fill_opacity('less', 0.01))
+  whenever(color, () => (path_query(focus_id.value).style.fill = color.value))
+</script>
 <template>
   <figure id="edit-fill" ref="figure">
     <as-svg
@@ -12,58 +48,6 @@
     </figcaption>
   </figure>
 </template>
-<script>
-  import finger from '@/mixins/finger'
-  import vector from '@/mixins/vector'
-  export default {
-    mixins: [vector, finger],
-    props: {
-      itemid: {
-        required: true,
-        type: String
-      }
-    },
-    emits: ['pressed'],
-    data() {
-      return {
-        color: '#151518',
-        focus_id: ''
-      }
-    },
-    watch: {
-      color() {
-        document.getElementById(this.focus_id).style.fill = this.color
-      }
-    },
-    methods: {
-      re_focus() {
-        document.getElementById(this.focus_id).focus()
-      },
-      focus(id) {
-        this.focus_id = id
-        this.color = document.getElementById(this.focus_id).style.fill
-      }
-    }
-  }
-</script>
-<script setup>
-  import { ref } from 'vue'
-  import asSvg from '@/components/posters/as-svg'
-  import { fill_opacity } from '@/use/path_style'
-  import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
-  const figure = ref(null)
-  const { distanceY } = usePointerSwipe(figure, {
-    onSwipe(e) {
-      if (distanceY.value < 0) fill_opacity('more', 0.03)
-      else fill_opacity('less', 0.03)
-    }
-  })
-  const keys = useMagicKeys()
-  whenever(keys.up, () => fill_opacity())
-  whenever(keys.up_shift, () => fill_opacity('more', 0.01))
-  whenever(keys.down, () => fill_opacity('less'))
-  whenever(keys.down_shift, () => fill_opacity('less', 0.01))
-</script>
 <style lang="stylus">
   figure#edit-fill
     & > svg

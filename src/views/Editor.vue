@@ -1,7 +1,6 @@
 <script setup>
   import icon from '@/components/icon'
   import asFill from '@/components/posters/as-fill-figure'
-  import asStroke from '@/components/posters/as-stroke-figure'
   import asAnimation from '@/components/posters/as-animation'
   import asGrid from '@/components/posters/as-grid'
 
@@ -63,7 +62,6 @@
       <a @click="save"><icon name="finished" /></a>
     </header>
     <as-fill v-if="fill" :itemid="itemid" />
-    <as-stroke v-if="stroke" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
     <as-grid v-if="grid" :itemid="itemid" />
     <footer>
