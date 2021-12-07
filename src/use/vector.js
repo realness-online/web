@@ -24,7 +24,6 @@ export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
 }
-
 function migrate_path(path) {
   const style = path.style
   const fill = path.getAttribute('fill')
@@ -43,9 +42,7 @@ export function migrate_poster(poster) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
     poster.bold = migrate_path(poster.path[2])
-  } else {
-    poster.bold = migrate_path(poster.path)
-  }
+  } else poster.bold = migrate_path(poster.path)
 
   poster.path = undefined
   return poster
@@ -84,8 +81,7 @@ export function as_poster(props, emit) {
   const fragment = computed(() => {
     return `#${id.value}`
   })
-  const click = () => emit('click', menu)
-
+  const click = () => emit('click', menu.value)
   const show = async () => {
     if (!vector.value) {
       let poster = await load(props.itemid)
@@ -103,9 +99,7 @@ export function as_poster(props, emit) {
     if (!props.tabable) return 0
     else return undefined
   })
-  const focus = async layer => {
-    emit('focus', layer)
-  }
+  const focus = async layer => emit('focus', layer)
   const should_show = () => {
     if (props.immediate) show()
   }
