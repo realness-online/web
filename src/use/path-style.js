@@ -1,8 +1,10 @@
 export const layers_like_fonts = ['light', 'regular', 'bold']
 export const svg_ns = 'http://www.w3.org/2000/svg'
-
 import { change } from '@/use/opacity'
 
+export function path_query(name) {
+  return document.querySelector(`[itemprop="${name}"]`)
+}
 export function get_active_id() {
   if (!document.activeElement) return
   return document.activeElement.getAttribute('href').substring(1)
