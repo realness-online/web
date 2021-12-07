@@ -20,7 +20,6 @@
     "@realness.online/potrace": "2.1.23",
     "@vue/compat": "^3.1.0-0",
     "@vueuse/core": "^6.7.3",
-    "alloyfinger": "^0.1.16",
     "firebase": "^8.2.1",
     "idb-keyval": "^5.0.2",
     "jimp": "^0.16.1",
@@ -31,8 +30,7 @@
     "simplex-noise": "^3.0.0",
     "svgo": "^1.3.0",
     "vue": "^3.2.0",
-    "vue-router": "^4.0.3",
-    "vue3-keypress": "^4.0.1"
+    "vue-router": "^4.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -76,6 +74,7 @@
     "stream-browserify": "^3.0.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
+    "ts-jest": "^26.5.6",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
     "vue-jest": "^5.0.0-alpha.10",
@@ -165,6 +164,7 @@
     "verbose": false,
     "collectCoverage": false,
     "restoreMocks": true,
+    "testEnvironment": "jsdom",
     "moduleFileExtensions": [
       "js",
       "jsx",
@@ -173,6 +173,7 @@
     ],
     "setupFiles": [
       "<rootDir>/tests/unit/setup.js",
+      "<rootDir>/tests/polyfill/activeElement.js",
       "<rootDir>/tests/polyfill/createrange.js",
       "<rootDir>/tests/polyfill/scrollIntoView.js",
       "<rootDir>/tests/polyfill/IntersectionObserver.js",
@@ -180,7 +181,9 @@
       "jest-localstorage-mock",
       "jsdom-worker-fix"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/tests/unit/router.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/unit/router.js"
+    ],
     "transform": {
       "^.+\\.vue$": "vue-jest",
       ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
