@@ -18,6 +18,7 @@ export function get_meta(item) {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')
+  if (type) type = type.substring(1)
   if (id && !type) type = as_type(id)
   if (id) meta.id = id
   if (type) meta.type = type
