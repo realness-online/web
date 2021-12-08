@@ -189,9 +189,6 @@
       ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
       "^.+\\.jsx?$": "babel-jest"
     },
-    "transformIgnorePatterns": [
-      "\\.pnp\\.[^\\/]+$"
-    ],
     "coverageDirectory": "<rootDir>/artifacts/unit/coverage",
     "cacheDirectory": "<rootDir>/artifacts/unit/cache",
     "collectCoverageFrom": [
