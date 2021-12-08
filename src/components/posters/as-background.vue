@@ -16,7 +16,7 @@
   const { tabindex } = as_poster(props)
   const background = reactive({
     style: {
-      fill: 'var(--white)'
+      fill: 'var(--white-poster)'
     }
   })
 </script>
