@@ -4,7 +4,7 @@ exports[`@/components/download-vector Renders Handles downloads from anonymous u
 <a
   class="download"
   download="posters_Saturday, September 26, 3:02 PM.svg"
-  href="data:application/octet-stream,%3Csvg%20viewBox%3D%220%200%20333%20444%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%5Bobject%20SVGElement%5D%3C%2Fsvg%3E"
+  href="data:application/octet-stream,%3Csvg%20viewBox%3D%220%200%20333%20444%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3Eundefined%3C%2Fsvg%3E"
 >
   <icon-stub
     name="download"
@@ -16,7 +16,7 @@ exports[`@/components/download-vector Renders Link to download svg 1`] = `
 <a
   class="download"
   download="Scott_Fryxell_posters_Saturday, September 26, 3:02 PM.svg"
-  href="data:application/octet-stream,%3Csvg%20viewBox%3D%220%200%20333%20444%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%5Bobject%20SVGElement%5D%3C%2Fsvg%3E"
+  href="data:application/octet-stream,%3Csvg%20viewBox%3D%220%200%20333%20444%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3Eundefined%3C%2Fsvg%3E"
 >
   <icon-stub
     name="download"
