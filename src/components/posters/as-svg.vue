@@ -103,12 +103,20 @@
     width: 100%
     &::focus
       border: 2px solid red
+
     & > rect[itemprop]
     & > path[itemprop]
-      stroke: background-black
+      stroke: black-background
       stroke-width: 1px
       stroke-opacity: 0.5
       outline: none
+    & > path[itemprop="light"]
+        fill: inherit
+    & > path[itemprop="regular"]
+        fill: inherit
+    & > path[itemprop="bold"]
+        stroke: white
+        stroke-opacity: 0.75
       &:focus
         outline: none
         stroke: red
