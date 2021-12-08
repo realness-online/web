@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posters/as-fill-figure.vue Renders a menu to edit a poster 1`] = `
+exports[`@/components/posters/as-fill-figure.vue Renders a editor for a poster 1`] = `
 <figure
   id="edit-fill"
   poster="[object Object]"
