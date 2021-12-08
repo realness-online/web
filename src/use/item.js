@@ -1,4 +1,5 @@
 import { as_type } from '@/use/itemid'
+import { set_vector_dimensions } from '@/use/vector'
 export function hydrate(item_as_string = new String()) {
   if (!item_as_string.length) return null
   return document.createRange().createContextualFragment(item_as_string)
@@ -47,7 +48,7 @@ export function get_itemprops(item) {
     case 'marker':
     case 'view':
     case 'pattern':
-      props.viewbox = item.getAttribute('viewBox')
+      set_vector_dimensions(props, item)
   }
   return props
 }

@@ -30,6 +30,17 @@ export const is_vector_id = itemid => {
   if (as_author(itemid) && as_created_at(itemid)) return true
   else return false
 }
+
+export function set_vector_dimensions(props, item) {
+  props.viewbox = item.getAttribute('viewBox')
+  const dimensions = props.viewbox.split(' ')
+  let width = item.getAttribute('width')
+  let height = item.getAttribute('height')
+  if (!width) width = dimensions[2]
+  if (!height) height = dimensions[3]
+  props.width = width
+  props.height = height
+}
 function migrate_path(path) {
   const style = path.style
   const fill = path.getAttribute('fill')
@@ -43,15 +54,11 @@ function migrate_path(path) {
   return path
 }
 export function migrate_poster(poster) {
-  const dimensions = poster.viewbox.split(' ')
-  poster.width = dimensions[2]
-  poster.height = dimensions[3]
   if (Array.isArray(poster?.path)) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
     poster.bold = migrate_path(poster.path[2])
   } else poster.bold = migrate_path(poster.path)
-
   poster.path = undefined
   return poster
 }
