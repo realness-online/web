@@ -9,11 +9,11 @@ import {
 describe('@/use/path-style.js', () => {
   describe('#get_active_id', () => {
     it('Returns the active element', () => {
-      window.document.body.innerHTML = `<a id="test"
-        href="#6282281824/posters/5598674934">I am a link</a>`
+      window.document.body.innerHTML = `<a itemprop="background" id="test"
+      href="#test">I am a link</a>`
       document.getElementById('test').focus()
       const id = get_active_id()
-      expect(id).toBe('6282281824/posters/5598674934')
+      expect(id).toBe('background')
     })
   })
   describe('#fill_opacity', () => {
