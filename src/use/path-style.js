@@ -1,28 +1,22 @@
-export const layers_like_fonts = ['light', 'regular', 'bold']
-export const svg_ns = 'http://www.w3.org/2000/svg'
+import { useActiveElement } from '@vueuse/core'
 import { change } from '@/use/opacity'
 
-export function path_query(name) {
+export const svg_ns = 'http://www.w3.org/2000/svg'
+
+export function itemprop_query(name) {
   return document.querySelector(`[itemprop="${name}"]`)
 }
-export function get_active_id() {
-  if (!document.activeElement) return
-  return document.activeElement.getAttribute('href').substring(1)
-}
-
 export function create_path_element() {
   return document.createElementNS(svg_ns, 'path')
 }
 
-export function fill_opacity(direction = 'more', resolution = 0.025) {
-  const path = document.getElementById(get_active_id())
-  let opacity = path.getAttribute('fill-opacity') // this will come from legacy posters
-  if (!opacity) opacity = path.style.fillOpacity
-  path.style.fillOpacity = change(opacity, direction, resolution)
+export function fill_opacity(direction, resolution) {
+  const path = useActiveElement().value
+  path.style.fillOpacity = change(path.style.fillOpacity, direction, resolution)
 }
 
-export function stroke_opacity(direction = 'more', resolution = 0.025) {
-  const path = document.getElementById(get_active_id())
+export function stroke_opacity(direction, resolution) {
+  const path = useActiveElement().value
   path.style.strokeOpacity = change(
     path.style.strokeOpacity,
     direction,
@@ -30,7 +24,7 @@ export function stroke_opacity(direction = 'more', resolution = 0.025) {
   )
 }
 
-export function opacity(direction = 'more', resolution = 0.025) {
-  const path = document.getElementById(get_active_id())
+export function opacity(direction, resolution) {
+  const path = useActiveElement().value
   path.style.opacity = change(path.style.opacity, direction, resolution)
 }
