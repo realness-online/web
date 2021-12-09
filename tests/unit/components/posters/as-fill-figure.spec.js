@@ -7,15 +7,29 @@ const poster_html = require('fs').readFileSync(
   'utf8'
 )
 let poster = get_item(poster_html)
-poster = migrate_poster(poster)
 const itemid = '/+16282281824/posters/559666932867'
 describe('@/components/posters/as-fill-figure.vue', () => {
+  let wrapper
+  beforeEach(() => {
+    wrapper = shallowMount(as_fill_figure, {
+      props: { poster, itemid }
+    })
+  })
   describe('Renders', () => {
-    it('a menu to edit a poster', () => {
-      const wrapper = shallowMount(as_fill_figure, {
-        props: { poster, itemid }
-      })
+    it('a editor for a poster', () => {
       expect(wrapper.element).toMatchSnapshot()
+    })
+  })
+  describe.skip('Methods', () => {
+    describe('#focus_on_active', () => {
+      it('sets the focus on the active element', () => {
+        wrapper.vm.focus_on_active()
+      })
+    })
+    describe('#focus_on_active', () => {
+      it('sets the color of active element', () => {
+        wrapper.vm.set_input_color('bold')
+      })
     })
   })
 })
