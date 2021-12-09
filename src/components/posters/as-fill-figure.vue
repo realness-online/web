@@ -1,12 +1,21 @@
 <script setup>
-  import { ref } from 'vue'
   import asSvg from '@/components/posters/as-svg'
-  import { fill_opacity, path_query } from '@/use/path-style'
-  import { useMagicKeys, whenever, usePointerSwipe } from '@vueuse/core'
+  import { ref } from 'vue'
+  import {
+    whenever,
+    useMagicKeys as keyboard,
+    usePointerSwipe as swipe
+  } from '@vueuse/core'
+  import {
+    fill_opacity as opacity,
+    itemprop_query as query
+  } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
+  import rgb_to_hex from '@/use/rgb-to-hex'
+
   const figure = ref(null)
   const color = ref('#151518')
-  const focus_id = ref(null)
+  const itemprop = ref('bold')
   defineProps({
     itemid: {
       required: true,
@@ -14,38 +23,41 @@
       validator: is_vector_id
     }
   })
-  const re_focus = () => {
-    path_query(focus_id.value).focus()
+  const focus_on_active = () => query(itemprop.value).focus()
+  const set_input_color = id => {
+    itemprop.value = id
+    const fill = query(itemprop.value).style.fill
+    if (fill.substring(0, 3) === 'var') color.value = '#ffffff'
+    else color.value = rgb_to_hex(fill)
   }
-  const focus = id => {
-    focus_id.value = id
-    let element = path_query(focus_id.value)
-    color.value = element.style.fill
-  }
-  const { distanceY } = usePointerSwipe(figure, {
+  const { distanceY } = swipe(figure, {
     onSwipe() {
       if (distanceY.value < 0) fill_opacity('more', 0.03)
       else fill_opacity('less', 0.03)
     }
   })
-  const keys = useMagicKeys()
-  whenever(keys.up, () => fill_opacity())
-  whenever(keys.up_shift, () => fill_opacity('more', 0.01))
-  whenever(keys.down, () => fill_opacity('less'))
-  whenever(keys.down_shift, () => fill_opacity('less', 0.01))
-  whenever(color, () => (path_query(focus_id.value).style.fill = color.value))
+  const keys = keyboard()
+  whenever(keys.up, () => opacity())
+  whenever(keys.up_shift, () => opacity('more', 0.01))
+  whenever(keys.down, () => opacity('less'))
+  whenever(keys.down_shift, () => opacity('less', 0.01))
+  whenever(color, () => (query(itemprop.value).style.fill = color.value))
 </script>
 <template>
   <figure id="edit-fill" ref="figure">
     <as-svg
       :itemid="itemid"
       :immediate="true"
-      :tabindex="-1"
       :slice="false"
       :tabable="true"
-      @focus="focus" />
+      tabindex="-1"
+      @focus="set_input_color" />
     <figcaption>
-      <input v-model="color" :tabindex="-1" type="color" @blur="re_focus" />
+      <input
+        v-model="color"
+        type="color"
+        tabindex="-1"
+        @blur="focus_on_active" />
     </figcaption>
   </figure>
 </template>
