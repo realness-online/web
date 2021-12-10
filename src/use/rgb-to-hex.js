@@ -1,7 +1,5 @@
 //See https://github.com/sindresorhus/rgb-hex
 export default function rgb_to_hex(red, green, blue) {
-  const isPercent = red.toString().includes('%')
-
   if (typeof red === 'string') {
     ;[red, green, blue] = red
       .match(/(0?\.?\d{1,3})%?\b/g)
