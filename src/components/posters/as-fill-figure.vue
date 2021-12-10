@@ -32,8 +32,8 @@
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      if (distanceY.value < 0) fill_opacity('more', 0.03)
-      else fill_opacity('less', 0.03)
+      if (distanceY.value < 0) opacity('more', 0.03)
+      else opacity('less', 0.03)
     }
   })
   const keys = keyboard()
