@@ -15,7 +15,7 @@
       :statements="statements">
       <template v-for="item in items">
         <poster-as-figure
-          v-if="item.type === 'posters'"
+          v-if="item.type === 'posters' || item.type === 'avatars'"
           :key="slot_key(item)"
           :itemid="item.id"
           :verbose="true" />
@@ -80,9 +80,10 @@
       async fill_feed() {
         await Promise.all(
           this.authors.map(async relation => {
-            const [statements, posters] = await Promise.all([
+            const [statements, posters, avatars] = await Promise.all([
               list(`${relation.id}/statements`),
-              as_directory(`${relation.id}/posters`)
+              as_directory(`${relation.id}/posters`),
+              as_directory(`${relation.id}/avatars`)
             ])
             relation.viewed = ['index']
             this.statements = [...statements, ...this.statements]
@@ -91,6 +92,14 @@
                 this.posters.push({
                   id: `${relation.id}/posters/${created_at}`,
                   type: 'posters'
+                })
+              })
+            }
+            if (avatars && avatars.items) {
+              avatars.items.forEach(created_at => {
+                this.posters.push({
+                  id: `${relation.id}/avatars/${created_at}`,
+                  type: 'avatars'
                 })
               })
             }
