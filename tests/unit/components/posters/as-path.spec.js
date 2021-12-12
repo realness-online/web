@@ -6,7 +6,6 @@ const poster_html = require('fs').readFileSync(
   'utf8'
 )
 let poster = get_item(poster_html)
-const itemid = '/+16282281824/posters/559666932867'
 describe('@/components/posters/as-fill-figure.vue', () => {
   describe('Renders', () => {
     it('a path from one provided', () => {

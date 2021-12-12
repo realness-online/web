@@ -1,3 +1,3 @@
-export default function(name) {
+export default name => {
   return getComputedStyle(document.documentElement).getPropertyValue(name)
 }
