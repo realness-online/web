@@ -34,7 +34,7 @@
         :key="poster.id"
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
-        @vector-click="menu_toggle(poster.id)">
+        @click="menu_toggle(poster.id)">
         <as-author-menu :poster="poster" />
       </as-figure>
     </article>
