@@ -16,7 +16,7 @@ const routes = [
   { path: '/events', component: Events },
   { path: '/feed', component: Feed },
   { path: '/posters', component: Posters },
-  { path: '/posters/:id/editor', component: Editor },
+  { path: '/:type/:id/editor', component: Editor },
   { path: '/relations', component: Relations },
   { path: '/phone-book', component: PhoneBook },
   { path: '/profile', component: Profile },

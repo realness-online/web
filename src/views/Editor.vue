@@ -15,7 +15,7 @@
   const grid = ref(false)
   const route = useRoute()
   const router = useRouter()
-  const itemid = `${localStorage.me}/posters/${route.params.id}`
+  const itemid = `${localStorage.me}/${route.params.type}/${route.params.id}`
 
   const page_title = computed(() => {
     if (stroke.value) return 'Stroke'
@@ -30,9 +30,9 @@
   const back = () => {
     console.log('back')
     const me = localStorage.me.substring(2)
-    router.replace({
-      path: `/posters#${me}-posters-${route.params.id}`
-    })
+    const id = route.params.id
+    const type = route.params.type
+    router.push({ path: '/posters', hash: `#${me}-${type}-${id}` })
   }
   const save = async () => {
     console.log('save')
