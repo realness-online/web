@@ -4,7 +4,7 @@
     v-else
     :id="id"
     itemscope
-    itemtype="/posters"
+    :itemtype="`/${as_type(itemid)}`"
     :itemid="itemid"
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
@@ -38,6 +38,7 @@
   import AsBackground from '@/components/posters/as-background'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { onMounted, ref } from 'vue'
+  import { as_type } from '@/use/itemid'
   import {
     as_poster,
     is_vector,
@@ -92,7 +93,6 @@
     tabindex,
     vector
   } = as_poster(props, emit)
-
   const trigger = ref(null)
   use_intersect(
     trigger,
@@ -105,6 +105,7 @@
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
+  svg[itemtype="/avatars"]
     aspect-ratio: 16 / 9
     display: block
     min-height: 512px
