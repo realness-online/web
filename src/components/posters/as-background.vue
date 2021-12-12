@@ -1,5 +1,4 @@
 <script setup>
-  import { reactive } from 'vue'
   import { as_poster, is_rect } from '@/use/vector'
   const props = defineProps({
     tabable: {
@@ -14,18 +13,21 @@
     }
   })
   const { tabindex } = as_poster(props)
-  const background = reactive({
-    style: {
-      fill: 'var(--white-poster)'
-    }
-  })
+  let style = {}
+  if (props.rect) style = props.rect.getAttribute('style')
 </script>
 <template>
   <rect
-    ref="background"
     itemprop="background"
+    :style="style"
     width="100%"
     height="100%"
-    :style="background.style"
     :tabindex="tabindex" />
 </template>
+<style lang="stylus">
+  rect[itemprop="background"]
+    fill: var(--white-poster)
+    &:focus
+      outline: none
+      stroke: none
+</style>
