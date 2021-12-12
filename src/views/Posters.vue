@@ -96,23 +96,27 @@
       this.optimizer.terminate()
     },
     methods: {
-      get_id(name) {
-        return `${localStorage.me}/posters/${name}`
+      get_id(name, type) {
+        return `${localStorage.me}/${type}/${name}`
       },
       async get_poster_list() {
         this.posters = []
         const posters = await as_directory(`${localStorage.me}/posters`)
-        const avatars = await as_directory(`${localStorage.me}/avatars`)
-
-        const directory = [...posters.items, ...avatars.items]
-        directory.forEach(item => {
+        posters.items.forEach(item => {
           this.posters.push({
-            id: this.get_id(item),
+            id: this.get_id(item, 'posters'),
             menu: false,
             picker: false
           })
         })
-
+        const avatars = await as_directory(`${localStorage.me}/avatars`)
+        avatars.items.forEach(item => {
+          this.posters.push({
+            id: this.get_id(item, 'avatars'),
+            menu: false,
+            picker: false
+          })
+        })
         this.posters.sort(recent_item_first)
       },
       vectorize(image) {
