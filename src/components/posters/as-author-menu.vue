@@ -24,7 +24,7 @@
   import { useRouter as use_router } from 'vue-router'
   import { watch } from 'vue'
   import { useMagicKeys as use_magic_keys } from '@vueuse/core'
-  import { as_created_at } from '@/use/itemid'
+  import { as_created_at, as_type } from '@/use/itemid'
   const props = defineProps({
     poster: {
       type: Object,
@@ -32,7 +32,8 @@
     }
   })
   const router = use_router()
-  const edit_poster = itemid => `/posters/${as_created_at(itemid)}/editor`
+  const edit_poster = itemid =>
+    `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
   const open_editor = () =>
     router.replace({ path: edit_poster(props.poster.id) })
 
