@@ -103,7 +103,8 @@
     #background
       fill: blue
     & > svg
-      margin-right: round((base-line / 3), 3)
+      margin-right: round((base-line * .33), 3)
+      min-height: inherit
       width: round(base-line * 6, 2)
       height: round(base-line * 6, 2)
       cursor: pointer
@@ -129,6 +130,4 @@
         padding: base-line
         &:hover
           opacity: 1
-        & > a > svg
-          fill: blue
 </style>

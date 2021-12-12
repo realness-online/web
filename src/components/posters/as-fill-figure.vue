@@ -12,9 +12,9 @@
   } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
   import rgb_to_hex from '@/use/rgb-to-hex'
-  import css_var from '@/use/css-var'
+  // import css_var from '@/use/css-var'
   const figure = ref(null)
-  const color = ref()
+  const color = ref('151518')
   const itemprop = ref('bold')
   defineProps({
     itemid: {
@@ -27,8 +27,8 @@
   const set_input_color = id => {
     itemprop.value = id
     const fill = query(itemprop.value).style.fill
-    if (!fill) color.value = css_var('--white-poster').substring(1)
-    else color.value = rgb_to_hex(fill)
+    // if (!fill) color.value = css_var('--white-poster').substring(1)
+    if (fill) color.value = rgb_to_hex(fill)
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
