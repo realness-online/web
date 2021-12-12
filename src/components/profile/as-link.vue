@@ -1,6 +1,6 @@
 <template>
   <router-link v-if="person" :to="author" class="profile">
-    <as-avatar :person="person" />
+    <as-avatar :itemid="person.avatar" />
     <as-address :person="person">
       <slot />
     </as-address>
@@ -8,7 +8,7 @@
 </template>
 <script>
   import { load, as_author } from '@/use/itemid'
-  import as_svg from '@/components/avatars/as-svg'
+  import as_svg from '@/components/posters/as-svg'
   import as_address from '@/components/profile/as-address'
   export default {
     components: {
@@ -48,8 +48,6 @@
       height: base-line * 2
       border-radius: round((base-line * 2), 2)
       margin-right: round((base-line / 6), 2)
-    & > svg > svg.background
-      fill: blue
     & > address
       & > time
         color: red

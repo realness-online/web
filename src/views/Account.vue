@@ -5,9 +5,6 @@
       <logo-as-link />
     </header>
     <address v-if="signed_in && !working">
-      <avatar-as-form
-        v-model:person="person"
-        @update:person="$emit('update:person', $event)" />
       <profile-as-figure
         v-model:person="person"
         :editable="true"
@@ -55,7 +52,6 @@
   import logo_as_link from '@/components/logo-as-link'
   import sign_on from '@/components/profile/sign-on'
   import profile_as_figure from '@/components/profile/as-figure'
-  import avatar_as_form from '@/components/avatars/as-form'
   import thought_as_article from '@/components/statements/as-article'
   export default {
     components: {
@@ -64,8 +60,7 @@
       'sign-on': sign_on,
       'logo-as-link': logo_as_link,
       'profile-as-figure': profile_as_figure,
-      'thought-as-article': thought_as_article,
-      'avatar-as-form': avatar_as_form
+      'thought-as-article': thought_as_article
     },
     mixins: [signed_in, intersection_thought],
     emits: ['update:person'],
@@ -155,23 +150,21 @@
       & > button.sign-on
       & > a#logo
         position: absolute
-        top: inset(top)
+        top: inset(top, 1.75em)
+        right: inset(right)
         z-index: 2
       & > button.sign-on
         left: inset(left)
         height: round(base-line * 2, 2)
-      & > a#logo
-        right: inset(right)
     & > address
       position: relative
       z-index: 1
       & > figure
-      & > form
         padding: base-line base-line 0 base-line
-      & > figure
         & > svg
           width: base-line * 2
           height: base-line * 2
+          min-height: inherit
           border-radius: base-line * 2
           border-color: red
         & > figcaption
@@ -180,8 +173,10 @@
             flex-direction: row
             align-items: center
             & > b
-             margin-bottom: 0
+              color: red
+              margin-bottom: 0
           & > menu
+            margin-right: base-line * 2.25
             justify-content: center
             opacity: 1
             padding: 0
@@ -199,12 +194,12 @@
       & > menu
         float:right
         width: 6rem
-        margin-bottom: base-line
+        margin-bottom: base-line * 2
         display:flex
         justify-content: space-between
         animation-name: fade-in
         animation-duration: 0.2s
-        margin-top: base-line
+
         & > button:hover
           transition: color
           transition-duration: 0.5s

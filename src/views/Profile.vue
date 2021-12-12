@@ -5,7 +5,7 @@
       <logo-as-link />
     </header>
     <div>
-      <avatar v-if="person" :person="person" />
+      <avatar v-if="person" :person="person.avatar" />
       <menu v-if="person">
         <as-download :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
@@ -37,7 +37,7 @@
   import as_download from '@/components/download-vector'
   import as_figure from '@/components/profile/as-figure'
   import as_messenger from '@/components/profile/as-messenger'
-  import avatar from '@/components/avatars/as-svg'
+  import avatar from '@/components/posters/as-svg'
   import as_article from '@/components/statements/as-article'
   import poster_as_figure from '@/components/posters/as-figure'
   import icon from '@/components/icon'

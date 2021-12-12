@@ -2,7 +2,7 @@
   <article class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
-        <as-avatar :person="author" />
+        <as-avatar :itemid="author.id" />
       </router-link>
       <address>
         <span>{{ author.first_name }}</span>
@@ -31,7 +31,7 @@
   import { as_time } from '@/use/date'
   import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
-  import as_avatar from '@/components/avatars/as-svg'
+  import as_avatar from '@/components/posters/as-svg'
   import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
