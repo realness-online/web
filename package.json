@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": false,
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
@@ -120,6 +120,7 @@
           "asyncArrow": "always"
         }
       ],
+      "vue/require-default-prop": "off",
       "vue/prop-name-casing": [
         "error",
         "snake_case"
@@ -200,9 +201,9 @@
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 92,
-        "branches": 84,
-        "functions": 91,
+        "statements": 90,
+        "branches": 80,
+        "functions": 89,
         "lines": 93
       }
     },
