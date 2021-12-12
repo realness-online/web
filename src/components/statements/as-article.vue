@@ -2,7 +2,7 @@
   <article class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
-        <as-avatar :itemid="author.id" />
+        <as-avatar :itemid="author.avatar" />
       </router-link>
       <address>
         <span>{{ author.first_name }}</span>
@@ -107,6 +107,7 @@
       & > a > svg
         width: base-line * 2
         height: base-line * 2
+        min-height: inherit
         cursor: pointer
         shape-outside: circle()
         border-radius: (base-line * 2)

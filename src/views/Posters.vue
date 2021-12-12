@@ -33,6 +33,7 @@
         v-else
         :key="poster.id"
         :itemid="poster.id"
+        :immediate="true"
         :class="{ 'selecting-event': poster.picker }"
         @click="menu_toggle(poster.id)">
         <as-author-menu :poster="poster" />

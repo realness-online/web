@@ -32,7 +32,7 @@
     const me = localStorage.me.substring(2)
     const id = route.params.id
     const type = route.params.type
-    router.push({ path: '/posters', hash: `#${me}-${type}-${id}` })
+    router.replace({ path: '/posters', hash: `#${me}-${type}-${id}` })
   }
   const save = async () => {
     console.log('save')

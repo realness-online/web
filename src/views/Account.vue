@@ -194,7 +194,7 @@
       & > menu
         float:right
         width: 6rem
-        margin-bottom: base-line * 2
+        margin: base-line * 2 0
         display:flex
         justify-content: space-between
         animation-name: fade-in

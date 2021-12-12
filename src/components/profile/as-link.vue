@@ -46,6 +46,7 @@
       fill: black-dark
       width: base-line * 2
       height: base-line * 2
+      min-height: inherit
       border-radius: round((base-line * 2), 2)
       margin-right: round((base-line / 6), 2)
     & > address
