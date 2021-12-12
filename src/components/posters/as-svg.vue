@@ -1,5 +1,5 @@
 <template>
-  <icon v-if="working" name="working" :tabindex="focusable" />
+  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
     :id="id"
@@ -36,7 +36,8 @@
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import { onMounted } from 'vue'
+  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+  import { onMounted, ref } from 'vue'
   import {
     as_poster,
     is_vector,
@@ -80,31 +81,33 @@
   })
   const {
     id,
-    itemid,
     viewbox,
     aspect_ratio,
     click,
     working,
+    show,
     should_show,
     focus,
     focusable,
     tabindex,
     vector
   } = as_poster(props, emit)
+
+  const trigger = ref(null)
+  use_intersect(trigger, ([{ isIntersecting }]) => {
+    if (isIntersecting) show()
+  })
   onMounted(should_show)
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
     aspect-ratio: 16 / 9
-    aspect-ratio: 1 / 1
     display: block
     min-height: 512px
     height: 100%
     width: 100%
     &::focus
       border: 2px solid red
-
-    & > rect[itemprop]
     & > path[itemprop]
       stroke: black-background
       stroke-width: 1px
@@ -120,7 +123,7 @@
       &:focus
         outline: none
         stroke: red
-        animation-name: press
+        // animation-name: press
       &:active
         outline: none
         stroke: red
