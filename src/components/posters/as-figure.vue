@@ -5,8 +5,8 @@
       :itemid="itemid"
       :poster="new_poster"
       :immediate="immediate"
-      @vector-click="vector_click"
-      @vector-loaded="on_load" />
+      @click="vector_click"
+      @loaded="on_load" />
     <figcaption>
       <slot v-if="menu">
         <menu>
