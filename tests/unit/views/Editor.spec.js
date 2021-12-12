@@ -9,7 +9,7 @@ describe('@/views/Editor.vue', () => {
     it('Shows an editor for a poster or an avatar', async () => {
       firebase.user = user
       localStorage.me = `/+${user.phoneNumber}`
-      getRouter().setParams({ id: '559666932867' })
+      getRouter().setParams({ id: '559666932867', type: 'posters' })
       const wrapper = shallowMount(Editor)
       expect(wrapper.element).toMatchSnapshot()
       firebase.user = null

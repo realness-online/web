@@ -91,14 +91,14 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#get_poster_list', () => {
       it('Adds posters', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
+        jest.spyOn(itemid, 'as_directory').mockImplementation(() => {
           return { items: ['1576588885385'] }
         })
         await wrapper.vm.get_poster_list({})
-        expect(wrapper.vm.posters.length).toBe(1)
+        expect(wrapper.vm.posters.length).toBe(2)
       })
       it('Handles an empty poster list', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => null)
+        jest.spyOn(itemid, 'as_directory').mockImplementation(() => null)
         await wrapper.vm.get_poster_list({})
       })
     })

@@ -33,7 +33,6 @@
         v-else
         :key="poster.id"
         :itemid="poster.id"
-        :immediate="true"
         :class="{ 'selecting-event': poster.picker }"
         @click="menu_toggle(poster.id)">
         <as-author-menu :poster="poster" />
@@ -77,11 +76,6 @@
         if (this.new_poster && this.new_poster.id) return this.new_poster.id
         else return `${localStorage.me}/posters/${Date.now()}`
       },
-      friendly() {
-        if (this.posters.length === 0 && !this.working && !this.new_poster)
-          return true
-        else return false
-      },
       add() {
         if (this.working || this.new_poster) return false
         else return true
@@ -103,21 +97,25 @@
       async get_poster_list() {
         this.posters = []
         const posters = await as_directory(`${localStorage.me}/posters`)
-        posters.items.forEach(item => {
-          this.posters.push({
-            id: this.get_id(item, 'posters'),
-            menu: false,
-            picker: false
+        if (posters && posters.items) {
+          posters.items.forEach(item => {
+            this.posters.push({
+              id: this.get_id(item, 'posters'),
+              menu: false,
+              picker: false
+            })
           })
-        })
+        }
         const avatars = await as_directory(`${localStorage.me}/avatars`)
-        avatars.items.forEach(item => {
-          this.posters.push({
-            id: this.get_id(item, 'avatars'),
-            menu: false,
-            picker: false
+        if (avatars && avatars.items) {
+          avatars.items.forEach(item => {
+            this.posters.push({
+              id: this.get_id(item, 'avatars'),
+              menu: false,
+              picker: false
+            })
           })
-        })
+        }
         this.posters.sort(recent_item_first)
       },
       vectorize(image) {

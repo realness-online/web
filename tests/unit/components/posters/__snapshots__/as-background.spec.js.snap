@@ -4,7 +4,6 @@ exports[`@/components/posters/as-fill-figure.vue Renders a new background for a 
 <rect
   height="100%"
   itemprop="background"
-  style="fill: var(--white-poster);"
   width="100%"
 />
 `;
