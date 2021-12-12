@@ -101,16 +101,18 @@
       },
       async get_poster_list() {
         this.posters = []
-        const directory = await as_directory(`${localStorage.me}/posters`)
-        if (directory && directory.items) {
-          directory.items.forEach(item => {
-            this.posters.push({
-              id: this.get_id(item),
-              menu: false,
-              picker: false
-            })
+        const posters = await as_directory(`${localStorage.me}/posters`)
+        const avatars = await as_directory(`${localStorage.me}/avatars`)
+
+        const directory = [...posters.items, ...avatars.items]
+        directory.forEach(item => {
+          this.posters.push({
+            id: this.get_id(item),
+            menu: false,
+            picker: false
           })
-        }
+        })
+
         this.posters.sort(recent_item_first)
       },
       vectorize(image) {
@@ -180,9 +182,8 @@
   section#posters
     & > header
       justify-content: space-between
-      & > h1
-        margin-bottom: base-line * 2
-        @media (prefers-color-scheme: dark)
+      @media (prefers-color-scheme: dark)
+        & > h1
           color: green
       a#camera
         position: fixed

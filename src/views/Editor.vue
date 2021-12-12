@@ -85,10 +85,10 @@
       border-radius: 1rem
       z-index: 2
       position: fixed;
-      padding: 0
+      padding: 0 (base-line * 0.5)
       top: inset(top, base-line)
-      left: inset(left, base-line)
-      right: inset(right, base-line)
+      left: inset(left)
+      right: inset(right)
       & > h1
         margin: 0
         color: red

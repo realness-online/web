@@ -120,7 +120,6 @@
           "asyncArrow": "always"
         }
       ],
-      "vue/no-v-html": "off",
       "vue/prop-name-casing": [
         "error",
         "snake_case"

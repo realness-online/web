@@ -1,6 +1,6 @@
 <template>
   <figure class="profile">
-    <as-svg :person="person" @vector-click="avatar_click" />
+    <as-svg :itemid="person.avatar" @click="avatar_click" />
     <figcaption>
       <as-address
         :key="person.id"
@@ -26,7 +26,7 @@
   import { Relations } from '@/persistance/Storage'
   import profile_as_meta from '@/components/profile/as-meta'
   import as_relationship_options from '@/components/profile/as-relationship-options'
-  import as_svg from '@/components/avatars/as-svg'
+  import as_svg from '@/components/posters/as-svg'
   import as_address from '@/components/profile/as-address'
   import as_messenger from '@/components/profile/as-messenger'
   export default {

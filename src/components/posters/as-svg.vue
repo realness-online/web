@@ -94,9 +94,13 @@
   } = as_poster(props, emit)
 
   const trigger = ref(null)
-  use_intersect(trigger, ([{ isIntersecting }]) => {
-    if (isIntersecting) show()
-  })
+  use_intersect(
+    trigger,
+    ([{ isIntersecting }]) => {
+      if (isIntersecting) show()
+    },
+    { rootMargin: '132px' }
+  )
   onMounted(should_show)
 </script>
 <style lang="stylus">
