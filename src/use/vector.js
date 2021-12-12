@@ -96,7 +96,10 @@ export function as_poster(props, emit) {
   const fragment = computed(() => {
     return `#${id.value}`
   })
-  const click = () => emit('click', menu.value)
+  const click = () => {
+    menu.value = !menu.value
+    emit('click', menu.value)
+  }
   const show = async () => {
     if (!vector.value) {
       let poster = await load(props.itemid)
