@@ -10,21 +10,17 @@ export function create_path_element() {
   return document.createElementNS(svg_ns, 'path')
 }
 
-export function fill_opacity(direction, resolution) {
+export function fill_opacity(resolution) {
   const path = useActiveElement().value
-  path.style.fillOpacity = change(path.style.fillOpacity, direction, resolution)
+  path.style.fillOpacity = change(path.style.fillOpacity, resolution)
 }
 
-export function stroke_opacity(direction, resolution) {
+export function stroke_opacity(resolution) {
   const path = useActiveElement().value
-  path.style.strokeOpacity = change(
-    path.style.strokeOpacity,
-    direction,
-    resolution
-  )
+  path.style.strokeOpacity = change(path.style.strokeOpacity, resolution)
 }
 
-export function opacity(direction, resolution) {
+export function opacity(resolution) {
   const path = useActiveElement().value
-  path.style.opacity = change(path.style.opacity, direction, resolution)
+  path.style.opacity = change(path.style.opacity, resolution)
 }
