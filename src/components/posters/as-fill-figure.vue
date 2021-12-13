@@ -34,15 +34,16 @@
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      if (distanceY.value < 0) opacity('more', 0.03)
-      else opacity('less', 0.03)
+      const chill = distanceY.value / 500
+      console.log('swipe', chill)
+      opacity(chill)
     }
   })
   const keys = keyboard()
-  whenever(keys.up, () => opacity())
-  whenever(keys.up_shift, () => opacity('more', 0.01))
-  whenever(keys.down, () => opacity('less'))
-  whenever(keys.down_shift, () => opacity('less', 0.01))
+  whenever(keys.up, () => opacity(0.03))
+  whenever(keys.up_shift, () => opacity(0.01))
+  whenever(keys.down, () => opacity(-0.03))
+  whenever(keys.down_shift, () => opacity(-0.01))
   whenever(color, () => (query(itemprop.value).style.fill = color.value))
 </script>
 <template>
@@ -73,7 +74,8 @@
       left: 0
       right: 0
       @media (orientation: landscape) and (max-height: page-width)
-        position: relative
+        max-height: 100vh
+        min-height: inherit
     & > figcaption
       position: relative
       z-index: 0
