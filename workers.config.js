@@ -23,6 +23,9 @@ module.exports = {
     },
     plugins: [],
     fallback: {
+      https: require.resolve('https-browserify'),
+      http: require.resolve('stream-http'),
+      zlib: require.resolve('browserify-zlib'),
       path: require.resolve('path-browserify'),
       os: require.resolve('os-browserify/browser'),
       stream: require.resolve('stream-browserify'),
