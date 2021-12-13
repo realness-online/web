@@ -125,12 +125,8 @@
     & > path[itemprop="bold"]
         stroke: white
         stroke-opacity: 0.75
-      &:focus
-        outline: none
-        stroke: red
-        // animation-name: press
+      &:focus,
       &:active
         outline: none
         stroke: red
-        animation-name: press
 </style>
