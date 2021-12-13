@@ -5,7 +5,7 @@
       <logo-as-link />
     </header>
     <div>
-      <avatar v-if="person" :person="person.avatar" />
+      <avatar v-if="person" :itemid="person.avatar" />
       <menu v-if="person">
         <as-download :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
