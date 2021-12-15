@@ -14,7 +14,7 @@ exports[`@/views/Profile.vue Renders Handles there not being posters 1`] = `
   <div>
     <avatar-stub
       immediate="false"
-      person="/+16282281824/avatars/1588451405024"
+      itemid="/+16282281824/avatars/1588451405024"
       slice="true"
       tabable="false"
     />
@@ -57,7 +57,7 @@ exports[`@/views/Profile.vue Renders Shows profile information for a phone numbe
   <div>
     <avatar-stub
       immediate="false"
-      person="/+16282281824/avatars/1588451405024"
+      itemid="/+16282281824/avatars/1588451405024"
       slice="true"
       tabable="false"
     />
