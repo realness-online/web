@@ -28,7 +28,7 @@ describe('@/use/path-style.js', () => {
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.fillOpacity).toBe('0.5')
-      fill_opacity('less')
+      fill_opacity(-0.025)
       expect(active.value.style.fillOpacity).toBe('0.475')
     })
   })
@@ -47,7 +47,7 @@ describe('@/use/path-style.js', () => {
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.strokeOpacity).toBe('0.5')
-      stroke_opacity('less')
+      stroke_opacity(-0.025)
       expect(active.value.style.strokeOpacity).toBe('0.475')
     })
   })
@@ -58,7 +58,7 @@ describe('@/use/path-style.js', () => {
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.opacity).toBe('0.025')
-      opacity() // default is more by 0.025
+      opacity(0.025) // default is more by 0.025
       expect(active.value.style.opacity).toBe('0.05')
     })
     it('Decreases opacity', () => {
@@ -66,7 +66,7 @@ describe('@/use/path-style.js', () => {
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.opacity).toBe('0.5')
-      opacity('less')
+      opacity(-0.025)
       expect(active.value.style.opacity).toBe('0.475')
     })
   })
