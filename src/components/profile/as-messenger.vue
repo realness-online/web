@@ -24,3 +24,11 @@
     }
   }
 </script>
+<style lang="stylus">
+  figure.profile > figcaption > menu a.phone > svg
+    fill: blue
+    opacity:0.25
+    &:hover
+    &:active
+      opacity:1
+</style>
