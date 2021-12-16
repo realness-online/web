@@ -44,6 +44,7 @@
   import { del } from 'idb-keyval'
   import { as_directory } from '@/use/itemid'
   import get_item from '@/use/item'
+  import { create_path_element } from '@/use/path-style'
   import { recent_item_first } from '@/use/sorting'
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
@@ -123,10 +124,21 @@
         this.vectorizer.postMessage({ image })
       },
       async vectorized(response) {
-        this.new_poster = response.data.vector
-        this.new_poster.type = 'posters'
-        this.new_poster.id = this.as_itemid
+        const vector = response.data.vector
+        vector.id = this.as_itemid
+        vector.type = 'posters'
+        vector.light = this.make_path(vector.light)
+        vector.regular = this.make_path(vector.regular)
+        vector.bold = this.make_path(vector.bold)
+        this.new_poster = vector
         this.working = false
+      },
+      make_path(path_data) {
+        const path = create_path_element()
+        path.setAttribute('d', path_data.d)
+        path.style.fillOpacity = path_data.fillOpacity
+        path.style.fillRule = 'evenodd'
+        return path
       },
       optimize(vector) {
         this.optimizer.postMessage({ vector })
