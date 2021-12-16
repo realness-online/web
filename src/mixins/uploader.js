@@ -16,7 +16,7 @@ export default {
   },
   directives: {
     uploader: {
-      beforeMount(input, binding, vnode) {
+      mounted(input, binding) {
         /* istanbul ignore next */
         input.addEventListener('change', event => {
           const image = event.target.files[0]
@@ -25,7 +25,8 @@ export default {
             return image.type === type
           })
           if (is_image) {
-            vnode.context.vectorize(image)
+            console.log(binding.instance, image)
+            binding.instance.vectorize(image)
             input.value = ''
           }
         })
