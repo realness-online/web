@@ -100,7 +100,7 @@
     methods: {
       async on_load(vector) {
         this.vector = vector
-        this.$nextTick()
+        await this.$nextTick()
         this.loaded = true
         this.$emit('loaded', this.$refs.poster.$el.outerHTML)
       },
