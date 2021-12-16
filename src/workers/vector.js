@@ -1,12 +1,12 @@
-import { as_paths } from '@realness.online/potrace'
-import Jimp from 'jimp'
+import { as_paths, Jimp } from '@realness.online/potrace'
 const potrace_options = {
-  threshold: 255,
   turdSize: 125,
   optTolerance: 0.55,
   blackOnWhite: true,
   fillStrategy: 'median',
-  rangeDistribution: 'auto'
+  rangeDistribution: 'auto',
+  steps: 3
+  // threshold: 255
 }
 const bright = {
   max: 175,
