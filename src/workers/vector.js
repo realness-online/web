@@ -41,14 +41,17 @@ export async function prepare(image) {
 }
 export async function make(image) {
   let poster = await as_paths(image, potrace_options)
+
   if (to_kb(poster) > 600) {
     image = await size(image, 368)
     poster = await as_paths(image, potrace_options)
   }
-  if (poster.paths[0] === '') poster.paths.shift()
-  while (poster.paths.length > 3) poster.paths.shift()
   return {
-    path: poster.paths,
+    light: poster.paths[0],
+    regular: poster.paths[1],
+    bold: poster.paths[2],
+    width: poster.width,
+    height: poster.height,
     viewbox: `0 0 ${poster.width} ${poster.height}`
   }
 }
