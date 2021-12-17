@@ -154,12 +154,15 @@
         @media (prefers-color-scheme: dark)
           & > header > h4, figure.poster > svg.background
             color: blue
-        figure.poster > figcaption > menu
-          & > a.download svg
-            fill: blue
-          & > a.phone
-            display: none
-          & > a.profile
+        figure.poster
+          margin-left: -1.333rem
+          margin-right: -1.333rem
+          & > figcaption > menu
+            & > a.download svg
+              fill: blue
+            & > a.phone
+              display: none
+            & > a.profile
             & > address
               & > time
                 font-size: max-font
