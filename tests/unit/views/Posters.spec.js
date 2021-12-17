@@ -66,11 +66,31 @@ describe('@/views/Posters.vue', () => {
     describe('#vectorized', () => {
       it('Gets the poster from the worker', () => {
         const event = {
-          data: { vector: poster }
+          data: {
+            vector: {
+              light: {
+                d: poster.light.getAttribute('d'),
+                fillOpacity: '0.208'
+              },
+              regular: {
+                d: poster.regular.getAttribute('d'),
+                fillOpacity: '0.85'
+              },
+              bold: {
+                d: poster.bold.getAttribute('d'),
+                fillOpacity: '0.535'
+              },
+              width: poster.width,
+              height: poster.height,
+              viewbox: `0 0 ${poster.width} ${poster.height}`
+            }
+          }
         }
         wrapper.vm.working = true
         wrapper.vm.vectorized(event)
-        expect(wrapper.vm.new_poster.id).toBe(poster.id)
+        expect(wrapper.vm.new_poster.id).toBe(
+          '/+16282281824/posters/1577836800000'
+        )
         expect(wrapper.vm.working).toBe(false)
       })
     })

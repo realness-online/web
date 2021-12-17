@@ -20,8 +20,14 @@ exports[`@/components/posters/as-svg.vue Renders Can show a poster immediatly 1`
   <as-background-stub
     tabable="false"
   />
-  <!--v-if-->
-  <!--v-if-->
+  <as-path-stub
+    itemprop="light"
+    path="[object SVGElement]"
+  />
+  <as-path-stub
+    itemprop="regular"
+    path="[object SVGElement]"
+  />
   <as-path-stub
     itemprop="bold"
     path="[object SVGElement]"
