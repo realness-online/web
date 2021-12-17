@@ -1,4 +1,5 @@
-import { as_paths, Jimp } from '@realness.online/potrace'
+import { as_paths } from '@realness.online/potrace'
+import Jimp from 'jimp'
 const potrace_options = {
   turdSize: 125,
   optTolerance: 0.55,
