@@ -4,13 +4,12 @@
       <legend :class="{ valid: validate_mobile_number() }">
         {{ mobile_display }}
       </legend>
-      <label for="mobile">1</label>
       <input
         id="mobile"
         ref="mobile"
         v-model="mobile"
         type="tel"
-        placeholder="(555) 555-5555"
+        placeholder="1 (555) 555-5555"
         @keypress="mobile_keypress"
         @keyup="validate_mobile_number"
         @paste.prevent="mobile_paste" />
