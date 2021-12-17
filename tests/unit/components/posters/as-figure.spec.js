@@ -64,12 +64,12 @@ describe('@/compontent/posters/as-figure.vue', () => {
       })
     })
     describe('#on_load', () => {
-      it('Sets loaded to true', () => {
-        wrapper.vm.on_load()
+      it('Sets loaded to true', async () => {
+        await wrapper.vm.on_load()
         expect(wrapper.vm.loaded).toBe(true)
       })
-      it('Emits an event after rendering svg', () => {
-        wrapper.vm.on_load()
+      it('Emits an event after rendering svg', async () => {
+        await wrapper.vm.on_load()
         expect(wrapper.vm.loaded).toBe(true)
         expect(wrapper.emitted('loaded')).toBeTruthy()
       })
