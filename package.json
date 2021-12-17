@@ -17,13 +17,14 @@
     "workers:dev": "yarn workers --mode=development --watch"
   },
   "dependencies": {
-    "@realness.online/potrace": "2.1.25",
+    "@realness.online/potrace": "../potrace/",
     "@vue/compat": "^3.1.0-0",
     "@vueuse/core": "^6.7.3",
     "browserify-zlib": "^0.2.0",
     "firebase": "^8.2.1",
     "https-browserify": "^1.0.0",
     "idb-keyval": "^5.0.2",
+    "jimp": "^0.16.1",
     "libphonenumber-js": "^1.7.44",
     "node-vibrant": "^3.2.1-alpha.1",
     "object-hash": "^2.1.1",
