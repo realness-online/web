@@ -160,7 +160,7 @@
       position: relative
       z-index: 1
       & > figure
-        padding: base-line base-line 0 base-line
+        padding: inset(top, base-line) base-line 0 base-line
         & > svg
           width: base-line * 2
           height: base-line * 2
