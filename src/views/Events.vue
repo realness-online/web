@@ -9,10 +9,12 @@
     <article v-if="events.length" id="tonight">
       <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
     </article>
-    <p v-else class="message">
-      <span>Zero</span> public events. You create events from
-      <router-link to="/posters">Posters</router-link>
-    </p>
+    <footer v-else>
+      <p class="message">
+        You create events from
+        <router-link to="/posters">Posters</router-link>
+      </p>
+    </footer>
   </section>
 </template>
 <script>
@@ -96,4 +98,9 @@
       @media (min-width: pad-begins)
         & > header > h1
           padding: 0
+    & > footer
+      display: flex
+      flex-direction: column
+      justify-content: space-evenly
+      align-items: center
 </style>
