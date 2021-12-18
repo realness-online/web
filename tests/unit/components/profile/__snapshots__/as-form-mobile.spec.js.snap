@@ -12,14 +12,9 @@ exports[`@/compontent/profile/as-form-mobile.vue Renders Profile form 1`] = `
     >
       (415) 123-4356
     </legend>
-    <label
-      for="mobile"
-    >
-      1
-    </label>
     <input
       id="mobile"
-      placeholder="(555) 555-5555"
+      placeholder="1 (555) 555-5555"
       type="tel"
     />
   </fieldset>
