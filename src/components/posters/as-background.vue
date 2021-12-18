@@ -22,6 +22,7 @@
     :style="style"
     width="100%"
     height="100%"
+    fill="white"
     :tabindex="tabindex" />
 </template>
 <style lang="stylus">

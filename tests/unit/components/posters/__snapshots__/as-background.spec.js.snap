@@ -2,6 +2,7 @@
 
 exports[`@/components/posters/as-fill-figure.vue Renders a new background for a poster without one 1`] = `
 <rect
+  fill="white"
   height="100%"
   itemprop="background"
   width="100%"
