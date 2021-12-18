@@ -16,9 +16,10 @@
         v-model:relations="relations"
         :person="person" />
     </nav>
-    <p v-if="!working && !signed_in" class="sign-on message">
-      <sign-on /> Check out who's here
-    </p>
+    <footer v-if="!working && !signed_in">
+      <sign-on />
+      <p class="sign-on message">Check out who's here</p>
+    </footer>
   </section>
 </template>
 <script>
@@ -75,17 +76,24 @@
 <style lang="stylus">
   section#directory
     padding-bottom: base-line * 2
-    nav.profile-list
+    & > header > svg.heart
+        fill: blue
+    & > svg.working
+      margin-top: base-line
+      @media (prefers-color-scheme: dark)
+        fill: blue
+    & > nav.profile-list
       margin-top: base-line
       & address > h3
         max-width: base-line * 6
         white-space: nowrap
         overflow: hidden
         text-overflow: ellipsis
-    svg.working
-      margin-top: base-line
-      @media (prefers-color-scheme: dark)
-        fill: blue
-    svg.heart
-        fill: blue
+    & > footer
+      display: flex
+      flex-direction: column
+      justify-content: space-evenly
+      align-items: center
+      & > p
+        margin-top: base-line
 </style>
