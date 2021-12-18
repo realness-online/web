@@ -8,7 +8,7 @@
     <router-link class="gear" :to="edit_poster(poster.id)">
       <icon name="gear" />
     </router-link>
-    <a class="remove" @click="remove_poster(poster.id)">
+    <a class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
     <as-download :itemid="poster.id" />
@@ -25,12 +25,14 @@
   import { watch } from 'vue'
   import { useMagicKeys as use_magic_keys } from '@vueuse/core'
   import { as_created_at, as_type } from '@/use/itemid'
+  import { is_vector_id } from '@/use/vector'
   const props = defineProps({
     poster: {
       type: Object,
       required: true
     }
   })
+  const emit = defineEmits({ remove: is_vector_id })
   const router = use_router()
   const edit_poster = itemid =>
     `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
