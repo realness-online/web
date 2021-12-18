@@ -93,7 +93,7 @@
         }
       }
     },
-    mounted() {
+    updated() {
       const fragment = window.location.hash.substring(1)
       if (this.query_id === fragment) this.$refs.poster.$el.scrollIntoView()
     },
