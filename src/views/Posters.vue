@@ -35,7 +35,7 @@
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
         @click="menu_toggle(poster.id)">
-        <as-author-menu :poster="poster" />
+        <as-author-menu :poster="poster" @remove="remove_poster" />
       </as-figure>
     </article>
   </section>
