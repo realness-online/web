@@ -24,7 +24,6 @@
     computed: {
       downloadable() {
         const svg = document.getElementById(as_query_id(this.itemid))
-        console.log(svg)
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
         return `data:application/octet-stream,${encodeURIComponent(
           svg.outerHTML
@@ -32,7 +31,6 @@
       }
     },
     async created() {
-      // this.vector = await load(this.itemid)
       this.file_name = await this.get_vector_name()
     },
     methods: {

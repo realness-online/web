@@ -1,7 +1,7 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import download_vector from '@/components/download-vector'
 import * as itemid from '@/use/itemid'
-import get_item from '@/use/item'
+import get_item, { hydrate } from '@/use/item'
 const fs = require('fs')
 const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
@@ -14,26 +14,32 @@ const person = {
 }
 describe('@/components/download-vector', () => {
   describe('Renders', () => {
-    it('Link to download svg', async () => {
-      jest.spyOn(itemid, 'load').mockImplementation(itemid => {
-        if (itemid === '/+16282281824/posters/559666932867')
-          return Promise.resolve(poster)
-        else return Promise.resolve(person)
-      })
+    it('Link to download svg', () => {
+      jest
+        .spyOn(document, 'getElementById')
+        .mockImplementation(itemid => hydrate(poster_html))
+
+      jest
+        .spyOn(itemid, 'load')
+        .mockImplementation(itemid => Promise.resolve(person))
+
       const wrapper = shallowMount(download_vector, {
         props: {
           itemid: poster.id
         }
       })
-      await flushPromises()
+
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Handles downloads from anonymous users', async () => {
-      jest.spyOn(itemid, 'load').mockImplementation(itemid => {
-        if (itemid === '/+16282281824/posters/559666932867')
-          return Promise.resolve(poster)
-        else return Promise.resolve(null)
-      })
+      jest
+        .spyOn(document, 'getElementById')
+        .mockImplementation(itemid => hydrate(poster_html))
+
+      jest
+        .spyOn(itemid, 'load')
+        .mockImplementation(itemid => Promise.resolve(null))
+
       const wrapper = shallowMount(download_vector, {
         props: {
           itemid: poster.id
