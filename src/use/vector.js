@@ -122,7 +122,7 @@ export function as_poster(props, emit) {
     if (props.immediate) show()
   }
   watchEffect(() => {
-    if (props.poster && !vector.value) vector.value = props.poster
+    if (props.poster) vector.value = props.poster
   })
   return {
     vector,
