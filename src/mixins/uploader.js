@@ -25,7 +25,6 @@ export default {
             return image.type === type
           })
           if (is_image) {
-            console.log(binding.instance, image)
             binding.instance.vectorize(image)
             input.value = ''
           }
