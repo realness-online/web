@@ -28,13 +28,6 @@ describe('@/compontent/posters/as-figure.vue', () => {
   })
   describe('Watchers', () => {
     describe('new_poster', () => {
-      it('Sets poster to new_poster', async () => {
-        expect(wrapper.vm.menu).toBe(false)
-        const new_poster = { ...poster }
-        new_poster.id = 'new_id'
-        await wrapper.setProps({ new_poster })
-        expect(wrapper.vm.poster.id).toBe('new_id')
-      })
       it('Sets menu to true', async () => {
         expect(wrapper.vm.menu).toBe(false)
         const new_poster = { ...poster }

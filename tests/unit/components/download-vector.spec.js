@@ -17,11 +17,11 @@ describe('@/components/download-vector', () => {
     it('Link to download svg', () => {
       jest
         .spyOn(document, 'getElementById')
-        .mockImplementation(itemid => hydrate(poster_html))
+        .mockImplementation(() => hydrate(poster_html))
 
       jest
         .spyOn(itemid, 'load')
-        .mockImplementation(itemid => Promise.resolve(person))
+        .mockImplementation(() => Promise.resolve(person))
 
       const wrapper = shallowMount(download_vector, {
         props: {
@@ -34,11 +34,9 @@ describe('@/components/download-vector', () => {
     it('Handles downloads from anonymous users', async () => {
       jest
         .spyOn(document, 'getElementById')
-        .mockImplementation(itemid => hydrate(poster_html))
+        .mockImplementation(() => hydrate(poster_html))
 
-      jest
-        .spyOn(itemid, 'load')
-        .mockImplementation(itemid => Promise.resolve(null))
+      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
 
       const wrapper = shallowMount(download_vector, {
         props: {
