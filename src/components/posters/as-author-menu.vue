@@ -2,9 +2,9 @@
   <event-as-fieldset
     v-if="poster.picker"
     :itemid="poster.id"
-    @picker="picker(poster.id)" />
+    @picker="emit('picker', poster.id)" />
   <menu v-else>
-    <event-as-button :itemid="poster.id" @picker="picker(poster.id)" />
+    <event-as-button :itemid="poster.id" @picker="emit('picker', poster.id)" />
     <router-link class="gear" :to="edit_poster(poster.id)">
       <icon name="gear" />
     </router-link>
@@ -32,7 +32,7 @@
       required: true
     }
   })
-  const emit = defineEmits({ remove: is_vector_id })
+  const emit = defineEmits({ remove: is_vector_id, picker: is_vector_id })
   const router = use_router()
   const edit_poster = itemid =>
     `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
