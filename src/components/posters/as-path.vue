@@ -1,5 +1,5 @@
 <script setup>
-  import { ref } from 'vue'
+  import { ref, watchEffect } from 'vue'
   import { is_path } from '@/use/vector'
   const props = defineProps({
     path: {
@@ -10,6 +10,7 @@
   })
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
+  watchEffect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <template>
   <path :d="d" :style="style" />

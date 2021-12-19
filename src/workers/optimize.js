@@ -15,7 +15,7 @@ const options = {
     },
     { cleanupNumericValues: true },
     { cleanupAttrs: true },
-    { removeEmptyAttrs: true },
+    { removeEmptyAttrs: false },
     { removeViewBox: false },
     { removeUselessStrokeAndFill: true },
     { sortAttrs: false },

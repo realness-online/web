@@ -123,7 +123,7 @@
         this.working = true
         this.vectorizer.postMessage({ image })
       },
-      async vectorized(response) {
+      vectorized(response) {
         const vector = response.data.vector
         vector.id = this.as_itemid
         vector.type = 'posters'
@@ -144,7 +144,8 @@
         this.optimizer.postMessage({ vector })
       },
       optimized(message) {
-        this.new_poster = get_item(message.data.vector)
+        const optimized = get_item(message.data.vector)
+        this.new_poster = optimized
       },
       async save_poster() {
         const id = this.new_poster.id
