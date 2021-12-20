@@ -76,8 +76,8 @@
 <style lang="stylus">
   section#directory
     padding-bottom: base-line * 2
-    & > header > svg.heart
-        fill: blue
+    & > header > a > svg.heart
+      fill: blue
     & > svg.working
       margin-top: base-line
       @media (prefers-color-scheme: dark)
