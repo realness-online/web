@@ -126,8 +126,6 @@
       z-index: 1
       &[itemscope]
         transition-property: all
-
-      &[itemscope]
         position: relative
       &.working
         min-height: 512px
