@@ -2,7 +2,7 @@
 
 ![Realness](../src/style/icons.svg)
 
-- How is the contact with the people we care about supposed to go?  
+- How is the contact with the people we care about supposed to go?
 - What about the internet are we on the hook to understand?
 
 Realness tries to be as small as possible so that you can trust the affection it generates. The server knows your phone number and the content you create. Statements, Posters, Events, Avatars. Your relationships remain on device. Images that you upload to create Posters and Avatars, are converted on device and then discarded.
@@ -18,7 +18,7 @@ Realness believes moderators should be at the center of social networking. Moder
 - You can download the posters that you create
 - You can sign up with your phone number, and create an avatar
 - You can look for people you may know on Realness
-- You can add those people  
+- You can add those people
 - You can view a feed of what those people want to say
 - You can view a list of upcoming events
 - You can contact a Moderator you probably know in real life to get your questions answered

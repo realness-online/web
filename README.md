@@ -12,7 +12,7 @@ Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/archi
 
 From your favorite terminal
 
-``` bash
+```bash
 git clone git@github.com:realness-online/web.git
 
 cd web
@@ -48,7 +48,7 @@ Once your project is created you will want to enable phone authentication and fi
 
 Install firebase-tools, login, and deploy
 
-``` bash
+```bash
 yarn global add firebase-tools
 
 firebase login

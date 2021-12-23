@@ -1,11 +1,10 @@
 # Realness – Contributing
 
-
 ![Realness](../src/style/icons.svg)
 
 Joining [realness](https://realness.online) is the best way to get support (moral, and technical). We'd love to have your help.
 
-The best way to start is deploy your own instance of realness and then read about the  the [philosopy](philosophy.md) and [architecture](architecture.md).
+The best way to start is deploy your own instance of realness and then read about the the [philosopy](philosophy.md) and [architecture](architecture.md).
 
 Deploying creates an `artifacts` folder with reports on what files are generated.
 
@@ -22,9 +21,10 @@ A standard setup is usually three tabs in a terminal running the following scrip
 replace `--watch` with `--watchAll` to get full coverage data with each change.
 
 ### Config
+
 For a fully functioning localhost save a file named `.env.local` to the root of your project with your firebase keys.
 
-``` bash
+```bash
 VUE_APP_API_KEY=${firebase.apiKey}
 VUE_APP_AUTH_DOMAIN=${firebase.authDomain}
 VUE_APP_DATABASE_URL=${firebase.databaseUrl}
@@ -46,6 +46,7 @@ Start your local server and `localhost:8080` will be good to go
 - Make sure `yarn test --coverage` passes. Deploying will fail if your changes drop code coverage.
 
 - If adding a new feature:
+
   - Add accompanying test case.
   - Provide a convincing reason to add this feature. Ideally, you should open a suggestion issue first and have it approved before working on it.
 

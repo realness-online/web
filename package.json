@@ -14,7 +14,9 @@
     "test": "TZ=UTC vue-cli-service test:unit",
     "test:e2e:ci": "cypress run --browser chrome --headless --config-file e2e/cypress.json",
     "workers": "webpack --config workers.config.js",
-    "workers:dev": "yarn workers --mode=development --watch"
+    "workers:dev": "yarn workers --mode=development --watch",
+    "format": "prettier .  --write",
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "@realness.online/potrace": "../potrace/",
