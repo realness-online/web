@@ -1,38 +1,3 @@
-<template>
-  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
-  <svg
-    v-else
-    :id="id"
-    itemscope
-    :itemtype="`/${as_type(itemid)}`"
-    :itemid="itemid"
-    :viewBox="viewbox"
-    :preserveAspectRatio="aspect_ratio"
-    :tabindex="focusable"
-    @click="click">
-    <as-background
-      :rect="vector.background"
-      :tabable="tabable"
-      @focus="focus('background')" />
-    <as-path
-      v-if="vector.light"
-      :path="vector.light"
-      itemprop="light"
-      :tabindex="tabindex"
-      @focus="focus('light')" />
-    <as-path
-      v-if="vector.regular"
-      :path="vector.regular"
-      itemprop="regular"
-      :tabindex="tabindex"
-      @focus="focus('regular')" />
-    <as-path
-      :path="vector.bold"
-      itemprop="bold"
-      :tabindex="tabindex"
-      @focus="focus('bold')" />
-  </svg>
-</template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
@@ -103,6 +68,41 @@
   )
   onMounted(should_show)
 </script>
+<template>
+  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
+  <svg
+    v-else
+    :id="id"
+    itemscope
+    :itemtype="`/${as_type(itemid)}`"
+    :itemid="itemid"
+    :viewBox="viewbox"
+    :preserveAspectRatio="aspect_ratio"
+    :tabindex="focusable"
+    @click="click">
+    <as-background
+      :rect="vector.background"
+      :tabable="tabable"
+      @focus="focus('background')" />
+    <as-path
+      v-if="vector.light"
+      :path="vector.light"
+      itemprop="light"
+      :tabindex="tabindex"
+      @focus="focus('light')" />
+    <as-path
+      v-if="vector.regular"
+      :path="vector.regular"
+      itemprop="regular"
+      :tabindex="tabindex"
+      @focus="focus('regular')" />
+    <as-path
+      :path="vector.bold"
+      itemprop="bold"
+      :tabindex="tabindex"
+      @focus="focus('bold')" />
+  </svg>
+</template>
 <style lang="stylus">
   svg[itemtype="/posters"]
   svg[itemtype="/avatars"]
