@@ -2,16 +2,25 @@
 <html lang="en">
   <head>
     <title>Realness – A Chill Vector Space</title>
-    <meta charset="UTF-8">
-    <meta name="description" content="A chill vector space. When people search for 'outsider social network' they'll find realness online">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
-    <link type="image/svg+xml" rel="icon"  href="<%=require('@/style/icons.svg')%>">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="og:url" content="https://realness.online">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="en_US">
-    <meta property="og:image" content="<%=require('@/style/icons.svg')%>">
-    <meta property="og:title" content="A chill vector space - realness.online">
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="A chill vector space. When people search for 'outsider social network' they'll find realness online" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+    <link
+      type="image/svg+xml"
+      rel="icon"
+      href="<%=require('@/style/icons.svg')%>" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:url" content="https://realness.online" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="<%=require('@/style/icons.svg')%>" />
+    <meta
+      property="og:title"
+      content="A chill vector space - realness.online" />
   </head>
   <body>
     <noscript>
@@ -22,26 +31,42 @@
       @media (prefers-color-scheme: dark) {
         html {
           background-color: rgb(23, 24, 28);
-          color: rgba(186,185,166,0.9);
+          color: rgba(186, 185, 166, 0.9);
         }
       }
-     </style>
-     <svg class="working" style="width:9rem; height:4rem; display: block; margin:auto; margin-top:12rem;" fill-opacity="0.73" fill="#EC364C">
-       <rect x="1em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
-       <rect x="3.5em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
-       <rect x="6em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
-     </svg>
+    </style>
+    <svg
+      class="working"
+      style="
+        width: 9rem;
+        height: 4rem;
+        display: block;
+        margin: auto;
+        margin-top: 12rem;
+      "
+      fill-opacity="0.73"
+      fill="#EC364C">
+      <rect x="1em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
+      <rect x="3.5em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
+      <rect x="6em" y="1.05em" width="2em" height="2em" rx="1em"></rect>
+    </svg>
   </body>
   <script>
     if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent)) {
-      window.addEventListener('orientationchange', () => {
-        const viewport = document.querySelector("meta[name=viewport]")
-        if (viewport) {
-          const content = viewport.getAttribute("content")
-          viewport.setAttribute("content", content + ", maximum-scale=1.0")
-          setTimeout( _ => { viewport.setAttribute("content", content); }, 90)
-        }
-      }, false)
+      window.addEventListener(
+        'orientationchange',
+        () => {
+          const viewport = document.querySelector('meta[name=viewport]')
+          if (viewport) {
+            const content = viewport.getAttribute('content')
+            viewport.setAttribute('content', content + ', maximum-scale=1.0')
+            setTimeout(_ => {
+              viewport.setAttribute('content', content)
+            }, 90)
+          }
+        },
+        false
+      )
     }
   </script>
 </html>
