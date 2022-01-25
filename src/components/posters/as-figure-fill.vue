@@ -35,7 +35,6 @@
   const { distanceY } = swipe(figure, {
     onSwipe() {
       const chill = distanceY.value / 500
-      console.log('swipe', chill)
       opacity(chill)
     }
   })
@@ -56,6 +55,7 @@
       tabindex="-1"
       @focus="set_input_color" />
     <figcaption>
+      <as-svg :itemid="itemid" :immediate="true" :slice="true" />
       <input
         v-model="color"
         type="color"
@@ -97,18 +97,16 @@
         &::-webkit-color-swatch-wrapper
           padding: 0
         &::-webkit-color-swatch
-          height: 100%
-          width: 100%
-          padding:0
           border: 1px solid green
           border-radius: base-line
       & > svg
+        cursor: pointer
         position: fixed
         z-index: 4
-        bottom: base-line * 3
+        bottom: base-line * 4
         left: base-line
-        width: base-line * 2
-        height: base-line * 2
+        width: base-line * 1.5
+        height: base-line * 1.5
         fill: transparent
         border: black
         border-radius: 2rem
