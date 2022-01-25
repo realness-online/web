@@ -23,6 +23,11 @@
       required: false,
       default: false
     },
+    toggle_aspect: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
     slice: {
       type: Boolean,
       required: false,

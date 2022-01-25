@@ -68,6 +68,7 @@ export function as_poster(props, emit) {
   const menu = ref(false)
 
   const aspect_ratio = computed(() => {
+    if (!props.toggle_aspect) return 'xMidYMid slice'
     if (menu.value || !props.slice) return 'xMidYMid meet'
     else return 'xMidYMid slice'
   })

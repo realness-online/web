@@ -62,6 +62,7 @@
         :itemid="itemid"
         :immediate="true"
         :slice="true"
+        :toggle_aspect="false"
         @click="toggle_stroke" />
       <input
         v-model="color"
@@ -94,24 +95,24 @@
       & > input[type="color"]
         position: fixed
         z-index: 2
-        bottom: inset(bottom,  base-line * 4)
+        bottom: inset(bottom,  base-line * 3)
         right: inset(right, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
         &::-moz-color-swatch
           border: 1px solid green
           border-radius: base-line
-        &::-webkit-color-swatch-wrapper
-          padding: 0
         &::-webkit-color-swatch
           border: 1px solid green
           border-radius: base-line
+        &::-webkit-color-swatch-wrapper
+          padding: 0
       & > svg
         cursor: pointer
         position: fixed
         z-index: 4
-        bottom: base-line * 4
-        left: base-line
+        bottom: inset(bottom,  base-line * 3)
+        left: inset(left, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
         fill: transparent
