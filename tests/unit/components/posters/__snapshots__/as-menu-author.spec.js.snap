@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`@/components/posters/as-author-menu.vue Renders a menu to edit a poster 1`] = `
+exports[`@/components/posters/as-menu-author.vue Renders a menu to edit a poster 1`] = `
 <menu>
   <event-as-button-stub
     itemid="/+16282281824/posters/559666932867"
