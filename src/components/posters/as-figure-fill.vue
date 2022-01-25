@@ -87,16 +87,21 @@
       & > input[type="color"]
         position: fixed
         z-index: 2
-        bottom: inset(bottom)
+        bottom: inset(bottom,  base-line * 4)
         right: inset(right, base-line)
-        width: base-line * 2
-        height: base-line * 2
+        width: base-line * 1.5
+        height: base-line * 1.5
         &::-moz-color-swatch
-          border: 2px solid green
-          border-radius: 16px
+          border: 1px solid green
+          border-radius: base-line
+        &::-webkit-color-swatch-wrapper
+          padding: 0
         &::-webkit-color-swatch
-          border: 2px solid green
-          border-radius: 16px
+          height: 100%
+          width: 100%
+          padding:0
+          border: 1px solid green
+          border-radius: base-line
       & > svg
         position: fixed
         z-index: 4
