@@ -1,6 +1,6 @@
 <script setup>
   import asSvg from '@/components/posters/as-svg'
-  import { ref } from 'vue'
+  import { ref, provide } from 'vue'
   import {
     whenever,
     useMagicKeys as keyboard,
@@ -13,9 +13,6 @@
   import { is_vector_id } from '@/use/vector'
   import rgb_to_hex from '@/use/rgb-to-hex'
   import css_var from '@/use/css-var'
-  const figure = ref(null)
-  const color = ref('#151518')
-  const itemprop = ref('bold')
   defineProps({
     itemid: {
       required: true,
@@ -23,6 +20,9 @@
       validator: is_vector_id
     }
   })
+  const figure = ref(null)
+  const color = ref('#151518')
+  const itemprop = ref('bold')
   const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
     itemprop.value = id
@@ -32,6 +32,9 @@
       color.value = css_var('--white-poster').substring(1)
     else color.value = '#151518'
   }
+  const as_stroke = ref(false)
+  const toggle_stroke = () => (as_stroke.value = !as_stroke.value)
+  provide('as_stroke', as_stroke)
   const { distanceY } = swipe(figure, {
     onSwipe() {
       const chill = distanceY.value / 500
@@ -55,7 +58,11 @@
       tabindex="-1"
       @focus="set_input_color" />
     <figcaption>
-      <as-svg :itemid="itemid" :immediate="true" :slice="true" />
+      <as-svg
+        :itemid="itemid"
+        :immediate="true"
+        :slice="true"
+        @click="toggle_stroke" />
       <input
         v-model="color"
         type="color"
