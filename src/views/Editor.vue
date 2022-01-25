@@ -65,7 +65,7 @@
     <as-animation v-if="animation" :itemid="itemid" />
     <as-grid v-if="grid" :itemid="itemid" />
     <footer>
-      <menu style="visibility: hidden">
+      <menu>
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: animation }" name="animation" />
         <icon :class="{ selected: grid }" name="grid" />
