@@ -52,7 +52,7 @@
   import { Poster } from '@/persistance/Storage'
   import icon from '@/components/icon'
   import as_figure from '@/components/posters/as-figure'
-  import as_author_menu from '@/components/posters/as-author-menu'
+  import as_author_menu from '@/components/posters/as-menu-author'
   import logo_as_link from '@/components/logo-as-link'
   import uploader from '@/mixins/uploader'
   import signed_in from '@/mixins/signed_in'

@@ -1,6 +1,6 @@
 <script setup>
   import icon from '@/components/icon'
-  import asFill from '@/components/posters/as-fill-figure'
+  import asFill from '@/components/posters/as-figure-fill'
   import asAnimation from '@/components/posters/as-animation'
   import asGrid from '@/components/posters/as-grid'
 

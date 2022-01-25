@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import as_fill_figure from '@/components/posters/as-fill-figure'
+import as_fill_figure from '@/components/posters/as-figure-fill'
 import get_item from '@/use/item'
 const poster_html = require('fs').readFileSync(
   './tests/unit/html/poster.html',
