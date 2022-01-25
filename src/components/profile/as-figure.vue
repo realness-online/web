@@ -127,7 +127,7 @@
       & > address
         justify-content: center
       & > menu
-        padding: base-line
+        padding: base-line * .33
         &:hover
           opacity: 1
 </style>
