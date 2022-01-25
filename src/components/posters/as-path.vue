@@ -1,6 +1,7 @@
 <script setup>
-  import { ref, watchEffect } from 'vue'
+  import { ref, watch, inject } from 'vue'
   import { is_path } from '@/use/vector'
+  const path = ref(null)
   const props = defineProps({
     path: {
       type: Object,
@@ -8,10 +9,19 @@
       validate: is_path
     }
   })
+  const as_stroke = inject('as_stroke', false)
+
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
-  watchEffect(() => (d.value = props.path.getAttribute('d')))
+  const fill = ref(null)
+  watch(as_stroke, () => {
+    if (as_stroke.value) {
+      fill.value = path.value.style.fill
+      path.value.style.fill = 'transparent'
+    } else path.value.style.fill = fill.value
+  })
+  watch(d, () => (d.value = props.path.getAttribute('d')))
 </script>
 <template>
-  <path :d="d" :style="style" />
+  <path ref="path" :d="d" :style="style" />
 </template>

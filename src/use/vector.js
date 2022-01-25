@@ -20,7 +20,6 @@ export const is_rect = rect => {
   if (rect instanceof SVGRectElement) return true
   else return false
 }
-
 export const is_path = path => {
   if (typeof vector != 'object') return false
   if (path instanceof SVGPathElement) return true

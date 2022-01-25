@@ -43,6 +43,11 @@
       required: false,
       default: null,
       validator: is_vector
+    },
+    as_stroke: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   })
   const {
