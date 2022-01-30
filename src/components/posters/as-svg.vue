@@ -136,8 +136,11 @@
     & > path[itemprop="bold"]
         stroke: white
         stroke-opacity: 0.75
-      &:focus,
+    & > path
       &:active
+        fill: yellow
+      &:focus
         outline: none
-        stroke: red
+        stroke-width: 3px
+        stroke: white
 </style>

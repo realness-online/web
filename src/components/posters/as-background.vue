@@ -31,4 +31,5 @@
     &:focus
       outline: none
       stroke: none
+      animation-name: press
 </style>

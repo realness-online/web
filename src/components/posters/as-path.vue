@@ -7,10 +7,13 @@
       type: Object,
       required: true,
       validate: is_path
+    },
+    tabindex: {
+      type: Number,
+      required: true
     }
   })
   const as_stroke = inject('as_stroke', false)
-
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
   const fill = ref(null)
@@ -23,5 +26,5 @@
   watch(d, () => (d.value = props.path.getAttribute('d')))
 </script>
 <template>
-  <path ref="path" :d="d" :style="style" />
+  <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
 </template>
