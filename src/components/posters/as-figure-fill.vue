@@ -63,6 +63,7 @@
         :immediate="true"
         :slice="true"
         :toggle_aspect="false"
+        tabindex="-1"
         @click="toggle_stroke" />
       <input
         v-model="color"

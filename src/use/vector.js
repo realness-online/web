@@ -111,7 +111,7 @@ export function as_poster(props, emit) {
   }
   const tabindex = computed(() => {
     if (props.tabable) return 0
-    else return undefined
+    else return -1
   })
   const focusable = computed(() => {
     if (!props.tabable) return 0
