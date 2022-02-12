@@ -7,7 +7,7 @@ export function change(opacity = 0.025, resolution = 0.025) {
 
   opacity += resolution
 
-  if (opacity > 0.9) opacity = 0.875
+  if (opacity > 0.99) opacity = 1
   else if (opacity < 0) opacity = 0.025
 
   return opacity
