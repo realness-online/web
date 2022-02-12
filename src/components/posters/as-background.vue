@@ -28,8 +28,9 @@
 <style lang="stylus">
   rect[itemprop="background"]
     fill: var(--white-poster)
-    &:focus
-      outline: none
-      stroke: none
+    outline: none
+    stroke: none
+    &:active
+      fill: currentColor
       animation-name: press
 </style>
