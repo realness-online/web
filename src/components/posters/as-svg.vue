@@ -122,25 +122,22 @@
     min-height: 512px
     height: 100%
     width: 100%
-    &::focus
-      border: 2px solid red
     & > path[itemprop]
-      stroke: black-background
+      stroke: currentColor
       stroke-width: 1px
-      stroke-opacity: 0.5
+      stroke-opacity: 0.75
       outline: none
     & > path[itemprop="light"]
         fill: inherit
     & > path[itemprop="regular"]
         fill: inherit
     & > path[itemprop="bold"]
-        stroke: white
-        stroke-opacity: 0.75
+        fill: inherit
     & > path
       &:active
-        fill: yellow
+        fill: currentColor
+        stroke: transparent
       &:focus
         outline: none
-        stroke-width: 3px
-        stroke: white
+        stroke-width: 1.5px
 </style>
