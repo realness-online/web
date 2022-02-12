@@ -1,12 +1,19 @@
-import rgb_hex from 'rgb-hex'
+import rgb_to_hex from 'rgb-hex'
+import hsl_to_hex from 'hsl-to-hex'
 
+export function to_hex(color = '') {
+  if (color.startsWith('#')) return color
+  if (color.startsWith('rgb')) return `#${rgb_to_hex(color)}`
+  if (color.startsWith('hsl')) return hsl_to_hex(color)
+  throw `Provided color is unrecognized — ${color}`
+}
 // https://una.im/css-color-theming
-// takes hex rgb or hsl value and returns hsla value
-export function to_blended_hsla(color = '') {
+// takes hex rgb or hsl value and returns hsl object
+export function to_hsl(color = '') {
   let H = color.toString()
   // check if it's already hsl
-  if (H.startsWith('hsl')) return H
-  if (H.startsWith('rgb')) H = rgb_hex(H)
+  if (H.startsWith('hsl')) return (H = hsl_to_hex(H))
+  if (H.startsWith('rgb')) H = rgb_to_hex(H)
   // Convert hex to RGB first
   let r = 0
   let g = 0
@@ -45,5 +52,10 @@ export function to_blended_hsla(color = '') {
   s = +(s * 100).toFixed(1)
   l = +(l * 100).toFixed(1)
 
-  return `hsla(${h},${s}%,${l}%,0.95)`
+  return {
+    color: `hsl(${h},${s}%,${l}%)`,
+    h,
+    s,
+    l
+  }
 }

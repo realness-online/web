@@ -11,7 +11,7 @@
     itemprop_query as query
   } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
-  import rgb_to_hex from '@/use/rgb-to-hex'
+  import { to_hex } from '@/use/colors'
   import css_var from '@/use/css-var'
   defineProps({
     itemid: {
@@ -27,7 +27,7 @@
   const set_input_color = id => {
     itemprop.value = id
     const fill = query(itemprop.value).style.fill
-    if (fill) color.value = rgb_to_hex(fill)
+    if (fill) color.value = to_hex(fill)
     else if (id === 'background')
       color.value = css_var('--white-poster').substring(1)
     else color.value = '#151518'
