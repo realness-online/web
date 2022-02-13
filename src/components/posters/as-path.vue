@@ -17,12 +17,16 @@
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
   const fill = ref(null)
+  const opacity = ref(null)
   watch(as_stroke, () => {
     if (as_stroke.value) {
       fill.value = path.value.style.fill
-      path.value.style.fill = 'transparent'
-      path.value.style.stroke = 'black'
-    } else path.value.style.fill = fill.value
+      opacity.value = path.value.style.fillOpacity
+      path.value.style.fillOpacity = '0.05'
+    } else {
+      path.value.style.fill = fill.value
+      path.value.style.fillOpacity = opacity.value
+    }
   })
   watch(d, () => (d.value = props.path.getAttribute('d')))
 </script>
