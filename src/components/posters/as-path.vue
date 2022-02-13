@@ -20,7 +20,8 @@
   watch(as_stroke, () => {
     if (as_stroke.value) {
       fill.value = path.value.style.fill
-      path.value.style.fill = 'hsla(0,0%,0%, 0.1)'
+      path.value.style.fill = 'transparent'
+      path.value.style.stroke = 'black'
     } else path.value.style.fill = fill.value
   })
   watch(d, () => (d.value = props.path.getAttribute('d')))
