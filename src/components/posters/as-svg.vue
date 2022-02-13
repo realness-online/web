@@ -125,9 +125,10 @@
     & > path[itemprop]
       stroke: currentColor
       stroke-width: 1px
-      stroke-opacity: 0.75
+      stroke-opacity: 0.5
       outline: none
     & > path[itemprop="light"]
+        stroke: black-background
         fill: inherit
     & > path[itemprop="regular"]
         fill: inherit
