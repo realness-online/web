@@ -81,14 +81,16 @@
         visibility: hidden
     & > header
       align-items: center
-      background: black-transparent
-      border-radius: 1rem
       z-index: 2
       position: fixed;
-      padding: 0 (base-line * 0.5)
       top: inset(top, base-line)
       left: inset(left)
       right: inset(right)
+      padding: 0
+      @media (min-width: pad-begins)
+        border-radius: 1rem
+        background: black-transparent
+        padding: 0 (base-line * 0.5)
       & > h1
         margin: 0
         color: red
