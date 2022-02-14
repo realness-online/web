@@ -13,6 +13,7 @@
   import { is_vector_id } from '@/use/vector'
   import { to_hex, to_complimentary_hsl } from '@/use/colors'
   import css_var from '@/use/css-var'
+  const emit = defineEmits(['toggle'])
   defineProps({
     itemid: {
       required: true,
@@ -22,8 +23,18 @@
   })
   const figure = ref(null)
   const color = ref('#151518')
-  const itemprop = ref('bold')
-  const focus_on_active = () => query(itemprop.value).focus()
+  const itemprop = ref('background')
+  const path_focused = ref(false)
+  const as_stroke = ref(false)
+
+  provide('as_stroke', as_stroke)
+  const focus_on_active = () => {
+    query(itemprop.value).focus()
+  }
+  const focused = path => {
+    console.log('focused', path)
+    path_focused.value = true
+  }
   const set_input_color = id => {
     itemprop.value = id
     const fill = query(itemprop.value).style.fill
@@ -32,9 +43,10 @@
       color.value = css_var('--white-poster').substring(1)
     else color.value = '#151518'
   }
-  const as_stroke = ref(false)
-  const toggle_stroke = () => (as_stroke.value = !as_stroke.value)
-  provide('as_stroke', as_stroke)
+  const toggle_stroke = () => {
+    as_stroke.value = !as_stroke.value
+    emit('toggle')
+  }
   const { distanceY } = swipe(figure, {
     onSwipe() {
       const chill = distanceY.value / 500
@@ -61,13 +73,15 @@
       tabindex="-1"
       @focus="set_input_color" />
     <figcaption>
+      <button v-if="as_stroke && path_focused">Darken</button>
       <as-svg
         :itemid="itemid"
         :immediate="true"
         :slice="true"
         :toggle_aspect="false"
         tabindex="-1"
-        @click="toggle_stroke" />
+        @click="toggle_stroke"
+        @focus="focused(path)" />
       <input
         v-model="color"
         type="color"
@@ -101,13 +115,14 @@
         cursor: pointer
         position: fixed
         z-index: 4
-        left: inset(left, base-line)
+        bottom: inset(bottom,  base-line * 4.5)
       & > button
+        padding: round((base-line / 4), 2) base-line * .33
         color: red
         border-color: red
-        bottom: inset(bottom,  base-line * 5)
+        left: inset(left, base-line * 3 )
       & > svg
-        bottom: inset(bottom,  base-line * 3)
+        left: inset(left, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
         fill: transparent
@@ -120,7 +135,7 @@
       & > input[type="color"]
         position: fixed
         z-index: 2
-        bottom: inset(bottom,  base-line * 3)
+        bottom: inset(bottom,  base-line * 4.5)
         right: inset(right, base-line)
         width: base-line * 1.5
         height: base-line * 1.5

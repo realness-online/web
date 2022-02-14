@@ -69,7 +69,7 @@
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
     <footer>
-      <menu>
+      <menu v-if="!is_fullscreen">
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: animation }" name="animation" />
         <icon :class="{ selected: grid }" name="grid" />
@@ -79,10 +79,6 @@
 </template>
 <style lang="stylus">
   section#editor
-    &:fullscreen
-    &:full-screen
-      & > header > a.fullscreen
-        visibility: hidden
     & > header
       align-items: center
       z-index: 2
@@ -120,14 +116,12 @@
       background-color: black-transparent
       position: fixed
       padding: base-line
-      z-index: 2
       bottom: 0
       left: 0
       right: 0
       display: flex
       justify-content: space-between
       & > svg
-        position: relative;
         z-index: 2
         &.selected
           stroke: red
