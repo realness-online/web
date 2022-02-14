@@ -59,3 +59,30 @@ export function to_hsl(color = '') {
     l
   }
 }
+
+export function to_complimentary_hsl(color = '') {
+  let hsl = to_hsl(color)
+  const h = hsl.h + 180
+
+  let s = 100 - hsl.s
+  // if (hsl.s < 30) s = 50 + hsl.s
+
+  let l = 100 - hsl.l
+  // if (hsl.l < 50) l = 50 + hsl.l
+
+  const new_color = `hsl(${h},${s}%,${l}%)`
+  console.log(hsl.color)
+  console.log(new_color)
+  return {
+    color: new_color,
+    h,
+    s,
+    l
+  }
+}
+
+// 100% saturation is completely saturated (full color),
+// while 0% is completely unsaturated (gray)
+//
+// 100% lightness is white,
+// 0% lightness is black

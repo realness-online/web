@@ -11,7 +11,7 @@
     itemprop_query as query
   } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
-  import { to_hex } from '@/use/colors'
+  import { to_hex, to_complimentary_hsl } from '@/use/colors'
   import css_var from '@/use/css-var'
   defineProps({
     itemid: {
@@ -46,7 +46,10 @@
   whenever(keys.up_shift, () => opacity(0.01))
   whenever(keys.down, () => opacity(-0.03))
   whenever(keys.down_shift, () => opacity(-0.01))
-  whenever(color, () => (query(itemprop.value).style.fill = color.value))
+  whenever(color, () => {
+    query(itemprop.value).style.fill = color.value
+    query(itemprop.value).style.color = to_complimentary_hsl(color.value).color
+  })
 </script>
 <template>
   <figure id="edit-fill" ref="figure">
