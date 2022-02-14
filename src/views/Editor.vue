@@ -87,14 +87,13 @@
       align-items: center
       z-index: 2
       position: fixed;
-      top: inset(top, base-line)
-      left: inset(left)
-      right: inset(right)
-      padding: 0
+      top: 0
+      left: 0
+      right: 0
+      padding: base-line
       @media (min-width: pad-begins)
-        border-radius: 1rem
-        background: black-transparent
-        padding: 0 (base-line * 0.5)
+        padding: 0 base-line
+      background: black-transparent
       & > h1
         margin: 0
         color: red
@@ -120,10 +119,11 @@
     & > footer > menu
       background-color: black-transparent
       position: fixed
+      padding: base-line
       z-index: 2
-      bottom: base-line
-      left: base-line
-      right: base-line
+      bottom: 0
+      left: 0
+      right: 0
       display: flex
       justify-content: space-between
       & > svg
