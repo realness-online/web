@@ -126,20 +126,18 @@
       color: black-dark
       stroke: currentColor
       stroke-width: 1px
-      stroke-opacity: 0.5
+      stroke-opacity: 0.33
       outline: none
     & > path[itemprop="light"]
-        fill: inherit
+      fill: inherit
     & > path[itemprop="regular"]
-        fill: inherit
+      fill: inherit
     & > path[itemprop="bold"]
-        color: white
-        fill: inherit
+      fill: inherit
     & > path
       &:active
         fill: currentColor
         stroke: transparent
       &:focus
         outline: none
-        stroke-width: 1.5px
 </style>
