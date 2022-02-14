@@ -96,6 +96,27 @@
       height: auto
       display: flex
       justify-content: space-between
+      & > button
+      & > svg
+        cursor: pointer
+        position: fixed
+        z-index: 4
+        left: inset(left, base-line)
+      & > button
+        color: red
+        border-color: red
+        bottom: inset(bottom,  base-line * 5)
+      & > svg
+        bottom: inset(bottom,  base-line * 3)
+        width: base-line * 1.5
+        height: base-line * 1.5
+        fill: transparent
+        border: black
+        border-radius: 2rem
+        min-height: auto
+        stroke-width: base-line
+        stroke-opacity: 1
+        stroke: white
       & > input[type="color"]
         position: fixed
         z-index: 2
@@ -111,19 +132,4 @@
           border-radius: base-line
         &::-webkit-color-swatch-wrapper
           padding: 0
-      & > svg
-        cursor: pointer
-        position: fixed
-        z-index: 4
-        bottom: inset(bottom,  base-line * 3)
-        left: inset(left, base-line)
-        width: base-line * 1.5
-        height: base-line * 1.5
-        fill: transparent
-        border: black
-        border-radius: 2rem
-        min-height: auto
-        stroke-width: base-line
-        stroke-opacity: 1
-        stroke: white
 </style>
