@@ -23,6 +23,10 @@
     if (animation.value) return 'Animation'
     return 'Grid'
   })
+  const toggle_stroke = () => {
+    stroke.value = !stroke.value
+    fill.value = !fill.value
+  }
   const color = computed(() => {
     if (stroke.value || fill.value) return true
     else return false
@@ -61,9 +65,9 @@
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
     </header>
-    <as-fill v-if="fill" :itemid="itemid" />
-    <as-animation v-if="animation" :itemid="itemid" />
+    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
+    <as-animation v-if="animation" :itemid="itemid" />
     <footer>
       <menu>
         <icon :class="{ selected: color }" name="edit-color" />
