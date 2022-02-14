@@ -48,9 +48,10 @@ export function to_hsl(color = '') {
   if (h < 0) h += 360
 
   l = (cmax + cmin) / 2
+  l = +(l * 100).toFixed(1)
+
   s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1))
   s = +(s * 100).toFixed(1)
-  l = +(l * 100).toFixed(1)
 
   return {
     color: `hsl(${h},${s}%,${l}%)`,
@@ -63,14 +64,11 @@ export function to_hsl(color = '') {
 export function to_complimentary_hsl(color = '') {
   let hsl = to_hsl(color)
   const h = hsl.h + 180
-
-  let s = 100 - hsl.s
-  // if (hsl.s < 30) s = 50 + hsl.s
-
-  let l = 100 - hsl.l
-  // if (hsl.l < 50) l = 50 + hsl.l
-
+  const s = 100 - hsl.s
+  const l = 100 - hsl.l
   const new_color = `hsl(${h},${s}%,${l}%)`
+  console.log('')
+  console.log(color)
   console.log(hsl.color)
   console.log(new_color)
   return {
