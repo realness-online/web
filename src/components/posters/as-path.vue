@@ -13,7 +13,7 @@
       required: true
     }
   })
-  const as_stroke = inject('as_stroke', false)
+  const as_stroke = ref(inject('as_stroke', false))
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
   const fill = ref(null)
