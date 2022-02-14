@@ -123,16 +123,17 @@
     height: 100%
     width: 100%
     & > path[itemprop]
+      color: black-dark
       stroke: currentColor
       stroke-width: 1px
       stroke-opacity: 0.5
       outline: none
     & > path[itemprop="light"]
-        stroke: black-background
         fill: inherit
     & > path[itemprop="regular"]
         fill: inherit
     & > path[itemprop="bold"]
+        color: white
         fill: inherit
     & > path
       &:active
