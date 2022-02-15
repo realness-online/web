@@ -129,7 +129,7 @@
       stroke-opacity: 0.33
       outline: none
       &:focus
-        animation-duration: 0.2s
+        animation-duration: 0.15s
         animation-name: quick
     & > path[itemprop="light"]
       fill: inherit
