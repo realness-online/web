@@ -1,6 +1,6 @@
 <template>
   <router-link v-if="person" :to="author" class="profile">
-    <as-avatar :itemid="person.avatar" />
+    <as-avatar :itemid="person.avatar" class="icon" />
     <as-address :person="person">
       <slot />
     </as-address>
