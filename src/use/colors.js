@@ -48,11 +48,15 @@ export function to_hsl(color = '') {
   if (h < 0) h += 360
 
   l = (cmax + cmin) / 2
-  l = +(l * 100).toFixed(1)
+  l = +(l * 100).toFixed(2)
 
-  s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1))
-  s = +(s * 100).toFixed(1)
+  s = delta == 0 ? 0 : delta / (1 + Math.abs(2 * l - 1))
+  s = Math.abs(s)
 
+  s = (s * 10000).toFixed(2)
+
+  s = Math.round(s)
+  l = Math.round(l)
   return {
     color: `hsl(${h},${s}%,${l}%)`,
     h,
