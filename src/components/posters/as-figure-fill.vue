@@ -73,7 +73,6 @@
       tabindex="-1"
       @focus="set_input_color" />
     <figcaption>
-      <button v-if="as_stroke && path_focused">Darken</button>
       <as-svg
         :itemid="itemid"
         :immediate="true"
