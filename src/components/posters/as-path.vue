@@ -22,7 +22,7 @@
     if (as_stroke.value) {
       fill.value = path.value.style.fill
       opacity.value = path.value.style.fillOpacity
-      path.value.style.fillOpacity = '0'
+      path.value.style.fillOpacity = '0.01'
     } else {
       path.value.style.fill = fill.value
       path.value.style.fillOpacity = opacity.value
