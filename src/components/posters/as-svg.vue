@@ -116,7 +116,6 @@
 <style lang="stylus">
   svg[itemtype="/posters"]
   svg[itemtype="/avatars"]
-    mix-blend-mode: difference
     aspect-ratio: 16 / 9
     display: block
     min-height: 512px
@@ -125,8 +124,8 @@
     & > path[itemprop]
       color: black-dark
       stroke: currentColor
-      stroke-width: 1px
-      stroke-opacity: 0.33
+      stroke-width: .33px
+      stroke-opacity: 1
       outline: none
       &:focus
         animation-duration: 0.15s
