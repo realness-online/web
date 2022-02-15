@@ -125,13 +125,10 @@
         left: inset(left, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
-        fill: transparent
-        border: black
+        border: green
+        border-width: 3px
         border-radius: 2rem
         min-height: auto
-        stroke-width: base-line
-        stroke-opacity: 1
-        stroke: white
       & > input[type="color"]
         position: fixed
         z-index: 2
