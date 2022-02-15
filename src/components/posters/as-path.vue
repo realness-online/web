@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, watch, inject } from 'vue'
+  import { ref, watch, watchEffect, inject } from 'vue'
   import { is_path } from '@/use/vector'
   const path = ref(null)
   const props = defineProps({
@@ -28,7 +28,7 @@
       path.value.style.fillOpacity = opacity.value
     }
   })
-  watch(d, () => (d.value = props.path.getAttribute('d')))
+  watchEffect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <template>
   <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
