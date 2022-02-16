@@ -8,8 +8,10 @@
   } from '@vueuse/core'
   import {
     fill_opacity as opacity,
-    itemprop_query as query
+    itemprop_query as query,
+    color_luminosity as luminosity
   } from '@/use/path-style'
+
   import { is_vector_id } from '@/use/vector'
   import { to_hex, to_complimentary_hsl } from '@/use/colors'
   import css_var from '@/use/css-var'
@@ -36,6 +38,7 @@
     path_focused.value = true
   }
   const set_input_color = id => {
+    if (as_stroke.value) return
     itemprop.value = id
     const fill = query(itemprop.value).style.fill
     if (fill) color.value = to_hex(fill)
@@ -54,13 +57,22 @@
     }
   })
   const keys = keyboard()
-  whenever(keys.up, () => opacity(0.03))
-  whenever(keys.up_shift, () => opacity(0.01))
-  whenever(keys.down, () => opacity(-0.03))
-  whenever(keys.down_shift, () => opacity(-0.01))
+  whenever(keys.up, () => {
+    if (as_stroke.value) luminosity(4)
+    else opacity(0.03)
+  })
+  whenever(keys.down, () => {
+    if (as_stroke.value) luminosity(-4)
+    else opacity(-0.03)
+  })
   whenever(color, () => {
-    query(itemprop.value).style.fill = color.value
-    query(itemprop.value).style.color = to_complimentary_hsl(color.value).color
+    if (as_stroke.value) query(itemprop.value).style.color = color.value
+    else {
+      query(itemprop.value).style.fill = color.value
+      query(itemprop.value).style.color = to_complimentary_hsl(
+        color.value
+      ).color
+    }
   })
 </script>
 <template>
@@ -116,7 +128,7 @@
         z-index: 4
         bottom: inset(bottom,  base-line * 4.5)
       & > button
-        padding: round((base-line / 4), 2) base-line * .33
+        padding: round(base-line * .25, 2) round(base-line * .33, 2)
         color: red
         border-color: red
         left: inset(left, base-line * 3 )

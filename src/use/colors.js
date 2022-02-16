@@ -13,7 +13,7 @@ export function to_hsl(color = '') {
   let H = color.toString()
   // check if it's already hsl
   if (H.startsWith('hsl')) return (H = hsl_to_hex(H))
-  if (H.startsWith('rgb')) H = rgb_to_hex(H)
+  if (H.startsWith('rgb')) H = `#${rgb_to_hex(H)}`
   // Convert hex to RGB first
   let r = 0
   let g = 0
@@ -69,16 +69,26 @@ export function to_complimentary_hsl(color = '') {
   let hsl = to_hsl(color)
   const h = hsl.h + 180
   const s = 100 - hsl.s
-  const l = 100 - hsl.l
+  let l = 100 - hsl.l
   const new_color = `hsl(${h},${s}%,${l}%)`
   console.log('')
   console.log(color)
-  console.log(hsl.color)
   console.log(new_color)
   return {
     color: new_color,
     h,
     s,
+    l
+  }
+}
+
+export function luminosity(color, change_by) {
+  const hsl = to_hsl(color)
+  const l = parseInt(hsl.l) + parseInt(change_by)
+  return {
+    color: `hsl(${hsl.h},${hsl.s}%,${l}%)`,
+    h: hsl.h,
+    s: hsl.s,
     l
   }
 }
