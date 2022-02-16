@@ -33,3 +33,17 @@
 <template>
   <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
 </template>
+<style lang="stylus">
+  path[itemprop]
+    color: black-dark
+    stroke: currentColor
+    stroke-width: .33px
+    stroke-opacity: 1
+    outline: none
+    fill: inherit
+    &:active
+      fill: currentColor
+      stroke: transparent
+      animation-duration: 0.15s
+      animation-name: press
+</style>

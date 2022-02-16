@@ -121,25 +121,4 @@
     min-height: 512px
     height: 100%
     width: 100%
-    & > path[itemprop]
-      color: black-dark
-      stroke: currentColor
-      stroke-width: .33px
-      stroke-opacity: 1
-      outline: none
-      &:focus
-        animation-duration: 0.15s
-        animation-name: quick
-    & > path[itemprop="light"]
-      fill: inherit
-    & > path[itemprop="regular"]
-      fill: inherit
-    & > path[itemprop="bold"]
-      fill: inherit
-    & > path
-      &:active
-        fill: currentColor
-        stroke: transparent
-      &:focus
-        outline: none
 </style>
