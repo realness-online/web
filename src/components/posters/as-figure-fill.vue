@@ -34,7 +34,6 @@
     itemprop.value = id
     if (as_stroke.value) {
       const stroke = query(id).style.stroke
-      console.log(stroke)
       if (stroke) color.value = to_hex(stroke)
     } else {
       const fill = query(id).style.fill
