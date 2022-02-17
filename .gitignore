@@ -14,7 +14,7 @@ node_modules
 /public/compress.worker.js.map
 /public/sync.worker.js
 /public/sync.worker.js.map
-# .prettierignore
+.prettierignore
 /.editorconfig
 
 /artifacts/
