@@ -71,9 +71,6 @@ export function to_complimentary_hsl(color = '') {
   const s = 100 - hsl.s
   let l = 100 - hsl.l
   const new_color = `hsl(${h},${s}%,${l}%)`
-  console.log('')
-  console.log(color)
-  console.log(new_color)
   return {
     color: new_color,
     h,
