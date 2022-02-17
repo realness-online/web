@@ -71,12 +71,17 @@
     else opacity(-0.03)
   })
   whenever(color, () => {
-    if (as_stroke.value) query(itemprop.value).style.color = color.value
+    const path = query(itemprop.value)
+    if (as_stroke.value) path.style.color = color.value
     else {
-      query(itemprop.value).style.fill = color.value
-      query(itemprop.value).style.color = to_complimentary_hsl(
-        color.value
-      ).color
+      const current_fill = path.style.fill
+      console.log(to_hex(current_fill), color.value)
+      if (to_hex(current_fill) !== color.value) {
+        console.log('changed')
+        const compliment = to_complimentary_hsl(color.value)
+        path.style.fill = color.value
+        path.style.color = compliment.color
+      }
     }
   })
 </script>
