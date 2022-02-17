@@ -11,11 +11,9 @@
     itemprop_query as query,
     color_luminosity as luminosity
   } from '@/use/path-style'
-
   import { is_vector_id } from '@/use/vector'
   import { to_hex, to_complimentary_hsl } from '@/use/colors'
   import css_var from '@/use/css-var'
-  const emit = defineEmits(['toggle'])
   defineProps({
     itemid: {
       required: true,
@@ -23,19 +21,14 @@
       validator: is_vector_id
     }
   })
+  const emit = defineEmits(['toggle'])
   const figure = ref(null)
   const color = ref('#151518')
   const itemprop = ref('background')
-  const path_focused = ref(false)
   const as_stroke = ref(false)
-
   provide('as_stroke', as_stroke)
   const focus_on_active = () => {
     query(itemprop.value).focus()
-  }
-  const focused = path => {
-    console.log('focused', path)
-    path_focused.value = true
   }
   const set_input_color = id => {
     itemprop.value = id
@@ -68,7 +61,6 @@
       }
     }
   })
-
   const keys = keyboard()
   whenever(keys.s, () => toggle_stroke())
   whenever(keys.up, () => {
@@ -105,8 +97,7 @@
         :slice="true"
         :toggle_aspect="false"
         tabindex="-1"
-        @click="toggle_stroke"
-        @focus="focused(path)" />
+        @click="toggle_stroke" />
       <input
         v-model="color"
         type="color"
