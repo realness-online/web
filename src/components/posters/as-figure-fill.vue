@@ -38,25 +38,39 @@
     path_focused.value = true
   }
   const set_input_color = id => {
-    if (as_stroke.value) return
     itemprop.value = id
-    const fill = query(itemprop.value).style.fill
-    if (fill) color.value = to_hex(fill)
-    else if (id === 'background')
-      color.value = css_var('--white-poster').substring(1)
-    else color.value = '#151518'
+    if (as_stroke.value) {
+      const stroke = query(id).style.stroke
+      console.log(stroke)
+      if (stroke) color.value = to_hex(stroke)
+    } else {
+      const fill = query(id).style.fill
+      if (fill) color.value = to_hex(fill)
+      else if (id === 'background')
+        color.value = css_var('--white-poster').substring(1)
+      else color.value = '#151518'
+    }
   }
   const toggle_stroke = () => {
     as_stroke.value = !as_stroke.value
+    if (as_stroke.value) color.value = to_hex(query(itemprop.value).style.color)
+    else color.value = to_hex(query(itemprop.value).style.fill)
     emit('toggle')
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      const chill = distanceY.value / 500
-      opacity(chill)
+      if (as_stroke.value) {
+        const chill = distanceY.value / 50
+        luminosity(chill)
+      } else {
+        const chill = distanceY.value / 500
+        opacity(chill)
+      }
     }
   })
+
   const keys = keyboard()
+  whenever(keys.s, () => toggle_stroke())
   whenever(keys.up, () => {
     if (as_stroke.value) luminosity(4)
     else opacity(0.03)
