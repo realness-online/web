@@ -37,8 +37,8 @@
   path[itemprop]
     color: black-dark
     stroke: currentColor
-    stroke-width: .33px
-    stroke-opacity: 1
+    stroke-width: base-line * 0.03
+    stroke-opacity: 0.66
     outline: none
     fill: inherit
     &:active
