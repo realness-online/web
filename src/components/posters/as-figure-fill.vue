@@ -75,9 +75,7 @@
     if (as_stroke.value) path.style.color = color.value
     else {
       const current_fill = path.style.fill
-      console.log(to_hex(current_fill), color.value)
       if (to_hex(current_fill) !== color.value) {
-        console.log('changed')
         const compliment = to_complimentary_hsl(color.value)
         path.style.fill = color.value
         path.style.color = compliment.color
