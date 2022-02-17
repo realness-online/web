@@ -11,7 +11,6 @@ describe('@/use/vector', () => {
   describe('#use_poster', () => {
     describe('.viewbox', () => {
       it("Returns the vector's viewbox", () => {
-        // console.log(poster)
         const { viewbox } = as_poster({
           immediate: true,
           slice: false,

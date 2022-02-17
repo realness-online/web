@@ -32,14 +32,12 @@
     else return false
   })
   const back = () => {
-    console.log('back')
     const me = localStorage.me.substring(2)
     const id = route.params.id
     const type = route.params.type
     router.replace({ path: '/posters', hash: `#${me}-${type}-${id}` })
   }
   const save = async () => {
-    console.log('save')
     const poster = new Poster(itemid)
     await poster.save()
     back()
