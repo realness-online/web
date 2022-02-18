@@ -45,8 +45,10 @@
   }
   const toggle_stroke = () => {
     as_stroke.value = !as_stroke.value
-    if (as_stroke.value) color.value = to_hex(query(itemprop.value).style.color)
-    else color.value = to_hex(query(itemprop.value).style.fill)
+    const path = query(itemprop.value)
+    if (as_stroke.value && path.style.color)
+      color.value = to_hex(path.style.color)
+    else if (path.style.fill) color.value = to_hex(path.style.fill)
     emit('toggle')
   }
   const { distanceY } = swipe(figure, {
