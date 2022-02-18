@@ -12,8 +12,8 @@
     color_luminosity as luminosity
   } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
-  import { to_hex, to_complimentary_hsl } from '@/use/colors'
-  import css_var from '@/use/css-var'
+  import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
+
   defineProps({
     itemid: {
       required: true,
@@ -32,15 +32,28 @@
   }
   const set_input_color = id => {
     itemprop.value = id
+    console.log('set_input_color', itemprop.value)
     if (as_stroke.value) {
-      const stroke = query(id).style.stroke
-      if (stroke) color.value = to_hex(stroke)
+      const path = query(id)
+      const stroke = path.style.stroke
+      if (stroke) {
+        console.log('stroke', stroke)
+        color.value = to_hex(stroke)
+      }
     } else {
       const fill = query(id).style.fill
-      if (fill) color.value = to_hex(fill)
-      else if (id === 'background')
-        color.value = css_var('--white-poster').substring(1)
-      else color.value = '#151518'
+      if (fill) {
+        console.log('fill', fill)
+        color.value = to_hex(fill)
+      } else if (id === 'background') {
+        const hex = to_hex('--white-poster')
+        console.log('default', hex)
+        color.value = hex
+      } else {
+        const hex = to_hex('--black-dark')
+        console.log('default', hex)
+        color.value = hex
+      }
     }
   }
   const toggle_stroke = () => {

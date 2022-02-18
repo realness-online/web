@@ -1,11 +1,19 @@
 import rgb_to_hex from 'rgb-hex'
 import hsl_to_hex from 'hsl-to-hex'
-
+import css_var from '@/use/css-var'
 export function to_hex(color = '') {
+  if (color.length === 0) color = '--black-dark'
+  if (color.startsWith('--')) color = css_var(color).trim()
   if (color.startsWith('#')) return color
-  if (color.startsWith('rgb')) return `#${rgb_to_hex(color)}`
-  if (color.startsWith('hsl')) return hsl_to_hex(color)
-  throw `Provided color is unrecognized — ${color}`
+  let hex
+  if (color.startsWith('rgb')) hex = `#${rgb_to_hex(color)}`
+  if (color.startsWith('hsl')) hex = hsl_to_hex(color)
+  if (hex.length === 9) return hex.slice(0, -2)
+  else if (hex.length === 7) return hex
+  else throw `Provided color is unrecognized — ${color}`
+}
+export function to_hex_number(color) {
+  return parseInt(color.substring(1))
 }
 // https://una.im/css-color-theming
 // takes hex rgb or hsl value and returns hsl object
