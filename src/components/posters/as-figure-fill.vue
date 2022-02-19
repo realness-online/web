@@ -38,7 +38,6 @@
   } from '@/use/path-style'
   import { is_vector_id } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
-
   defineProps({
     itemid: {
       required: true,
@@ -75,9 +74,8 @@
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      const chill = distanceY.value / 3
-      if (as_stroke.value) luminosity(chill)
-      else opacity(chill)
+      if (as_stroke.value) luminosity(distanceY.value / 3)
+      else opacity(distanceY.value / 400)
     }
   })
   const keys = keyboard()
@@ -127,26 +125,25 @@
         cursor: pointer
         position: fixed
         z-index: 4
-        // @media (orientation: landscape) and (max-height: page-width)
+        width: base-line * 1.5
+        height: base-line * 1.5
+        min-height: auto
+        left: base-line
         bottom: inset(bottom,  base-line * 2.5)
         @media (min-width: pad-begins)
           bottom: inset(bottom,  base-line * 4.5)
-        left: base-line
-        width: base-line * 1.5
-        height: base-line * 1.5
         border: green
         border-width: 3px
         border-radius: 2rem
-        min-height: auto
       & > input[type="color"]
         position: fixed
         z-index: 2
+        width: base-line * 1.5
+        height: base-line * 1.5
+        right: base-line
         bottom: inset(bottom,  base-line * 2.5)
         @media (min-width: pad-begins)
           bottom: inset(bottom,  base-line * 4.5)
-        right: base-line
-        width: base-line * 1.5
-        height: base-line * 1.5
         &::-moz-color-swatch
           border: 1px solid green
           border-radius: base-line
