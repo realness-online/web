@@ -216,12 +216,12 @@
         color: green
         fill: green
     & > article
+      standard-grid: gentle
+      padding-bottom: base-line * 3
       @media (max-width: pad-begins)
         margin-top: base-line
-      standard-grid: gentle
       @media (min-width: pad-begins)
         grid-gap: 0
-      padding-bottom: base-line * 3
       & > figure.poster
         &.selecting-event
           & > svg:not(.background)
