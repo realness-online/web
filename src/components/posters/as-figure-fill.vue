@@ -1,3 +1,28 @@
+<template>
+  <figure id="edit-fill" ref="figure">
+    <as-svg
+      :itemid="itemid"
+      :immediate="true"
+      :slice="false"
+      :tabable="true"
+      tabindex="-1"
+      @focus="set_input_color" />
+    <figcaption>
+      <as-svg
+        :itemid="itemid"
+        :immediate="true"
+        :slice="true"
+        :toggle_aspect="false"
+        tabindex="-1"
+        @click="toggle_stroke" />
+      <input
+        v-model="color"
+        type="color"
+        tabindex="-1"
+        @blur="focus_on_active" />
+    </figcaption>
+  </figure>
+</template>
 <script setup>
   import asSvg from '@/components/posters/as-svg'
   import { ref, provide } from 'vue'
@@ -50,13 +75,9 @@
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) {
-        const chill = distanceY.value / 50
-        luminosity(chill)
-      } else {
-        const chill = distanceY.value / 500
-        opacity(chill)
-      }
+      const chill = distanceY.value / 3
+      if (as_stroke.value) luminosity(chill)
+      else opacity(chill)
     }
   })
   const keys = keyboard()
@@ -82,31 +103,6 @@
     }
   })
 </script>
-<template>
-  <figure id="edit-fill" ref="figure">
-    <as-svg
-      :itemid="itemid"
-      :immediate="true"
-      :slice="false"
-      :tabable="true"
-      tabindex="-1"
-      @focus="set_input_color" />
-    <figcaption>
-      <as-svg
-        :itemid="itemid"
-        :immediate="true"
-        :slice="true"
-        :toggle_aspect="false"
-        tabindex="-1"
-        @click="toggle_stroke" />
-      <input
-        v-model="color"
-        type="color"
-        tabindex="-1"
-        @blur="focus_on_active" />
-    </figcaption>
-  </figure>
-</template>
 <style lang="stylus">
   figure#edit-fill
     & > svg
@@ -127,18 +123,14 @@
       height: auto
       display: flex
       justify-content: space-between
-      & > button
       & > svg
         cursor: pointer
         position: fixed
         z-index: 4
-        bottom: inset(bottom,  base-line * 4.5)
-      & > button
-        padding: round(base-line * .25, 2) round(base-line * .33, 2)
-        color: red
-        border-color: red
-        left: inset(left, base-line * 3 )
-      & > svg
+        // @media (orientation: landscape) and (max-height: page-width)
+        bottom: inset(bottom,  base-line * 2.5)
+        @media (min-width: pad-begins)
+          bottom: inset(bottom,  base-line * 4.5)
         left: inset(left, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
@@ -149,7 +141,9 @@
       & > input[type="color"]
         position: fixed
         z-index: 2
-        bottom: inset(bottom,  base-line * 4.5)
+        bottom: inset(bottom,  base-line * 2.5)
+        @media (min-width: pad-begins)
+          bottom: inset(bottom,  base-line * 4.5)
         right: inset(right, base-line)
         width: base-line * 1.5
         height: base-line * 1.5
