@@ -32,36 +32,20 @@
   }
   const set_input_color = id => {
     itemprop.value = id
-    console.log('set_input_color', itemprop.value)
-    if (as_stroke.value) {
-      const path = query(id)
-      const stroke = path.style.stroke
-      if (stroke) {
-        console.log('stroke', stroke)
-        color.value = to_hex(stroke)
-      }
-    } else {
-      const fill = query(id).style.fill
-      if (fill) {
-        console.log('fill', fill)
-        color.value = to_hex(fill)
-      } else if (id === 'background') {
-        const hex = to_hex('--white-poster')
-        console.log('default', hex)
-        color.value = hex
-      } else {
-        const hex = to_hex('--black-dark')
-        console.log('default', hex)
-        color.value = hex
-      }
+    const path = query(id)
+    if (as_stroke.value) color.value = to_hex(path.style.color)
+    else {
+      const fill = path.style.fill
+      if (fill) color.value = to_hex(fill)
+      else if (id === 'background') color.value = to_hex('--white-poster')
+      else color.value = to_hex()
     }
   }
   const toggle_stroke = () => {
     as_stroke.value = !as_stroke.value
     const path = query(itemprop.value)
-    if (as_stroke.value && path.style.color)
-      color.value = to_hex(path.style.color)
-    else if (path.style.fill) color.value = to_hex(path.style.fill)
+    if (as_stroke.value) color.value = to_hex(path.style.color)
+    else color.value = to_hex(path.style.fill)
     emit('toggle')
   }
   const { distanceY } = swipe(figure, {
