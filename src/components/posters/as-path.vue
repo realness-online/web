@@ -42,8 +42,7 @@
     outline: none
     fill: inherit
     &:active
-      fill: currentColor
+      fill-opacity: 1
+      transition-delay: 0.33s
       stroke: transparent
-      animation-duration: 0.15s
-      animation-name: press
 </style>

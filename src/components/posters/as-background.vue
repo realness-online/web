@@ -30,7 +30,4 @@
     fill: var(--white-poster)
     outline: none
     stroke: none
-    &:active
-      fill: currentColor
-      animation-name: press
 </style>
