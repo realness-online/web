@@ -217,6 +217,8 @@
         fill: green
     & > article
       standard-grid: gentle
+      @media (min-width: pad-begins)
+        grid-gap: 0
       padding-bottom: base-line * 3
       & > figure.poster
         &.selecting-event
