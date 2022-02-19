@@ -13,10 +13,12 @@ exports[`@/views/Profile.vue Renders Handles there not being posters 1`] = `
   </header>
   <div>
     <avatar-stub
+      as_stroke="false"
       immediate="false"
       itemid="/+16282281824/avatars/1588451405024"
       slice="true"
       tabable="false"
+      toggle_aspect="true"
     />
     <menu>
       <as-download-stub
@@ -56,10 +58,12 @@ exports[`@/views/Profile.vue Renders Shows profile information for a phone numbe
   </header>
   <div>
     <avatar-stub
+      as_stroke="false"
       immediate="false"
       itemid="/+16282281824/avatars/1588451405024"
       slice="true"
       tabable="false"
+      toggle_aspect="true"
     />
     <menu>
       <as-download-stub

@@ -5,11 +5,13 @@ exports[`@/compontent/posters/as-figure.vue Renders A new poster 1`] = `
   class="poster"
 >
   <as-svg-stub
+    as_stroke="false"
     immediate="false"
     itemid="/+16282281824/posters/559666932867"
     poster="[object Object]"
     slice="true"
     tabable="false"
+    toggle_aspect="true"
   />
   <figcaption>
     
@@ -32,10 +34,12 @@ exports[`@/compontent/posters/as-figure.vue Renders A poster 1`] = `
   class="poster"
 >
   <as-svg-stub
+    as_stroke="false"
     immediate="false"
     itemid="/+16282281824/posters/559666932867"
     slice="true"
     tabable="false"
+    toggle_aspect="true"
   />
   <figcaption>
     <!--v-if-->

@@ -5,6 +5,7 @@ exports[`@/components/posters/as-background.vue Renders a new background for a p
   fill="white"
   height="100%"
   itemprop="background"
+  tabindex="-1"
   width="100%"
 />
 `;

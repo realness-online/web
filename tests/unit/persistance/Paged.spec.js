@@ -137,7 +137,7 @@ describe('@/persistance/Paged.js', () => {
       })
       it('Tells the size of the item in local storage', () => {
         localStorage.setItem(paged.id, statements)
-        expect(itemid_as_kilobytes(paged.id)).toBe('4.14')
+        expect(itemid_as_kilobytes(paged.id)).toBe('4.68')
       })
       it('Returns zero if nothing in storage', () => {
         expect(itemid_as_kilobytes(paged.id)).toBe(0)
