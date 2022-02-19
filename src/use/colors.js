@@ -15,8 +15,6 @@ export function to_hex(color = '') {
 export function to_hex_number(color) {
   return parseInt(color.substring(1))
 }
-// https://una.im/css-color-theming
-// takes hex rgb or hsl value and returns hsl object
 export function to_hsl(color = '') {
   let H = color.toString()
   // check if it's already hsl
@@ -72,7 +70,6 @@ export function to_hsl(color = '') {
     l
   }
 }
-
 export function to_complimentary_hsl(color = '') {
   let hsl = to_hsl(color)
   const h = hsl.h + 180
@@ -86,7 +83,6 @@ export function to_complimentary_hsl(color = '') {
     l
   }
 }
-
 export function luminosity(color, change_by) {
   const hsl = to_hsl(color)
   const l = parseInt(hsl.l) + parseInt(change_by)
@@ -98,6 +94,7 @@ export function luminosity(color, change_by) {
   }
 }
 
+// https://una.im/css-color-theming
 // 100% saturation is completely saturated (full color),
 // while 0% is completely unsaturated (gray)
 //
