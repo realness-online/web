@@ -216,6 +216,8 @@
         color: green
         fill: green
     & > article
+      @media (max-width: pad-begins)
+        margin-top: base-line
       standard-grid: gentle
       @media (min-width: pad-begins)
         grid-gap: 0
