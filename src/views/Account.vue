@@ -154,6 +154,7 @@
         right: inset(right)
         z-index: 2
       & > button.sign-on
+        width: base-line * 4
         left: inset(left)
         height: round(base-line * 2, 2)
     & > address
