@@ -1,3 +1,23 @@
+<template>
+  <section id="editor" class="page">
+    <header v-if="!is_fullscreen">
+      <h1>{{ page_title }}</h1>
+      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
+      <a @click="back"><icon name="remove" /></a>
+      <a @click="save"><icon name="finished" /></a>
+    </header>
+    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
+    <as-grid v-if="grid" :itemid="itemid" />
+    <as-animation v-if="animation" :itemid="itemid" />
+    <footer>
+      <menu>
+        <icon :class="{ selected: color }" name="edit-color" />
+        <icon :class="{ selected: grid }" name="grid" />
+        <icon :class="{ selected: animation }" name="animation" />
+      </menu>
+    </footer>
+  </section>
+</template>
 <script setup>
   import icon from '@/components/icon'
   import asFill from '@/components/posters/as-figure-fill'
@@ -54,27 +74,6 @@
     if (v) fullscreen()
   })
 </script>
-<template>
-  <section id="editor" class="page">
-    <header v-if="!is_fullscreen">
-      <h1>{{ page_title }}</h1>
-      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
-      <icon name="nothing" />
-      <a @click="back"><icon name="remove" /></a>
-      <a @click="save"><icon name="finished" /></a>
-    </header>
-    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
-    <as-grid v-if="grid" :itemid="itemid" />
-    <as-animation v-if="animation" :itemid="itemid" />
-    <footer>
-      <menu v-if="true === false">
-        <icon :class="{ selected: color }" name="edit-color" />
-        <icon :class="{ selected: animation }" name="animation" />
-        <icon :class="{ selected: grid }" name="grid" />
-      </menu>
-    </footer>
-  </section>
-</template>
 <style lang="stylus">
   section#editor
     & > header
