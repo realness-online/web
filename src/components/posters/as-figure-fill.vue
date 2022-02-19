@@ -131,7 +131,7 @@
         bottom: inset(bottom,  base-line * 2.5)
         @media (min-width: pad-begins)
           bottom: inset(bottom,  base-line * 4.5)
-        left: inset(left, base-line)
+        left: base-line
         width: base-line * 1.5
         height: base-line * 1.5
         border: green
@@ -144,7 +144,7 @@
         bottom: inset(bottom,  base-line * 2.5)
         @media (min-width: pad-begins)
           bottom: inset(bottom,  base-line * 4.5)
-        right: inset(right, base-line)
+        right: base-line
         width: base-line * 1.5
         height: base-line * 1.5
         &::-moz-color-swatch
