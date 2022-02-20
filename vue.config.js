@@ -5,14 +5,14 @@ process.env.VUE_APP_VERSION = require('./package.json').version
 module.exports = {
   parallel: require('os').cpus().length > 1,
   productionSourceMap: true,
-  css: {
-    sourceMap: true,
-    loaderOptions: {
-      stylus: {
-        loader: 'stylus-resources-loader',
-        import: [path.resolve('./src/style/variables.styl')]
-      }
+  pluginOptions: {
+    'style-resources-loader': {
+      preProcessor: 'stylus',
+      patterns: [path.resolve('./src/style/variables.styl')]
     }
+  },
+  css: {
+    sourceMap: true
   },
   pwa: {
     name: 'Realness',
@@ -44,6 +44,7 @@ module.exports = {
       ]
     }
   },
+
   configureWebpack: {
     // TODO: remove when webpack 5 is supported
     module: {
