@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "private": false,
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
@@ -13,7 +13,7 @@
     "deploy:cheat": "yarn lint && yarn format:check && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
-    "release": "gh release create $npm_package_version && yarn deploy",
+    "release": "gh release create $npm_package_version && yarn deploy:cheat",
     "test": "TZ=UTC vue-cli-service test:unit",
     "test:e2e:ci": "cypress run --browser chrome --headless --config-file e2e/cypress.json",
     "workers": "webpack --config workers.config.js",
