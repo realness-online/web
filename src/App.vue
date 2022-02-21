@@ -5,7 +5,6 @@
       v-model:statement="statement"
       v-model:person="me" />
     <aside v-if="!working">
-      <developer-tools v-if="!is_production" />
       <sync v-model:statement="statement" :person="me" @active="sync_active" />
     </aside>
   </main>
@@ -13,13 +12,9 @@
 <script>
   import firebase from 'firebase/app'
   import { get, set } from 'idb-keyval'
-  import developer_tools from '@/components/developer-tools'
   import sync from '@/components/sync'
   export default {
-    components: {
-      sync,
-      'developer-tools': developer_tools
-    },
+    components: { sync },
     data() {
       return {
         working: true,
