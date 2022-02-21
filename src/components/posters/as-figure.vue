@@ -109,7 +109,7 @@
 </script>
 <style lang="stylus">
   figure.poster
-    border-radius: round((base-line / 6), 2)
+    border-radius: round((base-line * .03), 2)
     position: relative
     overflow: hidden
     grid-row-start: span 2
