@@ -17,7 +17,3 @@
     }
   }
 </script>
-<style lang="stylus">
-  svg.icon
-    filter: drop-shadow( -1px -1px 1.5px black-dark) // the sun is coming from the bottom right
-</style>
