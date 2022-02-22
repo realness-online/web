@@ -1,6 +1,5 @@
 @require 'variables'
 svg
-  mix-blend-mode: difference
   transition-property: none
   line-height: 0
   pointer-events: visible
@@ -11,6 +10,8 @@ svg
   display: block
   stroke-width: 0
   fill: black-dark
+  @media (prefers-color-scheme: dark)
+    mix-blend-mode: difference
   & use:active
     stroke-width: 2px
     -webkit-user-select: all
