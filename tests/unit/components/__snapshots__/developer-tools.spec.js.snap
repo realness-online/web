@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`@/components/developer-tools.js Renders Developer tools 1`] = `
-<section
-  id="developer-tools"
-/>
-`;
