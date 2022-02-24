@@ -74,8 +74,8 @@
   }
   const { distanceY } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) luminosity(distanceY.value / 3)
-      else opacity(distanceY.value / 400)
+      if (as_stroke.value) luminosity(-1 * (distanceY.value / 3))
+      else opacity(-1 * (distanceY.value / 300))
     }
   })
   const keys = keyboard()
