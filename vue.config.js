@@ -46,24 +46,6 @@ module.exports = {
   },
 
   configureWebpack: {
-    // TODO: remove when webpack 5 is supported
-    module: {
-      rules: [
-        {
-          test: /\.mjs$/,
-          include: /node_modules/,
-          type: 'javascript/auto'
-        }
-      ]
-    },
-
-    // plugins: [
-    //   new BundleAnalyzerPlugin({
-    //     analyzerMode: 'static',
-    //     openAnalyzer: false,
-    //     reportFilename: '../artifacts/vue_report.html'
-    //   })
-    // ],
     optimization: {
       moduleIds: 'named',
       removeAvailableModules: true,
