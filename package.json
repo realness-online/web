@@ -8,7 +8,6 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "test:e2e": "cypress open",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "deploy": "yarn lint && yarn format && yarn test --coverage --verbose && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
@@ -55,12 +54,10 @@
     "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
-    "jsdom-worker-fix": "git://github.com/scott-fryxell/jsdom-worker.git",
     "mockdate": "^3.0.2",
     "prettier": "^2.4.1",
     "process": "^0.11.10",
     "simplex-noise": "^3.0.0",
-    "style-resources-loader": "^1.4.1",
     "stylus": "^0.56.0",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
@@ -135,11 +132,6 @@
     "bracketSameLine": true,
     "arrowParens": "avoid",
     "vueIndentScriptAndStyle": true
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
   },
   "browserslist": [
     "> 2%"
