@@ -4,10 +4,10 @@ import App from '@/App'
 const fetch = require('jest-fetch-mock')
 describe('@/App.vue', () => {
   let wrapper
-  const node_env = process.env
+  // const node_env = import.meta.env
   beforeEach(async () => {
     jest.resetModules()
-    process.env = { ...node_env }
+    // process.env = { ...node_env }
     wrapper = await shallowMount(App)
   })
   afterEach(() => {
@@ -15,7 +15,7 @@ describe('@/App.vue', () => {
     wrapper.unmount()
   })
   afterAll(() => {
-    process.env = node_env
+    // process.env = node_env
   })
   describe('Renders', () => {
     it('Layout of the application', () => {
@@ -25,7 +25,7 @@ describe('@/App.vue', () => {
       expect(firebase.initializeApp).toHaveBeenCalled()
     })
     it('Initialises firebase in production', async () => {
-      process.env.NODE_ENV = 'production'
+      import.meta.env.NODE_ENV = 'production'
       fetch.mockResponseOnce('{}')
       wrapper = await shallowMount(App)
       expect(firebase.initializeApp).toHaveBeenCalled()

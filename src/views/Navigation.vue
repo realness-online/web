@@ -41,7 +41,7 @@
     data() {
       return {
         statements: [],
-        version: process.env.VUE_APP_VERSION,
+        version: import.meta.env.VITE_VERSION,
         signed_in: true,
         posting: false,
         first_name: ''
