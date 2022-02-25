@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import.meta.env.VITE_APP_VERSION = require('./package.json').version
+import loadVersion from 'vite-plugin-package-version'
+const path = require("path")
+
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -9,5 +11,5 @@ export default defineConfig({
     },
     extensions: ['.js', '.json', '.vue']
   },
-  plugins: [vue()]
+  plugins: [vue(), loadVersion()]
 })
