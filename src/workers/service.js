@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 workbox.core.setCacheNameDetails({ prefix: 'Realness' })
 self.__precacheManifest = [].concat(self.__precacheManifest || [])
-workbox.precaching.precacheAndRoute(self.__precacheManifest, {})
+workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
 self.addEventListener('install', () => {
   self.skipWaiting().then(() => {
     // https://redfin.engineering/how-to-fix-the-refresh-button-when-using-service-workers-a8e27af6df68

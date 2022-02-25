@@ -18,7 +18,7 @@ module.exports = {
     name: 'Realness',
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      swSrc: 'src/workers/service.js',
+      swSrc: './src/workers/service.js',
       swDest: 'service.worker.js'
     },
     assetsVersion: '4',
