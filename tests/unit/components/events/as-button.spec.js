@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import as_button from '@/components/events/as-button'
 import get_item from '@/use/item'

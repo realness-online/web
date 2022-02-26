@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import firebase from 'firebase/app'
 const mock_dir = {
   prefixes: [],
