@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import { as_poster } from '@/use/vector'
 
 import get_item from '@/use/item'

@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import { shallowMount, mount, flushPromises } from '@vue/test-utils'
 import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/use/itemid'

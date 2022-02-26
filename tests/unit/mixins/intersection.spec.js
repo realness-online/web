@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import vector_mock from './mixin_mock'
 describe('@/mixins/intersection', () => {

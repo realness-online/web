@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
 import { set, get, del } from 'idb-keyval'
