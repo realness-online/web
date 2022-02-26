@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { jest } from '@jest/globals'
 import firebase from 'firebase/app'
 import App from '@/App'
 const fetch = require('jest-fetch-mock')

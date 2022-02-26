@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_article from '@/components/statements/as-article'
 const statement = {

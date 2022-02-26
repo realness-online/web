@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 require('fake-indexeddb/auto')
 require('jest-fetch-mock').enableMocks()
 console.info = jest.fn()

@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
 import Events from '@/views/Events'

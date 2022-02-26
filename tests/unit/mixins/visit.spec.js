@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
 import firebase from 'firebase/app'

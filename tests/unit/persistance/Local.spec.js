@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import Storage from '@/persistance/Storage'
 import Local from '@/persistance/Local'
 const fs = require('fs')

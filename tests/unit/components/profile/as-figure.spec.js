@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'

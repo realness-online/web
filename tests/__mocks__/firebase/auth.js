@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import firebase from 'firebase/app'
 const RecaptchaVerifier = class {
   verify() {

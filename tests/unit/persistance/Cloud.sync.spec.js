@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { get, del, keys, set } from 'idb-keyval'
 import firebase from 'firebase/app'
 import 'firebase/auth'
