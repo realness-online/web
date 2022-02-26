@@ -14,7 +14,7 @@
     "format:check": "prettier . --check",
     "release": "gh release create $npm_package_version && yarn deploy",
     "release:npm": "yarn publish",
-    "test": "TZ=UTC jest",
+    "test": "TZ=UTC vite-jest --no-cache",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch"
   },
@@ -40,7 +40,7 @@
     "@vitejs/plugin-vue": "^2.2.2",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-standard": "^6.0.0",
-    "@vue/test-utils": "^2.0.0-rc.15",
+    "@vue/test-utils": "^2.0.0-rc.17",
     "eslint": "8",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.0.0",
@@ -50,7 +50,8 @@
     "eslint-plugin-vue": "8",
     "fake-indexeddb": "^3.0.0",
     "firebase-tools": "^9.1.0",
-    "jest": "^27.1.0",
+    "jest": "27.4.3",
+    "jest-environment-jsdom": "^27.4.3",
     "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
     "jest-serializer-vue": "^2.0.2",
@@ -62,7 +63,8 @@
     "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
-    "vite": "^2.5.4",
+    "vite": "^2.6.14",
+    "vite-jest": "workspace:*",
     "vite-plugin-package-version": "^1.0.2",
     "vue-jest": "^5.0.0-alpha.10",
     "vue-router-mock": "^0.1.2"
@@ -137,6 +139,7 @@
     "> 2%"
   ],
   "jest": {
+    "preset": "vite-jest",
     "notify": false,
     "notifyMode": "change",
     "resetMocks": false,
@@ -145,7 +148,7 @@
     "verbose": false,
     "collectCoverage": false,
     "restoreMocks": true,
-    "testEnvironment": "jsdom",
+    "testEnvironment": "jest-environment-jsdom",
     "moduleFileExtensions": [
       "js",
       "jsx",
@@ -159,8 +162,7 @@
       "<rootDir>/tests/polyfill/scrollIntoView.js",
       "<rootDir>/tests/polyfill/IntersectionObserver.js",
       "<rootDir>/tests/polyfill/FileReaderSync.js",
-      "jest-localstorage-mock",
-      "jsdom-worker-fix"
+      "jest-localstorage-mock"
     ],
     "setupFilesAfterEnv": [
       "<rootDir>/tests/unit/router.js"

@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/use/item'

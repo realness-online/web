@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import as_days from '@/components/as-days'
 import get_item from '@/use/item'

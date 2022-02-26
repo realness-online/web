@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'

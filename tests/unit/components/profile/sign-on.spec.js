@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { shallowMount } from '@vue/test-utils'
 import sign_on from '@/components/profile/sign-on'
 describe('@/components/profile/sign-on', () => {

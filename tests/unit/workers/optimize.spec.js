@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import * as optimize from '@/workers/optimize'
 import SVGO from 'svgo'
 const vector = require('fs').readFileSync('./tests/unit/html/vector.html')
