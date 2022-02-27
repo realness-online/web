@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals'
-require('fake-indexeddb/auto')
-require('jest-fetch-mock').enableMocks()
+global.jest = jest
 console.info = jest.fn()
 console.time = jest.fn()
 console.trace = jest.fn()

@@ -19,8 +19,9 @@ import {
   load,
   type_as_list
 } from '@/use/itemid'
+import fs from 'fs'
 describe('@/use/itemid', () => {
-  const poster_html = require('fs').readFileSync(
+  const poster_html = fs.readFileSync(
     './tests/unit/html/poster.html',
     'utf8'
   )

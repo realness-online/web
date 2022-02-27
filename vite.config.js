@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import loadVersion from 'vite-plugin-package-version'
-const path = require("path")
+import { ViteFS } from 'vite-fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+   exclude: ['fs']
+  },
   server: {
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
@@ -12,16 +14,20 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@/': new URL('./src/', import.meta.url).pathname,
+      '@@/': new URL('./test/', import.meta.url).pathname
     },
     extensions: ['.js', '.json', '.vue']
   },
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [path.resolve(__dirname, 'src/style/variables.styl')],
+        imports: [new URL('./src/style/variables.styl', import.meta.url).pathname],
       }
     }
   },
-  plugins: [vue(), loadVersion()]
+  plugins: [
+    vue(),
+    ViteFS()
+  ]
 })

@@ -2,6 +2,7 @@
   "name": "@realness.online/web",
   "version": "1.3.4",
   "private": false,
+  "type": "module",
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
@@ -22,7 +23,6 @@
     "@davidmarkclements/hsl-to-hex": "^1.0.2",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "^7.6.2",
-    "core-js": "^3.21.1",
     "firebase": "^8.2.1",
     "hsl-to-hex": "^1.0.0",
     "idb-keyval": "^6.1.0",
@@ -40,7 +40,7 @@
     "@vitejs/plugin-vue": "^2.2.2",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-standard": "^6.0.0",
-    "@vue/test-utils": "^2.0.0-rc.17",
+    "@vue/test-utils": "^2.0.0-rc.18",
     "eslint": "8",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.0.0",
@@ -50,7 +50,7 @@
     "eslint-plugin-vue": "8",
     "fake-indexeddb": "^3.0.0",
     "firebase-tools": "^9.1.0",
-    "jest": "27.4.3",
+    "jest": "^27.5.1",
     "jest-environment-jsdom": "^27.4.3",
     "jest-fetch-mock": "^3.0.1",
     "jest-localstorage-mock": "^2.4.0",
@@ -60,13 +60,10 @@
     "process": "^0.11.10",
     "simplex-noise": "^3.0.0",
     "stylus": "^0.56.0",
-    "ts-jest": "^27.1.3",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.4.4",
     "vite": "^2.6.14",
-    "vite-jest": "workspace:*",
+    "vite-fs": "^0.0.2",
+    "vite-jest": "^0.1.4",
     "vite-plugin-package-version": "^1.0.2",
-    "vue-jest": "^5.0.0-alpha.10",
     "vue-router-mock": "^0.1.2"
   },
   "eslintConfig": {
@@ -142,36 +139,35 @@
     "preset": "vite-jest",
     "notify": false,
     "notifyMode": "change",
-    "resetMocks": false,
     "automock": false,
     "bail": 0,
     "verbose": false,
     "collectCoverage": false,
+    "resetMocks": false,
     "restoreMocks": true,
+    "timers": "fake",
     "testEnvironment": "jest-environment-jsdom",
     "moduleFileExtensions": [
       "js",
-      "jsx",
       "json",
       "vue"
     ],
     "setupFiles": [
       "<rootDir>/tests/unit/setup.js",
-      "<rootDir>/tests/polyfill/activeElement.js",
       "<rootDir>/tests/polyfill/createrange.js",
       "<rootDir>/tests/polyfill/scrollIntoView.js",
       "<rootDir>/tests/polyfill/IntersectionObserver.js",
       "<rootDir>/tests/polyfill/FileReaderSync.js",
-      "jest-localstorage-mock"
+      "jest-localstorage-mock",
+      "fake-indexeddb/auto"
     ],
     "setupFilesAfterEnv": [
       "<rootDir>/tests/unit/router.js"
     ],
-    "transform": {
-      "^.+\\.vue$": "vue-jest",
-      ".+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$": "jest-transform-stub",
-      "^.+\\.jsx?$": "babel-jest"
-    },
+    "transform": {},
+    "extensionsToTreatAsEsm": [
+      ".vue"
+    ],
     "coverageDirectory": "<rootDir>/artifacts/unit/coverage",
     "cacheDirectory": "<rootDir>/artifacts/unit/cache",
     "collectCoverageFrom": [
@@ -179,7 +175,6 @@
       "!src/main.js",
       "!src/workers/service.js",
       "!src/workers/register_service_worker.js",
-      "!src/router.js",
       "!**/node_modules/**"
     ],
     "coverageThreshold": {
@@ -197,7 +192,8 @@
       "jest-serializer-vue"
     ],
     "testMatch": [
-      "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
+      "**/tests/unit/**/*.spec.?(m)js?(x)",
+      "**/__tests__/*.?(m)js?(x)"
     ],
     "testURL": "http://localhost/"
   },
