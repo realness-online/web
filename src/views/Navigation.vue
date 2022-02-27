@@ -41,7 +41,7 @@
     data() {
       return {
         statements: [],
-        version: import.meta.env.PACKAGE_VERSION,
+        version: JSON.stringify(process.env.npm_package_version),
         signed_in: true,
         posting: false,
         first_name: ''

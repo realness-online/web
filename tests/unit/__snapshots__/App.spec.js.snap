@@ -5,12 +5,7 @@ exports[`@/App.vue Renders Layout of the application 1`] = `
   class=""
   id="realness"
 >
-  <router-view-stub
-    name="default"
-  />
-  <aside>
-    <developer-tools-stub />
-    <sync-stub />
-  </aside>
+  <!--v-if-->
+  <!--v-if-->
 </main>
 `;

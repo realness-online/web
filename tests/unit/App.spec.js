@@ -1,14 +1,14 @@
 import { shallowMount } from '@vue/test-utils'
-import { jest } from '@jest/globals'
 import firebase from 'firebase/app'
 import App from '@/App'
-const fetch = require('jest-fetch-mock')
+import fetch from 'jest-fetch-mock'
+fetch.enableMocks()
 describe('@/App.vue', () => {
   let wrapper
-  // const node_env = import.meta.env
+  const node_env = import.meta.env
   beforeEach(async () => {
     jest.resetModules()
-    // process.env = { ...node_env }
+    process.env = { ...node_env }
     wrapper = await shallowMount(App)
   })
   afterEach(() => {
@@ -16,10 +16,10 @@ describe('@/App.vue', () => {
     wrapper.unmount()
   })
   afterAll(() => {
-    // process.env = node_env
+    process.env = node_env
   })
   describe('Renders', () => {
-    it('Layout of the application', () => {
+    it.only('Layout of the application', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Initialises firebase', () => {

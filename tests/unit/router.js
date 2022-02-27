@@ -1,9 +1,11 @@
-const {
+import {
   VueRouterMock,
   createRouterMock,
   injectRouterMock
-} = require('vue-router-mock')
-const { config } = require('@vue/test-utils')
+} from'vue-router-mock'
+
+import { config } from '@vue/test-utils'
+
 // Add properties to the wrapper
 config.plugins.VueWrapper.install(VueRouterMock)
 
