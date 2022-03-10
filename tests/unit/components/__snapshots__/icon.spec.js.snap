@@ -1,4 +1,14 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
+
+exports[`@/components/icon > Renders > An icon 1`] = `
+<svg
+  class="realness icon"
+>
+  <use
+    href="/src/style/icons.svg#realness"
+  />
+</svg>
+`;
 
 exports[`@/components/icon Renders An icon 1`] = `
 <svg
