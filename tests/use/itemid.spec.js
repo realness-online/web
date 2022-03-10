@@ -3,9 +3,9 @@ import {
   afterEach as after_each,
 } from 'vitest'
 import fs from 'fs'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/storage'
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 import {
@@ -26,9 +26,9 @@ import {
 } from '@/use/itemid'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 vi.mock('idb-keyval')
-vi.mock('firebase/app')
-vi.mock('firebase/auth')
-vi.mock('firebase/storage')
+vi.mock('firebase/compat/app')
+vi.mock('firebase/compat/auth')
+vi.mock('firebase/compat/storage')
 
 describe('@/use/itemid', () => {
   const posterid = '/+16282281824/posters/559666932867'

@@ -3,7 +3,7 @@ import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
 import * as itemid from '@/use/itemid'
 import get_item from '@/use/item'
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 const poster_html = require('fs').readFileSync(
   './tests/unit/html/poster.html',
   'utf8'

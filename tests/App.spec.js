@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 import App from '@/App'
 import fetch from 'jest-fetch-mock'
 fetch.enableMocks()

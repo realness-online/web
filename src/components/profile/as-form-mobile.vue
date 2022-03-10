@@ -44,8 +44,8 @@
   </form>
 </template>
 <script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
+  import firebase from 'firebase/compat/app'
+  import 'firebase/compat/auth'
   import { as_phone_number } from '@/use/profile'
   import icon from '@/components/icon'
   export default {

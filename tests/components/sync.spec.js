@@ -5,9 +5,9 @@ import * as sync_worker from '@/persistance/Cloud.sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
 import { Me, Statements, Events, Poster } from '@/persistance/Storage'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/storage'
 const fs = require('fs')
 const statements_html = fs.readFileSync(
   './tests/unit/html/statements.html',

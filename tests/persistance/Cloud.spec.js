@@ -1,9 +1,9 @@
 import Storage from '@/persistance/Storage'
 import Cloud from '@/persistance/Cloud'
 import Local from '@/persistance/Local'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/storage'
 import { get } from 'idb-keyval'
 import { flushPromises } from '@vue/test-utils'
 const statements = {

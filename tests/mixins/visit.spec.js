@@ -1,7 +1,7 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
 import vector_mock from './mixin_mock'
 const current_user = { phoneNumber: '+16282281824' }
 describe('@/mixins/visit', () => {
