@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
 
 exports[`@/views/Relations.vue Renders Fails gracefully when relations has been deleted 1`] = `
 <section
