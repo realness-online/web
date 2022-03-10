@@ -1,7 +1,7 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/storage'
 import hash from 'object-hash'
 import { get, set } from 'idb-keyval'
 import { as_filename } from '@/use/itemid'

@@ -1,7 +1,7 @@
 // {base_url}/{:author}/{:type}/{:created_at}
-import firebase from 'firebase/app'
-import 'firebase/storage'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/storage'
+import 'firebase/compat/auth'
 import get_item from '@/use/item'
 import { does_not_exist } from '@/persistance/Cloud.sync'
 import { get, set, keys } from 'idb-keyval'

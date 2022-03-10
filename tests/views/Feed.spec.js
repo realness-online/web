@@ -1,6 +1,6 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'

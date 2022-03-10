@@ -1,5 +1,5 @@
 
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 const RecaptchaVerifier = class {
   verify() {
     // console.log('RecaptchaVerifier.verify');

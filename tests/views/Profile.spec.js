@@ -1,6 +1,6 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
 const person = require('fs').readFileSync(

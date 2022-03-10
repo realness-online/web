@@ -18,8 +18,8 @@
   </section>
 </template>
 <script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
+  import firebase from 'firebase/compat/app'
+  import 'firebase/compat/auth'
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
   import { Me } from '@/persistance/Storage'

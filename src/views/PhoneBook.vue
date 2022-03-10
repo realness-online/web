@@ -23,8 +23,8 @@
   </section>
 </template>
 <script>
-  import firebase from 'firebase/app'
-  import 'firebase/storage'
+  import firebase from 'firebase/compat/app'
+  import 'firebase/compat/storage'
   import { list, load } from '@/use/itemid'
   import { from_e64 } from '@/use/profile'
   import { is_fresh } from '@/use/date'

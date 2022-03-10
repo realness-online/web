@@ -10,7 +10,7 @@
   </main>
 </template>
 <script>
-  import firebase from 'firebase/app'
+  import firebase from 'firebase/compat/app'
   import { get, set } from 'idb-keyval'
   import sync from '@/components/sync'
   export default {

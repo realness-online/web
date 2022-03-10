@@ -1,8 +1,8 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
 const user = {
   phoneNumber: '+16282281824'
 }

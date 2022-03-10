@@ -24,7 +24,7 @@
     "@davidmarkclements/hsl-to-hex": "^1.0.2",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "^7.6.2",
-    "firebase": "^8.2.1",
+    "firebase": "^9.6.8",
     "happy-dom": "^2.46.0",
     "hsl-to-hex": "^1.0.0",
     "idb-keyval": "^6.1.0",
@@ -50,7 +50,7 @@
     "eslint-plugin-standard": "^5.0.0",
     "eslint-plugin-vue": "8",
     "fake-indexeddb": "^4.0.0-beta.2",
-    "firebase-tools": "^9.1.0",
+    "firebase-tools": "^10.2.2",
     "mockdate": "^3.0.2",
     "prettier": "^2.4.1",
     "process": "^0.11.10",
@@ -147,7 +147,6 @@
       "json",
       "vue"
     ],
-
     "setupFilesAfterEnv": [
       "<rootDir>/tests/unit/router.js"
     ],
