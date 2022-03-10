@@ -1,12 +1,8 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { ViteFS } from 'vite-fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  optimizeDeps: {
-   exclude: ['fs']
-  },
   server: {
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
@@ -22,12 +18,21 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [new URL('./src/style/variables.styl', import.meta.url).pathname],
+        imports: [
+          new URL('./src/style/variables.styl', import.meta.url).pathname
+        ]
       }
     }
   },
-  plugins: [
-    vue(),
-    ViteFS()
-  ]
+  plugins: [vue()],
+  test: {
+    environment: 'happy-dom',
+    setupFiles: [
+      './tests/unit/setup.js',
+      './tests/polyfill/createrange.js',
+      './tests/polyfill/scrollIntoView.js',
+      './tests/polyfill/IntersectionObserver.js',
+      './tests/polyfill/FileReaderSync.js'
+    ]
+  }
 })
