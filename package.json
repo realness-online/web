@@ -152,21 +152,9 @@
       "json",
       "vue"
     ],
-    "setupFiles": [
-      "<rootDir>/tests/unit/setup.js",
-      "<rootDir>/tests/polyfill/createrange.js",
-      "<rootDir>/tests/polyfill/scrollIntoView.js",
-      "<rootDir>/tests/polyfill/IntersectionObserver.js",
-      "<rootDir>/tests/polyfill/FileReaderSync.js",
-      "jest-localstorage-mock",
-      "fake-indexeddb/auto"
-    ],
+
     "setupFilesAfterEnv": [
       "<rootDir>/tests/unit/router.js"
-    ],
-    "transform": {},
-    "extensionsToTreatAsEsm": [
-      ".vue"
     ],
     "coverageDirectory": "<rootDir>/artifacts/unit/coverage",
     "cacheDirectory": "<rootDir>/artifacts/unit/cache",
@@ -185,12 +173,6 @@
         "lines": 93
       }
     },
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
-    },
-    "snapshotSerializers": [
-      "jest-serializer-vue"
-    ],
     "testMatch": [
       "**/tests/unit/**/*.spec.?(m)js?(x)",
       "**/__tests__/*.?(m)js?(x)"

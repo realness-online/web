@@ -1,10 +1,6 @@
 import {
-  expect,
-  it,
-  describe,
   beforeEach as before_each,
   afterEach as after_each,
-  vi
 } from 'vitest'
 import fs from 'fs'
 import firebase from 'firebase/app'
@@ -29,16 +25,19 @@ import {
   type_as_list
 } from '@/use/itemid'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
-// vi.mock('firebase/app')
-// vi.mock('firebase/auth')
-// vi.mock('firebase/storage')
+vi.mock('idb-keyval')
+vi.mock('firebase/app')
+vi.mock('firebase/auth')
+vi.mock('firebase/storage')
 
 describe('@/use/itemid', () => {
-  let poster_html
   const posterid = '/+16282281824/posters/559666932867'
   const user = { phoneNumber: '/+16282281824' }
   before_each(() => {
     vi.clearAllMocks()
+  })
+  after_each(() => {
+
   })
   describe('#as_author', () => {
     const itemid = '/+16282281824/statements/1583955101461'
@@ -56,8 +55,7 @@ describe('@/use/itemid', () => {
     it('Exists', () => {
       expect(as_directory).toBeDefined()
     })
-    it.only('Returns a directory when offline', async () => {
-      console.log(get);
+    it('Returns a directory when offline', async () => {
       const mock_get = get.mockImplementationOnce(() =>
         Promise.resolve({ items: ['1555347888'] })
       )
@@ -66,23 +64,21 @@ describe('@/use/itemid', () => {
     })
     it('Returns a directory', async () => {
       firebase.user = user
-      vi.useFakeTimers()
-
       const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
       await as_directory('/+/posters/')
-
-      vi.runAllTimers()
       await flushPromises()
       expect(mock_get).toBeCalled()
       expect(set).toBeCalled()
       firebase.user = null
     })
     it('Returns null if not online and not found locally directory', async () => {
-      vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+      // const spy = vi.spyOn(window.navigator, 'onLine', 'get')
+      // spy.mockReturnValue(false)
       const directory = await as_directory('/+/posters/')
       expect(get).toBeCalled()
       expect(directory.items.length).toBe(0)
       expect(directory.types.length).toBe(0)
+      // spy.mockReset()
     })
   })
   describe('#as_directory_id', () => {
@@ -131,7 +127,9 @@ describe('@/use/itemid', () => {
     })
   })
   describe('#as_fragment', () => {
-    expect(as_fragment(posterid)).toBe('#16282281824-posters-559666932867')
+    it('return fragment id', () => {
+      expect(as_fragment(posterid)).toBe('#16282281824-posters-559666932867')
+    })
   })
   describe('#as_path_parts', () => {
     it('can handle a link without a slash', () => {
@@ -140,7 +138,9 @@ describe('@/use/itemid', () => {
     })
   })
   describe('#as_query_id', () => {
-    expect(as_query_id(posterid)).toBe('16282281824-posters-559666932867')
+    it('returns the proper id', () => {
+      expect(as_query_id(posterid)).toBe('16282281824-posters-559666932867')
+    })
   })
   describe('#as_storage_path', () => {
     it('Gives null for empty string', () => {
