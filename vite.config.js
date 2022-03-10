@@ -28,9 +28,11 @@ export default defineConfig({
   test: {
     global: true,
     environment: 'happy-dom',
+    mockReset: false,
     setupFiles: [
       './__mocks__/setup.js',
       './__mocks__/polyfill/indexedDB.js',
+      './__mocks__/polyfill/localstorage.js',
       './__mocks__/polyfill/createrange.js',
       './__mocks__/polyfill/scrollIntoView.js',
       './__mocks__/polyfill/IntersectionObserver.js',

@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
-module.exports.get = vi.fn(() => Promise.resolve(undefined))
-module.exports.set = vi.fn(() => Promise.resolve())
-module.exports.del = vi.fn(() => Promise.resolve())
-module.exports.clear = vi.fn(() => Promise.resolve())
-module.exports.keys = vi.fn(() => Promise.resolve([]))
+export const get = vi.fn(() => Promise.resolve(undefined))
+export const set = vi.fn(() => Promise.resolve())
+export const del = vi.fn(() => Promise.resolve())
+export const clear = vi.fn(() => Promise.resolve())
+export const keys = vi.fn(() => Promise.resolve([]))

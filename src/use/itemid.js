@@ -65,9 +65,9 @@ export async function as_directory(itemid) {
   const cached = await get(path)
   if (cached) return cached
   const directory = await build_local_directory(itemid)
-  setTimeout(() => {
+  // setTimeout(() => {
     load_directory_from_network(itemid)
-  }, 2000) // seperate thread
+  // }, 2000) // seperate thread
   return directory
 }
 export async function as_download_url(itemid) {
