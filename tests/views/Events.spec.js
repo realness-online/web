@@ -5,7 +5,7 @@ describe('@/views/Events.vue', () => {
   let list
   beforeEach(() => {
     localStorage.me = '/+'
-    list = jest.spyOn(itemid, 'list').mockImplementation(id => {
+    list = vi.spyOn(itemid, 'list').mockImplementation(id => {
       if (itemid.as_type(id) === 'relations') {
         return [
           { id: '/+14153451275' },
@@ -22,7 +22,7 @@ describe('@/views/Events.vue', () => {
       }
     })
   })
-  afterEach(() => jest.resetAllMocks())
+  afterEach(() => vi.resetAllMocks())
   describe('Renders', () => {
     it('List of upcoming events', async () => {
       const wrapper = await shallowMount(Events, {

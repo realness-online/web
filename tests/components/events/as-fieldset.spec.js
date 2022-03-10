@@ -33,20 +33,20 @@ describe('@/compontent/events/as-fieldset.vue', () => {
   let wrapper
   describe('Renders', () => {
     it('A fieldset with the default event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(() => [])
+      vi.spyOn(itemid, 'list').mockImplementationOnce(() => [])
       wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A fieldset with an existing event', () => {
-      jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
+      vi.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
     beforeEach(() => {
-      jest.spyOn(itemid, 'list').mockImplementation(() => events)
-      // jest.spyOn(itemid, 'list').mockImplementationOnce(() => events)
+      vi.spyOn(itemid, 'list').mockImplementation(() => events)
+      // vi.spyOn(itemid, 'list').mockImplementationOnce(() => events)
       wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
     })
     describe('#save', () => {

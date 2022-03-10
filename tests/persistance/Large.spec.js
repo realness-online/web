@@ -10,7 +10,7 @@ describe('@/persistance/Large.js', () => {
     pic = new Picture('/+16282281824/pictures/1445347888')
   })
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
   describe('Methods', () => {
     describe('#save', () => {

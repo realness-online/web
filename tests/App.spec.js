@@ -7,7 +7,7 @@ describe('@/App.vue', () => {
   let wrapper
   const node_env = import.meta.env
   beforeEach(async () => {
-    jest.resetModules()
+    vi.resetModules()
     process.env = { ...node_env }
     wrapper = await shallowMount(App)
   })
@@ -34,16 +34,16 @@ describe('@/App.vue', () => {
       expect(fetch.mock.calls[0][0]).toBe('__/firebase/init.json')
     })
     it('Calls offline is app is initialized offline', async () => {
-      jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
+      vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
       wrapper = await shallowMount(App)
     })
   })
   describe('Methods', () => {
     describe('#onLine', () => {
       it('Turns the editable content back on', () => {
-        const elements = [{ setAttribute: jest.fn() }]
+        const elements = [{ setAttribute: vi.fn() }]
         wrapper.vm.status = 'offline'
-        jest.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
+        vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
         wrapper.vm.online()
         expect(wrapper.vm.status).toBe(null)
         expect(elements[0].setAttribute).toBeCalled()
@@ -51,9 +51,9 @@ describe('@/App.vue', () => {
     })
     describe('#offLine', () => {
       it('Turns the editable content back on', () => {
-        const elements = [{ setAttribute: jest.fn() }]
+        const elements = [{ setAttribute: vi.fn() }]
         wrapper.vm.status = 'offline'
-        jest.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
+        vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
         wrapper.vm.offline()
         expect(wrapper.vm.status).toBe('offline')
         expect(elements[0].setAttribute).toBeCalled()

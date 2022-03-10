@@ -15,8 +15,8 @@
     "format:check": "prettier . --check",
     "release": "gh release create $npm_package_version && yarn deploy",
     "release:npm": "yarn publish",
-    "test": "TZ=UTC vitest",
-    "coverage": "TZ=UTC vitest run --coverage",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "workers": "webpack --config workers.config.js",
     "workers:dev": "yarn workers --mode=development --watch"
   },
@@ -41,6 +41,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.2.2",
     "@vue/test-utils": "^2.0.0-rc.18",
+    "c8": "^7.11.0",
     "eslint": "8",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.0.0",

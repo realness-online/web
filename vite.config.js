@@ -26,13 +26,15 @@ export default defineConfig({
   },
   plugins: [vue()],
   test: {
+    global: true,
     environment: 'happy-dom',
     setupFiles: [
-      './tests/unit/setup.js',
-      './tests/polyfill/createrange.js',
-      './tests/polyfill/scrollIntoView.js',
-      './tests/polyfill/IntersectionObserver.js',
-      './tests/polyfill/FileReaderSync.js'
+      './__mocks__/setup.js',
+      './__mocks__/polyfill/indexedDB.js',
+      './__mocks__/polyfill/createrange.js',
+      './__mocks__/polyfill/scrollIntoView.js',
+      './__mocks__/polyfill/IntersectionObserver.js',
+      './__mocks__/polyfill/FileReaderSync.js'
     ]
   }
 })

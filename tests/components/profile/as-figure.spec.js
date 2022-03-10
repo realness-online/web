@@ -30,7 +30,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
   describe('Methods:', () => {
     describe('#avatar_click', () => {
       it('Go to the mobile number when clicked', () => {
-        const $router = { push: jest.fn() }
+        const $router = { push: vi.fn() }
         wrapper = shallowMount(as_figure, {
           global: {
             mocks: { $router }
@@ -43,7 +43,7 @@ describe('@/compontent/profile/as-figure.vue', () => {
         // expect(wrapper.vm.$route.path).toBe('/+16282281823')
       })
       it('When is_me is true should go to the account page', () => {
-        const $router = { push: jest.fn() }
+        const $router = { push: vi.fn() }
         localStorage.me = '/+16282281823'
         wrapper = shallowMount(as_figure, {
           global: {

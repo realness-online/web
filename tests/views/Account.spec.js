@@ -46,7 +46,7 @@ describe('@/views/Account.vue', () => {
   describe('Methods', () => {
     let $router
     beforeEach(() => {
-      $router = { push: jest.fn() }
+      $router = { push: vi.fn() }
       wrapper = shallowMount(Account, {
         global: {
           mocks: { $router }
@@ -101,7 +101,7 @@ describe('@/views/Account.vue', () => {
     describe('#thought_blurred', () => {
       it('Run when an editable statement is focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.thought_shown = jest.spyOn(wrapper.vm, 'thought_shown')
+        wrapper.vm.thought_shown = vi.spyOn(wrapper.vm, 'thought_shown')
         wrapper.vm.thought_shown.mockImplementationOnce(() => true)
         wrapper.vm.currently_focused = statement.id
         wrapper.vm.thought_blurred(statement)
@@ -109,7 +109,7 @@ describe('@/views/Account.vue', () => {
       })
       it('Only Runs when focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.thought_shown = jest.spyOn(wrapper.vm, 'thought_shown')
+        wrapper.vm.thought_shown = vi.spyOn(wrapper.vm, 'thought_shown')
         wrapper.vm.thought_shown.mockImplementationOnce(() => true)
         wrapper.vm.currently_focused = '/some/one/else'
         wrapper.vm.thought_blurred(statement)
@@ -123,7 +123,7 @@ describe('@/views/Account.vue', () => {
         { id: '/+16282281824/statements/1569909311638' }
       ]
       it("Checks if it's time to load more thoughts", async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementation(() => {
+        vi.spyOn(itemid, 'as_directory').mockImplementation(() => {
           return { items: ['index', '1569909311638'] }
         })
         wrapper.vm.statements = statements

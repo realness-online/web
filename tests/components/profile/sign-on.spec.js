@@ -10,7 +10,7 @@ describe('@/components/profile/sign-on', () => {
   describe('Methods', () => {
     describe('#sign_on', () => {
       it('Takes you to the sign-on page when clicked', () => {
-        const $router = { push: jest.fn() }
+        const $router = { push: vi.fn() }
         const wrapper = shallowMount(sign_on, {
           global: {
             mocks: { $router }

@@ -12,7 +12,7 @@ describe('@/persistance/Local.js', () => {
     local = new Preferences('/+16282281824/preferences')
   })
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     localStorage.clear()
   })
   describe('Methods', () => {

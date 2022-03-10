@@ -36,7 +36,7 @@ describe('@/components/download-vector', () => {
         .spyOn(document, 'getElementById')
         .mockImplementation(() => hydrate(poster_html))
 
-      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
 
       const wrapper = shallowMount(download_vector, {
         props: {

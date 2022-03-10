@@ -31,7 +31,7 @@ describe('@/use/vector', () => {
     })
     describe('#show', () => {
       it('Sets vector to the poster prop', async () => {
-        const emit = jest.fn()
+        const emit = vi.fn()
         const props = {
           poster,
           immediate: true,
@@ -44,7 +44,7 @@ describe('@/use/vector', () => {
         expect(emit).toBeCalledWith('loaded', vector.value)
       })
       it('Only loads the vector once', async () => {
-        const emit = jest.fn()
+        const emit = vi.fn()
         const props = {
           immediate: true,
           itemid: poster.id

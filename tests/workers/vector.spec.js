@@ -12,14 +12,14 @@ const mock_image = {
     height: 444,
     data: [0.3, 0.4, 0.5]
   },
-  scan: jest.fn(() => mock_image),
-  resize: jest.fn(() => mock_image),
-  normalize: jest.fn(() => mock_image),
-  threshold: jest.fn(() => mock_image),
-  dither565: jest.fn(() => mock_image),
-  posterize: jest.fn(() => mock_image),
-  contrast: jest.fn(() => mock_image),
-  color: jest.fn(() => mock_image)
+  scan: vi.fn(() => mock_image),
+  resize: vi.fn(() => mock_image),
+  normalize: vi.fn(() => mock_image),
+  threshold: vi.fn(() => mock_image),
+  dither565: vi.fn(() => mock_image),
+  posterize: vi.fn(() => mock_image),
+  contrast: vi.fn(() => mock_image),
+  color: vi.fn(() => mock_image)
 }
 const mock_vector = {
   paths: [poster_html]

@@ -56,17 +56,17 @@ describe('@/components/statements/as-article.vue', () => {
         expect(wrapper.vm.focused).toBe(false)
       })
       it('Emits blurred event', async () => {
-        jest.useFakeTimers()
+        vi.useFakeTimers()
         await wrapper.vm.has_blurred()
         await wrapper.vm.$nextTick()
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(wrapper.emitted('blurred')).toBeTruthy()
       })
       it('Only emits blurred event whenb focused is lost', async () => {
         await wrapper.vm.has_blurred()
         await wrapper.vm.$nextTick()
         wrapper.vm.focused = true
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(wrapper.emitted('blurred')).not.toBeTruthy()
       })
     })

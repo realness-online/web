@@ -21,9 +21,9 @@ describe('@/persistance/Cloud.js', () => {
   })
   afterEach(() => {
     firebase.user = null
-    jest.clearAllMocks()
-    jest.restoreAllMocks()
-    // jest.resetAllMocks()
+    vi.clearAllMocks()
+    vi.restoreAllMocks()
+    // vi.resetAllMocks()
     localStorage.clear()
   })
   describe('Methods', () => {
@@ -32,17 +32,17 @@ describe('@/persistance/Cloud.js', () => {
         expect(cloud.save).toBeDefined()
       })
       it('Only saves if their are items', async () => {
-        cloud.to_network = jest.fn()
+        cloud.to_network = vi.fn()
         await cloud.save()
         expect(cloud.to_network).not.toBeCalled()
       })
       it('Only saves certain types', async () => {
-        cloud.to_network = jest.fn()
+        cloud.to_network = vi.fn()
         await cloud.save(statements)
         expect(cloud.to_network).not.toBeCalled()
       })
       it('Saves items on the server', async () => {
-        cloud.to_network = jest.fn()
+        cloud.to_network = vi.fn()
         cloud.type = 'avatars'
         await cloud.save(statements)
         expect(cloud.to_network).toBeCalled()
@@ -50,7 +50,7 @@ describe('@/persistance/Cloud.js', () => {
       it('Calls save on a parent class', async () => {
         class Whatever extends Cloud(Local(Storage)) {}
         cloud = new Whatever('/+16282281824/whatevers')
-        cloud.to_network = jest.fn()
+        cloud.to_network = vi.fn()
         cloud.type = 'avatars'
         await cloud.save(statements)
         expect(cloud.to_network).toBeCalled()

@@ -28,18 +28,16 @@ import {
   load,
   type_as_list
 } from '@/use/itemid'
-
-vi.mock('firebase/app')
-vi.mock('firebase/auth')
-vi.mock('firebase/storage')
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+// vi.mock('firebase/app')
+// vi.mock('firebase/auth')
+// vi.mock('firebase/storage')
 
 describe('@/use/itemid', () => {
   let poster_html
   const posterid = '/+16282281824/posters/559666932867'
   const user = { phoneNumber: '/+16282281824' }
   before_each(() => {
-
-    const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
     vi.clearAllMocks()
   })
   describe('#as_author', () => {
@@ -58,7 +56,8 @@ describe('@/use/itemid', () => {
     it('Exists', () => {
       expect(as_directory).toBeDefined()
     })
-    it('Returns a directory when offline', async () => {
+    it.only('Returns a directory when offline', async () => {
+      console.log(get);
       const mock_get = get.mockImplementationOnce(() =>
         Promise.resolve({ items: ['1555347888'] })
       )

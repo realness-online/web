@@ -51,7 +51,7 @@ describe('@/compontent/posters/as-figure.vue', () => {
   describe('Methods', () => {
     describe('#open_sms_app', () => {
       it('Opens a window to users default messenger', () => {
-        window.open = jest.fn()
+        window.open = vi.fn()
         wrapper.vm.open_sms_app()
         expect(window.open).toBeCalled()
       })

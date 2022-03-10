@@ -116,7 +116,7 @@ describe('@/persistance/Paged.js', () => {
       it('It optimizes a list of items accross a set of pages', async () => {
         firebase.user = user
         localStorage.setItem(paged.id, hella_statements)
-        const save_spy = jest.spyOn(paged, 'save')
+        const save_spy = vi.spyOn(paged, 'save')
         expect(Object.keys(localStorage.__STORE__).length).toBe(2)
         await paged.optimize()
         await flushPromises()

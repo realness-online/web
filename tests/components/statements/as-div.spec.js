@@ -30,8 +30,8 @@ describe('@/components/statements/as-div.vue', () => {
             statement: statements.statements[0]
           }
         })
-        jest.spyOn(Statements.prototype, 'save').mockImplementation(() => {
-          return jest.fn(() => Promise.resolve())
+        vi.spyOn(Statements.prototype, 'save').mockImplementation(() => {
+          return vi.fn(() => Promise.resolve())
         })
         wrapper.vm.$refs.editable.textContent = 'changed'
         await wrapper.vm.save()
@@ -44,8 +44,8 @@ describe('@/components/statements/as-div.vue', () => {
             statement: statements.statements[0]
           }
         })
-        jest.spyOn(Statements.prototype, 'save').mockImplementation(() => {
-          return jest.fn(() => Promise.resolve())
+        vi.spyOn(Statements.prototype, 'save').mockImplementation(() => {
+          return vi.fn(() => Promise.resolve())
         })
         await wrapper.vm.save()
         expect(Statements.prototype.save).not.toBeCalled()

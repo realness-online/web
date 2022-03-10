@@ -20,8 +20,8 @@ describe('@/views/Feed.vue', () => {
   beforeEach(() => {
     firebase.user = { phoneNumber: '+16282281824' }
     localStorage.me = '/+16282281824'
-    jest.spyOn(itemid, 'load').mockImplementation(() => person)
-    list_spy = jest.spyOn(itemid, 'list').mockImplementation(id => {
+    vi.spyOn(itemid, 'load').mockImplementation(() => person)
+    list_spy = vi.spyOn(itemid, 'list').mockImplementation(id => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
@@ -32,13 +32,13 @@ describe('@/views/Feed.vue', () => {
   afterEach(() => {
     firebase.user = undefined
     localStorage.me = undefined
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
   describe('Renders', () => {
     it('Handles a removed relation', async () => {
       const stale_person = { person }
       stale_person.visited = undefined
-      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
       const wrapper = await shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
@@ -55,7 +55,7 @@ describe('@/views/Feed.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A feed of statements', async () => {
-      jest.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
+      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return null
       })
       const wrapper = await shallowMount(Feed)
