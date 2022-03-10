@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
 
 exports[`@/compontent/profile/as-figure.vue Renders Render a person's profile info 1`] = `
 <figure
