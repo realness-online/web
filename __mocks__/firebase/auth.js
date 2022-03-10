@@ -1,3 +1,4 @@
+
 import firebase from 'firebase/app'
 const RecaptchaVerifier = class {
   verify() {
@@ -8,10 +9,10 @@ firebase.auth_mock = {
   get currentUser() {
     return firebase.user
   },
-  onAuthStateChanged: jest.fn(state => state(firebase.user)),
-  signInWithPhoneNumber: jest.fn(() => Promise.resolve('success')),
-  signOut: jest.fn()
+  onAuthStateChanged: vi.fn(state => state(firebase.user)),
+  signInWithPhoneNumber: vi.fn(() => Promise.resolve('success')),
+  signOut: vi.fn()
 }
-firebase.auth = jest.fn(() => firebase.auth_mock)
+firebase.auth = vi.fn(() => firebase.auth_mock)
 firebase.auth.RecaptchaVerifier = RecaptchaVerifier
 firebase.user = null

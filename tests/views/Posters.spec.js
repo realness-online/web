@@ -36,7 +36,7 @@ describe('@/views/Posters.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Unmounts the worker when destroyed', async () => {
-      const mock = jest.fn()
+      const mock = vi.fn()
       wrapper.vm.vectorizer = { terminate: mock }
       wrapper.vm.optimizer = { terminate: mock }
       wrapper.unmount()
@@ -96,7 +96,7 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#optimize', () => {
       it('Gives the optimize worker a vector to work on', () => {
-        wrapper.vm.optimizer.postMessage = jest.fn()
+        wrapper.vm.optimizer.postMessage = vi.fn()
         wrapper.vm.optimize({ id: 'mock-vector' })
         expect(wrapper.vm.optimizer.postMessage).toBeCalled()
       })
@@ -111,14 +111,14 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#get_poster_list', () => {
       it('Adds posters', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementation(() => {
+        vi.spyOn(itemid, 'as_directory').mockImplementation(() => {
           return { items: ['1576588885385'] }
         })
         await wrapper.vm.get_poster_list({})
         expect(wrapper.vm.posters.length).toBe(2)
       })
       it('Handles an empty poster list', async () => {
-        jest.spyOn(itemid, 'as_directory').mockImplementation(() => null)
+        vi.spyOn(itemid, 'as_directory').mockImplementation(() => null)
         await wrapper.vm.get_poster_list({})
       })
     })
@@ -130,8 +130,8 @@ describe('@/views/Posters.vue', () => {
     describe('#save_poster', () => {
       let save_spy
       beforeEach(() => {
-        save_spy = jest.fn(() => Promise.resolve())
-        jest.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
+        save_spy = vi.fn(() => Promise.resolve())
+        vi.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
       })
       it('Saves an optimized poster (will have a proper itemid)', async () => {
         localStorage.me = itemid.as_author(poster.id)
@@ -152,10 +152,10 @@ describe('@/views/Posters.vue', () => {
       let confirm_spy
       let delete_spy
       beforeEach(() => {
-        confirm_spy = jest.fn(() => true)
-        delete_spy = jest.fn(() => Promise.resolve())
+        confirm_spy = vi.fn(() => true)
+        delete_spy = vi.fn(() => Promise.resolve())
         window.confirm = confirm_spy
-        jest.spyOn(Poster.prototype, 'delete').mockImplementation(delete_spy)
+        vi.spyOn(Poster.prototype, 'delete').mockImplementation(delete_spy)
       })
       it('Executes the method', async () => {
         await wrapper.vm.remove_poster(poster.id)

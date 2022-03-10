@@ -15,7 +15,7 @@ describe('@/components/profile/as-messenger', () => {
         const wrapper = shallowMount(as_messenger, {
           props: { itemid: '/+16282281824' }
         })
-        window.open = jest.fn()
+        window.open = vi.fn()
         wrapper.vm.open_sms_app()
         expect(window.open).toBeCalled()
       })

@@ -1,4 +1,4 @@
 export default {
-  initializeApp: jest.fn(),
+  initializeApp: vi.fn(),
   apps: []
 }

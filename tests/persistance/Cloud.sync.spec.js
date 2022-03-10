@@ -20,11 +20,11 @@ const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
 describe('/persistance/Cloud.js', () => {
   beforeEach(async () => {
     localStorage.me = '/+16282281824'
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     firebase.user = null
   })
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     get.mockClear()
     localStorage.clear()
   })
@@ -33,7 +33,7 @@ describe('/persistance/Cloud.js', () => {
   describe('Methods', () => {
     describe('#sync_offline_actions', () => {
       it('Needs to be online', async () => {
-        jest.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+        vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync_offline_actions()
         expect(get).not.toBeCalled()
       })
@@ -44,7 +44,7 @@ describe('/persistance/Cloud.js', () => {
       })
       it('Saves offline content', async () => {
         firebase.user = user
-        const spy = jest.spyOn(Offline.prototype, 'save')
+        const spy = vi.spyOn(Offline.prototype, 'save')
         get.mockImplementation(() =>
           Promise.resolve([
             { action: 'save', id: '/+6282281824/posters/1555347888' }
@@ -57,7 +57,7 @@ describe('/persistance/Cloud.js', () => {
       })
       it('Deletes offline content', async () => {
         firebase.user = user
-        const spy = jest.spyOn(Offline.prototype, 'delete')
+        const spy = vi.spyOn(Offline.prototype, 'delete')
         get.mockImplementation(() =>
           Promise.resolve([
             { action: 'delete', id: '/+6282281824/posters/1555347888' }
@@ -114,7 +114,7 @@ describe('/persistance/Cloud.js', () => {
       })
       it('Prunes items with outdated info', async () => {
         await prune()
-        jest.runAllTimers()
+        vi.runAllTimers()
         expect(keys).toBeCalled()
         expect(del).toBeCalled()
       })

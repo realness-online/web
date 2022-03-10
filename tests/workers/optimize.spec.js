@@ -6,11 +6,11 @@ describe('/workers/vector.js', () => {
     describe('#listen', () => {
       let optimize_spy
       beforeEach(() => {
-        optimize_spy = jest.spyOn(SVGO.prototype, 'optimize')
+        optimize_spy = vi.spyOn(SVGO.prototype, 'optimize')
         // optimize_spy.mockImplementation(() => Promise.resolve(vector))
       })
       it('Optimizes a vector', async () => {
-        const postMessage_spy = jest.spyOn(global, 'postMessage')
+        const postMessage_spy = vi.spyOn(global, 'postMessage')
         postMessage_spy.mockImplementation(() => true)
         await optimize.listen({ data: { vector } })
         expect(optimize_spy).toBeCalled()

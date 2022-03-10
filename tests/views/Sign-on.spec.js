@@ -14,7 +14,7 @@ describe('@/views/Sign-on.vue', () => {
   let $router
   beforeEach(async () => {
     localStorage.me = '/+'
-    $router = { push: jest.fn() }
+    $router = { push: vi.fn() }
     wrapper = shallowMount(Sign_on, {
       global: {
         mocks: { $router }
@@ -24,7 +24,7 @@ describe('@/views/Sign-on.vue', () => {
   afterEach(() => {
     wrapper = null
     localStorage.clear()
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
   describe('Renders', () => {
     it('Renders a form for a new user', async () => {
@@ -32,7 +32,7 @@ describe('@/views/Sign-on.vue', () => {
     })
     it('Renders a form for a returning user', async () => {
       localStorage.me = '/+6282281823'
-      jest.spyOn(itemid, 'load').mockImplementation(() => {
+      vi.spyOn(itemid, 'load').mockImplementation(() => {
         return Promise.resolve(person)
       })
       wrapper = await shallowMount(Sign_on)
@@ -98,7 +98,7 @@ describe('@/views/Sign-on.vue', () => {
     })
     describe('#clean', () => {
       it('Wipes out the local storage', async () => {
-        const local_clear_spy = jest.spyOn(localStorage, 'clear')
+        const local_clear_spy = vi.spyOn(localStorage, 'clear')
         await wrapper.vm.clean()
         expect(local_clear_spy).toBeCalled()
         expect(clear).toBeCalled()

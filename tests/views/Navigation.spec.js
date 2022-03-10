@@ -9,7 +9,7 @@ const person = {
 describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
-    jest.spyOn(itemid, 'load').mockImplementation(() => person)
+    vi.spyOn(itemid, 'load').mockImplementation(() => person)
     wrapper = shallowMount(Navigation)
     wrapper.setData({ version: '1.0.0' })
     await flushPromises()
@@ -23,7 +23,7 @@ describe('@/views/Navigation.vue', () => {
     })
     describe('first_name', () => {
       it("Returns 'You' by default", async () => {
-        jest.spyOn(itemid, 'load').mockImplementationOnce(() => null)
+        vi.spyOn(itemid, 'load').mockImplementationOnce(() => null)
         wrapper = shallowMount(Navigation)
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
@@ -46,7 +46,7 @@ describe('@/views/Navigation.vue', () => {
   describe('Methods', () => {
     describe('#done_posting', () => {
       it('Sets the focus on the post statement button', () => {
-        const focus_mock = jest.spyOn(wrapper.vm.$refs.nav, 'focus')
+        const focus_mock = vi.spyOn(wrapper.vm.$refs.nav, 'focus')
         wrapper.vm.done_posting()
         expect(focus_mock).toBeCalled()
       })

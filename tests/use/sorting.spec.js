@@ -6,7 +6,7 @@ import {
 } from '@/use/sorting'
 describe('@/use/sorting', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
   describe('Methods', () => {
     describe('#recent_number_first', () => {

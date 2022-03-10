@@ -12,10 +12,10 @@ const person = {
 describe('@/views/PhoneBook', () => {
   let wrapper
   beforeEach(async () => {
-    // jest.spyOn(itemid, 'load').mockImplementation(() => person)
+    // vi.spyOn(itemid, 'load').mockImplementation(() => person)
   })
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     firebase.user = null
   })
   describe('Renders', () => {
@@ -52,7 +52,7 @@ describe('@/views/PhoneBook', () => {
       firebase.storage_mock.listAll.mockImplementation(() =>
         Promise.resolve(mock_dir)
       )
-      jest.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
       wrapper = await shallowMount(PhoneBook)
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)

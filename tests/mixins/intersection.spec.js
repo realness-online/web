@@ -10,7 +10,7 @@ describe('@/mixins/intersection', () => {
       expect(wrapper.unmount).toBeDefined()
     })
     it('Resets the observer', () => {
-      const mock = jest.fn()
+      const mock = vi.fn()
       wrapper.vm.observer = { unobserve: mock }
       wrapper.unmount()
       expect(mock).toBeCalled()
@@ -29,7 +29,7 @@ describe('@/mixins/intersection', () => {
           { isIntersecting: true },
           { isIntersecting: false }
         ]
-        const mock = jest.fn()
+        const mock = vi.fn()
         wrapper.vm.show = mock
         wrapper.vm.check_intersection(intersectings)
         expect(mock).toBeCalled()

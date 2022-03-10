@@ -1,5 +1,6 @@
-module.exports.get = jest.fn(() => Promise.resolve(undefined))
-module.exports.set = jest.fn(() => Promise.resolve())
-module.exports.del = jest.fn(() => Promise.resolve())
-module.exports.clear = jest.fn(() => Promise.resolve())
-module.exports.keys = jest.fn(() => Promise.resolve([]))
+import { vi } from 'vitest'
+module.exports.get = vi.fn(() => Promise.resolve(undefined))
+module.exports.set = vi.fn(() => Promise.resolve())
+module.exports.del = vi.fn(() => Promise.resolve())
+module.exports.clear = vi.fn(() => Promise.resolve())
+module.exports.keys = vi.fn(() => Promise.resolve([]))

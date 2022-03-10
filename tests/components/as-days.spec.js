@@ -34,14 +34,14 @@ describe('@/components/as-days', () => {
         other_poster.id = '/+16282281824/posters/559666932000'
       })
       it('Adds poster to the same day', async () => {
-        jest.spyOn(sorting, 'earlier_weirdo_first')
+        vi.spyOn(sorting, 'earlier_weirdo_first')
         await wrapper.setProps({ statements, posters: [poster, other_poster] })
         expect(wrapper.vm.days.get('9/26/1987').length).toBe(2)
         expect(sorting.earlier_weirdo_first).toBeCalled()
       })
       it('Sorts todays items by most recent', async () => {
-        jest.spyOn(as_date, 'is_today').mockImplementation(() => true)
-        jest.spyOn(sorting, 'recent_weirdo_first')
+        vi.spyOn(as_date, 'is_today').mockImplementation(() => true)
+        vi.spyOn(sorting, 'recent_weirdo_first')
         await wrapper.setProps({ statements, posters: [poster, other_poster] })
         expect(sorting.recent_weirdo_first).toBeCalled()
       })

@@ -24,7 +24,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         let input, stub
         beforeEach(async () => {
           input = wrapper.find('#mobile')
-          stub = jest.fn()
+          stub = vi.fn()
         })
         it('Accept numbers', () => {
           input.trigger('keypress', {
@@ -157,7 +157,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         })
 
         input = wrapper.find('#verification-code')
-        stub = jest.fn()
+        stub = vi.fn()
       })
       it('Allow valid digits', () => {
         input.trigger('keypress', {
@@ -186,7 +186,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
     describe('button#submit-verification', () => {
       let wrapper, button, confirm_spy
       beforeEach(async () => {
-        confirm_spy = jest.fn(() => Promise.resolve('result of confirm_spy'))
+        confirm_spy = vi.fn(() => Promise.resolve('result of confirm_spy'))
         wrapper = await shallowMount(as_form, {
           props: { person },
           data() {
