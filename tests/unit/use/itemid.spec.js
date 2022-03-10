@@ -6,6 +6,7 @@ import {
   afterEach as after_each,
   vi
 } from 'vitest'
+import fs from 'fs'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/storage'
@@ -28,14 +29,16 @@ import {
   type_as_list
 } from '@/use/itemid'
 
-// import fs from 'node:fs';
-import fs from 'fs'
+vi.mock('firebase/app')
+vi.mock('firebase/auth')
+vi.mock('firebase/storage')
 
 describe('@/use/itemid', () => {
   let poster_html
   const posterid = '/+16282281824/posters/559666932867'
   const user = { phoneNumber: '/+16282281824' }
   before_each(() => {
+
     const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
     vi.clearAllMocks()
   })
