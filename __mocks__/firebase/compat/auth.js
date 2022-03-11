@@ -1,4 +1,3 @@
-
 import firebase from 'firebase/compat/app'
 const RecaptchaVerifier = class {
   verify() {
