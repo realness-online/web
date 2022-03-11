@@ -1,2 +1,2 @@
-import { indexedDB } from "fake-indexeddb"
+import { indexedDB } from 'fake-indexeddb'
 globalThis.indexedDB = indexedDB
