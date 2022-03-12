@@ -30,13 +30,14 @@ export default defineConfig({
     environment: 'happy-dom',
     mockReset: false,
     setupFiles: [
-      './__mocks__/setup.js',
-      './__mocks__/polyfill/indexedDB.js',
-      './__mocks__/polyfill/localstorage.js',
-      './__mocks__/polyfill/createrange.js',
-      './__mocks__/polyfill/scrollIntoView.js',
-      './__mocks__/polyfill/IntersectionObserver.js',
-      './__mocks__/polyfill/FileReaderSync.js'
+      './__mocks__/browser/console.js',
+      './__mocks__/browser/fetch.js',
+      './__mocks__/browser/indexedDB.js',
+      './__mocks__/browser/localStorage.js',
+      './__mocks__/browser/createrange.js',
+      './__mocks__/browser/scrollIntoView.js',
+      './__mocks__/browser/IntersectionObserver.js',
+      './__mocks__/browser/FileReaderSync.js'
     ]
   }
 })
