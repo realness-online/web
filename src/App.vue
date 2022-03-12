@@ -1,20 +1,16 @@
 <template>
   <main id="realness" :class="status">
     <router-view
-      v-if="!working"
       v-model:statement="statement"
       v-model:person="me" />
-    <aside v-if="!working">
+    <aside>
       <sync v-model:statement="statement" :person="me" @active="sync_active" />
     </aside>
   </main>
 </template>
 <script setup>
-  import { onUnmounted as dismount } from 'vue'
-  import firebase from 'firebase/compat/app'
-  import { get, set } from 'idb-keyval'
   import sync from '@/components/sync'
-  const working = ref(true)
+  import { onUnmounted as dismount } from 'vue'
   const status = ref(null)
   const me = ref(undefined)
   const statement = ref(undefined)
@@ -34,7 +30,6 @@
   }
   window.addEventListener('online', online)
   window.addEventListener('offline', offline)
-  working.value = false
   dismount(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
