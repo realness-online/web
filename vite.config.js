@@ -30,6 +30,7 @@ export default defineConfig({
     environment: 'happy-dom',
     mockReset: false,
     setupFiles: [
+      './__mocks__/default.js',
       './__mocks__/browser/console.js',
       './__mocks__/browser/fetch.js',
       './__mocks__/browser/indexedDB.js',
