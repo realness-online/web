@@ -6,7 +6,8 @@ import {
 import {
   getStorage as init_storage,
   getDownloadURL as download_url,
-  ref as reference
+  ref as reference,
+  listAll as list_directory
 } from 'firebase/storage'
 import { get, set, keys } from 'idb-keyval'
 import { ref } from 'vue'
@@ -34,9 +35,9 @@ const storage = init_storage(info.value)
 
 export const current_user = ref(null)
 export const auth = init_auth(info.value)
-export const file = path => reference(storage, path)
-export const url = async path => await download_url(file(path))
-
+export const location = path => reference(storage, path)
+export const url = async path => await download_url(location(path))
+export const directory = async path => await list_directory(location(path))
 auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null

@@ -1,7 +1,4 @@
-import {
-  beforeEach as before_each,
-  afterEach as after_each,
-} from 'vitest'
+import { beforeEach as before_each, afterEach as after_each } from 'vitest'
 import fs from 'fs'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
@@ -24,8 +21,13 @@ import {
   load,
   type_as_list
 } from '@/use/itemid'
+import { current_user } from '@/use/serverless'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 vi.mock('idb-keyval')
+vi.mock('firebase/app')
+vi.mock('firebase/auth')
+vi.mock('firebase/storage')
+
 vi.mock('firebase/compat/app')
 vi.mock('firebase/compat/auth')
 vi.mock('firebase/compat/storage')
@@ -36,9 +38,7 @@ describe('@/use/itemid', () => {
   before_each(() => {
     vi.clearAllMocks()
   })
-  after_each(() => {
-
-  })
+  after_each(() => {})
   describe('#as_author', () => {
     const itemid = '/+16282281824/statements/1583955101461'
     it('Should return an author id for a statement id', () => {
@@ -63,13 +63,13 @@ describe('@/use/itemid', () => {
       expect(mock_get).toBeCalled()
     })
     it('Returns a directory', async () => {
-      firebase.user = user
+      current_user.value = user
       const mock_get = get.mockImplementationOnce(() => Promise.resolve(null))
       await as_directory('/+/posters/')
       await flushPromises()
       expect(mock_get).toBeCalled()
       expect(set).toBeCalled()
-      firebase.user = null
+      current_user.value = null
     })
     it('Returns null if not online and not found locally directory', async () => {
       // const spy = vi.spyOn(window.navigator, 'onLine', 'get')
@@ -93,12 +93,12 @@ describe('@/use/itemid', () => {
   })
   describe('#load_directory_from_network', () => {
     it('Returns an empty directory object', async () => {
-      firebase.user = user
+      current_user.value = user
       const itemid = '/+16282281824/statements/1583955101461'
       const directory = await load_directory_from_network(itemid)
       expect(directory.items.length).toBe(0)
       expect(directory.types.length).toBe(0)
-      firebase.user = null
+      current_user.value = null
     })
   })
   describe('#as_download_url', () => {
@@ -106,12 +106,13 @@ describe('@/use/itemid', () => {
       expect(as_download_url).toBeDefined()
     })
     it('Returns a url', async () => {
-      firebase.user = user
+      current_user.value = user
       const url = await as_download_url(posterid)
       expect(url).toBe('/path/to/file.html')
-      firebase.user = null
+      current_user.value = null
     })
     it('Returns null if person is not logged in', async () => {
+      current_user.value = null
       const url = await as_download_url(posterid)
       expect(url).toBe(null)
     })
@@ -213,13 +214,14 @@ describe('@/use/itemid', () => {
     describe.skip("Can't find it locally", () => {
       let network_request, poster
       before_each(async () => {
-        firebase.user = user
+        current_user.value = user
+
         network_request = fetch.mockResponseOnce(poster_html)
         poster = await load(posterid, '/+16282281824')
         await flushPromises()
       })
       after_each(() => {
-        firebase.user = null
+        current_user.value = null
       })
       it('Try the network', async () => {
         expect(poster.viewbox).toBe('0 0 333 444')
