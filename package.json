@@ -23,7 +23,7 @@
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "^1.0.2",
     "@realness.online/potrace": "../potrace/",
-    "@vueuse/core": "^7.6.2",
+    "@vueuse/core": "^8.0.0",
     "firebase": "^9.6.8",
     "happy-dom": "^2.46.0",
     "hsl-to-hex": "^1.0.0",
