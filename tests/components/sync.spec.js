@@ -8,16 +8,16 @@ import { Me, Statements, Events, Poster } from '@/persistance/Storage'
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
 import 'firebase/compat/storage'
-const fs = require('fs')
+import fs from 'fs'
 const statements_html = fs.readFileSync(
   './tests/unit/html/statements.html',
   'utf8'
 )
-const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const offline_poster = fs.readFileSync(
   './tests/unit/html/poster-offline.html',
   'utf8'
 )
+const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
 const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
 const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
@@ -48,19 +48,14 @@ describe('@/components/sync', () => {
       visited: '2020-03-03T17:37:22.943Z'
     }
     localStorage.me = `/${current_user.phoneNumber}`
-    jest
-      .spyOn(Statements.prototype, 'sync')
+    vi.spyOn(Statements.prototype, 'sync')
       .mockImplementation(() => Promise.resolve(statements))
-    jest
-      .spyOn(Statements.prototype, 'save')
+    vi.spyOn(Statements.prototype, 'save')
       .mockImplementation(() => Promise.resolve())
-    jest
-      .spyOn(Events.prototype, 'sync')
+    vi.spyOn(Events.prototype, 'sync')
       .mockImplementation(() => Promise.resolve(events))
-    jest
-      .spyOn(Events.prototype, 'save')
+    vi.spyOn(Events.prototype, 'save')
       .mockImplementation(() => Promise.resolve())
-    set.mockImplementation(() => Promise.resolve(null))
     wrapper = await shallowMount(sync, fake_props)
   })
   afterEach(() => {
@@ -75,10 +70,10 @@ describe('@/components/sync', () => {
   })
   describe('Watchers', () => {
     describe('statement', () => {
-      it('Does nothing unless there is a statement', async () => {
-        wrapper = shallowMount(sync, fake_props)
+      it.only('Does nothing unless there is a statement', async () => {
+        console.log('hi');
         wrapper.setProps({ statement })
-        await flushPromises()
+
         vi.clearAllMocks()
         const save_spy = vi.spyOn(Statements.prototype, 'save')
         wrapper.setProps({ statement: null })
@@ -95,8 +90,7 @@ describe('@/components/sync', () => {
       it('Does nothing unless there is a person', async () => {
         const props = { ...fake_props }
         props.props.person = person
-        wrapper = shallowMount(sync, props)
-        await flushPromises()
+        wrapper = await shallowMount(sync, props)
         wrapper.setProps({ person: null })
         const save_spy = vi.spyOn(Me.prototype, 'save')
         expect(wrapper.emitted('update:person')).not.toBeTruthy()
