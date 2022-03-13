@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
 
-exports[`@/components/as-days Renders With nothing 1`] = `
+exports[`@/components/as-days > Renders > With nothing 1`] = `
 <section
   class="as-days"
 >
@@ -9,7 +9,7 @@ exports[`@/components/as-days Renders With nothing 1`] = `
 </section>
 `;
 
-exports[`@/components/as-days Renders With posters and statements sorted into the days they were created 1`] = `
+exports[`@/components/as-days > Renders > With posters and statements sorted into the days they were created 1`] = `
 <section
   class="as-days"
 >
@@ -19,7 +19,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
   >
     <header>
       <h4>
-        Tuesday, October 1, 2019
+        Monday, September 30, 2019
       </h4>
     </header>
     
@@ -32,7 +32,7 @@ exports[`@/components/as-days Renders With posters and statements sorted into th
   >
     <header>
       <h4>
-        Wednesday, September 25, 2019
+        Tuesday, September 24, 2019
       </h4>
     </header>
     
