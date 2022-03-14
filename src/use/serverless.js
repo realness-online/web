@@ -30,7 +30,7 @@ if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
 }
 
 const firebase_keys = await get('firebase-keys')
-const info = ref(initialize_firebase(keys))
+const info = ref(initialize_firebase(firebase_keys))
 const storage = init_storage(info.value)
 
 export const current_user = ref(null)
