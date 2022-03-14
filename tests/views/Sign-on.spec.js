@@ -70,7 +70,7 @@ describe('@/views/Sign-on.vue', () => {
     })
     describe('#signed_on', () => {
       it('Loads the profile', async () => {
-        const load_spy = jest
+        const load_spy = vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.signed_on()
@@ -80,7 +80,7 @@ describe('@/views/Sign-on.vue', () => {
         expect($router.push).toHaveBeenCalledWith({ path: '/' })
       })
       it('Sets nameless to true if no profile is found', async () => {
-        const load_spy = jest
+        const load_spy = vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.signed_on()

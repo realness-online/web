@@ -14,11 +14,11 @@ const person = {
 describe('@/components/download-vector', () => {
   describe('Renders', () => {
     it('Link to download svg', () => {
-      jest
+      vi
         .spyOn(document, 'getElementById')
         .mockImplementation(() => hydrate(poster_html))
 
-      jest
+      vi
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(person))
 
@@ -31,7 +31,7 @@ describe('@/components/download-vector', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Handles downloads from anonymous users', async () => {
-      jest
+      vi
         .spyOn(document, 'getElementById')
         .mockImplementation(() => hydrate(poster_html))
 

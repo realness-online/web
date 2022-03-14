@@ -100,7 +100,7 @@ describe('/persistance/Cloud.js', () => {
         firebase.storage_mock.getMetadata.mockImplementation(() =>
           Promise.resolve(meta)
         )
-        list_spy = jest
+        list_spy = vi
           .spyOn(itemid, 'list')
           .mockImplementation(() => relations)
         get.mockImplementation(query => {

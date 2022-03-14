@@ -15,10 +15,10 @@ describe('@/views/Relations.vue', () => {
         type: 'relations',
         relations: [{ id: '/+14151234356' }]
       }
-      const load_relations = jest
+      const load_relations = vi
         .spyOn(itemid, 'list')
         .mockImplementation(() => Promise.resolve(my.relations))
-      const load_profile = jest
+      const load_profile = vi
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(joe_friday))
       const wrapper = await shallowMount(Relations)
@@ -34,10 +34,10 @@ describe('@/views/Relations.vue', () => {
         type: 'relations',
         relations: [{ id: '/+14151234356' }]
       }
-      const load_relations = jest
+      const load_relations = vi
         .spyOn(itemid, 'list')
         .mockImplementation(() => Promise.resolve(my.relations))
-      const load_profile = jest
+      const load_profile = vi
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(null))
       const wrapper = await shallowMount(Relations)

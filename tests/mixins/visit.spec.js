@@ -27,7 +27,7 @@ describe('@/mixins/visit', () => {
         expect(wrapper.vm.update_visit).toBeDefined()
       })
       it('Updates the user with a visit', async () => {
-        const load_spy = jest
+        const load_spy = vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.update_visit()
@@ -36,7 +36,7 @@ describe('@/mixins/visit', () => {
         expect(wrapper.emitted('update:person')).toBeTruthy()
       })
       it('Does nothing unless there is a person', async () => {
-        const load_spy = jest
+        const load_spy = vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(null))
         await wrapper.vm.update_visit()
@@ -46,7 +46,7 @@ describe('@/mixins/visit', () => {
       })
       it('Waits a proper interval before update to visit', async () => {
         person.visited = new Date().toISOString()
-        const load_spy = jest
+        const load_spy = vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         await wrapper.vm.update_visit()
