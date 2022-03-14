@@ -42,10 +42,10 @@ describe('@/persistance/Paged.js', () => {
         expect(get_item(hella_statements).statements.length).toBe(100)
       })
       beforeEach(() => {
-        cloud_spy = jest
+        cloud_spy = vi
           .spyOn(itemid, 'load_from_network')
           .mockImplementation(() => Promise.resolve(get_item(statements)))
-        local_spy = jest
+        local_spy = vi
           .spyOn(itemid, 'list')
           .mockImplementation(() =>
             Promise.resolve(get_item(hella_statements).statements)
@@ -82,7 +82,7 @@ describe('@/persistance/Paged.js', () => {
       })
       it('Syncs if there are no server items', async () => {
         firebase.user = user
-        cloud_spy = jest
+        cloud_spy = vi
           .spyOn(itemid, 'load_from_network')
           .mockImplementationOnce(() => null)
         const list = await paged.sync()
@@ -93,7 +93,7 @@ describe('@/persistance/Paged.js', () => {
       it('Syncs if there are no local items', async () => {
         firebase.user = user
         itemid.list.mockReset()
-        local_spy = jest
+        local_spy = vi
           .spyOn(itemid, 'list')
           .mockImplementationOnce(() => Promise.resolve([]))
         const list = await paged.sync()
@@ -105,7 +105,7 @@ describe('@/persistance/Paged.js', () => {
     describe('#optimize', () => {
       beforeEach(() => {
         localStorage.setItem(paged.id, hella_statements)
-        jest
+        vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(get_item(hella_statements)))
       })

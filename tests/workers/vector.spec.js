@@ -30,7 +30,7 @@ describe('/workers/vector.js', () => {
   describe('Methods', () => {
     let as_paths_spy
     beforeEach(() => {
-      as_paths_spy = jest
+      as_paths_spy = vi
         .spyOn(potrace, 'as_paths')
         .mockImplementation(() => Promise.resolve(mock_vector))
     })
@@ -39,10 +39,10 @@ describe('/workers/vector.js', () => {
       let postMessage_spy
 
       beforeEach(() => {
-        read_spy = jest
+        read_spy = vi
           .spyOn(Jimp, 'read')
           .mockImplementation(() => Promise.resolve(mock_image))
-        postMessage_spy = jest
+        postMessage_spy = vi
           .spyOn(global, 'postMessage')
           .mockImplementation(() => true)
       })
@@ -71,7 +71,7 @@ describe('/workers/vector.js', () => {
           large.paths.push(image)
         }
         large.paths.push(image)
-        as_paths_spy = jest
+        as_paths_spy = vi
           .spyOn(potrace, 'as_paths')
           .mockImplementationOnce(() => Promise.resolve(large))
         await vector.make(mock_image)

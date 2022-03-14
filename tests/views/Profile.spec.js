@@ -8,7 +8,7 @@ const person = fs.readFileSync(
   './__mocks__/html/person.html',
   'utf8'
 )
-const fetch = require('jest-fetch-mock')
+const fetch = require('vi-fetch-mock')
 const user = { phoneNumber: '/+16282281824' }
 
 describe('@/views/Profile.vue', () => {

@@ -26,7 +26,7 @@ describe('@/views/Feed.vue', () => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
-    jest
+    vi
       .spyOn(itemid, 'as_directory')
       .mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
   })
@@ -47,7 +47,7 @@ describe('@/views/Feed.vue', () => {
     })
     it('A fiendly explanatory message if new person', async () => {
       list_spy.mockImplementation(() => Promise.resolve([]))
-      jest
+      vi
         .spyOn(itemid, 'as_directory')
         .mockImplementationOnce(() => Promise.resolve({ items: [] }))
       firebase.user = undefined

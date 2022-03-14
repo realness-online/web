@@ -34,7 +34,7 @@ describe('@/views/PhoneBook', () => {
       firebase.storage_mock.listAll.mockImplementation(() =>
         Promise.resolve(mock_dir)
       )
-      jest
+      vi
         .spyOn(itemid, 'load')
         .mockImplementation(() => Promise.resolve(person))
       wrapper = await shallowMount(PhoneBook)
