@@ -11,15 +11,14 @@ import {
   elements_as_kilobytes,
   is_fat
 } from '@/persistance/Paged'
-
-const fs = require('fs')
-const statements = fs.readFileSync('./tests/unit/html/statements.html', 'utf8')
+import fs from 'fs'
+const statements = fs.readFileSync('./__mocks__/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync(
-  './tests/unit/html/statements-hella.html',
+  './__mocks__/html/statements-hella.html',
   'utf8'
 )
 const offline_statements = fs.readFileSync(
-  './tests/unit/html/statements-offline.html',
+  './__mocks__/html/statements-offline.html',
   'utf8'
 )
 const user = { phoneNumber: '/+16282281824' }

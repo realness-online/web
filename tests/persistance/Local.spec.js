@@ -1,8 +1,8 @@
 import Storage from '@/persistance/Storage'
 import Local from '@/persistance/Local'
-const fs = require('fs')
+import fs from 'fs'
 const preferences = fs.readFileSync(
-  './tests/unit/html/preferences.html',
+  './__mocks__/html/preferences.html',
   'utf8'
 )
 describe('@/persistance/Local.js', () => {

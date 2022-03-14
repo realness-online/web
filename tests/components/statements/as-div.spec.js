@@ -2,8 +2,9 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_statement from '@/components/statements/as-div'
 import get_item from '@/use/item'
 import { Statements } from '@/persistance/Storage'
-const statements_as_html = require('fs').readFileSync(
-  './tests/unit/html/statements.html',
+import fs from 'fs'
+const statements_as_html = fs.readFileSync(
+  './__mocks__/html/statements.html',
   'utf8'
 )
 describe('@/components/statements/as-div.vue', () => {

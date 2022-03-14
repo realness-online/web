@@ -1,9 +1,8 @@
 import { as_thoughts } from '@/use/thoughts'
 import { get_item } from '@/use/item'
-const fs = require('fs')
-
+import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './tests/unit/html/statements.html',
+  './__mocks__/html/statements.html',
   'utf8'
 )
 describe('@/use/itemid', () => {
