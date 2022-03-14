@@ -1,4 +1,3 @@
-
 export const RecaptchaVerifier = class {
   verify() {
     // console.log('RecaptchaVerifier.verify');
