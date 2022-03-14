@@ -39,6 +39,16 @@ export default defineConfig({
       './__mocks__/browser/scrollIntoView.js',
       './__mocks__/browser/IntersectionObserver.js',
       './__mocks__/browser/FileReaderSync.js'
-    ]
+    ],
+    coverage: {
+      reporter: ['text', 'html'],
+      lines: 90,
+      branches: 90,
+      statements: 90,
+      functions: 90,
+      all: true,
+      excludeNodeModules: true,
+      exclude: ['**/tests/**']
+    }
   }
 })
