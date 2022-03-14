@@ -5,11 +5,15 @@ describe('@/App.vue', () => {
   const node_env = import.meta.env
   beforeEach(async () => {
     process.env = { ...node_env }
-    wrapper = await shallowMount(App)
+    wrapper = await shallowMount(App, {
+      global: {
+        stubs: ["router-link", "router-view"]
+      }
+    })
   })
   afterEach(() => {
     wrapper.unmount()
-    vi.resetModules()
+    // vi.resetModules()
   })
   afterAll(() => {
     process.env = node_env
@@ -18,19 +22,17 @@ describe('@/App.vue', () => {
     it('Layout of the application', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Calls offline is app is initialized offline', async () => {
-      vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
-      wrapper = await shallowMount(App)
-    })
   })
   describe('Methods', () => {
     describe('#onLine', () => {
       it('Turns the editable content back on', () => {
         const elements = [{ setAttribute: vi.fn() }]
+
         wrapper.vm.status = 'offline'
         vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
         wrapper.vm.online()
-        expect(wrapper.vm.status.value).toBe(null)
+
+        expect(wrapper.vm.status).toBe(null)
         expect(elements[0].setAttribute).toBeCalled()
       })
     })
@@ -40,20 +42,20 @@ describe('@/App.vue', () => {
         wrapper.vm.status = 'offline'
         vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
         wrapper.vm.offline()
-        expect(wrapper.vm.status.value).toBe('offline')
+        expect(wrapper.vm.status).toBe('offline')
         expect(elements[0].setAttribute).toBeCalled()
       })
     })
     describe('#sync_active', () => {
-      it('Sets Status to active whebn syncing', () => {
-        wrapper.vm.status.value = 'offline'
+      it('Sets status to active when syncing', () => {
+        wrapper.vm.status = 'offline'
         wrapper.vm.sync_active(true)
-        expect(wrapper.vm.status.value).toBe('working')
+        expect(wrapper.vm.status).toBe('working')
       })
-      it('Sets Status to null when not syncing', () => {
-        wrapper.vm.status.value = 'offline'
+      it('Sets status to null when not syncing', () => {
+        wrapper.vm.status = 'offline'
         wrapper.vm.sync_active(false)
-        expect(wrapper.vm.status.value).toBe(null)
+        expect(wrapper.vm.status).toBe(null)
       })
     })
   })

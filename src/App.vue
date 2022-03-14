@@ -10,12 +10,12 @@
 </template>
 <script setup>
   import sync from '@/components/sync'
-  import { onUnmounted as dismount } from 'vue'
+  import { ref, onUnmounted as dismount } from 'vue'
   const status = ref(null)
   const me = ref(undefined)
   const statement = ref(undefined)
   const sync_active = active => {
-    if (active.value) status.value = 'working'
+    if (active) status.value = 'working'
     else status.value = null
   }
   const online = () => {
