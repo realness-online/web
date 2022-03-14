@@ -10,16 +10,16 @@ import 'firebase/compat/auth'
 import 'firebase/compat/storage'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './tests/unit/html/statements.html',
+  './__mocks__/html/statements.html',
   'utf8'
 )
 const offline_poster = fs.readFileSync(
-  './tests/unit/html/poster-offline.html',
+  './__mocks__/html/poster-offline.html',
   'utf8'
 )
-const poster_html = fs.readFileSync('./tests/unit/html/poster.html', 'utf8')
-const person_html = fs.readFileSync('./tests/unit/html/person.html', 'utf8')
-const events_html = fs.readFileSync('./tests/unit/html/events.html', 'utf8')
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const person_html = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
+const events_html = fs.readFileSync('./__mocks__/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
 const fake_props = {
@@ -74,11 +74,8 @@ describe('@/components/sync', () => {
   })
   describe('Watchers', () => {
     describe('statement', () => {
-      it.only('Does nothing unless there is a statement', async () => {
-        console.log('hi')
+      it('Does nothing unless there is a statement', async () => {
         wrapper.setProps({ statement })
-
-        vi.clearAllMocks()
         const save_spy = vi.spyOn(Statements.prototype, 'save')
         wrapper.setProps({ statement: null })
         expect(save_spy).not.toBeCalled()
@@ -111,10 +108,10 @@ describe('@/components/sync', () => {
     })
   })
   describe('Methods', () => {
-    describe('#visibility_change', () => {
+    describe.only('#visibility_change', () => {
       it('plays the sync when visible', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        const play = jest
+        const play = vi
           .spyOn(wrapper.vm, 'play')
           .mockImplementation(() => Promise.resolve())
         await wrapper.vm.visibility_change()
@@ -137,7 +134,7 @@ describe('@/components/sync', () => {
     describe('#auth_state_changed', () => {
       it('Connects sync worker to component', async () => {
         wrapper = await shallowMount(sync, fake_props)
-        const play = jest
+        const play = vie
           .spyOn(wrapper.vm, 'play')
           .mockImplementation(() => Promise.resolve())
         await wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
@@ -160,22 +157,22 @@ describe('@/components/sync', () => {
       let sync_anonymous_posters
       let sync_happened
       beforeEach(() => {
-        sync_offline_actions_sync = jest
+        sync_offline_actions_sync = vi
           .spyOn(sync_worker, 'sync_offline_actions')
           .mockImplementation(() => Promise.resolve())
-        sync_me = jest
+        sync_me = vi
           .spyOn(wrapper.vm, 'sync_me')
           .mockImplementation(() => Promise.resolve())
-        sync_statements = jest
+        sync_statements = vi
           .spyOn(wrapper.vm, 'sync_statements')
           .mockImplementation(() => Promise.resolve())
-        sync_events = jest
+        sync_events = vi
           .spyOn(wrapper.vm, 'sync_events')
           .mockImplementation(() => Promise.resolve())
-        sync_anonymous_posters = jest
+        sync_anonymous_posters = vi
           .spyOn(wrapper.vm, 'sync_anonymous_posters')
           .mockImplementation(() => Promise.resolve())
-        sync_happened = jest
+        sync_happened = vi
           .spyOn(wrapper.vm, 'sync_happened')
           .mockImplementation(() => Promise.resolve())
         firebase.user = current_user
@@ -236,7 +233,7 @@ describe('@/components/sync', () => {
     })
     describe('#sync_statements', () => {
       it('Syncs when there are items to sync', async () => {
-        jest
+        vi
           .spyOn(Statements.prototype, 'sync')
           .mockImplementationOnce(() => Promise.resolve([]))
         vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
@@ -295,7 +292,7 @@ describe('@/components/sync', () => {
     })
     describe('#sync_events', () => {
       it('Syncs when there are items to sync', async () => {
-        jest
+        vi
           .spyOn(Events.prototype, 'sync')
           .mockImplementationOnce(() => Promise.resolve([]))
         vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
@@ -371,7 +368,7 @@ describe('@/components/sync', () => {
           else return Promise.resolve([])
         })
         await flushPromises()
-        const save_poster_spy = jest
+        const save_poster_spy = vi
           .spyOn(wrapper.vm, 'save_poster')
           .mockImplementation(() => Promise.resolve())
         await wrapper.vm.sync_anonymous_posters()
@@ -383,7 +380,7 @@ describe('@/components/sync', () => {
     })
     describe('#sync_happened', () => {
       it('Updates visit', async () => {
-        jest
+        vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
@@ -395,7 +392,7 @@ describe('@/components/sync', () => {
       })
       it('Updates visit for the first time', async () => {
         person.visited = undefined
-        jest
+        vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
@@ -407,7 +404,7 @@ describe('@/components/sync', () => {
       })
       it('Updates the visit once per hour', async () => {
         person.visited = new Date().toISOString()
-        jest
+        vi
           .spyOn(itemid, 'load')
           .mockImplementation(() => Promise.resolve(person))
         wrapper = await mount(sync, fake_props)
@@ -425,7 +422,7 @@ describe('@/components/sync', () => {
           id: `${localStorage.me}/posters/${15323457857456}`,
           outerHTML: poster_html
         }
-        const poster_save_spy = jest
+        const poster_save_spy = vi
           .spyOn(Poster.prototype, 'save')
           .mockImplementation(() => Promise.resolve())
         await wrapper.vm.save_poster(mock_poster)

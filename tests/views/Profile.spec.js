@@ -3,8 +3,9 @@ import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
-const person = require('fs').readFileSync(
-  './tests/unit/html/person.html',
+import fs from 'fs'
+const person = fs.readFileSync(
+  './__mocks__/html/person.html',
   'utf8'
 )
 const fetch = require('jest-fetch-mock')

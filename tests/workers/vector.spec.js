@@ -1,9 +1,10 @@
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
 import Jimp from 'jimp'
-const image = require('fs').readFileSync('./tests/unit/workers/house.jpeg')
-const poster_html = require('fs').readFileSync(
-  './tests/unit/html/poster.html',
+import fs from 'fs'
+const image = fs.readFileSync('./tests/unit/workers/house.jpeg')
+const poster_html = fs.readFileSync(
+  './__mocks__/html/poster.html',
   'utf8'
 )
 const mock_image = {

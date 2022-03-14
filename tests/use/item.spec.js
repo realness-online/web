@@ -1,6 +1,6 @@
 import { get_item, hydrate } from '@/use/item'
-const fs = require('fs')
-const html_item = fs.readFileSync('./tests/unit/html/Item.html', 'utf8')
+import fs from 'fs'
+const html_item = fs.readFileSync('./__mocks__/html/Item.html', 'utf8')
 describe('@/use/item.js', () => {
   let item
   describe('Methods', () => {

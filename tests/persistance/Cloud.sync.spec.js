@@ -10,8 +10,10 @@ import {
   visit_interval
 } from '@/persistance/Cloud.sync'
 import * as itemid from '@/use/itemid'
-const person_html = require('fs').readFileSync(
-  './tests/unit/html/person.html',
+import fs from 'fs'
+fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const person_html = fs.readFileSync(
+  './__mocks__/html/person.html',
   'utf8'
 )
 const user = { phoneNumber: '+16282281824' }

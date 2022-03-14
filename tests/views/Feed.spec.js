@@ -4,8 +4,9 @@ import 'firebase/compat/auth'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'
-const statements_html = require('fs').readFileSync(
-  './tests/unit/html/statements.html',
+import fs from 'fs'
+const statements_html = fs.readFileSync(
+  './__mocks__/html/statements.html',
   'utf8'
 )
 const person = {
