@@ -23,11 +23,11 @@
   </div>
 </template>
 <script setup>
-  import as_days from '@/components/as-days'
-  import as_list from '@/components/events/as-list'
-  import as_svg from '@/components/posters/as-svg'
-  import thought_as_article from '@/components/statements/as-article'
-  import as_address from '@/components/profile/as-address'
+  import AsDays from '@/components/as-days'
+  import EventsList from '@/components/events/as-list'
+  import UnsyncedPoster from '@/components/posters/as-svg'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+  import AsAddress from '@/components/profile/as-address'
 
   import { current_user } from '@/use/serverless'
   import { del, get } from 'idb-keyval'
@@ -43,7 +43,7 @@
   import { list, load } from '@/use/itemid'
   import get_item from '@/use/item'
   import hash from 'object-hash'
-  import { watch, ref, nextTick as next_tick } from 'vue'
+  import { watch, watchEffect, ref, nextTick as next_tick } from 'vue'
 
   const sync = ref(null)
   const eight_hours = one_hour * 4
@@ -175,27 +175,27 @@
     poster.value = null
   }
 
-  watch(current_user, me => {
-    if (me && navigator.onLine) {
-      localStorage.me = from_e64(me.phoneNumber)
+  watchEffect(() => {
+    if (current_user.value && navigator.onLine) {
+      localStorage.me = from_e64(current_user.phoneNumber)
       window.addEventListener('online', play)
       play()
     } else window.removeEventListener('online', play)
   })
-  watch(props.statement, async statement => {
-    if (statement.value) {
+  watchEffect(async () => {
+    if (props.statement) {
       await next_tick()
-      const itemid = itemid('statements')
-      statements.value = await list(itemid)
-      statements.value.push(statement.value)
+      const id = itemid('statements')
+      statements.value = await list(id)
+      statements.value.push(props.statement)
       const data = new Statements()
       await next_tick()
       await data.save()
       emit('update:statement', null)
     }
   })
-  watch(props.person, async person => {
-    if (person.value) {
+  watchEffect(async () => {
+    if (props.person) {
       await next_tick()
       const me = new Me()
       await me.save()
