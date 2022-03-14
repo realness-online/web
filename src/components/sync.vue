@@ -61,7 +61,7 @@
   })
   const emit = defineEmits(['update:statement', 'update:person', 'active'])
   const poster = ref(null)
-  const statements =  ref([])
+  const statements = ref([])
   const events = ref(null)
 
   const visibility_change = async () => {

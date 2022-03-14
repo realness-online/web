@@ -7,7 +7,7 @@ describe('@/App.vue', () => {
     process.env = { ...node_env }
     wrapper = await shallowMount(App, {
       global: {
-        stubs: ["router-link", "router-view"]
+        stubs: ['router-link', 'router-view']
       }
     })
   })

@@ -48,14 +48,18 @@ describe('@/components/sync', () => {
       visited: '2020-03-03T17:37:22.943Z'
     }
     localStorage.me = `/${current_user.phoneNumber}`
-    vi.spyOn(Statements.prototype, 'sync')
-      .mockImplementation(() => Promise.resolve(statements))
-    vi.spyOn(Statements.prototype, 'save')
-      .mockImplementation(() => Promise.resolve())
-    vi.spyOn(Events.prototype, 'sync')
-      .mockImplementation(() => Promise.resolve(events))
-    vi.spyOn(Events.prototype, 'save')
-      .mockImplementation(() => Promise.resolve())
+    vi.spyOn(Statements.prototype, 'sync').mockImplementation(() =>
+      Promise.resolve(statements)
+    )
+    vi.spyOn(Statements.prototype, 'save').mockImplementation(() =>
+      Promise.resolve()
+    )
+    vi.spyOn(Events.prototype, 'sync').mockImplementation(() =>
+      Promise.resolve(events)
+    )
+    vi.spyOn(Events.prototype, 'save').mockImplementation(() =>
+      Promise.resolve()
+    )
     wrapper = await shallowMount(sync, fake_props)
   })
   afterEach(() => {
@@ -71,7 +75,7 @@ describe('@/components/sync', () => {
   describe('Watchers', () => {
     describe('statement', () => {
       it.only('Does nothing unless there is a statement', async () => {
-        console.log('hi');
+        console.log('hi')
         wrapper.setProps({ statement })
 
         vi.clearAllMocks()
