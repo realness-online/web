@@ -105,9 +105,9 @@ describe('@/persistance/Paged.js', () => {
     describe('#optimize', () => {
       beforeEach(() => {
         localStorage.setItem(paged.id, hella_statements)
-        vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(get_item(hella_statements)))
+        vi.spyOn(itemid, 'load').mockImplementation(() =>
+          Promise.resolve(get_item(hella_statements))
+        )
       })
       it('Exists', () => {
         expect(paged.optimize).toBeDefined()

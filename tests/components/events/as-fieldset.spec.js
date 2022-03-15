@@ -5,10 +5,7 @@ import * as itemid from '@/use/itemid'
 import get_item from '@/use/item'
 import firebase from 'firebase/compat/app'
 import fs from 'fs'
-const poster_html = fs.readFileSync(
-  './__mocks__/html/poster.html',
-  'utf8'
-)
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01', new Date().getTimezoneOffset())

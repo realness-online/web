@@ -2,10 +2,7 @@ import { as_poster } from '@/use/vector'
 
 import get_item from '@/use/item'
 import fs from 'fs'
-const poster_html = fs.readFileSync(
-  './__mocks__/html/poster.html',
-  'utf8'
-)
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 
 describe('@/use/vector', () => {

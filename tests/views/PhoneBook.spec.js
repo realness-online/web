@@ -34,9 +34,7 @@ describe('@/views/PhoneBook', () => {
       firebase.storage_mock.listAll.mockImplementation(() =>
         Promise.resolve(mock_dir)
       )
-      vi
-        .spyOn(itemid, 'load')
-        .mockImplementation(() => Promise.resolve(person))
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
       wrapper = await shallowMount(PhoneBook)
       await flushPromises()
       expect(wrapper.vm.signed_in).toBe(true)

@@ -233,9 +233,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_statements', () => {
       it('Syncs when there are items to sync', async () => {
-        vi
-          .spyOn(Statements.prototype, 'sync')
-          .mockImplementationOnce(() => Promise.resolve([]))
+        vi.spyOn(Statements.prototype, 'sync').mockImplementationOnce(() =>
+          Promise.resolve([])
+        )
         vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
           Promise.resolve({
             customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
@@ -292,9 +292,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_events', () => {
       it('Syncs when there are items to sync', async () => {
-        vi
-          .spyOn(Events.prototype, 'sync')
-          .mockImplementationOnce(() => Promise.resolve([]))
+        vi.spyOn(Events.prototype, 'sync').mockImplementationOnce(() =>
+          Promise.resolve([])
+        )
         vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
           Promise.resolve({
             customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
@@ -380,9 +380,9 @@ describe('@/components/sync', () => {
     })
     describe('#sync_happened', () => {
       it('Updates visit', async () => {
-        vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(person))
+        vi.spyOn(itemid, 'load').mockImplementation(() =>
+          Promise.resolve(person)
+        )
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()
@@ -392,9 +392,9 @@ describe('@/components/sync', () => {
       })
       it('Updates visit for the first time', async () => {
         person.visited = undefined
-        vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(person))
+        vi.spyOn(itemid, 'load').mockImplementation(() =>
+          Promise.resolve(person)
+        )
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()
@@ -404,9 +404,9 @@ describe('@/components/sync', () => {
       })
       it('Updates the visit once per hour', async () => {
         person.visited = new Date().toISOString()
-        vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(person))
+        vi.spyOn(itemid, 'load').mockImplementation(() =>
+          Promise.resolve(person)
+        )
         wrapper = await mount(sync, fake_props)
         expect(localStorage.sync_time).toBe(undefined)
         await wrapper.vm.sync_happened()
