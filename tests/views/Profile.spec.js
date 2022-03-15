@@ -4,10 +4,7 @@ import 'firebase/compat/auth'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
-const person = fs.readFileSync(
-  './__mocks__/html/person.html',
-  'utf8'
-)
+const person = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
 const fetch = require('vi-fetch-mock')
 const user = { phoneNumber: '/+16282281824' }
 

@@ -14,13 +14,11 @@ const person = {
 describe('@/components/download-vector', () => {
   describe('Renders', () => {
     it('Link to download svg', () => {
-      vi
-        .spyOn(document, 'getElementById')
-        .mockImplementation(() => hydrate(poster_html))
+      vi.spyOn(document, 'getElementById').mockImplementation(() =>
+        hydrate(poster_html)
+      )
 
-      vi
-        .spyOn(itemid, 'load')
-        .mockImplementation(() => Promise.resolve(person))
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
 
       const wrapper = shallowMount(download_vector, {
         props: {
@@ -31,9 +29,9 @@ describe('@/components/download-vector', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Handles downloads from anonymous users', async () => {
-      vi
-        .spyOn(document, 'getElementById')
-        .mockImplementation(() => hydrate(poster_html))
+      vi.spyOn(document, 'getElementById').mockImplementation(() =>
+        hydrate(poster_html)
+      )
 
       vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
 

@@ -3,10 +3,7 @@ import potrace from '@realness.online/potrace'
 import Jimp from 'jimp'
 import fs from 'fs'
 const image = fs.readFileSync('./tests/unit/workers/house.jpeg')
-const poster_html = fs.readFileSync(
-  './__mocks__/html/poster.html',
-  'utf8'
-)
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const mock_image = {
   bitmap: {
     width: 333,

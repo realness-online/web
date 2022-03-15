@@ -26,9 +26,9 @@ describe('@/views/Feed.vue', () => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
       else return Promise.resolve(get_item(statements_html).statements)
     })
-    vi
-      .spyOn(itemid, 'as_directory')
-      .mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
+    vi.spyOn(itemid, 'as_directory').mockImplementation(() =>
+      Promise.resolve({ items: ['559666932867'] })
+    )
   })
   afterEach(() => {
     firebase.user = undefined
@@ -47,9 +47,9 @@ describe('@/views/Feed.vue', () => {
     })
     it('A fiendly explanatory message if new person', async () => {
       list_spy.mockImplementation(() => Promise.resolve([]))
-      vi
-        .spyOn(itemid, 'as_directory')
-        .mockImplementationOnce(() => Promise.resolve({ items: [] }))
+      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
+        Promise.resolve({ items: [] })
+      )
       firebase.user = undefined
       const wrapper = await shallowMount(Feed)
       await flushPromises()

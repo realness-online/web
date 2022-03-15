@@ -5,10 +5,7 @@ import * as itemid from '@/use/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 import fs from 'fs'
-const poster_html = fs.readFileSync(
-  './__mocks__/html/poster.html',
-  'utf8'
-)
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01')
 let poster

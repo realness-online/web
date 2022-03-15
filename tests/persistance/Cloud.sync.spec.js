@@ -12,10 +12,7 @@ import {
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
-const person_html = fs.readFileSync(
-  './__mocks__/html/person.html',
-  'utf8'
-)
+const person_html = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
 const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
@@ -34,8 +31,8 @@ describe('/persistance/Cloud.js', () => {
   // The syncronizer deletes what's stale
   describe('Methods', () => {
     describe('#sync_offline_actions', () => {
-      it('Needs to be online', async () => {
-        vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
+      it.only('Needs to be online', async () => {
+        vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
         await sync_offline_actions()
         expect(get).not.toBeCalled()
       })
@@ -100,9 +97,7 @@ describe('/persistance/Cloud.js', () => {
         firebase.storage_mock.getMetadata.mockImplementation(() =>
           Promise.resolve(meta)
         )
-        list_spy = vi
-          .spyOn(itemid, 'list')
-          .mockImplementation(() => relations)
+        list_spy = vi.spyOn(itemid, 'list').mockImplementation(() => relations)
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
           if (query === id) return Promise.resolve(person_html)
