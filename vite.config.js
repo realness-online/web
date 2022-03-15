@@ -3,6 +3,11 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
+      process.env['npm_package_version']
+    )
+  },
   server: {
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
