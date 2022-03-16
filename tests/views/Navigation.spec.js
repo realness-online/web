@@ -1,4 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
+import { nextTick as next_tick } from 'vue'
 import Navigation from '@/views/Navigation'
 import * as itemid from '@/use/itemid'
 const person = {
@@ -10,8 +11,12 @@ describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     vi.spyOn(itemid, 'load').mockImplementation(() => person)
-    wrapper = shallowMount(Navigation)
-    wrapper.setData({ version: '1.0.0' })
+    wrapper = await shallowMount(Navigation, {
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
+    })
+    wrapper.vm.version = '1.0.0'
     await flushPromises()
   })
   afterEach(() => {
@@ -24,7 +29,11 @@ describe('@/views/Navigation.vue', () => {
     describe('first_name', () => {
       it("Returns 'You' by default", async () => {
         vi.spyOn(itemid, 'load').mockImplementationOnce(() => null)
-        wrapper = shallowMount(Navigation)
+        wrapper = await shallowMount(Navigation, {
+          global: {
+            stubs: ['router-link', 'router-view']
+          }
+        })
         await flushPromises()
         expect(wrapper.vm.first_name).toBe('You')
       })
@@ -33,12 +42,14 @@ describe('@/views/Navigation.vue', () => {
       })
     })
     describe('handling statement events', () => {
-      it('posting:false should render the main navigation', () => {
+      it('posting:false should render the main navigation', async () => {
         expect(wrapper.vm.posting).toBe(false)
+        await next_tick()
         expect(wrapper.element).toMatchSnapshot()
       })
-      it('posting:true should hide main navigation', () => {
-        wrapper.setData({ posting: true })
+      it.only('posting:true should hide main navigation', async () => {
+        wrapper.vm.posting = true
+        await next_tick()
         expect(wrapper.element).toMatchSnapshot()
       })
     })
