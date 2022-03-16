@@ -62,8 +62,7 @@
           await Promise.all(
             phone_numbers.prefixes.map(async phone_number => {
               const person = await load(from_e64(phone_number.name))
-              if (person && is_fresh(person.visited))
-                this.phonebook.push(person)
+              if (person) this.phonebook.push(person)
             })
           )
         }
