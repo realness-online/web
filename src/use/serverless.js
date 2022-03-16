@@ -1,4 +1,6 @@
-import { initializeApp as initialize_firebase } from 'firebase/app'
+// import { initializeApp as initialize_firebase } from 'firebase/app'
+import firebase from 'firebase/compat/app'
+
 import {
   getAuth as init_auth,
   onAuthStateChanged as auth_changed
@@ -7,13 +9,14 @@ import {
   getStorage as init_storage,
   getDownloadURL as download_url,
   ref as reference,
-  listAll as list_directory
+  listAll as list_directory,
+  uploadString as upload_file,
+  deleteObject as delete_file
 } from 'firebase/storage'
 import { get, set, keys } from 'idb-keyval'
 import { ref } from 'vue'
 
 // initialize application
-
 if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
   const response = await fetch('__/firebase/init.json')
   await set('firebase-keys', await response.json())
@@ -30,14 +33,17 @@ if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
 }
 
 const firebase_keys = await get('firebase-keys')
-const info = ref(initialize_firebase(firebase_keys))
+const info = ref(firebase.initializeApp(firebase_keys))
+// const info = ref(initialize_firebase(firebase_keys))
+// can't use this until fully converted to firebase version 9 modular
 const storage = init_storage(info.value)
-
 export const current_user = ref(null)
 export const auth = init_auth(info.value)
 export const location = path => reference(storage, path)
+export const upload = (path, data, meta) => upload_file(location(path), data, meta)
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
+export const remove = async path => delete_file(location(path))
 auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null

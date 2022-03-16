@@ -11,33 +11,33 @@ import {
 } from '@/persistance/Cloud.sync'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
-fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const person_html = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
 const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
 describe('/persistance/Cloud.js', () => {
   beforeEach(async () => {
+    vi.clearAllMocks()
     localStorage.me = '/+16282281824'
     vi.useFakeTimers()
     firebase.user = null
   })
   afterEach(() => {
-    vi.clearAllMocks()
-    get.mockClear()
+    localStorage.me = undefined
     localStorage.clear()
   })
   // The application loads the data
   // The syncronizer deletes what's stale
   describe('Methods', () => {
     describe('#sync_offline_actions', () => {
-      it.only('Needs to be online', async () => {
-        vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValueOnce(false)
+      it('Needs to be online', async () => {
+        expect(get).not.toBeCalled()
+        vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false)
         await sync_offline_actions()
         expect(get).not.toBeCalled()
       })
       it('Handles a lack of offline content gracefylly', async () => {
-        get.mockImplementation(() => Promise.resolve(undefined))
+        get.mockImplementationOnce(() => Promise.resolve(undefined))
         await sync_offline_actions()
         expect(del).not.toBeCalled()
       })
