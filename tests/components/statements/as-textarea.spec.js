@@ -9,11 +9,11 @@ describe('@/components/statements/as-textarea.vue', () => {
   })
   describe('Methods', () => {
     it('#wat_focused', () => {
-      expect(typeof wat.methods.focused).toBe('function')
+      expect(typeof shallowMount(wat).vm.focused).toBe('function')
     })
     describe('#prepare_statement', () => {
       it('Exists', () => {
-        expect(typeof wat.methods.prepare_statement).toBe('function')
+        expect(typeof shallowMount(wat).vm.prepare_statement).toBe('function')
       })
       it('Will ignore a statement that contains a http://', () => {
         const wrapper = shallowMount(wat, {
@@ -69,19 +69,14 @@ describe('@/components/statements/as-textarea.vue', () => {
       textarea.trigger('focusout')
       expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
     })
-    it('Emits a statement-added event when there is text', () => {
-      const wrapper = shallowMount(wat, {
-        data() {
-          return {
-            new_statement: 'I like to move it.'
-          }
-        }
-      })
+    it('Emits update:statement when there is text', () => {
+      const wrapper = shallowMount(wat)
+      wrapper.vm.new_statement = 'I like to move it.'
       const textarea = wrapper.find('#wat')
       textarea.trigger('focusout')
       expect(wrapper.emitted('update:statement')).toBeTruthy()
     })
-    it('Does not emit statement-added when there is not text', () => {
+    it('Does not emit update:statement when there is no text', () => {
       const wrapper = shallowMount(wat)
       const textarea = wrapper.find('#wat')
       textarea.trigger('focusout')
