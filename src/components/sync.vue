@@ -5,7 +5,7 @@
       v-if="statements"
       v-slot="thoughts"
       itemscope
-      :itemid="itemid('statements')"
+      :itemid="get_itemid('statements')"
       :statements="statements"
       :paginate="false">
       <thought-as-article
@@ -13,7 +13,10 @@
         :key="thought[0].id"
         :statements="thought" />
     </as-days>
-    <events-list v-if="events" :events="events" :itemid="itemid('events')" />
+    <events-list
+      v-if="events"
+      :events="events"
+      :itemid="get_itemid('events')" />
     <unsynced-poster
       v-if="poster"
       :key="poster.id"
@@ -28,7 +31,6 @@
   import UnsyncedPoster from '@/components/posters/as-svg'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
-
   import { current_user } from '@/use/serverless'
   import { del, get } from 'idb-keyval'
   import {
@@ -67,11 +69,12 @@
   const visibility_change = async () => {
     if (document.visibilityState === 'visible') await play()
   }
-  const itemid = type => {
+  const get_itemid = type => {
     if (type) return `${localStorage.me}/${type}`
     else return localStorage.me
   }
   const play = async () => {
+    console.log('play');
     const me = await load(localStorage.me) // check if new user
     if (!me || current_user.value === null) return null // let's wait to sync
     await sync_offline_actions()
@@ -81,16 +84,16 @@
     } else synced = eight_hours
     const time_left = eight_hours - synced
     if (time_left <= 0) {
-      setTimeout(async () => {
-        emit('active', true)
-        await prune()
-        await sync_me()
-        await sync_statements()
-        await sync_events()
-        await sync_anonymous_posters()
-        await sync_happened()
-        emit('active', false)
-      }, 1000)
+      // setTimeout(async () => {
+      emit('active', true)
+      await prune()
+      await sync_me()
+      await sync_statements()
+      await sync_events()
+      await sync_anonymous_posters()
+      await sync_happened()
+      emit('active', false)
+      // }, 1000)
     }
   }
   const sync_happened = async () => {
@@ -107,7 +110,7 @@
     }
   }
   const sync_me = async () => {
-    const id = itemid()
+    const id = get_itemid()
     const network = (await fresh_metadata(id)).customMetadata
     let my_info = localStorage.getItem(id)
     if (!my_info) my_info = await get(id)
@@ -120,7 +123,7 @@
   }
   const sync_statements = async () => {
     const statements = new Statements()
-    const itemid = itemid('statements')
+    const itemid = get_itemid('statements')
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
@@ -136,7 +139,7 @@
   }
   const sync_events = async () => {
     const events = new Events()
-    const itemid = itemid('events')
+    const itemid = get_itemid('events')
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
@@ -177,7 +180,7 @@
 
   watchEffect(() => {
     if (current_user.value && navigator.onLine) {
-      localStorage.me = from_e64(current_user.phoneNumber)
+      localStorage.me = from_e64(current_user.value.phoneNumber)
       window.addEventListener('online', play)
       play()
     } else window.removeEventListener('online', play)
@@ -185,7 +188,7 @@
   watchEffect(async () => {
     if (props.statement) {
       await next_tick()
-      const id = itemid('statements')
+      const id = get_itemid('statements')
       statements.value = await list(id)
       statements.value.push(props.statement)
       const data = new Statements()

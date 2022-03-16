@@ -108,7 +108,7 @@ describe('@/components/sync', () => {
     })
   })
   describe('Methods', () => {
-    describe.only('#visibility_change', () => {
+    describe('#visibility_change', () => {
       it('plays the sync when visible', async () => {
         wrapper = await shallowMount(sync, fake_props)
         const play = vi
