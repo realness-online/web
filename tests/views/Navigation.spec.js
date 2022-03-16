@@ -47,7 +47,7 @@ describe('@/views/Navigation.vue', () => {
         await next_tick()
         expect(wrapper.element).toMatchSnapshot()
       })
-      it.only('posting:true should hide main navigation', async () => {
+      it('posting:true should hide main navigation', async () => {
         wrapper.vm.posting = true
         await next_tick()
         expect(wrapper.element).toMatchSnapshot()
