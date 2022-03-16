@@ -20,7 +20,7 @@
       <statement-as-textarea
         class="red"
         @toggle-keyboard="posting = !posting"
-        @update:statement="$emit('update:statement', $event)" />
+        @update:statement="emit('update:statement', $event)" />
     </nav>
     <footer>
       <h6>{{ version }}</h6>
@@ -28,38 +28,22 @@
     </footer>
   </section>
 </template>
-<script>
-  import signed_in from '@/mixins/signed_in'
+<script setup>
+  import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
-  import as_textarea from '@/components/statements/as-textarea'
-  export default {
-    components: {
-      'statement-as-textarea': as_textarea
-    },
-    mixins: [signed_in],
-    emits: ['update:person', 'update:statement'],
-    data() {
-      return {
-        statements: [],
-        version: import.meta.env.PACKAGE_VERSION,
-        signed_in: true,
-        posting: false,
-        first_name: ''
-      }
-    },
-    async created() {
-      console.info('views:Navigation')
-      const my = await load(localStorage.me)
-      if (my && my.first_name) this.first_name = my.first_name
-      else this.first_name = 'You'
-    },
-    methods: {
-      done_posting() {
-        // focus somewhere else to commit statement
-        this.$refs.nav.focus()
-      }
-    }
-  }
+  import { ref, onMounted as mounted } from 'vue'
+  const version = import.meta.env.PACKAGE_VERSION
+  const emit = defineEmits(['update:person', 'update:statement'])
+  const posting = ref(false)
+  const first_name = ref('')
+  const nav = ref()
+  const done_posting = () => nav.value.focus()
+  mounted(async () => {
+    let my = await load(localStorage.me)
+    if (my && my.first_name) first_name.value = my.first_name
+    else first_name.value = 'You'
+    console.info('views:Navigation')
+  })
 </script>
 <style lang="stylus">
   section#navigation.page
@@ -82,15 +66,6 @@
           line-height: 0
           padding: 0
           display: block
-        & > textarea
-          height: auto
-          text-align: inherit
-          margin-top: base-line
-          padding: 0
-          border-radius: 0
-          &::placeholder
-            @media (prefers-color-scheme: light)
-              color: red
     @media (max-width: pad-begins) and (orientation: portrait)
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
@@ -128,7 +103,6 @@
       & > textarea
         padding: base-line
         border-radius: base-line
-      & > textarea
         text-align: right
         &::placeholder
           @media (prefers-color-scheme: light)
