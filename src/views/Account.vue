@@ -1,10 +1,10 @@
 <template>
-  <section id="account" :class="{ 'signed-in': signed_in }" class="page">
+  <section id="account" :class="{ 'signed-in': current_user }" class="page">
     <header>
-      <sign-on v-if="!signed_in" />
+      <sign-on v-if="!current_user" />
       <logo-as-link />
     </header>
-    <address v-if="signed_in && !working">
+    <address v-if="current_user && !working">
       <profile-as-figure
         v-model:person="person"
         :editable="true"
@@ -41,96 +41,72 @@
     </footer>
   </section>
 </template>
-<script>
-  import firebase from 'firebase/compat/app'
-  import 'firebase/compat/auth'
+<script setup>
+  import Icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDays from '@/components/as-days'
+  import SignOn from '@/components/profile/sign-on'
+  import ProfileAsFigure from '@/components/profile/as-figure'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+
   import { load, list } from '@/use/itemid'
-  import signed_in from '@/mixins/signed_in'
-  import intersection_thought from '@/mixins/intersection_thought'
-  import icon from '@/components/icon'
-  import as_days from '@/components/as-days'
-  import logo_as_link from '@/components/logo-as-link'
-  import sign_on from '@/components/profile/sign-on'
-  import profile_as_figure from '@/components/profile/as-figure'
-  import thought_as_article from '@/components/statements/as-article'
-  export default {
-    components: {
-      icon,
-      'as-days': as_days,
-      'sign-on': sign_on,
-      'logo-as-link': logo_as_link,
-      'profile-as-figure': profile_as_figure,
-      'thought-as-article': thought_as_article
-    },
-    mixins: [signed_in, intersection_thought],
-    emits: ['update:person'],
-    data() {
-      return {
-        person: {},
-        statements: [],
-        signed_in: true,
-        pages_viewed: ['index'],
-        image_file: null,
-        settings: false,
-        working: true,
-        first_page: [],
-        currently_focused: null
-      }
-    },
-    computed: {
-      statements_id() {
-        return `${localStorage.me}/statements`
-      }
-    },
-    async created() {
-      console.info('views:Account')
-      this.authors.push({
-        id: localStorage.me,
-        type: 'person',
-        viewed: ['index']
-      })
-      await this.get_all_my_stuff()
-      this.first_page = this.statements
-      this.working = false
-    },
-    methods: {
-      is_editable(thought) {
-        if (this.working) return false
-        return thought.some(statement => {
-          return this.first_page.some(s => {
-            return s.id === statement.id
-          })
-        })
-      },
-      signoff() {
-        firebase.auth().signOut()
-        this.$router.push({ path: '/sign-on' })
-      },
-      home() {
-        this.$router.push({ path: '/' })
-      },
-      async get_all_my_stuff() {
-        const [person, statements] = await Promise.all([
-          load(localStorage.me),
-          list(this.statements_id)
-        ])
-        if (person) this.person = person
-        this.statements = statements
-      },
-      async thought_focused(statement) {
-        this.currently_focused = statement.id
-        this.statements = await list(this.statements_id)
-        this.pages_viewed = ['index']
-      },
-      thought_blurred(statement) {
-        if (this.currently_focused === statement.id) {
-          this.currently_focused = null
-          const oldest = this.statements[this.statements.length - 1]
-          this.thought_shown([oldest])
-        }
-      }
+  import { current_user, sign_out } from '@/use/serverless'
+  import { use as use_thought } from '@/use/thoughts'
+  import { ref, computed, onMounted as mounted } from 'vue'
+  emit = defineEmits(['update:person'])
+  const {} = use_thought()
+  const person = ref({})
+  const statements = ref([])
+
+  const pages_viewed = ref(['index'])
+  const image_file = ref(null)
+  const settings = ref(false)
+  const working = ref(true)
+  const first_page = ref([])
+  const currently_focused = ref(nul)
+  const statements_id = computed(() => `${localStorage.me}/statements`)
+  const is_editable = thought => {
+    if (working.value) return false
+    return thought.some(statement =>
+      first_page.value.some(s => s.id === statement.id)
+    )
+  }
+  const signoff = () => {
+    sign_out()
+    this.$router.push({ path: '/sign-on' })
+  }
+  const home = () => this.$router.push({ path: '/' })
+  const get_all_my_stuff = async () => {
+    const [local_person, local_statements] = await Promise.all([
+      load(localStorage.me),
+      list(statements_id.value)
+    ])
+    if (local_person) person.value = local_person
+    statements.value = local_statements
+  }
+  const thought_focused = async statement => {
+    currently_focused.value = statement.id
+    statements.value = await list(statements_id.value)
+    pages_viewed.value = ['index']
+  }
+  const thought_blurred = statement => {
+    if (currently_focused.value === statement.id) {
+      currently_focused.value = null
+      const oldest = statements.value[statements.value.length - 1]
+      thought_shown.value([oldest])
     }
   }
+  mounted(async () => {
+    authors.value.push({
+      id: localStorage.me,
+      type: 'person',
+      viewed: ['index']
+    })
+    await get_all_my_stuff()
+    first_page.value = statements.value
+    working.value = false
+    console.info('views:Account')
+  })
 </script>
 <style lang="stylus">
   section#account
