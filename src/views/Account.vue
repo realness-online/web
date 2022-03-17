@@ -10,7 +10,7 @@
         :editable="true"
         @update:person="$emit('update:person', $event)">
         <a @click="settings = !settings">
-          <icon name="gear" />
+          <app-icon name="gear" />
         </a>
       </profile-as-figure>
       <menu v-if="settings" id="settings">
@@ -42,7 +42,7 @@
   </section>
 </template>
 <script setup>
-  import Icon from '@/components/icon'
+  import AppIcon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
   import SignOn from '@/components/profile/sign-on'
@@ -53,11 +53,12 @@
   import { current_user, sign_out } from '@/use/serverless'
   import { use as use_thought } from '@/use/thoughts'
   import { ref, computed, onMounted as mounted } from 'vue'
-  emit = defineEmits(['update:person'])
-  const {} = use_thought()
-  const person = ref({})
-  const statements = ref([])
+  import { useRouter as use_router } from 'vue-router'
 
+  const emit = defineEmits(['update:person'])
+  const router = use_router()
+
+  const { author: person, statements } = use_thought()
   const pages_viewed = ref(['index'])
   const image_file = ref(null)
   const settings = ref(false)
@@ -73,9 +74,9 @@
   }
   const signoff = () => {
     sign_out()
-    this.$router.push({ path: '/sign-on' })
+    router.push({ path: '/sign-on' })
   }
-  const home = () => this.$router.push({ path: '/' })
+  const home = () => router.push({ path: '/' })
   const get_all_my_stuff = async () => {
     const [local_person, local_statements] = await Promise.all([
       load(localStorage.me),
