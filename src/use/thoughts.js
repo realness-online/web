@@ -1,5 +1,6 @@
-import { as_created_at } from '@/use/itemid'
-import { recent_item_first } from '@/use/sorting'
+import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
+import { recent_item_first, recent_number_first } from '@/use/sorting'
+
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 export function as_thoughts(sacred_statements) {
   const statements = [...sacred_statements]
@@ -20,6 +21,11 @@ export function thoughts_sort(first, second) {
   return as_created_at(first[0].id) - as_created_at(second[0].id)
 }
 
+export const slot_key = item => {
+  if (Array.isArray(item)) return item[0].id
+  return item.id
+}
+
 export function is_train_of_thought(thot, statements) {
   const next_statement = statements[statements.length - 1]
   const nearest_statement = thot[thot.length - 1]
@@ -30,4 +36,40 @@ export function is_train_of_thought(thot, statements) {
     if (difference < thirteen_minutes) return true
     else return false
   } else return false
+}
+
+export const use = () => {
+  const authors = ref([])
+  const statements = ref([])
+  const shown = ref(false)
+  const thought_shown = async viewed_statements => {
+    const oldest = viewed_statements[statements.length - 1]
+    let author = as_author(oldest.id)
+    const author_statements = this.statements.filter(
+      statement => author === as_author(statement.id)
+    )
+    const author_oldest = author_statements[author_statements.length - 1]
+    if (oldest.id === author_oldest.id) {
+      author = this.authors.find(relation => relation.id === author)
+      const directory = await as_directory(`${author.id}/statements`)
+      if (!directory) return
+      let history = directory.items
+      history.sort(recent_number_first)
+      history = history.filter(
+        page => !author.viewed.some(viewed => viewed === page)
+      )
+      const next = history.shift()
+      if (next) {
+        const next_statements = await list(`${author.id}/statements/${next}`)
+        author.viewed.push(next)
+        this.statements = [...this.statements, ...next_statements]
+      }
+    }
+  }
+  return {
+    authors,
+    shown,
+    statements,
+    thought_shown
+  }
 }

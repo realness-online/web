@@ -35,7 +35,7 @@
   import 'firebase/compat/auth'
   import { list, as_directory, load } from '@/use/itemid'
   import signed_in from '@/mixins/signed_in'
-  import intersection_thought from '@/mixins/intersection_thought'
+  import intersection_thought from '@/use/intersection_thought'
   export default {
     mixins: [signed_in, intersection_thought],
     data() {

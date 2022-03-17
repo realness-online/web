@@ -3,7 +3,8 @@ import firebase from 'firebase/compat/app'
 
 import {
   getAuth as init_auth,
-  onAuthStateChanged as auth_changed
+  onAuthStateChanged as auth_changed,
+  signOut
 } from 'firebase/auth'
 import {
   getStorage as init_storage,
@@ -40,10 +41,12 @@ const storage = init_storage(info.value)
 export const current_user = ref(null)
 export const auth = init_auth(info.value)
 export const location = path => reference(storage, path)
-export const upload = (path, data, meta) => upload_file(location(path), data, meta)
+export const upload = (path, data, meta) =>
+  upload_file(location(path), data, meta)
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => delete_file(location(path))
+export const sign_off = signOut
 auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null

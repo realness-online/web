@@ -1,8 +1,8 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
+import { current_user } from '@/use/serverless'
+
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -13,8 +13,8 @@ const me = {
 }
 describe('@/views/Account.vue', () => {
   let wrapper, load_spy, list_spy
-  beforeEach(() => {
-    firebase.user = user
+  beforeEach(async () => {
+    current_user.value = user
     localStorage.me = '/+16282281824'
     load_spy = vi
       .spyOn(itemid, 'load')
@@ -22,14 +22,14 @@ describe('@/views/Account.vue', () => {
     list_spy = vi
       .spyOn(itemid, 'list')
       .mockImplementation(() => Promise.resolve([]))
-    wrapper = shallowMount(Account)
+    wrapper = await shallowMount(Account)
   })
   afterEach(() => {
     localStorage.clear()
-    firebase.user = null
+    current_user.value = null
   })
   describe('Renders', () => {
-    it('Account information', async () => {
+    it.only('Account information', async () => {
       await flushPromises()
       expect(load_spy).toBeCalled()
       expect(list_spy).toBeCalled()
@@ -80,7 +80,7 @@ describe('@/views/Account.vue', () => {
     describe('#signoff', () => {
       it('Signs the user out', () => {
         wrapper.vm.signoff()
-        expect(firebase.auth().signOut).toBeCalled()
+        expect(signOut).toBeCalled()
         expect($router.push).toHaveBeenCalledTimes(1)
         expect($router.push).toHaveBeenCalledWith({ path: '/sign-on' })
       })
