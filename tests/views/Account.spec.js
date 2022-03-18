@@ -4,6 +4,8 @@ import * as itemid from '@/use/itemid'
 import { current_user } from '@/use/serverless'
 import { signOut } from 'firebase/auth'
 import { describe, expect } from 'vitest'
+import { use_author_thoughts } from '@/use/thoughts'
+import { ref } from 'vue'
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -13,6 +15,19 @@ const me = {
   id: '/+16282281824'
 }
 vi.mock('vue-router')
+vi.mock('@/use/thoughts', () => {
+  return {
+    use_author_thoughts: () => {
+      return {
+        id: 1,
+        load: vi.fn(),
+        author: {},
+        statements: ref([]),
+        thought_shown: vi.fn()
+      }
+    }
+  }
+})
 describe('@/views/Account.vue', () => {
   let wrapper, load_spy, list_spy
   beforeEach(async () => {
@@ -33,14 +48,13 @@ describe('@/views/Account.vue', () => {
   })
   describe('Renders', () => {
     it('Account information', async () => {
-      expect(load_spy).toBeCalled()
-      expect(list_spy).toBeCalled()
+      expect(wrapper.vm.load_thoughts).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
-    beforeEach(() => {
-      wrapper = shallowMount(Account)
+    beforeEach(async () => {
+      wrapper = await shallowMount(Account)
     })
     describe('#is_editable', () => {
       it('Returns true if statements are the first page', () => {
@@ -97,19 +111,15 @@ describe('@/views/Account.vue', () => {
         expect(wrapper.vm.pages_viewed[0]).toBe('index')
       })
     })
-    describe('#thought_blurred', () => {
-      it.only('Run when an editable statement is focused', () => {
+    describe('#thought_blurred', async () => {
+      it('Run when an editable statement is focused', async () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.thought_shown = vi.spyOn(wrapper.vm, 'thought_shown')
-        wrapper.vm.thought_shown.mockImplementationOnce(() => true)
         wrapper.vm.currently_focused = statement.id
-        wrapper.vm.thought_blurred(statement)
+        await wrapper.vm.thought_blurred(statement)
         expect(wrapper.vm.thought_shown).toBeCalled()
       })
       it('Only Runs when focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.thought_shown = vi.spyOn(wrapper.vm, 'thought_shown')
-        wrapper.vm.thought_shown.mockImplementationOnce(() => true)
         wrapper.vm.currently_focused = '/some/one/else'
         wrapper.vm.thought_blurred(statement)
         expect(wrapper.vm.thought_shown).not.toBeCalled()
