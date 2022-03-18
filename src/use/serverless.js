@@ -46,7 +46,7 @@ export const upload = (path, data, meta) =>
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => delete_file(location(path))
-export const sign_off = signOut
+export const sign_off = () => signOut()
 auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null

@@ -2,7 +2,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'
 import { current_user } from '@/use/serverless'
-
+import { signOut } from 'firebase/auth'
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -11,6 +11,7 @@ const me = {
   last_name: 'Fryxell',
   id: '/+16282281824'
 }
+vi.mock('vue-router')
 describe('@/views/Account.vue', () => {
   let wrapper, load_spy, list_spy
   beforeEach(async () => {
@@ -22,36 +23,23 @@ describe('@/views/Account.vue', () => {
     list_spy = vi
       .spyOn(itemid, 'list')
       .mockImplementation(() => Promise.resolve([]))
-    wrapper = await shallowMount(Account)
+    const router = { push: vi.fn() }
+    wrapper = shallowMount(Account)
   })
   afterEach(() => {
-    localStorage.clear()
+    localStorage.me = undefined
     current_user.value = null
   })
   describe('Renders', () => {
-    it.only('Account information', async () => {
-      await flushPromises()
+    it('Account information', async () => {
       expect(load_spy).toBeCalled()
       expect(list_spy).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Computed', () => {
-    describe('.statements_id', () => {
-      it('Give the current users id', async () => {
-        expect(wrapper.vm.statements_id).toBe('/+16282281824/statements')
-      })
-    })
-  })
   describe('Methods', () => {
-    let $router
     beforeEach(() => {
-      $router = { push: vi.fn() }
-      wrapper = shallowMount(Account, {
-        global: {
-          mocks: { $router }
-        }
-      })
+      wrapper = shallowMount(Account)
     })
     describe('#is_editable', () => {
       it('Returns true if statements are the first page', () => {
@@ -77,19 +65,21 @@ describe('@/views/Account.vue', () => {
         expect(wrapper.vm.is_editable([])).toBe(false)
       })
     })
-    describe('#signoff', () => {
+    describe.only('#signoff', () => {
       it('Signs the user out', () => {
         wrapper.vm.signoff()
         expect(signOut).toBeCalled()
-        expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: '/sign-on' })
+        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.router.push).toHaveBeenCalledWith({
+          path: '/sign-on'
+        })
       })
     })
     describe('#home', () => {
       it('Takes the user to the homepage', () => {
         wrapper.vm.home()
-        expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: '/' })
+        expect(router.push).toHaveBeenCalledTimes(1)
+        expect(router.push).toHaveBeenCalledWith({ path: '/' })
       })
     })
     describe('#thought_focused', () => {

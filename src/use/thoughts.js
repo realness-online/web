@@ -85,7 +85,6 @@ export const use_author_thoughts = person_id => {
   }
   return {
     id,
-    authors,
     author: authors[0],
     statements,
     thoughts,
