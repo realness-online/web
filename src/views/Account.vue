@@ -58,12 +58,10 @@
   import { useRouter as use_router } from 'vue-router'
 
   const emit = defineEmits(['update:person'])
-
   const pages_viewed = ref(['index'])
   const settings = ref(false)
   const working = ref(true)
   const first_page = ref([])
-
   const currently_focused = ref(null)
   const router = use_router()
   const {
