@@ -79,7 +79,6 @@
     )
   }
   const signoff = () => {
-    console.log('signoff', sign_off)
     sign_off()
     router.push({ path: '/sign-on' })
   }
