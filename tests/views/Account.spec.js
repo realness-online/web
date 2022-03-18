@@ -29,16 +29,10 @@ vi.mock('@/use/thoughts', () => {
   }
 })
 describe('@/views/Account.vue', () => {
-  let wrapper, load_spy, list_spy
+  let wrapper
   beforeEach(async () => {
     current_user.value = user
     localStorage.me = '/+16282281824'
-    load_spy = vi
-      .spyOn(itemid, 'load')
-      .mockImplementation(() => Promise.resolve(me))
-    list_spy = vi
-      .spyOn(itemid, 'list')
-      .mockImplementation(() => Promise.resolve([]))
     const router = { push: vi.fn() }
     wrapper = shallowMount(Account)
   })
