@@ -3,6 +3,7 @@ import Account from '@/views/Account'
 import * as itemid from '@/use/itemid'
 import { current_user } from '@/use/serverless'
 import { signOut } from 'firebase/auth'
+import { describe, expect } from 'vitest'
 const user = {
   phoneNumber: '+16282281824'
 }
@@ -65,7 +66,7 @@ describe('@/views/Account.vue', () => {
         expect(wrapper.vm.is_editable([])).toBe(false)
       })
     })
-    describe.only('#signoff', () => {
+    describe('#signoff', () => {
       it('Signs the user out', () => {
         wrapper.vm.signoff()
         expect(signOut).toBeCalled()
@@ -78,18 +79,26 @@ describe('@/views/Account.vue', () => {
     describe('#home', () => {
       it('Takes the user to the homepage', () => {
         wrapper.vm.home()
-        expect(router.push).toHaveBeenCalledTimes(1)
-        expect(router.push).toHaveBeenCalledWith({ path: '/' })
+        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.router.push).toHaveBeenCalledWith({ path: '/' })
       })
     })
     describe('#thought_focused', () => {
-      it('Run when an editable statement is focused', () => {
-        const statement = { id: '/+16282281824/statements/1569168047725' }
+      const id = '/+16282281824/statements/1569168047725'
+      it('Tracks the statement that is being edited', () => {
+        const statement = { id }
         wrapper.vm.thought_focused(statement)
+        expect(wrapper.vm.currently_focused).toBe(id)
+      })
+      it('Sets the pages of statements viewed back to the default', () => {
+        const statement = { id }
+        wrapper.vm.thought_focused(statement)
+        expect(wrapper.vm.pages_viewed.length).toBe(1)
+        expect(wrapper.vm.pages_viewed[0]).toBe('index')
       })
     })
     describe('#thought_blurred', () => {
-      it('Run when an editable statement is focused', () => {
+      it.only('Run when an editable statement is focused', () => {
         const statement = { id: '/+16282281824/statements/1569168047725' }
         wrapper.vm.thought_shown = vi.spyOn(wrapper.vm, 'thought_shown')
         wrapper.vm.thought_shown.mockImplementationOnce(() => true)
@@ -104,40 +113,6 @@ describe('@/views/Account.vue', () => {
         wrapper.vm.currently_focused = '/some/one/else'
         wrapper.vm.thought_blurred(statement)
         expect(wrapper.vm.thought_shown).not.toBeCalled()
-      })
-    })
-    describe('#thought_shown', () => {
-      const statements = [
-        { id: '/+16282281824/statements/1569168047725' },
-        { id: '/+16282281824/statements/1569909292018' },
-        { id: '/+16282281824/statements/1569909311638' }
-      ]
-      it("Checks if it's time to load more thoughts", async () => {
-        vi.spyOn(itemid, 'as_directory').mockImplementation(() => {
-          return { items: ['index', '1569909311638'] }
-        })
-        wrapper.vm.statements = statements
-        await wrapper.vm.thought_shown(statements)
-      })
-    })
-    describe('#slot_key', () => {
-      const item = { id: '/+16282281824/statements/1569168047725' }
-      it('Determines the slot key of an item', () => {
-        const key = wrapper.vm.slot_key(item)
-        expect(key).toBe('/+16282281824/statements/1569168047725')
-      })
-      it('Determines the slot key of an array of items', () => {
-        const key = wrapper.vm.slot_key([item])
-        expect(key).toBe('/+16282281824/statements/1569168047725')
-      })
-    })
-    describe('#get_all_my_stuff', () => {
-      it('Handles empty person', () => {
-        load_spy = vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(null))
-        wrapper.vm.get_all_my_stuff()
-        expect(load_spy).toBeCalled()
       })
     })
   })
