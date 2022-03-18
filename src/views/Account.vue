@@ -8,7 +8,7 @@
       <profile-as-figure
         v-model:person="person"
         :editable="true"
-        @update:person="$emit('update:person', $event)">
+        @update:person="emit('update:person', person)">
         <a @click="settings = !settings">
           <app-icon name="gear" />
         </a>
@@ -21,8 +21,8 @@
     <as-days
       v-slot="thoughts"
       itemscope
+      :itemid="id"
       :paginate="false"
-      :itemid="statements_id"
       :statements="statements">
       <thought-as-article
         v-for="thought in thoughts"
@@ -33,9 +33,12 @@
         @focused="thought_focused"
         @blurred="thought_blurred" />
     </as-days>
-    <footer v-if="statements.length === 0 && !working" class="message">
+    <footer
+      v-if="statements && statements.length === 0 && !working"
+      class="message">
       <p>
-        Say some stuff via the <button @click="home" /> button on the homepage
+        Say some stuff via the <button aria-label="Home" @click="home" /> button
+        on the homepage
         <br />
       </p>
     </footer>
@@ -48,24 +51,27 @@
   import SignOn from '@/components/profile/sign-on'
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
-
-  import { load, list } from '@/use/itemid'
-  import { current_user, sign_out } from '@/use/serverless'
-  import { use as use_thought } from '@/use/thoughts'
-  import { ref, computed, onMounted as mounted } from 'vue'
+  import { current_user, sign_off } from '@/use/serverless'
+  import { use_author_thoughts } from '@/use/thoughts'
+  import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
 
   const emit = defineEmits(['update:person'])
   const router = use_router()
-
-  const { author: person, statements } = use_thought()
   const pages_viewed = ref(['index'])
   const image_file = ref(null)
   const settings = ref(false)
   const working = ref(true)
   const first_page = ref([])
-  const currently_focused = ref(nul)
-  const statements_id = computed(() => `${localStorage.me}/statements`)
+  const currently_focused = ref(null)
+  const {
+    id,
+    author: person,
+    statements,
+    thought_shown,
+    load: load_thoughts
+  } = use_author_thoughts(localStorage.me)
+
   const is_editable = thought => {
     if (working.value) return false
     return thought.some(statement =>
@@ -73,37 +79,24 @@
     )
   }
   const signoff = () => {
-    sign_out()
+    sign_off()
     router.push({ path: '/sign-on' })
   }
   const home = () => router.push({ path: '/' })
-  const get_all_my_stuff = async () => {
-    const [local_person, local_statements] = await Promise.all([
-      load(localStorage.me),
-      list(statements_id.value)
-    ])
-    if (local_person) person.value = local_person
-    statements.value = local_statements
-  }
   const thought_focused = async statement => {
     currently_focused.value = statement.id
-    statements.value = await list(statements_id.value)
+    // await load_thoughts()
     pages_viewed.value = ['index']
   }
   const thought_blurred = statement => {
     if (currently_focused.value === statement.id) {
       currently_focused.value = null
       const oldest = statements.value[statements.value.length - 1]
-      thought_shown.value([oldest])
+      thought_shown([oldest])
     }
   }
   mounted(async () => {
-    authors.value.push({
-      id: localStorage.me,
-      type: 'person',
-      viewed: ['index']
-    })
-    await get_all_my_stuff()
+    await load_thoughts()
     first_page.value = statements.value
     working.value = false
     console.info('views:Account')
