@@ -75,14 +75,13 @@ export const use_author_thoughts = person_id => {
   }
 
   const load = async () => {
-    console.log('load', person_id)
-    const [me, my_statements] = await Promise.all([
+    const [person, person_statements] = await Promise.all([
       load_itemid(person_id),
       list(id.value)
     ])
 
-    if (me) authors.value = [me]
-    statements.value = my_statements
+    if (person) authors.value = [person]
+    statements.value = person_statements
   }
   return {
     id,
