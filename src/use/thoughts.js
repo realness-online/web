@@ -1,6 +1,12 @@
-import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
+import {
+  as_created_at,
+  list,
+  load as load_itemid,
+  as_directory,
+  as_author
+} from '@/use/itemid'
 import { recent_item_first, recent_number_first } from '@/use/sorting'
-
+import { ref, computed } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 export function as_thoughts(sacred_statements) {
   const statements = [...sacred_statements]
@@ -38,19 +44,20 @@ export function is_train_of_thought(thot, statements) {
   } else return false
 }
 
-export const use = () => {
+export const use_author_thoughts = person_id => {
+  const id = ref(`${person_id}/statements`)
   const authors = ref([])
-  const statements = ref([])
-  const shown = ref(false)
-  const thought_shown = async viewed_statements => {
-    const oldest = viewed_statements[statements.length - 1]
+  const statements = ref(null)
+  const thoughts = computed(() => as_thoughts(statements))
+  const thought_shown = async thought => {
+    const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
-    const author_statements = this.statements.filter(
+    const author_statements = statements.value.filter(
       statement => author === as_author(statement.id)
     )
     const author_oldest = author_statements[author_statements.length - 1]
     if (oldest.id === author_oldest.id) {
-      author = this.authors.find(relation => relation.id === author)
+      author = authors.value.find(relation => relation.id === author)
       const directory = await as_directory(`${author.id}/statements`)
       if (!directory) return
       let history = directory.items
@@ -62,14 +69,35 @@ export const use = () => {
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
         author.viewed.push(next)
-        this.statements = [...this.statements, ...next_statements]
+        statements.value = [...statements, ...next_statements]
       }
     }
   }
+
+  const load = async () => {
+    console.log('load', person_id)
+    const [me, my_statements] = await Promise.all([
+      load_itemid(person_id),
+      list(id.value)
+    ])
+
+    if (me) authors.value = [me]
+    statements.value = my_statements
+  }
   return {
+    id,
     authors,
-    shown,
+    author: authors[0],
     statements,
-    thought_shown
+    thoughts,
+    thought_shown,
+    load
   }
 }
+
+// from account.vue
+// authors.value.push({
+//   id: localStorage.me,
+//   type: 'person',
+//   viewed: ['index']
+// })
