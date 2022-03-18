@@ -6,6 +6,7 @@
     </header>
     <address v-if="current_user && !working">
       <profile-as-figure
+        v-if="person"
         v-model:person="person"
         :editable="true"
         @update:person="emit('update:person', person)">
@@ -57,13 +58,14 @@
   import { useRouter as use_router } from 'vue-router'
 
   const emit = defineEmits(['update:person'])
-  const router = use_router()
+
   const pages_viewed = ref(['index'])
-  const image_file = ref(null)
   const settings = ref(false)
   const working = ref(true)
   const first_page = ref([])
+
   const currently_focused = ref(null)
+  const router = use_router()
   const {
     id,
     author: person,
@@ -79,6 +81,7 @@
     )
   }
   const signoff = () => {
+    console.log('signoff', sign_off)
     sign_off()
     router.push({ path: '/sign-on' })
   }
