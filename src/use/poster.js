@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+import { as_directory } from '@/use/itemid'
 export const use = () => {
   const posters = ref([])
 
@@ -9,7 +11,7 @@ export const use = () => {
     const combined = [...post.items, ...avatars.items]
     if (combined.length) {
       combined.forEach(created_at => {
-        posters.push({
+        posters.value.push({
           id: `${person.id}/posters/${created_at}`,
           type: 'posters'
         })
