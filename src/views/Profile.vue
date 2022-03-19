@@ -34,13 +34,13 @@
   import AsFigure from '@/components/profile/as-figure'
   import AsAvatar from '@/components/posters/as-svg'
   import AsMessenger from '@/components/profile/as-messenger'
-  import AsArticle from '@/components/statements/as-article'
+  import ThoughtAsArticle from '@/components/statements/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
   import { use as use_thought, slot_key } from '@/use/thought'
   import { use as use_poster } from '@/use/poster'
-  import { list, as_directory } from '@/use/itemid'
+  import { list } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
 
@@ -50,20 +50,19 @@
   const relations = ref(null)
   const route = use_route()
   const id = from_e64(route.params.phone_number)
-
+  console.log(id)
   const {
     author: person,
     statements,
     for_person: thoughts_for_person,
     thought_shown
   } = use_thought(id)
-  const { posters, for_person: posters_for_person } = use_poster(id)
+  const { posters, for_person: posters_for_person } = use_poster()
 
   mounted(async () => {
-    console.log('views:Profile')
     relations.value = await list(`${localStorage.me}/relations`)
-    await Promise.all([posters_for_person(), thoughts_for_person()])
-    console.log('views:Profile', id)
+    await Promise.all([posters_for_person({ id }), thoughts_for_person()])
+    console.info('views:Profile', id)
   })
 </script>
 <style lang="stylus">

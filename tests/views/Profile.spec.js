@@ -3,19 +3,17 @@ import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 const person = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
-import { nextTick as next_tick } from 'vue'
+import { ref, nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')
 vi.mock('@/use/thought', () => {
   return {
-    use_author_thoughts: () => {
+    use: () => {
       return {
         id: 1,
-        load: vi.fn(),
-        author: {
-          avatar: 'womp',
-          id: user.phoneNumber
-        },
+        for_person: vi.fn(),
+        author: {},
+        thoughts: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
       }
