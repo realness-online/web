@@ -1,40 +1,49 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 const person = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
-const fetch = require('vi-fetch-mock')
-const user = { phoneNumber: '/+16282281824' }
+import { nextTick as next_tick } from 'vue'
+const user = { phoneNumber: '+16282281824' }
+vi.mock('vue-router')
+vi.mock('@/use/thoughts', () => {
+  return {
+    use_author_thoughts: () => {
+      return {
+        id: 1,
+        load: vi.fn(),
+        author: {
+          avatar: 'womp',
+          id: user.phoneNumber
+        },
+        statements: ref([]),
+        thought_shown: vi.fn()
+      }
+    }
+  }
+})
 
 describe('@/views/Profile.vue', () => {
-  describe('Renders', () => {
-    it('Shows profile information for a phone number', async () => {
-      firebase.user = user
-      fetch.resetMocks()
-      fetch.mockResponseOnce(person)
+  describe('Renders', async () => {
+    it('profile information for a phone number', async () => {
       vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return { items: ['559666932867'] }
       })
-      const $route = { params: { phone_number: '+14151231234' } }
-      const wrapper = shallowMount(Profile, { global: { mocks: { $route } } })
+      const wrapper = shallowMount(Profile)
+      wrapper.vm.route = { params: { phone_number: user.phoneNumber } }
+      await next_tick()
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      firebase.user = null
     })
-    it('Handles there not being posters', async () => {
-      firebase.user = user
-      fetch.resetMocks()
-      fetch.mockResponseOnce(person)
+    it('there not being posters', async () => {
       vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
         return { items: [] }
       })
-      const $route = { params: { phone_number: '+14151231234' } }
-      const wrapper = shallowMount(Profile, { global: { mocks: { $route } } })
+      const wrapper = shallowMount(Profile)
+      wrapper.vm.route = { params: { phone_number: '+14151231234' } }
+
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      firebase.user = null
     })
   })
 })

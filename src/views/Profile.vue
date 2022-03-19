@@ -1,11 +1,11 @@
 <template>
   <section id="profile" class="page">
     <header>
-      <icon name="nothing" />
+      <realness-icon name="nothing" />
       <logo-as-link />
     </header>
     <div>
-      <avatar v-if="person" :itemid="person.avatar" />
+      <as-avatar v-if="person" :itemid="person.avatar" />
       <menu v-if="person">
         <as-download :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
@@ -16,7 +16,7 @@
       <template v-for="item in items">
         <poster-as-figure
           v-if="item.type === 'posters'"
-          :key="slot_key(item)"
+          :key="slot_key(item.id)"
           :itemid="item.id" />
         <thought-as-article
           v-else
@@ -27,65 +27,55 @@
     </as-days>
   </section>
 </template>
-<script>
+<script setup>
+  import AsDays from '@/components/as-days'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDownload from '@/components/download-vector'
+  import AsFigure from '@/components/profile/as-figure'
+  import AsAvatar from '@/components/posters/as-svg'
+  import AsMessenger from '@/components/profile/as-messenger'
+  import AsArticle from '@/components/statements/as-article'
+  import PosterAsFigure from '@/components/posters/as-figure'
+  import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
-  import { load, list, as_directory } from '@/use/itemid'
-  import as_days from '@/components/as-days'
-  import logo_as_link from '@/components/logo-as-link'
-  import as_download from '@/components/download-vector'
-  import as_figure from '@/components/profile/as-figure'
-  import as_messenger from '@/components/profile/as-messenger'
-  import avatar from '@/components/posters/as-svg'
-  import as_article from '@/components/statements/as-article'
-  import poster_as_figure from '@/components/posters/as-figure'
-  import icon from '@/components/icon'
-  export default {
-    components: {
-      icon,
-      avatar,
-      'as-days': as_days,
-      'as-figure': as_figure,
-      'as-messenger': as_messenger,
-      'as-download': as_download,
-      'logo-as-link': logo_as_link,
-      'poster-as-figure': poster_as_figure,
-      'thought-as-article': as_article
-    },
-    data() {
-      return {
-        working: true,
-        person: null,
-        statements: [],
-        pages_viewed: ['index'],
-        posters: [],
-        relations: []
-      }
-    },
-    async created() {
-      const id = from_e64(this.$route.params.phone_number)
-      const [person, statements, posters, my_relations] = await Promise.all([
-        load(id),
-        list(`${id}/statements`),
-        as_directory(`${id}/posters`),
-        list(`${localStorage.me}/relations`)
-      ])
-      this.person = person
-      this.authors.push({
-        id: person.id,
-        type: 'person',
-        viewed: ['index']
+  import { use_author_thoughts, slot_key } from '@/use/thoughts'
+  import { list, as_directory } from '@/use/itemid'
+  import { ref, onMounted as mounted } from 'vue'
+  import { useRoute as use_route } from 'vue-router'
+
+  const working = ref(true)
+  const pages_viewed = ref(['index'])
+
+  const posters = []
+
+  const relations = await list(`${localStorage.me}/relations`)
+
+  const route = use_route()
+  const id = from_e64(route.params.phone_number)
+  const load_posters = async () => {
+    const directory = await as_directory(`${id}/posters`)
+    directory.items.forEach(created_at => {
+      posters.push({
+        id: `${id}/posters/${created_at}`,
+        type: 'posters'
       })
-      this.relations = my_relations
-      this.statements = statements
-      posters.items.forEach(created_at => {
-        this.posters.push({
-          id: `${id}/posters/${created_at}`,
-          type: 'posters'
-        })
-      })
-      console.info('views:Profile')
-    }
+    })
   }
+
+  const {
+    author: person,
+    statements,
+    load: load_thoughts,
+    thought_shown
+  } = use_author_thoughts(id)
+
+  console.log(id)
+  mounted(async () => {
+    console.log('views:Profile')
+    await Promise.all([load_posters(), load_thoughts()])
+    console.log('views:Profile', id)
+  })
+  console.log('boner')
 </script>
 <style lang="stylus">
   section#profile
