@@ -38,7 +38,8 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
-  import { use_author_thoughts, slot_key } from '@/use/thoughts'
+  import { use as use_thought, slot_key } from '@/use/thought'
+  import { use as use_poster } from '@/use/poster'
   import { list, as_directory } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
@@ -46,36 +47,24 @@
   const working = ref(true)
   const pages_viewed = ref(['index'])
 
-  const posters = []
-
-  const relations = await list(`${localStorage.me}/relations`)
-
+  const relations = ref(null)
   const route = use_route()
   const id = from_e64(route.params.phone_number)
-  const load_posters = async () => {
-    const directory = await as_directory(`${id}/posters`)
-    directory.items.forEach(created_at => {
-      posters.push({
-        id: `${id}/posters/${created_at}`,
-        type: 'posters'
-      })
-    })
-  }
 
   const {
     author: person,
     statements,
-    load: load_thoughts,
+    for_person: thoughts_for_person,
     thought_shown
-  } = use_author_thoughts(id)
+  } = use_thought(id)
+  const { posters, for_person: posters_for_person } = use_poster(id)
 
-  console.log(id)
   mounted(async () => {
     console.log('views:Profile')
-    await Promise.all([load_posters(), load_thoughts()])
+    relations.value = await list(`${localStorage.me}/relations`)
+    await Promise.all([posters_for_person(), thoughts_for_person()])
     console.log('views:Profile', id)
   })
-  console.log('boner')
 </script>
 <style lang="stylus">
   section#profile
@@ -142,8 +131,6 @@
           & > header > h4, figure.poster > svg.background
             color: blue
         figure.poster
-          margin-left: -1.333rem
-          margin-right: -1.333rem
           & > figcaption > menu
             & > a.download svg
               fill: blue

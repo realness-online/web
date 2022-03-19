@@ -6,7 +6,7 @@ const person = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
 import { nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')
-vi.mock('@/use/thoughts', () => {
+vi.mock('@/use/thought', () => {
   return {
     use_author_thoughts: () => {
       return {

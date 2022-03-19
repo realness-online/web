@@ -22,16 +22,13 @@ export function as_thoughts(sacred_statements) {
   }
   return thoughts
 }
-
 export function thoughts_sort(first, second) {
   return as_created_at(first[0].id) - as_created_at(second[0].id)
 }
-
 export const slot_key = item => {
   if (Array.isArray(item)) return item[0].id
   return item.id
 }
-
 export function is_train_of_thought(thot, statements) {
   const next_statement = statements[statements.length - 1]
   const nearest_statement = thot[thot.length - 1]
@@ -43,8 +40,7 @@ export function is_train_of_thought(thot, statements) {
     else return false
   } else return false
 }
-
-export const use_author_thoughts = person_id => {
+export const use = person_id => {
   const id = ref(`${person_id}/statements`)
   const authors = ref([])
   const statements = ref(null)
@@ -73,8 +69,7 @@ export const use_author_thoughts = person_id => {
       }
     }
   }
-
-  const load = async () => {
+  const for_person = async () => {
     const [person, person_statements] = await Promise.all([
       load_itemid(person_id),
       list(id.value)
@@ -89,7 +84,7 @@ export const use_author_thoughts = person_id => {
     statements,
     thoughts,
     thought_shown,
-    load
+    for_person
   }
 }
 
