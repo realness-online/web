@@ -11,7 +11,7 @@ describe('@/views/Navigation.vue', () => {
   let wrapper
   beforeEach(async () => {
     vi.spyOn(itemid, 'load').mockImplementation(() => person)
-    wrapper = await shallowMount(Navigation, {
+    wrapper = shallowMount(Navigation, {
       global: {
         stubs: ['router-link', 'router-view']
       }
