@@ -10,11 +10,7 @@ exports[`@/views/Account.vue > Renders > Account information 1`] = `
     <logo-as-link-stub />
   </header>
   <address>
-    <profile-as-figure-stub
-      editable="true"
-      person="[object Object]"
-      relations=""
-    />
+    <!--v-if-->
     <!--v-if-->
   </address>
   <h1>
@@ -23,7 +19,7 @@ exports[`@/views/Account.vue > Renders > Account information 1`] = `
   <as-days-stub
     avatars=""
     events=""
-    itemid="1"
+    itemid="/+16282281824"
     itemscope=""
     paginate="false"
     posters=""

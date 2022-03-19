@@ -40,11 +40,10 @@ export function is_train_of_thought(thot, statements) {
     else return false
   } else return false
 }
-export const use = person_id => {
-  const id = ref(`${person_id}/statements`)
+export const use = () => {
   const authors = ref([])
   const statements = ref(null)
-  const thoughts = computed(() => as_thoughts(statements))
+  const author = computed(() => authors.value[0])
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
@@ -69,20 +68,18 @@ export const use = person_id => {
       }
     }
   }
-  const for_person = async () => {
+  const for_person = async person_id => {
+    const statement_id = `${person_id}/statements`
     const [person, person_statements] = await Promise.all([
       load_itemid(person_id),
-      list(id.value)
+      list(statement_id)
     ])
-
-    if (person) authors.value = [person]
+    if (person) authors.value.push(person)
     statements.value = person_statements
   }
   return {
-    id,
-    author: authors[0],
+    author,
     statements,
-    thoughts,
     thought_shown,
     for_person
   }

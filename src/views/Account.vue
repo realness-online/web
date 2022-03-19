@@ -53,7 +53,9 @@
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import { current_user, sign_off } from '@/use/serverless'
-  import { use as use_thought } from '@/use/thought'
+  import { use as use_statements } from '@/use/statements'
+  import { use as use_person } from '@/use/people'
+
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
 
@@ -64,14 +66,13 @@
   const first_page = ref([])
   const currently_focused = ref(null)
   const router = use_router()
+  const id = localStorage.me
   const {
-    id,
-    author: person,
     statements,
     thought_shown,
-    for_person: thoughts_for_person
-  } = use_thought(localStorage.me)
-
+    for_person: statements_for_person
+  } = use_statements()
+  const { person, load_person } = use_person()
   const is_editable = thought => {
     if (working.value) return false
     return thought.some(statement =>
@@ -96,7 +97,7 @@
     }
   }
   mounted(async () => {
-    await thoughts_for_person()
+    await Promise.all([load_person(id), statements_for_person(id)])
     first_page.value = statements.value
     working.value = false
     console.info('views:Account')
