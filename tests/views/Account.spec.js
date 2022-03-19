@@ -14,7 +14,7 @@ const me = {
   id: '/+16282281824'
 }
 vi.mock('vue-router')
-vi.mock('@/use/thought', () => {
+vi.mock('@/use/statements', () => {
   return {
     use: () => {
       return {
@@ -30,7 +30,7 @@ vi.mock('@/use/thought', () => {
 })
 describe('@/views/Account.vue', () => {
   let wrapper
-  beforeEach(async () => {
+  beforeEach(() => {
     current_user.value = user
     localStorage.me = '/+16282281824'
     const router = { push: vi.fn() }
@@ -42,13 +42,15 @@ describe('@/views/Account.vue', () => {
   })
   describe('Renders', () => {
     it('Account information', async () => {
-      expect(wrapper.vm.thoughts_for_person).toBeCalled()
+      await flushPromises()
+      expect(wrapper.vm.statements_for_person).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
     beforeEach(async () => {
       wrapper = await shallowMount(Account)
+      await flushPromises()
     })
     describe('#is_editable', () => {
       it('Returns true if statements are the first page', () => {
@@ -58,6 +60,7 @@ describe('@/views/Account.vue', () => {
           { id: '/+16282281824/statements/1569909311638' }
         ]
         wrapper.vm.first_page = mock_statements
+        expect(wrapper.vm.working).toBe(false)
         expect(wrapper.vm.is_editable(mock_statements)).toBe(true)
       })
       it('Returns false if statements are the another page', () => {
