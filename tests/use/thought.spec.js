@@ -1,11 +1,11 @@
-import { as_thoughts } from '@/use/thoughts'
+import { as_thoughts } from '@/use/thought'
 import { get_item } from '@/use/item'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
   './__mocks__/html/statements.html',
   'utf8'
 )
-describe('@/use/itemid', () => {
+describe('@/use/thought', () => {
   describe('Methods', () => {
     let person
     beforeEach(() => {
@@ -45,7 +45,7 @@ describe('@/use/itemid', () => {
         expect(key).toBe('/+16282281824/statements/1569168047725')
       })
     })
-    describe('#get_all_my_stuff', () => {
+    describe('#use', () => {
       it('Handles empty person', () => {
         load_spy = vi
           .spyOn(itemid, 'load')

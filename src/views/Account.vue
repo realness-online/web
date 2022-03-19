@@ -53,7 +53,7 @@
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import { current_user, sign_off } from '@/use/serverless'
-  import { use_author_thoughts } from '@/use/thoughts'
+  import { use as use_thought } from '@/use/thought'
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
 
@@ -69,8 +69,8 @@
     author: person,
     statements,
     thought_shown,
-    load: load_thoughts
-  } = use_author_thoughts(localStorage.me)
+    for_person: thoughts_for_person
+  } = use_thought(localStorage.me)
 
   const is_editable = thought => {
     if (working.value) return false
@@ -96,7 +96,7 @@
     }
   }
   mounted(async () => {
-    await load_thoughts()
+    await thoughts_for_person()
     first_page.value = statements.value
     working.value = false
     console.info('views:Account')

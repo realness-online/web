@@ -4,7 +4,6 @@ import * as itemid from '@/use/itemid'
 import { current_user } from '@/use/serverless'
 import { signOut } from 'firebase/auth'
 import { describe, expect } from 'vitest'
-import { use_author_thoughts } from '@/use/thoughts'
 import { ref } from 'vue'
 const user = {
   phoneNumber: '+16282281824'
@@ -15,13 +14,14 @@ const me = {
   id: '/+16282281824'
 }
 vi.mock('vue-router')
-vi.mock('@/use/thoughts', () => {
+vi.mock('@/use/thought', () => {
   return {
-    use_author_thoughts: () => {
+    use: () => {
       return {
         id: 1,
-        load: vi.fn(),
+        for_person: vi.fn(),
         author: {},
+        thoughts: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
       }
@@ -42,7 +42,7 @@ describe('@/views/Account.vue', () => {
   })
   describe('Renders', () => {
     it('Account information', async () => {
-      expect(wrapper.vm.load_thoughts).toBeCalled()
+      expect(wrapper.vm.thoughts_for_person).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })

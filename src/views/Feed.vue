@@ -29,96 +29,46 @@
     </as-days>
   </section>
 </template>
-
-<script>
-  import firebase from 'firebase/compat/app'
-  import 'firebase/compat/auth'
-  import { list, as_directory, load } from '@/use/itemid'
-  export default {
-    data() {
-      return {
-        signed_in: true,
-        statements: [],
-        posters: [],
-        working: true,
-        count: 0
-      }
-    },
-    computed: {
-      show_message() {
-        if (this.working) return false
-        if (this.statements.length === 0 && this.posters.length === 0)
-          return true
-        return false
-      }
-    },
-    async created() {
-      console.time('views:Feed')
-      firebase.auth().onAuthStateChanged(async user => {
-        if (user) {
-          const authors = await list(`${localStorage.me}/relations`)
-          await Promise.all(
-            authors.map(async a => {
-              const person = await load(a.id)
-              if (person) this.authors.push(person)
-            })
-          )
-        }
-        this.authors.push({
-          id: localStorage.me,
-          type: 'person'
-        })
-        await this.fill_feed()
-        console.timeEnd('views:Feed')
-        this.working = false
-      })
-    },
-    methods: {
-      async fill_feed() {
-        await Promise.all(
-          this.authors.map(async relation => {
-            const [statements, posters, avatars] = await Promise.all([
-              list(`${relation.id}/statements`),
-              as_directory(`${relation.id}/posters`),
-              as_directory(`${relation.id}/avatars`)
-            ])
-            relation.viewed = ['index']
-            this.statements = [...statements, ...this.statements]
-            if (posters && posters.items) {
-              posters.items.forEach(created_at => {
-                this.posters.push({
-                  id: `${relation.id}/posters/${created_at}`,
-                  type: 'posters'
-                })
-              })
-            }
-            if (avatars && avatars.items) {
-              avatars.items.forEach(created_at => {
-                this.posters.push({
-                  id: `${relation.id}/avatars/${created_at}`,
-                  type: 'avatars'
-                })
-              })
-            }
-          })
-        )
-      }
-    }
-  }
-</script>
-
 <script setup>
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import asDays from '@/components/as-days'
   import thoughtAsArticle from '@/components/statements/as-article'
   import posterAsFigure from '@/components/posters/as-figure'
-
-  import { watch, ref } from 'vue'
+  import { list, as_directory, load } from '@/use/itemid'
+  import { ref, computed, watch } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
   } from '@vueuse/core'
+
+  console.time('views:Feed')
+  const working = ref(true)
+
+  const posters = []
+  const relations = await list(`${localStorage.me}/relations`)
+  const count = ref(0)
+
+  const show_message = computed(() => {
+    if (this.working) return false
+    if (this.statements.length === 0 && this.posters.length === 0) return true
+    return false
+  })
+
+  await Promise.all(
+    relations.map(async a => {
+      const person = await load(a.id)
+      if (person) authors.push(person)
+    })
+  )
+  authors.push({
+    id: localStorage.me,
+    type: 'person'
+  })
+
+  await fill_feed()
+  console.timeEnd('views:Feed')
+  working.value = false
 
   const feed = ref(null)
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
@@ -129,7 +79,6 @@
     if (v) fullscreen()
   })
 </script>
-
 <style lang="stylus">
   section#feed
     position: relative
