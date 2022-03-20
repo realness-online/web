@@ -62,7 +62,6 @@ export const use = () => {
     }
   }
   const for_person = async person => {
-    console.log(person)
     const statement_id = `${person.id}/statements`
     statements.value = await list(statement_id)
     person.viewed = ['index']
