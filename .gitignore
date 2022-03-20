@@ -16,7 +16,7 @@ node_modules
 /public/sync.worker.js.map
 .prettierignore
 /.editorconfig
-
+/coverage/
 /artifacts/
 /dist
 /public/report.html

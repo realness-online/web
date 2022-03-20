@@ -7,7 +7,7 @@ export const use = () => {
       as_directory(`${person.id}/posters`),
       as_directory(`${person.id}/avatars`)
     ])
-
+    console.log(post)
     post.items.forEach(created_at => {
       posters.value.push({
         id: `${person.id}/posters/${created_at}`,
