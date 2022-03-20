@@ -45,18 +45,15 @@
   } from '@vueuse/core'
   console.time('views:Feed')
   const working = ref(true)
+  const feed = ref(null)
   const count = ref(0)
-
   const show_message = computed(() => {
-    if (this.working) return false
-    if (this.statements.length === 0 && this.posters.length === 0) return true
+    if (working.value) return false
+    if (statements.value.length === 0 && posters.value.length === 0) return true
     return false
   })
-
-  const feed = ref(null)
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
     use_fullscreen(feed)
-
   const { f } = use_magic_keys()
   const { load_people, people, load_relations, relations } = use_people()
   const {
