@@ -18,10 +18,7 @@ vi.mock('@/use/statements', () => {
   return {
     use: () => {
       return {
-        id: 1,
         for_person: vi.fn(),
-        author: {},
-        thoughts: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
       }

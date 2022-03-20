@@ -1,12 +1,6 @@
-import {
-  as_created_at,
-  list,
-  load as load_itemid,
-  as_directory,
-  as_author
-} from '@/use/itemid'
+import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
 import { recent_item_first, recent_number_first } from '@/use/sorting'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 export function as_thoughts(sacred_statements) {
   const statements = [...sacred_statements]
@@ -43,7 +37,6 @@ export function is_train_of_thought(thot, statements) {
 export const use = () => {
   const authors = ref([])
   const statements = ref(null)
-  const author = computed(() => authors.value[0])
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
@@ -70,24 +63,16 @@ export const use = () => {
   }
   const for_person = async person_id => {
     const statement_id = `${person_id}/statements`
-    const [person, person_statements] = await Promise.all([
-      load_itemid(person_id),
-      list(statement_id)
-    ])
-    if (person) authors.value.push(person)
-    statements.value = person_statements
+    statements.value = await list(statement_id)
+    authors.value.push({
+      id: person_id,
+      type: 'person',
+      viewed: ['index']
+    })
   }
   return {
-    author,
     statements,
     thought_shown,
     for_person
   }
 }
-
-// from account.vue
-// authors.value.push({
-//   id: localStorage.me,
-//   type: 'person',
-//   viewed: ['index']
-// })
