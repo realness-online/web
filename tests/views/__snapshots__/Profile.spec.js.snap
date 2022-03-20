@@ -21,7 +21,9 @@ exports[`@/views/Profile.vue > Renders > profile information for a phone number 
     />
     <menu>
       <as-download-stub />
-      <as-messenger-stub />
+      <as-messenger-stub
+        itemid="/+16282281824"
+      />
     </menu>
   </div>
   <as-figure-stub
@@ -61,7 +63,9 @@ exports[`@/views/Profile.vue > Renders > there not being posters 1`] = `
     />
     <menu>
       <as-download-stub />
-      <as-messenger-stub />
+      <as-messenger-stub
+        itemid="/+16282281824"
+      />
     </menu>
   </div>
   <as-figure-stub

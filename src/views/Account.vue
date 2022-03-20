@@ -66,7 +66,10 @@
   const first_page = ref([])
   const currently_focused = ref(null)
   const router = use_router()
-  const id = localStorage.me
+  const id = {
+    id: localStorage.me,
+    type: 'person'
+  }
   const {
     statements,
     thought_shown,

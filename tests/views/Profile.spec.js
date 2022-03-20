@@ -6,14 +6,27 @@ const person = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
 import { ref, nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')
-vi.mock('@/use/thought', () => {
+vi.mock('@/use/people', () => {
   return {
     use: () => {
       return {
-        id: 1,
+        load_relations: vi.fn(),
+        load_person: vi.fn(),
+        person: ref({
+          id: `/${user.phoneNumber}`,
+          type: 'person'
+        }),
+        relations: ref([])
+      }
+    }
+  }
+})
+
+vi.mock('@/use/statements', () => {
+  return {
+    use: () => {
+      return {
         for_person: vi.fn(),
-        author: {},
-        thoughts: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
       }
@@ -24,9 +37,9 @@ vi.mock('@/use/thought', () => {
 describe('@/views/Profile.vue', () => {
   describe('Renders', async () => {
     it('profile information for a phone number', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
-        return { items: ['559666932867'] }
-      })
+      // vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
+      //   return { items: ['559666932867'] }
+      // })
       const wrapper = shallowMount(Profile)
       wrapper.vm.route = { params: { phone_number: user.phoneNumber } }
       await next_tick()

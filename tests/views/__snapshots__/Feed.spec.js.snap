@@ -1,5 +1,13 @@
 // Vitest Snapshot v1
 
+exports[`@/views/Feed.vue > Renders > A feed of statements 1`] = `null`;
+
+exports[`@/views/Feed.vue > Renders > A feed of statements and posters 1`] = `null`;
+
+exports[`@/views/Feed.vue > Renders > A fiendly explanatory message if new person 1`] = `null`;
+
+exports[`@/views/Feed.vue > Renders > Handles a removed relation 1`] = `null`;
+
 exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
 <section
   class="page"
