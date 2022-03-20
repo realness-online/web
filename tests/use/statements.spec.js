@@ -5,7 +5,7 @@ const statements_html = fs.readFileSync(
   './__mocks__/html/statements.html',
   'utf8'
 )
-describe('@/use/thought', () => {
+describe('@/use/statements', () => {
   describe('Methods', () => {
     let person
     beforeEach(() => {
