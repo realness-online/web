@@ -1,14 +1,6 @@
 // Vitest Snapshot v1
 
-exports[`@/views/Feed.vue > Renders > A feed of statements 1`] = `null`;
-
-exports[`@/views/Feed.vue > Renders > A feed of statements and posters 1`] = `null`;
-
-exports[`@/views/Feed.vue > Renders > A fiendly explanatory message if new person 1`] = `null`;
-
-exports[`@/views/Feed.vue > Renders > Handles a removed relation 1`] = `null`;
-
-exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
+exports[`@/views/Feed.vue > Renders > A feed of statements 1`] = `
 <section
   class="page"
   id="feed"
@@ -33,13 +25,13 @@ exports[`@/views/Feed.vue Renders A feed of statements 1`] = `
     events=""
     paginate="true"
     posters=""
-    statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+    statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     working="false"
   />
 </section>
 `;
 
-exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
+exports[`@/views/Feed.vue > Renders > A feed of statements and posters 1`] = `
 <section
   class="page"
   id="feed"
@@ -64,13 +56,13 @@ exports[`@/views/Feed.vue Renders A feed of statements and posters 1`] = `
     events=""
     paginate="true"
     posters=""
-    statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+    statements="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
     working="false"
   />
 </section>
 `;
 
-exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`] = `
+exports[`@/views/Feed.vue > Renders > A fiendly explanatory message if new person 1`] = `
 <section
   class="page"
   id="feed"
@@ -101,7 +93,7 @@ exports[`@/views/Feed.vue Renders A fiendly explanatory message if new person 1`
 </section>
 `;
 
-exports[`@/views/Feed.vue Renders Handles a removed relation 1`] = `
+exports[`@/views/Feed.vue > Renders > handles a removed relation 1`] = `
 <section
   class="page"
   id="feed"

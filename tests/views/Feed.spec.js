@@ -1,6 +1,4 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'
@@ -19,7 +17,6 @@ const relations = [{ id: '/+14153731893' }]
 describe('@/views/Feed.vue', () => {
   let list_spy
   beforeEach(() => {
-    firebase.user = { phoneNumber: '+16282281824' }
     localStorage.me = '/+16282281824'
     vi.spyOn(itemid, 'load').mockImplementation(() => person)
     list_spy = vi.spyOn(itemid, 'list').mockImplementation(id => {
@@ -31,12 +28,11 @@ describe('@/views/Feed.vue', () => {
     )
   })
   afterEach(() => {
-    firebase.user = undefined
     localStorage.me = undefined
     vi.clearAllMocks()
   })
   describe('Renders', () => {
-    it('Handles a removed relation', async () => {
+    it('handles a removed relation', async () => {
       const stale_person = { person }
       stale_person.visited = undefined
       vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
@@ -50,22 +46,21 @@ describe('@/views/Feed.vue', () => {
       vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
         Promise.resolve({ items: [] })
       )
-      firebase.user = undefined
-      const wrapper = await shallowMount(Feed)
+      const wrapper = shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A feed of statements', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
-        return null
-      })
-      const wrapper = await shallowMount(Feed)
+      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
+        Promise.resolve({ items: [] })
+      )
+      const wrapper = shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(3)
     })
     it('A feed of statements and posters', async () => {
-      const wrapper = await shallowMount(Feed)
+      const wrapper = shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(3)
