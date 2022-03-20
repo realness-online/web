@@ -21,12 +21,8 @@ export const use = () => {
       })
     })
   }
-  const for_people = async people => {
-    await Promise.all(people.map(for_person))
-  }
   return {
     for_person,
-    for_people,
     posters
   }
 }
