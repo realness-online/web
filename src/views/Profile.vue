@@ -38,30 +38,35 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
-  import { use as use_thought, slot_key } from '@/use/thought'
-  import { use as use_poster } from '@/use/poster'
+  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_posters } from '@/use/posters'
+  import { use as use_person } from '@/use/people'
   import { list } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
 
   const working = ref(true)
   const pages_viewed = ref(['index'])
-
-  const relations = ref(null)
   const route = use_route()
   const id = from_e64(route.params.phone_number)
-  console.log(id)
   const {
-    author: person,
     statements,
-    for_person: thoughts_for_person,
-    thought_shown
-  } = use_thought(id)
-  const { posters, for_person: posters_for_person } = use_poster()
-
+    thought_shown,
+    for_person: statements_for_person
+  } = use_statements()
+  const {
+    posters,
+    poster_shown,
+    for_person: posters_for_person
+  } = use_posters()
+  const { load_person, load_relations, person, relations } = use_person()
   mounted(async () => {
-    relations.value = await list(`${localStorage.me}/relations`)
-    await Promise.all([posters_for_person({ id }), thoughts_for_person()])
+    await Promise.all([
+      load_relations({ id: localStorage.me }),
+      load_person(id),
+      posters_for_person(id),
+      statements_for_person(id)
+    ])
     console.info('views:Profile', id)
   })
 </script>

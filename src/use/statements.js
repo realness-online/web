@@ -61,14 +61,12 @@ export const use = () => {
       }
     }
   }
-  const for_person = async person_id => {
-    const statement_id = `${person_id}/statements`
+  const for_person = async person => {
+    console.log(person)
+    const statement_id = `${person.id}/statements`
     statements.value = await list(statement_id)
-    authors.value.push({
-      id: person_id,
-      type: 'person',
-      viewed: ['index']
-    })
+    person.viewed = ['index']
+    authors.value.push(person)
   }
   return {
     statements,
