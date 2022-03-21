@@ -50,20 +50,11 @@ describe('@/views/Feed.vue', () => {
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('A feed of statements', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
-        Promise.resolve({ items: [] })
-      )
-      const wrapper = shallowMount(Feed)
-      await flushPromises()
-      expect(wrapper.element).toMatchSnapshot()
-      expect(list_spy).toHaveBeenCalledTimes(3)
-    })
     it('A feed of statements and posters', async () => {
       const wrapper = shallowMount(Feed)
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
-      expect(list_spy).toHaveBeenCalledTimes(3)
+      expect(list_spy).toHaveBeenCalledTimes(2)
     })
   })
 })

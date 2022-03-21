@@ -74,7 +74,6 @@
     else return localStorage.me
   }
   const play = async () => {
-    console.log('play');
     const me = await load(localStorage.me) // check if new user
     if (!me || current_user.value === null) return null // let's wait to sync
     await sync_offline_actions()
