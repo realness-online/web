@@ -41,6 +41,7 @@ export default defineConfig({
       './__mocks__/default.js',
       './__mocks__/browser/console.js',
       './__mocks__/browser/fetch.js',
+      './__mocks__/browser/worker.js',
       './__mocks__/browser/indexedDB.js',
       './__mocks__/browser/localStorage.js',
       './__mocks__/browser/createrange.js',

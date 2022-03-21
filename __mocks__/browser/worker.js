@@ -1,0 +1,1 @@
+global.Worker = vi.fn()
