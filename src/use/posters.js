@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import { as_directory } from '@/use/itemid'
+import { recent_item_first } from '@/use/sorting'
 export const use = () => {
   const posters = ref([])
   const for_person = async person => {
+    console.log('for_person')
     const [post, avatars] = await Promise.all([
       as_directory(`${person.id}/posters`),
       as_directory(`${person.id}/avatars`)
@@ -19,6 +21,7 @@ export const use = () => {
         type: 'avatars'
       })
     })
+    posters.value.sort(recent_item_first)
   }
   return {
     for_person,

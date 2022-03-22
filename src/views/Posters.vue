@@ -72,6 +72,9 @@
   const optimizer = new Worker('/optimize.worker.js')
   const working = ref(false)
   const new_poster = ref(null)
+  const { posters, for_person: posters_for_person } = use_posters()
+  const { vUploader, uploader, open_camera, select_photo } = use_uploader()
+
   const as_itemid = computed(() => {
     if (new_poster.value && new_poster.value.id) return new_poster.value.id
     else return `${localStorage.me}/posters/${Date.now()}`
@@ -80,9 +83,6 @@
     if (working.value || new_poster.value) return false
     else return true
   })
-
-  const { posters, for_person: posters_for_person } = use_posters()
-  const { vUploader, uploader, open_camera, select_photo } = use_uploader()
   const get_id = (name, type) => {
     return `${localStorage.me}/${type}/${name}`
   }
@@ -151,13 +151,15 @@
     poster.menu = !poster.menu
   }
   const picker = itemid => {
-    const poster = posters.values.find(poster => poster.id === itemid)
+    const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
   }
   mounted(async () => {
     vectorizer.addEventListener('message', vectorized)
     optimizer.addEventListener('message', optimized)
-    await posters_for_person(localStorage.me)
+    await posters_for_person({ id: localStorage.me })
+    working.value = false
+    console.info('views:Posters')
   })
   dismount(() => {
     vectorizer.terminate()
