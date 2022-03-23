@@ -29,15 +29,482 @@ exports[`@/views/Feed.vue > Renders > A feed of statements and posters 1`] = `
   <section
     class="as-days"
   >
-    <header>
-      <svg
-        class="working icon"
+    
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Monday, September 30, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
       >
-        <use
-          href="/src/style/icons.svg#working"
-        />
-      </svg>
-    </header>
+        <header>
+          <router-link-stub
+            tabindex="-1"
+            to="/+16282281824"
+          />
+          <address>
+            <span>
+              Scott
+            </span>
+            <span>
+              Fryxell
+            </span>
+            <time>
+              10:54 PM
+            </time>
+          </address>
+          <menu>
+            <a
+              class="phone"
+            >
+              <svg
+                class="message icon"
+              >
+                <use
+                  href="/src/style/icons.svg#message"
+                />
+              </svg>
+            </a>
+          </menu>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569909292018"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Mark Zuckerberg is just feeding his AI vanity
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909311638"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Garbage in garbage out
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909356183"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            My AI will never leave the device
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909370699"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Like a personality
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909447842"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Side then AI sounds fun
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909455919"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            It’s my guy
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909465540"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            And he’s working for ke
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909547013"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            First thing though is to get the fucking dates out of posters
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909554598"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            So you don’t have too
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909579112"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            I got an optical recognition nerd I wanna talk to first
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Tuesday, September 24, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
+      >
+        <header>
+          <router-link-stub
+            tabindex="-1"
+            to="/+16282281824"
+          />
+          <address>
+            <span>
+              Scott
+            </span>
+            <span>
+              Fryxell
+            </span>
+            <time>
+              7:03 PM
+            </time>
+          </address>
+          <menu>
+            <a
+              class="phone"
+            >
+              <svg
+                class="message icon"
+              >
+                <use
+                  href="/src/style/icons.svg#message"
+                />
+              </svg>
+            </a>
+          </menu>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569376994365"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            where is escoot Instagram of all the crashes
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377030995"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            They barely know how to ride bycicles
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377042899"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Hilarity ensues
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377074452"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Oh my god I’m free
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377108981"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Totally legit to immediately start filming
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377203857"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Really should just be it’s own website
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377215858"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            We’re definitely all going back to that
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Sunday, September 22, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
+      >
+        <header>
+          <router-link-stub
+            tabindex="-1"
+            to="/+16282281824"
+          />
+          <address>
+            <span>
+              Scott
+            </span>
+            <span>
+              Fryxell
+            </span>
+            <time>
+              8:59 AM
+            </time>
+          </address>
+          <menu>
+            <a
+              class="phone"
+            >
+              <svg
+                class="message icon"
+              >
+                <use
+                  href="/src/style/icons.svg#message"
+                />
+              </svg>
+            </a>
+          </menu>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569167998040"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            O.4.12
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569168033108"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            A series of small UI improvements
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569168047725"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            App works in landscape mode now
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Saturday, September 26, 1987
+        </h4>
+      </header>
+      
+      
+      
+      
+      <figure
+        class="poster"
+        verbose="true"
+      >
+        <svg
+          class="working icon"
+          tabindex="0"
+        >
+          <use
+            href="/src/style/icons.svg#working"
+          />
+        </svg>
+        <figcaption>
+          <!--v-if-->
+        </figcaption>
+      </figure>
+      
+      
+      
+      
+      
+      
+      <figure
+        class="poster"
+        verbose="true"
+      >
+        <svg
+          class="working icon"
+          tabindex="0"
+        >
+          <use
+            href="/src/style/icons.svg#working"
+          />
+        </svg>
+        <figcaption>
+          <!--v-if-->
+        </figcaption>
+      </figure>
+      
+      
+      
+      
+    </article>
+    
   </section>
 </section>
 `;
@@ -71,15 +538,41 @@ exports[`@/views/Feed.vue > Renders > A fiendly explanatory message if new perso
   <section
     class="as-days"
   >
-    <header>
-      <svg
-        class="working icon"
+    
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Saturday, September 26, 1987
+        </h4>
+      </header>
+      
+      
+      
+      
+      <figure
+        class="poster"
+        verbose="true"
       >
-        <use
-          href="/src/style/icons.svg#working"
-        />
-      </svg>
-    </header>
+        <svg
+          class="working icon"
+          tabindex="0"
+        >
+          <use
+            href="/src/style/icons.svg#working"
+          />
+        </svg>
+        <figcaption>
+          <!--v-if-->
+        </figcaption>
+      </figure>
+      
+      
+      
+      
+    </article>
+    
   </section>
 </section>
 `;
@@ -113,15 +606,407 @@ exports[`@/views/Feed.vue > Renders > handles a removed relation 1`] = `
   <section
     class="as-days"
   >
-    <header>
-      <svg
-        class="working icon"
+    
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Monday, September 30, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
       >
-        <use
-          href="/src/style/icons.svg#working"
-        />
-      </svg>
-    </header>
+        <header>
+          <time>
+            10:54 PM
+          </time>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569909292018"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Mark Zuckerberg is just feeding his AI vanity
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909311638"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Garbage in garbage out
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909356183"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            My AI will never leave the device
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909370699"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Like a personality
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909447842"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Side then AI sounds fun
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909455919"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            It’s my guy
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909465540"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            And he’s working for ke
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909547013"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            First thing though is to get the fucking dates out of posters
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909554598"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            So you don’t have too
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569909579112"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            I got an optical recognition nerd I wanna talk to first
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Tuesday, September 24, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
+      >
+        <header>
+          <time>
+            7:03 PM
+          </time>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569376994365"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            where is escoot Instagram of all the crashes
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377030995"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            They barely know how to ride bycicles
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377042899"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Hilarity ensues
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377074452"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Oh my god I’m free
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377108981"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Totally legit to immediately start filming
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377203857"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            Really should just be it’s own website
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569377215858"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            We’re definitely all going back to that
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Sunday, September 22, 2019
+        </h4>
+      </header>
+      
+      
+      
+      
+      <article
+        class="thought"
+      >
+        <header>
+          <time>
+            8:59 AM
+          </time>
+        </header>
+        
+        <div
+          itemid="/+16282281824/statements/1569167998040"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            O.4.12
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569168033108"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            A series of small UI improvements
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        <div
+          itemid="/+16282281824/statements/1569168047725"
+          itemprop="statements"
+          itemscope=""
+        >
+          <p
+            itemprop="statement"
+          >
+            App works in landscape mode now
+          </p>
+          <!--v-if-->
+          <!--v-if-->
+        </div>
+        
+      </article>
+      
+      
+      
+      
+    </article>
+    <article
+      class="day"
+    >
+      <header>
+        <h4>
+          Saturday, September 26, 1987
+        </h4>
+      </header>
+      
+      
+      
+      
+      <figure
+        class="poster"
+        verbose="true"
+      >
+        <svg
+          class="working icon"
+          tabindex="0"
+        >
+          <use
+            href="/src/style/icons.svg#working"
+          />
+        </svg>
+        <figcaption>
+          <!--v-if-->
+        </figcaption>
+      </figure>
+      
+      
+      
+      
+      
+      
+      <figure
+        class="poster"
+        verbose="true"
+      >
+        <svg
+          class="working icon"
+          tabindex="0"
+        >
+          <use
+            href="/src/style/icons.svg#working"
+          />
+        </svg>
+        <figcaption>
+          <!--v-if-->
+        </figcaption>
+      </figure>
+      
+      
+      
+      
+    </article>
+    
   </section>
 </section>
 `;
