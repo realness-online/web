@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import Relations from '@/views/Relations'
 import * as itemid from '@/use/itemid'
 describe('@/views/Relations.vue', () => {
@@ -18,14 +18,13 @@ describe('@/views/Relations.vue', () => {
       const load_relations = vi
         .spyOn(itemid, 'list')
         .mockImplementation(() => Promise.resolve(my.relations))
-      const load_profile = vi
-        .spyOn(itemid, 'load')
-        .mockImplementation(() => Promise.resolve(joe_friday))
-      const wrapper = await shallowMount(Relations)
+      const wrapper = mount(Relations, {
+        global: { stubs: ['router-link'] }
+      })
       await flushPromises()
-      expect(wrapper.vm.relations.length).toBe(1)
+
       expect(load_relations).toBeCalled()
-      expect(load_profile).toBeCalled()
+      expect(wrapper.vm.relations.length).toBe(1)
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Fails gracefully when relations has been deleted', async () => {
@@ -36,15 +35,13 @@ describe('@/views/Relations.vue', () => {
       }
       const load_relations = vi
         .spyOn(itemid, 'list')
-        .mockImplementation(() => Promise.resolve(my.relations))
-      const load_profile = vi
-        .spyOn(itemid, 'load')
-        .mockImplementation(() => Promise.resolve(null))
-      const wrapper = await shallowMount(Relations)
+        .mockImplementation(() => Promise.resolve([]))
+      const wrapper = mount(Relations, {
+        global: { stubs: ['router-link'] }
+      })
       await flushPromises()
       expect(wrapper.vm.relations.length).toBe(0)
       expect(load_relations).toBeCalled()
-      expect(load_profile).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
