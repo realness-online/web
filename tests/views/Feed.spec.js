@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'
@@ -36,7 +36,11 @@ describe('@/views/Feed.vue', () => {
       const stale_person = { person }
       stale_person.visited = undefined
       vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
-      const wrapper = await shallowMount(Feed)
+      const wrapper = await mount(Feed, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(2)
@@ -46,12 +50,20 @@ describe('@/views/Feed.vue', () => {
       vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
         Promise.resolve({ items: [] })
       )
-      const wrapper = shallowMount(Feed)
+      const wrapper = await mount(Feed, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A feed of statements and posters', async () => {
-      const wrapper = shallowMount(Feed)
+      const wrapper = await mount(Feed, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       await flushPromises()
       expect(wrapper.element).toMatchSnapshot()
       expect(list_spy).toHaveBeenCalledTimes(2)
