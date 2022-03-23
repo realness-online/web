@@ -36,7 +36,7 @@ describe('@/views/Feed.vue', () => {
       const stale_person = { person }
       stale_person.visited = undefined
       vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
-      const wrapper = await mount(Feed, {
+      const wrapper = mount(Feed, {
         global: {
           stubs: ['router-link', 'router-view']
         }
@@ -50,7 +50,7 @@ describe('@/views/Feed.vue', () => {
       vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() =>
         Promise.resolve({ items: [] })
       )
-      const wrapper = await mount(Feed, {
+      const wrapper = mount(Feed, {
         global: {
           stubs: ['router-link', 'router-view']
         }
@@ -59,7 +59,7 @@ describe('@/views/Feed.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('A feed of statements and posters', async () => {
-      const wrapper = await mount(Feed, {
+      const wrapper = mount(Feed, {
         global: {
           stubs: ['router-link', 'router-view']
         }
