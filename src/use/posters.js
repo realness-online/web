@@ -4,7 +4,6 @@ import { recent_item_first } from '@/use/sorting'
 export const use = () => {
   const posters = ref([])
   const for_person = async person => {
-    console.log('for_person')
     const [post, avatars] = await Promise.all([
       as_directory(`${person.id}/posters`),
       as_directory(`${person.id}/avatars`)
