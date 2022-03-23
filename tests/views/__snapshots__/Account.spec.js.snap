@@ -7,25 +7,68 @@ exports[`@/views/Account.vue > Renders > Account information 1`] = `
 >
   <header>
     <!--v-if-->
-    <logo-as-link-stub />
+    <router-link-stub
+      id="logo"
+      tabindex="-1"
+      to="/"
+    />
   </header>
   <address>
-    <!--v-if-->
+    <figure
+      class="profile"
+    >
+      <!--v-if-->
+      <figcaption>
+        <address
+          itemid="/+16282281824"
+          itemscope=""
+          itemtype="/people"
+        >
+          <b
+            contenteditable="true"
+            itemprop="first_name"
+          />
+          <b
+            contenteditable="true"
+            itemprop="last_name"
+          />
+          
+          
+          <link
+            itemprop="avatar"
+            rel="icon"
+          />
+          <!--v-if-->
+          <!--v-if-->
+        </address>
+        <menu>
+          
+          <a>
+            <svg
+              class="gear icon"
+            >
+              <use
+                href="/src/style/icons.svg#gear"
+              />
+            </svg>
+          </a>
+          
+        </menu>
+      </figcaption>
+    </figure>
     <!--v-if-->
   </address>
   <h1>
     Statements
   </h1>
-  <as-days-stub
-    avatars=""
-    events=""
+  <section
+    class="as-days"
     itemid="/+16282281824"
     itemscope=""
-    paginate="false"
-    posters=""
-    statements=""
-    working="false"
-  />
+  >
+    
+    
+  </section>
   <footer
     class="message"
   >
