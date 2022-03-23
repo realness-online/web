@@ -1,6 +1,6 @@
 // Vitest Snapshot v1
 
-exports[`@/views/Posters.vue Renders UI for posters 1`] = `
+exports[`@/views/Posters.vue > Renders > UI for posters 1`] = `
 <section
   class="page"
   id="posters"
@@ -9,9 +9,13 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
     <a
       tabindex="-1"
     >
-      <icon-stub
-        name="add"
-      />
+      <svg
+        class="add icon"
+      >
+        <use
+          href="/src/style/icons.svg#add"
+        />
+      </svg>
     </a>
     <h1>
       Posters
@@ -19,26 +23,56 @@ exports[`@/views/Posters.vue Renders UI for posters 1`] = `
     <a
       id="camera"
     >
-      <icon-stub
-        name="camera"
-      />
+      <svg
+        class="camera icon"
+      >
+        <use
+          href="/src/style/icons.svg#camera"
+        />
+      </svg>
     </a>
     <input
       accept="image/jpeg,image/png"
       type="file"
     />
-    <logo-as-link-stub
+    <router-link-stub
+      id="logo"
       tabindex="-1"
+      to="/"
     />
   </header>
   <article>
     
-    <as-figure-stub
-      class=""
-      immediate="false"
-      itemid="/+16282281824/posters/559666932867"
-      working="false"
-    />
+    <figure
+      class="poster"
+    >
+      <svg
+        class="working icon"
+        tabindex="0"
+      >
+        <use
+          href="/src/style/icons.svg#working"
+        />
+      </svg>
+      <figcaption>
+        <!--v-if-->
+      </figcaption>
+    </figure>
+    <figure
+      class="poster"
+    >
+      <svg
+        class="working icon"
+        tabindex="0"
+      >
+        <use
+          href="/src/style/icons.svg#working"
+        />
+      </svg>
+      <figcaption>
+        <!--v-if-->
+      </figcaption>
+    </figure>
     
   </article>
 </section>

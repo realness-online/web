@@ -1,10 +1,11 @@
-import { shallowMount } from '@vue/test-utils'
+import { mount, shallowMount, flushPromises } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
 import fs from 'fs'
+import { describe } from 'vitest'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01')
@@ -23,7 +24,11 @@ describe('@/views/Posters.vue', () => {
     ]
     localStorage.me = '/+16282281824'
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
-    wrapper = shallowMount(Posters)
+    wrapper = mount(Posters, {
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
+    })
     wrapper.vm.events = events
   })
   afterEach(() => {
@@ -34,17 +39,19 @@ describe('@/views/Posters.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('Unmounts the worker when destroyed', async () => {
-      const mock = vi.fn()
-      wrapper.vm.vectorizer = { terminate: mock }
-      wrapper.vm.optimizer = { terminate: mock }
+      wrapper.vm.vectorizer
+      wrapper.vm.optimizer
       wrapper.unmount()
-      expect(mock).toHaveBeenCalledTimes(2)
+      expect(wrapper.vm.vectorizer.terminate).toHaveBeenCalledTimes(1)
+      expect(wrapper.vm.optimizer.terminate).toHaveBeenCalledTimes(1)
     })
   })
   describe('Computed', () => {
     describe('.as_itemid', () => {
       it('returns itemid for new poster', () => {
-        wrapper = shallowMount(Posters)
+        wrapper = mount(Posters, {
+          global: { stubs: ['router-link'] }
+        })
         localStorage.me = '/+16282281824'
         expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
       })
@@ -63,6 +70,7 @@ describe('@/views/Posters.vue', () => {
     })
     describe('#vectorized', () => {
       it('Gets the poster from the worker', () => {
+        console.log(poster.regular)
         const event = {
           data: {
             vector: {
@@ -71,11 +79,11 @@ describe('@/views/Posters.vue', () => {
                 fillOpacity: '0.208'
               },
               regular: {
-                d: poster.regular.getAttribute('d'),
+                d: poster.light.getAttribute('d'),
                 fillOpacity: '0.85'
               },
               bold: {
-                d: poster.bold.getAttribute('d'),
+                d: poster.light.getAttribute('d'),
                 fillOpacity: '0.535'
               },
               width: poster.width,
@@ -107,19 +115,6 @@ describe('@/views/Posters.vue', () => {
         )
       })
     })
-    describe('#get_poster_list', () => {
-      it('Adds posters', async () => {
-        vi.spyOn(itemid, 'as_directory').mockImplementation(() => {
-          return { items: ['1576588885385'] }
-        })
-        await wrapper.vm.get_poster_list({})
-        expect(wrapper.vm.posters.length).toBe(2)
-      })
-      it('Handles an empty poster list', async () => {
-        vi.spyOn(itemid, 'as_directory').mockImplementation(() => null)
-        await wrapper.vm.get_poster_list({})
-      })
-    })
     describe('#cancel_poster', () => {
       it('Executes the method', () => {
         wrapper.vm.cancel_poster(poster.id)
@@ -137,13 +132,6 @@ describe('@/views/Posters.vue', () => {
         wrapper.vm.new_poster.id = '/+16282281824/posters/559667032867'
         await wrapper.vm.save_poster()
         expect(save_spy).toBeCalled()
-      })
-      it('Only save optimized poster (will have undefined id and a created_at)', async () => {
-        poster.created_at = itemid.as_created_at(poster.id)
-        poster.id = undefined
-        wrapper.vm.new_poster = poster
-        await wrapper.vm.save_poster()
-        expect(save_spy).not.toBeCalled()
       })
     })
     describe('#remove_poster', () => {

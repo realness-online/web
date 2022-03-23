@@ -10,8 +10,8 @@ export const is_vector = vector => {
   if (vector?.path) return false
   if (!vector?.viewbox) return false
   if (!vector?.height || !vector?.width) return false
-  if (!vector?.bold) return false
-  if (!vector?.bold?.style) return false
+  if (!vector?.light) return false
+  if (!vector?.light?.style) return false
   if (vector?.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
