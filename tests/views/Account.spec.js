@@ -1,6 +1,5 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
-import * as itemid from '@/use/itemid'
 import { current_user } from '@/use/serverless'
 import { signOut } from 'firebase/auth'
 import { describe, expect } from 'vitest'
@@ -27,11 +26,16 @@ vi.mock('@/use/statements', () => {
 })
 describe('@/views/Account.vue', () => {
   let wrapper
-  beforeEach(() => {
+  beforeEach(async () => {
     current_user.value = user
     localStorage.me = '/+16282281824'
     const router = { push: vi.fn() }
-    wrapper = shallowMount(Account)
+    wrapper = mount(Account, {
+      global: {
+        stubs: ['router-link', 'router-view']
+      }
+    })
+    await flushPromises()
   })
   afterEach(() => {
     localStorage.me = undefined
@@ -39,14 +43,17 @@ describe('@/views/Account.vue', () => {
   })
   describe('Renders', () => {
     it('Account information', async () => {
-      await flushPromises()
       expect(wrapper.vm.statements_for_person).toBeCalled()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Methods', () => {
     beforeEach(async () => {
-      wrapper = await shallowMount(Account)
+      wrapper = mount(Account, {
+        global: {
+          stubs: ['router-link', 'router-view']
+        }
+      })
       await flushPromises()
     })
     describe('#is_editable', () => {

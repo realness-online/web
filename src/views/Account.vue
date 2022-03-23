@@ -22,7 +22,7 @@
     <as-days
       v-slot="thoughts"
       itemscope
-      :itemid="id"
+      :itemid="item.id"
       :paginate="false"
       :statements="statements">
       <thought-as-article
@@ -66,7 +66,7 @@
   const first_page = ref([])
   const currently_focused = ref(null)
   const router = use_router()
-  const id = {
+  const item = {
     id: localStorage.me,
     type: 'person'
   }
@@ -100,7 +100,7 @@
     }
   }
   mounted(async () => {
-    await Promise.all([load_person(id), statements_for_person(id)])
+    await Promise.all([load_person(item), statements_for_person(item)])
     first_page.value = statements.value
     working.value = false
     console.info('views:Account')
