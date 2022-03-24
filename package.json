@@ -21,45 +21,45 @@
     "workers:dev": "yarn workers --mode=development --watch"
   },
   "dependencies": {
-    "@davidmarkclements/hsl-to-hex": "^1.0.2",
+    "@davidmarkclements/hsl-to-hex": "1.0.2",
     "@realness.online/potrace": "../potrace/",
-    "@vueuse/core": "^8.0.0",
-    "firebase": "^9.6.8",
-    "happy-dom": "^2.46.0",
-    "hsl-to-hex": "^1.0.0",
-    "idb-keyval": "^6.1.0",
-    "jimp": "^0.16.1",
-    "libphonenumber-js": "^1.7.44",
-    "node-vibrant": "^3.2.1-alpha.1",
-    "object-hash": "^3.0.0",
-    "register-service-worker": "^1.7.1",
-    "rgb-hex": "^4.0.0",
-    "svgo": "^1.3.0",
-    "vue": "^3.2.26",
-    "vue-router": "^4.0.12"
+    "@vueuse/core": "8.0.0",
+    "firebase": "9.6.8",
+    "happy-dom": "2.46.0",
+    "hsl-to-hex": "1.0.0",
+    "idb-keyval": "6.1.0",
+    "jimp": "0.16.1",
+    "libphonenumber-js": "1.7.44",
+    "node-vibrant": "3.2.1-alpha.1",
+    "object-hash": "3.0.0",
+    "register-service-worker": "1.7.1",
+    "rgb-hex": "4.0.0",
+    "svgo": "1.3.0",
+    "vue": "3.2.26",
+    "vue-router": "4.0.12"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.2.2",
-    "@vue/test-utils": "^2.0.0-rc.18",
-    "c8": "^7.11.0",
+    "@vitejs/plugin-vue": "2.2.2",
+    "@vue/test-utils": "2.0.0-rc.18",
+    "c8": "7.11.0",
     "eslint": "8",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^11.0.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-import": "2.22.0",
+    "eslint-plugin-node": "11.0.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "eslint-plugin-promise": "6.0.0",
+    "eslint-plugin-standard": "5.0.0",
     "eslint-plugin-vue": "8",
-    "fake-indexeddb": "^4.0.0-beta.2",
-    "firebase-tools": "^10.2.2",
-    "mockdate": "^3.0.2",
-    "prettier": "^2.4.1",
-    "process": "^0.11.10",
-    "simplex-noise": "^3.0.0",
-    "stylus": "^0.57.0",
-    "vite": "^2.7.10",
-    "vite-plugin-package-version": "^1.0.2",
-    "vitest": "^0.7.6",
-    "vue-router-mock": "^0.1.2"
+    "fake-indexeddb": "4.0.0-beta.2",
+    "firebase-tools": "10.2.2",
+    "mockdate": "3.0.2",
+    "prettier": "2.4.1",
+    "process": "0.11.10",
+    "simplex-noise": "3.0.0",
+    "stylus": "0.57.0",
+    "vite": "2.7.10",
+    "vite-plugin-package-version": "1.0.2",
+    "vitest": "0.7.6",
+    "vue-router-mock": "0.1.2"
   },
   "eslintConfig": {
     "root": true,
@@ -130,48 +130,5 @@
   "browserslist": [
     "> 2%"
   ],
-  "jest": {
-    "preset": "vite-jest",
-    "notify": false,
-    "notifyMode": "change",
-    "automock": false,
-    "bail": 0,
-    "verbose": false,
-    "collectCoverage": false,
-    "resetMocks": false,
-    "restoreMocks": true,
-    "timers": "fake",
-    "testEnvironment": "jest-environment-jsdom",
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "vue"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/unit/router.js"
-    ],
-    "coverageDirectory": "<rootDir>/artifacts/unit/coverage",
-    "cacheDirectory": "<rootDir>/artifacts/unit/cache",
-    "collectCoverageFrom": [
-      "src/**/*.{js,vue}",
-      "!src/main.js",
-      "!src/workers/service.js",
-      "!src/workers/register_service_worker.js",
-      "!**/node_modules/**"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "statements": 90,
-        "branches": 79.75,
-        "functions": 89,
-        "lines": 93
-      }
-    },
-    "testMatch": [
-      "**/tests/unit/**/*.spec.?(m)js?(x)",
-      "**/__tests__/*.?(m)js?(x)"
-    ],
-    "testURL": "http://localhost/"
-  },
   "license": "UNLICENSED"
 }
