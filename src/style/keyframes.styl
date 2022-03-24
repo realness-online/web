@@ -23,11 +23,9 @@
   to
     transform: translate3d(0, 0, 0)
     position: absolute
-    top: inset(top)
-    left: inset(left)
-    @media (orientation: landscape)
-      left: base-line
-      top: 0
+    top: inset(top, 0)
+    left: inset(left, 0)
+    
 @keyframes absolute-slide-up
   from
     transform: translate3d(0, 100%, 0)
