@@ -1,5 +1,23 @@
 import { ref, computed } from 'vue'
-import { list } from '@/use/itemid'
+import { list, load } from '@/use/itemid'
+import { from_e64 } from '@/use/profile'
+import { current_user, directory } from '@/use/serverless'
+import { recent_visit_first } from '@/use/sorting'
+export const phonebook = ref([])
+const load_phonebook = async () => {
+  if (current_user.value && !phonebook.value.length) {
+    console.log('load phonebook')
+    const people = await directory('/people/')
+    await Promise.all(
+      people.prefixes.map(async phone_number => {
+        const person = await load(from_e64(phone_number.name))
+        if (person) phonebook.value.push(person)
+      })
+    )
+    phonebook.value.sort(recent_visit_first)
+  }
+}
+
 export const use = () => {
   const people = ref([])
   const relations = ref(null)
@@ -14,6 +32,8 @@ export const use = () => {
     people,
     person,
     load_relations,
-    relations
+    relations,
+    load_phonebook,
+    phonebook
   }
 }

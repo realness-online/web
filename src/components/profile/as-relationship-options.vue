@@ -28,9 +28,9 @@
     },
     methods: {
       is_relation() {
-        return this.relations.some(relation => {
-          return relation.id === this.person.id
-        })
+        if (this.relations) {
+          return this.relations.some(relation => relation.id === this.person.id)
+        } else return false
       },
       update_relationship() {
         if (this.relation) {
