@@ -127,7 +127,7 @@
     "vueIndentScriptAndStyle": true
   },
   "browserslist": [
-    "> 2%"
+    "last 2 versions"   
   ],
   "license": "UNLICENSED"
 }
