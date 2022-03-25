@@ -23,7 +23,7 @@
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
     "@realness.online/potrace": "../potrace/",
-    "@vueuse/core": "8.1.2",
+    "@vueuse/core": "8.2.0",
     "firebase": "9.6.9",
     "hsl-to-hex": "1.0.0",
     "idb-keyval": "6.1.0",
