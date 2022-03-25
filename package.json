@@ -24,7 +24,7 @@
     "@davidmarkclements/hsl-to-hex": "1.0.2",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "8.2.0",
-    "firebase": "9.6.9",
+    "firebase": "9.6.10",
     "hsl-to-hex": "1.0.0",
     "idb-keyval": "6.1.0",
     "jimp": "0.16.1",
@@ -48,16 +48,16 @@
     "eslint-plugin-standard": "5.0.0",
     "eslint-plugin-vue": "8",
     "fake-indexeddb": "4.0.0-beta.2",
-    "firebase-tools": "10.4.2",
+    "firebase-tools": "10.5.0",
     "happy-dom": "2.50.0",
     "mockdate": "3.0.5",
-    "prettier": "2.6.0",
+    "prettier": "2.6.1",
     "process": "0.11.10",
     "simplex-noise": "3.0.1",
     "stylus": "0.57.0",
     "vite": "2.8.6",
     "vite-plugin-package-version": "1.0.2",
-    "vitest": "0.7.10",
+    "vitest": "0.7.11",
     "vue-router-mock": "0.1.7"
   },
   "eslintConfig": {
@@ -127,7 +127,7 @@
     "vueIndentScriptAndStyle": true
   },
   "browserslist": [
-    "last 2 versions"   
+    "last 2 versions"
   ],
   "license": "UNLICENSED"
 }
