@@ -1,4 +1,4 @@
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount, shallowMount as shallow, flushPromises } from '@vue/test-utils'
 import PhoneBook from '@/views/PhoneBook'
 import * as itemid from '@/use/itemid'
 import { listAll as list_directory } from 'firebase/storage'
@@ -12,19 +12,25 @@ const person = {
 describe('@/views/PhoneBook', () => {
   let wrapper
   beforeEach(async () => {
+    vi.useFakeTimers()
     vi.spyOn(itemid, 'load').mockImplementation(() => person)
   })
   afterEach(() => {
+    vi.useRealTimers()
     vi.clearAllMocks()
   })
   describe('Renders', () => {
     it('Lets you know to sign in', async () => {
+      const date = new Date(2000, 1, 1, 13)
+      vi.setSystemTime(date)
+      expect(Date.now()).toBe(date.valueOf())
+
       wrapper = mount(PhoneBook, { global: { stubs: ['router-link'] } })
       await flushPromises()
       expect(wrapper.vm.current_user).toBe(null)
       expect(wrapper.element).toMatchSnapshot()
     })
-    it.only('Displays the PhoneBook when signed in', async () => {
+    it('Displays the PhoneBook when signed in', async () => {
       const mock_dir = {
         prefixes: ['+16282281824'],
         items: [],
@@ -35,28 +41,12 @@ describe('@/views/PhoneBook', () => {
       }
       list_directory.mockImplementation(() => Promise.resolve(mock_dir))
       vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
-      wrapper = mount(PhoneBook, { global: { stubs: ['router-link'] } })
+      wrapper = shallow(PhoneBook, { global: { stubs: ['router-link'] } })
       await flushPromises()
       expect(wrapper.vm.current_user).not.toBe(undefined)
       expect(wrapper.vm.current_user).not.toBe(null)
       expect(wrapper.element).toMatchSnapshot()
       current_user.value = null
-    })
-    it('Handles when a person not loading', async () => {
-      const mock_dir = {
-        prefixes: ['+16282281824'],
-        items: [],
-        path: '/but/fake/path'
-      }
-      firebase.user = person
-      firebase.storage_mock.listAll.mockImplementation(() =>
-        Promise.resolve(mock_dir)
-      )
-      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
-      wrapper = mount(PhoneBook, { global: { stubs: ['router-link'] } })
-      await flushPromises()
-      expect(wrapper.vm.signed_in).toBe(true)
-      expect(wrapper.element).toMatchSnapshot()
     })
   })
 })

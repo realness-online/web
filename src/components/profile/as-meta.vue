@@ -8,18 +8,13 @@
       :itemid="person.id" />
   </aside>
 </template>
-<script>
-  export default {
-    props: {
-      people: {
-        type: Array,
-        required: true
-      }
-    },
-    computed: {
-      itemid() {
-        return `${localStorage.me}/relations`
-      }
+<script setup>
+  import { computed } from 'vue'
+  const props = defineProps({
+    people: {
+      type: Array,
+      required: true
     }
-  }
+  })
+  const itemid = computed(() => `${localStorage.me}/relations`)
 </script>

@@ -12,6 +12,40 @@ exports[`@/views/PhoneBook > Renders > Displays the PhoneBook when signed in 1`]
     <h1>
       Recent
     </h1>
+    <logo-as-link-stub />
+  </header>
+  <!--v-if-->
+  <nav
+    class="profile-list"
+  >
+    
+    <as-figure-stub
+      editable="false"
+      person="[object Object]"
+      relations=""
+    />
+    
+  </nav>
+  <!--v-if-->
+</section>
+`;
+
+exports[`@/views/PhoneBook > Renders > Lets you know to sign in 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <svg
+      class="nothing icon"
+    >
+      <use
+        href="/src/style/icons.svg#nothing"
+      />
+    </svg>
+    <h1>
+      Recent
+    </h1>
     <router-link-stub
       id="logo"
       tabindex="-1"
@@ -19,86 +53,20 @@ exports[`@/views/PhoneBook > Renders > Displays the PhoneBook when signed in 1`]
     />
   </header>
   <!--v-if-->
-  <nav
-    class="profile-list"
-  >
-    
-    <figure
-      class="profile"
-    >
-      <!--v-if-->
-      <figcaption>
-        <address
-          itemid="/+14151234356"
-          itemscope=""
-          itemtype="/people"
-        >
-          <h3
-            itemprop="first_name"
-          >
-            Scott
-          </h3>
-          <h3
-            itemprop="last_name"
-          >
-            Fryxell
-          </h3>
-          
-          
-          <link
-            itemprop="avatar"
-            rel="icon"
-          />
-          <!--v-if-->
-          <meta
-            content="2022-03-24T16:12:54.471Z"
-            itemprop="visited"
-          />
-        </address>
-        <menu>
-          
-          <aside
-            itemid="undefined/relations"
-            itemscope=""
-          >
-            
-            
-          </aside>
-          <a
-            class="status"
-          >
-            <svg
-              class="add icon"
-            >
-              <use
-                href="/src/style/icons.svg#add"
-              />
-            </svg>
-            <svg
-              class="finished icon"
-            >
-              <use
-                href="/src/style/icons.svg#finished"
-              />
-            </svg>
-          </a>
-          <a
-            class="phone"
-          >
-            <svg
-              class="message icon"
-            >
-              <use
-                href="/src/style/icons.svg#message"
-              />
-            </svg>
-          </a>
-          
-        </menu>
-      </figcaption>
-    </figure>
-    
-  </nav>
   <!--v-if-->
+  <footer>
+    <button
+      class="sign-on"
+    >
+      
+      Sign on
+      
+    </button>
+    <p
+      class="sign-on message"
+    >
+      Check out who's here
+    </p>
+  </footer>
 </section>
 `;

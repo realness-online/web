@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises as flush } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
 import { clear } from 'idb-keyval'
 import Sign_on from '@/views/Sign-on'
@@ -9,17 +9,17 @@ const person = {
   mobile: '4151234356',
   avatar: 'avatars/5553338945763'
 }
+vi.mock('vue-router')
 describe('@/views/Sign-on.vue', () => {
   let wrapper
-  let $router
   beforeEach(async () => {
     localStorage.me = '/+'
-    $router = { push: vi.fn() }
     wrapper = shallowMount(Sign_on, {
       global: {
-        mocks: { $router }
+        stubs: ['router-link', 'router-view']
       }
     })
+    await flush()
   })
   afterEach(() => {
     wrapper = null
@@ -35,14 +35,15 @@ describe('@/views/Sign-on.vue', () => {
       vi.spyOn(itemid, 'load').mockImplementation(() => {
         return Promise.resolve(person)
       })
-      wrapper = await shallowMount(Sign_on)
+      wrapper = shallowMount(Sign_on)
+      await flush()
       expect(wrapper.element).toMatchSnapshot()
     })
   })
   describe('Computed', () => {
-    describe('.cleanable', () => {
+    describe.skip('.cleanable', () => {
       it('Is cleanable if they are signed out', () => {
-        wrapper.vm.signed_in = true
+        wrapper.vm.current_user = true
         expect(wrapper.vm.cleanable).toBe(false)
       })
       it('Is cleanable if me is defined', async () => {
@@ -61,13 +62,6 @@ describe('@/views/Sign-on.vue', () => {
     })
   })
   describe('Methods', () => {
-    describe('#auth_state', () => {
-      it('Sets mobile to null if the user is signed in', () => {
-        wrapper.vm.person = { mobile: '1112223333' }
-        wrapper.vm.auth_state({ phoneMumber: '+16282281824' })
-        expect(wrapper.vm.person.mobile).toBe(null)
-      })
-    })
     describe('#signed_on', () => {
       it('Loads the profile', async () => {
         const load_spy = vi
@@ -76,8 +70,8 @@ describe('@/views/Sign-on.vue', () => {
         await wrapper.vm.signed_on()
         expect(load_spy).toBeCalled()
         expect(wrapper.vm.nameless).toBe(false)
-        expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: '/' })
+        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.router.push).toHaveBeenCalledWith({ path: '/' })
       })
       it('Sets nameless to true if no profile is found', async () => {
         const load_spy = vi
@@ -92,8 +86,10 @@ describe('@/views/Sign-on.vue', () => {
       it('Takes them to the account page', async () => {
         await wrapper.vm.new_person()
         expect(wrapper.vm.person.visited).toBeTruthy()
-        expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: '/account' })
+        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.router.push).toHaveBeenCalledWith({
+          path: '/account'
+        })
       })
     })
     describe('#clean', () => {
@@ -103,8 +99,8 @@ describe('@/views/Sign-on.vue', () => {
         expect(local_clear_spy).toBeCalled()
         expect(clear).toBeCalled()
         expect(localStorage.me).toBe('/+')
-        expect($router.push).toHaveBeenCalledTimes(1)
-        expect($router.push).toHaveBeenCalledWith({ path: '/' })
+        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.router.push).toHaveBeenCalledWith({ path: '/' })
       })
     })
   })

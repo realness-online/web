@@ -29,36 +29,3 @@ exports[`@/views/Events.vue > Renders > List of upcoming events 1`] = `
   </footer>
 </section>
 `;
-
-exports[`@/views/Events.vue Renders List of upcoming events 1`] = `
-<section
-  class="page"
-  id="events"
->
-  <header>
-    <logo-as-link-stub />
-    <h1>
-      Events
-    </h1>
-    <icon-stub
-      name="nothing"
-    />
-  </header>
-  <icon-stub
-    name="working"
-  />
-  <footer>
-    <p
-      class="message"
-    >
-       You create events from 
-      <router-link-stub
-        ariacurrentvalue="page"
-        custom="false"
-        replace="false"
-        to="/posters"
-      />
-    </p>
-  </footer>
-</section>
-`;
