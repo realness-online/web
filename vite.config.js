@@ -41,16 +41,16 @@ export default defineConfig({
     environment: 'happy-dom',
     mockReset: false,
     setupFiles: [
-      './__mocks__/default.js',
-      './__mocks__/browser/console.js',
-      './__mocks__/browser/fetch.js',
-      './__mocks__/browser/worker.js',
-      './__mocks__/browser/indexedDB.js',
-      './__mocks__/browser/localStorage.js',
-      './__mocks__/browser/createrange.js',
-      './__mocks__/browser/scrollIntoView.js',
-      './__mocks__/browser/IntersectionObserver.js',
-      './__mocks__/browser/FileReaderSync.js'
+      './tests/__mocks__/default.js',
+      './tests/__mocks__/browser/console.js',
+      './tests/__mocks__/browser/fetch.js',
+      './tests/__mocks__/browser/worker.js',
+      './tests/__mocks__/browser/indexedDB.js',
+      './tests/__mocks__/browser/localStorage.js',
+      './tests/__mocks__/browser/createrange.js',
+      './tests/__mocks__/browser/scrollIntoView.js',
+      './tests/__mocks__/browser/IntersectionObserver.js',
+      './tests/__mocks__/browser/FileReaderSync.js'
     ],
     coverage: {
       reporter: ['text', 'html'],
