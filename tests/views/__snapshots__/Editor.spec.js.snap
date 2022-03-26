@@ -1,6 +1,6 @@
 // Vitest Snapshot v1
 
-exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`] = `
+exports[`@/views/Editor.vue > Renders > Shows an editor for a poster or an avatar 1`] = `
 <section
   class="page"
   id="editor"
@@ -16,9 +16,6 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
         name="fullscreen"
       />
     </a>
-    <icon-stub
-      name="nothing"
-    />
     <a>
       <icon-stub
         name="remove"
@@ -36,22 +33,7 @@ exports[`@/views/Editor.vue Renders Shows an editor for a poster or an avatar 1`
   <!--v-if-->
   <!--v-if-->
   <footer>
-    <menu
-      style="visibility: hidden;"
-    >
-      <icon-stub
-        class="selected"
-        name="edit-color"
-      />
-      <icon-stub
-        class=""
-        name="animation"
-      />
-      <icon-stub
-        class=""
-        name="grid"
-      />
-    </menu>
+    <!--v-if-->
   </footer>
 </section>
 `;

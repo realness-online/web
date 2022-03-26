@@ -6,7 +6,6 @@ import { recent_visit_first } from '@/use/sorting'
 export const phonebook = ref([])
 const load_phonebook = async () => {
   if (current_user.value && !phonebook.value.length) {
-    console.log('load phonebook')
     const people = await directory('/people/')
     await Promise.all(
       people.prefixes.map(async phone_number => {
