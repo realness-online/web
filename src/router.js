@@ -18,7 +18,7 @@ const routes = [
   { path: '/posters', component: Posters },
   { path: '/:type/:id/editor', component: Editor },
   { path: '/relations', component: Relations },
-  { path: '/phone-book', component: PhoneBook },
+  { path: '/phonebook', component: PhoneBook },
   { path: '/profile', component: Profile },
   { path: '/account', component: Account },
   { path: '/:phone_number', component: Profile }
