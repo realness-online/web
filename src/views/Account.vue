@@ -11,7 +11,7 @@
         :editable="true"
         @update:person="emit('update:person', person)">
         <a @click="settings = !settings">
-          <app-icon name="gear" />
+          <icon name="gear" />
         </a>
       </profile-as-figure>
       <menu v-if="settings" id="settings">
@@ -46,7 +46,7 @@
   </section>
 </template>
 <script setup>
-  import AppIcon from '@/components/icon'
+  import icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
   import SignOn from '@/components/profile/sign-on'
