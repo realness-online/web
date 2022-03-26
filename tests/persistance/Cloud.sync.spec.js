@@ -11,7 +11,22 @@ import {
 } from '@/persistance/Cloud.sync'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
+
+import fs from 'fs'
+const statements_html = fs.readFileSync(
+  './__mocks__/html/statements.html',
+  'utf8'
+)
+const offline_poster = fs.readFileSync(
+  './__mocks__/html/poster-offline.html',
+  'utf8'
+)
+const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const person_html = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
+const events_html = fs.readFileSync('./__mocks__/html/events.html', 'utf8')
+const statements = get_item(statements_html).statements
+const events = get_item(events_html).events
+
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
 const local_diferent_network = '9hsLRlznsMG9RuuzeQuVvA'
@@ -164,6 +179,299 @@ describe('/persistance/Cloud.js', () => {
         expect(visit_interval()).not.toBe(null)
       })
     })
+    describe('use', () => {
+      describe('#auth_state_changed', () => {
+        it('Connects sync worker to component', async () => {
+          wrapper = await shallowMount(sync, fake_props)
+          const play = vie
+            .spyOn(wrapper.vm, 'play')
+            .mockImplementation(() => Promise.resolve())
+          await wrapper.vm.auth_state_changed({ phoneNumber: '+16282281824' })
+          expect(play).toBeCalled()
+        })
+      })
+      describe('#play', () => {
+        let sync_offline_actions_sync
+        let sync_me
+        let sync_statements
+        let sync_events
+        let sync_anonymous_posters
+        let sync_happened
+        beforeEach(() => {
+          sync_offline_actions_sync = vi
+            .spyOn(sync_worker, 'sync_offline_actions')
+            .mockImplementation(() => Promise.resolve())
+          sync_me = vi
+            .spyOn(wrapper.vm, 'sync_me')
+            .mockImplementation(() => Promise.resolve())
+          sync_statements = vi
+            .spyOn(wrapper.vm, 'sync_statements')
+            .mockImplementation(() => Promise.resolve())
+          sync_events = vi
+            .spyOn(wrapper.vm, 'sync_events')
+            .mockImplementation(() => Promise.resolve())
+          sync_anonymous_posters = vi
+            .spyOn(wrapper.vm, 'sync_anonymous_posters')
+            .mockImplementation(() => Promise.resolve())
+          sync_happened = vi
+            .spyOn(wrapper.vm, 'sync_happened')
+            .mockImplementation(() => Promise.resolve())
+          firebase.user = current_user
+          vi.spyOn(itemid, 'load').mockImplementation(() =>
+            Promise.resolve({
+              id: '/+16282281824'
+            })
+          )
+        })
+        it('Starts syncing without a last_sync', async () => {
+          vi.useFakeTimers()
+          await wrapper.vm.play()
+          vi.runAllTimers()
+          await flushPromises()
+          expect(sync_offline_actions_sync).toBeCalled()
+          expect(sync_me).toBeCalled()
+          expect(sync_statements).toBeCalled()
+          expect(sync_events).toBeCalled()
+          expect(sync_anonymous_posters).toBeCalled()
+          expect(sync_happened).toBeCalled()
+          expect(wrapper.emitted('active').length).toBe(2)
+        })
+        it('Sets a timer for the remaining time until sync', async () => {
+          localStorage.last_sync = new Date().toISOString()
+          await wrapper.vm.play()
+          expect(sync_offline_actions_sync).toHaveBeenCalledTimes(1)
+        })
+      })
+      describe('#sync_me', () => {
+        it('Syncs when the hash between server and local are off', async () => {
+          localStorage.setItem(person.id, person_html)
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_me()
+          expect(localStorage.getItem(person.id)).toBe(null)
+          expect(del).toBeCalled()
+        })
+        it('Leaves localStorage alone if the hash are equal', async () => {
+          localStorage.setItem(person.id, person_html)
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: 'zLEGcdAG1gQg/uS89iaOYQ==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_me()
+          expect(localStorage.getItem(person.id)).not.toBe(null)
+          expect(del).not.toBeCalled()
+        })
+      })
+      describe('#sync_statements', () => {
+        it('Syncs when there are items to sync', async () => {
+          vi.spyOn(Statements.prototype, 'sync').mockImplementationOnce(() =>
+            Promise.resolve([])
+          )
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.sync).toBeCalled()
+          expect(Statements.prototype.save).not.toBeCalled()
+        })
+        it('Only syncs when the network and local statements differ', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: 'x5qk/9QmVjFHtJtL6pznJQ==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.sync).not.toBeCalled()
+        })
+        it('Syncs without a network file to sync with', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: null }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.sync).toBeCalled()
+        })
+        it('Saves synced statements', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.statements = statements
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_statements()
+          expect(Statements.prototype.sync).toBeCalled()
+          expect(Statements.prototype.save).toBeCalled()
+        })
+      })
+      describe('#sync_events', () => {
+        it('Syncs when there are items to sync', async () => {
+          vi.spyOn(Events.prototype, 'sync').mockImplementationOnce(() =>
+            Promise.resolve([])
+          )
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.events = events
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(Events.prototype.sync).toBeCalled()
+          expect(Events.prototype.save).not.toBeCalled()
+        })
+        it('Only syncs when the network and local statements differ', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: 'mxtr7zxj/Srcm5KRfn8pcA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.events = events
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(Events.prototype.sync).not.toBeCalled()
+        })
+        it('Syncs without a network file to sync with', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: null }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.events = events
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(Events.prototype.sync).toBeCalled()
+        })
+        it('Saves synced events', async () => {
+          vi.spyOn(sync_worker, 'fresh_metadata').mockImplementation(() =>
+            Promise.resolve({
+              customMetadata: { md5: '9hsLRlznsMG9RuuzeQuVvA==' }
+            })
+          )
+          wrapper = await mount(sync, fake_props)
+          await flushPromises()
+          wrapper.vm.events = events
+          await wrapper.vm.$nextTick()
+          await wrapper.vm.sync_events()
+          expect(Events.prototype.sync).toBeCalled()
+          expect(Events.prototype.save).toBeCalled()
+        })
+      })
+      describe('#sync_anonymous_posters', () => {
+        it('Handles no posters', async () => {
+          // get.mockImplementationOnce(() => Promise.resolve())
+          await wrapper.vm.sync_anonymous_posters()
+          expect(get).toBeCalled()
+          expect(del).not.toBeCalled()
+        })
+        it('Syncs anonymous posters', async () => {
+          // /+16282281824/posters/559666932867
+          const posters = {
+            items: ['559666932867']
+          }
+          get.mockImplementation(itemid => {
+            if (itemid === '/+/posters/') return Promise.resolve(posters)
+            else if (itemid === '/+/posters/559666932867')
+              return Promise.resolve(offline_poster)
+            else return Promise.resolve([])
+          })
+          await flushPromises()
+          const save_poster_spy = vi
+            .spyOn(wrapper.vm, 'save_poster')
+            .mockImplementation(() => Promise.resolve())
+          await wrapper.vm.sync_anonymous_posters()
+          await flushPromises()
+          expect(get).toHaveBeenCalledTimes(2)
+          expect(save_poster_spy).toHaveBeenCalledTimes(1)
+          expect(del).toHaveBeenCalledTimes(2)
+        })
+      })
+      describe('#sync_happened', () => {
+        it('Updates visit', async () => {
+          vi.spyOn(itemid, 'load').mockImplementation(() =>
+            Promise.resolve(person)
+          )
+          wrapper = await mount(sync, fake_props)
+          expect(localStorage.sync_time).toBe(undefined)
+          await wrapper.vm.sync_happened()
+          await flushPromises()
+          expect(localStorage.sync_time).not.toBe(undefined)
+          expect(wrapper.emitted('update:person')).toBeTruthy()
+        })
+        it('Updates visit for the first time', async () => {
+          person.visited = undefined
+          vi.spyOn(itemid, 'load').mockImplementation(() =>
+            Promise.resolve(person)
+          )
+          wrapper = await mount(sync, fake_props)
+          expect(localStorage.sync_time).toBe(undefined)
+          await wrapper.vm.sync_happened()
+          await flushPromises()
+          expect(localStorage.sync_time).not.toBe(undefined)
+          expect(wrapper.emitted('update:person')).toBeTruthy()
+        })
+        it('Updates the visit once per hour', async () => {
+          person.visited = new Date().toISOString()
+          vi.spyOn(itemid, 'load').mockImplementation(() =>
+            Promise.resolve(person)
+          )
+          wrapper = await mount(sync, fake_props)
+          expect(localStorage.sync_time).toBe(undefined)
+          await wrapper.vm.sync_happened()
+          await flushPromises()
+          expect(localStorage.sync_time).not.toBe(undefined)
+          expect(wrapper.emitted('update:person')).not.toBeTruthy()
+        })
+      })
+      describe('#save_poster', () => {
+        it('saves a poster that is passed to it as a variable', async () => {
+          wrapper = await shallowMount(sync, fake_props)
+          const mock_poster = {
+            id: `${localStorage.me}/posters/${15323457857456}`,
+            outerHTML: poster_html
+          }
+          const poster_save_spy = vi
+            .spyOn(Poster.prototype, 'save')
+            .mockImplementation(() => Promise.resolve())
+          await wrapper.vm.save_poster(mock_poster)
+          expect(del).toBeCalled()
+          expect(poster_save_spy).toBeCalled()
+        })
+      })
+    })
   })
   describe('Pruning the verge', () => {
     it.todo('Is mindfull of how large the local databese is getting')
@@ -175,8 +483,17 @@ describe('/persistance/Cloud.js', () => {
     it.todo('Shares updates with peers')
     it.todo('User can choose to share activity with peer network')
     it.todo('User can choose to share relations with peer network')
-    it.todo(
-      'User can share relations with their other devises for a few minutes'
-    )
+    it.todo('User can share relations with their other devises')
   })
 })
+
+vi.spyOn(Statements.prototype, 'sync').mockImplementation(() =>
+  Promise.resolve(statements)
+)
+vi.spyOn(Statements.prototype, 'save').mockImplementation(() =>
+  Promise.resolve()
+)
+vi.spyOn(Events.prototype, 'sync').mockImplementation(() =>
+  Promise.resolve(events)
+)
+vi.spyOn(Events.prototype, 'save').mockImplementation(() => Promise.resolve())

@@ -1,0 +1,22 @@
+// Vitest Snapshot v1
+
+exports[`@/components/sync > Render > Renders sync component 1`] = `
+<div
+  config="[object Object]"
+  hidden=""
+>
+  <!--v-if-->
+  <as-days-stub
+    avatars=""
+    events=""
+    itemid="/+16282281824/statements"
+    itemscope=""
+    paginate="false"
+    posters=""
+    statements=""
+    working="false"
+  />
+  <!--v-if-->
+  <!--v-if-->
+</div>
+`;
