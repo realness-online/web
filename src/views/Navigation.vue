@@ -13,7 +13,7 @@
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
         Feed
       </router-link>
-      <router-link v-if="!posting" to="/phone-book" class="blue" tabindex="-1">
+      <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Relations
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>

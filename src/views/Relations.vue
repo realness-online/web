@@ -3,7 +3,7 @@
     <header>
       <icon name="nothing" />
       <h1>Relations</h1>
-      <router-link to="/phone-book">
+      <router-link to="/phonebook">
         <icon name="finished" />
       </router-link>
     </header>
