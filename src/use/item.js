@@ -30,8 +30,7 @@ export function get_itemprops(item) {
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
     let value
-    if (prop.closest('[itemscope]')?.isSameNode(item))
-      value = itemprop_value(prop)
+    if (prop.closest('[itemscope]') === item) value = itemprop_value(prop)
     else if (prop.hasAttribute('itemscope')) value = make_item(prop)
     if (value) {
       const name = prop.getAttribute('itemprop')

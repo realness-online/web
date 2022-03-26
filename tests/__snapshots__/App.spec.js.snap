@@ -1,0 +1,13 @@
+// Vitest Snapshot v1
+
+exports[`@/App.vue > Renders > Layout of the application 1`] = `
+<main
+  class=""
+  id="realness"
+>
+  <router-view-stub />
+  <aside>
+    <sync-stub />
+  </aside>
+</main>
+`;

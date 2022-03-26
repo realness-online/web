@@ -1,9 +1,7 @@
 // {base_url}/{:author}/{:type}/{:created_at}
-import firebase from 'firebase/app'
-import 'firebase/storage'
-import 'firebase/auth'
 import get_item from '@/use/item'
 import { does_not_exist } from '@/persistance/Cloud.sync'
+import { current_user, url, directory } from '@/use/serverless'
 import { get, set, keys } from 'idb-keyval'
 class Directory {
   constructor() {
@@ -45,17 +43,13 @@ export async function load_from_network(itemid, me = localStorage.me) {
   } else return null
 }
 export async function load_directory_from_network(itemid) {
-  if (navigator.onLine && firebase.auth().currentUser) {
+  if (navigator.onLine && current_user.value) {
     const path = as_directory_id(itemid)
     const meta = new Directory()
     console.info('request:directory', itemid)
-    const directory = await firebase
-      .storage()
-      .ref()
-      .child(`people/${path}`)
-      .listAll()
-    directory.items.forEach(item => meta.items.push(item.name.split('.')[0]))
-    directory.prefixes.forEach(prefix => meta.types.push(prefix.name))
+    const folder = await directory(`people/${path}`)
+    folder.items.forEach(item => meta.items.push(item.name.split('.')[0]))
+    folder.prefixes.forEach(prefix => meta.types.push(prefix.name))
     await set(path, meta)
     return meta
   }
@@ -65,17 +59,14 @@ export async function as_directory(itemid) {
   const cached = await get(path)
   if (cached) return cached
   const directory = await build_local_directory(itemid)
-  setTimeout(() => {
-    load_directory_from_network(itemid)
-  }, 2000) // seperate thread
+  load_directory_from_network(itemid)
   return directory
 }
 export async function as_download_url(itemid) {
-  if (!firebase.auth().currentUser) return null
-  const storage = firebase.storage().ref()
+  if (!current_user.value) return null
   try {
     console.info('request:location', itemid)
-    return await storage.child(as_filename(itemid)).getDownloadURL()
+    return await url(as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))

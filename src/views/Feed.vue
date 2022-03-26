@@ -29,110 +29,64 @@
     </as-days>
   </section>
 </template>
-
-<script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
-  import { list, as_directory, load } from '@/use/itemid'
-  import signed_in from '@/mixins/signed_in'
-  import intersection_thought from '@/mixins/intersection_thought'
-  export default {
-    mixins: [signed_in, intersection_thought],
-    data() {
-      return {
-        signed_in: true,
-        statements: [],
-        posters: [],
-        working: true,
-        count: 0
-      }
-    },
-    computed: {
-      show_message() {
-        if (this.working) return false
-        if (this.statements.length === 0 && this.posters.length === 0)
-          return true
-        return false
-      }
-    },
-    async created() {
-      console.time('views:Feed')
-      firebase.auth().onAuthStateChanged(async user => {
-        if (user) {
-          const authors = await list(`${localStorage.me}/relations`)
-          await Promise.all(
-            authors.map(async a => {
-              const person = await load(a.id)
-              if (person) this.authors.push(person)
-            })
-          )
-        }
-        this.authors.push({
-          id: localStorage.me,
-          type: 'person'
-        })
-        await this.fill_feed()
-        console.timeEnd('views:Feed')
-        this.working = false
-      })
-    },
-    methods: {
-      async fill_feed() {
-        await Promise.all(
-          this.authors.map(async relation => {
-            const [statements, posters, avatars] = await Promise.all([
-              list(`${relation.id}/statements`),
-              as_directory(`${relation.id}/posters`),
-              as_directory(`${relation.id}/avatars`)
-            ])
-            relation.viewed = ['index']
-            this.statements = [...statements, ...this.statements]
-            if (posters && posters.items) {
-              posters.items.forEach(created_at => {
-                this.posters.push({
-                  id: `${relation.id}/posters/${created_at}`,
-                  type: 'posters'
-                })
-              })
-            }
-            if (avatars && avatars.items) {
-              avatars.items.forEach(created_at => {
-                this.posters.push({
-                  id: `${relation.id}/avatars/${created_at}`,
-                  type: 'avatars'
-                })
-              })
-            }
-          })
-        )
-      }
-    }
-  }
-</script>
-
 <script setup>
   import icon from '@/components/icon'
   import logoAsLink from '@/components/logo-as-link'
   import asDays from '@/components/as-days'
   import thoughtAsArticle from '@/components/statements/as-article'
   import posterAsFigure from '@/components/posters/as-figure'
-
-  import { watch, ref } from 'vue'
+  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_people } from '@/use/people'
+  import { use as use_posters } from '@/use/posters'
+  import { ref, computed, watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
   } from '@vueuse/core'
-
+  console.time('views:Feed')
+  const working = ref(true)
   const feed = ref(null)
+  const count = ref(0)
+  const show_message = computed(() => {
+    if (working.value) return false
+    if (statements.value.length === 0 && posters.value.length === 0) return true
+    return false
+  })
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
     use_fullscreen(feed)
-
   const { f } = use_magic_keys()
+  const { load_people, people, load_relations, relations } = use_people()
+  const {
+    for_person: statements_for_person,
+    statements,
+    thought_shown
+  } = use_statements()
+  const { for_person: posters_for_person, posters } = use_posters()
+  const fill_feed = async () => {
+    const me = {
+      id: localStorage.me,
+      type: 'person'
+    }
+    await load_relations(me)
+    people.value.push(me)
+    await Promise.all(
+      people.value.map(async relation => {
+        await Promise.all([
+          statements_for_person(relation),
+          posters_for_person(relation)
+        ])
+      })
+    )
+  }
   watch(f, v => {
     if (v) fullscreen()
   })
+  mounted(async () => {
+    await fill_feed()
+    working.value = false
+    console.timeEnd('views:Feed')
+  })
 </script>
-
 <style lang="stylus">
   section#feed
     position: relative

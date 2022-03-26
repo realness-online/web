@@ -1,0 +1,85 @@
+// Vitest Snapshot v1
+
+exports[`@/views/Account.vue > Renders > Account information 1`] = `
+<section
+  class="signed-in page"
+  id="account"
+>
+  <header>
+    <!--v-if-->
+    <router-link-stub
+      id="logo"
+      tabindex="-1"
+      to="/"
+    />
+  </header>
+  <address>
+    <figure
+      class="profile"
+    >
+      <!--v-if-->
+      <figcaption>
+        <address
+          itemid="/+16282281824"
+          itemscope=""
+          itemtype="/people"
+        >
+          <b
+            contenteditable="true"
+            itemprop="first_name"
+          />
+          <b
+            contenteditable="true"
+            itemprop="last_name"
+          />
+          
+          
+          <link
+            itemprop="avatar"
+            rel="icon"
+          />
+          <!--v-if-->
+          <!--v-if-->
+        </address>
+        <menu>
+          
+          <a>
+            <svg
+              class="gear icon"
+            >
+              <use
+                href="/src/style/icons.svg#gear"
+              />
+            </svg>
+          </a>
+          
+        </menu>
+      </figcaption>
+    </figure>
+    <!--v-if-->
+  </address>
+  <h1>
+    Statements
+  </h1>
+  <section
+    class="as-days"
+    itemid="/+16282281824"
+    itemscope=""
+  >
+    
+    
+  </section>
+  <footer
+    class="message"
+  >
+    <p>
+       Say some stuff via the 
+      <button
+        aria-label="Home"
+      />
+       button on the homepage 
+      <br />
+    </p>
+  </footer>
+</section>
+`;

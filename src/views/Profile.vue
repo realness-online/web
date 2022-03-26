@@ -1,11 +1,11 @@
 <template>
   <section id="profile" class="page">
     <header>
-      <icon name="nothing" />
+      <realness-icon name="nothing" />
       <logo-as-link />
     </header>
     <div>
-      <avatar v-if="person" :itemid="person.avatar" />
+      <as-avatar v-if="person" :itemid="person.avatar" />
       <menu v-if="person">
         <as-download :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
@@ -16,7 +16,7 @@
       <template v-for="item in items">
         <poster-as-figure
           v-if="item.type === 'posters'"
-          :key="slot_key(item)"
+          :key="slot_key(item.id)"
           :itemid="item.id" />
         <thought-as-article
           v-else
@@ -27,68 +27,48 @@
     </as-days>
   </section>
 </template>
-<script>
-  import signed_in from '@/mixins/signed_in'
+<script setup>
+  import AsDays from '@/components/as-days'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDownload from '@/components/download-vector'
+  import AsFigure from '@/components/profile/as-figure'
+  import AsAvatar from '@/components/posters/as-svg'
+  import AsMessenger from '@/components/profile/as-messenger'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+  import PosterAsFigure from '@/components/posters/as-figure'
+  import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
-  import intersection_thought from '@/mixins/intersection_thought'
-  import { load, list, as_directory } from '@/use/itemid'
-  import as_days from '@/components/as-days'
-  import logo_as_link from '@/components/logo-as-link'
-  import as_download from '@/components/download-vector'
-  import as_figure from '@/components/profile/as-figure'
-  import as_messenger from '@/components/profile/as-messenger'
-  import avatar from '@/components/posters/as-svg'
-  import as_article from '@/components/statements/as-article'
-  import poster_as_figure from '@/components/posters/as-figure'
-  import icon from '@/components/icon'
-  export default {
-    components: {
-      icon,
-      avatar,
-      'as-days': as_days,
-      'as-figure': as_figure,
-      'as-messenger': as_messenger,
-      'as-download': as_download,
-      'logo-as-link': logo_as_link,
-      'poster-as-figure': poster_as_figure,
-      'thought-as-article': as_article
-    },
-    mixins: [signed_in, intersection_thought],
-    data() {
-      return {
-        working: true,
-        person: null,
-        statements: [],
-        pages_viewed: ['index'],
-        posters: [],
-        relations: []
-      }
-    },
-    async created() {
-      const id = from_e64(this.$route.params.phone_number)
-      const [person, statements, posters, my_relations] = await Promise.all([
-        load(id),
-        list(`${id}/statements`),
-        as_directory(`${id}/posters`),
-        list(`${localStorage.me}/relations`)
-      ])
-      this.person = person
-      this.authors.push({
-        id: person.id,
-        type: 'person',
-        viewed: ['index']
-      })
-      this.relations = my_relations
-      this.statements = statements
-      posters.items.forEach(created_at => {
-        this.posters.push({
-          id: `${id}/posters/${created_at}`,
-          type: 'posters'
-        })
-      })
-      console.info('views:Profile')
-    }
-  }
+  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_posters } from '@/use/posters'
+  import { use as use_person } from '@/use/people'
+  import { list } from '@/use/itemid'
+  import { ref, onMounted as mounted } from 'vue'
+  import { useRoute as use_route } from 'vue-router'
+
+  const working = ref(true)
+  const pages_viewed = ref(['index'])
+  const route = use_route()
+  const id = from_e64(route.params.phone_number)
+  const {
+    statements,
+    thought_shown,
+    for_person: statements_for_person
+  } = use_statements()
+  const {
+    posters,
+    poster_shown,
+    for_person: posters_for_person
+  } = use_posters()
+  const { load_person, load_relations, person, relations } = use_person()
+  mounted(async () => {
+    await Promise.all([
+      load_relations({ id: localStorage.me }),
+      load_person(id),
+      posters_for_person(id),
+      statements_for_person(id)
+    ])
+    console.info('views:Profile', id)
+  })
 </script>
 <style lang="stylus">
   section#profile
@@ -155,8 +135,6 @@
           & > header > h4, figure.poster > svg.background
             color: blue
         figure.poster
-          margin-left: -1.333rem
-          margin-right: -1.333rem
           & > figcaption > menu
             & > a.download svg
               fill: blue

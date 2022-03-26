@@ -1,8 +1,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/app'
+import firebase from 'firebase/compat/app'
 import { recent_item_first } from '@/use/sorting'
-import 'firebase/storage'
-import 'firebase/auth'
+import 'firebase/compat/storage'
+import 'firebase/compat/auth'
 import { get_item, hydrate, get_itemprops } from '@/use/item'
 import {
   list,

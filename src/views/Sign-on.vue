@@ -17,78 +17,68 @@
     </footer>
   </section>
 </template>
-<script>
-  import firebase from 'firebase/app'
-  import 'firebase/auth'
+<script setup>
+  import LogoAsLink from '@/components/logo-as-link'
+  import ProfileAsFigure from '@/components/profile/as-figure'
+  import MobileAsForm from '@/components/profile/as-form-mobile'
+  import NameAsForm from '@/components/profile/as-form-name'
+
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
   import { Me } from '@/persistance/Storage'
-  import logo_as_link from '@/components/logo-as-link'
-  import profile_as_figure from '@/components/profile/as-figure'
-  import mobile_as_form from '@/components/profile/as-form-mobile'
-  import name_as_form from '@/components/profile/as-form-name'
-  import signed_on from '@/mixins/signed_in'
-  export default {
-    components: {
-      'logo-as-link': logo_as_link,
-      'profile-as-figure': profile_as_figure,
-      'mobile-as-form': mobile_as_form,
-      'name-as-form': name_as_form
-    },
-    mixins: [signed_on],
-    data() {
-      return {
-        nameless: false,
-        index_db_keys: [],
-        person: null
-      }
-    },
-    computed: {
-      cleanable() {
-        if (this.signed_in) return false
-        if (localStorage.me.length > 2) return true
-        if (localStorage.length > 2) return true
-        if (this.index_db_keys.length > 0) return true
-        else return false
-      }
-    },
-    async created() {
-      console.info('views:Sign-on')
-      const person = await load(localStorage.me)
-      const new_person = {
+  import { useRouter as use_router } from 'vue-router'
+  import { current_user } from '@/use/serverless'
+  import {
+    ref,
+    computed,
+    nextTick as next_tick,
+    watchEffect as watch_effect,
+    onMounted as mounted
+  } from 'vue'
+  const router = use_router()
+  const nameless = ref(false)
+  const index_db_keys = ref([])
+  const person = ref(null)
+  const cleanable = computed(() => {
+    if (current_user.value) return false
+    if (localStorage.me.length > 2) return true
+    if (localStorage.length > 2) return true
+    if (index_db_keys.value.length > 0) return true
+    else return false
+  })
+  mounted(async () => {
+    person.value = await load(localStorage.me)
+    if (!person.value) {
+      person.value = {
         id: '/+',
         mobile: null
       }
-      if (person) this.person = person
-      else this.person = new_person
-      this.index_db_keys = await keys()
-      firebase.auth().onAuthStateChanged(this.auth_state)
-    },
-    methods: {
-      auth_state(user) {
-        if (user) this.person.mobile = null
-      },
-      async signed_on() {
-        const my_profile = await load(localStorage.me)
-        if (my_profile) this.$router.push({ path: '/' })
-        else this.nameless = true
-      },
-      async new_person() {
-        this.person.visited = new Date().toISOString()
-        this.person.id = localStorage.me
-        await this.$nextTick()
-        const me = new Me()
-        await me.save()
-        await this.$nextTick()
-        this.$router.push({ path: '/account' })
-      },
-      async clean() {
-        localStorage.clear()
-        localStorage.me = '/+'
-        await clear()
-        this.$router.push({ path: '/' })
-      }
     }
+    index_db_keys.value = await keys()
+    console.info('views:Sign-on')
+  })
+  watch_effect(() => {
+    if (current_user.value) person.value.mobile = null
+  })
+  const signed_on = async () => {
+    const my_profile = await load(localStorage.me)
+    if (my_profile) router.push({ path: '/' })
+    else nameless.value = true
+  }
+  const new_person = async () => {
+    person.value.visited = new Date().toISOString()
+    person.value.id = localStorage.me
+    await next_tick()
+    const me = new Me()
+    await me.save()
+    await next_tick()
+    router.push({ path: '/account' })
+  }
+  const clean = async () => {
+    localStorage.clear()
+    localStorage.me = '/+'
+    await clear()
+    router.push({ path: '/' })
   }
 </script>
 <style lang="stylus">

@@ -7,7 +7,7 @@
         <icon name="finished" />
       </router-link>
     </header>
-    <nav v-if="signed_in" class="profile-list">
+    <nav v-if="current_user" class="profile-list">
       <as-figure
         v-for="person in relations"
         :key="person.id"
@@ -16,32 +16,18 @@
     </nav>
   </section>
 </template>
-<script>
-  import { list, load } from '@/use/itemid'
-  import signed_in from '@/mixins/signed_in'
+<script setup>
   import icon from '@/components/icon'
-  import as_figure from '@/components/profile/as-figure'
-  export default {
-    components: {
-      icon,
-      'as-figure': as_figure
-    },
-    mixins: [signed_in],
-    data() {
-      return {
-        signed_in: true,
-        relations: []
-      }
-    },
-    async created() {
-      console.info('views:Relations')
-      const temp = await list(`${localStorage.me}/relations`)
-      temp.forEach(async relation => {
-        const person = await load(relation.id)
-        if (person) this.relations.push(person)
-      })
-    }
-  }
+  import AsFigure from '@/components/profile/as-figure'
+  import { list, load } from '@/use/itemid'
+  import { onMounted as mounted, ref } from 'vue'
+  import { use } from '@/use/people'
+  import { current_user } from '@/use/serverless'
+  const { relations, load_relations } = use()
+  mounted(async () => {
+    await load_relations({ id: localStorage.me })
+    console.info('views:Relations')
+  })
 </script>
 <style lang="stylus">
   section#relations

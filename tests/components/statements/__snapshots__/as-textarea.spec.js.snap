@@ -1,0 +1,11 @@
+// Vitest Snapshot v1
+
+exports[`@/components/statements/as-textarea.vue > Renders > A texarea for statement input 1`] = `
+<textarea
+  cols="1"
+  id="wat"
+  placeholder=">"
+  rows="1"
+  spellcheck="true"
+/>
+`;
