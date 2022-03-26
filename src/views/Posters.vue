@@ -2,12 +2,12 @@
   <section id="posters" class="page">
     <header>
       <a v-if="add" tabindex="-1" @click="select_photo">
-        <app-icon name="add" />
+        <icon name="add" />
       </a>
-      <app-icon v-else name="nothing" />
+      <icon v-else name="nothing" />
       <h1>Posters</h1>
       <a v-if="add" id="camera" @click="open_camera">
-        <app-icon name="camera" />
+        <icon name="camera" />
       </a>
       <input
         ref="uploader"
@@ -16,7 +16,7 @@
         accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
-    <app-icon v-if="working" name="working" />
+    <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
         v-if="new_poster"
@@ -27,10 +27,10 @@
         @loaded="optimize">
         <menu>
           <a class="remove" @click="cancel_poster">
-            <app-icon name="remove" />
+            <icon name="remove" />
           </a>
           <a v-if="new_poster.id" class="save" @click="save_poster">
-            <app-icon name="finished" />
+            <icon name="finished" />
           </a>
         </menu>
       </as-figure>
@@ -50,7 +50,7 @@
   </section>
 </template>
 <script setup>
-  import AppIcon from '@/components/icon'
+  import icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'

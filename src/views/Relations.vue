@@ -1,10 +1,10 @@
 <template>
   <section id="relations" class="page">
     <header>
-      <app-icon name="nothing" />
+      <icon name="nothing" />
       <h1>Relations</h1>
       <router-link to="/phone-book">
-        <app-icon name="finished" />
+        <icon name="finished" />
       </router-link>
     </header>
     <nav v-if="current_user" class="profile-list">
@@ -17,7 +17,7 @@
   </section>
 </template>
 <script setup>
-  import AppIcon from '@/components/icon'
+  import icon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
   import { list, load } from '@/use/itemid'
   import { onMounted as mounted, ref } from 'vue'

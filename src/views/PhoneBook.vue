@@ -2,13 +2,13 @@
   <section id="directory" class="page">
     <header>
       <router-link v-if="current_user" to="/relations">
-        <app-icon name="heart" />
+        <icon name="heart" />
       </router-link>
-      <app-icon v-else name="nothing" />
+      <icon v-else name="nothing" />
       <h1>Recent</h1>
       <logo-as-link />
     </header>
-    <app-icon v-if="working" name="working" />
+    <icon v-if="working" name="working" />
     <nav v-if="current_user" class="profile-list">
       <as-figure
         v-for="person in phonebook"
@@ -23,8 +23,8 @@
   </section>
 </template>
 <script setup>
+  import icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
-  import AppIcon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
   import SignOn from '@/components/profile/sign-on'
 
