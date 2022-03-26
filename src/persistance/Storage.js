@@ -1,6 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
 import Local from '@/persistance/Local'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'

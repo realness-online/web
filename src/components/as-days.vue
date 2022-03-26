@@ -22,7 +22,7 @@
   } from '@/use/sorting'
   import { as_author } from '@/use/itemid'
   import { id_as_day, as_day, is_today } from '@/use/date'
-  import { as_thoughts, thoughts_sort } from '@/use/thoughts'
+  import { as_thoughts, thoughts_sort } from '@/use/statements'
   import icon from '@/components/icon'
   const page_size = 5
   export default {

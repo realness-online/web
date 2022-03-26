@@ -1,7 +1,5 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import 'firebase/storage'
+import { current_user, upload, remove } from '@/use/serverless'
 import hash from 'object-hash'
 import { get, set } from 'idb-keyval'
 import { as_filename } from '@/use/itemid'
@@ -21,14 +19,10 @@ export async function sync_later(id, action) {
 export const Cloud = superclass =>
   class extends superclass {
     async to_network(items) {
-      const user = firebase.auth().currentUser
-      if (navigator.onLine && user) {
-        const storage = firebase.storage()
+      if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
-        this.metadata.customMetadata = {
-          md5: hash(items, hash_options)
-        }
-        await storage.ref().child(path).putString(items, 'raw', this.metadata)
+        this.metadata.customMetadata = { md5: hash(items, hash_options) }
+        return await upload(path, items, this.metadata)
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
@@ -40,14 +34,11 @@ export const Cloud = superclass =>
     }
     async delete() {
       console.info('request:delete', this.id)
-      const user = firebase.auth().currentUser
-      if (navigator.onLine && user) {
-        const storage = firebase.storage().ref()
+      if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
-        await storage.child(path).delete()
+        await remove(path)
       } else await sync_later(this.id, 'delete')
       if (super.delete) await super.delete()
     }
   }
-
 export default Cloud

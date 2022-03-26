@@ -1,6 +1,0 @@
-require('fake-indexeddb/auto')
-require('jest-fetch-mock').enableMocks()
-console.info = jest.fn()
-console.time = jest.fn()
-console.trace = jest.fn()
-console.timeEnd = jest.fn()

@@ -1,0 +1,21 @@
+// Vitest Snapshot v1
+
+exports[`@/components/posters/as-background.vue > Renders > a new background for a poster without one 1`] = `
+<rect
+  fill="white"
+  height="100%"
+  itemprop="background"
+  tabindex="-1"
+  width="100%"
+/>
+`;
+
+exports[`@/components/posters/as-background.vue Renders a new background for a poster without one 1`] = `
+<rect
+  fill="white"
+  height="100%"
+  itemprop="background"
+  tabindex="-1"
+  width="100%"
+/>
+`;

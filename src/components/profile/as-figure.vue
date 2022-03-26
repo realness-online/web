@@ -1,6 +1,9 @@
 <template>
   <figure class="profile">
-    <as-svg :itemid="person.avatar" @click="avatar_click" />
+    <as-svg
+      v-if="person.avatar"
+      :itemid="person.avatar"
+      @click="avatar_click" />
     <figcaption>
       <as-address
         :key="person.id"

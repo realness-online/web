@@ -2,7 +2,7 @@ export default {
   data() {
     return {
       observer: new IntersectionObserver(this.check_intersection, {
-        rootMargin: '512px 0px 0px 0px',
+        rootMargin: '1024px 0px 0px 0px',
         threshold: 0
       })
     }

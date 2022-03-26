@@ -1,10 +1,18 @@
-import { defineConfig } from 'vite'
+// import { configDefaults, defineConfig } from 'vite'
+import { configDefaults, defineConfig } from 'vitest/config'
+
 import vue from '@vitejs/plugin-vue'
-import loadVersion from 'vite-plugin-package-version'
-const path = require("path")
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    target: 'esnext'
+  },
+  define: {
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
+      process.env['npm_package_version']
+    )
+  },
   server: {
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
@@ -12,16 +20,52 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@/': new URL('./src/', import.meta.url).pathname,
+      '@@/': new URL('./test/', import.meta.url).pathname
     },
     extensions: ['.js', '.json', '.vue']
   },
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [path.resolve(__dirname, 'src/style/variables.styl')],
+        imports: [
+          new URL('./src/style/variables.styl', import.meta.url).pathname
+        ]
       }
     }
   },
-  plugins: [vue(), loadVersion()]
+  plugins: [vue()],
+  test: {
+    root: 'web',
+    global: true,
+    environment: 'happy-dom',
+    mockReset: false,
+    setupFiles: [
+      './__mocks__/default.js',
+      './__mocks__/browser/console.js',
+      './__mocks__/browser/fetch.js',
+      './__mocks__/browser/worker.js',
+      './__mocks__/browser/indexedDB.js',
+      './__mocks__/browser/localStorage.js',
+      './__mocks__/browser/createrange.js',
+      './__mocks__/browser/scrollIntoView.js',
+      './__mocks__/browser/IntersectionObserver.js',
+      './__mocks__/browser/FileReaderSync.js'
+    ],
+    coverage: {
+      reporter: ['text', 'html'],
+      lines: 90,
+      branches: 90,
+      statements: 90,
+      functions: 90,
+      all: true,
+      excludeNodeModules: true,
+      exclude: [
+        ...configDefaults.exclude,
+        '**/tests/**',
+        '**/__mocks__/**',
+        '**/public/**'
+      ]
+    }
+  }
 })

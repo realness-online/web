@@ -1,0 +1,72 @@
+// Vitest Snapshot v1
+
+exports[`@/views/PhoneBook > Renders > Displays the PhoneBook when signed in 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <router-link-stub
+      to="/relations"
+    />
+    <h1>
+      Recent
+    </h1>
+    <logo-as-link-stub />
+  </header>
+  <!--v-if-->
+  <nav
+    class="profile-list"
+  >
+    
+    <as-figure-stub
+      editable="false"
+      person="[object Object]"
+      relations=""
+    />
+    
+  </nav>
+  <!--v-if-->
+</section>
+`;
+
+exports[`@/views/PhoneBook > Renders > Lets you know to sign in 1`] = `
+<section
+  class="page"
+  id="directory"
+>
+  <header>
+    <svg
+      class="nothing icon"
+    >
+      <use
+        href="/src/style/icons.svg#nothing"
+      />
+    </svg>
+    <h1>
+      Recent
+    </h1>
+    <router-link-stub
+      id="logo"
+      tabindex="-1"
+      to="/"
+    />
+  </header>
+  <!--v-if-->
+  <!--v-if-->
+  <footer>
+    <button
+      class="sign-on"
+    >
+      
+      Sign on
+      
+    </button>
+    <p
+      class="sign-on message"
+    >
+      Check out who's here
+    </p>
+  </footer>
+</section>
+`;
