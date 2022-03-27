@@ -1,18 +1,17 @@
-// <input type="file" accept="image/jpeg" capture="user" ref="uploader" v-uploader>
+
 import { ref } from 'vue'
-export const vUploader = () => {
-  mounted: input => input.addEventListener('change', upload)
-}
-export const upload = event => {
-  const image = event.target.files[0]
-  if (image === undefined) return
-  const is_image = ['image/jpeg', 'image/png'].some(type => {
-    return image.type === type
+export const vUploader = {
+  mounted: (input, binding) => input.addEventListener('change', event => {
+    const image = event.target.files[0]
+    if (image === undefined) return
+    const is_image = ['image/jpeg', 'image/png'].some(type => {
+      return image.type === type
+    })
+    if (is_image) {
+      binding.instance.vectorize(image)
+      input.value = ''
+    }
   })
-  if (is_image) {
-    binding.instance.vectorize(image)
-    input.value = ''
-  }
 }
 export const use = () => {
   const uploader = ref(null)

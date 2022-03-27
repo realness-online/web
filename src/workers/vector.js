@@ -23,12 +23,12 @@ function to_kb(vector) {
 }
 export async function read(file) {
   const reader = new FileReaderSync()
-  return await Jimp.read(reader.readAsArrayBuffer(file))
+  return await Jimp.default.read(reader.readAsArrayBuffer(file))
 }
 export async function size(image, size = 512) {
   if (image.bitmap.width > image.bitmap.height)
-    image = image.resize(Jimp.AUTO, size)
-  else image = image.resize(size, Jimp.AUTO)
+    image = image.resize(Jimp.default.AUTO, size)
+  else image = image.resize(size, Jimp.default.AUTO)
   return image
 }
 export async function prepare(image) {
