@@ -6,12 +6,8 @@
       <icon name="nothing" />
     </header>
     <icon v-show="working" name="working" />
-    <as-days
-      id="tonight"
-      v-slot="items"
-      :paginate="false"
-      :events="events">
-      <as-figure v-for="item in items" :key="item.url"  :itemid="item.url" />
+    <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
+      <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
     </as-days>
     <footer v-if="events.length <= 0">
       <p class="message">
