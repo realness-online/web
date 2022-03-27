@@ -15,6 +15,7 @@
   </section>
 </template>
 <script>
+  import icon from '@/components/icon'
   import {
     recent_date_first,
     earlier_weirdo_first,
@@ -23,7 +24,7 @@
   import { as_author } from '@/use/itemid'
   import { id_as_day, as_day, is_today } from '@/use/date'
   import { as_thoughts, thoughts_sort } from '@/use/statements'
-  import icon from '@/components/icon'
+
   const page_size = 5
   export default {
     components: { icon },
@@ -93,6 +94,12 @@
           this.refill_days()
         },
         deep: true
+      },
+      events: {
+        handler() {
+          this.refill_days()
+        },
+        deep: true
       }
     },
     mounted() {
@@ -134,13 +141,13 @@
         }
         this.thoughts.forEach(thought => this.insert_into_day(thought, days))
         this.posters.forEach(poster => this.insert_into_day(poster, days))
+        this.events.forEach(happening => this.insert_into_day(happening, days))
         this.days = days
       },
       insert_into_day(item, days) {
         let day_name
         if (item.id) day_name = id_as_day(item.id)
-        // posters
-        else day_name = id_as_day(item[0].id) // thoughts
+        else day_name = id_as_day(item[0].id)
         const day = days.get(day_name)
         if (day && is_today(day_name)) {
           day.unshift(item)

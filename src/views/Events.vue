@@ -6,10 +6,14 @@
       <icon name="nothing" />
     </header>
     <icon v-show="working" name="working" />
-    <article v-if="events.length" id="tonight">
-      <as-figure v-for="event in events" :key="event.url" :itemid="event.url" />
-    </article>
-    <footer v-else>
+    <as-days
+      id="tonight"
+      v-slot="items"
+      :paginate="false"
+      :events="events">
+      <as-figure v-for="item in items" :key="item.url"  :itemid="item.url" />
+    </as-days>
+    <footer v-if="events.length <= 0">
       <p class="message">
         You create events from
         <router-link to="/posters">Posters</router-link>
@@ -23,11 +27,13 @@
   import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
+  import as_days from '@/components/as-days'
   import as_figure from '@/components/posters/as-figure'
   export default {
     components: {
       'logo-as-link': logo_as_link,
       'as-figure': as_figure,
+      'as-days': as_days,
       icon
     },
     mixins: [signed_in],
@@ -35,14 +41,13 @@
       return {
         events: [],
         upcoming: [],
-        working: true,
-        days: new Map()
+        working: true
       }
     },
     async created() {
-      console.info('views:events')
       this.events = await this.get_upcoming_events()
       this.working = false
+      console.info('views:events', this.events.length)
     },
     methods: {
       async get_upcoming_events() {
