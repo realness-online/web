@@ -30,7 +30,9 @@ module.exports = {
       os: require.resolve('os-browserify/browser'),
       stream: require.resolve('stream-browserify'),
       fs: require.resolve('browserify-fs'),
-      buffer: require.resolve('buffer-browserify')
+      buffer: require.resolve('buffer-browserify'),
+      util: require.resolve("util/"),
+      assert: require.resolve("assert/")
     }
   },
   module: {
