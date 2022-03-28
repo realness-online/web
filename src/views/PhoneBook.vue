@@ -29,9 +29,6 @@
   import SignOn from '@/components/profile/sign-on'
 
   import { ref, onMounted as mounted } from 'vue'
-  import { list, load } from '@/use/itemid'
-  import { from_e64 } from '@/use/profile'
-
   import { current_user } from '@/use/serverless'
   import { use } from '@/use/people'
   const { phonebook, relations, load_phonebook, load_relations } = use()

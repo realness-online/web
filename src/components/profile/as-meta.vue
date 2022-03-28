@@ -10,7 +10,7 @@
 </template>
 <script setup>
   import { computed } from 'vue'
-  const props = defineProps({
+  defineProps({
     people: {
       type: Array,
       required: true
