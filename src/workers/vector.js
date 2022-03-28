@@ -1,5 +1,7 @@
-import { as_paths } from '@realness.online/potrace'
 import Jimp from 'jimp'
+import { as_paths } from '@realness.online/potrace'
+import { as_gradient } from '@/workers/gradient'
+
 const potrace_options = {
   turdSize: 125,
   optTolerance: 0.55,
@@ -58,9 +60,11 @@ export async function make(image) {
 }
 export async function listen(message) {
   let image = await read(message.data.image)
+  const background = as_gradient(image)
+  console.log(background)
   image = await prepare(image)
   image = await size(image)
   const vector = await make(image)
-  self.postMessage({ vector: vector })
+  self.postMessage({ vector, background })
 }
 self.addEventListener('message', listen)
