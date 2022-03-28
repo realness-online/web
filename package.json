@@ -92,9 +92,6 @@
       "plugin:vue/vue3-recommended",
       "prettier"
     ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
     "rules": {
       "no-import-assign": "off",
       "camelcase": 0,
