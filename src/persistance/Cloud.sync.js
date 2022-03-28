@@ -99,7 +99,7 @@ export const use = (props, emit) => {
   const poster = ref(null)
   const statements = ref([])
   const events = ref(null)
-
+  const sync = ref(null)
   const play = async () => {
     console.log('play')
     const me = await load(localStorage.me) // check if new user
