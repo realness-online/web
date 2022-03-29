@@ -88,6 +88,8 @@
     return `${localStorage.me}/${type}/${name}`
   }
   const vectorize = image => {
+    console.time('makes:poster')
+
     working.value = true
     vectorizer.postMessage({ image })
   }
@@ -114,6 +116,7 @@
   const optimized = message => {
     const optimized = get_item(message.data.vector)
     new_poster.value = optimized
+    console.timeEnd('makes:poster')
   }
   const save_poster = async () => {
     const id = new_poster.value.id
