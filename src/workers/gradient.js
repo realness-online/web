@@ -14,7 +14,6 @@ export const as_gradient = image => {
   const height = image.bitmap.height
   const chunk = fidelity(width)
   const stops = []
-  const color_stop = factory(width)
   for (let i = 0; i < width; i += chunk) {
     let color = image
       .clone()
@@ -22,15 +21,9 @@ export const as_gradient = image => {
       .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
     color = rgb_to_hex(Jimp.default.intToRGBA(color))
-    stops.push(color_stop(color, i))
+    stops.push({ color, stop: scale(i, 0, width) })
   }
   return stops
-}
-export const factory = width => {
-  console.log('factory')
-  return function color_stop(color, index) {
-    return { color, stop: scale(index, 0, width) }
-  }
 }
 export const fidelity = (length, pair = { number: 8.3325, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
