@@ -2,19 +2,23 @@
 // for Number.EPSILON edge case see https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
 import Jimp from 'jimp'
 
-export const as_gradient = image => {
-  const width = image.bitmap.width
-  const height = image.bitmap.height
-  const chunk = fidelity(width)
+export const as_gradient = (image, height = false) => {
+  let direction = image.bitmap.width
+  let opposite = image.bitmap.height
+  if (height) {
+    direction = image.bitmap.height
+    opposite = image.bitmap.width
+  }
+  const chunk = fidelity(direction)
   const stops = []
-  for (let i = 0; i < width; i += chunk) {
+  for (let i = 0; i < direction; i += chunk) {
     let color = image
       .clone()
-      .crop(i, 0, chunk, height)
+      .crop(i, 0, chunk, opposite)
       .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
     color = rgb_to_hex(Jimp.default.intToRGBA(color))
-    stops.push({ color, stop: scale(i, 0, width) })
+    stops.push({ color, stop: scale(i, 0, direction) })
   }
   return stops
 }

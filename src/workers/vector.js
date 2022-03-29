@@ -60,11 +60,12 @@ export async function make(image) {
 }
 export async function listen(message) {
   let image = await read(message.data.image)
-  const background = as_gradient(image)
-  console.log(background)
+  const width = as_gradient(image)
+  const height = as_gradient(image, true)
+  console.log(width, height)
   image = await prepare(image)
   image = await size(image)
   const vector = await make(image)
-  self.postMessage({ vector, background })
+  self.postMessage({ vector, width, height })
 }
 self.addEventListener('message', listen)
