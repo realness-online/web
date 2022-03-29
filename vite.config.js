@@ -37,7 +37,7 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     root: 'web',
-    global: true,
+    globals: true,
     environment: 'happy-dom',
     mockReset: false,
     setupFiles: [
