@@ -1,13 +1,6 @@
+// this code is inspired by https://github.com/ben-eb/postcss-resemble-image
 // for Number.EPSILON edge case see https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
-
 import Jimp from 'jimp'
-
-export const is_stop = stop => {
-  if (!stop.unit) return false
-  if (!stop.number) return false
-  if (!stop.color) return false
-  return true
-}
 
 export const as_gradient = image => {
   const width = image.bitmap.width
@@ -45,4 +38,10 @@ export const scale = (value, min, max) => {
   const percent = (value - min) / (max - min)
   const scale = percent * (new_max - new_min) + new_min
   return Math.round((scale + Number.EPSILON) * 100) / 100
+}
+export const is_stop = stop => {
+  if (!stop.unit) return false
+  if (!stop.number) return false
+  if (!stop.color) return false
+  return true
 }
