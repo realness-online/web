@@ -37,6 +37,7 @@
   path[itemprop]
     color: black-dark
     stroke: currentColor
+    // stroke: url('#width-gradient')
     stroke-width: base-line * 0.03
     stroke-opacity: 0.33
     outline: none
