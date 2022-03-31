@@ -3,18 +3,18 @@ import { as_paths } from '@realness.online/potrace'
 import { as_gradient } from '@/workers/gradient'
 
 const potrace_options = {
-  turdSize: 125,
+  turdSize: 40,
   optTolerance: 0.55,
   blackOnWhite: true,
-  fillStrategy: 'median',
+  fillStrategy: 'dominant',
   rangeDistribution: 'auto',
   steps: 3
   // threshold: 255
 }
 const bright = {
-  max: 175,
+  max: 255,
   replace: 255,
-  autoGreyscale: false
+  autoGreyscale: true
 }
 function to_kb(vector) {
   let size_of = 0
@@ -62,10 +62,10 @@ export async function listen(message) {
   let image = await read(message.data.image)
   const width = as_gradient(image)
   const height = as_gradient(image, true)
-  console.log(width, height)
   image = await prepare(image)
   image = await size(image)
   const vector = await make(image)
-  self.postMessage({ vector, width, height })
+  vector.gradients = { width, height }
+  self.postMessage({ vector })
 }
 self.addEventListener('message', listen)

@@ -1,6 +1,7 @@
 <template>
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
+    outline
     v-else
     :id="id"
     itemscope
@@ -10,34 +11,44 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
+    <as-effects :poster="vector" />
     <as-background
       :rect="vector.background"
       :tabable="tabable"
+      fill="url(#height-gradient)"
+      style="filter: url(#background-filter)"
       @focus="focus('background')" />
     <as-path
       v-if="vector.light"
       :path="vector.light"
       itemprop="light"
       :tabindex="tabindex"
+      fill="url(#width-gradient)"
+      style="filter: url(#light-filter)"
       @focus="focus('light')" />
     <as-path
       v-if="vector.regular"
       :path="vector.regular"
       itemprop="regular"
       :tabindex="tabindex"
+      fill="url(#width-gradient)"
+      style="filter: url(#regular-filter)"
       @focus="focus('regular')" />
     <as-path
       :path="vector.bold"
       itemprop="bold"
       :tabindex="tabindex"
+      fill="url(#height-gradient)"
+      style="filter: url(#bold-filter)"
       @focus="focus('bold')" />
   </svg>
 </template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
+  import AsEffects from '@/components/posters/as-effects'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { onMounted, ref } from 'vue'
+  import { onMounted as mounted, ref } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
     as_poster,
@@ -111,7 +122,7 @@
     },
     { rootMargin: '132px' }
   )
-  onMounted(should_show)
+  mounted(should_show)
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
@@ -121,4 +132,6 @@
     min-height: 512px
     height: 100%
     width: 100%
+    // path
+    //   display:none
 </style>

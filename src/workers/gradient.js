@@ -18,11 +18,11 @@ export const as_gradient = (image, height = false) => {
       .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
     color = rgb_to_hex(Jimp.default.intToRGBA(color))
-    stops.push({ color, stop: scale(i, 0, direction) })
+    stops.push({ color, percentage: scale(i, 0, direction) })
   }
   return stops
 }
-export const fidelity = (length, pair = { number: 8.3325, unit: '%' }) => {
+export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
@@ -44,8 +44,7 @@ export const scale = (value, min, max) => {
   return Math.round((scale + Number.EPSILON) * 100) / 100
 }
 export const is_stop = stop => {
-  if (!stop.unit) return false
-  if (!stop.number) return false
+  if (!stop.percentage) return false
   if (!stop.color) return false
   return true
 }
