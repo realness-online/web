@@ -6,7 +6,7 @@
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
@@ -37,7 +37,7 @@
     "vue-router": "4.0.14"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "2.2.4",
+    "@vitejs/plugin-vue": "2.3.0",
     "@vue/test-utils": "2.0.0-rc.18",
     "assert": "^2.0.0",
     "browserify-fs": "^1.0.0",
@@ -54,7 +54,7 @@
     "eslint-plugin-vue": "8",
     "fake-indexeddb": "4.0.0-beta.2",
     "firebase-tools": "10.5.0",
-    "happy-dom": "^2.51.0",
+    "happy-dom": "^2.52.0",
     "https-browserify": "^1.0.0",
     "mockdate": "3.0.5",
     "os-browserify": "^0.3.0",
@@ -66,9 +66,9 @@
     "stream-http": "^3.2.0",
     "stylus": "0.57.0",
     "util": "^0.12.4",
-    "vite": "2.8.6",
+    "vite": "2.9.0",
     "vite-plugin-package-version": "1.0.2",
-    "vitest": "^0.8.0",
+    "vitest": "^0.8.1",
     "webpack": "^5.70.0",
     "webpack-cli": "^4.9.2"
   },
