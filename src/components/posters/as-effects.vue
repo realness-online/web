@@ -1,5 +1,12 @@
 <template>
   <defs itemprop="effects">
+    <filter id="emboss">
+      <feConvolveMatrix
+        id="emboss"
+        kernelMatrix="3 0 0
+                      0 0 0
+                      0 0 -3" />
+    </filter>
     <filter id="background-filter" color-interpolation-filters="sRGB">
       <feComponentTransfer>
         <feFuncR
@@ -25,7 +32,6 @@
       </feComponentTransfer>
     </filter>
     <filter id="regular-filter" x="0" y="0" width="100%" height="100%">
-      <feColorMatrix in="SourceGraphic" type="hueRotate" values="1" />
       <feComponentTransfer>
         <feFuncR type="gamma" exponent="2" />
         <feFuncG type="gamma" exponent="2" />
@@ -50,7 +56,7 @@
       <stop
         v-for="stop in height"
         :stop-color="stop.color"
-        stop-opacity="0.9"
+        stop-opacity="0.8"
         :offset="`${stop.percentage}%`" />
     </linearGradient>
     <linearGradient
@@ -64,7 +70,7 @@
       <stop
         v-for="stop in width"
         :stop-color="stop.color"
-        stop-opacity="0.9"
+        stop-opacity="0.8"
         :offset="`${stop.percentage}%`" />
     </linearGradient>
   </defs>
