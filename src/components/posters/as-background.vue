@@ -27,7 +27,6 @@
 </template>
 <style lang="stylus">
   rect[itemprop="background"]
-    fill: var(--white-poster)
     outline: none
     stroke: none
 </style>

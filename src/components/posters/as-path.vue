@@ -1,3 +1,6 @@
+<template>
+  <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
+</template>
 <script setup>
   import { ref, watch, watchEffect, inject } from 'vue'
   import { is_path } from '@/use/vector'
@@ -30,17 +33,15 @@
   })
   watchEffect(() => (d.value = props.path.getAttribute('d')))
 </script>
-<template>
-  <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
-</template>
 <style lang="stylus">
   path[itemprop]
     color: black-dark
     stroke: currentColor
     stroke-width: base-line * 0.03
-    stroke-opacity: 0.66
+    stroke-opacity: 0.33
     outline: none
-    fill: inherit
+    // fill: inherit
+    // display:none
     &:active
       fill-opacity: 1
       transition-delay: 0.33s
