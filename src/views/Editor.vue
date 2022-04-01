@@ -10,7 +10,7 @@
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
     <footer>
-      <menu v-if="true === false">
+      <menu>
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: grid }" name="grid" />
         <icon :class="{ selected: animation }" name="animation" />
