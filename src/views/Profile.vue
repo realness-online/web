@@ -39,7 +39,7 @@
   import RealnessIcon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
   import { use as use_statements, slot_key } from '@/use/statements'
-  import { use as use_posters } from '@/use/posters'
+  import { use_posters } from '@/use/vector'
   import { use as use_person } from '@/use/people'
   import { list } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'

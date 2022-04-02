@@ -67,7 +67,7 @@
     onMounted as mounted,
     onUnmounted as dismount
   } from 'vue'
-  import { use as use_posters } from '@/use/posters'
+  import { use_posters } from '@/use/vector'
   const finished = ref(true)
   const vectorizer = new Worker('/vector.worker.js')
   const optimizer = new Worker('/optimize.worker.js')

@@ -1,6 +1,12 @@
-import { as_query_id, load, as_author, as_created_at } from '@/use/itemid'
+import {
+  as_query_id,
+  load,
+  as_author,
+  as_created_at,
+  as_directory
+} from '@/use/itemid'
 import { ref, computed, watchEffect } from 'vue'
-
+import { recent_item_first } from '@/use/sorting'
 const path_names = ['background', 'bold', 'regular', 'light']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
@@ -30,7 +36,7 @@ export const is_vector_id = itemid => {
   else return false
 }
 
-export function set_vector_dimensions(props, item) {
+export const set_vector_dimensions = (props, item) => {
   props.viewbox = item.getAttribute('viewBox')
   const dimensions = props.viewbox.split(' ')
   let width = item.getAttribute('width')
@@ -40,7 +46,7 @@ export function set_vector_dimensions(props, item) {
   props.width = width
   props.height = height
 }
-function migrate_path(path) {
+export const migrate_path = path => {
   const style = path.style
   const fill = path.getAttribute('fill')
   const opacity = path.getAttribute('fill-opacity')
@@ -52,7 +58,7 @@ function migrate_path(path) {
 
   return path
 }
-export function migrate_poster(poster) {
+export const migrate_poster = poster => {
   if (Array.isArray(poster?.path)) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
@@ -62,7 +68,7 @@ export function migrate_poster(poster) {
   return poster
 }
 
-export function as_poster(props, emit) {
+export const use_poster = (props, emit) => {
   const vector = ref(null)
   const working = ref(true)
   const menu = ref(false)
@@ -140,5 +146,32 @@ export function as_poster(props, emit) {
     focus,
     tabindex,
     focusable
+  }
+}
+
+export const use_posters = () => {
+  const posters = ref([])
+  const for_person = async person => {
+    const [post, avatars] = await Promise.all([
+      as_directory(`${person.id}/posters`),
+      as_directory(`${person.id}/avatars`)
+    ])
+    post.items.forEach(created_at => {
+      posters.value.push({
+        id: `${person.id}/posters/${created_at}`,
+        type: 'posters'
+      })
+    })
+    avatars.items.forEach(created_at => {
+      posters.value.push({
+        id: `${person.id}/avatars/${created_at}`,
+        type: 'avatars'
+      })
+    })
+    posters.value.sort(recent_item_first)
+  }
+  return {
+    for_person,
+    posters
   }
 }

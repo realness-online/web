@@ -8,7 +8,7 @@
     :tabindex="tabindex" />
 </template>
 <script setup>
-  import { as_poster, is_rect } from '@/use/vector'
+  import { use_poster, is_rect } from '@/use/vector'
   const props = defineProps({
     tabable: {
       type: Boolean,
@@ -21,7 +21,7 @@
       validator: is_rect
     }
   })
-  const { tabindex } = as_poster(props)
+  const { tabindex } = use_poster(props)
   let style = {}
   if (props.rect) style = props.rect.getAttribute('style')
 </script>
