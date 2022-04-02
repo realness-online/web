@@ -30,6 +30,6 @@
     outline: none
     stroke: none
     fill: var(--white-poster)
-    // &:active
-    //   fill: currentColor
+    &:focus
+      outline:none
 </style>

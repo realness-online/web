@@ -10,42 +10,65 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <as-effects :poster="vector" />
+    <defs>
+      <filter id="emboss">
+        <feConvolveMatrix
+          kernelMatrix="3 0 0
+                        0 0 0
+                        0 0 -3" />
+      </filter>
+      <filter
+        id="background-filter"
+        color-interpolation-filters="sRGB"></filter>
+      <filter id="light-filter" x="0" y="0" width="100%" height="100%"></filter>
+      <filter
+        id="regular-filter"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"></filter>
+      <filter id="bold-filter" x="0" y="0" width="100%" height="100%"></filter>
+      <symbol id="light">
+        <as-path v-if="vector.light" :path="vector.light" itemprop="light" />
+      </symbol>
+      <symbol id="regular">
+        <as-path
+          v-if="vector.regular"
+          :path="vector.regular"
+          itemprop="regular" />
+      </symbol>
+      <symbol id="bold">
+        <as-path :path="vector.bold" itemprop="bold" />
+      </symbol>
+    </defs>
     <as-background
       :rect="vector.background"
       :tabable="tabable"
-      fill="url(#height-gradient)"
-      style="filter: url(#background-filter)"
       @focus="focus('background')" />
-    <as-path
-      v-if="vector.light"
-      :path="vector.light"
-      itemprop="light"
+    <rect
+      width="100%"
+      height="100%"
       :tabindex="tabindex"
-      fill="url(#width-gradient)"
-      style="filter: url(#light-filter)"
-      @focus="focus('light')" />
-    <as-path
-      v-if="vector.regular"
-      :path="vector.regular"
-      itemprop="regular"
-      :tabindex="tabindex"
-      fill="url(#width-gradient)"
-      style="filter: url(#regular-filter)"
-      @focus="focus('regular')" />
-    <as-path
-      :path="vector.bold"
-      itemprop="bold"
-      :tabindex="tabindex"
-      fill="url(#height-gradient)"
-      style="filter: url(#bold-filter)"
-      @focus="focus('bold')" />
+      style="
+        filter: url(#background-filter);
+        fill: url(#background-gradient);
+        fill-opacity: 0.5;
+      " />
+
+    <use href="#light" :tabindex="tabindex" @focus="focus('light')" />
+    <use href="#light" filter="url(#emboss)" />
+
+    <use href="#regular" :tabindex="tabindex" @focus="focus('regular')" />
+    <use href="#regular" filter="url(#emboss)" />
+
+    <use href="#bold" :tabindex="tabindex" @focus="focus('bold')" />
+    <use href="#bold" filter="url(#emboss)" />
   </svg>
 </template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import AsEffects from '@/components/posters/as-effects'
+  import AsGradient from '@/components/posters/as-gradient'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { onMounted as mounted, ref } from 'vue'
   import { as_type } from '@/use/itemid'
@@ -131,6 +154,7 @@
     min-height: 512px
     height: 100%
     width: 100%
+    outline: none
     // path
     //   display:none
 </style>
