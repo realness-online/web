@@ -1,5 +1,5 @@
 <template>
-  <path ref="path" :d="d" :tabindex="tabindex" :style="style" />
+  <path ref="path" :d="d" :style="style" />
 </template>
 <script setup>
   import { ref, watch, watchEffect, inject } from 'vue'
@@ -10,10 +10,6 @@
       type: Object,
       required: true,
       validate: is_path
-    },
-    tabindex: {
-      type: Number,
-      required: true
     }
   })
   const as_stroke = ref(inject('as_stroke', false))
