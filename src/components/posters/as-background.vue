@@ -1,3 +1,12 @@
+<template>
+  <rect
+    itemprop="background"
+    :style="style"
+    width="100%"
+    height="100%"
+    fill="white"
+    :tabindex="tabindex" />
+</template>
 <script setup>
   import { as_poster, is_rect } from '@/use/vector'
   const props = defineProps({
@@ -16,17 +25,11 @@
   let style = {}
   if (props.rect) style = props.rect.getAttribute('style')
 </script>
-<template>
-  <rect
-    itemprop="background"
-    :style="style"
-    width="100%"
-    height="100%"
-    fill="white"
-    :tabindex="tabindex" />
-</template>
 <style lang="stylus">
   rect[itemprop="background"]
     outline: none
     stroke: none
+    fill: var(--white-poster)
+    // &:active
+    //   fill: currentColor
 </style>
