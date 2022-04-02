@@ -1,7 +1,6 @@
 <template>
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
-    outline
     v-else
     :id="id"
     itemscope
