@@ -28,13 +28,6 @@ export async function size(image, size = 512) {
   else image = image.resize(size, Jimp.default.AUTO)
   return image
 }
-export async function prepare(image) {
-  return image
-    .normalize()
-    .posterize(13)
-    .color([{ apply: 'shade', params: [3] }])
-    .dither565()
-}
 export async function make(image) {
   let poster = await as_paths(image, potrace_options)
 
@@ -53,7 +46,6 @@ export async function make(image) {
 }
 export async function listen(message) {
   let image = await read(message.data.image)
-  image = await prepare(image)
   image = await size(image)
   const width = as_gradient(image)
   const height = as_gradient(image, true)
