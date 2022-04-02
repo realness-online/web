@@ -11,11 +11,6 @@ const potrace_options = {
   steps: 3
   // threshold: 255
 }
-const bright = {
-  max: 255,
-  replace: 255,
-  autoGreyscale: true
-}
 function to_kb(vector) {
   let size_of = 0
   vector.paths.forEach(path => {
@@ -37,10 +32,8 @@ export async function prepare(image) {
   return image
     .normalize()
     .posterize(13)
-    .contrast(0.35)
     .color([{ apply: 'shade', params: [3] }])
     .dither565()
-    .threshold(bright)
 }
 export async function make(image) {
   let poster = await as_paths(image, potrace_options)
@@ -60,10 +53,10 @@ export async function make(image) {
 }
 export async function listen(message) {
   let image = await read(message.data.image)
-  const width = as_gradient(image)
-  const height = as_gradient(image, true)
   image = await prepare(image)
   image = await size(image)
+  const width = as_gradient(image)
+  const height = as_gradient(image, true)
   const vector = await make(image)
   vector.gradients = { width, height }
   self.postMessage({ vector })
