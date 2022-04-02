@@ -1,5 +1,4 @@
-import { as_poster } from '@/use/vector'
-
+import { use_poster } from '@/use/vector'
 import get_item from '@/use/item'
 import fs from 'fs'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
@@ -9,7 +8,7 @@ describe('@/use/vector', () => {
   describe('#use_poster', () => {
     describe('.viewbox', () => {
       it("Returns the vector's viewbox", () => {
-        const { viewbox } = as_poster({
+        const { viewbox } = use_poster({
           immediate: true,
           slice: false,
           itemid: poster.id,
@@ -18,7 +17,7 @@ describe('@/use/vector', () => {
         expect(viewbox.value).toBe('0 0 333 444')
       })
       it('Always returns a value', () => {
-        const { viewbox, vector } = as_poster({
+        const { viewbox, vector } = use_poster({
           immediate: true,
           slice: false,
           itemid: poster.id
@@ -36,7 +35,7 @@ describe('@/use/vector', () => {
           slice: false,
           itemid: poster.id
         }
-        const { vector, show } = as_poster(props, emit)
+        const { vector, show } = use_poster(props, emit)
         await show()
         expect(vector.value.id).toBe(poster.id)
         expect(emit).toBeCalledWith('loaded', vector.value)
@@ -47,7 +46,7 @@ describe('@/use/vector', () => {
           immediate: true,
           itemid: poster.id
         }
-        const { show } = as_poster(props, emit)
+        const { show } = use_poster(props, emit)
         await show()
         expect(emit).not.toBeCalledWith()
       })

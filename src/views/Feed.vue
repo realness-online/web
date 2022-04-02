@@ -37,7 +37,7 @@
   import posterAsFigure from '@/components/posters/as-figure'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people } from '@/use/people'
-  import { use as use_posters } from '@/use/posters'
+  import { use_posters } from '@/use/vector'
   import { ref, computed, watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,

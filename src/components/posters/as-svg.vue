@@ -50,7 +50,7 @@
   import { onMounted as mounted, ref } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
-    as_poster,
+    use_poster,
     is_vector,
     is_vector_id,
     is_click,
@@ -112,7 +112,7 @@
     focusable,
     tabindex,
     vector
-  } = as_poster(props, emit)
+  } = use_poster(props, emit)
   const trigger = ref(null)
   use_intersect(
     trigger,
