@@ -5,6 +5,7 @@ const webpack = require('webpack')
 
 module.exports = {
   entry: {
+    gradient: path.join(__dirname, './src/workers/gradient.js'),
     vector: path.join(__dirname, './src/workers/vector.js'),
     optimize: path.join(__dirname, './src/workers/optimize.js')
   },

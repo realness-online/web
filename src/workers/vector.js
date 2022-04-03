@@ -1,6 +1,5 @@
 import Jimp from 'jimp'
 import { as_paths } from '@realness.online/potrace'
-import { as_gradient } from '@/workers/gradient'
 
 const potrace_options = {
   turdSize: 40,
@@ -32,6 +31,7 @@ export async function make(image) {
   let poster = await as_paths(image, potrace_options)
 
   if (to_kb(poster) > 600) {
+    log
     image = await size(image, 368)
     poster = await as_paths(image, potrace_options)
   }
@@ -45,16 +45,11 @@ export async function make(image) {
   }
 }
 export async function listen(message) {
-  console.time('size:poster')
+  console.time('make:vector')
   let image = await read(message.data.image)
   image = await size(image)
-  console.timeEnd('size:poster')
-  console.time('gradient:poster')
-  const width = as_gradient(image)
-  const height = as_gradient(image, true)
-  console.timeEnd('gradient:poster')
   const vector = await make(image)
-  vector.gradients = { width, height }
-  self.postMessage({ vector })
+  self.postMessage({ reply: 'vectorized', vector })
+  console.timeEnd('make:vector')
 }
 self.addEventListener('message', listen)

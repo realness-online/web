@@ -6,6 +6,8 @@ node_modules
 /tests/unit/cache/
 /tests/e2e/reports/
 /functions/coverage
+/public/gradient.worker.js
+/public/gradient.worker.js.map
 /public/vector.worker.js
 /public/vector.worker.js.map
 /public/optimize.worker.js
