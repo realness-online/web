@@ -38,13 +38,6 @@ describe('@/views/Posters.vue', () => {
     it('UI for posters', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('Unmounts the worker when destroyed', async () => {
-      wrapper.vm.vectorizer
-      wrapper.vm.optimizer
-      wrapper.unmount()
-      expect(wrapper.vm.vectorizer.terminate).toHaveBeenCalledTimes(1)
-      expect(wrapper.vm.optimizer.terminate).toHaveBeenCalledTimes(1)
-    })
   })
   describe('Computed', () => {
     describe('.as_itemid', () => {
@@ -58,63 +51,6 @@ describe('@/views/Posters.vue', () => {
     })
   })
   describe('Methods', () => {
-    describe('#get_id', () => {
-      it('Gets the poster id from the directory listing on hte network', () => {
-        wrapper.vm.get_id(`${poster.id}.html`)
-      })
-    })
-    describe('#vectorize', () => {
-      it('Executes the method', () => {
-        wrapper.vm.vectorize()
-      })
-    })
-    describe('#vectorized', () => {
-      it('Gets the poster from the worker', () => {
-        console.log(poster.regular)
-        const event = {
-          data: {
-            vector: {
-              light: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.208'
-              },
-              regular: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.85'
-              },
-              bold: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.535'
-              },
-              width: poster.width,
-              height: poster.height,
-              viewbox: `0 0 ${poster.width} ${poster.height}`
-            }
-          }
-        }
-        wrapper.vm.working = true
-        wrapper.vm.vectorized(event)
-        expect(wrapper.vm.new_poster.id).toBe(
-          '/+16282281824/posters/1577836800000'
-        )
-        expect(wrapper.vm.working).toBe(false)
-      })
-    })
-    describe('#optimize', () => {
-      it('Gives the optimize worker a vector to work on', () => {
-        wrapper.vm.optimizer.postMessage = vi.fn()
-        wrapper.vm.optimize({ id: 'mock-vector' })
-        expect(wrapper.vm.optimizer.postMessage).toBeCalled()
-      })
-    })
-    describe('#optimized', () => {
-      it('Updates new_poster with the optimized vector', async () => {
-        await wrapper.vm.optimized({ data: { vector: poster_html } })
-        expect(wrapper.vm.new_poster.id).toBe(
-          '/+16282281824/posters/559666932867'
-        )
-      })
-    })
     describe('#cancel_poster', () => {
       it('Executes the method', () => {
         wrapper.vm.cancel_poster(poster.id)
@@ -156,11 +92,6 @@ describe('@/views/Posters.vue', () => {
         await wrapper.vm.remove_poster(poster.id)
         expect(confirm_spy).toBeCalled()
         expect(delete_spy).not.toBeCalled()
-      })
-    })
-    describe('#picker', () => {
-      it('Toggles the picker property on a poster', () => {
-        wrapper.vm.picker(poster.id)
       })
     })
     describe('#toggle_menu', () => {

@@ -1,5 +1,5 @@
 import { mount, shallowMount, flushPromises } from '@vue/test-utils'
-import Posters from '@/views/Posters'
+import uploader from '@/use/uploader'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import { get } from 'idb-keyval'
@@ -12,7 +12,7 @@ MockDate.set('2020-01-01')
 let poster
 let events
 
-describe('@/views/Posters.vue', () => {
+describe('@/use/uploader.vue', () => {
   let wrapper
   beforeEach(() => {
     poster = get_item(poster_html)
@@ -24,12 +24,6 @@ describe('@/views/Posters.vue', () => {
     ]
     localStorage.me = '/+16282281824'
     get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
-    wrapper = mount(Posters, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
-    wrapper.vm.events = events
   })
   afterEach(() => {
     localStorage.me = undefined
@@ -110,49 +104,6 @@ describe('@/views/Posters.vue', () => {
         expect(wrapper.vm.new_poster.id).toBe(
           '/+16282281824/posters/559666932867'
         )
-      })
-    })
-    describe('#cancel_poster', () => {
-      it('Executes the method', () => {
-        wrapper.vm.cancel_poster(poster.id)
-      })
-    })
-    describe('#save_poster', () => {
-      let save_spy
-      beforeEach(() => {
-        save_spy = vi.fn(() => Promise.resolve())
-        vi.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
-      })
-      it('Saves an optimized poster (will have a proper itemid)', async () => {
-        localStorage.me = itemid.as_author(poster.id)
-        wrapper.vm.new_poster = poster
-        wrapper.vm.new_poster.id = '/+16282281824/posters/559667032867'
-        await wrapper.vm.save_poster()
-        expect(save_spy).toBeCalled()
-      })
-    })
-    describe('#remove_poster', () => {
-      let confirm_spy
-      let delete_spy
-      beforeEach(() => {
-        confirm_spy = vi.fn(() => true)
-        delete_spy = vi.fn(() => Promise.resolve())
-        window.confirm = confirm_spy
-        vi.spyOn(Poster.prototype, 'delete').mockImplementation(delete_spy)
-      })
-      it('Executes the method', async () => {
-        await wrapper.vm.remove_poster(poster.id)
-        expect(delete_spy).toBeCalled()
-      })
-      it('Triggers a confirm message before deleting poster', async () => {
-        await wrapper.vm.remove_poster(poster.id)
-        expect(confirm_spy).toBeCalled()
-      })
-      it('Will not delete poster unless confirmed', async () => {
-        confirm_spy.mockImplementationOnce(() => false)
-        await wrapper.vm.remove_poster(poster.id)
-        expect(confirm_spy).toBeCalled()
-        expect(delete_spy).not.toBeCalled()
       })
     })
   })
