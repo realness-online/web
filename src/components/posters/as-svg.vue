@@ -28,16 +28,16 @@
         width="100%"
         height="100%"></filter>
       <filter id="bold-filter" x="0" y="0" width="100%" height="100%"></filter>
-      <symbol id="light">
+      <symbol :id="query('light')">
         <as-path v-if="vector.light" :path="vector.light" itemprop="light" />
       </symbol>
-      <symbol id="regular">
+      <symbol :id="query('regular')">
         <as-path
           v-if="vector.regular"
           :path="vector.regular"
           itemprop="regular" />
       </symbol>
-      <symbol id="bold">
+      <symbol :id="query('bold')">
         <as-path :path="vector.bold" itemprop="bold" />
       </symbol>
     </defs>
@@ -54,15 +54,18 @@
         fill: url(#background-gradient);
         fill-opacity: 0.5;
       " />
-
-    <use href="#light" :tabindex="tabindex" @focus="focus('light')" />
-    <use href="#light" filter="url(#emboss)" />
-
-    <use href="#regular" :tabindex="tabindex" @focus="focus('regular')" />
-    <use href="#regular" filter="url(#emboss)" />
-
-    <use href="#bold" :tabindex="tabindex" @focus="focus('bold')" />
-    <use href="#bold" filter="url(#emboss)" />
+    <use
+      :href="fragment('light')"
+      :tabindex="tabindex"
+      @focus="focus('light')" />
+    <use :href="fragment('light')" filter="url(#emboss)" />
+    <use
+      :href="fragment('regular')"
+      :tabindex="tabindex"
+      @focus="focus('regular')" />
+    <use :href="fragment('regular')" filter="url(#emboss)" />
+    <use :href="fragment('bold')" :tabindex="tabindex" @focus="focus('bold')" />
+    <use :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
 </template>
 <script setup>
@@ -125,6 +128,7 @@
   })
   const {
     id,
+    fragment: id_fragment,
     viewbox,
     aspect_ratio,
     click,
@@ -137,12 +141,14 @@
     vector
   } = use_poster(props, emit)
   const trigger = ref(null)
+  const query = name => `${id.value}-${name}`
+  const fragment = name => `${id_fragment.value}-${name}`
   use_intersect(
     trigger,
     ([{ isIntersecting }]) => {
       if (isIntersecting) show()
     },
-    { rootMargin: '132px' }
+    { rootMargin: '512px' }
   )
   mounted(should_show)
 </script>
