@@ -13,7 +13,7 @@ const potrace_options = {
 function to_kb(vector) {
   let size_of = 0
   vector.paths.forEach(path => {
-    size_of += path.length
+    size_of += path.d.length
   })
   return (size_of / 1024).toFixed(2)
 }
@@ -29,10 +29,9 @@ export async function size(image, size = 512) {
 }
 export async function make(image) {
   let poster = await as_paths(image, potrace_options)
-
   if (to_kb(poster) > 600) {
-    log
-    image = await size(image, 368)
+    console.log('poster is too large, resizing')
+    image = await size(image, 400) //from 512 to 400
     poster = await as_paths(image, potrace_options)
   }
   return {
