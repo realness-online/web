@@ -9,9 +9,11 @@ import get_item from '@/use/item'
 export const use = () => {
   const uploader = ref(null)
   const new_poster = ref(null)
+  const new_gradients = ref(null)
   const working = ref(true)
   const vectorizer = new Worker('/vector.worker.js')
   const optimizer = new Worker('/optimize.worker.js')
+  const gradienter = new Worker('/gradient.worker.js')
   const select_photo = () => {
     uploader.value.removeAttribute('capture')
     uploader.value.click()
@@ -52,7 +54,9 @@ export const use = () => {
     console.time('makes:poster')
     working.value = true
     vectorizer.postMessage({ image })
+    gradienter.postMessage({ image })
   }
+
   const vectorized = response => {
     const vector = response.data.vector
     vector.id = as_new_itemid
@@ -70,9 +74,13 @@ export const use = () => {
     path.style.fillRule = 'evenodd'
     return path
   }
+  const gradientized = message => {
+    new_gradients.value = message.data.gradients
+  }
   const optimize = vector => {
     optimizer.postMessage({ vector })
   }
+
   const optimized = message => {
     const optimized = get_item(message.data.vector)
     new_poster.value = optimized
@@ -80,13 +88,13 @@ export const use = () => {
   }
   mounted(async () => {
     vectorizer.addEventListener('message', vectorized)
+    gradienter.addEventListener('message', gradientized)
     optimizer.addEventListener('message', optimized)
   })
   dismount(() => {
     vectorizer.terminate()
     optimizer.terminate()
   })
-
   return {
     can_add,
     vectorize,
@@ -98,6 +106,7 @@ export const use = () => {
     as_new_itemid,
     working,
     new_poster,
+    new_gradients,
     select_photo,
     open_selfie_camera,
     open_camera

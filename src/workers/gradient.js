@@ -48,3 +48,24 @@ export const is_stop = stop => {
   if (!stop.color) return false
   return true
 }
+
+export async function read(file) {
+  const reader = new FileReaderSync()
+  return await Jimp.default.read(reader.readAsArrayBuffer(file))
+}
+export async function size(image, size = 512) {
+  if (image.bitmap.width > image.bitmap.height)
+    image = image.resize(Jimp.default.AUTO, size)
+  else image = image.resize(size, Jimp.default.AUTO)
+  return image
+}
+export async function listen(message) {
+  console.time('make:gradient')
+  let image = await read(message.data.image)
+  image = await size(image)
+  const width = as_gradient(image)
+  const height = as_gradient(image, true)
+  self.postMessage({ gradients: { width, height } })
+  console.timeEnd('make:gradient')
+}
+self.addEventListener('message', listen)
