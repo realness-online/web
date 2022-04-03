@@ -1,29 +1,17 @@
-import { mount, shallowMount, flushPromises } from '@vue/test-utils'
-import uploader from '@/use/uploader'
+import { use } from '@/use/vectorize'
 import get_item from '@/use/item'
-import * as itemid from '@/use/itemid'
-import { get } from 'idb-keyval'
-import { Poster } from '@/persistance/Storage'
 import fs from 'fs'
 import { describe } from 'vitest'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01')
 let poster
-let events
 
-describe('@/use/uploader.vue', () => {
+describe('@/use/vectorize.js', () => {
   let wrapper
   beforeEach(() => {
     poster = get_item(poster_html)
-    events = [
-      {
-        id: new Date(2020, 1, 1).getTime(),
-        poster: poster.id
-      }
-    ]
     localStorage.me = '/+16282281824'
-    get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
   })
   afterEach(() => {
     localStorage.me = undefined
