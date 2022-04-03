@@ -34,10 +34,7 @@ describe('@/views/Posters.vue', () => {
   afterEach(() => {
     localStorage.me = undefined
   })
-  describe('Renders', () => {
-    it('UI for posters', () => {
-      expect(wrapper.element).toMatchSnapshot()
-    })
+  describe('Lifecycle', () => {
     it('Unmounts the worker when destroyed', async () => {
       wrapper.vm.vectorizer
       wrapper.vm.optimizer
@@ -156,16 +153,6 @@ describe('@/views/Posters.vue', () => {
         await wrapper.vm.remove_poster(poster.id)
         expect(confirm_spy).toBeCalled()
         expect(delete_spy).not.toBeCalled()
-      })
-    })
-    describe('#picker', () => {
-      it('Toggles the picker property on a poster', () => {
-        wrapper.vm.picker(poster.id)
-      })
-    })
-    describe('#toggle_menu', () => {
-      it('Toggles the picker property on a poster', () => {
-        wrapper.vm.toggle_menu(poster.id)
       })
     })
   })

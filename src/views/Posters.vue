@@ -1,12 +1,12 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <a v-if="add" tabindex="-1" @click="select_photo">
+      <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
       <icon v-else name="nothing" />
       <h1>Posters</h1>
-      <a v-if="add" id="camera" @click="open_camera">
+      <a v-if="can_add" id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
       <input
@@ -21,7 +21,7 @@
       <as-figure
         v-if="new_poster"
         class="new"
-        :itemid="as_itemid"
+        :itemid="as_new_itemid"
         :new_poster="new_poster"
         :working="working"
         @loaded="optimize">
@@ -40,7 +40,7 @@
         :key="poster.id"
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
-        @click="menu_toggle(poster.id)">
+        @click="toggle_menu(poster.id)">
         <as-author-menu
           :poster="poster"
           @remove="remove_poster"
@@ -57,7 +57,6 @@
 
   import { del } from 'idb-keyval'
   import get_item from '@/use/item'
-  import { create_path_element } from '@/use/path-style'
   import { use as use_uploader } from '@/use/uploader'
   import { Poster } from '@/persistance/Storage'
   import {
@@ -69,55 +68,20 @@
   } from 'vue'
   import { use_posters } from '@/use/vector'
   const finished = ref(true)
-  const vectorizer = new Worker('/vector.worker.js')
-  const optimizer = new Worker('/optimize.worker.js')
-  const working = ref(false)
-  const new_poster = ref(null)
+
   const { posters, for_person: posters_for_person } = use_posters()
-  const { vUploader, uploader, open_camera, select_photo } = use_uploader()
+  const {
+    vUploader,
+    uploader,
+    optimize,
+    new_poster,
+    working,
+    open_camera,
+    select_photo,
+    as_new_itemid,
+    can_add
+  } = use_uploader()
 
-  const as_itemid = computed(() => {
-    if (new_poster.value && new_poster.value.id) return new_poster.value.id
-    else return `${localStorage.me}/posters/${Date.now()}`
-  })
-  const add = computed(() => {
-    if (working.value || new_poster.value) return false
-    else return true
-  })
-  const get_id = (name, type) => {
-    return `${localStorage.me}/${type}/${name}`
-  }
-  const vectorize = image => {
-    console.time('makes:poster')
-
-    working.value = true
-    vectorizer.postMessage({ image })
-  }
-  const vectorized = response => {
-    const vector = response.data.vector
-    vector.id = as_itemid
-    vector.type = 'posters'
-    vector.light = make_path(vector.light)
-    vector.regular = make_path(vector.regular)
-    vector.bold = make_path(vector.bold)
-    new_poster.value = vector
-    working.value = false
-  }
-  const make_path = path_data => {
-    const path = create_path_element()
-    path.setAttribute('d', path_data.d)
-    path.style.fillOpacity = path_data.fillOpacity
-    path.style.fillRule = 'evenodd'
-    return path
-  }
-  const optimize = vector => {
-    optimizer.postMessage({ vector })
-  }
-  const optimized = message => {
-    const optimized = get_item(message.data.vector)
-    new_poster.value = optimized
-    console.timeEnd('makes:poster')
-  }
   const save_poster = async () => {
     const id = new_poster.value.id
     if (!id) return null
@@ -147,7 +111,7 @@
     }
   }
   const cancel_poster = () => (new_poster.value = null)
-  const menu_toggle = itemid => {
+  const toggle_menu = itemid => {
     posters.value.forEach(poster => {
       if (poster.menu) poster.menu = false
     })
@@ -159,15 +123,9 @@
     poster.picker = !poster.picker
   }
   mounted(async () => {
-    vectorizer.addEventListener('message', vectorized)
-    optimizer.addEventListener('message', optimized)
     await posters_for_person({ id: localStorage.me })
     working.value = false
     console.info('views:Posters')
-  })
-  dismount(() => {
-    vectorizer.terminate()
-    optimizer.terminate()
   })
 </script>
 <style lang="stylus">

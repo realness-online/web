@@ -45,10 +45,14 @@ export async function make(image) {
   }
 }
 export async function listen(message) {
+  console.time('size:poster')
   let image = await read(message.data.image)
   image = await size(image)
+  console.timeEnd('size:poster')
+  console.time('gradient:poster')
   const width = as_gradient(image)
   const height = as_gradient(image, true)
+  console.timeEnd('gradient:poster')
   const vector = await make(image)
   vector.gradients = { width, height }
   self.postMessage({ vector })
