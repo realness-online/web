@@ -12,13 +12,13 @@ export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
 export const is_vector = vector => {
   if (typeof vector != 'object') return false
-  if (!is_vector_id(vector?.id)) return false
-  if (vector?.path) return false
-  if (!vector?.viewbox) return false
-  if (!vector?.height || !vector?.width) return false
-  if (!vector?.light) return false
-  if (!vector?.light?.style) return false
-  if (vector?.type === 'posters' || vector.type === 'avatars') return true
+  if (!is_vector_id(vector.id)) return false
+  if (vector.path) return false
+  if (!vector.viewbox) return false
+  if (!vector.height || !vector.width) return false
+  if (!vector.light) return false
+  if (!vector.light.style) return false
+  if (vector.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
 export const is_rect = rect => {
@@ -59,7 +59,7 @@ export const migrate_path = path => {
   return path
 }
 export const migrate_poster = poster => {
-  if (Array.isArray(poster?.path)) {
+  if (Array.isArray(poster.path)) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
     poster.bold = migrate_path(poster.path[2])
@@ -99,9 +99,7 @@ export const use_poster = (props, emit) => {
     if (vector.value) return as_query_id(vector.value.id)
     else return 'new-poster'
   })
-  const fragment = computed(() => {
-    return `#${id.value}`
-  })
+  const fragment = computed(() => `#${id.value}`)
   const click = () => {
     menu.value = !menu.value
     emit('click', menu.value)
@@ -109,7 +107,7 @@ export const use_poster = (props, emit) => {
   const show = async () => {
     if (!vector.value) {
       let poster = await load(props.itemid)
-      if (poster?.path) poster = migrate_poster(poster)
+      if (poster.path) poster = migrate_poster(poster)
       vector.value = poster
     }
     working.value = false
