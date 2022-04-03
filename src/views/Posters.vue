@@ -10,8 +10,8 @@
         <icon name="camera" />
       </a>
       <input
-        ref="uploader"
-        v-uploader
+        ref="image_picker"
+        v-vectorizer
         type="file"
         accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
@@ -19,17 +19,17 @@
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
-        v-if="new_poster"
+        v-if="new_vector"
         class="new"
         :itemid="as_new_itemid"
-        :new_poster="new_poster"
+        :new_poster="new_vector"
         :working="working"
         @loaded="optimize">
         <menu>
           <a class="remove" @click="cancel_poster">
             <icon name="remove" />
           </a>
-          <a v-if="new_poster.id" class="save" @click="save_poster">
+          <a v-if="new_vector.id" class="save" @click="save_poster">
             <icon name="finished" />
           </a>
         </menu>
@@ -57,7 +57,7 @@
 
   import { del } from 'idb-keyval'
   import get_item from '@/use/item'
-  import { use as use_uploader } from '@/use/uploader'
+  import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
   import {
     computed,
@@ -71,19 +71,19 @@
 
   const { posters, for_person: posters_for_person } = use_posters()
   const {
-    vUploader,
-    uploader,
-    optimize,
-    new_poster,
-    working,
+    can_add,
+    vVectorizer,
+    image_picker,
     open_camera,
     select_photo,
+    working,
     as_new_itemid,
-    can_add
-  } = use_uploader()
+    optimize,
+    new_vector
+  } = use_vectorize()
 
   const save_poster = async () => {
-    const id = new_poster.value.id
+    const id = new_vector.value.id
     if (!id) return null
     working.value = true
     const poster = new Poster(id)
@@ -94,7 +94,7 @@
       menu: false,
       picker: false
     })
-    new_poster.value = null
+    new_vector.value = null
     working.value = false
     del(`${localStorage.me}/posters/`)
     // Creating a poster during a sync will sometimes
@@ -110,7 +110,7 @@
       console.info('delete:poster', id)
     }
   }
-  const cancel_poster = () => (new_poster.value = null)
+  const cancel_poster = () => (new_vector.value = null)
   const toggle_menu = itemid => {
     posters.value.forEach(poster => {
       if (poster.menu) poster.menu = false
@@ -125,7 +125,7 @@
   mounted(async () => {
     await posters_for_person({ id: localStorage.me })
     working.value = false
-    console.info('views:Posters')
+    console.info('views:/posters')
   })
 </script>
 <style lang="stylus">

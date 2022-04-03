@@ -7,24 +7,22 @@ import {
 import { create_path_element } from '@/use/path-style'
 import get_item from '@/use/item'
 export const use = () => {
-  const uploader = ref(null)
-  const new_poster = ref(null)
+  const image_picker = ref(null)
+  const new_vector = ref(null)
   const new_gradients = ref(null)
   const working = ref(true)
-  const vectorizer = new Worker('/vector.worker.js')
-  const optimizer = new Worker('/optimize.worker.js')
-  const gradienter = new Worker('/gradient.worker.js')
+
   const select_photo = () => {
-    uploader.value.removeAttribute('capture')
-    uploader.value.click()
+    image_picker.value.removeAttribute('capture')
+    image_picker.value.click()
   }
   const open_selfie_camera = () => {
-    uploader.value.setAttribute('capture', 'user')
-    uploader.value.click()
+    image_picker.value.setAttribute('capture', 'user')
+    image_picker.value.click()
   }
   const open_camera = () => {
-    uploader.value.setAttribute('capture', 'environment')
-    uploader.value.click()
+    image_picker.value.setAttribute('capture', 'environment')
+    image_picker.value.click()
   }
   const upload = (input, binding, event) => {
     const image = event.target.files[0]
@@ -37,36 +35,19 @@ export const use = () => {
       input.value = ''
     }
   }
-  const vUploader = {
+  const vVectorizer = {
     mounted: (input, binding) => {
       input.addEventListener('change', event => upload(input, binding, event))
     }
   }
   const can_add = computed(() => {
-    if (working.value || new_poster.value) return false
+    if (working.value || new_vector.value) return false
     else return true
   })
   const as_new_itemid = computed(() => {
-    if (new_poster.value && new_poster.value.id) return new_poster.value.id
+    if (new_vector.value && new_vector.value.id) return new_vector.value.id
     else return `${localStorage.me}/posters/${Date.now()}`
   })
-  const vectorize = image => {
-    console.time('makes:poster')
-    working.value = true
-    vectorizer.postMessage({ image })
-    gradienter.postMessage({ image })
-  }
-
-  const vectorized = response => {
-    const vector = response.data.vector
-    vector.id = as_new_itemid
-    vector.type = 'posters'
-    vector.light = make_path(vector.light)
-    vector.regular = make_path(vector.regular)
-    vector.bold = make_path(vector.bold)
-    new_poster.value = vector
-    working.value = false
-  }
   const make_path = path_data => {
     const path = create_path_element()
     path.setAttribute('d', path_data.d)
@@ -74,16 +55,37 @@ export const use = () => {
     path.style.fillRule = 'evenodd'
     return path
   }
+
+  const vectorizer = new Worker('/vector.worker.js')
+  const vectorize = image => {
+    console.time('makes:poster')
+    working.value = true
+    vectorizer.postMessage({ image })
+    gradienter.postMessage({ image })
+  }
+  const vectorized = response => {
+    const vector = response.data.vector
+    vector.id = as_new_itemid
+    vector.type = 'posters'
+    vector.light = make_path(vector.light)
+    vector.regular = make_path(vector.regular)
+    vector.bold = make_path(vector.bold)
+    new_vector.value = vector
+    working.value = false
+  }
+
+  const gradienter = new Worker('/gradient.worker.js')
   const gradientized = message => {
     new_gradients.value = message.data.gradients
   }
+
+  const optimizer = new Worker('/optimize.worker.js')
   const optimize = vector => {
     optimizer.postMessage({ vector })
   }
-
   const optimized = message => {
     const optimized = get_item(message.data.vector)
-    new_poster.value = optimized
+    new_vector.value = optimized
     console.timeEnd('makes:poster')
   }
   mounted(async () => {
@@ -97,18 +99,18 @@ export const use = () => {
   })
   return {
     can_add,
+    select_photo,
+    open_selfie_camera,
+    open_camera,
+    image_picker,
+    vVectorizer,
     vectorize,
     vectorizer,
     optimizer,
     optimize,
-    vUploader,
-    uploader,
-    as_new_itemid,
     working,
-    new_poster,
+    new_vector,
     new_gradients,
-    select_photo,
-    open_selfie_camera,
-    open_camera
+    as_new_itemid
   }
 }
