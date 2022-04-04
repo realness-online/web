@@ -11,31 +11,12 @@
     :tabindex="focusable"
     @click="click">
     <defs>
-      <filter id="emboss">
-        <feConvolveMatrix
-          kernelMatrix="3 0 0
-                        0 0 0
-                        0 0 -3" />
-      </filter>
-      <filter
-        id="background-filter"
-        color-interpolation-filters="sRGB"></filter>
-      <filter id="light-filter" x="0" y="0" width="100%" height="100%"></filter>
-      <filter
-        id="regular-filter"
-        x="0"
-        y="0"
-        width="100%"
-        height="100%"></filter>
-      <filter id="bold-filter" x="0" y="0" width="100%" height="100%"></filter>
-      <symbol :id="query('light')">
-        <as-path v-if="vector.light" :path="vector.light" itemprop="light" />
+      <as-effects :vector="vector" />
+      <symbol v-if="vector.light" :id="query('light')">
+        <as-path :path="vector.light" itemprop="light" />
       </symbol>
-      <symbol :id="query('regular')">
-        <as-path
-          v-if="vector.regular"
-          :path="vector.regular"
-          itemprop="regular" />
+      <symbol v-if="vector.regular" :id="query('regular')">
+        <as-path :path="vector.regular" itemprop="regular" />
       </symbol>
       <symbol :id="query('bold')">
         <as-path :path="vector.bold" itemprop="bold" />
@@ -49,29 +30,26 @@
       width="100%"
       height="100%"
       :tabindex="tabindex"
-      style="
-        filter: url(#background-filter);
-        fill: url(#background-gradient);
-        fill-opacity: 0.5;
-      " />
+      filter="url(#background-filter)"
+      fill="url(#height-gradient)" />
     <use
       :href="fragment('light')"
       :tabindex="tabindex"
       @focus="focus('light')" />
-    <use :href="fragment('light')" filter="url(#emboss)" />
+    <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
       :href="fragment('regular')"
       :tabindex="tabindex"
       @focus="focus('regular')" />
-    <use :href="fragment('regular')" filter="url(#emboss)" />
+    <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use :href="fragment('bold')" :tabindex="tabindex" @focus="focus('bold')" />
-    <use :href="fragment('bold')" filter="url(#emboss)" />
+    <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
 </template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import AsGradient from '@/components/posters/as-gradient'
+  import AsEffects from '@/components/posters/as-effects'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { onMounted as mounted, ref } from 'vue'
   import { as_type } from '@/use/itemid'
