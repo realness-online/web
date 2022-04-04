@@ -1,6 +1,9 @@
 <template>
+  <filter id="background-filter" color-interpolation-filters="sRGB"></filter>
+  <filter id="light-filter" x="0" y="0" width="100%" height="100%"></filter>
+  <filter id="regular-filter" x="0" y="0" width="100%" height="100%"></filter>
+  <filter id="bold-filter" x="0" y="0" width="100%" height="100%"></filter>
   <linearGradient
-    v-if="height"
     gradientUnits="userSpaceOnUse"
     id="height-gradient"
     x1="0%"
@@ -13,7 +16,6 @@
       :offset="`${stop.percentage}%`" />
   </linearGradient>
   <linearGradient
-    v-if="width"
     id="width-gradient"
     gradientUnits="userSpaceOnUse"
     x1="0"
@@ -25,17 +27,23 @@
       :stop-color="stop.color"
       :offset="`${stop.percentage}%`" />
   </linearGradient>
+  <filter id="emboss">
+    <feConvolveMatrix
+      kernelMatrix="3 0 0
+                    0 0 0
+                    0 0 -3" />
+  </filter>
 </template>
 <script setup>
   import { ref } from 'vue'
   import { is_vector } from '@/use/vector'
   const props = defineProps({
-    poster: {
+    vector: {
       type: Object,
       required: true,
       validator: is_vector
     }
   })
-  const height = ref(props.poster?.gradients?.height)
-  const width = ref(props.poster?.gradients?.width)
+  const height = ref(props.vector.gradients?.height)
+  const width = ref(props.vector.gradients?.width)
 </script>
