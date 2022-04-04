@@ -2,6 +2,8 @@
 
 ![Realness](src/style/icons.svg)
 
+Realness is for churches punks and veterans. Realness is organizations that live outside of advertizing.
+
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
 
 Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
