@@ -1,7 +1,7 @@
 // this code is inspired by https://github.com/ben-eb/postcss-resemble-image
 // for Number.EPSILON edge case see https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
 import Jimp from 'jimp'
-
+import { rgba_to_hsla } from '@/use/colors'
 export const as_gradient = (image, height = false) => {
   let direction = image.bitmap.width
   let opposite = image.bitmap.height
@@ -17,7 +17,9 @@ export const as_gradient = (image, height = false) => {
       .crop(i, 0, chunk, opposite)
       .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
-    color = rgb_to_hex(Jimp.default.intToRGBA(color))
+
+    color = Jimp.default.intToRGBA(color)
+    color = rgba_to_hsla(color)
     stops.push({ color, percentage: scale(i, 0, direction) })
   }
   return stops
@@ -29,13 +31,7 @@ export const fidelity = (length, pair = { number: 3, unit: '%' }) => {
   if (pair.unit === '%') return length * (number / 100)
   return number
 }
-export const rgb_to_hex = ({ r, g, b }) => {
-  function convert(c) {
-    const hex = c.toString(16)
-    return hex.length === 1 ? '0' + hex : hex
-  }
-  return '#' + convert(r) + convert(g) + convert(b)
-}
+
 export const scale = (value, min, max) => {
   const new_min = 0
   const new_max = 100
@@ -48,7 +44,6 @@ export const is_stop = stop => {
   if (!stop.color) return false
   return true
 }
-
 export async function read(file) {
   const reader = new FileReaderSync()
   return await Jimp.default.read(reader.readAsArrayBuffer(file))
