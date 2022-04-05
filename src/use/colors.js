@@ -33,10 +33,39 @@ export function to_hsl(color = '') {
     g = '0x' + H[3] + H[4]
     b = '0x' + H[5] + H[6]
   }
+  return rgba_to_hsla({ r, g, b, a: 255 })
+}
+export function to_complimentary_hsl(color = '') {
+  let hsl = to_hsl(color)
+  const h = hsl.h + 180
+  const s = 100 - hsl.s
+  let l = 100 - hsl.l
+  const new_color = `hsl(${h},${s}%,${l}%)`
+  return {
+    color: new_color,
+    h,
+    s,
+    l
+  }
+}
+export function luminosity(color, change_by) {
+  const hsl = to_hsl(color)
+  const l = parseInt(hsl.l) + parseInt(change_by)
+  return {
+    color: `hsl(${hsl.h},${hsl.s}%,${l}%)`,
+    h: hsl.h,
+    s: hsl.s,
+    l
+  }
+}
+
+export const rgba_to_hsla = ({ r, g, b, a }) => {
   // Then to HSL
   r /= 255
   g /= 255
   b /= 255
+  a /= 255
+  a = a.toFixed(2)
   let cmin = Math.min(r, g, b)
   let cmax = Math.max(r, g, b)
   let delta = cmax - cmin
@@ -64,33 +93,12 @@ export function to_hsl(color = '') {
   s = Math.round(s)
   l = Math.round(l)
   return {
-    color: `hsl(${h},${s}%,${l}%)`,
+    color: `hsl(${h},${s}%,${l}%,)`,
+    hsla: `hsla(${h},${s}%,${l}%, ${a})`,
     h,
     s,
-    l
-  }
-}
-export function to_complimentary_hsl(color = '') {
-  let hsl = to_hsl(color)
-  const h = hsl.h + 180
-  const s = 100 - hsl.s
-  let l = 100 - hsl.l
-  const new_color = `hsl(${h},${s}%,${l}%)`
-  return {
-    color: new_color,
-    h,
-    s,
-    l
-  }
-}
-export function luminosity(color, change_by) {
-  const hsl = to_hsl(color)
-  const l = parseInt(hsl.l) + parseInt(change_by)
-  return {
-    color: `hsl(${hsl.h},${hsl.s}%,${l}%)`,
-    h: hsl.h,
-    s: hsl.s,
-    l
+    l,
+    a
   }
 }
 
