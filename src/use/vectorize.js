@@ -1,17 +1,17 @@
 import {
   ref,
   computed,
+  watch,
   onMounted as mounted,
   onUnmounted as dismount
 } from 'vue'
 import { create_path_element } from '@/use/path-style'
+const new_vector = ref(null)
 import get_item from '@/use/item'
 export const use = () => {
   const image_picker = ref(null)
-  const new_vector = ref(null)
   const new_gradients = ref(null)
   const working = ref(true)
-
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
     image_picker.value.click()
@@ -24,15 +24,15 @@ export const use = () => {
     image_picker.value.setAttribute('capture', 'environment')
     image_picker.value.click()
   }
-  const upload = (input, binding, event) => {
-    const image = event.target.files[0]
+  const upload = () => {
+    const image = image_picker.value.files[0]
     if (image === undefined) return
     const is_image = ['image/jpeg', 'image/png'].some(type => {
       return image.type === type
     })
     if (is_image) {
       vectorize(image)
-      input.value = ''
+      image_picker.value.value = ''
     }
   }
   const vVectorizer = {
@@ -92,6 +92,10 @@ export const use = () => {
     vectorizer.addEventListener('message', vectorized)
     gradienter.addEventListener('message', gradientized)
     optimizer.addEventListener('message', optimized)
+  })
+
+  watch(new_vector, () => {
+    if (new_vector.value) new_vector.value.gradients = new_gradients
   })
   dismount(() => {
     vectorizer.terminate()
