@@ -10,8 +10,14 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
+    <as-effects :vector="vector" />
     <defs>
-      <as-effects :vector="vector" />
+      <filter id="emboss">
+        <feConvolveMatrix
+          kernelMatrix="3 0 0
+                        0 0 0
+                        0 0 -3" />
+      </filter>
       <symbol v-if="vector.light" :id="query('light')">
         <as-path :path="vector.light" itemprop="light" />
       </symbol>
@@ -21,17 +27,21 @@
       <symbol :id="query('bold')">
         <as-path :path="vector.bold" itemprop="bold" />
       </symbol>
+      <symbol :id="query('background')">
+        <as-background
+          :rect="vector.background"
+          :tabable="tabable"
+          @focus="focus('background')" />
+        <rect
+          width="100%"
+          height="100%"
+          :tabindex="tabindex"
+          filter="url(#background-filter)"
+          fill="url(#background-gradient)"
+          @focus="focus('background-gradient')" />
+      </symbol>
     </defs>
-    <as-background
-      :rect="vector.background"
-      :tabable="tabable"
-      @focus="focus('background')" />
-    <rect
-      width="100%"
-      height="100%"
-      :tabindex="tabindex"
-      filter="url(#background-filter)"
-      fill="url(#height-gradient)" />
+    <use :href="fragment('background')" />
     <use
       :href="fragment('light')"
       :tabindex="tabindex"
@@ -106,6 +116,7 @@
   })
   const {
     id,
+    query,
     fragment: id_fragment,
     viewbox,
     aspect_ratio,
@@ -119,7 +130,6 @@
     vector
   } = use_poster(props, emit)
   const trigger = ref(null)
-  const query = name => `${id.value}-${name}`
   const fragment = name => `${id_fragment.value}-${name}`
   use_intersect(
     trigger,
