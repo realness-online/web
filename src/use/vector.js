@@ -100,6 +100,7 @@ export const use_poster = (props, emit) => {
     else return 'new-poster'
   })
   const fragment = computed(() => `#${id.value}`)
+  const query = add => `${id.value}-${add}`
   const click = () => {
     menu.value = !menu.value
     emit('click', menu.value)
@@ -133,6 +134,7 @@ export const use_poster = (props, emit) => {
     click,
     menu,
     id,
+    query,
     fragment,
     landscape,
     aspect_ratio,
