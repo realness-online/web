@@ -15,7 +15,7 @@ export function to_hex(color = '') {
 export function to_hex_number(color) {
   return parseInt(color.substring(1))
 }
-export function to_hsl(color = '') {
+export function to_hsla(color = '') {
   let H = color.toString()
   // check if it's already hsl
   if (H.startsWith('hsl')) return (H = hsl_to_hex(H))
@@ -29,6 +29,7 @@ export function to_hsl(color = '') {
     g = '0x' + H[2] + H[2]
     b = '0x' + H[3] + H[3]
   } else if (H.length == 7) {
+    // todo accomidate hex with alpha
     r = '0x' + H[1] + H[2]
     g = '0x' + H[3] + H[4]
     b = '0x' + H[5] + H[6]
@@ -36,26 +37,29 @@ export function to_hsl(color = '') {
   return rgba_to_hsla({ r, g, b, a: 255 })
 }
 export function to_complimentary_hsl(color = '') {
-  let hsl = to_hsl(color)
+  let hsl = to_hsla(color)
   const h = hsl.h + 180
   const s = 100 - hsl.s
   let l = 100 - hsl.l
-  const new_color = `hsl(${h},${s}%,${l}%)`
   return {
-    color: new_color,
+    hsl: `hsl(${h}, ${s}%, ${l}%)`,
+    hsla: `hsl(${h}, ${s}%, ${l}%, ${hsl.a})`,
     h,
     s,
-    l
+    l,
+    a: hsl.a
   }
 }
 export function luminosity(color, change_by) {
-  const hsl = to_hsl(color)
+  const hsl = to_hsla(color)
   const l = parseInt(hsl.l) + parseInt(change_by)
   return {
-    color: `hsl(${hsl.h},${hsl.s}%,${l}%)`,
+    hsl: `hsl(${hsl.h}, ${hsl.s}%, ${l}%)`,
+    hsla: `hsl(${hsl.h}, ${hsl.s}%, ${l}%, ${hsl.a})`,
     h: hsl.h,
     s: hsl.s,
-    l
+    l,
+    a: hsl.a
   }
 }
 
@@ -93,8 +97,8 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
   s = Math.round(s)
   l = Math.round(l)
   return {
-    color: `hsl(${h},${s}%,${l}%,)`,
-    hsla: `hsla(${h},${s}%,${l}%, ${a})`,
+    hsl: `hsl(${h}, ${s}%, ${l}%)`,
+    hsla: `hsla(${h}, ${s}%, ${l}%, ${a})`,
     h,
     s,
     l,

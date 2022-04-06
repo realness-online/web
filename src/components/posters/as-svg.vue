@@ -36,8 +36,8 @@
           width="100%"
           height="100%"
           :tabindex="tabindex"
-          filter="url(#background-filter)"
-          fill="url(#background-gradient)"
+          :fill="`url(${fragment('width-gradient')})`"
+          :filter="`url(${fragment('background-filter')})`"
           @focus="focus('background-gradient')" />
       </symbol>
     </defs>
@@ -45,14 +45,23 @@
     <use
       :href="fragment('light')"
       :tabindex="tabindex"
+      :fill="`url(${fragment('width-gradient')})`"
+      :filter="`url(${fragment('light-filter')})`"
       @focus="focus('light')" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
       :href="fragment('regular')"
       :tabindex="tabindex"
+      :fill="`url(${fragment('height-gradient')})`"
+      :filter="`url(${fragment('regular-filter')})`"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
-    <use :href="fragment('bold')" :tabindex="tabindex" @focus="focus('bold')" />
+    <use
+      :href="fragment('bold')"
+      :tabindex="tabindex"
+      :fill="`url(${fragment('width-gradient')})`"
+      :filter="`url(${fragment('bold-filter')})`"
+      @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
 </template>
@@ -150,5 +159,5 @@
     width: 100%
     outline: none
     // path
-    //   display:none
+    //   display: none
 </style>

@@ -24,14 +24,13 @@ export const as_gradient = (image, height = false) => {
   }
   return stops
 }
-export const fidelity = (length, pair = { number: 3, unit: '%' }) => {
+export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
   if (pair.unit === '%') return length * (number / 100)
   return number
 }
-
 export const scale = (value, min, max) => {
   const new_min = 0
   const new_max = 100
@@ -44,17 +43,17 @@ export const is_stop = stop => {
   if (!stop.color) return false
   return true
 }
-export async function read(file) {
+export const read = async file => {
   const reader = new FileReaderSync()
   return await Jimp.default.read(reader.readAsArrayBuffer(file))
 }
-export async function size(image, size = 512) {
+export const size = async (image, size = 512) => {
   if (image.bitmap.width > image.bitmap.height)
     image = image.resize(Jimp.default.AUTO, size)
   else image = image.resize(size, Jimp.default.AUTO)
   return image
 }
-export async function listen(message) {
+export const listen = async message => {
   console.time('make:gradient')
   let image = await read(message.data.image)
   image = await size(image)

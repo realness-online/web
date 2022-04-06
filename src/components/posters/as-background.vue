@@ -29,7 +29,6 @@
   rect[itemprop="background"]
     outline: none
     stroke: none
-    fill: var(--white-poster)
     &:focus
       outline:none
 </style>
