@@ -36,7 +36,7 @@
           width="100%"
           height="100%"
           :tabindex="tabindex"
-          :fill="`url(${fragment('width-gradient')})`"
+          :fill="`url(${fragment('height-gradient')})`"
           :filter="`url(${fragment('background-filter')})`"
           @focus="focus('background-gradient')" />
       </symbol>
