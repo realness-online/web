@@ -1,16 +1,15 @@
 import {
   ref,
   computed,
-  watch,
   onMounted as mounted,
   onUnmounted as dismount
 } from 'vue'
 import { create_path_element } from '@/use/path-style'
 const new_vector = ref(null)
+const new_gradients = ref(null)
 import get_item from '@/use/item'
 export const use = () => {
   const image_picker = ref(null)
-  const new_gradients = ref(null)
   const working = ref(true)
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
@@ -75,9 +74,7 @@ export const use = () => {
   }
 
   const gradienter = new Worker('/gradient.worker.js')
-  const gradientized = message => {
-    new_gradients.value = message.data.gradients
-  }
+  const gradientized = message => (new_gradients.value = message.data.gradients)
 
   const optimizer = new Worker('/optimize.worker.js')
   const optimize = vector => {
@@ -94,9 +91,6 @@ export const use = () => {
     optimizer.addEventListener('message', optimized)
   })
 
-  watch(new_vector, () => {
-    if (new_vector.value) new_vector.value.gradients = new_gradients
-  })
   dismount(() => {
     vectorizer.terminate()
     optimizer.terminate()
