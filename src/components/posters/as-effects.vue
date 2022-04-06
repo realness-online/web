@@ -31,37 +31,37 @@
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 0.33 0
-                  0 1 0 0.33 0
-                  0 0 1 0.33 0
+          values="1 0 0 0.21 0
+                  0 1 0 0.21 0
+                  0 0 1 0.21 0
                   0 0 0 1.00 0" />
       </filter>
       <filter :id="query('light-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 -0.15 0
-                  0 1 0 -0.15 0
-                  0 0 1 -0.15 0
-                  0 0 0 2.0 0" />
+          values="1 0 0 -0.11 0
+                  0 1 0 -0.11 0
+                  0 0 1 -0.11 0
+                  0 0 0 1.0 0" />
       </filter>
       <filter :id="query('regular-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 -0.33 0
-                  0 1 0 -0.33 0
-                  0 0 1 -0.33 0
-                  0 0 0  2.00 0" />
+          values="1 0 0 -0.5 0
+                  0 1 0 -0.5 0
+                  0 0 1 -0.5 0
+                  0 0 0  1.0 0" />
       </filter>
       <filter :id="query('bold-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 -0.66 0
-                  0 1 0 -0.66 0
-                  0 0 1 -0.66 0
-                  0 0 0  2.00 0" />
+          values="1 0 0 -0.88 0
+                  0 1 0 -0.88 0
+                  0 0 1 -0.88 0
+                  0 0 0  2.50 0" />
       </filter>
     </g>
   </defs>
