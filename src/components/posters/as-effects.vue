@@ -10,7 +10,7 @@
         y2="100%">
         <stop
           v-for="stop in height"
-          :stop-color="stop.color.hsl"
+          :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </linearGradient>
       <linearGradient
@@ -22,7 +22,7 @@
         y2="0">
         <stop
           v-for="stop in width"
-          :stop-color="stop.color.hsl"
+          :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </linearGradient>
     </g>
@@ -31,37 +31,37 @@
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 0.5 0
-                  0 1 0 0.5 0
-                  0 0 1 0.5 0
-                  0 0 0 1 0" />
+          values="1 0 0 0.33 0
+                  0 1 0 0.33 0
+                  0 0 1 0.33 0
+                  0 0 0 1.00 0" />
       </filter>
       <filter :id="query('light-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
+          values="1 0 0 -0.15 0
+                  0 1 0 -0.15 0
+                  0 0 1 -0.15 0
+                  0 0 0 2.0 0" />
       </filter>
       <filter :id="query('regular-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 -0.5 0
-                  0 1 0 -0.5 0
-                  0 0 1 -0.5 0
-                  0 0 0 1.5 0" />
+          values="1 0 0 -0.33 0
+                  0 1 0 -0.33 0
+                  0 0 1 -0.33 0
+                  0 0 0  2.00 0" />
       </filter>
       <filter :id="query('bold-filter')">
         <feColorMatrix
           in="SourceGraphic"
           type="matrix"
-          values="1 0 0 -0.99 0
-                  0 1 0 -0.99 0
-                  0 0 1 -0.99 0
-                  0 0 0  3 0" />
+          values="1 0 0 -0.66 0
+                  0 1 0 -0.66 0
+                  0 0 1 -0.66 0
+                  0 0 0  2.00 0" />
       </filter>
     </g>
   </defs>
