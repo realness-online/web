@@ -24,7 +24,7 @@ export const as_gradient = (image, height = false) => {
   }
   return stops
 }
-export const fidelity = (length, pair = { number: 33.33, unit: '%' }) => {
+export const fidelity = (length, pair = { number: 33, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
