@@ -31,10 +31,6 @@
 </script>
 <style lang="stylus">
   path[itemprop]
-    // color: url()
-    // stroke: currentColor
-    // stroke-width: base-line * 0.033
-    // stroke-opacity: 0.33
     outline: none
     &:active
       outline:none
