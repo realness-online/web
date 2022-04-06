@@ -34,7 +34,7 @@
           values="1 0 0 0.21 0
                   0 1 0 0.21 0
                   0 0 1 0.21 0
-                  0 0 0 1.00 0" />
+                  0 0 0 2.00 0" />
       </filter>
       <filter :id="query('light-filter')">
         <feColorMatrix
@@ -43,7 +43,7 @@
           values="1 0 0 -0.11 0
                   0 1 0 -0.11 0
                   0 0 1 -0.11 0
-                  0 0 0 1.0 0" />
+                  0 0 0 2.0 0" />
       </filter>
       <filter :id="query('regular-filter')">
         <feColorMatrix
@@ -52,7 +52,7 @@
           values="1 0 0 -0.5 0
                   0 1 0 -0.5 0
                   0 0 1 -0.5 0
-                  0 0 0  1.0 0" />
+                  0 0 0  1.4 0" />
       </filter>
       <filter :id="query('bold-filter')">
         <feColorMatrix
