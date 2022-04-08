@@ -1,5 +1,5 @@
 <template>
-  <defs itemprop="effects">
+  <defs v-if="gradients" itemprop="effects">
     <g class="gradients">
       <linearGradient
         :id="query('height-gradient')"
@@ -70,15 +70,9 @@
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector, use_poster } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
-  const props = defineProps({
-    vector: {
-      type: Object,
-      required: true,
-      validator: is_vector
-    }
-  })
-  const { query } = use_poster({ poster: props.vector })
-  const { new_gradients: gradients } = use_vectorize()
+  const { new_gradients: gradients, new_vector } = use_vectorize()
+  const { query, vector } = use_poster()
+  vector.value = new_vector.value
   const width = ref([])
   const height = ref([])
   watch_effect(() => {

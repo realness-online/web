@@ -10,7 +10,8 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <as-effects :vector="vector" />
+    <defs v-if="vector.effects" itemprop="effects" v-html="vector.effects" />
+    <new-effects v-if="new_poster" />
     <defs>
       <filter id="emboss">
         <feConvolveMatrix
@@ -45,22 +46,19 @@
     <use
       :href="fragment('light')"
       :tabindex="tabindex"
-      :fill="`url(${fragment('width-gradient')})`"
-      :filter="`url(${fragment('light-filter')})`"
+      :style="style('light')"
       @focus="focus('light')" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
       :href="fragment('regular')"
       :tabindex="tabindex"
-      :fill="`url(${fragment('height-gradient')})`"
-      :filter="`url(${fragment('regular-filter')})`"
+      :style="style('regular')"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
       :href="fragment('bold')"
       :tabindex="tabindex"
-      :fill="`url(${fragment('width-gradient')})`"
-      :filter="`url(${fragment('bold-filter')})`"
+      :style="style('bold')"
       @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
@@ -68,9 +66,9 @@
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import AsEffects from '@/components/posters/as-effects'
+  import NewEffects from '@/components/posters/new-effects'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { onMounted as mounted, ref } from 'vue'
+  import { onMounted as mounted, ref, inject } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
     use_poster,
@@ -79,7 +77,9 @@
     is_click,
     is_focus
   } from '@/use/vector'
+  import { use as use_vectorize } from '@/use/vectorize'
   import icon from '@/components/icon'
+  const new_poster = inject('new-poster', false)
   const emit = defineEmits({
     focus: is_focus,
     click: is_click,
@@ -111,12 +111,6 @@
       required: true,
       validator: is_vector_id
     },
-    poster: {
-      type: Object,
-      required: false,
-      default: null,
-      validator: is_vector
-    },
     as_stroke: {
       type: Boolean,
       required: false,
@@ -124,9 +118,8 @@
     }
   })
   const {
-    id,
     query,
-    fragment: id_fragment,
+    fragment,
     viewbox,
     aspect_ratio,
     click,
@@ -138,16 +131,30 @@
     tabindex,
     vector
   } = use_poster(props, emit)
+
   const trigger = ref(null)
-  const fragment = name => `${id_fragment.value}-${name}`
-  use_intersect(
-    trigger,
-    ([{ isIntersecting }]) => {
-      if (isIntersecting) show()
-    },
-    { rootMargin: '512px' }
-  )
-  mounted(should_show)
+  const style = name => {
+    if (new_poster || vector.value.effects) {
+      const gradient_id = fragment(`${name}-gradient`)
+      const filter_id = fragment(`${name}-filter`)
+      return `fill:url(${gradient_id}); filter:url(${filter_id})`
+    } else return null
+  }
+  if (new_poster) {
+    const { new_vector } = use_vectorize()
+    console.log('new_vector', new_vector.value.id)
+    vector.value = new_vector.value
+    working.value = false
+  } else {
+    use_intersect(
+      trigger,
+      ([{ isIntersecting }]) => {
+        if (isIntersecting) show()
+      },
+      { rootMargin: '512px' }
+    )
+    mounted(should_show)
+  }
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
