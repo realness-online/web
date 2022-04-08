@@ -146,7 +146,7 @@ export function as_created_at(itemid) {
 export function as_query_id(itemid) {
   return itemid.substring(2).replace('/', '-').replace('/', '-')
 }
-export function as_fragment(itemid) {
+export function as_fragment_id(itemid) {
   return `#${as_query_id(itemid)}`
 }
 export function type_as_list(item) {

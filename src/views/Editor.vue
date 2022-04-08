@@ -6,7 +6,11 @@
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
     </header>
-    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
+    <as-fill
+      v-if="fill || stroke"
+      :itemid="itemid"
+      @loaded="optimize"
+      @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
     <footer>
@@ -25,18 +29,21 @@
   import asGrid from '@/components/posters/as-grid'
 
   import { Poster } from '@/persistance/Storage'
-  import { useFullscreen, useMagicKeys } from '@vueuse/core'
-  import { useRoute, useRouter } from 'vue-router'
-  import { watch, computed, ref } from 'vue'
-
+  import {
+    useFullscreen as use_fullscreen,
+    useMagicKeys as use_Keyboard
+  } from '@vueuse/core'
+  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
+  import { watch, computed, ref, provide } from 'vue'
+  import { use as use_optimizer } from '@/use/optimize'
+  import { use as use_vectorize } from '@/use/vectorize'
   const fill = ref(true)
   const stroke = ref(false)
   const animation = ref(false)
   const grid = ref(false)
-  const route = useRoute()
-  const router = useRouter()
+  const route = use_route()
+  const router = use_router()
   const itemid = `${localStorage.me}/${route.params.type}/${route.params.id}`
-
   const page_title = computed(() => {
     if (stroke.value) return 'Stroke'
     if (fill.value) return 'Fill'
@@ -47,6 +54,7 @@
     stroke.value = !stroke.value
     fill.value = !fill.value
   }
+  const { optimize } = use_optimizer()
   const color = computed(() => {
     if (stroke.value || fill.value) return true
     else return false
@@ -55,15 +63,19 @@
     const me = localStorage.me.substring(2)
     const id = route.params.id
     const type = route.params.type
-    router.replace({ path: '/posters', hash: `#${me}-${type}-${id}` })
+    router.push({ path: '/posters', hash: `#${me}-${type}-${id}` })
   }
   const save = async () => {
     const poster = new Poster(itemid)
     await poster.save()
     back()
   }
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = useFullscreen()
-  const { f, enter, escape } = useMagicKeys()
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
+  const { f, enter, escape } = use_Keyboard()
+  if (route.params.id === 'new-poster') {
+    const { new_vector } = use_vectorize()
+    if (new_vector.value) provide('new-poster', true)
+  }
   watch(enter, v => {
     if (v) save()
   })

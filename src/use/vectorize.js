@@ -1,16 +1,31 @@
 import {
   ref,
   computed,
-  onMounted as mounted,
+  watchEffect as watch_effect,
   onUnmounted as dismount
 } from 'vue'
 import { create_path_element } from '@/use/path-style'
+import { is_vector } from '@/use/vector'
 const new_vector = ref(null)
 const new_gradients = ref(null)
-import get_item from '@/use/item'
+
+import { useRouter as use_router } from 'vue-router'
 export const use = () => {
+  const router = use_router()
   const image_picker = ref(null)
   const working = ref(true)
+  const vectorizer = ref(null)
+  const gradienter = ref(null)
+
+  const can_add = computed(() => {
+    if (working.value || new_vector.value) return false
+    else return true
+  })
+  const as_new_itemid = computed(() => {
+    if (new_vector.value && new_vector.value.id) return new_vector.value.id
+    else return `${localStorage.me}/posters/${Date.now()}`
+  })
+
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
     image_picker.value.click()
@@ -23,9 +38,17 @@ export const use = () => {
     image_picker.value.setAttribute('capture', 'environment')
     image_picker.value.click()
   }
-  const upload = () => {
+  const make_path = path_data => {
+    const path = create_path_element()
+    path.setAttribute('d', path_data.d)
+    path.style.fillOpacity = path_data.fillOpacity
+    path.style.fillRule = 'evenodd'
+    return path
+  }
+  const listener = () => {
     const image = image_picker.value.files[0]
     if (image === undefined) return
+
     const is_image = ['image/jpeg', 'image/png'].some(type => {
       return image.type === type
     })
@@ -36,31 +59,15 @@ export const use = () => {
   }
   const vVectorizer = {
     mounted: (input, binding) => {
-      input.addEventListener('change', event => upload(input, binding, event))
+      input.addEventListener('change', event => listener(input, binding, event))
     }
   }
-  const can_add = computed(() => {
-    if (working.value || new_vector.value) return false
-    else return true
-  })
-  const as_new_itemid = computed(() => {
-    if (new_vector.value && new_vector.value.id) return new_vector.value.id
-    else return `${localStorage.me}/posters/${Date.now()}`
-  })
-  const make_path = path_data => {
-    const path = create_path_element()
-    path.setAttribute('d', path_data.d)
-    path.style.fillOpacity = path_data.fillOpacity
-    path.style.fillRule = 'evenodd'
-    return path
-  }
 
-  const vectorizer = new Worker('/vector.worker.js')
   const vectorize = image => {
     console.time('makes:poster')
     working.value = true
-    vectorizer.postMessage({ image })
-    gradienter.postMessage({ image })
+    vectorizer.value.postMessage({ image })
+    gradienter.value.postMessage({ image })
   }
   const vectorized = response => {
     const vector = response.data.vector
@@ -70,30 +77,27 @@ export const use = () => {
     vector.regular = make_path(vector.regular)
     vector.bold = make_path(vector.bold)
     new_vector.value = vector
-    working.value = false
   }
-
-  const gradienter = new Worker('/gradient.worker.js')
   const gradientized = message => (new_gradients.value = message.data.gradients)
-
-  const optimizer = new Worker('/optimize.worker.js')
-  const optimize = vector => {
-    optimizer.postMessage({ vector })
+  const mount_workers = () => {
+    vectorizer.value = new Worker('/vector.worker.js')
+    gradienter.value = new Worker('/gradient.worker.js')
+    vectorizer.value.addEventListener('message', vectorized)
+    gradienter.value.addEventListener('message', gradientized)
   }
-  const optimized = message => {
-    const optimized = get_item(message.data.vector)
-    new_vector.value = optimized
-    console.timeEnd('makes:poster')
-  }
-  mounted(async () => {
-    vectorizer.addEventListener('message', vectorized)
-    gradienter.addEventListener('message', gradientized)
-    optimizer.addEventListener('message', optimized)
+  watch_effect(() => {
+    if (
+      new_gradients.value &&
+      new_vector.value &&
+      is_vector(new_vector.value)
+    ) {
+      console.timeEnd('makes:poster')
+      router.push({ path: '/posters/new-poster/editor' })
+    }
   })
-
   dismount(() => {
-    vectorizer.terminate()
-    optimizer.terminate()
+    if (vectorizer.value) vectorizer.value.terminate()
+    if (gradienter.value) gradienter.value.terminate()
   })
   return {
     can_add,
@@ -104,11 +108,9 @@ export const use = () => {
     vVectorizer,
     vectorize,
     vectorizer,
-    optimizer,
-    optimize,
     working,
     new_vector,
     new_gradients,
-    as_new_itemid
+    mount_workers
   }
 }

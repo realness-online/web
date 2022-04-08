@@ -6,6 +6,7 @@
       :slice="false"
       :tabable="true"
       tabindex="-1"
+      @loaded="emit('loaded')"
       @focus="set_input_color" />
     <figcaption>
       <as-svg
@@ -36,7 +37,7 @@
     itemprop_query as query,
     color_luminosity as luminosity
   } from '@/use/path-style'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   defineProps({
     itemid: {
@@ -45,15 +46,13 @@
       validator: is_vector_id
     }
   })
-  const emit = defineEmits(['toggle'])
+  const emit = defineEmits({ toggle: () => true, loaded: is_vector })
   const figure = ref(null)
   const color = ref('#151518')
   const itemprop = ref('background')
   const as_stroke = ref(false)
   provide('as_stroke', as_stroke)
-  const focus_on_active = () => {
-    query(itemprop.value).focus()
-  }
+  const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
     itemprop.value = id
     const path = query(id)

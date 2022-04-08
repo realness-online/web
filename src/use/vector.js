@@ -1,5 +1,6 @@
 import {
   as_query_id,
+  as_fragment_id,
   load,
   as_author,
   as_created_at,
@@ -95,12 +96,17 @@ export const use_poster = (props, emit) => {
     if (vector.value) return vector.value.viewbox
     else return '0 0 16 16' // this is the viewbox for silhouette
   })
-  const id = computed(() => {
-    if (vector.value) return as_query_id(vector.value.id)
-    else return 'new-poster'
-  })
-  const fragment = computed(() => `#${id.value}`)
-  const query = add => `${id.value}-${add}`
+
+  const query = add => {
+    if (!vector.value) return add
+    if (add) return `${as_query_id(vector.value.id)}-${add}`
+    else return as_query_id(vector.value.id)
+  }
+  const fragment = add => {
+    if (!vector.value) return add
+    if (add) return `${as_fragment_id(vector.value.id)}-${add}`
+    else return as_fragment_id(vector.value.id)
+  }
   const click = () => {
     menu.value = !menu.value
     emit('click', menu.value)
@@ -126,14 +132,10 @@ export const use_poster = (props, emit) => {
   const should_show = () => {
     if (props.immediate) show()
   }
-  watchEffect(() => {
-    if (props.poster) vector.value = props.poster
-  })
   return {
     vector,
     click,
     menu,
-    id,
     query,
     fragment,
     landscape,

@@ -19,24 +19,7 @@
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
-        v-if="new_vector"
-        class="new"
-        :itemid="as_new_itemid"
-        :new_poster="new_vector"
-        :working="working"
-        @loaded="optimize">
-        <menu>
-          <a class="remove" @click="cancel_poster">
-            <icon name="remove" />
-          </a>
-          <a v-if="new_vector.id" class="save" @click="save_poster">
-            <icon name="finished" />
-          </a>
-        </menu>
-      </as-figure>
-      <as-figure
         v-for="poster in posters"
-        v-else
         :key="poster.id"
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
@@ -77,30 +60,9 @@
     open_camera,
     select_photo,
     working,
-    as_new_itemid,
-    optimize,
-    new_vector
+    mount_workers
   } = use_vectorize()
 
-  const save_poster = async () => {
-    const id = new_vector.value.id
-    if (!id) return null
-    working.value = true
-    const poster = new Poster(id)
-    await poster.save()
-    await next_tick()
-    posters.value.unshift({
-      id: id,
-      menu: false,
-      picker: false
-    })
-    new_vector.value = null
-    working.value = false
-    del(`${localStorage.me}/posters/`)
-    // Creating a poster during a sync will sometimes
-    // create a directory with only the poster you just createed
-    console.info('save:poster', id)
-  }
   const remove_poster = async id => {
     const message = 'Delete poster?'
     if (window.confirm(message)) {
@@ -110,7 +72,6 @@
       console.info('delete:poster', id)
     }
   }
-  const cancel_poster = () => (new_vector.value = null)
   const toggle_menu = itemid => {
     posters.value.forEach(poster => {
       if (poster.menu) poster.menu = false
@@ -123,6 +84,7 @@
     poster.picker = !poster.picker
   }
   mounted(async () => {
+    mount_workers()
     await posters_for_person({ id: localStorage.me })
     working.value = false
     console.info('views:/posters')
