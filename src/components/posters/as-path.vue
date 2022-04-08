@@ -32,6 +32,9 @@
 <style lang="stylus">
   path[itemprop]
     outline: none
+    stroke: currentColor
+    stroke-width: 0.33px
+    stroke-opacity: 0.33
     &:active
       outline:none
       fill-opacity: 1
