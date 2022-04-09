@@ -24,7 +24,24 @@ export const as_gradient = (image, height = false) => {
   }
   return stops
 }
-export const fidelity = (length, pair = { number: 25, unit: '%' }) => {
+export const as_radial_gradient = image => {
+  let box_size = image.bitmap.width
+  if (image.bitmap.height < box_size) box_size = image.bitmap.height
+  const chunk = fidelity(box_size)
+  const stops = []
+  for (let i = 0; i < box_size; i += chunk) {
+    let color = image
+      .clone()
+      .crop(i, 0, chunk, box_size)
+      .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
+      .getPixelColor(0, 0)
+    color = Jimp.default.intToRGBA(color)
+    color = rgba_to_hsla(color)
+    stops.push({ color, percentage: scale(i, 0, box_size) })
+  }
+  return stops
+}
+export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
@@ -59,7 +76,8 @@ export const listen = async message => {
   image = await size(image)
   const width = as_gradient(image)
   const height = as_gradient(image, true)
-  self.postMessage({ gradients: { width, height } })
+  const radial = as_radial_gradient(image)
+  self.postMessage({ gradients: { width, height, radial } })
   console.timeEnd('make:gradient')
 }
 self.addEventListener('message', listen)

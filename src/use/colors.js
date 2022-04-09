@@ -1,7 +1,7 @@
 import rgb_to_hex from 'rgb-hex'
 import hsl_to_hex from 'hsl-to-hex'
 import css_var from '@/use/css-var'
-export function to_hex(color = '') {
+export const to_hex = (color = '') => {
   if (color.length === 0) color = '--black-dark'
   if (color.startsWith('--')) color = css_var(color).trim()
   if (color.startsWith('#')) return color
@@ -12,10 +12,9 @@ export function to_hex(color = '') {
   else if (hex.length === 7) return hex
   else throw `Provided color is unrecognized — ${color}`
 }
-export function to_hex_number(color) {
-  return parseInt(color.substring(1))
-}
-export function to_hsla(color = '') {
+export const to_hex_number = color => parseInt(color.substring(1))
+
+export const to_hsla = (color = '') => {
   let H = color.toString()
   // check if it's already hsl
   if (H.startsWith('hsl')) return (H = hsl_to_hex(H))
@@ -36,31 +35,17 @@ export function to_hsla(color = '') {
   }
   return rgba_to_hsla({ r, g, b, a: 255 })
 }
-export function to_complimentary_hsl(color = '') {
+export const to_complimentary_hsl = (color = '') => {
   let hsl = to_hsla(color)
   const h = hsl.h + 180
   const s = 100 - hsl.s
   let l = 100 - hsl.l
-  return {
-    hsl: `hsl(${h}, ${s}%, ${l}%)`,
-    hsla: `hsl(${h}, ${s}%, ${l}%, ${hsl.a})`,
-    h,
-    s,
-    l,
-    a: hsl.a
-  }
+  return color_to_hsla({ h, s, l, a: hsl.a })
 }
-export function luminosity(color, change_by) {
+export const luminosity = (color, change_by) => {
   const hsl = to_hsla(color)
   const l = parseInt(hsl.l) + parseInt(change_by)
-  return {
-    hsl: `hsl(${hsl.h}, ${hsl.s}%, ${l}%)`,
-    hsla: `hsl(${hsl.h}, ${hsl.s}%, ${l}%, ${hsl.a})`,
-    h: hsl.h,
-    s: hsl.s,
-    l,
-    a: hsl.a
-  }
+  return color_to_hsla({ h: hsl.h, s: hsl.s, l, a: hsl.a })
 }
 
 export const rgba_to_hsla = ({ r, g, b, a }) => {
@@ -96,9 +81,14 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
 
   s = Math.round(s)
   l = Math.round(l)
+
+  return color_to_hsla({ h, s, l, a })
+}
+
+export const color_to_hsla = ({ h, s, l, a }) => {
   return {
-    hsl: `hsl(${h}, ${s}%, ${l}%)`,
-    hsla: `hsla(${h}, ${s}%, ${l}%, ${a})`,
+    hsl: `hsl(${h} ${s}% ${l}%)`,
+    hsla: `hsla(${h} ${s}% ${l}% ${a})`,
     h,
     s,
     l,
@@ -108,7 +98,8 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
 
 // https://una.im/css-color-theming
 // 100% saturation is completely saturated (full color),
-// while 0% is completely unsaturated (gray)
+// while 0% is unsaturated (gray), 50% is normal
 //
 // 100% lightness is white,
+// 50% is normal
 // 0% lightness is black

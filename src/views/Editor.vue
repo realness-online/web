@@ -72,10 +72,10 @@
   }
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
   const { f, enter, escape } = use_Keyboard()
-  if (route.params.id === 'new-poster') {
-    const { new_vector } = use_vectorize()
-    if (new_vector.value) provide('new-poster', true)
-  }
+
+  const { new_vector } = use_vectorize()
+  if (new_vector.value) provide('new-poster', true)
+
   watch(enter, v => {
     if (v) save()
   })
