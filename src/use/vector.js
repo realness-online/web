@@ -6,7 +6,7 @@ import {
   as_created_at,
   as_directory
 } from '@/use/itemid'
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 import { recent_item_first } from '@/use/sorting'
 const path_names = ['background', 'bold', 'regular', 'light']
 export const is_click = menu => typeof menu === 'boolean'
@@ -17,8 +17,16 @@ export const is_vector = vector => {
   if (vector.path) return false
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
-  if (!vector.light) return false
-  if (!vector.light.style) return false
+  if (!vector.regular) return false // the only required path
+  if (!vector.regular.style) return false
+  if (vector.light && !vector.light.style) return false // have style if exist
+  if (vector.bold && !vector.bold.style) return false
+  if (vector.gradients) {
+    if (!vector.gradients.width) return false
+    if (!vector.gradients.height) return false
+    if (!vector.gradients.radial) return false
+    console.log('gradients are good')
+  }
   if (vector.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }

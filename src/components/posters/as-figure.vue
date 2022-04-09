@@ -3,7 +3,6 @@
     <as-svg
       ref="poster"
       :itemid="itemid"
-      :poster="new_poster"
       :immediate="immediate"
       @click="vector_click"
       @loaded="on_load" />
@@ -22,6 +21,7 @@
 </template>
 <script>
   import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
+  import { is_vector_id } from '@/use/vector'
   import { as_time } from '@/use/date'
   import as_svg from '@/components/posters/as-svg'
   import vector_click from '@/mixins/vector_click'
@@ -40,12 +40,8 @@
     props: {
       itemid: {
         type: String,
-        required: true
-      },
-      new_poster: {
-        type: Object,
-        required: false,
-        default: null
+        required: true,
+        validate: is_vector_id
       },
       working: {
         type: Boolean,
@@ -85,9 +81,6 @@
         if (this.menu && !this.person) {
           this.person = await load(as_author(this.itemid))
         }
-      },
-      new_poster() {
-        if (this.new_poster) this.menu = true
       }
     },
     updated() {

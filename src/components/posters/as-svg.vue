@@ -2,7 +2,7 @@
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
-    :id="id"
+    :id="query(itemid)"
     itemscope
     :itemtype="`/${as_type(itemid)}`"
     :itemid="itemid"
@@ -19,15 +19,6 @@
                         0 0 0
                         0 0 -3" />
       </filter>
-      <symbol v-if="vector.light" :id="query('light')">
-        <as-path :path="vector.light" itemprop="light" />
-      </symbol>
-      <symbol v-if="vector.regular" :id="query('regular')">
-        <as-path :path="vector.regular" itemprop="regular" />
-      </symbol>
-      <symbol :id="query('bold')">
-        <as-path :path="vector.bold" itemprop="bold" />
-      </symbol>
       <symbol :id="query('background')">
         <as-background
           :rect="vector.background"
@@ -37,25 +28,37 @@
           width="100%"
           height="100%"
           :tabindex="tabindex"
-          :fill="`url(${fragment('height-gradient')})`"
+          :fill="`url(${fragment('radial')})`"
           :filter="`url(${fragment('background-filter')})`"
           @focus="focus('background-gradient')" />
+      </symbol>
+      <symbol v-if="vector.light" :id="query('light')">
+        <as-path :path="vector.light" itemprop="light" />
+      </symbol>
+      <symbol v-if="vector.regular" :id="query('regular')">
+        <as-path :path="vector.regular" itemprop="regular" />
+      </symbol>
+      <symbol :id="query('bold')">
+        <as-path :path="vector.bold" itemprop="bold" />
       </symbol>
     </defs>
     <use :href="fragment('background')" />
     <use
+      class="light"
       :href="fragment('light')"
       :tabindex="tabindex"
       :style="style('light')"
       @focus="focus('light')" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
+      class="regular"
       :href="fragment('regular')"
       :tabindex="tabindex"
       :style="style('regular')"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
+      class="bold"
       :href="fragment('bold')"
       :tabindex="tabindex"
       :style="style('bold')"
@@ -135,7 +138,11 @@
   const trigger = ref(null)
   const style = name => {
     if (new_poster || vector.value.effects) {
-      const gradient_id = fragment(`${name}-gradient`)
+      let gradient_id = fragment(`radial`)
+      if (name === 'light') gradient_id = fragment('height')
+      if (name === 'regular') gradient_id = fragment('width')
+      if (name === 'bold') gradient_id = fragment('height')
+
       const filter_id = fragment(`${name}-filter`)
       return `fill:url(${gradient_id}); filter:url(${filter_id})`
     } else return null
@@ -165,6 +172,6 @@
     height: 100%
     width: 100%
     outline: none
-    // path
+    // use.bold, use.regular, use.light, use.emboss
     //   display: none
 </style>

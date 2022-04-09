@@ -1,11 +1,7 @@
-import {
-  ref,
-  computed,
-  watchEffect as watch_effect,
-  onUnmounted as dismount
-} from 'vue'
+import { ref, computed, watch, onUnmounted as dismount } from 'vue'
 import { create_path_element } from '@/use/path-style'
 import { is_vector } from '@/use/vector'
+import { as_created_at } from '@/use/itemid'
 const new_vector = ref(null)
 const new_gradients = ref(null)
 
@@ -85,14 +81,15 @@ export const use = () => {
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
-  watch_effect(() => {
+  watch(new_vector, () => {
     if (
       new_gradients.value &&
       new_vector.value &&
       is_vector(new_vector.value)
     ) {
       console.timeEnd('makes:poster')
-      router.push({ path: '/posters/new-poster/editor' })
+      const created_at = as_created_at(new_vector.value.id)
+      router.push({ path: `/posters/${created_at}/editor` })
     }
   })
   dismount(() => {
