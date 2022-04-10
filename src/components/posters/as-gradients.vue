@@ -6,7 +6,7 @@
         :id="query('radial')"
         gradientUnits="userSpaceOnUse">
         <stop
-          v-for="stop in height"
+          v-for="stop in radial"
           :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </radialGradient>
@@ -38,50 +38,50 @@
       </linearGradient>
     </g>
     <g class="generated gradients">
-      <radialGradient :id="query('background')" gradientUnits="userSpaceOnUse">
+      <radialGradient
+        :id="query('background-gradient')"
+        gradientUnits="userSpaceOnUse">
         <stop
           v-for="stop in background"
           :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </radialGradient>
-    </g>
-    <g class="filters">
-      <filter :id="query('background-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('light-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('regular-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('bold-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 -0.88 0
-                  0 1 0 -0.88 0
-                  0 0 1 -0.88 0
-                  0 0 0  2.50 0" />
-      </filter>
+      <linearGradient
+        :id="query('light-gradient')"
+        gradientUnits="userSpaceOnUse"
+        x1="0%"
+        x2="0"
+        y1="0"
+        y2="100%">
+        <stop
+          v-for="stop in light"
+          :stop-color="stop.color.hsla"
+          :offset="`${stop.percentage}%`" />
+      </linearGradient>
+      <linearGradient
+        :id="query('regular-gradient')"
+        gradientUnits="userSpaceOnUse"
+        x1="0"
+        x2="100%"
+        y1="0"
+        y2="0">
+        <stop
+          v-for="stop in regular"
+          :stop-color="stop.color.hsla"
+          :offset="`${stop.percentage}%`" />
+      </linearGradient>
+      <linearGradient
+        :id="query('bold-gradient')"
+        gradientUnits="userSpaceOnUse"
+        x1="0"
+        x2="100%"
+        y1="0"
+        y2="0">
+        <stop
+          v-for="stop in bold"
+          :stop-color="stop.color.hsla"
+          :offset="`${stop.percentage}%`" />
+      </linearGradient>
     </g>
   </defs>
 </template>
@@ -100,8 +100,8 @@
           const color = color_to_hsla({
             h: stop.color.h,
             s: stop.color.s,
-            l: 85,
-            a: stop.color.a
+            l: 70,
+            a: 1
           })
           return {
             color,
@@ -111,6 +111,60 @@
       })
     } else return []
   })
+
+  const light = computed(() => {
+    if (height.value) {
+      return height.value.map(stop => {
+        if (stop.color.l > 50 || stop.color.l < 60) return stop
+        else {
+          const color = color_to_hsla({
+            h: stop.color.h,
+            s: 20,
+            l: 60,
+            a: 0.5
+          })
+          return {
+            color,
+            percentage: stop.percentage
+          }
+        }
+      })
+    } else return []
+  })
+  const regular = computed(() => {
+    if (width.value) {
+      return width.value.map(stop => {
+        const color = color_to_hsla({
+          h: stop.color.h,
+          s: 90,
+          l: 50,
+          a: 0.5
+        })
+        return {
+          color,
+          percentage: stop.percentage
+        }
+      })
+    } else return []
+  })
+
+  const bold = computed(() => {
+    if (height.value) {
+      return height.value.map(stop => {
+        const color = color_to_hsla({
+          h: stop.color.h,
+          s: 10,
+          l: 18,
+          a: 0.5
+        })
+        return {
+          color,
+          percentage: stop.percentage
+        }
+      })
+    } else return []
+  })
+
   vector.value = new_vector.value
   const width = ref([])
   const height = ref([])
