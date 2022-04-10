@@ -100,7 +100,7 @@
           const color = color_to_hsla({
             h: stop.color.h,
             s: stop.color.s,
-            l: 70,
+            l: 90,
             a: 1
           })
           return {
@@ -115,13 +115,13 @@
   const light = computed(() => {
     if (height.value) {
       return height.value.map(stop => {
-        if (stop.color.l > 50 || stop.color.l < 60) return stop
+        if ((stop.color.l = 10)) return stop
         else {
           const color = color_to_hsla({
             h: stop.color.h,
-            s: 20,
+            s: stop.color.s,
             l: 60,
-            a: 0.5
+            a: 1
           })
           return {
             color,
@@ -136,9 +136,9 @@
       return width.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: 90,
-          l: 50,
-          a: 0.5
+          s: stop.color.s,
+          l: 30,
+          a: 1
         })
         return {
           color,
@@ -153,9 +153,9 @@
       return height.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: 10,
-          l: 18,
-          a: 0.5
+          s: 100,
+          l: 10,
+          a: 0.95
         })
         return {
           color,
