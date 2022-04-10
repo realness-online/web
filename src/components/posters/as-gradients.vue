@@ -100,7 +100,7 @@
           const color = color_to_hsla({
             h: stop.color.h,
             s: stop.color.s,
-            l: 90,
+            l: 80,
             a: 1
           })
           return {
@@ -153,9 +153,9 @@
       return height.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: 100,
-          l: 10,
-          a: 0.95
+          s: 80,
+          l: 8,
+          a: 1
         })
         return {
           color,
