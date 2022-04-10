@@ -87,8 +87,8 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
 
 export const color_to_hsla = ({ h, s, l, a }) => {
   return {
-    hsl: `hsl(${h} ${s}% ${l}%)`,
-    hsla: `hsla(${h} ${s}% ${l}% ${a})`,
+    hsl: `hsl(${h}, ${s}%, ${l}%)`,
+    hsla: `hsla(${h}, ${s}%, ${l}%, ${a})`,
     h,
     s,
     l,

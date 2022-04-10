@@ -2,7 +2,7 @@
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
-    :id="query(itemid)"
+    :id="query()"
     itemscope
     :itemtype="`/${as_type(itemid)}`"
     :itemid="itemid"
@@ -11,7 +11,7 @@
     :tabindex="focusable"
     @click="click">
     <defs v-if="vector.effects" itemprop="effects" v-html="vector.effects" />
-    <new-effects v-if="new_poster" />
+    <as-gradients v-if="new_poster" />
     <defs>
       <filter id="emboss">
         <feConvolveMatrix
@@ -20,17 +20,7 @@
                         0 0 -3" />
       </filter>
       <symbol :id="query('background')">
-        <as-background
-          :rect="vector.background"
-          :tabable="tabable"
-          @focus="focus('background')" />
-        <rect
-          width="100%"
-          height="100%"
-          :tabindex="tabindex"
-          :fill="`url(${fragment('radial')})`"
-          :filter="`url(${fragment('background-filter')})`"
-          @focus="focus('background-gradient')" />
+        <as-background :rect="vector.background" :tabable="tabable" />
       </symbol>
       <symbol v-if="vector.light" :id="query('light')">
         <as-path :path="vector.light" itemprop="light" />
@@ -38,30 +28,35 @@
       <symbol v-if="vector.regular" :id="query('regular')">
         <as-path :path="vector.regular" itemprop="regular" />
       </symbol>
-      <symbol :id="query('bold')">
+      <symbol v-if="vector.bold" :id="query('bold')">
         <as-path :path="vector.bold" itemprop="bold" />
       </symbol>
     </defs>
-    <use :href="fragment('background')" />
+    <use
+      class="background"
+      :tabindex="tabindex"
+      :href="fragment('background')"
+      :fill="`url(${fragment('background-gradient')}`"
+      @focus="focus('background')" />
     <use
       class="light"
-      :href="fragment('light')"
       :tabindex="tabindex"
-      :style="style('light')"
+      :href="fragment('light')"
+      :fill="`url(${fragment('light-gradient')}`"
       @focus="focus('light')" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
       class="regular"
-      :href="fragment('regular')"
       :tabindex="tabindex"
-      :style="style('regular')"
+      :href="fragment('regular')"
+      :fill="`url(${fragment('regular-gradient')}`"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
       class="bold"
-      :href="fragment('bold')"
       :tabindex="tabindex"
-      :style="style('bold')"
+      :href="fragment('bold')"
+      :fill="`url(${fragment('bold-gradient')}`"
       @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
@@ -69,7 +64,7 @@
 <script setup>
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import NewEffects from '@/components/posters/new-effects'
+  import AsGradients from '@/components/posters/as-gradients'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { onMounted as mounted, ref, inject } from 'vue'
   import { as_type } from '@/use/itemid'
@@ -136,17 +131,6 @@
   } = use_poster(props, emit)
 
   const trigger = ref(null)
-  const style = name => {
-    if (new_poster || vector.value.effects) {
-      let gradient_id = fragment(`radial`)
-      if (name === 'light') gradient_id = fragment('height')
-      if (name === 'regular') gradient_id = fragment('width')
-      if (name === 'bold') gradient_id = fragment('height')
-
-      const filter_id = fragment(`${name}-filter`)
-      return `fill:url(${gradient_id}); filter:url(${filter_id})`
-    } else return null
-  }
   if (new_poster) {
     const { new_vector } = use_vectorize()
     console.log('new_vector', new_vector.value.id)
