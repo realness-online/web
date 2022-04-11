@@ -1,90 +1,41 @@
 <template>
-  <defs v-if="gradients" itemprop="effects">
-    <g class="gradients">
-      <radialGradient
-        itemprop="radial"
-        :id="query('radial')"
-        gradientUnits="userSpaceOnUse">
-        <stop
-          v-for="stop in radial"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
-      </radialGradient>
-      <linearGradient
-        itemprop="height"
-        :id="query('height')"
-        gradientUnits="userSpaceOnUse"
-        x1="0%"
-        x2="0"
-        y1="0"
-        y2="100%">
-        <stop
-          v-for="stop in height"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
-      </linearGradient>
-      <linearGradient
-        itemprop="width"
-        :id="query('width')"
-        gradientUnits="userSpaceOnUse"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0">
-        <stop
-          v-for="stop in width"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
-      </linearGradient>
-    </g>
-    <g class="generated gradients">
-      <radialGradient
-        :id="query('background-gradient')"
-        gradientUnits="userSpaceOnUse">
-        <stop
-          v-for="stop in background"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
-      </radialGradient>
-    </g>
-    <g class="filters">
-      <filter :id="query('background-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('light-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('regular-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-      <filter :id="query('bold-filter')">
-        <feColorMatrix
-          in="SourceGraphic"
-          type="matrix"
-          values="1 0 0 0 0
-                  0 1 0 0 0
-                  0 0 1 0 0
-                  0 0 0 1 0" />
-      </filter>
-    </g>
+  <defs itemprop="filters">
+    <filter :id="query('background-filter')">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 1 0" />
+    </filter>
+    <filter :id="query('light-filter')">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 1 0" />
+    </filter>
+    <filter :id="query('regular-filter')">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 1 0" />
+    </filter>
+    <filter :id="query('bold-filter')">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 2.75 0" />
+    </filter>
   </defs>
 </template>
 <script setup>

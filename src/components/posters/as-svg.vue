@@ -12,6 +12,7 @@
     @click="click">
     <defs v-if="vector.effects" itemprop="effects" v-html="vector.effects" />
     <as-gradients v-if="new_poster" />
+    <as-filters v-if="new_poster" />
     <defs>
       <filter id="emboss">
         <feConvolveMatrix
@@ -50,6 +51,7 @@
       :tabindex="tabindex"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
+      :filter="`url(${fragment('regular-filter')}`"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
@@ -57,6 +59,7 @@
       :tabindex="tabindex"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
+      :filter="`url(${fragment('bold-filter')}`"
       @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
@@ -65,6 +68,7 @@
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
+  import AsFilters from '@/components/posters/as-filters'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { onMounted as mounted, ref, inject } from 'vue'
   import { as_type } from '@/use/itemid'
