@@ -1,5 +1,5 @@
 <template>
-  <defs itemprop="filters">
+  <defs>
     <filter id="bold-filter">
       <feColorMatrix
         in="SourceGraphic"

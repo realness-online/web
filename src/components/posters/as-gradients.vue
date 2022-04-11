@@ -1,5 +1,5 @@
 <template>
-  <defs v-if="gradients">
+  <defs>
     <g class="gradients">
       <radialGradient
         :id="query('radial')"
@@ -87,13 +87,23 @@
 </template>
 <script setup>
   import { ref, watchEffect as watch_effect, computed } from 'vue'
-  import { is_vector, use_poster } from '@/use/vector'
+  import { is_vector_id, use_poster } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
   import { color_to_hsla } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
-  const { query, vector } = use_poster()
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    }
+  })
+  const { query, vector, show } = use_poster(props, () => {})
+  const width = ref([])
+  const height = ref([])
+  const radial = ref([])
   const background = computed(() => {
-    if (radial.value) {
+    if (radial.value.length) {
       return radial.value.map(stop => {
         if (stop.color.l > 85) return stop
         else {
@@ -109,7 +119,19 @@
           }
         }
       })
-    } else return []
+    } else {
+      return [
+        {
+          color: color_to_hsla({
+            h: 57,
+            s: 13,
+            l: 88,
+            a: 1
+          }),
+          percentage: 0
+        }
+      ]
+    }
   })
   const light = computed(() => {
     if (height.value) {
@@ -128,7 +150,19 @@
           }
         }
       })
-    } else return []
+    } else {
+      return [
+        {
+          color: color_to_hsla({
+            h: 300,
+            s: 2,
+            l: 2,
+            a: 1
+          }),
+          percentage: 0
+        }
+      ]
+    }
   })
   const regular = computed(() => {
     if (width.value) {
@@ -144,10 +178,22 @@
           percentage: stop.percentage
         }
       })
-    } else return []
+    } else {
+      return [
+        {
+          color: color_to_hsla({
+            h: 300,
+            s: 2,
+            l: 2,
+            a: 1
+          }),
+          percentage: 0
+        }
+      ]
+    }
   })
   const bold = computed(() => {
-    if (width.value) {
+    if (width.value.length) {
       return width.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
@@ -160,12 +206,23 @@
           percentage: stop.percentage
         }
       })
-    } else return []
+    } else {
+      return [
+        {
+          color: color_to_hsla({
+            h: 300,
+            s: 2,
+            l: 2,
+            a: 1
+          }),
+          percentage: 0
+        }
+      ]
+    }
   })
-  vector.value = new_vector.value
-  const width = ref([])
-  const height = ref([])
-  const radial = ref([])
+
+  if (new_vector.value) vector.value = new_vector.value
+  show()
   watch_effect(() => {
     if (!gradients.value) return
     width.value = gradients.value.width
