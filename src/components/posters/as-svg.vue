@@ -14,12 +14,6 @@
     <as-gradients v-if="new_poster" />
     <as-filters v-if="new_poster" />
     <defs>
-      <filter id="emboss">
-        <feConvolveMatrix
-          kernelMatrix="3 0 0
-                        0 0 0
-                        0 0 -3" />
-      </filter>
       <symbol :id="query('background')">
         <as-background :rect="vector.background" :tabable="tabable" />
       </symbol>
@@ -51,7 +45,6 @@
       :tabindex="tabindex"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
-      :filter="`url(${fragment('regular-filter')}`"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
@@ -59,7 +52,7 @@
       :tabindex="tabindex"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
-      :filter="`url(${fragment('bold-filter')}`"
+      :filter="`url(#bold-filter)`"
       @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
