@@ -1,9 +1,9 @@
 <template>
-  <defs v-if="gradients" itemprop="effects">
+  <defs v-if="gradients">
     <g class="gradients">
       <radialGradient
-        itemprop="radial"
         :id="query('radial')"
+        itemprop="radial"
         gradientUnits="userSpaceOnUse">
         <stop
           v-for="stop in radial"
@@ -11,8 +11,8 @@
           :offset="`${stop.percentage}%`" />
       </radialGradient>
       <linearGradient
-        itemprop="height"
         :id="query('height')"
+        itemprop="height"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="0"
@@ -24,8 +24,8 @@
           :offset="`${stop.percentage}%`" />
       </linearGradient>
       <linearGradient
-        itemprop="width"
         :id="query('width')"
+        itemprop="width"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"

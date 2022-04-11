@@ -80,6 +80,8 @@ export function itemprop_value(element) {
     case 'svg':
     case 'path':
     case 'rect':
+    case 'radialGradient':
+    case 'linearGradient':
       return element
     case 'g':
     case 'defs':
