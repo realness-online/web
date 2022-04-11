@@ -14,7 +14,7 @@
         itemprop="height"
         :id="query('height')"
         gradientUnits="userSpaceOnUse"
-        x1="0%"
+        x1="0"
         x2="0"
         y1="0"
         y2="100%">
@@ -111,7 +111,6 @@
       })
     } else return []
   })
-
   const light = computed(() => {
     if (height.value) {
       return height.value.map(stop => {
@@ -136,8 +135,8 @@
       return width.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: stop.color.s,
-          l: 30,
+          s: stop.color.s + 20,
+          l: 50,
           a: 1
         })
         return {
@@ -147,13 +146,12 @@
       })
     } else return []
   })
-
   const bold = computed(() => {
-    if (height.value) {
-      return height.value.map(stop => {
+    if (width.value) {
+      return width.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: 80,
+          s: 10,
           l: 8,
           a: 1
         })
@@ -164,7 +162,6 @@
       })
     } else return []
   })
-
   vector.value = new_vector.value
   const width = ref([])
   const height = ref([])
