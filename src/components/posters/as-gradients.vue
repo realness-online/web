@@ -135,7 +135,7 @@
       return width.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: stop.color.s + 5,
+          s: stop.color.s + 10,
           l: 50,
           a: 1
         })
