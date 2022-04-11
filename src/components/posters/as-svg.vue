@@ -10,9 +10,8 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <defs v-if="vector.effects" itemprop="effects" v-html="vector.effects" />
-    <as-gradients v-if="new_poster" />
-    <as-filters v-if="new_poster" />
+    <as-filters />
+    <as-gradients :itemid="itemid" />
     <defs>
       <symbol :id="query('background')">
         <as-background :rect="vector.background" :tabable="tabable" />
