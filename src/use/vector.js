@@ -6,7 +6,7 @@ import {
   as_created_at,
   as_directory
 } from '@/use/itemid'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted as mounted } from 'vue'
 import { recent_item_first } from '@/use/sorting'
 const path_names = ['background', 'bold', 'regular', 'light']
 export const is_click = menu => typeof menu === 'boolean'
@@ -140,6 +140,7 @@ export const use_poster = (props, emit) => {
   const should_show = () => {
     if (props.immediate) show()
   }
+  mounted(should_show)
   return {
     vector,
     click,

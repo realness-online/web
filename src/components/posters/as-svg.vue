@@ -62,7 +62,12 @@
   import AsGradients from '@/components/posters/as-gradients'
   import AsFilters from '@/components/posters/as-filters'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { onMounted as mounted, ref, inject } from 'vue'
+  import {
+    onMounted as mounted,
+    watchEffect as watch_effect,
+    ref,
+    inject
+  } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
     use_poster,
@@ -72,8 +77,8 @@
     is_focus
   } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
+  import { use as use_optimizer } from '@/use/optimize'
   import icon from '@/components/icon'
-  const new_poster = inject('new-poster', false)
   const emit = defineEmits({
     focus: is_focus,
     click: is_click,
@@ -81,6 +86,11 @@
   })
   const props = defineProps({
     immediate: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    optimize: {
       type: Boolean,
       required: false,
       default: false
@@ -119,29 +129,34 @@
     click,
     working,
     show,
-    should_show,
     focus,
     focusable,
     tabindex,
     vector
   } = use_poster(props, emit)
-
   const trigger = ref(null)
-  if (new_poster) {
+
+  if (inject('new-poster', false)) {
     const { new_vector } = use_vectorize()
-    console.log('new_vector', new_vector.value.id)
     vector.value = new_vector.value
     working.value = false
   } else {
-    use_intersect(
-      trigger,
-      ([{ isIntersecting }]) => {
-        if (isIntersecting) show()
-      },
-      { rootMargin: '512px' }
-    )
-    mounted(should_show)
+    if (!props.immediate) {
+      use_intersect(
+        trigger,
+        ([{ isIntersecting }]) => {
+          if (isIntersecting) show()
+        },
+        { rootMargin: '512px' }
+      )
+    }
   }
+  watch_effect(() => {
+    if (vector.value && props.optimize && !vector.value.optimized) {
+      const { optimize } = use_optimizer(vector)
+      optimize()
+    }
+  })
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
