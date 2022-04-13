@@ -1,38 +1,36 @@
 <template>
   <defs>
     <g class="gradients">
-      <radialGradient
-        :id="query('radial')"
-        itemprop="radial"
-        gradientUnits="userSpaceOnUse">
+      <radialGradient :id="query('radial')" gradientUnits="userSpaceOnUse">
         <stop
+          itemprop="radial"
           v-for="stop in radial"
           :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </radialGradient>
       <linearGradient
         :id="query('height')"
-        itemprop="height"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="0"
         y1="0"
         y2="100%">
         <stop
-          v-for="stop in height"
+          itemprop="vertical"
+          v-for="stop in vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </linearGradient>
       <linearGradient
         :id="query('width')"
-        itemprop="width"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
         y1="0"
         y2="0">
         <stop
-          v-for="stop in width"
+          itemprop="horizontal"
+          v-for="stop in horizontal"
           :stop-color="stop.color.hsla"
           :offset="`${stop.percentage}%`" />
       </linearGradient>
@@ -99,8 +97,8 @@
     }
   })
   const { query, vector, show } = use_poster(props, () => {})
-  const width = ref([])
-  const height = ref([])
+  const horizontal = ref([])
+  const vertical = ref([])
   const radial = ref([])
   const background = computed(() => {
     if (radial.value.length) {
@@ -134,8 +132,8 @@
     }
   })
   const light = computed(() => {
-    if (height.value) {
-      return height.value.map(stop => {
+    if (vertical.value) {
+      return vertical.value.map(stop => {
         if ((stop.color.l = 10)) return stop
         else {
           const color = color_to_hsla({
@@ -165,11 +163,11 @@
     }
   })
   const regular = computed(() => {
-    if (width.value) {
-      return width.value.map(stop => {
+    if (horizontal.value) {
+      return horizontal.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
-          s: stop.color.s + 10,
+          s: stop.color.s + 8,
           l: 50,
           a: 1
         })
@@ -193,8 +191,8 @@
     }
   })
   const bold = computed(() => {
-    if (width.value.length) {
-      return width.value.map(stop => {
+    if (vertical.value.length) {
+      return vertical.value.map(stop => {
         const color = color_to_hsla({
           h: stop.color.h,
           s: 10,
@@ -225,8 +223,8 @@
   show()
   watch_effect(() => {
     if (!gradients.value) return
-    width.value = gradients.value.width
-    height.value = gradients.value.height
+    horizontal.value = gradients.value.horizontal
+    vertical.value = gradients.value.vertical
     radial.value = gradients.value.radial
   })
 </script>

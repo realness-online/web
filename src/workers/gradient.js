@@ -74,10 +74,10 @@ export const listen = async message => {
   console.time('make:gradient')
   let image = await read(message.data.image)
   image = await size(image)
-  const width = as_gradient(image)
-  const height = as_gradient(image, true)
+  const horizontal = as_gradient(image)
+  const vertical = as_gradient(image, true)
   const radial = as_radial_gradient(image)
-  self.postMessage({ gradients: { width, height, radial } })
+  self.postMessage({ gradients: { horizontal, vertical, radial } })
   console.timeEnd('make:gradient')
 }
 self.addEventListener('message', listen)
