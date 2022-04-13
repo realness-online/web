@@ -8,7 +8,7 @@ import {
 } from '@/use/itemid'
 import { ref, computed, onMounted as mounted } from 'vue'
 import { recent_item_first } from '@/use/sorting'
-const path_names = ['background', 'bold', 'regular', 'light']
+const path_names = ['background', 'light', 'regular', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
 export const is_vector = vector => {
@@ -30,18 +30,23 @@ export const is_vector = vector => {
   if (vector.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
+export const is_vector_id = itemid => {
+  if (as_author(itemid) && as_created_at(itemid)) return true
+  else return false
+}
 export const is_rect = rect => {
   if (typeof rect != 'object') return false
   if (rect instanceof SVGRectElement) return true
   else return false
 }
 export const is_path = path => {
-  if (typeof vector != 'object') return false
+  if (typeof path != 'object') return false
   if (path instanceof SVGPathElement) return true
   else return false
 }
-export const is_vector_id = itemid => {
-  if (as_author(itemid) && as_created_at(itemid)) return true
+export const is_stop = stop => {
+  if (typeof stop != 'object') return false
+  if (stop instanceof SVGStopElement) return true
   else return false
 }
 
