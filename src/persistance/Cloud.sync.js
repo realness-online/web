@@ -101,7 +101,6 @@ export const use = (props, emit) => {
   const events = ref(null)
   const sync = ref(null)
   const play = async () => {
-    console.log('play')
     const me = await load(localStorage.me) // check if new user
     if (!me || current_user.value === null) return null // let's wait to sync
     await sync_offline_actions()
