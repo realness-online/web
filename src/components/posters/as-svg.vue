@@ -10,7 +10,6 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <as-filters />
     <as-gradients :itemid="itemid" />
     <defs>
       <symbol :id="query('background')">
@@ -26,6 +25,7 @@
         <as-path :path="vector.bold" itemprop="bold" />
       </symbol>
     </defs>
+    <as-filters />
     <use
       class="background"
       :tabindex="tabindex"
@@ -37,6 +37,7 @@
       :tabindex="tabindex"
       :href="fragment('light')"
       :fill="`url(${fragment('light-gradient')}`"
+      filter="url(#light-filter)"
       @focus="focus('light')" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
@@ -44,6 +45,7 @@
       :tabindex="tabindex"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
+      filter="url(#regular-filter)"
       @focus="focus('regular')" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
@@ -51,7 +53,7 @@
       :tabindex="tabindex"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
-      :filter="`url(#bold-filter)`"
+      filter="url(#bold-filter)"
       @focus="focus('bold')" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
