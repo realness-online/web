@@ -67,12 +67,14 @@
   const save = async () => {
     const poster = new Poster(itemid)
     await poster.save()
+    if (new_vector.value) new_vector.value = null
+    if (new_gradients.value) new_gradients.value = null
     back()
   }
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
   const { f, enter, escape } = use_Keyboard()
 
-  const { new_vector } = use_vectorize()
+  const { new_vector, new_gradients } = use_vectorize()
   if (new_vector.value) provide('new-poster', true)
 
   watch(enter, v => {
