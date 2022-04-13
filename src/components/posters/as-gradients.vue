@@ -6,7 +6,7 @@
           itemprop="radial"
           v-for="stop in radial"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </radialGradient>
       <linearGradient
         :id="query('height')"
@@ -19,7 +19,7 @@
           itemprop="vertical"
           v-for="stop in vertical"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
         :id="query('width')"
@@ -32,7 +32,7 @@
           itemprop="horizontal"
           v-for="stop in horizontal"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </linearGradient>
     </g>
     <g class="generated gradients">
@@ -42,7 +42,7 @@
         <stop
           v-for="stop in background"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </radialGradient>
       <linearGradient
         :id="query('light-gradient')"
@@ -54,7 +54,7 @@
         <stop
           v-for="stop in light"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
         :id="query('regular-gradient')"
@@ -66,7 +66,7 @@
         <stop
           v-for="stop in regular"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
         :id="query('bold-gradient')"
@@ -78,7 +78,7 @@
         <stop
           v-for="stop in bold"
           :stop-color="stop.color.hsla"
-          :offset="`${stop.percentage}%`" />
+          :offset="`${stop.offset}%`" />
       </linearGradient>
     </g>
   </defs>
@@ -87,7 +87,7 @@
   import { ref, watchEffect as watch_effect, computed } from 'vue'
   import { is_vector_id, use_poster } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
-  import { color_to_hsla } from '@/use/colors'
+  import { color_to_hsla, hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
   const props = defineProps({
     itemid: {
@@ -102,31 +102,31 @@
   const radial = ref([])
   const background = computed(() => {
     if (radial.value.length) {
+      console.log('radial.length', radial.value.length)
       return radial.value.map(stop => {
         if (stop.color.l > 85) return stop
         else {
-          const color = color_to_hsla({
-            h: stop.color.h,
-            s: stop.color.s,
-            l: 80,
-            a: 1
-          })
           return {
-            color,
-            percentage: stop.percentage
+            offset: stop.offset,
+            color: color_to_hsla({
+              h: stop.color.h,
+              s: stop.color.s,
+              l: 80,
+              a: 1
+            })
           }
         }
       })
     } else {
       return [
         {
+          offset: 0,
           color: color_to_hsla({
             h: 57,
             s: 13,
             l: 88,
             a: 1
-          }),
-          percentage: 0
+          })
         }
       ]
     }
@@ -144,20 +144,20 @@
           })
           return {
             color,
-            percentage: stop.percentage
+            offset: stop.offset
           }
         }
       })
     } else {
       return [
         {
+          offset: 0,
           color: color_to_hsla({
             h: 300,
             s: 2,
             l: 2,
             a: 1
-          }),
-          percentage: 0
+          })
         }
       ]
     }
@@ -165,27 +165,26 @@
   const regular = computed(() => {
     if (horizontal.value) {
       return horizontal.value.map(stop => {
-        const color = color_to_hsla({
-          h: stop.color.h,
-          s: stop.color.s + 8,
-          l: 50,
-          a: 1
-        })
         return {
-          color,
-          percentage: stop.percentage
+          offset: stop.offset,
+          color: color_to_hsla({
+            h: stop.color.h,
+            s: stop.color.s + 8,
+            l: 50,
+            a: 1
+          })
         }
       })
     } else {
       return [
         {
+          offset: 0,
           color: color_to_hsla({
             h: 300,
             s: 2,
             l: 2,
             a: 1
-          }),
-          percentage: 0
+          })
         }
       ]
     }
@@ -193,27 +192,26 @@
   const bold = computed(() => {
     if (vertical.value.length) {
       return vertical.value.map(stop => {
-        const color = color_to_hsla({
-          h: stop.color.h,
-          s: 10,
-          l: 8,
-          a: 1
-        })
         return {
-          color,
-          percentage: stop.percentage
+          offset: stop.offset,
+          color: color_to_hsla({
+            h: stop.color.h,
+            s: 10,
+            l: 8,
+            a: 1
+          })
         }
       })
     } else {
       return [
         {
+          offset: 0,
           color: color_to_hsla({
             h: 300,
             s: 2,
             l: 2,
             a: 1
-          }),
-          percentage: 0
+          })
         }
       ]
     }
@@ -222,9 +220,21 @@
   if (new_vector.value) vector.value = new_vector.value
   show()
   watch_effect(() => {
-    if (!gradients.value) return
-    horizontal.value = gradients.value.horizontal
-    vertical.value = gradients.value.vertical
-    radial.value = gradients.value.radial
+    if (gradients.value) {
+      horizontal.value = gradients.value.horizontal
+      vertical.value = gradients.value.vertical
+      radial.value = gradients.value.radial
+    } else if (vector.value) {
+      // if (vector.value.horizontal) {
+      //   vector.value.horizontal.forEach(stop => {
+      //     horizontal.value.push({
+      //       color: hsla_to_color(stop.getAttribute('stop-color')),
+      //       offset: stop.getAttribute('offset')
+      //     })
+      //   })
+      // }
+      // console.log(vector.value.vertical)
+      // console.log(vector.value.radial)
+    }
   })
 </script>

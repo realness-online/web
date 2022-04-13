@@ -20,7 +20,7 @@ export const as_gradient = (image, height = false) => {
 
     color = Jimp.default.intToRGBA(color)
     color = rgba_to_hsla(color)
-    stops.push({ color, percentage: scale(i, 0, direction) })
+    stops.push({ color, offset: scale(i, 0, direction) })
   }
   return stops
 }
@@ -37,7 +37,7 @@ export const as_radial_gradient = image => {
       .getPixelColor(0, 0)
     color = Jimp.default.intToRGBA(color)
     color = rgba_to_hsla(color)
-    stops.push({ color, percentage: scale(i, 0, box_size) })
+    stops.push({ color, offset: scale(i, 0, box_size) })
   }
   return stops
 }
@@ -77,7 +77,8 @@ export const listen = async message => {
   const horizontal = as_gradient(image)
   const vertical = as_gradient(image, true)
   const radial = as_radial_gradient(image)
-  self.postMessage({ gradients: { horizontal, vertical, radial } })
+  const gradients = { horizontal, vertical, radial }
+  self.postMessage({ gradients })
   console.timeEnd('make:gradient')
 }
 self.addEventListener('message', listen)
