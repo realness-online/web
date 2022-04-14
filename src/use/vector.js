@@ -49,7 +49,6 @@ export const is_stop = stop => {
   if (stop instanceof SVGStopElement) return true
   else return false
 }
-
 export const set_vector_dimensions = (props, item) => {
   props.viewbox = item.getAttribute('viewBox')
   const dimensions = props.viewbox.split(' ')
