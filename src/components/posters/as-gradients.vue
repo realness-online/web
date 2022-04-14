@@ -1,7 +1,7 @@
 <template>
   <defs>
     <g class="gradients">
-      <radialGradient :id="query('radial')" gradientUnits="userSpaceOnUse">
+      <radialGradient gradientUnits="userSpaceOnUse">
         <stop
           itemprop="radial"
           v-for="stop in radial"
@@ -9,7 +9,6 @@
           :offset="`${stop.offset}%`" />
       </radialGradient>
       <linearGradient
-        :id="query('height')"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="0"
@@ -22,7 +21,6 @@
           :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
-        :id="query('width')"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
@@ -102,7 +100,6 @@
   const radial = ref([])
   const background = computed(() => {
     if (radial.value.length) {
-      console.log('radial.length', radial.value.length)
       return radial.value.map(stop => {
         if (stop.color.l > 85) return stop
         else {
@@ -169,7 +166,7 @@
           offset: stop.offset,
           color: color_to_hsla({
             h: stop.color.h,
-            s: stop.color.s + 8,
+            s: stop.color.s,
             l: 50,
             a: 1
           })
@@ -216,7 +213,12 @@
       ]
     }
   })
-
+  const convert_stop = stop => {
+    return {
+      color: hsla_to_color(stop.getAttribute('stop-color')),
+      offset: stop.getAttribute('offset').replace('%', '')
+    }
+  }
   if (new_vector.value) vector.value = new_vector.value
   show()
   watch_effect(() => {
@@ -225,16 +227,15 @@
       vertical.value = gradients.value.vertical
       radial.value = gradients.value.radial
     } else if (vector.value) {
-      // if (vector.value.horizontal) {
-      //   vector.value.horizontal.forEach(stop => {
-      //     horizontal.value.push({
-      //       color: hsla_to_color(stop.getAttribute('stop-color')),
-      //       offset: stop.getAttribute('offset')
-      //     })
-      //   })
-      // }
-      // console.log(vector.value.vertical)
-      // console.log(vector.value.radial)
+      if (vector.value.horizontal) {
+        horizontal.value = vector.value.horizontal.map(convert_stop)
+      }
+      if (vector.value.vertical) {
+        vertical.value = vector.value.vertical.map(convert_stop)
+      }
+      if (vector.value.radial) {
+        radial.value = vector.value.radial.map(convert_stop)
+      }
     }
   })
 </script>

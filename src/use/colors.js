@@ -85,12 +85,11 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
   return color_to_hsla({ h, s, l, a })
 }
 export const hsla_to_color = hsla => {
-  let color = hsla.substring(5)
-  console.log(color)
+  let color = hsla.substring(5, hsla.length - 1)
   color = color.split(', ')
   const h = color[0]
-  const s = color[1]
-  const l = color[2]
+  const s = color[1].replace('%', '')
+  const l = color[2].replace('%', '')
   const a = color[3]
   color = { h, s, l, a }
   return color_to_hsla(color)
