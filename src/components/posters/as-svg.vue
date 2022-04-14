@@ -13,48 +13,56 @@
     <as-gradients :itemid="itemid" />
     <defs>
       <symbol :id="query('background')">
-        <as-background :rect="vector.background" :tabable="tabable" />
+        <as-background
+          :rect="vector.background"
+          :tabindex="tabindex"
+          itemprop="background"
+          @focus="focus('background')" />
       </symbol>
       <symbol v-if="vector.light" :id="query('light')">
-        <as-path :path="vector.light" itemprop="light" />
+        <as-path
+          :path="vector.light"
+          :tabindex="tabindex"
+          itemprop="light"
+          @focus="focus('light')" />
       </symbol>
       <symbol v-if="vector.regular" :id="query('regular')">
-        <as-path :path="vector.regular" itemprop="regular" />
+        <as-path
+          :path="vector.regular"
+          itemprop="regular"
+          :tabindex="tabindex"
+          @focus="focus('regular')" />
       </symbol>
       <symbol v-if="vector.bold" :id="query('bold')">
-        <as-path :path="vector.bold" itemprop="bold" />
+        <as-path
+          :tabindex="tabindex"
+          :path="vector.bold"
+          itemprop="bold"
+          @focus="focus('bold')" />
       </symbol>
     </defs>
     <as-filters />
     <use
       class="background"
-      :tabindex="tabindex"
       :href="fragment('background')"
-      :fill="`url(${fragment('background-gradient')}`"
-      @focus="focus('background')" />
+      :fill="`url(${fragment('background-gradient')}`" />
     <use
       class="light"
-      :tabindex="tabindex"
       :href="fragment('light')"
       :fill="`url(${fragment('light-gradient')}`"
-      filter="url(#light-filter)"
-      @focus="focus('light')" />
+      filter="url(#light-filter)" />
     <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
     <use
       class="regular"
-      :tabindex="tabindex"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
-      filter="url(#regular-filter)"
-      @focus="focus('regular')" />
+      filter="url(#regular-filter)" />
     <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
     <use
       class="bold"
-      :tabindex="tabindex"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
-      filter="url(#bold-filter)"
-      @focus="focus('bold')" />
+      filter="url(#bold-filter)" />
     <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
   </svg>
 </template>
@@ -169,6 +177,7 @@
     height: 100%
     width: 100%
     outline: none
-    // use.bold, use.regular, use.light, use.emboss
+    // use.emboss
+    //   user-select: none
     //   display: none
 </style>
