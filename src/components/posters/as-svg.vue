@@ -51,19 +51,31 @@
       :href="fragment('light')"
       :fill="`url(${fragment('light-gradient')}`"
       filter="url(#light-filter)" />
-    <use class="emboss" :href="fragment('light')" filter="url(#emboss)" />
+    <use
+      class="emboss"
+      tabindex="-1"
+      :href="fragment('light')"
+      filter="url(#emboss)" />
     <use
       class="regular"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
       filter="url(#regular-filter)" />
-    <use class="emboss" :href="fragment('regular')" filter="url(#emboss)" />
+    <use
+      class="emboss"
+      tabindex="-1"
+      :href="fragment('regular')"
+      filter="url(#emboss)" />
     <use
       class="bold"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
       filter="url(#bold-filter)" />
-    <use class="emboss" :href="fragment('bold')" filter="url(#emboss)" />
+    <use
+      class="emboss"
+      tabindex="-1"
+      :href="fragment('bold')"
+      filter="url(#emboss)" />
   </svg>
 </template>
 <script setup>
@@ -177,6 +189,6 @@
     height: 100%
     width: 100%
     outline: none
-    // use.bold, use.regular, use.light, use.emboss
+    // use.light, use.regular, use.bold, use.emboss, use.background
     //   display: none
 </style>
