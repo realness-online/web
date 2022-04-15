@@ -177,7 +177,6 @@
     height: 100%
     width: 100%
     outline: none
-    // use.emboss
-    //   user-select: none
+    // use.bold, use.regular, use.light, use.emboss
     //   display: none
 </style>

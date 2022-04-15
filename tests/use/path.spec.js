@@ -5,9 +5,9 @@ import {
   fill_opacity,
   stroke_opacity,
   opacity
-} from '@/use/path-style'
+} from '@/use/path'
 
-describe('@/use/path-style.js', () => {
+describe('@/use/path.js', () => {
   describe('#create_path_element', () => {
     it('Creates path element', () => {
       const path = create_path_element()

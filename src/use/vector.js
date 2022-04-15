@@ -8,6 +8,7 @@ import {
 } from '@/use/itemid'
 import { ref, computed, onMounted as mounted } from 'vue'
 import { recent_item_first } from '@/use/sorting'
+import { use as use_path } from '@/use/path'
 const path_names = ['background', 'light', 'regular', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
@@ -85,7 +86,7 @@ export const use_poster = (props, emit) => {
   const vector = ref(null)
   const working = ref(true)
   const menu = ref(false)
-
+  const { get_active_path } = use_path()
   const aspect_ratio = computed(() => {
     if (!props.toggle_aspect) return 'xMidYMid slice'
     if (menu.value || !props.slice) return 'xMidYMid meet'
@@ -140,7 +141,14 @@ export const use_poster = (props, emit) => {
     if (!props.tabable) return 0
     else return undefined
   })
-  const focus = async layer => emit('focus', layer)
+  const focus = async layer => {
+    console.log('dude')
+    const path = get_active_path()
+    console.log('howdy', path)
+    selected_path.value = path.getAttribute('itemprop')
+    opacity_percentage.value = path.style.fillOpacity
+    emit('focus', layer)
+  }
   const should_show = () => {
     if (props.immediate) show()
   }
