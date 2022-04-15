@@ -131,18 +131,14 @@
   const light = computed(() => {
     if (vertical.value) {
       return vertical.value.map(stop => {
-        if ((stop.color.l = 10)) return stop
-        else {
-          const color = color_to_hsla({
+        return {
+          offset: stop.offset,
+          color: color_to_hsla({
             h: stop.color.h,
             s: stop.color.s,
             l: 60,
             a: 1
           })
-          return {
-            color,
-            offset: stop.offset
-          }
         }
       })
     } else {
