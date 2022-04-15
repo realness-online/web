@@ -3,7 +3,7 @@
 </template>
 <script setup>
   import { ref, watch, watchEffect, inject } from 'vue'
-  import { is_path } from '@/use/vector'
+  import { is_path } from '@/use/path'
   const path = ref(null)
   const props = defineProps({
     path: {
