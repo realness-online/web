@@ -109,7 +109,7 @@
               h: stop.color.h,
               s: stop.color.s,
               l: 80,
-              a: 1
+              a: 0.9
             })
           }
         }
@@ -137,7 +137,7 @@
             h: stop.color.h,
             s: stop.color.s,
             l: 60,
-            a: 1
+            a: 0.9
           })
         }
       })
@@ -149,7 +149,7 @@
             h: 300,
             s: 2,
             l: 2,
-            a: 1
+            a: 0.9
           })
         }
       ]
