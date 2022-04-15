@@ -142,11 +142,7 @@ export const use_poster = (props, emit) => {
     else return undefined
   })
   const focus = async layer => {
-    console.log('dude')
-    const path = get_active_path()
-    console.log('howdy', path)
-    selected_path.value = path.getAttribute('itemprop')
-    opacity_percentage.value = path.style.fillOpacity
+    get_active_path()
     emit('focus', layer)
   }
   const should_show = () => {
