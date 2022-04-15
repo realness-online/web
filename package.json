@@ -6,7 +6,7 @@
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
