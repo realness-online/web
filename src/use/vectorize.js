@@ -1,5 +1,5 @@
 import { ref, computed, watch, onUnmounted as dismount } from 'vue'
-import { create_path_element } from '@/use/path-style'
+import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
 const new_vector = ref(null)

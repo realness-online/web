@@ -17,10 +17,13 @@
         tabindex="-1"
         @click="toggle_stroke" />
       <input
+        id="color-input"
         v-model="color"
         type="color"
         tabindex="-1"
         @blur="focus_on_active" />
+      <label for="color-input">{{ selected_path }}</label>
+      <label for="color-input">{{ opacity_percentage }}</label>
     </figcaption>
   </figure>
 </template>
@@ -32,11 +35,7 @@
     useMagicKeys as keyboard,
     usePointerSwipe as swipe
   } from '@vueuse/core'
-  import {
-    fill_opacity as opacity,
-    itemprop_query as query,
-    color_luminosity as luminosity
-  } from '@/use/path-style'
+  import { use as use_path, itemprop_query as query } from '@/use/path'
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   defineProps({
@@ -52,6 +51,12 @@
   const itemprop = ref('background')
   const as_stroke = ref(false)
   provide('as_stroke', as_stroke)
+  const {
+    opacity_percentage,
+    selected_path,
+    fill_opacity: opacity,
+    color_luminosity: luminosity
+  } = use_path()
   const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
     itemprop.value = id
@@ -114,13 +119,21 @@
         max-height: 100vh
         min-height: inherit
     & > figcaption
-      position: relative
+      position: fixed
+      bottom: 0
       z-index: 0
       border: none
       padding: 0
       height: auto
       display: flex
       justify-content: space-between
+      & > label
+        text-transform: capitalize
+        position: fixed
+        right: base-line
+        bottom: inset(bottom,  base-line * 6.5)
+        &:nth-of-type(2)
+          bottom: inset(bottom,  base-line * 3)
       & > svg
         cursor: pointer
         position: fixed
