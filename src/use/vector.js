@@ -19,6 +19,7 @@ export const is_vector = vector => {
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
   if (!vector.regular) return false // the only required path
+
   if (!vector.regular.style) return false
   if (vector.light && !vector.light.style) return false // have style if exist
   if (vector.bold && !vector.bold.style) return false
@@ -32,7 +33,7 @@ export const is_vector = vector => {
   else return false
 }
 export const is_vector_id = itemid => {
-  if (as_author(itemid) && as_created_at(itemid)) return true
+  if (as_created_at(itemid)) return true
   else return false
 }
 export const is_rect = rect => {
