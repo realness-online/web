@@ -55,7 +55,7 @@ export const set_vector_dimensions = (props, item) => {
   props.width = width
   props.height = height
 }
-export const migrate_path = path => {
+const migrate_path = path => {
   const style = path.style
   const fill = path.getAttribute('fill')
   const opacity = path.getAttribute('fill-opacity')
@@ -67,7 +67,7 @@ export const migrate_path = path => {
 
   return path
 }
-export const migrate_poster = poster => {
+const migrate_poster = poster => {
   if (Array.isArray(poster.path)) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
