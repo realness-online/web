@@ -127,6 +127,7 @@
       display: flex
       justify-content: space-between
       & > label
+        text-shadow: 1px 1px 1px black-background
         text-transform: capitalize
         position: fixed
         right: base-line
