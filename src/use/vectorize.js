@@ -1,4 +1,9 @@
-import { ref, computed, watch, onUnmounted as dismount } from 'vue'
+import {
+  ref,
+  computed,
+  watchEffect as watch_effect,
+  onUnmounted as dismount
+} from 'vue'
 import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
@@ -81,7 +86,7 @@ export const use = () => {
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
-  watch(new_vector, () => {
+  watch_effect(() => {
     if (
       new_gradients.value &&
       new_vector.value &&
