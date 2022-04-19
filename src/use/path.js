@@ -18,6 +18,10 @@ export const create_path_element = () => {
   return document.createElementNS(svg_ns, 'path')
 }
 
+export const create_stop_element = () => {
+  return document.createElementNS(svg_ns, 'stop')
+}
+
 const opacity_percentage = ref()
 const selected_path = ref()
 
