@@ -65,7 +65,6 @@
     else {
       const fill = path.style.fill
       if (fill) color.value = to_hex(fill)
-      else if (id === 'background') color.value = to_hex('--white-poster')
       else color.value = to_hex()
     }
   }
