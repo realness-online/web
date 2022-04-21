@@ -10,7 +10,6 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <as-gradients :itemid="itemid" />
     <defs>
       <symbol :id="query('background')">
         <as-background
@@ -41,7 +40,6 @@
           @focus="focus('bold')" />
       </symbol>
     </defs>
-    <as-filters />
     <use
       class="background"
       :href="fragment('background')"
@@ -62,6 +60,8 @@
       :fill="`url(${fragment('bold-gradient')}`"
       filter="url(#bold-filter)" />
     <as-emboss :itemid="itemid" />
+    <as-gradients :itemid="itemid" />
+    <as-filters />
   </svg>
 </template>
 <script setup>
