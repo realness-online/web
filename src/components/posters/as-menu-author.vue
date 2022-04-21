@@ -23,7 +23,10 @@
 
   import { useRouter as use_router } from 'vue-router'
   import { watch } from 'vue'
-  import { useMagicKeys as use_magic_keys } from '@vueuse/core'
+  import {
+    useMagicKeys as use_magic_keys,
+    useActiveElement as use_active_element
+  } from '@vueuse/core'
   import { as_created_at, as_type } from '@/use/itemid'
   import { is_vector_id } from '@/use/vector'
   const props = defineProps({
@@ -37,9 +40,14 @@
   const edit_poster = itemid =>
     `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
   const open_editor = () => router.push({ path: edit_poster(props.poster.id) })
+  const active = use_active_element()
 
   const { enter } = use_magic_keys()
   watch(enter, v => {
-    if (v) open_editor()
+    if (v && active.value) {
+      const clicked = parseInt(active.value.href?.baseVal.split('-')[2])
+      const me = as_created_at(props.poster.id)
+      if (clicked === me) open_editor()
+    }
   })
 </script>
