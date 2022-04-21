@@ -71,12 +71,7 @@
   import AsFilters from '@/components/posters/as-filters'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import {
-    onMounted as mounted,
-    watchEffect as watch_effect,
-    ref,
-    inject
-  } from 'vue'
+  import { watchEffect as watch_effect, ref, inject } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
     use_poster,

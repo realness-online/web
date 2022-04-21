@@ -68,7 +68,6 @@
       else color.value = to_hex()
     }
   }
-  const svg_loaded = event => emit('loaded', event)
   const toggle_stroke = () => {
     as_stroke.value = !as_stroke.value
     const path = query(itemprop.value)

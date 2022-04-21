@@ -20,13 +20,7 @@
 </template>
 <script setup>
   import { as_fragment_id } from '@/use/itemid'
-  import {
-    onMounted as mounted,
-    watchEffect as watch_effect,
-    ref,
-    inject
-  } from 'vue'
-  import { is_vector_id, use_poster } from '@/use/vector'
+  import { is_vector_id } from '@/use/vector'
   const props = defineProps({
     itemid: {
       type: String,

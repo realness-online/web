@@ -3,8 +3,9 @@
     <g class="gradients">
       <radialGradient gradientUnits="userSpaceOnUse">
         <stop
-          itemprop="radial"
           v-for="stop in radial"
+          :key="stop.offset"
+          itemprop="radial"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </radialGradient>
@@ -15,8 +16,9 @@
         y1="0"
         y2="100%">
         <stop
-          itemprop="vertical"
           v-for="stop in vertical"
+          :key="stop.offset"
+          itemprop="vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
@@ -27,8 +29,9 @@
         y1="0"
         y2="0">
         <stop
-          itemprop="horizontal"
           v-for="stop in horizontal"
+          :key="stop.offset"
+          itemprop="horizontal"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
@@ -39,6 +42,7 @@
         gradientUnits="userSpaceOnUse">
         <stop
           v-for="stop in background"
+          :key="stop.offset"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </radialGradient>
@@ -51,6 +55,7 @@
         y2="100%">
         <stop
           v-for="stop in light"
+          :key="stop.offset"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
@@ -63,6 +68,7 @@
         y2="0">
         <stop
           v-for="stop in regular"
+          :key="stop.offset"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
@@ -75,6 +81,7 @@
         y2="0">
         <stop
           v-for="stop in bold"
+          :key="stop.offset"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>

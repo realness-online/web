@@ -1,9 +1,4 @@
-import {
-  ref,
-  onMounted as mounted,
-  onUnmounted as dismount,
-  nextTick as next_tick
-} from 'vue'
+import { ref, nextTick as next_tick } from 'vue'
 import get_item from '@/use/item'
 import { as_query_id } from '@/use/itemid'
 export const use = vector => {
