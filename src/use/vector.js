@@ -2,7 +2,6 @@ import {
   as_query_id,
   as_fragment_id,
   load,
-  as_author,
   as_created_at,
   as_directory
 } from '@/use/itemid'
