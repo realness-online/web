@@ -41,12 +41,8 @@
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/vector'
   import { use as use_person } from '@/use/people'
-  import { list } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
-
-  const working = ref(true)
-  const pages_viewed = ref(['index'])
   const route = use_route()
   const id = from_e64(route.params.phone_number)
   const {
@@ -54,11 +50,7 @@
     thought_shown,
     for_person: statements_for_person
   } = use_statements()
-  const {
-    posters,
-    poster_shown,
-    for_person: posters_for_person
-  } = use_posters()
+  const { posters, for_person: posters_for_person } = use_posters()
   const { load_person, load_relations, person, relations } = use_person()
   mounted(async () => {
     await Promise.all([

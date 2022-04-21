@@ -19,8 +19,7 @@
 <script setup>
   import icon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
-  import { list, load } from '@/use/itemid'
-  import { onMounted as mounted, ref } from 'vue'
+  import { onMounted as mounted } from 'vue'
   import { use } from '@/use/people'
   import { current_user } from '@/use/serverless'
   const { relations, load_relations } = use()
