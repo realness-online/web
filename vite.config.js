@@ -33,7 +33,23 @@ export default defineConfig({
       }
     }
   },
-  plugins: [vue(), vite_pwa()],
+  plugins: [
+    vue(),
+    vite_pwa({
+      minify: false,
+      manifest: {
+        short_name: 'Realness',
+        description: 'Realness – A Chill Vector Space',
+        scope: '/',
+        orientation: 'portrait',
+        background_color: '#151518',
+        icons: [
+          { src: '192.png', sizes: '192x192', type: 'image/png' },
+          { src: '512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      }
+    })
+  ],
   test: {
     root: 'web',
     globals: true,
