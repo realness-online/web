@@ -15,7 +15,7 @@
     class="emboss"
     tabindex="-1"
     :href="fragment('bold')"
-    :fill="`url(${fragment('light-gradient')}`"
+    :fill="`url(${fragment('bold-gradient')}`"
     filter="url(#emboss)" />
 </template>
 <script setup>
