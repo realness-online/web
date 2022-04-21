@@ -1,9 +1,8 @@
-// import { configDefaults, defineConfig } from 'vite'
 import { configDefaults, defineConfig } from 'vitest/config'
-
 import vue from '@vitejs/plugin-vue'
+// vite.config.js / vite.config.ts
+import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   build: {
     target: 'esnext'
@@ -34,7 +33,7 @@ export default defineConfig({
       }
     }
   },
-  plugins: [vue()],
+  plugins: [vue(), vite_pwa()],
   test: {
     root: 'web',
     globals: true,
