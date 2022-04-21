@@ -38,7 +38,7 @@
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/vector'
-  import { ref, computed, watch, onMounted as mounted } from 'vue'
+  import { watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
@@ -46,16 +46,11 @@
   console.time('views:Feed')
   const working = ref(true)
   const feed = ref(null)
-  const count = ref(0)
-  const show_message = computed(() => {
-    if (working.value) return false
-    if (statements.value.length === 0 && posters.value.length === 0) return true
-    return false
-  })
+
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
     use_fullscreen(feed)
   const { f } = use_magic_keys()
-  const { load_people, people, load_relations, relations } = use_people()
+  const { people, load_relations } = use_people()
   const {
     for_person: statements_for_person,
     statements,

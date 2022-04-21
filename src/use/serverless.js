@@ -14,7 +14,7 @@ import {
   uploadString as upload_file,
   deleteObject as delete_file
 } from 'firebase/storage'
-import { get, set, keys } from 'idb-keyval'
+import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
 
 // initialize application

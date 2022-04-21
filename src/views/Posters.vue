@@ -38,19 +38,10 @@
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
 
-  import { del } from 'idb-keyval'
-  import get_item from '@/use/item'
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
-  import {
-    computed,
-    ref,
-    nextTick as next_tick,
-    onMounted as mounted,
-    onUnmounted as dismount
-  } from 'vue'
+  import { onMounted as mounted } from 'vue'
   import { use_posters } from '@/use/vector'
-  const finished = ref(true)
 
   const { posters, for_person: posters_for_person } = use_posters()
   const {

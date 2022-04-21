@@ -38,6 +38,4 @@
   </defs>
 </template>
 <!-- todo check to include on the page via documebnt.getItemById. this way we only include it once on the page.
-    will need to verify that this gets saved when svg is downloaded
-
- -->
+    will need to verify that this gets saved when svg is downloaded -->
