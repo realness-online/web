@@ -52,30 +52,16 @@
       :fill="`url(${fragment('light-gradient')}`"
       filter="url(#light-filter)" />
     <use
-      class="emboss"
-      tabindex="-1"
-      :href="fragment('light')"
-      filter="url(#emboss)" />
-    <use
       class="regular"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
       filter="url(#regular-filter)" />
     <use
-      class="emboss"
-      tabindex="-1"
-      :href="fragment('regular')"
-      filter="url(#emboss)" />
-    <use
       class="bold"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
       filter="url(#bold-filter)" />
-    <use
-      class="emboss"
-      tabindex="-1"
-      :href="fragment('bold')"
-      filter="url(#emboss)" />
+    <as-emboss :itemid="itemid" />
   </svg>
 </template>
 <script setup>
@@ -83,6 +69,7 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsFilters from '@/components/posters/as-filters'
+  import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     onMounted as mounted,
