@@ -57,6 +57,7 @@
     const me = localStorage.me.substring(2)
     const id = route.params.id
     const type = route.params.type
+    new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
       router.push({ path: '/posters' })
