@@ -38,7 +38,7 @@
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/vector'
-  import { watch, onMounted as mounted } from 'vue'
+  import { ref, watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
