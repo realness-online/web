@@ -116,7 +116,7 @@
               h: stop.color.h,
               s: stop.color.s,
               l: 80,
-              a: 0.9
+              a: 1
             })
           }
         }
