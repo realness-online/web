@@ -4,19 +4,19 @@
       <feColorMatrix
         in="SourceGraphic"
         type="matrix"
-        values="1.50 0 0 0 0
-                0 1.25 0 0 0
-                0 0 1.00 0 0
-                0 0 0 1.00 0" />
+        values="1.5 0 0 0 0
+                0 1.5 0 0 0
+                0 0 1.5 0 0
+                0 0 0 1.5 0" />
     </filter>
     <filter id="regular-filter">
       <feColorMatrix
         in="SourceGraphic"
         type="matrix"
-        values="1.50 0 0 0 0
-                0 1.25 0 0 0
-                0 0 1.00 0 0
-                0 0 0 1.50 0" />
+        values="1.5 0 0 0 0
+                0 1.5 0 0 0
+                0 0 1.5 0 0
+                0 0 0 1 0" />
     </filter>
 
     <filter id="bold-filter">
