@@ -1,7 +1,8 @@
 // import { initializeApp as initialize_firebase } from 'firebase/app'
 import firebase from 'firebase/compat/app'
-
 import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
   getAuth as init_auth,
   onAuthStateChanged as auth_changed,
   signOut
@@ -38,6 +39,8 @@ const info = ref(firebase.initializeApp(firebase_keys))
 // const info = ref(initialize_firebase(firebase_keys))
 // can't use this until fully converted to firebase version 9 modular
 const storage = init_storage(info.value)
+export const sign_in = signInWithPhoneNumber
+export const Recaptcha = RecaptchaVerifier
 export const current_user = ref(null)
 export const auth = init_auth(info.value)
 export const location = path => reference(storage, path)
