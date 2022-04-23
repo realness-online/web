@@ -9,7 +9,9 @@ import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
 import Editor from '@/views/Editor'
-
+import About from '@/views/About'
+import Settings from '@/views/Settings'
+import Documentation from '@/views/Documentation'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/sign-on', component: Sign_on },
@@ -21,6 +23,9 @@ const routes = [
   { path: '/phonebook', component: PhoneBook },
   { path: '/profile', component: Profile },
   { path: '/account', component: Account },
+  { path: '/about', component: About },
+  { path: '/settings', component: Settings },
+  { path: '/documentation', component: Documentation },
   { path: '/:phone_number', component: Profile }
 ]
 

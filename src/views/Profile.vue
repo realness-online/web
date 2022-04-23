@@ -1,7 +1,7 @@
 <template>
   <section id="profile" class="page">
     <header>
-      <realness-icon name="nothing" />
+      <icon name="nothing" />
       <logo-as-link />
     </header>
     <div>
@@ -36,7 +36,7 @@
   import AsMessenger from '@/components/profile/as-messenger'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
-  import RealnessIcon from '@/components/icon'
+  import Icon from '@/components/icon'
   import { from_e64 } from '@/use/profile'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/vector'
