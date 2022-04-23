@@ -11,6 +11,9 @@
     <a class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
+    <a class="avatar" @click="emit('avatar', poster.id)">
+      <icon name="silhouette" />
+    </a>
     <as-download :itemid="poster.id" />
   </menu>
 </template>
@@ -35,11 +38,16 @@
       required: true
     }
   })
-  const emit = defineEmits({ remove: is_vector_id, picker: is_vector_id })
+  const emit = defineEmits({
+    remove: is_vector_id,
+    picker: is_vector_id,
+    avatar: is_vector_id
+  })
   const router = use_router()
   const edit_poster = itemid =>
     `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
-  const open_editor = () => router.push({ path: edit_poster(props.poster.id) })
+  const open_editor = () =>
+    router.replace({ path: edit_poster(props.poster.id) })
   const active = use_active_element()
 
   const { enter } = use_magic_keys()
