@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
+    "@headlessui/vue": "^1.5.0",
+    "@heroicons/vue": "^1.0.6",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "8.3.0",
     "firebase": "9.6.11",
