@@ -1,7 +1,9 @@
 <template>
   <section id="account" :class="{ 'signed-in': current_user }" class="page">
     <header>
-      <sign-on v-if="!current_user" />
+      <router-link to="/settings" tabindex="-1">
+        <icon name="gear" />
+      </router-link>
       <logo-as-link />
     </header>
     <address v-if="current_user && !working">
@@ -9,14 +11,7 @@
         v-if="person"
         v-model:person="person"
         :editable="true"
-        @update:person="emit('update:person', person)">
-        <a @click="settings = !settings">
-          <icon name="gear" />
-        </a>
-      </profile-as-figure>
-      <menu v-if="settings" id="settings">
-        <button @click="signoff">Sign off</button>
-      </menu>
+        @update:person="emit('update:person', person)" />
     </address>
     <h1 v-if="!working">Statements</h1>
     <as-days
@@ -46,10 +41,10 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
+  import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
-  import SignOn from '@/components/profile/sign-on'
+
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import { current_user, sign_off } from '@/use/serverless'
@@ -108,6 +103,8 @@
 </script>
 <style lang="stylus">
   section#account
+    svg.icon
+      fill: red
     a
     button
     time
