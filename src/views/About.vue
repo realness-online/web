@@ -35,19 +35,21 @@
             <figcaption>
               <h3>We call them <span>Posters</span></h3>
               <p>
-                Once created, Your poster is optimized to be small and run fast.
-                Realness has tools for You to edit opacity, color, gradient, for
-                fill and stroke
+                Your image is composed into four animatable layers, From a white
+                background to a dark foreground.
               </p>
               <p>
-                Your image is composed into four animatable layers, From a white
-                background to a dark foreground. with a poster you can extract a
-                color pallet. Animate filter settings. the individual parts of a
-                Poster are easy to query and feel natural to mainipulate for the
-                web.
+                Once created, Your poster is optimized to be small and run fast.
+                Realness has tools for You to edit opacity, color, gradient, for
+                fill and stroke.
+              </p>
+              <p>
+                Download your poster and you can extract a color pallet. Animate
+                a filter or gradient. the individual parts of a Poster are easy
+                to query and feel natural to mainipulate for the web.
               </p>
               <p>Hand coders — <b>Realness</b> was built for you.</p>
-              <h4>An simple editor at the creative limits of the web</h4>
+              <h4>A tool at the creative limits of the web</h4>
             </figcaption>
           </figure>
           <ol>
@@ -65,8 +67,19 @@
             <li>
               <icon name="finished" />
               <p>
-                Each poster is a document you can read, animate and extract
-                masks, filters, gradients and patterns
+                Each poster is a document you can download, read, and animate
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Symbols make it possible to use posters as masks and patterns
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Extract filters, and any one of six gradients from your poster
               </p>
             </li>
             <li>
@@ -75,12 +88,8 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>Colors are easily extracted from gradients</p>
-            </li>
-            <li>
-              <icon name="finished" />
               <p>
-                Sign in with your phone number to sync.
+                Sign in with your phone number to sync
                 <span class="not">email</span>
               </p>
             </li>
@@ -117,10 +126,7 @@
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" />
       </a>
-      <p>
-        Realness is free, if that's what you need. There are no reciepts — Pay
-        after it's been usefull.
-      </p>
+      <p>Realness is free, if that's what you need. There are no reciepts</p>
     </div>
     <footer>
       <figure>
@@ -225,7 +231,6 @@
       & > figure
         & > img
           border-radius: base-line * 0.33
-          // max-width: 80vw
         @media (min-width: pad-begins)
           padding: base-line
           display: flex
@@ -233,9 +238,14 @@
             width: 40vw
         & > figcaption
           padding: base-line
+          display: flex
+          flex-direction: column
           & > h4
+            margin-top: base-line
             text-align: center
             line-height: 2
+            max-width: base-line * 13
+            align-self: center
           & > ol
             list-style-type: square
             & > li
