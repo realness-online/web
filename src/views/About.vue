@@ -39,7 +39,7 @@
                 background to a dark foreground.
               </p>
               <p>
-                Once created, Your poster is optimized to be small and run fast.
+                Once created, your poster is optimized to be small and run fast.
                 Realness has tools for You to edit opacity, color, gradient, for
                 fill and stroke.
               </p>
