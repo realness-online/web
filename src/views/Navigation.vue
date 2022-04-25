@@ -24,7 +24,7 @@
     </nav>
     <footer>
       <h6>{{ version }}</h6>
-      <a href="https://github.com/realness-online/web" rel="external">?</a>
+      <router-link to="/about" tabindex="-1"> ? </router-link>
     </footer>
   </section>
 </template>
