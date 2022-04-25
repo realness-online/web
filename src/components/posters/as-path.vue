@@ -30,6 +30,20 @@
   watchEffect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">
+  svg:focus-within
+    path
+      // &[itemprop="light"]
+      //   animation-timing-function: linear;
+      //   animation-name: subtle-rotate
+      //   animation-duration: 4s
+      //   animation-direction: alternate
+      //   animation-iteration-count: infinite
+      // &[itemprop="bold"]
+      //   animation-timing-function: linear
+      //   animation-name: subtle-rotate
+      //   animation-duration: 8s
+      //   animation-direction: alternate
+      //   animation-iteration-count: infinite
   path[itemprop]
     outline: none
     stroke: currentColor

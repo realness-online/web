@@ -3,19 +3,19 @@
     class="emboss"
     tabindex="-1"
     :href="fragment('light')"
-    :fill="`url(${fragment('light-gradient')}`"
-    filter="url(#emboss)" />
-  <use
-    class="emboss"
-    tabindex="-1"
-    :href="fragment('regular')"
     :fill="`url(${fragment('regular-gradient')}`"
     filter="url(#emboss)" />
   <use
     class="emboss"
     tabindex="-1"
-    :href="fragment('bold')"
+    :href="fragment('regular')"
     :fill="`url(${fragment('bold-gradient')}`"
+    filter="url(#emboss)" />
+  <use
+    class="emboss"
+    tabindex="-1"
+    :href="fragment('bold')"
+    :fill="`url(${fragment('light-gradient')}`"
     filter="url(#emboss)" />
 </template>
 <script setup>

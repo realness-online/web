@@ -1,4 +1,13 @@
 /* http://daneden.me/animate/ */
+
+@keyframes subtle-rotate
+  50%
+    transform: rotate(0.33deg)
+
+@keyframes subtle-breath
+  50%
+    opacity: 0.5
+
 @keyframes working
   50%
     fill: white-background
@@ -25,7 +34,7 @@
     position: absolute
     top: inset(top, 0)
     left: inset(left, 0)
-    
+
 @keyframes absolute-slide-up
   from
     transform: translate3d(0, 100%, 0)

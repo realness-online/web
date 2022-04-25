@@ -1,55 +1,279 @@
-<script setup>
-  import { ref } from 'vue'
-  const samples = ref([])
-</script>
 <template>
   <section id="about" class="page">
     <header>
       <nav>
-        <icon name="nothing" />
         <logo-as-link />
       </nav>
-      <h1>Realness</h1>
-      <p>A low-fi vector graphics network</p>
       <figure>
-        <icon name="hero" />
+        <figcaption>
+          <h1>Realness</h1>
+          <h3>online</h3>
+          <p>
+            Realness creates expressive vector graphics from your designs and
+            photos. It works on any device — saving nothing to the network until
+            you want it to.  
+          </p>
+          <p>
+            Once you edit and download your creations, they will integrate into
+            any workflow that uses SVG.
+          </p>
+        </figcaption>
+        <img class="example" :src="`/about/landscape/06.svg`" />
       </figure>
     </header>
-    <details>
-      <summary>For Designers</summary>
-      <h3>Turn your photos into design material</h3>
-      <p>
-        Realness makes it Posters from photos — by turning photos into vector
-        graphics. Posters are then stored on device for you to download and us.
-      </p>
-      <p>
-        Realness creates a 4 layer svg from any image. It pulls out prediminate
-        colors and optimized the vector to the smallest possible size.
-      </p>
-      <h4>With realness</h4>
-      <ol>
-        <li>Conversion and storage is done on device</li>
-        <li>Edit the color, gradient and opacity of each layer</li>
-        <li>A timeline view that includes your comments about each Poster</li>
-        <li>Vectors are configured to be infinitly animatable</li>
-        <li>Background, light, regular, and bold can be animated seperatly</li>
-        <li>Supports accessing posters from your filesystem</li>
-        <li>Sign up if you want to sync accross devices, or share</li>
-      </ol>
-    </details>
-    <details>
-      <summary>For Churches, Punks, Veterans</summary>
-    </details>
-    <details>
-      <summary>For Developers</summary>
-      <a href="https://github.com/realness-online/web" rel="external">
-        Open Source
+    <tab-group>
+      <tab-list as="menu">
+        <tab>For Designers</tab>
+        <tab>For Churches, Punks, and Veterans</tab>
+        <tab>For Developers</tab>
+      </tab-list>
+      <tab-panels as="template">
+        <tab-panel as="article" tabindex="-1" class="designers">
+          <header></header>
+          <figure>
+            <img class="example" src="/about/portrait/09.svg" />
+            <figcaption>
+              <h3>We call them <span>Posters</span></h3>
+              <p>
+                Once created, Your poster is optimized to be small and run fast.
+                Realness has tools for You to edit opacity, color, gradient, for
+                fill and stroke
+              </p>
+              <p>
+                Your image is composed into four animatable layers, From a white
+                background to a dark foreground. with a poster you can extract a
+                color pallet. Animate filter settings. the individual parts of a
+                Poster are easy to query and feel natural to mainipulate for the
+                web.
+              </p>
+              <p>Hand coders — <b>Realness</b> was built for you.</p>
+              <h4>An simple editor at the creative limits of the web</h4>
+            </figcaption>
+          </figure>
+          <ol>
+            <li>
+              <icon name="finished" />
+              <p>
+                Edit color, gradient and opacity for symbols <b>Background</b>,
+                <b>Light</b>, <b>Regular</b> and <b>Bold</b>
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>View Posters in a timeline with your comments</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Each poster is a document you can read, animate and extract
+                masks, filters, gradients and patterns
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Access posters from your filesystem</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Colors are easily extracted from gradients</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Sign in with your phone number to sync.
+                <span class="not">email</span>
+              </p>
+            </li>
+          </ol>
+        </tab-panel>
+        <tab-panel as="article">
+          <h2></h2>
+          <p>
+            Independent people and organizations can use Realness to create
+            social networks of their own.
+          </p>
+        </tab-panel>
+        <tab-panel as="article">
+          <h2>We own the web</h2>
+          <p>
+            <span class="realness">Realness</span> takes advantage of serverless
+            to deliver a superior experence and create oportunities for products
+            beyond today's web
+          </p>
+          <p>
+            Developers can use realness to free themselves from SQL and the
+            tyrany of elite developers who have used the backend to
+            <a href="https://meta.com">reak havoc</a> for profit.
+          </p>
+          <a href="https://github.com/realness-online/web" rel="external">
+            Open Source
+          </a>
+        </tab-panel>
+      </tab-panels>
+    </tab-group>
+    <div class="call to action">
+      <h2>Support <span>Realness</span></h2>
+      <h3>$5 for Designers</h3>
+      <a href="https://cash.app/$ScottFryxell">
+        <img src="/about/cash-app.jpg" />
       </a>
-    </details>
-    <footer class="call to action"></footer>
+      <p>
+        Realness is free, if that's what you need. There are no reciepts — Pay
+        after it's been usefull.
+      </p>
+    </div>
+    <footer>
+      <figure>
+        <figcaption>
+          <h2>Gallery</h2>
+        </figcaption>
+      </figure>
+    </footer>
   </section>
-  <figure>
-    <figcaption>Realness in action</figcaption>
-  </figure>
 </template>
-<style lang="stylus"></style>
+<script setup>
+  import { ref } from 'vue'
+  import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
+  import Icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  const current_picture = ref(16)
+</script>
+<style lang="stylus">
+  section.page#about
+    span, b
+      color: blue
+    span.not
+      text-decoration: line-through
+    svg.icon
+      fill: green
+      width: base-line
+      height: base-line
+    & > header
+      display: block
+      min-height: 100vh
+      // overflow: hidden
+      // perspective: 1000px
+      // overflow-x: hidden
+      & > nav
+        display: flex
+        justify-content: space-between
+        margin-bottom: base-line * 2
+        svg.icon
+          fill: blue
+      & > figure
+        perspective: base-line * 80
+        @media (min-width: pad-begins)
+          display: flex
+          justify-content: space-around
+        & > figcaption
+          padding: base-line
+          @media (min-width: pad-begins)
+            margin-top: base-line * 2
+            width:33%
+          & > h1
+            color: blue
+            margin: 0
+            text-align: center
+            @media (min-width: pad-begins)
+              text-align: left
+          & > h3
+            max-width: base-line * 10
+            @media (min-width: pad-begins)
+              max-width: inherit
+            text-align: right;
+            margin:0
+            color:green
+          & > p
+            margin-top: base-line
+            text-align: center;
+        & > img
+          transition: transform 2s
+          transform-style: preserve-3d
+          // transform: rotateY( 180deg )
+          display: block
+          border-radius: base-line
+          @media (min-width: pad-begins)
+            width: 50vw
+    & > menu
+      border-radius: base-line
+      display: flex
+      justify-content: space-between
+      margin-top: base-line
+      padding base-line
+      @media (min-width: pad-begins)
+        margin: base-line
+        justify-content: center
+      & > button
+        border-radius: base-line * 0.33
+        color: green
+        background-color: white
+        font-weight: bold
+        max-width: 10rem
+        line-height: 1.33
+        @media (prefers-color-scheme: dark)
+          background-color: black
+        @media (min-width: pad-begins)
+          margin 0 base-line
+        &[aria-selected=false]
+          border-color: transparent
+          background-color: transparent
+    & > article.designers
+      min-height: 100vh
+      padding: base-line
+      & > header > h3
+        margin-bottom:  base-line * 2
+      & > figure
+        & > img
+          border-radius: base-line * 0.33
+          // max-width: 80vw
+        @media (min-width: pad-begins)
+          padding: base-line
+          display: flex
+          & > img
+            width: 40vw
+        & > figcaption
+          padding: base-line
+          & > h4
+            text-align: center
+            line-height: 2
+          & > ol
+            list-style-type: square
+            & > li
+              margin-left: base-line
+
+      & > ol
+        padding: base-line
+        display: grid
+        grid-gap: base-line
+        grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
+        li
+          position: relative;
+          display: block
+          svg
+            position: absolute
+          p
+            margin-left: base-line * 2
+            margin-bottom: 0
+    & > div.call.to.action
+      padding: base-line * 2
+      min-height: 100vh
+      display: flex
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      & > h2 > span
+        color: blue
+      h3
+        margin-bottom: base-line * 3
+        color: green
+      img
+        border-radius: base-line
+        width: base-line * 12
+      p
+        margin-top: base-line * 3
+        max-width: base-line * 18rem
+        text-align: center
+    & > footer
+      padding: base-line * 2
+      min-height: 100vh
+</style>
