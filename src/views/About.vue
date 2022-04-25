@@ -10,8 +10,8 @@
           <h3>online</h3>
           <p>
             Realness creates expressive vector graphics from your designs and
-            photos. It works on any device — saving nothing to the network until
-            you want it to.  
+            photos. It works on any device, saving to the network — when you
+            want it to.  
           </p>
           <p>
             Once you edit and download your creations, they will integrate into
@@ -33,7 +33,7 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" />
             <figcaption>
-              <h3>We call them <span>Posters</span></h3>
+              <h3>We call them <b>posters</b></h3>
               <p>
                 Your image is composed into four animatable layers, From a white
                 background to a dark foreground.
@@ -41,7 +41,7 @@
               <p>
                 Once created, your poster is optimized to be small and run fast.
                 Realness has tools for You to edit opacity, color, gradient, for
-                fill and stroke.
+                the fill and stroke of each layer.
               </p>
               <p>
                 Download your poster and you can extract a color pallet. Animate
@@ -89,8 +89,8 @@
             <li>
               <icon name="finished" />
               <p>
-                Sign in with your phone number to sync
-                <span class="not">email</span>
+                Sign in with your phone number to sync.
+                <span class="not">No email</span>
               </p>
             </li>
           </ol>
