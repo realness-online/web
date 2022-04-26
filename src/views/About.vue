@@ -27,8 +27,7 @@
         <tab>For Developers</tab>
       </tab-list>
       <tab-panels as="template">
-        <tab-panel as="article" tabindex="-1" class="designers">
-          <header></header>
+        <tab-panel class="designers" as="article" tabIndex="-1">
           <figure>
             <img class="example" src="/about/portrait/09.svg" />
             <figcaption>
@@ -39,7 +38,7 @@
               </p>
               <p>
                 Once created, your poster is optimized to be small and run fast.
-                Realness has tools for You to edit opacity, color, gradient, for
+                Realness has tools for you to edit opacity, color, gradient for
                 the fill and stroke of each layer.
               </p>
               <p>
@@ -85,6 +84,25 @@
               <icon name="finished" />
               <p>Access posters from your filesystem</p>
             </li>
+          </ol>
+        </tab-panel>
+        <tab-panel class="networks" as="article" tabIndex="-1">
+          <figure>
+            <img class="example" src="/about/portrait/02.svg" />
+            <figcaption>
+              <h2>The real us</h2>
+              <p>
+                Social media is a Mall. There are communities that we are apart
+                of that exist outside of the market. Realness is for communities
+                with ideals and principles around doing it yourself.
+              </p>
+              <p>
+                Independent people and organizations can use Realness to create
+                social networks of their own.
+              </p>
+            </figcaption>
+          </figure>
+          <ol>
             <li>
               <icon name="finished" />
               <p>
@@ -94,28 +112,35 @@
             </li>
           </ol>
         </tab-panel>
-        <tab-panel as="article">
-          <h2></h2>
-          <p>
-            Independent people and organizations can use Realness to create
-            social networks of their own.
-          </p>
-        </tab-panel>
-        <tab-panel as="article">
-          <h2>We own the web</h2>
-          <p>
-            <span class="realness">Realness</span> takes advantage of serverless
-            to deliver a superior experence and create oportunities for products
-            beyond today's web
-          </p>
-          <p>
-            Developers can use realness to free themselves from SQL and the
-            tyrany of elite developers who have used the backend to
-            <a href="https://meta.com">reak havoc</a> for profit.
-          </p>
-          <a href="https://github.com/realness-online/web" rel="external">
-            Open Source
-          </a>
+        <tab-panel class="developers" as="article" tabIndex="-1">
+          <figure>
+            <img class="example" src="/about/portrait/03.svg" />
+            <figcaption>
+              <h2>Built on the edge</h2>
+              <p>
+                <span class="realness">Realness</span> takes advantage of
+                serverless to deliver a superior experence and create
+                oportunities for products beyond today's web
+              </p>
+              <p>
+                Developers can use realness to free themselves from SQL and the
+                tyrany of elite developers who have used the backend to
+                <a href="https://meta.com">reak havoc</a> for profit.
+              </p>
+              <a href="https://github.com/realness-online/web" rel="external">
+                Open Source
+              </a>
+            </figcaption>
+          </figure>
+          <ol>
+            <li>
+              <icon name="finished" />
+              <p>
+                Sign in with your phone number to sync.
+                <span class="not">No email</span>
+              </p>
+            </li>
+          </ol>
         </tab-panel>
       </tab-panels>
     </tab-group>
@@ -228,7 +253,7 @@
           text-shadow 1px 1px green
           @media (prefers-color-scheme: dark)
             color: white
-    & > article.designers
+    & > article
       min-height: 100vh
       padding: base-line
       & > header > h3
