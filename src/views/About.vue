@@ -10,12 +10,11 @@
           <h3>online</h3>
           <p>
             Realness creates expressive vector graphics from your designs and
-            photos. It works on any device, saving to the network — when you
-            want it to.  
+            photos. It works on any device.
           </p>
           <p>
-            Once you edit and download your creations, they will integrate into
-            any workflow that uses SVG.
+            Once you edit and save your creations, they will integrate into any
+            workflow that uses SVG.
           </p>
         </figcaption>
         <img class="example" :src="`/about/landscape/06.svg`" />
@@ -126,7 +125,7 @@
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" />
       </a>
-      <p>Realness is free, if that's what you need. There are no reciepts</p>
+      <p>Realness is free. There are no reciepts</p>
     </div>
     <footer>
       <figure>
@@ -223,6 +222,12 @@
         &[aria-selected=false]
           border-color: transparent
           background-color: transparent
+        &[aria-selected=true]
+          font-size: larger
+          color: #ffffff
+          text-shadow 1px 1px green
+          @media (prefers-color-scheme: dark)
+            color: white
     & > article.designers
       min-height: 100vh
       padding: base-line
