@@ -93,7 +93,7 @@
               <h2>Shared values</h2>
               <p>
                 You can create your own social network with realness. While easy
-                to administer realenss encourages internet literacy. The time
+                to administer Realness encourages internet literacy. The time
                 and investment you put into realness helps you understand the
                 internet
               </p>
@@ -110,8 +110,9 @@
               </p>
               <p>
                 The performance is over. Our social health requires more
-                realness online. Realness has extensive documentation and you
-                can join the network if you want to talk with the team.
+                realness online. Realness is alpha we are not quite finished
+                with bugs and documentation. Sign in with your phone number and
+                you can text directly with the team.
               </p>
               <h4>Let's be fun again</h4>
             </figcaption>
