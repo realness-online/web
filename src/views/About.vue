@@ -103,8 +103,8 @@
                 content.
               </p>
               <p>
-                Use it with just your family, or maybe your warhammer
-                nerdacalypse user group. Realness set's you up with all the
+                Use it with just your family, union hall, or maybe your
+                warhammer nerdacalypse group. Realness set's you up with all the
                 benifits of serverless to advantage intimate useful communities
                 with clear lines of responsibility and communication
               </p>
