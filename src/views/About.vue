@@ -90,24 +90,76 @@
           <figure>
             <img class="example" src="/about/portrait/02.svg" />
             <figcaption>
-              <h2>The real us</h2>
+              <h2>Shared values</h2>
               <p>
-                Social media is a Mall. There are communities that we are apart
-                of that exist outside of the market. Realness is for communities
-                with ideals and principles around doing it yourself.
+                You can create your own social network with realness. While easy
+                to administer realenss encouirages internet literacy. The time
+                and investment you put into realness helps you understand the
+                internet
               </p>
               <p>
-                Independent people and organizations can use Realness to create
-                social networks of their own.
+                This means creating and managing an instance of realness is
+                going to require taking responcibilty for it's maintenance and
+                content.
               </p>
+              <p>
+                Use it with just your family, or maybe your warhammer
+                nerdacalypse user group. Realness set's you up with all the
+                benifits of serverless to advantage intimate usefull communities
+                with clear lines of responcibility and communication
+              </p>
+              <p>
+                The performance is over. Our social health requires more
+                realness online. Realness has extensive documentation and you
+                can join the network if you want to talk with the team.
+              </p>
+              <h4>Let's be fun again</h4>
             </figcaption>
           </figure>
           <ol>
             <li>
               <icon name="finished" />
+              <p>Low resolution graphics support natural human dynamics</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Clear lines of responcibility</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Supports decentralized decision making</p>
+            </li>
+            <li>
+              <icon name="finished" />
               <p>
-                Sign in with your phone number to sync.
-                <span class="not">No email</span>
+                Easy to administer with direct support from the development team
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Designed to encourage enough internet literacy to empower
+                regular ass people help manage the web
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Usefull to learn. Built on top of firebase</p>
+            </li>
+
+            <li>
+              <icon name="finished" />
+              <p>Organized around voting with your participation</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Sign in with your phone number</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                <b class="no">Email</b>, <b class="no">Likes</b>,
+                <b class="no">Links</b>
               </p>
             </li>
           </ol>
@@ -116,28 +168,33 @@
           <figure>
             <img class="example" src="/about/portrait/03.svg" />
             <figcaption>
-              <h2>Built on the edge</h2>
+              <h2>HTML is our database</h2>
               <p>
                 <span class="realness">Realness</span> takes advantage of
                 serverless to deliver a superior experence and create
-                oportunities for products beyond today's web
+                oportunities for customers and developers based on internet
+                literacy. We argue that we have to build an open web. Built on a
+                web of trust between communities.
               </p>
               <p>
                 Developers can use realness to free themselves from SQL and the
-                tyrany of elite developers who have used the backend to
-                <a href="https://meta.com">reak havoc</a> for profit.
+                tyrany of a full-stack mindset.
               </p>
-              <a href="https://github.com/realness-online/web" rel="external">
-                Open Source
-              </a>
+              <p>
+                you pay when your ready, and if it feels apropriate. This helps
+                keep the developers of realness focused on their job.
+              </p>
+              <p>Crypto is fake scarcity. bro.</p>
+              <h4>Cyber</h4>
             </figcaption>
           </figure>
           <ol>
             <li>
               <icon name="finished" />
               <p>
-                Sign in with your phone number to sync.
-                <span class="not">No email</span>
+                <a href="https://github.com/realness-online/web" rel="external">
+                  Open Source
+                </a>
               </p>
             </li>
           </ol>
@@ -172,7 +229,7 @@
   section.page#about
     span, b
       color: blue
-    span.not
+    .no
       text-decoration: line-through
     svg.icon
       fill: green
