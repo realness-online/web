@@ -93,7 +93,7 @@
               <h2>Shared values</h2>
               <p>
                 You can create your own social network with realness. While easy
-                to administer realenss encouirages internet literacy. The time
+                to administer realenss encourages internet literacy. The time
                 and investment you put into realness helps you understand the
                 internet
               </p>
@@ -105,8 +105,8 @@
               <p>
                 Use it with just your family, or maybe your warhammer
                 nerdacalypse user group. Realness set's you up with all the
-                benifits of serverless to advantage intimate usefull communities
-                with clear lines of responcibility and communication
+                benifits of serverless to advantage intimate useful communities
+                with clear lines of responsibility and communication
               </p>
               <p>
                 The performance is over. Our social health requires more
@@ -202,8 +202,12 @@
       </tab-panels>
     </tab-group>
     <div class="call to action">
-      <h2>Support <span>Realness</span></h2>
-      <h3>$5 for Designers</h3>
+      <h3>
+        Continued development of <span>Realness</span> <span>online</span>
+      </h3>
+      <h4>$5 — Designers</h4>
+      <h4>$15 — Community</h4>
+      <h4>$25 — Developers</h4>
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" />
       </a>
@@ -324,15 +328,16 @@
           & > img
             width: 40vw
         & > figcaption
-          padding: base-line
+          padding: 0 base-line
           display: flex
           flex-direction: column
           & > h4
-            margin-top: base-line
+            margin: base-line 0
             text-align: center
             line-height: 2
             max-width: base-line * 13
             align-self: center
+
           & > ol
             list-style-type: square
             & > li
@@ -358,16 +363,26 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      & > h2 > span
-        color: blue
-      h3
-        margin-bottom: base-line * 3
+      & > h2
+        margin-bottom: 0
+        & > span
+          color: blue
+      & > h3
+        & > span:first-of-type
+          color: blue
+        & > span:last-of-type
+          color: green
+      h4
+        margin: base-line
         color: green
+        max-width: base-line * 13
+        &:last-of-type
+          margin-bottom: base-line * 2
       img
         border-radius: base-line
         width: base-line * 12
       p
-        margin-top: base-line * 3
+        margin-top: base-line
         max-width: base-line * 18rem
         text-align: center
     & > footer
