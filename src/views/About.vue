@@ -31,7 +31,7 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" />
             <figcaption>
-              <h3>We call them <b>posters</b></h3>
+              <h2>We call them <b>posters</b></h2>
               <p>
                 Your image is composed into four animatable layers, From a white
                 background to a dark foreground.
@@ -94,20 +94,21 @@
               <p>
                 You can create your own social network with realness. While easy
                 to administer Realness encourages internet literacy. The time
-                and investment you put into realness helps you understand the
-                power of the internet — Taking responcibilty for it's
-                maintenance and content.
+                and investment you put into a realness of your own helps you
+                understand the power of the internet.
               </p>
               <p>
                 Use it with just your family, union hall, or maybe your
                 <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
                 nerdpocalypse users group. Realness set's you up with all the
                 benifits of serverless to advantage intimate useful communities
-                with clear lines of responsibility and communication.
+                with clear lines of responsibility and communication. There is
+                joy in taking responcibilty for the maintenance and content on
+                the web.
               </p>
               <p>
                 The performance is over. Our social health requires more
-                realness online.
+                realness online
               </p>
               <p>
                 Realness is in alpha we are not quite finished with bugs and
@@ -173,16 +174,49 @@
             <figcaption>
               <h2>HTML is our database</h2>
               <p>
-                A simple constraint opens up whole vistas of oportunity.
-                <span class="realness">Realness</span> takes advantage of
-                serverless to deliver a superior experence and create
-                oportunities for customers and developers.
+                Building web applications edge first points you directly at html
+                as your storage system. Orienting to this has advantages and
+                creates oportunities over the monitiezed client server model we
+                are used to using today.
+              </p>
+              <p>
+                Edge first is native fast, more secure, Gives you choices around
+                data storage that don't exist traditionally, makes a quick and
+                seemless transition from demo to product development.
+              </p>
+              <p>
+                Edge on the web opens the DOM up as a typing sytem and object
+                model. There is a minimalist emphasis that supports coding
+                standards that are accessible in nature.
               </p>
               <p>
                 Developers can use realness to free themselves from SQL and the
-                tyrany of a full-stack mindset.
+                tyrany of a full-stack mindset. Development roles are less
+                heirarchical.
               </p>
-              <p>Crypto is fake scarcity. bro.</p>
+              <p>
+                Build applications faster with less overhead, that keeps
+                stakeholders involved. All this in only HTML, CSS, and
+                JavaScript
+              </p>
+              <p>
+                Can a single developer provide a service all can use? Scott
+                Fryxell is the developer behind realness and that's what I'm
+                trying to find out.
+              </p>
+              <p>
+                Sign into realness and you can message with the me directly.
+                Visit the code
+                <a href="https://github.com/realness-online/web" rel="external">
+                  online.
+                </a>
+                I keep a
+                <a href="https://scott-fryxell.github.io/" rel="external"
+                  >blog</a
+                >
+                of all my feelings and nerd problems. My resume is on there. I
+                want to to support the web on the next iteration of itself.
+              </p>
               <h4>Cyber</h4>
             </figcaption>
           </figure>
@@ -193,6 +227,72 @@
                 <a href="https://github.com/realness-online/web" rel="external">
                   Open Source
                 </a>
+                utilizing modern best practices. semantic, HTML described with
+                microdata
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Build complete applications without backend having to keep up,
+                or cordinate
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Codebase priortizes readability and being accessibility friendly
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>As simple or complex as your app requires</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Opinionated: Tailwind and TypeScript are anti-patterns. CSS to
+                the rescue!
+              </p>
+            </li>
+
+            <li>
+              <icon name="finished" />
+              <p>Runtime typing via the DOM</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Eliminate CSS crosstalk and improve legibility with fragment
+                identifies and child selectors
+              </p>
+            </li>
+
+            <li>
+              <icon name="finished" />
+              <p>Reduce attack surface — Leave sensitive data on device.</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Server is auth, and storage only, no backend processes required
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>Affirms infinite nature of the web</p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Your projects live under http://{app-name}.web.app by default.
+              </p>
+            </li>
+            <li>
+              <icon name="finished" />
+              <p>
+                Learns lessons from mastedon:
+                <span class="no">facists, terrrorists, communists</span>
               </p>
             </li>
           </ol>
@@ -350,7 +450,7 @@
         grid-gap: base-line
         grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
         li
-          position: relative;
+          position: relative
           display: block
           svg
             position: absolute
@@ -361,9 +461,9 @@
       padding: base-line * 2
       min-height: 100vh
       display: flex
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column
+      justify-content: center
+      align-items: center
       & > h2
         margin-bottom: 0
         & > span
