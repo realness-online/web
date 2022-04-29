@@ -104,7 +104,8 @@
               </p>
               <p>
                 Use it with just your family, union hall, or maybe your
-                warhammer nerdacalypse group. Realness set's you up with all the
+                <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
+                nerdpocalypse users group. Realness set's you up with all the
                 benifits of serverless to advantage intimate useful communities
                 with clear lines of responsibility and communication
               </p>
@@ -140,7 +141,7 @@
               <icon name="finished" />
               <p>
                 Designed to encourage enough internet literacy to empower
-                regular ass people help manage the web
+                regular ass people to help manage the web
               </p>
             </li>
             <li>
@@ -171,19 +172,14 @@
             <figcaption>
               <h2>HTML is our database</h2>
               <p>
+                A simple constraint opens up whole vistas of oportunity.
                 <span class="realness">Realness</span> takes advantage of
                 serverless to deliver a superior experence and create
-                oportunities for customers and developers based on internet
-                literacy. We argue that we have to build an open web. Built on a
-                web of trust between communities.
+                oportunities for customers and developers.
               </p>
               <p>
                 Developers can use realness to free themselves from SQL and the
                 tyrany of a full-stack mindset.
-              </p>
-              <p>
-                you pay when your ready, and if it feels apropriate. This helps
-                keep the developers of realness focused on their job.
               </p>
               <p>Crypto is fake scarcity. bro.</p>
               <h4>Cyber</h4>
@@ -309,6 +305,9 @@
         &[aria-selected=false]
           border-color: transparent
           background-color: transparent
+          font-size: larger
+          // color: transparent
+          text-shadow 1px 1px transparent
         &[aria-selected=true]
           font-size: larger
           color: #ffffff
