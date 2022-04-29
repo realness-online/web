@@ -95,25 +95,26 @@
                 You can create your own social network with realness. While easy
                 to administer Realness encourages internet literacy. The time
                 and investment you put into realness helps you understand the
-                internet
-              </p>
-              <p>
-                This means creating and managing an instance of realness is
-                going to require taking responcibilty for it's maintenance and
-                content.
+                power of the internet — Taking responcibilty for it's
+                maintenance and content.
               </p>
               <p>
                 Use it with just your family, union hall, or maybe your
                 <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
                 nerdpocalypse users group. Realness set's you up with all the
                 benifits of serverless to advantage intimate useful communities
-                with clear lines of responsibility and communication
+                with clear lines of responsibility and communication.
               </p>
               <p>
                 The performance is over. Our social health requires more
-                realness online. Realness is alpha we are not quite finished
-                with bugs and documentation. Sign in with your phone number and
-                you can text directly with the team.
+                realness online.
+              </p>
+              <p>
+                Realness is in alpha we are not quite finished with bugs and
+                documentation. It's slow on safari, but runs well on chrome and
+                firefox. There is a great readme for the project. and feel free
+                to sign in with your phone number and you can text directly with
+                the team.
               </p>
               <h4>Let's be fun again</h4>
             </figcaption>
