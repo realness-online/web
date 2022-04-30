@@ -42,9 +42,9 @@
                 the fill and stroke of each layer.
               </p>
               <p>
-                Download your poster and you can extract a color pallet. Animate
-                a filter or gradient. the individual parts of a Poster are easy
-                to query and feel natural to mainipulate for the web.
+                Save your poster and you can extract a color pallet. Animate a
+                filter or gradient. the individual parts of a Poster are easy to
+                query and feel natural to mainipulate for the web.
               </p>
               <p>Hand coders — <b>Realness</b> was built for you.</p>
               <h4>A tool at the creative limits of the web</h4>
@@ -92,10 +92,11 @@
             <figcaption>
               <h2>Shared values</h2>
               <p>
-                You can create your own social network with realness. While easy
-                to administer Realness encourages internet literacy. The time
-                and investment you put into a realness of your own helps you
-                understand the power of the internet.
+                You can create your own social network with realness. Use it
+                with your design team as a fun way to play and be creative.
+                While easy to administer Realness encourages internet literacy.
+                The time and investment you put into a realness of your own
+                helps you understand the power of the internet.
               </p>
               <p>
                 Use it with just your family, union hall, or maybe your
@@ -180,22 +181,24 @@
                 are used to using today.
               </p>
               <p>
-                Edge first is native fast, more secure, Gives you choices around
-                data storage that don't exist traditionally, makes a quick and
-                seemless transition from demo to product development.
+                Edge first is native fast, more secure, gives you choices around
+                data storage that don't exist traditionally. Make a quick and
+                seemless transition from a User Expereience demo to product
+                development.
               </p>
               <p>
                 Edge on the web opens the DOM up as a typing sytem and object
-                model. There is a minimalist emphasis that supports coding
-                standards that are accessible in nature.
+                model. There are natural constraints on HTML that supports
+                accessible coding standards.
               </p>
               <p>
                 Developers can use realness to free themselves from SQL and the
                 tyrany of a full-stack mindset. Development roles are less
-                heirarchical.
+                heirarchical. Products are more inline with customer
+                expectations.
               </p>
               <p>
-                Build applications faster with less overhead, that keeps
+                Build applications faster with less overhead, that keep
                 stakeholders involved. All this in only HTML, CSS, and
                 JavaScript
               </p>
@@ -215,7 +218,7 @@
                   >blog</a
                 >
                 of all my feelings and nerd problems. My resume is on there. I
-                want to to support the web on the next iteration of itself.
+                want to support the web iterate.
               </p>
               <h4>Cyber</h4>
             </figcaption>
@@ -227,7 +230,7 @@
                 <a href="https://github.com/realness-online/web" rel="external">
                   Open Source
                 </a>
-                utilizing modern best practices. semantic, HTML described with
+                utilizing modern best practices. semantic HTML described with
                 microdata
               </p>
             </li>
@@ -235,7 +238,7 @@
               <icon name="finished" />
               <p>
                 Build complete applications without backend having to keep up,
-                or cordinate
+                or coordinate
               </p>
             </li>
             <li>
@@ -387,8 +390,8 @@
       border-radius: base-line
       display: flex
       justify-content: space-between
-      margin-top: base-line
-      padding base-line
+      // margin-top: base-line
+      // padding base-line
       @media (min-width: pad-begins)
         margin: base-line
         justify-content: center
@@ -407,7 +410,6 @@
           border-color: transparent
           background-color: transparent
           font-size: larger
-          // color: transparent
           text-shadow 1px 1px transparent
         &[aria-selected=true]
           font-size: larger
@@ -429,7 +431,8 @@
           & > img
             width: 40vw
         & > figcaption
-          padding: 0 base-line
+          @media (min-width: pad-begins)
+            padding: 0 base-line
           display: flex
           flex-direction: column
           & > h4
@@ -438,17 +441,17 @@
             line-height: 2
             max-width: base-line * 13
             align-self: center
-
           & > ol
             list-style-type: square
             & > li
               margin-left: base-line
 
       & > ol
-        padding: base-line
         display: grid
         grid-gap: base-line
         grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
+        @media (min-width: pad-begins)
+          padding: base-line
         li
           position: relative
           display: block
