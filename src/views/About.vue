@@ -264,7 +264,7 @@
               <icon name="finished" />
               <p>
                 Eliminate CSS crosstalk and improve legibility with fragment
-                identifies and child selectors
+                identifiers and child selectors
               </p>
             </li>
 
@@ -284,15 +284,15 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>
-                Your projects live under http://{app-name}.web.app by default.
-              </p>
+              <p>Your projects live under ${name}.web.app</p>
             </li>
             <li>
               <icon name="finished" />
               <p>
-                Learns lessons from mastedon:
-                <span class="no">facists, terrrorists, communists</span>
+                Learn lessons from Mastedon:
+                <span class="no">facists</span>,
+                <span class="no">terrrorists</span>,
+                <span class="no">communists</span>
               </p>
             </li>
           </ol>
