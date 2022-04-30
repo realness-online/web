@@ -2,7 +2,7 @@
 
 ![Realness](src/style/icons.svg)
 
-Realness is for churches, punks, and veterans: any organization whose core tenants are at odds with advertising based-social networking.
+Realness is for churches, punks, and veterans: any organization whose core tenants are at odds with advertising-based social networking.
 
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
 
