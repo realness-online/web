@@ -17,7 +17,7 @@
             workflow that uses SVG.
           </p>
         </figcaption>
-        <img class="example" :src="`/about/landscape/06.svg`" />
+        <img class="example" src="/about/landscape/02.svg" />
       </figure>
     </header>
     <tab-group>
@@ -171,7 +171,7 @@
         </tab-panel>
         <tab-panel class="developers" as="article" tabIndex="-1">
           <figure>
-            <img class="example" src="/about/portrait/03.svg" />
+            <img class="example" src="/about/portrait/05.svg" />
             <figcaption>
               <h2>HTML is our database</h2>
               <p>
