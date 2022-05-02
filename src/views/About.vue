@@ -17,7 +17,7 @@
             workflow that uses SVG.
           </p>
         </figcaption>
-        <img class="example" src="/about/landscape/02.svg" />
+        <img class="example" src="/about/landscape/02.svg" loading="lazy" />
       </figure>
     </header>
     <tab-group>
@@ -29,7 +29,7 @@
       <tab-panels as="template">
         <tab-panel class="designers" as="article" tabIndex="-1">
           <figure>
-            <img class="example" src="/about/portrait/09.svg" />
+            <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
               <h2>We call them <b>posters</b></h2>
               <p>
@@ -88,7 +88,7 @@
         </tab-panel>
         <tab-panel class="networks" as="article" tabIndex="-1">
           <figure>
-            <img class="example" src="/about/portrait/02.svg" />
+            <img class="example" src="/about/portrait/02.svg" loading="lazy" />
             <figcaption>
               <h2>Shared values</h2>
               <p>
@@ -171,7 +171,7 @@
         </tab-panel>
         <tab-panel class="developers" as="article" tabIndex="-1">
           <figure>
-            <img class="example" src="/about/portrait/05.svg" />
+            <img class="example" src="/about/portrait/05.svg" loading="lazy" />
             <figcaption>
               <h2>HTML is our database</h2>
               <p>
@@ -310,7 +310,7 @@
       <h4>$15 — Community</h4>
       <h4>$25 — Developers</h4>
       <a href="https://cash.app/$ScottFryxell">
-        <img src="/about/cash-app.jpg" />
+        <img src="/about/cash-app.jpg" loading="lazy" />
       </a>
       <p>Realness is free. There are no reciepts</p>
     </div>
@@ -319,6 +319,32 @@
         <figcaption>
           <h2>Gallery</h2>
         </figcaption>
+        <img src="/about/landscape/01.svg" loading="lazy" />
+        <img src="/about/landscape/02.svg" loading="lazy" />
+        <img src="/about/landscape/03.svg" loading="lazy" />
+        <img src="/about/landscape/04.svg" loading="lazy" />
+        <img src="/about/landscape/05.svg" loading="lazy" />
+        <img src="/about/landscape/06.svg" loading="lazy" />
+        <img src="/about/landscape/07.svg" loading="lazy" />
+        <img src="/about/landscape/08.svg" loading="lazy" />
+        <img src="/about/landscape/09.svg" loading="lazy" />
+        <img src="/about/landscape/10.svg" loading="lazy" />
+        <img src="/about/landscape/11.svg" loading="lazy" />
+        <img src="/about/landscape/12.svg" loading="lazy" />
+        <img src="/about/landscape/13.svg" loading="lazy" />
+        <img src="/about/landscape/14.svg" loading="lazy" />
+        <img src="/about/landscape/15.svg" loading="lazy" />
+        <img src="/about/landscape/16.svg" loading="lazy" />
+
+        <img src="/about/portrait/01.svg" loading="lazy" />
+        <img src="/about/portrait/02.svg" loading="lazy" />
+        <img src="/about/portrait/03.svg" loading="lazy" />
+        <img src="/about/portrait/04.svg" loading="lazy" />
+        <img src="/about/portrait/05.svg" loading="lazy" />
+        <img src="/about/portrait/06.svg" loading="lazy" />
+        <img src="/about/portrait/07.svg" loading="lazy" />
+        <img src="/about/portrait/08.svg" loading="lazy" />
+        <img src="/about/portrait/09.svg" loading="lazy" />
       </figure>
     </footer>
   </section>
@@ -391,7 +417,7 @@
       display: flex
       justify-content: space-between
       // margin-top: base-line
-      // padding base-line
+      padding base-line
       @media (min-width: pad-begins)
         margin: base-line
         justify-content: center
@@ -409,12 +435,16 @@
         &[aria-selected=false]
           border-color: transparent
           background-color: transparent
-          font-size: larger
+          font-size: smaller
           text-shadow 1px 1px transparent
+          @media (min-width: pad-begins)
+            font-size: larger
         &[aria-selected=true]
-          font-size: larger
+          font-size: smaller
           color: #ffffff
           text-shadow 1px 1px green
+          @media (min-width: pad-begins)
+            font-size: larger
           @media (prefers-color-scheme: dark)
             color: white
     & > article
@@ -490,6 +520,17 @@
         max-width: base-line * 18rem
         text-align: center
     & > footer
-      padding: base-line * 2
+      padding: base-line
       min-height: 100vh
+      & > figure
+        standard-grid: gentle
+        & > img
+          height: 100%
+          width: 100%
+        & > img[src^="/about/landscape"]
+          grid-column-start: span 2
+        @media (orientation: landscape), (min-width: page-width)
+          & > img[href^="/about/landscape"]
+            border:1em solid blue
+            grid-column-start: span 2
 </style>
