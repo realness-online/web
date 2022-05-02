@@ -1,31 +1,31 @@
 <svg id="-posters-1650742918292" itemscope="" itemtype="/posters" itemid="/+/posters/1650742918292" viewBox="0 0 708 512" preserveAspectRatio="xMidYMid slice" tabindex="0" xmlns="http://www.w3.org/2000/svg">
-<style>
-  @keyframes subtle-rotate {
-    50% {
-      transform: rotate(0.33deg)
+  <style>
+    @keyframes subtle-rotate {
+      50% {
+        transform: rotate(0.33deg)
+      }
     }
-  }
-  @keyframes subtle-move {
-    50% {
-      transform: translateX(4px)
+    @keyframes subtle-move {
+      50% {
+        transform: translateX(4px)
+      }
     }
-  }
 
-  [itemprop="regular"] {
-    animation-timing-function: linear;
-    animation-name: subtle-rotate;
-    animation-duration: 6s;
-    animation-direction: alternate;
-    animation-iteration-count: infinite;
-  }
-  [itemprop="light"] {
-    animation-timing-function: linear;
-    animation-name: subtle-move;
-    animation-duration: 13s;
-    animation-direction: alternate;
-    animation-iteration-count: infinite;
-  }
-</style>
+    [itemprop="regular"] {
+      animation-timing-function: linear;
+      animation-name: subtle-rotate;
+      animation-duration: 6s;
+      animation-direction: alternate;
+      animation-iteration-count: infinite;
+    }
+    [itemprop="light"] {
+      animation-timing-function: linear;
+      animation-name: subtle-move;
+      animation-duration: 13s;
+      animation-direction: alternate;
+      animation-iteration-count: infinite;
+    }
+  </style>
   <defs>
     <symbol id="-posters-1650742918292-background">
       <rect itemprop="background" width="100%" height="100%" tabindex="-1"></rect>
