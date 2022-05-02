@@ -5,10 +5,23 @@
       transform: rotate(0.33deg)
     }
   }
+  @keyframes subtle-move {
+    50% {
+      transform: translateX(4px)
+    }
+  }
+
   [itemprop="regular"] {
     animation-timing-function: linear;
     animation-name: subtle-rotate;
-    animation-duration: 3s;
+    animation-duration: 6s;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+  [itemprop="light"] {
+    animation-timing-function: linear;
+    animation-name: subtle-move;
+    animation-duration: 13s;
     animation-direction: alternate;
     animation-iteration-count: infinite;
   }
@@ -120,6 +133,7 @@
                 0 0 0 1 0"></feColorMatrix>
     </filter>
     <filter id="bold-filter">
+
       <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0
                 0 1 0 0 0
                 0 0 1 0 0
