@@ -112,9 +112,9 @@
                 0 0 0 1 0"></feColorMatrix>
     </filter>
     <filter id="emboss">
-      <feConvolveMatrix kernelMatrix="3 0 0
+      <feConvolveMatrix kernelMatrix="1 0 0
                       0 0 0
-                      0 0 -3"></feConvolveMatrix>
+                      0 0 -1"></feConvolveMatrix>
     </filter>
   </defs>
 </svg>

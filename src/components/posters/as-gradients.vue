@@ -1,7 +1,9 @@
 <template>
   <defs>
     <g class="gradients">
-      <radialGradient gradientUnits="userSpaceOnUse">
+      <radialGradient
+        gradientUnits="userSpaceOnUse"
+        :id="query('radial-gradient')">
         <stop
           v-for="stop in radial"
           :key="stop.offset"
@@ -10,6 +12,7 @@
           :offset="`${stop.offset}%`" />
       </radialGradient>
       <linearGradient
+        :id="query('vertical-gradient')"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="0"
@@ -23,6 +26,7 @@
           :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
+        :id="query('horizontal-gradient')"
         gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
