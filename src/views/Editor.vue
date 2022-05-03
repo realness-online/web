@@ -19,10 +19,10 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
-  import asFill from '@/components/posters/as-figure-fill'
-  import asAnimation from '@/components/posters/as-animation'
-  import asGrid from '@/components/posters/as-grid'
+  import Icon from '@/components/icon'
+  import AsFill from '@/components/posters/as-figure-fill'
+  import AsAnimation from '@/components/posters/as-animation'
+  import AsGrid from '@/components/posters/as-grid'
 
   import { Poster } from '@/persistance/Storage'
   import {
@@ -98,9 +98,9 @@
       left: 0
       right: 0
       padding: base-line
+      background: black-transparent
       @media (min-width: pad-begins)
         padding: 0 base-line
-      background: black-transparent
       & > h1
         margin: 0
         color: red

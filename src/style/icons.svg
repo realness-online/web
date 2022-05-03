@@ -25,6 +25,9 @@
     <symbol id="opacity" viewBox="0 0 32 32">
       <path d="M15.996 1.004c-8.272 0-15 6.727-15 15 0 8.272 6.728 15 15 15 8.273 0 15-6.728 15-15 0-8.273-6.727-15-15-15zm0 1.992v26.008c-7.191 0-13-5.809-13-13 0-7.192 5.809-13.008 13-13.008z" />
     </symbol>
+    <symbol id="circle" viewBox="0 0 120 120" >
+      <circle cy="60" cx="60" r="60"/>
+    </symbol>
     <symbol id="edit-color" viewBox="0 0 120 120" >
       <circle cy="60" cx="60" r="60" fill="url(#rainbow)" fill-opacity="0.66" />
       <use href="#opacity" />

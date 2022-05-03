@@ -9,26 +9,40 @@
       tabindex="-1"
       @focus="set_input_color" />
     <figcaption>
-      <as-svg
-        :itemid="itemid"
-        :immediate="true"
-        :slice="true"
-        :toggle_aspect="false"
-        tabindex="-1"
-        @click="toggle_stroke" />
       <input
-        id="color-input"
-        v-model="color"
-        type="color"
-        tabindex="-1"
-        @blur="focus_on_active" />
-      <label for="color-input">{{ selected_path }}</label>
-      <label for="color-input">{{ opacity_percentage }}</label>
+        outline
+        type="range"
+        id="opacity"
+        name="opacity"
+        v-model="opacity_percentage"
+        min="0"
+        max="100"
+        orient="vertical" />
+      <h4>{{ selected_path }}</h4>
+      <menu>
+        <as-svg
+          :itemid="itemid"
+          :immediate="true"
+          :slice="true"
+          :toggle_aspect="false"
+          tabindex="-1"
+          @click="toggle_stroke" />
+        <input
+          id="color-input"
+          v-model="color"
+          type="color"
+          tabindex="-1"
+          @blur="focus_on_active" />
+        <icon name="circle" :fill="fragment('horizontal-gradient')" />
+        <icon name="circle" :fill="fragment('vertical-gradient')" />
+        <icon name="circle" :fill="fragment('radial-gradient')" />
+      </menu>
     </figcaption>
   </figure>
 </template>
 <script setup>
-  import asSvg from '@/components/posters/as-svg'
+  import Icon from '@/components/icon'
+  import AsSvg from '@/components/posters/as-svg'
   import { ref, provide } from 'vue'
   import {
     whenever,
@@ -38,7 +52,9 @@
   import { use as use_path, itemprop_query as query } from '@/use/path'
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
-  defineProps({
+  import { as_fragment_id } from '@/use/itemid'
+
+  const props = defineProps({
     itemid: {
       required: true,
       type: String,
@@ -50,6 +66,9 @@
   const color = ref('#151518')
   const itemprop = ref('background')
   const as_stroke = ref(false)
+  const fragment = add => {
+    return `url(${as_fragment_id(props.itemid)}-${add})`
+  }
   provide('as_stroke', as_stroke)
   const {
     opacity_percentage,
@@ -75,10 +94,10 @@
     else color.value = to_hex(path.style.fill)
     emit('toggle')
   }
-  const { distanceY } = swipe(figure, {
+  const { distanceY: distance_y } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) luminosity(-1 * (distanceY.value / 3))
-      else opacity(-1 * (distanceY.value / 300))
+      if (as_stroke.value) luminosity(-1 * (distance_y.value / 3))
+      else opacity(-1 * (distance_y.value / 300))
     }
   })
   const keys = keyboard()
@@ -118,50 +137,50 @@
         min-height: inherit
     & > figcaption
       position: fixed
-      bottom: 0
-      z-index: 0
-      border: none
-      padding: 0
-      height: auto
+      bottom: base-line * 4
+      z-index: 2
       display: flex
-      justify-content: space-between
-      & > label
+      & > h4
+        margin: 0
+        margin-left: -(base-line)
         text-shadow: 1px 1px 1px black-background
         text-transform: capitalize
+      & > input
+        transform: rotate(90deg)
+        transform-origin:top;
+        margin-left: base-line * 0.333
+        border: 3px solid red
+        border-radius: base-line * 0.25
+        padding: base-line * 0.25
+        width: base-line * 4
+      & > menu
+        background-color: black-transparent
         position: fixed
-        right: base-line
-        bottom: inset(bottom,  base-line * 6.5)
-        &:nth-of-type(2)
-          bottom: inset(bottom,  base-line * 3)
-      & > svg
-        cursor: pointer
-        position: fixed
-        z-index: 4
-        width: base-line * 1.5
-        height: base-line * 1.5
-        min-height: auto
-        left: base-line
-        bottom: inset(bottom,  base-line * 2.5)
-        @media (min-width: pad-begins)
-          bottom: inset(bottom,  base-line * 4.5)
-        border: green
-        border-width: 3px
-        border-radius: 2rem
-      & > input[type="color"]
-        position: fixed
-        z-index: 2
-        width: base-line * 1.5
-        height: base-line * 1.5
-        right: base-line
-        bottom: inset(bottom,  base-line * 2.5)
-        @media (min-width: pad-begins)
-          bottom: inset(bottom,  base-line * 4.5)
-        &::-moz-color-swatch
-          border: 1px solid green
-          border-radius: base-line
-        &::-webkit-color-swatch
-          border: 1px solid green
-          border-radius: base-line
-        &::-webkit-color-swatch-wrapper
-          padding: 0
+        padding: base-line
+        bottom: 0
+        left: 0
+        right: 0
+        display: flex
+        justify-content: space-between
+        & > svg
+          cursor: pointer
+          width: base-line * 1.5
+          height: base-line * 1.5
+          min-height: auto
+          border: green
+          border-width: 3px
+          border-radius: 2rem
+          @media (min-width: pad-begins)
+            bottom: inset(bottom,  base-line * 4.5)
+        & > input[type="color"]
+          width: base-line * 1.5
+          height: base-line * 1.5
+          &::-moz-color-swatch
+            border: 3px solid green
+            border-radius: base-line
+          &::-webkit-color-swatch
+            border: 3px solid green
+            border-radius: base-line
+          &::-webkit-color-swatch-wrapper
+            padding: 0
 </style>
