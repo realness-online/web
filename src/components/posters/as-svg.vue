@@ -171,6 +171,12 @@
     height: 100%
     width: 100%
     outline: none
+    use.emboss[href$="bold"]:active
+      stroke: yellow !important
+      fill: yellow !important
+      stroke-opacity:1
+      stroke-width: 6px
+
     // use.light, use.regular, use.bold, use.emboss, use.background
     //   display: none
 </style>

@@ -12,6 +12,7 @@
   50%
     fill: white-background
     stroke: white-background
+
 @keyframes pulsing
   50%
     border-color: black-background
@@ -20,9 +21,11 @@
   50%
     fill: currentColor
     fill-opacity: 0.25
+
 @keyframes press-hold
   100%
     -webkit-tap-highlight-color: blue
+
 @keyframes absolute-slide-down
   from
     top: inset(top, -(base-line * 2))
@@ -43,18 +46,21 @@
     transform: translate3d(0, 0, 0)
     position: absolute
     bottom: base-line
+
 @keyframes slide-in-down
   from
     transform: translate3d(0, -100%, 0)
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
+
 @keyframes slide-in-up
   from
     transform: translate3d(0, 100%, 0)
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
+
 @keyframes slide-in-left
   from
     transform: translate3d(-100%, 0, 0)
@@ -67,22 +73,26 @@
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
+
 @keyframes slide-out-right
   from
     transform: translate3d(0, 0, 0)
   to
     visibility: hidden
     transform: translate3d(100%, 0, 0)
+
 @keyframes rotate
   from
     transform: rotate3d(0, 0, 1, -100deg)
   to
     transform: translate3d(0, 0, 0)
+
 @keyframes rotate-back
   from
     transform: rotate3d(0, 0, 1, 100deg)
   to
     transform: translate3d(0, 0, 0)
+
 @keyframes fade-in
   from
     opacity: 0

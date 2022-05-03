@@ -6,18 +6,14 @@ svg
   height: base-line * 1.5
   width: base-line * 1.5
   overflow: auto
-  outline:none
+  outline: none
   display: block
   stroke-width: 0
-  // fill: transparent
   mix-blend-mode: screen
   & use:active
     stroke-width: 2px
-    -webkit-user-select: all
-    animation-name: working
-    animation-timing-function: ease-in-out
-    animation-fill-mode: none
-    animation-direction: alternate-reverse
+    user-select: all
+    fill: white-background
     transition-property: padding, fill
     transition-duration: 0.1s
     transition-timing-function: ease-in
