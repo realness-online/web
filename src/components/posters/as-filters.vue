@@ -31,9 +31,9 @@
 
     <filter id="emboss">
       <feConvolveMatrix
-        kernelMatrix="3 0 0
+        kernelMatrix="1 0 0
                       0 0 0
-                      0 0 -3" />
+                      0 0 -1" />
     </filter>
   </defs>
 </template>
