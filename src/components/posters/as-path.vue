@@ -50,7 +50,7 @@
     stroke-width: 0.33px
     stroke-opacity: 0.33
     &:active
-      outline:none
+      outline: none
       fill-opacity: 1
       transition-delay: 0.33s
       stroke: transparent
