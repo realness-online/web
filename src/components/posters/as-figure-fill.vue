@@ -141,6 +141,7 @@
       z-index: 2
       display: flex
       & > h4
+        color: red
         margin: 0
         margin-left: -(base-line)
         text-shadow: 1px 1px 1px black-background
