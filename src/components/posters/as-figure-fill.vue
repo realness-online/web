@@ -10,14 +10,19 @@
       @focus="set_input_color" />
     <figcaption>
       <input
-        outline
+        :class="{ 'has-opacity': has_opacity }"
+        :disabled="!has_opacity"
         type="range"
         id="opacity"
         name="opacity"
         v-model="opacity_percentage"
-        min="0"
-        max="100"
-        orient="vertical" />
+        tabindex="-1"
+        min="0.001"
+        max="0.995"
+        step="0.001"
+        oninput="opacity_output.value = opacity.value;"
+        onblur="opacity_output.value ='' " />
+      <output ref="opacity_output" for="opacity" id="opacity_output" />
       <h4>{{ selected_path }}</h4>
       <menu>
         <as-svg
@@ -53,7 +58,7 @@
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   import { as_fragment_id } from '@/use/itemid'
-
+  const has_opacity = ref(false)
   const props = defineProps({
     itemid: {
       required: true,
@@ -78,6 +83,9 @@
   } = use_path()
   const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
+    console.log(id)
+    if (id === 'background') has_opacity.value = false
+    else has_opacity.value = true
     itemprop.value = id
     const path = query(id)
     if (as_stroke.value) color.value = to_hex(path.style.color)
@@ -143,17 +151,27 @@
       & > h4
         color: red
         margin: 0
-        margin-left: -(base-line)
-        text-shadow: 1px 1px 1px black-background
+        text-shadow: 1px 1px 1.25px black-background
         text-transform: capitalize
+        transform: translate(-5rem, -1rem)
       & > input
-        transform: rotate(90deg)
-        transform-origin:top;
+        transform: rotate(-90deg)
+        transform-origin: bottom
         margin-left: base-line * 0.333
+        margin-bottom: 2rem
         border: 3px solid red
         border-radius: base-line * 0.25
         padding: base-line * 0.25
         width: base-line * 4
+        &[disabled]
+          opacity:0.5
+      & > output
+        color:red
+        width: 3rem
+        height: 2rem
+        transform: translate(-2rem, 1rem)
+        transform-origin: top
+        text-shadow: 1px 1px 1.25px black-background
       & > menu
         background-color: black-transparent
         position: fixed
@@ -177,11 +195,16 @@
           width: base-line * 1.5
           height: base-line * 1.5
           &::-moz-color-swatch
-            border: 3px solid green
+            border: 3px solid black
             border-radius: base-line
           &::-webkit-color-swatch
-            border: 3px solid green
+            border: 3px solid black
             border-radius: base-line
           &::-webkit-color-swatch-wrapper
             padding: 0
+          &.selected
+            &::-moz-color-swatch
+                border-color: green
+            &::-webkit-color-swatch
+                border-color: green
 </style>
