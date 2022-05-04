@@ -26,6 +26,7 @@ const opacity_percentage = ref()
 const selected_path = ref()
 
 export const use = () => {
+  const as_stroke = ref(false)
   const fill_opacity = resolution => {
     const path = get_active_path()
     path.style.fillOpacity = change(path.style.fillOpacity, resolution)
@@ -73,10 +74,12 @@ export const use = () => {
 
   whenever(opacity_percentage, () => {
     const path = itemprop_query(selected_path.value)
-    path.style.fillOpacity = opacity_percentage.value
+    if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
+    else path.style.fillOpacity = opacity_percentage.value
   })
 
   return {
+    as_stroke,
     fill_opacity,
     opacity_percentage,
     selected_path,
