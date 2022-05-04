@@ -40,7 +40,10 @@
           @blur="focus_on_active" />
         <icon name="circle" :fill="fragment('horizontal-gradient')" />
         <icon name="circle" :fill="fragment('vertical-gradient')" />
-        <icon name="circle" :fill="fragment('radial-gradient')" />
+        <icon
+          class="selected"
+          name="circle"
+          :fill="fragment('radial-gradient')" />
       </menu>
     </figcaption>
   </figure>
@@ -83,7 +86,6 @@
   } = use_path()
   const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
-    console.log(id)
     if (id === 'background') has_opacity.value = false
     else has_opacity.value = true
     itemprop.value = id
@@ -186,11 +188,11 @@
           width: base-line * 1.5
           height: base-line * 1.5
           min-height: auto
-          border: green
-          border-width: 3px
           border-radius: 2rem
           @media (min-width: pad-begins)
             bottom: inset(bottom,  base-line * 4.5)
+          &.selected
+            border: 3px solid green
         & > input[type="color"]
           width: base-line * 1.5
           height: base-line * 1.5
