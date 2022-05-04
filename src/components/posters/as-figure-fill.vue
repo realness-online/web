@@ -70,17 +70,17 @@
   const figure = ref(null)
   const color = ref('#151518')
   const itemprop = ref('background')
-  const as_stroke = ref(false)
   const fragment = add => {
     return `url(${as_fragment_id(props.itemid)}-${add})`
   }
-  provide('as_stroke', as_stroke)
   const {
     opacity_percentage,
+    as_stroke,
     selected_path,
     fill_opacity: opacity,
     color_luminosity: luminosity
   } = use_path()
+  provide('as_stroke', as_stroke)
   const focus_on_active = () => query(itemprop.value).focus()
   const set_input_color = id => {
     if (id === 'background') has_opacity.value = false
