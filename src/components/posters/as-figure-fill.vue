@@ -10,19 +10,16 @@
       @focus="set_input_color" />
     <figcaption>
       <input
-        :class="{ 'has-opacity': has_opacity }"
+        id="opacity"
+        v-model="opacity_percentage"
         :disabled="!has_opacity"
         type="range"
-        id="opacity"
         name="opacity"
-        v-model="opacity_percentage"
         tabindex="-1"
-        min="0.001"
-        max="0.995"
-        step="0.001"
-        oninput="opacity_output.value = opacity.value;"
-        onblur="opacity_output.value ='' " />
-      <output ref="opacity_output" for="opacity" id="opacity_output" />
+        min="0.010"
+        max="0.996"
+        step="0.013" />
+      <output :value="opacity_percentage" for="opacity" />
       <h4>{{ selected_path }}</h4>
       <menu>
         <as-svg
@@ -114,11 +111,11 @@
   whenever(keys.s, () => toggle_stroke())
   whenever(keys.up, () => {
     if (as_stroke.value) luminosity(4)
-    else opacity(0.03)
+    else opacity(0.08)
   })
   whenever(keys.down, () => {
     if (as_stroke.value) luminosity(-4)
-    else opacity(-0.03)
+    else opacity(-0.08)
   })
   whenever(color, () => {
     const path = query(itemprop.value)

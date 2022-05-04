@@ -1,4 +1,4 @@
-import { useActiveElement as active_element } from '@vueuse/core'
+import { useActiveElement as active_element, whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
 import { change } from '@/use/opacity'
 import { luminosity } from '@/use/colors'
@@ -58,9 +58,11 @@ export const use = () => {
         path = symbol.firstChild
       }
     }
-
-    selected_path.value = path.getAttribute('itemprop')
-    opacity_percentage.value = path.style.fillOpacity
+    const path_name = path.getAttribute('itemprop')
+    if (path_name) {
+      selected_path.value = path_name
+      opacity_percentage.value = path.style.fillOpacity
+    }
     return path
   }
 
@@ -68,6 +70,12 @@ export const use = () => {
     selected_path.value = null
     opacity_percentage.value = null
   })
+
+  whenever(opacity_percentage, () => {
+    const path = itemprop_query(selected_path.value)
+    path.style.fillOpacity = opacity_percentage.value
+  })
+
   return {
     fill_opacity,
     opacity_percentage,
