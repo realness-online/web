@@ -51,9 +51,12 @@ export const use = () => {
   const get_active_path = () => {
     let path = active_element().value
     if (!is_path(path)) {
-      const id = active_element().value.href.baseVal.slice(1)
-      const symbol = document.getElementById(id)
-      path = symbol.firstChild
+      const href = active_element().value.href
+      if (href) {
+        const id = href.baseVal.slice(1)
+        const symbol = document.getElementById(id)
+        path = symbol.firstChild
+      }
     }
 
     selected_path.value = path.getAttribute('itemprop')
