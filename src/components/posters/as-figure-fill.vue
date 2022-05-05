@@ -7,7 +7,7 @@
       :slice="false"
       :tabable="true"
       tabindex="-1"
-      @focus="set_input_color" />
+      @focus="layer_selected" />
     <figcaption>
       <input
         id="opacity"
@@ -18,28 +18,36 @@
         tabindex="-1"
         min="0.010"
         max="0.996"
-        step="0.013" />
+        :step="change_by" />
       <output :value="opacity_percentage" for="opacity" />
       <h4>{{ selected_path }}</h4>
-      <menu>
+      <menu class="stroke background">
         <as-svg
           :itemid="itemid"
           :immediate="true"
           :slice="true"
           :toggle_aspect="false"
           tabindex="-1"
+          :aria-selected="as_stroke"
           @click="toggle_stroke" />
         <input
           id="color-input"
           v-model="color"
           type="color"
           tabindex="-1"
+          :disabled="disable_controls"
           @blur="focus_on_active" />
-        <icon name="circle" :fill="fragment('horizontal-gradient')" />
-        <icon name="circle" :fill="fragment('vertical-gradient')" />
         <icon
-          class="selected"
           name="circle"
+          :disabled="disable_controls"
+          :fill="fragment('horizontal-gradient')" />
+        <icon
+          name="circle"
+          :disabled="disable_controls"
+          :fill="fragment('vertical-gradient')" />
+        <icon
+          name="circle"
+          :disabled="disable_controls"
           :fill="fragment('radial-gradient')" />
       </menu>
     </figcaption>
@@ -48,13 +56,17 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsSvg from '@/components/posters/as-svg'
-  import { ref, provide } from 'vue'
+  import { ref, provide, computed } from 'vue'
   import {
     whenever,
     useMagicKeys as keyboard,
     usePointerSwipe as swipe
   } from '@vueuse/core'
-  import { use as use_path, itemprop_query as query } from '@/use/path'
+  import {
+    use as use_path,
+    change_by,
+    itemprop_query as query
+  } from '@/use/path'
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   import { as_fragment_id } from '@/use/itemid'
@@ -77,12 +89,12 @@
     opacity_percentage,
     as_stroke,
     selected_path,
-    fill_opacity: opacity,
-    color_luminosity: luminosity
+    fill_opacity,
+    stroke_opacity
   } = use_path()
   provide('as_stroke', as_stroke)
   const focus_on_active = () => query(itemprop.value).focus()
-  const set_input_color = id => {
+  const layer_selected = id => {
     if (id === 'background') has_opacity.value = false
     else has_opacity.value = true
     itemprop.value = id
@@ -103,19 +115,24 @@
   }
   const { distanceY: distance_y } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) luminosity(-1 * (distance_y.value / 3))
-      else opacity(-1 * (distance_y.value / 300))
+      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / 300))
+      else fill_opacity(-1 * (distance_y.value / 300))
     }
   })
   const keys = keyboard()
+  const disable_controls = computed(() => {
+    if (as_stroke.value && selected_path.value === 'background') return true
+    else if (!selected_path.value) return true
+    else return false
+  })
   whenever(keys.s, () => toggle_stroke())
   whenever(keys.up, () => {
-    if (as_stroke.value) luminosity(4)
-    else opacity(0.08)
+    if (as_stroke.value) stroke_opacity(change_by)
+    else fill_opacity(change_by)
   })
   whenever(keys.down, () => {
-    if (as_stroke.value) luminosity(-4)
-    else opacity(-0.08)
+    if (as_stroke.value) stroke_opacity(-change_by)
+    else fill_opacity(-change_by)
   })
   whenever(color, () => {
     const path = query(itemprop.value)
@@ -186,24 +203,31 @@
           height: base-line * 1.5
           min-height: auto
           border-radius: 2rem
+          &[disabled=true]
+            opacity: 0.25
+          &[aria-selected=true]
+            border: (base-line * 0.13) solid green
           @media (min-width: pad-begins)
             bottom: inset(bottom,  base-line * 4.5)
-          &.selected
-            border: 3px solid green
         & > input[type="color"]
           width: base-line * 1.5
           height: base-line * 1.5
-          &::-moz-color-swatch
-            border: 3px solid black
-            border-radius: base-line
-          &::-webkit-color-swatch
-            border: 3px solid black
-            border-radius: base-line
+          &[disabled]
+            &::-moz-color-swatch
+              border: (base-line * 0.13) solid transparent
+            &::-webkit-color-swatch
+              border: (base-line * 0.13) solid transparent
           &::-webkit-color-swatch-wrapper
             padding: 0
-          &.selected
+          &::-moz-color-swatch
+            border-color: red
+            border-radius: base-line
+          &::-webkit-color-swatch
+            border-color: red
+            border-radius: base-line
+          &[aria-selected=true]
             &::-moz-color-swatch
-                border-color: green
+              border: (base-line * 0.13) solid green
             &::-webkit-color-swatch
-                border-color: green
+              border: (base-line * 0.13) solid green
 </style>

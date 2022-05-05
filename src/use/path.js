@@ -1,9 +1,8 @@
 import { useActiveElement as active_element, whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
 import { change } from '@/use/opacity'
-import { luminosity } from '@/use/colors'
 export const svg_ns = 'http://www.w3.org/2000/svg'
-
+export const change_by = 0.08
 export const is_path = path => {
   if (typeof path != 'object') return false
   if (path instanceof SVGPathElement) return true
@@ -27,26 +26,19 @@ const selected_path = ref()
 
 export const use = () => {
   const as_stroke = ref(false)
-  const fill_opacity = resolution => {
+  const fill_opacity = change_by => {
     const path = get_active_path()
-    path.style.fillOpacity = change(path.style.fillOpacity, resolution)
+    path.style.fillOpacity = change(path.style.fillOpacity, change_by)
   }
 
-  const stroke_opacity = resolution => {
+  const stroke_opacity = change_by => {
     const path = get_active_path()
-    path.style.strokeOpacity = change(path.style.strokeOpacity, resolution)
+    path.style.strokeOpacity = change(path.style.strokeOpacity, change_by)
   }
 
-  const opacity = resolution => {
+  const opacity = change_by => {
     const path = get_active_path()
-    path.style.opacity = change(path.style.opacity, resolution)
-  }
-
-  const color_luminosity = amount => {
-    const path = get_active_path()
-    const color = path.style.color
-    const changed = luminosity(color, amount)
-    path.style.color = changed.color
+    path.style.opacity = change(path.style.opacity, change_by)
   }
 
   const get_active_path = () => {
@@ -62,7 +54,8 @@ export const use = () => {
     const path_name = path.getAttribute('itemprop')
     if (path_name) {
       selected_path.value = path_name
-      opacity_percentage.value = path.style.fillOpacity
+      if (as_stroke.value) opacity_percentage.value = path.style.strokeOpacity
+      else opacity_percentage.value = path.style.fillOpacity
     }
     return path
   }
@@ -74,18 +67,19 @@ export const use = () => {
 
   whenever(opacity_percentage, () => {
     const path = itemprop_query(selected_path.value)
-    if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
-    else path.style.fillOpacity = opacity_percentage.value
+    if (as_stroke.value) {
+      console.log('change stroke', opacity_percentage.value)
+      path.style.strokeOpacity = opacity_percentage.value
+    } else path.style.fillOpacity = opacity_percentage.value
   })
 
   return {
     as_stroke,
     fill_opacity,
+    stroke_opacity,
+    opacity,
     opacity_percentage,
     selected_path,
-    stroke_opacity,
-    color_luminosity,
-    opacity,
     get_active_path
   }
 }
