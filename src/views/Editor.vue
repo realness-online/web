@@ -100,7 +100,7 @@
       padding: base-line
       background: black-transparent
       @media (min-width: pad-begins)
-        padding: 0 base-line
+        padding: (base-line * 0.25) base-line
       & > h1
         margin: 0
         color: red
