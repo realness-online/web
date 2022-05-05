@@ -6,8 +6,9 @@
     :fill="`url(${fragment('regular-gradient')}`"
     filter="url(#emboss)" />
   <use
-    class="emboss"
+    class="emboss regular"
     tabindex="-1"
+    style="opacity: 0.5"
     :href="fragment('regular')"
     :fill="`url(${fragment('bold-gradient')}`"
     filter="url(#emboss)" />
@@ -33,8 +34,8 @@
   }
 </script>
 <style lang="stylus">
-  // svg > use.emboss
-  //   opacity: 0
+  // svg > use.emboss.regular
+  //   opacity: 0.5
   //   visibility: hidden
   //   transition-delay: 0s, 0.5s
   // svg:focus > use.emboss
