@@ -48,17 +48,19 @@
       class="light"
       :href="fragment('light')"
       :fill="`url(${fragment('light-gradient')}`"
+      :stroke="`url(${fragment('radial-gradient')}`"
       filter="url(#light-filter)" />
     <use
       class="regular"
       :href="fragment('regular')"
       :fill="`url(${fragment('regular-gradient')}`"
+      :stroke="`url(${fragment('horizontal-gradient')}`"
       filter="url(#regular-filter)" />
     <use
       class="bold"
       :href="fragment('bold')"
       :fill="`url(${fragment('bold-gradient')}`"
-      filter="url(#bold-filter)" />
+      :stroke="`url(${fragment('vertical-gradient')}`" />
     <as-emboss :itemid="itemid" />
     <as-gradients :itemid="itemid" />
     <as-filters />
