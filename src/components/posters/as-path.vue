@@ -12,6 +12,7 @@
       validate: is_path
     }
   })
+
   const as_stroke = ref(inject('as_stroke', false))
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
@@ -21,9 +22,11 @@
     if (as_stroke.value) {
       fill.value = path.value.style.fill
       opacity.value = path.value.style.fillOpacity
-      path.value.style.fillOpacity = '0.05'
+      // path.value.style.fillOpacity = '0.05'
+      path.value.style.strokeWidth = '1px'
     } else {
       path.value.style.fill = fill.value
+      path.value.style.strokeWidth = '0'
       path.value.style.fillOpacity = opacity.value
     }
   })
@@ -33,24 +36,21 @@
   svg:focus-within
     path
       // &[itemprop="light"]
-      //   animation-timing-function: linear;
+      //   animation-timing-function: linear
       //   animation-name: subtle-rotate
-      //   animation-duration: 4s
+      //   animation-duration: 2s
       //   animation-direction: alternate
       //   animation-iteration-count: infinite
       // &[itemprop="bold"]
       //   animation-timing-function: linear
       //   animation-name: subtle-rotate
-      //   animation-duration: 8s
+      //   animation-duration: 3s
       //   animation-direction: alternate
       //   animation-iteration-count: infinite
   path[itemprop]
-    outline: none
-    stroke: currentColor
-    stroke-width: 0.33px
-    stroke-opacity: 0.33
-    &:active
+    &:focus
       outline: none
+    &:active
       fill-opacity: 1
       transition-delay: 0.33s
       stroke: transparent
