@@ -1,4 +1,5 @@
-export function change(opacity = 0.025, resolution = 0.05) {
+import { change_by } from '@/use/path'
+export function change(opacity = 0.025, resolution = change_by) {
   opacity = parseFloat(opacity)
 
   opacity = opacity * 10000
