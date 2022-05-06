@@ -3,7 +3,7 @@
 </template>
 <script setup>
   import { ref, watch, watchEffect, inject } from 'vue'
-  import { is_path } from '@/use/path'
+  import { is_path, use } from '@/use/path'
   const path = ref(null)
   const props = defineProps({
     path: {
@@ -12,22 +12,15 @@
       validate: is_path
     }
   })
-
-  const as_stroke = ref(inject('as_stroke', false))
+  const { as_stroke } = use()
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
-  const fill = ref(null)
-  const opacity = ref(null)
+
   watch(as_stroke, () => {
     if (as_stroke.value) {
-      fill.value = path.value.style.fill
-      opacity.value = path.value.style.fillOpacity
-      // path.value.style.fillOpacity = '0.05'
       path.value.style.strokeWidth = '1px'
     } else {
-      path.value.style.fill = fill.value
       path.value.style.strokeWidth = '0'
-      path.value.style.fillOpacity = opacity.value
     }
   })
   watchEffect(() => (d.value = props.path.getAttribute('d')))
