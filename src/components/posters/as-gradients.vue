@@ -1,7 +1,7 @@
 <template>
   <defs>
-    <g class="gradients">
-      <radialGradient :id="query('radial-gradient')">
+    <g class="radial gradients">
+      <radialGradient :id="query('radial')">
         <stop
           v-for="stop in radial"
           :key="stop.offset"
@@ -9,25 +9,63 @@
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </radialGradient>
-      <linearGradient
-        :id="query('vertical-gradient')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%">
+      <radialGradient :id="query('radial-background')">
+        <as-stops :luminosity="background" :stops="radial" />
+      </radialGradient>
+      <radialGradient :id="query('radial-light')">
+        <as-stops :luminosity="light" :stops="radial" />
+      </radialGradient>
+      <radialGradient :id="query('radial-regular')">
+        <as-stops :luminosity="regular" :stops="radial" />
+      </radialGradient>
+      <radialGradient :id="query('radial-bold')">
+        <as-stops :luminosity="bold" :stops="radial" />
+      </radialGradient>
+    </g>
+    <g class="vertical gradients">
+      <linearGradient :id="query('vertical')" x1="0" x2="0" y1="0" y2="100%">
         <stop
+          itemprop="vertical"
           v-for="stop in vertical"
           :key="stop.offset"
-          itemprop="vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
       <linearGradient
-        :id="query('horizontal-gradient')"
+        :id="query('vertical-background')"
         x1="0"
-        x2="100%"
+        x2="0"
         y1="0"
-        y2="0">
+        y2="100%">
+        <as-stops :luminosity="background" :stops="vertical" />
+      </linearGradient>
+      <linearGradient
+        :id="query('vertical-light')"
+        x1="0"
+        x2="0"
+        y1="0"
+        y2="100%">
+        <as-stops :luminosity="light" :stops="vertical" />
+      </linearGradient>
+      <linearGradient
+        :id="query('vertical-regular')"
+        x1="0"
+        x2="0"
+        y1="0"
+        y2="100%">
+        <as-stops :luminosity="regular" :stops="vertical" />
+      </linearGradient>
+      <linearGradient
+        :id="query('vertical-bold')"
+        x1="0"
+        x2="0"
+        y1="0"
+        y2="100%">
+        <as-stops :luminosity="bold" :stops="vertical" />
+      </linearGradient>
+    </g>
+    <g class="horizontal gradients">
+      <linearGradient :id="query('horizontal')" x1="0" x2="100%" y1="0" y2="0">
         <stop
           v-for="stop in horizontal"
           :key="stop.offset"
@@ -35,60 +73,52 @@
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
-    </g>
-    <g class="generated gradients">
-      <radialGradient :id="query('background-gradient')">
-        <stop
-          v-for="stop in background"
-          :key="stop.offset"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
-      </radialGradient>
       <linearGradient
-        :id="query('light-gradient')"
-        x1="0%"
-        x2="0"
-        y1="0"
-        y2="100%">
-        <stop
-          v-for="stop in light"
-          :key="stop.offset"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
-      </linearGradient>
-      <linearGradient
-        :id="query('regular-gradient')"
+        :id="query('horizontal-background')"
         x1="0"
         x2="100%"
         y1="0"
         y2="0">
-        <stop
-          v-for="stop in regular"
-          :key="stop.offset"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
+        <as-stops :luminosity="background" :stops="horizontal" />
       </linearGradient>
       <linearGradient
-        :id="query('bold-gradient')"
+        :id="query('horizontal-light')"
         x1="0"
         x2="100%"
         y1="0"
         y2="0">
-        <stop
-          v-for="stop in bold"
-          :key="stop.offset"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
+        <as-stops :luminosity="light" :stops="horizontal" />
+      </linearGradient>
+      <linearGradient
+        :id="query('horizontal-regular')"
+        x1="0"
+        x2="100%"
+        y1="0"
+        y2="0">
+        <as-stops :luminosity="regular" :stops="horizontal" />
+      </linearGradient>
+      <linearGradient
+        :id="query('horizontal-bold')"
+        x1="0"
+        x2="100%"
+        y1="0"
+        y2="0">
+        <as-stops :luminosity="bold" :stops="horizontal" />
       </linearGradient>
     </g>
   </defs>
 </template>
 <script setup>
+  import AsStops from '@/components/posters/as-stops'
   import { ref, watchEffect as watch_effect, computed } from 'vue'
   import { is_vector_id, use_poster } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
   import { color_to_hsla, hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
+  const background = 80
+  const light = 60
+  const regular = 50
+  const bold = 13
   const props = defineProps({
     itemid: {
       type: String,
@@ -100,117 +130,6 @@
   const horizontal = ref([])
   const vertical = ref([])
   const radial = ref([])
-  const background = computed(() => {
-    if (radial.value.length) {
-      return radial.value.map(stop => {
-        if (stop.color.l > 85) return stop
-        else {
-          return {
-            offset: stop.offset,
-            color: color_to_hsla({
-              h: stop.color.h,
-              s: stop.color.s,
-              l: 80,
-              a: 1
-            })
-          }
-        }
-      })
-    } else {
-      return [
-        {
-          offset: 0,
-          color: color_to_hsla({
-            h: 57,
-            s: 13,
-            l: 88,
-            a: 1
-          })
-        }
-      ]
-    }
-  })
-  const light = computed(() => {
-    if (vertical.value) {
-      return vertical.value.map(stop => {
-        return {
-          offset: stop.offset,
-          color: color_to_hsla({
-            h: stop.color.h,
-            s: stop.color.s,
-            l: 60,
-            a: 1
-          })
-        }
-      })
-    } else {
-      return [
-        {
-          offset: 0,
-          color: color_to_hsla({
-            h: 300,
-            s: 2,
-            l: 2,
-            a: 1
-          })
-        }
-      ]
-    }
-  })
-  const regular = computed(() => {
-    if (horizontal.value) {
-      return horizontal.value.map(stop => {
-        return {
-          offset: stop.offset,
-          color: color_to_hsla({
-            h: stop.color.h,
-            s: stop.color.s,
-            l: 50,
-            a: 1
-          })
-        }
-      })
-    } else {
-      return [
-        {
-          offset: 0,
-          color: color_to_hsla({
-            h: 300,
-            s: 2,
-            l: 2,
-            a: 1
-          })
-        }
-      ]
-    }
-  })
-  const bold = computed(() => {
-    if (vertical.value.length) {
-      return vertical.value.map(stop => {
-        return {
-          offset: stop.offset,
-          color: color_to_hsla({
-            h: stop.color.h,
-            s: 10,
-            l: 8,
-            a: 1
-          })
-        }
-      })
-    } else {
-      return [
-        {
-          offset: 0,
-          color: color_to_hsla({
-            h: 300,
-            s: 2,
-            l: 2,
-            a: 1
-          })
-        }
-      ]
-    }
-  })
   const convert_stop = stop => {
     return {
       color: hsla_to_color(stop.getAttribute('stop-color')),

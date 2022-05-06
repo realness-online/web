@@ -27,7 +27,7 @@
         <tab>For Developers</tab>
       </tab-list>
       <tab-panels as="template">
-        <tab-panel class="designers" as="article" tabIndex="-1">
+        <tab-panel class="designers" as="article" tab-index="-1">
           <figure>
             <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
@@ -86,7 +86,7 @@
             </li>
           </ol>
         </tab-panel>
-        <tab-panel class="networks" as="article" tabIndex="-1">
+        <tab-panel class="networks" as="article" tab-index="-1">
           <figure>
             <img class="example" src="/about/portrait/02.svg" loading="lazy" />
             <figcaption>
@@ -169,7 +169,7 @@
             </li>
           </ol>
         </tab-panel>
-        <tab-panel class="developers" as="article" tabIndex="-1">
+        <tab-panel class="developers" as="article" tab-index="-1">
           <figure>
             <img class="example" src="/about/portrait/05.svg" loading="lazy" />
             <figcaption>
@@ -214,9 +214,7 @@
                   online.
                 </a>
                 I keep a
-                <a href="https://scott-fryxell.github.io/" rel="external"
-                  >blog</a
-                >
+                <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
                 of all my feelings and nerd problems. My resume is on there. I
                 want to support the web iterate.
               </p>
