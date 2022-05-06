@@ -1,6 +1,6 @@
 <template>
   <use
-    class="emboss"
+    class="emboss light"
     tabindex="-1"
     :href="fragment('light')"
     :fill="`url(${fragment('regular-gradient')}`"
@@ -13,7 +13,7 @@
     :fill="`url(${fragment('bold-gradient')}`"
     filter="url(#emboss)" />
   <use
-    class="emboss"
+    class="emboss bold"
     tabindex="-1"
     :href="fragment('bold')"
     :fill="`url(${fragment('light-gradient')}`"
