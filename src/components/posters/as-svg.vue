@@ -10,7 +10,7 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <defs>
+    <defs class="symbols">
       <symbol :id="query('background')">
         <as-background
           :rect="vector.background"
@@ -40,30 +40,32 @@
           @focus="focus('bold')" />
       </symbol>
     </defs>
-    <use
-      class="background"
-      :href="fragment('background')"
-      :fill="`url(${fragment('radial-background')}`" />
-    <use
-      class="light"
-      :href="fragment('light')"
-      :fill="`url(${fragment('vertical-light')}`"
-      :stroke="`url(${fragment('horizontal-light')}`"
-      filter="url(#light-filter)" />
-    <use
-      class="regular"
-      :href="fragment('regular')"
-      :fill="`url(${fragment('horizontal-regular')}`"
-      :stroke="`url(${fragment('vertical-regular')}`"
-      filter="url(#regular-filter)" />
-    <use
-      class="bold"
-      :href="fragment('bold')"
-      :fill="`url(${fragment('vertical-bold')}`"
-      :stroke="`url(${fragment('vertical-light')}`" />
-    <as-emboss :itemid="itemid" />
     <as-gradients :itemid="itemid" />
     <as-filters />
+    <g class="render">
+      <use
+        class="background"
+        :href="fragment('background')"
+        :fill="`url(${fragment('radial-background')}`" />
+      <use
+        class="light"
+        :href="fragment('light')"
+        :fill="`url(${fragment('vertical-light')}`"
+        :stroke="`url(${fragment('horizontal-background')}`"
+        filter="url(#light-filter)" />
+      <use
+        class="regular"
+        :href="fragment('regular')"
+        :fill="`url(${fragment('horizontal-regular')}`"
+        :stroke="`url(${fragment('vertical-light')}`"
+        filter="url(#regular-filter)" />
+      <use
+        class="bold"
+        :href="fragment('bold')"
+        :fill="`url(${fragment('vertical-bold')}`"
+        :stroke="`url(${fragment('radial')}`" />
+      <as-emboss :itemid="itemid" />
+    </g>
   </svg>
 </template>
 <script setup>
@@ -176,9 +178,8 @@
     use.emboss[href$="bold"]:active
       stroke: yellow !important
       fill: yellow !important
-      stroke-opacity:1
+      stroke-opacity: 1
       stroke-width: 6px
-
     // use.light, use.regular, use.bold, use.emboss, use.background
     //   display: none
 </style>

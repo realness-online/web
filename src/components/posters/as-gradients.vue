@@ -1,6 +1,6 @@
 <template>
-  <defs>
-    <g class="radial gradients">
+  <defs class="gradients">
+    <g class="radial">
       <radialGradient :id="query('radial')">
         <stop
           v-for="stop in radial"
@@ -22,7 +22,7 @@
         <as-stops :luminosity="bold" :stops="radial" />
       </radialGradient>
     </g>
-    <g class="vertical gradients">
+    <g class="vertical">
       <linearGradient :id="query('vertical')" x1="0" x2="0" y1="0" y2="100%">
         <stop
           itemprop="vertical"
@@ -64,7 +64,7 @@
         <as-stops :luminosity="bold" :stops="vertical" />
       </linearGradient>
     </g>
-    <g class="horizontal gradients">
+    <g class="horizontal">
       <linearGradient :id="query('horizontal')" x1="0" x2="100%" y1="0" y2="0">
         <stop
           v-for="stop in horizontal"
