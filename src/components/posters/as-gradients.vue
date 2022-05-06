@@ -1,9 +1,7 @@
 <template>
   <defs>
     <g class="gradients">
-      <radialGradient
-        gradientUnits="userSpaceOnUse"
-        :id="query('radial-gradient')">
+      <radialGradient :id="query('radial-gradient')">
         <stop
           v-for="stop in radial"
           :key="stop.offset"
@@ -13,7 +11,6 @@
       </radialGradient>
       <linearGradient
         :id="query('vertical-gradient')"
-        gradientUnits="userSpaceOnUse"
         x1="0"
         x2="0"
         y1="0"
@@ -27,7 +24,6 @@
       </linearGradient>
       <linearGradient
         :id="query('horizontal-gradient')"
-        gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
         y1="0"
@@ -41,9 +37,7 @@
       </linearGradient>
     </g>
     <g class="generated gradients">
-      <radialGradient
-        :id="query('background-gradient')"
-        gradientUnits="userSpaceOnUse">
+      <radialGradient :id="query('background-gradient')">
         <stop
           v-for="stop in background"
           :key="stop.offset"
@@ -52,7 +46,6 @@
       </radialGradient>
       <linearGradient
         :id="query('light-gradient')"
-        gradientUnits="userSpaceOnUse"
         x1="0%"
         x2="0"
         y1="0"
@@ -65,7 +58,6 @@
       </linearGradient>
       <linearGradient
         :id="query('regular-gradient')"
-        gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
         y1="0"
@@ -78,7 +70,6 @@
       </linearGradient>
       <linearGradient
         :id="query('bold-gradient')"
-        gradientUnits="userSpaceOnUse"
         x1="0"
         x2="100%"
         y1="0"
@@ -148,7 +139,7 @@
             h: stop.color.h,
             s: stop.color.s,
             l: 60,
-            a: 0.9
+            a: 1
           })
         }
       })
@@ -160,7 +151,7 @@
             h: 300,
             s: 2,
             l: 2,
-            a: 0.9
+            a: 1
           })
         }
       ]
