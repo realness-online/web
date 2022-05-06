@@ -136,8 +136,10 @@
   })
   whenever(color, () => {
     const path = query(itemprop.value)
-    if (as_stroke.value) path.style.color = color.value
-    else {
+    if (as_stroke.value) {
+      path.style.color = color.value
+      path.style.stroke = 'currentColor'
+    } else {
       const current_fill = path.style.fill
       if (to_hex(current_fill) !== color.value) {
         const compliment = to_complimentary_hsl(color.value)
