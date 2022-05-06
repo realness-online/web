@@ -3,19 +3,19 @@
     class="emboss light"
     tabindex="-1"
     :href="fragment('light')"
-    :fill="`url(${fragment('radial-regular')}`"
+    fill="white"
     filter="url(#emboss)" />
   <use
     class="emboss regular"
     tabindex="-1"
     :href="fragment('regular')"
-    :fill="`url(${fragment('radial-bold')}`"
+    fill="white"
     filter="url(#emboss)" />
   <use
     class="emboss bold"
     tabindex="-1"
     :href="fragment('bold')"
-    :fill="`url(${fragment('radial-background')}`"
+    fill="white"
     filter="url(#emboss)" />
 </template>
 <script setup>
