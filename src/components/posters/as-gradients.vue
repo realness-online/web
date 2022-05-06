@@ -117,7 +117,7 @@
   const { new_gradients: gradients, new_vector } = use_vectorize()
   const background = 80
   const light = 60
-  const regular = 50
+  const regular = 40
   const bold = 13
   const props = defineProps({
     itemid: {
