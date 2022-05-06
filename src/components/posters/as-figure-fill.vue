@@ -41,15 +41,15 @@
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('horizontal-gradient')" />
+          :fill="fragment('horizontal')" />
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('vertical-gradient')" />
+          :fill="fragment('vertical')" />
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('radial-gradient')" />
+          :fill="fragment('radial')" />
       </menu>
     </figcaption>
   </figure>
