@@ -63,7 +63,7 @@
         class="bold"
         :href="fragment('bold')"
         :fill="`url(${fragment('vertical-bold')}`"
-        :stroke="`url(${fragment('radial')}`" />
+        :stroke="`url(${fragment('radial-regular')}`" />
       <as-emboss :itemid="itemid" />
     </g>
   </svg>
