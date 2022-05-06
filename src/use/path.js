@@ -23,9 +23,8 @@ export const create_stop_element = () => {
 
 const opacity_percentage = ref()
 const selected_path = ref()
-
+const as_stroke = ref(false)
 export const use = () => {
-  const as_stroke = ref(false)
   const fill_opacity = change_by => {
     const path = get_active_path()
     path.style.fillOpacity = change(path.style.fillOpacity, change_by)
@@ -63,14 +62,13 @@ export const use = () => {
   mounted(() => {
     selected_path.value = null
     opacity_percentage.value = null
+    as_stroke.value = false
   })
 
   whenever(opacity_percentage, () => {
     const path = itemprop_query(selected_path.value)
-    if (as_stroke.value) {
-      console.log('change stroke', opacity_percentage.value)
-      path.style.strokeOpacity = opacity_percentage.value
-    } else path.style.fillOpacity = opacity_percentage.value
+    if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
+    else path.style.fillOpacity = opacity_percentage.value
   })
 
   return {

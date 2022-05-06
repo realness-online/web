@@ -23,6 +23,7 @@
       <h4>{{ selected_path }}</h4>
       <menu class="stroke background">
         <as-svg
+          inert
           :itemid="itemid"
           :immediate="true"
           :slice="true"
