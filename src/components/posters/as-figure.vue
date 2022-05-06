@@ -79,7 +79,8 @@
     watch: {
       async menu() {
         if (this.menu && !this.person) {
-          this.person = await load(as_author(this.itemid))
+          const author_id = as_author(this.itemid)
+          if (author_id) this.person = await load()
         }
       }
     },
