@@ -21,7 +21,7 @@
         :step="change_by" />
       <output :value="opacity_percentage" for="opacity" />
       <h4>{{ selected_path }}</h4>
-      <menu class="stroke background">
+      <menu>
         <as-svg
           inert
           :itemid="itemid"
@@ -37,19 +37,23 @@
           type="color"
           tabindex="-1"
           :disabled="disable_controls"
+          :aria-selected="is_using('input')"
           @blur="focus_on_active" />
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('horizontal')" />
+          :aria-selected="is_using('horizontal')"
+          :fill="pick_gradient_for('horizontal')" />
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('vertical')" />
+          :aria-selected="is_using('vertical')"
+          :fill="pick_gradient_for('vertical')" />
         <icon
           name="circle"
           :disabled="disable_controls"
-          :fill="fragment('radial')" />
+          :aria-selected="is_using('radial')"
+          :fill="pick_gradient_for('radial')" />
       </menu>
     </figcaption>
   </figure>
@@ -83,9 +87,7 @@
   const figure = ref(null)
   const color = ref('#151518')
   const itemprop = ref('background')
-  const fragment = add => {
-    return `url(${as_fragment_id(props.itemid)}-${add})`
-  }
+  const fragment = add => `url(${as_fragment_id(props.itemid)}-${add})`
   const {
     opacity_percentage,
     as_stroke,
@@ -126,6 +128,16 @@
     else if (!selected_path.value) return true
     else return false
   })
+  const is_using = type => {
+    const layer = selected_path.value
+    if (layer) return true
+    return false
+  }
+  const pick_gradient_for = type => {
+    const layer = selected_path.value
+    if (layer) return fragment(`${type}-${layer}`)
+    return fragment(type)
+  }
   whenever(keys.s, () => toggle_stroke())
   whenever(keys.up, () => {
     if (as_stroke.value) stroke_opacity(change_by)
@@ -201,6 +213,7 @@
         display: flex
         justify-content: space-between
         & > svg
+          user-select: none
           cursor: pointer
           width: base-line * 1.5
           height: base-line * 1.5
