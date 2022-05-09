@@ -3,19 +3,19 @@
     class="emboss light"
     tabindex="-1"
     :href="fragment('light')"
-    fill="grey"
+    fill="gray"
     filter="url(#emboss)" />
   <use
     class="emboss regular"
     tabindex="-1"
     :href="fragment('regular')"
-    fill="black"
+    fill="DimGray"
     filter="url(#emboss)" />
   <use
     class="emboss bold"
     tabindex="-1"
     :href="fragment('bold')"
-    fill="grey"
+    fill="gray"
     filter="url(#emboss)" />
 </template>
 <script setup>
