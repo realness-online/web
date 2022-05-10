@@ -214,7 +214,9 @@
                   online.
                 </a>
                 I keep a
-                <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
+                <a href="https://scott-fryxell.github.io/" rel="external"
+                  >blog</a
+                >
                 of all my feelings and nerd problems. My resume is on there. I
                 want to support the web iterate.
               </p>
@@ -305,8 +307,6 @@
         Continued development of <span>Realness</span> <span>online</span>
       </h3>
       <h4>$5 — Designers</h4>
-      <h4>$15 — Community</h4>
-      <h4>$25 — Developers</h4>
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" loading="lazy" />
       </a>

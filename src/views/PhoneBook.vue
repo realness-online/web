@@ -5,7 +5,7 @@
         <icon name="heart" />
       </router-link>
       <icon v-else name="nothing" />
-      <h1>Recent</h1>
+      <h1>PhoneBook</h1>
       <logo-as-link />
     </header>
     <icon v-if="working" name="working" />
@@ -17,8 +17,7 @@
         :person="person" />
     </nav>
     <footer v-if="!working && !current_user">
-      <sign-on />
-      <p class="sign-on message">Check out who's here</p>
+      <p class="sign-on message">Coming in July</p>
     </footer>
   </section>
 </template>

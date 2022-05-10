@@ -9,7 +9,8 @@
     <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
       <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
     </as-days>
-    <footer v-if="events.length <= 0">
+    <footer>
+      <p class="message">Events will make sense in July</p>
       <p class="message">
         You create events from
         <router-link to="/posters">Posters</router-link>

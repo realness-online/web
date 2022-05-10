@@ -8,7 +8,7 @@
       :tabable="true"
       tabindex="-1"
       @focus="layer_selected" />
-    <figcaption>
+    <figcaption hidden>
       <input
         id="opacity"
         v-model="opacity_percentage"
