@@ -5,7 +5,7 @@
       <h1>Feed</h1>
       <icon v-if="is_fullscreen" name="nothing" />
       <a v-else tabindex="-1" @click="fullscreen">
-        <icon name="fullscreen" />
+        <icon name="nothin" />
       </a>
     </header>
     <as-days
