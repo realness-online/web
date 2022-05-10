@@ -1,9 +1,9 @@
 <template>
-  <path ref="path" :d="d" :style="style" />
+  <path ref="path" :d="d" fill-rule="evenodd" />
 </template>
 <script setup>
-  import { ref, watch, watchEffect, inject } from 'vue'
-  import { is_path, use } from '@/use/path'
+  import { ref, watchEffect as watch_effect, inject } from 'vue'
+  import { is_path } from '@/use/path'
   const path = ref(null)
   const props = defineProps({
     path: {
@@ -12,18 +12,10 @@
       validate: is_path
     }
   })
-  const { as_stroke } = use()
   const d = ref(props.path.getAttribute('d'))
   const style = ref(props.path.getAttribute('style'))
-
-  watch(as_stroke, () => {
-    if (as_stroke.value) {
-      path.value.style.strokeWidth = '1px'
-    } else {
-      path.value.style.strokeWidth = '0'
-    }
-  })
-  watchEffect(() => (d.value = props.path.getAttribute('d')))
+  // console.log(style.value)
+  watch_effect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">
   svg:focus-within

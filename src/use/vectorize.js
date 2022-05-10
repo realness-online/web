@@ -5,12 +5,14 @@ import {
   onUnmounted as dismount
 } from 'vue'
 import { create_path_element } from '@/use/path'
+import { create_use_element } from '@/use/layer'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
+import { useRouter as use_router } from 'vue-router'
+
 const new_vector = ref(null)
 const new_gradients = ref(null)
 
-import { useRouter as use_router } from 'vue-router'
 export const use = () => {
   const router = use_router()
   const image_picker = ref(null)
@@ -42,9 +44,13 @@ export const use = () => {
   const make_path = path_data => {
     const path = create_path_element()
     path.setAttribute('d', path_data.d)
-    path.style.fillOpacity = path_data.fillOpacity
     path.style.fillRule = 'evenodd'
     return path
+  }
+  const make_settings = data => {
+    const use = create_use_element()
+    use.style.fillOpacity = data.fillOpacity
+    return use
   }
   const listener = () => {
     const image = image_picker.value.files[0]
@@ -65,7 +71,6 @@ export const use = () => {
   }
 
   const vectorize = image => {
-    console.time('makes:poster')
     working.value = true
     vectorizer.value.postMessage({ image })
     gradienter.value.postMessage({ image })
@@ -74,6 +79,11 @@ export const use = () => {
     const vector = response.data.vector
     vector.id = as_new_itemid
     vector.type = 'posters'
+    vector.settings = {
+      light: make_settings(response.data.vector.light),
+      regular: make_settings(response.data.vector.regular),
+      bold: make_settings(response.data.vector.bold)
+    }
     vector.light = make_path(vector.light)
     vector.regular = make_path(vector.regular)
     vector.bold = make_path(vector.bold)
@@ -92,7 +102,6 @@ export const use = () => {
       new_vector.value &&
       is_vector(new_vector.value)
     ) {
-      console.timeEnd('makes:poster')
       const created_at = as_created_at(new_vector.value.id)
       router.push({ path: `/posters/${created_at}/editor` })
     }
