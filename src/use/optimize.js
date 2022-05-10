@@ -12,7 +12,9 @@ export const use = vector => {
   }
   const optimized = message => {
     const optimized = get_item(message.data.vector)
-    vector.value = optimized
+    vector.value.light = optimized.light
+    vector.value.regular = optimized.regular
+    vector.value.bold = optimized.bold
     vector.value.optimized = true
     optimizer.value.removeEventListener('message', optimized)
     optimizer.value.terminate()

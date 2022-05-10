@@ -166,8 +166,8 @@
   }
   watch_effect(() => {
     if (vector.value && props.optimize && !vector.value.optimized) {
-      // const { optimize } = use_optimizer(vector)
-      // optimize()
+      const { optimize } = use_optimizer(vector)
+      optimize()
     }
   })
 </script>
