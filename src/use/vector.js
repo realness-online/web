@@ -8,6 +8,7 @@ import {
 import { ref, computed, onMounted as mounted } from 'vue'
 import { recent_item_first } from '@/use/sorting'
 import { use as use_path } from '@/use/path'
+import { create_use_element } from '@/use/layer'
 const path_names = ['background', 'light', 'regular', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
@@ -26,8 +27,13 @@ export const is_vector = vector => {
     if (!vector.gradients.width) return false
     if (!vector.gradients.height) return false
     if (!vector.gradients.radial) return false
-    console.log('gradients are good')
   }
+  if (!vector.settings) return false
+  // if (!vector.settings.background) return false // todo make bacground settings
+  if (!vector.settings.light) return false
+  if (!vector.settings.regular) return false
+  if (!vector.settings.bold) return false
+
   if (vector.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
@@ -56,16 +62,36 @@ export const set_vector_dimensions = (props, item) => {
   props.height = height
 }
 const migrate_path = path => {
-  const style = path.style
   const fill = path.getAttribute('fill')
   const opacity = path.getAttribute('fill-opacity')
   const rule = path.getAttribute('fill-rule')
 
-  if (fill) style.fill = fill
-  if (opacity) style.fillOpacity = opacity
-  if (rule) style.fillRule = rule
+  if (fill) path.style.fill = fill
+  if (opacity) path.style.fillOpacity = opacity
+  if (rule) path.style.fillRule = rule
 
   return path
+}
+const migrate_setting = path => {
+  const use = create_use_element()
+  if (path.style.length) {
+    for (var i = 0; i < path.style.length; i++) {
+      const name = path.style[i]
+      const value = path.style[name]
+      use.style[name] = value
+      path.style[name] = undefined
+    }
+  }
+  return use
+}
+const migrate_settings = poster => {
+  poster.settings = {
+    background: migrate_setting(poster.background),
+    light: migrate_setting(poster.light),
+    regular: migrate_setting(poster.regular),
+    bold: migrate_setting(poster.bold)
+  }
+  return poster
 }
 const migrate_poster = poster => {
   if (Array.isArray(poster.path)) {
@@ -76,7 +102,6 @@ const migrate_poster = poster => {
   poster.path = undefined
   return poster
 }
-
 export const use_poster = (props, emit) => {
   const vector = ref(null)
   const working = ref(true)
@@ -123,6 +148,7 @@ export const use_poster = (props, emit) => {
     if (!vector.value) {
       let poster = await load(props.itemid)
       if (poster.path) poster = migrate_poster(poster)
+      if (!poster.settings) poster = migrate_settings(poster)
       vector.value = poster
     }
     working.value = false

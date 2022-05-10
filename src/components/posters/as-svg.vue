@@ -42,25 +42,29 @@
     </defs>
     <as-gradients :itemid="itemid" />
     <as-filters />
-    <g class="render">
-      <use
-        class="background"
+    <g itemscope itemtype="/settings">
+      <as-use
+        itemprop="background"
+        :use="vector.settings.background"
         :href="fragment('background')"
         :fill="`url(${fragment('radial-background')}`" />
-      <use
-        class="light"
+      <as-use
+        itemprop="light"
+        :use="vector.settings.light"
         :href="fragment('light')"
         :fill="`url(${fragment('vertical-light')}`"
         :stroke="`url(${fragment('horizontal-background')}`"
         filter="url(#light-filter)" />
-      <use
-        class="regular"
+      <as-use
+        itemprop="regular"
+        :use="vector.settings.regular"
         :href="fragment('regular')"
         :fill="`url(${fragment('horizontal-regular')}`"
         :stroke="`url(${fragment('vertical-light')}`"
         filter="url(#regular-filter)" />
-      <use
-        class="bold"
+      <as-use
+        itemprop="bold"
+        :use="vector.settings.bold"
         :href="fragment('bold')"
         :fill="`url(${fragment('vertical-bold')}`"
         :stroke="`url(${fragment('radial-regular')}`" />
@@ -70,6 +74,7 @@
 </template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
+  import AsUse from '@/components/posters/as-use'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsFilters from '@/components/posters/as-filters'
@@ -161,8 +166,8 @@
   }
   watch_effect(() => {
     if (vector.value && props.optimize && !vector.value.optimized) {
-      const { optimize } = use_optimizer(vector)
-      optimize()
+      // const { optimize } = use_optimizer(vector)
+      // optimize()
     }
   })
 </script>
