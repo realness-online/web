@@ -55,5 +55,3 @@ auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null
 })
-
-console.log('I am doing stuff', auth, app.value)
