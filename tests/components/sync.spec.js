@@ -5,7 +5,6 @@ import * as sync_worker from '@/persistance/Cloud.sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
 import { Me, Statements, Events, Poster } from '@/persistance/Storage'
-import firebase from 'firebase/compat/app'
 const fake_props = {
   global: {
     stubs: ['router-link', 'router-view']
@@ -124,8 +123,7 @@ describe('@/components/sync', () => {
 
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
+
 import vector_mock from './mixin_mock'
 const current_user = { phoneNumber: '+16282281824' }
 describe('@/mixins/visit', () => {

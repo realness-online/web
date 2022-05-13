@@ -1,8 +1,5 @@
 import { beforeEach as before_each, afterEach as after_each } from 'vitest'
 import fs from 'fs'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/storage'
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 import {

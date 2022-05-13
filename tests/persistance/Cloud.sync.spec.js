@@ -1,7 +1,4 @@
 import { get, del, keys, set } from 'idb-keyval'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/storage'
 import { Offline } from '@/persistance/Storage'
 import {
   prune,

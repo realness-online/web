@@ -1,7 +1,5 @@
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/storage'
 import hash from 'object-hash'
+import { location } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
@@ -71,7 +69,7 @@ export async function local_md5(itemid) {
 }
 export async function fresh_metadata(itemid) {
   const index = (await get('sync:index')) || {}
-  const path = firebase.storage().ref().child(as_filename(itemid))
+  const path = location(as_filename(itemid))
   let network
   try {
     // console.info('request:metadata', itemid)
