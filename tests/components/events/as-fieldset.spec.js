@@ -3,7 +3,6 @@ import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'
 import * as itemid from '@/use/itemid'
 import get_item from '@/use/item'
-import firebase from 'firebase/compat/app'
 import fs from 'fs'
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
 const poster = get_item(poster_html)

@@ -1,5 +1,3 @@
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 

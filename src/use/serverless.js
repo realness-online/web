@@ -1,5 +1,5 @@
-// import { initializeApp as initialize_firebase } from 'firebase/app'
-import firebase from 'firebase/compat/app'
+import { initializeApp as initialize_firebase } from 'firebase/app'
+
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -38,9 +38,7 @@ if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
 }
 
 const firebase_keys = await get('firebase-keys')
-export const app = ref(firebase.initializeApp(firebase_keys))
-// const app = ref(initialize_firebase(firebase_keys))
-// can't use this until fully converted to firebase version 9 modular
+export const app = ref(initialize_firebase(firebase_keys))
 const storage = init_storage(app.value)
 export const sign_in = signInWithPhoneNumber
 export const Recaptcha = RecaptchaVerifier
@@ -58,4 +56,4 @@ auth_changed(auth, user => {
   else current_user.value = null
 })
 
-console.log('I am doing stuff', auth.value, app.value)
+console.log('I am doing stuff', auth, app.value)

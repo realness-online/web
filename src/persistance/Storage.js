@@ -1,10 +1,9 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
 import Local from '@/persistance/Local'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
+import { current_user } from '@/use/serverless'
 import { as_type } from '@/use/itemid'
 import { get } from 'idb-keyval'
 export default class Storage {
@@ -46,13 +45,9 @@ export class History extends Cloud(Storage) {
   async save(items) {
     // on purpose doesn't call super.save
     if (!items) return
-    if (firebase.auth().currentUser && navigator.onLine) {
+    if (current_user.value && navigator.onLine) {
       const path = `/people/${this.id}.html`
-      await firebase
-        .storage()
-        .ref()
-        .child(path)
-        .putString(items.outerHTML, 'raw', this.metadata)
+      await location(path).putString(items.outerHTML, 'raw', this.metadata)
     }
   }
 }

@@ -1,8 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import firebase from 'firebase/compat/app'
 import { recent_item_first } from '@/use/sorting'
-import 'firebase/compat/storage'
-import 'firebase/compat/auth'
+import { current_user } from '@/use/serverless'
 import { get_item, hydrate, get_itemprops } from '@/use/item'
 import {
   list,
@@ -55,7 +53,7 @@ const Paged = superclass =>
         div.setAttribute('itemscope', '')
         div.setAttribute('itemid', this.id)
         div.appendChild(offload)
-        const me = from_e64(firebase.auth().currentUser.phoneNumber)
+        const me = from_e64(current_user.value.phoneNumber)
         const id = `${me}/${this.type}/${oldest.getTime()}`
         await this.save(current)
         const history = new History(id)
@@ -90,7 +88,7 @@ const Paged = superclass =>
       offline = type_as_list(get_item(offline))
       offline.forEach(item => {
         // convert id's to current id
-        const me = from_e64(firebase.auth().currentUser.phoneNumber)
+        const me = from_e64(current_user.value.phoneNumber)
         item.id = `${me}/${this.type}/${as_created_at(item.id)}`
       })
 
