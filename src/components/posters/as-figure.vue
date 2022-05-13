@@ -13,93 +13,102 @@
             <time>{{ posted_at }}</time>
           </as-link>
           <as-download :itemid="itemid" />
-          <as-messenger v-if="signed_in" :itemid="itemid" />
+          <as-messenger v-if="current_user" :itemid="itemid" />
         </menu>
       </slot>
     </figcaption>
   </figure>
 </template>
-<script>
+<script setup>
+  import AsDownload from '@/components/download-vector'
+  import AsMessenger from '@/components/profile/as-messenger'
+  import AsLink from '@/components/profile/as-link'
+  import AsSvg from '@/components/posters/as-svg'
   import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
   import { is_vector_id } from '@/use/vector'
   import { as_time } from '@/use/date'
-  import as_svg from '@/components/posters/as-svg'
-  import vector_click from '@/mixins/vector_click'
-  import signed_in from '@/mixins/signed_in'
-  import as_download from '@/components/download-vector'
-  import as_messenger from '@/components/profile/as-messenger'
-  import as_link from '@/components/profile/as-link'
-  export default {
-    components: {
-      'as-svg': as_svg,
-      'as-link': as_link,
-      'as-messenger': as_messenger,
-      'as-download': as_download
+  import { current_user } from '@/use/serverless'
+  import {
+    ref,
+    computed,
+    watchEffect as watch_effect,
+    onUpdated as updated,
+    nextTick as next_tick
+  } from 'vue'
+
+  const props = defineProps({
+    slice: {
+      type: Boolean,
+      required: false,
+      default: true
     },
-    mixins: [vector_click, signed_in],
-    props: {
-      itemid: {
-        type: String,
-        required: true,
-        validate: is_vector_id
-      },
-      working: {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      immediate: {
-        type: Boolean,
-        required: false,
-        default: false
-      }
+    itemid: {
+      type: String,
+      required: true,
+      validate: is_vector_id
     },
-    emits: ['loaded'],
-    data() {
-      return {
-        menu: false,
-        poster: null,
-        person: null,
-        loaded: false
-      }
+    working: {
+      type: Boolean,
+      required: false,
+      default: false
     },
-    computed: {
-      query_id() {
-        return as_query_id(this.itemid)
-      },
-      posted_at() {
-        return as_time(as_created_at(this.itemid))
-      },
-      background() {
-        if (this.working) return 'working'
-        if (this.loaded) return 'background'
-        else return 'working'
-      }
-    },
-    watch: {
-      async menu() {
-        if (this.menu && !this.person) {
-          const author_id = as_author(this.itemid)
-          if (author_id) this.person = await load()
-        }
-      }
-    },
-    updated() {
-      const fragment = window.location.hash.substring(1)
-      if (this.query_id === fragment) this.$refs.poster.$el.scrollIntoView()
-    },
-    methods: {
-      async on_load(vector) {
-        this.vector = vector
-        await this.$nextTick()
-        this.loaded = true
-        this.$emit('loaded', this.$refs.poster.$el.outerHTML)
-      },
-      open_sms_app() {
-        window.open(this.sms_link, '_self')
-      }
+    immediate: {
+      type: Boolean,
+      required: false,
+      default: false
     }
+  })
+  const menu = ref(false)
+  const poster = ref(null)
+  const vector = ref(null)
+  const person = ref(null)
+  const loaded = ref(false)
+  const emit = defineEmits(['loaded', 'vector-click'])
+  const aspect_ratio = computed(() => {
+    if (menu.value || !slice.value) return 'xMidYMid meet'
+    else return 'xMidYMid slice'
+  })
+  const landscape = computed(() => {
+    if (!vector.value) return false
+    const numbers = vector.value.viewbox.split(' ')
+    const width = parseInt(numbers[2])
+    const height = parseInt(numbers[3])
+    return width > height
+  })
+  const query_id = computed(() => {
+    return as_query_id(props.itemid)
+  })
+  const posted_at = computed(() => {
+    return as_time(as_created_at(props.itemid))
+  })
+  const background = computed(() => {
+    if (working.value) return 'working'
+    if (loaded.value) return 'background'
+    else return 'working'
+  })
+  const vector_click = () => {
+    menu.value = !menu.value
+    emit('vector-click', menu.value)
   }
+  const on_load = async vector => {
+    vector.value = vector
+    await next_tick()
+    loaded.value = true
+    emit('loaded', poster.value.outerHTML)
+  }
+  const open_sms_app = () => {
+    window.open(sms_link.value, '_self')
+  }
+  watch_effect(async () => {
+    if (menu.value && !person.value) {
+      const author_id = as_author(props.itemid)
+      if (author_id) person.value = await load()
+    }
+  })
+  updated(() => {
+    const fragment = window.location.hash.substring(1)
+    if (query_id.value === fragment) poster.value.scrollIntoView()
+  })
 </script>
 <style lang="stylus">
   figure.poster

@@ -20,8 +20,11 @@ import { ref } from 'vue'
 
 // initialize application
 if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
-  const response = await fetch('__/firebase/init.json')
-  await set('firebase-keys', await response.json())
+  const firebase_keys = await get('firebase-keys')
+  if (!firebase_keys) {
+    const response = await fetch('__/firebase/init.json')
+    await set('firebase-keys', await response.json())
+  }
 } else {
   const dev_keys = {
     apiKey: import.meta.env.VITE_API_KEY,
@@ -35,14 +38,14 @@ if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
 }
 
 const firebase_keys = await get('firebase-keys')
-const info = ref(firebase.initializeApp(firebase_keys))
-// const info = ref(initialize_firebase(firebase_keys))
+export const app = ref(firebase.initializeApp(firebase_keys))
+// const app = ref(initialize_firebase(firebase_keys))
 // can't use this until fully converted to firebase version 9 modular
-const storage = init_storage(info.value)
+const storage = init_storage(app.value)
 export const sign_in = signInWithPhoneNumber
 export const Recaptcha = RecaptchaVerifier
 export const current_user = ref(null)
-export const auth = init_auth(info.value)
+export const auth = init_auth(app.value)
 export const location = path => reference(storage, path)
 export const upload = (path, data, meta) =>
   upload_file(location(path), data, meta)
@@ -54,3 +57,5 @@ auth_changed(auth, user => {
   if (user) current_user.value = user
   else current_user.value = null
 })
+
+console.log('I am doing stuff', auth.value, app.value)

@@ -45,7 +45,7 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import { auth, Recaptcha, sign_in } from '@/use/serverless'
+  import { auth, Recaptcha, sign_in, app } from '@/use/serverless'
   import { as_phone_number } from '@/use/profile'
   import {
     watch,
@@ -99,10 +99,15 @@
     show_authorize.value = false
     show_captcha.value = true
     await next_tick()
-    human.value = new Recaptcha('captcha', {
-      size: 'invisible',
-      callback: text_human_verify_code
-    })
+    console.log(auth)
+    human.value = new Recaptcha(
+      'captcha',
+      {
+        size: 'invisible',
+        callback: text_human_verify_code
+      },
+      app
+    )
     human.value.verify()
   }
   const text_human_verify_code = async () => {
@@ -110,7 +115,7 @@
     show_code.value = true
     show_captcha.value = false
     hide_captcha.value = true
-    signInWithPhoneNumber(auth.value, `+1${props.person.mobile}`, human.value)
+    signInWithPhoneNumber(auth, `+1${props.person.mobile}`, human.value)
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
@@ -153,7 +158,6 @@
     emit('update:person', update)
   })
   mounted(async () => {
-    auth.value = get_auth()
     validator.value = await import('libphonenumber-js')
     working.value = false
     const updated = { ...props.person }
