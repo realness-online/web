@@ -307,6 +307,8 @@
         Continued development of <span>Realness</span> <span>online</span>
       </h3>
       <h4>$5 — Designers</h4>
+      <h4>$15 — Community</h4>
+      <h4>$25 — Developers</h4>
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" loading="lazy" />
       </a>
