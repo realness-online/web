@@ -29,7 +29,6 @@
 <script>
   import { load, as_author, as_created_at } from '@/use/itemid'
   import { as_time } from '@/use/date'
-  import intersection from '@/mixins/intersection'
   import as_statement from '@/components/statements/as-div'
   import as_avatar from '@/components/posters/as-svg'
   import as_messenger from '@/components/profile/as-messenger'
@@ -39,7 +38,6 @@
       'as-messenger': as_messenger,
       'as-statement': as_statement
     },
-    mixins: [intersection],
     props: {
       statements: {
         type: Array,
@@ -59,10 +57,20 @@
     emits: ['show', 'focused', 'blurred'],
     data() {
       return {
+        observer: new IntersectionObserver(this.check_intersection, {
+          rootMargin: '1024px 0px 0px 0px',
+          threshold: 0
+        }),
         all: null,
         author: null,
         focused: false
       }
+    },
+    mounted() {
+      this.observer.observe(this.$el)
+    },
+    beforeUnmount() {
+      this.observer.unobserve(this.$el)
     },
     computed: {
       thought_starts_at() {
@@ -75,6 +83,13 @@
       }
     },
     methods: {
+      check_intersection(entries) {
+        const entry = entries[0]
+        if (entry.isIntersecting) {
+          this.show()
+          this.observer.unobserve(this.$el)
+        }
+      },
       click() {
         if (this.all) this.all = null
         else this.all = 'all'

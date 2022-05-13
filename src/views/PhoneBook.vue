@@ -17,7 +17,7 @@
         :person="person" />
     </nav>
     <footer v-if="!working && !current_user">
-      <p class="sign-on message">Coming in July</p>
+      <sign-on v-if="!current_user" />
     </footer>
   </section>
 </template>

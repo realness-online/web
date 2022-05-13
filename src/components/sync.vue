@@ -25,13 +25,22 @@
       :immediate="true" />
   </div>
 </template>
+
 <script setup>
   import AsDays from '@/components/as-days'
   import EventsList from '@/components/events/as-list'
   import UnsyncedPoster from '@/components/posters/as-svg'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
-  import { use as use_sync, get_itemid } from '@/persistance/Cloud.sync'
+  import { load } from '@/use/itemid'
+  import { from_e64 } from '@/use/profile'
+  import {
+    use as use_sync,
+    get_itemid,
+    visit_interval
+  } from '@/persistance/Cloud.sync'
+  import { current_user } from '@/use/serverless'
+  import { onMounted as mounted } from 'vue'
   const props = defineProps({
     statement: {
       type: Object,
@@ -46,9 +55,21 @@
   })
   const emit = defineEmits(['update:statement', 'update:person', 'active'])
   const { sync, statements, poster, events, play } = use_sync(props, emit)
-
   const visibility_change = async () => {
     if (document.visibilityState === 'visible') await play()
   }
   document.addEventListener('visibilitychange', visibility_change)
+  mounted(async () => {
+    if (navigator.onLine && current_user.value) {
+      const person = await load(from_e64(current_user.phoneNumber))
+      if (!person) return // Do nothing until there is a person
+      const visit_digit = new Date(person.visited).getTime()
+      if (visit_interval() > visit_digit) {
+        const new_visit = new Date().toISOString()
+        person.visited = new_visit
+        emit('update:person', person)
+        console.log('should save person now', person)
+      }
+    }
+  })
 </script>

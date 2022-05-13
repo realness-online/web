@@ -10,7 +10,7 @@
       <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
     </as-days>
     <footer>
-      <p class="message">Events will make sense in July</p>
+      <p class="message">Coming in July</p>
       <p class="message">
         You create events from
         <router-link to="/posters">Posters</router-link>
@@ -21,7 +21,6 @@
 <script>
   import { list } from '@/use/itemid'
   import { recent_item_first } from '@/use/sorting'
-  import signed_in from '@/mixins/signed_in'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
@@ -33,7 +32,6 @@
       'as-days': as_days,
       icon
     },
-    mixins: [signed_in],
     data() {
       return {
         events: [],

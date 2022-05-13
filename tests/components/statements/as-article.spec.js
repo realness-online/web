@@ -1,5 +1,6 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_article from '@/components/statements/as-article'
+import vector_mock from './mixin_mock'
 const statement = {
   statement: 'I am saying it',
   id: '/+14151234356/statements/1557614404580'
@@ -68,6 +69,47 @@ describe('@/components/statements/as-article.vue', () => {
         wrapper.vm.focused = true
         vi.runAllTimers()
         expect(wrapper.emitted('blurred')).not.toBeTruthy()
+      })
+    })
+  })
+})
+
+describe('@/mixins/intersection', () => {
+  let wrapper
+  beforeEach(() => {
+    wrapper = shallowMount(vector_mock)
+  })
+  describe('#unmount', () => {
+    it('Exists', () => {
+      expect(wrapper.unmount).toBeDefined()
+    })
+    it('Resets the observer', () => {
+      const mock = vi.fn()
+      wrapper.vm.observer = { unobserve: mock }
+      wrapper.unmount()
+      expect(mock).toBeCalled()
+    })
+    it('Does nothing if null observer', () => {
+      wrapper.unmount()
+    })
+  })
+  describe('Methods', () => {
+    describe('#check_intersection', () => {
+      it('Exists', () => {
+        expect(wrapper.vm.check_intersection).toBeDefined()
+      })
+      it('Checks entries', () => {
+        const intersectings = [
+          { isIntersecting: true },
+          { isIntersecting: false }
+        ]
+        const mock = vi.fn()
+        wrapper.vm.show = mock
+        wrapper.vm.check_intersection(intersectings)
+        expect(mock).toBeCalled()
+        wrapper.vm.observer = { unobserve: () => true }
+        wrapper.vm.check_intersection(intersectings)
+        expect(mock).toHaveBeenCalledTimes(2)
       })
     })
   })
