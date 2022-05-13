@@ -345,6 +345,12 @@
         <img src="/about/portrait/07.svg" loading="lazy" />
         <img src="/about/portrait/08.svg" loading="lazy" />
         <img src="/about/portrait/09.svg" loading="lazy" />
+        <img src="/about/portrait/10.svg" loading="lazy" />
+        <img src="/about/portrait/11.svg" loading="lazy" />
+        <img src="/about/portrait/12.svg" loading="lazy" />
+        <img src="/about/portrait/14.svg" loading="lazy" />
+        <img src="/about/portrait/15.svg" loading="lazy" />
+        <img src="/about/portrait/16.svg" loading="lazy" />
       </figure>
     </footer>
   </section>
