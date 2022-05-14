@@ -5,7 +5,8 @@ import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 
 export default defineConfig({
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    sourcemap: true
   },
   define: {
     'import.meta.env.PACKAGE_VERSION': JSON.stringify(
@@ -36,16 +37,24 @@ export default defineConfig({
   plugins: [
     vue(),
     vite_pwa({
+      filename: 'service.worker.js',
       minify: false,
+      includeAssets: ['icons.svg', 'favicon.ico', '180.png'],
       manifest: {
         short_name: 'Realness',
         description: 'Realness – A Chill Vector Space',
         scope: '/',
         orientation: 'portrait',
-        background_color: '#151518',
+        theme_color: '#151518',
         icons: [
           { src: '192.png', sizes: '192x192', type: 'image/png' },
-          { src: '512.png', sizes: '512x512', type: 'image/png' }
+          { src: '512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: '512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
         ]
       }
     })
