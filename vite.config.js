@@ -41,11 +41,12 @@ export default defineConfig({
       minify: false,
       includeAssets: ['icons.svg', 'favicon.ico', '180.png'],
       manifest: {
+        display: 'standalone',
+        background_color: '#151518',
         short_name: 'Realness',
         description: 'Realness – A Chill Vector Space',
         scope: '/',
         orientation: 'portrait',
-        background_color: '#151518',
         theme_color: '#151518',
         icons: [
           { src: '192.png', sizes: '192x192', type: 'image/png' },
