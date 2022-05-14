@@ -14,7 +14,10 @@
         @keyup="validate_mobile_number"
         @paste.prevent="mobile_paste" />
     </fieldset>
-    <fieldset v-if="show_captcha" id="captcha" :class="{ hide_captcha }" />
+    <fieldset
+      v-if="show_captcha"
+      id="captcha"
+      :class="{ hide: hide_captcha }" />
     <fieldset v-if="show_code">
       <input
         id="verification-code"
@@ -99,23 +102,25 @@
     show_authorize.value = false
     show_captcha.value = true
     await next_tick()
-    console.log(auth)
+
     human.value = new Recaptcha(
       'captcha',
       {
         size: 'invisible',
         callback: text_human_verify_code
       },
-      app
+      auth
     )
     human.value.verify()
   }
   const text_human_verify_code = async () => {
     working.value = false
     show_code.value = true
-    show_captcha.value = false
+    // show_captcha.value = false
     hide_captcha.value = true
-    signInWithPhoneNumber(auth, `+1${props.person.mobile}`, human.value)
+    console.log('props.person.mobile', props.person.mobile)
+    await next_tick()
+    sign_in(auth, `+${props.person.mobile}`, human.value)
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
@@ -175,6 +180,8 @@
       fill: red
     fieldset
       margin-bottom: base-line
+      &#captcha.hide
+        display: none
     input#mobile
       min-width: (40% - base-line * 2)
       margin-right: base-line
