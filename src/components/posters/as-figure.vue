@@ -1,7 +1,6 @@
 <template>
-  <figure class="poster" :class="{ landscape }">
+  <figure ref="poster" class="poster" :class="{ landscape }">
     <as-svg
-      ref="poster"
       :itemid="itemid"
       :immediate="immediate"
       @click="vector_click"
@@ -90,8 +89,8 @@
     menu.value = !menu.value
     emit('vector-click', menu.value)
   }
-  const on_load = async vector => {
-    vector.value = vector
+  const on_load = async loaded_vector => {
+    vector.value = loaded_vector
     await next_tick()
     loaded.value = true
     emit('loaded', poster.value.outerHTML)
