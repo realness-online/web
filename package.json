@@ -15,7 +15,7 @@
     "deploy:trash": "yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
-    "release": "gh release create $npm_package_version && yarn deploy",
+    "release": "gh release create $npm_package_version",
     "release:npm": "yarn publish",
     "test": "vitest",
     "coverage": "vitest run --coverage",
