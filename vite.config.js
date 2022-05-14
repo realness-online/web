@@ -45,6 +45,7 @@ export default defineConfig({
         description: 'Realness – A Chill Vector Space',
         scope: '/',
         orientation: 'portrait',
+        background_color: '#151518',
         theme_color: '#151518',
         icons: [
           { src: '192.png', sizes: '192x192', type: 'image/png' },
