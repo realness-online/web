@@ -43,7 +43,7 @@
     <as-gradients :itemid="itemid" />
     <as-filters />
     <g itemscope itemtype="/settings">
-      <as-use
+      <use
         itemprop="background"
         :use="vector.settings.background"
         :href="fragment('background')"
