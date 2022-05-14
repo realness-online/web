@@ -51,6 +51,7 @@
     align-items: center
     max-width: page-width
     &.posting
+      align-self: end
       margin-top: inset(top)
       height: inherit
       @media (max-width: pad-begins)
@@ -58,7 +59,7 @@
       & > nav
         transition-duration: 0.5s
         min-height: round(base-line * 10)
-        height: round(base-line * 10)
+        height: round(base-line * 15)
         & > button
           top: 0
           width: base-line * 3
@@ -66,6 +67,8 @@
           line-height: 0
           padding: 0
           display: block
+      & > footer
+        display: none
     @media (max-width: pad-begins) and (orientation: portrait)
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
