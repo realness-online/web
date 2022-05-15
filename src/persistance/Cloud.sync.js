@@ -1,5 +1,5 @@
 import hash from 'object-hash'
-import { location } from '@/use/serverless'
+import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
@@ -72,8 +72,8 @@ export async function fresh_metadata(itemid) {
   const path = location(as_filename(itemid))
   let network
   try {
-    // console.info('request:metadata', itemid)
-    network = await path.getMetadata()
+    // console.info('request:metadata', itemid, path)
+    network = await metadata(path)
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       network = does_not_exist
@@ -232,6 +232,7 @@ export const use = (props, emit) => {
     container,
     events,
     statements,
-    poster
+    poster,
+    sync
   }
 }
