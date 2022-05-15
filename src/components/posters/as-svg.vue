@@ -53,22 +53,20 @@
         :use="vector.settings.light"
         :href="fragment('light')"
         :fill="`url(${fragment('vertical-light')}`"
-        :stroke="`url(${fragment('horizontal-background')}`"
-        filter="url(#light-filter)" />
+        :stroke="`url(${fragment('horizontal-background')}`" />
       <as-use
         itemprop="regular"
         :use="vector.settings.regular"
         :href="fragment('regular')"
         :fill="`url(${fragment('horizontal-regular')}`"
-        :stroke="`url(${fragment('vertical-light')}`"
-        filter="url(#regular-filter)" />
+        :stroke="`url(${fragment('vertical-light')}`" />
       <as-use
         itemprop="bold"
         :use="vector.settings.bold"
         :href="fragment('bold')"
         :fill="`url(${fragment('vertical-bold')}`"
         :stroke="`url(${fragment('radial-regular')}`" />
-      <as-emboss :itemid="itemid" />
+      <!-- <as-emboss :itemid="itemid" /> -->
     </g>
   </svg>
 </template>
