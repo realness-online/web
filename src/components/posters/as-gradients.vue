@@ -116,8 +116,8 @@
   import { color_to_hsla, hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
   const background = 80
-  const light = 60
-  const regular = 40
+  const light = 66
+  const regular = 44
   const bold = 13
   const props = defineProps({
     itemid: {
