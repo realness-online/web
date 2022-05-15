@@ -66,7 +66,7 @@
         :href="fragment('bold')"
         :fill="`url(${fragment('vertical-bold')}`"
         :stroke="`url(${fragment('radial-regular')}`" />
-      <!-- <as-emboss :itemid="itemid" /> -->
+      <as-emboss v-if="show_emboss" :itemid="itemid" />
     </g>
   </svg>
 </template>
@@ -78,7 +78,7 @@
   import AsFilters from '@/components/posters/as-filters'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { watchEffect as watch_effect, ref, inject } from 'vue'
+  import { watchEffect as watch_effect, ref, inject, computed } from 'vue'
   import { as_type } from '@/use/itemid'
   import {
     use_poster,
@@ -90,6 +90,7 @@
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
   import icon from '@/components/icon'
+  const show_emboss = computed(() => localStorage.emboss)
   const emit = defineEmits({
     focus: is_focus,
     click: is_click,
