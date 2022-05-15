@@ -8,9 +8,10 @@ import {
   signOut
 } from 'firebase/auth'
 import {
-  getStorage as init_storage,
+  getStorage as get_storage,
   getDownloadURL as download_url,
   ref as reference,
+  getMetadata as get_metadata,
   listAll as list_directory,
   uploadString as upload_file,
   deleteObject as delete_file
@@ -39,12 +40,13 @@ if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
 
 const firebase_keys = await get('firebase-keys')
 export const app = ref(initialize_firebase(firebase_keys))
-const storage = init_storage(app.value)
+const storage = get_storage(app.value)
 export const sign_in = signInWithPhoneNumber
 export const Recaptcha = RecaptchaVerifier
 export const current_user = ref(null)
 export const auth = init_auth(app.value)
 export const location = path => reference(storage, path)
+export const metadata = async path => get_metadata(location(path))
 export const upload = (path, data, meta) =>
   upload_file(location(path), data, meta)
 export const url = async path => await download_url(location(path))
