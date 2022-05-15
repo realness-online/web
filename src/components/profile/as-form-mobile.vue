@@ -120,7 +120,11 @@
     hide_captcha.value = true
     console.log('props.person.mobile', props.person.mobile)
     await next_tick()
-    sign_in(auth, `+${props.person.mobile}`, human.value)
+    authorizer.value = await sign_in(
+      auth,
+      `+${props.person.mobile}`,
+      human.value
+    )
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
