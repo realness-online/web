@@ -4,6 +4,12 @@
       <h1>Settings</h1>
       <logo-as-link />
     </header>
+    <menu>
+      <li>
+        <button v-if="current_user" @click="sign_off">Sign off</button>
+        <sign-on v-else />
+      </li>
+    </menu>
     <article>
       <h3>Coming Soon</h3>
       <p>
@@ -15,10 +21,7 @@
           <button disabled @click="toggle('sync:netwok')">Sync</button>
           with network
         </li>
-        <li>
-          <button v-if="current_user" @click="signoff">Sign off</button>
-          <sign-on disabled v-else />
-        </li>
+
         <li>
           <button disabled @click="toggle('sync:netwok')">GPU</button>
           Disable GPU ehancments on slower machines
@@ -45,7 +48,7 @@
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import SignOn from '@/components/profile/sign-on'
-  import { current_user } from '@/use/serverless'
+  import { current_user, sign_off } from '@/use/serverless'
 </script>
 <style lang="stylus">
   section#settings

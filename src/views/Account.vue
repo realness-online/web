@@ -114,9 +114,9 @@
       padding-top: 0
       & > h1
         margin-top: base-line
-      & > header
-        height: 0
-        padding: 0
+      // & > header
+      //   height: 0
+      //   padding: 0
     & > header
       & > button.sign-on
       & > a#logo
