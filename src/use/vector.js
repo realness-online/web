@@ -20,20 +20,11 @@ export const is_vector = vector => {
   if (!vector.height || !vector.width) return false
   if (!vector.regular) return false // the only required path
 
-  if (!vector.regular.style) return false
-  if (vector.light && !vector.light.style) return false // have style if exist
-  if (vector.bold && !vector.bold.style) return false
   if (vector.gradients) {
     if (!vector.gradients.width) return false
     if (!vector.gradients.height) return false
     if (!vector.gradients.radial) return false
   }
-  if (!vector.settings) return false
-  // if (!vector.settings.background) return false // todo make bacground settings
-  if (!vector.settings.light) return false
-  if (!vector.settings.regular) return false
-  if (!vector.settings.bold) return false
-
   if (vector.type === 'posters' || vector.type === 'avatars') return true
   else return false
 }
@@ -50,6 +41,13 @@ export const is_stop = stop => {
   if (typeof stop != 'object') return false
   if (stop instanceof SVGStopElement) return true
   else return false
+}
+export const is_url_query = query => {
+  if (typeof query != 'string') return false
+  if (query.startsWith('url(')) {
+    if (!query.endsWith(')')) return false
+  }
+  return true
 }
 export const set_vector_dimensions = (props, item) => {
   props.viewbox = item.getAttribute('viewBox')
@@ -74,7 +72,7 @@ const migrate_path = path => {
 }
 const migrate_setting = path => {
   const use = create_use_element()
-  if (path.style.length) {
+  if (path.style?.length) {
     for (var i = 0; i < path.style.length; i++) {
       const name = path.style[i]
       const value = path.style[name]
@@ -148,7 +146,7 @@ export const use_poster = (props, emit) => {
     if (!vector.value) {
       let poster = await load(props.itemid)
       if (poster.path) poster = migrate_poster(poster)
-      if (!poster.settings) poster = migrate_settings(poster)
+      // if (!poster.settings) poster = migrate_settings(poster)
       vector.value = poster
     }
     working.value = false
