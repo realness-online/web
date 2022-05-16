@@ -1,5 +1,13 @@
 <template>
-  <path ref="path" :d="d" fill-rule="evenodd" />
+  <path
+    ref="path"
+    :d="d"
+    :fill="fill"
+    :fill-opacity="fill_opacity"
+    :stroke="stroke"
+    :stroke-opacity="stroke_opacity"
+    :stroke-width="stroke_width"
+    fill-rule="evenodd" />
 </template>
 <script setup>
   import { ref, watchEffect as watch_effect, inject } from 'vue'
@@ -13,25 +21,29 @@
     }
   })
   const d = ref(props.path.getAttribute('d'))
-  const style = ref(props.path.getAttribute('style'))
-  // console.log(style.value)
+  const fill_opacity = ref(props.path.style.fillOpacity)
+  const fill = ref(props.path.style.fill)
+  const stroke_opacity = ref(props.path.style.strokeOpacity)
+  const stroke = ref(props.path.style.color)
+  const stroke_width = ref(undefined)
+  if (props.path.style.color) stroke_width.value = '0.33px'
   watch_effect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">
   svg:focus-within
-    path
-      // &[itemprop="light"]
-      //   animation-timing-function: linear
-      //   animation-name: subtle-rotate
-      //   animation-duration: 2s
-      //   animation-direction: alternate
-      //   animation-iteration-count: infinite
-      // &[itemprop="bold"]
-      //   animation-timing-function: linear
-      //   animation-name: subtle-rotate
-      //   animation-duration: 3s
-      //   animation-direction: alternate
-      //   animation-iteration-count: infinite
+    // path
+    //   &[itemprop="light"]
+    //     animation-timing-function: linear
+    //     animation-name: subtle-rotate
+    //     animation-duration: 2s
+    //     animation-direction: alternate
+    //     animation-iteration-count: infinite
+    //   &[itemprop="bold"]
+    //     animation-timing-function: linear
+    //     animation-name: subtle-rotate
+    //     animation-duration: 3s
+    //     animation-direction: alternate
+    //     animation-iteration-count: infinite
   path[itemprop]
     &:focus
       outline: none
