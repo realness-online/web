@@ -127,9 +127,20 @@
     }
   })
   const { query, vector, show } = use_poster(props, () => {})
-  const horizontal = ref([])
-  const vertical = ref([])
-  const radial = ref([])
+  const default_color = {
+    offset: '0',
+    color: {
+      hsla: 'hsla(300,  1%, 2%, 1)',
+      hsl: 'hsl(300,  1%, 2%)',
+      h: 300,
+      s: 1,
+      l: 2,
+      a: 1
+    }
+  }
+  const horizontal = ref([default_color])
+  const vertical = ref([default_color])
+  const radial = ref([default_color])
   const convert_stop = stop => {
     return {
       color: hsla_to_color(stop.getAttribute('stop-color')),

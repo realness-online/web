@@ -7,13 +7,18 @@
     :tabindex="tabindex" />
 </template>
 <script setup>
-  import { use_poster, is_rect } from '@/use/vector'
+  import { use_poster, is_rect, is_url_query } from '@/use/vector'
   import { ref } from 'vue'
   const props = defineProps({
     tabable: {
       type: Boolean,
       required: false,
       default: false
+    },
+    fill: {
+      type: String,
+      required: true,
+      validator: is_url_query
     },
     rect: {
       type: Object,
@@ -22,8 +27,12 @@
     }
   })
   const { tabindex } = use_poster(props)
-  const fill = ref('var(--white)')
+  const fill = ref(props.fill)
   if (props.rect?.style.fill) fill.value = props.rect?.style.fill
+  if (props.rect?.fill) {
+    console.log('has fill attribute', props.rect.fill)
+    fill.value = props.rect?.fill
+  }
 </script>
 <style lang="stylus">
   rect[itemprop="background"]

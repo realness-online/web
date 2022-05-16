@@ -10,64 +10,43 @@
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <defs class="symbols">
-      <symbol :id="query('background')">
-        <as-background
-          :rect="vector.background"
-          :tabindex="tabindex"
-          itemprop="background"
-          @focus="focus('background')" />
-      </symbol>
-      <symbol v-if="vector.light" :id="query('light')">
-        <as-path
-          :path="vector.light"
-          :tabindex="tabindex"
-          itemprop="light"
-          @focus="focus('light')" />
-      </symbol>
-      <symbol v-if="vector.regular" :id="query('regular')">
-        <as-path
-          :path="vector.regular"
-          itemprop="regular"
-          :tabindex="tabindex"
-          @focus="focus('regular')" />
-      </symbol>
-      <symbol v-if="vector.bold" :id="query('bold')">
-        <as-path
-          :tabindex="tabindex"
-          :path="vector.bold"
-          itemprop="bold"
-          @focus="focus('bold')" />
-      </symbol>
-    </defs>
     <as-gradients :itemid="itemid" />
-    <as-filters />
-    <g itemscope itemtype="/settings">
-      <use
-        itemprop="background"
-        :use="vector.settings.background"
-        :href="fragment('background')"
-        :fill="`url(${fragment('radial-background')}`" />
-      <as-use
-        itemprop="light"
-        :use="vector.settings.light"
-        :href="fragment('light')"
-        :fill="`url(${fragment('vertical-light')}`"
-        :stroke="`url(${fragment('horizontal-background')}`" />
-      <as-use
-        itemprop="regular"
-        :use="vector.settings.regular"
-        :href="fragment('regular')"
-        :fill="`url(${fragment('horizontal-regular')}`"
-        :stroke="`url(${fragment('vertical-light')}`" />
-      <as-use
-        itemprop="bold"
-        :use="vector.settings.bold"
-        :href="fragment('bold')"
-        :fill="`url(${fragment('vertical-bold')}`"
-        :stroke="`url(${fragment('radial-regular')}`" />
-      <as-emboss v-if="show_emboss" :itemid="itemid" />
-    </g>
+    <as-background
+      :id="query('background')"
+      :rect="vector.background"
+      :tabindex="tabindex"
+      :fill="`url(${fragment('radial-background')})`"
+      @focus="focus('background')" />
+    <as-path
+      v-if="vector.light"
+      itemprop="light"
+      :id="query('light')"
+      :path="vector.light"
+      :tabindex="tabindex"
+      :fill="`url(${fragment('vertical-light')})`"
+      :stroke="`url(${fragment('horizontal-background')})`"
+      @focus="focus('light')" />
+    <as-path
+      v-if="vector.regular"
+      itemprop="regular"
+      :id="query('regular')"
+      :path="vector.regular"
+      :tabindex="tabindex"
+      :fill="`url(${fragment('horizontal-regular')})`"
+      :stroke="`url(${fragment('vertical-light')})`"
+      @focus="focus('regular')" />
+
+    <as-path
+      v-if="vector.bold"
+      itemprop="bold"
+      :id="query('bold')"
+      :tabindex="tabindex"
+      :path="vector.bold"
+      @focus="focus('bold')"
+      :fill="`url(${fragment('vertical-bold')}`"
+      :stroke="`url(${fragment('radial-regular')}`" />
+
+    <as-emboss v-if="show_emboss" :itemid="itemid" />
   </svg>
 </template>
 <script setup>

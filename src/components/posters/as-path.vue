@@ -1,5 +1,6 @@
 <template>
   <path
+    :id="id"
     ref="path"
     :d="d"
     :fill="fill"
@@ -12,19 +13,36 @@
 <script setup>
   import { ref, watchEffect as watch_effect, inject } from 'vue'
   import { is_path } from '@/use/path'
+  import { is_vector_id } from '@/use/vector'
   const path = ref(null)
   const props = defineProps({
     path: {
       type: Object,
       required: true,
       validate: is_path
+    },
+    fill: {
+      type: String,
+      required: true
+    },
+    id: {
+      type: String,
+      required: is_vector_id
+    },
+    stroke: {
+      type: String,
+      required: true
     }
   })
+
+  const fill = ref(props.fill)
+  const stroke = ref(props.stroke)
+
+  if (props.path.style.color) stroke.value = props.path.style.color
+  if (props.path.style.fill) fill.value = props.path.style.fill
   const d = ref(props.path.getAttribute('d'))
   const fill_opacity = ref(props.path.style.fillOpacity)
-  const fill = ref(props.path.style.fill)
   const stroke_opacity = ref(props.path.style.strokeOpacity)
-  const stroke = ref(props.path.style.color)
   const stroke_width = ref(undefined)
   if (props.path.style.color) stroke_width.value = '0.33px'
   watch_effect(() => (d.value = props.path.getAttribute('d')))
