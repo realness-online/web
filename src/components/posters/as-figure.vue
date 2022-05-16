@@ -101,7 +101,7 @@
   watch_effect(async () => {
     if (menu.value && !person.value) {
       const author_id = as_author(props.itemid)
-      if (author_id) person.value = await load()
+      if (author_id) person.value = await load(author_id)
     }
   })
   updated(() => {
