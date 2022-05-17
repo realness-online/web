@@ -8,7 +8,7 @@ import {
   load_from_network,
   as_created_at
 } from '@/use/itemid'
-import { from_e64 } from '@/use/profile'
+import { from_e64 } from '@/use/people'
 import { History } from '@/persistance/Storage'
 function get_oldest(elements, prop_name) {
   const list = get_itemprops(elements)
