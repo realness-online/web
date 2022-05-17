@@ -13,7 +13,8 @@ import {
   getMetadata as get_metadata,
   listAll as list_directory,
   uploadString as upload_file,
-  deleteObject as delete_file
+  deleteObject as delete_file,
+  StringFormat
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
@@ -56,8 +57,11 @@ const storage = get_storage(app.value)
 export const location = path => reference(storage, path)
 export const metadata = async path => get_metadata(location(path))
 
-export const upload = (path, data, meta) =>
-  upload_file(location(path), data, meta)
+export const upload = (path, data, meta) => {
+  console.log('upload', path)
+  upload_file(location(path), data, StringFormat.raw, meta)
+}
+
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => delete_file(location(path))

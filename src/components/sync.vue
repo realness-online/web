@@ -1,11 +1,11 @@
 <template>
-  <div ref="sync" hidden>
-    <as-address v-if="person" :person="person" />
+  <aside ref="sync" hidden>
+    <as-address v-if="me" :person="me" />
     <as-days
       v-if="statements"
       v-slot="thoughts"
       itemscope
-      :itemid="get_itemid('statements')"
+      :itemid="get_my_itemid('statements')"
       :statements="statements"
       :paginate="false">
       <thought-as-article
@@ -16,14 +16,14 @@
     <events-list
       v-if="events"
       :events="events"
-      :itemid="get_itemid('events')" />
+      :itemid="get_my_itemid('events')" />
     <unsynced-poster
       v-if="poster"
       :key="poster.id"
       :itemid="poster.id"
       :poster="poster"
       :immediate="true" />
-  </div>
+  </aside>
 </template>
 
 <script setup>
@@ -32,27 +32,13 @@
   import UnsyncedPoster from '@/components/posters/as-svg'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
+
+  import { onMounted as mounted, watch } from 'vue'
   import { load } from '@/use/itemid'
   import { from_e64 } from '@/use/people'
-  import {
-    use as use_sync,
-    get_itemid,
-    visit_interval
-  } from '@/persistance/Cloud.sync'
   import { current_user } from '@/use/serverless'
-  import { onMounted as mounted, watch } from 'vue'
-  const props = defineProps({
-    statement: {
-      type: Object,
-      required: false,
-      default: null
-    },
-    person: {
-      type: Object,
-      required: false,
-      default: null
-    }
-  })
-  const emit = defineEmits(['update:statement', 'update:person', 'active'])
-  const { sync, statements, poster, events, person } = use_sync(props, emit)
+  import { use as use_sync, get_my_itemid } from '@/persistance/Cloud.sync'
+
+  const emit = defineEmits(['active'])
+  const { me, statements, poster, events, sync_element: sync } = use_sync()
 </script>
