@@ -33,7 +33,7 @@
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
   import { load } from '@/use/itemid'
-  import { from_e64 } from '@/use/profile'
+  import { from_e64 } from '@/use/people'
   import {
     use as use_sync,
     get_itemid,
@@ -54,5 +54,5 @@
     }
   })
   const emit = defineEmits(['update:statement', 'update:person', 'active'])
-  const { sync, statements, poster, events } = use_sync(props, emit)
+  const { sync, statements, poster, events, person } = use_sync(props, emit)
 </script>

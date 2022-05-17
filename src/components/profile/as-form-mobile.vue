@@ -49,7 +49,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in, app } from '@/use/serverless'
-  import { as_phone_number } from '@/use/profile'
+  import { as_phone_number } from '@/use/people'
   import {
     watch,
     onMounted as mounted,
