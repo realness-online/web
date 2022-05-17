@@ -21,10 +21,11 @@ import { ref } from 'vue'
 
 // initialize application
 if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
-  const firebase_keys = await get('firebase-keys')
-  if (!firebase_keys) {
+  try {
     const response = await fetch('__/firebase/init.json')
     await set('firebase-keys', await response.json())
+  } catch (e) {
+    console.log(e)
   }
 } else {
   const dev_keys = {
