@@ -101,11 +101,10 @@
         fill: green
     & > article
       standard-grid: gentle
+      grid-gap: 0
       padding-bottom: base-line * 3
       @media (max-width: pad-begins)
         margin-top: base-line
-      @media (min-width: pad-begins)
-        grid-gap: 0
       & > figure.poster
         &.selecting-event
           & > svg:not(.background)
