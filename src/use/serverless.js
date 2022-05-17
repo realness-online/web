@@ -19,8 +19,7 @@ import {
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
 
-// initialize application
-if (navigator.onLine && import.meta.env.NODE_ENV === 'production') {
+if (navigator.onLine && import.meta.env.PROD) {
   try {
     const response = await fetch('__/firebase/init.json')
     await set('firebase-keys', await response.json())
@@ -65,4 +64,12 @@ export const upload = (path, data, meta) => {
 
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
-export const remove = async path => delete_file(location(path))
+export const remove = async path => {
+  try {
+    delete_file(location(path))
+  } catch (e) {
+    if (e.code === 'storage/object-not-found')
+      console.log(path, 'already deleted')
+    else throw e
+  }
+}
