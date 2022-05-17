@@ -164,7 +164,7 @@ export const use = () => {
     const persistance = new Statements()
     const itemid = get_my_itemid('statements')
     const network = (await fresh_metadata(itemid)).customMetadata
-    const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
+    const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const md5 = hash(elements.outerHTML, hash_options)
     if (!network || network.md5 !== md5) {
@@ -181,7 +181,7 @@ export const use = () => {
     const events = new Events()
     const itemid = get_my_itemid('events')
     const network = (await fresh_metadata(itemid)).customMetadata
-    const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
+    const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
     const md5 = hash(elements.outerHTML, hash_options)
     if (!network || network.md5 !== md5) {
