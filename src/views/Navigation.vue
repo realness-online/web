@@ -33,7 +33,7 @@
   import { load } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   const version = import.meta.env.PACKAGE_VERSION
-  const emit = defineEmits(['update:person', 'update:statement'])
+  const emit = defineEmits(['update:statement'])
   const posting = ref(false)
   const first_name = ref('')
   const nav = ref()
