@@ -5,7 +5,7 @@
         <icon name="heart" />
       </router-link>
       <icon v-else name="nothing" />
-      <h1>PhoneBook</h1>
+      <h1>Phonebook</h1>
       <logo-as-link />
     </header>
     <icon v-if="working" name="working" />
