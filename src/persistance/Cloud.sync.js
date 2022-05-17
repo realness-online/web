@@ -5,7 +5,13 @@ import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { from_e64 } from '@/use/profile'
 import get_item from '@/use/item'
-import { ref, watchEffect as watch_effect, nextTick as next_tick } from 'vue'
+import {
+  ref,
+  watchEffect as watch_effect,
+  onMounted as mounted,
+  onUnmounted as dismount,
+  nextTick as next_tick
+} from 'vue'
 import { current_user } from '@/use/serverless'
 
 export const three_minutes = 180000
@@ -201,10 +207,31 @@ export const use = (props, emit) => {
     await del(`${localStorage.me}/posters/`)
     poster.value = null
   }
-  watch_effect(() => {
+  const visibility_change = async () => {
+    console.log('visibility_change')
+    if (document.visibilityState === 'visible') {
+      // await visit()
+      // await play()
+    }
+  }
+  const visit = async () => {
+    if (navigator.onLine && current_user.value) {
+      const person = await load(from_e64(current_user.value.phoneNumber))
+      if (!person) return // Do nothing until there is a person
+      const visit_digit = new Date(person.visited).getTime()
+      if (visit_interval() > visit_digit) {
+        const new_visit = new Date().toISOString()
+        person.visited = new_visit
+        emit('update:person', person)
+        console.log('should save person now', person)
+      }
+    }
+  }
+  watch_effect(async () => {
     if (current_user.value && navigator.onLine) {
       localStorage.me = from_e64(current_user.value.phoneNumber)
       window.addEventListener('online', play)
+      await visit()
       play()
     } else window.removeEventListener('online', play)
   })
@@ -220,6 +247,12 @@ export const use = (props, emit) => {
       emit('update:statement', null)
     }
   })
+  mounted(() =>
+    document.addEventListener('visibilitychange', visibility_change)
+  )
+  dismount(() =>
+    document.removeEventListener('visibilitychange', visibility_change)
+  )
   watch_effect(async () => {
     if (props.person) {
       await next_tick()
