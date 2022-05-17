@@ -115,7 +115,7 @@
           scroll-snap-align: start end
           display: flex
           flex-direction: row
-          grid-gap:0
+          grid-gap: 0
           margin: 0
           figure.poster
             scroll-behavior: smooth
