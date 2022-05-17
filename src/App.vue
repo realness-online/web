@@ -1,9 +1,7 @@
 <template>
   <main id="realness" :class="status">
-    <router-view v-model:statement="statement" v-model:person="me" />
-    <aside>
-      <sync v-model:statement="statement" :person="me" @active="sync_active" />
-    </aside>
+    <router-view />
+    <sync @active="sync_active" />
   </main>
 </template>
 <script setup>

@@ -5,11 +5,7 @@
       :itemid="person.avatar"
       @click="avatar_click" />
     <figcaption>
-      <as-address
-        :key="person.id"
-        :person="person"
-        :editable="editable"
-        @update:person="$emit('update:person', $event)" />
+      <as-address :key="person.id" :person="person" :editable="editable" />
       <menu>
         <slot v-if="!is_me">
           <profile-as-meta :people="relations" />
@@ -56,7 +52,7 @@
         default: () => []
       }
     },
-    emits: ['update:person', 'update:relations'],
+    emits: ['update:relations'],
     data() {
       return {
         saving: false

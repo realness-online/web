@@ -110,12 +110,12 @@ describe('@/components/sync', () => {
         expect(play).not.toBeCalled()
       })
     })
-    describe('#get_itemid', () => {
+    describe('#get_my_itemid', () => {
       it('Returns the user itemid when called without type', async () => {
         expect(localStorage.me).toBe(`/${current_user.phoneNumber}`)
         wrapper = shallowMount(sync, fake_props)
         await flush()
-        expect(wrapper.vm.get_itemid()).toBe('/+16282281824')
+        expect(wrapper.vm.get_my_itemid()).toBe('/+16282281824')
       })
     })
   })

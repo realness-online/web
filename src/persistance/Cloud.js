@@ -26,11 +26,13 @@ export const Cloud = superclass =>
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      console.info('request:save', this.id, items)
+      console.trace('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type))
+      if (networkable.includes(this.type)) {
+        console.log('to the network')
         await this.to_network(items.outerHTML)
+      }
     }
     async delete() {
       console.info('request:delete', this.id)

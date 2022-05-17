@@ -3,14 +3,15 @@ import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
-import { from_e64 } from '@/use/profile'
+import { from_e64 } from '@/use/people'
 import get_item from '@/use/item'
 import {
   ref,
   watchEffect as watch_effect,
   onMounted as mounted,
   onUnmounted as dismount,
-  nextTick as next_tick
+  nextTick as next_tick,
+  getCurrentInstance as current_instance
 } from 'vue'
 import { current_user } from '@/use/serverless'
 
@@ -78,7 +79,7 @@ export async function fresh_metadata(itemid) {
   const path = location(as_filename(itemid))
   let network
   try {
-    // console.info('request:metadata', itemid, path)
+    console.info('request:metadata', itemid)
     network = await metadata(path)
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
@@ -93,54 +94,62 @@ export async function fresh_metadata(itemid) {
 export function visit_interval() {
   return Date.now() - one_hour
 }
-export const get_itemid = type => {
+export const get_my_itemid = type => {
   if (type) return `${localStorage.me}/${type}`
   else return localStorage.me
 }
 
-export const use = (props, emit) => {
-  const container = ref(null)
-  const poster = ref(null)
-  const statements = ref([])
-  const events = ref(null)
-  const sync = ref(null)
-  const play = async () => {
-    const me = await load(localStorage.me) // check if new user
-    if (!me || current_user.value === null) return null // let's wait to sync
-    await sync_offline_actions()
-    let synced
-    if (localStorage.sync_time) {
-      synced = Date.now() - new Date(localStorage.sync_time).getTime()
-    } else synced = eight_hours
-    const time_left = eight_hours - synced
-    if (time_left <= 0) {
-      // setTimeout(async () => {
-      emit('active', true)
-      await prune()
-      await sync_me()
-      await sync_statements()
-      await sync_events()
-      await sync_anonymous_posters()
-      await sync_happened()
-      emit('active', false)
-      // }, 1000)
-    }
-  }
-  const sync_happened = async () => {
-    const statements = new Statements()
-    await statements.optimize()
+export const me = ref(null)
+export const statements = ref(null)
+export const new_statement = ref(null)
+export const i_am_fresh = () => {
+  let synced
+  if (localStorage.sync_time) {
+    synced = Date.now() - new Date(localStorage.sync_time).getTime()
+  } else {
     localStorage.sync_time = new Date().toISOString()
-    const me = await load(localStorage.me)
-    if (!me) return // new user let's wait
-    if (!me.visited) me.visited = null
-    const visit_gap = Date.now() - new Date(me.visited).getTime()
-    if (me && visit_gap > one_hour) {
-      me.visited = new Date().toISOString()
-      emit('update:person', me)
+    synced = eight_hours
+  }
+  const time_left = eight_hours - synced
+  return time_left <= 0
+}
+
+export const use = () => {
+  const { emit } = current_instance()
+  const poster = ref(null)
+  const events = ref(null)
+  const sync_element = ref(null)
+  const play = async () => {
+    if (document.visibilityState !== 'visible') return
+    console.log('play the sync game')
+    await visit()
+    if (!navigator.onLine || !current_user.value) return
+    await sync_offline_actions()
+    // if (i_am_fresh()) return
+    // setTimeout(async () => {
+    emit('active', true)
+    await prune()
+    await sync_me()
+    await sync_statements()
+    await sync_events()
+    await sync_anonymous_posters()
+
+    emit('active', false)
+    // }, 1000)
+  }
+  const visit = async () => {
+    me.value = await load(from_e64(current_user.value.phoneNumber))
+    if (!me.value) return // Do nothing until there is a person
+    const visit_digit = new Date(me.value.visited).getTime()
+    if (visit_interval() > visit_digit) {
+      me.value.visited = new Date().toISOString()
+      await next_tick()
+      await new Me().save()
+      console.log('should save me')
     }
   }
   const sync_me = async () => {
-    const id = get_itemid()
+    const id = get_my_itemid()
     const network = (await fresh_metadata(id)).customMetadata
     let my_info = localStorage.getItem(id)
     if (!my_info) my_info = await get(id)
@@ -152,24 +161,25 @@ export const use = (props, emit) => {
     }
   }
   const sync_statements = async () => {
-    const statements = new Statements()
-    const itemid = get_itemid('statements')
+    const persistance = new Statements()
+    const itemid = get_my_itemid('statements')
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const md5 = hash(elements.outerHTML, hash_options)
     if (!network || network.md5 !== md5) {
-      statements.value = await statements.sync()
+      statements.value = await persistance.sync()
       if (statements.value.length) {
         await next_tick()
-        await statements.save(elements)
+        await persistance.save(elements)
         localStorage.removeItem('/+/statements')
       }
     }
+    await persistance.optimize()
   }
   const sync_events = async () => {
     const events = new Events()
-    const itemid = get_itemid('events')
+    const itemid = get_my_itemid('events')
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
@@ -207,65 +217,37 @@ export const use = (props, emit) => {
     await del(`${localStorage.me}/posters/`)
     poster.value = null
   }
-  const visibility_change = async () => {
-    console.log('visibility_change')
-    if (document.visibilityState === 'visible') {
-      // await visit()
-      // await play()
-    }
-  }
-  const visit = async () => {
-    if (navigator.onLine && current_user.value) {
-      const person = await load(from_e64(current_user.value.phoneNumber))
-      if (!person) return // Do nothing until there is a person
-      const visit_digit = new Date(person.visited).getTime()
-      if (visit_interval() > visit_digit) {
-        const new_visit = new Date().toISOString()
-        person.visited = new_visit
-        emit('update:person', person)
-        console.log('should save person now', person)
-      }
-    }
-  }
+
   watch_effect(async () => {
     if (current_user.value && navigator.onLine) {
-      localStorage.me = from_e64(current_user.value.phoneNumber)
+      const my_id = from_e64(current_user.value.phoneNumber)
+      localStorage.me = my_id
+      me.value = await load(my_id)
+      statements.value = await list(`${my_id}/statements`)
+      await play()
       window.addEventListener('online', play)
-      await visit()
-      play()
     } else window.removeEventListener('online', play)
   })
   watch_effect(async () => {
-    if (props.statement) {
+    if (new_statement.value) {
       await next_tick()
-      const id = get_itemid('statements')
+      const id = get_my_itemid('statements')
       statements.value = await list(id)
-      statements.value.push(props.statement)
-      const data = new Statements()
+      statements.value.push(new_statement.value)
       await next_tick()
-      await data.save()
-      emit('update:statement', null)
+      await new Statements().save()
+      new_statement.value = null
     }
   })
-  mounted(() =>
-    document.addEventListener('visibilitychange', visibility_change)
-  )
-  dismount(() =>
-    document.removeEventListener('visibilitychange', visibility_change)
-  )
-  watch_effect(async () => {
-    if (props.person) {
-      await next_tick()
-      const me = new Me()
-      await me.save()
-    }
-  })
+  mounted(() => document.addEventListener('visibilitychange', play))
+  dismount(() => document.removeEventListener('visibilitychange', play))
   return {
-    play,
-    container,
-    events,
+    me,
     statements,
+    new_statement,
+    play,
+    events,
     poster,
-    sync
+    sync_element
   }
 }

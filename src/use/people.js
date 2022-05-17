@@ -23,8 +23,8 @@ export const use = () => {
   const person = computed(() => people.value[0])
   const load_person = async person => people.value.push(person)
   const load_people = async ids => await Promise.all(ids.map(load_person))
-  const load_relations = async person =>
-    (relations.value = await list(`${person.id}/relations`))
+  const load_relations = async me =>
+    (relations.value = await list(`${me.id}/relations`)) // relations are edge only.
   return {
     load_person,
     load_people,
