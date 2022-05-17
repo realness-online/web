@@ -125,7 +125,7 @@ export const use = () => {
     await visit()
     if (!navigator.onLine || !current_user.value) return
     await sync_offline_actions()
-    // if (i_am_fresh()) return
+    if (i_am_fresh()) return
     // setTimeout(async () => {
     emit('active', true)
     await prune()
@@ -133,7 +133,6 @@ export const use = () => {
     await sync_statements()
     await sync_events()
     await sync_anonymous_posters()
-
     emit('active', false)
     // }, 1000)
   }
