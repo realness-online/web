@@ -1,6 +1,6 @@
 // {base_url}/{:author}/{:type}/{:created_at}
 import get_item from '@/use/item'
-import { does_not_exist } from '@/persistance/Cloud.sync'
+import { does_not_exist } from '@/use/sync'
 import { current_user, url, directory } from '@/use/serverless'
 import { get, set, keys } from 'idb-keyval'
 class Directory {

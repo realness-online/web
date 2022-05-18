@@ -13,7 +13,6 @@
       <as-figure
         v-for="person in phonebook"
         :key="person.id"
-        v-model:relations="relations"
         :person="person" />
     </nav>
     <footer v-if="!working && !current_user">
@@ -27,17 +26,15 @@
   import AsFigure from '@/components/profile/as-figure'
   import SignOn from '@/components/profile/sign-on'
 
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, watch } from 'vue'
   import { current_user } from '@/use/serverless'
-  import { use } from '@/use/people'
-  const { phonebook, relations, load_phonebook, load_relations } = use()
-  const working = ref(true)
+  import { use as use_people } from '@/use/people'
 
-  mounted(async () => {
+  const { phonebook, load_phonebook, working } = use_people()
+
+  watch(current_user, async () => {
     await load_phonebook()
-    await load_relations({ id: localStorage.me })
-    console.info('views:PhoneBook')
-    working.value = false
+    console.info('views:Phonebook')
   })
 </script>
 <style lang="stylus">

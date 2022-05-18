@@ -5,7 +5,7 @@ import {
   sync_offline_actions,
   sync_later,
   visit_interval
-} from '@/persistance/Cloud.sync'
+} from '@/use/sync'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 

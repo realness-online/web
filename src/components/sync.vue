@@ -37,8 +37,14 @@
   import { load } from '@/use/itemid'
   import { from_e64 } from '@/use/people'
   import { current_user } from '@/use/serverless'
-  import { use as use_sync, get_my_itemid } from '@/persistance/Cloud.sync'
-
-  const emit = defineEmits(['active'])
-  const { me, statements, poster, events, sync_element: sync } = use_sync()
+  import { use as use_sync } from '@/use/sync'
+  import { use_me, get_my_itemid } from '@/use/people'
+  const emit = defineEmits({
+    active: state => {
+      if (typeof state === 'boolen') return true
+      else return false
+    }
+  })
+  const { me } = use_me()
+  const { statements, poster, events, sync_element: sync } = use_sync()
 </script>
