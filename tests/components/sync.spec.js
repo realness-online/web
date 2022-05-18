@@ -1,7 +1,7 @@
 import { shallowMount, mount, flushPromises as flush } from '@vue/test-utils'
 import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/use/itemid'
-import * as sync_worker from '@/persistance/Cloud.sync'
+import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
 import { Me, Statements, Events, Poster } from '@/persistance/Storage'

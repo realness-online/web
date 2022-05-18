@@ -3,7 +3,7 @@ import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
-import { from_e64 } from '@/use/people'
+import { from_e64, use_me } from '@/use/people'
 import get_item from '@/use/item'
 import {
   ref,
@@ -14,6 +14,7 @@ import {
   getCurrentInstance as current_instance
 } from 'vue'
 import { current_user } from '@/use/serverless'
+import { get_my_itemid } from '@/use/people'
 
 export const three_minutes = 180000
 export const five_minutes = 300000
@@ -23,58 +24,18 @@ export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
-export async function sync_later(id, action) {
+export const sync_later = async (id, action) => {
   const offline = (await get('sync:offline')) || []
   offline.push({ id, action })
   await set('sync:offline', offline)
 }
-export async function is_stranger(id) {
-  const relations = await list(`${localStorage.me}/relations`)
-  relations.push({
-    id: localStorage.me,
-    type: 'person'
-  })
-  const is_friend = relations.some(relation => {
-    if (relation.id === id) return true
-    else return false
-  })
-  return !is_friend
-}
-export async function sync_offline_actions() {
-  if (navigator.onLine) {
-    const offline = await get('sync:offline')
-    if (!offline) return
-    while (offline.length) {
-      const item = offline.pop()
-      if (item.action === 'save') await new Offline(item.id).save()
-      else if (item.action === 'delete') await new Offline(item.id).delete()
-      else console.info('weird:unknown-offline-action', item.action, item.id)
-    }
-    await del('sync:offline')
-  }
-}
-export async function prune() {
-  const relations = await list(`${localStorage.me}/relations`)
-  const everything = await keys()
-  everything.forEach(async itemid => {
-    if (!as_author(itemid)) return // items have authors
-    if (await is_stranger(as_author(itemid), relations)) await del(itemid) // only relations are cached
-    if (await itemid.endsWith('/')) await del(itemid)
-    else {
-      const network = await fresh_metadata(itemid)
-      if (!network || !network.customMetadata) return null
-      const md5 = await local_md5(itemid)
-      if (network.customMetadata.md5 !== md5) await del(itemid)
-    }
-  })
-}
-export async function local_md5(itemid) {
+export const local_md5 = async itemid => {
   // always checks the network
   const local = await get(itemid)
   if (!local) return null
   return hash(local, hash_options)
 }
-export async function fresh_metadata(itemid) {
+export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
   const path = location(as_filename(itemid))
   let network
@@ -94,12 +55,7 @@ export async function fresh_metadata(itemid) {
 export function visit_interval() {
   return Date.now() - one_hour
 }
-export const get_my_itemid = type => {
-  if (type) return `${localStorage.me}/${type}`
-  else return localStorage.me
-}
 
-export const me = ref(null)
 export const statements = ref(null)
 export const new_statement = ref(null)
 export const i_am_fresh = () => {
@@ -115,7 +71,8 @@ export const i_am_fresh = () => {
 }
 
 export const use = () => {
-  const { emit } = current_instance()
+  const { me, relations } = use_me()
+  const { emit, props } = current_instance()
   const poster = ref(null)
   const events = ref(null)
   const sync_element = ref(null)
@@ -137,7 +94,6 @@ export const use = () => {
     // }, 1000)
   }
   const visit = async () => {
-    me.value = await load(from_e64(current_user.value.phoneNumber))
     if (!me.value) return // Do nothing until there is a person
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
@@ -145,9 +101,53 @@ export const use = () => {
       await next_tick()
       await new Me().save()
       console.log('should save me')
+      me.value = await load(from_e64(current_user.value.phoneNumber))
     }
   }
+  const prune = async () => {
+    console.log('prune')
+    const everything = await keys()
+    everything.forEach(async itemid => {
+      if (!as_author(itemid)) return // items have authors
+      if (await is_stranger(as_author(itemid), relations.value))
+        await del(itemid) // only relations are cached
+      if (await itemid.endsWith('/')) await del(itemid)
+      else {
+        const network = await fresh_metadata(itemid)
+        if (!network || !network.customMetadata) return null
+        const md5 = await local_md5(itemid)
+        if (network.customMetadata.md5 !== md5) await del(itemid)
+      }
+    })
+  }
+  const is_stranger = async id => {
+    relations.value.push({
+      id: localStorage.me,
+      type: 'person'
+    })
+    const is_friend = relations.value.some(relation => {
+      if (relation.id === id) return true
+      else return false
+    })
+    return !is_friend
+  }
+
+  const sync_offline_actions = async () => {
+    if (navigator.onLine) {
+      const offline = await get('sync:offline')
+      if (!offline) return
+      while (offline.length) {
+        const item = offline.pop()
+        if (item.action === 'save') await new Offline(item.id).save()
+        else if (item.action === 'delete') await new Offline(item.id).delete()
+        else console.info('weird:unknown-offline-action', item.action, item.id)
+      }
+      await del('sync:offline')
+    }
+  }
+
   const sync_me = async () => {
+    console.log('sync_me')
     const id = get_my_itemid()
     const network = (await fresh_metadata(id)).customMetadata
     let my_info = localStorage.getItem(id)
@@ -160,6 +160,7 @@ export const use = () => {
     }
   }
   const sync_statements = async () => {
+    console.log('sync_statements')
     const persistance = new Statements()
     const itemid = get_my_itemid('statements')
     const network = (await fresh_metadata(itemid)).customMetadata
@@ -177,6 +178,7 @@ export const use = () => {
     await persistance.optimize()
   }
   const sync_events = async () => {
+    console.log('sync_events')
     const events = new Events()
     const itemid = get_my_itemid('events')
     const network = (await fresh_metadata(itemid)).customMetadata
@@ -193,6 +195,7 @@ export const use = () => {
     }
   }
   const sync_anonymous_posters = async () => {
+    console.log('sync_anonymous_posters')
     const offline_posters = await get('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
     await Promise.all(
@@ -207,16 +210,16 @@ export const use = () => {
     )
     await del('/+/posters/')
   }
-  const save_poster = async poster => {
-    props.poster.value = get_item(poster.outerHTML)
-    props.poster.id = poster.id
+  const save_poster = async poster_to_save => {
+    console.log('save_poster')
+    props.poster.value = get_item(poster_to_save.outerHTML)
+    props.poster.id = poster_to_save.id
     await next_tick()
-    const new_poster = new Poster(poster.value.id)
+    const new_poster = new Poster(poster_to_save.value.id)
     await new_poster.save()
-    await del(`${localStorage.me}/posters/`)
+    await del(`${localStorage.me}/posters/`) // local version of poster directory
     poster.value = null
   }
-
   watch_effect(async () => {
     if (current_user.value && navigator.onLine) {
       const my_id = from_e64(current_user.value.phoneNumber)
@@ -238,7 +241,7 @@ export const use = () => {
       new_statement.value = null
     }
   })
-  mounted(() => document.addEventListener('visibilitychange', play))
+  mounted(async () => document.addEventListener('visibilitychange', play))
   dismount(() => document.removeEventListener('visibilitychange', play))
   return {
     me,

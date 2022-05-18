@@ -9,11 +9,7 @@
       <menu>
         <slot v-if="!is_me">
           <profile-as-meta :people="relations" />
-          <as-relationship-options
-            :person="person"
-            :relations="relations"
-            @remove="remove_relationship"
-            @add="add_relationship" />
+          <as-relationship-options :person="person" />
           <as-messenger :itemid="person.id" />
         </slot>
         <slot v-else />
@@ -21,75 +17,37 @@
     </figcaption>
   </figure>
 </template>
-<script>
-  import { Relations } from '@/persistance/Storage'
-  import profile_as_meta from '@/components/profile/as-meta'
-  import as_relationship_options from '@/components/profile/as-relationship-options'
-  import as_svg from '@/components/posters/as-svg'
-  import as_address from '@/components/profile/as-address'
-  import as_messenger from '@/components/profile/as-messenger'
-  export default {
-    components: {
-      'as-svg': as_svg,
-      'as-address': as_address,
-      'profile-as-meta': profile_as_meta,
-      'as-relationship-options': as_relationship_options,
-      'as-messenger': as_messenger
+<script setup>
+  import ProfileAsMeta from '@/components/profile/as-meta'
+  import AsRelationshipOptions from '@/components/profile/as-relationship-options'
+  import AsSvg from '@/components/posters/as-svg'
+  import AsAddress from '@/components/profile/as-address'
+  import AsMessenger from '@/components/profile/as-messenger'
+  import { useRouter as use_router } from 'vue-router'
+  import { ref, computed, nextTick as next_tick } from 'vue'
+  import { use_me } from '@/use/people'
+  const props = defineProps({
+    person: {
+      type: Object,
+      required: true
     },
-    props: {
-      person: {
-        type: Object,
-        required: true
-      },
-      editable: {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      relations: {
-        type: Array,
-        required: false,
-        default: () => []
-      }
-    },
-    emits: ['update:relations'],
-    data() {
-      return {
-        saving: false
-      }
-    },
-    computed: {
-      is_me() {
-        if (localStorage.me === this.person.id) return true
-        else return false
-      }
-    },
-    methods: {
-      avatar_click() {
-        const route = { path: this.person.id }
-        if (this.is_me) route.path = '/account'
-        this.$router.push(route)
-      },
-      async add_relationship(person) {
-        const relations = this.relations
-        relations.push(person)
-        await this.$nextTick()
-        new Relations().save()
-        this.$emit('update:relations', relations)
-      },
-      async remove_relationship(person) {
-        const relations = this.relations
-        const index = relations.findIndex(p => p.id === person.id)
-        if (index > -1) {
-          relations.splice(index, 1)
-          await this.$nextTick()
-          new Relations().save()
-          if (!relations.length)
-            localStorage.removeItem(`${localStorage.me}/relations`)
-          this.$emit('update:relations', relations)
-        }
-      }
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
     }
+  })
+  const router = use_router()
+  const { relations } = use_me()
+  const saving = ref(false)
+  const is_me = computed(() => {
+    if (localStorage.me === props.person.id) return true
+    else return false
+  })
+  const avatar_click = () => {
+    const route = { path: props.person.id }
+    if (is_me) route.path = '/account'
+    router.push(route)
   }
 </script>
 <style lang="stylus">

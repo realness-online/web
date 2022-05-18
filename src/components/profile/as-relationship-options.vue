@@ -1,47 +1,36 @@
 <template>
-  <a class="status" :class="{ relation }" @click="update_relationship">
+  <a
+    class="status"
+    :class="{ relation: is_relation }"
+    @click="update_relationship">
     <icon name="add" />
     <icon name="finished" />
   </a>
 </template>
-<script>
-  import icon from '@/components/icon'
-  export default {
-    components: {
-      icon
-    },
-    props: {
-      person: {
-        type: Object,
-        required: true
-      },
-      relations: {
-        type: Array,
-        required: true
-      }
-    },
-    emits: ['remove', 'add'],
-    data() {
-      return {
-        relation: this.is_relation()
-      }
-    },
-    methods: {
-      is_relation() {
-        if (this.relations) {
-          return this.relations.some(relation => relation.id === this.person.id)
-        } else return false
-      },
-      update_relationship() {
-        if (this.relation) {
-          this.relation = false
-          this.$emit('remove', this.person)
-        } else {
-          this.relation = true
-          this.$emit('add', this.person)
-        }
-      }
+<script setup>
+  import Icon from '@/components/icon'
+  import { use_me } from '@/use/people'
+  import { nextTick as next_tick, computed } from 'vue'
+  import { Relations } from '@/persistance/Storage'
+  const props = defineProps({
+    person: {
+      type: Object,
+      required: true
     }
+  })
+  const { relations } = use_me()
+  const is_relation = computed(() => {
+    return relations.value.some(relation => relation.id === props.person.id)
+  })
+  const update_relationship = async () => {
+    if (is_relation.value) {
+      const index = relations.value.findIndex(p => p.id === props.person.id)
+      if (index > -1) relations.value.splice(index, 1)
+      if (!relations.value.length)
+        localStorage.removeItem(`${localStorage.me}/relations`)
+    } else relations.value.push(props.person)
+    await next_tick()
+    await new Relations().save()
   }
 </script>
 <style lang="stylus">
