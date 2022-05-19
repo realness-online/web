@@ -39,6 +39,7 @@
   import { current_user } from '@/use/serverless'
   import { use as use_sync } from '@/use/sync'
   import { use_me, get_my_itemid } from '@/use/people'
+
   const emit = defineEmits({
     active: state => {
       if (typeof state === 'boolen') return true

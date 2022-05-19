@@ -26,13 +26,16 @@
   import AsFigure from '@/components/profile/as-figure'
   import SignOn from '@/components/profile/sign-on'
 
-  import { ref, watch } from 'vue'
+  import { ref, watch, onMounted as mounted } from 'vue'
   import { current_user } from '@/use/serverless'
   import { use as use_people } from '@/use/people'
 
   const { phonebook, load_phonebook, working } = use_people()
 
   watch(current_user, async () => {
+    await load_phonebook()
+  })
+  mounted(async () => {
     await load_phonebook()
     console.info('views:Phonebook')
   })
