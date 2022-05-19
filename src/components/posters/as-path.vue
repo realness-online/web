@@ -3,6 +3,7 @@
     :id="id"
     ref="path"
     :d="d"
+    :itemprop="itemprop"
     :fill="fill"
     :fill-opacity="fill_opacity"
     :stroke="stroke"
@@ -16,6 +17,14 @@
   import { is_vector_id } from '@/use/vector'
   const path = ref(null)
   const props = defineProps({
+    itemprop: {
+      type: String,
+      required: true,
+      validate: itemprop => {
+        console.log(itemprop)
+        return ['light', 'regular', 'bold'].some(valid => valid === itemprop)
+      }
+    },
     path: {
       type: Object,
       required: true,
