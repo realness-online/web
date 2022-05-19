@@ -47,6 +47,7 @@ export const use = () => {
     await sync_statements()
     await sync_events()
     await sync_anonymous_posters()
+    localStorage.sync_time = new Date().toISOString()
     emit('active', false)
     // }, 1000)
   }
