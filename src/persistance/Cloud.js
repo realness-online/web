@@ -23,9 +23,6 @@ export const Cloud = superclass =>
         const path = as_filename(this.id)
         this.metadata.customMetadata = { md5: hash(items, hash_options) }
         const response = upload(path, items, this.metadata)
-        const dir_name = as_directory_id(this.id)
-        console.log('directory to remove', dir_name)
-        await del(dir_name)
         return response
       } else await sync_later(this.id, 'save')
     }
