@@ -36,7 +36,7 @@
   import thoughtAsArticle from '@/components/statements/as-article'
   import posterAsFigure from '@/components/posters/as-figure'
   import { use as use_statements, slot_key } from '@/use/statements'
-  import { use as use_people } from '@/use/people'
+  import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/vector'
   import { ref, watch, onMounted as mounted } from 'vue'
   import {
@@ -50,14 +50,17 @@
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
     use_fullscreen(feed)
   const { f } = use_magic_keys()
-  const { people } = use_people()
+  const { people, load_people } = use_people()
   const {
     for_person: statements_for_person,
     statements,
     thought_shown
   } = use_statements()
   const { for_person: posters_for_person, posters } = use_posters()
+  const { relations } = use_me()
+
   const fill_feed = async () => {
+    load_people(relations.value)
     const me = {
       id: localStorage.me,
       type: 'person'
@@ -65,6 +68,7 @@
     people.value.push(me)
     await Promise.all(
       people.value.map(async relation => {
+        console.log(relation)
         await Promise.all([
           statements_for_person(relation),
           posters_for_person(relation)
