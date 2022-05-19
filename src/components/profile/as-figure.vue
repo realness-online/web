@@ -46,7 +46,6 @@
   })
   const avatar_click = () => {
     const route = { path: props.person.id }
-    if (is_me) route.path = '/account'
     router.push(route)
   }
 </script>

@@ -19,12 +19,17 @@
 <script setup>
   import icon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
-  import { onMounted as mounted } from 'vue'
-  import { use } from '@/use/people'
+  import { ref, onMounted as mounted } from 'vue'
+  import { load } from '@/use/itemid'
+  import { use_me } from '@/use/people'
   import { current_user } from '@/use/serverless'
-  const { relations, load_relations } = use()
+  const { relations: stubbed_relations } = use_me()
+  const relations = ref([])
   mounted(async () => {
-    await load_relations({ id: localStorage.me })
+    stubbed_relations.value.map(async relation => {
+      const loaded_relation = await load(relation.id)
+      relations.value.push(loaded_relation)
+    })
     console.info('views:Relations')
   })
 </script>
