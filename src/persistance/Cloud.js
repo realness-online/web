@@ -1,8 +1,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove } from '@/use/serverless'
 import hash from 'object-hash'
-import { get, set } from 'idb-keyval'
-import { as_filename } from '@/use/itemid'
+import { get, set, del } from 'idb-keyval'
+import { as_filename, as_directory_id } from '@/use/itemid'
 
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
@@ -22,7 +22,11 @@ export const Cloud = superclass =>
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
         this.metadata.customMetadata = { md5: hash(items, hash_options) }
-        return upload(path, items, this.metadata)
+        const response = upload(path, items, this.metadata)
+        const dir_name = as_directory_id(this.id)
+        console.log('directory to remove', dir_name)
+        await del(dir_name)
+        return response
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {

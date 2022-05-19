@@ -66,8 +66,7 @@
     }
   }
   const save = async () => {
-    const poster = new Poster(itemid)
-    await poster.save()
+    await new Poster(itemid).save()
     if (new_vector.value) new_vector.value = null
     if (new_gradients.value) new_gradients.value = null
     back()
