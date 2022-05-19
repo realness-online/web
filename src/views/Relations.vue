@@ -8,11 +8,7 @@
       </router-link>
     </header>
     <nav v-if="current_user" class="profile-list">
-      <as-figure
-        v-for="person in relations"
-        :key="person.id"
-        v-model:relations="relations"
-        :person="person" />
+      <as-figure v-for="person in people" :key="person.id" :person="person" />
     </nav>
   </section>
 </template>
@@ -21,15 +17,14 @@
   import AsFigure from '@/components/profile/as-figure'
   import { ref, onMounted as mounted } from 'vue'
   import { load } from '@/use/itemid'
-  import { use_me } from '@/use/people'
+  import { use_me, use as use_people } from '@/use/people'
   import { current_user } from '@/use/serverless'
-  const { relations: stubbed_relations } = use_me()
-  const relations = ref([])
+
+  const { people, load_people } = use_people()
+  const { relations } = use_me()
+
   mounted(async () => {
-    stubbed_relations.value.map(async relation => {
-      const loaded_relation = await load(relation.id)
-      relations.value.push(loaded_relation)
-    })
+    await load_people(relations.value)
     console.info('views:Relations')
   })
 </script>

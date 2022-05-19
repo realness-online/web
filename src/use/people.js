@@ -12,16 +12,14 @@ const me = ref(null)
 const relations = ref(null)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
 
-export const get_my_itemid = type => {
-  if (type) return `${localStorage.me}/${type}`
-  else return localStorage.me
-}
-
 export const use = () => {
   const working = ref(true)
   const people = ref([])
   const person = computed(() => people.value[0])
-  const load_person = async person => people.value.push(person)
+  const load_person = async person => {
+    const loaded = await load(person.id)
+    people.value.push(loaded)
+  }
   const load_people = async ids => await Promise.all(ids.map(load_person))
   const load_phonebook = async () => {
     if (current_user.value && !phonebook.value.length) {
@@ -46,17 +44,12 @@ export const use = () => {
     phonebook
   }
 }
-
-export const as_phone_number = (id = '/+1') => {
-  return id.substring(2)
-}
-export const from_e64 = e64_number => {
-  return `/${e64_number}`
-}
 export const use_me = () => {
   mounted(async () => {
-    if (!relations.value)
+    if (!relations.value) {
+      console.trace('loading relations')
       relations.value = await list(`${localStorage.me}/relations`)
+    }
     if (!me.value) me.value = await load(from_e64(localStorage.me)) // load what i have locally
   })
 
@@ -68,4 +61,15 @@ export const use_me = () => {
     relations,
     me
   }
+}
+
+export const get_my_itemid = type => {
+  if (type) return `${localStorage.me}/${type}`
+  else return localStorage.me
+}
+export const as_phone_number = (id = '/+1') => {
+  return id.substring(2)
+}
+export const from_e64 = e64_number => {
+  return `/${e64_number}`
 }
