@@ -8,7 +8,6 @@ import {
 import { ref, computed, onMounted as mounted } from 'vue'
 import { recent_item_first } from '@/use/sorting'
 import { use as use_path } from '@/use/path'
-import { create_use_element } from '@/use/layer'
 const path_names = ['background', 'light', 'regular', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
@@ -70,27 +69,6 @@ const migrate_path = path => {
 
   return path
 }
-const migrate_setting = path => {
-  const use = create_use_element()
-  if (path.style?.length) {
-    for (var i = 0; i < path.style.length; i++) {
-      const name = path.style[i]
-      const value = path.style[name]
-      use.style[name] = value
-      path.style[name] = undefined
-    }
-  }
-  return use
-}
-const migrate_settings = poster => {
-  poster.settings = {
-    background: migrate_setting(poster.background),
-    light: migrate_setting(poster.light),
-    regular: migrate_setting(poster.regular),
-    bold: migrate_setting(poster.bold)
-  }
-  return poster
-}
 const migrate_poster = poster => {
   if (Array.isArray(poster.path)) {
     poster.light = migrate_path(poster.path[0])
@@ -146,7 +124,6 @@ export const use_poster = (props, emit) => {
     if (!vector.value) {
       let poster = await load(props.itemid)
       if (poster.path) poster = migrate_poster(poster)
-      // if (!poster.settings) poster = migrate_settings(poster)
       vector.value = poster
     }
     working.value = false
