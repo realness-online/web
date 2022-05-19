@@ -40,12 +40,7 @@
   import { use as use_sync } from '@/use/sync'
   import { use_me, get_my_itemid } from '@/use/people'
 
-  const emit = defineEmits({
-    active: state => {
-      if (typeof state === 'boolen') return true
-      else return false
-    }
-  })
+  const emit = defineEmits(['active'])
   const { me } = use_me()
   const { statements, poster, events, sync_element: sync } = use_sync()
 </script>

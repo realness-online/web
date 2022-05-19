@@ -5,13 +5,13 @@
       <logo-as-link />
     </header>
     <div>
-      <as-avatar v-if="person" :itemid="person.avatar" />
+      <as-avatar v-if="person && person.avatar" :itemid="person.avatar" />
       <menu v-if="person">
-        <as-download :itemid="person.avatar" />
+        <as-download v-if="person.avatar" :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
       </menu>
     </div>
-    <as-figure v-if="person" :person="person" :relations="relations" />
+    <as-figure v-if="person" :person="person" />
     <as-days v-slot="items" :posters="posters" :statements="statements">
       <template v-for="item in items">
         <poster-as-figure
@@ -41,7 +41,7 @@
   import { from_e64 } from '@/use/people'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/vector'
-  import { use as use_person } from '@/use/people'
+  import { use as use_person, use_me } from '@/use/people'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
 
@@ -53,10 +53,10 @@
     for_person: statements_for_person
   } = use_statements()
   const { posters, for_person: posters_for_person } = use_posters()
-  const { load_person, load_relations, person, relations } = use_person()
+  const { load_person, person } = use_person()
+  const { relations } = use_me()
   mounted(async () => {
     await Promise.all([
-      load_relations({ id: localStorage.me }),
       load_person(id),
       posters_for_person(id),
       statements_for_person(id)

@@ -24,51 +24,8 @@ export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
-export const sync_later = async (id, action) => {
-  const offline = (await get('sync:offline')) || []
-  offline.push({ id, action })
-  await set('sync:offline', offline)
-}
-export const local_md5 = async itemid => {
-  // always checks the network
-  const local = await get(itemid)
-  if (!local) return null
-  return hash(local, hash_options)
-}
-export const fresh_metadata = async itemid => {
-  const index = (await get('sync:index')) || {}
-  const path = location(as_filename(itemid))
-  let network
-  try {
-    console.info('request:metadata', itemid)
-    network = await metadata(path)
-  } catch (e) {
-    if (e.code === 'storage/object-not-found') {
-      network = does_not_exist
-    } else throw e
-  }
-  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
-  index[itemid] = network
-  await set('sync:index', index)
-  return network
-}
-export function visit_interval() {
-  return Date.now() - one_hour
-}
-
 export const statements = ref(null)
 export const new_statement = ref(null)
-export const i_am_fresh = () => {
-  let synced
-  if (localStorage.sync_time) {
-    synced = Date.now() - new Date(localStorage.sync_time).getTime()
-  } else {
-    localStorage.sync_time = new Date().toISOString()
-    synced = eight_hours
-  }
-  const time_left = eight_hours - synced
-  return time_left <= 0
-}
 
 export const use = () => {
   const { me, relations } = use_me()
@@ -252,4 +209,48 @@ export const use = () => {
     poster,
     sync_element
   }
+}
+export const sync_later = async (id, action) => {
+  const offline = (await get('sync:offline')) || []
+  offline.push({ id, action })
+  await set('sync:offline', offline)
+}
+export const local_md5 = async itemid => {
+  // always checks the network
+  const local = await get(itemid)
+  if (!local) return null
+  return hash(local, hash_options)
+}
+export const fresh_metadata = async itemid => {
+  const index = (await get('sync:index')) || {}
+  const path = location(as_filename(itemid))
+  let network
+  try {
+    console.info('request:metadata', itemid)
+    network = await metadata(path)
+  } catch (e) {
+    if (e.code === 'storage/object-not-found') {
+      network = does_not_exist
+    } else throw e
+  }
+  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
+  index[itemid] = network
+  await set('sync:index', index)
+  return network
+}
+export function visit_interval() {
+  return Date.now() - one_hour
+}
+export const i_am_fresh = () => {
+  let synced
+  if (localStorage.sync_time) {
+    synced = Date.now() - new Date(localStorage.sync_time).getTime()
+  } else {
+    localStorage.sync_time = new Date().toISOString()
+    synced = eight_hours
+  }
+  const time_left = eight_hours - synced
+  const am_i_fresh = time_left > 0
+  console.log('i_am_fresh', am_i_fresh, time_left)
+  return am_i_fresh
 }
