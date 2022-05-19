@@ -18,13 +18,8 @@
       </p>
       <ol>
         <li>
-          <button disabled @click="toggle('sync:netwok')">Sync</button>
-          with network
-        </li>
-
-        <li>
           <button disabled @click="toggle('sync:netwok')">GPU</button>
-          Disable GPU ehancments on slower machines
+          Emboss posters
         </li>
         <li>
           <button disabled @click="toggle('fullscreen')">
@@ -63,7 +58,7 @@
       & > summary
       & > article
         padding: 0 base-line
-    article, ol
+    article, ol, menu
       padding: base-line
       display: flex
       flex-direction: column
