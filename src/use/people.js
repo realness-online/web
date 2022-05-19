@@ -47,7 +47,7 @@ export const use = () => {
 export const use_me = () => {
   mounted(async () => {
     if (!relations.value) {
-      console.trace('loading relations')
+      console.log('loading relations')
       relations.value = await list(`${localStorage.me}/relations`)
     }
     if (!me.value) me.value = await load(from_e64(localStorage.me)) // load what i have locally

@@ -60,7 +60,6 @@
   const { relations } = use_me()
 
   const fill_feed = async () => {
-    console.log('fill_feed')
     people.value = [...relations.value]
     const me = {
       id: localStorage.me,
@@ -69,7 +68,6 @@
     people.value.push(me)
     await Promise.all(
       people.value.map(async relation => {
-        console.log(relation)
         await Promise.all([
           statements_for_person(relation),
           posters_for_person(relation)
