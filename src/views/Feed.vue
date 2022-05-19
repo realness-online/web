@@ -60,7 +60,8 @@
   const { relations } = use_me()
 
   const fill_feed = async () => {
-    load_people(relations.value)
+    console.log('fill_feed')
+    people.value = [...relations.value]
     const me = {
       id: localStorage.me,
       type: 'person'
