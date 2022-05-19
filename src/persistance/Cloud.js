@@ -22,7 +22,7 @@ export const Cloud = superclass =>
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
         this.metadata.customMetadata = { md5: hash(items, hash_options) }
-        return await upload(path, items, this.metadata)
+        return upload(path, items, this.metadata)
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
