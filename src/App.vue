@@ -1,5 +1,6 @@
 <template>
   <main id="realness" :class="status">
+    <h6>{{ frames_per_second }}</h6>
     <router-view />
     <sync @active="sync_active" />
   </main>
@@ -7,6 +8,8 @@
 <script setup>
   import sync from '@/components/sync'
   import { ref, onUnmounted as dismount } from 'vue'
+  import { useFps as use_fps } from '@vueuse/core'
+  const frames_per_second = use_fps()
   const status = ref(null)
   const me = ref(undefined)
   const statement = ref(undefined)
@@ -44,4 +47,10 @@
       animation-duration: 5s
       animation-delay: 200ms
       animation-iteration-count: infinite
+    & > h6
+      text-shadow: 1px 1px 1.25px black-background
+      position: fixed
+      display: none
+      top: 0
+      left: base-line
 </style>

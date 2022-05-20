@@ -17,9 +17,9 @@
     <as-days
       v-slot="thoughts"
       itemscope
-      :itemid="item.id"
+      :itemid="get_my_itemid('statements')"
       :paginate="false"
-      :statements="statements">
+      :statements="my_statements">
       <thought-as-article
         v-for="thought in thoughts"
         :key="thought[0].id"
@@ -49,7 +49,7 @@
 
   import { current_user, sign_off } from '@/use/serverless'
   import { use as use_statements } from '@/use/statements'
-  import { use as use_person } from '@/use/people'
+  import { use as use_person, get_my_itemid } from '@/use/people'
 
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
@@ -64,13 +64,16 @@
     id: localStorage.me,
     type: 'person'
   }
+
   const {
     my_statements,
     statements,
     thought_shown,
     for_person: statements_for_person
   } = use_statements()
+
   const { person, load_person } = use_person()
+
   const is_editable = thought => {
     if (working.value) return false
     return thought.some(statement =>
@@ -84,7 +87,7 @@
   const home = () => router.push({ path: '/' })
   const thought_focused = async statement => {
     currently_focused.value = statement.id
-    // await load_thoughts()
+    await load_thoughts()
     pages_viewed.value = ['index']
   }
   const thought_blurred = statement => {
