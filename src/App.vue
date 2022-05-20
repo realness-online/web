@@ -7,7 +7,7 @@
 </template>
 <script setup>
   import sync from '@/components/sync'
-  import { ref, onUnmounted as dismount } from 'vue'
+  import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { useFps as use_fps } from '@vueuse/core'
   const frames_per_second = use_fps()
   const status = ref(null)
@@ -27,8 +27,10 @@
     editable.forEach(e => e.setAttribute('contenteditable', false))
     status.value = 'offline'
   }
-  window.addEventListener('online', online)
-  window.addEventListener('offline', offline)
+  mounted(() => {
+    window.addEventListener('online', online)
+    window.addEventListener('offline', offline)
+  })
   dismount(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
