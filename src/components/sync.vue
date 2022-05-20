@@ -2,11 +2,11 @@
   <aside ref="sync" hidden>
     <as-address v-if="me" :person="me" />
     <as-days
-      v-if="statements"
+      v-if="my_editable_statements"
       v-slot="thoughts"
       itemscope
       :itemid="get_my_itemid('statements')"
-      :statements="statements"
+      :statements="my_editable_statements"
       :paginate="false">
       <thought-as-article
         v-for="thought in thoughts"
@@ -38,9 +38,11 @@
   import { from_e64 } from '@/use/people'
   import { current_user } from '@/use/serverless'
   import { use as use_sync } from '@/use/sync'
+  import { use as use_statements } from '@/use/statements'
   import { use_me, get_my_itemid } from '@/use/people'
 
   const emit = defineEmits(['active'])
   const { me } = use_me()
-  const { statements, poster, events, sync_element: sync } = use_sync()
+  const { my_statements: my_editable_statements } = use_statements()
+  const { poster, events, sync_element: sync } = use_sync()
 </script>

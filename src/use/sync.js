@@ -4,6 +4,7 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, list, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { from_e64, use_me } from '@/use/people'
+import { use as use_statements } from '@/use/statements'
 import get_item from '@/use/item'
 import {
   ref,
@@ -24,18 +25,17 @@ export const timeouts = []
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
-export const statements = ref(null)
-export const new_statement = ref(null)
-
 export const use = () => {
-  const { me, relations } = use_me()
+  console.log('use sync')
   const { emit, props } = current_instance()
+  const { me, relations } = use_me()
+  const { my_statements: statements } = use_statements()
   const poster = ref(null)
   const events = ref(null)
   const sync_element = ref(null)
   const play = async () => {
+    if (!me.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
-    console.log('play the sync game')
     await visit()
     if (!navigator.onLine || !current_user.value) return
     await sync_offline_actions()
@@ -52,13 +52,11 @@ export const use = () => {
     // }, 1000)
   }
   const visit = async () => {
-    if (!me.value) return // Do nothing until there is a person
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
       me.value.visited = new Date().toISOString()
       await next_tick()
       await new Me().save()
-      console.log('should save me')
       me.value = await load(from_e64(current_user.value.phoneNumber))
     }
   }
@@ -89,7 +87,6 @@ export const use = () => {
     })
     return !is_friend
   }
-
   const sync_offline_actions = async () => {
     if (navigator.onLine) {
       const offline = await get('sync:offline')
@@ -103,7 +100,6 @@ export const use = () => {
       await del('sync:offline')
     }
   }
-
   const sync_me = async () => {
     console.log('sync_me')
     const id = get_my_itemid()
@@ -179,38 +175,25 @@ export const use = () => {
     poster.value = null
   }
   watch_effect(async () => {
-    if (current_user.value && navigator.onLine) {
-      const my_id = from_e64(current_user.value.phoneNumber)
-      localStorage.me = my_id
-      me.value = await load(my_id)
-      statements.value = await list(`${my_id}/statements`)
-      await play()
-      window.addEventListener('online', play)
-    } else window.removeEventListener('online', play)
+    if (current_user.value) await play()
   })
-  watch_effect(async () => {
-    if (new_statement.value) {
-      await next_tick()
-      const id = get_my_itemid('statements')
-      statements.value = await list(id)
-      statements.value.push(new_statement.value)
-      await next_tick()
-      await new Statements().save()
-      new_statement.value = null
-    }
+
+  mounted(async () => {
+    document.addEventListener('visibilitychange', play)
+    window.addEventListener('online', play)
   })
-  mounted(async () => document.addEventListener('visibilitychange', play))
-  dismount(() => document.removeEventListener('visibilitychange', play))
+  dismount(() => {
+    window.removeEventListener('online', play)
+    document.removeEventListener('visibilitychange', play)
+  })
   return {
-    me,
-    statements,
-    new_statement,
     play,
     events,
     poster,
     sync_element
   }
 }
+
 export const sync_later = async (id, action) => {
   const offline = (await get('sync:offline')) || []
   offline.push({ id, action })

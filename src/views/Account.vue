@@ -44,9 +44,9 @@
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
-
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
+
   import { current_user, sign_off } from '@/use/serverless'
   import { use as use_statements } from '@/use/statements'
   import { use as use_person } from '@/use/people'
@@ -58,14 +58,14 @@
   const pages_viewed = ref(['index'])
   const settings = ref(false)
   const working = ref(true)
-  const first_page = ref([])
   const currently_focused = ref(null)
   const router = use_router()
-  const item = {
+  const me = {
     id: localStorage.me,
     type: 'person'
   }
   const {
+    my_statements,
     statements,
     thought_shown,
     for_person: statements_for_person
@@ -74,7 +74,7 @@
   const is_editable = thought => {
     if (working.value) return false
     return thought.some(statement =>
-      first_page.value.some(s => s.id === statement.id)
+      my_statements.value.some(s => s.id === statement.id)
     )
   }
   const signoff = () => {
@@ -95,8 +95,7 @@
     }
   }
   mounted(async () => {
-    await Promise.all([load_person(item), statements_for_person(item)])
-    first_page.value = statements.value
+    await Promise.all([load_person(me), statements_for_person(me)])
     working.value = false
     console.info('views:Account')
   })
