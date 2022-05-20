@@ -21,7 +21,7 @@
     emit('toggle-keyboard')
     save(statement_text.value)
     statement_text.value = null
-    console.info('creates:statement', post)
+    console.info('creates:statement')
   }
 </script>
 <style lang="stylus">

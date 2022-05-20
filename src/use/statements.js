@@ -53,7 +53,7 @@ export const use = () => {
     if (!statement || links.some(link => statement.includes(link))) return
     my_statements.value.push(post)
     await next_tick()
-    await new Statement().save()
+    await new Statements().save()
   }
   return {
     save,
