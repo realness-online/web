@@ -19,8 +19,7 @@
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea
         class="red"
-        @toggle-keyboard="posting = !posting"
-        @update:statement="emit('update:statement', $event)" />
+        @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
       <h6>{{ version }}</h6>
@@ -33,7 +32,6 @@
   import { load } from '@/use/itemid'
   import { ref, onMounted as mounted } from 'vue'
   const version = import.meta.env.PACKAGE_VERSION
-  const emit = defineEmits(['update:statement'])
   const posting = ref(false)
   const first_name = ref('')
   const nav = ref()

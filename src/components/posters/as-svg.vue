@@ -35,7 +35,6 @@
       :fill="`url(${fragment('horizontal-regular')})`"
       :stroke="`url(${fragment('vertical-light')})`"
       @focus="focus('regular')" />
-
     <as-path
       v-if="vector.bold"
       itemprop="bold"
