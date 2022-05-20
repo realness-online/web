@@ -4,14 +4,12 @@ import { Statements } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
 import { ref, watchEffect as watch_effect, nextTick as next_tick } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
-
-const new_statement = ref(null)
+const links = ['http://', 'https://']
 const my_statements = ref([])
 
 export const use = () => {
   const authors = ref([])
   const statements = ref(null)
-  const textarea = ref(null)
   const thought_shown = async thought => {
     console.log('thought_shown')
     const oldest = thought[thought.length - 1]
@@ -47,24 +45,22 @@ export const use = () => {
     if (current_user.value && navigator.onLine)
       my_statements.value = await list(`${localStorage.me}/statements`)
   })
-  // watch_effect(async () => {
-  //   console.log(textarea.value)
-  //   if (textarea.value) {
-  //     console.log('no way')
-  //     await next_tick()
-  //     my_statements.value.push(new_statement.value)
-  //     await next_tick()
-  //     await new Statements().save()
-  //     new_statement.value = ''
-  //   }
-  // })
+  const save = async statement => {
+    const post = {
+      statement: statement.trim(),
+      id: `${localStorage.me}/statements/${new Date().getTime()}`
+    }
+    if (!statement || links.some(link => statement.includes(link))) return
+    my_statements.value.push(post)
+    await next_tick()
+    await new Statement().save()
+  }
   return {
-    textarea,
+    save,
     statements,
     for_person,
     thought_shown,
-    my_statements,
-    new_statement
+    my_statements
   }
 }
 

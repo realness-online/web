@@ -11,7 +11,11 @@ import {
 const me = ref(null)
 const relations = ref(null)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
-const working = ref(false)
+watch_effect(async () => {
+  if (current_user.value) {
+    me.value = await load(from_e64(current_user.value.phoneNumber)) // load after I know about current_user
+  } else if (!me.value) me.value = await load(localStorage.me) // load signed out users with a profile
+})
 export const use = () => {
   const working = ref(true)
   const people = ref([])
@@ -46,28 +50,14 @@ export const use = () => {
 }
 export const use_me = () => {
   mounted(async () => {
-    if (!relations.value && !working.value) {
-      console.log('loading relations')
-      working.value = true
+    if (!relations.value)
       relations.value = await list(`${localStorage.me}/relations`)
-      working.value = false
-    }
   })
   return {
     relations,
     me
   }
 }
-
-watch_effect(async () => {
-  if (current_user.value) {
-    console.log('loading me')
-    working.value = true
-    me.value = await load(from_e64(current_user.value.phoneNumber)) // load after I know about current_user
-    working.value = false
-  }
-})
-
 export const get_my_itemid = type => {
   if (type) return `${localStorage.me}/${type}`
   else return localStorage.me

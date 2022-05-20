@@ -26,7 +26,6 @@ export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
-  console.log('use sync')
   const { emit, props } = current_instance()
   const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()

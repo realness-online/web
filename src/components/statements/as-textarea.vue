@@ -1,7 +1,7 @@
 <template>
   <textarea
-    :ref="textarea"
     id="wat"
+    v-model="statement_text"
     cols="1"
     rows="1"
     placeholder=">"
@@ -12,19 +12,16 @@
 <script setup>
   import { ref } from 'vue'
   import { use } from '@/use/statements'
-  const { new_statement, textarea } = use()
-  const links = ['http://', 'https://']
+  const { save } = use()
+  const statement_text = ref(null)
+
   const emit = defineEmits(['toggle-keyboard'])
   const focused = () => emit('toggle-keyboard')
   const prepare_statement = () => {
     emit('toggle-keyboard')
-    console.log(statement_input)
-    const post = { statement: statement_input.value.value.trim() }
-    if (!post.statement || links.some(link => post.statement.includes(link)))
-      return
-    post.id = `${localStorage.me}/statements/${new Date().getTime()}`
-    new_statement.value = post
-    console.info('creates:statement')
+    save(statement_text.value)
+    statement_text.value = null
+    console.info('creates:statement', post)
   }
 </script>
 <style lang="stylus">
