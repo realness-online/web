@@ -1,11 +1,13 @@
 import { list, load } from '@/use/itemid'
 import { current_user, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
+import { Me } from '@/persistance/Storage'
 import {
   ref,
   computed,
   watchEffect as watch_effect,
-  onMounted as mounted
+  onMounted as mounted,
+  nextTick as next_tick
 } from 'vue'
 
 const me = ref(null)
@@ -13,8 +15,10 @@ const relations = ref(null)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
 watch_effect(async () => {
   if (current_user.value) {
-    me.value = await load(from_e64(current_user.value.phoneNumber)) // load after I know about current_user
+    localStorage.me = from_e64(current_user.value.phoneNumber)
+    me.value = await load(localStorage.me) // load after I know about current_user
   } else if (!me.value) me.value = await load(localStorage.me) // load signed out users with a profile
+  relations.value = await list(`${localStorage.me}/relations`)
 })
 export const use = () => {
   const working = ref(true)
@@ -49,12 +53,16 @@ export const use = () => {
   }
 }
 export const use_me = () => {
-  mounted(async () => {
-    if (!relations.value)
-      relations.value = await list(`${localStorage.me}/relations`)
-  })
+  const save = async () => {
+    if (me.value) {
+      await next_tick()
+      console.log('save me')
+      await new Me().save()
+    }
+  }
   return {
     relations,
+    save,
     me
   }
 }

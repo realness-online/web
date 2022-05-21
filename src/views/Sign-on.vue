@@ -46,20 +46,12 @@
     if (index_db_keys.value.length > 0) return true
     else return false
   })
-  mounted(async () => {
-    person.value = await load(localStorage.me)
-    if (!person.value) {
-      person.value = {
-        id: '/+',
-        mobile: null
-      }
-    }
-    index_db_keys.value = await keys()
-    console.info('views:Sign-on')
-  })
-  watch_effect(() => {
-    if (current_user.value) person.value.mobile = null
-  })
+  const clean = async () => {
+    localStorage.clear()
+    localStorage.me = '/+'
+    await clear()
+    router.push({ path: '/' })
+  }
   const signed_on = async () => {
     const my_profile = await load(localStorage.me)
     if (my_profile) router.push({ path: '/' })
@@ -74,12 +66,20 @@
     await next_tick()
     router.push({ path: '/account' })
   }
-  const clean = async () => {
-    localStorage.clear()
-    localStorage.me = '/+'
-    await clear()
-    router.push({ path: '/' })
-  }
+  mounted(async () => {
+    person.value = await load(localStorage.me)
+    if (!person.value) {
+      person.value = {
+        id: '/+',
+        mobile: null
+      }
+    }
+    index_db_keys.value = await keys()
+    console.info('views:Sign-on')
+  })
+  watch_effect(() => {
+    if (current_user.value) person.value.mobile = null
+  })
 </script>
 <style lang="stylus">
   section#sign-on.page
