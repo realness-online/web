@@ -12,8 +12,6 @@
     onMounted as mounted,
     watch
   } from 'vue'
-  import { useFps as use_fps } from '@vueuse/core'
-  const frames_per_second = use_fps()
   const status = ref(null)
   const me = ref(undefined)
   const statement = ref(undefined)
@@ -31,9 +29,6 @@
     editable.forEach(e => e.setAttribute('contenteditable', false))
     status.value = 'offline'
   }
-  watch(frames_per_second, () => {
-    if (frames_per_second.value < 60) console.log(frames_per_second.value)
-  })
   mounted(() => {
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
