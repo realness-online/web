@@ -2,7 +2,7 @@ import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
 import { recent_item_first, recent_number_first } from '@/use/sorting'
 import { Statements } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
-import { ref, watchEffect as watch_effect, nextTick as next_tick } from 'vue'
+import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 const links = ['http://', 'https://']
 const my_statements = ref([])
@@ -14,12 +14,14 @@ export const use = () => {
     console.log('thought_shown')
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
+
     const author_statements = statements.value.filter(
       statement => author === as_author(statement.id)
     )
     const author_oldest = author_statements[author_statements.length - 1]
     if (oldest.id === author_oldest.id) {
       author = authors.value.find(relation => relation.id === author)
+      if (!author) return
       const directory = await as_directory(`${author.id}/statements`)
       if (!directory) return
       let history = directory.items
@@ -41,9 +43,8 @@ export const use = () => {
     person.viewed = ['index']
     authors.value.push(person)
   }
-  watch_effect(async () => {
-    if (current_user.value && navigator.onLine)
-      my_statements.value = await list(`${localStorage.me}/statements`)
+  mounted(async () => {
+    my_statements.value = await list(`${localStorage.me}/statements`)
   })
   const save = async statement => {
     const post = {

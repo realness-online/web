@@ -79,7 +79,8 @@
     },
     async created() {
       if (this.verbose) {
-        this.author = await load(as_author(this.statements[0].id))
+        const author_id = as_author(this.statements[0].id)
+        if (author_id) this.author = await load(author_id)
       }
     },
     methods: {
