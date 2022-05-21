@@ -6,7 +6,6 @@ import {
   ref,
   computed,
   watchEffect as watch_effect,
-  onMounted as mounted,
   nextTick as next_tick
 } from 'vue'
 
