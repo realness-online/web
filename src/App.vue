@@ -1,13 +1,17 @@
 <template>
   <main id="realness" :class="status">
-    <h6>{{ frames_per_second }}</h6>
     <router-view />
     <sync @active="sync_active" />
   </main>
 </template>
 <script setup>
   import sync from '@/components/sync'
-  import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
+  import {
+    ref,
+    onUnmounted as dismount,
+    onMounted as mounted,
+    watch
+  } from 'vue'
   import { useFps as use_fps } from '@vueuse/core'
   const frames_per_second = use_fps()
   const status = ref(null)
@@ -27,6 +31,9 @@
     editable.forEach(e => e.setAttribute('contenteditable', false))
     status.value = 'offline'
   }
+  watch(frames_per_second, () => {
+    if (frames_per_second.value < 60) console.log(frames_per_second.value)
+  })
   mounted(() => {
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
