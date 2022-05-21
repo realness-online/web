@@ -87,7 +87,6 @@
   const home = () => router.push({ path: '/' })
   const thought_focused = async statement => {
     currently_focused.value = statement.id
-    await load_thoughts()
     pages_viewed.value = ['index']
   }
   const thought_blurred = statement => {
