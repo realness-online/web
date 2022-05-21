@@ -1,3 +1,36 @@
+<script setup>
+  import { ref } from 'vue'
+  import { use_me } from '@/use/people'
+  const props = defineProps({
+    person: {
+      type: Object,
+      required: true
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  })
+  const { me, save } = use_me()
+  const last_name = ref(null)
+  const first_name = ref(null)
+  const save_first_name = () => {
+    const changed = first_name.value.textContent.trim()
+    if (props.person.first_name !== changed) {
+      me.value.first_name = changed
+      save()
+    }
+  }
+  const save_last_name = () => {
+    const changed = last_name.value.textContent.trim()
+    if (props.person.last_name !== changed) {
+      me.value.last_name = changed
+      save()
+    }
+  }
+</script>
+
 <template>
   <address itemscope itemtype="/people" :itemid="person.id">
     <b
@@ -30,40 +63,6 @@
     <meta v-if="person.visited" itemprop="visited" :content="person.visited" />
   </address>
 </template>
-<script>
-  export default {
-    props: {
-      person: {
-        type: Object,
-        required: true
-      },
-      editable: {
-        type: Boolean,
-        required: false,
-        default: false
-      }
-    },
-    emits: ['update:person'],
-    methods: {
-      async save_first_name() {
-        const possibly_changed = this.$refs.first_name.textContent.trim()
-        if (this.person.first_name !== possibly_changed) {
-          const updated = { ...this.person }
-          updated.first_name = possibly_changed
-          this.$emit('update:person', updated)
-        }
-      },
-      async save_last_name() {
-        const possibly_changed = this.$refs.last_name.textContent.trim()
-        if (this.person.last_name !== possibly_changed) {
-          const updated = { ...this.person }
-          updated.last_name = possibly_changed
-          this.$emit('update:person', updated)
-        }
-      }
-    }
-  }
-</script>
 <style lang="stylus">
   address[itemscope]
     color: black
