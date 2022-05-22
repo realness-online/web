@@ -1,83 +1,42 @@
 <template>
   <form id="profile-name">
     <fieldset id="name">
-      <legend :class="{ valid: is_valid }">Name</legend>
+      <legend :class="{ valid: is_valid_name }">Name</legend>
       <input
         id="first-name"
-        v-model="first_name"
+        v-model="me.first_name"
         type="text"
         placeholder="First"
         @keyup="modified_check" />
       <input
         id="last-name"
-        v-model="last_name"
+        v-model="me.last_name"
         type="text"
         placeholder="Last"
         @keyup="modified_check" />
     </fieldset>
     <menu>
-      <button ref="button" disabled @click.prevent="valid">
+      <button ref="button" disabled @click.prevent="save_me">
         Yep, That's my name
       </button>
     </menu>
   </form>
 </template>
-<script>
-  export default {
-    props: {
-      person: {
-        type: Object,
-        required: true
-      }
-    },
-    emits: ['valid', 'update:person'],
-    data() {
-      return {
-        first_name: this.person.first_name,
-        last_name: this.person.last_name
-      }
-    },
-    computed: {
-      is_valid() {
-        let length = 0
-        if (this.person.first_name) length = this.person.first_name.length
-        else return false // first name is required
-
-        if (this.person.last_name) length += this.person.last_name.length
-        else return false // last name is required
-
-        if (length > 2) return true
-        else return false // full name is at least 3 characters
-      }
-    },
-    watch: {
-      person() {
-        this.first_name = this.person.first_name
-        this.last_name = this.person.last_name
-      }
-    },
-    methods: {
-      async valid() {
-        if (this.is_valid) this.$emit('valid')
-      },
-      async modified_check() {
-        let modified = false
-        if (this.is_valid) this.$refs.button.disabled = false
-        else this.$refs.button.disabled = true
-        const updated = { ...this.person }
-        if (this.person.first_name !== this.first_name) {
-          updated.first_name = this.first_name
-          modified = true
-        }
-        if (this.person.last_name !== this.last_name) {
-          updated.last_name = this.last_name
-          modified = true
-        }
-        if (modified) {
-          this.$emit('update:person', updated)
-        }
-      }
-    }
+<script setup>
+  import { computed, ref } from 'vue'
+  import { use_me } from '@/use/people'
+  const emit = defineEmits(['valid'])
+  const { me, save, is_valid_name } = use_me()
+  const button = ref()
+  const save_me = async () => {
+    me.value.visited = new Date().toISOString()
+    await save()
+    console.log('saved', me.value)
+    if (is_valid_name.value) emit('valid')
+  }
+  const modified_check = async () => {
+    if (is_valid_name.value) button.value.disabled = false
+    else button.value.disabled = true
   }
 </script>
 <style lang="stylus">

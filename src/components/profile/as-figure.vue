@@ -25,11 +25,12 @@
   import AsMessenger from '@/components/profile/as-messenger'
   import { useRouter as use_router } from 'vue-router'
   import { ref, computed, nextTick as next_tick } from 'vue'
-  import { use_me } from '@/use/people'
+  import { use_me, is_person } from '@/use/people'
   const props = defineProps({
     person: {
       type: Object,
-      required: true
+      required: true,
+      validator: is_person
     },
     editable: {
       type: Boolean,

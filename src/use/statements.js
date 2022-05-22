@@ -11,7 +11,6 @@ export const use = () => {
   const authors = ref([])
   const statements = ref(null)
   const thought_shown = async thought => {
-    console.log('thought_shown')
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
 
@@ -33,7 +32,8 @@ export const use = () => {
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
         author.viewed.push(next)
-        statements.value = [...statements, ...next_statements]
+
+        statements.value = [...statements.value, ...next_statements]
       }
     }
   }

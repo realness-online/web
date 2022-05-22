@@ -12,9 +12,13 @@
     onMounted as mounted,
     watch
   } from 'vue'
+  import { use_me } from '@/use/people'
+  import { useRouter as use_router } from 'vue-router'
+  import { current_user } from '@/use/serverless'
+  const router = use_router()
+
+  const { me, is_valid_name } = use_me()
   const status = ref(null)
-  const me = ref(undefined)
-  const statement = ref(undefined)
   const sync_active = active => {
     if (active) status.value = 'working'
     else status.value = null
@@ -36,6 +40,12 @@
   dismount(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
+  })
+  watch(current_user, async () => {
+    console.log('is_valid_name.value', is_valid_name.value)
+    console.log('current_user.value', current_user.value)
+    if (current_user.value && !is_valid_name.value)
+      router.push({ path: '/sign-on' })
   })
 </script>
 <style src="@/style/index.styl" lang="stylus"></style>

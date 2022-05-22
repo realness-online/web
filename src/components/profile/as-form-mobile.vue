@@ -49,7 +49,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in, app } from '@/use/serverless'
-  import { as_phone_number } from '@/use/people'
+  import { as_phone_number, use_me } from '@/use/people'
   import {
     watch,
     onMounted as mounted,
@@ -57,13 +57,8 @@
     computed,
     nextTick as next_tick
   } from 'vue'
-  const props = defineProps({
-    person: {
-      type: Object,
-      required: true
-    }
-  })
-  const emit = defineEmits(['update:person', 'signed-on'])
+  const emit = defineEmits(['signed-on'])
+  const { me } = use_me()
   const validator = ref(null)
   const mobile = ref(null)
   const mobile_number = ref()
@@ -81,15 +76,15 @@
     return true
   })
   const mobile_display = computed(() => {
-    if (props.person.mobile)
-      return new validator.value.AsYouType('US').input(props.person.mobile)
+    if (me.value.mobile)
+      return new validator.value.AsYouType('US').input(me.value.mobile)
     else return 'Mobile'
   })
   const validate_mobile_number = () => {
     let is_valid = false
     if (!validator.value) return false
-    if (props.person.mobile)
-      is_valid = validator.value.parseNumber(props.person.mobile, 'US').phone
+    if (me.value.mobile)
+      is_valid = validator.value.parseNumber(me.value.mobile, 'US').phone
     disabled_sign_in.value = !is_valid
     return is_valid
   }
@@ -102,7 +97,6 @@
     show_authorize.value = false
     show_captcha.value = true
     await next_tick()
-
     human.value = new Recaptcha(
       'captcha',
       {
@@ -118,13 +112,9 @@
     show_code.value = true
     // show_captcha.value = false
     hide_captcha.value = true
-    console.log('props.person.mobile', props.person.mobile)
+    console.log('me.mobile', me.value.mobile)
     await next_tick()
-    authorizer.value = await sign_in(
-      auth,
-      `+${props.person.mobile}`,
-      human.value
-    )
+    authorizer.value = await sign_in(auth, `+${me.value.mobile}`, human.value)
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
@@ -134,7 +124,7 @@
     show_code.value = false
     try {
       await authorizer.value.confirm(code.value)
-      emit('signed-on', props.person)
+      emit('signed-on')
     } catch (e) {
       if (e.code === 'auth/invalid-verification-code') {
         mobile.value.disabled = false
@@ -142,6 +132,7 @@
       }
     }
   }
+
   const mobile_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
   }
@@ -149,9 +140,7 @@
     const past_text = event.clipboardData.getData('text/plain')
     const phone_number = validator.value.parseNumber(past_text, 'US').phone
     if (phone_number) {
-      const update = { ...props.person }
-      update.mobile = phone_number
-      emit('update:person', update)
+      me.value.mobile = phone_number
       return validate_mobile_number()
     } else return false
   }
@@ -161,19 +150,18 @@
     const input = document.querySelector('#verification-code')
     if (input.value.length === 5) button.disabled = false
   }
+
   watch(mobile_number, () => {
-    const update = { ...props.person }
-    update.mobile = mobile_number.value
-    emit('update:person', update)
+    me.value.mobile = mobile_number.value
   })
   mounted(async () => {
     validator.value = await import('libphonenumber-js')
     working.value = false
-    const updated = { ...props.person }
-    updated.mobile = as_phone_number(props.person.id)
-    if (!updated.mobile.length) updated.mobile = null
+
+    me.value.mobile = as_phone_number(me.value.id)
+    if (!me.value.mobile.length) me.value.mobile = null
     show_authorize.value = true
-    mobile_number.value = updated.mobile
+    mobile_number.value = me.value.mobile
     validate_mobile_number()
   })
 </script>

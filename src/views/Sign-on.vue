@@ -1,17 +1,14 @@
 <template>
   <section id="sign-on" class="page">
     <header>
-      <profile-as-figure v-if="person" :person="person">
+      <profile-as-figure v-if="me" :person="me">
         <p />
         <!-- defeat the default slot -->
       </profile-as-figure>
       <logo-as-link />
     </header>
-    <mobile-as-form
-      v-if="person && !nameless"
-      v-model:person="person"
-      @signed-on="signed_on" />
-    <name-as-form v-if="nameless" v-model:person="person" @valid="new_person" />
+    <mobile-as-form v-if="me && !nameless" @signed-on="signed_on" />
+    <name-as-form v-if="nameless" @valid="new_person" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
@@ -26,6 +23,7 @@
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
   import { Me } from '@/persistance/Storage'
+  import { use_me } from '@/use/People'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'
   import {
@@ -36,9 +34,9 @@
     onMounted as mounted
   } from 'vue'
   const router = use_router()
+  const { me, save, is_valid_name } = use_me()
   const nameless = ref(false)
   const index_db_keys = ref([])
-  const person = ref(null)
   const cleanable = computed(() => {
     if (current_user.value) return false
     if (localStorage.me.length > 2) return true
@@ -49,6 +47,7 @@
   const clean = async () => {
     localStorage.clear()
     localStorage.me = '/+'
+    me.value = null
     await clear()
     router.push({ path: '/' })
   }
@@ -58,27 +57,24 @@
     else nameless.value = true
   }
   const new_person = async () => {
-    person.value.visited = new Date().toISOString()
-    person.value.id = localStorage.me
     await next_tick()
-    const me = new Me()
-    await me.save()
-    await next_tick()
-    router.push({ path: '/account' })
+    // router.push({ path: '/account' })
   }
   mounted(async () => {
-    person.value = await load(localStorage.me)
-    if (!person.value) {
-      person.value = {
-        id: '/+',
-        mobile: null
-      }
-    }
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
+    if (current_user.value && !is_valid_name.value) {
+      console.log('you need a name')
+      nameless.value = true
+    }
   })
   watch_effect(() => {
-    if (current_user.value) person.value.mobile = null
+    console.log('watch_effect')
+    if (current_user.value) me.value.mobile = undefined
+    else if (!is_valid_name.value) {
+      console.log('you need a name')
+      nameless.value = true
+    }
   })
 </script>
 <style lang="stylus">

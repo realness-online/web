@@ -209,7 +209,7 @@ export const fresh_metadata = async itemid => {
   const path = location(as_filename(itemid))
   let network
   try {
-    console.info('request:metadata', itemid)
+    // console.info('request:metadata', itemid)
     network = await metadata(path)
   } catch (e) {
     if (e.code === 'storage/object-not-found') {

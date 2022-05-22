@@ -1,42 +1,9 @@
-<script setup>
-  import { ref } from 'vue'
-  import { use_me } from '@/use/people'
-  const props = defineProps({
-    person: {
-      type: Object,
-      required: true
-    },
-    editable: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
-  })
-  const { me, save } = use_me()
-  const last_name = ref(null)
-  const first_name = ref(null)
-  const save_first_name = () => {
-    const changed = first_name.value.textContent.trim()
-    if (props.person.first_name !== changed) {
-      me.value.first_name = changed
-      save()
-    }
-  }
-  const save_last_name = () => {
-    const changed = last_name.value.textContent.trim()
-    if (props.person.last_name !== changed) {
-      me.value.last_name = changed
-      save()
-    }
-  }
-</script>
-
 <template>
-  <address itemscope itemtype="/people" :itemid="person.id">
+  <address itemscope itemtype="/person" :itemid="person.id">
     <b
       v-if="editable"
       ref="first_name"
-      :key="person.first_name"
+      :key="me.first_name"
       :contenteditable="true"
       itemprop="first_name"
       @blur="save_first_name">
@@ -55,6 +22,7 @@
     <h3 v-else itemprop="last_name">{{ person.last_name }}</h3>
     <slot />
     <link
+      v-if="person.avatar"
       :key="person.avatar"
       itemprop="avatar"
       rel="icon"
@@ -63,6 +31,41 @@
     <meta v-if="person.visited" itemprop="visited" :content="person.visited" />
   </address>
 </template>
+
+<script setup>
+  import { ref } from 'vue'
+  import { use_me } from '@/use/people'
+  const props = defineProps({
+    person: {
+      type: Object,
+      required: true
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  })
+  const { me, save } = use_me()
+  const person = ref(props.person)
+  if (me.id === person.id) person.value = me.value
+  const last_name = ref(null)
+  const first_name = ref(null)
+  const save_first_name = () => {
+    const changed = first_name.value.textContent.trim()
+    if (props.person.first_name !== changed) {
+      me.value.first_name = changed
+      save()
+    }
+  }
+  const save_last_name = () => {
+    const changed = last_name.value.textContent.trim()
+    if (props.person.last_name !== changed) {
+      me.value.last_name = changed
+      save()
+    }
+  }
+</script>
 <style lang="stylus">
   address[itemscope]
     color: black
