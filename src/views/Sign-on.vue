@@ -56,10 +56,7 @@
     if (my_profile) router.push({ path: '/' })
     else nameless.value = true
   }
-  const new_person = async () => {
-    await next_tick()
-    // router.push({ path: '/account' })
-  }
+  const new_person = async () => router.push({ path: '/phonebook' })
   mounted(async () => {
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
