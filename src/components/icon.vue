@@ -17,3 +17,13 @@
     }
   }
 </script>
+<style lang="stylus">
+  svg.icon:active
+    transform: scale(0.95)
+  svg.icon.gear:active
+    transition-timing-function: ease
+    transition-duration: 0.66s
+    transition-property: all
+    fill:green
+    transform: rotate(60deg) scale(0.95)
+</style>
