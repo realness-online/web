@@ -4,6 +4,7 @@
       v-if="person.avatar"
       :itemid="person.avatar"
       @click="avatar_click" />
+    <icon v-else name="silhouette" />
     <figcaption>
       <as-address :key="person.id" :person="person" :editable="editable" />
       <menu>
@@ -18,6 +19,7 @@
   </figure>
 </template>
 <script setup>
+  import Icon from '@/components/icon'
   import ProfileAsMeta from '@/components/profile/as-meta'
   import AsRelationshipOptions from '@/components/profile/as-relationship-options'
   import AsSvg from '@/components/posters/as-svg'
@@ -57,7 +59,7 @@
     text-overflow: ellipsis
     display:flex
     justify-content: space-between
-    #background
+    #background, svg.icon.silhouette
       fill: blue
     & > svg
       margin-right: round((base-line * .33), 3)
