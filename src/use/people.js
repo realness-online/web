@@ -17,6 +17,14 @@ watch_effect(async () => {
     localStorage.me = from_e64(current_user.value.phoneNumber)
     me.value = await load(localStorage.me) // load after I know about current_user
   } else if (!me.value) me.value = await load(localStorage.me) // load signed out users with a profile
+
+  if (!me.value) {
+    console.log('brand new person')
+    me.value = {
+      id: localStorage.me,
+      type: 'person'
+    }
+  }
   relations.value = await list(`${localStorage.me}/relations`)
 })
 export const use = () => {
@@ -55,11 +63,24 @@ export const use_me = () => {
   const save = async () => {
     if (me.value) {
       await next_tick()
-      console.log('save me')
+      console.log('save me', me)
       await new Me().save()
     }
   }
+  const is_valid_name = computed(() => {
+    let length = 0
+    if (me.value.first_name) length = me.value.first_name.length
+    else return false // first name is required
+
+    if (me.value.last_name) length += me.value.last_name.length
+    else return false // last name is required
+
+    if (length > 2) return true
+    else return false // full name is at least 3 characters
+  })
+
   return {
+    is_valid_name,
     relations,
     save,
     me
@@ -74,4 +95,10 @@ export const as_phone_number = (id = '/+1') => {
 }
 export const from_e64 = e64_number => {
   return `/${e64_number}`
+}
+export const is_person = maybe => {
+  if (typeof maybe !== 'object') return false
+  if (maybe.type !== 'person') return false
+  if (!maybe.id) return false
+  return true
 }
