@@ -11,5 +11,9 @@
 </script>
 <style lang="stylus">
   svg.realness:active
-    transition-duration: 0.1s
+    outline: 1px double green
+    outline-offset: base-line * 0.25
+    transition-property: all
+    transition-duration: 0.21s
+    transform: scale(0.95)
 </style>
