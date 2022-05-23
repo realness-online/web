@@ -48,7 +48,7 @@
   })
   const { me, save } = use_me()
   const person = ref(props.person)
-  if (me.id === person.id) person.value = me.value
+  if (me.value.id === person.value.id) person.value = me.value
   const last_name = ref(null)
   const first_name = ref(null)
   const save_first_name = () => {
