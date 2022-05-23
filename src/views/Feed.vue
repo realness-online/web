@@ -30,11 +30,11 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
-  import logoAsLink from '@/components/logo-as-link'
-  import asDays from '@/components/as-days'
-  import thoughtAsArticle from '@/components/statements/as-article'
-  import posterAsFigure from '@/components/posters/as-figure'
+  import Icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDays from '@/components/as-days'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+  import PosterAsFigure from '@/components/posters/as-figure'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/vector'
@@ -60,7 +60,7 @@
   const { relations } = use_me()
 
   const fill_feed = async () => {
-    people.value = [...relations.value]
+    if (relations.value) people.value = [...relations.value]
     const me = {
       id: localStorage.me,
       type: 'person'

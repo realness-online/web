@@ -42,8 +42,6 @@
     window.removeEventListener('offline', offline)
   })
   watch(current_user, async () => {
-    console.log('is_valid_name.value', is_valid_name.value)
-    console.log('current_user.value', current_user.value)
     if (current_user.value && !is_valid_name.value)
       router.push({ path: '/sign-on' })
   })
