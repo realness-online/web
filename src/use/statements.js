@@ -39,12 +39,17 @@ export const use = () => {
   }
   const for_person = async person => {
     const statement_id = `${person.id}/statements`
-    statements.value = await list(statement_id)
+    const their_statements = await list(statement_id)
+    if (statements.value) {
+      statements.value = [...statements.value, ...their_statements]
+    } else statements.value = their_statements
+
     person.viewed = ['index']
     authors.value.push(person)
   }
   mounted(async () => {
-    my_statements.value = await list(`${localStorage.me}/statements`)
+    if (!my_statements.value)
+      my_statements.value = await list(`${localStorage.me}/statements`)
   })
   const save = async statement => {
     const post = {
