@@ -63,10 +63,7 @@
   const person = ref(null)
   const loaded = ref(false)
   const emit = defineEmits(['loaded', 'vector-click'])
-  const aspect_ratio = computed(() => {
-    if (menu.value || !slice.value) return 'xMidYMid meet'
-    else return 'xMidYMid slice'
-  })
+
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -80,11 +77,7 @@
   const posted_at = computed(() => {
     return as_time(as_created_at(props.itemid))
   })
-  const background = computed(() => {
-    if (working.value) return 'working'
-    if (loaded.value) return 'background'
-    else return 'working'
-  })
+
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)
@@ -94,9 +87,6 @@
     await next_tick()
     loaded.value = true
     emit('loaded', poster.value.outerHTML)
-  }
-  const open_sms_app = () => {
-    window.open(sms_link.value, '_self')
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {

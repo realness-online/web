@@ -40,8 +40,8 @@
 
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/vector'
-  import { use as use_person, use_me, from_e64 } from '@/use/people'
-  import { ref, onMounted as mounted } from 'vue'
+  import { use as use_person, from_e64 } from '@/use/people'
+  import { onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
 
   const route = use_route()
@@ -53,7 +53,6 @@
   } = use_statements()
   const { posters, for_person: posters_for_person } = use_posters()
   const { load_person, person } = use_person()
-  const { relations } = use_me()
   mounted(async () => {
     await Promise.all([
       load_person(id),

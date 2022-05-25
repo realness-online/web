@@ -6,16 +6,8 @@
     :offset="`${stop.offset}%`" />
 </template>
 <script setup>
-  import { ref, watchEffect as watch_effect, computed } from 'vue'
-  import { is_vector_id, use_poster } from '@/use/vector'
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { color_to_hsla, hsla_to_color } from '@/use/colors'
-  const { new_gradients: gradients, new_vector } = use_vectorize()
-  const is_stops = stops => {
-    if (!Array.isArray(stops)) return false
-    if (stops.length < 1) return false
-    return true
-  }
+  import { computed } from 'vue'
+  import { color_to_hsla } from '@/use/colors'
   const props = defineProps({
     luminosity: {
       type: Number,

@@ -48,7 +48,7 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import { app, auth, Recaptcha, sign_in } from '@/use/serverless'
+  import { auth, Recaptcha, sign_in } from '@/use/serverless'
   import { as_phone_number, use_me } from '@/use/people'
   import {
     watch,

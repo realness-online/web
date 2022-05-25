@@ -17,7 +17,7 @@
   import { current_user } from '@/use/serverless'
   const router = use_router()
 
-  const { me, is_valid_name } = use_me()
+  const { is_valid_name } = use_me()
   const status = ref(null)
   const sync_active = active => {
     if (active) status.value = 'working'

@@ -66,16 +66,16 @@
         focused: false
       }
     },
+    computed: {
+      thought_starts_at() {
+        return as_time(as_created_at(this.statements[0].id))
+      }
+    },
     mounted() {
       this.observer.observe(this.$el)
     },
     beforeUnmount() {
       this.observer.unobserve(this.$el)
-    },
-    computed: {
-      thought_starts_at() {
-        return as_time(as_created_at(this.statements[0].id))
-      }
     },
     async created() {
       if (this.verbose) {

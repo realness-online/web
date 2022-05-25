@@ -33,13 +33,10 @@
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
 
-  import { onMounted as mounted, watch } from 'vue'
-  import { load } from '@/use/itemid'
   import { use as use_sync } from '@/use/sync'
   import { use as use_statements } from '@/use/statements'
-  import { use_me, get_my_itemid, from_e64 } from '@/use/people'
+  import { use_me, get_my_itemid } from '@/use/people'
 
-  const emit = defineEmits(['active'])
   const { me } = use_me()
   const { my_statements: my_editable_statements } = use_statements()
   const { poster, events, sync_element: sync } = use_sync()

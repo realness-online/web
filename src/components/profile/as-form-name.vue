@@ -23,7 +23,7 @@
   </form>
 </template>
 <script setup>
-  import { computed, ref } from 'vue'
+  import { ref } from 'vue'
   import { use_me } from '@/use/people'
   const emit = defineEmits(['valid'])
   const { me, save, is_valid_name } = use_me()

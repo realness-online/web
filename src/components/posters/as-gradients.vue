@@ -25,9 +25,9 @@
     <g class="vertical">
       <linearGradient :id="query('vertical')" x1="0" x2="0" y1="0" y2="100%">
         <stop
-          itemprop="vertical"
           v-for="stop in vertical"
           :key="stop.offset"
+          itemprop="vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
       </linearGradient>
@@ -110,10 +110,10 @@
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
-  import { ref, watchEffect as watch_effect, computed } from 'vue'
+  import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector_id, use_poster } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
-  import { color_to_hsla, hsla_to_color } from '@/use/colors'
+  import { hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
   const background = 80
   const light = 66

@@ -214,9 +214,7 @@
                   online.
                 </a>
                 I keep a
-                <a href="https://scott-fryxell.github.io/" rel="external"
-                  >blog</a
-                >
+                <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
                 of all my feelings and nerd problems. My resume is on there. I
                 want to support the web iterate.
               </p>
@@ -356,11 +354,9 @@
   </section>
 </template>
 <script setup>
-  import { ref } from 'vue'
   import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
-  const current_picture = ref(16)
 </script>
 <style lang="stylus">
   section.page#about

@@ -37,7 +37,6 @@
       async get_vector_name() {
         const info = this.itemid.split('/')
         const author_id = `/${info[1]}`
-        const type = `${info[2]}`
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
         const facts = `${time}.svg`

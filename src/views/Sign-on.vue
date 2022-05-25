@@ -22,19 +22,17 @@
 
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
-  import { Me } from '@/persistance/Storage'
   import { use_me, default_me } from '@/use/People'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'
   import {
     ref,
     computed,
-    nextTick as next_tick,
     watchEffect as watch_effect,
     onMounted as mounted
   } from 'vue'
   const router = use_router()
-  const { me, save, is_valid_name } = use_me()
+  const { me, is_valid_name } = use_me()
   const nameless = ref(false)
   const index_db_keys = ref([])
   const cleanable = computed(() => {
@@ -66,11 +64,12 @@
     }
   })
   watch_effect(() => {
-    console.log('watch_effect')
-    if (current_user.value) me.value.mobile = undefined
-    else if (!is_valid_name.value) {
-      console.log('you need a name')
-      nameless.value = true
+    if (current_user.value) {
+      me.value.mobile = undefined
+      if (!is_valid_name.value) {
+        console.log('you need a name')
+        nameless.value = true
+      }
     }
   })
 </script>
