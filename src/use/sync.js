@@ -51,10 +51,10 @@ export const use = () => {
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
+      me.value = await load(from_e64(current_user.value.phoneNumber))
       me.value.visited = new Date().toISOString()
       await next_tick()
       await new Me().save()
-      me.value = await load(from_e64(current_user.value.phoneNumber))
     }
   }
   const prune = async () => {
