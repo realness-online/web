@@ -26,7 +26,7 @@
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
   import { useRouter as use_router } from 'vue-router'
-  import { ref, computed, nextTick as next_tick } from 'vue'
+  import { computed } from 'vue'
   import { use_me, is_person } from '@/use/people'
   const props = defineProps({
     person: {
@@ -42,7 +42,7 @@
   })
   const router = use_router()
   const { relations } = use_me()
-  const saving = ref(false)
+
   const is_me = computed(() => {
     if (localStorage.me === props.person.id) return true
     else return false

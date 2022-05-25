@@ -2,7 +2,7 @@ import { list, load } from '@/use/itemid'
 import { current_user, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
 import { Me } from '@/persistance/Storage'
-import { ref, computed, watch, nextTick as next_tick } from 'vue'
+import { ref, computed, nextTick as next_tick } from 'vue'
 console.log('instantiated people.js')
 
 export const default_me = {

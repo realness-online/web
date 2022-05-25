@@ -26,7 +26,7 @@
   import AsFigure from '@/components/profile/as-figure'
   import SignOn from '@/components/profile/sign-on'
 
-  import { ref, watch, onMounted as mounted } from 'vue'
+  import { watch, onMounted as mounted } from 'vue'
   import { current_user } from '@/use/serverless'
   import { use as use_people } from '@/use/people'
 

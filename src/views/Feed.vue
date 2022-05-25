@@ -50,7 +50,7 @@
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
     use_fullscreen(feed)
   const { f } = use_magic_keys()
-  const { people, load_people } = use_people()
+  const { people } = use_people()
   const {
     for_person: statements_for_person,
     statements,

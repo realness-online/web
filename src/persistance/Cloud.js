@@ -1,8 +1,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove } from '@/use/serverless'
 import hash from 'object-hash'
-import { get, set, del } from 'idb-keyval'
-import { as_filename, as_directory_id } from '@/use/itemid'
+import { get, set } from 'idb-keyval'
+import { as_filename } from '@/use/itemid'
 
 const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }

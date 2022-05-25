@@ -47,17 +47,16 @@
   import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
 
-  import { current_user, sign_off } from '@/use/serverless'
+  import { current_user } from '@/use/serverless'
   import { use as use_statements } from '@/use/statements'
   import { use as use_person, get_my_itemid } from '@/use/people'
 
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
-
+  const working = ref(true)
   const emit = defineEmits(['update:person'])
   const pages_viewed = ref(['index'])
-  const settings = ref(false)
-  const working = ref(true)
+
   const currently_focused = ref(null)
   const router = use_router()
   const me = {
@@ -79,10 +78,6 @@
     return thought.some(statement =>
       my_statements.value.some(s => s.id === statement.id)
     )
-  }
-  const signoff = () => {
-    sign_off()
-    router.push({ path: '/sign-on' })
   }
   const home = () => router.push({ path: '/' })
   const thought_focused = async statement => {

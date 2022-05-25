@@ -17,14 +17,15 @@ import {
   StringFormat
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
-import { ref, watch } from 'vue'
-import {me , from_e64} from '@/use/people'
+import { ref } from 'vue'
+import { me , from_e64 } from '@/use/people'
 import { load } from '@/use/itemid'
 console.log('instantiated serverless')
 if (navigator.onLine && import.meta.env.PROD) {
   try {
-    const response = await fetch('__/firebase/init.json')
-    await set('firebase-keys', await response.json())
+    fetch('__/firebase/init.json').then(async response => {
+      await set('firebase-keys', await response.json())
+    })
   } catch (e) {
     console.log(e)
   }

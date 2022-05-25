@@ -128,7 +128,7 @@
     else if (!selected_path.value) return true
     else return false
   })
-  const is_using = type => {
+  const is_using = () => {
     const layer = selected_path.value
     if (layer) return true
     return false

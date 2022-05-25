@@ -1,5 +1,4 @@
 <script setup>
-  import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
 </script>
 <template>

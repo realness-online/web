@@ -19,8 +19,8 @@
       @focus="focus('background')" />
     <as-path
       v-if="vector.light"
-      itemprop="light"
       :id="query('light')"
+      itemprop="light"
       :path="vector.light"
       :tabindex="tabindex"
       :fill="`url(${fragment('vertical-light')})`"
@@ -28,8 +28,8 @@
       @focus="focus('light')" />
     <as-path
       v-if="vector.regular"
-      itemprop="regular"
       :id="query('regular')"
+      itemprop="regular"
       :path="vector.regular"
       :tabindex="tabindex"
       :fill="`url(${fragment('horizontal-regular')})`"
@@ -37,23 +37,21 @@
       @focus="focus('regular')" />
     <as-path
       v-if="vector.bold"
-      itemprop="bold"
       :id="query('bold')"
+      itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      @focus="focus('bold')"
       :fill="`url(${fragment('vertical-bold')}`"
-      :stroke="`url(${fragment('radial-regular')}`" />
+      :stroke="`url(${fragment('radial-regular')}`"
+      @focus="focus('bold')" />
 
     <as-emboss v-if="show_emboss" :itemid="itemid" />
   </svg>
 </template>
 <script setup>
   import AsPath from '@/components/posters/as-path'
-  import AsUse from '@/components/posters/as-use'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
-  import AsFilters from '@/components/posters/as-filters'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import { watchEffect as watch_effect, ref, inject, computed } from 'vue'

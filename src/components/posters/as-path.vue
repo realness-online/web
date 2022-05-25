@@ -12,7 +12,7 @@
     fill-rule="evenodd" />
 </template>
 <script setup>
-  import { ref, watchEffect as watch_effect, inject } from 'vue'
+  import { ref, watchEffect as watch_effect, onMounted as mounted } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
   const path = ref(null)
@@ -42,16 +42,23 @@
     }
   })
 
-  const fill = ref(props.fill)
-  const stroke = ref(props.stroke)
-
-  if (props.path.style.color) stroke.value = props.path.style.color
-  if (props.path.style.fill) fill.value = props.path.style.fill
-  const d = ref(props.path.getAttribute('d'))
-  const fill_opacity = ref(props.path.style.fillOpacity)
-  const stroke_opacity = ref(props.path.style.strokeOpacity)
+  const fill = ref(undefined)
+  const stroke = ref(undefined)
+  const d = ref(undefined)
+  const fill_opacity = ref(undefined)
+  const stroke_opacity = ref(undefined)
   const stroke_width = ref(undefined)
-  if (props.path.style.color) stroke_width.value = '0.33px'
+  mounted(() => {
+    fill.value = props.fill
+    stroke.value = props.stroke
+    d.value = props.path.getAttribute('d')
+    fill_opacity.value = props.path.style.fillOpacity
+    stroke_opacity.value = props.path.style.strokeOpacity
+
+    if (props.path.style.color) stroke_width.value = '0.33px'
+    if (props.path.style.color) stroke.value = props.path.style.color
+    if (props.path.style.fill) fill.value = props.path.style.fill
+  })
   watch_effect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">

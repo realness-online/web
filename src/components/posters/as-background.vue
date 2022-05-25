@@ -8,7 +8,7 @@
 </template>
 <script setup>
   import { use_poster, is_rect, is_url_query } from '@/use/vector'
-  import { ref } from 'vue'
+  import { ref, onMounted as mounted } from 'vue'
   const props = defineProps({
     tabable: {
       type: Boolean,
@@ -27,9 +27,12 @@
     }
   })
   const { tabindex } = use_poster(props)
-  const fill = ref(props.fill)
-  if (props.rect?.style.fill) fill.value = props.rect?.style.fill
-  if (props.rect?.fill) fill.value = props.rect?.fill
+  const fill = ref(null)
+  mounted(() => {
+    fill.value = props.fill
+    if (props.rect?.style.fill) fill.value = props.rect?.style.fill
+    if (props.rect?.fill) fill.value = props.rect?.fill
+  })
 </script>
 <style lang="stylus">
   rect[itemprop="background"]
