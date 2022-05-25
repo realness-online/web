@@ -54,7 +54,8 @@ export const use_me = () => {
       await new Me().save()
     }
   }
-  const is_valid_name = computed(() => {
+  const is_valid_name = computed(async () => {
+    await next_tick()
     let length = 0
     if (!me.value) return false
 
