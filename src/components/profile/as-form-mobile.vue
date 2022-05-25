@@ -70,6 +70,7 @@
   const show_authorize = ref(false)
   const show_captcha = ref(false)
   const hide_captcha = ref(false)
+  const country_code = ref('US')
   const show_code = ref(false)
   const show_mobile_input = computed(() => {
     if (working.value) return false
@@ -77,14 +78,14 @@
   })
   const mobile_display = computed(() => {
     if (me.value.mobile)
-      return new validator.value.AsYouType('US').input(me.value.mobile)
+      return new validator.value.AsYouType(country_code.value).input(me.value.mobile)
     else return 'Mobile'
   })
   const validate_mobile_number = () => {
     let is_valid = false
     if (!validator.value) return false
     if (me.value.mobile)
-      is_valid = validator.value.parseNumber(me.value.mobile, 'US').phone
+      is_valid = validator.value.parseNumber(me.value.mobile, country_code.value).phone
     disabled_sign_in.value = !is_valid
     return is_valid
   }
@@ -140,7 +141,7 @@
   }
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const phone_number = validator.value.parseNumber(past_text, 'US').phone
+    const phone_number = validator.value.parseNumber(past_text, country_code.value).phone
     if (phone_number) {
       me.value.mobile = phone_number
       return validate_mobile_number()
