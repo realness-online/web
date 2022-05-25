@@ -30,7 +30,7 @@ export async function size(image, size = 512) {
 export async function make(image) {
   let poster = await as_paths(image, potrace_options)
   if (to_kb(poster) > 600) {
-    console.log('poster is too large, resizing')
+    console.info('poster is too large, resizing')
     image = await size(image, 400) //from 512 to 400
     poster = await as_paths(image, potrace_options)
   }

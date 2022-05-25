@@ -24,7 +24,6 @@ export const use = () => {
   const load_people = async ids => await Promise.all(ids.map(load_person))
   const load_phonebook = async () => {
     if (current_user.value && !phonebook.value.length) {
-      console.log('load_phonebook')
       const people = await directory('/people/')
       await Promise.all(
         people.prefixes.map(async phone_number => {
@@ -52,7 +51,6 @@ export const use_me = () => {
   const save = async () => {
     if (me.value) {
       await next_tick()
-      console.log('save me', me)
       await new Me().save()
     }
   }

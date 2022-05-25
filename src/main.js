@@ -8,7 +8,7 @@ if (!me) localStorage.me = '/+'
 
 const update_servie_worker = registerSW({
   onOfflineReady() {
-    console.log('offline-ready', update_servie_worker)
+    console.info('offline-ready', update_servie_worker)
   }
 })
 
