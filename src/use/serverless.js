@@ -18,7 +18,7 @@ import {
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
-import { me , from_e64 } from '@/use/people'
+import { me, from_e64 } from '@/use/people'
 import { load } from '@/use/itemid'
 console.log('instantiated serverless')
 if (navigator.onLine && import.meta.env.PROD) {
@@ -55,6 +55,7 @@ auth_changed(auth, user => {
   if (user) {
     current_user.value = user
     localStorage.me = from_e64(current_user.value.phoneNumber)
+    me.value.id = localStorage.me
     load(localStorage.me).then(maybe_me => {
       if (maybe_me) me.value = maybe_me
     })
