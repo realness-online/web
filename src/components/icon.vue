@@ -20,6 +20,8 @@
 <style lang="stylus">
   svg.icon:active
     transform: scale(0.95)
+    outline: 1px double currentColor
+    outline-offset: base-line * 0.25
   svg.icon.gear:active
     transition-timing-function: ease
     transition-duration: 0.66s

@@ -47,7 +47,7 @@
   const clean = async () => {
     localStorage.clear()
     localStorage.me = '/+'
-    me.value = null
+    me.value = default_me
     await clear()
     router.push({ path: '/' })
   }
