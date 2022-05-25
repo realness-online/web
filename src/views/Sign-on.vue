@@ -1,4 +1,5 @@
 <template>
+
   <section id="sign-on" class="page">
     <header>
       <profile-as-figure v-if="me" :person="me">
@@ -47,7 +48,7 @@
     localStorage.me = '/+'
     me.value = default_me
     await clear()
-    router.push({ path: '/' })
+    window.location.href = '/'
   }
   const signed_on = async () => {
     const my_profile = await load(localStorage.me)
