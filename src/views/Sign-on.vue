@@ -58,18 +58,12 @@
   mounted(async () => {
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
-    if (current_user.value && !is_valid_name.value) {
-      console.log('you need a name')
-      nameless.value = true
-    }
+    if (current_user.value && !is_valid_name.value)  nameless.value = true
   })
   watch_effect(() => {
     if (current_user.value) {
       me.value.mobile = undefined
-      if (!is_valid_name.value) {
-        console.log('you need a name')
-        nameless.value = true
-      }
+      if (!is_valid_name.value)  nameless.value = true
     }
   })
 </script>

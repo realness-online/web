@@ -232,6 +232,6 @@ export const i_am_fresh = () => {
   }
   const time_left = eight_hours - synced
   const am_i_fresh = time_left > 0
-  console.log('i_am_fresh', am_i_fresh, time_left)
+  console.info('i_am_fresh', am_i_fresh, time_left)
   return am_i_fresh
 }

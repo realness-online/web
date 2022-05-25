@@ -51,7 +51,6 @@ export const sign_in = signInWithPhoneNumber
 export const sign_off = () => sign_out(auth)
 export const current_user = ref(null)
 auth_changed(auth, user => {
-  console.log('auth_changed')
   if (user) {
     current_user.value = user
     localStorage.me = from_e64(current_user.value.phoneNumber)
@@ -66,12 +65,7 @@ auth_changed(auth, user => {
 const storage = get_storage(app.value)
 export const location = path => reference(storage, path)
 export const metadata = async path => get_metadata(location(path))
-
-export const upload = (path, data, meta) => {
-  console.log('upload', path)
-  upload_file(location(path), data, StringFormat.raw, meta)
-}
-
+export const upload = (path, data, meta) => upload_file(location(path), data, StringFormat.raw, meta)
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => {
