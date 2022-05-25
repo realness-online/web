@@ -38,10 +38,9 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
 
-  import { from_e64 } from '@/use/people'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/vector'
-  import { use as use_person, use_me } from '@/use/people'
+  import { use as use_person, use_me, from_e64 } from '@/use/people'
   import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
 

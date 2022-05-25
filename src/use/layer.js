@@ -10,7 +10,7 @@ export const is_use = path => {
   else return false
 }
 export const is_url_query = query => {
-  console.log(query)
+  console.log('is_url_query', query)
   return true
 }
 export const settings_query = name => {

@@ -35,11 +35,9 @@
 
   import { onMounted as mounted, watch } from 'vue'
   import { load } from '@/use/itemid'
-  import { from_e64 } from '@/use/people'
-  import { current_user } from '@/use/serverless'
   import { use as use_sync } from '@/use/sync'
   import { use as use_statements } from '@/use/statements'
-  import { use_me, get_my_itemid } from '@/use/people'
+  import { use_me, get_my_itemid, from_e64 } from '@/use/people'
 
   const emit = defineEmits(['active'])
   const { me } = use_me()
