@@ -23,7 +23,7 @@
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
   import { Me } from '@/persistance/Storage'
-  import { use_me } from '@/use/People'
+  import { use_me, default_me } from '@/use/People'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'
   import {

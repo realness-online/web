@@ -1,9 +1,10 @@
 import hash from 'object-hash'
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, list, load } from '@/use/itemid'
+import { as_filename, as_author, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
-import { from_e64, use_me } from '@/use/people'
+import { current_user } from '@/use/serverless'
+import { from_e64, use_me, get_my_itemid } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import get_item from '@/use/item'
 import {
@@ -14,8 +15,6 @@ import {
   nextTick as next_tick,
   getCurrentInstance as current_instance
 } from 'vue'
-import { current_user } from '@/use/serverless'
-import { get_my_itemid } from '@/use/people'
 
 export const three_minutes = 180000
 export const five_minutes = 300000
@@ -39,16 +38,14 @@ export const use = () => {
     if (!navigator.onLine || !current_user.value) return
     await sync_offline_actions()
     if (i_am_fresh()) return
-    // setTimeout(async () => {
     emit('active', true)
+    localStorage.sync_time = new Date().toISOString()
     await prune()
     await sync_me()
     await sync_statements()
     await sync_events()
     await sync_anonymous_posters()
-    localStorage.sync_time = new Date().toISOString()
     emit('active', false)
-    // }, 1000)
   }
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()

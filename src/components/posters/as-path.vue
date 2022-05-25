@@ -20,10 +20,8 @@
     itemprop: {
       type: String,
       required: true,
-      validate: itemprop => {
-        console.log(itemprop)
-        return ['light', 'regular', 'bold'].some(valid => valid === itemprop)
-      }
+      validate: itemprop =>
+        ['light', 'regular', 'bold'].some(valid => valid === itemprop)
     },
     path: {
       type: Object,

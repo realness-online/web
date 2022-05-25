@@ -29,10 +29,7 @@
   const { tabindex } = use_poster(props)
   const fill = ref(props.fill)
   if (props.rect?.style.fill) fill.value = props.rect?.style.fill
-  if (props.rect?.fill) {
-    console.log('has fill attribute', props.rect.fill)
-    fill.value = props.rect?.fill
-  }
+  if (props.rect?.fill) fill.value = props.rect?.fill
 </script>
 <style lang="stylus">
   rect[itemprop="background"]
