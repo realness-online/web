@@ -48,7 +48,7 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import { auth, Recaptcha, sign_in, app } from '@/use/serverless'
+  import { app, auth, Recaptcha, sign_in } from '@/use/serverless'
   import { as_phone_number, use_me } from '@/use/people'
   import {
     watch,
@@ -103,18 +103,20 @@
         size: 'invisible',
         callback: text_human_verify_code
       },
-      auth
+      auth.value
     )
     human.value.verify()
   }
   const text_human_verify_code = async () => {
     working.value = false
     show_code.value = true
-    // show_captcha.value = false
     hide_captcha.value = true
-    console.log('me.mobile', me.value.mobile)
     await next_tick()
-    authorizer.value = await sign_in(auth, `+${me.value.mobile}`, human.value)
+    authorizer.value = await sign_in(
+      auth.value,
+      `+${me.value.mobile}`,
+      human.value
+    )
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }

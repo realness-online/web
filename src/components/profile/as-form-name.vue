@@ -30,9 +30,10 @@
   const button = ref()
   const save_me = async () => {
     me.value.visited = new Date().toISOString()
-    await save()
-    console.log('saved', me.value)
-    if (is_valid_name.value) emit('valid')
+    if (is_valid_name.value) {
+      await save()
+      emit('valid')
+    }
   }
   const modified_check = async () => {
     if (is_valid_name.value) button.value.disabled = false
