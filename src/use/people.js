@@ -2,28 +2,25 @@ import { list, load } from '@/use/itemid'
 import { current_user, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
 import { Me } from '@/persistance/Storage'
-import {
-  ref,
-  computed,
-  watchEffect as watch_effect,
-  nextTick as next_tick
-} from 'vue'
+import { ref, computed, watch, nextTick as next_tick } from 'vue'
+console.trace('instantiated people.js')
 
-const me = ref(null)
+export const default_me = {
+  id: localStorage.me,
+  type: 'person'
+}
+const me = ref(default_me)
 const relations = ref(null)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
-watch_effect(async () => {
+const inited = ref(false)
+watch(current_user, async () => {
+  if (inited.value) return
+  inited.value = true
+  console.log('watch:current_user')
   if (current_user.value) {
     localStorage.me = from_e64(current_user.value.phoneNumber)
-    me.value = await load(localStorage.me) // load after I know about current_user
-  } else if (!me.value) me.value = await load(localStorage.me) // load signed out users with a profile
-
-  if (!me.value) {
-    console.log('brand new person')
-    me.value = {
-      id: localStorage.me,
-      type: 'person'
-    }
+    const maybe_me = await load(localStorage.me) // load signed out users with a profile
+    if (maybe_me) me.value = maybe_me
   }
   relations.value = await list(`${localStorage.me}/relations`)
 })
@@ -69,6 +66,8 @@ export const use_me = () => {
   }
   const is_valid_name = computed(() => {
     let length = 0
+    if (!me.value) return false
+
     if (me.value.first_name) length = me.value.first_name.length
     else return false // first name is required
 
