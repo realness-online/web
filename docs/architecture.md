@@ -17,13 +17,12 @@ We use Vue.js, workers, Firebase Auth & Storage primarily. Design is applied wit
 
 ### Data structure
 
-Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Avatars`, `Statements`, `Events`, and `Posters`
+Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Statements`, `Events`, and `Posters`
 
 ```
 index.html
 statements/index.html
 events/index.html
-avatars/${created-at}.html
 posters/${created-at}.html
 ```
 

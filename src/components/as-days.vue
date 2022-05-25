@@ -39,11 +39,6 @@
         required: false,
         default: () => []
       },
-      avatars: {
-        type: Array,
-        required: false,
-        default: () => []
-      },
       events: {
         type: Array,
         required: false,

@@ -15,7 +15,7 @@
       :statements="statements">
       <template v-for="item in items">
         <poster-as-figure
-          v-if="item.type === 'posters' || item.type === 'avatars'"
+          v-if="item.type === 'posters'"
           :key="slot_key(item)"
           :itemid="item.id"
           :verbose="true" />
@@ -68,6 +68,7 @@
     people.value.push(me)
     await Promise.all(
       people.value.map(async relation => {
+        console.log(relation.id)
         await Promise.all([
           statements_for_person(relation),
           posters_for_person(relation)
