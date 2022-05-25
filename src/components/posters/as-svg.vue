@@ -148,7 +148,6 @@
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
-  svg[itemtype="/avatars"]
     aspect-ratio: 16 / 9
     display: block
     min-height: 512px

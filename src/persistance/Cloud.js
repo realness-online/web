@@ -4,7 +4,7 @@ import hash from 'object-hash'
 import { get, set } from 'idb-keyval'
 import { as_filename } from '@/use/itemid'
 
-const networkable = ['person', 'statements', 'posters', 'avatars', 'events']
+const networkable = ['person', 'statements', 'posters', 'events']
 export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 
 export async function sync_later(id, action) {
@@ -27,7 +27,8 @@ export const Cloud = superclass =>
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      console.info('request:save', this.id, items)
+      console.trace('request:save')
+      console.log('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
       if (networkable.includes(this.type))

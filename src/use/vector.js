@@ -24,7 +24,7 @@ export const is_vector = vector => {
     if (!vector.gradients.height) return false
     if (!vector.gradients.radial) return false
   }
-  if (vector.type === 'posters' || vector.type === 'avatars') return true
+  if (vector.type === 'posters') return true
   else return false
 }
 export const is_vector_id = itemid => {
@@ -167,20 +167,11 @@ export const use_poster = (props, emit) => {
 export const use_posters = () => {
   const posters = ref([])
   const for_person = async person => {
-    const [post, avatars] = await Promise.all([
-      as_directory(`${person.id}/posters`),
-      as_directory(`${person.id}/avatars`)
-    ])
-    post.items.forEach(created_at => {
+    const directory = await as_directory(`${person.id}/posters`)
+    directory.items.forEach(created_at => {
       posters.value.push({
         id: `${person.id}/posters/${created_at}`,
         type: 'posters'
-      })
-    })
-    avatars.items.forEach(created_at => {
-      posters.value.push({
-        id: `${person.id}/avatars/${created_at}`,
-        type: 'avatars'
       })
     })
     posters.value.sort(recent_item_first)

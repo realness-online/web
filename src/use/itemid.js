@@ -79,7 +79,7 @@ export async function as_download_url(itemid) {
 }
 
 // Cheap to call
-const created_at = ['avatars', 'posters', 'animations']
+const created_at = ['posters', 'animations']
 const has_history = ['statements', 'events']
 export function is_history(itemid) {
   const parts = as_path_parts(itemid)
