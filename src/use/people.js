@@ -3,27 +3,16 @@ import { current_user, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
 import { Me } from '@/persistance/Storage'
 import { ref, computed, watch, nextTick as next_tick } from 'vue'
-console.trace('instantiated people.js')
+console.log('instantiated people.js')
 
 export const default_me = {
   id: localStorage.me,
   type: 'person'
 }
-const me = ref(default_me)
+export const me = ref(default_me)
 const relations = ref(null)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
-const inited = ref(false)
-watch(current_user, async () => {
-  if (inited.value) return
-  inited.value = true
-  console.log('watch:current_user')
-  if (current_user.value) {
-    localStorage.me = from_e64(current_user.value.phoneNumber)
-    const maybe_me = await load(localStorage.me) // load signed out users with a profile
-    if (maybe_me) me.value = maybe_me
-  }
-  relations.value = await list(`${localStorage.me}/relations`)
-})
+
 export const use = () => {
   const working = ref(true)
   const people = ref([])
@@ -57,6 +46,9 @@ export const use = () => {
   }
 }
 export const use_me = () => {
+  list(`${localStorage.me}/relations`).then(list => {
+    relations.value = list
+  })
   const save = async () => {
     if (me.value) {
       await next_tick()

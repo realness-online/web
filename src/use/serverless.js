@@ -17,8 +17,10 @@ import {
   StringFormat
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
-import { ref } from 'vue'
-
+import { ref, watch } from 'vue'
+import {me , from_e64} from '@/use/people'
+import { load } from '@/use/itemid'
+console.log('instantiated serverless')
 if (navigator.onLine && import.meta.env.PROD) {
   try {
     const response = await fetch('__/firebase/init.json')
@@ -48,8 +50,14 @@ export const sign_in = signInWithPhoneNumber
 export const sign_off = () => sign_out(auth)
 export const current_user = ref(null)
 auth_changed(auth, user => {
-  if (user) current_user.value = user
-  else current_user.value = null
+  console.log('auth_changed')
+  if (user) {
+    current_user.value = user
+    localStorage.me = from_e64(current_user.value.phoneNumber)
+    load(localStorage.me).then(maybe_me => {
+      if (maybe_me) me.value = maybe_me
+    })
+  } else current_user.value = null
 })
 
 // storage methods

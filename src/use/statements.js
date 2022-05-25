@@ -5,6 +5,7 @@ import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000
 const links = ['http://', 'https://']
 const my_statements = ref([])
+console.log('instantiated statements.js')
 
 export const use = () => {
   const authors = ref([])

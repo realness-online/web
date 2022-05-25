@@ -103,7 +103,7 @@
         size: 'invisible',
         callback: text_human_verify_code
       },
-      auth.value
+      auth
     )
     human.value.verify()
   }
@@ -113,7 +113,7 @@
     hide_captcha.value = true
     await next_tick()
     authorizer.value = await sign_in(
-      auth.value,
+      auth,
       `+${me.value.mobile}`,
       human.value
     )
