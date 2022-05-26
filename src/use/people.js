@@ -1,16 +1,14 @@
 import { list, load } from '@/use/itemid'
-import { current_user, directory } from '@/use/serverless'
+import { current_user, me, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
 import { Me } from '@/persistance/Storage'
 import { ref, computed, nextTick as next_tick } from 'vue'
 console.log('instantiated people.js')
-
-export const default_me = {
+export const default_person = {
   id: localStorage.me,
   type: 'person'
 }
-export const me = ref(default_me)
-const relations = ref(null)
+const relations = ref(undefined)
 const phonebook = ref([]) // phone book is expensive so just load it once per session
 
 export const use = () => {

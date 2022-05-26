@@ -18,7 +18,7 @@ import {
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
-import { me, from_e64 } from '@/use/people'
+import { from_e64, default_person } from '@/use/people'
 import { load } from '@/use/itemid'
 console.log('instantiated serverless')
 if (navigator.onLine && import.meta.env.PROD) {
@@ -38,18 +38,21 @@ if (navigator.onLine && import.meta.env.PROD) {
     storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID
   }
-  await set('firebase-keys', dev_keys)
+  set('firebase-keys', dev_keys)
 }
 
 const firebase_keys = await get('firebase-keys')
 export const app = ref(initialize_firebase(firebase_keys))
 
 // Auth methods
+
 export const auth = init_auth(app.value)
 export const Recaptcha = RecaptchaVerifier
 export const sign_in = signInWithPhoneNumber
 export const sign_off = () => sign_out(auth)
-export const current_user = ref(null)
+export const current_user = ref(undefined)
+export const me = ref(default_person)
+
 auth_changed(auth, user => {
   if (user) {
     current_user.value = user
