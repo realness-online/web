@@ -119,6 +119,7 @@
       },
       statements_by_people(statements) {
         const people = new Map()
+        if(!statements) return []
         statements.forEach(item => {
           const author = as_author(item.id)
           let statements = people.get(author)
