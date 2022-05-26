@@ -74,11 +74,12 @@ export const use = () => {
     })
   }
   const is_stranger = async id => {
-    relations.value.push({
+    const friends = [...relations.value]
+    friends.push({
       id: localStorage.me,
       type: 'person'
     })
-    const is_friend = relations.value.some(relation => {
+    const is_friend = friends.some(relation => {
       if (relation.id === id) return true
       else return false
     })
