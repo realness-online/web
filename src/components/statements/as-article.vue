@@ -123,7 +123,6 @@
       justify-content: flex-start
       flex-direction: row
       margin: 0 0 base-line 0
-
       & > a > svg
         width: base-line * 2
         height: base-line * 2
