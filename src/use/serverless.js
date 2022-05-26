@@ -1,3 +1,4 @@
+console.log('instantiated serverless')
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import {
   RecaptchaVerifier,
@@ -18,9 +19,9 @@ import {
 } from 'firebase/storage'
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
-import { from_e64, default_person } from '@/use/people'
 import { load } from '@/use/itemid'
-console.log('instantiated serverless')
+import { from_e64, default_person } from '@/use/people'
+
 if (navigator.onLine && import.meta.env.PROD) {
   try {
     fetch('__/firebase/init.json').then(async response => {
@@ -68,7 +69,8 @@ auth_changed(auth, user => {
 const storage = get_storage(app.value)
 export const location = path => reference(storage, path)
 export const metadata = async path => get_metadata(location(path))
-export const upload = (path, data, meta) => upload_file(location(path), data, StringFormat.raw, meta)
+export const upload = (path, data, meta) =>
+  upload_file(location(path), data, StringFormat.raw, meta)
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => {

@@ -5,6 +5,7 @@
   </main>
 </template>
 <script setup>
+  console.log('App.vue setup')
   import sync from '@/components/sync'
   import {
     ref,
