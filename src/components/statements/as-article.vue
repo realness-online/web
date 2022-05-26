@@ -2,7 +2,8 @@
   <article class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
-        <as-avatar :itemid="author.avatar" class="icon" />
+        <as-avatar v-if="author.avatar" :itemid="author.avatar" class="icon" />
+        <icon v-else name="silhouette" />
       </router-link>
       <address>
         <span>{{ author.first_name }}</span>
@@ -29,11 +30,13 @@
 <script>
   import { load, as_author, as_created_at } from '@/use/itemid'
   import { as_time } from '@/use/date'
+  import Icon from '@/components/Icon'
   import as_statement from '@/components/statements/as-div'
   import as_avatar from '@/components/posters/as-svg'
   import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
+      'icon': Icon,
       'as-avatar': as_avatar,
       'as-messenger': as_messenger,
       'as-statement': as_statement
@@ -120,6 +123,7 @@
       justify-content: flex-start
       flex-direction: row
       margin: 0 0 base-line 0
+
       & > a > svg
         width: base-line * 2
         height: base-line * 2
@@ -128,6 +132,8 @@
         shape-outside: circle()
         border-radius: (base-line * 2)
         margin-right: round((base-line / 4), 2)
+        &.icon
+          fill: blue
       & > address
         flex:1
         margin: 0
