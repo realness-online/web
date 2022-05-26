@@ -23,7 +23,7 @@
 
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
-  import { use_me, default_me } from '@/use/People'
+  import { use_me, default_person } from '@/use/People'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'
   import {
@@ -46,7 +46,7 @@
   const clean = async () => {
     localStorage.clear()
     localStorage.me = '/+'
-    me.value = default_me
+    me.value = default_person
     await clear()
     window.location.href = '/'
   }

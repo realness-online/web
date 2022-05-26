@@ -33,7 +33,7 @@ export const use = () => {
   const events = ref(null)
   const sync_element = ref(null)
   const play = async () => {
-    if (!me.value) return // Do nothing until there is a person
+    if (!me.value && !current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -49,9 +49,10 @@ export const use = () => {
     emit('active', false)
   }
   const visit = async () => {
+    console.trace(me.value)
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
-      me.value = await load(from_e64(current_user.value.phoneNumber))
+      me.value = await load(localStorage.me)
       me.value.visited = new Date().toISOString()
       await next_tick()
       await new Me().save()
