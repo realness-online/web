@@ -68,7 +68,6 @@
     people.value.push(me)
     await Promise.all(
       people.value.map(async relation => {
-        console.log(relation.id)
         await Promise.all([
           statements_for_person(relation),
           posters_for_person(relation)

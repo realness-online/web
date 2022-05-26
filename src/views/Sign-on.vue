@@ -39,7 +39,7 @@
     if (current_user.value) return false
     if (localStorage.me.length > 2) return true
     if (localStorage.length > 2) return true
-    if (index_db_keys.value.length > 0) return true
+    if (index_db_keys.value.length > 1) return true
     else return false
   })
   const clean = async () => {
@@ -58,13 +58,10 @@
   mounted(async () => {
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
-    if (current_user.value && !is_valid_name.value) nameless.value = true
   })
   watch_effect(() => {
-    if (current_user.value) {
-      me.value.mobile = undefined
-      if (!is_valid_name.value) nameless.value = true
-    }
+    console.log('this gets run')
+    if (current_user.value && !is_valid_name.value) nameless.value = true
   })
 </script>
 <style lang="stylus">

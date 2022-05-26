@@ -24,12 +24,12 @@
 </template>
 <script setup>
   import { ref } from 'vue'
+  import { me } from '@/use/serverless'
   import { use_me } from '@/use/people'
   const emit = defineEmits(['valid'])
-  const { me, save, is_valid_name } = use_me()
+  const { save, is_valid_name } = use_me()
   const button = ref()
   const save_me = async () => {
-    me.value.visited = new Date().toISOString()
     if (is_valid_name.value) {
       await save()
       emit('valid')

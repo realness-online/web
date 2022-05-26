@@ -77,15 +77,21 @@
     return true
   })
   const mobile_display = computed(() => {
-    if (me.value.mobile)
-      return new validator.value.AsYouType(country_code.value).input(me.value.mobile)
+    if (mobile_number.value)
+      return new validator.value.AsYouType(country_code.value).input(
+        mobile_number.value
+      )
     else return 'Mobile'
   })
   const validate_mobile_number = () => {
     let is_valid = false
     if (!validator.value) return false
-    if (me.value.mobile)
-      is_valid = validator.value.parseNumber(me.value.mobile, country_code.value).phone
+
+    if (mobile_number.value)
+      is_valid = validator.value.parseNumber(
+        mobile_number.value,
+        country_code.value
+      ).phone
     disabled_sign_in.value = !is_valid
     return is_valid
   }
@@ -104,7 +110,7 @@
         size: 'invisible',
         callback: text_human_verify_code
       },
-      auth
+      auth.value
     )
     human.value.verify()
   }
@@ -114,8 +120,8 @@
     hide_captcha.value = true
     await next_tick()
     authorizer.value = await sign_in(
-      auth,
-      `+${me.value.mobile}`,
+      auth.value,
+      `+${mobile_number.value}`,
       human.value
     )
     document.querySelector('#verification-code').scrollIntoView(false)
@@ -141,9 +147,12 @@
   }
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const phone_number = validator.value.parseNumber(past_text, country_code.value).phone
+    const phone_number = validator.value.parseNumber(
+      past_text,
+      country_code.value
+    ).phone
     if (phone_number) {
-      me.value.mobile = phone_number
+      mobile_number.value = phone_number
       return validate_mobile_number()
     } else return false
   }
@@ -153,18 +162,11 @@
     const input = document.querySelector('#verification-code')
     if (input.value.length === 5) button.disabled = false
   }
-
-  watch(mobile_number, () => {
-    me.value.mobile = mobile_number.value
-  })
   mounted(async () => {
     validator.value = await import('libphonenumber-js')
     working.value = false
-
-    me.value.mobile = as_phone_number(me.value.id)
-    if (!me.value.mobile.length) me.value.mobile = null
+    mobile_number.value = as_phone_number(me.value.id)
     show_authorize.value = true
-    mobile_number.value = me.value.mobile
     validate_mobile_number()
   })
 </script>
