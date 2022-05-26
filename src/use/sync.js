@@ -4,7 +4,7 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
-import { from_e64, use_me, get_my_itemid } from '@/use/people'
+import { get_my_itemid } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import get_item from '@/use/item'
 import {
@@ -27,7 +27,8 @@ export const does_not_exist = { updated: null, customMetadata: { md5: null } } /
 
 export const use = () => {
   const { emit, props } = current_instance()
-  const { me, relations } = use_me()
+  const me = ref(undefined)
+  const relations = ref(undefined)
   const { my_statements: statements } = use_statements()
   const poster = ref(null)
   const events = ref(null)
@@ -49,7 +50,6 @@ export const use = () => {
     emit('active', false)
   }
   const visit = async () => {
-    console.trace(me.value)
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
       me.value = await load(localStorage.me)
@@ -180,6 +180,8 @@ export const use = () => {
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
+    me.value = await load(localStorage.me)
+    relations.value = await load(`${localStorage.me}/relations`)
   })
   dismount(() => {
     window.removeEventListener('online', play)
