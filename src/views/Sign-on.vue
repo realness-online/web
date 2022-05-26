@@ -1,5 +1,4 @@
 <template>
-
   <section id="sign-on" class="page">
     <header>
       <profile-as-figure v-if="me" :person="me">
@@ -23,7 +22,7 @@
 
   import { keys, clear } from 'idb-keyval'
   import { load } from '@/use/itemid'
-  import { use_me, default_person } from '@/use/People'
+  import { use_me, default_person } from '@/use/people'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'
   import {
@@ -59,12 +58,12 @@
   mounted(async () => {
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
-    if (current_user.value && !is_valid_name.value)  nameless.value = true
+    if (current_user.value && !is_valid_name.value) nameless.value = true
   })
   watch_effect(() => {
     if (current_user.value) {
       me.value.mobile = undefined
-      if (!is_valid_name.value)  nameless.value = true
+      if (!is_valid_name.value) nameless.value = true
     }
   })
 </script>
