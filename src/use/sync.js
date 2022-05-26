@@ -1,3 +1,4 @@
+console.log('instantiated sync.js')
 import hash from 'object-hash'
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
@@ -16,7 +17,6 @@ import {
   getCurrentInstance as current_instance
 } from 'vue'
 
-console.log('instantiated sync.js')
 export const three_minutes = 180000
 export const five_minutes = 300000
 export const one_hour = 3600000
