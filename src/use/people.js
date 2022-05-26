@@ -3,7 +3,7 @@ import { list, load } from '@/use/itemid'
 import { current_user, me, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'
 import { Me } from '@/persistance/Storage'
-import { ref, computed, nextTick as next_tick } from 'vue'
+import { ref, computed, readonly, nextTick as next_tick } from 'vue'
 
 export const default_person = {
   id: localStorage.me,
@@ -55,6 +55,7 @@ export const use_me = () => {
   }
   const is_valid_name = computed(async () => {
     await next_tick()
+    if (!current_user.value) return false
     let length = 0
     if (!me.value) return false
 
@@ -72,7 +73,7 @@ export const use_me = () => {
     is_valid_name,
     relations,
     save,
-    me
+    me: readonly(me)
   }
 }
 export const get_my_itemid = type => {

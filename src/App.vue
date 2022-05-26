@@ -15,9 +15,8 @@
   } from 'vue'
   import { use_me } from '@/use/people'
   import { useRouter as use_router } from 'vue-router'
-  import { current_user } from '@/use/serverless'
+  import { current_user, init_serverless } from '@/use/serverless'
   const router = use_router()
-
   const { is_valid_name } = use_me()
   const status = ref(null)
   const sync_active = active => {
@@ -34,17 +33,17 @@
     editable.forEach(e => e.setAttribute('contenteditable', false))
     status.value = 'offline'
   }
-  mounted(() => {
+  mounted(async () => {
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
+    await init_serverless()
   })
   dismount(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
   })
   watch(current_user, async () => {
-    if (current_user.value && !is_valid_name.value)
-      router.push({ path: '/sign-on' })
+    if (!is_valid_name.value) router.push({ path: '/sign-on' })
   })
 </script>
 <style src="@/style/index.styl" lang="stylus"></style>

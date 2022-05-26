@@ -5,7 +5,7 @@ import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, load } from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
-import { get_my_itemid } from '@/use/people'
+import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import get_item from '@/use/item'
 import {
@@ -27,14 +27,13 @@ export const does_not_exist = { updated: null, customMetadata: { md5: null } } /
 
 export const use = () => {
   const { emit, props } = current_instance()
-  const me = ref(undefined)
-  const relations = ref(undefined)
+  const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()
   const poster = ref(null)
   const events = ref(null)
   const sync_element = ref(null)
   const play = async () => {
-    if (!me.value && !current_user.value) return // Do nothing until there is a person
+    if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -52,7 +51,6 @@ export const use = () => {
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
-      me.value = await load(localStorage.me)
       me.value.visited = new Date().toISOString()
       await next_tick()
       await new Me().save()
@@ -180,7 +178,6 @@ export const use = () => {
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
-    me.value = await load(localStorage.me)
     relations.value = await load(`${localStorage.me}/relations`)
   })
   dismount(() => {
