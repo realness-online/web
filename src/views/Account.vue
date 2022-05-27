@@ -6,13 +6,7 @@
       </router-link>
       <logo-as-link />
     </header>
-    <address v-if="current_user && !working">
-      <profile-as-figure
-        v-if="person"
-        v-model:person="person"
-        :editable="true"
-        @update:person="emit('update:person', person)" />
-    </address>
+    <name-as-form v-if="current_user" />
     <h1 v-if="!working">Statements</h1>
     <as-days
       v-slot="thoughts"
@@ -24,13 +18,10 @@
         v-for="thought in thoughts"
         :key="thought[0].id"
         :statements="thought"
-        :editable="is_editable(thought)"
-        @show="thought_shown"
-        @focused="thought_focused"
-        @blurred="thought_blurred" />
+        :editable="true" />
     </as-days>
     <footer
-      v-if="statements && statements.length === 0 && !working"
+      v-if="my_statements && my_statements.length === 0 && !working"
       class="message">
       <p>
         Say some stuff via the <button aria-label="Home" @click="home" /> button
@@ -42,57 +33,29 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
+  import NameAsForm from '@/components/profile/as-form-name'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
-  import ProfileAsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/statements/as-article'
 
   import { current_user } from '@/use/serverless'
   import { use as use_statements } from '@/use/statements'
-  import { use as use_person, get_my_itemid } from '@/use/people'
+  import { get_my_itemid } from '@/use/people'
 
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
   const working = ref(true)
-  const emit = defineEmits(['update:person'])
+
   const pages_viewed = ref(['index'])
 
   const currently_focused = ref(null)
   const router = use_router()
-  const me = {
-    id: localStorage.me,
-    type: 'person'
-  }
 
-  const {
-    my_statements,
-    statements,
-    thought_shown,
-    for_person: statements_for_person
-  } = use_statements()
+  const { my_statements } = use_statements()
 
-  const { person, load_person } = use_person()
-
-  const is_editable = thought => {
-    if (working.value) return false
-    return thought.some(statement =>
-      my_statements.value.some(s => s.id === statement.id)
-    )
-  }
   const home = () => router.push({ path: '/' })
-  const thought_focused = async statement => {
-    currently_focused.value = statement.id
-    pages_viewed.value = ['index']
-  }
-  const thought_blurred = statement => {
-    if (currently_focused.value === statement.id) {
-      currently_focused.value = null
-      const oldest = statements.value[statements.value.length - 1]
-      thought_shown([oldest])
-    }
-  }
+
   mounted(async () => {
-    await Promise.all([load_person(me), statements_for_person(me)])
     working.value = false
     console.info('views:Account')
   })
