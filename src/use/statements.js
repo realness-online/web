@@ -6,14 +6,12 @@ export const thirteen_minutes = 1000 * 60 * 13 // 780000
 const links = ['http://', 'https://']
 const my_statements = ref([])
 console.log('instantiated statements.js')
-
 export const use = () => {
   const authors = ref([])
   const statements = ref(null)
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
-
     const author_statements = statements.value.filter(
       statement => author === as_author(statement.id)
     )
@@ -32,7 +30,6 @@ export const use = () => {
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
         author.viewed.push(next)
-
         statements.value = [...statements.value, ...next_statements]
       }
     }
@@ -47,8 +44,7 @@ export const use = () => {
     authors.value.push(person)
   }
   mounted(async () => {
-    if (!my_statements.value)
-      my_statements.value = await list(`${localStorage.me}/statements`)
+    my_statements.value = await list(`${localStorage.me}/statements`)
   })
   const save = async statement => {
     const post = {

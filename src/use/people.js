@@ -1,4 +1,3 @@
-console.log('instantiated people.js')
 import { list, load } from '@/use/itemid'
 import { current_user, me, directory } from '@/use/serverless'
 import { recent_visit_first } from '@/use/sorting'

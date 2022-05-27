@@ -1,4 +1,3 @@
-console.log('instantiated serverless')
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import {
   RecaptchaVerifier,
@@ -49,7 +48,6 @@ export const remove = async path => {
 }
 
 export const init_serverless = async () => {
-  console.log('init_serverless')
   me.value = default_person
   if (navigator.onLine && import.meta.env.PROD) {
     try {
@@ -74,15 +72,13 @@ export const init_serverless = async () => {
   app.value = initialize_firebase(firebase_keys)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
-  auth_changed(auth.value, user => {
+  auth_changed(auth.value, async user => {
     if (user) {
-      console.log('doing my dummy stuff')
       current_user.value = user
       localStorage.me = from_e64(current_user.value.phoneNumber)
       me.value.id = localStorage.me
-      load(localStorage.me).then(maybe_me => {
-        if (maybe_me) me.value = maybe_me
-      })
+      const maybe_me = await load(localStorage.me)
+      if (maybe_me) me.value = maybe_me
     } else current_user.value = null
   })
 }
