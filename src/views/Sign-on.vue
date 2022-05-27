@@ -7,8 +7,8 @@
       </profile-as-figure>
       <logo-as-link />
     </header>
-    <mobile-as-form v-if="me && !nameless" @signed-on="signed_on" />
     <name-as-form v-if="nameless" @valid="new_person" />
+    <mobile-as-form v-else @signed-on="signed_on" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>
     </footer>
@@ -60,7 +60,6 @@
     console.info('views:Sign-on')
   })
   watch_effect(() => {
-    console.log('this gets run')
     if (current_user.value && !is_valid_name.value) nameless.value = true
   })
 </script>

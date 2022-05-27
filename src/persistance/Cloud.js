@@ -27,7 +27,6 @@ export const Cloud = superclass =>
       } else await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      console.trace('request:save')
       console.log('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)

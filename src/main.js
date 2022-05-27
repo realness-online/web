@@ -1,4 +1,3 @@
-console.log('instantiated main.js')
 import { createApp } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
 
@@ -14,4 +13,3 @@ const update_servie_worker = registerSW({
 })
 
 createApp(App).use(router).mount('body')
-console.log('main finished')

@@ -1,4 +1,3 @@
-console.log('instantiated sync.js')
 import hash from 'object-hash'
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
