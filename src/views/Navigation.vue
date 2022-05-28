@@ -95,8 +95,8 @@
           transition-duration: 0.6s
           transition: all
           outline: none
-        &:nth-child(even)
-         text-align: right
+        &:nth-child(odd)
+         text-align: left
         &:active
           border-width: 1vmax
           color:transparent
