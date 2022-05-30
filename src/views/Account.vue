@@ -6,7 +6,7 @@
       </router-link>
       <logo-as-link />
     </header>
-    <name-as-form v-if="current_user" />
+
     <h1 v-if="!working">Statements</h1>
     <as-days
       v-slot="thoughts"
@@ -20,6 +20,7 @@
         :statements="thought"
         :editable="true" />
     </as-days>
+
     <footer
       v-if="my_statements && my_statements.length === 0 && !working"
       class="message">
@@ -33,7 +34,6 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import NameAsForm from '@/components/profile/as-form-name'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/statements/as-article'
@@ -45,14 +45,8 @@
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
   const working = ref(true)
-
-  const pages_viewed = ref(['index'])
-
-  const currently_focused = ref(null)
   const router = use_router()
-
   const { my_statements } = use_statements()
-
   const home = () => router.push({ path: '/' })
 
   mounted(async () => {
