@@ -6,6 +6,7 @@
     </header>
     <menu>
       <li>
+        <name-as-form v-if="current_user" />
         <button v-if="current_user" @click="sign_off">Sign off</button>
         <sign-on v-else />
       </li>
@@ -42,6 +43,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
+  import NameAsForm from '@/components/profile/as-form-name'
   import SignOn from '@/components/profile/sign-on'
   import { current_user, sign_off } from '@/use/serverless'
 </script>
