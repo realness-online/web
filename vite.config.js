@@ -45,10 +45,8 @@ export default defineConfig({
         'vector.worker.js',
         'optimize.worker.js',
         'gradient.worker.js',
-        'icons.svg',
-        'Lato-Heavy-Subset.woff2',
-        'Lato-Regular-Subset.woff2',
-        'Lato-Light-Subset.woff2'
+        'fonts/*.woff2',
+        'icons.svg'
       ],
       manifest: {
         display: 'standalone',
