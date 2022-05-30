@@ -2,7 +2,6 @@
   <figure id="edit-fill" ref="figure">
     <as-svg
       :itemid="itemid"
-      :immediate="true"
       :optimize="true"
       :slice="false"
       :tabable="true"
@@ -25,7 +24,6 @@
         <as-svg
           inert
           :itemid="itemid"
-          :immediate="true"
           :slice="true"
           :toggle_aspect="false"
           tabindex="-1"
