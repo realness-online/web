@@ -27,26 +27,26 @@
 <style lang="stylus">
   section#navigation.page
     & textarea#wat
-        padding: base-line
-        border-radius: base-line
-        text-align: right
-        resize: none
-        appearance: none
-        transition-duration: 0.3s
-        user-select: text
-        border-style: solid
-        caret-color: red
-        cursor: pointer
-        transition-property: color, border-radius, text-align
-        color: red
-        @media (prefers-color-scheme: dark)
-          color: white
-        &::placeholder
-          transition-property: all
-          font-family: inherit
-          color: white
-          @media (prefers-color-scheme: light)
-            color: #fff
+      padding: base-line
+      border-radius: base-line
+      text-align: right
+      resize: none
+      appearance: none
+      transition-duration: 0.3s
+      user-select: text
+      border-style: solid
+      caret-color: red
+      cursor: pointer
+      transition-property: color, border-radius, text-align
+      color: red
+      @media (prefers-color-scheme: dark)
+        color: white
+      &::placeholder
+        transition-property: all
+        font-family: inherit
+        color: white
+        @media (prefers-color-scheme: light)
+          color: #fff
     &.posting textarea#wat
       font-size: 1.25em
       font-weight: normal
