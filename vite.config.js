@@ -39,7 +39,17 @@ export default defineConfig({
     vite_pwa({
       filename: 'service.worker.js',
       minify: false,
-      includeAssets: ['/src/style/icons.svg', 'favicon.ico', '180.png'],
+      includeAssets: [
+        'favicon.ico',
+        '180.png',
+        'vector.worker.js',
+        'optimize.worker.js',
+        'gradient.worker.js',
+        'icons.svg',
+        'Lato-Heavy-Subset.woff2',
+        'Lato-Regular-Subset.woff2',
+        'Lato-Light-Subset.woff2'
+      ],
       manifest: {
         display: 'standalone',
         background_color: '#151518',
