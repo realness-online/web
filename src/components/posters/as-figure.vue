@@ -1,10 +1,6 @@
 <template>
   <figure ref="poster" class="poster" :class="{ landscape }">
-    <as-svg
-      :itemid="itemid"
-      :immediate="immediate"
-      @click="vector_click"
-      @loaded="on_load" />
+    <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
     <figcaption>
       <slot v-if="menu">
         <menu>
@@ -24,7 +20,7 @@
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
   import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector, is_vector_id, is_click } from '@/use/vector'
   import { as_time } from '@/use/date'
   import { current_user } from '@/use/serverless'
   import {
@@ -61,9 +57,10 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
-  const loaded = ref(false)
-  const emit = defineEmits(['loaded', 'vector-click'])
-
+  const emit = defineEmits({
+    vector_click: is_click,
+    loaded: is_vector
+  })
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -77,7 +74,6 @@
   const posted_at = computed(() => {
     return as_time(as_created_at(props.itemid))
   })
-
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)
@@ -85,8 +81,7 @@
   const on_load = async loaded_vector => {
     vector.value = loaded_vector
     await next_tick()
-    loaded.value = true
-    emit('loaded', poster.value.outerHTML)
+    emit('loaded', vector.value)
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
@@ -96,7 +91,11 @@
   })
   updated(() => {
     const fragment = window.location.hash.substring(1)
-    if (query_id.value === fragment) poster.value.scrollIntoView()
+    if (query_id.value === fragment) {
+      console.log('updated: scroll poster into view', poster.value)
+      poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      window.location.hash = ''
+    }
   })
 </script>
 <style lang="stylus">
