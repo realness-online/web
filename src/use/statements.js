@@ -46,6 +46,7 @@ export const use = () => {
     my_statements.value = await list(`${localStorage.me}/statements`)
   })
   const save = async statement => {
+    if (!statement) return
     const post = {
       statement: statement.trim(),
       id: `${localStorage.me}/statements/${new Date().getTime()}`
