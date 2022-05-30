@@ -58,7 +58,7 @@
   const vector = ref(null)
   const person = ref(null)
   const emit = defineEmits({
-    vector_click: is_click,
+    'vector-click': is_click,
     loaded: is_vector
   })
   const landscape = computed(() => {
