@@ -5,7 +5,7 @@ import {
   as_created_at,
   as_directory
 } from '@/use/itemid'
-import { ref, computed, onMounted as mounted } from 'vue'
+import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { recent_item_first } from '@/use/sorting'
 import { use as use_path } from '@/use/path'
 const path_names = ['background', 'light', 'regular', 'bold']
@@ -78,7 +78,9 @@ const migrate_poster = poster => {
   poster.path = undefined
   return poster
 }
-export const use_poster = (props, emit) => {
+
+export const use_poster = () => {
+  const { props, emit } = current_instance()
   const vector = ref(null)
   const working = ref(true)
   const menu = ref(false)
@@ -141,10 +143,6 @@ export const use_poster = (props, emit) => {
     get_active_path()
     emit('focus', layer)
   }
-  const should_show = () => {
-    if (props.immediate) show()
-  }
-  mounted(should_show)
   return {
     vector,
     click,
@@ -157,13 +155,11 @@ export const use_poster = (props, emit) => {
     viewbox,
     working,
     show,
-    should_show,
     focus,
     tabindex,
     focusable
   }
 }
-
 export const use_posters = () => {
   const posters = ref([])
   const for_person = async person => {

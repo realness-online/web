@@ -111,7 +111,11 @@
       },
       auth.value
     )
-    human.value.verify()
+    try {
+      human.value.verify()
+    } catch (e) {
+      console.log(e)
+    }
   }
   const text_human_verify_code = async () => {
     working.value = false

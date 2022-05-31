@@ -17,12 +17,7 @@
       v-if="events"
       :events="events"
       :itemid="get_my_itemid('events')" />
-    <unsynced-poster
-      v-if="poster"
-      :key="poster.id"
-      :itemid="poster.id"
-      :poster="poster"
-      :immediate="true" />
+    <unsynced-poster />
   </aside>
 </template>
 
@@ -32,12 +27,20 @@
   import UnsyncedPoster from '@/components/posters/as-svg'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
-
+  const emit = defineEmits(['active'])
+  const props = defineProps({
+    pause: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  })
+  import { onMounted as mounted } from 'vue'
   import { use as use_sync } from '@/use/sync'
   import { use as use_statements } from '@/use/statements'
   import { use_me, get_my_itemid } from '@/use/people'
-
+  import { directory } from '@/use/serverless'
   const { me } = use_me()
   const { my_statements: my_editable_statements } = use_statements()
-  const { poster, events, sync_element: sync } = use_sync()
+  const { events, sync_element: sync } = use_sync()
 </script>

@@ -1,19 +1,25 @@
 import hash from 'object-hash'
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, load } from '@/use/itemid'
+import {
+  as_filename,
+  as_author,
+  load,
+  build_local_directory
+} from '@/use/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
+import { use_poster } from '@/use/vector'
 import get_item from '@/use/item'
 import {
   ref,
-  watchEffect as watch_effect,
   onMounted as mounted,
   onUnmounted as dismount,
   nextTick as next_tick,
-  getCurrentInstance as current_instance
+  getCurrentInstance as current_instance,
+  watch
 } from 'vue'
 
 export const three_minutes = 180000
@@ -25,27 +31,31 @@ export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
-  const { emit, props } = current_instance()
+  const { props, emit } = current_instance()
+  const { vector, working } = use_poster()
   const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()
   const poster = ref(null)
   const events = ref(null)
   const sync_element = ref(null)
   const play = async () => {
-    if (!current_user.value) return // Do nothing until there is a person
-    if (document.visibilityState !== 'visible') return
-    await visit()
-    if (!navigator.onLine || !current_user.value) return
-    await sync_offline_actions()
-    if (i_am_fresh()) return
-    emit('active', true)
-    localStorage.sync_time = new Date().toISOString()
-    await prune()
-    await sync_me()
-    await sync_statements()
-    await sync_events()
     await sync_anonymous_posters()
-    emit('active', false)
+    // if (!current_user.value) return // Do nothing until there is a person
+    // if (document.visibilityState !== 'visible') return
+    // await visit()
+    // if (!navigator.onLine || !current_user.value) return
+    // if (i_am_fresh()) {
+    //   await sync_offline_actions()
+    // } else {
+    //   emit('active', true)
+    //   localStorage.sync_time = new Date().toISOString()
+    //   await sync_anonymous_posters()
+    //   await prune()
+    //   await sync_me()
+    //   await sync_statements()
+    //   await sync_events()
+    //   emit('active', false)
+    // }
   }
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
@@ -89,6 +99,7 @@ export const use = () => {
       if (!offline) return
       while (offline.length) {
         const item = offline.pop()
+        console.log(item.id, me.id)
         if (item.action === 'save') await new Offline(item.id).save()
         else if (item.action === 'delete') await new Offline(item.id).delete()
         else console.info('weird:unknown-offline-action', item.action, item.id)
@@ -145,35 +156,32 @@ export const use = () => {
     }
   }
   const sync_anonymous_posters = async () => {
-    console.log('sync_anonymous_posters')
-    const offline_posters = await get('/+/posters/')
+    await del('/+/posters/')
+    const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
     await Promise.all(
       offline_posters.items.map(async created_at => {
         const poster_string = await get(`/+/posters/${created_at}`)
-        save_poster({
+        await save_poster({
           id: `${localStorage.me}/posters/${created_at}`,
           outerHTML: poster_string
         })
-        await del(`/+/posters/${created_at}`)
+        // await del(`/+/posters/${created_at}`)
       })
     )
-    await del('/+/posters/')
+    await del(`${localStorage.me}/posters/`)
   }
   const save_poster = async poster_to_save => {
-    console.log('save_poster')
-    props.poster.value = get_item(poster_to_save.outerHTML)
-    props.poster.id = poster_to_save.id
-    await next_tick()
-    const new_poster = new Poster(poster_to_save.value.id)
-    await new_poster.save()
-    await del(`${localStorage.me}/posters/`) // local version of poster directory
-    poster.value = null
-  }
-  watch_effect(async () => {
-    if (current_user.value) await play()
-  })
+    vector.value = get_item(poster_to_save.outerHTML)
+    vector.value.id = poster_to_save.id
+    poster.value = vector.value
+    working.value = false
+    console.log('vector.value', vector.value.id)
 
+    await next_tick()
+    await new Poster(vector.value.id).save()
+    // vector.value = null
+  }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
@@ -183,19 +191,15 @@ export const use = () => {
     window.removeEventListener('online', play)
     document.removeEventListener('visibilitychange', play)
   })
+  watch(current_user, async () => {
+    if (current_user.value) await play()
+  })
   return {
-    play,
     events,
-    poster,
     sync_element
   }
 }
 
-export const sync_later = async (id, action) => {
-  const offline = (await get('sync:offline')) || []
-  offline.push({ id, action })
-  await set('sync:offline', offline)
-}
 export const local_md5 = async itemid => {
   // always checks the network
   const local = await get(itemid)
