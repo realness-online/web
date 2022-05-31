@@ -44,18 +44,26 @@
       :fill="`url(${fragment('vertical-bold')}`"
       :stroke="`url(${fragment('radial-regular')}`"
       @focus="focus('bold')" />
-
     <as-emboss v-if="show_emboss" :itemid="itemid" />
   </svg>
 </template>
 <script setup>
+  import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { watchEffect as watch_effect, ref, inject, computed } from 'vue'
+  import {
+    watchEffect as watch_effect,
+    watch,
+    ref,
+    inject,
+    computed
+  } from 'vue'
   import { as_type } from '@/use/itemid'
+  import { use as use_vectorize } from '@/use/vectorize'
+  import { use as use_optimizer } from '@/use/optimize'
   import {
     use_poster,
     is_vector,
@@ -63,20 +71,17 @@
     is_click,
     is_focus
   } from '@/use/vector'
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { use as use_optimizer } from '@/use/optimize'
-  import icon from '@/components/icon'
-  const show_emboss = computed(() => localStorage.emboss)
+
   const emit = defineEmits({
     focus: is_focus,
     click: is_click,
     loaded: is_vector
   })
   const props = defineProps({
-    immediate: {
-      type: Boolean,
+    itemid: {
+      type: String,
       required: false,
-      default: false
+      validator: is_vector_id
     },
     optimize: {
       type: Boolean,
@@ -98,11 +103,6 @@
       required: false,
       default: false
     },
-    itemid: {
-      type: String,
-      required: true,
-      validator: is_vector_id
-    },
     as_stroke: {
       type: Boolean,
       required: false,
@@ -121,24 +121,29 @@
     focusable,
     tabindex,
     vector
-  } = use_poster(props, emit)
+  } = use_poster()
   const trigger = ref(null)
-
+  const show_emboss = computed(() => localStorage.emboss)
   if (inject('new-poster', false)) {
+    console.log('inject new-poster')
     const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
   } else {
-    if (!props.immediate) {
-      use_intersect(
-        trigger,
-        ([{ isIntersecting }]) => {
-          if (isIntersecting) show()
-        },
-        { rootMargin: '612px' }
-      )
-    }
+    use_intersect(
+      trigger,
+      ([{ isIntersecting }]) => {
+        if (isIntersecting) show()
+      },
+      { rootMargin: '612px' }
+    )
   }
+  const sync_poster = inject('sync-poster', ref(null))
+  watch(sync_poster, () => {
+    console.log('sync_poster is set', sync_poster.value)
+    vector.value = sync_poster.value
+    working.value = false
+  })
   watch_effect(() => {
     if (vector.value && props.optimize && !vector.value.optimized) {
       const { optimize } = use_optimizer(vector)

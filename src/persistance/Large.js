@@ -5,7 +5,10 @@ import { as_directory_id, as_path_parts, as_created_at } from '@/use/itemid'
 const Large = superclass =>
   class extends superclass {
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      if (!items) return
+      if (!items) {
+        console.log(`Unable to find ${this.id}`)
+        return
+      }
       const exist = await get(this.id)
       await set(this.id, items.outerHTML)
       if (!exist) {
