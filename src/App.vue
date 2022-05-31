@@ -42,7 +42,8 @@
     window.removeEventListener('offline', offline)
   })
   watch(current_user, async () => {
-    if (!is_valid_name.value) router.push({ path: '/sign-on' })
+    const valid = await is_valid_name.value
+    if (!valid) router.push({ path: '/sign-on' })
   })
 </script>
 <style src="@/style/index.styl" lang="stylus"></style>
