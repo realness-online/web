@@ -43,7 +43,7 @@
   })
   watch(current_user, async () => {
     const valid = await is_valid_name.value
-    if (!valid) router.push({ path: '/sign-on' })
+    if (current_user.value && !valid) router.push({ path: '/sign-on' })
   })
 </script>
 <style src="@/style/index.styl" lang="stylus"></style>
