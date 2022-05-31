@@ -59,8 +59,9 @@
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
   })
-  watch_effect(() => {
-    if (current_user.value && !is_valid_name.value) nameless.value = true
+  watch_effect(async () => {
+    const valid = await is_valid_name.value
+    if (current_user.value && !valid) nameless.value = true
   })
 </script>
 <style lang="stylus">
