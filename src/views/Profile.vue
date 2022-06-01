@@ -6,7 +6,7 @@
     </header>
     <div>
       <as-avatar v-if="person && person.avatar" :itemid="person.avatar" />
-      <menu v-if="person">
+      <menu v-if="person && person.avatar">
         <as-download v-if="person.avatar" :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />
       </menu>
@@ -54,10 +54,12 @@
   const { posters, for_person: posters_for_person } = use_posters()
   const { load_person, person } = use_person()
   mounted(async () => {
+    console.log('id', id);
     await Promise.all([
-      load_person(id),
-      posters_for_person(id),
-      statements_for_person(id)
+
+      load_person({ id }),
+      posters_for_person({id}),
+      statements_for_person({id})
     ])
     console.info('views:Profile', id)
   })
@@ -105,6 +107,8 @@
       & > figcaption > menu
         a.status
           position: absolute
+          top: base-line
+          left: base-line
           animation: absolute-slide-down
           animation-delay: 1.33s
           animation-duration: 0.35s
