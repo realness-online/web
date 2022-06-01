@@ -35,6 +35,8 @@
     padding-bottom: base-line * 2
     & > header
       margin: auto
+      button
+        height: base-line * 2
       svg
         &.finished
           fill: blue
