@@ -27,6 +27,7 @@
         <as-author-menu
           :poster="poster"
           @remove="remove_poster"
+          @avatar="set_avatar"
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
@@ -109,19 +110,4 @@
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1
-        & > figcaption > menu > a
-          &.gear
-            top: base-line
-            right: base-line
-          &.remove
-            bottom: base-line
-            left: base-line
-          &.save
-            bottom: base-line
-            right: base-line
-          &.event
-            top: base-line
-            left: base-line
-          & > svg
-            fill: green
 </style>
