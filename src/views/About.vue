@@ -371,9 +371,6 @@
     & > header
       display: block
       min-height: 100vh
-      // overflow: hidden
-      // perspective: 1000px
-      // overflow-x: hidden
       & > nav
         display: flex
         justify-content: space-between
