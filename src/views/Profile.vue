@@ -54,12 +54,10 @@
   const { posters, for_person: posters_for_person } = use_posters()
   const { load_person, person } = use_person()
   mounted(async () => {
-    console.log('id', id);
     await Promise.all([
-
       load_person({ id }),
-      posters_for_person({id}),
-      statements_for_person({id})
+      posters_for_person({ id }),
+      statements_for_person({ id })
     ])
     console.info('views:Profile', id)
   })

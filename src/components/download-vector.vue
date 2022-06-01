@@ -26,7 +26,7 @@
     computed: {
       downloadable() {
         const svg = document.getElementById(as_query_id(this.itemid))
-        if(!svg) return
+        if (!svg) return
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
         return `data:application/octet-stream,${encodeURIComponent(
           svg.outerHTML

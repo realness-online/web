@@ -58,8 +58,9 @@ export async function as_directory(itemid) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) return cached
-  let directory =  await build_local_directory(itemid)
-  if (navigator.online && current_user.value) directory  = await load_directory_from_network(itemid)
+  let directory = await build_local_directory(itemid)
+  if (navigator.online && current_user.value)
+    directory = await load_directory_from_network(itemid)
   return directory
 }
 export async function as_download_url(itemid) {

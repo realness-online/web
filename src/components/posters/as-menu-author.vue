@@ -17,29 +17,6 @@
     <as-download :itemid="poster.id" />
   </menu>
 </template>
-<style lang="stylus">
-  section#posters > article > figure.poster
-    & > figcaption > menu > a
-      &.avatar
-        top: base-line
-        left: calc(50% - 1em)
-        &.selected > svg
-          fill: red
-      &.gear
-        top: base-line
-        right: base-line
-      &.remove
-        bottom: base-line
-        left: base-line
-      &.save
-        bottom: base-line
-        right: base-line
-      &.event
-        top: base-line
-        left: base-line
-      & > svg
-        fill: green
-</style>
 <script setup>
   import icon from '@/components/icon'
   import eventAsFieldset from '@/components/events/as-fieldset'
@@ -80,3 +57,26 @@
     }
   })
 </script>
+<style lang="stylus">
+  section#posters > article > figure.poster
+    & > figcaption > menu > a
+      &.avatar
+        top: base-line
+        left: calc(50% - 1em)
+        &.selected > svg
+          fill: red
+      &.gear
+        top: base-line
+        right: base-line
+      &.remove
+        bottom: base-line
+        left: base-line
+      &.save
+        bottom: base-line
+        right: base-line
+      &.event
+        top: base-line
+        left: base-line
+      & > svg
+        fill: green
+</style>
