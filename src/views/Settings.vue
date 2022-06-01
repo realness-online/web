@@ -6,7 +6,7 @@
     </header>
     <menu>
       <li>
-        <name-as-form v-if="current_user" />
+        <name-as-form />
       </li>
     </menu>
     <article hidden>
@@ -56,16 +56,9 @@
       & > summary
       & > article
         padding: 0 base-line
-    article, ol, menu
-      padding: base-line
-      display: flex
-      flex-direction: column
-      justify-content: space-around
+    menu
+      margin: base-line
       & > li
         list-style: none
         margin-bottom: base-line
-        &:last-of-type
-          margin-bottom: 0
-      & > button:disabled
-        color: inherit
 </style>
