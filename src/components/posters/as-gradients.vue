@@ -110,8 +110,9 @@
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
+  import { as_query_id, as_fragment_id } from '@/use/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
-  import { is_vector_id, use_poster } from '@/use/vector'
+  import { is_vector } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
   import { hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients, new_vector } = use_vectorize()
@@ -120,13 +121,17 @@
   const regular = 44
   const bold = 13
   const props = defineProps({
-    itemid: {
-      type: String,
+    vector: {
+      type: Object,
       required: true,
-      validator: is_vector_id
+      validator: is_vector
     }
   })
-  const { query, vector, show } = use_poster(props, () => {})
+  const query = add => {
+    if (!props.vector) return add
+    if (add) return `${as_query_id(props.vector.id)}-${add}`
+    else return as_query_id(props.vector.id)
+  }
   const default_color = {
     offset: '0',
     color: {
@@ -147,22 +152,20 @@
       offset: stop.getAttribute('offset').replace('%', '')
     }
   }
-  if (new_vector.value) vector.value = new_vector.value
-  show()
   watch_effect(() => {
     if (gradients.value) {
       horizontal.value = gradients.value.horizontal
       vertical.value = gradients.value.vertical
       radial.value = gradients.value.radial
-    } else if (vector.value) {
-      if (vector.value.horizontal) {
-        horizontal.value = vector.value.horizontal.map(convert_stop)
+    } else if (props.vector) {
+      if (props.vector.horizontal) {
+        horizontal.value = props.vector.horizontal.map(convert_stop)
       }
-      if (vector.value.vertical) {
-        vertical.value = vector.value.vertical.map(convert_stop)
+      if (props.vector.vertical) {
+        vertical.value = props.vector.vertical.map(convert_stop)
       }
-      if (vector.value.radial) {
-        radial.value = vector.value.radial.map(convert_stop)
+      if (props.vector.radial) {
+        radial.value = props.vector.radial.map(convert_stop)
       }
     }
   })

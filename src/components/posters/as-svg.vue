@@ -4,13 +4,13 @@
     v-else
     :id="query()"
     itemscope
-    :itemtype="`/${as_type(itemid)}`"
+    itemtype="/posters"
     :itemid="itemid"
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     @click="click">
-    <as-gradients :itemid="itemid" />
+    <as-gradients :vector="vector" />
     <as-background
       :id="query('background')"
       :rect="vector.background"
@@ -44,7 +44,7 @@
       :fill="`url(${fragment('vertical-bold')}`"
       :stroke="`url(${fragment('radial-regular')}`"
       @focus="focus('bold')" />
-    <as-emboss v-if="show_emboss" :itemid="itemid" />
+    <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
 </template>
 <script setup>
@@ -78,9 +78,14 @@
     loaded: is_vector
   })
   const props = defineProps({
+    sync: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
     itemid: {
       type: String,
-      required: false,
+      required: true,
       validator: is_vector_id
     },
     optimize: {
@@ -129,6 +134,11 @@
     const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
+  } else if (props.sync) {
+    const sync_poster = inject('sync-poster', ref(null))
+    console.log('sync_poster.value', sync_poster.value)
+    vector.value = sync_poster.value
+    working.value = false
   } else {
     use_intersect(
       trigger,
@@ -138,12 +148,6 @@
       { rootMargin: '612px' }
     )
   }
-  const sync_poster = inject('sync-poster', ref(null))
-  watch(sync_poster, () => {
-    console.log('sync_poster is set', sync_poster.value)
-    vector.value = sync_poster.value
-    working.value = false
-  })
   watch_effect(() => {
     if (vector.value && props.optimize && !vector.value.optimized) {
       const { optimize } = use_optimizer(vector)

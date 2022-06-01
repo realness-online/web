@@ -17,7 +17,7 @@
       v-if="events"
       :events="events"
       :itemid="get_my_itemid('events')" />
-    <unsynced-poster />
+    <unsynced-poster v-if="sync_poster" :sync="true" :itemid="sync_poster.id" />
   </aside>
 </template>
 
@@ -41,6 +41,7 @@
   import { use_me, get_my_itemid } from '@/use/people'
   import { directory } from '@/use/serverless'
   const { me } = use_me()
+
   const { my_statements: my_editable_statements } = use_statements()
-  const { events, sync_element: sync } = use_sync()
+  const { events, sync_element: sync, sync_poster } = use_sync()
 </script>
