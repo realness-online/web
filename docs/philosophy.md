@@ -1,6 +1,6 @@
 # Realness – Philosophy
 
-![Realness](/icons.svg)
+![Realness](public/icons.svg)
 
 - How is the contact with the people we care about supposed to go?
 - What about the internet are we on the hook to understand?
