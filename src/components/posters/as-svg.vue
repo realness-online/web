@@ -56,6 +56,8 @@
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
+    nextTick as next_tick,
+    onMounted as mounted,
     watch,
     ref,
     inject,
@@ -78,10 +80,11 @@
     loaded: is_vector
   })
   const props = defineProps({
-    sync: {
-      type: Boolean,
+    sync_poster: {
+      type: Object,
       required: false,
-      default: false
+      default: null,
+      validator: is_vector
     },
     itemid: {
       type: String,
@@ -129,25 +132,31 @@
   } = use_poster()
   const trigger = ref(null)
   const show_emboss = computed(() => localStorage.emboss)
-  if (inject('new-poster', false)) {
+  const new_poster = inject('new-poster', false)
+  if (new_poster) {
     console.log('inject new-poster')
     const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
-  } else if (props.sync) {
-    const sync_poster = inject('sync-poster', ref(null))
-    console.log('sync_poster.value', sync_poster.value)
-    vector.value = sync_poster.value
-    working.value = false
-  } else {
-    use_intersect(
-      trigger,
-      ([{ isIntersecting }]) => {
-        if (isIntersecting) show()
-      },
-      { rootMargin: '612px' }
-    )
   }
+  mounted(() => {
+    if (!props.sync_poster && !new_poster) {
+      console.log('using show')
+      use_intersect(
+        trigger,
+        ([{ isIntersecting }]) => {
+          if (isIntersecting) show()
+        },
+        { rootMargin: '612px' }
+      )
+    }
+  })
+  watch_effect(() => {
+    if (props.sync_poster) {
+      vector.value = props.sync_poster
+      working.value = false
+    }
+  })
   watch_effect(() => {
     if (vector.value && props.optimize && !vector.value.optimized) {
       const { optimize } = use_optimizer(vector)

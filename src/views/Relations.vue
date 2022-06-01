@@ -1,7 +1,8 @@
 <template>
   <section id="relations" class="page">
     <header>
-      <icon name="nothing" />
+      <button v-if="current_user" @click="sign_off">Sign off</button>
+      <sign-on v-else />
       <h1>Relations</h1>
       <router-link to="/phonebook">
         <icon name="finished" />
@@ -13,12 +14,13 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
+  import Icon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
+  import SignOn from '@/components/profile/sign-on'
+  import { current_user, sign_off } from '@/use/serverless'
   import { onMounted as mounted } from 'vue'
 
   import { use_me, use as use_people } from '@/use/people'
-  import { current_user } from '@/use/serverless'
 
   const { people, load_people } = use_people()
   const { relations } = use_me()
