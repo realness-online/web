@@ -14,7 +14,7 @@
   import as_address from '@/components/profile/as-address'
   export default {
     components: {
-      'icon': icon,
+      icon: icon,
       'as-avatar': as_svg,
       'as-address': as_address
     },

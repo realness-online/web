@@ -11,7 +11,6 @@ import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
-import { use_poster } from '@/use/vector'
 import get_item from '@/use/item'
 import {
   ref,
