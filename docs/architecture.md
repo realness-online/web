@@ -1,6 +1,6 @@
 # Realness – Architecture
 
-![Realness](public/icons.svg)
+![Realness](/public/icons.svg)
 
 Realness is a progressive web app. It is serverless and static. All of the heavy lifting is done at the edge on device. You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
 
