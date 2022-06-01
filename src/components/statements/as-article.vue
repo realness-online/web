@@ -36,7 +36,7 @@
   import as_messenger from '@/components/profile/as-messenger'
   export default {
     components: {
-      'icon': Icon,
+      icon: Icon,
       'as-avatar': as_avatar,
       'as-messenger': as_messenger,
       'as-statement': as_statement

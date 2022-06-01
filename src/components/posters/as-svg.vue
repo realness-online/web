@@ -56,14 +56,11 @@
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
-    nextTick as next_tick,
     onMounted as mounted,
-    watch,
     ref,
     inject,
     computed
   } from 'vue'
-  import { as_type } from '@/use/itemid'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
   import {
@@ -74,7 +71,7 @@
     is_focus
   } from '@/use/vector'
 
-  const emit = defineEmits({
+  defineEmits({
     focus: is_focus,
     click: is_click,
     loaded: is_vector

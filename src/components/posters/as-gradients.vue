@@ -110,12 +110,12 @@
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
-  import { as_query_id, as_fragment_id } from '@/use/itemid'
+  import { as_query_id } from '@/use/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector } from '@/use/vector'
   import { use as use_vectorize } from '@/use/vectorize'
   import { hsla_to_color } from '@/use/colors'
-  const { new_gradients: gradients, new_vector } = use_vectorize()
+  const { new_gradients: gradients } = use_vectorize()
   const background = 80
   const light = 66
   const regular = 44
