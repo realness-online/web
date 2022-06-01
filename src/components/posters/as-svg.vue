@@ -131,14 +131,12 @@
   const show_emboss = computed(() => localStorage.emboss)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
-    console.log('inject new-poster')
     const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
   }
   mounted(() => {
     if (!props.sync_poster && !new_poster) {
-      console.log('using show')
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
