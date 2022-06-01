@@ -98,7 +98,6 @@ export const use = () => {
       if (!offline) return
       while (offline.length) {
         const item = offline.pop()
-        console.log(item.id, me.id)
         if (item.action === 'save') await new Offline(item.id).save()
         else if (item.action === 'delete') await new Offline(item.id).delete()
         else console.info('weird:unknown-offline-action', item.action, item.id)

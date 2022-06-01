@@ -92,7 +92,6 @@
   updated(() => {
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment) {
-      console.log('updated: scroll poster into view', poster.value)
       poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
       window.location.hash = ''
     }
