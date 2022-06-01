@@ -6,7 +6,6 @@
       </router-link>
       <logo-as-link />
     </header>
-
     <h1 v-if="!working">Statements</h1>
     <as-days
       v-slot="thoughts"
