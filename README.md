@@ -1,6 +1,6 @@
 # Realness: A Chill Vector Space
 
-![Realness](src/style/icons.svg)
+![Realness](public/icons.svg)
 
 Realness is for churches, punks, and veterans: any organization whose core tenants are at odds with advertising-based social networking.
 

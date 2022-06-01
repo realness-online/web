@@ -1,6 +1,6 @@
 # Realness – Contributing
 
-![Realness](/icons.svg)
+![Realness](/public/cons.svg)
 
 Joining [realness](https://realness.online) is the best way to get support (moral, and technical). We'd love to have your help.
 
