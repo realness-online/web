@@ -6,13 +6,15 @@
 <script>
   import { as_day_and_time } from '@/use/date'
   import { load, as_query_id } from '@/use/itemid'
+  import { is_vector_id } from '@/use/vector'
   import icon from '@/components/icon'
   export default {
     components: { icon },
     props: {
       itemid: {
         type: String,
-        required: true
+        required: true,
+        validator: is_vector_id
       }
     },
     data() {
@@ -24,6 +26,7 @@
     computed: {
       downloadable() {
         const svg = document.getElementById(as_query_id(this.itemid))
+        if(!svg) return
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
         return `data:application/octet-stream,${encodeURIComponent(
           svg.outerHTML
