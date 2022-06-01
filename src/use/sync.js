@@ -32,8 +32,7 @@ export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
-  // await del('/+/posters/') do i still need this?
-  const { props, emit } = current_instance()
+  const { emit } = current_instance()
   const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()
   const events = ref(null)
@@ -42,22 +41,21 @@ export const use = () => {
   provide('sync-poster', sync_poster)
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
-    await sync_anonymous_posters()
-    // if (document.visibilityState !== 'visible') return
-    // await visit()
-    // if (!navigator.onLine || !current_user.value) return
-    // if (i_am_fresh()) {
-    //   await sync_offline_actions()
-    // } else {
-    //   emit('active', true)
-    //   localStorage.sync_time = new Date().toISOString()
-    //   await sync_anonymous_posters()
-    //   await prune()
-    //   await sync_me()
-    //   await sync_statements()
-    //   await sync_events()
-    //   emit('active', false)
-    // }
+    if (document.visibilityState !== 'visible') return
+    await visit()
+    if (!navigator.onLine || !current_user.value) return
+    if (i_am_fresh()) {
+      await sync_offline_actions()
+    } else {
+      emit('active', true)
+      localStorage.sync_time = new Date().toISOString()
+      await sync_anonymous_posters()
+      await prune()
+      await sync_me()
+      await sync_statements()
+      await sync_events()
+      emit('active', false)
+    }
   }
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
@@ -158,17 +156,14 @@ export const use = () => {
     }
   }
   const sync_anonymous_posters = async () => {
+    await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    console.log('offline_posters.items', offline_posters.items)
     for (const created_at of offline_posters.items) {
       await save_poster(created_at)
     }
-
-    // await Promise.all(offline_posters.items.map(async () => save_poster()))
   }
   const save_poster = async created_at => {
-    console.log('started', created_at)
     const poster_string = await get(`/+/posters/${created_at}`)
     sync_poster.value = get_item(poster_string)
     sync_poster.value.id = `${localStorage.me}/posters/${created_at}`
@@ -176,8 +171,6 @@ export const use = () => {
     await new Poster(sync_poster.value.id).save()
     sync_poster.value = null
     await del(`/+/posters/${created_at}`)
-    await next_tick()
-    console.log('save', created_at)
   }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
