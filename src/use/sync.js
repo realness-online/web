@@ -19,6 +19,7 @@ import {
   onUnmounted as dismount,
   nextTick as next_tick,
   getCurrentInstance as current_instance,
+  provide,
   watch
 } from 'vue'
 
@@ -32,12 +33,12 @@ export const does_not_exist = { updated: null, customMetadata: { md5: null } } /
 
 export const use = () => {
   const { props, emit } = current_instance()
-  const { vector, working } = use_poster()
   const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()
-  const poster = ref(null)
   const events = ref(null)
   const sync_element = ref(null)
+  const sync_poster = ref(null)
+  provide('sync-poster', sync_poster)
   const play = async () => {
     await sync_anonymous_posters()
     // if (!current_user.value) return // Do nothing until there is a person
@@ -172,15 +173,12 @@ export const use = () => {
     await del(`${localStorage.me}/posters/`)
   }
   const save_poster = async poster_to_save => {
-    vector.value = get_item(poster_to_save.outerHTML)
-    vector.value.id = poster_to_save.id
-    poster.value = vector.value
-    working.value = false
-    console.log('vector.value', vector.value.id)
-
+    console.log('save_poster')
+    sync_poster.value = get_item(poster_to_save.outerHTML)
+    sync_poster.value.id = poster_to_save.id
     await next_tick()
-    await new Poster(vector.value.id).save()
-    // vector.value = null
+    await new Poster(sync_poster.value.id).save()
+    // sync_poster.value = null
   }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
@@ -196,7 +194,8 @@ export const use = () => {
   })
   return {
     events,
-    sync_element
+    sync_element,
+    sync_poster
   }
 }
 

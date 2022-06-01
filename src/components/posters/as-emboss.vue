@@ -20,15 +20,15 @@
 </template>
 <script setup>
   import { as_fragment_id } from '@/use/itemid'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector } from '@/use/vector'
   const props = defineProps({
-    itemid: {
-      type: String,
+    vector: {
+      type: Object,
       required: true,
-      validator: is_vector_id
+      validator: is_vector
     }
   })
   const fragment = add => {
-    return `${as_fragment_id(props.itemid)}-${add}`
+    return `${as_fragment_id(props.vector.value.id)}-${add}`
   }
 </script>
