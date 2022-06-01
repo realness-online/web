@@ -17,7 +17,10 @@
       v-if="events"
       :events="events"
       :itemid="get_my_itemid('events')" />
-    <unsynced-poster v-if="sync_poster" :sync="true" :itemid="sync_poster.id" />
+    <unsynced-poster
+      v-if="sync_poster"
+      :sync_poster="sync_poster"
+      :itemid="sync_poster.id" />
   </aside>
 </template>
 
@@ -27,6 +30,7 @@
   import UnsyncedPoster from '@/components/posters/as-svg'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
+  import { watch } from 'vue'
   const emit = defineEmits(['active'])
   const props = defineProps({
     pause: {

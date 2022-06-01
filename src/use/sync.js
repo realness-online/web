@@ -32,6 +32,7 @@ export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
+  // await del('/+/posters/') do i still need this?
   const { props, emit } = current_instance()
   const { me, relations } = use_me()
   const { my_statements: statements } = use_statements()
@@ -40,8 +41,8 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
   const play = async () => {
+    if (!current_user.value) return // Do nothing until there is a person
     await sync_anonymous_posters()
-    // if (!current_user.value) return // Do nothing until there is a person
     // if (document.visibilityState !== 'visible') return
     // await visit()
     // if (!navigator.onLine || !current_user.value) return
@@ -157,28 +158,26 @@ export const use = () => {
     }
   }
   const sync_anonymous_posters = async () => {
-    await del('/+/posters/')
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    await Promise.all(
-      offline_posters.items.map(async created_at => {
-        const poster_string = await get(`/+/posters/${created_at}`)
-        await save_poster({
-          id: `${localStorage.me}/posters/${created_at}`,
-          outerHTML: poster_string
-        })
-        // await del(`/+/posters/${created_at}`)
-      })
-    )
-    await del(`${localStorage.me}/posters/`)
+    console.log('offline_posters.items', offline_posters.items)
+    for (const created_at of offline_posters.items) {
+      await save_poster(created_at)
+    }
+
+    // await Promise.all(offline_posters.items.map(async () => save_poster()))
   }
-  const save_poster = async poster_to_save => {
-    console.log('save_poster')
-    sync_poster.value = get_item(poster_to_save.outerHTML)
-    sync_poster.value.id = poster_to_save.id
+  const save_poster = async created_at => {
+    console.log('started', created_at)
+    const poster_string = await get(`/+/posters/${created_at}`)
+    sync_poster.value = get_item(poster_string)
+    sync_poster.value.id = `${localStorage.me}/posters/${created_at}`
     await next_tick()
     await new Poster(sync_poster.value.id).save()
-    // sync_poster.value = null
+    sync_poster.value = null
+    await del(`/+/posters/${created_at}`)
+    await next_tick()
+    console.log('save', created_at)
   }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
