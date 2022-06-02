@@ -26,6 +26,7 @@
     return props.stops.map(stop => {
       let saturation = props.saturation_floor
       if (saturation && stop.color.s < saturation) {
+        // leave things bee
       } else saturation = stop.color.s
       return {
         offset: stop.offset,
