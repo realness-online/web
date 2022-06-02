@@ -3,11 +3,12 @@
     <header>
       <button v-if="current_user" @click="sign_off">Sign off</button>
       <sign-on v-else />
-      <h1>Relations</h1>
+
       <router-link to="/phonebook">
         <icon name="finished" />
       </router-link>
     </header>
+    <h1>Relations</h1>
     <nav v-if="current_user" class="profile-list">
       <as-figure v-for="person in people" :key="person.id" :person="person" />
     </nav>
@@ -33,10 +34,13 @@
 <style lang="stylus">
   section#relations
     padding-bottom: base-line * 2
+    & > h1
+      color: blue
+      text-align: center
     & > header
       margin: auto
       button
-        height: base-line * 2
+        font-size: 88%
       svg
         &.finished
           fill: blue
