@@ -12,7 +12,7 @@
       <radialGradient :id="query('radial-background')">
         <as-stops
           :luminosity="background"
-          :saturation_floor="35"
+          :saturation_floor="13"
           :stops="radial" />
       </radialGradient>
       <radialGradient :id="query('radial-light')">
@@ -50,7 +50,7 @@
         y2="100%">
         <as-stops
           :luminosity="light"
-          :saturation_floor="30"
+          :saturation_floor="21"
           :stops="vertical" />
       </linearGradient>
       <linearGradient
