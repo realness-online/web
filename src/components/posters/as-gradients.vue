@@ -10,7 +10,10 @@
           :offset="`${stop.offset}%`" />
       </radialGradient>
       <radialGradient :id="query('radial-background')">
-        <as-stops :luminosity="background" :stops="radial" />
+        <as-stops
+          :luminosity="background"
+          :saturation_floor="35"
+          :stops="radial" />
       </radialGradient>
       <radialGradient :id="query('radial-light')">
         <as-stops :luminosity="light" :stops="radial" />
@@ -45,7 +48,10 @@
         x2="0"
         y1="0"
         y2="100%">
-        <as-stops :luminosity="light" :stops="vertical" />
+        <as-stops
+          :luminosity="light"
+          :saturation_floor="30"
+          :stops="vertical" />
       </linearGradient>
       <linearGradient
         :id="query('vertical-regular')"
@@ -95,7 +101,10 @@
         x2="100%"
         y1="0"
         y2="0">
-        <as-stops :luminosity="regular" :stops="horizontal" />
+        <as-stops
+          :luminosity="regular"
+          :saturation_floor="18"
+          :stops="horizontal" />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-bold')"
