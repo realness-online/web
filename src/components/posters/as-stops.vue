@@ -16,15 +16,22 @@
     stops: {
       type: Array,
       required: true
+    },
+    saturation_floor: {
+      type: Number,
+      required: false
     }
   })
   const converted = computed(() => {
     return props.stops.map(stop => {
+      let saturation = props.saturation_floor
+      if (saturation && stop.color.s < saturation) {
+      } else saturation = stop.color.s
       return {
         offset: stop.offset,
         color: color_to_hsla({
           h: stop.color.h,
-          s: stop.color.s,
+          s: saturation,
           l: props.luminosity,
           a: 1
         })
