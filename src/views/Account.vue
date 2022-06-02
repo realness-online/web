@@ -19,7 +19,6 @@
         :statements="thought"
         :editable="true" />
     </as-days>
-
     <footer
       v-if="my_statements && my_statements.length === 0 && !working"
       class="message">
@@ -66,9 +65,6 @@
       padding-top: 0
       & > h1
         margin-top: base-line
-      // & > header
-      //   height: 0
-      //   padding: 0
     & > header
       & > button.sign-on
       & > a#logo
@@ -76,15 +72,11 @@
         top: inset(top, 1.75em)
         right: inset(right)
         z-index: 2
-      & > button.sign-on
-        width: base-line * 4
-        left: inset(left)
-        height: round(base-line * 2, 2)
     & > address
       position: relative
       z-index: 1
       & > figure
-        padding: inset(top, base-line) base-line 0 base-line
+        padding: inset(top) base-line 0 base-line
         & > svg
           width: base-line * 2
           height: base-line * 2
@@ -105,6 +97,8 @@
             opacity: 1
             padding: 0
             & > a > svg.gear
+              top: inset(top)
+              left: inset(left)
               fill: red
               animation-name: rotate-back
               transform-origin: center
@@ -123,7 +117,6 @@
         justify-content: space-between
         animation-name: fade-in
         animation-duration: 0.2s
-
         & > button:hover
           transition: color
           transition-duration: 0.5s
