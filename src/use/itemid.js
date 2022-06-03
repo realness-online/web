@@ -59,7 +59,7 @@ export async function as_directory(itemid) {
   const cached = await get(path)
   if (cached) return cached
   let directory = await build_local_directory(itemid)
-  if (navigator.online && current_user.value)
+  if (navigator.onLine && current_user.value)
     directory = await load_directory_from_network(itemid)
   return directory
 }
