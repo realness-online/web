@@ -34,7 +34,7 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
+  import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
@@ -74,6 +74,10 @@
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
+  }
+  const set_avatar = async itemid => {
+    me.avatar = itemid
+    await new me().save()
   }
   mounted(async () => {
     mount_workers()

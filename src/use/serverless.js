@@ -21,11 +21,12 @@ import { ref } from 'vue'
 import { load } from '@/use/itemid'
 import { from_e64, default_person } from '@/use/people'
 
+export const me = ref(undefined)
 export const app = ref(undefined)
 export const auth = ref(undefined)
 export const storage = ref(undefined)
 export const current_user = ref(undefined)
-export const me = ref(undefined)
+
 export const Recaptcha = RecaptchaVerifier
 export const sign_in = signInWithPhoneNumber
 export const sign_off = () => sign_out(auth.value)
@@ -75,10 +76,12 @@ export const init_serverless = async () => {
 
   auth_changed(auth.value, async user => {
     if (user) {
+      console.log('auth_changed')
       current_user.value = user
       localStorage.me = from_e64(current_user.value.phoneNumber)
       me.value.id = localStorage.me
       const maybe_me = await load(localStorage.me)
+      console.log(maybe_me)
       if (maybe_me) me.value = maybe_me
     } else current_user.value = null
   })
