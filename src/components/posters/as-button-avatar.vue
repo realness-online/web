@@ -31,6 +31,6 @@
   }
 </script>
 <style lang="stylus">
-  a.avatar > svg.true
-    fill: red
+  menu > a > svg.true
+    fill: red !important
 </style>

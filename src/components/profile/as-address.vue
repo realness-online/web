@@ -1,25 +1,7 @@
 <template>
   <address itemscope itemtype="/person" :itemid="person.id">
-    <b
-      v-if="editable"
-      ref="first_name"
-      :key="me.first_name"
-      :contenteditable="true"
-      itemprop="first_name"
-      @blur="save_first_name">
-      {{ person.first_name }}
-    </b>
-    <h3 v-else itemprop="first_name">{{ person.first_name }}</h3>
-    <b
-      v-if="editable"
-      ref="last_name"
-      :key="person.last_name"
-      :contenteditable="true"
-      itemprop="last_name"
-      @blur="save_last_name">
-      {{ person.last_name }}
-    </b>
-    <h3 v-else itemprop="last_name">{{ person.last_name }}</h3>
+    <h3 itemprop="first_name">{{ person.first_name }}</h3>
+    <h3 itemprop="last_name">{{ person.last_name }}</h3>
     <slot />
     <link
       v-if="person.avatar"
@@ -33,7 +15,7 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, watch, onMounted as mounted } from 'vue'
   import { use_me } from '@/use/people'
   const props = defineProps({
     person: {
@@ -48,23 +30,10 @@
   })
   const { me, save } = use_me()
   const person = ref(props.person)
-  if (me.value.id === person.value.id) person.value = me.value
-  const last_name = ref(null)
-  const first_name = ref(null)
-  const save_first_name = () => {
-    const changed = first_name.value.textContent.trim()
-    if (props.person.first_name !== changed) {
-      me.value.first_name = changed
-      save()
-    }
-  }
-  const save_last_name = () => {
-    const changed = last_name.value.textContent.trim()
-    if (props.person.last_name !== changed) {
-      me.value.last_name = changed
-      save()
-    }
-  }
+  mounted(() => {
+    if (me.value.id === person.value.id) person.value = me.value
+  })
+  watch(me, () => (person.value = me.value))
 </script>
 <style lang="stylus">
   address[itemscope]
