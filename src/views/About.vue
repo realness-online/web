@@ -54,8 +54,8 @@
             <li>
               <icon name="finished" />
               <p>
-                Edit color, gradient and opacity for symbols <b>Background</b>,
-                <b>Light</b>, <b>Regular</b> and <b>Bold</b>
+                Edit color, gradient and opacity for <b>Background</b>,
+                <b>Light</b>, <b>Regular</b> and <b>Bold</b> layers
               </p>
             </li>
             <li>
@@ -70,15 +70,11 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>
-                Symbols make it possible to use posters as masks and patterns
-              </p>
+              <p>Use the parts of your posters as masks and patterns.</p>
             </li>
             <li>
               <icon name="finished" />
-              <p>
-                Extract filters, and any one of six gradients from your poster
-              </p>
+              <p>Use any one of twelve gradients created from your poster</p>
             </li>
             <li>
               <icon name="finished" />
@@ -110,13 +106,6 @@
               <p>
                 The performance is over. Our social health requires more
                 realness online
-              </p>
-              <p>
-                Realness is in alpha we are not quite finished with bugs and
-                documentation. It's slow on safari, but runs well on chrome and
-                firefox. There is a great readme for the project. and feel free
-                to sign in with your phone number and you can text directly with
-                the team.
               </p>
               <h4>Let's be fun again</h4>
             </figcaption>
@@ -214,7 +203,9 @@
                   online.
                 </a>
                 I keep a
-                <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
+                <a href="https://scott-fryxell.github.io/" rel="external"
+                  >blog</a
+                >
                 of all my feelings and nerd problems. My resume is on there. I
                 want to support the web iterate.
               </p>
