@@ -1,7 +1,7 @@
 <template>
   <section id="account" :class="{ 'signed-in': current_user }" class="page">
     <header>
-      <router-link to="/settings" tabindex="-1">
+      <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
       </router-link>
       <logo-as-link />
@@ -66,65 +66,15 @@
       & > h1
         margin-top: base-line
     & > header
-      & > button.sign-on
+      & > a#settings
+        position: absolute
+        top: inset(top)
+        left: inset(right)
       & > a#logo
         position: absolute
-        top: inset(top, 1.75em)
+        top: inset(top)
         right: inset(right)
         z-index: 2
-    & > address
-      position: relative
-      z-index: 1
-      & > figure
-        padding: inset(top) base-line 0 base-line
-        & > svg
-          width: base-line * 2
-          height: base-line * 2
-          min-height: inherit
-          border-radius: base-line * 2
-          border-color: red
-        & > figcaption
-          padding: 0
-          & > address
-            flex-direction: row
-            align-items: center
-            & > b
-              color: red
-              margin-bottom: 0
-          & > menu
-            margin-right: base-line * 2.25
-            justify-content: center
-            opacity: 1
-            padding: 0
-            & > a > svg.gear
-              top: inset(top)
-              left: inset(left)
-              fill: red
-              animation-name: rotate-back
-              transform-origin: center
-              transition-duration: 0.1s
-              animation-iteration-count: 0.1
-              transition-timing-function: ease-in-out
-              &:active
-                transition-timing-function: ease-in-out
-                animation-name: rotate
-                animation-iteration-count: 0.5
-      & > menu
-        float:right
-        width: 6rem
-        margin: base-line * 2 0
-        display:flex
-        justify-content: space-between
-        animation-name: fade-in
-        animation-duration: 0.2s
-        & > button:hover
-          transition: color
-          transition-duration: 0.5s
-          color: hsla(353, 83%, 57%, 1) // #ec364c
-      & > button
-        position: absolute
-        bottom: .05rem
-        right: 1em
     & > h1
       margin-top: base-line * 2
       padding: base-line
