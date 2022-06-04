@@ -11,14 +11,13 @@
     <a class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
-    <a class="avatar" @click="emit('avatar', poster.id)">
-      <icon name="silhouette" />
-    </a>
+    <toggle-avatar :itemid="poster.id" />
     <as-download :itemid="poster.id" />
   </menu>
 </template>
 <script setup>
   import icon from '@/components/icon'
+  import toggleAvatar from '@/components/posters/as-button-avatar'
   import eventAsFieldset from '@/components/events/as-fieldset'
   import eventAsButton from '@/components/events/as-button'
   import asDownload from '@/components/download-vector'

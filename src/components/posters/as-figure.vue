@@ -30,7 +30,6 @@
     onUpdated as updated,
     nextTick as next_tick
   } from 'vue'
-
   const props = defineProps({
     slice: {
       type: Boolean,
@@ -92,6 +91,7 @@
   updated(() => {
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment) {
+      console.log('scroll into view')
       poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
       window.location.hash = ''
     }

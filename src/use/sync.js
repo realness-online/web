@@ -47,7 +47,7 @@ export const use = () => {
       await sync_offline_actions()
     } else {
       emit('active', true)
-      localStorage.sync_time = new Date().toISOString()
+      // localStorage.sync_time = new Date().toISOString()
       await sync_anonymous_posters()
       await prune()
       await sync_me()
