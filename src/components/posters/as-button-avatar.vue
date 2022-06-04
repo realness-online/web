@@ -6,9 +6,8 @@
 <script setup>
   import Icon from '@/components/icon'
   import { is_vector_id } from '@/use/vector'
-  import { Me } from '@/persistance/Storage'
   import { computed } from 'vue'
-  import { me, current_user } from '@/use/serverless'
+  import { me } from '@/use/serverless'
   import { use_me } from '@/use/people'
   const { save } = use_me()
   const props = defineProps({

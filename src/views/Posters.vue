@@ -27,7 +27,6 @@
         <as-author-menu
           :poster="poster"
           @remove="remove_poster"
-          @avatar="set_avatar"
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
@@ -74,10 +73,6 @@
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
-  }
-  const set_avatar = async itemid => {
-    me.avatar = itemid
-    await new me().save()
   }
   mounted(async () => {
     mount_workers()
