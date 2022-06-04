@@ -28,7 +28,7 @@
       default: false
     }
   })
-  const { me, save } = use_me()
+  const { me } = use_me()
   const person = ref(props.person)
   mounted(() => {
     if (me.value.id === person.value.id) person.value = me.value
