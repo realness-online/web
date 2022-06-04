@@ -57,10 +57,16 @@ export async function load_directory_from_network(itemid) {
 export async function as_directory(itemid) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
-  if (cached) return cached
+  if (cached) {
+    console.log('has directory cached')
+    return cached
+  }
   let directory = await build_local_directory(itemid)
-  if (navigator.onLine && current_user.value)
+  if (navigator.onLine && current_user.value) {
+    console.log('load_directory_from_network')
     directory = await load_directory_from_network(itemid)
+  }
+
   return directory
 }
 export async function as_download_url(itemid) {
