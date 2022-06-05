@@ -5,7 +5,6 @@
         <icon name="add" />
       </a>
       <icon v-else name="nothing" />
-      <h1>Posters</h1>
       <a v-if="can_add" id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
@@ -16,6 +15,7 @@
         accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
+    <h1>Posters</h1>
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
@@ -83,11 +83,11 @@
 </script>
 <style lang="stylus">
   section#posters
+    svg, a
+      color: green
+      fill: green
     & > header
       justify-content: space-between
-      @media (prefers-color-scheme: dark)
-        & > h1
-          color: green
       a#camera
         position: fixed
         bottom: base-line
@@ -95,10 +95,9 @@
         z-index: 4
         @media (min-width: typing-begins)
           visibility: hidden
-    & header
-      svg, a
+    & > h1
+      @media (prefers-color-scheme: dark)
         color: green
-        fill: green
     & > article
       standard-grid: gentle
       grid-gap: 0

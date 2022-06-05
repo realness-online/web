@@ -6,12 +6,10 @@ section.page
     display:flex
     justify-content: space-between
     z-index: 2
-    h1
-      line-height: 1
-      @media (prefers-color-scheme: dark)
-        color: blue
-  & > address
+  & > h1
+    margin-top: 0
     text-align: center
-    h1
-      @media (prefers-color-scheme: dark)
-        color: blue
+    padding: 0 base-line base-line base-line
+    line-height: 1
+    @media (prefers-color-scheme: dark)
+      color: blue

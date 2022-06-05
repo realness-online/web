@@ -2,9 +2,9 @@
   <section id="events" class="page">
     <header>
       <logo-as-link />
-      <h1>Events</h1>
       <icon name="nothing" />
     </header>
+    <h1>Events</h1>
     <icon v-show="working" name="working" />
     <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
       <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
@@ -67,19 +67,12 @@
 </script>
 <style lang="stylus">
   section#events
-    p.message
-      padding: 0 base-line
-      svg, a, button, span
-        border-color: green
-        fill: green
-        color: green
-    h1
+    & > header > svg
+      width: base-line * 2
+      height: base-line * 2
+      fill: transparent
+    & > h1
       color: green
-    & > header
-      & > svg
-        width: base-line * 2
-        height: base-line * 2
-        fill: transparent
     & > article
       standard-grid: howdy
       & > figure
@@ -103,4 +96,10 @@
       flex-direction: column
       justify-content: space-evenly
       align-items: center
+      p.message
+        padding: 0 base-line
+        svg, a, button, span
+          border-color: green
+          fill: green
+          color: green
 </style>
