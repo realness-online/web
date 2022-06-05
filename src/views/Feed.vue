@@ -2,12 +2,12 @@
   <section id="feed" ref="feed" class="page">
     <header>
       <logo-as-link tabindex="-1" />
-      <h1>Feed</h1>
       <icon v-if="is_fullscreen" name="nothing" />
       <a v-else tabindex="-1" @click="fullscreen">
         <icon name="nothin" />
       </a>
     </header>
+    <h1>Feed</h1>
     <as-days
       v-slot="items"
       :working="working"

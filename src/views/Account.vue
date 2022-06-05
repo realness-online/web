@@ -1,5 +1,9 @@
 <template>
-  <section id="account" :class="{ 'signed-in': current_user }" class="page">
+  <section
+    id="account"
+    :class="{ 'signed-in': current_user }"
+    class="page"
+    outline>
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
@@ -61,10 +65,7 @@
     time
       color: red
       border-color: red
-    & > h1
-      margin-top: inset(top)
-      text-align: center
-      padding: base-line
+
     & > section.as-days
       padding-top: 0
       h4

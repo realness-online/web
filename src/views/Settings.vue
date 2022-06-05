@@ -1,9 +1,10 @@
 <template>
   <section id="settings" class="page">
     <header>
-      <h1>Settings</h1>
+      <icon name="nothin" />
       <logo-as-link />
     </header>
+    <h1>Settings</h1>
     <menu>
       <li>
         <name-as-form />
