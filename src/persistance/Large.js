@@ -6,7 +6,7 @@ const Large = superclass =>
   class extends superclass {
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       if (!items) {
-        console.log(`Unable to find ${this.id}`)
+        console.info(`Unable to find ${this.id}`)
         return
       }
       const exist = await get(this.id)
