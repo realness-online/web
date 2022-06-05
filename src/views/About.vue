@@ -357,14 +357,14 @@
             <img src="/about/cash-app.jpg" loading="lazy" />
           </a>
           <menu>
-            <button>GPU</button>
-            <button>Embossing</button>
             <button>Visualizations</button>
             <button>Animation</button>
+            <button>Sync Contacts</button>
             <button>Video Stream</button>
             <button>Sync Filesystem</button>
+            <button>Keyframing</button>
+            <button>Embossing</button>
             <button>Sync Devices</button>
-            <button>Sync Contacts</button>
           </menu>
         </div>
       </article>
