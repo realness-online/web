@@ -1,9 +1,5 @@
 <template>
-  <section
-    id="account"
-    :class="{ 'signed-in': current_user }"
-    class="page"
-    outline>
+  <section id="account" :class="{ 'signed-in': current_user }" class="page">
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
