@@ -341,26 +341,30 @@
       <img src="/about/portrait/16.svg" loading="lazy" />
     </figure>
     <footer>
-      <article class="ask again">
-        <p>
-          Your <a href="https://cash.app/$ScottFryxell">support</a> creates the
-          space to unlock a universe of functionality around vector graphics
-        </p>
-        <ol>
-          <li>
-            <button disabled @click="toggle('sync:netwok')">GPU</button>
-            Embossed posters
-          </li>
-          <li>Visualize audio</li>
-          <li>Realtime poster from your webcam or phone</li>
-          <li>Stream your postered self to your audience</li>
-          <li>
-            <h4>We can build a natural set of syn options</h4>
-            <button>Filesystem</button>
-            <button>Devices</button>
-            <button>Contacts</button>
-          </li>
-        </ol>
+      <article>
+        <header>
+          <h2>We can build it better</h2>
+          <p>
+            Your <a href="https://cash.app/$ScottFryxell">support</a> will
+            unlock a universe of functionality around vector graphics. A
+            metaverse outside the mall
+          </p>
+        </header>
+        <div class="">
+          <a href="https://cash.app/$ScottFryxell">
+            <img src="/about/cash-app.jpg" loading="lazy" />
+          </a>
+          <menu>
+            <button>GPU</button>
+            <button>Embossing</button>
+            <button>Visualizations</button>
+            <button>Animation</button>
+            <button>Video Stream</button>
+            <button>Sync Filesystem</button>
+            <button>Sync Devices</button>
+            <button>Sync Contacts</button>
+          </menu>
+        </div>
       </article>
     </footer>
   </section>
@@ -545,6 +549,19 @@
           border:1em solid blue
           grid-column-start: span 2
     & > footer
-      padding: base-line
       min-height: 100vh
+      & > article
+        & > div
+          display: flex
+          & > a > img
+            border-radius: base-line
+            width: base-line * 12
+          & > menu
+            max-width: 21rem
+            display: flex
+            flex-wrap: wrap
+            align-items: flex-start
+            // justify-content:space-between
+            & button
+              margin: base-line
 </style>
