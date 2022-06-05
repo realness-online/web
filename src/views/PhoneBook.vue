@@ -5,9 +5,9 @@
         <icon name="heart" />
       </router-link>
       <icon v-else name="nothing" />
-      <h1>Phonebook</h1>
       <logo-as-link />
     </header>
+    <h1>Phonebook</h1>
     <icon v-if="working" name="working" />
     <nav v-if="current_user" class="profile-list">
       <as-figure
@@ -49,6 +49,11 @@
       margin-top: base-line
       @media (prefers-color-scheme: dark)
         fill: blue
+    & > h1
+      margin-top: 0
+      margin-bottom: base-line * 2
+      text-align: center
+      color: blue
     & > nav.profile-list
       margin-top: base-line
       & address > h3

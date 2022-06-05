@@ -61,22 +61,9 @@
     time
       color: red
       border-color: red
-    &.signed-in
-      padding-top: 0
-      & > h1
-        margin-top: base-line
-    & > header
-      & > a#settings
-        position: absolute
-        top: inset(top)
-        left: inset(right)
-      & > a#logo
-        position: absolute
-        top: inset(top)
-        right: inset(right)
-        z-index: 2
     & > h1
-      margin-top: base-line * 2
+      margin-top: inset(top)
+      text-align: center
       padding: base-line
     & > section.as-days
       padding-top: 0
