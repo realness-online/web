@@ -122,6 +122,6 @@
       & > h6
         left: base-line
       & > a
-        color: white
+        color: yellow
         right: base-line
 </style>
