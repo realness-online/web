@@ -8,6 +8,7 @@
         <figcaption>
           <h1>Realness</h1>
           <h3>online</h3>
+          <p>Install realness on your homescreen</p>
           <p>
             Realness creates expressive vector graphics from your designs and
             photos. It works on any device.
