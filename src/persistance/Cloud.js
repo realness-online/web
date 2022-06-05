@@ -27,7 +27,7 @@ export const Cloud = superclass =>
       } else if (current_user.value) await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      console.log('request:save', this.id, items)
+      console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
       if (networkable.includes(this.type))

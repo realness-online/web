@@ -76,12 +76,10 @@ export const init_serverless = async () => {
 
   auth_changed(auth.value, async user => {
     if (user) {
-      console.log('auth_changed')
       current_user.value = user
       localStorage.me = from_e64(current_user.value.phoneNumber)
       me.value.id = localStorage.me
       const maybe_me = await load(localStorage.me)
-      console.log(maybe_me)
       if (maybe_me) me.value = maybe_me
     } else current_user.value = null
   })
