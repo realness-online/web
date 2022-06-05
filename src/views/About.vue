@@ -303,44 +303,65 @@
       </a>
       <p>Realness is free. There are no reciepts</p>
     </div>
-    <footer>
-      <figure>
-        <figcaption>
-          <h2>Gallery</h2>
-        </figcaption>
-        <img src="/about/landscape/01.svg" loading="lazy" />
-        <img src="/about/landscape/02.svg" loading="lazy" />
-        <img src="/about/landscape/03.svg" loading="lazy" />
-        <img src="/about/landscape/04.svg" loading="lazy" />
-        <img src="/about/landscape/05.svg" loading="lazy" />
-        <img src="/about/landscape/06.svg" loading="lazy" />
-        <img src="/about/landscape/07.svg" loading="lazy" />
-        <img src="/about/landscape/08.svg" loading="lazy" />
-        <img src="/about/landscape/09.svg" loading="lazy" />
-        <img src="/about/landscape/10.svg" loading="lazy" />
-        <img src="/about/landscape/11.svg" loading="lazy" />
-        <img src="/about/landscape/12.svg" loading="lazy" />
-        <img src="/about/landscape/13.svg" loading="lazy" />
-        <img src="/about/landscape/14.svg" loading="lazy" />
-        <img src="/about/landscape/15.svg" loading="lazy" />
-        <img src="/about/landscape/16.svg" loading="lazy" />
+    <figure>
+      <figcaption>
+        <h2>Gallery</h2>
+      </figcaption>
+      <img src="/about/landscape/01.svg" loading="lazy" />
 
-        <img src="/about/portrait/01.svg" loading="lazy" />
-        <img src="/about/portrait/02.svg" loading="lazy" />
-        <img src="/about/portrait/03.svg" loading="lazy" />
-        <img src="/about/portrait/04.svg" loading="lazy" />
-        <img src="/about/portrait/05.svg" loading="lazy" />
-        <img src="/about/portrait/06.svg" loading="lazy" />
-        <img src="/about/portrait/07.svg" loading="lazy" />
-        <img src="/about/portrait/08.svg" loading="lazy" />
-        <img src="/about/portrait/09.svg" loading="lazy" />
-        <img src="/about/portrait/10.svg" loading="lazy" />
-        <img src="/about/portrait/11.svg" loading="lazy" />
-        <img src="/about/portrait/12.svg" loading="lazy" />
-        <img src="/about/portrait/14.svg" loading="lazy" />
-        <img src="/about/portrait/15.svg" loading="lazy" />
-        <img src="/about/portrait/16.svg" loading="lazy" />
-      </figure>
+      <img src="/about/landscape/03.svg" loading="lazy" />
+      <img src="/about/landscape/04.svg" loading="lazy" />
+      <img src="/about/landscape/05.svg" loading="lazy" />
+      <img src="/about/landscape/06.svg" loading="lazy" />
+      <img src="/about/landscape/07.svg" loading="lazy" />
+      <img src="/about/landscape/08.svg" loading="lazy" />
+      <img src="/about/landscape/09.svg" loading="lazy" />
+      <img src="/about/landscape/10.svg" loading="lazy" />
+      <img src="/about/landscape/11.svg" loading="lazy" />
+      <img src="/about/landscape/12.svg" loading="lazy" />
+      <img src="/about/landscape/13.svg" loading="lazy" />
+      <img src="/about/landscape/14.svg" loading="lazy" />
+      <img src="/about/landscape/15.svg" loading="lazy" />
+      <img src="/about/landscape/16.svg" loading="lazy" />
+
+      <img src="/about/portrait/01.svg" loading="lazy" />
+      <img src="/about/portrait/02.svg" loading="lazy" />
+      <img src="/about/portrait/03.svg" loading="lazy" />
+      <img src="/about/portrait/04.svg" loading="lazy" />
+      <img src="/about/portrait/05.svg" loading="lazy" />
+      <img src="/about/portrait/06.svg" loading="lazy" />
+
+      <img src="/about/portrait/08.svg" loading="lazy" />
+      <img src="/about/portrait/09.svg" loading="lazy" />
+      <img src="/about/portrait/10.svg" loading="lazy" />
+      <img src="/about/portrait/11.svg" loading="lazy" />
+      <img src="/about/portrait/12.svg" loading="lazy" />
+      <img src="/about/portrait/14.svg" loading="lazy" />
+      <img src="/about/portrait/15.svg" loading="lazy" />
+      <img src="/about/portrait/16.svg" loading="lazy" />
+    </figure>
+    <footer>
+      <article class="ask again">
+        <p>
+          Your <a href="https://cash.app/$ScottFryxell">support</a> creates the
+          space to unlock a universe of functionality around vector graphics
+        </p>
+        <ol>
+          <li>
+            <button disabled @click="toggle('sync:netwok')">GPU</button>
+            Embossed posters
+          </li>
+          <li>Visualize audio</li>
+          <li>Realtime poster from your webcam or phone</li>
+          <li>Stream your postered self to your audience</li>
+          <li>
+            <h4>We can build a natural set of syn options</h4>
+            <button>Filesystem</button>
+            <button>Devices</button>
+            <button>Contacts</button>
+          </li>
+        </ol>
+      </article>
     </footer>
   </section>
 </template>
@@ -509,18 +530,21 @@
         margin-top: base-line
         max-width: base-line * 18rem
         text-align: center
+    & > figure
+      padding: base-line
+      min-height: 100vh
+      standard-grid: gentle
+      & > img
+
+        height: 100%
+        width: 100%
+      & > img[src^="/about/landscape"]
+        grid-column-start: span 2
+      @media (orientation: landscape), (min-width: page-width)
+        & > img[href^="/about/landscape"]
+          border:1em solid blue
+          grid-column-start: span 2
     & > footer
       padding: base-line
       min-height: 100vh
-      & > figure
-        standard-grid: gentle
-        & > img
-          height: 100%
-          width: 100%
-        & > img[src^="/about/landscape"]
-          grid-column-start: span 2
-        @media (orientation: landscape), (min-width: page-width)
-          & > img[href^="/about/landscape"]
-            border:1em solid blue
-            grid-column-start: span 2
 </style>
