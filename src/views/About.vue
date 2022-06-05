@@ -293,11 +293,14 @@
     </tab-group>
     <div class="call to action">
       <h3>
-        Continued development of <span>Realness</span> <span>online</span>
+        Support <span>Realness</span>
+        <span>online</span>
       </h3>
-      <h4>$5 — Designers</h4>
-      <h4>$15 — Community</h4>
-      <h4>$25 — Developers</h4>
+      <p>
+        <b>$5 Designers</b>
+        <b>$15 Community</b>
+        <b>$25 Developers</b>
+      </p>
       <a href="https://cash.app/$ScottFryxell">
         <img src="/about/cash-app.jpg" loading="lazy" />
       </a>
@@ -346,8 +349,7 @@
           <h2>We can build it better</h2>
           <p>
             Your <a href="https://cash.app/$ScottFryxell">support</a> will
-            unlock a universe of functionality around vector graphics. A
-            metaverse outside the mall
+            unlock a universe of functionality around vector graphics.
           </p>
         </header>
         <div class="">
@@ -512,21 +514,21 @@
       flex-direction: column
       justify-content: center
       align-items: center
-      & > h2
-        margin-bottom: 0
-        & > span
-          color: blue
       & > h3
+        margin-bottom: base-line
         & > span:first-of-type
+          padding-right: base-line * 0.25
           color: blue
         & > span:last-of-type
           color: green
-      h4
-        margin: base-line
+      & > p
+        display: flex
+        margin-bottom: base-line * 2
+
         color: green
-        max-width: base-line * 13
-        &:last-of-type
-          margin-bottom: base-line * 2
+        & > b
+          color: green
+          margin-right: base-line * .5
       img
         border-radius: base-line
         width: base-line * 12
@@ -539,7 +541,7 @@
       min-height: 100vh
       standard-grid: gentle
       & > img
-
+        border-radius: base-line * 0.21
         height: 100%
         width: 100%
       & > img[src^="/about/landscape"]
@@ -551,6 +553,10 @@
     & > footer
       min-height: 100vh
       & > article
+        padding: base-line
+        & > header
+          margin-bottom: base-line * 2
+          display: block
         & > div
           display: flex
           & > a > img
@@ -561,7 +567,6 @@
             display: flex
             flex-wrap: wrap
             align-items: flex-start
-            // justify-content:space-between
             & button
               margin: base-line
 </style>
