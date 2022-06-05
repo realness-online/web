@@ -100,7 +100,7 @@
     </symbol>
     <symbol id="camera" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
       <path class="st0" d="M903 323.6v492c0 14.1-11.3 25.5-25.5 25.5H145c-14.1 0-25-11.3-25-25.5v-492c0-14.1 10.9-25.6 25-25.6h181.9l51.7-115h265.3l41.4 115h192.2c14.2 0 25.5 11.4 25.5 25.6z"/>
-      <circle class="st0" cx="500" cy="555" r="156.3"/>
+      <circle class="st0" cx="500" cy="555" r="156.3" fill="var(--black-background)" stroke="var(--red)" stroke-width="var(--base-line)" fill-opacity="0.66"/>
     </symbol>
     <symbol id="working" viewBox="0 0 430 130" preserveAspectRatio="xMidYMid meet">
       <circle cy="64" cx="64" r="64"/>
