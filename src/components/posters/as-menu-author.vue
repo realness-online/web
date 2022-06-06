@@ -46,13 +46,15 @@
   const open_editor = () =>
     router.replace({ path: edit_poster(props.poster.id) })
   const active = use_active_element()
-
   const { enter } = use_magic_keys()
   watch(enter, v => {
     if (v && active.value) {
-      const clicked = parseInt(active.value.href?.baseVal.split('-')[2])
-      const me = as_created_at(props.poster.id)
-      if (clicked === me) open_editor()
+      const clicked_created_at = active.value.id.split('-')[2]
+      if (clicked_created_at) {
+        const clicked = parseInt(clicked_created_at)
+        const i_am_created_at = as_created_at(props.poster.id)
+        if (clicked === i_am_created_at) open_editor()
+      }
     }
   })
 </script>
