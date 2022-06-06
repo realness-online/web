@@ -9,9 +9,9 @@ export const default_person = {
   type: 'person'
 }
 const relations = ref(undefined)
-const phonebook = ref([]) // phone book is expensive so just load it once per session
 
 export const use = () => {
+  const phonebook = ref([])
   const working = ref(true)
   const people = ref([])
   const person = computed(() => people.value[0])
@@ -21,7 +21,7 @@ export const use = () => {
   }
   const load_people = async ids => await Promise.all(ids.map(load_person))
   const load_phonebook = async () => {
-    if (current_user.value && !phonebook.value.length) {
+    if (current_user.value) {
       const people = await directory('/people/')
       await Promise.all(
         people.prefixes.map(async phone_number => {
