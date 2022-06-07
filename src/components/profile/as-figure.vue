@@ -3,8 +3,8 @@
     <as-svg
       v-if="person.avatar"
       :itemid="person.avatar"
-      @click="avatar_click"
-      :tabable="editable" />
+      :tabable="editable"
+      @click="avatar_click" />
     <icon v-else name="silhouette" @click="avatar_click" />
     <figcaption>
       <as-address :key="person.id" :person="person" :editable="editable" />
