@@ -18,8 +18,11 @@
     "release:npm": "yarn publish",
     "release:gh": "gh release create $npm_package_version",
     "workers": "webpack --config workers.config.cjs",
-    "workers:dev": "yarn workers --mode=development --watch"
-  },
+    "workers:dev": "yarn workers --mode=development --watch",
+    "postinstall": "husky install",
+    "prepack": "pinst --disable",
+    "postpack": "pinst --enable"
+    },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
     "@headlessui/vue": "^1.5.0",
@@ -60,9 +63,11 @@
     "happy-dom": "3.2.0",
     "https-browserify": "1.0.0",
     "https-localhost": "^4.7.1",
+    "husky": "^8.0.1",
     "mockdate": "3.0.5",
     "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
+    "pinst": "^3.0.0",
     "prettier": "2.6.2",
     "process": "0.11.10",
     "simplex-noise": "3.0.1",
