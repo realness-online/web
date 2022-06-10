@@ -1,6 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
-import { as_directory_id, as_path_parts, as_created_at } from '@/use/itemid'
+import { as_directory_id, as_created_at } from '@/use/itemid'
 
 const Large = superclass =>
   class extends superclass {
@@ -9,18 +9,10 @@ const Large = superclass =>
         console.info(`Unable to find ${this.id}`)
         return
       }
-      const exist = await get(this.id)
+      // const exist = await get(this.id)
       await set(this.id, items.outerHTML)
-      if (!exist) {
-        const path = as_directory_id(this.id)
-        let directory = await get(path)
-        if (directory && directory.items)
-          directory.items.push(as_path_parts(this.id)[2])
-        else directory = { items: [as_path_parts(this.id)[2]] }
-        if (items) {
-          await set(path, directory)
-        }
-      }
+      const path = as_directory_id(this.id)
+      await del(path)
       if (super.save) await super.save(items)
     }
     async delete() {
