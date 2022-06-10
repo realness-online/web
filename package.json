@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "private": false,
   "type": "module",
   "description": "When people search for 'outsider social network' they'll find realness online",
@@ -22,7 +22,7 @@
     "postinstall": "husky install",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable"
-    },
+  },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
     "@headlessui/vue": "^1.5.0",
