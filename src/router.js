@@ -27,7 +27,7 @@ const routes = [
   { path: '/account', component: Account },
   { path: '/about', component: About },
   { path: '/settings', component: Settings },
-  { path: '/documentation', component: Documentation },
+  { path: '/player', component: Player },
   { path: '/:phone_number', component: Profile }
 ]
 

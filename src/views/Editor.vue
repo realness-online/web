@@ -6,7 +6,7 @@
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
     </header>
-    <audio-visualizer />
+
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
@@ -24,7 +24,6 @@
   import AsFill from '@/components/posters/as-figure-fill'
   import AsAnimation from '@/components/posters/as-animation'
   import AsGrid from '@/components/posters/as-grid'
-  import AudioVisualizer from '@/components/audio/visualizer'
 
   import { Poster } from '@/persistance/Storage'
   import {
