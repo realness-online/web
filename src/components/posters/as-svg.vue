@@ -52,7 +52,6 @@
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-regular')})`"
       @focus="focus('bold')" />
-    <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
 </template>
 <script setup>

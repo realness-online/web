@@ -1,6 +1,7 @@
 <template>
   <figure ref="poster" class="poster" :class="{ landscape }">
     <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
+    <as-emboss v-if="show_emboss" :itemid="itemid" />
     <figcaption>
       <slot v-if="menu">
         <menu>
@@ -19,6 +20,8 @@
   import AsMessenger from '@/components/profile/as-messenger'
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
+  import AsEmboss from '@/components/posters/as-emboss'
+
   import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/vector'
   import { as_time } from '@/use/date'
@@ -56,6 +59,7 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
+  const show_emboss = computed(() => localStorage.emboss)
   const emit = defineEmits({
     'vector-click': is_click,
     loaded: is_vector
