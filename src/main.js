@@ -9,14 +9,14 @@ if (!me) localStorage.me = '/+'
 
 const update_servie_worker = register_service_worker({
   onOfflineReady() {
-    console.info('sw-offline-ready', update_servie_worker)
+    console.info('service-worker-offline-ready', update_servie_worker)
   },
-  onRegistered(r) {
-    console.info('sw-registered', r)
-    r &&
+  onRegistered(registration) {
+    console.info('service-worker-registered', registration)
+    registration &&
       setInterval(() => {
-        console.info('sw-interval-check', r)
-        r.update()
+        console.info('service-worker-interval-check', registration)
+        registration.update()
       }, eight_hours)
   }
 })
