@@ -548,9 +548,10 @@
         max-width: base-line * 18rem
         text-align: center
     & > figure
-      padding: base-line
       min-height: 100vh
-      standard-grid: gentle
+      @media (min-width: pad-begins)
+        padding: base-line
+        standard-grid: gentle
       & > img
         border-radius: base-line * 0.21
         height: 100%
@@ -564,20 +565,28 @@
     & > footer
       min-height: 100vh
       & > article
-        padding: base-line
         & > header
-          margin-bottom: base-line * 2
+          padding: base-line
           display: block
+          @media (min-width: pad-begins)
+            margin-bottom: base-line * 2
         & > div
           display: flex
+          @media (max-width: pad-begins)
+            flex-direction: column
           & > a > img
             border-radius: base-line
-            width: base-line * 12
+            width 100%
+            @media (min-width: pad-begins)
+              margin-left: base-line
+              width: base-line * 12
           & > menu
             max-width: 21rem
             display: flex
             flex-wrap: wrap
             align-items: flex-start
             & button
+              margin: base-line * 0.25
+
               margin: base-line
 </style>
