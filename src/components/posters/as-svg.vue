@@ -66,8 +66,7 @@
     watchEffect as watch_effect,
     onMounted as mounted,
     ref,
-    inject,
-    computed
+    inject
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'

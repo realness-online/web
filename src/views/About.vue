@@ -32,7 +32,10 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
-              <h2>We call them <b>Posters</b></h2>
+              <h2>
+                We call them
+                <b>posters</b>
+              </h2>
               <p>
                 Realness reduces your toolchain dependence. No need for Figma,
                 no need for Illustrator no need for Sketch or After Effects.
@@ -63,8 +66,15 @@
             <li>
               <icon name="remove" style="fill: red" />
               <p>
-                Edit color, gradient and opacity for <b>Background</b>,
-                <b>Light</b>, <b>Regular</b> and <b>Bold</b> layers
+                Edit color, gradient and opacity for
+                <b>Background</b>
+                ,
+                <b>Light</b>
+                ,
+                <b>Regular</b>
+                and
+                <b>Bold</b>
+                layers
               </p>
             </li>
             <li>
@@ -159,7 +169,10 @@
             <li>
               <icon name="finished" />
               <p>
-                <b class="no">Email</b>, <b class="no">Likes</b>,
+                <b class="no">Email</b>
+                ,
+                <b class="no">Likes</b>
+                ,
                 <b class="no">Links</b>
               </p>
             </li>
@@ -293,8 +306,10 @@
               <icon name="finished" />
               <p>
                 Learn lessons from Mastedon:
-                <span class="no">facists</span>,
-                <span class="no">terrrorists</span>,
+                <span class="no">facists</span>
+                ,
+                <span class="no">terrrorists</span>
+                ,
                 <span class="no">communists</span>
               </p>
             </li>
@@ -304,7 +319,8 @@
     </tab-group>
     <div class="call to action">
       <h3>
-        Support <span>Realness</span>
+        Support
+        <span>Realness</span>
         <span>online</span>
       </h3>
       <p>
@@ -359,8 +375,9 @@
         <header>
           <h2>We can build it better</h2>
           <p>
-            Your <a href="https://cash.app/$ScottFryxell">support</a> will
-            unlock a universe of functionality around vector graphics.
+            Your
+            <a href="https://cash.app/$ScottFryxell">support</a>
+            will unlock a universe of functionality around vector graphics.
           </p>
         </header>
         <div class="">

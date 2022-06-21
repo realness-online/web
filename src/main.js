@@ -13,10 +13,11 @@ const update_servie_worker = register_service_worker({
   },
   onRegistered(r) {
     console.info('sw-registered', r)
-    r && setInterval(() => {
-      console.info('sw-interval-check', r)
-      r.update()
-    }, eight_hours)
+    r &&
+      setInterval(() => {
+        console.info('sw-interval-check', r)
+        r.update()
+      }, eight_hours)
   }
 })
 createApp(App).use(router).mount('body')

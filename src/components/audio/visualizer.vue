@@ -1,7 +1,5 @@
 <template>
-  <button v-if="can_visualize && !analyzing" @click="start">
-    Visualize
-  </button>
+  <button v-if="can_visualize && !analyzing" @click="start">Visualize</button>
   <button v-if="analyzing" @click="stop">Stop</button>
 </template>
 <script setup>
@@ -13,14 +11,17 @@
   const start = async () => {
     const context = new AudioContext()
     analyser.value = context.createAnalyser()
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false
+    })
     const input = context.createMediaStreamSource(stream)
     input.connect(analyser.value)
     analyzing.value = true
     requestAnimationFrame(visualize)
   }
 
-  const stop = () => analyzing.value = false
+  const stop = () => (analyzing.value = false)
   const visualize = () => {
     const times = new Uint8Array(analyser.value.frequencyBinCount)
     analyser.value.getByteTimeDomainData(times)

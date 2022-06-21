@@ -33,11 +33,10 @@
   </svg>
 </template>
 <script setup>
-  import { as_fragment_id } from '@/use/itemid'
   import { is_vector_id } from '@/use/vector'
   import { use_poster } from '@/use/vector'
   const { fragment, viewbox, aspect_ratio, show } = use_poster()
-  const props = defineProps({
+  defineProps({
     itemid: {
       type: String,
       required: true,

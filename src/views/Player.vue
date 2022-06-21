@@ -5,7 +5,7 @@
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Play Thots</h1>
-    <menu> </menu>
+    <menu />
   </section>
 </template>
 <script setup>

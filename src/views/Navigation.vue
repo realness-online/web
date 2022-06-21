@@ -23,7 +23,7 @@
     </nav>
     <footer>
       <h6>{{ version }}</h6>
-      <router-link to="/about" tabindex="-1"> ? </router-link>
+      <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
 </template>
