@@ -140,7 +140,8 @@
     "trailingComma": "none",
     "bracketSameLine": true,
     "arrowParens": "avoid",
-    "vueIndentScriptAndStyle": true
+    "vueIndentScriptAndStyle": true,
+    "htmlWhitespaceSensitivity": "ignore"
   },
   "browserslist": [
     "last 2 versions"
