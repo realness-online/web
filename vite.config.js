@@ -1,6 +1,5 @@
 import { configDefaults, defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
-// vite.config.js / vite.config.ts
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 
 export default defineConfig({

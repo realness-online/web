@@ -13,6 +13,7 @@ import About from '@/views/About'
 import Settings from '@/views/Settings'
 import Camera from '@/views/Camera'
 import Documentation from '@/views/Documentation'
+import Visualizer from '@/views/Visualizer'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/sign-on', component: Sign_on },
@@ -20,6 +21,7 @@ const routes = [
   { path: '/feed', component: Feed },
   { path: '/posters', component: Posters },
   { path: '/:type/:id/editor', component: Editor },
+  { path: '/:type/:id/visualizer', component: Visualizer },
   { path: '/relations', component: Relations },
   { path: '/phonebook', component: PhoneBook },
   { path: '/camera', component: Camera },
@@ -27,7 +29,6 @@ const routes = [
   { path: '/account', component: Account },
   { path: '/about', component: About },
   { path: '/settings', component: Settings },
-  { path: '/player', component: Player },
   { path: '/:phone_number', component: Profile }
 ]
 
