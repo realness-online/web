@@ -12,7 +12,9 @@
       @focus="layer_selected" />
     <footer>
       <menu>
-        <button v-if="can_visualize && !analyzing" @click="start">Visualize</button>
+        <button v-if="can_visualize && !analyzing" @click="start">
+          Visualize
+        </button>
         <button v-if="analyzing" @click="stop">Stop</button>
       </menu>
     </footer>
@@ -36,15 +38,18 @@
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
   const { f, enter, escape } = use_Keyboard()
   const can_visualize = () => {
-    console.log(!navigator.mediaDevices);
+    console.log(!navigator.mediaDevices)
     navigator.mediaDevices
   }
   const start = async () => {
     const context = new AudioContext()
     analyser.value = context.createAnalyser()
+    analyser.value.fftSize = 32
+    analyser.value.minDecibels = -64
+    analyser.value.maxDecibels = -6
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
-      video: false
+      video: { height: 512 }
     })
     const input = context.createMediaStreamSource(stream)
     input.connect(analyser.value)
@@ -58,8 +63,8 @@
     console.log(times.length)
     for (var i = 0; i < times.length; i++) {
       const value = times[i]
-      const percent = value / 256
-      console.log(value, percent)
+      const zerod = value - 128
+      console.log(i, value, zerod)
     }
     if (analyzing.value) requestAnimationFrame(visualize)
   }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <body onload="init()">
+    <menu>
+      <button onclick="start()">Start</button>
+      <button onclick="stop()">Stop</button>
+      <button onclick="snapshot()">Snapshot</button>
+    </menu>
+    <video
+      id="video"
+      onclick="snapshot(this)"
+      width="400"
+      height="400"
+      controls
+      autoplay></video>
+    <p>
+      <canvas id="myCanvas" width="400" height="300"></canvas>
+    </p>
+  </body>
+  <script>
+    let video
+    let stream
+    let canvas
+    let ctx
+    const start = () => {
+      navigator.getUserMedia(
+        {
+          video: true,
+          audio: false
+        },
+        function (localMediaStream) {
+          video = document.querySelector('video')
+          video.srcObject = localMediaStream
+          stream = localMediaStream
+        },
+        function (err) {
+          console.log('The following error occured: ' + err)
+        }
+      )
+    }
+    const stop = () => stream.stop()
+    
+    const init = () => {
+      canvas = document.getElementById('myCanvas')
+      ctx = canvas.getContext('2d')
+    }
+    const snapshot = () =>  {
+      console.log(video);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    }
+  </script>
+</html>
