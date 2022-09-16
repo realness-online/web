@@ -11,10 +11,10 @@
     "serve": "vite preview",
     "serve:https": "serve dist",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
-    "deploy": "yarn format && yarn lint && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
-    "release": "yarn release:gh && yarn release:npm && git tag v$npm_package_version",
+    "deploy": "yarn format && yarn lint && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
+    "release": "yarn release:gh && yarn release:npm",
     "release:npm": "yarn publish",
     "release:gh": "gh release create $npm_package_version",
     "workers": "webpack --config workers.config.cjs",
@@ -48,7 +48,6 @@
     "vue-router": "4.0.15"
   },
   "devDependencies": {
-
     "@vitejs/plugin-vue": "2.3.3",
     "@vue/test-utils": "2.0.0-rc.21",
     "assert": "2.0.0",
