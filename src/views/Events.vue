@@ -10,7 +10,6 @@
       <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
     </as-days>
     <footer>
-      <p class="message">Coming in July</p>
       <p class="message">
         You create events from
         <router-link to="/posters">Posters</router-link>
