@@ -107,14 +107,6 @@
       "camelcase": 0,
       "indent": "off",
       "lines-between-class-members": 0,
-      "space-before-function-paren": [
-        "error",
-        {
-          "anonymous": "never",
-          "named": "never",
-          "asyncArrow": "always"
-        }
-      ],
       "vue/multi-word-component-names": "off",
       "vue/require-default-prop": "off",
       "vue/prop-name-casing": [
