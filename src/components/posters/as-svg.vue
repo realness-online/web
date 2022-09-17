@@ -14,7 +14,10 @@
     <as-background
       :id="query('background')"
       :rect="vector.background"
+      :width="vector.width"
+      :height="vector.height"
       :tabindex="tabindex"
+      fill-opacity="1"
       :fill="`url(${fragment('radial-background')})`"
       @focus="focus('background')" />
     <as-path
@@ -23,7 +26,7 @@
       itemprop="light"
       :path="vector.light"
       :tabindex="tabindex"
-      opacity="0.95"
+      fill-opacity="0.95"
       :fill="`url(${fragment('vertical-light')})`"
       :stroke="`url(${fragment('horizontal-background')})`"
       @focus="focus('light')" />
@@ -31,7 +34,7 @@
       v-if="vector.regular"
       :id="query('regular')"
       itemprop="regular"
-      opacity="0.95"
+      fill-opacity="0.95"
       :path="vector.regular"
       :tabindex="tabindex"
       :fill="`url(${fragment('horizontal-regular')})`"
@@ -43,7 +46,7 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      opacity="0.95"
+      fill-opacity="0.95"
       :fill="`url(${fragment('vertical-bold')}`"
       :stroke="`url(${fragment('radial-regular')}`"
       @focus="focus('bold')" />
