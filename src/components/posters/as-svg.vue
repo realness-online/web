@@ -47,8 +47,8 @@
       :tabindex="tabindex"
       :path="vector.bold"
       fill-opacity="0.95"
-      :fill="`url(${fragment('vertical-bold')}`"
-      :stroke="`url(${fragment('radial-regular')}`"
+      :fill="`url(${fragment('vertical-bold')})`"
+      :stroke="`url(${fragment('radial-regular')})`"
       @focus="focus('bold')" />
     <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
