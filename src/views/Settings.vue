@@ -6,14 +6,34 @@
     </header>
     <h1>Settings</h1>
     <menu>
+      <h2>Me</h2>
       <li>
         <name-as-form />
+      </li>
+    </menu>
+    <menu>
+      <h2>Posters</h2>
+      <li>
+        <preference name="save-as-svg" title="Save as html or svg">
+          <preference
+            name="support-adobe-animate"
+            title="Posters download with atrributres over CSS and hex over hsla" />
+        </preference>
+      </li>
+      <li>
+        <preference name="emboss" title="Apply the emboss filter" />
+      </li>
+      <li>
+        <preference
+          name="use-filesystem"
+          title="Use the filesystem api to sync posters on your desktop" />
       </li>
     </menu>
   </section>
 </template>
 <script setup>
   import Icon from '@/components/icon'
+  import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import NameAsForm from '@/components/profile/as-form-name'
 </script>
@@ -31,6 +51,7 @@
       & > article
         padding: 0 base-line
     menu
+      standard-grid()
       margin: base-line
       & > li
         list-style: none
