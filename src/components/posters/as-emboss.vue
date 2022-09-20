@@ -1,45 +1,21 @@
 <template>
   <defs>
-    <filter id="emboss-light">
+    <symbol :id="query('emboss')">
+      <use :href="fragment('light')" filter="url(#emboss)" />
+      <use :href="fragment('regular')" filter="url(#emboss)" />
+      <use :href="fragment('bold')" filter="url(#emboss)" />
+    </symbol>
+    <filter id="emboss">
       <feConvolveMatrix
-        kernelMatrix="2 0 0
+        kernelMatrix="3 0 0
                       0 0 0
-                      0 0 -2"></feConvolveMatrix>
-    </filter>
-    <filter id="emboss-regular">
-      <feConvolveMatrix
-        kernelMatrix="4 0 0
-                      0 0 0
-                      0 0 -4"></feConvolveMatrix>
-    </filter>
-    <filter id="emboss-bold">
-      <feConvolveMatrix
-        kernelMatrix="19 0 0
-                      0 0 0
-                      0 0 -19"></feConvolveMatrix>
+                      0 0 -3"></feConvolveMatrix>
     </filter>
   </defs>
-  <use
-    class="emboss light"
-    tabindex="-1"
-    :href="fragment('light')"
-    fill="gray"
-    filter="url(#emboss-light)" />
-  <use
-    class="emboss regular"
-    tabindex="-1"
-    :href="fragment('regular')"
-    fill="gray"
-    filter="url(#emboss-regular)" />
-  <use
-    class="emboss bold"
-    tabindex="-1"
-    :href="fragment('bold')"
-    fill="white"
-    filter="url(#emboss-bold)" />
+  <use tabindex="-1" class="emboss" :href="fragment('emboss')" />
 </template>
 <script setup>
-  import { as_fragment_id } from '@/use/itemid'
+  import { as_fragment_id, as_query_id } from '@/use/itemid'
   import { is_vector } from '@/use/vector'
   const props = defineProps({
     vector: {
@@ -48,7 +24,6 @@
       validator: is_vector
     }
   })
-  const fragment = add => {
-    return `${as_fragment_id(props.vector.id)}-${add}`
-  }
+  const query = add => `${as_query_id(props.vector.id)}-${add}`
+  const fragment = add => `${as_fragment_id(props.vector.id)}-${add}`
 </script>
