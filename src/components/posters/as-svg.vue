@@ -175,4 +175,6 @@
     outline: none
     // use.light, use.regular, use.bold, use.emboss, use.background
     //   display: none
+    &:focus-within
+      border: base-line solid black
 </style>
