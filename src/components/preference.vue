@@ -3,7 +3,7 @@
     <div>
       <h3>{{ name }}</h3>
       <label class="switch">
-        <input type="checkbox" v-model="state" @click="toggle" />
+        <input v-model="state" type="checkbox" @click="toggle" />
         <span class="slider"></span>
       </label>
     </div>
