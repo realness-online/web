@@ -45,17 +45,15 @@
   const fill = ref(undefined)
   const stroke = ref(undefined)
   const d = ref(undefined)
-  const fill_opacity = ref(undefined)
-  const stroke_opacity = ref(undefined)
-  const stroke_width = ref(undefined)
+  const fill_opacity = ref('0.90')
+  const stroke_opacity = ref('1')
+  const stroke_width = ref('0.33')
   mounted(() => {
     fill.value = props.fill
     stroke.value = props.stroke
     d.value = props.path.getAttribute('d')
     fill_opacity.value = props.path.style.fillOpacity
     stroke_opacity.value = props.path.style.strokeOpacity
-
-    if (props.path.style.color) stroke_width.value = '0.33px'
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
   })
@@ -83,6 +81,7 @@
         animation-direction: alternate
         animation-iteration-count: infinite
   path[itemprop]
+    // stroke-width: 0.33px
     &:focus
       outline: none
     &:active
