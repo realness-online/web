@@ -28,7 +28,7 @@
     computed: {
       downloadable() {
         const svg = document.getElementById(as_query_id(this.itemid))
-        if (!!localStorage.adobe) {
+        if (localStorage.adobe) {
           const convert = svg.querySelectorAll('[stop-color]')
           convert.forEach(element => {
             const hsla = element.getAttribute('stop-color')
