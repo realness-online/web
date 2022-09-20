@@ -3,33 +3,30 @@
     <div>
       <h3>{{ name }}</h3>
       <label class="switch">
-        <input type="checkbox" />
+        <input type="checkbox" v-model="state" @click="toggle" />
         <span class="slider"></span>
       </label>
     </div>
     <p>{{ title }}</p>
   </fieldset>
 </template>
-<script>
-  export default {
-    props: {
-      name: {
-        type: String,
-        required: true
-      },
-      title: {
-        type: String,
-        required: false
-      },
-      default: {
-        type: String,
-        required: false
-      },
-      option: {
-        type: String,
-        required: false
-      }
+<script setup>
+  import { ref } from 'vue'
+  const props = defineProps({
+    name: {
+      type: String,
+      required: true
+    },
+    title: {
+      type: String,
+      required: true
     }
+  })
+  const state = ref(!!localStorage.getItem(props.name))
+  const toggle = () => {
+    state.value = !state.value
+    if (localStorage.getItem(props.name)) localStorage.removeItem(props.name)
+    else localStorage.setItem(props.name, 1)
   }
 </script>
 <style lang="stylus">
