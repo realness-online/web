@@ -43,7 +43,6 @@
         line-height: 1
         margin: 0 0 base-line 0
         padding: 0
-
       & > label.switch
         position: relative
         display: inline-block
@@ -53,14 +52,12 @@
           opacity: 0
           width: 0
           height: 0
-          &:checked
-            background-color: #2196F3
-          &:focus
-            box-shadow: 0 0 1px #2196F3
-          &:checked
-            -webkit-transform: translateX(26px)
-            -ms-transform: translateX(26px)
-            transform: translateX(26px)
+          &:checked + .slider
+            background-color: green
+          &:focus + .slider
+            box-shadow: 0 0 1px red
+          &:checked + .slider:before
+            transform: translateX(base-line * 1.5)
         .slider
           border-radius: base-line * 2
           position: absolute
@@ -81,6 +78,7 @@
             left: base-line * .25
             bottom: base-line * .25
             background-color: white
+            opacity: 0.5
             -webkit-transition: .4s
             transition: .4s
     & > p
