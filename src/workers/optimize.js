@@ -12,11 +12,8 @@ const options = {
       params: {
         overrides: {
           removeUnknownsAndDefaults: false,
-          cleanupAttrs: true,
-          cleanupNumericValues: true,
           removeViewBox: false,
           removeEmptyAttrs: false,
-          removeUselessStrokeAndFill: true,
           mergePaths: false,
           convertPathData: {
             floatPrecision: 0,
