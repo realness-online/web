@@ -54,5 +54,5 @@
       width: 40%
     menu
       display: flex
-      justify-content: flex-end
+      justify-content: center
 </style>
