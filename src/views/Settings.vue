@@ -6,9 +6,11 @@
     </header>
     <h1>Settings</h1>
     <menu>
-      <h2>Posters</h2>
+      <h2 style="grid-row: 1 / span 2">Posters</h2>
       <li>
-        <preference name="emboss" title="Apply the emboss filter" />
+        <preference
+          name="emboss"
+          title="Apply an emboss effect to each layer of a poster" />
       </li>
       <li>
         <preference
@@ -52,6 +54,7 @@
       standard-grid: 'nothing'
       margin: base-line
       & > li
+        height: 100%
         list-style: none
         margin-bottom: base-line
 </style>
