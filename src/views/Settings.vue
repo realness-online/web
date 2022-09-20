@@ -7,27 +7,19 @@
     <h1>Settings</h1>
     <menu>
       <h2 style="grid-row: 1 / span 2">Posters</h2>
-      <li>
-        <preference
-          name="emboss"
-          title="Apply an emboss effect to each layer of a poster" />
-      </li>
-      <li>
-        <preference
-          name="filesystem"
-          title="Use the filesystem api to sync posters on your desktop" />
-      </li>
-      <li>
-        <preference
-          name="adobe"
-          title="Posters download without CSS and use HEX for color" />
-      </li>
+      <preference
+        name="emboss"
+        title="Apply an emboss effect to each layer of a poster" />
+      <preference
+        name="filesystem"
+        title="Use the filesystem api to sync posters on your desktop" />
+      <preference
+        name="adobe"
+        title="Posters download without CSS and use HEX for color" />
     </menu>
     <menu>
       <h2>Me</h2>
-      <li>
-        <name-as-form />
-      </li>
+      <name-as-form />
     </menu>
   </section>
 </template>
