@@ -63,19 +63,25 @@
 </script>
 <style lang="stylus">
   svg:focus-within
-    // path
-    //   &[itemprop="light"]
-    //     animation-timing-function: linear
-    //     animation-name: subtle-rotate
-    //     animation-duration: 2s
-    //     animation-direction: alternate
-    //     animation-iteration-count: infinite
-    //   &[itemprop="bold"]
-    //     animation-timing-function: linear
-    //     animation-name: subtle-rotate
-    //     animation-duration: 3s
-    //     animation-direction: alternate
-    //     animation-iteration-count: infinite
+    use.emboss
+      animation-timing-function: linear
+      animation-name: subtle-rotate
+      animation-duration: 3s
+      animation-direction: alternate-reverse
+      animation-iteration-count: infinite
+    path
+      &[itemprop="regular"]
+        animation-timing-function: linear
+        animation-name: subtle-rotate
+        animation-duration: 6s
+        animation-direction: alternate
+        animation-iteration-count: infinite
+      &[itemprop="bold"]
+        animation-timing-function: linear
+        animation-name: subtle-rotate
+        animation-duration: 12s
+        animation-direction: alternate
+        animation-iteration-count: infinite
   path[itemprop]
     &:focus
       outline: none
