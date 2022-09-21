@@ -16,7 +16,7 @@ const new_gradients = ref(null)
 export const use = () => {
   const router = use_router()
   const image_picker = ref(null)
-  const working = ref(true)
+  const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
 
