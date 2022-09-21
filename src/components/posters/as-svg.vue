@@ -9,7 +9,7 @@
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :class="{ animate: localStorage.animate }"
+    :class="{ animate }"
     @click="click">
     <as-gradients :vector="vector" />
     <as-background
@@ -136,6 +136,7 @@
   } = use_poster()
   const trigger = ref(null)
   const show_emboss = computed(() => localStorage.emboss)
+  const animate = computed(() => localStorage.animate)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
@@ -178,6 +179,7 @@
     //   display: none
     &:focus-within
       border: base-line solid black
+      border-radius: base-line * 0.11
       &.animate
         use.emboss
           animation-timing-function: linear
