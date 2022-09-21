@@ -9,6 +9,7 @@
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
+    :class="{ animate: localStorage.animate }"
     @click="click">
     <as-gradients :vector="vector" />
     <as-background
@@ -26,7 +27,7 @@
       itemprop="light"
       :path="vector.light"
       :tabindex="tabindex"
-      fill-opacity="0.95"
+      fill-opacity="0.90"
       :fill="`url(${fragment('vertical-light')})`"
       :stroke="`url(${fragment('horizontal-background')})`"
       @focus="focus('light')" />
@@ -34,7 +35,7 @@
       v-if="vector.regular"
       :id="query('regular')"
       itemprop="regular"
-      fill-opacity="0.95"
+      fill-opacity="0.90"
       :path="vector.regular"
       :tabindex="tabindex"
       :fill="`url(${fragment('horizontal-regular')})`"
@@ -46,7 +47,7 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      fill-opacity="0.95"
+      fill-opacity="0.90"
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-regular')})`"
       @focus="focus('bold')" />
@@ -177,4 +178,24 @@
     //   display: none
     &:focus-within
       border: base-line solid black
+      &.animate
+        use.emboss
+          animation-timing-function: linear
+          animation-name: subtle-rotate
+          animation-duration: 3s
+          animation-direction: alternate-reverse
+          animation-iteration-count: infinite
+        path
+          &[itemprop="regular"]
+            animation-timing-function: linear
+            animation-name: subtle-rotate
+            animation-duration: 6s
+            animation-direction: alternate
+            animation-iteration-count: infinite
+          &[itemprop="bold"]
+            animation-timing-function: linear
+            animation-name: subtle-rotate
+            animation-duration: 12s
+            animation-direction: alternate
+            animation-iteration-count: infinite
 </style>

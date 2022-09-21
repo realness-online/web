@@ -12,7 +12,7 @@
                       0 0 -3"></feConvolveMatrix>
     </filter>
   </defs>
-  <use tabindex="-1" class="emboss" :href="fragment('emboss')" />
+  <use tabindex="-1" class="emboss" opacity="0.80" :href="fragment('emboss')" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
