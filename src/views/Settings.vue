@@ -11,6 +11,9 @@
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
+        name="animate"
+        title="Animate the individual paths of a posters when focused" />
+      <preference
         name="filesystem"
         title="Use the filesystem api to sync posters on your desktop" />
       <preference

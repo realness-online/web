@@ -46,8 +46,8 @@
   const stroke = ref(undefined)
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
-  const stroke_opacity = ref('1')
-  const stroke_width = ref('0.33')
+  const stroke_opacity = ref('0.90')
+  const stroke_width = ref('0.33px')
   mounted(() => {
     fill.value = props.fill
     stroke.value = props.stroke
@@ -60,28 +60,7 @@
   watch_effect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">
-  svg:focus-within
-    use.emboss
-      animation-timing-function: linear
-      animation-name: subtle-rotate
-      animation-duration: 3s
-      animation-direction: alternate-reverse
-      animation-iteration-count: infinite
-    path
-      &[itemprop="regular"]
-        animation-timing-function: linear
-        animation-name: subtle-rotate
-        animation-duration: 6s
-        animation-direction: alternate
-        animation-iteration-count: infinite
-      &[itemprop="bold"]
-        animation-timing-function: linear
-        animation-name: subtle-rotate
-        animation-duration: 12s
-        animation-direction: alternate
-        animation-iteration-count: infinite
   path[itemprop]
-    // stroke-width: 0.33px
     &:focus
       outline: none
     &:active
