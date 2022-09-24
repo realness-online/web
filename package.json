@@ -14,7 +14,7 @@
     "deploy": "yarn format && yarn lint && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
-    "release": "yarn release:gh && yarn release:npm",
+    "release": "yarn release:gh && yarn release:npm && git tag v$npm_package_version",
     "release:npm": "yarn publish",
     "release:gh": "gh release create $npm_package_version",
     "workers": "webpack --config workers.config.cjs",
