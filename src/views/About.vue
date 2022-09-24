@@ -32,28 +32,36 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
-              <h2>We call them <b>posters</b></h2>
+              <h2>We call them <b>Posters</b></h2>
               <p>
-                Your image is composed into four animatable layers, From a white
-                background to a dark foreground.
+                Realness reduces your toolchain dependence. No need for Figma,
+                no need for Illustrator no need for Sketch or After Effects.
               </p>
               <p>
-                Once created, your poster is optimized to be small and run fast.
-                Realness has tools for you to edit opacity, color, gradient for
-                the fill and stroke of each layer.
+                Realness takes you from hand drawn to animation in a single
+                step. Save $50 a month on the Creative Cloud.
               </p>
               <p>
-                Save your poster and you can extract a color pallet. Animate a
-                filter or gradient. the individual parts of a Poster are easy to
-                query and feel natural to mainipulate for the web.
+                Take a picture from your phone and realness creates a vector
+                graphic composed into four animatable layers from a bright
+                radial background to a dark horizontal foreground.
               </p>
-              <p>Hand coders — <b>Realness</b> was built for you.</p>
-              <h4>A tool at the creative limits of the web</h4>
+              <p>
+                Your Poster is a natural fit for the web. Posters are optimized
+                to be expressive, small, and to run fast. You can extract a
+                color pallet. Animate a filter or gradient. The individual parts
+                of a Poster are easy to query and feel natural to access and
+                manipulate.
+              </p>
+              <h4>
+                Animators, Designers, Hand coders — <b>Realness</b> was built
+                for you.
+              </h4>
             </figcaption>
           </figure>
           <ol>
             <li>
-              <icon name="finished" />
+              <icon name="remove" style="fill: red" />
               <p>
                 Edit color, gradient and opacity for <b>Background</b>,
                 <b>Light</b>, <b>Regular</b> and <b>Bold</b> layers
@@ -75,10 +83,10 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>Use any one of twelve gradients created from your poster</p>
+              <p>Use any one of sixteen gradients generated from your poster</p>
             </li>
             <li>
-              <icon name="finished" />
+              <icon name="remove" style="fill: red" />
               <p>Access posters from your filesystem</p>
             </li>
           </ol>
@@ -101,8 +109,7 @@
                 nerdpocalypse users group. Realness set's you up with all the
                 benifits of serverless to advantage intimate useful communities
                 with clear lines of responsibility and communication. There is
-                joy in taking responcibilty for the maintenance and content on
-                the web.
+                joy in our care for the maintenance and content on the web.
               </p>
               <p>
                 The performance is over. Our social health requires more
@@ -118,7 +125,7 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>Clear lines of responcibility</p>
+              <p>Clear lines of responsibility</p>
             </li>
             <li>
               <icon name="finished" />
@@ -141,7 +148,6 @@
               <icon name="finished" />
               <p>Usefull to learn. Built on top of firebase</p>
             </li>
-
             <li>
               <icon name="finished" />
               <p>Organized around voting with your participation</p>
@@ -165,27 +171,32 @@
             <figcaption>
               <h2>HTML is our database</h2>
               <p>
-                Building web applications edge first points you directly at html
-                as your storage system. Orienting to this has advantages and
-                creates oportunities over the monitiezed client server model we
-                are used to using today.
+                Realness is a way, and a support system to help you build web
+                applications
+              </p>
+              <p>
+                Its natura to build web applications with html. This is
+                especially true for <i>Edge first</i>. Orienting to this has
+                helped realness take advantage of what's possible on the web
+                today. How you build your app can create oportunities over the
+                monitiezed client server model we are used to today.
               </p>
               <p>
                 Edge first is native fast, more secure, gives you choices around
-                data storage that don't exist traditionally. Make a quick and
-                seemless transition from a User Expereience demo to product
-                development.
+                data storage that don't exist traditionally. With an edge first
+                approach you can make a quick and seemless transition from a
+                User Expereience demo to product development.
               </p>
               <p>
                 Edge on the web opens the DOM up as a typing sytem and object
                 model. There are natural constraints on HTML that supports
-                accessible coding standards.
+                accessible applications.
               </p>
               <p>
                 Developers can use realness to free themselves from SQL and the
-                tyrany of a full-stack mindset. Development roles are less
-                heirarchical. Products are more inline with customer
-                expectations.
+                tyrany of a full-stack mindset. Development roles can be less
+                heirarchical. Products can be fun to build naturally more inline
+                with our customers expectations.
               </p>
               <p>
                 Build applications faster with less overhead, that keep
@@ -204,9 +215,10 @@
                   online.
                 </a>
                 I keep a
-                <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
-                of all my feelings and nerd problems. My resume is on there. I
-                want to support the web iterate.
+                <a href="https://scott-fryxell.github.io/" rel="external">
+                  blog
+                </a>
+                of all my feelings and nerd problems. My resume is on there.
               </p>
               <h4>Cyber</h4>
             </figcaption>
