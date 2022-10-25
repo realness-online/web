@@ -1,28 +1,39 @@
 <template>
   <defs class="gradients">
     <g class="radial">
-      <radialGradient :id="query('radial')">
+      <radialGradient
+        :id="query('radial')"
+        gradientTransform="rotate(-30 190 190)">
         <stop
           v-for="stop in radial"
           :key="stop.offset"
           itemprop="radial"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
+        <animate-gradient />
       </radialGradient>
-      <radialGradient :id="query('radial-background')">
+      <radialGradient
+        :id="query('radial-background')"
+        gradientTransform="rotate(-30 190 190)">
         <as-stops
           :luminosity="background"
           :saturation_floor="13"
           :stops="radial" />
+        <animate-gradient />
       </radialGradient>
-      <radialGradient :id="query('radial-light')">
+      <radialGradient
+        :id="query('radial-light')"
+        gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="light" :stops="radial" />
+        <animate-gradient />
       </radialGradient>
       <radialGradient :id="query('radial-regular')">
         <as-stops :luminosity="regular" :stops="radial" />
+        <animate-gradient />
       </radialGradient>
       <radialGradient :id="query('radial-bold')">
         <as-stops :luminosity="bold" :stops="radial" />
+        <animate-gradient />
       </radialGradient>
     </g>
     <g class="vertical">
@@ -33,6 +44,7 @@
           itemprop="vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('vertical-background')"
@@ -41,6 +53,7 @@
         y1="0"
         y2="100%">
         <as-stops :luminosity="background" :stops="vertical" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('vertical-light')"
@@ -52,6 +65,7 @@
           :luminosity="light"
           :saturation_floor="21"
           :stops="vertical" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('vertical-regular')"
@@ -60,6 +74,7 @@
         y1="0"
         y2="100%">
         <as-stops :luminosity="regular" :stops="vertical" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('vertical-bold')"
@@ -68,6 +83,7 @@
         y1="0"
         y2="100%">
         <as-stops :luminosity="bold" :stops="vertical" />
+        <animate-gradient />
       </linearGradient>
     </g>
     <g class="horizontal">
@@ -78,6 +94,7 @@
           itemprop="horizontal"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-background')"
@@ -86,6 +103,7 @@
         y1="0"
         y2="0">
         <as-stops :luminosity="background" :stops="horizontal" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-light')"
@@ -94,6 +112,7 @@
         y1="0"
         y2="0">
         <as-stops :luminosity="light" :stops="horizontal" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-regular')"
@@ -105,6 +124,7 @@
           :luminosity="regular"
           :saturation_floor="18"
           :stops="horizontal" />
+        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-bold')"
@@ -113,12 +133,14 @@
         y1="0"
         y2="0">
         <as-stops :luminosity="bold" :stops="horizontal" />
+        <animate-gradient />
       </linearGradient>
     </g>
   </defs>
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
+  import AnimateGradient from '@/components/animations/gradient'
   import { as_query_id } from '@/use/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector } from '@/use/vector'
