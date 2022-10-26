@@ -140,7 +140,7 @@
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
-  import AnimateGradient from '@/components/animations/gradient'
+  import AnimateGradient from '@/components/animations/gradient-transform'
   import { as_query_id } from '@/use/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector } from '@/use/vector'

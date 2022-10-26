@@ -8,8 +8,14 @@
     :fill-opacity="fill_opacity"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"
-    fill-rule="evenodd" />
+    stroke-width="1"
+    fill-rule="evenodd">
+    <!-- <animate
+      attributeName="stroke-width"
+      dur="2s"
+      values="0.33; 1.33; .44; 0.22;"
+      repeatCount="indefinite" /> -->
+  </path>
 </template>
 <script setup>
   import { ref, watchEffect as watch_effect, onMounted as mounted } from 'vue'
