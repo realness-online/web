@@ -25,7 +25,7 @@ export const use = () => {
     else return true
   })
   const as_new_itemid = computed(() => {
-    if (new_vector.value && new_vector.value.id) return new_vector.value.id
+    if (new_vector.value?.id) return new_vector.value.id
     else return `${localStorage.me}/posters/${Date.now()}`
   })
 
@@ -55,7 +55,6 @@ export const use = () => {
   const listener = () => {
     const image = image_picker.value.files[0]
     if (image === undefined) return
-
     const is_image = ['image/jpeg', 'image/png'].some(type => {
       return image.type === type
     })
