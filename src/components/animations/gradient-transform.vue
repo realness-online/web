@@ -1,7 +1,7 @@
 <template>
   <animate
     attributeName="gradientTransform"
-    dur="3s"
-    values="rotate(0); rotate(-56); rotate(-20); rotate(5);"
-    repeatCount="indefinite" />
+    dur="12s"
+    values="rotate(-90); rotate(0); rotate(56); rotate(0);"
+    repeatCount="indefinite"  />
 </template>

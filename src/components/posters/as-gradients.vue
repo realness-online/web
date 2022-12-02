@@ -27,17 +27,27 @@
         <as-stops :luminosity="light" :stops="radial" />
         <animate-gradient />
       </radialGradient>
-      <radialGradient :id="query('radial-regular')">
+      <radialGradient
+        :id="query('radial-regular')"
+        gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="regular" :stops="radial" />
         <animate-gradient />
       </radialGradient>
-      <radialGradient :id="query('radial-bold')">
+      <radialGradient
+        :id="query('radial-bold')"
+        gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="bold" :stops="radial" />
         <animate-gradient />
       </radialGradient>
     </g>
     <g class="vertical">
-      <linearGradient :id="query('vertical')" x1="0" x2="0" y1="0" y2="100%">
+      <linearGradient
+        :id="query('vertical')"
+        x1="0"
+        x2="0"
+        y1="0"
+        y2="100%"
+        gradientTransform="rotate(0)">
         <stop
           v-for="stop in vertical"
           :key="stop.offset"
@@ -51,7 +61,8 @@
         x1="0"
         x2="0"
         y1="0"
-        y2="100%">
+        y2="100%"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="background" :stops="vertical" />
         <animate-gradient />
       </linearGradient>
@@ -60,7 +71,8 @@
         x1="0"
         x2="0"
         y1="0"
-        y2="100%">
+        y2="100%"
+        gradientTransform="rotate(0)">
         <as-stops
           :luminosity="light"
           :saturation_floor="21"
@@ -72,7 +84,8 @@
         x1="0"
         x2="0"
         y1="0"
-        y2="100%">
+        y2="100%"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="regular" :stops="vertical" />
         <animate-gradient />
       </linearGradient>
@@ -81,13 +94,20 @@
         x1="0"
         x2="0"
         y1="0"
-        y2="100%">
+        y2="100%"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="bold" :stops="vertical" />
         <animate-gradient />
       </linearGradient>
     </g>
     <g class="horizontal">
-      <linearGradient :id="query('horizontal')" x1="0" x2="100%" y1="0" y2="0">
+      <linearGradient
+        :id="query('horizontal')"
+        x1="0"
+        x2="100%"
+        y1="0"
+        y2="0"
+        gradientTransform="rotate(0)">
         <stop
           v-for="stop in horizontal"
           :key="stop.offset"
@@ -101,7 +121,8 @@
         x1="0"
         x2="100%"
         y1="0"
-        y2="0">
+        y2="0"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="background" :stops="horizontal" />
         <animate-gradient />
       </linearGradient>
@@ -110,7 +131,8 @@
         x1="0"
         x2="100%"
         y1="0"
-        y2="0">
+        y2="0"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="light" :stops="horizontal" />
         <animate-gradient />
       </linearGradient>
@@ -119,19 +141,20 @@
         x1="0"
         x2="100%"
         y1="0"
-        y2="0">
+        y2="0"
+        gradientTransform="rotate(0)">
         <as-stops
           :luminosity="regular"
           :saturation_floor="18"
           :stops="horizontal" />
-        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-bold')"
         x1="0"
         x2="100%"
         y1="0"
-        y2="0">
+        y2="0"
+        gradientTransform="rotate(0)">
         <as-stops :luminosity="bold" :stops="horizontal" />
         <animate-gradient />
       </linearGradient>
