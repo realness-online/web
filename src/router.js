@@ -11,6 +11,7 @@ import Sign_on from '@/views/Sign-on'
 import Editor from '@/views/Editor'
 import About from '@/views/About'
 import Settings from '@/views/Settings'
+import Camera from '@/views/Camera'
 import Documentation from '@/views/Documentation'
 const routes = [
   { path: '/', component: Navigation },
@@ -21,6 +22,7 @@ const routes = [
   { path: '/:type/:id/editor', component: Editor },
   { path: '/relations', component: Relations },
   { path: '/phonebook', component: PhoneBook },
+  { path: '/camera', component: Camera },
   { path: '/profile', component: Profile },
   { path: '/account', component: Account },
   { path: '/about', component: About },
