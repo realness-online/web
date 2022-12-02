@@ -4,11 +4,10 @@
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
-      <a v-if="can_add" tabindex="-1" @click="get_file">
+      <a tabindex="-1" @click="get_file">
         <icon name="download" />
       </a>
-      <icon v-else name="nothing" />
-      <a v-if="can_add" id="camera" @click="open_camera">
+      <a id="camera" href="/camera">
         <icon name="camera" />
       </a>
       <input
