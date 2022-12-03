@@ -10,7 +10,6 @@
           itemprop="radial"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
-        <animate-gradient />
       </radialGradient>
       <radialGradient
         :id="query('radial-background')"
@@ -19,25 +18,25 @@
           :luminosity="background"
           :saturation_floor="13"
           :stops="radial" />
-        <animate-gradient />
+        <animate-gradient :background="true" />
       </radialGradient>
       <radialGradient
         :id="query('radial-light')"
         gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="light" :stops="radial" />
-        <animate-gradient />
+        <animate-gradient :light="true"  />
       </radialGradient>
       <radialGradient
         :id="query('radial-regular')"
         gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="regular" :stops="radial" />
-        <animate-gradient />
+        <animate-gradient :regular="true"  />
       </radialGradient>
       <radialGradient
         :id="query('radial-bold')"
         gradientTransform="rotate(-30 190 190)">
         <as-stops :luminosity="bold" :stops="radial" />
-        <animate-gradient />
+        <animate-gradient :bold="true"  />
       </radialGradient>
     </g>
     <g class="vertical">
@@ -54,7 +53,6 @@
           itemprop="vertical"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
-        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('vertical-background')"
@@ -64,7 +62,7 @@
         y2="100%"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="background" :stops="vertical" />
-        <animate-gradient />
+        <animate-gradient :background="true"  />
       </linearGradient>
       <linearGradient
         :id="query('vertical-light')"
@@ -77,7 +75,7 @@
           :luminosity="light"
           :saturation_floor="21"
           :stops="vertical" />
-        <animate-gradient />
+        <animate-gradient :light="true"  />
       </linearGradient>
       <linearGradient
         :id="query('vertical-regular')"
@@ -87,7 +85,7 @@
         y2="100%"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="regular" :stops="vertical" />
-        <animate-gradient />
+        <animate-gradient :regular="true"  />
       </linearGradient>
       <linearGradient
         :id="query('vertical-bold')"
@@ -97,7 +95,7 @@
         y2="100%"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="bold" :stops="vertical" />
-        <animate-gradient />
+        <animate-gradient :bold="true"  />
       </linearGradient>
     </g>
     <g class="horizontal">
@@ -114,7 +112,6 @@
           itemprop="horizontal"
           :stop-color="stop.color.hsla"
           :offset="`${stop.offset}%`" />
-        <animate-gradient />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-background')"
@@ -124,7 +121,7 @@
         y2="0"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="background" :stops="horizontal" />
-        <animate-gradient />
+        <animate-gradient :background="true"  />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-light')"
@@ -134,7 +131,7 @@
         y2="0"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="light" :stops="horizontal" />
-        <animate-gradient />
+        <animate-gradient :light="true"  />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-regular')"
@@ -147,6 +144,7 @@
           :luminosity="regular"
           :saturation_floor="18"
           :stops="horizontal" />
+        <animate-gradient  :regular="true" />
       </linearGradient>
       <linearGradient
         :id="query('horizontal-bold')"
@@ -156,7 +154,7 @@
         y2="0"
         gradientTransform="rotate(0)">
         <as-stops :luminosity="bold" :stops="horizontal" />
-        <animate-gradient />
+        <animate-gradient  :bold="true" />
       </linearGradient>
     </g>
   </defs>
