@@ -8,13 +8,8 @@
     :fill-opacity="fill_opacity"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
-    stroke-width="1"
+    :stroke-width="stroke_width"
     fill-rule="evenodd">
-    <!-- <animate
-      attributeName="stroke-width"
-      dur="2s"
-      values="0.33; 1.33; .44; 0.22;"
-      repeatCount="indefinite" /> -->
   </path>
 </template>
 <script setup>
