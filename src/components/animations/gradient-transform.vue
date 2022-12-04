@@ -3,7 +3,7 @@
     v-if="bold"
     attributeName="gradientTransform"
     dur="8s"
-    values="rotate(0); rotate(-90);rotate(0);rotate(56);rotate(0);rotate(-10);rotate(90);rotate(0);"
+    values="rotate(0);rotate(-90);rotate(0);rotate(56);rotate(0);rotate(-10);rotate(90);rotate(0);"
     repeatCount="indefinite" />
   <animate
     v-if="regular"
@@ -25,28 +25,27 @@
     repeatCount="indefinite" />
 </template>
 
-
 <script setup>
   defineProps({
     bold: {
       type: Boolean,
       required: false,
-      default: false,
+      default: false
     },
     regular: {
       type: Boolean,
       required: false,
-      default: false,
+      default: false
     },
     light: {
       type: Boolean,
       required: false,
-      default: false,
+      default: false
     },
     background: {
       type: Boolean,
       required: false,
-      default: true,
+      default: true
     }
   })
 </script>
