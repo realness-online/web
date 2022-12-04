@@ -10,11 +10,12 @@
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
     fill-rule="evenodd">
-    <animate v-if="itemprop === 'bold'" attributeName="opacity"
-    values="1;0.9;1"
-    dur="5s"
-    repeatCount="indefinite" />
-
+    <animate
+      v-if="itemprop === 'bold'"
+      attributeName="opacity"
+      values="1;0.9;1"
+      dur="5s"
+      repeatCount="indefinite" />
   </path>
 </template>
 <script setup>
