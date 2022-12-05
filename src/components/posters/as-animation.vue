@@ -3,6 +3,7 @@
     <animate
       :href="fragment('radial-background')"
       attributeName="gradientTransform"
+      attributeType="XML"
       repeatCount="indefinite"
       dur="21s"
       values="rotate(0);
@@ -16,6 +17,7 @@
     <animate
       :href="fragment('vertical-light')"
       attributeName="gradientTransform"
+      attributeType="XML"
       repeatCount="indefinite"
       dur="13s"
       values="rotate(0);
@@ -29,6 +31,7 @@
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="gradientTransform"
+      attributeType="XML"
       repeatCount="indefinite"
       dur="21s"
       values="rotate(0);
@@ -42,6 +45,7 @@
     <animate
       :href="fragment('vertical-bold')"
       attributeName="gradientTransform"
+      attributeType="XML"
       repeatCount="indefinite"
       dur="8s"
       values="rotate(0);
