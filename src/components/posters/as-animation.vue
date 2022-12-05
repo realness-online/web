@@ -4,7 +4,6 @@
       :href="fragment('radial-background')"
       attributeName="gradientTransform"
       repeatCount="indefinite"
-      fill="freeze"
       dur="21s"
       values="rotate(0);
               rotate(-60);
@@ -18,7 +17,6 @@
       :href="fragment('vertical-light')"
       attributeName="gradientTransform"
       repeatCount="indefinite"
-      fill="freeze"
       dur="13s"
       values="rotate(0);
               rotate(-30);
@@ -32,7 +30,6 @@
       :href="fragment('horizontal-regular')"
       attributeName="gradientTransform"
       repeatCount="indefinite"
-      fill="freeze"
       dur="21s"
       values="rotate(0);
               rotate(-180);
@@ -46,7 +43,6 @@
       :href="fragment('vertical-bold')"
       attributeName="gradientTransform"
       repeatCount="indefinite"
-      fill="freeze"
       dur="8s"
       values="rotate(0);
               rotate(-90);
