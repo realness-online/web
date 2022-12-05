@@ -12,6 +12,7 @@
     :class="{ animate }"
     @click="click">
     <as-gradients :vector="vector" />
+    <as-animation :vector="vector" />
     <as-background
       :id="query('background')"
       :rect="vector.background"
@@ -59,6 +60,7 @@
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
+  import AsAnimation from '@/components/posters/as-animation'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
