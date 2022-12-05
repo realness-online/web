@@ -9,7 +9,7 @@
       <feConvolveMatrix
         kernelMatrix="3 0 0
                       0 0 0
-                      0 0 -3"></feConvolveMatrix>
+                      0 0 -3" />
     </filter>
   </defs>
   <use tabindex="-1" class="emboss" opacity="0.80" :href="fragment('emboss')" />

@@ -9,14 +9,7 @@
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
-    fill-rule="evenodd">
-    <animate
-      v-if="itemprop === 'bold'"
-      attributeName="opacity"
-      values="1;0.9;1"
-      dur="5s"
-      repeatCount="indefinite" />
-  </path>
+    fill-rule="evenodd" />
 </template>
 <script setup>
   import { ref, watchEffect as watch_effect, onMounted as mounted } from 'vue'
