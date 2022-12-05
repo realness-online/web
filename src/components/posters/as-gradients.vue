@@ -1,9 +1,7 @@
 <template>
   <defs class="gradients">
     <g class="radial">
-      <radialGradient
-        :id="query('radial')"
-        gradientTransform="rotate(0)">
+      <radialGradient :id="query('radial')" gradientTransform="rotate(0)">
         <stop
           v-for="stop in radial"
           :key="stop.offset"
@@ -19,9 +17,7 @@
           :saturation_floor="13"
           :stops="radial" />
       </radialGradient>
-      <radialGradient
-        :id="query('radial-light')"
-        gradientTransform="rotate(0)">
+      <radialGradient :id="query('radial-light')" gradientTransform="rotate(0)">
         <as-stops :luminosity="light" :stops="radial" />
       </radialGradient>
       <radialGradient
@@ -29,9 +25,7 @@
         gradientTransform="rotate(0)">
         <as-stops :luminosity="regular" :stops="radial" />
       </radialGradient>
-      <radialGradient
-        :id="query('radial-bold')"
-        gradientTransform="rotate(0)">
+      <radialGradient :id="query('radial-bold')" gradientTransform="rotate(0)">
         <as-stops :luminosity="bold" :stops="radial" />
       </radialGradient>
     </g>

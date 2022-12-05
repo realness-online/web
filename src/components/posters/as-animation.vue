@@ -71,9 +71,7 @@
       validator: is_vector
     }
   })
-  watch(
-    () => {
-      vector.value = props.vector
-    }
-  )
+  watch(() => {
+    vector.value = props.vector
+  })
 </script>
