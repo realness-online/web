@@ -15,7 +15,11 @@
         title="Animate the individual paths of a posters when focused" />
       <preference
         name="filesystem"
-        title="Use the filesystem api to sync posters on your desktop" />
+        title="Use the filesystem api to sync posters on your desktop">
+        <a @click="set_posters_folder">
+          <icon name="download" />
+        </a>
+      </preference>
       <preference
         name="adobe"
         title="Posters download without CSS and use HEX for color" />
@@ -31,6 +35,19 @@
   import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import NameAsForm from '@/components/profile/as-form-name'
+
+  const set_posters_folder = async () => {
+    const root = await navigator.storage.getDirectory()
+    // const untitledFile = await root.getFileHandle('Untitled.txt', {
+    //   create: true
+    // })
+    const new_dir = await root.getDirectoryHandle('Posters', {
+      create: true
+    })
+    console.log(new_dir)
+    // ;[file_handle] = await window.showDirectoryPicker()
+  }
+
 </script>
 <style lang="stylus">
   section#settings
