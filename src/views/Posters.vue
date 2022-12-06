@@ -4,10 +4,7 @@
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
-      <a tabindex="-1" @click="get_file">
-        <icon name="download" />
-      </a>
-      <a id="camera" href="/camera">
+      <a id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
       <input
@@ -75,19 +72,6 @@
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
-  }
-  let fileHandle
-  const get_file = async () => {
-    const root = await navigator.storage.getDirectory()
-    const untitledFile = await root.getFileHandle('Untitled.txt', {
-      create: true
-    })
-
-    const new_dir = await root.getDirectoryHandle('Diary Folder', {
-      create: true
-    })
-    console.log(new_dir)
-    // ;[file_handle] = await window.showDirectoryPicker()
   }
 
   mounted(async () => {

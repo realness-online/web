@@ -38,7 +38,7 @@
   const grid = ref(false)
   const route = use_route()
   const router = use_router()
-  const itemid = `${localStorage.me}/${route.params.type}/${route.params.id}`
+  const itemid = `${localStorage.me}/posters/${route.params.id}`
   const page_title = computed(() => {
     if (stroke.value) return 'Stroke'
     if (fill.value) return 'Fill'
@@ -56,13 +56,12 @@
   const back = () => {
     const me = localStorage.me.substring(2)
     const id = route.params.id
-    const type = route.params.type
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
       router.push({ path: '/posters' })
     } else {
-      router.push({ path: '/posters', hash: `#${me}-${type}-${id}` })
+      router.push({ path: '/posters', hash: `#${me}-posters-${id}` })
     }
   }
   const save = async () => {

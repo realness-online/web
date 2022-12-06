@@ -8,6 +8,7 @@
       </label>
     </div>
     <p>{{ title }}</p>
+    <slot />
   </fieldset>
 </template>
 <script setup>
