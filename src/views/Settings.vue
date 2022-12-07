@@ -8,6 +8,9 @@
     <menu>
       <h2 style="grid-row: 1 / span 2">Posters</h2>
       <preference
+        name="robot"
+        title="Use Machine learning camera. This is unusable" />
+      <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
