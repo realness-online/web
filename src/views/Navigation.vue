@@ -7,7 +7,7 @@
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
         Events
       </router-link>
-      <router-link v-if="!posting" to="/camera" class="green" tabindex="-1">
+      <router-link v-if="!posting" :to="camera" class="green" tabindex="-1">
         Posters
       </router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
@@ -35,7 +35,7 @@
 <script setup>
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted, computed } from 'vue'
   const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
   const first_name = ref('')
@@ -46,6 +46,10 @@
     if (my && my.first_name) first_name.value = my.first_name
     else first_name.value = 'You'
     console.info('views:Navigation')
+  })
+  const camera = computed(() => {
+    if(localStorage.robot) return '/camera'
+    else return '/posters'
   })
   // const snapshot = () => {
   //   const canvas = document.createElement('canvas') // create a canvas
