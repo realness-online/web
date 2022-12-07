@@ -79,7 +79,6 @@
     is_click,
     is_focus
   } from '@/use/vector'
-
   defineEmits({
     focus: is_focus,
     click: is_click,

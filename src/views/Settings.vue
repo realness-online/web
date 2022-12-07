@@ -47,7 +47,6 @@
     console.log(new_dir)
     // ;[file_handle] = await window.showDirectoryPicker()
   }
-
 </script>
 <style lang="stylus">
   section#settings
