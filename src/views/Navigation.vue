@@ -7,7 +7,7 @@
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
         Events
       </router-link>
-      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
+      <router-link v-if="!posting" to="/camera" class="green" tabindex="-1">
         Posters
       </router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
@@ -22,13 +22,15 @@
         @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
-      <h6><router-link to="/documentation" tabindex="-1">{{ version }}</router-link></h6>
+      <h6>
+        <router-link to="/documentation" tabindex="-1">{{
+          version
+        }}</router-link>
+      </h6>
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
-  <aside>
-  
-  </aside>
+  <aside></aside>
 </template>
 <script setup>
   import StatementAsTextarea from '@/components/statements/as-textarea'
@@ -45,25 +47,24 @@
     else first_name.value = 'You'
     console.info('views:Navigation')
   })
-  const snapshot = () => {
-    const canvas = document.createElement('canvas') // create a canvas
-    const ctx = canvas.getContext('2d') // get its context
-    canvas.width = vid.videoWidth // set its size to the one of the video
-    canvas.height = vid.videoHeight
-    ctx.drawImage(vid, 0, 0) // the video
-    return new Promise((res, rej) => {
-      canvas.toBlob(res, 'image/jpeg') // request a Blob from the canvas
-    })
-  }
-  function download(blob) {
-    // uses the <a download> to download a Blob
-    let a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'screenshot.jpg'
-    document.body.appendChild(a)
-    a.click()
-  }
-
+  // const snapshot = () => {
+  //   const canvas = document.createElement('canvas') // create a canvas
+  //   const ctx = canvas.getContext('2d') // get its context
+  //   canvas.width = vid.videoWidth // set its size to the one of the video
+  //   canvas.height = vid.videoHeight
+  //   ctx.drawImage(vid, 0, 0) // the video
+  //   return new Promise((res, rej) => {
+  //     canvas.toBlob(res, 'image/jpeg') // request a Blob from the canvas
+  //   })
+  // }
+  // function download(blob) {
+  //   // uses the <a download> to download a Blob
+  //   let a = document.createElement('a')
+  //   a.href = URL.createObjectURL(blob)
+  //   a.download = 'screenshot.jpg'
+  //   document.body.appendChild(a)
+  //   a.click()
+  // }
 </script>
 <style lang="stylus">
   section#navigation.page

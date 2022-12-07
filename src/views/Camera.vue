@@ -5,14 +5,13 @@
       <a @click="back"><icon name="remove" /></a>
     </header>
     <h1>Camera</h1>
-    <canvas ref="canvas" />
-    <video ref="video" />
-    <as-svg
-      :itemid="itemid"
-      @focus="layer_selected" />
+    <canvas ref="canvas"  hidden />
+    <video ref="video" autoplay controls muted playsinline  @click="toggle_camera" />
     <footer>
       <menu>
-        <button v-if="can_visualize && !analyzing" @click="start">Visualize</button>
+        <button v-if="can_visualize && !analyzing" @click="start">
+          Visualize
+        </button>
         <button v-if="analyzing" @click="stop">Stop</button>
       </menu>
     </footer>
@@ -20,79 +19,71 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import AsSvg from '@/components/posters/as-svg'
+  // import AsSvg from '@/components/posters/as-svg'
   import {
     useFullscreen as use_fullscreen,
-    useMagicKeys as use_Keyboard,
+    useMagicKeys as use_Keyboard
   } from '@vueuse/core'
-  import { useRoute as use_route } from 'vue-router'
-  import { watch, computed, ref, onMounted as mounted } from 'vue'
-
-  const route = use_route()
-  const itemid = `${localStorage.me}/posters/${route.params.id}`
+  import { watch, ref, computed, onMounted as mounted } from 'vue'
   const analyser = ref(null)
   const analyzing = ref(false)
   const video = ref()
   const canvas = ref()
+  const facing = ref('user')
+  mounted(async () => {
+    console.log("configurable options",navigator.mediaDevices.getSupportedConstraints());
+    console.info('views:/camera')
+    await start()
+  })
+  const video_config = computed(() => {
+    return {
+      audio: true,
+      video: { facingMode: facing.value, height:512}
+    }
+  })
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
-  const { f, enter, escape } = use_Keyboard()
-
-  const can_visualize = () => {
-    console.log(!navigator.mediaDevices)
-    navigator.mediaDevices
-  }
+  // const { f, enter, escape } = use_Keyboard()
   const start = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia(video_config.value)
+    video.value.srcObject = stream
+    await video.value.play()
+    analyze_audio(stream)
+  }
+  const stop = async () => {
+    analyzing.value = false
+    await video.value.pause()
+  }
+  const toggle_camera = async ()=> {
+    if (facing.value == "user") facing.value = "environment";
+    else facing.value = "user";
+    const stream = await navigator.mediaDevices.getUserMedia(video_config.value)
+    video.value.srcObject = stream
+    analyze_audio(stream)    
+  }
+  const analyze_audio = (stream) => {
     const context = new AudioContext()
     analyser.value = context.createAnalyser()
     analyser.value.fftSize = 32
     analyser.value.minDecibels = -64
     analyser.value.maxDecibels = -6
-    const stream = await navigator. mediaDevices.getUserMedia({
-      audio: true,
-      video: { height: 512 },
-    })
-    console.log('stream', stream)
     const input = context.createMediaStreamSource(stream)
     input.connect(analyser.value)
     analyzing.value = true
-    requestAnimationFrame(visualize)
+    requestAnimationFrame(process_audio)
   }
-  const stop = () => (analyzing.value = false)
-  const visualize = () => {
+  const process_audio = () => {
     const times = new Uint8Array(analyser.value.frequencyBinCount)
     analyser.value.getByteTimeDomainData(times)
-    console.log(times.length)
-    for (var i = 0; i < times.length; i++) {
-      const value = times[i]
-      const zerod = value - 128
-      console.log(i, value, zerod)
-    }
-    if (analyzing.value) requestAnimationFrame(visualize)
+    // for (var i = 0; i < times.length; i++) {
+    //   const value = times[i]
+    //   const zerod = value - 128
+    //   console.log(i, value, zerod)
+    // }
+    if (analyzing.value) requestAnimationFrame(process_audio)
   }
-  const layer_selected = layer => {
-    console.log(layer)
-  }
-  watch(enter, v => {
-    if (v) back()
-  })
-  watch(escape, v => {
-    if (v) back()
-  })
-  watch(f, v => {
-    if (v) fullscreen()
-  })
-  mounted(async () => {
-    console.log("video", video.value)
-    console.log("canvas", canvas.value)
-    console.info('views:/camera')
-  })
-
   // const stream = await navigator.mediaDevices.getUserMedia({
   //   video: { height: 512 }
   // })
-  // vid.srcObject = stream // don't use createObjectURL(MediaStream)
-  // await vid.play()
-  // const btn = document.querySelector('button')
 
   // btn.disabled = false
   // btn.onclick = e => {
@@ -122,6 +113,8 @@
   section#visualizer
     & > h1
       color: red
+    & > video  
+      max-width:100vw
     & > header > a  > svg
     & > footer > menu > svg
       cursor: pointer
@@ -139,12 +132,12 @@
       &.finished
         fill-opacity: inherit
     & > footer > menu
-      // background-color: black-transparent
-      // position: fixed
+      background-color: black-transparent
+      position: fixed
       padding: base-line
-      // bottom: 0
-      // left: 0
-      // right: 0
+      bottom: 0
+      left: 0
+      right: 0
       display: flex
       justify-content: space-between
       & > svg
