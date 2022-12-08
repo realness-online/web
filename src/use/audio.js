@@ -17,11 +17,11 @@ export const use = () => {
   const process_audio = () => {
     const times = new Uint8Array(analyser.value.frequencyBinCount)
     analyser.value.getByteTimeDomainData(times)
-    for (var i = 0; i < times.length; i++) {
-      const value = times[i]
-      const zerod = value - 128
-      console.log(i, value, zerod)
-    }
+    // for (var i = 0; i < times.length; i++) {
+    //   const value = times[i]
+    //   const zerod = value - 128
+    //   console.log(i, value, zerod)
+    // }
     if (analyzing.value) requestAnimationFrame(process_audio)
   }
 

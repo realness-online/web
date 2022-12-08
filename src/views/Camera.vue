@@ -3,7 +3,6 @@
     <header v-if="!is_fullscreen">
       <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
       <logo-as-link />
-
     </header>
     <h1>Camera</h1>
     <canvas ref="canvas"  hidden />
@@ -30,9 +29,12 @@
   const video = ref()
   const canvas = ref()
   const facing = ref('user')
+  const coco_model = ref(null)
+  const depth_model = ref(null)
   mounted(async () => {
     console.log('views:/camera',navigator.mediaDevices.getSupportedConstraints());
     await start()
+    coco_model.value = await cocoSsd.load()
   })
   const video_config = computed(() => {
     return {
