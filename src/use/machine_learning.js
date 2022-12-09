@@ -1,61 +1,42 @@
-// Store the resulting model in the global scope of our app.
-
-import('@tensorflow/tfjs-backend-cpu');
-import('@tensorflow/tfjs-backend-webgl');
-import { cocoSsd as coco_ssd } from '@tensorflow-models/coco-ssd'
-
-const model = ref(null);
-// Before we can use COCO-SSD class we must wait for it to finish
-// loading. Machine Learning models can be large and take a moment 
-// to get everything needed to run.
-// Note: cocoSsd is an external object loaded from our index.html
-// script tag import so ignore any warning in Glitch.
-coco_ssd.load().then(loadedModel => {
-  console.log('model loaded')
-  model.value = loadedModel
-})
-
-
-var children = [];
-
-export const predict = async (video) => {
-  // Now let's start classifying a frame in the stream.
-  const predictions = await model.value.detect(video)
-
-  // Remove any highlighting we did previous frame.
-  for (let i = 0; i < children.length; i++) {
-    liveView.removeChild(children[i]);
+import * as tf from '@tensorflow/tfjs-core'
+import '@tensorflow/tfjs-backend-cpu'
+import '@tensorflow/tfjs-backend-webgl'
+// import '@tensorflow/tfjs-backend-wasm'
+import * as coco_ssd from '@tensorflow-models/coco-ssd'
+import { ref, onMounted as mounted } from 'vue'
+//['lite_mobilenet_v2', 'mobilenet_v1', 'mobilenet_v2'],
+export const use = () => {
+  const coco_model = ref(null)
+  const depth_model = ref(null)
+  const video = ref(null)
+  const canvas = ref(null)
+  mounted(async () => {
+    console.time('robot:awakens')
+    await tf.ready() 
+    await tf.setBackend('webgl')
+    coco_model.value = Object.freeze(await coco_ssd.load({base: 'mobilenet_v2'}))
+    console.timeEnd('robot:awakens')
+    await predict()
+  })
+  const snapshot = () => {
+    const ctx = canvas.value.getContext('2d') 
+    ctx.drawImage(video.value, 0, 0)
   }
-  children.splice(0);
-  
-  // Now lets loop through predictions and draw them to the live view if
-  // they have a high confidence score.
-  for (let n = 0; n < predictions.length; n++) {
-    // If we are over 66% sure we are sure we classified it right, draw it!
-    if (predictions[n].score > 0.66) {
-      const p = document.createElement('p');
-      p.innerText = predictions[n].class  + ' - with ' 
-          + Math.round(parseFloat(predictions[n].score) * 100) 
-          + '% confidence.';
-      p.style = 'margin-left: ' + predictions[n].bbox[0] + 'px; margin-top: '
-          + (predictions[n].bbox[1] - 10) + 'px; width: ' 
-          + (predictions[n].bbox[2] - 10) + 'px; top: 0; left: 0;';
-
-      const highlighter = document.createElement('div');
-      highlighter.setAttribute('class', 'highlighter');
-      highlighter.style = 'left: ' + predictions[n].bbox[0] + 'px; top: '
-          + predictions[n].bbox[1] + 'px; width: ' 
-          + predictions[n].bbox[2] + 'px; height: '
-          + predictions[n].bbox[3] + 'px;';
-
-      liveView.appendChild(highlighter);
-      liveView.appendChild(p);
-      children.push(highlighter);
-      children.push(p);
-    }
+  const predict = async () => {
+    if(!coco_model.value) return
+    snapshot()
+    const predictions = await coco_model.value.detect(canvas.value)
+    predictions.forEach(prediction => {
+      console.log('prediction', prediction) 
+    })
+    // Call this function again to keep predicting when the browser is ready.
+    // window.requestAnimationFrame(predict);
   }
-  
-  // Call this function again to keep predicting when the browser is ready.
-  window.requestAnimationFrame(predict );
-  
+  return {
+    coco_model,
+    depth_model,
+    video, 
+    canvas,
+    predict
+  }
 }
