@@ -81,7 +81,7 @@
             left: base-line * .25
             bottom: base-line * .25
             background-color: white
-            opacity: 0.5
+            opacity: 0.75
             -webkit-transition: .4s
             transition: .4s
 </style>
