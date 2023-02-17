@@ -1,5 +1,5 @@
 <template>
-  <g itemprop="animation">
+  <g v-if="animate" itemprop="animation">
     <animate
       :href="fragment('radial-background')"
       attributeName="gradientTransform"
@@ -61,7 +61,7 @@
 
 <script setup>
   import { use_poster, is_vector } from '@/use/vector'
-  import { watch } from 'vue'
+  import { watchEffect as watch, computed } from 'vue'
   const { fragment, vector } = use_poster()
   const props = defineProps({
     vector: {
@@ -71,6 +71,7 @@
       validator: is_vector
     }
   })
+  const animate = computed(() => localStorage.animate)
   watch(() => {
     vector.value = props.vector
   })

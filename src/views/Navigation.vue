@@ -48,7 +48,7 @@
     console.info('views:Navigation')
   })
   const camera = computed(() => {
-    if(localStorage.robot) return '/camera'
+    if (localStorage.robot) return '/camera'
     else return '/posters'
   })
   // const snapshot = () => {
