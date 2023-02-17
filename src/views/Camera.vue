@@ -30,11 +30,8 @@
   // import AsSvg from '@/components/posters/as-svg'
   import { use as use_audio_analyzer } from '@/use/audio'
   import { use as use_machine_learning } from '@/use/machine_learning'
-  import {
-    useFullscreen as use_fullscreen,
-    useMagicKeys as use_Keyboard
-  } from '@vueuse/core'
-  import { watch, ref, computed, onMounted as mounted } from 'vue'
+  import { useFullscreen as use_fullscreen } from '@vueuse/core'
+  import { ref, computed, onMounted as mounted } from 'vue'
 
   // const { f, enter, escape } = use_Keyboard()
   const facing = ref('user')
@@ -56,7 +53,7 @@
     }
   })
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
-  const { analyzing, analyze_audio } = use_audio_analyzer()
+  const { analyze_audio } = use_audio_analyzer()
   const { video, canvas, predict } = use_machine_learning()
 
   const start = async () => {
@@ -65,10 +62,10 @@
     await video.value.play()
     analyze_audio(stream)
   }
-  const stop = async () => {
-    analyzing.value = false
-    await video.value.pause()
-  }
+  // const stop = async () => {
+  //   analyzing.value = false
+  //   await video.value.pause()
+  // }
   const toggle_camera = async () => {
     if (facing.value == 'user') facing.value = 'environment'
     else facing.value = 'user'
