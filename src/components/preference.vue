@@ -8,6 +8,7 @@
       </label>
     </div>
     <p>{{ title }}</p>
+    <p v-if="subtitle">{{ subtitle }}</p>
     <slot />
   </fieldset>
 </template>
@@ -19,6 +20,10 @@
       required: true
     },
     title: {
+      type: String,
+      required: true
+    },
+    subtitle: {
       type: String,
       required: true
     }
@@ -79,6 +84,4 @@
             opacity: 0.5
             -webkit-transition: .4s
             transition: .4s
-    & > p
-      margin: 0
 </style>

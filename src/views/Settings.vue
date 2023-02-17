@@ -6,16 +6,17 @@
     </header>
     <h1>Settings</h1>
     <menu>
-      <h2 style="grid-row: 1 / span 2">Posters</h2>
-      <preference
-        name="robot"
-        title="Use Machine learning camera. This is unusable" />
+      <name-as-form />
       <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="animate"
-        title="Animate the individual paths of a posters when focused" />
+        title="Rotate gradients (Safari)"
+        subtitle="A subtle wobble when posters focused " />
+      <preference
+        name="adobe"
+        title="Posters download with HEX (#FFF000) values for color" />
       <preference
         name="filesystem"
         title="Use the filesystem api to sync posters on your desktop">
@@ -24,12 +25,11 @@
         </a>
       </preference>
       <preference
-        name="adobe"
-        title="Posters download without CSS and use HEX for color" />
-    </menu>
-    <menu>
-      <h2>Me</h2>
-      <name-as-form />
+        name="social"
+        title="Use the social networking features. silk screens become posters and are automatically synced with the network" />
+      <preference
+        name="robot"
+        title="Use Machine learning camera. This is unusable" />
     </menu>
   </section>
 </template>

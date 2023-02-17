@@ -171,6 +171,7 @@
 <style lang="stylus">
   svg[itemtype="/posters"]
     aspect-ratio: 16 / 9
+    // aspect-ratio: 4 / 3
     display: block
     min-height: 512px
     height: 100%
@@ -179,26 +180,24 @@
     // use.light, use.regular, use.bold, use.emboss, use.background
     //   display: none
     &:focus-within
-      border: base-line solid black
-      border-radius: base-line * 0.11
       &.animate
         use.emboss
           animation-timing-function: linear
           animation-name: subtle-rotate
-          animation-duration: 3s
+          animation-duration: 2s
           animation-direction: alternate-reverse
           animation-iteration-count: infinite
         path
           &[itemprop="regular"]
             animation-timing-function: linear
             animation-name: subtle-rotate
-            animation-duration: 6s
+            animation-duration: 3s
             animation-direction: alternate
             animation-iteration-count: infinite
           &[itemprop="bold"]
             animation-timing-function: linear
             animation-name: subtle-rotate
-            animation-duration: 12s
-            animation-direction: alternate
+            animation-duration: 6s
+            animation-direction: alternate-reverse
             animation-iteration-count: infinite
 </style>

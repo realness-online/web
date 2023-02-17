@@ -5,8 +5,18 @@
       <logo-as-link />
     </header>
     <h1>Camera</h1>
-    <video ref="video" autoplay controls muted playsinline  @click="toggle_camera" />
-    <canvas ref="canvas" :width="config.video.width" :height="config.video.height"></canvas>
+    <video
+      ref="video"
+      hidden
+      autoplay
+      controls
+      muted
+      playsinline
+      @click="toggle_camera" />
+    <canvas
+      ref="canvas"
+      :width="config.video.width"
+      :height="config.video.height"></canvas>
     <footer>
       <menu>
         <button @click="predict">predict</button>
@@ -20,16 +30,19 @@
   // import AsSvg from '@/components/posters/as-svg'
   import { use as use_audio_analyzer } from '@/use/audio'
   import { use as use_machine_learning } from '@/use/machine_learning'
-    import {
+  import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_Keyboard
   } from '@vueuse/core'
   import { watch, ref, computed, onMounted as mounted } from 'vue'
-  
+
   // const { f, enter, escape } = use_Keyboard()
   const facing = ref('user')
   mounted(async () => {
-    console.log('views:/camera',navigator.mediaDevices.getSupportedConstraints());
+    console.log(
+      'views:/camera',
+      navigator.mediaDevices.getSupportedConstraints()
+    )
     await start()
   })
   const config = computed(() => {
@@ -45,7 +58,7 @@
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
   const { analyzing, analyze_audio } = use_audio_analyzer()
   const { video, canvas, predict } = use_machine_learning()
-  
+
   const start = async () => {
     const stream = await navigator.mediaDevices.getUserMedia(config.value)
     video.value.srcObject = stream
@@ -56,19 +69,19 @@
     analyzing.value = false
     await video.value.pause()
   }
-  const toggle_camera = async ()=> {
-    if (facing.value == "user") facing.value = "environment";
-    else facing.value = "user";
+  const toggle_camera = async () => {
+    if (facing.value == 'user') facing.value = 'environment'
+    else facing.value = 'user'
     const stream = await navigator.mediaDevices.getUserMedia(config.value)
     video.value.srcObject = stream
-    analyze_audio(stream)    
+    analyze_audio(stream)
   }
 </script>
 <style lang="stylus">
   section#visualizer
     & > h1
       color: red
-    & > video 
+    // & > video
     & > canvas
       margin: 0 auto 1rem auto
       display:flex
