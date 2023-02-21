@@ -16,14 +16,14 @@
       itemid: {
         type: String,
         required: true,
-        validator: is_vector_id,
+        validator: is_vector_id
       }
     },
     data() {
       return {
         content: '',
         vector: {},
-        file_name: null,
+        file_name: null
       }
     },
     async created() {
@@ -53,7 +53,8 @@
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
         const facts = `${time}.svg`
-        if (creator) return `${creator.first_name}_${creator.last_name}_${facts}`
+        if (creator)
+          return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
       }
     }
