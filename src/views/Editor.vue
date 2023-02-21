@@ -2,15 +2,16 @@
   <section id="editor" class="page">
     <header v-if="!is_fullscreen">
       <h1>{{ page_title }}</h1>
-      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
       <a @click="back"><icon name="remove" /></a>
+      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
+      <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
     </header>
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
-    <footer>
-      <menu hidden>
+    <footer v-if="!is_fullscreen">
+      <menu>
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: grid }" name="grid" />
         <icon :class="{ selected: animation }" name="animation" />
@@ -23,11 +24,11 @@
   import AsFill from '@/components/posters/as-figure-fill'
   import AsAnimation from '@/components/posters/as-animation'
   import AsGrid from '@/components/posters/as-grid'
-
+  import asDownload from '@/components/download-vector'
   import { Poster } from '@/persistance/Storage'
   import {
     useFullscreen as use_fullscreen,
-    useMagicKeys as use_Keyboard
+    useMagicKeys as use_Keyboard,
   } from '@vueuse/core'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { watch, computed, ref, provide } from 'vue'

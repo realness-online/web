@@ -168,6 +168,7 @@
     }
   })
 </script>
+
 <style lang="stylus">
   svg[itemtype="/posters"]
     aspect-ratio: 16 / 9

@@ -1,5 +1,5 @@
 <template>
-  <a :href="downloadable" :download="file_name" class="download">
+  <a :href="content" :download="file_name" class="download" @click="download">
     <icon name="download" />
   </a>
 </template>
@@ -16,17 +16,21 @@
       itemid: {
         type: String,
         required: true,
-        validator: is_vector_id
+        validator: is_vector_id,
       }
     },
     data() {
       return {
+        content: '',
         vector: {},
-        file_name: null
+        file_name: null,
       }
     },
-    computed: {
-      downloadable() {
+    async created() {
+      this.file_name = await this.get_vector_name()
+    },
+    methods: {
+      download() {
         const svg = document.getElementById(as_query_id(this.itemid))
         if (localStorage.adobe) {
           const convert = svg.querySelectorAll('[stop-color]')
@@ -37,24 +41,19 @@
           })
         }
         if (!svg) return
+
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-        return `data:application/octet-stream,${encodeURIComponent(
+        this.content = `data:application/octet-stream,${encodeURIComponent(
           svg.outerHTML
         )}`
-      }
-    },
-    async created() {
-      this.file_name = await this.get_vector_name()
-    },
-    methods: {
+      },
       async get_vector_name() {
         const info = this.itemid.split('/')
         const author_id = `/${info[1]}`
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
         const facts = `${time}.svg`
-        if (creator)
-          return `${creator.first_name}_${creator.last_name}_${facts}`
+        if (creator) return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
       }
     }
