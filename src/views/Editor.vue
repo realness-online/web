@@ -28,7 +28,7 @@
   import { Poster } from '@/persistance/Storage'
   import {
     useFullscreen as use_fullscreen,
-    useMagicKeys as use_Keyboard,
+    useMagicKeys as use_Keyboard
   } from '@vueuse/core'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { watch, computed, ref, provide } from 'vue'
