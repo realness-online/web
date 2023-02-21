@@ -4,9 +4,6 @@
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
-      <a id="camera" @click="open_camera">
-        <icon name="camera" />
-      </a>
       <input
         ref="image_picker"
         v-vectorizer
@@ -29,6 +26,11 @@
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
+    <footer>
+      <a id="camera" @click="open_camera">
+        <icon name="camera" />
+      </a>
+    </footer>
   </section>
 </template>
 <script setup>
@@ -88,13 +90,16 @@
       fill: green
     & > header
       justify-content: space-between
-      a#camera
-        position: fixed
-        bottom: base-line
-        left: s('calc( 50% - %s)', (base-line * 1.25) )
-        z-index: 4
-        @media (min-width: typing-begins)
-          visibility: hidden
+    & > footer
+      border-radius: base-line
+      padding: base-line * 0.5
+      background-color: black-transparent
+      position: fixed
+      bottom: base-line * 0.5
+      left: s('calc( 50% - %s)', (base-line * 1.25) )
+      z-index: 4
+      @media (min-width: typing-begins)
+        visibility: hidden
     & > h1
       @media (prefers-color-scheme: dark)
         color: green
