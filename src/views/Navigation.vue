@@ -4,7 +4,7 @@
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
       </router-link>
-      <icon name="realness-black" @click="toggle_social" />
+
     </header>
     <nav v-if="social"  ref="nav">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
@@ -92,7 +92,7 @@
       left: 0
       right: 0
       & > a
-        fill:red
+        fill:black
     &.posting
       align-self: end
       margin-top: inset(top)
@@ -167,6 +167,6 @@
       & > h6
         left: base-line
       & > a
-        color: yellow
+        color: red
         right: base-line
 </style>

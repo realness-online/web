@@ -8,7 +8,7 @@
     </header>
 
     <nav ref="nav">
-      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
+      <router-link v-if="!posting" to="/language" class="black" tabindex="-1">
         {{ first_name }}
       </router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">

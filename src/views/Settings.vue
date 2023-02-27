@@ -8,6 +8,9 @@
     <menu>
       <name-as-form />
       <preference
+        name="social"
+        title="Use the social networking features. silk screens become posters and are automatically synced with the network" />
+      <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
@@ -24,9 +27,6 @@
           <icon name="download" />
         </a>
       </preference>
-      <preference
-        name="social"
-        title="Use the social networking features. silk screens become posters and are automatically synced with the network" />
       <preference
         name="robot"
         title="Use Machine learning camera. This is unusable" />

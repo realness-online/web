@@ -1,9 +1,7 @@
 <template>
   <section id="account" :class="{ 'signed-in': current_user }" class="page">
     <header>
-      <router-link id="settings" to="/settings" tabindex="-1">
-        <icon name="gear" />
-      </router-link>
+      <icon name="nothin" />
       <logo-as-link />
     </header>
     <h1 v-if="!working">Statements</h1>
