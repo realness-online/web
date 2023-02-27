@@ -49,7 +49,7 @@ export default defineConfig({
         'icons.svg'
       ],
       manifest: {
-        display: 'standalone',
+        display: 'fullscreen',
         background_color: '#151518',
         name: 'Realness',
         short_name: 'Realness',

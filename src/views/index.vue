@@ -1,12 +1,13 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <header v-if="!posting">
+    <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
       </router-link>
-      <icon name="realness-black" @click="toggle_social" />
+      <logo-as-link />
     </header>
-    <nav v-if="social"  ref="nav">
+
+    <nav ref="nav">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
       </router-link>
@@ -23,11 +24,15 @@
         Phonebook
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" />
+      <statement-as-textarea
+        class="red"
+        @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
       <h6>
-        <router-link to="/documentation" tabindex="-1">{{ version }}</router-link>
+        <router-link to="/documentation" tabindex="-1">{{
+          version
+        }}</router-link>
       </h6>
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
@@ -54,14 +59,6 @@
     if (localStorage.robot) return '/camera'
     else return '/posters'
   })
-  const social = computed(() => {
-    if (localStorage.social) return true
-    else return false
-  })
-  const toggle_social = () => {
-    if (localStorage.social) localStorage.removeItem('social')
-    else localStorage.social = true
-  }
   // const snapshot = () => {
   //   const canvas = document.createElement('canvas') // create a canvas
   //   const ctx = canvas.getContext('2d') // get its context
@@ -86,13 +83,6 @@
     display: flex
     align-items: center
     max-width: page-width
-    & > header
-      position absolute
-      top: 0
-      left: 0
-      right: 0
-      & > a
-        fill:red
     &.posting
       align-self: end
       margin-top: inset(top)
