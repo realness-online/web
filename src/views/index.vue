@@ -1,33 +1,13 @@
 <template>
-  <section id="navigation" class="page" :class="{ posting }">
+  <section id="index" class="page" :class="{ posting }">
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
       </router-link>
       <logo-as-link />
     </header>
-
-    <nav ref="nav">
-      <router-link v-if="!posting" to="/language" class="black" tabindex="-1">
-        {{ first_name }}
-      </router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
-        Events
-      </router-link>
-      <router-link v-if="!posting" :to="camera" class="green" tabindex="-1">
-        Posters
-      </router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
-        Feed
-      </router-link>
-      <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
-        Phonebook
-      </router-link>
-      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea
-        class="red"
-        @toggle-keyboard="posting = !posting" />
-    </nav>
+    <my-social v-if="social" />
+    <my-prints v-else />
     <footer>
       <h6>
         <router-link to="/documentation" tabindex="-1">{{
@@ -41,44 +21,27 @@
 </template>
 <script setup>
   import Icon from '@/components/icon'
-  import StatementAsTextarea from '@/components/statements/as-textarea'
+  import MySocial from '@/components/navigation'
+  import MyPrints from '@/components/posters/as-list'
   import { load } from '@/use/itemid'
   import { ref, onMounted as mounted, computed } from 'vue'
   const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
   const first_name = ref('')
-  const nav = ref()
-  const done_posting = () => nav.value.focus()
+  const social = computed(() => {
+    return localStorage.social
+  })
+
   mounted(async () => {
     let my = await load(localStorage.me)
     if (my && my.first_name) first_name.value = my.first_name
     else first_name.value = 'You'
     console.info('views:Navigation')
   })
-  const camera = computed(() => {
-    if (localStorage.robot) return '/camera'
-    else return '/posters'
-  })
-  // const snapshot = () => {
-  //   const canvas = document.createElement('canvas') // create a canvas
-  //   const ctx = canvas.getContext('2d') // get its context
-  //   canvas.width = vid.videoWidth // set its size to the one of the video
-  //   canvas.height = vid.videoHeight
-  //   ctx.drawImage(vid, 0, 0) // the video
-  //   return new Promise((res, rej) => {
-  //     canvas.toBlob(res, 'image/jpeg') // request a Blob from the canvas
-  //   })
-  // }
-  // function download(blob) {
-  //   // uses the <a download> to download a Blob
-  //   let a = document.createElement('a')
-  //   a.href = URL.createObjectURL(blob)
-  //   a.download = 'screenshot.jpg'
-  //   document.body.appendChild(a)
-  //   a.click()
-  // }
 </script>
 <style lang="stylus">
+  section#index > header
+    fill:black
   section#navigation.page
     display: flex
     align-items: center
@@ -102,11 +65,11 @@
           display: block
       & > footer
         display: none
-    @media (max-width: pad-begins) and (orientation: portrait)
-      padding: 0 base-line
-    @media (max-height: pad-begins) and (orientation: landscape)
-      height: auto
-      max-width: none
+    // @media (max-width: pad-begins) and (orientation: portrait)
+    //   padding: 0 base-line
+    // @media (max-height: pad-begins) and (orientation: landscape)
+    //   height: auto
+    //   max-width: none
     & > nav
       transition-duration: 0s
       display: grid
@@ -117,9 +80,9 @@
       max-height: page-width
       height: 100vmin
       width: 100vw
-      @media (max-height: pad-begins) and (orientation: landscape)
-        min-height: auto
-        padding: base-line (base-line * 4)
+      // @media (max-height: pad-begins) and (orientation: landscape)
+      //   min-height: auto
+      //   padding: base-line (base-line * 4)
       & > a
         text-transform: capitalize
         text-align: left

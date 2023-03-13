@@ -1,18 +1,9 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <a v-if="can_add" tabindex="-1" @click="select_photo">
-        <icon name="add" />
-      </a>
-      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
-      <logo-as-link tabindex="-1" />
+      <logo-as-link v-if="show_logo"  tabindex="-1" />
     </header>
-    <h1>Posters</h1>
-
+    <h1>{{ name }}</h1>
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
@@ -31,6 +22,11 @@
       <a id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
+      <input
+        ref="image_picker"
+        v-vectorizer
+        type="file"
+        accept="image/jpeg,image/png" />
     </footer>
   </section>
 </template>
@@ -55,7 +51,13 @@
     working,
     mount_workers
   } = use_vectorize()
-
+  defineProps({
+    name: {
+      type: String,
+      required: false,
+      default: "Screen Print"
+    },
+  })
   const remove_poster = async id => {
     const message = 'Delete poster?'
     if (window.confirm(message)) {
@@ -97,7 +99,7 @@
       background-color: black-transparent
       position: fixed
       bottom: base-line * 0.5
-      left: s('calc( 50% - %s)', (base-line * 1.75) )
+      left: s('calc( 50% - %s)', (base-line * 1.25) )
       z-index: 4
       @media (min-width: typing-begins)
         visibility: hidden

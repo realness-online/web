@@ -3,7 +3,7 @@ import Events from '@/views/Events'
 import Feed from '@/views/Feed'
 import Posters from '@/views/Posters'
 import Language from '@/views/Language'
-import Navigation from '@/views/Navigation'
+import Index from '@/views/Index'
 import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
@@ -14,7 +14,7 @@ import Camera from '@/views/Camera'
 import Settings from '@/views/Settings'
 import Documentation from '@/views/Documentation'
 const routes = [
-  { path: '/', component: Navigation },
+  { path: '/', component: Index },
   { path: '/posters', component: Posters },
   { path: '/posters/:id/editor', component: Editor },
   { path: '/feed', component: Feed },

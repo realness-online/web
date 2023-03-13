@@ -1,45 +1,28 @@
 <template>
-  <section id="navigation" class="page" :class="{ posting }">
-    <header v-if="!posting">
-      <router-link id="settings" to="/settings" tabindex="-1">
-        <icon name="gear" />
-      </router-link>
-
-    </header>
-    <nav v-if="social"  ref="nav">
-      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
-        {{ first_name }}
-      </router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
-        Events
-      </router-link>
-      <router-link v-if="!posting" :to="camera" class="green" tabindex="-1">
-        Posters
-      </router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
-        Feed
-      </router-link>
-      <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
-        Phonebook
-      </router-link>
-      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" />
-    </nav>
-    <footer>
-      <h6>
-        <router-link to="/documentation" tabindex="-1">{{ version }}</router-link>
-      </h6>
-      <router-link to="/about" tabindex="-1">?</router-link>
-    </footer>
-  </section>
-  <aside></aside>
+  <nav id="navigation" ref="nav" :class="{ posting }">
+    <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
+      {{ first_name }}
+    </router-link>
+    <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
+      Events
+    </router-link>
+    <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
+      Posters
+    </router-link>
+    <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
+      Feed
+    </router-link>
+    <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
+      Phonebook
+    </router-link>
+    <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
+    <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" />
+  </nav>
 </template>
 <script setup>
-  import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
-  import { ref, onMounted as mounted, computed } from 'vue'
-  const version = import.meta.env.PACKAGE_VERSION
+  import { ref, onMounted as mounted } from 'vue'
   const posting = ref(false)
   const first_name = ref('')
   const nav = ref()
@@ -50,18 +33,6 @@
     else first_name.value = 'You'
     console.info('views:Navigation')
   })
-  const camera = computed(() => {
-    if (localStorage.robot) return '/camera'
-    else return '/posters'
-  })
-  const social = computed(() => {
-    if (localStorage.social) return true
-    else return false
-  })
-  const toggle_social = () => {
-    if (localStorage.social) localStorage.removeItem('social')
-    else localStorage.social = true
-  }
   // const snapshot = () => {
   //   const canvas = document.createElement('canvas') // create a canvas
   //   const ctx = canvas.getContext('2d') // get its context
@@ -86,13 +57,6 @@
     display: flex
     align-items: center
     max-width: page-width
-    & > header
-      position absolute
-      top: 0
-      left: 0
-      right: 0
-      & > a
-        fill:black
     &.posting
       align-self: end
       margin-top: inset(top)
