@@ -96,7 +96,7 @@
       background-color: black-transparent
       position: fixed
       bottom: base-line * 0.5
-      left: s('calc( 50% - %s)', (base-line * 2) )
+      left: s('calc( 50% - %s)', (base-line * 1.5) )
       z-index: 4
       @media (min-width: typing-begins)
         visibility: hidden
