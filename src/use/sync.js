@@ -93,8 +93,10 @@ export const use = () => {
     return !is_friend
   }
   const sync_offline_actions = async () => {
+    console.log('sync_offline_actions')
     if (navigator.onLine) {
       const offline = await get('sync:offline')
+      console.log('offline', offline)
       if (!offline) return
       while (offline.length) {
         const item = offline.pop()
@@ -188,7 +190,6 @@ export const use = () => {
     sync_poster
   }
 }
-
 export const local_md5 = async itemid => {
   // always checks the network
   const local = await get(itemid)
