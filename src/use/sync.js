@@ -41,11 +41,11 @@ export const use = () => {
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
+    console.log('play')
+    await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
-    if (i_am_fresh()) {
-      await sync_offline_actions()
-    } else {
+    if (!i_am_fresh()) {
       emit('active', true)
       localStorage.sync_time = new Date().toISOString()
       await sync_anonymous_posters()
@@ -93,7 +93,7 @@ export const use = () => {
     return !is_friend
   }
   const sync_offline_actions = async () => {
-    console.log('sync_offline_actions')
+    console.log('sync_offline_actions', navigator.onLine)
     if (navigator.onLine) {
       const offline = await get('sync:offline')
       console.log('offline', offline)
@@ -182,6 +182,7 @@ export const use = () => {
     document.removeEventListener('visibilitychange', play)
   })
   watch(current_user, async () => {
+    console.log('watch')
     if (current_user.value) await play()
   })
   return {
