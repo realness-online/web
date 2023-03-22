@@ -1,6 +1,5 @@
 <template>
   <g v-if="animate" itemprop="animation">
-
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
