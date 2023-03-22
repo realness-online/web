@@ -60,7 +60,8 @@
           &:focus + .slider
             box-shadow: 0 0 1px red
           &:checked + .slider:before
-            transform: translateX(base-line * 1.5)
+            transform: translateX(base-line * 1.4)
+
         .slider
           border-radius: base-line * 2
           position: absolute
@@ -76,10 +77,10 @@
             border-radius: 50%
             position: absolute
             content: ""
-            height: base-line
-            width: base-line
-            left: base-line * .25
-            bottom: base-line * .25
+            height: base-line * 1.2
+            width: base-line * 1.2
+            left: base-line * 0.2
+            bottom: base-line * 0.15
             background-color: white
             opacity: 0.75
             -webkit-transition: .4s
