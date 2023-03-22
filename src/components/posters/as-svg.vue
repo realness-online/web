@@ -178,8 +178,6 @@
     height: 100%
     width: 100%
     outline: none
-    // use.light, use.regular, use.bold, use.emboss, use.background
-    //   display: none
     &:focus-within
       &.animate
         use.emboss

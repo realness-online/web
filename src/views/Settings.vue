@@ -12,8 +12,8 @@
         title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="animate"
-        title="Rotate gradients (Safari)"
-        subtitle="A subtle wobble when posters focused " />
+        title="Rotate gradients"
+        subtitle="A subtle wobble when a poster is focused" />
       <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
@@ -25,9 +25,11 @@
         </a>
       </preference>
       <preference
+        hidden
         name="social"
         title="Use the social networking features. silk screens become posters and are automatically synced with the network" />
       <preference
+        hidden
         name="robot"
         title="Use Machine learning camera. This is unusable" />
     </menu>
