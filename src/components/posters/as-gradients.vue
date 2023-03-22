@@ -8,8 +8,7 @@
         :stop-color="stop.color.hsla"
         :offset="`${stop.offset}%`" />
     </radialGradient>
-    <radialGradient
-      :id="query('radial-background')">
+    <radialGradient :id="query('radial-background')">
       <as-stops
         :luminosity="background"
         :saturation_floor="13"
@@ -18,8 +17,7 @@
     <radialGradient :id="query('radial-light')">
       <as-stops :luminosity="light" :stops="radial" />
     </radialGradient>
-    <radialGradient
-      :id="query('radial-regular')">
+    <radialGradient :id="query('radial-regular')">
       <as-stops :luminosity="regular" :stops="radial" />
     </radialGradient>
     <radialGradient :id="query('radial-bold')">
@@ -27,12 +25,7 @@
     </radialGradient>
   </g>
   <g class="vertical">
-    <linearGradient
-      :id="query('vertical')"
-      x1="0"
-      x2="0"
-      y1="0"
-      y2="100%">
+    <linearGradient :id="query('vertical')" x1="0" x2="0" y1="0" y2="100%">
       <stop
         v-for="stop in vertical"
         :key="stop.offset"
@@ -54,10 +47,7 @@
       x2="0"
       y1="0"
       y2="100%">
-      <as-stops
-        :luminosity="light"
-        :saturation_floor="21"
-        :stops="vertical" />
+      <as-stops :luminosity="light" :saturation_floor="21" :stops="vertical" />
     </linearGradient>
     <linearGradient
       :id="query('vertical-regular')"
@@ -67,22 +57,12 @@
       y2="100%">
       <as-stops :luminosity="regular" :stops="vertical" />
     </linearGradient>
-    <linearGradient
-      :id="query('vertical-bold')"
-      x1="0"
-      x2="0"
-      y1="0"
-      y2="100%">
+    <linearGradient :id="query('vertical-bold')" x1="0" x2="0" y1="0" y2="100%">
       <as-stops :luminosity="bold" :stops="vertical" />
     </linearGradient>
   </g>
   <g class="horizontal">
-    <linearGradient
-      :id="query('horizontal')"
-      x1="0"
-      x2="100%"
-      y1="0"
-      y2="0">
+    <linearGradient :id="query('horizontal')" x1="0" x2="100%" y1="0" y2="0">
       <stop
         v-for="stop in horizontal"
         :key="stop.offset"
@@ -126,7 +106,6 @@
       <as-stops :luminosity="bold" :stops="horizontal" />
     </linearGradient>
   </g>
-
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
