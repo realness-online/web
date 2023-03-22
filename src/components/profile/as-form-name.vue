@@ -42,7 +42,7 @@
 </script>
 <style lang="stylus">
   form#profile-name
-    animation-name: slide-in-left
+    // animation-name: slide-in-left
     &.complete
       animation-name: slide-out-right
     fieldset

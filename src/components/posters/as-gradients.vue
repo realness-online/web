@@ -1,145 +1,132 @@
 <template>
-  <defs class="gradients">
-    <g class="radial">
-      <radialGradient :id="query('radial')" gradientTransform="rotate(0)">
-        <stop
-          v-for="stop in radial"
-          :key="stop.offset"
-          itemprop="radial"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
-      </radialGradient>
-      <radialGradient
-        :id="query('radial-background')"
-        gradientTransform="rotate(0)">
-        <as-stops
-          :luminosity="background"
-          :saturation_floor="13"
-          :stops="radial" />
-      </radialGradient>
-      <radialGradient :id="query('radial-light')" gradientTransform="rotate(0)">
-        <as-stops :luminosity="light" :stops="radial" />
-      </radialGradient>
-      <radialGradient
-        :id="query('radial-regular')"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="regular" :stops="radial" />
-      </radialGradient>
-      <radialGradient :id="query('radial-bold')" gradientTransform="rotate(0)">
-        <as-stops :luminosity="bold" :stops="radial" />
-      </radialGradient>
-    </g>
-    <g class="vertical">
-      <linearGradient
-        :id="query('vertical')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%"
-        gradientTransform="rotate(0)">
-        <stop
-          v-for="stop in vertical"
-          :key="stop.offset"
-          itemprop="vertical"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
-      </linearGradient>
-      <linearGradient
-        :id="query('vertical-background')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="background" :stops="vertical" />
-      </linearGradient>
-      <linearGradient
-        :id="query('vertical-light')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%"
-        gradientTransform="rotate(0)">
-        <as-stops
-          :luminosity="light"
-          :saturation_floor="21"
-          :stops="vertical" />
-      </linearGradient>
-      <linearGradient
-        :id="query('vertical-regular')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%"
-        gradientTransform="rotate(0) ">
-        <as-stops :luminosity="regular" :stops="vertical" />
-      </linearGradient>
-      <linearGradient
-        :id="query('vertical-bold')"
-        x1="0"
-        x2="0"
-        y1="0"
-        y2="100%"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="bold" :stops="vertical" />
-      </linearGradient>
-    </g>
-    <g class="horizontal">
-      <linearGradient
-        :id="query('horizontal')"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0"
-        gradientTransform="rotate(0)">
-        <stop
-          v-for="stop in horizontal"
-          :key="stop.offset"
-          itemprop="horizontal"
-          :stop-color="stop.color.hsla"
-          :offset="`${stop.offset}%`" />
-      </linearGradient>
-      <linearGradient
-        :id="query('horizontal-background')"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="background" :stops="horizontal" />
-      </linearGradient>
-      <linearGradient
-        :id="query('horizontal-light')"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="light" :stops="horizontal" />
-      </linearGradient>
-      <linearGradient
-        :id="query('horizontal-regular')"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0"
-        gradientTransform="rotate(0)">
-        <as-stops
-          :luminosity="regular"
-          :saturation_floor="18"
-          :stops="horizontal" />
-      </linearGradient>
-      <linearGradient
-        :id="query('horizontal-bold')"
-        x1="0"
-        x2="100%"
-        y1="0"
-        y2="0"
-        gradientTransform="rotate(0)">
-        <as-stops :luminosity="bold" :stops="horizontal" />
-      </linearGradient>
-    </g>
-  </defs>
+  <g class="radial">
+    <radialGradient :id="query('radial')">
+      <stop
+        v-for="stop in radial"
+        :key="stop.offset"
+        itemprop="radial"
+        :stop-color="stop.color.hsla"
+        :offset="`${stop.offset}%`" />
+    </radialGradient>
+    <radialGradient
+      :id="query('radial-background')">
+      <as-stops
+        :luminosity="background"
+        :saturation_floor="13"
+        :stops="radial" />
+    </radialGradient>
+    <radialGradient :id="query('radial-light')">
+      <as-stops :luminosity="light" :stops="radial" />
+    </radialGradient>
+    <radialGradient
+      :id="query('radial-regular')">
+      <as-stops :luminosity="regular" :stops="radial" />
+    </radialGradient>
+    <radialGradient :id="query('radial-bold')">
+      <as-stops :luminosity="bold" :stops="radial" />
+    </radialGradient>
+  </g>
+  <g class="vertical">
+    <linearGradient
+      :id="query('vertical')"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <stop
+        v-for="stop in vertical"
+        :key="stop.offset"
+        itemprop="vertical"
+        :stop-color="stop.color.hsla"
+        :offset="`${stop.offset}%`" />
+    </linearGradient>
+    <linearGradient
+      :id="query('vertical-background')"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <as-stops :luminosity="background" :stops="vertical" />
+    </linearGradient>
+    <linearGradient
+      :id="query('vertical-light')"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <as-stops
+        :luminosity="light"
+        :saturation_floor="21"
+        :stops="vertical" />
+    </linearGradient>
+    <linearGradient
+      :id="query('vertical-regular')"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <as-stops :luminosity="regular" :stops="vertical" />
+    </linearGradient>
+    <linearGradient
+      :id="query('vertical-bold')"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <as-stops :luminosity="bold" :stops="vertical" />
+    </linearGradient>
+  </g>
+  <g class="horizontal">
+    <linearGradient
+      :id="query('horizontal')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <stop
+        v-for="stop in horizontal"
+        :key="stop.offset"
+        itemprop="horizontal"
+        :stop-color="stop.color.hsla"
+        :offset="`${stop.offset}%`" />
+    </linearGradient>
+    <linearGradient
+      :id="query('horizontal-background')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <as-stops :luminosity="background" :stops="horizontal" />
+    </linearGradient>
+    <linearGradient
+      :id="query('horizontal-light')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <as-stops :luminosity="light" :stops="horizontal" />
+    </linearGradient>
+    <linearGradient
+      :id="query('horizontal-regular')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <as-stops
+        :luminosity="regular"
+        :saturation_floor="18"
+        :stops="horizontal" />
+    </linearGradient>
+    <linearGradient
+      :id="query('horizontal-bold')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <as-stops :luminosity="bold" :stops="horizontal" />
+    </linearGradient>
+  </g>
+
 </template>
 <script setup>
   import AsStops from '@/components/posters/as-stops'
