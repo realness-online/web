@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "1.4.34",
+  "version": "1.4.35",
   "private": false,
   "type": "module",
   "description": "When people search for 'outsider social network' they'll find realness online",
@@ -11,7 +11,7 @@
     "serve": "vite preview",
     "serve:https": "serve dist",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
-    "deploy": "yarn format && yarn lint && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
+    "deploy": "yarn lint && yarn format && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
     "release": "yarn release:gh && yarn release:npm && git tag v$npm_package_version",
