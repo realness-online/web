@@ -49,7 +49,7 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      fill-opacity="0.85"
+      fill-opacity="0.9"
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
@@ -182,12 +182,6 @@
     width: 100%
     outline: none
     &.animate
-      use.emboss
-        animation-timing-function: linear
-        animation-name: subtle-rotate
-        animation-duration: 2s
-        animation-direction: alternate-reverse
-        animation-iteration-count: infinite
       path
         &[itemprop="regular"]
           animation-timing-function: linear
@@ -195,10 +189,10 @@
           animation-duration: 5s
           animation-direction: alternate
           animation-iteration-count: infinite
-        &[itemprop="bold"]
-          animation-timing-function: linear
-          animation-name: subtle-rotate
-          animation-duration: 8s
-          animation-direction: alternate-reverse
-          animation-iteration-count: infinite
+        // &[itemprop="bold"]
+        //   animation-timing-function: linear
+        //   animation-name: subtle-rotate
+        //   animation-duration: 8s
+        //   animation-direction: alternate-reverse
+        //   animation-iteration-count: infinite
 </style>
