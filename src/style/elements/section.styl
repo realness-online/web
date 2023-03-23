@@ -1,7 +1,12 @@
 section.page
   padding-top: env(safe-area-inset-top)
+  max-height: 100vh
+  overflow-y: scroll
+  scroll-snap-type: y mandatory
+  // scroll-behavior: smooth
   width: 100%
   & > header
+    scroll-snap-align: start
     padding: base-line
     display:flex
     justify-content: space-between

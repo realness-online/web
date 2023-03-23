@@ -154,7 +154,7 @@
         ([{ isIntersecting }]) => {
           if (isIntersecting) show()
         },
-        { rootMargin: '0%' }
+        { rootMargin: '100%' }
       )
     }
   })
@@ -174,6 +174,7 @@
 
 <style lang="stylus">
   svg[itemtype="/posters"]
+    scroll-snap-align: center
     aspect-ratio: 16 / 9
     // aspect-ratio: 4 / 3
     display: block

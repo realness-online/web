@@ -104,6 +104,7 @@
       @media (prefers-color-scheme: dark)
         color: green
     & > article
+      scroll-snap-align: center
       standard-grid: gentle
       grid-gap: 0
       padding-bottom: base-line * 3
