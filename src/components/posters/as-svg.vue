@@ -155,7 +155,6 @@
           if (isIntersecting) show()
         },
         { rootMargin: '1024px' }
-
       )
     }
   })
