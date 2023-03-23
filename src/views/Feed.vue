@@ -106,9 +106,6 @@
         display: none
       section.as-days
         white-space: nowrap;
-        overflow-x: auto;
-        scroll-behavior: smooth
-        scroll-snap-type: both mandatory
         padding: 0
         margin: 0
         & > article.day
@@ -117,8 +114,6 @@
           grid-gap: 0
           margin: 0
           figure.poster
-            scroll-behavior: smooth
-            scroll-snap-align: center
             border-radius: 0
             min-width: 100vw
             height: 100vh

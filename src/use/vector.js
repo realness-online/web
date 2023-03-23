@@ -138,7 +138,6 @@ export const use_poster = () => {
         if (isIntersecting) {
           intersecting.value = true
         } else intersecting.value = false
-        console.log(intersecting.value)
       },
       { rootMargin: '0%' }
     )
