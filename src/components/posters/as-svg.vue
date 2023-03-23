@@ -151,7 +151,7 @@
         ([{ isIntersecting }]) => {
           if (isIntersecting) show()
         },
-        { rootMargin: '612px' }
+        { rootMargin: '0' }
       )
     }
   })
