@@ -136,7 +136,7 @@
     tabindex,
     vector,
     vector_element,
-    intersecting,
+    intersecting
   } = use_poster()
   const trigger = ref(null)
   const show_emboss = computed(() => localStorage.emboss && intersecting.value)
