@@ -46,7 +46,7 @@
   const stroke = ref(undefined)
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
-  const stroke_opacity = ref('0.90')
+  const stroke_opacity = ref('.98')
   const stroke_width = ref('0.33px')
   mounted(() => {
     fill.value = props.fill
@@ -63,7 +63,6 @@
 </script>
 <style lang="stylus">
   path[itemprop]
-    stroke-width: 1.33px
     &:focus
       outline: none
     &:active
