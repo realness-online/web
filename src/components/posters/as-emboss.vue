@@ -2,8 +2,6 @@
   <defs>
     <symbol :id="query('emboss')">
       <use :href="fragment('light')" filter="url(#emboss)" />
-      <use :href="fragment('regular')" filter="url(#emboss)" />
-      <use :href="fragment('bold')" filter="url(#emboss)" />
     </symbol>
     <filter id="emboss">
       <feConvolveMatrix
