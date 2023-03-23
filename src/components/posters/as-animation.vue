@@ -3,14 +3,12 @@
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="21s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="32s"
       values="0%;100%;33%;100%;66%;0%" />
@@ -18,14 +16,12 @@
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="13s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="21s"
       values="0%;100%;33%;100%;66%;0%" />
@@ -33,14 +29,12 @@
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="34s"
       values="0%;100%;66%;0%;33%;100%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
-      attributeType="XML"
       repeatCount="indefinite"
       dur="21s"
       values="0%;100%;33%;100%;0%" />

@@ -6,6 +6,7 @@ import {
   as_directory
 } from '@/use/itemid'
 import { ref, computed, getCurrentInstance as current_instance } from 'vue'
+import { useIntersectionObserver as use_intersect } from '@vueuse/core'
 import { recent_item_first } from '@/use/sorting'
 import { use as use_path } from '@/use/path'
 const path_names = ['background', 'light', 'regular', 'bold']
@@ -82,6 +83,8 @@ const migrate_poster = poster => {
 export const use_poster = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
+  const vector_element = ref(null)
+  const intersecting = ref(false)
   const working = ref(true)
   const menu = ref(false)
   const { get_active_path } = use_path()
@@ -129,6 +132,16 @@ export const use_poster = () => {
       vector.value = poster
     }
     working.value = false
+    use_intersect(
+      vector_element,
+      ([{ isIntersecting }]) => {
+        if (isIntersecting) {
+          intersecting.value = true
+        } else intersecting.value = false
+        console.log(intersecting.value)
+      },
+      { rootMargin: '0%' }
+    )
     emit('loaded', vector.value)
   }
   const tabindex = computed(() => {
@@ -145,6 +158,8 @@ export const use_poster = () => {
   }
   return {
     vector,
+    vector_element,
+    intersecting,
     click,
     menu,
     query,

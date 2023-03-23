@@ -12,8 +12,7 @@
         title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="animate"
-        title="Rotate gradients"
-        subtitle="A subtle wobble when a poster is focused" />
+        title="Animate posters as they come into view" />
       <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
