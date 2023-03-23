@@ -5,20 +5,20 @@
       attributeName="cx"
       repeatCount="indefinite"
       dur="21s"
-      values="0%;33%;200%;0%;100%;0%;" />
+      values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;33%;200%;66%;0%" />
+      values="0%;100%;33%;100%;66%;0%" />
 
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;33%;200%;0%;150%;0%;" />
+      values="0%;33%;100%;0%;150%;0%;" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
