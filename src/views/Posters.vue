@@ -85,6 +85,7 @@
 </script>
 <style lang="stylus">
   section#posters
+
     svg, a
       color: green
       fill: green
@@ -110,7 +111,6 @@
       @media (max-width: pad-begins)
         margin-top: base-line
       & > figure.poster
-        scroll-snap-align: center
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1

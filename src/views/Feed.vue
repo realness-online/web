@@ -93,32 +93,6 @@
       figure.poster
         margin-left: -(base-line)
         margin-right: -(base-line)
-    &:fullscreen
-    &:full-screen
-      background-color: black-background
-      flex-direction: row
-      overflow-x: auto
-      display: flex;
-      padding: 0
-      & > header
-      article.day > header
-      article.thought
-        display: none
-      section.as-days
-        white-space: nowrap;
-        padding: 0
-        margin: 0
-        & > article.day
-          display: flex
-          flex-direction: row
-          grid-gap: 0
-          margin: 0
-          figure.poster
-            border-radius: 0
-            min-width: 100vw
-            height: 100vh
-            figcaption
-              display: none
     & > header
       & > h1
         width:auto
