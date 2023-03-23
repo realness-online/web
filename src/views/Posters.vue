@@ -104,13 +104,13 @@
       @media (prefers-color-scheme: dark)
         color: green
     & > article
-      scroll-snap-align: center
       standard-grid: gentle
       grid-gap: 0
       padding-bottom: base-line * 3
       @media (max-width: pad-begins)
         margin-top: base-line
       & > figure.poster
+        scroll-snap-align: center
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1

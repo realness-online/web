@@ -49,7 +49,7 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      fill-opacity="0.90"
+      fill-opacity="0.85"
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
@@ -154,7 +154,8 @@
         ([{ isIntersecting }]) => {
           if (isIntersecting) show()
         },
-        { rootMargin: '100%' }
+        { rootMargin: '1024px' }
+
       )
     }
   })
@@ -174,7 +175,6 @@
 
 <style lang="stylus">
   svg[itemtype="/posters"]
-    scroll-snap-align: center
     aspect-ratio: 16 / 9
     // aspect-ratio: 4 / 3
     display: block
