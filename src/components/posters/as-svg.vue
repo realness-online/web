@@ -31,7 +31,7 @@
       :tabindex="tabindex"
       fill-opacity="0.90"
       :fill="`url(${fragment('vertical-light')})`"
-      :stroke="`url(${fragment('horizontal-background')})`"
+      :stroke="`url(${fragment('horizontal-light')})`"
       @focus="focus('light')" />
     <as-path
       v-if="vector.regular"
@@ -41,7 +41,7 @@
       :path="vector.regular"
       :tabindex="tabindex"
       :fill="`url(${fragment('horizontal-regular')})`"
-      :stroke="`url(${fragment('vertical-light')})`"
+      :stroke="`url(${fragment('vertical-bold')})`"
       @focus="focus('regular')" />
     <as-path
       v-if="vector.bold"
@@ -51,7 +51,7 @@
       :path="vector.bold"
       fill-opacity="0.90"
       :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-regular')})`"
+      :stroke="`url(${fragment('radial-background')})`"
       @focus="focus('bold')" />
     <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
@@ -192,13 +192,13 @@
         &[itemprop="regular"]
           animation-timing-function: linear
           animation-name: subtle-rotate
-          animation-duration: 3s
+          animation-duration: 5s
           animation-direction: alternate
           animation-iteration-count: infinite
         &[itemprop="bold"]
           animation-timing-function: linear
           animation-name: subtle-rotate
-          animation-duration: 6s
+          animation-duration: 8s
           animation-direction: alternate-reverse
           animation-iteration-count: infinite
 </style>
