@@ -31,7 +31,7 @@
       :tabindex="tabindex"
       fill-opacity="0.90"
       :fill="`url(${fragment('vertical-light')})`"
-      :stroke="`url(${fragment('horizontal-light')})`"
+      :stroke="`url(${fragment('horizontal-regular')})`"
       @focus="focus('light')" />
     <as-path
       v-if="vector.regular"
@@ -41,7 +41,7 @@
       :path="vector.regular"
       :tabindex="tabindex"
       :fill="`url(${fragment('horizontal-regular')})`"
-      :stroke="`url(${fragment('vertical-bold')})`"
+      :stroke="`url(${fragment('radial-background')})`"
       @focus="focus('regular')" />
     <as-path
       v-if="vector.bold"
@@ -51,7 +51,7 @@
       :path="vector.bold"
       fill-opacity="0.90"
       :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-background')})`"
+      :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
     <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
