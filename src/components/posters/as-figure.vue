@@ -101,6 +101,7 @@
   figure.poster
     border-radius: round((base-line * .03), 2)
     position: relative
+    scroll-snap-align: center
     overflow: hidden
     grid-row-start: span 2
     @media (orientation: landscape), (min-width: page-width)

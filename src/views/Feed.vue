@@ -112,9 +112,6 @@
         padding: 0
         margin: 0
         & > article.day
-          scroll-behavior: smooth
-          scroll-snap-type: both mandatory
-          scroll-snap-align: start end
           display: flex
           flex-direction: row
           grid-gap: 0
