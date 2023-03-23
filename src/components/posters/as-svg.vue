@@ -3,6 +3,7 @@
   <svg
     v-else
     :id="query()"
+    ref="vector_element"
     itemscope
     itemtype="/posters"
     :itemid="itemid"
@@ -133,11 +134,13 @@
     focus,
     focusable,
     tabindex,
-    vector
+    vector,
+    vector_element,
+    intersecting,
   } = use_poster()
   const trigger = ref(null)
-  const show_emboss = computed(() => localStorage.emboss)
-  const animate = computed(() => localStorage.animate)
+  const show_emboss = computed(() => localStorage.emboss && intersecting.value)
+  const animate = computed(() => localStorage.animate && intersecting.value)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
@@ -178,25 +181,24 @@
     height: 100%
     width: 100%
     outline: none
-    &:focus-within
-      &.animate
-        use.emboss
+    &.animate
+      use.emboss
+        animation-timing-function: linear
+        animation-name: subtle-rotate
+        animation-duration: 2s
+        animation-direction: alternate-reverse
+        animation-iteration-count: infinite
+      path
+        &[itemprop="regular"]
           animation-timing-function: linear
           animation-name: subtle-rotate
-          animation-duration: 2s
+          animation-duration: 3s
+          animation-direction: alternate
+          animation-iteration-count: infinite
+        &[itemprop="bold"]
+          animation-timing-function: linear
+          animation-name: subtle-rotate
+          animation-duration: 6s
           animation-direction: alternate-reverse
           animation-iteration-count: infinite
-        path
-          &[itemprop="regular"]
-            animation-timing-function: linear
-            animation-name: subtle-rotate
-            animation-duration: 3s
-            animation-direction: alternate
-            animation-iteration-count: infinite
-          &[itemprop="bold"]
-            animation-timing-function: linear
-            animation-name: subtle-rotate
-            animation-duration: 6s
-            animation-direction: alternate-reverse
-            animation-iteration-count: infinite
 </style>

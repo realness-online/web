@@ -52,8 +52,8 @@
     fill.value = props.fill
     stroke.value = props.stroke
     d.value = props.path.getAttribute('d')
-    fill_opacity.value = props.path.style.fillOpacity
-    stroke_opacity.value = props.path.style.strokeOpacity
+    if (props.path.style?.fillOpacity) fill_opacity.value = props.path.style.fillOpacity
+    if (props.path.style.strokeOpacity) stroke_opacity.value = props.path.style.strokeOpacity
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
   })
@@ -61,6 +61,7 @@
 </script>
 <style lang="stylus">
   path[itemprop]
+    stroke-width: 1.33px
     &:focus
       outline: none
     &:active
