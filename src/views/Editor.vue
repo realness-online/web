@@ -10,7 +10,7 @@
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
-    <footer v-if="!is_fullscreen">
+    <footer v-if="!is_fullscreen" hidden>
       <menu>
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: grid }" name="grid" />
@@ -92,7 +92,7 @@
     & > header
       align-items: center
       z-index: 2
-      position: fixed;
+      position: absolute
       top: inset(top, 0)
       left: 0
       right: 0
