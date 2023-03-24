@@ -4,13 +4,13 @@
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
-      dur="21s"
+      dur="86s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
-      dur="34s"
+      dur="55s"
       values="0%;100%;33%;100%;66%;0%" />
 
     <animate
@@ -18,12 +18,12 @@
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;33%;100%;0%;150%;0%;" />
+      values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="21s"
+      dur="86s"
       values="0%;100%;33%;100%;66%;0%" />
 
     <animate
@@ -31,7 +31,7 @@
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;66%;0%;33%;200%;0%" />
+      values="0%;100%;66%;0%;33%;100%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
