@@ -85,7 +85,6 @@
 </script>
 <style lang="stylus">
   section#posters
-
     svg, a
       color: green
       fill: green

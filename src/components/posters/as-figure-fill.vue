@@ -204,7 +204,7 @@
       & > menu
         background-color: black-transparent
         position: fixed
-        padding: base-line
+        padding: (base-line * 0.5) base-line
         bottom: 0
         left: 0
         right: 0
