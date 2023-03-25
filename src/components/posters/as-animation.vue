@@ -12,7 +12,6 @@
       repeatCount="indefinite"
       dur="55s"
       values="0%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
@@ -58,3 +57,13 @@
     vector.value = props.vector
   })
 </script>
+<style lang="stylus">
+  svg[itemtype="/posters"].animate
+    path
+      &[itemprop="regular"]
+        animation-timing-function: linear
+        animation-name: subtle-rotate
+        animation-duration: 8s
+        animation-direction: alternate
+        animation-iteration-count: infinite
+</style>

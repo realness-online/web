@@ -171,28 +171,12 @@
     }
   })
 </script>
-
 <style lang="stylus">
   svg[itemtype="/posters"]
     aspect-ratio: 16 / 9
-    // aspect-ratio: 4 / 3
     display: block
     min-height: 512px
     height: 100%
     width: 100%
     outline: none
-    &.animate
-      path
-        &[itemprop="regular"]
-          animation-timing-function: linear
-          animation-name: subtle-rotate
-          animation-duration: 5s
-          animation-direction: alternate
-          animation-iteration-count: infinite
-        // &[itemprop="bold"]
-        //   animation-timing-function: linear
-        //   animation-name: subtle-rotate
-        //   animation-duration: 8s
-        //   animation-direction: alternate-reverse
-        //   animation-iteration-count: infinite
 </style>
