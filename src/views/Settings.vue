@@ -17,6 +17,7 @@
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
+        hidden
         name="filesystem"
         title="Use the filesystem api to sync posters on your desktop">
         <a @click="set_posters_folder">

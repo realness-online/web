@@ -1,5 +1,10 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
+    <header>
+      <router-link id="settings" to="/settings" tabindex="-1">
+        <icon name="gear" />
+      </router-link>
+    </header>
     <nav ref="nav">
       <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
         {{ first_name }}
@@ -33,6 +38,7 @@
   <aside></aside>
 </template>
 <script setup>
+  import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
   import { ref, onMounted as mounted, computed } from 'vue'
@@ -72,6 +78,12 @@
 </script>
 <style lang="stylus">
   section#navigation.page
+    & > header
+      position: fixed
+      top: 0
+      left: 0
+      & > a > svg
+        fill: red
     display: flex
     align-items: center
     max-width: page-width

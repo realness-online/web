@@ -4,7 +4,7 @@
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
-      dur="86s"
+      dur="34s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('radial-background')"
@@ -17,7 +17,7 @@
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;33%;100%;0%;100%;0%;" />
+      values="0%;33%;100%;0%;133%;0%;" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
@@ -30,7 +30,7 @@
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;66%;0%;33%;100%;0%" />
+      values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
