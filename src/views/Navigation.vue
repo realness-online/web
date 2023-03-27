@@ -80,7 +80,7 @@
   section#navigation.page
     & > header
       position: fixed
-      top: 0
+      top: env(safe-area-inset-top)
       left: 0
       & > a > svg
         fill: red
