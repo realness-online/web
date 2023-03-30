@@ -59,15 +59,15 @@ export const init_serverless = async () => {
       console.warn(e)
     }
   } else {
-    const dev_keys = {
+    set('firebase-keys', {
       apiKey: import.meta.env.VITE_API_KEY,
       authDomain: import.meta.env.VITE_AUTH_DOMAIN,
       databaseUrl: import.meta.env.VITE_DATABASE_URL,
       projectId: import.meta.env.VITE_PROJECT_ID,
       storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-      messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID
-    }
-    set('firebase-keys', dev_keys)
+      messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_APP_ID
+    })
   }
   const firebase_keys = await get('firebase-keys')
   app.value = initialize_firebase(firebase_keys)
