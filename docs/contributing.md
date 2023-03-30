@@ -39,7 +39,7 @@ Start your local server and `localhost:8080` will be good to go
 
 - The `main` branch is just a snapshot of the latest stable release. All development should be done in dedicated branches. **Do not submit PRs against the `main` branch.**
 
-- Work in the `src` folder and **DO NOT** checkin `dist` or `artifacts` in the commits.
+- Work in the root folder and **DO NOT** checkin `dist` or `artifacts` in the commits.
 
 - It's OK to have multiple small commits as you work on the PR
 
