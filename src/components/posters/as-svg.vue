@@ -173,7 +173,8 @@
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"]
-    aspect-ratio: 16 / 9
+    // aspect-ratio: 1.618 / 1 // golden-ratio
+    // aspect-ratio: 2.35 / 1 // current film
     display: block
     min-height: 512px
     height: 100%
