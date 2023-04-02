@@ -61,7 +61,7 @@
   svg[itemtype="/posters"].animate
     path
       &[itemprop="regular"]
-        animation-timing-function: linear
+        animation-timing-function: ease-in-out
         animation-name: subtle-rotate
         animation-duration: 8s
         animation-direction: alternate
