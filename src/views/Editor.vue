@@ -93,13 +93,13 @@
       align-items: center
       z-index: 2
       position: absolute
-      top: inset(top, 0)
+      top: 0
       left: 0
       right: 0
       padding: base-line
       background: black-transparent
       @media (min-width: pad-begins)
-        padding: (base-line * 0.25) base-line
+        padding: (base-line * 2) base-line base-line base-line
       & > h1
         margin: 0
         color: red
