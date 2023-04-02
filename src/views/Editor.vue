@@ -1,16 +1,16 @@
 <template>
   <section id="editor" class="page">
-    <header v-if="!is_fullscreen">
+    <header v-if="!is_fullscreen || !menu">
       <h1>{{ page_title }}</h1>
       <a @click="back"><icon name="remove" /></a>
-      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
+      <a class="fullscreen" @click="just_poster"><icon name="fullscreen" /></a>
       <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
     </header>
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />
-    <footer v-if="!is_fullscreen" hidden>
+    <footer v-if="!is_fullscreen || !menu" hidden>
       <menu>
         <icon :class="{ selected: color }" name="edit-color" />
         <icon :class="{ selected: grid }" name="grid" />
@@ -37,6 +37,7 @@
   const stroke = ref(false)
   const animation = ref(false)
   const grid = ref(false)
+  const menu = ref(true)
   const route = use_route()
   const router = use_router()
   const itemid = `${localStorage.me}/posters/${route.params.id}`
@@ -54,15 +55,17 @@
     if (stroke.value || fill.value) return true
     else return false
   })
+
+
   const back = () => {
     const me = localStorage.me.substring(2)
     const id = route.params.id
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
-      router.push({ path: '/posters' })
+      router.replace({ path: '/posters' })
     } else {
-      router.push({ path: '/posters', hash: `#${me}-posters-${id}` })
+      router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
     }
   }
   const save = async () => {
@@ -71,7 +74,13 @@
     if (new_gradients.value) new_gradients.value = null
     back()
   }
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
+  const just_poster = () => {
+    if (fullscreen_supported.value) fullscreen()
+    else menu.value = false
+  }
+  const { toggle: fullscreen,
+          isFullscreen: is_fullscreen,
+          isSupported: fullscreen_supported } = use_fullscreen()
   const { f, enter, escape } = use_Keyboard()
 
   const { new_vector, new_gradients } = use_vectorize()
@@ -83,8 +92,12 @@
   watch(escape, v => {
     if (v) back()
   })
+  watch(is_fullscreen, v => {
+    if(!is_fullscreen.value) menu.value = true
+  })
   watch(f, v => {
-    if (v) fullscreen()
+    if(!v) return
+    just_poster()
   })
 </script>
 <style lang="stylus">
