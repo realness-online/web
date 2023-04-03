@@ -63,8 +63,6 @@
 </script>
 <style lang="stylus">
   svg
-    & rect ~ path:not(active)
-      // transition-duration: 1s
     & rect:active ~ path:not(active),
     & path:active ~ path:not(active),
     & use:active ~ path:not(active)
