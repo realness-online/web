@@ -33,6 +33,7 @@
       :fill="`url(${fragment('vertical-light')})`"
       :stroke="`url(${fragment('horizontal-regular')})`"
       @focus="focus('light')" />
+    <as-emboss v-if="show_emboss" :vector="vector" />
     <as-path
       v-if="vector.regular"
       :id="query('regular')"
@@ -43,6 +44,7 @@
       :fill="`url(${fragment('horizontal-regular')})`"
       :stroke="`url(${fragment('radial-background')})`"
       @focus="focus('regular')" />
+
     <as-path
       v-if="vector.bold"
       :id="query('bold')"
@@ -53,7 +55,7 @@
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
-    <as-emboss v-if="show_emboss" :vector="vector" />
+
   </svg>
 </template>
 <script setup>

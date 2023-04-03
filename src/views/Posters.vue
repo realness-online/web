@@ -38,12 +38,13 @@
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
-
+  import { as_created_at, as_type } from '@/use/itemid'
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
   import { onMounted as mounted } from 'vue'
+  import { useRouter as use_router } from 'vue-router'
   import { use_posters } from '@/use/vector'
-
+  const router = use_router()
   const { posters, for_person: posters_for_person } = use_posters()
   const {
     can_add,
@@ -70,6 +71,7 @@
     })
     const poster = posters.value.find(poster => poster.id === itemid)
     if (poster) poster.menu = !poster.menu
+    router.push({ path: `/${as_type(itemid)}/${as_created_at(itemid)}/editor` })
   }
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)

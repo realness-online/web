@@ -1,7 +1,6 @@
 <template>
   <section id="editor" class="page">
-    <header v-if="menu" ref="header">
-      <h1 @click="hide_menu">{{ page_title }}</h1>
+    <header v-if="!is_fullscreen || !menu">
       <a @click="back"><icon name="remove" /></a>
       <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
@@ -40,12 +39,6 @@
   const route = use_route()
   const router = use_router()
   const itemid = `${localStorage.me}/posters/${route.params.id}`
-  const page_title = computed(() => {
-    if (stroke.value) return 'Stroke'
-    if (fill.value) return 'Fill'
-    if (animation.value) return 'Animation'
-    return 'Grid'
-  })
   const toggle_stroke = () => {
     stroke.value = !stroke.value
     fill.value = !fill.value
@@ -54,7 +47,6 @@
     if (stroke.value || fill.value) return true
     else return false
   })
-
   const back = () => {
     const me = localStorage.me.substring(2)
     const id = route.params.id

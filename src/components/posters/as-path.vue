@@ -62,11 +62,26 @@
   watch_effect(() => (d.value = props.path.getAttribute('d')))
 </script>
 <style lang="stylus">
+  svg
+    & rect ~ path:not(active)
+      // transition-duration: 1s
+    & rect:active ~ path:not(active),
+    & path:active ~ path:not(active),
+    & use:active ~ path:not(active)
+      fill-opacity: 0
+      stroke-width: 0.5px
+      stroke-opacity: 1
+      stroke: grey
+      transition-duration: 1s
+      transition-delay: 1.15s
+    use
+      user-select: none;
   path[itemprop]
     &:focus
       outline: none
     &:active
       fill-opacity: 1
-      transition-delay: 0.33s
-      stroke: transparent
+      stroke-opacity: 0
+      transition-duration: 0.33s
+      transition-delay: 0.05s
 </style>
