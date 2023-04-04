@@ -183,4 +183,16 @@
     height: 100%
     width: 100%
     outline: none
+    & rect:active ~ use.emboss
+    & path:active ~ use.emboss
+      display:none
+    & rect:active ~ path
+    & path:active ~ path:not(active)
+    & use:active ~ path:not(active)
+      fill-opacity: 0
+      stroke-width: 0.5px
+      stroke-opacity: 1
+      stroke: grey
+      transition-duration: 1s
+      transition-delay: 1.15s
 </style>
