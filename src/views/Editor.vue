@@ -56,7 +56,6 @@
     else return false
   })
 
-
   const back = () => {
     const me = localStorage.me.substring(2)
     const id = route.params.id
@@ -78,9 +77,11 @@
     if (fullscreen_supported.value) fullscreen()
     else menu.value = false
   }
-  const { toggle: fullscreen,
-          isFullscreen: is_fullscreen,
-          isSupported: fullscreen_supported } = use_fullscreen()
+  const {
+    toggle: fullscreen,
+    isFullscreen: is_fullscreen,
+    isSupported: fullscreen_supported
+  } = use_fullscreen()
   const { f, enter, escape } = use_Keyboard()
 
   const { new_vector, new_gradients } = use_vectorize()
@@ -93,10 +94,11 @@
     if (v) back()
   })
   watch(is_fullscreen, v => {
-    if(!is_fullscreen.value) menu.value = true
+    if (!v) return
+    if (!is_fullscreen.value) menu.value = true
   })
   watch(f, v => {
-    if(!v) return
+    if (!v) return
     just_poster()
   })
 </script>
