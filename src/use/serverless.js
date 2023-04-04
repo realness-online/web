@@ -1,4 +1,5 @@
 import { initializeApp as initialize_firebase } from 'firebase/app'
+import { getPerformance } from 'firebase/performance'
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -71,6 +72,7 @@ export const init_serverless = async () => {
   }
   const firebase_keys = await get('firebase-keys')
   app.value = initialize_firebase(firebase_keys)
+  getPerformance(app.value)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
 
