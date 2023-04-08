@@ -39,7 +39,9 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
   const play = async () => {
+    console.log('pre-play')
     if (!current_user.value) return // Do nothing until there is a person
+    console.log('play-current_user', current_user.value)
     if (document.visibilityState !== 'visible') return
     console.log('play')
     await sync_offline_actions()
