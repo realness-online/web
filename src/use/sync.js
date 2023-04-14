@@ -106,7 +106,7 @@ export const use = () => {
         else if (item.action === 'delete') await new Offline(item.id).delete()
         else console.info('weird:unknown-offline-action', item.action, item.id)
       }
-      await del('sync:offline')
+      // await del('sync:offline')
     }
   }
   const sync_me = async () => {
