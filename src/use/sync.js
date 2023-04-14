@@ -184,7 +184,7 @@ export const use = () => {
     document.removeEventListener('visibilitychange', play)
   })
   watch(current_user, async () => {
-    console.log('watch')
+    console.log('watch', current_user)
     if (current_user.value) await play()
   })
   return {
