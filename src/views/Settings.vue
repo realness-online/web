@@ -1,7 +1,8 @@
 <template>
   <section id="settings" class="page">
     <header>
-      <icon name="nothin" />
+      <button v-if="current_user" @click="sign_off">Sign off</button>
+      <sign-on v-else />
       <logo-as-link />
     </header>
     <h1>Settings</h1>
@@ -40,6 +41,8 @@
   import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import NameAsForm from '@/components/profile/as-form-name'
+  import SignOn from '@/components/profile/sign-on'
+  import { current_user, sign_off } from '@/use/serverless'
 
   const set_posters_folder = async () => {
     const root = await navigator.storage.getDirectory()
