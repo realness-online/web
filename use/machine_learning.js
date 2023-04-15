@@ -1,8 +1,8 @@
-import * as tf from '@tensorflow/tfjs-core'
-import '@tensorflow/tfjs-backend-cpu'
-import '@tensorflow/tfjs-backend-webgl'
+// import * as tf from '@tensorflow/tfjs-core'
+// import '@tensorflow/tfjs-backend-cpu'
+// import '@tensorflow/tfjs-backend-webgl'
 // import '@tensorflow/tfjs-backend-wasm'
-import * as coco_ssd from '@tensorflow-models/coco-ssd'
+// import * as coco_ssd from '@tensorflow-models/coco-ssd'
 import { ref, onMounted as mounted } from 'vue'
 //['lite_mobilenet_v2', 'mobilenet_v1', 'mobilenet_v2'],
 export const use = () => {
@@ -12,11 +12,12 @@ export const use = () => {
   const canvas = ref(null)
   mounted(async () => {
     console.time('robot:awakens')
-    await tf.ready()
-    await tf.setBackend('webgl')
-    coco_model.value = Object.freeze(
-      await coco_ssd.load({ base: 'mobilenet_v2' })
-    )
+    // await tf.ready()
+    // await tf.setBackend('webgl')
+    coco_model.value = Object
+      .freeze
+      // await coco_ssd.load({ base: 'mobilenet_v2' })
+      ()
     console.timeEnd('robot:awakens')
     await predict()
   })
