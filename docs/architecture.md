@@ -38,10 +38,6 @@ Running `yarn deploy` will fully exercise the application creating reports on co
 
 Contains static files that get merged into the `dist` directory with the built files.
 
-## `src/` = `@`
-
-`src` is the application that gets built. Inside javascript is represented by `@`. Overall, most of the application is in `@/components`, `@/modules/Item` reads From HTML, `@/persistance/Storage` saves the state of the HTML, which means the `@/style` has to be query driven.
-
 The `@/App` is loaded by `@/main.js` from `public/index.html` and is organized `App > views > components`
 
 ### `@/views`
