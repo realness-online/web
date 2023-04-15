@@ -39,18 +39,14 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
   const play = async () => {
-    console.log('pre-play')
     if (!current_user.value) return // Do nothing until there is a person
-    console.log('play-current_user', current_user.value)
     if (document.visibilityState !== 'visible') return
-    console.log('play')
     await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
     if (!i_am_fresh()) {
       emit('active', true)
       localStorage.sync_time = new Date().toISOString()
-      await sync_anonymous_posters()
       await prune()
       await sync_me()
       await sync_statements()
@@ -106,7 +102,7 @@ export const use = () => {
         else if (item.action === 'delete') await new Offline(item.id).delete()
         else console.info('weird:unknown-offline-action', item.action, item.id)
       }
-      // await del('sync:offline')
+      await del('sync:offline')
     }
   }
   const sync_me = async () => {
@@ -118,6 +114,7 @@ export const use = () => {
     if (!my_info || !network) return
     const md5 = hash(my_info, hash_options)
     if (md5 !== network.md5) {
+      console.log(`delete_me: ${id}`, 'md5', md5, 'network', network.md5)
       localStorage.removeItem(id)
       del(id)
     }
@@ -185,7 +182,11 @@ export const use = () => {
   })
   watch(current_user, async () => {
     console.log('watch', current_user)
-    if (current_user.value) await play()
+
+    if (current_user.value) {
+      await sync_anonymous_posters()
+      await play()
+    }
   })
   return {
     events,

@@ -56,6 +56,7 @@
   }
   const new_person = async () => router.push({ path: '/phonebook' })
   mounted(async () => {
+    if(current_user.value) router.push({ path: '/' })
     index_db_keys.value = await keys()
     console.info('views:Sign-on')
   })
