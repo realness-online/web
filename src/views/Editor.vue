@@ -1,9 +1,8 @@
 <template>
   <section id="editor" class="page">
-    <header v-if="!is_fullscreen || !menu">
-      <h1>{{ page_title }}</h1>
+    <header v-if="menu" ref="header">
+      <h1 @click="hide_menu">{{ page_title }}</h1>
       <a @click="back"><icon name="remove" /></a>
-      <a class="fullscreen" @click="just_poster"><icon name="fullscreen" /></a>
       <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
     </header>
@@ -77,6 +76,10 @@
     if (fullscreen_supported.value) fullscreen()
     else menu.value = false
   }
+  const hide_menu = () => {
+    console.log('hide menu')
+    menu.value = false
+  }
   const {
     toggle: fullscreen,
     isFullscreen: is_fullscreen,
@@ -108,7 +111,7 @@
       align-items: center
       z-index: 2
       position: absolute
-      top: 0
+      top: inset(0)
       left: 0
       right: 0
       padding: base-line
@@ -116,6 +119,7 @@
       @media (min-width: pad-begins)
         padding: (base-line * 2) base-line base-line base-line
       & > h1
+        cursor: pointer
         margin: 0
         color: red
         position: relative
