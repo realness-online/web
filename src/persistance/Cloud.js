@@ -24,7 +24,8 @@ export const Cloud = superclass =>
         this.metadata.customMetadata = { md5: hash(items, hash_options) }
         const response = upload(path, items, this.metadata)
         return response
-      } else if (current_user.value) await sync_later(this.id, 'save')
+      } else if (current_user.value || localStorage.me)
+        await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)

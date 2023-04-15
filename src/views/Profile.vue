@@ -103,6 +103,7 @@
         height: base-line * 2
         border-radius: base-line
       & > figcaption > menu
+        display:none
         a.status
           position: absolute
           top: base-line

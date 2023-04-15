@@ -69,7 +69,7 @@
       if (poster.menu) poster.menu = false
     })
     const poster = posters.value.find(poster => poster.id === itemid)
-    poster.menu = !poster.menu
+    if(poster) poster.menu = !poster.menu
   }
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
