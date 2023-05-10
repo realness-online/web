@@ -29,9 +29,21 @@
                       0 0  0" />
     </filter>
   </defs>
-  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-light')" />
-  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-regular')" />
-  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-bold')" />
+  <use
+    tabindex="-1"
+    class="emboss"
+    opacity="0.66"
+    :href="fragment('emboss-light')" />
+  <use
+    tabindex="-1"
+    class="emboss"
+    opacity="0.66"
+    :href="fragment('emboss-regular')" />
+  <use
+    tabindex="-1"
+    class="emboss"
+    opacity="0.66"
+    :href="fragment('emboss-bold')" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
