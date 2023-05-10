@@ -1,16 +1,32 @@
 <template>
   <defs>
-    <symbol :id="query('emboss')">
+    <symbol :id="query('emboss-light')">
       <use :href="fragment('light')" filter="url(#emboss)" />
     </symbol>
+    <symbol :id="query('emboss-regular')">
+      <use :href="fragment('regular')" filter="url(#emboss)" />
+    </symbol>
+    <symbol :id="query('emboss-bold')">
+      <use :href="fragment('bold')" filter="url(#emboss-thick)" />
+    </symbol>
+
     <filter id="emboss">
       <feConvolveMatrix
         kernelMatrix="2 0 0
                       0 0 0
                       0 0 -2" />
     </filter>
+    <filter id="emboss-thick">
+      <feConvolveMatrix
+        kernelMatrix="3 0 0
+                      0 0 0
+                      0 0 -3" />
+    </filter>
+
   </defs>
-  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss')" />
+  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-light')" />
+  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-regular')" />
+  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-bold')" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
