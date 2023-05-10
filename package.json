@@ -31,6 +31,7 @@
     "@heroicons/vue": "^1.0.6",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "9.8.1",
+    "canvas-size": "^1.2.6",
     "firebase": "9.8.2",
     "hsl-to-hex": "1.0.0",
     "idb-keyval": "6.1.0",

@@ -1,18 +1,22 @@
 <template>
-  <a :href="content" :download="file_name" class="download" @click="download">
-    <icon name="download" />
+  <a :href="content" :download="file_name" class="download" @click="share">
+    <icon name="share" />
   </a>
+  <aside hidden>
+
+  </aside>
 </template>
 <script>
-  import { as_day_and_time } from '@/use/date'
   import hsl_to_hex from 'hsl-to-hex'
+  import canvas_size from 'canvas-size'
+  import { as_day_and_time } from '@/use/date'
   import { hsla_to_color } from '@/use/colors'
   import { load, as_query_id } from '@/use/itemid'
   import { is_vector_id } from '@/use/vector'
   import icon from '@/components/icon'
   export default {
     components: { icon },
-    props: {
+        props: {
       itemid: {
         type: String,
         required: true,
@@ -30,6 +34,9 @@
       this.file_name = await this.get_vector_name()
     },
     methods: {
+      share()  {
+        navigator.share(this.content)
+      },
       download() {
         const svg = document.getElementById(as_query_id(this.itemid))
         if (localStorage.adobe) {
@@ -41,7 +48,6 @@
           })
         }
         if (!svg) return
-
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
         this.content = `data:application/octet-stream,${encodeURIComponent(
           svg.outerHTML
@@ -57,6 +63,6 @@
           return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
       }
-    }
+      }
   }
 </script>

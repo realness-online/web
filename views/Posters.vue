@@ -92,14 +92,14 @@
       justify-content: space-between
     & > footer
       border-radius: base-line
-      padding: base-line * 0.5
+      padding: base-line * 0.25
       background-color: black-transparent
       position: fixed
       bottom: base-line * 0.5
-      left: s('calc( 50% - %s)', (base-line * 1.75) )
+      left: s('calc( 50% - %s)', (base-line) )
       z-index: 4
       @media (min-width: typing-begins)
-        visibility: hidden
+        // visibility: hidden
     & > h1
       @media (prefers-color-scheme: dark)
         color: green

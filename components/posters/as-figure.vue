@@ -2,30 +2,35 @@
   <figure ref="poster" class="poster" :class="{ landscape }">
     <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
     <figcaption>
-      <slot v-if="menu">
+      <as-link :itemid="itemid">
+        <time>{{ posted_at }}</time>
+      </as-link>
+      <slot>
         <menu>
-          <as-link :itemid="itemid">
-            <time>{{ posted_at }}</time>
-          </as-link>
+          <a @click="back"><icon name="finished" /></a>
+          <as-messenger v-if="is_friend" :itemid="itemid" />
           <as-download :itemid="itemid" />
-          <as-messenger v-if="current_user" :itemid="itemid" />
         </menu>
+        <!-- <as-author-menu :poster="poster" /> -->
       </slot>
     </figcaption>
   </figure>
 </template>
 <script setup>
+  import icon from '@/components/icon'
   import AsDownload from '@/components/download-vector'
   import AsMessenger from '@/components/profile/as-messenger'
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
+  import AsAuthorMenu from '@/components/posters/as-menu-author'
+  import { useMagicKeys as use_Keyboard } from '@vueuse/core'
   import { as_query_id, as_author, load, as_created_at } from '@/use/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/vector'
   import { as_time } from '@/use/date'
-  import { current_user } from '@/use/serverless'
   import {
     ref,
     computed,
+    watch,
     watchEffect as watch_effect,
     onUpdated as updated,
     nextTick as next_tick
@@ -56,6 +61,7 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
+  const { escape } = use_Keyboard()
   const emit = defineEmits({
     'vector-click': is_click,
     loaded: is_vector
@@ -77,11 +83,18 @@
     menu.value = !menu.value
     emit('vector-click', menu.value)
   }
+  const is_friend = computed(() => {
+    return localStorage.me !== props.itemid
+  })
   const on_load = async loaded_vector => {
     vector.value = loaded_vector
     await next_tick()
     emit('loaded', vector.value)
   }
+  watch(escape, v => {
+    if (v) back()
+  })
+
   watch_effect(async () => {
     if (menu.value && !person.value) {
       const author_id = as_author(props.itemid)
@@ -112,6 +125,46 @@
       &.new:not(.landscape)
         grid-column: 2
         grid-row: 2
+    & > figcaption
+      a.profile
+        padding: base-line * 0.25
+        border-radius: base-line
+        background: black-transparent
+        position: fixed
+        top: base-line * .5
+        left: base-line * .5
+        z-index: 2
+        time
+          color: blue
+      & > menu
+        padding: base-line
+        z-index: 2
+        position: fixed
+        bottom: 0
+        left: 0
+        right: 0
+        padding: base-line * .5
+        background: black-transparent
+
+        width: 100%
+        display:flex
+        justify-content: space-between
+        align-items: center
+        & > a  > svg
+          cursor: pointer
+          fill: blue
+          .selected
+            fill:red
+          &:hover
+            fill: red
+          &.color > svg.opacity
+            fill: black-background
+            &:hover
+              fill: transparent
+          &.remove
+          &.finished
+          &.share
+            fill-opacity: inherit
     svg
       z-index: 1
       &[itemscope]
@@ -122,28 +175,9 @@
         margin-top: base-line
         max-width: round(base-line * 6)
     & > figcaption > menu
-      height: 0
       & > a
-        z-index: 2
-        position: absolute
         @media (prefers-color-scheme: dark)
           &.phone > svg
           &.download > svg
             fill: blue
-        &.phone
-          top: base-line
-          right: base-line
-        &.download
-          bottom: base-line
-          right: base-line
-        &.profile
-          top: base-line
-          left: base-line
-          & > address
-            & > h3:first-of-type
-              margin-right: base-line * .333
-            & > h3
-            & > time
-              color: blue
-              line-height: 1
 </style>

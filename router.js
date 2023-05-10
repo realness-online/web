@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import Events from '@/views/Events'
 import Feed from '@/views/Feed'
 import Posters from '@/views/Posters'
+import Poster from '@/views/Poster'
 import Account from '@/views/Account'
 import Navigation from '@/views/Navigation'
 import Profile from '@/views/Profile'
@@ -16,6 +17,7 @@ import Documentation from '@/views/Documentation'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
+  { path: '/posters/:id', component: Poster },
   { path: '/posters/:id/editor', component: Editor },
   { path: '/feed', component: Feed },
   { path: '/camera', component: Camera },

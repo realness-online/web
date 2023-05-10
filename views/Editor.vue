@@ -1,7 +1,6 @@
 <template>
   <section id="editor" class="page">
-    <header v-if="menu" ref="header">
-      <h1 @click="hide_menu">{{ page_title }}</h1>
+    <header ref="header">
       <a @click="back"><icon name="remove" /></a>
       <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
@@ -111,13 +110,13 @@
       align-items: center
       z-index: 2
       position: absolute
-      top: inset(0)
+      bottom: 0
       left: 0
       right: 0
       padding: base-line
       background: black-transparent
-      @media (min-width: pad-begins)
-        padding: (base-line * 2) base-line base-line base-line
+      // @media (min-width: pad-begins)
+      //   padding: (base-line * 2) base-line base-line base-line
       & > h1
         cursor: pointer
         margin: 0

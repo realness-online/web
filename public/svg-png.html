@@ -401,7 +401,6 @@
       var svgString = new XMLSerializer().serializeToString(
         document.querySelector('svg')
       )
-
       var canvas = document.getElementById('canvas')
       var ctx = canvas.getContext('2d')
       var DOMURL = self.URL || self.webkitURL || self
@@ -416,6 +415,23 @@
         DOMURL.revokeObjectURL(png)
       }
       img.src = url
+    </script>
+    <script>
+      async function share_canvas() {
+        const canvasElement = document.getElementById('mycanvasid')
+        const dataUrl = canvasElement.toDataURL()
+        const blob = await (await fetch(dataUrl)).blob()
+        const filesArray = [
+          new File([blob], 'realness.png', {
+            type: blob.type,
+            lastModified: new Date().getTime()
+          })
+        ]
+        const share_data = {
+          files: filesArray
+        }
+        navigator.share(share_data)
+      }
     </script>
     <style>
       canvas {
