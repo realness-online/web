@@ -4,10 +4,10 @@
       <use :href="fragment('light')" filter="url(#emboss)" />
     </symbol>
     <symbol :id="query('emboss-regular')">
-      <use :href="fragment('regular')" filter="url(#emboss)" />
+      <use :href="fragment('regular')" filter="url(#emboss-straight)" />
     </symbol>
     <symbol :id="query('emboss-bold')">
-      <use :href="fragment('bold')" filter="url(#emboss-thick)" />
+      <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
     </symbol>
 
     <filter id="emboss">
@@ -16,13 +16,18 @@
                       0 0 0
                       0 0 -2" />
     </filter>
-    <filter id="emboss-thick">
+    <filter id="emboss-opposite">
       <feConvolveMatrix
-        kernelMatrix="3 0 0
+        kernelMatrix="0 0 3
                       0 0 0
-                      0 0 -3" />
+                     -3 0 0" />
     </filter>
-
+    <filter id="emboss-straight">
+      <feConvolveMatrix
+        kernelMatrix="0 0  0
+                      3 0 -3
+                      0 0  0" />
+    </filter>
   </defs>
   <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-light')" />
   <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss-regular')" />
