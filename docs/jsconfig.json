@@ -12,5 +12,7 @@
   "esModuleInterop": true,
   "allowSyntheticDefaultImports": true,
   "sourceMap": true,
-  "exclude": ["node_modules", "dist", "artifacts"]
+  "exclude": ["node_modules", "dist", "artifacts"],
+  "allowJs": true,
+  "outDir": "dist"
 }
