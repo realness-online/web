@@ -1,6 +1,24 @@
 <template>
   <g v-if="animate" itemprop="animation">
     <animate
+      :href="fragment('light')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="5s"
+      values="0.9;0.0;0.9" />
+    <animate
+        :href="fragment('regular')"
+        attributeName="stroke-opacity"
+        repeatCount="indefinite"
+        dur="2s"
+        values="0.9;0.6;0.9" />
+    <animate
+        :href="fragment('bold')"
+        attributeName="stroke-opacity"
+        repeatCount="indefinite"
+        dur="3s"
+        values="0.9;0.0;0.9" />
+    <animate
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
