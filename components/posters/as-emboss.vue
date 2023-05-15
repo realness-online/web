@@ -58,3 +58,8 @@
   const query = add => `${as_query_id(props.vector.id)}-${add}`
   const fragment = add => `${as_fragment_id(props.vector.id)}-${add}`
 </script>
+<style lang="stylus">
+  svg[itemtype="/posters"] use.emboss
+    pointer-events: none
+    user-select none
+</style>
