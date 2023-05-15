@@ -63,10 +63,9 @@
 </script>
 <style lang="stylus">
   path[itemprop]
+    transition-duration: 0.66s
     &:focus
       outline: none
     &:active
-      fill-opacity: 1
-      transition-delay: 0.33s
-      stroke: transparent
+      fill-opacity: 0.99
 </style>
