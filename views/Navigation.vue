@@ -1,5 +1,5 @@
 <template>
-  <section id="navigation" class="page" :class="{ posting }">
+  <section id="navigation" class="page" :class="{ posting }" outline>
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
@@ -32,6 +32,9 @@
           version
         }}</router-link>
       </h6>
+      <a id="camera" @click="open_camera">
+        <icon name="camera" />
+      </a>
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
@@ -86,6 +89,8 @@
         fill: red
     display: flex
     align-items: center
+    flex-direction: column
+    justify-content: center
     max-width: page-width
     &.posting
       align-self: end
@@ -117,10 +122,13 @@
       grid-gap: base-line
       grid-template-columns: 1fr 1fr
       align-items: stretch
-      min-height: round(base-line * 19, 2)
+      min-height: round(base-line * 18, 2)
       max-height: page-width
       height: 100vmin
-      width: 100vw
+      min-width: 55vw
+      margin-bottom: base-line * 2
+      margin-top: base-line * 2
+
       @media (max-height: pad-begins) and (orientation: landscape)
         min-height: auto
         padding: base-line (base-line * 4)
@@ -158,6 +166,13 @@
         padding: 0
         position: fixed
         bottom: base-line
+        &#camera
+          position: inherit
+          // bottom: env(safe-area-inset-bottom, base-line)
+          padding-top: base-line * 3
+          svg
+            fill: red
+
       & > h6
         left: base-line
       & > a
