@@ -38,12 +38,13 @@
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
-  <aside>      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
-</aside>
+  <aside>
+    <input
+      ref="image_picker"
+      v-vectorizer
+      type="file"
+      accept="image/jpeg,image/png" />
+  </aside>
 </template>
 <script setup>
   import Icon from '@/components/icon'
@@ -56,13 +57,8 @@
   const first_name = ref('')
   const nav = ref()
   const done_posting = () => nav.value.focus()
-  const {
-    vVectorizer,
-    image_picker,
-    open_camera,
-    mount_workers
-  } = use_vectorize()
-
+  const { vVectorizer, image_picker, open_camera, mount_workers } =
+    use_vectorize()
 
   mounted(async () => {
     let my = await load(localStorage.me)

@@ -61,7 +61,7 @@
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
-      router.replace({ path: '/posters' })
+      router.replace({ path: '/' })
     } else {
       router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
     }
