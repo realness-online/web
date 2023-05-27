@@ -26,11 +26,6 @@
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
-    <footer>
-      <a id="camera" @click="open_camera">
-        <icon name="camera" />
-      </a>
-    </footer>
   </section>
 </template>
 <script setup>
@@ -49,7 +44,6 @@
     can_add,
     vVectorizer,
     image_picker,
-    open_camera,
     select_photo,
     working,
     mount_workers
