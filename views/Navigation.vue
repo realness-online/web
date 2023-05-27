@@ -38,23 +38,38 @@
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
-  <aside></aside>
+  <aside>      <input
+        ref="image_picker"
+        v-vectorizer
+        type="file"
+        accept="image/jpeg,image/png" />
+</aside>
 </template>
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
   import { ref, onMounted as mounted, computed } from 'vue'
+  import { use as use_vectorize } from '@/use/vectorize'
   const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
   const first_name = ref('')
   const nav = ref()
   const done_posting = () => nav.value.focus()
+  const {
+    vVectorizer,
+    image_picker,
+    open_camera,
+    mount_workers
+  } = use_vectorize()
+
+
   mounted(async () => {
     let my = await load(localStorage.me)
     if (my && my.first_name) first_name.value = my.first_name
     else first_name.value = 'You'
     console.info('views:Navigation')
+    mount_workers()
   })
   const camera = computed(() => {
     if (localStorage.robot) return '/camera'
@@ -133,7 +148,6 @@
       min-width: 55vw
       margin-bottom: base-line * 2
       margin-top: base-line * 2
-
       @media (max-height: pad-begins) and (orientation: landscape)
         min-height: auto
         padding: base-line (base-line * 4)
