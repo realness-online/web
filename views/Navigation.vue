@@ -1,5 +1,5 @@
 <template>
-  <section id="navigation" class="page" :class="{ posting }" outline>
+  <section id="navigation" class="page" :class="{ posting }">
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
         <icon name="gear" />
@@ -82,9 +82,14 @@
 <style lang="stylus">
   section#navigation.page
     & > header
+      opacity: 0.66
       position: fixed
-      top: env(safe-area-inset-top)
+      top: base-line * 1.5
       left: 0
+      @media (min-width: pad-begins)
+        top: env(safe-area-inset-top) !important
+      &:hover, &:active
+        opacity: 1
       & > a > svg
         fill: red
     display: flex
@@ -167,9 +172,16 @@
         position: fixed
         bottom: base-line
         &#camera
-          position: inherit
-          // bottom: env(safe-area-inset-bottom, base-line)
-          padding-top: base-line * 3
+          border-radius: base-line
+          padding: base-line * 0.5
+          background-color: black-transparent
+          position: fixed
+          bottom: base-line
+          right: s('calc( 50% - %s)', (base-line * 1.75) )
+          z-index: 4
+          @media (min-width: pad-begins)
+            position:inherit
+
           svg
             fill: red
 
