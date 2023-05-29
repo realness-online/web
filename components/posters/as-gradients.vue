@@ -8,7 +8,9 @@
         :stop-color="stop.color.hsla"
         :offset="`${stop.offset}%`" />
     </radialGradient>
-    <radialGradient :id="query('radial-background')" gradientUnits="userSpaceOnUse">
+    <radialGradient
+      :id="query('radial-background')"
+      gradientUnits="userSpaceOnUse">
       <as-stops
         :luminosity="background"
         :saturation_floor="13"
@@ -17,7 +19,9 @@
     <radialGradient :id="query('radial-light')" gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="light" :stops="radial" />
     </radialGradient>
-    <radialGradient :id="query('radial-regular')" gradientUnits="userSpaceOnUse">
+    <radialGradient
+      :id="query('radial-regular')"
+      gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="regular" :stops="radial" />
     </radialGradient>
     <radialGradient :id="query('radial-bold')" gradientUnits="userSpaceOnUse">
@@ -25,7 +29,13 @@
     </radialGradient>
   </g>
   <g class="vertical">
-    <linearGradient :id="query('vertical')" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2="100%">
+    <linearGradient
+      :id="query('vertical')"
+      gradientUnits="userSpaceOnUse"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
       <stop
         v-for="stop in vertical"
         :key="stop.offset"
@@ -65,7 +75,13 @@
     </linearGradient>
   </g>
   <g class="horizontal">
-    <linearGradient :id="query('horizontal')" x1="0" x2="100%" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+    <linearGradient
+      :id="query('horizontal')"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0"
+      gradientUnits="userSpaceOnUse">
       <stop
         v-for="stop in horizontal"
         :key="stop.offset"
