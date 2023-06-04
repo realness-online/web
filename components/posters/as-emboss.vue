@@ -9,7 +9,6 @@
     <symbol :id="query('emboss-bold')">
       <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
     </symbol>
-
     <filter id="emboss">
       <feConvolveMatrix
         kernelMatrix="2 0 0

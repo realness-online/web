@@ -14,6 +14,7 @@
     @click="click">
     <as-gradients :vector="vector" />
     <as-animation :vector="vector" />
+    <as-shadow :vector="vector" />
     <as-background
       :id="query('background')"
       :rect="vector.background"
@@ -63,6 +64,7 @@
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
   import AsEmboss from '@/components/posters/as-emboss'
+  import AsShadow from '@/components/posters/as-shadow'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
@@ -177,7 +179,7 @@
     // aspect-ratio: 1 / 1.618 // golden-ratio
     // aspect-ratio: 2.35 / 1 // current film
     display: block
-    min-height: 512px
+    // min-height: base-line * 24
     height: 100%
     width: 100%
     outline: none

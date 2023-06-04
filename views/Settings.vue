@@ -9,12 +9,6 @@
     <menu>
       <name-as-form />
       <preference
-        name="emboss"
-        title="Apply an emboss effect to each layer of a poster" />
-      <preference
-        name="animate"
-        title="Animate posters as they come into view" />
-      <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
@@ -33,6 +27,19 @@
         hidden
         name="robot"
         title="Use Machine learning camera. This is unusable" />
+    </menu>
+    <hr />
+    <menu>
+      <h3>Expensive</h3>
+      <preference
+        name="animate"
+        title="Animate posters as they come into view" />
+      <preference
+        name="emboss"
+        title="Apply an emboss effect to each layer of a poster" />
+      <preference
+        name="shadow"
+        title="Increase a sense of depth with some shadow" />
     </menu>
   </section>
 </template>
@@ -58,6 +65,9 @@
 </script>
 <style lang="stylus">
   section#settings
+    hr,h3
+      color:red
+      border-color:red
     a
       color: green
       border-color: green

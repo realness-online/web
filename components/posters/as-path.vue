@@ -4,6 +4,7 @@
     ref="path"
     :d="d"
     :itemprop="itemprop"
+    :filter="`url(#shadow-${itemprop})`"
     :fill="fill"
     :fill-opacity="fill_opacity"
     :stroke="stroke"
@@ -63,6 +64,7 @@
 </script>
 <style lang="stylus">
   path[itemprop]
+    user-select: none
     transition-duration: 0.66s
     &:focus
       outline: none
