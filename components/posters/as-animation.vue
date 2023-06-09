@@ -42,7 +42,6 @@
       repeatCount="indefinite"
       dur="86s"
       values="0%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
@@ -82,6 +81,12 @@
         animation-timing-function: ease-in-out
         animation-name: subtle-rotate
         animation-duration: 8s
+        animation-direction: alternate
+        animation-iteration-count: infinite
+      &.bold-regular
+        animation-timing-function: ease-in-out
+        animation-name: subtle-rotate
+        animation-duration: 1s
         animation-direction: alternate
         animation-iteration-count: infinite
 </style>

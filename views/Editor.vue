@@ -1,11 +1,5 @@
 <template>
   <section id="editor" class="page">
-    <header v-if="menu" ref="header">
-      <h1 @click="hide_menu">{{ page_title }}</h1>
-      <a @click="back"><icon name="remove" /></a>
-      <as-download :itemid="itemid" />
-      <a @click="save"><icon name="finished" /></a>
-    </header>
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
     <as-grid v-if="grid" :itemid="itemid" />
     <as-animation v-if="animation" :itemid="itemid" />

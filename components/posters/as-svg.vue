@@ -50,9 +50,18 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      fill-opacity="0.9"
+      fill-opacity="0.95"
       :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-light')})`"
+      :stroke="`url(${fragment('radial-regular')})`"
+      @focus="focus('bold')" />
+    <as-path
+      v-if="vector.bold"
+      class="bold-regular"
+      :tabindex="tabindex"
+      :path="vector.bold"
+      fill-opacity="0.21"
+      :fill="`url(${fragment('vertical-regular')})`"
+      :stroke="`url(${fragment('radial-regular')})`"
       @focus="focus('bold')" />
     <as-emboss v-if="show_emboss" :vector="vector" />
   </svg>
@@ -178,6 +187,7 @@
     // aspect-ratio: 1.618 / 1 // golden-ratio
     // aspect-ratio: 1 / 1.618 // golden-ratio
     // aspect-ratio: 2.35 / 1 // current film
+    // aspect-ratio: 1 / 2.35  // current film
     display: block
     // min-height: base-line * 24
     height: 100%

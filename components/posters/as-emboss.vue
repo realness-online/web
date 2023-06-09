@@ -24,7 +24,7 @@
     <filter id="emboss-straight">
       <feConvolveMatrix
         kernelMatrix="0 0  0
-                      3 0 -3
+                      2 0 -2
                       0 0  0" />
     </filter>
   </defs>
@@ -36,7 +36,7 @@
   <use
     tabindex="-1"
     class="emboss"
-    opacity="0.66"
+    opacity="0.11"
     :href="fragment('emboss-regular')" />
   <use
     tabindex="-1"

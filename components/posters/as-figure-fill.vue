@@ -165,10 +165,10 @@
     & > svg
       position: fixed
       z-index: 0
-      top: 0
-      bottom: 0
-      left: 0
-      right: 0
+      // top: 0
+      // bottom: 0
+      // left: 0
+      // right: 0
       @media (orientation: landscape) and (max-height: page-width)
         max-height: 100vh
         min-height: inherit
