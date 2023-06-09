@@ -184,7 +184,6 @@
         &#camera
           border-radius: base-line
           padding: base-line * 0.5
-          background-color: black-transparent
           position: fixed
           bottom: base-line
           right: s('calc( 50% - %s)', (base-line * 1.75) )
