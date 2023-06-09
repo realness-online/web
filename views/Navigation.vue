@@ -59,7 +59,6 @@
   const done_posting = () => nav.value.focus()
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
-
   mounted(async () => {
     let my = await load(localStorage.me)
     if (my && my.first_name) first_name.value = my.first_name
@@ -190,10 +189,8 @@
           z-index: 4
           @media (min-width: pad-begins)
             position:inherit
-
           svg
             fill: red
-
       & > h6
         left: base-line
       & > a
