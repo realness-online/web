@@ -12,20 +12,20 @@
 
     <filter id="emboss">
       <feConvolveMatrix
-        kernelMatrix="2 0 0
+        kernelMatrix="1 0 0
                       0 0 0
-                      0 0 -2" />
+                      0 0 -1" />
     </filter>
     <filter id="emboss-opposite">
       <feConvolveMatrix
-        kernelMatrix="0 0 3
+        kernelMatrix="0 0 2
                       0 0 0
-                     -3 0 0" />
+                     -2 0 0" />
     </filter>
     <filter id="emboss-straight">
       <feConvolveMatrix
         kernelMatrix="0 0  0
-                      3 0 -3
+                      2 0 -2
                       0 0  0" />
     </filter>
   </defs>
