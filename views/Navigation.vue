@@ -16,7 +16,7 @@
         Posters
       </router-link>
       <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
-        Feed
+        Thoughts
       </router-link>
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook
