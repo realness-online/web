@@ -1,5 +1,5 @@
 <template>
-  <section id="feed" ref="feed" class="page">
+  <section id="thoughts" ref="thoughts" class="page">
     <header>
       <logo-as-link tabindex="-1" />
       <icon v-if="is_fullscreen" name="nothing" />
@@ -7,7 +7,7 @@
         <icon name="nothin" />
       </a>
     </header>
-    <h1>Feed</h1>
+    <h1>Thoughts</h1>
     <as-days
       v-slot="items"
       :working="working"
@@ -43,12 +43,12 @@
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
   } from '@vueuse/core'
-  console.time('views:Feed')
+  console.time('views:Thoughts')
   const working = ref(true)
-  const feed = ref(null)
+  const thoughts = ref(null)
 
   const { toggle: fullscreen, isFullscreen: is_fullscreen } =
-    use_fullscreen(feed)
+    use_fullscreen(thoughts)
   const { f } = use_magic_keys()
   const { people } = use_people()
   const {
@@ -59,7 +59,7 @@
   const { for_person: posters_for_person, posters } = use_posters()
   const { relations } = use_me()
 
-  const fill_feed = async () => {
+  const fill_thoughts = async () => {
     if (relations.value) people.value = [...relations.value]
     const me = {
       id: localStorage.me,
@@ -79,13 +79,13 @@
     if (v) fullscreen()
   })
   mounted(async () => {
-    await fill_feed()
+    await fill_thoughts()
     working.value = false
-    console.timeEnd('views:Feed')
+    console.timeEnd('views:Thoughts')
   })
 </script>
 <style lang="stylus">
-  section#feed
+  section#thoughts
     position: relative
     display: flex
     flex-direction: column

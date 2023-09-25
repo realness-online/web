@@ -1,6 +1,6 @@
 import { createWebHistory, createRouter } from 'vue-router'
 import Events from '@/views/Events'
-import Feed from '@/views/Feed'
+import Thoughts from '@/views/Thoughts'
 import Posters from '@/views/Posters'
 import Account from '@/views/Account'
 import Navigation from '@/views/Navigation'
@@ -17,7 +17,7 @@ const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
   { path: '/posters/:id/editor', component: Editor },
-  { path: '/feed', component: Feed },
+  { path: '/thoughts', component: Thoughts },
   { path: '/camera', component: Camera },
   { path: '/sign-on', component: Sign_on },
   { path: '/events', component: Events },

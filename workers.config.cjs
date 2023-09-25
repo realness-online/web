@@ -33,7 +33,10 @@ module.exports = {
       fs: require.resolve('browserify-fs'),
       buffer: require.resolve('buffer-browserify'),
       util: require.resolve('util/'),
-      assert: require.resolve('assert/')
+      assert: require.resolve('assert/'),
+      url: require.resolve('url/'),
+      events: require.resolve('events/'),
+      querystring: require.resolve('querystring-es3')
     }
   },
   module: {

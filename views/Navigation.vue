@@ -15,7 +15,7 @@
       <router-link v-if="!posting" :to="camera" class="green" tabindex="-1">
         Posters
       </router-link>
-      <router-link v-if="!posting" to="/feed" class="blue" tabindex="-1">
+      <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
         Thoughts
       </router-link>
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
