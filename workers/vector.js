@@ -1,6 +1,6 @@
 import Jimp from 'jimp'
 import { as_paths } from '@realness.online/potrace'
-
+import ExifReader from 'exifreader'
 const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
@@ -20,6 +20,10 @@ function to_kb(vector) {
 export async function read(file) {
   const reader = new FileReaderSync()
   return await Jimp.default.read(reader.readAsArrayBuffer(file))
+}
+export function read_exif(file) {
+  const reader = new FileReaderSync()
+  return reader.readAsArrayBuffer(file)
 }
 export async function size(image, size = 512) {
   if (image.bitmap.width > image.bitmap.height)
@@ -46,6 +50,8 @@ export async function make(image) {
 export async function listen(message) {
   console.time('make:vector')
   let image = await read(message.data.image)
+  const tags = ExifReader.load(read_exif(message.data.image))
+  console.log('exif', JSON.stringify(tags))
   image = await size(image)
   const vector = await make(image)
   self.postMessage({ reply: 'vectorized', vector })
