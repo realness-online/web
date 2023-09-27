@@ -181,8 +181,6 @@ export const use = () => {
     document.removeEventListener('visibilitychange', play)
   })
   watch(current_user, async () => {
-    console.log('watch', current_user)
-
     if (current_user.value) {
       await sync_anonymous_posters()
       await play()
