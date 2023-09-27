@@ -122,6 +122,10 @@ export const use_poster = () => {
     else return as_fragment_id(vector.value.id)
   }
   const click = () => {
+    const fragment = as_query_id(vector.value.id)
+    console.log('vector click', fragment)
+    window.location.hash = fragment
+
     menu.value = !menu.value
     emit('click', menu.value)
   }
