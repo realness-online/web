@@ -1,9 +1,7 @@
 <template>
   <section id="editor" class="page">
     <header v-if="menu" ref="header">
-      <h1 @click="hide_menu">{{ page_title }}</h1>
       <a @click="back"><icon name="remove" /></a>
-      <as-download :itemid="itemid" />
       <a @click="save"><icon name="finished" /></a>
     </header>
     <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
@@ -23,7 +21,6 @@
   import AsFill from '@/components/posters/as-figure-fill'
   import AsAnimation from '@/components/posters/as-animation'
   import AsGrid from '@/components/posters/as-grid'
-  import asDownload from '@/components/download-vector'
   import { Poster } from '@/persistance/Storage'
   import {
     useFullscreen as use_fullscreen,
@@ -75,10 +72,6 @@
   const just_poster = () => {
     if (fullscreen_supported.value) fullscreen()
     else menu.value = false
-  }
-  const hide_menu = () => {
-    console.log('hide menu')
-    menu.value = false
   }
   const {
     toggle: fullscreen,

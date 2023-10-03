@@ -91,7 +91,7 @@
   updated(() => {
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment) {
-      poster.value.scrollIntoView({ behavior: 'smooth', block: 'top' })
+      poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
       window.location.hash = ''
     }
   })
