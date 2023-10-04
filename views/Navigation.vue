@@ -2,12 +2,12 @@
   <section id="navigation" class="page" :class="{ posting }">
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
-        <icon name="gear" />
+        <icon name="gear" /> <span>{{ first_name }}</span>
       </router-link>
     </header>
     <nav ref="nav">
-      <router-link v-if="!posting" to="/account" class="black" tabindex="-1">
-        {{ first_name }}
+      <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
+        Statements
       </router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
         Events
@@ -100,8 +100,17 @@
         top: env(safe-area-inset-top) !important
       &:hover, &:active
         opacity: 1
-      & > a > svg
-        fill: red
+      & > a
+        display: flex
+        align-items: center
+        & > svg
+          display: inline-block
+          fill: red
+        & > span
+          margin-left: base-line * .5
+          line-height: 0
+          display: inline-block
+          vertical-align: middle
     display: flex
     align-items: center
     flex-direction: column

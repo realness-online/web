@@ -2,7 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import Events from '@/views/Events'
 import Thoughts from '@/views/Thoughts'
 import Posters from '@/views/Posters'
-import Account from '@/views/Account'
+import Statements from '@/views/Statements'
 import Navigation from '@/views/Navigation'
 import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
@@ -24,7 +24,7 @@ const routes = [
   { path: '/relations', component: Relations },
   { path: '/phonebook', component: PhoneBook },
   { path: '/profile', component: Profile },
-  { path: '/account', component: Account },
+  { path: '/statements', component: Statements },
   { path: '/settings', component: Settings },
   { path: '/about', component: About },
   { path: '/documentation', component: Documentation },
