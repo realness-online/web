@@ -4,7 +4,7 @@
       <icon name="nothin" />
       <logo-as-link />
     </header>
-    <h1 v-if="!working">Statements</h1>
+    <h1 v-if="!working">Editable Statements</h1>
     <as-days
       v-slot="thoughts"
       itemscope
@@ -44,7 +44,6 @@
   const router = use_router()
   const { my_statements } = use_statements()
   const home = () => router.push({ path: '/' })
-
   mounted(async () => {
     working.value = false
     console.info('views:Statements')
@@ -59,7 +58,6 @@
     time
       color: red
       border-color: red
-
     & > section.as-days
       padding-top: 0
       h4
