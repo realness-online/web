@@ -1,5 +1,5 @@
 <template>
-  <section id="account" :class="{ 'signed-in': current_user }" class="page">
+  <section id="statements" :class="{ 'signed-in': current_user }" class="page">
     <header>
       <icon name="nothin" />
       <logo-as-link />
@@ -47,11 +47,11 @@
 
   mounted(async () => {
     working.value = false
-    console.info('views:Account')
+    console.info('views:Statements')
   })
 </script>
 <style lang="stylus">
-  section#account
+  section#statements
     svg.icon
       fill: red
     a
