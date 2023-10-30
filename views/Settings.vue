@@ -18,21 +18,11 @@
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
-        hidden
         name="filesystem"
-        title="Use the filesystem api to sync posters on your desktop">
-        <a @click="set_posters_folder">
-          <icon name="download" />
-        </a>
+        title="sync posters with a directory"
+        subtitle="on an iphone this will save piture and exif info that you can sync on the a desktop machine"
+        @on="set_posters_folder">
       </preference>
-      <preference
-        hidden
-        name="social"
-        title="Use the social networking features. silk screens become posters and are automatically synced with the network" />
-      <preference
-        hidden
-        name="robot"
-        title="Use Machine learning camera. This is unusable" />
     </menu>
   </section>
 </template>
@@ -43,17 +33,9 @@
   import NameAsForm from '@/components/profile/as-form-name'
   import SignOn from '@/components/profile/sign-on'
   import { current_user, sign_off } from '@/use/serverless'
-
+  import { get_file_system } from '@/use/file'
   const set_posters_folder = async () => {
-    const root = await navigator.storage.getDirectory()
-    // const untitledFile = await root.getFileHandle('Untitled.txt', {
-    //   create: true
-    // })
-    const new_dir = await root.getDirectoryHandle('Posters', {
-      create: true
-    })
-    console.log(new_dir)
-    // ;[file_handle] = await window.showDirectoryPicker()
+    get_file_system()
   }
 </script>
 <style lang="stylus">
