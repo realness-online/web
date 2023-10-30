@@ -14,6 +14,7 @@
 </template>
 <script setup>
   import { ref } from 'vue'
+  const emit = defineEmits(['on, off'])
   const props = defineProps({
     name: {
       type: String,
@@ -31,8 +32,14 @@
   const state = ref(!!localStorage.getItem(props.name))
   const toggle = () => {
     state.value = !state.value
-    if (localStorage.getItem(props.name)) localStorage.removeItem(props.name)
-    else localStorage.setItem(props.name, 1)
+
+    if (localStorage.getItem(props.name)) {
+      localStorage.removeItem(props.name)
+      emit('off')
+    } else {
+      emit('on')
+      localStorage.setItem(props.name, 1)
+    }
   }
 </script>
 <style lang="stylus">
@@ -61,7 +68,6 @@
             box-shadow: 0 0 1px red
           &:checked + .slider:before
             transform: translateX(base-line * 1.4)
-
         .slider
           border-radius: base-line * 2
           position: absolute
