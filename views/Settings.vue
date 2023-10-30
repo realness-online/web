@@ -18,6 +18,7 @@
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
+        hidden
         name="filesystem"
         title="sync posters with a directory"
         subtitle="on an iphone this will save piture and exif info that you can sync on the a desktop machine"
