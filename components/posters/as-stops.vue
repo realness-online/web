@@ -35,7 +35,6 @@
         l: props.luminosity,
         a: 1
       })
-      console.log('color', color)
       return {
         offset: stop.offset,
         color
