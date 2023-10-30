@@ -1,11 +1,11 @@
 import rgb_to_hex from 'rgb-hex'
 import hsl_to_hex from 'hsl-to-hex'
 import css_var from '@/use/css-var'
-import { converter } from 'culori'
+// import { converter } from 'culori'
 
-// import { useMode, modeHsl, modeOklch, converter } from 'culori/fn'
-// useMode(modeOklch)
-// useMode(modeHsl)
+import { useMode, modeHsl, modeOklch, converter } from 'culori/fn'
+useMode(modeOklch)
+useMode(modeHsl)
 
 export const to_hex = (color = '') => {
   if (color.length === 0) color = '--black-dark'
@@ -104,6 +104,8 @@ export const color_to_hsla = ({ h, s, l, a }) => {
   const hsla = `hsla(${h}, ${s}%, ${l}%, ${a})`
   const ok = converter('oklch')(hsla)
   ok.h = Math.round(ok.h)
+  ok.l = ok.l.toFixed(3)
+  ok.c = ok.c.toFixed(3)
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
     hsla: hsla,
