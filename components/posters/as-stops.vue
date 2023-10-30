@@ -2,7 +2,7 @@
   <stop
     v-for="stop in converted"
     :key="stop.offset"
-    :stop-color="stop.color.oklch"
+    :stop-color="stop.color.hsla"
     :offset="`${stop.offset}%`" />
 </template>
 <script setup>
