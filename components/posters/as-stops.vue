@@ -2,7 +2,7 @@
   <stop
     v-for="stop in converted"
     :key="stop.offset"
-    :stop-color="stop.color.hsla"
+    :stop-color="stop.color.oklch"
     :offset="`${stop.offset}%`" />
 </template>
 <script setup>
@@ -28,14 +28,17 @@
       if (saturation && stop.color.s < saturation) {
         // leave things bee
       } else saturation = stop.color.s
+
+      const color = color_to_hsla({
+        h: stop.color.h,
+        s: saturation,
+        l: props.luminosity,
+        a: 1
+      })
+      console.log('color', color)
       return {
         offset: stop.offset,
-        color: color_to_hsla({
-          h: stop.color.h,
-          s: saturation,
-          l: props.luminosity,
-          a: 1
-        })
+        color
       }
     })
   })

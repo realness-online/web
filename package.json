@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "1.4.84",
+  "version": "1.4.85.staging.01",
   "private": false,
   "type": "module",
   "description": "When people search for 'outsider social network' they'll find realness online",
@@ -30,6 +30,7 @@
     "@heroicons/vue": "^1.0.6",
     "@realness.online/potrace": "../potrace/",
     "@vueuse/core": "9.8.1",
+    "culori": "^3.2.0",
     "events": "^3.3.0",
     "exifreader": "^4.13.0",
     "firebase": "9.8.2",
@@ -50,7 +51,7 @@
     "workbox-window": "^6.5.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "2.3.3",
+    "@vitejs/plugin-vue": "^4.4.0",
     "assert": "2.0.0",
     "browserify-fs": "1.0.0",
     "browserify-zlib": "0.2.0",

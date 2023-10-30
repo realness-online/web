@@ -1,6 +1,12 @@
 import rgb_to_hex from 'rgb-hex'
 import hsl_to_hex from 'hsl-to-hex'
 import css_var from '@/use/css-var'
+import { converter } from 'culori'
+
+// import { useMode, modeHsl, modeOklch, converter } from 'culori/fn'
+// useMode(modeOklch)
+// useMode(modeHsl)
+
 export const to_hex = (color = '') => {
   if (color.length === 0) color = '--black-dark'
   if (color.startsWith('--')) color = css_var(color).trim()
@@ -95,9 +101,13 @@ export const hsla_to_color = hsla => {
   return color_to_hsla(color)
 }
 export const color_to_hsla = ({ h, s, l, a }) => {
+  const hsla = `hsla(${h}, ${s}%, ${l}%, ${a})`
+  const ok = converter('oklch')(hsla)
+  ok.h = Math.round(ok.h)
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
-    hsla: `hsla(${h}, ${s}%, ${l}%, ${a})`,
+    hsla: hsla,
+    oklch: `oklch(${ok.l}, ${ok.c}, ${ok.h})`,
     h,
     s,
     l,
@@ -108,7 +118,6 @@ export const color_to_hsla = ({ h, s, l, a }) => {
 // https://una.im/css-color-theming
 // 100% saturation is completely saturated (full color),
 // while 0% is unsaturated (gray), 50% is normal
-//
 // 100% lightness is white,
 // 50% is normal
 // 0% lightness is black
