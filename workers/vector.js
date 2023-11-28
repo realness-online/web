@@ -51,10 +51,24 @@ export async function listen(message) {
   console.time('make:vector')
   let image = await read(message.data.image)
   const tags = ExifReader.load(read_exif(message.data.image))
-  console.log('exif', JSON.stringify(tags))
+  exif_logger(tags)
+  console.log('exif-everything', JSON.stringify(tags))
+
   image = await size(image)
   const vector = await make(image)
   self.postMessage({ reply: 'vectorized', vector })
   console.timeEnd('make:vector')
 }
 self.addEventListener('message', listen)
+
+const exif_logger = tags => {
+  // console.log('exif', JSON.stringify(tags))
+  const properties = [
+    'Image Width',
+    'Image Height',
+    'FocalLength',
+    'Orientation',
+    'SubjectArea'
+  ]
+  for (const p of properties) console.log(p, tags[p].description)
+}
