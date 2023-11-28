@@ -373,7 +373,7 @@
       </svg>
     </div>
     <button id="share">share</button>
-    <canvas id="canvas" width="16384" height="16384" hidden></canvas>
+    <canvas id="canvas" width="16384" height="16384"></canvas>
     <div id="png-container"></div>
 
     <script>
@@ -405,24 +405,18 @@
         var png = canvas.toDataURL('image/png')
         document.querySelector('#png-container').innerHTML =
           '<img src="' + png + '"/>'
+
+        let downloadLink = document.createElement('a')
+        downloadLink.setAttribute('download', 'CanvasAsImage.png')
+        canvas.toBlob(blob => {
+          let url = URL.createObjectURL(blob)
+          downloadLink.setAttribute('href', url)
+          downloadLink.click()
+        })
+
         DOMURL.revokeObjectURL(png)
       }
       img.src = url
-
-      const share = document.getElementById('share')
-      share.addEventListener('click', async () => {
-        console.log('click')
-        var png = canvas.toDataURL('image/png')
-        const file = new File(png, 'some.png', { type: 'image/png' })
-        try {
-          await navigator.share({
-            title: 'Example File',
-            files: [file]
-          })
-        } catch (err) {
-          console.error('Share failed:', err.message)
-        }
-      })
     </script>
     <style>
       button {
@@ -435,6 +429,9 @@
         max-width: 75vw;
         max-height: 75vh;
         outline: 1em dashed blue;
+      }
+      img {
+        outline: 1em dashed red;
       }
     </style>
   </body>
