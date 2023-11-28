@@ -2,6 +2,8 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-size@1"></script>
+
     <title></title>
   </head>
   <body style="margin: 0; padding: 4px">
@@ -370,11 +372,24 @@
           href="#16282281824-posters-1682879718671-emboss"></use>
       </svg>
     </div>
-
-    <canvas id="canvas" width="1600" height="1200"></canvas>
-    <div id="png-container" hidden></div>
+    <button id="share">share</button>
+    <canvas id="canvas" width="16384" height="16384" hidden></canvas>
+    <div id="png-container"></div>
 
     <script>
+      // Default (optimized sizes)
+      canvasSize
+        .maxArea({
+          usePromise: true,
+          useWorker: true
+        })
+        .then(({ width, height, benchmark }) => {
+          console.log(`Success: ${width} x ${height} (${benchmark} ms)`)
+        })
+        .catch(({ width, height, benchmark }) => {
+          console.log(`Error: ${width} x ${height} (${benchmark} ms)`)
+        })
+
       var svgString = new XMLSerializer().serializeToString(
         document.querySelector('svg')
       )
@@ -393,9 +408,29 @@
         DOMURL.revokeObjectURL(png)
       }
       img.src = url
+
+      const share = document.getElementById('share')
+      share.addEventListener('click', async () => {
+        console.log('click')
+        var png = canvas.toDataURL('image/png')
+        const file = new File(png, 'some.png', { type: 'image/png' })
+        try {
+          await navigator.share({
+            title: 'Example File',
+            files: [file]
+          })
+        } catch (err) {
+          console.error('Share failed:', err.message)
+        }
+      })
     </script>
     <style>
-      canvas {
+      button {
+        min-width: 64px;
+        height: 24px;
+      }
+      canvas,
+      img {
         margin: 1em;
         max-width: 75vw;
         max-height: 75vh;
