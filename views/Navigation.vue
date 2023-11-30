@@ -27,11 +27,7 @@
         @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
-      <h6>
-        <router-link to="/documentation" tabindex="-1">{{
-          version
-        }}</router-link>
-      </h6>
+      <h6>{{ version }}</h6>
       <a id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
