@@ -15,6 +15,9 @@
         name="animate"
         title="Animate posters as they come into view" />
       <preference
+        name="rasterize"
+        title="export posters as png" />
+      <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
