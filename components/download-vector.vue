@@ -1,11 +1,20 @@
 <template>
-  <icon v-if="working" name="download" />
-  <a :href="content" :download="file_name" class="download" @click="download">
+  <a v-if="rasterize" class="download">
+    <icon v-if="working" name="working" />
+    <icon v-else name="download" @click="download_png" />
+    <aside hidden>
+      <a ref="png" :href="content" :download="file_name" />
+      <canvas ref="canvas" :width="width" :height="height"></canvas>
+    </aside>
+  </a>
+  <a
+    v-else
+    :href="content"
+    :download="file_name"
+    class="download"
+    @click="download_svg">
     <icon name="download" />
   </a>
-  <aside v-if="rasterize" hidden>
-    <canvas ref="canvas" :width="width" :height="height"></canvas>
-  </aside>
 </template>
 <script>
   import { as_day_and_time } from '@/use/date'
@@ -25,12 +34,11 @@
     },
     data() {
       return {
-        working: true,
+        working: false,
         default_size: 16384,
         content: '',
         file_type: 'svg',
         vector: {},
-        png: null,
         file_name: null
       }
     },
@@ -46,18 +54,15 @@
       }
     },
     async mounted() {
-      if (this.rasterize) await this.prepare_png()
+      if (this.rasterize) this.file_type = 'png'
       this.file_name = await this.get_vector_name()
     },
     methods: {
-      download() {
-        if (this.rasterize) this.file_type = 'png'
-        else this.download_svg()
-      },
-      async prepare_png() {
+      async download_png() {
+        this.working = true
         this.file_type = 'png'
         this.vector = await load(this.itemid)
-        console.log('preparing png', this.vector)
+        await this.$nextTick()
 
         const svg = new XMLSerializer().serializeToString(
           document.getElementById(as_query_id(this.itemid))
@@ -73,19 +78,19 @@
         var url = DOMURL.createObjectURL(svg_blob)
         this.content = url
         img.onload = async () => {
-          console.log(this.width)
-          console.log(this.height)
           context.drawImage(img, 0, 0, this.width, this.height)
           var png = canvas.toDataURL('image/png')
           this.content = png
           await this.$nextTick()
           DOMURL.revokeObjectURL(png)
+          await this.$nextTick()
+          this.$refs.png.click()
+          this.working = false
         }
         img.src = url
-        await this.$nextTick()
-        console.log('png prepaired')
       },
       download_svg() {
+        this.working = false
         const svg = document.getElementById(as_query_id(this.itemid))
         if (!svg) return
         if (localStorage.adobe) this.adobe(svg)
