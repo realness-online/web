@@ -354,32 +354,6 @@
       <img src="/about/portrait/15.svg" loading="lazy" />
       <img src="/about/portrait/16.svg" loading="lazy" />
     </figure>
-    <footer>
-      <article>
-        <header>
-          <h2>We can build it better</h2>
-          <p>
-            Your <a href="https://cash.app/$ScottFryxell">support</a> will
-            unlock a universe of functionality around vector graphics.
-          </p>
-        </header>
-        <div class="">
-          <a href="https://cash.app/$ScottFryxell">
-            <img src="/about/cash-app.jpg" loading="lazy" />
-          </a>
-          <menu>
-            <button>Visualizations</button>
-            <button>Animation</button>
-            <button>Sync Contacts</button>
-            <button>Video Stream</button>
-            <button>Sync Filesystem</button>
-            <button>Keyframing</button>
-            <button>Embossing</button>
-            <button>Sync Devices</button>
-          </menu>
-        </div>
-      </article>
-    </footer>
   </section>
 </template>
 <script setup>

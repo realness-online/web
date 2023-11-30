@@ -12,7 +12,6 @@ import Editor from '@/views/Editor'
 import About from '@/views/About'
 import Camera from '@/views/Camera'
 import Settings from '@/views/Settings'
-import Documentation from '@/views/Documentation'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
@@ -27,7 +26,6 @@ const routes = [
   { path: '/statements', component: Statements },
   { path: '/settings', component: Settings },
   { path: '/about', component: About },
-  { path: '/documentation', component: Documentation },
   { path: '/:phone_number', component: Profile }
 ]
 const router = createRouter({
