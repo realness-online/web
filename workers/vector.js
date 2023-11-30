@@ -70,5 +70,5 @@ const exif_logger = tags => {
     'Orientation',
     'SubjectArea'
   ]
-  for (const p of properties) console.log(p, tags[p].description)
+  for (const p of properties) console.log(p, tags[p]?.description)
 }
