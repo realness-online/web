@@ -4,8 +4,7 @@
     <icon name="download" />
   </a>
   <aside v-if="rasterize" hidden>
-    <canvas ref="canvas" :width="width" :height="height" />
-    <div ref="div" />
+    <canvas ref="canvas" :width="width" :height="height"></canvas>
   </aside>
 </template>
 <script>
@@ -37,10 +36,10 @@
     },
     computed: {
       width() {
-        return this.vector.width * 13
+        return this.vector.width * 8
       },
       height() {
-        return this.vector.height * 13
+        return this.vector.height * 8
       },
       rasterize() {
         return !!localStorage.rasterize
@@ -64,24 +63,20 @@
           document.getElementById(as_query_id(this.itemid))
         )
         if (!svg) return
-        const div = this.$refs.div
         const canvas = this.$refs.canvas
         const context = canvas.getContext('2d')
-        let content = this.content
         const DOMURL = self.URL || self.webkitURL || self
         var img = new Image()
-
         const svg_blob = new Blob([svg], {
           type: 'image/svg+xml;charset=utf-8'
         })
         var url = DOMURL.createObjectURL(svg_blob)
         this.content = url
         img.onload = async () => {
-          console.log('img.onload dude ', this.content)
-          context.drawImage(img, 0, 0)
+          console.log(this.width)
+          console.log(this.height)
+          context.drawImage(img, 0, 0, this.width, this.height)
           var png = canvas.toDataURL('image/png')
-          console.log(div)
-          div.innerHTML = '<img src="' + png + '"/>'
           this.content = png
           await this.$nextTick()
           DOMURL.revokeObjectURL(png)
