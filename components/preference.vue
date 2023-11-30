@@ -26,7 +26,7 @@
     },
     subtitle: {
       type: String,
-      required: true
+      required: false
     }
   })
   const state = ref(!!localStorage.getItem(props.name))

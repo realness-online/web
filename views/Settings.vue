@@ -14,9 +14,7 @@
       <preference
         name="animate"
         title="Animate posters as they come into view" />
-      <preference
-        name="rasterize"
-        title="export posters as png" />
+      <preference name="rasterize" title="export posters as png" />
       <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
@@ -31,7 +29,6 @@
   </section>
 </template>
 <script setup>
-  import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import NameAsForm from '@/components/profile/as-form-name'
