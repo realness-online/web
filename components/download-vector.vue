@@ -62,8 +62,6 @@
         this.working = true
         this.file_type = 'png'
         this.vector = await load(this.itemid)
-        await this.$nextTick()
-
         const svg = new XMLSerializer().serializeToString(
           document.getElementById(as_query_id(this.itemid))
         )
