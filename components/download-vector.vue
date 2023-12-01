@@ -3,7 +3,7 @@
     <icon v-if="working" name="working" />
     <icon v-else name="download" @click="download_png" />
     <aside hidden>
-      <a ref="png" :href="content" :download="file_name" />
+      <a ref="png" :href="content" :download="file_name" type="image/png" />
       <canvas ref="canvas" :width="width" :height="height"></canvas>
     </aside>
   </a>
