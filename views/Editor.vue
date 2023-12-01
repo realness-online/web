@@ -37,12 +37,7 @@
   const route = use_route()
   const router = use_router()
   const itemid = `${localStorage.me}/posters/${route.params.id}`
-  const page_title = computed(() => {
-    if (stroke.value) return 'Stroke'
-    if (fill.value) return 'Fill'
-    if (animation.value) return 'Animation'
-    return 'Grid'
-  })
+
   const toggle_stroke = () => {
     stroke.value = !stroke.value
     fill.value = !fill.value
@@ -65,7 +60,7 @@
   }
   const save = async () => {
     await new Poster(itemid).save()
-    if (new_vector.value) new_vector.value = null
+
     if (new_gradients.value) new_gradients.value = null
     back()
   }

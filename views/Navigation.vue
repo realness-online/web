@@ -12,7 +12,7 @@
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
         Events
       </router-link>
-      <router-link v-if="!posting" :to="camera" class="green" tabindex="-1">
+      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
         Posters
       </router-link>
       <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
@@ -46,7 +46,7 @@
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { load } from '@/use/itemid'
-  import { ref, onMounted as mounted, computed } from 'vue'
+  import { ref, onMounted as mounted } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
@@ -62,28 +62,6 @@
     console.info('views:Navigation')
     mount_workers()
   })
-  const camera = computed(() => {
-    if (localStorage.robot) return '/camera'
-    else return '/posters'
-  })
-  // const snapshot = () => {
-  //   const canvas = document.createElement('canvas') // create a canvas
-  //   const ctx = canvas.getContext('2d') // get its context
-  //   canvas.width = vid.videoWidth // set its size to the one of the video
-  //   canvas.height = vid.videoHeight
-  //   ctx.drawImage(vid, 0, 0) // the video
-  //   return new Promise((res, rej) => {
-  //     canvas.toBlob(res, 'image/jpeg') // request a Blob from the canvas
-  //   })
-  // }
-  // function download(blob) {
-  //   // uses the <a download> to download a Blob
-  //   let a = document.createElement('a')
-  //   a.href = URL.createObjectURL(blob)
-  //   a.download = 'screenshot.jpg'
-  //   document.body.appendChild(a)
-  //   a.click()
-  // }
 </script>
 <style lang="stylus">
   section#navigation.page
