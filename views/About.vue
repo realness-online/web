@@ -8,7 +8,7 @@
         <figcaption>
           <h1>Realness</h1>
           <h3>online</h3>
-          <p>Install realness on your homescreen</p>
+          <p>Install Realness on your home screen</p>
           <p>
             Realness creates expressive vector graphics from your designs and
             photos. It works on any device.
@@ -32,41 +32,26 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
-              <h2>We call them <b>Posters</b></h2>
+              <h2>We call them <strong>Posters</strong></h2>
               <p>
-                Realness reduces your toolchain dependence. No need for Figma,
-                no need for Illustrator no need for Sketch or After Effects.
-              </p>
-              <p>
-                Realness takes you from hand drawn to animation in a single
-                step. Save $50 a month on the Creative Cloud.
-              </p>
-              <p>
-                Take a picture from your phone and realness creates a vector
-                graphic composed into four animatable layers from a bright
+                Take a picture from your phone, and Realness creates a vector
+                graphic composed into four animatable layers, from a bright
                 radial background to a dark horizontal foreground.
               </p>
               <p>
                 Your Poster is a natural fit for the web. Posters are optimized
                 to be expressive, small, and to run fast. You can extract a
-                color pallet. Animate a filter or gradient. The individual parts
-                of a Poster are easy to query and feel natural to access and
-                manipulate.
+                color palette, animate a filter or gradient. The individual
+                parts of a Poster are easy to query and feel natural to access
+                and manipulate.
               </p>
               <h4>
-                Animators, Designers, Hand coders — <b>Realness</b> was built
-                for you.
+                Animators, Designers, Hand coders —
+                <strong>Realness</strong> was built for you.
               </h4>
             </figcaption>
           </figure>
           <ol>
-            <li>
-              <icon name="remove" style="fill: red" />
-              <p>
-                Edit color, gradient and opacity for <b>Background</b>,
-                <b>Light</b>, <b>Regular</b> and <b>Bold</b> layers
-              </p>
-            </li>
             <li>
               <icon name="finished" />
               <p>View Posters in a timeline with your comments</p>
@@ -79,15 +64,11 @@
             </li>
             <li>
               <icon name="finished" />
-              <p>Use the parts of your posters as masks and patterns.</p>
+              <p>Use the parts of your posters as masks and patterns</p>
             </li>
             <li>
               <icon name="finished" />
-              <p>Use any one of sixteen gradients generated from your poster</p>
-            </li>
-            <li>
-              <icon name="remove" style="fill: red" />
-              <p>Access posters from your filesystem</p>
+              <p>Use any one of twelve gradients generated from your poster</p>
             </li>
           </ol>
         </tab-panel>
@@ -169,52 +150,51 @@
           <figure>
             <img class="example" src="/about/portrait/05.svg" loading="lazy" />
             <figcaption>
-              <h2>HTML is our database</h2>
+              <h2>HTML is Our Database</h2>
               <p>
-                Realness is a way, and a support system to help you build web
-                applications
+                Realness is a way and a support system to help you build web
+                applications.
               </p>
               <p>
-                Its natura to build web applications with html. This is
-                especially true for <i>Edge first</i>. Orienting to this has
-                helped realness take advantage of what's possible on the web
-                today. How you build your app can create oportunities over the
-                monitiezed client server model we are used to today.
+                It's natural to build web applications with HTML, especially for
+                <i>Edge first</i>. Orienting to this has helped Realness take
+                advantage of what's possible on the web today. How you build
+                your app can create opportunities over the monetized
+                client-server model we are used to today.
               </p>
               <p>
-                Edge first is native fast, more secure, gives you choices around
-                data storage that don't exist traditionally. With an edge first
-                approach you can make a quick and seemless transition from a
-                User Expereience demo to product development.
+                Edge first is native, fast, more secure, and gives you choices
+                around data storage that don't exist traditionally. With an
+                Edge-first approach, you can make a quick and seamless
+                transition from a User Experience demo to product development.
               </p>
               <p>
-                Edge on the web opens the DOM up as a typing sytem and object
-                model. There are natural constraints on HTML that supports
+                Edge on the web opens the DOM up as a typing system and object
+                model. There are natural constraints on HTML that support
                 accessible applications.
               </p>
               <p>
-                Developers can use realness to free themselves from SQL and the
-                tyrany of a full-stack mindset. Development roles can be less
-                heirarchical. Products can be fun to build naturally more inline
-                with our customers expectations.
+                Developers can use Realness to free themselves from SQL and the
+                tyranny of a full-stack mindset. Development roles can be less
+                hierarchical. Products can be fun to build, naturally more in
+                line with our customers' expectations.
               </p>
               <p>
-                Build applications faster with less overhead, that keep
-                stakeholders involved. All this in only HTML, CSS, and
-                JavaScript
+                Build applications faster with less overhead that keeps
+                stakeholders involved. All this using only HTML, CSS, and
+                JavaScript.
               </p>
               <p>
                 Can a single developer provide a service all can use? Scott
-                Fryxell is the developer behind realness and that's what I'm
+                Fryxell is the developer behind Realness, and that's what I'm
                 trying to find out.
               </p>
               <p>
-                Sign into realness and you can message with the me directly.
-                Visit the code
+                Sign into Realness, and you can message me directly. Visit the
+                code
                 <a href="https://github.com/realness-online/web" rel="external">
-                  online.
-                </a>
-                I keep a
+                  online</a
+                >. I keep a
                 <a href="https://scott-fryxell.github.io/" rel="external">
                   blog
                 </a>
@@ -225,98 +205,82 @@
           </figure>
           <ol>
             <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
                 <a href="https://github.com/realness-online/web" rel="external">
                   Open Source
                 </a>
-                utilizing modern best practices. semantic HTML described with
-                microdata
+                utilizing modern best practices, with semantic HTML described
+                using microdata.
               </p>
             </li>
             <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
-                Build complete applications without backend having to keep up,
-                or coordinate
+                Build complete applications without the backend having to keep
+                up or coordinate.
               </p>
             </li>
             <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
-                Codebase priortizes readability and being accessibility friendly
+                Codebase prioritizes readability and accessibility friendliness.
               </p>
             </li>
             <li>
-              <icon name="finished" />
-              <p>As simple or complex as your app requires</p>
+              <icon name="finished"></icon>
+              <p>As simple or complex as your app requires.</p>
             </li>
             <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
                 Opinionated: Tailwind and TypeScript are anti-patterns. CSS to
                 the rescue!
               </p>
             </li>
-
             <li>
-              <icon name="finished" />
-              <p>Runtime typing via the DOM</p>
+              <icon name="finished"></icon>
+              <p>Runtime typing via the DOM.</p>
             </li>
             <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
                 Eliminate CSS crosstalk and improve legibility with fragment
-                identifiers and child selectors
-              </p>
-            </li>
-
-            <li>
-              <icon name="finished" />
-              <p>Reduce attack surface — Leave sensitive data on device.</p>
-            </li>
-            <li>
-              <icon name="finished" />
-              <p>
-                Server is auth, and storage only, no backend processes required
+                identifiers and child selectors.
               </p>
             </li>
             <li>
-              <icon name="finished" />
-              <p>Affirms infinite nature of the web</p>
+              <icon name="finished"></icon>
+              <p>Reduce attack surface — Leave sensitive data on the device.</p>
             </li>
             <li>
-              <icon name="finished" />
-              <p>Your projects live under ${name}.web.app</p>
-            </li>
-            <li>
-              <icon name="finished" />
+              <icon name="finished"></icon>
               <p>
-                Learn lessons from Mastedon:
-                <span class="no">facists</span>,
-                <span class="no">terrrorists</span>,
-                <span class="no">communists</span>
+                Server is auth and storage only, no backend processes required.
+              </p>
+            </li>
+            <li>
+              <icon name="finished"></icon>
+              <p>Affirms the infinite nature of the web.</p>
+            </li>
+            <li>
+              <icon name="finished"></icon>
+              <p>Your projects live under ${name}.web.app.</p>
+            </li>
+            <li>
+              <icon name="finished"></icon>
+              <p>
+                Learn lessons from Mastodon:
+                <strong class="no">fascists</strong>,
+                <strong class="no">terrorists</strong>,
+                <strong class="no">communists</strong>.
               </p>
             </li>
           </ol>
         </tab-panel>
       </tab-panels>
     </tab-group>
-    <div class="call to action">
-      <h3>
-        Support <span>Realness</span>
-        <span>online</span>
-      </h3>
-      <p>
-        <b>$5 Designers</b>
-        <b>$15 Community</b>
-        <b>$25 Developers</b>
-      </p>
-      <a href="https://cash.app/$ScottFryxell">
-        <img src="/about/cash-app.jpg" loading="lazy" />
-      </a>
-      <p>Realness is free. There are no reciepts</p>
-    </div>
+    <call-to-action />
     <figure>
       <figcaption>
         <h2>Gallery</h2>
@@ -359,12 +323,11 @@
 <script setup>
   import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
   import Icon from '@/components/icon'
+  import CallToAction from '@/components/call-to-action'
   import LogoAsLink from '@/components/logo-as-link'
 </script>
 <style lang="stylus">
   section.page#about
-    span, b
-      color: blue
     .no
       text-decoration: line-through
     svg.icon
@@ -373,7 +336,6 @@
       height: base-line
     & > header
       display: block
-      min-height: 100vh
       & > nav
         display: flex
         justify-content: space-between
@@ -450,7 +412,6 @@
           @media (prefers-color-scheme: dark)
             color: white
     & > article
-      min-height: 100vh
       padding: base-line
       & > header > h3
         margin-bottom:  base-line * 2
@@ -463,10 +424,12 @@
           & > img
             width: 40vw
         & > figcaption
-          @media (min-width: pad-begins)
-            padding: 0 base-line
           display: flex
           flex-direction: column
+          @media (min-width: pad-begins)
+            padding: 0 base-line
+          strong
+            color:blue
           & > h4
             margin: base-line 0
             text-align: center
@@ -492,35 +455,6 @@
           p
             margin-left: base-line * 2
             margin-bottom: 0
-    & > div.call.to.action
-      padding: base-line * 2
-      min-height: 100vh
-      display: flex
-      flex-direction: column
-      justify-content: center
-      align-items: center
-      & > h3
-        margin-bottom: base-line
-        & > span:first-of-type
-          padding-right: base-line * 0.25
-          color: blue
-        & > span:last-of-type
-          color: green
-      & > p
-        display: flex
-        margin-bottom: base-line * 2
-
-        color: green
-        & > b
-          color: green
-          margin-right: base-line * .5
-      img
-        border-radius: base-line
-        width: base-line * 12
-      p
-        margin-top: base-line
-        max-width: base-line * 18rem
-        text-align: center
     & > figure
       padding: base-line
       min-height: 100vh
