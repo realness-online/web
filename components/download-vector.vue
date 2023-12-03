@@ -1,11 +1,14 @@
 <template>
-  <a v-if="rasterize" class="download">
-    <icon v-if="working" name="working" />
-    <icon v-else name="download" @click="download_png" />
-    <aside hidden>
-      <a ref="png" :href="content" :download="file_name" type="image/png" />
-      <canvas ref="canvas" :width="width" :height="height"></canvas>
-    </aside>
+  <a
+    v-if="rasterize"
+    ref="png"
+    class="download"
+    :href="content"
+    :download="file_name"
+    type="image/png"
+    @click="download_png">
+    <icon name="download" :class="{ working }" />
+    <canvas ref="canvas" :width="width" :height="height" hidden></canvas>
   </a>
   <a
     v-else
@@ -36,7 +39,7 @@
       return {
         working: false,
         default_size: 16384,
-        content: '',
+        content: null,
         file_type: 'svg',
         vector: {},
         file_name: null
@@ -59,6 +62,8 @@
     },
     methods: {
       async download_png() {
+        console.log('download_png')
+        if (this.working || this.content) return
         this.working = true
         this.file_type = 'png'
         this.vector = await load(this.itemid)
@@ -118,3 +123,7 @@
     }
   }
 </script>
+<style lang="stylus">
+  a.download.working
+    animation-name: working
+</style>
