@@ -82,12 +82,9 @@
         this.content = url
         img.onload = async () => {
           context.drawImage(img, 0, 0, this.width, this.height)
-          var png = canvas.toDataURL('image/png')
+          var png = canvas.toDataURL('image/png', 0.8)
           this.content = png
-          await this.$nextTick()
           DOMURL.revokeObjectURL(png)
-          await this.$nextTick()
-          this.$refs.png.click()
           this.working = false
         }
         img.src = url
@@ -116,7 +113,7 @@
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
         const facts = `${time}.${this.file_type}`
-        if (creator)
+        if (creator?.first_name)
           return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
       }
