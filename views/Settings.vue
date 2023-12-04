@@ -7,14 +7,12 @@
     </header>
     <h1>Settings</h1>
     <menu>
-      <name-as-form />
       <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="animate"
         title="Animate posters as they come into view" />
-      <preference name="rasterize" title="Download posters as png" />
       <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
@@ -28,9 +26,7 @@
       <details>
         <summary><h3>Documentation</h3></summary>
         <h4>
-          <router-link to="/about" tabindex="-1"
-            >Drawing and Vector Graphics Workflows</router-link
-          >
+          <router-link to="/about" tabindex="-1">Drawing and Vector Graphics Workflows</router-link>
         </h4>
         <p>
           By default, Realness supports vector workflows. Take a picture, and
@@ -65,9 +61,9 @@
           posters to see them all animating at once.
         </p>
         <p>
-          Send your poster to Procreate via rasterize. Click the download icon
-          <icon name="download" />, and choose to save it as a PNG. These large
-          graphics allow zooming while still looking great.
+          SVG's work great for most design tools. If you want to use your poster
+          in Procreate You'll need to convert it to PSD with Affinity Designer
+          or Adobe Illustrator
         </p>
       </details>
     </menu>

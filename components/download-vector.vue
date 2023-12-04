@@ -1,21 +1,5 @@
 <template>
-  <a
-    v-if="rasterize"
-    ref="png"
-    class="download"
-    :href="content"
-    :download="file_name"
-    type="image/png"
-    @click="download_png">
-    <icon name="download" :class="{ working }" />
-    <canvas ref="canvas" :width="width" :height="height" hidden></canvas>
-  </a>
-  <a
-    v-else
-    :href="content"
-    :download="file_name"
-    class="download"
-    @click="download_svg">
+  <a :href="content" :download="file_name" class="download" @click="download">
     <icon name="download" />
   </a>
 </template>
@@ -37,59 +21,16 @@
     },
     data() {
       return {
-        working: false,
-        default_size: 16384,
         content: null,
-        file_type: 'svg',
         vector: {},
         file_name: null
       }
     },
-    computed: {
-      width() {
-        return this.vector.width * 8
-      },
-      height() {
-        return this.vector.height * 8
-      },
-      rasterize() {
-        return !!localStorage.rasterize
-      }
-    },
     async mounted() {
-      if (this.rasterize) this.file_type = 'png'
       this.file_name = await this.get_vector_name()
     },
     methods: {
-      async download_png() {
-        console.log('download_png')
-        if (this.working || this.content) return
-        this.working = true
-        this.file_type = 'png'
-        this.vector = await load(this.itemid)
-        const svg = new XMLSerializer().serializeToString(
-          document.getElementById(as_query_id(this.itemid))
-        )
-        if (!svg) return
-        const canvas = this.$refs.canvas
-        const context = canvas.getContext('2d')
-        const DOMURL = self.URL || self.webkitURL || self
-        var img = new Image()
-        const svg_blob = new Blob([svg], {
-          type: 'image/svg+xml;charset=utf-8'
-        })
-        var url = DOMURL.createObjectURL(svg_blob)
-        this.content = url
-        img.onload = async () => {
-          context.drawImage(img, 0, 0, this.width, this.height)
-          var png = canvas.toDataURL('image/png', 0.8)
-          this.content = png
-          DOMURL.revokeObjectURL(png)
-          this.working = false
-        }
-        img.src = url
-      },
-      download_svg() {
+      download() {
         this.working = false
         const svg = document.getElementById(as_query_id(this.itemid))
         if (!svg) return
@@ -112,7 +53,7 @@
         const author_id = `/${info[1]}`
         const time = as_day_and_time(Number(info[3]))
         const creator = await load(author_id)
-        const facts = `${time}.${this.file_type}`
+        const facts = `${time}.svg`
         if (creator?.first_name)
           return `${creator.first_name}_${creator.last_name}_${facts}`
         else return facts
