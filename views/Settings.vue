@@ -26,7 +26,9 @@
       <details>
         <summary><h3>Documentation</h3></summary>
         <h4>
-          <router-link to="/about" tabindex="-1">Drawing and Vector Graphics Workflows</router-link>
+          <router-link to="/about" tabindex="-1">
+            Drawing and Vector Graphics Workflows
+          </router-link>
         </h4>
         <p>
           By default, Realness supports vector workflows. Take a picture, and
