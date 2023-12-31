@@ -58,6 +58,12 @@ firebase login
 yarn deploy
 ```
 
+## Maybe rust
+
+https://www.rust-lang.org/tools/install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+wasm-pack build
+
 # DONE!
 
 Visit [https://${project-name}.web.app](https://${name}.wep.app). You can sign in and invite your friends

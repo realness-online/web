@@ -17,7 +17,9 @@ export const use = () => {
   const router = use_router()
   const image_picker = ref(null)
   const working = ref(false)
-  const vectorizer = ref(null)
+  const sizer = ref(null)
+  const potracer = ref(null)
+  const vtracer = ref(null)
   const gradienter = ref(null)
 
   const can_add = computed(() => {
@@ -59,7 +61,8 @@ export const use = () => {
       return image.type === type
     })
     if (is_image) {
-      vectorize(image)
+      working.value = true
+      sizer.value.postMessage({ image })
       image_picker.value.value = ''
     }
   }
@@ -68,13 +71,13 @@ export const use = () => {
       input.addEventListener('change', event => listener(input, binding, event))
     }
   }
-
-  const vectorize = image => {
-    working.value = true
-    vectorizer.value.postMessage({ image })
+  const sized = response => {
+    const image = response.data.image
+    potracer.value.postMessage({ image })
+    vtracer.value.postMessage({ image })
     gradienter.value.postMessage({ image })
   }
-  const vectorized = response => {
+  const potraced = response => {
     const vector = response.data.vector
     vector.id = as_new_itemid
     vector.type = 'posters'
@@ -88,11 +91,18 @@ export const use = () => {
     vector.bold = make_path(vector.bold)
     new_vector.value = vector
   }
+  const vtraced = response => {
+    console.log(response.data.vector)
+  }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
-    vectorizer.value = new Worker('/vector.worker.js')
+    sizer.value = new Worker('/image.worker.js')
+    potracer.value = new Worker('/potracer.worker.js')
+    vtracer.value = new Worker('/vtracer.worker.js')
     gradienter.value = new Worker('/gradient.worker.js')
-    vectorizer.value.addEventListener('message', vectorized)
+    sizer.value.addEventListener('message', sized)
+    potracer.value.addEventListener('message', potraced)
+    vtracer.value.addEventListener('message', vtraced)
     gradienter.value.addEventListener('message', gradientized)
   }
   watch_effect(() => {
@@ -106,7 +116,9 @@ export const use = () => {
     }
   })
   dismount(() => {
-    if (vectorizer.value) vectorizer.value.terminate()
+    if (sizer.value) sizer.value.terminate()
+    if (vtracer.value) tracer.value.terminate()
+    if (potracer.value) potracer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
   })
   return {
@@ -116,8 +128,6 @@ export const use = () => {
     open_camera,
     image_picker,
     vVectorizer,
-    vectorize,
-    vectorizer,
     working,
     new_vector,
     new_gradients,

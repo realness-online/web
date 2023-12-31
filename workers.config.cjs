@@ -6,10 +6,15 @@ const webpack = require('webpack')
 module.exports = {
   entry: {
     gradient: path.join(__dirname, './workers/gradient.js'),
-    vector: path.join(__dirname, './workers/vector.js'),
+    potracer: path.join(__dirname, './workers/potracer.js'),
+    vtracer: path.join(__dirname, './workers/vtracer.js'),
+    image: path.join(__dirname, './workers/image.js'),
     optimize: path.join(__dirname, './workers/optimize.js')
   },
   mode: 'production',
+  experiments: {
+    asyncWebAssembly: true
+  },
   output: {
     filename: '[name].worker.js',
     path: path.join(__dirname, './public')
