@@ -72,10 +72,11 @@ export const use = () => {
     }
   }
   const sized = response => {
-    const image = response.data.image
-    potracer.value.postMessage({ image })
-    vtracer.value.postMessage({ image })
-    gradienter.value.postMessage({ image })
+    const bitmap = response.data.bitmap
+    console.log('sized', bitmap)
+    potracer.value.postMessage({ bitmap })
+    vtracer.value.postMessage({ bitmap })
+    gradienter.value.postMessage({ bitmap })
   }
   const potraced = response => {
     const vector = response.data.vector
@@ -117,7 +118,7 @@ export const use = () => {
   })
   dismount(() => {
     if (sizer.value) sizer.value.terminate()
-    if (vtracer.value) tracer.value.terminate()
+    if (vtracer.value) vtracer.value.terminate()
     if (potracer.value) potracer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
   })

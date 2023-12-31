@@ -1,6 +1,7 @@
 // this code is inspired by https://github.com/ben-eb/postcss-resemble-image
 // for Number.EPSILON edge case see https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
 import Jimp from 'jimp'
+import { setup_jimp } from '@/workers/image'
 import { rgba_to_hsla } from '@/use/colors'
 export const as_gradient = (image, height = false) => {
   let direction = image.bitmap.width
@@ -62,7 +63,8 @@ export const is_stop = stop => {
 }
 export const listen = async message => {
   console.time('make:gradient')
-  let image = message.data.image
+  setup_jimp()
+  let image = Jimp.read(message.data.bitmap)
   const horizontal = as_gradient(image)
   const vertical = as_gradient(image, true)
   const radial = as_radial_gradient(image)

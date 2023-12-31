@@ -19,26 +19,13 @@ export const size = (image, size = 512) => {
   return image
 }
 
-export const listen = async message => {
-  console.time('make:vector-tracer')
-  let image = await read(message.data.image)
-  image = await size(image)
-
-  const tags = ExifReader.load(read_exif(message.data.image))
-  exif_logger(tags)
-  console.log('exif-everything', JSON.stringify(tags))
-
-  self.postMessage({ image })
-  console.timeEnd('vector-tracer')
-}
-self.addEventListener('message', listen)
-
 export function read_exif(file) {
   const reader = new FileReaderSync()
   return reader.readAsArrayBuffer(file)
 }
 
-const exif_logger = tags => {
+const exif_logger = image => {
+  const tags = ExifReader.load(read_exif(image))
   console.log('exif', JSON.stringify(tags))
   const properties = [
     'Image Width',
@@ -49,3 +36,25 @@ const exif_logger = tags => {
   ]
   for (const p of properties) console.log(p, tags[p]?.description)
 }
+
+export const setup_jimp = () => {
+  Jimp.appendConstructorOption(
+    'bitmap',
+    args => args.bitmap,
+    (resolve, reject, args) => {
+      this.bitmap = args.bitmap
+      resolve()
+    }
+  )
+}
+
+export const listen = async message => {
+  console.time('make:vector-tracer')
+  let image = await read(message.data.image)
+  image = await size(image)
+  console.log('image', image.bitmap)
+  self.postMessage({ bitmap: image.bitmap })
+  // exif_logger(image)
+  console.timeEnd('vector-tracer')
+}
+self.addEventListener('message', listen)

@@ -1,12 +1,12 @@
-import { trace } from 'vtracer'
-import { to_kb } from 'size-image'
+import { ColorImageConverter as trace } from 'vtracer'
+import { to_kb } from './image.js'
 export const listen = async message => {
-  console.time('make:vector-tracer')
-  const image = message.data.image
-  console.log('image', image, image.bitmap.width, image.bitmap.height)
+  console.time('vtracer:vector')
+  const image = message.data.bitmap
+  console.log('bitmap', image, image.width, image.height)
   const paths = trace(image)
-  console.log('size', to_kb(paths))
+  console.log('vtracer:size', to_kb(paths))
   self.postMessage({ paths })
-  console.timeEnd('vector-tracer')
+  console.timeEnd('vtracer:vector')
 }
 self.addEventListener('message', listen)
