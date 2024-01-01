@@ -17,21 +17,21 @@ function to_kb(vector) {
   })
   return (size_of / 1024).toFixed(2)
 }
-export async function read(file) {
+export const read = async file => {
   const reader = new FileReaderSync()
-  return await Jimp.default.read(reader.readAsArrayBuffer(file))
+  return Jimp.default.read(reader.readAsArrayBuffer(file))
 }
-export function read_exif(file) {
+export const read_exif = file => {
   const reader = new FileReaderSync()
   return reader.readAsArrayBuffer(file)
 }
-export async function size(image, size = 512) {
+export const size = async (image, size = 512) => {
   if (image.bitmap.width > image.bitmap.height)
     image = image.resize(Jimp.default.AUTO, size)
   else image = image.resize(size, Jimp.default.AUTO)
   return image
 }
-export async function make(image) {
+export const make = async image => {
   let poster = await as_paths(image, potrace_options)
   if (to_kb(poster) > 600) {
     console.info('poster is too large, resizing')
@@ -47,7 +47,7 @@ export async function make(image) {
     viewbox: `0 0 ${poster.width} ${poster.height}`
   }
 }
-export async function listen(message) {
+export const listen = async message => {
   console.time('make:vector')
   let image = await read(message.data.image)
   const tags = ExifReader.load(read_exif(message.data.image))
