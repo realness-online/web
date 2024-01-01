@@ -75,8 +75,8 @@ export const use = () => {
     const bitmap = response.data.bitmap
     console.log('sized', bitmap)
     potracer.value.postMessage({ bitmap })
-    vtracer.value.postMessage({ bitmap })
-    gradienter.value.postMessage({ bitmap })
+    // vtracer.value.postMessage({ bitmap })
+    // gradienter.value.postMessage({ bitmap })
   }
   const potraced = response => {
     const vector = response.data.vector

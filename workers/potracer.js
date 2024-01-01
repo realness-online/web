@@ -1,6 +1,5 @@
 import Jimp from 'jimp'
 import { as_paths } from '@realness.online/potrace'
-import { setup_jimp } from '@/workers/image'
 const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
@@ -12,7 +11,7 @@ const potrace_options = {
 }
 
 export async function make(image) {
-  let poster = await as_paths({ bitmap: image }, potrace_options)
+  let poster = await as_paths(image, potrace_options)
   return {
     light: poster.paths[0],
     regular: poster.paths[1],
@@ -24,8 +23,13 @@ export async function make(image) {
 }
 export async function listen(message) {
   console.time('potrace:vector')
-  setup_jimp()
-  const vector = await make(Jimp.read({ bitmap: message.data.bitmap }))
+
+  const image = new Blob(message.data.bitmap.data)
+  const width = message.data.bitmap.width
+  const height = message.data.bitmap.height
+
+  const vector = await make(Jimp.read(image))
+  console.log('vector', vector, width, height)
   self.postMessage({ vector })
   console.timeEnd('potrace:vector')
 }
