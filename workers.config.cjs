@@ -7,6 +7,7 @@ module.exports = {
   entry: {
     gradient: path.join(__dirname, './workers/gradient.js'),
     vector: path.join(__dirname, './workers/vector.js'),
+    vtracer: path.join(__dirname, './workers/vtracer.js'),
     optimize: path.join(__dirname, './workers/optimize.js')
   },
   mode: 'production',
