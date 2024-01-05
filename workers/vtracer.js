@@ -26,9 +26,9 @@ export const make = image => {
   }
 }
 export const listen = async message => {
+  console.log('listen', message)
   console.time('make:vtracer')
   let image = await read(message.data.image)
-
   image = await size(image)
   const vector = make(image)
   self.postMessage({ paths: vector.paths })

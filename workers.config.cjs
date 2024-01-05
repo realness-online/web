@@ -1,5 +1,6 @@
 const path = require('path')
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const TerserPlugin = require('terser-webpack-plugin')
 const webpack = require('webpack')
 
@@ -21,7 +22,10 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.json'],
     alias: {
-      '@': path.resolve('./')
+      '@': path.resolve('./'),
+      '@realness.online/vtracer': path.resolve(
+        '../vtracer/@realness.online/vtracer'
+      )
     },
     plugins: [],
     fallback: {
@@ -48,11 +52,11 @@ module.exports = {
   },
   devtool: false,
   plugins: [
-    // new BundleAnalyzerPlugin({
-    //   analyzerMode: 'static',
-    //   openAnalyzer: false,
-    //   reportFilename: '../artifacts/worker_report.html'
-    // }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      openAnalyzer: false,
+      reportFilename: './worker_report.html'
+    }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
     }),
