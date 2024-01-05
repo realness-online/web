@@ -33,11 +33,6 @@ export const size = async (image, size = 512) => {
 }
 export const make = async image => {
   let poster = await as_paths(image, potrace_options)
-  if (to_kb(poster) > 600) {
-    console.info('poster is too large, resizing')
-    image = await size(image, 400) //from 512 to 400
-    poster = await as_paths(image, potrace_options)
-  }
   return {
     light: poster.paths[0],
     regular: poster.paths[1],
@@ -52,8 +47,6 @@ export const listen = async message => {
   let image = await read(message.data.image)
   const tags = ExifReader.load(read_exif(message.data.image))
   exif_logger(tags)
-  console.log('exif-everything', JSON.stringify(tags))
-
   image = await size(image)
   const vector = await make(image)
   self.postMessage({ reply: 'vectorized', vector })
