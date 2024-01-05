@@ -8,6 +8,7 @@ node_modules
 /functions/coverage
 /public/**.worker.js
 /public/**.worker.js.map
+/public/**.wasm
 .prettierignore
 /.editorconfig
 /coverage/
