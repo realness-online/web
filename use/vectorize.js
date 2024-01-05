@@ -78,8 +78,8 @@ export const use = () => {
   }
 
   const vtraced = response => {
-    const paths = response.data.paths
-    console.log('vtraced', paths)
+    // const paths = response.data.paths
+    console.log('vtraced', response)
   }
 
   const vectorized = response => {
@@ -101,7 +101,7 @@ export const use = () => {
     vtracer.value = new Worker('/vtracer.worker.js')
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/gradient.worker.js')
-    vectorizer.value.addEventListener('message', vtraced)
+    vtracer.value.addEventListener('message', vtraced)
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
@@ -116,6 +116,7 @@ export const use = () => {
     }
   })
   dismount(() => {
+    if (vtracer.value) vtracer.value.terminate()
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
   })
