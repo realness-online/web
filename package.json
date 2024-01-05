@@ -3,6 +3,12 @@
   "version": "1.4.98",
   "private": false,
   "type": "module",
+  "keywords": [
+    "svg",
+    "computer-graphics",
+    "vector-graphics",
+    "web-programming"
+  ],
   "description": "When people search for 'outsider social network' they'll find realness online",
   "author": "Scott Fryxell <sfryxell@me.com>",
   "scripts": {
@@ -24,8 +30,6 @@
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
-    "@ffmpeg/core": "^0.11.0",
-    "@ffmpeg/ffmpeg": "^0.11.6",
     "@headlessui/vue": "^1.5.0",
     "@heroicons/vue": "^1.0.6",
     "@realness.online/potrace": "../potrace/",
