@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "description": "When people search for 'outsider social network' they'll find realness online",
-  "author": "Scott Fryxell <sfryxell@me.com>",
+  "author": "Scott Fryxell <sfryxell@gmail.com>",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
