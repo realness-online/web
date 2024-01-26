@@ -17,7 +17,6 @@ export const use = () => {
   const router = use_router()
   const image_picker = ref(null)
   const working = ref(false)
-  const vtracer = ref(null)
   const vectorizer = ref(null)
   const gradienter = ref(null)
 
@@ -72,14 +71,8 @@ export const use = () => {
 
   const vectorize = image => {
     working.value = true
-    vtracer.value.postMessage({ image })
     vectorizer.value.postMessage({ image })
     gradienter.value.postMessage({ image })
-  }
-
-  const vtraced = response => {
-    // const paths = response.data.paths
-    console.log('vtraced', response)
   }
 
   const vectorized = response => {
@@ -98,10 +91,8 @@ export const use = () => {
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
-    vtracer.value = new Worker('/vtracer.worker.js')
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/gradient.worker.js')
-    vtracer.value.addEventListener('message', vtraced)
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
@@ -116,7 +107,6 @@ export const use = () => {
     }
   })
   dismount(() => {
-    if (vtracer.value) vtracer.value.terminate()
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
   })

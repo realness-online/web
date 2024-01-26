@@ -8,7 +8,6 @@ module.exports = {
   entry: {
     gradient: path.join(__dirname, './workers/gradient.js'),
     vector: path.join(__dirname, './workers/vector.js'),
-    vtracer: path.join(__dirname, './workers/vtracer.js'),
     optimize: path.join(__dirname, './workers/optimize.js')
   },
   mode: 'production',
@@ -22,10 +21,7 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.json'],
     alias: {
-      '@': path.resolve('./'),
-      '@realness.online/vtracer': path.resolve(
-        '../vtracer/@realness.online/vtracer'
-      )
+      '@': path.resolve('./')
     },
     plugins: [],
     fallback: {
