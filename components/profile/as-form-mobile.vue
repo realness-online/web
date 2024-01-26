@@ -103,14 +103,10 @@
     show_authorize.value = false
     show_captcha.value = true
     await next_tick()
-    human.value = new Recaptcha(
-      'captcha',
-      {
-        size: 'invisible',
-        callback: text_human_verify_code
-      },
-      auth.value
-    )
+    human.value = new Recaptcha(auth.value, 'captcha', {
+      size: 'invisible',
+      callback: text_human_verify_code
+    })
     human.value.verify()
   }
   const text_human_verify_code = async () => {

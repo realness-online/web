@@ -38,7 +38,7 @@
     "culori": "^3.2.0",
     "events": "^3.3.0",
     "exifreader": "^4.13.0",
-    "firebase": "9.8.2",
+    "firebase": "10.7.2",
     "hsl-to-hex": "1.0.0",
     "idb-keyval": "6.1.0",
     "jimp": "0.16.2",
