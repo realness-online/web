@@ -103,6 +103,7 @@
       "worker": true
     },
     "globals": {
+      "process": "readonly",
       "defineProps": "readonly",
       "defineEmits": "readonly",
       "defineExpose": "readonly",
