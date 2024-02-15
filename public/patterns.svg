@@ -1,4 +1,19 @@
 <svg height="100vh" width="100vw" xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <pre>
+    # the available patterns are:
+      circles: [1...9]
+      diagonal-stripe: [1...6]
+      dots:[1...9]
+      horizontal-stripe:[1...9]
+      vertical-stripe:[1...9]
+      crosshatch,
+      houndstooth,
+      lightstripe,
+      smalldot,
+      subtle-patch,
+      verticalstripe,
+      whitecarbon
+  </pre>
   <pattern id="circles-1" patternUnits="userSpaceOnUse" width="10" height="10">
     <image
       href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSJ3aGl0ZSIgLz4KICA8Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iIzU1OTRlNyIvPgo8L3N2Zz4="
