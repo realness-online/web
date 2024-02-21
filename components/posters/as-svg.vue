@@ -13,9 +13,6 @@
     :class="{ animate }"
     @click="click">
     <defs>
-      <as-gradients :vector="vector" />
-      <as-animation :vector="vector" />
-      <as-texture :vector="vector" />
       <pattern :id="query('pattern')" :viewBox="viewbox">
         <as-background
           :id="query('background')"
@@ -57,7 +54,9 @@
           :stroke="`url(${fragment('radial-light')})`"
           @focus="focus('bold')" />
       </pattern>
+      <as-gradients :vector="vector" />
       <as-texture :vector="vector" />
+      <as-animation :vector="vector" />
     </defs>
     <rect filter="url(#test)" width="100%" height="100%" />
   </svg>
