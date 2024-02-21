@@ -12,48 +12,54 @@
     :tabindex="focusable"
     :class="{ animate }"
     @click="click">
-    <as-gradients :vector="vector" />
-    <as-animation :vector="vector" />
-    <as-background
-      :id="query('background')"
-      :rect="vector.background"
-      :width="vector.width"
-      :height="vector.height"
-      :tabindex="tabindex"
-      fill-opacity="1"
-      :fill="`url(${fragment('radial-background')})`"
-      @focus="focus('background')" />
-    <as-path
-      v-if="vector.light"
-      :id="query('light')"
-      itemprop="light"
-      :path="vector.light"
-      :tabindex="tabindex"
-      fill-opacity="0.90"
-      :fill="`url(${fragment('vertical-light')})`"
-      :stroke="`url(${fragment('horizontal-regular')})`"
-      @focus="focus('light')" />
-    <as-path
-      v-if="vector.regular"
-      :id="query('regular')"
-      itemprop="regular"
-      fill-opacity="0.90"
-      :path="vector.regular"
-      :tabindex="tabindex"
-      :fill="`url(${fragment('horizontal-regular')})`"
-      :stroke="`url(${fragment('radial-background')})`"
-      @focus="focus('regular')" />
-    <as-path
-      v-if="vector.bold"
-      :id="query('bold')"
-      itemprop="bold"
-      :tabindex="tabindex"
-      :path="vector.bold"
-      fill-opacity="0.9"
-      :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-light')})`"
-      @focus="focus('bold')" />
-    <as-emboss v-if="show_emboss" :vector="vector" />
+    <defs>
+      <as-gradients :vector="vector" />
+      <as-animation :vector="vector" />
+      <as-texture :vector="vector" />
+      <pattern :id="query('pattern')" :viewBox="viewbox">
+        <as-background
+          :id="query('background')"
+          :rect="vector.background"
+          :width="vector.width"
+          :height="vector.height"
+          :tabindex="tabindex"
+          fill-opacity="1"
+          :fill="`url(${fragment('radial-background')})`"
+          @focus="focus('background')" />
+        <as-path
+          v-if="vector.light"
+          :id="query('light')"
+          itemprop="light"
+          :path="vector.light"
+          :tabindex="tabindex"
+          fill-opacity="0.90"
+          :fill="`url(${fragment('vertical-light')})`"
+          :stroke="`url(${fragment('horizontal-regular')})`"
+          @focus="focus('light')" />
+        <as-path
+          v-if="vector.regular"
+          :id="query('regular')"
+          itemprop="regular"
+          fill-opacity="0.90"
+          :path="vector.regular"
+          :tabindex="tabindex"
+          :fill="`url(${fragment('horizontal-regular')})`"
+          :stroke="`url(${fragment('radial-background')})`"
+          @focus="focus('regular')" />
+        <as-path
+          v-if="vector.bold"
+          :id="query('bold')"
+          itemprop="bold"
+          :tabindex="tabindex"
+          :path="vector.bold"
+          fill-opacity="0.9"
+          :fill="`url(${fragment('vertical-bold')})`"
+          :stroke="`url(${fragment('radial-light')})`"
+          @focus="focus('bold')" />
+      </pattern>
+      <as-texture :vector="vector" />
+    </defs>
+    <rect filter="url(#test)" width="100%" height="100%" />
   </svg>
 </template>
 <script setup>
@@ -62,7 +68,7 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
-  import AsEmboss from '@/components/posters/as-emboss'
+  import AsTexture from '@/components/posters/as-texture'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
