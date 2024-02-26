@@ -4,7 +4,7 @@ import { get_item } from '@/use/item'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  './tests/__mocks__/html/statements.html',
   'utf8'
 )
 describe('@/use/statements', () => {

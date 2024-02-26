@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import Storage from '@/persistance/Storage'
 import Local from '@/persistance/Local'
 import fs from 'fs'
-const preferences = fs.readFileSync('./__mocks__/html/preferences.html', 'utf8')
+const preferences = fs.readFileSync('./tests/__mocks__/html/preferences.html', 'utf8')
 describe('@/persistance/Local.js', () => {
   class Preferences extends Local(Storage) {}
   let local

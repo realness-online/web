@@ -10,16 +10,16 @@ import {
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  './tests/__mocks__/html/statements.html',
   'utf8'
 )
 const offline_poster = fs.readFileSync(
-  './__mocks__/html/poster-offline.html',
+  './tests/__mocks__/html/poster-offline.html',
   'utf8'
 )
-const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
-const person_html = fs.readFileSync('./__mocks__/html/person.html', 'utf8')
-const events_html = fs.readFileSync('./__mocks__/html/events.html', 'utf8')
+const poster_html = fs.readFileSync('./tests/__mocks__/html/poster.html', 'utf8')
+const person_html = fs.readFileSync('./tests/__mocks__/html/person.html', 'utf8')
+const events_html = fs.readFileSync('./tests/__mocks__/html/events.html', 'utf8')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
 

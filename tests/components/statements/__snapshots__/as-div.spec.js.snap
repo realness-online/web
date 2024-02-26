@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/statements/as-div.vue > Renders > A statement 1`] = `
+<div
+  itemid="/+16282281824/statements/1569909292018"
+  itemscope=""
+>
+  <p
+    itemprop="statement"
+  >
+    Mark Zuckerberg is just feeding his AI vanity
+  </p>
+  <!--v-if-->
+  <!--v-if-->
+</div>
+`;
