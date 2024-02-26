@@ -9,7 +9,10 @@ const statements_html = fs.readFileSync(
   './tests/__mocks__/html/statements.html',
   'utf8'
 )
-const poster_html = fs.readFileSync('./tests/__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync(
+  './tests/__mocks__/html/poster.html',
+  'utf8'
+)
 const poster = get_item(poster_html)
 const statements = get_item(statements_html).statements
 describe('@/components/as-days', () => {

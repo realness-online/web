@@ -11,7 +11,10 @@ import {
   is_fat
 } from '@/persistance/Paged'
 import fs from 'fs'
-const statements = fs.readFileSync('./tests/__mocks__/html/statements.html', 'utf8')
+const statements = fs.readFileSync(
+  './tests/__mocks__/html/statements.html',
+  'utf8'
+)
 const hella_statements = fs.readFileSync(
   './tests/__mocks__/html/statements-hella.html',
   'utf8'

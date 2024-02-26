@@ -4,7 +4,10 @@ import as_figure from '@/components/posters/as-figure'
 import get_item from '@/use/item'
 import fs from 'fs'
 import vector_mock from './mixin_mock'
-const poster_html = fs.readFileSync('./tests/__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync(
+  './tests/__mocks__/html/poster.html',
+  'utf8'
+)
 const poster = get_item(poster_html)
 describe('@/compontent/posters/as-figure.vue', () => {
   let wrapper
