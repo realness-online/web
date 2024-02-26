@@ -10,7 +10,7 @@ const potrace_options = {
   steps: 3
   // threshold: 255
 }
-function to_kb(vector) {
+export function to_kb(vector) {
   let size_of = 0
   vector.paths.forEach(path => {
     size_of += path.d.length

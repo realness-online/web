@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import { as_thoughts } from '@/use/statements'
 import { get_item } from '@/use/item'
+import * as itemid from '@/use/itemid'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
   './__mocks__/html/statements.html',

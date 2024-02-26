@@ -72,13 +72,10 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
   import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import CallToAction from '@/components/call-to-action'
-  import NameAsForm from '@/components/profile/as-form-name'
   import SignOn from '@/components/profile/sign-on'
-
   import { current_user, sign_off } from '@/use/serverless'
   import { get_file_system } from '@/use/file'
   const set_posters_folder = async () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import {
   recent_visit_first,
   recent_number_first,

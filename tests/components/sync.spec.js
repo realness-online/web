@@ -1,10 +1,11 @@
+import { vi } from 'vitest'
 import { shallowMount, mount, flushPromises as flush } from '@vue/test-utils'
-import { get, set, del } from 'idb-keyval'
 import * as itemid from '@/use/itemid'
-import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
-import { Me, Statements, Events, Poster } from '@/persistance/Storage'
+import { Me, Statements } from '@/persistance/Storage'
+import vector_mock from './mixin_mock'
+const current_user = { phoneNumber: '+16282281824' }
 const fake_props = {
   global: {
     stubs: ['router-link', 'router-view']
@@ -15,9 +16,6 @@ const statement = {
   id: '/+16282281824',
   type: 'statements',
   statement: 'I like to move it'
-}
-const current_user = {
-  phoneNumber: '+16282281824'
 }
 describe('@/components/sync', () => {
   let wrapper
@@ -120,12 +118,6 @@ describe('@/components/sync', () => {
     })
   })
 })
-
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import * as itemid from '@/use/itemid'
-
-import vector_mock from './mixin_mock'
-const current_user = { phoneNumber: '+16282281824' }
 describe('@/mixins/visit', () => {
   let wrapper
   let person

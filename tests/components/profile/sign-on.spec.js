@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import sign_on from '@/components/profile/sign-on'
 describe('@/components/profile/sign-on', () => {

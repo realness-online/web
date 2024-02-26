@@ -8,11 +8,6 @@ import { ref } from 'vue'
 const user = {
   phoneNumber: '+16282281824'
 }
-const me = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+16282281824'
-}
 vi.mock('vue-router')
 vi.mock('@/use/statements', () => {
   return {
@@ -30,7 +25,6 @@ describe('@/views/Account.vue', () => {
   beforeEach(async () => {
     current_user.value = user
     localStorage.me = '/+16282281824'
-    const router = { push: vi.fn() }
     wrapper = mount(Account, {
       global: {
         stubs: ['router-link', 'router-view']
