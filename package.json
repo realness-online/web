@@ -17,7 +17,7 @@
     "serve": "vite preview",
     "serve:https": "serve dist --host",
     "deploy": "yarn lint && yarn format && yarn workers && yarn build && firebase deploy --only hosting,storage -m $npm_package_version",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix .",
     "format": "prettier .  --write",
     "format:check": "prettier . --check",
     "release": "yarn release:gh && yarn release:npm && git tag v$npm_package_version",
@@ -37,7 +37,6 @@
     "@realness.online/vtracer": "../vtracer/",
     "@vueuse/core": "^10.8.0",
     "culori": "^4.0.1",
-    "events": "^3.3.0",
     "exifreader": "^4.21.0",
     "firebase": "^10.8.0",
     "hsl-to-hex": "^1.0.0",
@@ -53,16 +52,15 @@
     "url": "^0.11.3",
     "vue": "^3.4.19",
     "vue-router": "^4.2.5",
-    "webpack-bundle-analyzer": "^4.10.1",
     "workbox-build": "^7.0.0",
     "workbox-window": "^7.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "assert": "2.1.0",
-    "buffer": "^6.0.3",
     "browserify-fs": "1.0.0",
     "browserify-zlib": "0.2.0",
+    "buffer": "^6.0.3",
     "c8": "^9.1.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -70,6 +68,8 @@
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-vitest": "^0.3.22",
+    "eslint-plugin-vitest-globals": "^1.4.0",
     "eslint-plugin-vue": "^9.21.1",
     "fake-indexeddb": "^5.0.2",
     "happy-dom": "^13.3.8",
@@ -92,14 +92,18 @@
     "vite-plugin-pwa": "^0.19.0",
     "vitest": "^1.3.1",
     "webpack": "5.90.3",
-    "webpack-cli": "5.1.4"
+    "webpack-cli": "5.1.4",
+    "webpack-bundle-analyzer": "^4.10.1"
   },
   "eslintConfig": {
     "root": true,
+    "parserOptions": {
+      "ecmaVersion": 2023
+    },
     "env": {
       "browser": true,
-      "es2021": true,
-      "jest": true,
+      "node": true,
+      "es2023": true,
       "serviceworker": true,
       "worker": true
     },
@@ -111,6 +115,7 @@
       "withDefaults": "readonly"
     },
     "extends": [
+      "plugin:vitest/recommended",
       "eslint:recommended",
       "plugin:vue/vue3-recommended",
       "prettier"
@@ -148,7 +153,8 @@
     "trailingComma": "none",
     "bracketSameLine": true,
     "arrowParens": "avoid",
-    "vueIndentScriptAndStyle": true
+    "vueIndentScriptAndStyle": true,
+    "htmlWhitespaceSensitivity": "ignore"
   },
   "browserslist": [
     "last 2 versions"

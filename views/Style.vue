@@ -400,25 +400,6 @@ P R E F O R M A T T E D T E X T
               <p><a href="#top">[Top]</a></p>
             </footer>
           </article>
-          <article id="text__comments">
-            <header><h2>HTML Comments</h2></header>
-            <div>
-              <p>
-                There is comment here:
-                <!--This comment should not be displayed-->
-              </p>
-              <p>
-                There is a comment spanning multiple tags and lines below here.
-              </p>
-              <!--<p><a href="#!">This is a text link. But it should not be displayed in a comment</a>.</p>
-              <p><strong>Strong is used to indicate strong importance. But, it should not be displayed in a comment</strong></p>
-              <p><em>This text has added emphasis. But, it should not be displayed in a comment</em></p>-->
-            </div>
-                       
-            <footer>
-              <p><a href="#top">[Top]</a></p>
-            </footer>
-          </article>
         </section>
         <section id="embedded">
           <header><h2>Embedded content</h2></header>
