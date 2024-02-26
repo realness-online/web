@@ -85,6 +85,9 @@ devDependencies:
   '@vitest/coverage-v8':
     specifier: ^1.3.1
     version: 1.3.1(vitest@1.3.1)
+  '@vitest/ui':
+    specifier: ^1.3.1
+    version: 1.3.1(vitest@1.3.1)
   '@vue/test-utils':
     specifier: ^2.4.4
     version: 2.4.4(vue@3.4.20)
@@ -189,7 +192,7 @@ devDependencies:
     version: 0.19.0(vite@5.1.4)(workbox-build@7.0.0)(workbox-window@7.0.0)
   vitest:
     specifier: ^1.3.1
-    version: 1.3.1(happy-dom@13.6.2)(stylus@0.62.0)
+    version: 1.3.1(@vitest/ui@1.3.1)(happy-dom@13.6.2)(stylus@0.62.0)
   webpack:
     specifier: 5.90.3
     version: 5.90.3(webpack-cli@5.1.4)
@@ -2990,7 +2993,7 @@ packages:
       std-env: 3.7.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.3.1(happy-dom@13.6.2)(stylus@0.62.0)
+      vitest: 1.3.1(@vitest/ui@1.3.1)(happy-dom@13.6.2)(stylus@0.62.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3023,6 +3026,21 @@ packages:
     resolution: {integrity: sha512-xAcW+S099ylC9VLU7eZfdT9myV67Nor9w9zhf0mGCYJSO+zM2839tOeROTdikOi/8Qeusffvxb/MyBSOja1Uig==}
     dependencies:
       tinyspy: 2.2.1
+    dev: true
+
+  /@vitest/ui@1.3.1(vitest@1.3.1):
+    resolution: {integrity: sha512-2UrFLJ62c/eJGPHcclstMKlAR7E1WB1ITe1isuowEPJJHi3HfqofvsUqQ1cGrEF7kitG1DJuwURUA3HLDtQkXA==}
+    peerDependencies:
+      vitest: 1.3.1
+    dependencies:
+      '@vitest/utils': 1.3.1
+      fast-glob: 3.3.2
+      fflate: 0.8.2
+      flatted: 3.3.1
+      pathe: 1.1.2
+      picocolors: 1.0.0
+      sirv: 2.0.4
+      vitest: 1.3.1(@vitest/ui@1.3.1)(happy-dom@13.6.2)(stylus@0.62.0)
     dev: true
 
   /@vitest/utils@1.3.1:
@@ -4461,7 +4479,7 @@ packages:
     dependencies:
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.0)(typescript@5.3.3)
       eslint: 8.57.0
-      vitest: 1.3.1(happy-dom@13.6.2)(stylus@0.62.0)
+      vitest: 1.3.1(@vitest/ui@1.3.1)(happy-dom@13.6.2)(stylus@0.62.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -4736,6 +4754,10 @@ packages:
     dependencies:
       websocket-driver: 0.7.4
     dev: false
+
+  /fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
+    dev: true
 
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
@@ -7600,7 +7622,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.3.1(happy-dom@13.6.2)(stylus@0.62.0):
+  /vitest@1.3.1(@vitest/ui@1.3.1)(happy-dom@13.6.2)(stylus@0.62.0):
     resolution: {integrity: sha512-/1QJqXs8YbCrfv/GPQ05wAZf2eakUPLPa18vkJAKE7RXOKfVHqMZZ1WlTjiwl6Gcn65M5vpNUB6EFLnEdRdEXQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -7629,6 +7651,7 @@ packages:
       '@vitest/runner': 1.3.1
       '@vitest/snapshot': 1.3.1
       '@vitest/spy': 1.3.1
+      '@vitest/ui': 1.3.1(vitest@1.3.1)
       '@vitest/utils': 1.3.1
       acorn-walk: 8.3.2
       chai: 4.4.1
