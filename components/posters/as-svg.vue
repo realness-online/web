@@ -58,7 +58,7 @@
       <as-texture :vector="vector" />
       <as-animation :vector="vector" />
     </defs>
-    <rect filter="url(#test)" width="100%" height="100%" />
+    <rect filter="url(#stage)" width="100%" height="100%" />
   </svg>
 </template>
 <script setup>

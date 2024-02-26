@@ -1,15 +1,108 @@
 <template>
-  <defs>
+  <defs class="emboss">
+    <symbol :id="query('emboss-symbol')">
+      <defs>
+        <symbol :id="query('emboss-light')">
+          <use :href="fragment('light')" filter="url(#emboss)" />
+        </symbol>
+        <symbol :id="query('emboss-regular')">
+          <use :href="fragment('regular')" filter="url(#emboss-straight)" />
+        </symbol>
+        <symbol :id="query('emboss-bold')">
+          <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
+        </symbol>
+
+        <filter id="emboss">
+          <feConvolveMatrix
+            kernelMatrix="1.5 0 0
+                      0   0 0
+                      0   0 -1.5" />
+        </filter>
+        <filter id="emboss-opposite">
+          <feConvolveMatrix
+            kernelMatrix="0   0 2.5
+                      0   0 0
+                     -2.5 0 0" />
+        </filter>
+        <filter id="emboss-straight">
+          <feConvolveMatrix
+            kernelMatrix="0   0 0
+                      2.5 0 -2.5
+                      0   0 0" />
+        </filter>
+      </defs>
+      <use
+        tabindex="-1"
+        class="emboss"
+        opacity="0.66"
+        :href="fragment('emboss-light')" />
+      <use
+        tabindex="-1"
+        class="emboss"
+        opacity="0.66"
+        :href="fragment('emboss-regular')" />
+      <use
+        tabindex="-1"
+        class="emboss"
+        opacity="0.66"
+        :href="fragment('emboss-bold')" />
+    </symbol>
+  </defs>
+  <defs class="texture global">
+    <filter id="stage-slow" color-interpolation-filters="sRGB" y="0">
+      <feImage :href="`${icons}#background`" result="bg" />
+
+      <feImage :href="`${icons}#realness`" result="tile" />
+      <feImage href="#gradientRect" result="waves" />
+      <feMerge>
+        <feMergeNode in="bg" />
+        <feMergeNode in="tile" />
+        <feMergeNode in="waves" />
+      </feMerge>
+    </filter>
+  </defs>
+  <defs class="texture actual"></defs>
+  <defs class="texture example">
     <pattern
       id="tile"
       patternUnits="userSpaceOnUse"
-      width="75"
-      height="75"
-      viewBox="0 0 50 50">
-      <line x1="1" y1="0" x2="51" y2="50" stroke="#19203d" stroke-width="2" />
-      <line x1="49" y1="0" x2="-1" y2="50" stroke="#19203d" stroke-width="2" />
-      <line x1="50" y1="0" x2="0" y2="50" stroke="#313763" stroke-width="2" />
-      <line x1="0" y1="0" x2="50" y2="50" stroke="#313763" stroke-width="2" />
+      preserveAspectRatio="xMidYMid slice"
+      width="21"
+      height="34"
+      viewBox="0 0 192 192">
+      <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="69" />
+      <rect
+        fill="hsla(203, 58%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104"
+        y="69" />
+      <rect
+        fill="hsla(203, 58%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="138" />
+      <rect
+        fill="hsla(353, 83%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104"
+        y="138" />
     </pattern>
     <radialGradient id="l" cx="50%" cy="200%" fy="0" r="201%">
       <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
@@ -21,8 +114,7 @@
     <rect id="bgRect" fill="#39466b" width="100%" height="100%" />
     <rect id="gradientRect" fill="url(#l)" width="100%" height="100%" />
     <rect id="tileRect" fill="url(#tile)" width="100%" height="100%" />
-
-    <filter id="test" color-interpolation-filters="sRGB" y="0">
+    <filter id="stage" color-interpolation-filters="sRGB" y="0">
       <feImage href="#bgRect" result="bg" />
       <feImage href="#tileRect" result="tile" />
       <feImage href="#gradientRect" result="waves" />
@@ -32,25 +124,8 @@
         <feMergeNode in="waves" />
       </feMerge>
     </filter>
-    <filter id="rough-it-up">
-      <feTurbulence
-        baseFrequency="0.1"
-        type="fractalNoise"
-        numOctaves="2"
-        seed="83"
-        in="flood" />
-      <feFlood
-        flood-color="rgba(0,0,0,0.5)"
-        flood-opacity="0.91"
-        result="flood" />
-      <feBlend in="flood" in2="SourceGraphic" />
-    </filter>
   </defs>
-  <defs>
-    <symbol :id="query('emboss-light')"> </symbol>
-    <symbol :id="query('emboss-regular')"> </symbol>
-    <symbol :id="query('emboss-bold')"> </symbol>
-
+  <defs class="filter extra">
     <filter id="emboss">
       <feConvolveMatrix
         kernelMatrix="1.5 0 0
@@ -69,8 +144,6 @@
                       2.5 0 -2.5
                       0   0 0" />
     </filter>
-  </defs>
-  <defs class="filters">
     <filter id="light-filter">
       <feColorMatrix
         in="SourceGraphic"
@@ -89,7 +162,6 @@
                 0 0 1.5 0 0
                 0 0 0 1 0" />
     </filter>
-
     <filter id="bold-filter">
       <feColorMatrix
         in="SourceGraphic"
@@ -99,40 +171,23 @@
                 0 0 1 0 0
                 0 0 0 1 0" />
     </filter>
-
-    <filter id="emboss">
-      <feConvolveMatrix
-        kernelMatrix="1 0 0
-                      0 0 0
-                      0 0 -1" />
+    <filter id="rough-it-up">
+      <feTurbulence
+        baseFrequency="0.1"
+        type="fractalNoise"
+        numOctaves="2"
+        seed="83"
+        in="flood" />
+      <feFlood
+        flood-color="rgba(0,0,0,0.5)"
+        flood-opacity="0.91"
+        result="flood" />
+      <feBlend in="flood" in2="SourceGraphic" />
     </filter>
   </defs>
-
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('light')"
-    filter="url(#emboss)" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('emboss-regular')" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('regular')"
-    filter="url(#emboss-straight)" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('bold')"
-    filter="url(#emboss-opposite)" />
 </template>
 <script setup>
+  import icons from '/icons.svg'
   import { as_fragment_id, as_query_id } from '@/use/itemid'
   import { is_vector } from '@/use/vector'
   const props = defineProps({
