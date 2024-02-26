@@ -11,7 +11,7 @@ node_modules
 /public/**.wasm
 .prettierignore
 /.editorconfig
-/coverage/
+/tests/coverage/
 /artifacts/
 /dist
 /public/report.html

@@ -86,6 +86,8 @@ export default defineConfig({
       './tests/__mocks__/browser/FileReaderSync.js'
     ],
     coverage: {
+      enabled: true,
+      subdir: true,
       reporter: ['text', 'html'],
       lines: 90,
       branches: 90,
