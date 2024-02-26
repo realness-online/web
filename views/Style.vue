@@ -239,10 +239,15 @@
             <header><h1>Address</h1></header>
             <address>
               Written by
-              <a href="mailto:webmaster@example.com">Jon Doe</a>.<br />
-              Visit us at:<br />
-              Example.com<br />
-              Box 564, Disneyland<br />
+              <a href="mailto:webmaster@example.com">Jon Doe</a>
+              .
+              <br />
+              Visit us at:
+              <br />
+              Example.com
+              <br />
+              Box 564, Disneyland
+              <br />
               USA
             </address>
             <footer>
@@ -261,9 +266,7 @@
           <article id="text__tables">
             <header><h2>Tabular data</h2></header>
             <table>
-              <caption>
-                Table Caption
-              </caption>
+              <caption>Table Caption</caption>
               <thead>
                 <tr>
                   <th>Table Heading 1</th>
@@ -320,7 +323,10 @@
           <article id="text__code">
             <header><h2>Code</h2></header>
             <div>
-              <p><strong>Keyboard input:</strong> <kbd>Cmd</kbd></p>
+              <p>
+                <strong>Keyboard input:</strong>
+                <kbd>Cmd</kbd>
+              </p>
               <p>
                 <strong>Inline code:</strong>
                 <code>&lt;div&gt;code&lt;/div&gt;</code>
@@ -347,30 +353,51 @@ P R E F O R M A T T E D T E X T
           <article id="text__inline">
             <header><h2>Inline elements</h2></header>
             <div>
-              <p><a href="#!">This is a text link</a>.</p>
+              <p>
+                <a href="#!">This is a text link</a>
+                .
+              </p>
               <p>
                 <strong>Strong is used to indicate strong importance.</strong>
               </p>
               <p><em>This text has added emphasis.</em></p>
               <p>
-                The <b>b element</b> is stylistically different text from normal
-                text, without any special importance.
+                The
+                <b>b element</b>
+                is stylistically different text from normal text, without any
+                special importance.
               </p>
               <p>
-                The <i>i element</i> is text that is offset from the normal
-                text.
+                The
+                <i>i element</i>
+                is text that is offset from the normal text.
               </p>
               <p>
-                The <u>u element</u> is text with an unarticulated, though
-                explicitly rendered, non-textual annotation.
+                The
+                <u>u element</u>
+                is text with an unarticulated, though explicitly rendered,
+                non-textual annotation.
               </p>
               <p>
-                <del>This text is deleted</del> and
-                <ins>This text is inserted</ins>.
+                <del>This text is deleted</del>
+                and
+                <ins>This text is inserted</ins>
+                .
               </p>
-              <p><s>This text has a strikethrough</s>.</p>
-              <p>Superscript<sup>®</sup>.</p>
-              <p>Subscript for things like H<sub>2</sub>O.</p>
+              <p>
+                <s>This text has a strikethrough</s>
+                .
+              </p>
+              <p>
+                Superscript
+                <sup>®</sup>
+                .
+              </p>
+              <p>
+                Subscript for things like H
+                <sub>2</sub>
+                O.
+              </p>
               <p>
                 <small>This small text is small for fine print, etc.</small>
               </p>
@@ -380,16 +407,29 @@ P R E F O R M A T T E D T E X T
               </p>
               <p>
                 <q
-                  cite="https://developer.mozilla.org/en-US/docs/HTML/Element/q"
-                  >This text is a short inline quotation.</q
-                >
+                  cite="https://developer.mozilla.org/en-US/docs/HTML/Element/q">
+                  This text is a short inline quotation.
+                </q>
               </p>
               <p><cite>This is a citation.</cite></p>
-              <p>The <dfn>dfn element</dfn> indicates a definition.</p>
-              <p>The <mark>mark element</mark> indicates a highlight.</p>
               <p>
-                The <var>variable element</var>, such as <var>x</var> =
-                <var>y</var>.
+                The
+                <dfn>dfn element</dfn>
+                indicates a definition.
+              </p>
+              <p>
+                The
+                <mark>mark element</mark>
+                indicates a highlight.
+              </p>
+              <p>
+                The
+                <var>variable element</var>
+                , such as
+                <var>x</var>
+                =
+                <var>y</var>
+                .
               </p>
               <p>
                 The time element:
@@ -406,15 +446,21 @@ P R E F O R M A T T E D T E X T
           <article id="embedded__images">
             <header><h2>Images</h2></header>
             <div>
-              <h3>Plain <code>&lt;img&gt;</code> element</h3>
+              <h3>
+                Plain
+                <code>&lt;img&gt;</code>
+                element
+              </h3>
               <p>
                 <img
                   src="https://placekitten.com/480/480"
                   alt="Photo of a kitten" />
               </p>
               <h3>
-                <code>&lt;figure&gt;</code> element with
-                <code>&lt;img&gt;</code> element
+                <code>&lt;figure&gt;</code>
+                element with
+                <code>&lt;img&gt;</code>
+                element
               </h3>
               <figure>
                 <img
@@ -422,9 +468,12 @@ P R E F O R M A T T E D T E X T
                   alt="Photo of a kitten" />
               </figure>
               <h3>
-                <code>&lt;figure&gt;</code> element with
-                <code>&lt;img&gt;</code> and
-                <code>&lt;figcaption&gt;</code> elements
+                <code>&lt;figure&gt;</code>
+                element with
+                <code>&lt;img&gt;</code>
+                and
+                <code>&lt;figcaption&gt;</code>
+                elements
               </h3>
               <figure>
                 <img
@@ -433,8 +482,10 @@ P R E F O R M A T T E D T E X T
                 <figcaption>Here is a caption for this image.</figcaption>
               </figure>
               <h3>
-                <code>&lt;figure&gt;</code> element with a
-                <code>&lt;picture&gt;</code> element
+                <code>&lt;figure&gt;</code>
+                element with a
+                <code>&lt;picture&gt;</code>
+                element
               </h3>
               <figure>
                 <picture>
@@ -616,26 +667,26 @@ P R E F O R M A T T E D T E X T
               <legend>Checkboxes</legend>
               <ul>
                 <li>
-                  <label for="checkbox1"
-                    ><input
+                  <label for="checkbox1">
+                    <input
                       id="checkbox1"
                       name="checkbox"
                       type="checkbox"
                       checked="checked" />
-                    Choice A</label
-                  >
+                    Choice A
+                  </label>
                 </li>
                 <li>
-                  <label for="checkbox2"
-                    ><input id="checkbox2" name="checkbox" type="checkbox" />
-                    Choice B</label
-                  >
+                  <label for="checkbox2">
+                    <input id="checkbox2" name="checkbox" type="checkbox" />
+                    Choice B
+                  </label>
                 </li>
                 <li>
-                  <label for="checkbox3"
-                    ><input id="checkbox3" name="checkbox" type="checkbox" />
-                    Choice C</label
-                  >
+                  <label for="checkbox3">
+                    <input id="checkbox3" name="checkbox" type="checkbox" />
+                    Choice C
+                  </label>
                 </li>
               </ul>
             </fieldset>
@@ -644,26 +695,26 @@ P R E F O R M A T T E D T E X T
               <legend>Radio buttons</legend>
               <ul>
                 <li>
-                  <label for="radio1"
-                    ><input
+                  <label for="radio1">
+                    <input
                       id="radio1"
                       name="radio"
                       type="radio"
                       checked="checked" />
-                    Option 1</label
-                  >
+                    Option 1
+                  </label>
                 </li>
                 <li>
-                  <label for="radio2"
-                    ><input id="radio2" name="radio" type="radio" /> Option
-                    2</label
-                  >
+                  <label for="radio2">
+                    <input id="radio2" name="radio" type="radio" />
+                    Option 2
+                  </label>
                 </li>
                 <li>
-                  <label for="radio3"
-                    ><input id="radio3" name="radio" type="radio" /> Option
-                    3</label
-                  >
+                  <label for="radio3">
+                    <input id="radio3" name="radio" type="radio" />
+                    Option 3
+                  </label>
                 </li>
               </ul>
             </fieldset>
@@ -749,8 +800,11 @@ P R E F O R M A T T E D T E X T
       </main>
       <footer>
         <p>
-          Made by <a href="http://twitter.com/cbracco">@cbracco</a>. Code on
-          <a href="http://github.com/cbracco/html5-test-page">GitHub</a>.
+          Made by
+          <a href="http://twitter.com/cbracco">@cbracco</a>
+          . Code on
+          <a href="http://github.com/cbracco/html5-test-page">GitHub</a>
+          .
         </p>
       </footer>
     </div>

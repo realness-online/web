@@ -32,7 +32,10 @@
           <figure>
             <img class="example" src="/about/portrait/09.svg" loading="lazy" />
             <figcaption>
-              <h2>We call them <strong>Posters</strong></h2>
+              <h2>
+                We call them
+                <strong>Posters</strong>
+              </h2>
               <p>
                 Take a picture from your phone, and Realness creates a vector
                 graphic composed into four animatable layers, from a bright
@@ -47,7 +50,8 @@
               </p>
               <h4>
                 Animators, Designers, Hand coders —
-                <strong>Realness</strong> was built for you.
+                <strong>Realness</strong>
+                was built for you.
               </h4>
             </figcaption>
           </figure>
@@ -140,7 +144,10 @@
             <li>
               <icon name="finished" />
               <p>
-                <b class="no">Email</b>, <b class="no">Likes</b>,
+                <b class="no">Email</b>
+                ,
+                <b class="no">Likes</b>
+                ,
                 <b class="no">Links</b>
               </p>
             </li>
@@ -157,10 +164,11 @@
               </p>
               <p>
                 It's natural to build web applications with HTML, especially for
-                <i>Edge first</i>. Orienting to this has helped Realness take
-                advantage of what's possible on the web today. How you build
-                your app can create opportunities over the monetized
-                client-server model we are used to today.
+                <i>Edge first</i>
+                . Orienting to this has helped Realness take advantage of what's
+                possible on the web today. How you build your app can create
+                opportunities over the monetized client-server model we are used
+                to today.
               </p>
               <p>
                 Edge first is native, fast, more secure, and gives you choices
@@ -193,7 +201,9 @@
                 Sign into Realness, and you can message me directly. Visit the
                 code
                 <a href="https://github.com/realness-online/web" rel="external">
-                  online</a>. I keep a
+                  online
+                </a>
+                . I keep a
                 <a href="https://scott-fryxell.github.io/" rel="external">
                   blog
                 </a>
@@ -270,9 +280,12 @@
               <icon name="finished"></icon>
               <p>
                 Learn lessons from Mastodon:
-                <strong class="no">fascists</strong>,
-                <strong class="no">terrorists</strong>,
-                <strong class="no">communists</strong>.
+                <strong class="no">fascists</strong>
+                ,
+                <strong class="no">terrorists</strong>
+                ,
+                <strong class="no">communists</strong>
+                .
               </p>
             </li>
           </ol>

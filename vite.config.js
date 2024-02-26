@@ -69,7 +69,7 @@ export default defineConfig({
     })
   ],
   test: {
-    root: 'web',
+    root: 'tests',
     globals: true,
     environment: 'happy-dom',
     mockReset: false,

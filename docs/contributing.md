@@ -14,9 +14,9 @@ Deploying creates an `artifacts` folder with reports on what files are generated
 
 A standard setup is usually three tabs in a terminal running the following scripts
 
-- `yarn serve` runs the client code on `http://localhost:8080`
-- `yarn workers:dev` keeps the workers current
-- `yarn test --watch --coverage --verbose` runs tests with code coverage on javascript you have changed.
+- `pnpm serve` runs the client code on `http://localhost:8080`
+- `pnpm workers:dev` keeps the workers current
+- `pnpm test --watch --coverage --verbose` runs tests with code coverage on javascript you have changed.
 
 replace `--watch` with `--watchAll` to get full coverage data with each change.
 
@@ -43,7 +43,7 @@ Start your local server and `localhost:8080` will be good to go
 
 - It's OK to have multiple small commits as you work on the PR
 
-- Make sure `yarn test --coverage` passes. Deploying will fail if your changes drop code coverage.
+- Make sure `pnpm test --coverage` passes. Deploying will fail if your changes drop code coverage.
 
 - If adding a new feature:
 

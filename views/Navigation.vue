@@ -2,7 +2,8 @@
   <section id="navigation" class="page" :class="{ posting }">
     <header>
       <router-link id="settings" to="/settings" tabindex="-1">
-        <icon name="gear" /> <span>{{ first_name }}</span>
+        <icon name="gear" />
+        <span>{{ first_name }}</span>
       </router-link>
     </header>
     <nav ref="nav">

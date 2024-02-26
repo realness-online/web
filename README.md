@@ -19,7 +19,7 @@ git clone git@github.com:realness-online/web.git
 
 cd web
 
-yarn install
+pnpm install
 ```
 
 ### Configure firebase
@@ -51,11 +51,11 @@ Once your project is created you will want to enable phone authentication and fi
 Install firebase-tools, login, and deploy
 
 ```bash
-yarn global add firebase-tools
+pnpm global add firebase-tools
 
 firebase login
 
-yarn deploy
+pnpm deploy
 ```
 
 # DONE!

@@ -21,8 +21,7 @@
         name="filesystem"
         title="Sync posters with a directory"
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
-        @on="set_posters_folder">
-      </preference>
+        @on="set_posters_folder"></preference>
       <details>
         <summary><h3>Documentation</h3></summary>
         <h4>

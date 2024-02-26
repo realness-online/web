@@ -32,7 +32,7 @@ Relationships are exclusive to the device, so a person's feed is constructed the
 
 All of the root files are for building realness. `workers.config` builds the workers, `vue.config` is build instructions for the web application.
 
-Running `yarn deploy` will fully exercise the application creating reports on code coverage, linting, and reporting on what files are being created and their sizes.
+Running `pnpm deploy` will fully exercise the application creating reports on code coverage, linting, and reporting on what files are being created and their sizes.
 
 ## `public/`
 
