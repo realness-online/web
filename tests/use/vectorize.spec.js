@@ -1,4 +1,4 @@
-import { use } from '@/use/vectorize'
+import { vi } from 'vitest'
 import get_item from '@/use/item'
 import fs from 'fs'
 import { describe } from 'vitest'

@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { vi } from 'vitest'
 import App from '@/App'
 describe('@/App.vue', () => {
   let wrapper

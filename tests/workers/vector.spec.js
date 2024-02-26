@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
 import Jimp from 'jimp'

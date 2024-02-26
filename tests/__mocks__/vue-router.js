@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 export const useRouter = vi.fn(() => {
   return {
     push: vi.fn()

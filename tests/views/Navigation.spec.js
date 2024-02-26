@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { nextTick as next_tick } from 'vue'
 import Navigation from '@/views/Navigation'

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_form from '@/components/profile/as-form-mobile'
 

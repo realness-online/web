@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { as_thoughts } from '@/use/statements'
 import { get_item } from '@/use/item'
 import fs from 'fs'

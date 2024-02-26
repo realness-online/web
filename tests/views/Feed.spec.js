@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'

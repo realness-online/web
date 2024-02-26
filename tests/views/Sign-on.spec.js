@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises as flush } from '@vue/test-utils'
 import * as itemid from '@/use/itemid'
 import { clear } from 'idb-keyval'

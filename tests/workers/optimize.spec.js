@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import * as optimize from '@/workers/optimize'
 import SVGO from 'svgo'
 import fs from 'fs'

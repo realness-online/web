@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { use_poster } from '@/use/vector'
 import get_item from '@/use/item'
 import fs from 'fs'

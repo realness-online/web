@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { mount, shallowMount as shallow, flushPromises } from '@vue/test-utils'
 import PhoneBook from '@/views/PhoneBook'
 import * as itemid from '@/use/itemid'

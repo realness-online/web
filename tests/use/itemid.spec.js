@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { beforeEach as before_each, afterEach as after_each } from 'vitest'
 import fs from 'fs'
 import { flushPromises } from '@vue/test-utils'

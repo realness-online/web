@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_fieldset from '@/components/events/as-fieldset'

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
 import { set, get, del } from 'idb-keyval'

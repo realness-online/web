@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_article from '@/components/statements/as-article'
 import vector_mock from './mixin_mock'

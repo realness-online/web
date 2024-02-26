@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import as_statement from '@/components/statements/as-div'
 import get_item from '@/use/item'

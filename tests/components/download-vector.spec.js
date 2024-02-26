@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import download_vector from '@/components/download-vector'
 import * as itemid from '@/use/itemid'

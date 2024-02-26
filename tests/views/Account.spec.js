@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import Account from '@/views/Account'
 import { current_user } from '@/use/serverless'

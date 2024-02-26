@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 

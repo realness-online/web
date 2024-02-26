@@ -14,7 +14,7 @@ describe('@/use/item.js', () => {
         expect(item.type).toBe('person')
         expect(item.id).toBe('/+16282281824')
       })
-      it('Returns null if no elements provided', () => {
+      it('Returns null if no elements provizded', () => {
         const items = get_item()
         expect(items).toBe(null)
       })

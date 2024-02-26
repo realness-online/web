@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { mount, shallowMount, flushPromises } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/use/item'

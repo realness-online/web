@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'

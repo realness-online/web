@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import Storage from '@/persistance/Storage'
 import Cloud from '@/persistance/Cloud'
 import Local from '@/persistance/Local'
