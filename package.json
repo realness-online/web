@@ -60,9 +60,9 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "assert": "2.1.0",
+    "buffer": "^6.0.3",
     "browserify-fs": "1.0.0",
     "browserify-zlib": "0.2.0",
-    "buffer-browserify": "0.2.5",
     "c8": "^9.1.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
