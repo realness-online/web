@@ -215,7 +215,6 @@
       :id="query('mood')"
       class="texture shadow"
       :fill="`url(${fragment(pattern)})`"
-
       width="100%"
       height="100%" />
     <as-animation :id="query('performance')" :vector="vector" />

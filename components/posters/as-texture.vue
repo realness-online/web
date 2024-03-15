@@ -60,7 +60,6 @@
     </filter>
   </defs>
   <defs class="texture shadow"></defs>
-
 </template>
 <script setup>
   import icons from '/icons.svg'
