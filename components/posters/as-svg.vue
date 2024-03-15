@@ -1,5 +1,5 @@
 <template>
-  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
+  <icon v-if="working" ref="trigger" name="stage" :tabindex="focusable" />
   <svg
     v-else
     :id="query()"
@@ -12,7 +12,8 @@
     :tabindex="focusable"
     :class="{ animate }"
     @click="click">
-    <defs>
+    <rect filter="url(#stage)" width="100%" height="100%" />
+    <defs :id="query('set')">
       <pattern :id="query('pattern')" :viewBox="viewbox">
         <as-background
           :id="query('background')"
@@ -44,6 +45,16 @@
           :stroke="`url(${fragment('radial-background')})`"
           @focus="focus('regular')" />
         <as-path
+          v-if="vector.mid"
+          :id="query('mid')"
+          itemprop="mid"
+          :tabindex="tabindex"
+          :path="vector.bold"
+          fill-opacity="0.9"
+          :fill="`url(${fragment('radial-regular')})`"
+          :stroke="`url(${fragment('vertical-light')})`"
+          @focus="focus('mid')" />
+        <as-path
           v-if="vector.bold"
           :id="query('bold')"
           itemprop="bold"
@@ -56,13 +67,161 @@
       </pattern>
       <as-gradients :vector="vector" />
       <as-texture :vector="vector" />
-      <as-animation :vector="vector" />
     </defs>
-    <rect filter="url(#stage)" width="100%" height="100%" />
+    <g
+      :id="query('parts')"
+      class="line-art color"
+      :filter="`url(${fragment('texture')})`">
+      <g class="back section">
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+      </g>
+      <g class="mid section">
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+      </g>
+      <g class="fore section">
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+        <g class="object">
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+          <g class="detail">
+            <path />
+          </g>
+        </g>
+      </g>
+    </g>
+    <rect
+      :id="query('mood')"
+      class="texture shadow"
+      :fill="`url(${fragment(pattern)})`"
+
+      width="100%"
+      height="100%" />
+    <as-animation :id="query('performance')" :vector="vector" />
   </svg>
 </template>
 <script setup>
-  import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'

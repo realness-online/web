@@ -42,7 +42,6 @@
       repeatCount="indefinite"
       dur="86s"
       values="0%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"

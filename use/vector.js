@@ -108,7 +108,7 @@ export const use_poster = () => {
   })
   const viewbox = computed(() => {
     if (vector.value) return vector.value.viewbox
-    else return '0 0 16 16' // this is the viewbox for silhouette
+    else return '0 0 512 683' // this is the default dimensions
   })
 
   const query = add => {

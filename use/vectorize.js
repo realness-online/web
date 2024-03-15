@@ -82,10 +82,12 @@ export const use = () => {
     vector.settings = {
       light: make_settings(response.data.vector.light),
       regular: make_settings(response.data.vector.regular),
+      mid: make_settings(response.data.vector.mid),
       bold: make_settings(response.data.vector.bold)
     }
     vector.light = make_path(vector.light)
     vector.regular = make_path(vector.regular)
+    vector.mid = make_path(vector.mid)
     vector.bold = make_path(vector.bold)
     new_vector.value = vector
   }
