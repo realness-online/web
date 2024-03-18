@@ -103,7 +103,6 @@
       left: 0
       right: 0
       padding: base-line
-      background: black-transparent
       @media (min-width: pad-begins)
         padding: (base-line * 2) base-line base-line base-line
       & > h1
