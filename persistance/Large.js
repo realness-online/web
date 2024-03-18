@@ -20,7 +20,7 @@ const Large = superclass =>
       const directory = await get(path)
       await del(this.id)
       await del(path)
-      if (directory.items) {
+      if (directory?.items) {
         directory.items = directory.items.filter(
           id => parseInt(id) !== as_created_at(this.id)
         )
