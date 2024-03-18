@@ -44,6 +44,16 @@
       :stroke="`url(${fragment('radial-background')})`"
       @focus="focus('regular')" />
     <as-path
+      v-if="vector.medium"
+      :id="query('medium')"
+      itemprop="medium"
+      fill-opacity=".90"
+      :path="vector.medium"
+      :tabindex="tabindex"
+      :fill="`url(${fragment('vertical-regular')})`"
+      :stroke="`url(${fragment('horizontal-regular')})`"
+      @focus="focus('medium')" />
+    <as-path
       v-if="vector.bold"
       :id="query('bold')"
       itemprop="bold"
