@@ -7,7 +7,7 @@ const potrace_options = {
   blackOnWhite: true,
   fillStrategy: 'dominant',
   rangeDistribution: 'auto',
-  steps: 3
+  steps: 4
   // threshold: 255
 }
 function to_kb(vector) {
@@ -36,7 +36,8 @@ export const make = async image => {
   return {
     light: poster.paths[0],
     regular: poster.paths[1],
-    bold: poster.paths[2],
+    medium: poster.paths[2],
+    bold: poster.paths[3],
     width: poster.width,
     height: poster.height,
     viewbox: `0 0 ${poster.width} ${poster.height}`
