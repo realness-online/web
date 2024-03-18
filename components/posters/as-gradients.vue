@@ -24,6 +24,11 @@
       gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="regular" :stops="radial" />
     </radialGradient>
+    <radialGradient
+      :id="query('radial-medium')"
+      gradientUnits="userSpaceOnUse">
+      <as-stops :luminosity="medium" :stops="radial" />
+    </radialGradient>
     <radialGradient :id="query('radial-bold')" gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="bold" :stops="radial" />
     </radialGradient>
@@ -69,6 +74,15 @@
       y1="0"
       y2="100%">
       <as-stops :luminosity="regular" :stops="vertical" />
+    </linearGradient>
+    <linearGradient
+      :id="query('vertical-medium')"
+      gradientUnits="userSpaceOnUse"
+      x1="0"
+      x2="0"
+      y1="0"
+      y2="100%">
+      <as-stops :luminosity="medium" :stops="vertical" />
     </linearGradient>
     <linearGradient :id="query('vertical-bold')" x1="0" x2="0" y1="0" y2="100%">
       <as-stops :luminosity="bold" :stops="vertical" />
@@ -120,6 +134,18 @@
         :stops="horizontal" />
     </linearGradient>
     <linearGradient
+      :id="query('horizontal-medium')"
+      gradientUnits="userSpaceOnUse"
+      x1="0"
+      x2="100%"
+      y1="0"
+      y2="0">
+      <as-stops
+        :luminosity="medium"
+        :saturation_floor="18"
+        :stops="horizontal" />
+    </linearGradient>
+    <linearGradient
       :id="query('horizontal-bold')"
       gradientUnits="userSpaceOnUse"
       x1="0"
@@ -141,7 +167,8 @@
   const background = 80
   const light = 66
   const regular = 44
-  const bold = 13
+  const medium = 39
+  const bold = 18
   const props = defineProps({
     vector: {
       type: Object,

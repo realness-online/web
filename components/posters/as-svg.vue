@@ -50,8 +50,8 @@
       fill-opacity=".90"
       :path="vector.medium"
       :tabindex="tabindex"
-      :fill="`url(${fragment('vertical-regular')})`"
-      :stroke="`url(${fragment('horizontal-regular')})`"
+      :fill="`url(${fragment('vertical-medium')})`"
+      :stroke="`url(${fragment('horizontal-medium')})`"
       @focus="focus('medium')" />
     <as-path
       v-if="vector.bold"
