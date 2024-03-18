@@ -24,9 +24,7 @@
       gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="regular" :stops="radial" />
     </radialGradient>
-    <radialGradient
-      :id="query('radial-medium')"
-      gradientUnits="userSpaceOnUse">
+    <radialGradient :id="query('radial-medium')" gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="medium" :stops="radial" />
     </radialGradient>
     <radialGradient :id="query('radial-bold')" gradientUnits="userSpaceOnUse">
@@ -167,7 +165,7 @@
   const background = 80
   const light = 66
   const regular = 44
-  const medium = 39
+  const medium = 33
   const bold = 18
   const props = defineProps({
     vector: {
