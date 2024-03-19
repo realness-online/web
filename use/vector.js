@@ -9,7 +9,7 @@ import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
 import { recent_item_first } from '@/use/sorting'
 import { use as use_path } from '@/use/path'
-const path_names = ['background', 'light', 'regular', 'bold']
+const path_names = ['background', 'light', 'regular', 'medium', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
 export const is_vector = vector => {
@@ -74,7 +74,8 @@ const migrate_poster = poster => {
   if (Array.isArray(poster.path)) {
     poster.light = migrate_path(poster.path[0])
     poster.regular = migrate_path(poster.path[1])
-    poster.bold = migrate_path(poster.path[2])
+    poster.medium = migrate_path(poster.path[2])
+    poster.bold = migrate_path(poster.path[3])
   } else poster.bold = migrate_path(poster.path)
   poster.path = undefined
   return poster
