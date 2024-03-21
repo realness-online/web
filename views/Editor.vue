@@ -60,7 +60,6 @@
   }
   const save = async () => {
     await new Poster(itemid).save()
-
     if (new_gradients.value) new_gradients.value = null
     back()
   }
