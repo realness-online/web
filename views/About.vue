@@ -325,6 +325,7 @@
   import Icon from '@/components/icon'
   import CallToAction from '@/components/call-to-action'
   import LogoAsLink from '@/components/logo-as-link'
+  localStorage.about = true
 </script>
 <style lang="stylus">
   section.page#about

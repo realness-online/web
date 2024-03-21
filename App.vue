@@ -8,7 +8,9 @@
   import sync from '@/components/sync'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { init_serverless } from '@/use/serverless'
+  import { useRouter as use_router } from 'vue-router'
   const status = ref(null)
+  const router = use_router()
   const sync_active = active => {
     if (active) status.value = 'working'
     else status.value = null
@@ -24,6 +26,7 @@
     status.value = 'offline'
   }
   mounted(async () => {
+    if (!localStorage.about) router.push('/about')
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     await init_serverless()
