@@ -1,5 +1,3 @@
-import { initializeApp as initialize_firebase } from 'firebase/app'
-import { getPerformance } from 'firebase/performance'
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -17,6 +15,7 @@ import {
   deleteObject as delete_file,
   StringFormat
 } from 'firebase/storage'
+import { initializeApp as initialize_firebase } from 'firebase/app'
 import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
 import { load } from '@/use/itemid'
@@ -73,7 +72,6 @@ export const init_serverless = async () => {
   }
   const firebase_keys = await get('firebase-keys')
   app.value = initialize_firebase(firebase_keys)
-  getPerformance(app.value)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
 
