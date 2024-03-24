@@ -3,6 +3,7 @@
     :id="id"
     ref="path"
     :d="d"
+    :mask="mask"
     :itemprop="itemprop"
     :fill="fill"
     :fill-opacity="fill_opacity"
@@ -15,7 +16,6 @@
   import { ref, watchEffect as watch_effect, onMounted as mounted } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
-  const path = ref(null)
   const props = defineProps({
     itemprop: {
       type: String,
@@ -32,6 +32,11 @@
       type: String,
       required: true
     },
+    mask: {
+      type: String,
+      required: false,
+      default: ""
+    },
     id: {
       type: String,
       required: is_vector_id
@@ -41,12 +46,12 @@
       required: true
     }
   })
-
+  const path = ref(null)
   const fill = ref(undefined)
   const stroke = ref(undefined)
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
-  const stroke_opacity = ref('.90')
+  const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.25px')
   mounted(() => {
     fill.value = props.fill
