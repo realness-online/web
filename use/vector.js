@@ -44,9 +44,7 @@ export const is_stop = stop => {
 }
 export const is_url_query = query => {
   if (typeof query != 'string') return false
-  if (query.startsWith('url(')) {
-    if (!query.endsWith(')')) return false
-  }
+  if (query.startsWith('url(') && !query.endsWith(')')) return false
   return true
 }
 export const set_vector_dimensions = (props, item) => {
