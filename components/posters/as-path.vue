@@ -35,7 +35,7 @@
     mask: {
       type: String,
       required: false,
-      default: ""
+      default: ''
     },
     id: {
       type: String,
