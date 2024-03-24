@@ -12,6 +12,7 @@
     :tabindex="focusable"
     :class="{ animate }"
     @click="click">
+    <as-masks :itemid="itemid" />
     <as-gradients :vector="vector" />
     <as-animation :vector="vector" />
     <as-background
@@ -30,6 +31,7 @@
       :path="vector.light"
       :tabindex="tabindex"
       fill-opacity="0.90"
+      :mask="`url(${fragment('horizontal-mask')})`"
       :fill="`url(${fragment('vertical-light')})`"
       :stroke="`url(${fragment('horizontal-regular')})`"
       @focus="focus('light')" />
@@ -40,6 +42,7 @@
       fill-opacity="0.90"
       :path="vector.regular"
       :tabindex="tabindex"
+      :mask="`url(${fragment('horizontal-mask')})`"
       :fill="`url(${fragment('horizontal-regular')})`"
       :stroke="`url(${fragment('radial-background')})`"
       @focus="focus('regular')" />
@@ -50,6 +53,7 @@
       fill-opacity=".90"
       :path="vector.medium"
       :tabindex="tabindex"
+      :mask="`url(${fragment('horizontal-mask')})`"
       :fill="`url(${fragment('vertical-medium')})`"
       :stroke="`url(${fragment('horizontal-medium')})`"
       @focus="focus('medium')" />
@@ -59,7 +63,8 @@
       itemprop="bold"
       :tabindex="tabindex"
       :path="vector.bold"
-      fill-opacity="0.9"
+      fill-opacity="1"
+      :mask="`url(${fragment('horizontal-mask')})`"
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
@@ -69,6 +74,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
+  import AsMasks from '@/components/posters/as-masks'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
