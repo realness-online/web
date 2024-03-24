@@ -71,7 +71,6 @@ export const use = () => {
     vector.id = as_new_itemid
     vector.type = 'posters'
     vector.light = make_path(vector.light)
-    vector.thin = make_path(vector.thin)
     vector.regular = make_path(vector.regular)
     vector.medium = make_path(vector.medium)
     vector.bold = make_path(vector.bold)
