@@ -5,7 +5,6 @@ import {
   onUnmounted as dismount
 } from 'vue'
 import { create_path_element } from '@/use/path'
-import { create_use_element } from '@/use/layer'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
 import { useRouter as use_router } from 'vue-router'
@@ -24,10 +23,7 @@ export const use = () => {
     if (working.value || new_vector.value) return false
     else return true
   })
-  const as_new_itemid = computed(() => {
-    if (new_vector.value?.id) return new_vector.value.id
-    else return `${localStorage.me}/posters/${Date.now()}`
-  })
+  const as_new_itemid = computed(() => `${localStorage.me}/posters/${Date.now()}`)
 
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
@@ -46,11 +42,6 @@ export const use = () => {
     path.setAttribute('d', path_data.d)
     path.style.fillRule = 'evenodd'
     return path
-  }
-  const make_settings = data => {
-    const use = create_use_element()
-    use.style.fillOpacity = data.fillOpacity
-    return use
   }
   const listener = () => {
     const image = image_picker.value.files[0]
@@ -79,13 +70,8 @@ export const use = () => {
     const vector = response.data.vector
     vector.id = as_new_itemid
     vector.type = 'posters'
-    vector.settings = {
-      light: make_settings(response.data.vector.light),
-      regular: make_settings(response.data.vector.regular),
-      medium: make_settings(response.data.vector.medium),
-      bold: make_settings(response.data.vector.bold)
-    }
     vector.light = make_path(vector.light)
+    vector.thin = make_path(vector.thin)
     vector.regular = make_path(vector.regular)
     vector.medium = make_path(vector.medium)
     vector.bold = make_path(vector.bold)
