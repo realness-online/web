@@ -23,7 +23,9 @@ export const use = () => {
     if (working.value || new_vector.value) return false
     else return true
   })
-  const as_new_itemid = computed(() => `${localStorage.me}/posters/${Date.now()}`)
+  const as_new_itemid = computed(
+    () => `${localStorage.me}/posters/${Date.now()}`
+  )
 
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
