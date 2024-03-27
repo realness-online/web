@@ -9,8 +9,20 @@
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { init_serverless } from '@/use/serverless'
   import { useRouter as use_router } from 'vue-router'
+  import {
+    useFullscreen as use_fullscreen,
+    useMagicKeys as use_Keyboard
+  } from '@vueuse/core'
   const status = ref(null)
   const router = use_router()
+
+  const {
+    toggle: fullscreen,
+    isFullscreen: is_fullscreen,
+    isSupported: fullscreen_supported
+  } = use_fullscreen()
+  const { f, enter, escape } = use_Keyboard()
+
   const sync_active = active => {
     if (active) status.value = 'working'
     else status.value = null
