@@ -8,7 +8,8 @@ module.exports = {
   entry: {
     gradient: path.join(__dirname, './workers/gradient.js'),
     vector: path.join(__dirname, './workers/vector.js'),
-    optimize: path.join(__dirname, './workers/optimize.js')
+    optimize: path.join(__dirname, './workers/optimize.js'),
+    compressor: path.join(__dirname, './workers/compressor.js')
   },
   mode: 'production',
   output: {

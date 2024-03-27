@@ -47,7 +47,7 @@
   import { as_query_id, as_fragment_id } from '@/use/itemid'
   const props = defineProps({
     itemid: {
-      type: Object,
+      type: String,
       required: true
     }
   })
