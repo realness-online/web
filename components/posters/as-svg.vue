@@ -12,7 +12,7 @@
     :tabindex="focusable"
     :class="{ animate }"
     @click="click">
-    <as-masks :itemid="itemid" />
+    <as-masks v-if="mask" :itemid="itemid" />
     <as-gradients :vector="vector" />
     <as-animation :vector="vector" />
     <as-background
@@ -157,6 +157,7 @@
   const trigger = ref(null)
   const show_emboss = computed(() => localStorage.emboss && intersecting.value)
   const animate = computed(() => localStorage.animate && intersecting.value)
+  const mask = computed(() => localStorage.mask && intersecting.value)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
