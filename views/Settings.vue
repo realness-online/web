@@ -8,6 +8,9 @@
     <h1>Settings</h1>
     <menu>
       <preference
+        name="mask"
+        title="this meshes the layers into each other via an bright graidient" />
+      <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
       <preference
