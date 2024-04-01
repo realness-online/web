@@ -157,7 +157,7 @@
   const trigger = ref(null)
   const show_emboss = computed(() => localStorage.emboss && intersecting.value)
   const animate = computed(() => localStorage.animate && intersecting.value)
-  const mask = computed(() => localStorage.mask && intersecting.value)
+  const mask = computed(() => intersecting.value)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
