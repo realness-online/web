@@ -6,8 +6,9 @@
       <logo-as-link />
     </header>
     <h1>Settings</h1>
-    <name-as-form />
+
     <menu>
+      <name-as-form />
       <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster" />
