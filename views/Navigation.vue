@@ -5,6 +5,7 @@
         <icon name="gear" /> <span>{{ first_name }}</span>
       </router-link>
     </header>
+    <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
     <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
@@ -21,7 +22,6 @@
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook
       </router-link>
-      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea
         class="red"
         @toggle-keyboard="posting = !posting" />
@@ -96,6 +96,8 @@
       height: inherit
       @media (max-width: pad-begins)
         align-items: flex-start
+      & > footer
+        height: 50vh
       & > nav
         transition-duration: 0.5s
         min-height: round(base-line * 10)
@@ -107,14 +109,14 @@
           line-height: 0
           padding: 0
           display: block
-      & > footer
-        display: none
     @media (max-width: pad-begins) and (orientation: portrait)
       padding: 0 base-line
     @media (max-height: pad-begins) and (orientation: landscape)
       height: auto
       max-width: none
     & > nav
+      @media (orientation: landscape)
+        display:none
       transition-duration: 0s
       display: grid
       grid-gap: base-line
@@ -156,12 +158,16 @@
         @media (prefers-color-scheme: light)
           color: #fff
     & > footer
+      display: flex
+      justify-content: space-between
+      align-items: center
+      width: 50vw
       padding: 0
       & > h6
       & > a
+      & > textarea
         margin: 0
         padding: 0
-        position: fixed
         bottom: base-line
         &#camera
           border-radius: base-line
@@ -179,4 +185,9 @@
       & > a
         color: yellow
         right: base-line
+      & > menu
+        display: flex
+        align-items: center
+        justify-content: space-between
+
 </style>

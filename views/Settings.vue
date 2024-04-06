@@ -23,8 +23,7 @@
         name="filesystem"
         title="Sync posters with a directory"
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
-        @on="set_posters_folder">
-      </preference>
+        @on="set_posters_folder" />
       <details>
         <summary><h3>Documentation</h3></summary>
         <h4>
@@ -71,6 +70,35 @@
         </p>
       </details>
     </menu>
+    <h1>Key Commands</h1>
+    <form>
+      <fieldset>
+        <legend>Your statements</legend>
+        <kbd>S</kbd>
+      </fieldset>
+      <fieldset>
+        <legend>Your Posters</legend>
+        <kbd>D</kbd>
+      </fieldset>
+      <fieldset>
+        <legend>Phonebook</legend>
+        <kbd>F</kbd>
+      </fieldset>
+    </form>
+    <form>
+      <fieldset>
+        <legend>Events</legend>
+        <kbd>h</kbd>
+      </fieldset>
+      <fieldset>
+        <legend>Feed</legend>
+        <kbd>k</kbd>
+      </fieldset>
+      <fieldset>
+        <legend>Post</legend>
+        <kbd>l</kbd>
+      </fieldset>
+    </form>
     <call-to-action />
   </section>
 </template>
@@ -107,9 +135,27 @@
       & > summary
       & > article
         padding: 0 base-line
-    menu
+    & > form
+
       standard-grid: 'nothing'
       margin: base-line
+      & > *:not(:last-child)
+        height: 100%
+        list-style: none
+        margin-bottom: base-line
+      & > fieldset
+        & > kbd
+          line-height: 4
+        & > legend
+          color:green
+          margin-bottom: base-line * 0.55
+    & > menu
+      standard-grid: 'nothing'
+      margin: base-line
+      & > *:not(:last-child)
+        height: 100%
+        list-style: none
+        margin-bottom: base-line
       & > details
         & > summary > h3
           display: inline-block
@@ -118,8 +164,5 @@
           padding: 0
         & > h4
           margin-top: base-line
-      & > li
-        height: 100%
-        list-style: none
-        margin-bottom: base-line
+
 </style>

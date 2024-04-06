@@ -1,15 +1,19 @@
 {
   "name": "@realness.online/web",
-  "version": "1.5.11",
+  "version": "1.5.12",
   "private": false,
   "type": "module",
   "keywords": [
+    "Private",
+    "Realtime Graphics",
+    "animation",
+    "Social Network",
     "svg",
     "computer-graphics",
     "vector-graphics",
     "web-programming"
   ],
-  "description": "When people search for 'outsider social network' they'll find realness online",
+  "description": "When people search for 'outsider social network' they'll find realness online. The medium is the message",
   "author": "Scott Fryxell <sfryxell@gmail.com>",
   "scripts": {
     "dev": "vite",

@@ -4,6 +4,9 @@
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
+      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
+        Events
+      </router-link>
       <input
         ref="image_picker"
         v-vectorizer
