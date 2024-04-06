@@ -5,7 +5,7 @@
         <icon name="gear" /> <span>{{ first_name }}</span>
       </router-link>
     </header>
-    <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
+
     <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
@@ -22,6 +22,7 @@
       <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
         Thoughts
       </router-link>
+      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea
         class="red"
         @toggle-keyboard="posting = !posting" />
