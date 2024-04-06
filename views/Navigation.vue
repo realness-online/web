@@ -16,11 +16,11 @@
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
         Posters
       </router-link>
-      <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
-        Thoughts
-      </router-link>
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook
+      </router-link>
+      <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
+        Thoughts
       </router-link>
       <statement-as-textarea
         class="red"
@@ -189,5 +189,4 @@
         display: flex
         align-items: center
         justify-content: space-between
-
 </style>

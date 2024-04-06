@@ -70,35 +70,6 @@
         </p>
       </details>
     </menu>
-    <h1>Key Commands</h1>
-    <form>
-      <fieldset>
-        <legend>Your statements</legend>
-        <kbd>S</kbd>
-      </fieldset>
-      <fieldset>
-        <legend>Your Posters</legend>
-        <kbd>D</kbd>
-      </fieldset>
-      <fieldset>
-        <legend>Phonebook</legend>
-        <kbd>F</kbd>
-      </fieldset>
-    </form>
-    <form>
-      <fieldset>
-        <legend>Events</legend>
-        <kbd>h</kbd>
-      </fieldset>
-      <fieldset>
-        <legend>Feed</legend>
-        <kbd>k</kbd>
-      </fieldset>
-      <fieldset>
-        <legend>Post</legend>
-        <kbd>l</kbd>
-      </fieldset>
-    </form>
     <call-to-action />
   </section>
 </template>
@@ -164,5 +135,4 @@
           padding: 0
         & > h4
           margin-top: base-line
-
 </style>

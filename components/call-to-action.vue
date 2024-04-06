@@ -28,7 +28,7 @@
         color: blue
         min-width: 50vw
         & > h1
-          color: blue !important
+          font-weight: 300
           margin: 0
           text-align: center
           @media (min-width: pad-begins)
@@ -47,6 +47,7 @@
       max-width: base-line * 18rem
       text-align: center
       & > strong
-        color: red
+        color: blue
+        font-weight: 200
         margin-right: base-line * .5
 </style>
