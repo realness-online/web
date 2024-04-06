@@ -8,14 +8,13 @@
       </a>
     </h3>
     <p>
-      <strong>Free for everyone</strong>
+      <strong>The medium is the message</strong>
     </p>
   </div>
 </template>
 <style lang="stylus">
   div.call.to.action
     padding: base-line * 2
-    min-height: 100vh
     display: flex
     flex-direction: column
     justify-content: center
