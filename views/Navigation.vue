@@ -116,7 +116,7 @@
       height: auto
       max-width: none
     & > nav
-      @media (orientation: landscape)
+      @media (orientation: landscape) and (display-mode: standalone)
         display:none
       transition-duration: 0s
       display: grid
