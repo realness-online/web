@@ -38,7 +38,8 @@
     status.value = 'offline'
   }
   mounted(async () => {
-    if (window.matchMedia('(display-mode: standalone)').matches) sessionStorage.about = true
+    if (window.matchMedia('(display-mode: standalone)').matches)
+      sessionStorage.about = true
     if (!sessionStorage.about) router.push('/about')
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
