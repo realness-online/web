@@ -10,7 +10,7 @@
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :class="{ animate }"
+    :class="{ animate, landscape }"
     @click="click">
     <as-masks v-if="mask" :itemid="itemid" />
     <as-gradients :vector="vector" />
@@ -102,16 +102,16 @@
     loaded: is_vector
   })
   const props = defineProps({
+    itemid: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    },
     sync_poster: {
       type: Object,
       required: false,
       default: null,
       validator: is_vector
-    },
-    itemid: {
-      type: String,
-      required: true,
-      validator: is_vector_id
     },
     optimize: {
       type: Boolean,
@@ -158,6 +158,13 @@
   const show_emboss = computed(() => localStorage.emboss && intersecting.value)
   const animate = computed(() => localStorage.animate && intersecting.value)
   const mask = computed(() => intersecting.value)
+  const landscape = computed(() => {
+    if (!vector.value) return false
+    const numbers = vector.value.viewbox.split(' ')
+    const width = parseInt(numbers[2])
+    const height = parseInt(numbers[3])
+    return width > height
+  })
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
