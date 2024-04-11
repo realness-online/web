@@ -10,16 +10,18 @@
     <menu>
       <name-as-form />
       <preference
-        name="emboss"
-        title="Apply an emboss effect to each layer of a poster" />
-      <preference
         name="animate"
         title="Animate posters as they come into view" />
+      <preference
+        name="emboss"
+        title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="adobe"
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
-        hidden
+        name="simple"
+        title="Download posters with simple readable ids " />
+      <preference
         name="filesystem"
         title="Sync posters with a directory"
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
@@ -33,9 +35,9 @@
         </h4>
         <p>
           By default, Realness supports vector workflows. Take a picture, and
-          Realness will create a good-looking rotoscope vector graphic. Each
-          photo has twelve gradients for you to pull color from. Realness
-          integrates right into Figma or Adobe toolchains.
+          Realness will create a super fun rotoscope vector graphic. Each photo
+          has eighteen gradients for you to pull color from. Realness integrates
+          right into Figma, Affinity, Procreate, or Adobe toolchains.
         </p>
         <p>
           Realness is fast. Save it to your home screen on your phone and iPad.
@@ -57,7 +59,18 @@
         <p>Realness updates at eight-hour intervals.</p>
         <h6>Lighten Our Burden</h6>
         <h5>Settings</h5>
-        <p>These settings are off because they are resource-expensive.</p>
+        <p>
+          These settings are off because they are resource-expensive, or
+          workflow specific.
+        </p>
+        <p>
+          By default a Poster's internal IDs are globally unique which makes
+          them safe to embed and reference in the same document.
+        </p>
+        <p>
+          Simplifying ids makes layers more readable as you export into other
+          tools.
+        </p>
         <p>Embossing the borders looks amazing, adding a subtle flair.</p>
         <p>
           Animations will look great if you have a beefy GPU. Just go to your

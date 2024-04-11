@@ -22,10 +22,10 @@
     svg.icon
       fill: blue
     & > h3
-      margin-bottom: base-line
+      margin-bottom: 0
       & > a
         padding-right: base-line * 0.25
-        color: blue
+        color: red
         min-width: 50vw
         & > h1
           font-weight: 300
@@ -43,11 +43,11 @@
     & > p
       display: flex
       margin-bottom: base-line * 2
-      margin-top: base-line
       max-width: base-line * 18rem
       text-align: center
       & > strong
+        text-transform: capitalize
         color: blue
-        font-weight: 200
+        font-weight: normal
         margin-right: base-line * .5
 </style>
