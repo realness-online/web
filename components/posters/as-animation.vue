@@ -60,7 +60,7 @@
 
 <script setup>
   import { use_poster, is_vector } from '@/use/vector'
-  import { watchEffect as watch,} from 'vue'
+  import { watchEffect as watch } from 'vue'
   const { fragment, vector } = use_poster()
   const props = defineProps({
     vector: {
