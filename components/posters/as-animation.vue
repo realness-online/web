@@ -1,5 +1,5 @@
 <template>
-  <g v-if="animate" itemprop="animation">
+  <g itemprop="animation">
     <animate
       :href="fragment('light')"
       attributeName="stroke-opacity"
@@ -60,7 +60,7 @@
 
 <script setup>
   import { use_poster, is_vector } from '@/use/vector'
-  import { watchEffect as watch, computed } from 'vue'
+  import { watchEffect as watch,} from 'vue'
   const { fragment, vector } = use_poster()
   const props = defineProps({
     vector: {
@@ -70,7 +70,7 @@
       validator: is_vector
     }
   })
-  const animate = computed(() => localStorage.animate)
+
   watch(() => {
     vector.value = props.vector
   })

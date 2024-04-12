@@ -24,7 +24,7 @@
     <article class="designers">
       <header><h2>Artists</h2></header>
       <figure>
-        <as-svg v-if="posters.length" :itemid="posters[2]?.id" />
+        <as-svg v-if="posters.length" :itemid="posters[1]?.id" />
         <figcaption>
           <h2>We call them <strong>Posters</strong></h2>
           <p>
@@ -51,16 +51,22 @@
         </li>
         <li>
           <icon name="finished" />
-          <p>
-            Realtime graphics settings to view each poster in your feed with an
-            emboss edge and subtle animation
-          </p>
+          <p>Powerfull workflow into Procreate Dreams</p>
         </li>
         <li>
           <icon name="finished" />
+          <p>View Posters in a timeline with your comments</p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>Use the parts of your posters as masks and patterns</p>
+        </li>
+
+        <li>
+          <icon name="finished" />
           <p>
-            High performance masking and smart use of opacity to merge the
-            colors between each of five layers of detail
+            Realtime graphics settings to view each poster in your feed with an
+            embossed edge and/or subtle animation
           </p>
         </li>
         <li>
@@ -72,15 +78,10 @@
         </li>
         <li>
           <icon name="finished" />
-          <p>Powerfull workflow into Procreate Dreams</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>View Posters in a timeline with your comments</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Use the parts of your posters as masks and patterns</p>
+          <p>
+            High performance masking and smart use of opacity to merge the
+            colors between each of five layers of detail creating a natural sense of movement and life
+          </p>
         </li>
         <li>
           <icon name="finished" />
@@ -129,7 +130,7 @@
       <ol>
         <li>
           <icon name="finished" />
-          <p>Low resolution graphics support natural human dynamics</p>
+          <p>Sign in with your phone number</p>
         </li>
         <li>
           <icon name="finished" />
@@ -141,9 +142,22 @@
         </li>
         <li>
           <icon name="finished" />
+          <p>Low resolution graphics support natural human dynamics</p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>Nurtures web literacy. from command line to the power of firebase</p>
+        </li>
+
+        <li>
+          <icon name="finished" />
           <p>
             Easy to administer with direct support from the development team
           </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>PWA means realness is unindexed by search engines</p>
         </li>
         <li>
           <icon name="finished" />
@@ -151,22 +165,6 @@
             Designed to encourage enough internet literacy to empower regular
             ass people to help manage the web
           </p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Usefull to learn. Built on top of firebase</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Organized around voting with your participation</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Sign in with your phone number</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>PWA means realness is unindexed and darkweb compatable</p>
         </li>
 
         <li>

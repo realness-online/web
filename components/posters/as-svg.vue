@@ -12,9 +12,6 @@
     :tabindex="focusable"
     :class="{ animate, landscape }"
     @click="click">
-    <as-masks v-if="mask" :itemid="itemid" />
-    <as-gradients :vector="vector" />
-    <as-animation :vector="vector" />
     <as-background
       :id="query('background')"
       :rect="vector.background"
@@ -68,7 +65,10 @@
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="focus('bold')" />
-    <as-emboss v-if="show_emboss" :vector="vector" />
+    <as-gradients :vector="vector" />
+    <as-masks v-if="mask" :itemid="itemid" />
+    <as-animation v-if="animate" :vector="vector" />
+    <as-emboss v-if="emboss" :vector="vector" />
   </svg>
 </template>
 <script setup>
@@ -80,6 +80,7 @@
   import AsAnimation from '@/components/posters/as-animation'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+  import { useStorage as use_storage } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
     onMounted as mounted,
@@ -96,6 +97,7 @@
     is_click,
     is_focus
   } from '@/use/vector'
+
   defineEmits({
     focus: is_focus,
     click: is_click,
@@ -155,8 +157,10 @@
     intersecting
   } = use_poster()
   const trigger = ref(null)
-  const show_emboss = computed(() => localStorage.emboss && intersecting.value)
-  const animate = computed(() => localStorage.animate && intersecting.value)
+  const please_animate = use_storage('animate')
+  const please_emboss = use_storage('animate')
+  const emboss = computed(() => please_animate.value && intersecting.value)
+  const animate = computed(() => please_emboss.value && intersecting.value)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
