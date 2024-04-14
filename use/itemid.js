@@ -43,7 +43,7 @@ export async function load_from_network(itemid, me = localStorage.me) {
   } else return null
 }
 export async function load_directory_from_network(itemid) {
-  if (navigator.onLine && current_user.value) {
+  if (navigator.onLine) {
     const path = as_directory_id(itemid)
     const meta = new Directory()
     console.info('request:directory', itemid)
@@ -62,7 +62,7 @@ export async function as_directory(itemid) {
     return cached
   }
   let directory = await build_local_directory(itemid)
-  if (navigator.onLine && current_user.value) {
+  if (navigator.onLine) {
     console.log('load_directory_from_network')
     directory = await load_directory_from_network(itemid)
   }
@@ -70,7 +70,6 @@ export async function as_directory(itemid) {
   return directory
 }
 export async function as_download_url(itemid) {
-  if (!current_user.value) return null
   try {
     console.info('request:location', itemid)
     return await url(as_filename(itemid))

@@ -72,7 +72,7 @@
         <li>
           <icon name="finished" />
           <p>
-            Woks great on your iPad – Split view and export right into Affinity
+            Works great on your iPad – Split view and export right into Affinity
             Designer
           </p>
         </li>
@@ -117,9 +117,10 @@
             Use it with just your family, union hall, or maybe your
             <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
             nerdpocalypse users group. Realness set's you up with all the
-            benifits of serverless to advantage intimate useful communities with
-            clear lines of responsibility and communication. There is joy in our
-            care for the maintenance and content on the web.
+            benifits of a serverless web application to advantage intimate
+            useful communities with clear lines of responsibility and
+            communication. There is joy in our care for the maintenance and
+            content on the web.
           </p>
           <p>
             The performance is over. Our social health requires more realness
@@ -186,6 +187,7 @@
 
         <figcaption>
           <h2>HTML is Our Database</h2>
+
           <p>
             Realness is a way and a support system to help you build web
             applications.
@@ -231,7 +233,7 @@
             <a href="https://scott-fryxell.github.io/" rel="external"> blog </a>
             of all my feelings and nerd problems. My resume is on there.
           </p>
-          <h4>Cyber</h4>
+          <h4>Cyber the App Store</h4>
         </figcaption>
       </figure>
       <ol>
@@ -282,7 +284,7 @@
         </li>
         <li>
           <icon name="finished"></icon>
-          <p>Reduce attack surface — Leave sensitive data on the device.</p>
+          <p>Reduced attack surface — Leave sensitive data on the device.</p>
         </li>
         <li>
           <icon name="finished"></icon>
