@@ -80,7 +80,6 @@
   import AsAnimation from '@/components/posters/as-animation'
   import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import { useStorage as use_storage } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
     onMounted as mounted,
@@ -97,7 +96,10 @@
     is_click,
     is_focus
   } from '@/use/vector'
-
+  import {
+    animate as animate_pref,
+    emboss as emboss_pref
+  } from '@/use/preference'
   defineEmits({
     focus: is_focus,
     click: is_click,
@@ -157,10 +159,8 @@
     intersecting
   } = use_poster()
   const trigger = ref(null)
-  const please_animate = use_storage('animate')
-  const please_emboss = use_storage('animate')
-  const emboss = computed(() => please_animate.value && intersecting.value)
-  const animate = computed(() => please_emboss.value && intersecting.value)
+  const emboss = computed(() => emboss_pref.value == true && intersecting.value)
+  const animate = computed(() => animate_pref.value == true && intersecting.value)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
