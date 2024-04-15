@@ -160,7 +160,9 @@
   } = use_poster()
   const trigger = ref(null)
   const emboss = computed(() => emboss_pref.value == true && intersecting.value)
-  const animate = computed(() => animate_pref.value == true && intersecting.value)
+  const animate = computed(
+    () => animate_pref.value == true && intersecting.value
+  )
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false

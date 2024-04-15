@@ -29,7 +29,7 @@
     }
   })
   const preference = preferences[props.name]
-  const toggle = () => preference.value = !preference.value
+  const toggle = () => (preference.value = !preference.value)
 </script>
 <style lang="stylus">
   fieldset.preference
