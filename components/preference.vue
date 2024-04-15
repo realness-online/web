@@ -13,8 +13,7 @@
   </fieldset>
 </template>
 <script setup>
-  import { ref } from 'vue'
-  const emit = defineEmits(['on, off'])
+  import * as preferences from '@/use/preference'
   const props = defineProps({
     name: {
       type: String,
@@ -29,17 +28,12 @@
       required: false
     }
   })
-  const state = ref(!!localStorage.getItem(props.name))
+  const state = preferences[props.name]
+  console.log(props.name, state.value)
   const toggle = () => {
+    console.log(props.name, state.value)
     state.value = !state.value
-
-    if (localStorage.getItem(props.name)) {
-      localStorage.removeItem(props.name)
-      emit('off')
-    } else {
-      emit('on')
-      localStorage.setItem(props.name, 1)
-    }
+    console.log(props.name, state.value)
   }
 </script>
 <style lang="stylus">

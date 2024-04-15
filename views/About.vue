@@ -330,10 +330,8 @@
   import { use_posters } from '@/use/vector'
   sessionStorage.about = true
   const { posters, for_person: posters_for_admin } = use_posters()
-
   mounted(async () => {
     await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
-    console.log(posters.value[0])
   })
 </script>
 <style lang="stylus">
@@ -355,7 +353,6 @@
         svg.icon
           fill: blue
       & > figure
-
         @media (min-width: pad-begins)
           display: flex
           justify-content: space-around
