@@ -3,11 +3,11 @@
     <div>
       <h3>{{ name }}</h3>
       <label class="switch">
-        <input v-model="state" type="checkbox" @click="toggle" />
+        <input v-model="preference" type="checkbox" @click="toggle" />
         <span class="slider"></span>
       </label>
     </div>
-    <p>{{ title }}</p>
+    <p v-if="title">{{ title }}</p>
     <p v-if="subtitle">{{ subtitle }}</p>
     <slot />
   </fieldset>
@@ -28,13 +28,8 @@
       required: false
     }
   })
-  const state = preferences[props.name]
-  console.log(props.name, state.value)
-  const toggle = () => {
-    console.log(props.name, state.value)
-    state.value = !state.value
-    console.log(props.name, state.value)
-  }
+  const preference = preferences[props.name]
+  const toggle = () => preference.value = !preference.value
 </script>
 <style lang="stylus">
   fieldset.preference
