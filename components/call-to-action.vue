@@ -14,6 +14,7 @@
 </template>
 <style lang="stylus">
   div.call.to.action
+    max-width: base-line * 18rem
     padding: base-line * 2
     display: flex
     flex-direction: column
