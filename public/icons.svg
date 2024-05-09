@@ -223,7 +223,7 @@
       <feFlood flood-color="rgba(0,0,0,0.5)" flood-opacity="0.91" result="flood" />
       <feBlend in="flood" in2="SourceGraphic" />
     </filter>
-    <defs>
+    <filter id="stage" color-interpolation-filters="sRGB" y="0">
       <pattern id="tile" patternUnits="userSpaceOnUse" preserveAspectRatio="xMidYMid slice" width="21" height="34"
         viewBox="0 0 192 192">
         <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
@@ -242,17 +242,15 @@
       </radialGradient>
       <rect id="gradient_rect" fill="url(#l)" width="100%" height="100%" />
       <rect id="tile_rect" fill="url(#tile)" width="100%" height="100%" />
-      <filter id="stage" color-interpolation-filters="sRGB" y="0">
-        <feImage href="#background" result="bg" />
-        <feImage href="#tile_rect" result="tile" />
-        <feImage href="#gradient_rect" result="waves" />
-        <feMerge>
-          <feMergeNode in="bg" />
-          <feMergeNode in="tile" />
-          <feMergeNode in="waves" />
-        </feMerge>
-      </filter>
-    </defs>
+      <feImage href="#background" result="bg" />
+      <feImage href="#tile_rect" result="tile" />
+      <feImage href="#gradient_rect" result="waves" />
+      <feMerge>
+        <feMergeNode in="bg" />
+        <feMergeNode in="tile" />
+        <feMergeNode in="waves" />
+      </feMerge>
+    </filter>
   </defs>
   <use href="#background" />
   <svg id="realness" viewBox="0 0 192 192" preserveAspectRatio="xMidYMid meet">
