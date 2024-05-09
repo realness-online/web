@@ -1,5 +1,5 @@
 <template>
-  <icon v-if="working" ref="trigger" name="stage" :tabindex="focusable" />
+  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
     :id="query()"
