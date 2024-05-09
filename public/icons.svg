@@ -223,7 +223,7 @@
       <feFlood flood-color="rgba(0,0,0,0.5)" flood-opacity="0.91" result="flood" />
       <feBlend in="flood" in2="SourceGraphic" />
     </filter>
-    <filter id="stage" color-interpolation-filters="sRGB" y="0">
+    <filter id="stage-filter" color-interpolation-filters="sRGB" y="0">
       <pattern id="tile" patternUnits="userSpaceOnUse" preserveAspectRatio="xMidYMid slice" width="21" height="34"
         viewBox="0 0 192 192">
         <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
@@ -251,6 +251,7 @@
         <feMergeNode in="waves" />
       </feMerge>
     </filter>
+    <rect id="stage" filter="url(#stage-filter)" width="100%" height="100%" />
   </defs>
   <use href="#background" />
   <svg id="realness" viewBox="0 0 192 192" preserveAspectRatio="xMidYMid meet">
