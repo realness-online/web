@@ -17,11 +17,14 @@
         title="Apply an emboss effect to each layer of a poster" />
       <preference
         name="adobe"
+        hidden
         title="Posters download with HEX (#FFF000) values for color" />
       <preference
+        hidden
         name="simple"
         title="Download posters with simple readable ids " />
       <preference
+        hidden
         name="filesystem"
         title="Sync posters with a directory"
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
@@ -82,8 +85,8 @@
           or Adobe Illustrator
         </p>
       </details>
+      <call-to-action />
     </menu>
-    <call-to-action />
   </section>
 </template>
 <script setup>

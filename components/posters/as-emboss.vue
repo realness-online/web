@@ -1,15 +1,5 @@
 <template>
   <defs>
-    <symbol :id="query('emboss-light')">
-      <use :href="fragment('light')" filter="url(#emboss)" />
-    </symbol>
-    <symbol :id="query('emboss-regular')">
-      <use :href="fragment('regular')" filter="url(#emboss-straight)" />
-    </symbol>
-    <symbol :id="query('emboss-bold')">
-      <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
-    </symbol>
-
     <filter id="emboss">
       <feConvolveMatrix
         kernelMatrix="1.5 0 0
@@ -28,6 +18,19 @@
                       2.5 0 -2.5
                       0   0 0" />
     </filter>
+    <symbol :id="query('emboss-light')">
+      <use :href="fragment('light')" filter="url(#emboss)" />
+    </symbol>
+    <symbol :id="query('emboss-regular')">
+      <use :href="fragment('regular')" filter="url(#emboss-straight)" />
+    </symbol>
+    <symbol :id="query('emboss-medium')">
+      <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
+    </symbol>
+
+    <symbol :id="query('emboss-bold')">
+      <use :href="fragment('bold')" filter="url(#emboss)" />
+    </symbol>
   </defs>
   <use
     tabindex="-1"
