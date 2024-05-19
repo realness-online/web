@@ -12,61 +12,83 @@
     :tabindex="focusable"
     :class="{ animate, landscape }"
     @click="click">
-    <as-background
-      :id="query('background')"
-      :rect="vector.background"
-      :width="vector.width"
-      :height="vector.height"
-      :tabindex="tabindex"
-      fill-opacity="1"
-      :fill="`url(${fragment('radial-background')})`"
-      @focus="focus('background')" />
-    <as-path
-      v-if="vector.light"
-      :id="query('light')"
-      itemprop="light"
-      :path="vector.light"
-      :tabindex="tabindex"
-      fill-opacity="0.90"
-      :mask="`url(${fragment('horizontal-mask')})`"
-      :fill="`url(${fragment('vertical-light')})`"
-      :stroke="`url(${fragment('horizontal-regular')})`"
-      @focus="focus('light')" />
-    <as-path
-      v-if="vector.regular"
-      :id="query('regular')"
-      itemprop="regular"
-      fill-opacity="0.90"
-      :path="vector.regular"
-      :tabindex="tabindex"
-      :mask="`url(${fragment('radial-mask')})`"
-      :fill="`url(${fragment('horizontal-regular')})`"
-      :stroke="`url(${fragment('radial-background')})`"
-      @focus="focus('regular')" />
-    <as-path
-      v-if="vector.medium"
-      :id="query('medium')"
-      itemprop="medium"
-      fill-opacity="0.90"
-      :path="vector.medium"
-      :tabindex="tabindex"
-      :mask="`url(${fragment('vertical-mask')})`"
-      :fill="`url(${fragment('vertical-medium')})`"
-      :stroke="`url(${fragment('horizontal-medium')})`"
-      @focus="focus('medium')" />
-    <as-path
-      v-if="vector.bold"
-      :id="query('bold')"
-      itemprop="bold"
-      :tabindex="tabindex"
-      :path="vector.bold"
-      fill-opacity="0.90"
-      :mask="`url(${fragment('horizontal-mask')})`"
-      :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-light')})`"
-      @focus="focus('bold')" />
+    <symbol
+      :id="query('graphic')"
+      :viewBox="viewbox"
+      :preserveAspectRatio="aspect_ratio">
+      <as-background
+        :id="query('background')"
+        :rect="vector.background"
+        :width="vector.width"
+        :height="vector.height"
+        :tabindex="tabindex"
+        fill-opacity="1"
+        :fill="`url(${fragment('radial-background')})`"
+        @focus="focus('background')" />
+      <as-path
+        v-if="vector.light"
+        :id="query('light')"
+        itemprop="light"
+        :path="vector.light"
+        :tabindex="tabindex"
+        fill-opacity="0.90"
+        :mask="`url(${fragment('horizontal-mask')})`"
+        :fill="`url(${fragment('vertical-light')})`"
+        :stroke="`url(${fragment('horizontal-regular')})`"
+        @focus="focus('light')" />
+      <as-path
+        v-if="vector.regular"
+        :id="query('regular')"
+        itemprop="regular"
+        fill-opacity="0.90"
+        :path="vector.regular"
+        :tabindex="tabindex"
+        :mask="`url(${fragment('radial-mask')})`"
+        :fill="`url(${fragment('horizontal-regular')})`"
+        :stroke="`url(${fragment('radial-background')})`"
+        @focus="focus('regular')" />
+      <as-path
+        v-if="vector.medium"
+        :id="query('medium')"
+        itemprop="medium"
+        fill-opacity="0.90"
+        :path="vector.medium"
+        :tabindex="tabindex"
+        :mask="`url(${fragment('vertical-mask')})`"
+        :fill="`url(${fragment('vertical-medium')})`"
+        :stroke="`url(${fragment('horizontal-medium')})`"
+        @focus="focus('medium')" />
+      <as-path
+        v-if="vector.bold"
+        :id="query('bold')"
+        itemprop="bold"
+        :tabindex="tabindex"
+        :path="vector.bold"
+        fill-opacity="0.90"
+        :mask="`url(${fragment('horizontal-mask')})`"
+        :fill="`url(${fragment('vertical-bold')})`"
+        :stroke="`url(${fragment('radial-light')})`"
+        @focus="focus('bold')" />
+    </symbol>
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
+    <use :href="fragment('graphic')" />
+    <filter :id="query('composite')">
+      <feImage
+        :href="fragment('graphic')"
+        result="composite"
+        preserveAspectRatio="xMidYMid slice" />
+      <feComposite
+        in="composite"
+        in2="SourceGraphic"
+        operator="in"
+        result="composite" />
+    </filter>
+    <rect
+      :id="query('rendner')"
+      width="100%"
+      height="100%"
+      :filter="`url(${fragment('composite')})`" />
     <as-animation v-if="animate" :vector="vector" />
     <as-emboss v-if="emboss" :vector="vector" />
   </svg>
