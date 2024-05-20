@@ -2,9 +2,9 @@
   <defs>
     <filter id="emboss">
       <feConvolveMatrix
-        kernelMatrix="1.5 0 0
+        kernelMatrix="2.5 0 0
                       0   0 0
-                      0   0 -1.5" />
+                      0   0 -2.5" />
     </filter>
     <filter id="emboss-opposite">
       <feConvolveMatrix
@@ -25,7 +25,7 @@
       <use :href="fragment('regular')" filter="url(#emboss-straight)" />
     </symbol>
     <symbol :id="query('emboss-medium')">
-      <use :href="fragment('bold')" filter="url(#emboss-opposite)" />
+      <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
     </symbol>
 
     <symbol :id="query('emboss-bold')">
@@ -42,6 +42,11 @@
     class="emboss"
     opacity="0.66"
     :href="fragment('emboss-regular')" />
+  <use
+    tabindex="-1"
+    class="emboss"
+    opacity="0.66"
+    :href="fragment('emboss-medium')" />
   <use
     tabindex="-1"
     class="emboss"
