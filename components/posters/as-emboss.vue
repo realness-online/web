@@ -12,24 +12,29 @@
                       0   0 0
                      -2.5 0 0" />
     </filter>
-    <filter id="emboss-straight">
+    <filter id="emboss-horizontal">
       <feConvolveMatrix
         kernelMatrix="0   0 0
                       2.5 0 -2.5
                       0   0 0" />
     </filter>
+    <filter id="emboss-vertical">
+      <feConvolveMatrix
+        kernelMatrix="0    2.5 0
+                      0    0   0
+                      0   -2.5 0" />
+    </filter>
     <symbol :id="query('emboss-light')">
       <use :href="fragment('light')" filter="url(#emboss)" />
     </symbol>
     <symbol :id="query('emboss-regular')">
-      <use :href="fragment('regular')" filter="url(#emboss-straight)" />
+      <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
     </symbol>
     <symbol :id="query('emboss-medium')">
       <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
     </symbol>
-
     <symbol :id="query('emboss-bold')">
-      <use :href="fragment('bold')" filter="url(#emboss)" />
+      <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
     </symbol>
   </defs>
   <use
