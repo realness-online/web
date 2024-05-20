@@ -85,7 +85,7 @@
         <feMergeNode in="image2" />
       </feMerge>
     </filter>
-    <!-- <rect filter="url(#stage)" width="100%" height="100%" /> -->
+
     <rect :id="query('render')" :filter="`url(${fragment('composite')})`" />
   </svg>
 </template>
