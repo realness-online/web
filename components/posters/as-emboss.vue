@@ -33,7 +33,7 @@
   </defs>
   <defs class="texture example">
     <pattern
-      id="realness-tile"
+      id="tile"
       patternUnits="userSpaceOnUse"
       preserveAspectRatio="xMidYMid slice"
       width="21"
@@ -82,20 +82,25 @@
     </radialGradient>
     <rect id="bgRect" fill="#39466b" width="100%" height="100%" />
     <rect id="gradientRect" fill="url(#l)" width="100%" height="100%" />
-    <rect id="tileRect" fill="url(#realness-tile)" width="100%" height="100%" />
+    <rect id="tileRect" fill="url(#tile)" width="100%" height="100%" />
     <filter id="stage" color-interpolation-filters="sRGB" y="0">
       <feImage href="#bgRect" result="bg" />
       <feImage href="#tileRect" result="tile" />
       <feImage href="#gradientRect" result="waves" />
       <feMerge>
-        <feMergeNode in="bg" />
-        <feMergeNode in="tile" />
+        <!-- <feMergeNode in="bg" /> -->
+        <!-- <feMergeNode in="tile" /> -->
         <feMergeNode in="waves" />
       </feMerge>
     </filter>
   </defs>
+  <rect filter="url(#stage)" width="100%" height="100%" />
+  <use :href="fragment('light')" opacity="0.45" filter="url(#emboss)" />
+  <use :href="fragment('regular')"  opacity="0.66" filter="url(#emboss-vertical)" />
+  <use :href="fragment('medium')"  opacity="0.66" filter="url(#emboss-opposite)" />
+  <use :href="fragment('bold')" opacity="0.66" filter="url(#emboss-horizontal)" />
 
-  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss')" />
+
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
