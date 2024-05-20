@@ -24,16 +24,10 @@
                       0    0   0
                       0   -2.5 0" />
     </filter>
-    <symbol :id="query('emboss-light')">
+    <symbol :id="query('emboss')">
       <use :href="fragment('light')" filter="url(#emboss)" />
-    </symbol>
-    <symbol :id="query('emboss-regular')">
       <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
-    </symbol>
-    <symbol :id="query('emboss-medium')">
       <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
-    </symbol>
-    <symbol :id="query('emboss-bold')">
       <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
     </symbol>
   </defs>
@@ -41,22 +35,8 @@
     tabindex="-1"
     class="emboss"
     opacity="0.66"
-    :href="fragment('emboss-light')" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('emboss-regular')" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('emboss-medium')" />
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :href="fragment('emboss-bold')" />
+    :id="query('emboss-rendered')"
+    :href="fragment('emboss')" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
