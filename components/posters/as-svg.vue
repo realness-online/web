@@ -76,7 +76,7 @@
     <as-animation v-if="animate" :vector="vector" />
     <use :href="fragment('graphic')" />
     <as-emboss v-if="emboss" :vector="vector" />
-    <filter :id="query('composite')"color-interpolation-filters="sRGB" y="0">
+    <filter :id="query('composite')" color-interpolation-filters="sRGB" y="0">
       <feImage :href="fragment('emboss')" result="image1" />
       <feImage :href="fragment('graphic')" result="image2" />
 

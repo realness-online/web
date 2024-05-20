@@ -96,11 +96,18 @@
   </defs>
   <rect filter="url(#stage)" width="100%" height="100%" />
   <use :href="fragment('light')" opacity="0.45" filter="url(#emboss)" />
-  <use :href="fragment('regular')"  opacity="0.66" filter="url(#emboss-vertical)" />
-  <use :href="fragment('medium')"  opacity="0.66" filter="url(#emboss-opposite)" />
-  <use :href="fragment('bold')" opacity="0.66" filter="url(#emboss-horizontal)" />
-
-
+  <use
+    :href="fragment('regular')"
+    opacity="0.66"
+    filter="url(#emboss-vertical)" />
+  <use
+    :href="fragment('medium')"
+    opacity="0.66"
+    filter="url(#emboss-opposite)" />
+  <use
+    :href="fragment('bold')"
+    opacity="0.66"
+    filter="url(#emboss-horizontal)" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
