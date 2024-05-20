@@ -45,7 +45,7 @@ export const use = () => {
         path = symbol.firstChild
       }
     }
-    const path_name = path.getAttribute('itemprop')
+    const path_name = path?.getAttribute('itemprop')
     if (path_name) {
       selected_path.value = path_name
       if (as_stroke.value) opacity_percentage.value = path.style.strokeOpacity
