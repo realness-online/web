@@ -70,27 +70,23 @@
         :stroke="`url(${fragment('radial-light')})`"
         @focus="focus('bold')" />
     </symbol>
+
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
-    <use :href="fragment('graphic')" />
-    <filter :id="query('composite')">
-      <feImage
-        :href="fragment('graphic')"
-        result="composite"
-        preserveAspectRatio="xMidYMid slice" />
-      <feComposite
-        in="composite"
-        in2="SourceGraphic"
-        operator="in"
-        result="composite" />
-    </filter>
-    <rect
-      :id="query('rendner')"
-      width="100%"
-      height="100%"
-      :filter="`url(${fragment('composite')})`" />
     <as-animation v-if="animate" :vector="vector" />
+    <use :href="fragment('graphic')" />
     <as-emboss v-if="emboss" :vector="vector" />
+    <filter :id="query('composite')"color-interpolation-filters="sRGB" y="0">
+      <feImage :href="fragment('emboss')" result="image1" />
+      <feImage :href="fragment('graphic')" result="image2" />
+
+      <feMerge>
+        <feMergeNode in="image1" />
+        <feMergeNode in="image2" />
+      </feMerge>
+    </filter>
+    <!-- <rect filter="url(#stage)" width="100%" height="100%" /> -->
+    <rect :id="query('render')" :filter="`url(${fragment('composite')})`" />
   </svg>
 </template>
 <script setup>
