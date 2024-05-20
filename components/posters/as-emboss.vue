@@ -31,12 +31,71 @@
       <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
     </symbol>
   </defs>
-  <use
-    tabindex="-1"
-    class="emboss"
-    opacity="0.66"
-    :id="query('emboss-rendered')"
-    :href="fragment('emboss')" />
+  <defs class="texture example">
+    <pattern
+      id="realness-tile"
+      patternUnits="userSpaceOnUse"
+      preserveAspectRatio="xMidYMid slice"
+      width="21"
+      height="34"
+      viewBox="0 0 192 192">
+      <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="69" />
+      <rect
+        fill="hsla(203, 58%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104"
+        y="69" />
+      <rect
+        fill="hsla(203, 58%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="138" />
+      <rect
+        fill="hsla(353, 83%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104"
+        y="138" />
+    </pattern>
+    <radialGradient id="l" cx="50%" cy="200%" fy="0" r="201%">
+      <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
+      <stop offset="10%" style="stop-color: #000; stop-opacity: 0.1" />
+      <stop offset="30%" style="stop-color: #000; stop-opacity: 0.3" />
+      <stop offset="90%" style="stop-color: #000; stop-opacity: 0.55" />
+      <stop offset="100%" style="stop-color: #000; stop-opacity: 0.6" />
+    </radialGradient>
+    <rect id="bgRect" fill="#39466b" width="100%" height="100%" />
+    <rect id="gradientRect" fill="url(#l)" width="100%" height="100%" />
+    <rect id="tileRect" fill="url(#realness-tile)" width="100%" height="100%" />
+    <filter id="stage" color-interpolation-filters="sRGB" y="0">
+      <feImage href="#bgRect" result="bg" />
+      <feImage href="#tileRect" result="tile" />
+      <feImage href="#gradientRect" result="waves" />
+      <feMerge>
+        <feMergeNode in="bg" />
+        <feMergeNode in="tile" />
+        <feMergeNode in="waves" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <use tabindex="-1" class="emboss" opacity="0.66" :href="fragment('emboss')" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'
