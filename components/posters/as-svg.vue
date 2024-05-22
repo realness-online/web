@@ -45,7 +45,7 @@
         :tabindex="tabindex"
         :mask="`url(${fragment('radial-mask')})`"
         :fill="`url(${fragment('horizontal-regular')})`"
-        :stroke="`url(${fragment('radial-background')})`"
+        :stroke="`url(${fragment('radial-bold')})`"
         @focus="focus('regular')" />
       <as-path
         v-if="vector.medium"
@@ -56,7 +56,7 @@
         :tabindex="tabindex"
         :mask="`url(${fragment('vertical-mask')})`"
         :fill="`url(${fragment('vertical-medium')})`"
-        :stroke="`url(${fragment('horizontal-medium')})`"
+        :stroke="`url(${fragment('horizontal-bold')})`"
         @focus="focus('medium')" />
       <as-path
         v-if="vector.bold"
@@ -65,9 +65,11 @@
         :tabindex="tabindex"
         :path="vector.bold"
         fill-opacity="0.90"
+        stroke-opacity="0.90"
+        stroke-width="0.66"
         :mask="`url(${fragment('horizontal-mask')})`"
         :fill="`url(${fragment('vertical-bold')})`"
-        :stroke="`url(${fragment('radial-light')})`"
+        :stroke="`url(${fragment('radial-medium')})`"
         @focus="focus('bold')" />
     </symbol>
 
