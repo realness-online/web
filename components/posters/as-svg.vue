@@ -51,13 +51,12 @@
         v-if="vector.medium"
         :id="query('medium')"
         itemprop="medium"
-        fill-opacity="0.90"
         :path="vector.medium"
         :tabindex="tabindex"
         :mask="`url(${fragment('vertical-mask')})`"
+        fill-opacity="0.90"
         :fill="`url(${fragment('vertical-medium')})`"
         stroke-opacity="0.90"
-        stroke-width="0.66"
         :stroke="`url(${fragment('horizontal-bold')})`"
         @focus="focus('medium')" />
       <as-path
