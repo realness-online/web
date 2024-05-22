@@ -56,6 +56,8 @@
         :tabindex="tabindex"
         :mask="`url(${fragment('vertical-mask')})`"
         :fill="`url(${fragment('vertical-medium')})`"
+        stroke-opacity="0.90"
+        stroke-width="0.66"
         :stroke="`url(${fragment('horizontal-bold')})`"
         @focus="focus('medium')" />
       <as-path
@@ -64,11 +66,11 @@
         itemprop="bold"
         :tabindex="tabindex"
         :path="vector.bold"
+        :mask="`url(${fragment('horizontal-mask')})`"
         fill-opacity="0.90"
+        :fill="`url(${fragment('vertical-bold')})`"
         stroke-opacity="0.90"
         stroke-width="0.66"
-        :mask="`url(${fragment('horizontal-mask')})`"
-        :fill="`url(${fragment('vertical-bold')})`"
         :stroke="`url(${fragment('radial-medium')})`"
         @focus="focus('bold')" />
     </symbol>
