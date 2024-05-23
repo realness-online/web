@@ -159,7 +159,7 @@
         width="100%"
         height="100%" />
     </defs>
-    <defs>
+    <defs class="graphic">
       <pattern
         :id="query('pattern')"
         :width="vector.width"
@@ -233,6 +233,7 @@
     </defs>
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
+    <use :href="fragment('pattern-render')" />
     <filter
       v-if="!emboss"
       :id="query('composite')"
@@ -250,7 +251,6 @@
       :filter="`url(${fragment('composite')})`"
       width="100%"
       height="100%" />
-
     <as-animation v-if="animate" :vector="vector" />
   </svg>
 </template>
