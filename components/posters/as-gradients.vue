@@ -1,4 +1,11 @@
 <template>
+  <radialGradient id="lightbar" cx="50%" cy="200%" fy="0" r="201%">
+    <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
+    <stop offset="10%" style="stop-color: #000; stop-opacity: 0.1" />
+    <stop offset="30%" style="stop-color: #000; stop-opacity: 0.3" />
+    <stop offset="90%" style="stop-color: #000; stop-opacity: 0.55" />
+    <stop offset="100%" style="stop-color: #000; stop-opacity: 0.6" />
+  </radialGradient>
   <g class="radial">
     <radialGradient :id="query('radial')" gradientUnits="userSpaceOnUse">
       <stop
