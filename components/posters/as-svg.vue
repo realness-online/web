@@ -12,9 +12,33 @@
     :tabindex="focusable"
     :class="{ animate, landscape }"
     @click="click">
-    <symbol
-      :id="query('graphic')"
+    <pattern
+      :id="query('pattern-emboss')"
+      :width="vector.width"
+      :height="vector.height"
+      :viewBox="vector.viewbox"
+      patternUnits="userSpaceOnUse"
+      :preserveAspectRatio="aspect_ratio">
+      <use :href="fragment('light')" filter="url(#emboss)" opacity="0.45" />
+      <use
+        :href="fragment('regular')"
+        filter="url(#emboss-vertical)"
+        opacity="0.66" />
+      <use
+        :href="fragment('medium')"
+        filter="url(#emboss-opposite)"
+        opacity="0.45" />
+      <use
+        :href="fragment('bold')"
+        filter="url(#emboss-horizontal)"
+        opacity="0.45" />
+    </pattern>
+    <pattern
+      :id="query('pattern')"
+      :width="vector.width"
+      :height="vector.height"
       :viewBox="viewbox"
+      patternUnits="userSpaceOnUse"
       :preserveAspectRatio="aspect_ratio">
       <as-background
         :id="query('background')"
@@ -72,13 +96,12 @@
         stroke-width="0.66"
         :stroke="`url(${fragment('radial-medium')})`"
         @focus="focus('bold')" />
-    </symbol>
+    </pattern>
 
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
-    <as-animation v-if="animate" :vector="vector" />
-    <use :href="fragment('graphic')" />
     <as-emboss v-if="emboss" :vector="vector" />
+    <as-animation v-if="animate" :vector="vector" />
   </svg>
 </template>
 <script setup>

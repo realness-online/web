@@ -62,8 +62,7 @@
       </feMerge>
     </filter>
   </defs>
-
-  <defs>
+  <defs class="static filters">
     <filter id="emboss">
       <feConvolveMatrix
         kernelMatrix="2.5 0 0
@@ -88,22 +87,11 @@
                       0    0   0
                       0   -2.5 0" />
     </filter>
-    <symbol :id="query('emboss')">
-      <use :href="fragment('light')" filter="url(#emboss)" />
-      <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
-      <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
-      <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
-    </symbol>
-    <pattern
-      :id="query('pattern')"
-      :href="fragment('graphic')"
-      :width="vector.width"
-      :height="vector.height"
-      :viewBox="viewbox" />
-    <use :id="query('emboss-use')" :href="fragment('emboss')" />
+  </defs>
+  <defs>
     <rect
       :id="query('emboss-render')"
-      :fill="`url(${fragment('emboss-use')})`"
+      :fill="`url(${fragment('pattern-emboss')})`"
       width="100%"
       height="100%" />
     <rect
@@ -111,26 +99,18 @@
       :fill="`url(${fragment('pattern')})`"
       width="100%"
       height="100%" />
-    <rect id="lightbar-rect" fill="url(#l)" width="100%" height="100%" />
-
+    <rect id="lightbar-rect" fill="url(#lightbar)" width="100%" height="100%" />
     <filter :id="query('composite')" color-interpolation-filters="sRGB" y="0">
-      <feImage :href="fragment('pick-me')" result="puffy" />
-      <feImage :href="fragment('pattern-render')" result="frame" />
       <feImage href="#lightbar-rect" result="waves" />
+      <feImage :href="fragment('emboss-render')" result="puffy" />\
+      <feImage :href="fragment('pattern-render')" result="frame" />
       <feMerge>
         <feMergeNode in="frame" />
         <feMergeNode in="waves" />
+        <feMergeNode in="puffy" />
       </feMerge>
     </filter>
   </defs>
-    <rect id="rect-test" :fill="`url(${fragment('emboss')})`" width="100%" height="100%" />
-  <!-- <rect filter="url(#stage)" width="100%" height="100%" /> -->
-  <g>
-    <use
-    id="pick-me"
-    :href="fragment('emboss')" />
-  </g>
-
   <rect :filter="`url(${fragment('composite')})`" width="100%" height="100%" />
 </template>
 <script setup>
