@@ -10,14 +10,21 @@
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="2s"
-      values="0.9;0.6;0.9" />
+      dur="4s"
+      values="0.9;0;0.9" />
+    <animate
+      :href="fragment('medium')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="5s"
+      values="0.9;0;0.9" />
     <animate
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="3s"
-      values="0.9;0.0;0.9" />
+      values="0.9;0;0.9" />
+
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
@@ -51,6 +58,31 @@
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="55s"
+      values="0%;66%;100%;33%;100%;66%;0%" />
+
+    <animate
+      :href="fragment('vertical-medium')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="34s"
+      values="0%;100%;66%;0%;33%;133%;0%" />
+    <animate
+      :href="fragment('vertical-medium')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="55s"
+      values="0%;66%;100%;33%;100%;66%;0%" />
+    <animate
+      :href="fragment('vertical-bold')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="34s"
+      values="0%;100%;66%;0%;33%;133%;0%" />
+    <animate
+      :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
