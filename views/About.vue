@@ -481,12 +481,17 @@
       padding: base-line
       min-height: 100vh
       standard-grid: gentle
+
+      & > figcaption
+        width:100%
       & > svg
         border-radius: base-line * 0.21
         height: 100%
         width: 100%
       & > svg.landscape
-        grid-column-start: span 2
+        @media (min-width: pad-begins)
+          grid-column-start: span 2
+        padding:0
       @media (orientation: landscape), (min-width: page-width)
         & > img.landscape
           border:1em solid blue
