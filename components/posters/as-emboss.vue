@@ -1,36 +1,4 @@
 <template>
-  <defs>
-    <filter id="emboss">
-      <feConvolveMatrix
-        kernelMatrix="2.5 0 0
-                      0   0 0
-                      0   0 -2.5" />
-    </filter>
-    <filter id="emboss-opposite">
-      <feConvolveMatrix
-        kernelMatrix="0   0 2.5
-                      0   0 0
-                     -2.5 0 0" />
-    </filter>
-    <filter id="emboss-horizontal">
-      <feConvolveMatrix
-        kernelMatrix="0   0 0
-                      2.5 0 -2.5
-                      0   0 0" />
-    </filter>
-    <filter id="emboss-vertical">
-      <feConvolveMatrix
-        kernelMatrix="0    2.5 0
-                      0    0   0
-                      0   -2.5 0" />
-    </filter>
-    <symbol :id="query('emboss')">
-      <use :href="fragment('light')" filter="url(#emboss)" />
-      <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
-      <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
-      <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
-    </symbol>
-  </defs>
   <defs class="texture example">
     <pattern
       id="tile"
@@ -94,20 +62,76 @@
       </feMerge>
     </filter>
   </defs>
-  <rect filter="url(#stage)" width="100%" height="100%" />
-  <use :href="fragment('light')" opacity="0.45" filter="url(#emboss)" />
-  <use
-    :href="fragment('regular')"
-    opacity="0.66"
-    filter="url(#emboss-vertical)" />
-  <use
-    :href="fragment('medium')"
-    opacity="0.66"
-    filter="url(#emboss-opposite)" />
-  <use
-    :href="fragment('bold')"
-    opacity="0.66"
-    filter="url(#emboss-horizontal)" />
+
+  <defs>
+    <filter id="emboss">
+      <feConvolveMatrix
+        kernelMatrix="2.5 0 0
+                      0   0 0
+                      0   0 -2.5" />
+    </filter>
+    <filter id="emboss-opposite">
+      <feConvolveMatrix
+        kernelMatrix="0   0 2.5
+                      0   0 0
+                     -2.5 0 0" />
+    </filter>
+    <filter id="emboss-horizontal">
+      <feConvolveMatrix
+        kernelMatrix="0   0 0
+                      2.5 0 -2.5
+                      0   0 0" />
+    </filter>
+    <filter id="emboss-vertical">
+      <feConvolveMatrix
+        kernelMatrix="0    2.5 0
+                      0    0   0
+                      0   -2.5 0" />
+    </filter>
+    <symbol :id="query('emboss')">
+      <use :href="fragment('light')" filter="url(#emboss)" />
+      <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
+      <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
+      <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
+    </symbol>
+    <pattern
+      :id="query('pattern')"
+      :href="fragment('graphic')"
+      :width="vector.width"
+      :height="vector.height"
+      :viewBox="viewbox" />
+    <use :id="query('emboss-use')" :href="fragment('emboss')" />
+    <rect
+      :id="query('emboss-render')"
+      :fill="`url(${fragment('emboss-use')})`"
+      width="100%"
+      height="100%" />
+    <rect
+      :id="query('pattern-render')"
+      :fill="`url(${fragment('pattern')})`"
+      width="100%"
+      height="100%" />
+    <rect id="lightbar-rect" fill="url(#l)" width="100%" height="100%" />
+
+    <filter :id="query('composite')" color-interpolation-filters="sRGB" y="0">
+      <feImage :href="fragment('pick-me')" result="puffy" />
+      <feImage :href="fragment('pattern-render')" result="frame" />
+      <feImage href="#lightbar-rect" result="waves" />
+      <feMerge>
+        <feMergeNode in="frame" />
+        <feMergeNode in="waves" />
+      </feMerge>
+    </filter>
+  </defs>
+    <rect id="rect-test" :fill="`url(${fragment('emboss')})`" width="100%" height="100%" />
+  <!-- <rect filter="url(#stage)" width="100%" height="100%" /> -->
+  <g>
+    <use
+    id="pick-me"
+    :href="fragment('emboss')" />
+  </g>
+
+  <rect :filter="`url(${fragment('composite')})`" width="100%" height="100%" />
 </template>
 <script setup>
   import { as_fragment_id, as_query_id } from '@/use/itemid'

@@ -57,7 +57,7 @@
         fill-opacity="0.90"
         :fill="`url(${fragment('vertical-medium')})`"
         stroke-opacity="0.90"
-        :stroke="`url(${fragment('horizontal-bold')})`"
+        :stroke="`url(${fragment('horizontal-regular')})`"
         @focus="focus('medium')" />
       <as-path
         v-if="vector.bold"
@@ -79,17 +79,6 @@
     <as-animation v-if="animate" :vector="vector" />
     <use :href="fragment('graphic')" />
     <as-emboss v-if="emboss" :vector="vector" />
-    <filter :id="query('composite')" color-interpolation-filters="sRGB" y="0">
-      <feImage :href="fragment('emboss')" result="image1" />
-      <feImage :href="fragment('graphic')" result="image2" />
-
-      <feMerge>
-        <feMergeNode in="image1" />
-        <feMergeNode in="image2" />
-      </feMerge>
-    </filter>
-
-    <rect :id="query('render')" :filter="`url(${fragment('composite')})`" />
   </svg>
 </template>
 <script setup>
