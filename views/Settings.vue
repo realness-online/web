@@ -9,12 +9,19 @@
 
     <menu>
       <name-as-form />
+      <preference name="fill" title="Use a gradient to fill up your poster" />
+      <preference
+        name="stroke"
+        title="Outline your graphic with a stroke in relevant color" />
       <preference
         name="animate"
         title="Animate posters as they come into view" />
       <preference
         name="emboss"
-        title="Apply an emboss effect to each layer of a poster" />
+        title="Apply an emboss effect to each layer of a poster">
+        <preference name="light" title="emboss + lightbar" />
+      </preference>
+
       <preference
         name="adobe"
         hidden
@@ -90,7 +97,6 @@
   </section>
 </template>
 <script setup>
-  import icon from '@/components/icon'
   import Preference from '@/components/preference'
   import LogoAsLink from '@/components/logo-as-link'
   import CallToAction from '@/components/call-to-action'

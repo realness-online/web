@@ -1,36 +1,17 @@
 <template>
   <g itemprop="animation">
     <animate
-      :href="fragment('light')"
-      attributeName="stroke-opacity"
-      repeatCount="indefinite"
-      dur="5s"
-      values="0.9;0.0;0.9" />
-    <animate
-      :href="fragment('regular')"
-      attributeName="stroke-opacity"
-      repeatCount="indefinite"
-      dur="4s"
-      values="0.9;0;0.9" />
-    <animate
-      :href="fragment('medium')"
-      attributeName="stroke-opacity"
-      repeatCount="indefinite"
-      dur="5s"
-      values="0.9;0;0.9" />
-    <animate
-      :href="fragment('bold')"
-      attributeName="stroke-opacity"
-      repeatCount="indefinite"
-      dur="3s"
-      values="0.9;0;0.9" />
-
-    <animate
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
       dur="34s"
       values="0%;33%;100%;0%;100%;0%;" />
+    <animate
+      :href="fragment('horizontal-background')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="52s"
+      values="0%;100%;-100%;100%;-166%;0%" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"

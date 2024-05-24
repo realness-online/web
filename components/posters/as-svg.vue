@@ -46,7 +46,7 @@
         x="0"
         width="100%"
         height="100%">
-        <feImage href="#lightbar-rect" result="lighting" />
+        <feImage v-if="light" href="#lightbar-rect" result="lighting" />
         <feImage :href="fragment('emboss-render-light')" result="light" />
         <feImage :href="fragment('emboss-render-regular')" result="regular" />
         <feImage :href="fragment('emboss-render-medium')" result="medium" />
@@ -54,34 +54,14 @@
         <feImage :href="fragment('pattern-render')" result="framing" />
         <feMerge>
           <feMergeNode in="framing" />
-          <feMergeNode in="lighting" />
+          <feMergeNode v-if="light" in="lighting" />
           <feMergeNode in="bold" />
           <feMergeNode in="medium" />
           <feMergeNode in="regular" />
           <feMergeNode in="light" />
         </feMerge>
       </filter>
-      <pattern
-        :id="query('pattern-emboss')"
-        :width="vector.width"
-        :height="vector.height"
-        :viewBox="vector.viewbox"
-        patternUnits="userSpaceOnUse"
-        :preserveAspectRatio="aspect_ratio">
-        <use :href="fragment('light')" filter="url(#emboss)" opacity="0.45" />
-        <use
-          :href="fragment('regular')"
-          filter="url(#emboss-vertical)"
-          opacity="0.66" />
-        <use
-          :href="fragment('medium')"
-          filter="url(#emboss-opposite)"
-          opacity="0.45" />
-        <use
-          :href="fragment('bold')"
-          filter="url(#emboss-horizontal)"
-          opacity="0.45" />
-      </pattern>
+
       <pattern
         :id="query('pattern-emboss-light')"
         :width="vector.width"
@@ -98,10 +78,7 @@
         :viewBox="vector.viewbox"
         patternUnits="userSpaceOnUse"
         :preserveAspectRatio="aspect_ratio">
-        <use
-          :href="fragment('regular')"
-          filter="url(#emboss-vertical)"
-          opacity="0.66" />
+        <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
       </pattern>
       <pattern
         :id="query('pattern-emboss-medium')"
@@ -110,10 +87,7 @@
         :viewBox="vector.viewbox"
         patternUnits="userSpaceOnUse"
         :preserveAspectRatio="aspect_ratio">
-        <use
-          :href="fragment('medium')"
-          filter="url(#emboss-opposite)"
-          opacity="0.45" />
+        <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
       </pattern>
       <pattern
         :id="query('pattern-emboss-bold')"
@@ -122,10 +96,7 @@
         :viewBox="vector.viewbox"
         patternUnits="userSpaceOnUse"
         :preserveAspectRatio="aspect_ratio">
-        <use
-          :href="fragment('bold')"
-          filter="url(#emboss-horizontal)"
-          opacity="0.45" />
+        <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
       </pattern>
       <rect
         :id="query('emboss-render')"
@@ -152,7 +123,6 @@
         :fill="`url(${fragment('pattern-emboss-bold')})`"
         width="100%"
         height="100%" />
-
       <rect
         id="lightbar-rect"
         fill="url(#lightbar)"
@@ -174,7 +144,7 @@
           :height="vector.height"
           :tabindex="tabindex"
           fill-opacity="1"
-          :fill="`url(${fragment('radial-background')})`"
+          :fill="`url(${fragment('horizontal-background')})`"
           @focus="focus('background')" />
         <as-path
           v-if="vector.light"
@@ -234,23 +204,19 @@
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <use :href="fragment('pattern-render')" />
-    <filter
-      v-if="!emboss"
-      :id="query('composite')"
-      color-interpolation-filters="sRGB"
-      y="0"
-      x="0"
-      width="100%"
-      height="100%">
-      <feImage :href="fragment('pattern-render')" result="framing" />
-      <feMerge>
-        <feMergeNode in="framing" />
-      </feMerge>
-    </filter>
     <rect
+      v-if="emboss"
       :filter="`url(${fragment('composite')})`"
       width="100%"
       height="100%" />
+    <g v-else>
+      <use :href="fragment('background')" @focus="focus('bold')" />
+      <use :href="fragment('light')" @focus="focus('light')" />
+      <use :href="fragment('regular')" @focus="focus('regular')" />
+      <use :href="fragment('medium')" @focus="focus('medium')" />
+      <use :href="fragment('bold')" @focus="focus('bold')" />
+    </g>
+
     <as-animation v-if="animate" :vector="vector" />
   </svg>
 </template>
@@ -261,7 +227,6 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
-  import AsEmboss from '@/components/posters/as-emboss'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
@@ -281,7 +246,8 @@
   } from '@/use/vector'
   import {
     animate as animate_pref,
-    emboss as emboss_pref
+    emboss as emboss_pref,
+    light as light_pref
   } from '@/use/preference'
   defineEmits({
     focus: is_focus,
@@ -346,6 +312,8 @@
   const animate = computed(
     () => animate_pref.value == true && intersecting.value
   )
+  const light = computed(() => light_pref.value == true && intersecting.value)
+
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
