@@ -313,8 +313,12 @@
     <figure>
       <figcaption>
         <h2>Gallery</h2>
-        <preference name="emboss" />
+        <preference name="fill" />
+        <preference name="stroke" />
         <preference name="animate" />
+        <preference name="emboss">
+          <preference name="light" />
+        </preference>
       </figcaption>
       <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
@@ -336,7 +340,7 @@
 </script>
 <style lang="stylus">
   section.page#about
-    fieldset.preference:first-of-type
+    fieldset.preference
       margin-bottom: base-line
     .no
       text-decoration: line-through
@@ -479,9 +483,8 @@
             margin-bottom: 0
     & > figure
       padding: base-line
-      min-height: 100vh
+      // min-height: 100vh
       standard-grid: gentle
-
       & > figcaption
         width:100%
       & > svg

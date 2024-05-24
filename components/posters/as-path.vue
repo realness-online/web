@@ -1,5 +1,6 @@
 <template>
   <path
+    v-if="wants_both"
     :id="id"
     ref="path"
     :d="d"
@@ -11,11 +12,40 @@
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
     fill-rule="evenodd" />
+  <path
+    v-else-if="just_stroke"
+    :id="id"
+    ref="path"
+    :d="d"
+    fill="none"
+    :mask="mask"
+    :itemprop="itemprop"
+    :stroke="stroke"
+    :stroke-opacity="stroke_opacity"
+    :stroke-width="stroke_width" />
+  <path
+    v-if="just_fill"
+    :id="id"
+    ref="path"
+    :d="d"
+    :mask="mask"
+    :itemprop="itemprop"
+    :fill="fill"
+    :fill-opacity="fill_opacity"
+    fill-rule="evenodd"
+    stroke="none" />
 </template>
 <script setup>
-  import { ref, watchEffect as watch_effect, onMounted as mounted } from 'vue'
+  import {
+    ref,
+    watchEffect as watch_effect,
+    onMounted as mounted,
+    computed
+  } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
+  import { stroke as stroke_pref, fill as fill_pref } from '@/use/preference'
+
   const props = defineProps({
     itemprop: {
       type: String,
@@ -46,13 +76,16 @@
       required: true
     }
   })
+  const wants_both = computed(() => stroke_pref.value && fill_pref.value)
+  const just_stroke = computed(() => !fill_pref.value && stroke_pref.value)
+  const just_fill = computed(() => fill_pref.value)
   const path = ref(null)
   const fill = ref(undefined)
   const stroke = ref(undefined)
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
   const stroke_opacity = ref('0.90')
-  const stroke_width = ref('0.25px')
+  const stroke_width = ref('0.33')
   mounted(() => {
     fill.value = props.fill
     stroke.value = props.stroke
