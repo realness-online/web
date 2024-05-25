@@ -1,5 +1,6 @@
 <template>
   <g itemprop="animation">
+    <!-- We mostly animate gradients. it's fast and packs a hell of a punch -->
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
@@ -7,23 +8,26 @@
       dur="34s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
-      :href="fragment('horizontal-background')"
-      attributeName="x1"
-      repeatCount="indefinite"
-      dur="52s"
-      values="0%;100%;-100%;100%;-166%;0%" />
-    <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
       dur="55s"
       values="0%;100%;33%;100%;66%;0%" />
+
+    <animate
+      :href="fragment('horizontal-background')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="52s"
+      values="0%;100%;-100%;100%;-166%;0%" />\
+
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
       values="0%;33%;100%;0%;133%;0%;" />
+
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
@@ -46,16 +50,17 @@
 
     <animate
       :href="fragment('vertical-medium')"
-      attributeName="x1"
+      attributeName="x2"
       repeatCount="indefinite"
-      dur="34s"
+      dur="14s"
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('vertical-medium')"
-      attributeName="y1"
+      attributeName="y2"
       repeatCount="indefinite"
-      dur="55s"
+      dur="35s"
       values="0%;66%;100%;33%;100%;66%;0%" />
+
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
@@ -72,29 +77,21 @@
 </template>
 
 <script setup>
-  import { use_poster, is_vector } from '@/use/vector'
-  import { watchEffect as watch } from 'vue'
-  const { fragment, vector } = use_poster()
-  const props = defineProps({
-    vector: {
-      type: Object,
-      required: true,
-      default: null,
-      validator: is_vector
-    }
-  })
-
-  watch(() => {
-    vector.value = props.vector
-  })
+  import { use_poster } from '@/use/vector'
+  const { fragment } = use_poster()
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"].animate
-    path
-      &[itemprop="regular"]
-        animation-timing-function: ease-in-out
-        animation-name: subtle-rotate
-        animation-duration: 8s
-        animation-direction: alternate
-        animation-iteration-count: infinite
+    path[itemprop="medium"]
+      animation-timing-function: ease-in-out
+      animation-name: subtle-rotate
+      animation-duration: 8s
+      animation-direction: alternate
+      animation-iteration-count: infinite
+    // path[itemprop="regular"]
+    //   animation-timing-function: ease-in-out
+    //   animation-name: subtle-counter-rotate
+    //   animation-duration: 13s
+    //   animation-direction: alternate
+    //   animation-iteration-count: infinite
 </style>

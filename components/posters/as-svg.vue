@@ -218,7 +218,7 @@
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
 
-    <as-animation v-if="animate" :vector="vector" />
+    <as-animation v-if="animate" />
   </svg>
 </template>
 <script setup>
@@ -354,15 +354,22 @@
   })
 </script>
 <style lang="stylus">
-  svg[itemtype="/posters"]
     // aspect-ratio: 1.618 / 1 // golden-ratio
     // aspect-ratio: 1 / 1.618 // golden-ratio
     // aspect-ratio: 2.35 / 1 // current film
+    // aspect-ratio: 16 / 9 // most like human vision
+    // aspect-ratio: 1 / 1 // square
+  svg[itemtype="/posters"]
     display: block
+    aspect-ratio: 16 / 9
+    aspect-ratio: 2.35 / 1 // current film
     min-height: 512px
     height: 100%
     width: 100%
     outline: none
+    // @media (min-height: pad-begins)
+    //   min-height: 682px
+
   svg[itemtype="/posters"] rect.emboss
     pointer-events: none
     user-select none
