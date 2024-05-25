@@ -51,7 +51,7 @@
       type: String,
       required: true,
       validate: itemprop =>
-        ['light', 'regular', 'bold'].some(valid => valid === itemprop)
+        ['light', 'regular', 'medium', 'bold'].some(valid => valid === itemprop)
     },
     path: {
       type: Object,
