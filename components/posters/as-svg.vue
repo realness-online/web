@@ -178,7 +178,8 @@
           fill-opacity="0.90"
           :fill="`url(${fragment('vertical-medium')})`"
           stroke-opacity="0.90"
-          :stroke="`url(${fragment('horizontal-regular')})`"
+          stroke-width="0.66"
+          :stroke="`url(${fragment('vertical-regular')})`"
           @focus="focus('medium')" />
         <as-path
           v-if="vector.bold"
