@@ -30,7 +30,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="8s"
-      values="0.9;0.66;0.9;" />
+      values="0.9;0.75;0.95;0.8;0.9;" />
 
     <animate
       :href="fragment('radial-background')"
@@ -120,7 +120,7 @@
     path[itemprop="light"]
       animation-timing-function: ease-in-out
       animation-name: subtle-counter-rotate
-      animation-duration: 13s
+      animation-duration: 21s
       animation-direction: alternate
       animation-iteration-count: infinite
 </style>
