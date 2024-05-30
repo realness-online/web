@@ -2,10 +2,12 @@
   <main id="realness" :class="status">
     <router-view />
     <sync @active="sync_active" />
+    <fps />
   </main>
 </template>
 <script setup>
   import sync from '@/components/sync'
+  import fps from '@/components/fps'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { init_serverless } from '@/use/serverless'
   import { useRouter as use_router } from 'vue-router'
