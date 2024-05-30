@@ -170,10 +170,10 @@
   import { hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients } = use_vectorize()
   const background = 80
-  const light = 66
-  const regular = 44
-  const medium = 33
-  const bold = 18
+  const light = 60
+  const regular = 50
+  const medium = 31
+  const bold = 15
   const props = defineProps({
     vector: {
       type: Object,
