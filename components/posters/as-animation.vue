@@ -1,6 +1,37 @@
 <template>
   <g itemprop="animation">
-    <!-- We mostly animate gradients. it's fast and packs a hell of a punch -->
+    <animate
+      :href="fragment('light')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="5s"
+      values="0.9;0.0;0.9" />
+    <animate
+      :href="fragment('regular')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="4s"
+      values="0.9;0;0.9" />
+    <animate
+      :href="fragment('medium')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="5s"
+      values="0.9;0;0.9" />
+    <animate
+      :href="fragment('bold')"
+      attributeName="stroke-opacity"
+      repeatCount="indefinite"
+      dur="3s"
+      values="0.9;0;0.9" />
+
+    <animate
+      :href="fragment('medium')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      dur="3s"
+      values="0.9;0.1;0.9;" />
+
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
@@ -13,21 +44,12 @@
       repeatCount="indefinite"
       dur="55s"
       values="0%;100%;33%;100%;66%;0%" />
-
-    <animate
-      :href="fragment('horizontal-background')"
-      attributeName="x1"
-      repeatCount="indefinite"
-      dur="52s"
-      values="0%;100%;-100%;100%;-166%;0%" />\
-
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
       values="0%;33%;100%;0%;133%;0%;" />
-
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
@@ -50,17 +72,16 @@
 
     <animate
       :href="fragment('vertical-medium')"
-      attributeName="x2"
+      attributeName="x1"
       repeatCount="indefinite"
-      dur="14s"
+      dur="34s"
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('vertical-medium')"
-      attributeName="y2"
+      attributeName="y1"
       repeatCount="indefinite"
-      dur="35s"
+      dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
@@ -91,7 +112,7 @@
     // path[itemprop="regular"]
     //   animation-timing-function: ease-in-out
     //   animation-name: subtle-counter-rotate
-    //   animation-duration: 13s
+    //   animation-duration: 33s
     //   animation-direction: alternate
-    //   animation-iteration-count: infinite
+      // animation-iteration-count: infinite
 </style>

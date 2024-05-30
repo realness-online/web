@@ -16,27 +16,27 @@
       <defs class="static filters">
         <filter id="emboss">
           <feConvolveMatrix
-            kernelMatrix="2.5 0 0
-                      0   0 0
-                      0   0 -2.5" />
+            kernelMatrix="1.5 0 0
+                          0   0 0
+                          0   0 -1.5" />
         </filter>
         <filter id="emboss-opposite">
           <feConvolveMatrix
-            kernelMatrix="0   0 2.5
-                      0   0 0
-                     -2.5 0 0" />
+            kernelMatrix="0   0 1.5
+                          0   0 0
+                         -1.5 0 0" />
         </filter>
         <filter id="emboss-horizontal">
           <feConvolveMatrix
             kernelMatrix="0   0 0
-                      2.5 0 -2.5
-                      0   0 0" />
+                          1.5 0 -1.5
+                          0   0 0" />
         </filter>
         <filter id="emboss-vertical">
           <feConvolveMatrix
-            kernelMatrix="0    2.5 0
-                      0    0   0
-                      0   -2.5 0" />
+            kernelMatrix="0    1.5 0
+                          0    0   0
+                          0   -1.5 0" />
         </filter>
       </defs>
       <filter
@@ -144,7 +144,7 @@
           :height="vector.height"
           :tabindex="tabindex"
           fill-opacity="1"
-          :fill="`url(${fragment('horizontal-background')})`"
+          :fill="`url(${fragment('radial-background')})`"
           @focus="focus('background')" />
         <as-path
           v-if="vector.light"
