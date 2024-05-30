@@ -116,8 +116,6 @@
       height: auto
       max-width: none
     & > nav
-      @media (orientation: landscape) and (display-mode: standalone)
-        display:none
       transition-duration: 0s
       display: grid
       grid-gap: base-line
@@ -129,6 +127,8 @@
       min-width: 55vw
       margin-bottom: base-line * 2
       margin-top: base-line * 2
+      @media (orientation: landscape) and (display-mode: standalone) and (max-height: pad-begins)
+        display:none
       @media (max-height: pad-begins) and (orientation: landscape)
         min-height: auto
         padding: base-line (base-line * 4)
