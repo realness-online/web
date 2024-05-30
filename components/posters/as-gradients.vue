@@ -173,7 +173,7 @@
   const light = 60
   const regular = 50
   const medium = 31
-  const bold = 15
+  const bold = 18
   const props = defineProps({
     vector: {
       type: Object,

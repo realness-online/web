@@ -26,11 +26,11 @@
       values="0.9;0;0.9" />
 
     <animate
-      :href="fragment('medium')"
+      :href="fragment('regular')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="3s"
-      values="0.9;0.1;0.9;" />
+      dur="8s"
+      values="0.9;0.66;0.9;" />
 
     <animate
       :href="fragment('radial-background')"
@@ -98,8 +98,16 @@
 </template>
 
 <script setup>
-  import { use_poster } from '@/use/vector'
-  const { fragment } = use_poster()
+  import { as_fragment_id } from '@/use/itemid'
+  import { is_vector_id } from '@/use/vector'
+  const props = defineProps({
+    id: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    }
+  })
+  const fragment = add => `${as_fragment_id(props.id)}-${add}`
 </script>
 <style lang="stylus">
   svg[itemtype="/posters"].animate
@@ -109,10 +117,10 @@
       animation-duration: 8s
       animation-direction: alternate
       animation-iteration-count: infinite
-    // path[itemprop="regular"]
-    //   animation-timing-function: ease-in-out
-    //   animation-name: subtle-counter-rotate
-    //   animation-duration: 33s
-    //   animation-direction: alternate
-      // animation-iteration-count: infinite
+    path[itemprop="light"]
+      animation-timing-function: ease-in-out
+      animation-name: subtle-counter-rotate
+      animation-duration: 13s
+      animation-direction: alternate
+      animation-iteration-count: infinite
 </style>
