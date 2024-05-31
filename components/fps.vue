@@ -12,8 +12,9 @@
     right: base-line * .5
     padding: base-line * .5
     border-radius: base-line * .5
-    background: rgba(0, 0, 0, 0.5)
+    background: rgba(0, 0, 0, 0.66)
     color: red
-    font-size: 1.5rem
+    font-size: base-line
+    text-shadow: -0.66px -0.66px .51px blue
     z-index: 1000
 </style>
