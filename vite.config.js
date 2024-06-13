@@ -38,7 +38,6 @@ export default defineConfig({
       filename: 'service.worker.js',
       minify: false,
       includeAssets: [
-        'favicon.ico',
         '180.png',
         'vector.worker.js',
         'optimize.worker.js',

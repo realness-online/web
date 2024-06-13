@@ -166,7 +166,7 @@
           :tabindex="tabindex"
           :mask="`url(${fragment('radial-mask')})`"
           :fill="`url(${fragment('horizontal-regular')})`"
-          :stroke="`url(${fragment('radial-bold')})`"
+          :stroke="`url(${fragment('radial-light')})`"
           @focus="focus('regular')" />
         <as-path
           v-if="vector.medium"
@@ -177,9 +177,7 @@
           :mask="`url(${fragment('vertical-mask')})`"
           fill-opacity="0.90"
           :fill="`url(${fragment('vertical-medium')})`"
-          stroke-opacity="0.90"
-          stroke-width="0.66"
-          :stroke="`url(${fragment('vertical-regular')})`"
+          :stroke="`url(${fragment('vertical-light')})`"
           @focus="focus('medium')" />
         <as-path
           v-if="vector.bold"
@@ -190,9 +188,7 @@
           :mask="`url(${fragment('horizontal-mask')})`"
           fill-opacity="0.90"
           :fill="`url(${fragment('vertical-bold')})`"
-          stroke-opacity="0.90"
-          stroke-width="0.66"
-          :stroke="`url(${fragment('radial-medium')})`"
+          :stroke="`url(${fragment('radial-regular')})`"
           @focus="focus('bold')" />
       </pattern>
 

@@ -36,7 +36,10 @@ export const function_row = [
   'F9',
   'F10',
   'F11',
-  'F12'
+  'F12',
+  'PrintScreen',
+  'Spotlight',
+  'unknown'
 ]
 
 export const digit_row = [
