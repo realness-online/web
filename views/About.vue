@@ -47,7 +47,7 @@
       <ol>
         <li>
           <icon name="finished" />
-          <p>Supremly animatable vector graphics</p>
+          <p>Supremely animatable vector graphics</p>
         </li>
         <li>
           <icon name="finished" />
