@@ -193,7 +193,6 @@
           itemprop="light"
           :path="vector.light"
           :tabindex="tabindex"
-          fill-opacity="0.90"
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-light')})`"
           :stroke="`url(${fragment('horizontal-regular')})`"
@@ -202,7 +201,6 @@
           v-if="vector.regular"
           :id="query('regular')"
           itemprop="regular"
-          fill-opacity="0.90"
           :path="vector.regular"
           :tabindex="tabindex"
           :mask="`url(${fragment('radial-mask')})`"
@@ -216,7 +214,6 @@
           :path="vector.medium"
           :tabindex="tabindex"
           :mask="`url(${fragment('vertical-mask')})`"
-          fill-opacity="0.90"
           :fill="`url(${fragment('vertical-medium')})`"
           :stroke="`url(${fragment('vertical-light')})`"
           @focus="focus('medium')" />
@@ -227,7 +224,6 @@
           :tabindex="tabindex"
           :path="vector.bold"
           :mask="`url(${fragment('horizontal-mask')})`"
-          fill-opacity="0.90"
           :fill="`url(${fragment('vertical-bold')})`"
           :stroke="`url(${fragment('radial-regular')})`"
           @focus="focus('bold')" />
