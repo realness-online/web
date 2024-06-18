@@ -45,7 +45,7 @@
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
   import { stroke as stroke_pref, fill as fill_pref } from '@/use/preference'
-
+  defineEmits(['focus'])
   const props = defineProps({
     itemprop: {
       type: String,
@@ -57,6 +57,10 @@
       type: Object,
       required: true,
       validate: is_path
+    },
+    tabindex: {
+      type: Number,
+      required: false
     },
     fill: {
       type: String,
