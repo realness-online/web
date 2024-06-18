@@ -20,7 +20,12 @@ export async function load(itemid, me = localStorage.me) {
   const result = await get(itemid)
   item = get_item(result)
   if (item) return item
-  item = await load_from_network(itemid, me)
+  try {
+    item = await load_from_network(itemid, me)
+  } catch (e) {
+    if (e.code === 'storage/unauthorized') return null
+    else throw e
+  }
   if (item) return item
   return null
 }

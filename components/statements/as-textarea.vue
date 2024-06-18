@@ -17,9 +17,9 @@
 
   const emit = defineEmits(['toggle-keyboard'])
   const focused = () => emit('toggle-keyboard')
-  const prepare_statement = () => {
+  const prepare_statement = async () => {
     emit('toggle-keyboard')
-    save(statement_text.value)
+    await save(statement_text.value)
     statement_text.value = null
     console.info('creates:statement')
   }

@@ -1,7 +1,7 @@
 <template>
   <main id="realness" :class="status">
     <router-view />
-    <sync v-if="current_user" @active="sync_active" />
+    <sync @active="sync_active" />
     <fps />
   </main>
 </template>
