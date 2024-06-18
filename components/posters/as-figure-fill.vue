@@ -3,7 +3,7 @@
     <as-svg
       :itemid="itemid"
       :optimize="true"
-      :slice="false"
+      :slice="true"
       :tabable="true"
       tabindex="-1"
       @focus="layer_selected" />

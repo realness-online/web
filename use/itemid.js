@@ -69,7 +69,12 @@ export async function as_directory(itemid) {
   let directory = await build_local_directory(itemid)
   if (navigator.onLine) {
     console.log('load_directory_from_network')
-    directory = await load_directory_from_network(itemid)
+    try {
+      directory = await load_directory_from_network(itemid)
+    } catch (e) {
+      if (e.code === 'storage/unauthorized') return directory
+      else throw e
+    }
   }
 
   return directory

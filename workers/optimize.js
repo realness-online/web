@@ -28,10 +28,10 @@ const options = {
     }
   ]
 }
-export async function listen(message) {
-  console.info('before', `${to_kb(message.data.vector)}kb`)
+export function listen(message) {
+  console.log('before', `${to_kb(message.data.vector)}kb`)
   const optimized = optimize(message.data.vector, options)
-  console.info('after', `${to_kb(optimized.data)}kb`)
+  console.log('after', `${to_kb(optimized.data)}kb`)
   self.postMessage({ vector: optimized.data })
 }
 self.addEventListener('message', listen)
