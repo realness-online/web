@@ -28,7 +28,7 @@
         @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
-      <h6>{{ version }}</h6>
+      <button>{{ version }}</button>
       <a id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
@@ -164,7 +164,7 @@
       align-items: center
       width: 50vw
       padding: 0
-      & > h6
+      & > button
       & > a
       & > textarea
         margin: 0
@@ -181,8 +181,10 @@
             position:inherit
           svg
             fill: red
-      & > h6
+      & > button
         left: base-line
+        border: none
+        font-size: 0.66em
       & > a
         color: yellow
         right: base-line
