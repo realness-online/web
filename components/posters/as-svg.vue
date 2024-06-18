@@ -129,47 +129,6 @@
         width="100%"
         height="100%" />
     </defs>
-    <defs class="screen tone">
-      <pattern
-        id="light-screen-tone"
-        x="-201.833"
-        y="575.5"
-        width="9"
-        height="9"
-        patternUnits="userSpaceOnUse"
-        viewBox="0 -9 9 9">
-        <path
-          d="M9-7.875C9-7.254,8.496-6.75,7.875-6.75S6.75-7.254,6.75-7.875S7.254-9,7.875-9S9-8.496,9-7.875z" />
-        <path
-          d="M4.5-3.375c0,0.621-0.504,1.125-1.125,1.125S2.25-2.754,2.25-3.375S2.754-4.5,3.375-4.5S4.5-3.996,4.5-3.375z" />
-      </pattern>
-      <pattern
-        id="medium-screen-tone"
-        x="-201.833"
-        y="575.5"
-        width="18.403"
-        height="9.366"
-        patternUnits="userSpaceOnUse"
-        viewBox="0 -9.366 18.403 9.366">
-        <path
-          d="M4.601-6.982c0,1.27-1.03,2.3-2.3,2.3S0-5.713,0-6.982c0-1.271,1.03-2.301,2.3-2.301S4.601-8.254,4.601-6.982z" />
-        <path
-          d="M13.802-2.383c0,1.271-1.03,2.301-2.3,2.301s-2.3-1.029-2.3-2.301c0-1.27,1.03-2.3,2.3-2.3S13.802-3.652,13.802-2.383z" />
-      </pattern>
-      <pattern
-        id="dense-screen-tone"
-        x="-201.833"
-        y="575.5"
-        width="9"
-        height="9"
-        patternUnits="userSpaceOnUse"
-        viewBox="0 -9 9 9">
-        <path
-          d="M9-6.75C9-5.508,7.993-4.5,6.75-4.5S4.5-5.508,4.5-6.75S5.507-9,6.75-9S9-7.992,9-6.75z" />
-        <path
-          d="M4.5-2.25C4.5-1.008,3.493,0,2.25,0S0-1.008,0-2.25S1.007-4.5,2.25-4.5S4.5-3.492,4.5-2.25z" />
-      </pattern>
-    </defs>
     <defs class="graphic">
       <pattern
         :id="query('pattern')"

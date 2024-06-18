@@ -16,11 +16,13 @@ export const use = vector => {
   }
   const optimized = message => {
     const optimized = get_item(message.data.vector)
-    vector.value.light = optimized.light
-    vector.value.regular = optimized.regular
-    vector.value.medium = optimized.medium
-    vector.value.bold = optimized.bold
+    console.log('optimized', optimized)
+    vector.value.light = get_path(optimized.light)
+    vector.value.regular = get_path(optimized.regular)
+    vector.value.medium = get_path(optimized.medium)
+    vector.value.bold = get_path(optimized.bold)
     vector.value.optimized = true
+    console.log('vector', vector.value)
     optimizer.value.removeEventListener('message', optimized)
     next_tick().then(() => {
       const element = document.getElementById(as_query_id(vector.value.id))
@@ -36,3 +38,5 @@ export const use = vector => {
     vector
   }
 }
+
+const get_path = path => (Array.isArray(path) ? path[0] : path)
