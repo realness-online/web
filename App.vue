@@ -1,7 +1,7 @@
 <template>
   <main id="realness" :class="status">
     <router-view />
-    <sync @active="sync_active" />
+    <sync v-if="current_user" @active="sync_active" />
     <fps />
   </main>
 </template>
@@ -9,21 +9,10 @@
   import sync from '@/components/sync'
   import fps from '@/components/fps'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
-  import { init_serverless } from '@/use/serverless'
+  import { init_serverless, current_user } from '@/use/serverless'
   import { useRouter as use_router } from 'vue-router'
-  import {
-    useFullscreen as use_fullscreen,
-    useMagicKeys as use_Keyboard
-  } from '@vueuse/core'
   const status = ref(null)
   const router = use_router()
-
-  const {
-    toggle: fullscreen,
-    isFullscreen: is_fullscreen,
-    isSupported: fullscreen_supported
-  } = use_fullscreen()
-  const { f, enter, escape } = use_Keyboard()
 
   const sync_active = active => {
     if (active) status.value = 'working'
