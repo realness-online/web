@@ -354,12 +354,14 @@
     const height = parseInt(numbers[3])
     return width > height
   })
+  const { optimize } = use_optimizer(vector)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
   }
+
   mounted(() => {
     if (!props.sync_poster && !new_poster) {
       use_intersect(
@@ -378,10 +380,7 @@
     }
   })
   watch_effect(() => {
-    if (vector.value && props.optimize && !vector.value.optimized) {
-      const { optimize } = use_optimizer(vector)
-      optimize()
-    }
+    if (vector.value && props.optimize && !vector.value.optimized) optimize()
   })
 </script>
 <style lang="stylus">
@@ -395,6 +394,8 @@
     height: 100%
     width: 100%
     outline: none
+    use:focus
+      outline: none
     & rect.emboss
       pointer-events: none
       user-select none
