@@ -14,7 +14,7 @@ const options = {
           removeUnknownsAndDefaults: false,
           removeViewBox: false,
           removeEmptyAttrs: false,
-          mergePaths: false,
+          mergePaths: true,
           convertPathData: {
             floatPrecision: 0,
             transformPrecision: 0,
@@ -29,13 +29,14 @@ const options = {
   ]
 }
 export function listen(message) {
-  console.log('before', `${to_kb(message.data.vector)}kb`)
+  console.log('Optimizer', `${to_kb(message.data.vector)}kb`)
+  console.log(`  before: ${to_kb(message.data.vector)}kb`)
   const optimized = optimize(message.data.vector, options)
-  console.log('after', `${to_kb(optimized.data)}kb`)
+  console.log(`  after: ${to_kb(optimized.data)}kb`)
   self.postMessage({ vector: optimized.data })
 }
 self.addEventListener('message', listen)
 
 function to_kb(object) {
-  return (object.length / 1024).toFixed(2)
+  return (object.length / 1024).toFixed(1)
 }

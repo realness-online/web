@@ -4,12 +4,12 @@ import pako from 'pako'
 
 self.onmessage = event => {
   console.log('Compressor')
-  console.log('  before:', to_kb(event.data.vector))
+  console.log(`  before: ${to_kb(event.data.vector)}kb`)
   const result = pako.deflate(event.data.vector, { gzip: true })
-  console.log('  after:', to_kb(result))
+  console.log(`  after: ${to_kb(result)}kb`)
   // self.postMessage({
   //   id: event.data.id,
   //   result
   // })
 }
-const to_kb = object => (object.length / 1024).toFixed(2)
+const to_kb = object => (object.length / 1024).toFixed(1)
