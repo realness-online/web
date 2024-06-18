@@ -58,7 +58,7 @@
     use_vectorize()
   mounted(async () => {
     let my = await load(localStorage.me)
-    if (my && my.first_name) first_name.value = my.first_name
+    if (my?.first_name) first_name.value = my.first_name
     else first_name.value = 'You'
     console.info('views:Navigation')
     mount_workers()
