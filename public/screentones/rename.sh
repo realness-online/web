@@ -1,3 +1,3 @@
-for file in *.txt; do
-    mv -- "$file" "${file%.txt}.text"
+for file in *.svg; do
+    mv -- "$file" "${file%}.html"
 done
