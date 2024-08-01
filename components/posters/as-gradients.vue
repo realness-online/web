@@ -169,7 +169,7 @@
   import { use as use_vectorize } from '@/use/vectorize'
   import { hsla_to_color } from '@/use/colors'
   const { new_gradients: gradients } = use_vectorize()
-  const background = 80
+  const background = 81
   const light = 60
   const regular = 50
   const medium = 31
