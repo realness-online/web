@@ -35,7 +35,7 @@ export const sign_off = () => sign_out(auth.value)
 export const location = path => reference(storage.value, path)
 export const metadata = async path => get_metadata(location(path))
 export const upload = (path, data, meta) =>
-  upload_file(location(path), data, StringFormat.raw, meta)
+  upload_file(location(path), data, StringFormat.RAW, meta)
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => {
