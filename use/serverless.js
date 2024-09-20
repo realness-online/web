@@ -48,33 +48,19 @@ export const remove = async path => {
   }
 }
 
-export const init_serverless = async () => {
+export const init_serverless = () => {
   me.value = default_person
-  if (navigator.onLine && import.meta.env.PROD) {
-    try {
-      fetch('__/firebase/init.json').then(async response => {
-        await set('firebase-keys', await response.json())
-      })
-    } catch (e) {
-      console.warn(e)
-    }
-  } else {
-    const dev_keys = {
-      apiKey: import.meta.env.VITE_API_KEY,
-      authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-      databaseUrl: import.meta.env.VITE_DATABASE_URL,
-      projectId: import.meta.env.VITE_PROJECT_ID,
-      storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-      messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-      appId: import.meta.env.VITE_APP_ID
-    }
-    set('firebase-keys', dev_keys)
+  const firebase_keys = {
+    apiKey: import.meta.env.VITE_API_KEY,
+    authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_APP_ID
   }
-  const firebase_keys = await get('firebase-keys')
   app.value = initialize_firebase(firebase_keys)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
-
   auth_changed(auth.value, async user => {
     if (user) {
       current_user.value = user
