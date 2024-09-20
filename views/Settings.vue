@@ -13,9 +13,11 @@
       <preference
         name="stroke"
         title="Outline your graphic with a stroke in relevant color" />
-      <preference
-        name="animate"
-        title="Animate posters as they come into view" />
+      <preference name="animate" title="Animate posters">
+        <preference
+          name="fps"
+          title="show frames per second on the bottom right" />
+      </preference>
       <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster">
@@ -129,7 +131,6 @@
       & > article
         padding: 0 base-line
     & > form
-
       standard-grid: 'nothing'
       margin: base-line
       & > *:not(:last-child)
