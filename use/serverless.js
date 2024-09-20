@@ -16,7 +16,6 @@ import {
   StringFormat
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
-import { get, set } from 'idb-keyval'
 import { ref } from 'vue'
 import { load } from '@/use/itemid'
 import { from_e64, default_person } from '@/use/people'
@@ -50,15 +49,16 @@ export const remove = async path => {
 
 export const init_serverless = () => {
   me.value = default_person
-  const firebase_keys = {
+  const init = {
     apiKey: import.meta.env.VITE_API_KEY,
+    appId: import.meta.env.VITE_APP_ID,
     authDomain: import.meta.env.VITE_AUTH_DOMAIN,
     projectId: import.meta.env.VITE_PROJECT_ID,
     storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_APP_ID
+    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID
   }
-  app.value = initialize_firebase(firebase_keys)
+  console.log(init)
+  app.value = initialize_firebase(init)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
   auth_changed(auth.value, async user => {
