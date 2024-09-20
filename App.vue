@@ -9,7 +9,7 @@
   import sync from '@/components/sync'
   import fps from '@/components/fps'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
-  import { init_serverless, current_user } from '@/use/serverless'
+  import { init_serverless } from '@/use/serverless'
   import { useRouter as use_router } from 'vue-router'
   const status = ref(null)
   const router = use_router()
