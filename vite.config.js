@@ -14,6 +14,7 @@ export default defineConfig({
     )
   },
   server: {
+    port: 8080,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
     }
