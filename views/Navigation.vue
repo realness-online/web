@@ -5,7 +5,6 @@
         <icon name="gear" /> <span>{{ first_name }}</span>
       </router-link>
     </header>
-
     <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
@@ -123,7 +122,6 @@
       align-items: stretch
       min-height: round(base-line * 18, 2)
       max-height: page-width
-      height: 100vmin
       min-width: 55vw
       margin-bottom: base-line * 2
       margin-top: base-line * 2
