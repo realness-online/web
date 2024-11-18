@@ -36,8 +36,11 @@ export default defineConfig({
   plugins: [
     vue(),
     vite_pwa({
+      workbox: {
+        maximumFileSizeToCacheInBytes: 4000000
+      },
       filename: 'service.worker.js',
-      minify: false,
+      minify: true,
       includeAssets: [
         '180.png',
         'vector.worker.js',
