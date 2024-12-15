@@ -195,7 +195,7 @@
     </defs>
     <as-gradients :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
-    <use :href="fragment('pattern-render')" />
+    <use :href="fragment('pattern')" />
     <rect
       v-if="emboss"
       :filter="`url(${fragment('composite')})`"
@@ -209,6 +209,7 @@
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
     <as-animation v-if="animate" :id="vector.id" />
+    <as-halftone />
   </svg>
 </template>
 <script setup>
@@ -218,6 +219,7 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
+  import AsHalftone from '@/components/posters/as-halftone'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
