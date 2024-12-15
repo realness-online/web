@@ -316,6 +316,7 @@
         <preference name="fill" />
         <preference name="stroke" />
         <preference name="animate" />
+        <preference name="fps" title="Show frames per second" />
         <preference name="emboss">
           <preference name="light" />
         </preference>
