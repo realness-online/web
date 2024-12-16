@@ -1,5 +1,5 @@
 <template>
-  <radialGradient id="lightbar" cx="50%" cy="200%" fy="0" r="201%">
+  <radialGradient id="lightbar" cx="50%" cy="200%" fy="0" r="301%">
     <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
     <stop offset="10%" style="stop-color: #000; stop-opacity: 0.1" />
     <stop offset="30%" style="stop-color: #000; stop-opacity: 0.3" />
