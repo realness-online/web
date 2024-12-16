@@ -46,7 +46,6 @@
         x="0"
         width="100%"
         height="100%">
-        <feImage v-if="light" href="#lightbar-rect" result="lighting" />
         <feImage :href="fragment('emboss-render-light')" result="light" />
         <feImage :href="fragment('emboss-render-regular')" result="regular" />
         <feImage :href="fragment('emboss-render-medium')" result="medium" />
@@ -54,7 +53,6 @@
         <feImage :href="fragment('pattern-render')" result="framing" />
         <feMerge>
           <feMergeNode in="framing" />
-          <feMergeNode v-if="light" in="lighting" />
           <feMergeNode in="bold" />
           <feMergeNode in="medium" />
           <feMergeNode in="regular" />
@@ -208,6 +206,12 @@
       <use :href="fragment('medium')" @focus="focus('medium')" />
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
+    <rect
+      v-if="light"
+      id="lightbar-rect"
+      fill="url(#lightbar)"
+      width="100%"
+      height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
     <as-halftone />
   </svg>
