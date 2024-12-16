@@ -109,18 +109,3 @@
   })
   const fragment = add => `${as_fragment_id(props.id)}-${add}`
 </script>
-<style lang="stylus">
-  svg[itemtype="/posters"].animate
-    // path[itemprop="medium"]
-    //   animation-timing-function: ease-in-out
-    //   animation-name: subtle-rotate
-    //   animation-duration: 8s
-    //   animation-direction: alternate
-    //   animation-iteration-count: infinite
-    // path[itemprop="light"]
-    //   animation-timing-function: ease-in-out
-    //   animation-name: subtle-counter-rotate
-    //   animation-duration: 21s
-    //   animation-direction: alternate
-    //   animation-iteration-count: infinite
-</style>
