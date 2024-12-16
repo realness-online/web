@@ -21,9 +21,8 @@
       <preference
         name="emboss"
         title="Apply an emboss effect to each layer of a poster">
-        <preference name="light" title="emboss + lightbar" />
       </preference>
-
+      <preference name="light" title="A subtle lightbar" />
       <preference
         name="adobe"
         hidden

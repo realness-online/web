@@ -298,15 +298,6 @@
           <icon name="finished"></icon>
           <p>Your projects live under ${name}.web.app.</p>
         </li>
-        <li>
-          <icon name="finished"></icon>
-          <p>
-            Learn lessons from Mastodon:
-            <strong class="no">fascists</strong>,
-            <strong class="no">terrorists</strong>,
-            <strong class="no">communists</strong>.
-          </p>
-        </li>
       </ol>
     </article>
     <call-to-action />
@@ -316,10 +307,9 @@
         <preference name="fill" />
         <preference name="stroke" />
         <preference name="animate" />
+        <preference name="light" />
+        <preference name="emboss" />
         <preference name="fps" title="Show frames per second" />
-        <preference name="emboss">
-          <preference name="light" />
-        </preference>
       </figcaption>
       <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
