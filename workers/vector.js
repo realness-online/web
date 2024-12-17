@@ -1,5 +1,5 @@
 import Jimp from 'jimp'
-import { as_paths } from '@realness.online/potrace'
+import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/use/colors'
 import { optimize } from 'svgo/dist/svgo.browser.js'
 import ExifReader from 'exifreader'
@@ -163,7 +163,7 @@ export const make_gradient = async message => {
 
 export const optimize_vector = message => {
   console.time('optimize:vector')
-  console.log('Optimizer', `${to_kb(message.data.vector)}kb`)
+  console.log('Optimizer')
   console.log(`  before: ${to_kb(message.data.vector)}kb`)
   const optimized = optimize(message.data.vector, svgo_options)
   console.log(`  after: ${to_kb(optimized.data)}kb`)

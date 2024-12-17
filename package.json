@@ -11,7 +11,11 @@
     "Private",
     "Realtime Graphics",
     "animation",
-    "Social Network"
+    "Social Network",
+    "potrace",
+    "trace",
+    "tracing",
+    "posterization"
   ],
   "description": "When people search for 'outsider social network' they'll find realness online. The medium is the message",
   "author": "Scott Fryxell <sfryxell@gmail.com>",
