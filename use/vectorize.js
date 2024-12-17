@@ -64,8 +64,8 @@ export const use = () => {
 
   const vectorize = image => {
     working.value = true
-    vectorizer.value.postMessage({ image })
-    gradienter.value.postMessage({ image })
+    vectorizer.value.postMessage({ route: 'make:vector', image })
+    gradienter.value.postMessage({ route: 'make:gradient', image })
   }
 
   const vectorized = response => {
@@ -81,7 +81,7 @@ export const use = () => {
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
     vectorizer.value = new Worker('/vector.worker.js')
-    gradienter.value = new Worker('/gradient.worker.js')
+    gradienter.value = new Worker('/vector.worker.js')
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
