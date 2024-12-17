@@ -57,7 +57,6 @@ export const init_serverless = () => {
     storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID
   }
-  console.log(init)
   app.value = initialize_firebase(init)
   auth.value = init_auth(app.value)
   storage.value = get_storage(app.value)
