@@ -80,8 +80,9 @@ export const use = () => {
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
-    vectorizer.value = new Worker('/vector.worker.js')
-    gradienter.value = new Worker('/vector.worker.js')
+    const worker_url = new URL('/workers/vector.js', import.meta.url)
+    vectorizer.value = new Worker(worker_url, { type: 'module' })
+    gradienter.value = new Worker(worker_url, { type: 'module' })
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
