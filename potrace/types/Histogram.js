@@ -9,7 +9,7 @@
 
 import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
-import Jimp from 'jimp'
+import Jimp from '@/jimp'
 const COLOR_DEPTH = 256
 const COLOR_RANGE_END = COLOR_DEPTH - 1
 

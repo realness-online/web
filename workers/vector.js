@@ -1,4 +1,4 @@
-import Jimp from 'jimp'
+import Jimp from '@/jimp'
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/use/colors'
 import { optimize } from 'svgo/dist/svgo.browser.js'
@@ -50,7 +50,7 @@ export const to_kb = obj => {
 }
 export const read = async file => {
   const reader = new FileReaderSync()
-  return Jimp.default.read(reader.readAsArrayBuffer(file))
+  return Jimp.read(reader.readAsArrayBuffer(file))
 }
 export const read_exif = file => {
   const reader = new FileReaderSync()
@@ -64,8 +64,8 @@ export const exif_logger = tags => {
 
 export const size = async (image, size = 512) => {
   if (image.bitmap.width > image.bitmap.height)
-    image = image.resize(Jimp.default.AUTO, size)
-  else image = image.resize(size, Jimp.default.AUTO)
+    image = image.resize(Jimp.AUTO, size)
+  else image = image.resize(size, Jimp.AUTO)
   return image
 }
 
@@ -82,10 +82,10 @@ export const as_gradient = (image, height = false) => {
     let color = image
       .clone()
       .crop(i, 0, chunk, opposite)
-      .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
+      .resize(1, 1, Jimp.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
 
-    color = Jimp.default.intToRGBA(color)
+    color = Jimp.intToRGBA(color)
     color = rgba_to_hsla(color)
     stops.push({ color, offset: scale(i, 0, direction) })
   }
@@ -100,9 +100,9 @@ export const as_radial_gradient = image => {
     let color = image
       .clone()
       .crop(i, 0, chunk, box_size)
-      .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
+      .resize(1, 1, Jimp.RESIZE_BICUBIC)
       .getPixelColor(0, 0)
-    color = Jimp.default.intToRGBA(color)
+    color = Jimp.intToRGBA(color)
     color = rgba_to_hsla(color)
     stops.push({ color, offset: scale(i, 0, box_size) })
   }

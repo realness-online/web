@@ -1,6 +1,6 @@
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
-import Jimp from 'jimp'
+import Jimp from '@/jimp'
 import fs from 'fs'
 const image = fs.readFileSync('./tests/unit/workers/house.jpeg')
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
