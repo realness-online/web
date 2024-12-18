@@ -2,14 +2,13 @@ import { ref, nextTick as next_tick, onUnmounted as dismount } from 'vue'
 
 import get_item from '@/use/item'
 import { as_query_id } from '@/use/itemid'
-
+import vector_worker from '@/workers/vector.js?worker'
 export const use = vector => {
   const optimizer = ref(null)
   const compressor = ref(null)
   const optimize = () => {
-    const worker_url = new URL('/workers/vector.js', import.meta.url)
-    optimizer.value = new Worker(worker_url, { type: 'module' })
-    compressor.value = new Worker(worker_url, { type: 'module' })
+    optimizer.value = new vector_worker()
+    compressor.value = new vector_worker()
     optimizer.value.addEventListener('message', optimized)
     next_tick().then(() => {
       const element = document.getElementById(as_query_id(vector.value.id))

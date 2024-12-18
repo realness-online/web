@@ -8,7 +8,7 @@ import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
 import { useRouter as use_router } from 'vue-router'
-
+import vector_worker from '@/workers/vector.js?worker'
 const new_vector = ref(null)
 const new_gradients = ref(null)
 
@@ -80,9 +80,8 @@ export const use = () => {
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
-    const worker_url = new URL('/workers/vector.js', import.meta.url)
-    vectorizer.value = new Worker(worker_url, { type: 'module' })
-    gradienter.value = new Worker(worker_url, { type: 'module' })
+    vectorizer.value = new vector_worker()
+    gradienter.value = new vector_worker()
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
