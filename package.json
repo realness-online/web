@@ -91,7 +91,7 @@
     "stream-http": "3.2.0",
     "stylus": "0.63.0",
     "util": "0.12.5",
-    "vite": "5.2.11",
+    "vite": "5.2.14",
     "vite-plugin-package-version": "1.1.0",
     "vite-plugin-pwa": "^0.20.0",
     "vitest": "1.6.0",
