@@ -1,24 +1,28 @@
 <template>
   <g itemprop="animation">
     <animate
+      v-if="stroke"
       :href="fragment('light')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="5s"
       values="0.9;0.0;0.9" />
     <animate
+      v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="4s"
       values="0.9;0;0.9" />
     <animate
+      v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="5s"
       values="0.9;0;0.9" />
     <animate
+      v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
@@ -26,11 +30,24 @@
       values="0.9;0;0.9" />
 
     <animate
-      :href="fragment('regular')"
+      :href="fragment('light')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      dur="5s"
+      values="0.9;0.75;1;0.21;0.9" />
+    <animate
+      :href="fragment('medium')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      dur="13s"
+      values="0.9;0.6;1;0.5;0.9;" />
+
+    <animate
+      :href="fragment('bold')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="8s"
-      values="0.9;0.75;0.95;0.8;0.9;" />
+      values="0.9;0.75;1;0.6;0.8;0.9;" />
 
     <animate
       :href="fragment('radial-background')"
@@ -81,7 +98,8 @@
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;66%;100%;33%;100%;66%;0%" />
+      val
+      bues="0%;66%;100%;33%;100%;66%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
@@ -100,6 +118,8 @@
 <script setup>
   import { as_fragment_id } from '@/use/itemid'
   import { is_vector_id } from '@/use/vector'
+
+  import { stroke } from '@/use/preference'
   const props = defineProps({
     id: {
       type: String,
