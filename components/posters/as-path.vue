@@ -40,7 +40,8 @@
     ref,
     watchEffect as watch_effect,
     onMounted as mounted,
-    computed
+    computed,
+    inject
   } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
@@ -80,7 +81,10 @@
       required: true
     }
   })
-  const wants_both = computed(() => stroke_pref.value && fill_pref.value)
+  const wants_both = computed(() => {
+    if (inject('new-poster')) return true
+    return stroke_pref.value && fill_pref.value
+  })
   const just_stroke = computed(() => !fill_pref.value && stroke_pref.value)
   const just_fill = computed(() => fill_pref.value)
   const path = ref(null)
