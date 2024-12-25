@@ -170,13 +170,25 @@ export const optimize_vector = message => {
   console.timeEnd('optimize:vector')
   return { vector: optimized.data }
 }
-// https://github.com/jakearchibald/svgomg/blob/master/src/js/gzip-worker/index.js
+
 const compress_vector = message => {
   console.time('compress:vector')
   console.log('Compressor')
   console.log(`  before: ${to_kb(message.data.vector)}kb`)
-  const result = pako.deflate(message.data.vector, { gzip: true })
-  console.log(`  after: ${to_kb(result)}kb`)
+
+  // Convert SVG string to Uint8Array
+  const uint8_array = new TextEncoder().encode(message.data.vector)
+
+  // Compress the data using GZIP
+  const result = pako.gzip(uint8_array, {
+    level: 9, // Maximum compression
+    header: {
+      name: message.data.filename
+    }
+  })
+
+  const blob = new Blob([result], { type: 'application/gzip' })
+  console.log(`  after: ${(blob.size / 1024).toFixed(2)}kb`)
   console.timeEnd('compress:vector')
   return result
 }
