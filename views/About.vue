@@ -489,6 +489,8 @@
         @media (min-width: pad-begins)
           grid-column-start: span 2
         padding:0
+      & > svg  + .landscape
+          grid-column-start: span 3
       @media (orientation: landscape), (min-width: page-width)
         & > img.landscape
           border:1em solid blue
