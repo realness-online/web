@@ -309,7 +309,9 @@
         <preference name="animate" />
         <preference name="light" />
         <preference name="emboss" />
-        <preference name="fps" title="Show frames per second" />
+        <preference
+          name="fps"
+          title="Show frames per second. usefull if you have animation turned on" />
       </figcaption>
       <as-svg
         v-for="poster in posters.slice(0, 33)"
@@ -486,10 +488,11 @@
         height: 100%
         width: 100%
       & > svg.landscape
+        padding: 0
         @media (min-width: pad-begins)
           grid-column-start: span 2
-        padding:0
-      & > svg  + .landscape
+      & > svg.landscape + .landscape
+        @media (min-width: pad-begins)
           grid-column-start: span 3
       @media (orientation: landscape), (min-width: page-width)
         & > img.landscape
