@@ -311,7 +311,10 @@
         <preference name="emboss" />
         <preference name="fps" title="Show frames per second" />
       </figcaption>
-      <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
+      <as-svg
+        v-for="poster in posters.slice(0, 33)"
+        :key="poster.id"
+        :itemid="poster.id" />
     </figure>
   </section>
 </template>
