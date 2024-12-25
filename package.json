@@ -1,13 +1,12 @@
 {
   "name": "@realness.online/web",
-  "version": "1.6.3",
+  "version": "1.6.6",
   "private": false,
   "type": "module",
   "keywords": [
     "svg",
     "computer-graphics",
     "vector-graphics",
-    "web-programming",
     "Private",
     "Realtime Graphics",
     "animation",
