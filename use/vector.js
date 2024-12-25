@@ -57,28 +57,6 @@ export const set_vector_dimensions = (props, item) => {
   props.width = width
   props.height = height
 }
-const migrate_path = path => {
-  const fill = path.getAttribute('fill')
-  const opacity = path.getAttribute('fill-opacity')
-  const rule = path.getAttribute('fill-rule')
-
-  if (fill) path.style.fill = fill
-  if (opacity) path.style.fillOpacity = opacity
-  if (rule) path.style.fillRule = rule
-
-  return path
-}
-const migrate_poster = poster => {
-  if (Array.isArray(poster.path)) {
-    poster.light = migrate_path(poster.path[0])
-    poster.regular = migrate_path(poster.path[1])
-    poster.medium = migrate_path(poster.path[2])
-    poster.bold = migrate_path(poster.path[3])
-  } else poster.bold = migrate_path(poster.path)
-  poster.path = undefined
-  return poster
-}
-
 export const use_poster = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -127,7 +105,6 @@ export const use_poster = () => {
   const show = async () => {
     if (!vector.value) {
       let poster = await load(props.itemid)
-      if (poster.path) poster = migrate_poster(poster)
       vector.value = poster
     }
     working.value = false
