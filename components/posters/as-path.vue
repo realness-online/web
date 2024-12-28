@@ -105,7 +105,7 @@
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
   })
-  watch_effect(() => (d.value = props.path.getAttribute('d')))
+  watch_effect(() => (d.value = props.path?.getAttribute('d')))
 </script>
 <style lang="stylus">
   path[itemprop]

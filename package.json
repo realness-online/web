@@ -36,14 +36,12 @@
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
-    "@headlessui/vue": "^1.7.22",
-    "@heroicons/vue": "^2.1.4",
-    "@realness.online/potrace": "../potrace",
-    "@realness.online/vtracer": "../vtracer",
+    "@headlessui/vue": "1.7.22",
+    "@heroicons/vue": "2.1.4",
     "@vueuse/core": "10.9.0",
-    "culori": "^4.0.1",
-    "events": "^3.3.0",
-    "exifreader": "^4.23.3",
+    "culori": "4.0.1",
+    "events": "3.3.0",
+    "exifreader": "4.23.3",
     "firebase": "10.12.0",
     "hsl-to-hex": "1.0.0",
     "idb-keyval": "6.2.1",
@@ -51,10 +49,10 @@
     "libphonenumber-js": "1.11.1",
     "node-vibrant": "3.2.1-alpha.1",
     "object-hash": "3.0.0",
-    "pako": "^2.1.0",
+    "pako": "2.1.0",
     "rgb-hex": "4.1.0",
-    "svgo": "^3.3.2",
-    "url": "^0.11.3",
+    "svgo": "3.3.2",
+    "url": "0.11.3",
     "vue": "3.4.27",
     "vue-router": "4.3.2",
     "workbox-build": "^7.1.1",
@@ -145,14 +143,6 @@
         }
       ]
     }
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "none",
-    "bracketSameLine": true,
-    "arrowParens": "avoid",
-    "vueIndentScriptAndStyle": true
   },
   "browserslist": [
     "last 2 versions"
