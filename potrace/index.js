@@ -1,5 +1,4 @@
 import Jimp from 'jimp'
-import '@/potrace/types/Point'
 import Curve from '@/potrace/types/Curve'
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
@@ -29,56 +28,37 @@ export const as_paths = (file, options = {}) => {
  * @param {Potrace~Options} [options]
  * @constructor
  */
-function Potrace(options) {
-  this._luminanceData = null
-  this._pathlist = []
+class Potrace {
+  constructor(options) {
+    this._luminanceData = null
+    this._pathlist = []
 
-  this._imageLoadingIdentifier = null
-  this._imageLoaded = false
-  this._processed = false
+    this._imageLoadingIdentifier = null
+    this._imageLoaded = false
+    this._processed = false
 
-  this._params = {
-    turnPolicy: Potrace.TURNPOLICY_MINORITY,
-    turdSize: 2,
-    alphaMax: 1,
-    optCurve: true,
-    optTolerance: 0.2,
-    threshold: Potrace.THRESHOLD_AUTO,
-    blackOnWhite: true,
-    color: Potrace.COLOR_AUTO,
-    background: Potrace.COLOR_TRANSPARENT
+    this._params = {
+      turnPolicy: Potrace.TURNPOLICY_MINORITY,
+      turdSize: 2,
+      alphaMax: 1,
+      optCurve: true,
+      optTolerance: 0.2,
+      threshold: Potrace.THRESHOLD_AUTO,
+      blackOnWhite: true,
+      color: Potrace.COLOR_AUTO,
+      background: Potrace.COLOR_TRANSPARENT
+    }
+
+    if (options) {
+      this.setParameters(options)
+    }
   }
 
-  if (options) {
-    this.setParameters(options)
-  }
-}
-
-Potrace.COLOR_AUTO = 'auto'
-Potrace.COLOR_TRANSPARENT = 'transparent'
-Potrace.THRESHOLD_AUTO = -1
-Potrace.TURNPOLICY_BLACK = 'black'
-Potrace.TURNPOLICY_WHITE = 'white'
-Potrace.TURNPOLICY_LEFT = 'left'
-Potrace.TURNPOLICY_RIGHT = 'right'
-Potrace.TURNPOLICY_MINORITY = 'minority'
-Potrace.TURNPOLICY_MAJORITY = 'majority'
-
-var SUPPORTED_TURNPOLICY_VALUES = [
-  Potrace.TURNPOLICY_BLACK,
-  Potrace.TURNPOLICY_WHITE,
-  Potrace.TURNPOLICY_LEFT,
-  Potrace.TURNPOLICY_RIGHT,
-  Potrace.TURNPOLICY_MINORITY,
-  Potrace.TURNPOLICY_MAJORITY
-]
-
-Potrace.prototype = {
   /**
    * Creating a new {@link Path} for every group of black pixels.
    * @private
    */
-  _bmToPathlist: function () {
+  _bmToPathlist() {
     var self = this,
       threshold = this._params.threshold,
       blackOnWhite = this._params.blackOnWhite,
@@ -234,13 +214,13 @@ Potrace.prototype = {
         this._pathlist.push(path)
       }
     }
-  },
+  }
 
   /**
    * Processes path list created by _bmToPathlist method creating and optimizing {@link Curve}'s
    * @private
    */
-  _processPath: function () {
+  _processPath() {
     var self = this
 
     function calcSums(path) {
@@ -1129,14 +1109,14 @@ Potrace.prototype = {
         optiCurve(path)
       }
     }
-  },
+  }
 
   /**
    * Validates some of parameters
    * @param params
    * @private
    */
-  _validateParameters: function (params) {
+  _validateParameters(params) {
     if (
       params &&
       params.turnPolicy &&
@@ -1169,9 +1149,9 @@ Potrace.prototype = {
     ) {
       throw new Error("'optCurve' must be Boolean")
     }
-  },
+  }
 
-  _processLoadedImage: function (image) {
+  _processLoadedImage(image) {
     var bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
     var pixels = image.bitmap.data
 
@@ -1194,13 +1174,13 @@ Potrace.prototype = {
 
     this._luminanceData = bitmap
     this._imageLoaded = true
-  },
+  }
 
   /**
    * @param {Jimp} target Image source. Could be anything that {@link Jimp} Supported formats are: PNG, JPEG or BMP
    * @param {Function} callback
    */
-  loadImage: function (target, callback) {
+  loadImage(target, callback) {
     var self = this
     var jobId = {}
 
@@ -1212,13 +1192,13 @@ Potrace.prototype = {
     this._imageLoaded = true
     self._processLoadedImage(target)
     callback.call(self, null)
-  },
+  }
 
   /**
    * Sets algorithm parameters
    * @param {Potrace~Options} newParams
    */
-  setParameters: function (newParams) {
+  setParameters(newParams) {
     var key, tmpOldVal
 
     this._validateParameters(newParams)
@@ -1236,7 +1216,7 @@ Potrace.prototype = {
         }
       }
     }
-  },
+  }
 
   /**
    * Generates just <path> tag without rest of the SVG file
@@ -1244,7 +1224,7 @@ Potrace.prototype = {
    * @param {String} [fillColor] - overrides color from parameters
    * @returns {String}
    */
-  getPathTag: function (fillColor) {
+  getPathTag(fillColor) {
     fillColor = arguments.length === 0 ? this._params.color : fillColor
 
     if (fillColor === Potrace.COLOR_AUTO) {
@@ -1270,9 +1250,9 @@ Potrace.prototype = {
     tag += '" style="fill-rule:evenodd"/>'
 
     return tag
-  },
+  }
 
-  getPathData: function (fillColor) {
+  getPathData(fillColor) {
     fillColor = arguments.length === 0 ? this._params.color : fillColor
 
     if (fillColor === Potrace.COLOR_AUTO) {
@@ -1298,6 +1278,25 @@ Potrace.prototype = {
     return tag
   }
 }
+
+Potrace.COLOR_AUTO = 'auto'
+Potrace.COLOR_TRANSPARENT = 'transparent'
+Potrace.THRESHOLD_AUTO = -1
+Potrace.TURNPOLICY_BLACK = 'black'
+Potrace.TURNPOLICY_WHITE = 'white'
+Potrace.TURNPOLICY_LEFT = 'left'
+Potrace.TURNPOLICY_RIGHT = 'right'
+Potrace.TURNPOLICY_MINORITY = 'minority'
+Potrace.TURNPOLICY_MAJORITY = 'majority'
+
+var SUPPORTED_TURNPOLICY_VALUES = [
+  Potrace.TURNPOLICY_BLACK,
+  Potrace.TURNPOLICY_WHITE,
+  Potrace.TURNPOLICY_LEFT,
+  Potrace.TURNPOLICY_RIGHT,
+  Potrace.TURNPOLICY_MINORITY,
+  Potrace.TURNPOLICY_MAJORITY
+]
 
 /**
  * Potrace options
@@ -1327,45 +1326,25 @@ Potrace.prototype = {
  * @param {Posterizer~Options} [options]
  * @constructor
  */
-function Posterizer(options) {
-  this._potrace = new Potrace()
+class Posterizer {
+  constructor(options) {
+    this._potrace = new Potrace()
 
-  this._calculatedThreshold = null
+    this._calculatedThreshold = null
 
-  this._params = {
-    threshold: Potrace.THRESHOLD_AUTO,
-    blackOnWhite: true,
-    steps: Posterizer.STEPS_AUTO,
-    background: Potrace.COLOR_TRANSPARENT,
-    fillStrategy: Posterizer.FILL_DOMINANT,
-    rangeDistribution: Posterizer.RANGES_AUTO
+    this._params = {
+      threshold: Potrace.THRESHOLD_AUTO,
+      blackOnWhite: true,
+      steps: Posterizer.STEPS_AUTO,
+      background: Potrace.COLOR_TRANSPARENT,
+      fillStrategy: Posterizer.FILL_DOMINANT,
+      rangeDistribution: Posterizer.RANGES_AUTO
+    }
+
+    if (options) {
+      this.setParameters(options)
+    }
   }
-
-  if (options) {
-    this.setParameters(options)
-  }
-}
-
-// Inherit constants from Potrace class
-for (var key in Potrace) {
-  if (
-    Object.prototype.hasOwnProperty.call(Potrace, key) &&
-    key === key.toUpperCase()
-  ) {
-    Posterizer[key] = Potrace[key]
-  }
-}
-
-Posterizer.STEPS_AUTO = -1
-Posterizer.FILL_SPREAD = 'spread'
-Posterizer.FILL_DOMINANT = 'dominant'
-Posterizer.FILL_MEDIAN = 'median'
-Posterizer.FILL_MEAN = 'mean'
-
-Posterizer.RANGES_AUTO = 'auto'
-Posterizer.RANGES_EQUAL = 'equal'
-
-Posterizer.prototype = {
   /**
    * Fine tuning to color ranges.
    *
@@ -1376,7 +1355,7 @@ Posterizer.prototype = {
    * @param ranges
    * @private
    */
-  _addExtraColorStop: function (ranges) {
+  _addExtraColorStop(ranges) {
     var blackOnWhite = this._params.blackOnWhite
     var lastColorStop = ranges[ranges.length - 1]
     var lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
@@ -1410,7 +1389,7 @@ Posterizer.prototype = {
     }
 
     return ranges
-  },
+  }
 
   /**
    * Calculates color intensity for each element of numeric array
@@ -1419,7 +1398,7 @@ Posterizer.prototype = {
    * @returns {{ levels: number, colorIntensity: number }[]}
    * @private
    */
-  _calcColorIntensity: function (colorStops) {
+  _calcColorIntensity(colorStops) {
     var blackOnWhite = this._params.blackOnWhite
     var colorSelectionStrat = this._params.fillStrategy
     var histogram =
@@ -1495,22 +1474,22 @@ Posterizer.prototype = {
           color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
       }
     })
-  },
+  }
 
   /**
    * @returns {Histogram}
    * @private
    */
-  _getImageHistogram: function () {
+  _getImageHistogram() {
     return this._potrace._luminanceData.histogram()
-  },
+  }
 
   /**
    * Processes threshold, steps and rangeDistribution parameters and returns normalized array of color stops
    * @returns {*}
    * @private
    */
-  _getRanges: function () {
+  _getRanges() {
     var steps = this._paramSteps()
 
     if (!Array.isArray(steps)) {
@@ -1549,14 +1528,14 @@ Posterizer.prototype = {
     }
 
     return this._calcColorIntensity(colorStops)
-  },
+  }
 
   /**
    * Calculates given (or lower) number of thresholds using automatic thresholding algorithm
    * @returns {*}
    * @private
    */
-  _getRangesAuto: function () {
+  _getRangesAuto() {
     var histogram = this._getImageHistogram()
     var steps = this._paramSteps(true)
     var colorStops
@@ -1582,7 +1561,7 @@ Posterizer.prototype = {
     }
 
     return this._calcColorIntensity(colorStops)
-  },
+  }
 
   /**
    * Calculates color stops and color representing each segment, returning them
@@ -1590,7 +1569,7 @@ Posterizer.prototype = {
    *
    * @private
    */
-  _getRangesEquallyDistributed: function () {
+  _getRangesEquallyDistributed() {
     var blackOnWhite = this._params.blackOnWhite
     var colorsToThreshold = blackOnWhite
       ? this._paramThreshold()
@@ -1613,7 +1592,7 @@ Posterizer.prototype = {
     }
 
     return this._calcColorIntensity(colorStops)
-  },
+  }
 
   /**
    * Returns valid steps value
@@ -1621,7 +1600,7 @@ Posterizer.prototype = {
    * @returns {number|number[]}
    * @private
    */
-  _paramSteps: function (count) {
+  _paramSteps(count) {
     var steps = this._params.steps
 
     if (Array.isArray(steps)) {
@@ -1645,14 +1624,14 @@ Posterizer.prototype = {
         ? 4
         : 3
       : Math.min(colorsCount, Math.max(2, steps))
-  },
+  }
 
   /**
    * Returns valid threshold value
    * @returns {number}
    * @private
    */
-  _paramThreshold: function () {
+  _paramThreshold() {
     if (this._calculatedThreshold !== null) {
       return this._calculatedThreshold
     }
@@ -1669,7 +1648,7 @@ Posterizer.prototype = {
     this._calculatedThreshold = this._calculatedThreshold || 128
 
     return this._calculatedThreshold
-  },
+  }
 
   /**
    * Running potrace on the image multiple times with different thresholds and returns an array
@@ -1679,7 +1658,7 @@ Posterizer.prototype = {
    * @returns {string[]}
    * @private
    */
-  _pathTags: function (noFillColor) {
+  _pathTags(noFillColor) {
     var ranges = this._getRanges()
     var potrace = this._potrace
     var blackOnWhite = this._params.blackOnWhite
@@ -1737,7 +1716,7 @@ Posterizer.prototype = {
 
       return canBeIgnored ? '' : element
     })
-  },
+  }
 
   /**
    * Loads image.
@@ -1745,21 +1724,21 @@ Posterizer.prototype = {
    * @param {string|Buffer|Jimp} target Image source. Could be anything that {@link Jimp} can read (buffer, local path or url). Supported formats are: PNG, JPEG or BMP
    * @param {Function} callback
    */
-  loadImage: function (target, callback) {
+  loadImage(target, callback) {
     var self = this
 
     this._potrace.loadImage(target, function (err) {
       self._calculatedThreshold = null
       callback.call(self, err)
     })
-  },
+  }
 
   /**
    * Sets parameters. Accepts same object as {Potrace}
    *
    * @param {Posterizer~Options} params
    */
-  setParameters: function (params) {
+  setParameters(params) {
     if (!params) {
       return
     }
@@ -1781,9 +1760,9 @@ Posterizer.prototype = {
     }
 
     this._calculatedThreshold = null
-  },
+  }
 
-  as_curves: function () {
+  as_curves() {
     var ranges = this._getRanges()
     var potrace = this._potrace
     var blackOnWhite = this._params.blackOnWhite
@@ -1821,6 +1800,25 @@ Posterizer.prototype = {
     })
   }
 }
+
+// Inherit constants from Potrace class
+for (var key in Potrace) {
+  if (
+    Object.prototype.hasOwnProperty.call(Potrace, key) &&
+    key === key.toUpperCase()
+  ) {
+    Posterizer[key] = Potrace[key]
+  }
+}
+
+Posterizer.STEPS_AUTO = -1
+Posterizer.FILL_SPREAD = 'spread'
+Posterizer.FILL_DOMINANT = 'dominant'
+Posterizer.FILL_MEDIAN = 'median'
+Posterizer.FILL_MEAN = 'mean'
+
+Posterizer.RANGES_AUTO = 'auto'
+Posterizer.RANGES_EQUAL = 'equal'
 
 export default {
   as_paths,
