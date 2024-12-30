@@ -1,5 +1,6 @@
 /**
  * @typedef {import('@/potrace/types/Point').default} Point
+ * A 2D point with x and y coordinates
  */
 
 import Point from '@/potrace/types/Point'
@@ -7,8 +8,9 @@ import Point from '@/potrace/types/Point'
 const attr_regexps = {}
 
 /**
- * @param {string} attr_name
- * @returns {RegExp}
+ * Creates or retrieves a cached RegExp for matching HTML attributes
+ * @param {string} attr_name - The name of the HTML attribute to match
+ * @returns {RegExp} A regular expression that matches the attribute and its value
  */
 const get_attr_regexp = attr_name => {
   if (attr_regexps[attr_name]) {
@@ -23,10 +25,11 @@ const get_attr_regexp = attr_name => {
 }
 
 /**
- * @param {string} html
- * @param {string} attr_name
- * @param {string} value
- * @returns {string}
+ * Sets or updates an HTML attribute in an HTML string
+ * @param {string} html - The HTML string to modify
+ * @param {string} attr_name - The name of the attribute to set
+ * @param {string} value - The value to set for the attribute
+ * @returns {string} The modified HTML string
  */
 export const set_html_attr = (html, attr_name, value) => {
   const attr = ` ${attr_name}="${value}"`
@@ -41,44 +44,52 @@ export const set_html_attr = (html, attr_name, value) => {
 }
 
 /**
- * @param {number} number
- * @returns {string}
+ * Formats a number with up to 3 decimal places, removing trailing zeros
+ * @param {number} number - The number to format
+ * @returns {string} The formatted number as a string
  */
 const fixed = number => number.toFixed(3).replace('.000', '')
 
 /**
- * @param {number} a
- * @param {number} n
- * @returns {number}
+ * Calculates the positive modulo. Different from JavaScript's % operator,
+ * this always returns a non-negative number
+ * @param {number} a - The dividend
+ * @param {number} n - The divisor
+ * @returns {number} The positive modulo result
  */
 export const mod = (a, n) =>
   a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n)
 
 /**
- * @param {Point} p1
- * @param {Point} p2
- * @returns {number}
+ * Calculates the cross product of two 2D vectors
+ * @param {Point} p1 - First point vector
+ * @param {Point} p2 - Second point vector
+ * @returns {number} The cross product value
  */
 export const xprod = (p1, p2) => p1.x * p2.y - p1.y * p2.x
 
 /**
- * @param {number} a
- * @param {number} b
- * @param {number} c
- * @returns {boolean}
+ * Checks if b lies within the cyclic range from a to c
+ * @param {number} a - Start of range
+ * @param {number} b - Value to check
+ * @param {number} c - End of range
+ * @returns {boolean} True if b is in the cyclic range from a to c
  */
 export const cyclic = (a, b, c) => (a <= c ? a <= b && b < c : a <= b || b < c)
 
 /**
- * @param {number} i
- * @returns {-1 | 0 | 1}
+ * Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero
+ * @param {number} i - The number to check
+ * @returns {-1 | 0 | 1} The sign indicator
  */
 export const sign = i => (i > 0 ? 1 : i < 0 ? -1 : 0)
 
 /**
- * @param {Object} Q Matrix-like object with at(i,j) method
- * @param {Point} w
- * @returns {number}
+ * Calculates the quadratic form for curve optimization
+ * @param {Object} Q - Matrix-like object representing the quadratic form
+ * @param {function(number, number): number} Q.at - Method to access matrix elements
+ * @param {Point} w - Point to evaluate
+ * @returns {number} The quadratic form value
  */
 export const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
@@ -93,10 +104,11 @@ export const quadform = (Q, w) => {
 }
 
 /**
- * @param {number} lambda
- * @param {Point} a
- * @param {Point} b
- * @returns {Point}
+ * Calculates a point on the line between two points using linear interpolation
+ * @param {number} lambda - Interpolation parameter (0 to 1)
+ * @param {Point} a - Start point
+ * @param {Point} b - End point
+ * @returns {Point} The interpolated point
  */
 export const interval = (lambda, a, b) => {
   const res = new Point()
@@ -106,9 +118,11 @@ export const interval = (lambda, a, b) => {
 }
 
 /**
- * @param {Point} p0
- * @param {Point} p2
- * @returns {Point}
+ * Computes the direction of the perpendicular vector at infinity
+ * Used in curve optimization for determining curve directions
+ * @param {Point} p0 - Start point
+ * @param {Point} p2 - End point
+ * @returns {Point} Direction vector
  */
 export const dorth_infinity = (p0, p2) => {
   const r = new Point()
@@ -172,15 +186,18 @@ export const is_number = val => typeof val === 'number'
 
 /**
  * @typedef {Object} Curve
- * @property {Point[]} c Array of curve points
- * @property {number} n Number of segments
- * @property {('CURVE'|'CORNER')[]} tag Tags for each segment
+ * @property {Point[]} c - Array of curve points, where each set of 3 points represents
+ *                        the control points of a Bézier curve segment
+ * @property {number} n - Number of curve segments
+ * @property {('CURVE'|'CORNER')[]} tag - Type of each segment: 'CURVE' for smooth
+ *                                       Bézier curves, 'CORNER' for sharp corners
  */
 
 /**
- * @param {Curve} curve
- * @param {number} [scale=1]
- * @returns {string} SVG path data
+ * Converts a curve object into an SVG path data string
+ * @param {Curve} curve - The curve to render
+ * @param {number} [scale=1] - Optional scale factor for the coordinates
+ * @returns {string} SVG path data string using absolute coordinates
  */
 export const render_curve = (curve, scale = 1) => {
   const starting_point = curve.c[(curve.n - 1) * 3 + 2]
@@ -206,12 +223,13 @@ export const render_curve = (curve, scale = 1) => {
 }
 
 /**
- * @param {number} t Parameter between 0 and 1
- * @param {Point} p0 Start point
- * @param {Point} p1 First control point
- * @param {Point} p2 Second control point
- * @param {Point} p3 End point
- * @returns {Point}
+ * Calculates a point on a cubic Bézier curve at parameter t
+ * @param {number} t - Parameter between 0 and 1
+ * @param {Point} p0 - Start point
+ * @param {Point} p1 - First control point
+ * @param {Point} p2 - Second control point
+ * @param {Point} p3 - End point
+ * @returns {Point} The point on the curve at parameter t
  */
 export const bezier = (t, p0, p1, p2, p3) => {
   const s = 1 - t
@@ -232,13 +250,14 @@ export const bezier = (t, p0, p1, p2, p3) => {
 }
 
 /**
- * @param {Point} p0
- * @param {Point} p1
- * @param {Point} p2
- * @param {Point} p3
- * @param {Point} q0
- * @param {Point} q1
- * @returns {number}
+ * Finds the parameter value where a line intersects a Bézier curve
+ * @param {Point} p0 - Bézier curve start point
+ * @param {Point} p1 - First control point
+ * @param {Point} p2 - Second control point
+ * @param {Point} p3 - Bézier curve end point
+ * @param {Point} q0 - First point defining the line
+ * @param {Point} q1 - Second point defining the line
+ * @returns {number} Parameter value t at intersection, or -1 if no intersection
  */
 export const tangent = (p0, p1, p2, p3, q0, q1) => {
   var A, B, C, a, b, c, d, s, r1, r2
