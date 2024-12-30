@@ -113,77 +113,58 @@ class Potrace {
    * @private
    */
   _bm_to_pathlist() {
-    var self = this
-    var threshold = this._params.threshold
-    var blackOnWhite = this._params.blackOnWhite
-    var blackMap
-    var currentPoint = new Point(0, 0)
-    var path
+    const self = this
+    const threshold = this._params.threshold
+    const black_on_white = this._params.blackOnWhite
+    let black_map
+    let current_point = new Point(0, 0)
+    let path
 
     if (threshold === Potrace.THRESHOLD_AUTO) {
       threshold = this._luminance_data.histogram().autoThreshold() || 128
     }
 
-    blackMap = this._luminance_data.copy(function (lum) {
-      var pastTheThreshold = blackOnWhite ? lum > threshold : lum < threshold
-
-      return pastTheThreshold ? 0 : 1
+    black_map = this._luminance_data.copy(lum => {
+      const past_the_threshold = black_on_white
+        ? lum > threshold
+        : lum < threshold
+      return past_the_threshold ? 0 : 1
     })
 
-    /**
-     * Finds next black pixel in the bitmap
-     * @private
-     * @param {Point} point - Starting point
-     * @returns {boolean|Point} False if no pixel found, or Point object
-     */
-    function findNext(point) {
-      var i = blackMap.pointToIndex(point)
-
-      while (i < blackMap.size && blackMap.data[i] !== 1) {
+    // Convert nested functions to arrow functions with snake_case
+    const find_next = point => {
+      let i = black_map.pointToIndex(point)
+      while (i < black_map.size && black_map.data[i] !== 1) {
         i++
       }
-
-      return i < blackMap.size && blackMap.indexToPoint(i)
+      return i < black_map.size && black_map.indexToPoint(i)
     }
 
-    function majority(x, y) {
-      var i
-      var a
-      var ct
-
-      for (i = 2; i < 5; i++) {
+    const get_majority = (x, y) => {
+      let ct
+      for (let i = 2; i < 5; i++) {
         ct = 0
-        for (a = -i + 1; a <= i - 1; a++) {
-          ct += blackMap.getValueAt(x + a, y + i - 1) ? 1 : -1
-          ct += blackMap.getValueAt(x + i - 1, y + a - 1) ? 1 : -1
-          ct += blackMap.getValueAt(x + a - 1, y - i) ? 1 : -1
-          ct += blackMap.getValueAt(x - i, y + a) ? 1 : -1
+        for (let a = -i + 1; a <= i - 1; a++) {
+          ct += black_map.getValueAt(x + a, y + i - 1) ? 1 : -1
+          ct += black_map.getValueAt(x + i - 1, y + a - 1) ? 1 : -1
+          ct += black_map.getValueAt(x + a - 1, y - i) ? 1 : -1
+          ct += black_map.getValueAt(x - i, y + a) ? 1 : -1
         }
-
-        if (ct > 0) {
-          return 1
-        } else if (ct < 0) {
-          return 0
-        }
+        if (ct > 0) return 1
+        if (ct < 0) return 0
       }
       return 0
     }
 
-    /**
-     * Traces a path from given point
-     * @private
-     * @param {Point} point - Starting point
-     * @returns {Path} Traced path object
-     */
-    function findPath(point) {
-      var path = new Path()
-      var x = point.x
-      var y = point.y
-      var dirx = 0
-      var diry = 1
-      var tmp
+    const find_path = point => {
+      const path = new Path()
+      let x = point.x
+      let y = point.y
+      let dir_x = 0
+      let dir_y = 1
+      let tmp
 
-      path.sign = blackMap.getValueAt(point.x, point.y) ? '+' : '-'
+      path.sign = black_map.getValueAt(point.x, point.y) ? '+' : '-'
 
       while (1) {
         path.pt.push(new Point(x, y))
@@ -193,19 +174,19 @@ class Potrace {
         if (y < path.minY) path.minY = y
         path.len++
 
-        x += dirx
-        y += diry
-        path.area -= x * diry
+        x += dir_x
+        y += dir_y
+        path.area -= x * dir_y
 
         if (x === point.x && y === point.y) break
 
-        var l = blackMap.getValueAt(
-          x + (dirx + diry - 1) / 2,
-          y + (diry - dirx - 1) / 2
+        const l = black_map.getValueAt(
+          x + (dir_x + dir_y - 1) / 2,
+          y + (dir_y - dir_x - 1) / 2
         )
-        var r = blackMap.getValueAt(
-          x + (dirx - diry - 1) / 2,
-          y + (diry + dirx - 1) / 2
+        const r = black_map.getValueAt(
+          x + (dir_x - dir_y - 1) / 2,
+          y + (dir_y + dir_x - 1) / 2
         )
 
         if (r && !l) {
@@ -216,57 +197,46 @@ class Potrace {
             (self._params.turnPolicy === Potrace.turn_policy.white &&
               path.sign === '-') ||
             (self._params.turnPolicy === Potrace.turn_policy.majority &&
-              majority(x, y)) ||
+              get_majority(x, y)) ||
             (self._params.turnPolicy === Potrace.turn_policy.minority &&
-              !majority(x, y))
+              !get_majority(x, y))
           ) {
-            tmp = dirx
-            dirx = -diry
-            diry = tmp
+            tmp = dir_x
+            dir_x = -dir_y
+            dir_y = tmp
           } else {
-            tmp = dirx
-            dirx = diry
-            diry = -tmp
+            tmp = dir_x
+            dir_x = dir_y
+            dir_y = -tmp
           }
         } else if (r) {
-          tmp = dirx
-          dirx = -diry
-          diry = tmp
+          tmp = dir_x
+          dir_x = -dir_y
+          dir_y = tmp
         } else if (!l) {
-          tmp = dirx
-          dirx = diry
-          diry = -tmp
+          tmp = dir_x
+          dir_x = dir_y
+          dir_y = -tmp
         }
       }
       return path
     }
 
-    /**
-     * XOR operation on path pixels
-     * @private
-     * @param {Path} path - Path to XOR
-     */
-    function xorPath(path) {
-      var y1 = path.pt[0].y
-      var len = path.len
-      var x
-      var y
-      var maxX
-      var minY
-      var i
-      var j
-      var indx
+    const xor_path = path => {
+      let y1 = path.pt[0].y
+      const len = path.len
+      let x, y, max_x, min_y, indx
 
-      for (i = 1; i < len; i++) {
+      for (let i = 1; i < len; i++) {
         x = path.pt[i].x
         y = path.pt[i].y
 
         if (y !== y1) {
-          minY = y1 < y ? y1 : y
-          maxX = path.maxX
-          for (j = x; j < maxX; j++) {
-            indx = blackMap.pointToIndex(j, minY)
-            blackMap.data[indx] = blackMap.data[indx] ? 0 : 1
+          min_y = y1 < y ? y1 : y
+          max_x = path.maxX
+          for (let j = x; j < max_x; j++) {
+            indx = black_map.pointToIndex(j, min_y)
+            black_map.data[indx] = black_map.data[indx] ? 0 : 1
           }
           y1 = y
         }
@@ -276,9 +246,9 @@ class Potrace {
     // Clear path list
     this._pathlist = []
 
-    while ((currentPoint = findNext(currentPoint))) {
-      path = findPath(currentPoint)
-      xorPath(path)
+    while ((current_point = find_next(current_point))) {
+      path = find_path(current_point)
+      xor_path(path)
 
       if (path.area > self._params.turdSize) {
         this._pathlist.push(path)
@@ -298,7 +268,7 @@ class Potrace {
      * @private
      * @param {Path} path - Path to calculate sums for
      */
-    function calcSums(path) {
+    function calc_sums(path) {
       var i
       var x
       var y
@@ -328,7 +298,7 @@ class Potrace {
      * @private
      * @param {Path} path - Path to calculate sequences for
      */
-    function calcLon(path) {
+    function calc_lon(path) {
       var n = path.len
       var pt = path.pt
       var dir
@@ -464,7 +434,7 @@ class Potrace {
      * @private
      * @param {Path} path - Path to optimize
      */
-    function bestPolygon(path) {
+    function best_polygon(path) {
       function penalty3(path, i, j) {
         var n = path.len
         var pt = path.pt
@@ -597,22 +567,22 @@ class Potrace {
      * @private
      * @param {Path} path - Path to adjust
      */
-    function adjustVertices(path) {
-      function pointslope(path, i, j, ctr, dir) {
-        var n = path.len
-        var sums = path.sums
-        var x
-        var y
-        var x2
-        var xy
-        var y2
-        var k
-        var a
-        var b
-        var c
-        var lambda2
-        var l
-        var r = 0
+    const adjust_vertices = path => {
+      const pointslope = (path, i, j, ctr, dir) => {
+        const n = path.len
+        const sums = path.sums
+        let x
+        let y
+        let x2
+        let xy
+        let y2
+        let k
+        let a
+        let b
+        let c
+        let lambda2
+        let l
+        let r = 0
 
         while (j >= n) {
           j -= n
@@ -668,27 +638,27 @@ class Potrace {
         }
       }
 
-      var m = path.m
-      var po = path.po
-      var n = path.len
-      var pt = path.pt
-      var x0 = path.x0
-      var y0 = path.y0
-      var ctr = []
-      var dir = []
-      var q = []
-      var v = []
-      var d
-      var i
-      var j
-      var k
-      var l
-      var s = new Point()
+      const m = path.m
+      const po = path.po
+      const n = path.len
+      const pt = path.pt
+      const x0 = path.x0
+      const y0 = path.y0
+      const ctr = []
+      const dir = []
+      const q = []
+      const v = []
+      let d
+      let i
+      let j
+      let k
+      let l
+      const s = new Point()
 
       path.curve = new Curve(m)
 
       for (i = 0; i < m; i++) {
-        j = po[utils.mod(i + 1, m)]
+        j = utils.mod(i + 1, m)
         j = utils.mod(j - po[i], n) + po[i]
         ctr[i] = new Point()
         dir[i] = new Point()
@@ -716,16 +686,16 @@ class Potrace {
         }
       }
 
-      var Q
-      var w
-      var dx
-      var dy
-      var det
-      var min
-      var cand
-      var xmin
-      var ymin
-      var z
+      let Q
+      let w
+      let dx
+      let dy
+      let det
+      let min
+      let cand
+      let xmin
+      let ymin
+      let z
       for (i = 0; i < m; i++) {
         Q = new Quad()
         w = new Point()
@@ -828,13 +798,13 @@ class Potrace {
      * @private
      * @param {Path} path - Path to reverse
      */
-    function reverse(path) {
-      var curve = path.curve
-      var m = curve.n
-      var v = curve.vertex
-      var i
-      var j
-      var tmp
+    const reverse = path => {
+      const curve = path.curve
+      const m = curve.n
+      const v = curve.vertex
+      let i
+      let j
+      let tmp
 
       for (i = 0, j = m - 1; i < j; i++, j--) {
         tmp = v[i]
@@ -848,19 +818,19 @@ class Potrace {
      * @private
      * @param {Path} path - Path to smooth
      */
-    function smooth(path) {
-      var m = path.curve.n
-      var curve = path.curve
+    const smooth = path => {
+      const m = path.curve.n
+      const curve = path.curve
 
-      var i
-      var j
-      var k
-      var dd
-      var denom
-      var alpha
-      var p2
-      var p3
-      var p4
+      let i
+      let j
+      let k
+      let dd
+      let denom
+      let alpha
+      let p2
+      let p3
+      let p4
 
       for (i = 0; i < m; i++) {
         j = utils.mod(i + 1, m)
@@ -916,34 +886,34 @@ class Potrace {
      * @private
      * @param {Path} path - Path to optimize
      */
-    function optiCurve(path) {
-      function opti_penalty(path, i, j, res, opttolerance, convc, areac) {
-        var m = path.curve.n
-        var curve = path.curve
-        var vertex = curve.vertex
-        var k
-        var k1
-        var k2
-        var conv
-        var i1
-        var area
-        var alpha
-        var d
-        var d1
-        var d2
-        var p0
-        var p1
-        var p2
-        var p3
-        var pt
-        var A
-        var R
-        var A1
-        var A2
-        var A3
-        var A4
-        var s
-        var t
+    const opti_curve = path => {
+      const opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
+        const m = path.curve.n
+        const curve = path.curve
+        const vertex = curve.vertex
+        let k
+        let k1
+        let k2
+        let conv
+        let i1
+        let area
+        let alpha
+        let d
+        let d1
+        let d2
+        let p0
+        let p1
+        let p2
+        let p3
+        let pt
+        let A
+        let R
+        let A1
+        let A2
+        let A3
+        let A4
+        let s
+        let t
 
         if (i == j) {
           return 1
@@ -1083,28 +1053,28 @@ class Potrace {
         return 0
       }
 
-      var curve = path.curve
-      var m = curve.n
-      var vert = curve.vertex
-      var pt = []
-      var pen = []
-      var len = []
-      var opt = []
-      var om
-      var i
-      var j
-      var r
-      var o = new Opti()
-      var p0
-      var i1
-      var area
-      var alpha
-      var ocurve
-      var s
-      var t
+      const curve = path.curve
+      const m = curve.n
+      const vert = curve.vertex
+      const pt = []
+      const pen = []
+      const len = []
+      const opt = []
+      let om
+      let i
+      let j
+      let r
+      let o = new Opti()
+      let p0
+      let i1
+      let area
+      let alpha
+      let ocurve
+      const s = []
+      const t = []
 
-      var convc = []
-      var areac = []
+      const convc = []
+      const areac = []
 
       for (i = 0; i < m; i++) {
         if (curve.tag[i] == 'CURVE') {
@@ -1174,8 +1144,6 @@ class Potrace {
       }
       om = len[m]
       ocurve = new Curve(om)
-      s = []
-      t = []
 
       j = m
       for (i = om - 1; i >= 0; i--) {
@@ -1216,12 +1184,12 @@ class Potrace {
       path.curve = ocurve
     }
 
-    for (var i = 0; i < this._pathlist.length; i++) {
-      var path = this._pathlist[i]
-      calcSums(path)
-      calcLon(path)
-      bestPolygon(path)
-      adjustVertices(path)
+    for (let i = 0; i < this._pathlist.length; i++) {
+      const path = this._pathlist[i]
+      calc_sums(path)
+      calc_lon(path)
+      best_polygon(path)
+      adjust_vertices(path)
 
       if (path.sign === '-') {
         reverse(path)
@@ -1230,7 +1198,7 @@ class Potrace {
       smooth(path)
 
       if (self._params.optCurve) {
-        optiCurve(path)
+        opti_curve(path)
       }
     }
   }
@@ -1247,7 +1215,7 @@ class Potrace {
       params.turnPolicy &&
       Potrace.supported_turn_policy_values.indexOf(params.turnPolicy) === -1
     ) {
-      var goodVals =
+      const goodVals =
         "'" + Potrace.supported_turn_policy_values.join("', '") + "'"
 
       throw new Error('Bad turnPolicy value. Allowed values are: ' + goodVals)
@@ -1283,25 +1251,19 @@ class Potrace {
    * @param {Jimp} image - Loaded image
    */
   _process_loaded_image(image) {
-    var bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
-    var pixels = image.bitmap.data
+    const bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
+    const pixels = image.bitmap.data
 
-    image.scan(
-      0,
-      0,
-      image.bitmap.width,
-      image.bitmap.height,
-      function (x, y, idx) {
-        // We want background underneath non-opaque regions to be white
+    image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
+      // We want background underneath non-opaque regions to be white
 
-        var opacity = pixels[idx + 3] / 255,
-          r = 255 + (pixels[idx + 0] - 255) * opacity,
-          g = 255 + (pixels[idx + 1] - 255) * opacity,
-          b = 255 + (pixels[idx + 2] - 255) * opacity
+      const opacity = pixels[idx + 3] / 255,
+        r = 255 + (pixels[idx + 0] - 255) * opacity,
+        g = 255 + (pixels[idx + 1] - 255) * opacity,
+        b = 255 + (pixels[idx + 2] - 255) * opacity
 
-        bitmap.data[idx / 4] = utils.luminance(r, g, b)
-      }
-    )
+      bitmap.data[idx / 4] = utils.luminance(r, g, b)
+    })
 
     this._luminance_data = bitmap
     this._image_loaded = true
@@ -1312,8 +1274,8 @@ class Potrace {
    * @param {Function} callback
    */
   load_image(target, callback) {
-    var self = this
-    var jobId = {}
+    const self = this
+    let jobId = {}
 
     this._image_loading_identifier = jobId
     this._image_loaded = false
@@ -1330,8 +1292,8 @@ class Potrace {
    * @param {Potrace~Options} newParams
    */
   set_parameters(newParams) {
-    var key
-    var tmpOldVal
+    let key
+    let tmpOldVal
     this._validate_parameters(newParams)
 
     for (key in this._params) {
@@ -1383,9 +1345,9 @@ class Potrace {
       this._processed = true
     }
 
-    var tag = '<path itemprop="path" d="'
+    let tag = '<path itemprop="path" d="'
 
-    this._pathlist.forEach(function (path) {
+    this._pathlist.forEach(path => {
       tag += utils.renderCurve(path.curve, 1)
     })
 
@@ -1417,9 +1379,9 @@ class Potrace {
       this._processed = true
     }
 
-    var tag = ''
+    let tag = ''
 
-    this._pathlist.forEach(function (path) {
+    this._pathlist.forEach(path => {
       tag += utils.renderCurve(path.curve, 1)
     })
 
@@ -1433,29 +1395,29 @@ class Potrace {
    * @returns {Array<Object>} Modified color ranges
    */
   _add_extra_color_stop(ranges) {
-    var blackOnWhite = this._params.blackOnWhite
-    var lastColorStop = ranges[ranges.length - 1]
-    var lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
-    var lastRangeTo = blackOnWhite ? lastColorStop.value : 255
+    const blackOnWhite = this._params.blackOnWhite
+    const lastColorStop = ranges[ranges.length - 1]
+    const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
+    const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
 
     if (
       lastRangeTo - lastRangeFrom > 25 &&
       lastColorStop.colorIntensity !== 1
     ) {
-      var histogram = this._get_image_histogram()
-      var levels = histogram.getStats(lastRangeFrom, lastRangeTo).levels
+      const histogram = this._get_image_histogram()
+      const levels = histogram.getStats(lastRangeFrom, lastRangeTo).levels
 
-      var newColorStop =
+      const newColorStop =
         levels.mean + levels.stdDev <= 25
           ? levels.mean + levels.stdDev
           : levels.mean - levels.stdDev <= 25
             ? levels.mean - levels.stdDev
             : 25
 
-      var newStats = blackOnWhite
+      const newStats = blackOnWhite
         ? histogram.getStats(0, newColorStop)
         : histogram.getStats(newColorStop, 255)
-      var color = newStats.levels.mean
+      const color = newStats.levels.mean
 
       ranges.push({
         value: Math.abs((blackOnWhite ? 0 : 255) - newColorStop),
@@ -1475,27 +1437,29 @@ class Potrace {
    * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
    */
   _calc_color_intensity(colorStops) {
-    var blackOnWhite = this._params.blackOnWhite
-    var colorSelectionStrat = this._params.fillStrategy
-    var histogram =
+    const blackOnWhite = this._params.blackOnWhite
+    const colorSelectionStrat = this._params.fillStrategy
+    const histogram =
       colorSelectionStrat !== Potrace.FILL_SPREAD
         ? this._get_image_histogram()
         : null
-    var fullRange = Math.abs(this._param_threshold() - (blackOnWhite ? 0 : 255))
+    const fullRange = Math.abs(
+      this._param_threshold() - (blackOnWhite ? 0 : 255)
+    )
 
-    return colorStops.map(function (threshold, index) {
-      var nextValue =
+    return colorStops.map((threshold, index) => {
+      const nextValue =
         index + 1 === colorStops.length
           ? blackOnWhite
             ? -1
             : 256
           : colorStops[index + 1]
-      var rangeStart = Math.round(blackOnWhite ? nextValue + 1 : threshold)
-      var rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
-      var factor = index / (colorStops.length - 1)
-      var intervalSize = rangeEnd - rangeStart
-      var stats = histogram.getStats(rangeStart, rangeEnd)
-      var color = -1
+      const rangeStart = Math.round(blackOnWhite ? nextValue + 1 : threshold)
+      const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
+      const factor = index / (colorStops.length - 1)
+      const intervalSize = rangeEnd - rangeStart
+      const stats = histogram.getStats(rangeStart, rangeEnd)
+      let color = -1
 
       if (stats.pixels === 0) {
         return {
@@ -1567,7 +1531,7 @@ class Potrace {
    * @returns {Array<Object>} Color ranges
    */
   _get_ranges() {
-    var steps = this._param_steps()
+    const steps = this._param_steps()
 
     if (!Array.isArray(steps)) {
       return this._params.rangeDistribution === Potrace.RANGES_AUTO
@@ -1577,11 +1541,11 @@ class Potrace {
 
     // Steps is array of thresholds and we want to preprocess it
 
-    var colorStops = []
-    var threshold = this._param_threshold()
-    var lookingForDarkPixels = this._params.blackOnWhite
+    const colorStops = []
+    const threshold = this._param_threshold()
+    const lookingForDarkPixels = this._params.blackOnWhite
 
-    steps.forEach(function (item) {
+    steps.forEach(item => {
       if (colorStops.indexOf(item) === -1 && utils.between(item, 0, 255)) {
         colorStops.push(item)
       }
@@ -1591,9 +1555,9 @@ class Potrace {
       colorStops.push(threshold)
     }
 
-    colorStops = colorStops.sort(function (a, b) {
-      return a < b === lookingForDarkPixels ? 1 : -1
-    })
+    colorStops = colorStops.sort((a, b) =>
+      a < b === lookingForDarkPixels ? 1 : -1
+    )
 
     if (lookingForDarkPixels && colorStops[0] < threshold) {
       colorStops.unshift(threshold)
@@ -1613,14 +1577,14 @@ class Potrace {
    * @returns {Array<Object>} Auto-calculated ranges
    */
   _get_ranges_auto() {
-    var histogram = this._get_image_histogram()
-    var steps = this._param_steps(true)
-    var colorStops
+    const histogram = this._get_image_histogram()
+    const steps = this._param_steps(true)
+    let colorStops
 
     if (this._params.threshold === Potrace.THRESHOLD_AUTO) {
       colorStops = histogram.multilevelThresholding(steps)
     } else {
-      var threshold = this._param_threshold()
+      const threshold = this._param_threshold()
 
       colorStops = this._params.blackOnWhite
         ? histogram.multilevelThresholding(steps - 1, 0, threshold)
@@ -1646,15 +1610,15 @@ class Potrace {
    * @returns {Array<Object>} Equally distributed ranges
    */
   _get_ranges_equally_distributed() {
-    var blackOnWhite = this._params.blackOnWhite
-    var colorsToThreshold = blackOnWhite
+    const blackOnWhite = this._params.blackOnWhite
+    const colorsToThreshold = blackOnWhite
       ? this._param_threshold()
       : 255 - this._param_threshold()
-    var steps = this._param_steps()
+    const steps = this._param_steps()
 
-    var stepSize = colorsToThreshold / steps
-    var colorStops = []
-    var i = steps - 1,
+    const stepSize = colorsToThreshold / steps
+    const colorStops = []
+    let i = steps - 1,
       factor,
       threshold
 
@@ -1677,7 +1641,7 @@ class Potrace {
    * @returns {number|Array} Steps value or count
    */
   _param_steps(count) {
-    var steps = this._params.steps
+    const steps = this._params.steps
 
     if (Array.isArray(steps)) {
       return count ? steps.length : steps
@@ -1690,8 +1654,8 @@ class Potrace {
       return 4
     }
 
-    var blackOnWhite = this._params.blackOnWhite
-    var colorsCount = blackOnWhite
+    const blackOnWhite = this._params.blackOnWhite
+    const colorsCount = blackOnWhite
       ? this._param_threshold()
       : 255 - this._param_threshold()
 
@@ -1717,7 +1681,7 @@ class Potrace {
       return this._calculated_threshold
     }
 
-    var twoThresholds = this._get_image_histogram().multilevelThresholding(2)
+    const twoThresholds = this._get_image_histogram().multilevelThresholding(2)
     this._calculated_threshold = this._params.blackOnWhite
       ? twoThresholds[1]
       : twoThresholds[0]
@@ -1769,17 +1733,17 @@ class Potrace {
 
       set_parameters({ threshold: colorStop.value })
 
-      var element = noFillColor ? this.get_path_tag('') : this.get_path_tag()
+      let element = noFillColor ? this.get_path_tag('') : this.get_path_tag()
       element = utils.setHtmlAttr(
         element,
         'fill-opacity',
         calculatedOpacity.toFixed(3)
       )
 
-      var canBeIgnored =
+      const canBeIgnored =
         calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
 
-      var c = Math.round(
+      const c = Math.round(
         Math.abs((blackOnWhite ? 255 : 0) - 255 * thisLayerOpacity)
       )
       element = utils.setHtmlAttr(
@@ -1810,7 +1774,7 @@ class Potrace {
 
       if (thisLayerOpacity === 0) return ''
 
-      var calculatedOpacity =
+      let calculatedOpacity =
         !actualPrevLayersOpacity || thisLayerOpacity === 1
           ? thisLayerOpacity
           : (actualPrevLayersOpacity - thisLayerOpacity) /
