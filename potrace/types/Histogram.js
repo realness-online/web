@@ -27,10 +27,18 @@ class Histogram {
   static MODE_G = 'g'
   static MODE_B = 'b'
 
-  // Private fields need to be declared first
-  #sorted_indexes = null
-  #cached_stats = {}
-  #lookup_table_h = null
+  // Reusable arrays for thresholding calculations
+  static SHARED_ARRAYS = {
+    p: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
+    s: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
+    h: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
+    indexes: new Array(COLOR_DEPTH)
+  }
+
+  // Use regular properties for better performance in hot paths
+  sorted_indexes = null
+  cached_stats = {}
+  lookup_table_h = null
   data = null
   pixels = 0
 
@@ -119,22 +127,26 @@ class Histogram {
    * @returns {Array} Array of sorted color indexes
    * @private
    */
-  #get_sorted_indexes(refresh) {
-    if (!refresh && this.#sorted_indexes) {
-      return this.#sorted_indexes
+  get_sorted_indexes(refresh) {
+    if (!refresh && this.sorted_indexes) {
+      return this.sorted_indexes
     }
 
     const data = this.data
-    const indexes = new Array(COLOR_DEPTH)
+    const indexes = Histogram.SHARED_ARRAYS.indexes
 
+    // Traditional for loop is faster than forEach
     for (let i = 0; i < COLOR_DEPTH; i++) {
       indexes[i] = i
     }
 
-    indexes.sort((a, b) => (data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0))
+    // Use regular function for better performance in sort
+    indexes.sort(function (a, b) {
+      return data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0
+    })
 
-    this.#sorted_indexes = indexes
-    return indexes
+    this.sorted_indexes = indexes.slice() // Create a copy to preserve the shared array
+    return this.sorted_indexes
   }
 
   /**
@@ -143,48 +155,48 @@ class Histogram {
    * @returns {Float64Array} Lookup table H
    * @private
    */
-  #thresholding_build_lookup_table() {
-    const p = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
-    const s = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
-    const h = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
+  thresholding_build_lookup_table() {
+    const { p, s, h } = Histogram.SHARED_ARRAYS
     const pixels_total = this.pixels
-    let i, j, idx, tmp
 
-    // diagonal
-    for (i = 1; i < COLOR_DEPTH; ++i) {
-      idx = index(i, i)
-      tmp = this.data[i] / pixels_total
+    // Clear arrays
+    p.fill(0)
+    s.fill(0)
+    h.fill(0)
+
+    // Use traditional for loops for better performance
+    for (let i = 1; i < COLOR_DEPTH; ++i) {
+      const idx = index(i, i)
+      const tmp = this.data[i] / pixels_total
 
       p[idx] = tmp
       s[idx] = i * tmp
     }
 
-    // calculate first row (row 0 is all zero)
-    for (i = 1; i < COLOR_DEPTH - 1; ++i) {
-      tmp = this.data[i + 1] / pixels_total
-      idx = index(1, i)
+    for (let i = 1; i < COLOR_DEPTH - 1; ++i) {
+      const tmp = this.data[i + 1] / pixels_total
+      const idx = index(1, i)
 
       p[idx + 1] = p[idx] + tmp
       s[idx + 1] = s[idx] + (i + 1) * tmp
     }
 
-    // using row 1 to calculate others
-    for (i = 2; i < COLOR_DEPTH; i++) {
-      for (j = i + 1; j < COLOR_DEPTH; j++) {
+    for (let i = 2; i < COLOR_DEPTH; i++) {
+      for (let j = i + 1; j < COLOR_DEPTH; j++) {
         p[index(i, j)] = p[index(1, j)] - p[index(1, i - 1)]
         s[index(i, j)] = s[index(1, j)] - s[index(1, i - 1)]
       }
     }
 
-    // now calculate h[i][j]
-    for (i = 1; i < COLOR_DEPTH; ++i) {
-      for (j = i + 1; j < COLOR_DEPTH; j++) {
-        idx = index(i, j)
+    for (let i = 1; i < COLOR_DEPTH; ++i) {
+      for (let j = i + 1; j < COLOR_DEPTH; j++) {
+        const idx = index(i, j)
         h[idx] = p[idx] !== 0 ? (s[idx] * s[idx]) / p[idx] : 0
       }
     }
 
-    return (this.#lookup_table_h = h)
+    this.lookup_table_h = h.slice() // Create a copy to preserve the shared array
+    return this.lookup_table_h
   }
 
   /**
@@ -198,35 +210,58 @@ class Histogram {
    * @param [levelMax=255] - histogram segment end
    * @returns {number[]}
    */
-  multilevelThresholding(amount, level_min, level_max) {
+  multilevel_thresholding(amount, level_min, level_max) {
     ;[level_min, level_max] = normalize_min_max(level_min, level_max)
     amount = Math.min(level_max - level_min - 2, ~~amount)
 
-    if (amount < 1) {
-      return []
+    if (amount < 1) return []
+    if (!this.lookup_table_h) {
+      this.thresholding_build_lookup_table()
     }
 
-    if (!this.#lookup_table_h) {
-      this.#thresholding_build_lookup_table()
+    const stack = [
+      {
+        starting_point: level_min || 0,
+        prev_variance: 0,
+        indexes: new Array(amount),
+        depth: 0,
+        max_sig: 0,
+        color_stops: null
+      }
+    ]
+
+    let best_result = { max_sig: 0, color_stops: null }
+
+    while (stack.length > 0) {
+      const current = stack.pop()
+      const { starting_point, prev_variance, indexes, depth } = current
+
+      for (let i = starting_point + 1; i < level_max - amount + depth; i++) {
+        const variance =
+          prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
+        indexes[depth] = i
+
+        if (depth + 1 < amount) {
+          stack.push({
+            starting_point: i,
+            prev_variance: variance,
+            indexes: indexes.slice(),
+            depth: depth + 1,
+            max_sig: current.max_sig,
+            color_stops: current.color_stops
+          })
+        } else {
+          const total_variance =
+            variance + this.lookup_table_h[index(i + 1, level_max)]
+          if (total_variance > best_result.max_sig) {
+            best_result.max_sig = total_variance
+            best_result.color_stops = indexes.slice()
+          }
+        }
+      }
     }
 
-    if (amount > 4) {
-      console.log(
-        '[Warning]: Threshold computation for more than 5 levels may take a long time'
-      )
-    }
-
-    const [color_stops] = iterate_recursive(
-      level_min || 0,
-      0,
-      null,
-      0,
-      this.#lookup_table_h,
-      amount,
-      level_max
-    )
-
-    return color_stops || []
+    return best_result.color_stops || []
   }
 
   /**
@@ -236,8 +271,8 @@ class Histogram {
    * @param {number} [levelMax]
    * @returns {null|number}
    */
-  autoThreshold(levelMin, levelMax) {
-    var value = this.multilevelThresholding(1, levelMin, levelMax)
+  auto_threshold(levelMin, levelMax) {
+    const value = this.multilevel_thresholding(1, levelMin, levelMax)
     return value.length ? value[0] : null
   }
 
@@ -249,7 +284,7 @@ class Histogram {
    * @param [tolerance=1]
    * @returns {number}
    */
-  getDominantColor(levelMin, levelMax, tolerance) {
+  get_dominant_color(levelMin, levelMax, tolerance) {
     levelMin = normalize_min_max(levelMin, levelMax)
     levelMax = levelMin[1]
     levelMin = levelMin[0]
@@ -300,17 +335,17 @@ class Histogram {
    * @param {Boolean} [refresh=false] - if cached result can be returned
    * @returns {{levels: {mean: (number|*), median: *, stdDev: number, unique: number}, pixelsPerLevel: {mean: (number|*), median: (number|*), peak: number}, pixels: number}}
    */
-  getStats(levelMin, levelMax, refresh) {
+  get_stats(levelMin, levelMax, refresh) {
     levelMin = normalize_min_max(levelMin, levelMax)
     levelMax = levelMin[1]
     levelMin = levelMin[0]
 
-    if (!refresh && this.#cached_stats[levelMin + '-' + levelMax]) {
-      return this.#cached_stats[levelMin + '-' + levelMax]
+    if (!refresh && this.cached_stats[levelMin + '-' + levelMax]) {
+      return this.cached_stats[levelMin + '-' + levelMax]
     }
 
     var data = this.data
-    var sortedIndexes = this.#get_sorted_indexes()
+    var sortedIndexes = this.get_sorted_indexes()
 
     var pixelsTotal = 0
     var medianValue = null
@@ -362,7 +397,7 @@ class Histogram {
       }
     }
 
-    return (this.#cached_stats[levelMin + '-' + levelMax] = {
+    return (this.cached_stats[levelMin + '-' + levelMax] = {
       // various pixel counts for levels (0..255)
 
       levels: {
@@ -398,7 +433,7 @@ class Histogram {
 const index = (x, y) => COLOR_DEPTH * x + y
 
 /**
- * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
+ * Shared parameter normalization for methods 'multilevel_thresholding', 'auto_threshold', 'get_dominant_color' and 'get_stats'
  *
  * @param level_min
  * @param level_max
@@ -421,69 +456,6 @@ const normalize_min_max = (level_min, level_max) => {
   }
 
   return [level_min, level_max]
-}
-
-/**
- * Recursive function for multilevel thresholding
- * @param {number} starting_point - Starting point for iteration
- * @param {number} prev_variance - Previous variance value
- * @param {Array} indexes - Array to store threshold indexes
- * @param {number} previous_depth - Previous depth in recursion
- * @param {Float64Array} h - Lookup table H
- * @param {number} amount - Number of thresholds
- * @param {number} level_max - Maximum level
- * @returns {[Array, number]} - Array of color stops and maximum significance
- * @private
- */
-const iterate_recursive = (
-  starting_point,
-  prev_variance,
-  indexes,
-  previous_depth,
-  h,
-  amount,
-  level_max
-) => {
-  starting_point = (starting_point || 0) + 1
-  prev_variance = prev_variance || 0
-  indexes = indexes || new Array(amount)
-  previous_depth = previous_depth || 0
-
-  const depth = previous_depth + 1
-  let max_sig = 0
-  let color_stops = null
-
-  for (let i = starting_point; i < level_max - amount + previous_depth; i++) {
-    const variance = prev_variance + h[index(starting_point, i)]
-    indexes[depth - 1] = i
-
-    if (depth + 1 < amount + 1) {
-      // we need to go deeper
-      const [new_stops, new_sig] = iterate_recursive(
-        i,
-        variance,
-        indexes,
-        depth,
-        h,
-        amount,
-        level_max
-      )
-      if (new_sig > max_sig) {
-        max_sig = new_sig
-        color_stops = new_stops
-      }
-    } else {
-      // enough, we can compare values now
-      const total_variance = variance + h[index(i + 1, level_max)]
-
-      if (max_sig < total_variance) {
-        max_sig = total_variance
-        color_stops = indexes.slice()
-      }
-    }
-  }
-
-  return [color_stops, max_sig]
 }
 
 export default Histogram
