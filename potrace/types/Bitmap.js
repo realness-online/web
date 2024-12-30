@@ -2,14 +2,32 @@ import Point from '@/potrace/types/Point'
 import utils from '@/potrace/utils'
 import Histogram from '@/potrace/types/Histogram'
 
+/**
+ * Represents a bitmap image as a 1-dimensional array of pixel values
+ */
 class Bitmap {
   #histogram = null
+
+  /** @type {number} Width of the bitmap in pixels */
   width
+
+  /** @type {number} Height of the bitmap in pixels */
   height
+
+  /** @type {number} Total number of pixels (width * height) */
   size
+
+  /** @type {ArrayBuffer} Underlying array buffer for pixel data */
   arrayBuffer
+
+  /** @type {Uint8Array} Pixel data array */
   data
 
+  /**
+   * Creates a new Bitmap instance
+   * @param {number} w - Width of the bitmap in pixels
+   * @param {number} h - Height of the bitmap in pixels
+   */
   constructor(w, h) {
     this.width = w
     this.height = h
@@ -18,6 +36,12 @@ class Bitmap {
     this.data = new Uint8Array(this.arrayBuffer)
   }
 
+  /**
+   * Gets the pixel value at the specified coordinates or index
+   * @param {number|Point} x - X coordinate or linear index
+   * @param {number} [y] - Y coordinate if x is not an index
+   * @returns {number} Pixel value at the specified position
+   */
   get_value_at = (x, y) => {
     const index =
       typeof x === 'number' && typeof y !== 'number'
@@ -26,6 +50,11 @@ class Bitmap {
     return this.data[index]
   }
 
+  /**
+   * Converts a linear index to 2D coordinates
+   * @param {number} index - Linear index in the bitmap array
+   * @returns {Point} Point object containing x,y coordinates
+   */
   index_to_point = index => {
     const point = new Point()
 
@@ -40,6 +69,12 @@ class Bitmap {
     return point
   }
 
+  /**
+   * Converts 2D coordinates to a linear index
+   * @param {Point|number} point_or_x - Point object or x coordinate
+   * @param {number} [y] - Y coordinate if first parameter is x coordinate
+   * @returns {number} Linear index in the bitmap array, -1 if coordinates are out of bounds
+   */
   point_to_index = (point_or_x, y) => {
     let _x = point_or_x
     let _y = y
@@ -59,6 +94,11 @@ class Bitmap {
     return this.width * _y + _x
   }
 
+  /**
+   * Creates a copy of the bitmap, optionally transforming pixel values
+   * @param {function} [iterator] - Optional function to transform pixel values: (value, index) => newValue
+   * @returns {Bitmap} New bitmap instance
+   */
   copy = iterator => {
     const bm = new Bitmap(this.width, this.height)
     const iterator_present = typeof iterator === 'function'
@@ -70,6 +110,10 @@ class Bitmap {
     return bm
   }
 
+  /**
+   * Gets or creates a histogram of the bitmap's pixel values
+   * @returns {Histogram} Histogram instance for this bitmap
+   */
   histogram = () => {
     if (this.#histogram) {
       return this.#histogram
