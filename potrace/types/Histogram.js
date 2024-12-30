@@ -24,11 +24,9 @@ const COLOR_RANGE_END = COLOR_DEPTH - 1
  * @returns {*}
  * @private
  */
-function index(x, y) {
-  return COLOR_DEPTH * x + y
-}
+const index = (x, y) => COLOR_DEPTH * x + y
 
-function normalizeMinMax(levelMin, levelMax) {
+const normalize_min_max = (level_min, level_max) => {
   /**
    * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
    *
@@ -37,20 +35,21 @@ function normalizeMinMax(levelMin, levelMax) {
    * @returns {number[]}
    * @private
    */
-  levelMin =
-    typeof levelMin === 'number'
-      ? utils.clamp(Math.round(levelMin), 0, COLOR_RANGE_END)
+  level_min =
+    typeof level_min === 'number'
+      ? utils.clamp(Math.round(level_min), 0, COLOR_RANGE_END)
       : 0
-  levelMax =
-    typeof levelMax === 'number'
-      ? utils.clamp(Math.round(levelMax), 0, COLOR_RANGE_END)
+
+  level_max =
+    typeof level_max === 'number'
+      ? utils.clamp(Math.round(level_max), 0, COLOR_RANGE_END)
       : COLOR_RANGE_END
 
-  if (levelMin > levelMax) {
-    throw new Error('Invalid range "' + levelMin + '...' + levelMax + '"')
+  if (level_min > level_max) {
+    throw new Error(`Invalid range "${level_min}...${level_max}"`)
   }
 
-  return [levelMin, levelMax]
+  return [level_min, level_max]
 }
 
 /**
@@ -61,57 +60,50 @@ function normalizeMinMax(levelMin, levelMax) {
  * @constructor
  * @protected
  */
-function Histogram(imageSource, mode) {
-  this.data = null
-  this.pixels = 0
-  this._sortedIndexes = null
-  this._cachedStats = {}
-  this._lookupTableH = null
+class Histogram {
+  static MODE_LUMINANCE = 'luminance'
+  static MODE_R = 'r'
+  static MODE_G = 'g'
+  static MODE_B = 'b'
 
-  if (typeof imageSource === 'number') {
-    this._createArray(imageSource)
-  } else if (imageSource instanceof Bitmap) {
-    this._collectValuesBitmap(imageSource)
-  } else if (Jimp && imageSource instanceof Jimp) {
-    this._collectValuesJimp(imageSource, mode)
-  } else {
-    throw new Error('Unsupported image source')
+  constructor(image_source, mode) {
+    this.data = null
+    this.pixels = 0
+    this._sorted_indexes = null
+    this._cached_stats = {}
+    this._lookup_table_h = null
+
+    if (typeof image_source === 'number') {
+      this._create_array(image_source)
+    } else if (image_source instanceof Bitmap) {
+      this._collect_values_bitmap(image_source)
+    } else if (Jimp && image_source instanceof Jimp) {
+      this._collect_values_jimp(image_source, mode)
+    } else {
+      throw new Error('Unsupported image source')
+    }
   }
-}
 
-Histogram.MODE_LUMINANCE = 'luminance'
-Histogram.MODE_R = 'r'
-Histogram.MODE_G = 'g'
-Histogram.MODE_B = 'b'
-
-Histogram.prototype = {
-  /**
-   * Initializes data array for an image of given pixel size
-   * @param imageSize
-   * @returns {Uint8Array|Uint16Array|Uint32Array}
-   * @private
-   */
-  _createArray: function (imageSize) {
-    var ArrayType =
-      imageSize <= Math.pow(2, 8)
+  _create_array(image_size) {
+    const ArrayType =
+      image_size <= Math.pow(2, 8)
         ? Uint8Array
-        : imageSize <= Math.pow(2, 16)
+        : image_size <= Math.pow(2, 16)
           ? Uint16Array
           : Uint32Array
 
-    this.pixels = imageSize
-
+    this.pixels = image_size
     return (this.data = new ArrayType(COLOR_DEPTH))
-  },
+  }
 
   /**
    * @param {Jimp} source
    * @param mode
    * @private
    */
-  _collectValuesJimp: function (source, mode) {
+  _collect_values_jimp(source, mode) {
     var pixelData = source.bitmap.data
-    var data = this._createArray(source.bitmap.width * source.bitmap.height)
+    var data = this._create_array(source.bitmap.width * source.bitmap.height)
 
     source.scan(
       0,
@@ -135,15 +127,15 @@ Histogram.prototype = {
         data[val]++
       }
     )
-  },
+  }
 
   /**
    * Aggregates color data from {@link Bitmap} instance
    * @param {Bitmap} source
    * @private
    */
-  _collectValuesBitmap: function (source) {
-    var data = this._createArray(source.size)
+  _collect_values_bitmap(source) {
+    var data = this._create_array(source.size)
     var len = source.data.length
     var color
 
@@ -151,7 +143,7 @@ Histogram.prototype = {
       color = source.data[i]
       data[color]++
     }
-  },
+  }
 
   /**
    * Returns array of color indexes in ascending order
@@ -159,9 +151,9 @@ Histogram.prototype = {
    * @returns {*}
    * @private
    */
-  _getSortedIndexes: function (refresh) {
-    if (!refresh && this._sortedIndexes) {
-      return this._sortedIndexes
+  _get_sorted_indexes(refresh) {
+    if (!refresh && this._sorted_indexes) {
+      return this._sorted_indexes
     }
 
     var data = this.data
@@ -176,9 +168,9 @@ Histogram.prototype = {
       return data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0
     })
 
-    this._sortedIndexes = indexes
+    this._sorted_indexes = indexes
     return indexes
-  },
+  }
 
   /**
    * Builds lookup table H from lookup tables P and S.
@@ -187,7 +179,7 @@ Histogram.prototype = {
    * @returns {Float64Array}
    * @private
    */
-  _thresholdingBuildLookupTable: function () {
+  _thresholding_build_lookup_table() {
     var P = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
     var S = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
     var H = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
@@ -228,8 +220,8 @@ Histogram.prototype = {
       }
     }
 
-    return (this._lookupTableH = H)
-  },
+    return (this._lookup_table_h = H)
+  }
 
   /**
    * Implements Algorithm For Multilevel Thresholding
@@ -242,8 +234,8 @@ Histogram.prototype = {
    * @param [levelMax=255] - histogram segment end
    * @returns {number[]}
    */
-  multilevelThresholding: function (amount, levelMin, levelMax) {
-    levelMin = normalizeMinMax(levelMin, levelMax)
+  multilevelThresholding(amount, levelMin, levelMax) {
+    levelMin = normalize_min_max(levelMin, levelMax)
     levelMax = levelMin[1]
     levelMin = levelMin[0]
     amount = Math.min(levelMax - levelMin - 2, ~~amount)
@@ -252,11 +244,11 @@ Histogram.prototype = {
       return []
     }
 
-    if (!this._lookupTableH) {
-      this._thresholdingBuildLookupTable()
+    if (!this._lookup_table_h) {
+      this._thresholding_build_lookup_table()
     }
 
-    var H = this._lookupTableH
+    var H = this._lookup_table_h
 
     var colorStops = null
     var maxSig = 0
@@ -303,7 +295,7 @@ Histogram.prototype = {
     iterateRecursive(levelMin || 0)
 
     return colorStops ? colorStops : []
-  },
+  }
 
   /**
    * Automatically finds threshold value using Algorithm For Multilevel Thresholding
@@ -312,10 +304,10 @@ Histogram.prototype = {
    * @param {number} [levelMax]
    * @returns {null|number}
    */
-  autoThreshold: function (levelMin, levelMax) {
+  autoThreshold(levelMin, levelMax) {
     var value = this.multilevelThresholding(1, levelMin, levelMax)
     return value.length ? value[0] : null
-  },
+  }
 
   /**
    * Returns dominant color in given range. Returns -1 if not a single color from the range present on the image
@@ -325,8 +317,8 @@ Histogram.prototype = {
    * @param [tolerance=1]
    * @returns {number}
    */
-  getDominantColor: function (levelMin, levelMax, tolerance) {
-    levelMin = normalizeMinMax(levelMin, levelMax)
+  getDominantColor(levelMin, levelMax, tolerance) {
+    levelMin = normalize_min_max(levelMin, levelMax)
     levelMax = levelMin[1]
     levelMin = levelMin[0]
     tolerance = tolerance || 1
@@ -361,7 +353,7 @@ Histogram.prototype = {
     }
 
     return dominantValue <= 0 ? -1 : dominantIndex
-  },
+  }
 
   /**
    * Returns stats for histogram or its segment.
@@ -376,17 +368,17 @@ Histogram.prototype = {
    * @param {Boolean} [refresh=false] - if cached result can be returned
    * @returns {{levels: {mean: (number|*), median: *, stdDev: number, unique: number}, pixelsPerLevel: {mean: (number|*), median: (number|*), peak: number}, pixels: number}}
    */
-  getStats: function (levelMin, levelMax, refresh) {
-    levelMin = normalizeMinMax(levelMin, levelMax)
+  getStats(levelMin, levelMax, refresh) {
+    levelMin = normalize_min_max(levelMin, levelMax)
     levelMax = levelMin[1]
     levelMin = levelMin[0]
 
-    if (!refresh && this._cachedStats[levelMin + '-' + levelMax]) {
-      return this._cachedStats[levelMin + '-' + levelMax]
+    if (!refresh && this._cached_stats[levelMin + '-' + levelMax]) {
+      return this._cached_stats[levelMin + '-' + levelMax]
     }
 
     var data = this.data
-    var sortedIndexes = this._getSortedIndexes()
+    var sortedIndexes = this._get_sorted_indexes()
 
     var pixelsTotal = 0
     var medianValue = null
@@ -438,7 +430,7 @@ Histogram.prototype = {
       }
     }
 
-    return (this._cachedStats[levelMin + '-' + levelMax] = {
+    return (this._cached_stats[levelMin + '-' + levelMax] = {
       // various pixel counts for levels (0..255)
 
       levels: {

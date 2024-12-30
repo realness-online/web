@@ -134,7 +134,7 @@ export const make_vector = async message => {
   const tags = ExifReader.load(read_exif(message.data.image))
   const exif = exif_logger(tags)
   image = await size(image)
-  let poster = await as_paths(image, potrace_options)
+  let poster = as_paths(image, potrace_options)
   const vector = {
     light: poster.paths[0],
     regular: poster.paths[1],
