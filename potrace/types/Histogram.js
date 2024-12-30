@@ -14,45 +14,6 @@ const COLOR_DEPTH = 256
 const COLOR_RANGE_END = COLOR_DEPTH - 1
 
 /**
- * Calculates array index for pair of indexes. We multiple column (x) by 256 and then add row to it,
- * this way `(index(i, j) + 1) === index(i, j + i)` thus we can reuse `index(i, j)` we once calculated
- *
- * Note: this is different from how indexes calculated in {@link Bitmap} class, keep it in mind.
- *
- * @param x
- * @param y
- * @returns {*}
- * @private
- */
-const index = (x, y) => COLOR_DEPTH * x + y
-
-const normalize_min_max = (level_min, level_max) => {
-  /**
-   * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
-   *
-   * @param levelMin
-   * @param levelMax
-   * @returns {number[]}
-   * @private
-   */
-  level_min =
-    typeof level_min === 'number'
-      ? utils.clamp(Math.round(level_min), 0, COLOR_RANGE_END)
-      : 0
-
-  level_max =
-    typeof level_max === 'number'
-      ? utils.clamp(Math.round(level_max), 0, COLOR_RANGE_END)
-      : COLOR_RANGE_END
-
-  if (level_min > level_max) {
-    throw new Error(`Invalid range "${level_min}...${level_max}"`)
-  }
-
-  return [level_min, level_max]
-}
-
-/**
  * 1D Histogram
  *
  * @param Jimp  imageSource - Image to collect pixel data from. Or integer to create empty histogram for image of specific size
@@ -66,13 +27,14 @@ class Histogram {
   static MODE_G = 'g'
   static MODE_B = 'b'
 
-  constructor(image_source, mode) {
-    this.data = null
-    this.pixels = 0
-    this._sorted_indexes = null
-    this._cached_stats = {}
-    this._lookup_table_h = null
+  // Default property values
+  data = null
+  pixels = 0
+  _sorted_indexes = null
+  _cached_stats = {}
+  _lookup_table_h = null
 
+  constructor(image_source, mode) {
     if (typeof image_source === 'number') {
       this._create_array(image_source)
     } else if (image_source instanceof Bitmap) {
@@ -450,6 +412,45 @@ class Histogram {
       pixels: pixelsTotal
     })
   }
+}
+
+/**
+ * Calculates array index for pair of indexes. We multiple column (x) by 256 and then add row to it,
+ * this way `(index(i, j) + 1) === index(i, j + i)` thus we can reuse `index(i, j)` we once calculated
+ *
+ * Note: this is different from how indexes calculated in {@link Bitmap} class, keep it in mind.
+ *
+ * @param x
+ * @param y
+ * @returns {*}
+ * @private
+ */
+const index = (x, y) => COLOR_DEPTH * x + y
+
+const normalize_min_max = (level_min, level_max) => {
+  /**
+   * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
+   *
+   * @param levelMin
+   * @param levelMax
+   * @returns {number[]}
+   * @private
+   */
+  level_min =
+    typeof level_min === 'number'
+      ? utils.clamp(Math.round(level_min), 0, COLOR_RANGE_END)
+      : 0
+
+  level_max =
+    typeof level_max === 'number'
+      ? utils.clamp(Math.round(level_max), 0, COLOR_RANGE_END)
+      : COLOR_RANGE_END
+
+  if (level_min > level_max) {
+    throw new Error(`Invalid range "${level_min}...${level_max}"`)
+  }
+
+  return [level_min, level_max]
 }
 
 export default Histogram
