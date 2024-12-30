@@ -9,18 +9,96 @@ import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
 
 /**
+ * @typedef {Object} PotraceOptions
+ * @property {('black'|'white'|'left'|'right'|'minority'|'majority')} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition
+ * @property {number} [turdSize=2] - Suppress speckles of up to this size (must be >= 0)
+ * @property {number} [alphaMax=1] - Corner threshold parameter (must be >= 0)
+ * @property {boolean} [optCurve=true] - Enable/disable curve optimization
+ * @property {number} [optTolerance=0.2] - Curve optimization tolerance (must be >= 0)
+ * @property {number|'auto'} [threshold='auto'] - Threshold below which color is considered black (0-255 or 'auto')
+ * @property {boolean} [blackOnWhite=true] - Specifies which side of threshold to trace
+ * @property {string} [color='auto'] - Foreground color ('auto', 'black', 'white', or any valid CSS color)
+ * @property {string} [background='transparent'] - Background color (any valid CSS color)
+ * @property {number|number[]|'auto'} [steps='auto'] - Number of posterization steps or array of threshold values
+ * @property {('spread'|'dominant'|'median'|'mean')} [fillStrategy='dominant'] - Color selection strategy for posterization
+ * @property {('auto'|'equal')} [rangeDistribution='auto'] - Distribution strategy for posterization ranges
+ */
+
+/**
+ * @typedef {Object} PathData
+ * @property {string} d - SVG path data string
+ * @property {string} fillOpacity - Fill opacity value between 0 and 1
+ */
+
+/**
+ * @typedef {Object} ProcessedPaths
+ * @property {number} width - Image width in pixels
+ * @property {number} height - Image height in pixels
+ * @property {boolean} dark - Whether image is dark on light background
+ * @property {PathData[]} paths - Array of path objects
+ */
+
+/**
+ * @typedef {Object} ColorRange
+ * @property {number} value - Threshold value
+ * @property {number} colorIntensity - Color intensity value between 0 and 1
+ */
+
+/**
+ * @typedef {Object} ColorStats
+ * @property {number} pixels - Number of pixels in range
+ * @property {{mean: number, median: number, stdDev: number}} levels - Statistical measures
+ */
+
+/**
+ * @typedef {Object} ConstraintPoint
+ * @property {number} x - X coordinate
+ * @property {number} y - Y coordinate
+ */
+
+/**
+ * @typedef {Object} Sum
+ * @property {number} x - Sum of x coordinates
+ * @property {number} y - Sum of y coordinates
+ * @property {number} xy - Sum of x*y products
+ * @property {number} x2 - Sum of x^2 values
+ * @property {number} y2 - Sum of y^2 values
+ */
+
+/**
+ * @typedef {Object} Curve
+ * @property {number} n - Number of vertices
+ * @property {Point[]} vertex - Array of vertex points
+ * @property {('CORNER'|'CURVE')[]} tag - Type of each vertex
+ * @property {Point[]} c - Control points
+ * @property {number[]} alpha - Alpha values for each vertex
+ * @property {number[]} alpha0 - Initial alpha values
+ * @property {number[]} beta - Beta values for each vertex
+ * @property {boolean} alphaCurve - Whether curve uses alpha values
+ */
+
+/**
+ * @typedef {Object} Quad
+ * @property {number[]} data - 3x3 matrix stored as flat array
+ * @property {function(number, number): number} at - Function to get value at position
+ */
+
+/**
+ * @typedef {Object} Opti
+ * @property {Point[]} c - Control points
+ * @property {number} alpha - Alpha value
+ * @property {number} t - Parameter t
+ * @property {number} s - Parameter s
+ * @property {number} pen - Penalty value
+ */
+
+/**
  * Converts an image into SVG paths
  * @async
- * @param {string|Buffer|Jimp} file - Image source (buffer, local path or url). Supports PNG, JPEG or BMP
- * @param {Object} [options={}] - Potrace options
- * @param {string} [options.turnPolicy='minority'] - How to resolve ambiguities in path decomposition
- * @param {number} [options.turdSize=2] - Suppress speckles of up to this size
- * @param {number} [options.alphaMax=1] - Corner threshold parameter
- * @param {boolean} [options.optCurve=true] - Curve optimization
- * @param {number} [options.optTolerance=0.2] - Curve optimization tolerance
- * @param {number} [options.threshold=AUTO] - Threshold below which color is considered black (0-255)
- * @param {boolean} [options.blackOnWhite=true] - Specifies which side of threshold to trace
- * @returns {Promise<Object>} - Resolution object containing width, height, dark flag and paths
+ * @param {string|Buffer|import('jimp')} file - Image source (buffer, local path or url). Supports PNG, JPEG or BMP
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {Promise<ProcessedPaths>} Resolution object containing width, height, dark flag and paths
+ * @throws {Error} If image cannot be loaded or processed
  */
 export const as_paths = async (file, options = {}) => {
   const potrace = new Potrace(options)
@@ -29,26 +107,16 @@ export const as_paths = async (file, options = {}) => {
 
 /**
  * Potrace class for converting bitmap images to vector graphics
- * @class Potrace
- * @classdesc Implements the Potrace algorithm for tracing bitmap images into vector graphics
- *
- * @typedef {Object} PotraceOptions
- * @property {string} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition
- *    One of: 'black', 'white', 'left', 'right', 'minority', 'majority'
- * @property {number} [turdSize=2] - Suppress speckles of up to this size
- * @property {number} [alphaMax=1] - Corner threshold parameter
- * @property {boolean} [optCurve=true] - Enable/disable curve optimization
- * @property {number} [optTolerance=0.2] - Curve optimization tolerance
- * @property {number} [threshold=THRESHOLD_AUTO] - Threshold below which color is considered black (0-255)
- * @property {boolean} [blackOnWhite=true] - Specifies which side of threshold to trace
- * @property {string} [color='auto'] - Foreground color ('auto', 'black', 'white', or any CSS color)
- * @property {string} [background='transparent'] - Background color
- *
- * @requires {@link https://www.npmjs.com/package/jimp|Jimp}
+ * @class
  */
 class Potrace {
+  /** @type {'auto'} */
   static COLOR_AUTO = 'auto'
+
+  /** @type {'transparent'} */
   static COLOR_TRANSPARENT = 'transparent'
+
+  /** @type {-1} */
   static THRESHOLD_AUTO = -1
 
   static STEPS_AUTO = -1
@@ -59,6 +127,7 @@ class Potrace {
   static RANGES_AUTO = 'auto'
   static RANGES_EQUAL = 'equal'
 
+  /** @type {Record<string, string>} */
   static turn_policy = {
     black: 'black',
     white: 'white',
@@ -67,15 +136,32 @@ class Potrace {
     minority: 'minority',
     majority: 'majority'
   }
+
+  /** @type {string[]} */
   static supported_turn_policy_values = Object.values(Potrace.turn_policy)
 
-  // Private fields
+  /** @type {import('./types/Bitmap')|null} */
   #luminance_data = null
+
+  /** @type {Path[]} */
   #pathlist = []
+
+  /** @type {string|null} */
   #image_loading_identifier = null
+
+  /** @type {boolean} */
   #image_loaded = false
+
+  /** @type {boolean} */
   #processed = false
+
+  /** @type {number|null} */
   #calculated_threshold = null
+
+  /**
+   * @type {Required<PotraceOptions>}
+   * @private
+   */
   #params = {
     turnPolicy: Potrace.turn_policy.minority,
     turdSize: 2,
@@ -86,17 +172,27 @@ class Potrace {
     blackOnWhite: true,
     color: Potrace.COLOR_AUTO,
     background: Potrace.COLOR_TRANSPARENT,
-    blackOnWhite: true,
     steps: Potrace.STEPS_AUTO,
     fillStrategy: Potrace.FILL_DOMINANT,
     rangeDistribution: Potrace.RANGES_AUTO
   }
 
+  /**
+   * Creates a new Potrace instance
+   * @param {PotraceOptions} [options] - Configuration options
+   * @throws {Error} If options are invalid
+   */
   constructor(options) {
     if (options) this.#set_parameters(options)
     if (this.#params.steps) this.#calculated_threshold = null
   }
 
+  /**
+   * @private
+   * @param {Bitmap} black_map - Binary bitmap data
+   * @param {Point} point - Starting point coordinates
+   * @returns {Point|false} Next point or false if not found
+   */
   #find_next(black_map, point) {
     let i = black_map.pointToIndex(point)
     while (i < black_map.size && black_map.data[i] !== 1) {
@@ -105,6 +201,13 @@ class Potrace {
     return i < black_map.size && black_map.indexToPoint(i)
   }
 
+  /**
+   * @private
+   * @param {Bitmap} black_map - Binary bitmap data
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @returns {0|1} Majority value (0 or 1)
+   */
   #get_majority(black_map, x, y) {
     let ct
     for (let i = 2; i < 5; i++) {
@@ -121,6 +224,12 @@ class Potrace {
     return 0
   }
 
+  /**
+   * @private
+   * @param {Bitmap} black_map - Binary bitmap data
+   * @param {Point} point - Starting point coordinates
+   * @returns {Path} Generated path
+   */
   #find_path(black_map, point) {
     const path = new Path()
     let x = point.x
@@ -178,6 +287,12 @@ class Potrace {
     return path
   }
 
+  /**
+   * @private
+   * @param {Bitmap} black_map - Binary bitmap data
+   * @param {Path} path - Path to XOR
+   * @returns {void}
+   */
   #xor_path(black_map, path) {
     let y1 = path.pt[0].y
     const len = path.len
@@ -199,6 +314,11 @@ class Potrace {
     }
   }
 
+  /**
+   * @private
+   * @returns {void}
+   * @throws {Error} If image is not loaded
+   */
   #bitmap_to_pathlist() {
     const threshold =
       this.#params.threshold === Potrace.THRESHOLD_AUTO
@@ -229,6 +349,7 @@ class Potrace {
    * Calculates sums for path optimization
    * @private
    * @param {Path} path - Path to calculate sums for
+   * @returns {void}
    */
   #calc_sums = path => {
     let i
@@ -259,6 +380,7 @@ class Potrace {
    * Calculates longest sequences for path optimization
    * @private
    * @param {Path} path - Path to calculate sequences for
+   * @returns {void}
    */
   #calc_lon = path => {
     const n = path.len
@@ -393,6 +515,7 @@ class Potrace {
    * Determines optimal polygon for path
    * @private
    * @param {Path} path - Path to optimize
+   * @returns {void}
    */
   #best_polygon = path => {
     const penalty3 = (path, i, j) => {
@@ -526,6 +649,7 @@ class Potrace {
    * Adjusts vertices of the path
    * @private
    * @param {Path} path - Path to adjust
+   * @returns {void}
    */
   #adjust_vertices = path => {
     const pointslope = (path, i, j, ctr, dir) => {
@@ -753,6 +877,7 @@ class Potrace {
    * Reverses path direction
    * @private
    * @param {Path} path - Path to reverse
+   * @returns {void}
    */
   #reverse = path => {
     const curve = path.curve
@@ -773,6 +898,7 @@ class Potrace {
    * Smooths path curves
    * @private
    * @param {Path} path - Path to smooth
+   * @returns {void}
    */
   #smooth = path => {
     const m = path.curve.n
@@ -832,6 +958,8 @@ class Potrace {
    * Optimizes path curves
    * @private
    * @param {Path} path - Path to optimize
+   * @returns {void}
+   * @throws {Error} If path is invalid
    */
   #opti_curve = path => {
     const curve = path.curve
@@ -965,7 +1093,18 @@ class Potrace {
     path.curve = ocurve
   }
 
-  #opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
+  /**
+   * @private
+   * @param {Path} path - Path to calculate sums for
+   * @param {number} i - Start index
+   * @param {number} j - End index
+   * @param {Opti} res - Result object
+   * @param {number} opttolerance - Optimization tolerance
+   * @param {number[]} convc - Convexity array
+   * @param {number[]} areac - Area array
+   * @returns {0|1} Success flag
+   */
+  #opti_penalty(path, i, j, res, opttolerance, convc, areac) {
     const m = path.curve.n
     const curve = path.curve
     const vertex = curve.vertex
@@ -1119,8 +1258,10 @@ class Potrace {
   }
 
   /**
-   * Processes path list created by #bitmap_to_pathlist method creating and optimizing {@link Curve}'s
+   * Processes path list and creates optimized curves
    * @private
+   * @returns {void}
+   * @throws {Error} If pathlist is empty or invalid
    */
   #process_path() {
     for (let i = 0; i < this.#pathlist.length; i++) {
@@ -1143,10 +1284,11 @@ class Potrace {
   }
 
   /**
-   * Validates parameters
+   * Validates parameters against constraints
    * @private
-   * @param {Object} params - Parameters to validate
-   * @throws {Error} If parameters are invalid
+   * @param {Partial<PotraceOptions>} params - Parameters to validate
+   * @throws {Error} If parameters are invalid with specific reason
+   * @returns {void}
    */
   #validate_parameters(params) {
     if (
@@ -1185,9 +1327,9 @@ class Potrace {
   }
 
   /**
-   * Processes loaded image data
    * @private
-   * @param {Jimp} image - Loaded image
+   * @param {Jimp} image - Loaded image data
+   * @returns {void}
    */
   #process_loaded_image(image) {
     const bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
@@ -1222,8 +1364,10 @@ class Potrace {
   }
 
   /**
-   * Sets algorithm parameters
-   * @param {Potrace~Options} newParams
+   * @private
+   * @param {PotraceOptions} newParams - New parameters to validate and set
+   * @throws {Error} If parameters are invalid
+   * @returns {void}
    */
   #set_parameters(newParams) {
     this.#validate_parameters(newParams)
@@ -1256,7 +1400,7 @@ class Potrace {
 
   /**
    * Gets path tag for SVG output
-   * @param {string} [fillColor] - Override fill color
+   * @param {string} [fillColor] - Override fill color (any valid CSS color)
    * @returns {string} SVG path tag
    * @throws {Error} If image not loaded
    */
@@ -1290,8 +1434,8 @@ class Potrace {
 
   /**
    * Gets path data for SVG output
-   * @param {string} [fillColor] - Override fill color
-   * @returns {string} SVG path data
+   * @param {string} [fillColor] - Override fill color (any valid CSS color)
+   * @returns {string} SVG path data string
    * @throws {Error} If image not loaded
    */
   get_path_data(fillColor) {
@@ -1321,10 +1465,9 @@ class Potrace {
   }
 
   /**
-   * Fine tunes color ranges by adding extra color stops for better shadow and line art representation
    * @private
-   * @param {Array<Object>} ranges - Current color ranges
-   * @returns {Array<Object>} Modified color ranges
+   * @param {Array<{value: number, colorIntensity: number}>} ranges - Current color ranges
+   * @returns {Array<{value: number, colorIntensity: number}>} Modified color ranges
    */
   #add_extra_color_stop(ranges) {
     const blackOnWhite = this.#params.blackOnWhite
@@ -1363,7 +1506,6 @@ class Potrace {
   }
 
   /**
-   * Calculates color intensity for each element of numeric array
    * @private
    * @param {number[]} colorStops - Array of threshold values
    * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
@@ -1449,9 +1591,8 @@ class Potrace {
   }
 
   /**
-   * Gets image histogram for color analysis
    * @private
-   * @returns {Histogram} Image histogram
+   * @returns {import('./types/Histogram')} Image histogram
    */
   #get_image_histogram() {
     return this.#luminance_data.histogram()
@@ -1562,10 +1703,9 @@ class Potrace {
   }
 
   /**
-   * Gets valid steps parameter
    * @private
    * @param {boolean} [count=false] - Return count instead of steps
-   * @returns {number|Array} Steps value or count
+   * @returns {number|number[]} Steps value or count
    */
   #param_steps(count) {
     const steps = this.#params.steps
@@ -1618,10 +1758,9 @@ class Potrace {
   }
 
   /**
-   * Gets path tags for all thresholds
    * @private
-   * @param {boolean} [noFillColor] - Skip fill color
-   * @returns {Array<string>} Array of path tags
+   * @param {boolean} [noFillColor=false] - Skip fill color
+   * @returns {string[]} Array of path tags
    */
   #path_tags(noFillColor) {
     let ranges = this.#get_ranges()
@@ -1684,7 +1823,8 @@ class Potrace {
 
   /**
    * Converts the loaded image into an array of curve paths
-   * @returns {Array<{d: string, fillOpacity: string}>} Array of path objects with SVG path data and opacity
+   * @returns {PathData[]} Array of path objects with SVG path data and opacity
+   * @throws {Error} If image not loaded
    */
   as_curves() {
     const ranges = this.#get_ranges()
@@ -1724,9 +1864,10 @@ class Potrace {
   }
 
   /**
-   * Processes loaded image data
-   * @private
-   * @param {Jimp} image - Loaded image
+   * Creates paths from an image file
+   * @param {string|Buffer|import('jimp')} file - Image source
+   * @returns {Promise<ProcessedPaths>} Processed path data
+   * @throws {Error} If image cannot be loaded or processed
    */
   async create_paths(file) {
     this.#load_image(file)
@@ -1735,6 +1876,219 @@ class Potrace {
     const dark = !this.#params.black_on_white
     const paths = this.as_curves()
     return { width, height, dark, paths }
+  }
+
+  /**
+   * Calculates bezier curve parameters
+   * @private
+   * @param {Point} p0 - Start point
+   * @param {Point} p1 - Control point 1
+   * @param {Point} p2 - Control point 2
+   * @param {Point} p3 - End point
+   * @param {number} t - Parameter value
+   * @returns {Point} Point on curve
+   */
+  #bezier(p0, p1, p2, p3, t) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates cross product of vectors
+   * @private
+   * @param {Point} p1 - First vector start
+   * @param {Point} p2 - First vector end
+   * @param {Point} p3 - Second vector start
+   * @param {Point} p4 - Second vector end
+   * @returns {number} Cross product value
+   */
+  #xprod(p1, p2, p3, p4) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates dot product of vectors
+   * @private
+   * @param {Point} p1 - First vector start
+   * @param {Point} p2 - First vector end
+   * @param {Point} p3 - Second vector start
+   * @param {Point} p4 - Second vector end
+   * @returns {number} Dot product value
+   */
+  #iprod(p1, p2, p3, p4) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates quadratic form value
+   * @private
+   * @param {Quad} Q - Quadratic form matrix
+   * @param {Point} w - Point to evaluate
+   * @returns {number} Quadratic form value
+   */
+  #quadform(Q, w) {
+    // ... implementation ...
+  }
+
+  /**
+   * Checks if three points form a valid cycle
+   * @private
+   * @param {number} i - First point index
+   * @param {number} j - Second point index
+   * @param {number} k - Third point index
+   * @returns {boolean} True if points form a valid cycle
+   */
+  #cyclic(i, j, k) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates point on interval
+   * @private
+   * @param {number} lambda - Interval parameter
+   * @param {Point} a - Start point
+   * @param {Point} b - End point
+   * @returns {Point} Point on interval
+   */
+  #interval(lambda, a, b) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates determinant denominator
+   * @private
+   * @param {Point} p0 - First point
+   * @param {Point} p2 - Second point
+   * @returns {number} Denominator value
+   */
+  #ddenom(p0, p2) {
+    // ... implementation ...
+  }
+
+  /**
+   * Modulo operation that handles negative numbers correctly
+   * @private
+   * @param {number} a - Dividend
+   * @param {number} n - Divisor
+   * @returns {number} Positive modulo result
+   */
+  #mod(a, n) {
+    // ... implementation ...
+  }
+
+  /**
+   * Processes histogram data for color analysis
+   * @private
+   * @param {number[]} histogram - Raw histogram data
+   * @param {number} start - Start of range
+   * @param {number} end - End of range
+   * @returns {ColorStats} Statistical data for color range
+   */
+  #process_histogram(histogram, start, end) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates curve tangent at point
+   * @private
+   * @param {Point} p0 - Curve start point
+   * @param {Point} p1 - First control point
+   * @param {Point} p2 - Second control point
+   * @param {Point} p3 - Curve end point
+   * @param {Point} p - Point to calculate tangent at
+   * @returns {number} Tangent parameter value
+   */
+  #curve_tangent(p0, p1, p2, p3, p) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates area under curve segment
+   * @private
+   * @param {Point[]} points - Array of curve points
+   * @param {number} start - Start index
+   * @param {number} end - End index
+   * @returns {number} Area value
+   */
+  #curve_area(points, start, end) {
+    // ... implementation ...
+  }
+
+  /**
+   * Checks if point is inside path
+   * @private
+   * @param {Point} point - Point to check
+   * @param {Path} path - Path to test against
+   * @returns {boolean} True if point is inside path
+   */
+  #point_in_path(point, path) {
+    // ... implementation ...
+  }
+
+  /**
+   * Simplifies path by removing redundant points
+   * @private
+   * @param {Path} path - Path to simplify
+   * @param {number} tolerance - Simplification tolerance
+   * @returns {Path} Simplified path
+   */
+  #simplify_path(path, tolerance) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates path bounding box
+   * @private
+   * @param {Path} path - Path to analyze
+   * @returns {{minX: number, minY: number, maxX: number, maxY: number}} Bounding box coordinates
+   */
+  #path_bounds(path) {
+    // ... implementation ...
+  }
+
+  /**
+   * Splits path at specified point
+   * @private
+   * @param {Path} path - Path to split
+   * @param {Point} point - Split point
+   * @returns {[Path, Path]} Array containing two resulting paths
+   * @throws {Error} If point is not on path
+   */
+  #split_path(path, point) {
+    // ... implementation ...
+  }
+
+  /**
+   * Joins two paths at their endpoints
+   * @private
+   * @param {Path} path1 - First path
+   * @param {Path} path2 - Second path
+   * @returns {Path} Combined path
+   * @throws {Error} If paths cannot be joined
+   */
+  #join_paths(path1, path2) {
+    // ... implementation ...
+  }
+
+  /**
+   * Checks if paths can be joined
+   * @private
+   * @param {Path} path1 - First path
+   * @param {Path} path2 - Second path
+   * @returns {boolean} True if paths can be joined
+   */
+  #can_join_paths(path1, path2) {
+    // ... implementation ...
+  }
+
+  /**
+   * Calculates distance between point and path
+   * @private
+   * @param {Point} point - Point to measure from
+   * @param {Path} path - Path to measure to
+   * @returns {number} Minimum distance to path
+   */
+  #point_path_distance(point, path) {
+    // ... implementation ...
   }
 }
 
