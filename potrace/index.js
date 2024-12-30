@@ -322,7 +322,7 @@ class Potrace {
   #bitmap_to_pathlist() {
     const threshold =
       this.#params.threshold === Potrace.THRESHOLD_AUTO
-        ? this.#luminance_data.histogram().autoThreshold() || 128
+        ? this.#luminance_data.histogram().auto_threshold() || 128
         : this.#params.threshold
 
     const black_on_white = this.#params.blackOnWhite
@@ -1480,7 +1480,7 @@ class Potrace {
       lastColorStop.colorIntensity !== 1
     ) {
       const histogram = this.#get_image_histogram()
-      const levels = histogram.getStats(lastRangeFrom, lastRangeTo).levels
+      const levels = histogram.get_stats(lastRangeFrom, lastRangeTo).levels
 
       const newColorStop =
         levels.mean + levels.stdDev <= 25
@@ -1490,8 +1490,8 @@ class Potrace {
             : 25
 
       const newStats = blackOnWhite
-        ? histogram.getStats(0, newColorStop)
-        : histogram.getStats(newColorStop, 255)
+        ? histogram.get_stats(0, newColorStop)
+        : histogram.get_stats(newColorStop, 255)
       const color = newStats.levels.mean
 
       ranges.push({
@@ -1532,7 +1532,7 @@ class Potrace {
       const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
       const factor = index / (colorStops.length - 1)
       const intervalSize = rangeEnd - rangeStart
-      const stats = histogram.getStats(rangeStart, rangeEnd)
+      const stats = histogram.get_stats(rangeStart, rangeEnd)
       let color = -1
 
       if (stats.pixels === 0) {
@@ -1553,7 +1553,7 @@ class Potrace {
               factor
           break
         case Potrace.FILL_DOMINANT:
-          color = histogram.getDominantColor(
+          color = histogram.get_dominant_color(
             rangeStart,
             rangeEnd,
             utils.clamp(intervalSize, 1, 5)
@@ -1652,13 +1652,13 @@ class Potrace {
     let colorStops
 
     if (this.#params.threshold === Potrace.THRESHOLD_AUTO) {
-      colorStops = histogram.multilevelThresholding(steps)
+      colorStops = histogram.multilevel_thresholding(steps)
     } else {
       const threshold = this.#param_threshold()
 
       colorStops = this.#params.blackOnWhite
-        ? histogram.multilevelThresholding(steps - 1, 0, threshold)
-        : histogram.multilevelThresholding(steps - 1, threshold, 255)
+        ? histogram.multilevel_thresholding(steps - 1, 0, threshold)
+        : histogram.multilevel_thresholding(steps - 1, threshold, 255)
 
       if (this.#params.blackOnWhite) {
         colorStops.push(threshold)
@@ -1748,7 +1748,7 @@ class Potrace {
       return this.#calculated_threshold
     }
 
-    const twoThresholds = this.#get_image_histogram().multilevelThresholding(2)
+    const twoThresholds = this.#get_image_histogram().multilevel_thresholding(2)
     this.#calculated_threshold = this.#params.blackOnWhite
       ? twoThresholds[1]
       : twoThresholds[0]
