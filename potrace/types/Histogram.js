@@ -128,9 +128,7 @@ class Histogram {
    * @private
    */
   get_sorted_indexes(refresh) {
-    if (!refresh && this.sorted_indexes) {
-      return this.sorted_indexes
-    }
+    if (!refresh && this.sorted_indexes) return this.sorted_indexes
 
     const data = this.data
     const indexes = Histogram.SHARED_ARRAYS.indexes
@@ -271,8 +269,8 @@ class Histogram {
    * @param {number} [levelMax]
    * @returns {null|number}
    */
-  auto_threshold(levelMin, levelMax) {
-    const value = this.multilevel_thresholding(1, levelMin, levelMax)
+  auto_threshold(level_min, level_max) {
+    const value = this.multilevel_thresholding(1, level_min, level_max)
     return value.length ? value[0] : null
   }
 
@@ -284,42 +282,38 @@ class Histogram {
    * @param [tolerance=1]
    * @returns {number}
    */
-  get_dominant_color(levelMin, levelMax, tolerance) {
-    levelMin = normalize_min_max(levelMin, levelMax)
-    levelMax = levelMin[1]
-    levelMin = levelMin[0]
+  get_dominant_color(level_min, level_max, tolerance) {
+    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
     tolerance = tolerance || 1
 
-    var colors = this.data,
-      dominantIndex = -1,
-      dominantValue = -1,
-      i,
-      j,
-      tmp
+    const colors = this.data
+    let dominant_index = -1
+    let dominant_value = -1
+    let tmp
 
-    if (levelMin === levelMax) {
-      return colors[levelMin] ? levelMin : -1
+    if (level_min === level_max) {
+      return colors[level_min] ? level_min : -1
     }
 
-    for (i = levelMin; i <= levelMax; i++) {
+    for (let i = level_min; i <= level_max; i++) {
       tmp = 0
 
-      for (j = ~~(tolerance / -2); j < tolerance; j++) {
+      for (let j = ~~(tolerance / -2); j < tolerance; j++) {
         tmp += utils.between(i + j, 0, COLOR_RANGE_END) ? colors[i + j] : 0
       }
 
-      var summIsBigger = tmp > dominantValue
-      var summEqualButMainColorIsBigger =
-        dominantValue === tmp &&
-        (dominantIndex < 0 || colors[i] > colors[dominantIndex])
+      const summ_is_bigger = tmp > dominant_value
+      const summ_equal_but_main_color_is_bigger =
+        dominant_value === tmp &&
+        (dominant_index < 0 || colors[i] > colors[dominant_index])
 
-      if (summIsBigger || summEqualButMainColorIsBigger) {
-        dominantIndex = i
-        dominantValue = tmp
+      if (summ_is_bigger || summ_equal_but_main_color_is_bigger) {
+        dominant_index = i
+        dominant_value = tmp
       }
     }
 
-    return dominantValue <= 0 ? -1 : dominantIndex
+    return dominant_value <= 0 ? -1 : dominant_index
   }
 
   /**
@@ -335,86 +329,72 @@ class Histogram {
    * @param {Boolean} [refresh=false] - if cached result can be returned
    * @returns {{levels: {mean: (number|*), median: *, stdDev: number, unique: number}, pixelsPerLevel: {mean: (number|*), median: (number|*), peak: number}, pixels: number}}
    */
-  get_stats(levelMin, levelMax, refresh) {
-    levelMin = normalize_min_max(levelMin, levelMax)
-    levelMax = levelMin[1]
-    levelMin = levelMin[0]
+  get_stats(level_min, level_max, refresh) {
+    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
 
-    if (!refresh && this.cached_stats[levelMin + '-' + levelMax]) {
-      return this.cached_stats[levelMin + '-' + levelMax]
-    }
+    if (!refresh && this.cached_stats[level_min + '-' + level_max])
+      return this.cached_stats[level_min + '-' + level_max]
 
-    var data = this.data
-    var sortedIndexes = this.get_sorted_indexes()
+    const data = this.data
+    const sorted_indexes = this.get_sorted_indexes()
 
-    var pixelsTotal = 0
-    var medianValue = null
-    var meanValue
-    var medianPixelIndex
-    var pixelsPerLevelMean
-    var pixelsPerLevelMedian
-    var tmpSumOfDeviations = 0
-    var tmpPixelsIterated = 0
-    var allPixelValuesCombined = 0
-    var i, tmpPixels, tmpPixelValue
-
-    var uniqueValues = 0 // counter for levels that's represented by at least one pixel
-    var mostPixelsPerLevel = 0
+    let pixels_total = 0
+    let median_value = null
+    let mean_value
+    let median_pixel_index
+    let pixels_per_level_mean
+    let pixels_per_level_median
+    let tmp_sum_of_deviations = 0
+    let tmp_pixels_iterated = 0
+    let all_pixel_values_combined = 0
+    let unique_values = 0 // counter for levels that's represented by at least one pixel
+    let most_pixels_per_level = 0
 
     // Finding number of pixels and mean
+    for (let i = level_min; i <= level_max; i++) {
+      pixels_total += data[i]
+      all_pixel_values_combined += data[i] * i
 
-    for (i = levelMin; i <= levelMax; i++) {
-      pixelsTotal += data[i]
-      allPixelValuesCombined += data[i] * i
+      unique_values += data[i] === 0 ? 0 : 1
 
-      uniqueValues += data[i] === 0 ? 0 : 1
-
-      if (mostPixelsPerLevel < data[i]) {
-        mostPixelsPerLevel = data[i]
+      if (most_pixels_per_level < data[i]) {
+        most_pixels_per_level = data[i]
       }
     }
 
-    meanValue = allPixelValuesCombined / pixelsTotal
-    pixelsPerLevelMean = pixelsTotal / (levelMax - levelMin)
-    pixelsPerLevelMedian = pixelsTotal / uniqueValues
-    medianPixelIndex = Math.floor(pixelsTotal / 2)
+    mean_value = all_pixel_values_combined / pixels_total
+    pixels_per_level_mean = pixels_total / (level_max - level_min)
+    pixels_per_level_median = pixels_total / unique_values
+    median_pixel_index = Math.floor(pixels_total / 2)
 
     // Finding median and standard deviation
+    for (let i = 0; i < COLOR_DEPTH; i++) {
+      const tmp_pixel_value = sorted_indexes[i]
+      const tmp_pixels = data[tmp_pixel_value]
 
-    for (i = 0; i < COLOR_DEPTH; i++) {
-      tmpPixelValue = sortedIndexes[i]
-      tmpPixels = data[tmpPixelValue]
+      if (tmp_pixel_value < level_min || tmp_pixel_value > level_max) continue
 
-      if (tmpPixelValue < levelMin || tmpPixelValue > levelMax) {
-        continue
-      }
+      tmp_pixels_iterated += tmp_pixels
+      tmp_sum_of_deviations +=
+        Math.pow(tmp_pixel_value - mean_value, 2) * tmp_pixels
 
-      tmpPixelsIterated += tmpPixels
-      tmpSumOfDeviations += Math.pow(tmpPixelValue - meanValue, 2) * tmpPixels
-
-      if (medianValue === null && tmpPixelsIterated >= medianPixelIndex) {
-        medianValue = tmpPixelValue
-      }
+      if (median_value === null && tmp_pixels_iterated >= median_pixel_index)
+        median_value = tmp_pixel_value
     }
 
-    return (this.cached_stats[levelMin + '-' + levelMax] = {
-      // various pixel counts for levels (0..255)
-
+    return (this.cached_stats[level_min + '-' + level_max] = {
       levels: {
-        mean: meanValue,
-        median: medianValue,
-        stdDev: Math.sqrt(tmpSumOfDeviations / pixelsTotal),
-        unique: uniqueValues
+        mean: mean_value,
+        median: median_value,
+        std_dev: Math.sqrt(tmp_sum_of_deviations / pixels_total),
+        unique: unique_values
       },
-
-      // what's visually represented as bars
-      pixelsPerLevel: {
-        mean: pixelsPerLevelMean,
-        median: pixelsPerLevelMedian,
-        peak: mostPixelsPerLevel
+      pixels_per_level: {
+        mean: pixels_per_level_mean,
+        median: pixels_per_level_median,
+        peak: most_pixels_per_level
       },
-
-      pixels: pixelsTotal
+      pixels: pixels_total
     })
   }
 }
