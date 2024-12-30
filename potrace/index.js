@@ -834,167 +834,6 @@ class Potrace {
    * @param {Path} path - Path to optimize
    */
   #opti_curve = path => {
-    const opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
-      const m = path.curve.n
-      const curve = path.curve
-      const vertex = curve.vertex
-      let k
-      let k1
-      let k2
-      let conv
-      let i1
-      let area
-      let alpha
-      let d
-      let d1
-      let d2
-      let p0
-      let p1
-      let p2
-      let p3
-      let pt
-      let A
-      let R
-      let A1
-      let A2
-      let A3
-      let A4
-      let s
-      let t
-
-      if (i == j) {
-        return 1
-      }
-
-      k = i
-      i1 = utils.mod(i + 1, m)
-      k1 = utils.mod(k + 1, m)
-      conv = convc[k1]
-      if (conv === 0) {
-        return 1
-      }
-      d = utils.ddist(vertex[i], vertex[i1])
-      for (k = k1; k != j; k = k1) {
-        k1 = utils.mod(k + 1, m)
-        k2 = utils.mod(k + 2, m)
-        if (convc[k1] != conv) {
-          return 1
-        }
-        if (
-          utils.sign(
-            utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
-          ) != conv
-        ) {
-          return 1
-        }
-        if (
-          utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
-          d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
-        ) {
-          return 1
-        }
-      }
-
-      p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
-      p1 = vertex[utils.mod(i + 1, m)].copy()
-      p2 = vertex[utils.mod(j, m)].copy()
-      p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
-
-      area = areac[j] - areac[i]
-      area -= utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
-      if (i >= j) area += areac[m]
-
-      A1 = utils.dpara(p0, p1, p2)
-      A2 = utils.dpara(p0, p1, p3)
-      A3 = utils.dpara(p0, p2, p3)
-
-      A4 = A1 + A3 - A2
-
-      if (A2 == A1) {
-        return 1
-      }
-
-      t = A3 / (A3 - A4)
-      s = A2 / (A2 - A1)
-      A = (A2 * t) / 2.0
-
-      if (A === 0.0) {
-        return 1
-      }
-
-      R = area / A
-      alpha = 2 - Math.sqrt(4 - R / 0.3)
-
-      res.c[0] = utils.interval(t * alpha, p0, p1)
-      res.c[1] = utils.interval(s * alpha, p3, p2)
-      res.alpha = alpha
-      res.t = t
-      res.s = s
-
-      p1 = res.c[0].copy()
-      p2 = res.c[1].copy()
-
-      res.pen = 0
-
-      for (k = utils.mod(i + 1, m); k != j; k = k1) {
-        k1 = utils.mod(k + 1, m)
-        t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
-        if (t < -0.5) {
-          return 1
-        }
-        pt = utils.bezier(t, p0, p1, p2, p3)
-        d = utils.ddist(vertex[k], vertex[k1])
-        if (d === 0.0) {
-          return 1
-        }
-        d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
-        if (Math.abs(d1) > opttolerance) {
-          return 1
-        }
-        if (
-          utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
-          utils.iprod(vertex[k1], vertex[k], pt) < 0
-        ) {
-          return 1
-        }
-        res.pen += d1 * d1
-      }
-
-      for (k = i; k != j; k = k1) {
-        k1 = utils.mod(k + 1, m)
-        t = utils.tangent(
-          p0,
-          p1,
-          p2,
-          p3,
-          curve.c[k * 3 + 2],
-          curve.c[k1 * 3 + 2]
-        )
-        if (t < -0.5) {
-          return 1
-        }
-        pt = utils.bezier(t, p0, p1, p2, p3)
-        d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-        if (d === 0.0) {
-          return 1
-        }
-        d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
-        d2 =
-          utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
-        d2 *= 0.75 * curve.alpha[k1]
-        if (d2 < 0) {
-          d1 = -d1
-          d2 = -d2
-        }
-        if (d1 < d2 - opttolerance) {
-          return 1
-        }
-        if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
-      }
-
-      return 0
-    }
-
     const curve = path.curve
     const m = curve.n
     const vert = curve.vertex
@@ -1060,7 +899,7 @@ class Potrace {
       len[j] = len[j - 1] + 1
 
       for (i = j - 2; i >= 0; i--) {
-        r = opti_penalty(
+        r = this.#opti_penalty(
           path,
           i,
           utils.mod(j, m),
@@ -1124,6 +963,159 @@ class Potrace {
 
     ocurve.alphaCurve = 1
     path.curve = ocurve
+  }
+
+  #opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
+    const m = path.curve.n
+    const curve = path.curve
+    const vertex = curve.vertex
+    let k
+    let k1
+    let k2
+    let conv
+    let i1
+    let area
+    let alpha
+    let d
+    let d1
+    let d2
+    let p0
+    let p1
+    let p2
+    let p3
+    let pt
+    let A
+    let R
+    let A1
+    let A2
+    let A3
+    let A4
+    let s
+    let t
+
+    if (i == j) {
+      return 1
+    }
+
+    k = i
+    i1 = utils.mod(i + 1, m)
+    k1 = utils.mod(k + 1, m)
+    conv = convc[k1]
+    if (conv === 0) {
+      return 1
+    }
+    d = utils.ddist(vertex[i], vertex[i1])
+    for (k = k1; k != j; k = k1) {
+      k1 = utils.mod(k + 1, m)
+      k2 = utils.mod(k + 2, m)
+      if (convc[k1] != conv) {
+        return 1
+      }
+      if (
+        utils.sign(
+          utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
+        ) != conv
+      ) {
+        return 1
+      }
+      if (
+        utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
+        d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
+      ) {
+        return 1
+      }
+    }
+
+    p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
+    p1 = vertex[utils.mod(i + 1, m)].copy()
+    p2 = vertex[utils.mod(j, m)].copy()
+    p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
+
+    area = areac[j] - areac[i]
+    area -= utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
+    if (i >= j) area += areac[m]
+
+    A1 = utils.dpara(p0, p1, p2)
+    A2 = utils.dpara(p0, p1, p3)
+    A3 = utils.dpara(p0, p2, p3)
+
+    A4 = A1 + A3 - A2
+
+    if (A2 == A1) {
+      return 1
+    }
+
+    t = A3 / (A3 - A4)
+    s = A2 / (A2 - A1)
+    A = (A2 * t) / 2.0
+
+    if (A === 0.0) {
+      return 1
+    }
+
+    R = area / A
+    alpha = 2 - Math.sqrt(4 - R / 0.3)
+
+    res.c[0] = utils.interval(t * alpha, p0, p1)
+    res.c[1] = utils.interval(s * alpha, p3, p2)
+    res.alpha = alpha
+    res.t = t
+    res.s = s
+
+    p1 = res.c[0].copy()
+    p2 = res.c[1].copy()
+
+    res.pen = 0
+
+    for (k = utils.mod(i + 1, m); k != j; k = k1) {
+      k1 = utils.mod(k + 1, m)
+      t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
+      if (t < -0.5) {
+        return 1
+      }
+      pt = utils.bezier(t, p0, p1, p2, p3)
+      d = utils.ddist(vertex[k], vertex[k1])
+      if (d === 0.0) {
+        return 1
+      }
+      d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
+      if (Math.abs(d1) > opttolerance) {
+        return 1
+      }
+      if (
+        utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
+        utils.iprod(vertex[k1], vertex[k], pt) < 0
+      ) {
+        return 1
+      }
+      res.pen += d1 * d1
+    }
+
+    for (k = i; k != j; k = k1) {
+      k1 = utils.mod(k + 1, m)
+      t = utils.tangent(p0, p1, p2, p3, curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
+      if (t < -0.5) {
+        return 1
+      }
+      pt = utils.bezier(t, p0, p1, p2, p3)
+      d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
+      if (d === 0.0) {
+        return 1
+      }
+      d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
+      d2 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
+      d2 *= 0.75 * curve.alpha[k1]
+      if (d2 < 0) {
+        d1 = -d1
+        d2 = -d2
+      }
+      if (d1 < d2 - opttolerance) {
+        return 1
+      }
+      if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
+    }
+
+    return 0
   }
 
   /**
