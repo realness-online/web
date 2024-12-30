@@ -46,8 +46,14 @@ class Histogram {
     }
   }
 
+  /**
+   * Creates a typed array based on image size
+   * @param {number} image_size - Size of the image
+   * @returns {Uint8Array|Uint16Array|Uint32Array} - Appropriate typed array for the image size
+   * @private
+   */
   #create_array(image_size) {
-    const ArrayType =
+    const array_type =
       image_size <= Math.pow(2, 8)
         ? Uint8Array
         : image_size <= Math.pow(2, 16)
@@ -55,35 +61,36 @@ class Histogram {
           : Uint32Array
 
     this.pixels = image_size
-    return (this.data = new ArrayType(COLOR_DEPTH))
+    return (this.data = new array_type(COLOR_DEPTH))
   }
 
   /**
-   * @param {Jimp} source
-   * @param mode
+   * Collects pixel values from a Jimp image
+   * @param {Jimp} source - Source Jimp image
+   * @param {string} mode - Color mode to use (r, g, b, or luminance)
    * @private
    */
   #collect_values_jimp(source, mode) {
-    var pixelData = source.bitmap.data
-    var data = this.#create_array(source.bitmap.width * source.bitmap.height)
+    const pixel_data = source.bitmap.data
+    const data = this.#create_array(source.bitmap.width * source.bitmap.height)
 
     source.scan(
       0,
       0,
       source.bitmap.width,
       source.bitmap.height,
-      function (x, y, idx) {
-        var val =
+      (x, y, idx) => {
+        const val =
           mode === Histogram.MODE_R
-            ? pixelData[idx]
+            ? pixel_data[idx]
             : mode === Histogram.MODE_G
-              ? pixelData[idx + 1]
+              ? pixel_data[idx + 1]
               : mode === Histogram.MODE_B
-                ? pixelData[idx + 2]
+                ? pixel_data[idx + 2]
                 : utils.luminance(
-                    pixelData[idx],
-                    pixelData[idx + 1],
-                    pixelData[idx + 2]
+                    pixel_data[idx],
+                    pixel_data[idx + 1],
+                    pixel_data[idx + 2]
                   )
 
         data[val]++
@@ -92,25 +99,24 @@ class Histogram {
   }
 
   /**
-   * Aggregates color data from {@link Bitmap} instance
-   * @param {Bitmap} source
+   * Collects color values from a Bitmap instance
+   * @param {Bitmap} source - Source bitmap
    * @private
    */
   #collect_values_bitmap(source) {
-    var data = this.#create_array(source.size)
-    var len = source.data.length
-    var color
+    const data = this.#create_array(source.size)
+    const len = source.data.length
 
-    for (var i = 0; i < len; i++) {
-      color = source.data[i]
+    for (let i = 0; i < len; i++) {
+      const color = source.data[i]
       data[color]++
     }
   }
 
   /**
-   * Returns array of color indexes in ascending order
-   * @param refresh
-   * @returns {*}
+   * Gets array of color indexes in ascending order
+   * @param {boolean} refresh - Whether to refresh the cached sorted indexes
+   * @returns {Array} Array of sorted color indexes
    * @private
    */
   #get_sorted_indexes(refresh) {
@@ -118,11 +124,10 @@ class Histogram {
       return this.#sorted_indexes
     }
 
-    var data = this.data
-    var indexes = new Array(COLOR_DEPTH)
-    var i = 0
+    const data = this.data
+    const indexes = new Array(COLOR_DEPTH)
 
-    for (i; i < COLOR_DEPTH; i++) {
+    for (let i = 0; i < COLOR_DEPTH; i++) {
       indexes[i] = i
     }
 
@@ -133,54 +138,53 @@ class Histogram {
   }
 
   /**
-   * Builds lookup table H from lookup tables P and S.
-   * see {@link http://www.iis.sinica.edu.tw/page/jise/2001/200109_01.pdf|this paper} for more details
-   *
-   * @returns {Float64Array}
+   * Builds lookup table H from lookup tables P and S
+   * See {@link http://www.iis.sinica.edu.tw/page/jise/2001/200109_01.pdf|this paper} for more details
+   * @returns {Float64Array} Lookup table H
    * @private
    */
   #thresholding_build_lookup_table() {
-    var P = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
-    var S = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
-    var H = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
-    var pixelsTotal = this.pixels
-    var i, j, idx, tmp
+    const p = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
+    const s = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
+    const h = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
+    const pixels_total = this.pixels
+    let i, j, idx, tmp
 
     // diagonal
     for (i = 1; i < COLOR_DEPTH; ++i) {
       idx = index(i, i)
-      tmp = this.data[i] / pixelsTotal
+      tmp = this.data[i] / pixels_total
 
-      P[idx] = tmp
-      S[idx] = i * tmp
+      p[idx] = tmp
+      s[idx] = i * tmp
     }
 
     // calculate first row (row 0 is all zero)
     for (i = 1; i < COLOR_DEPTH - 1; ++i) {
-      tmp = this.data[i + 1] / pixelsTotal
+      tmp = this.data[i + 1] / pixels_total
       idx = index(1, i)
 
-      P[idx + 1] = P[idx] + tmp
-      S[idx + 1] = S[idx] + (i + 1) * tmp
+      p[idx + 1] = p[idx] + tmp
+      s[idx + 1] = s[idx] + (i + 1) * tmp
     }
 
     // using row 1 to calculate others
     for (i = 2; i < COLOR_DEPTH; i++) {
       for (j = i + 1; j < COLOR_DEPTH; j++) {
-        P[index(i, j)] = P[index(1, j)] - P[index(1, i - 1)]
-        S[index(i, j)] = S[index(1, j)] - S[index(1, i - 1)]
+        p[index(i, j)] = p[index(1, j)] - p[index(1, i - 1)]
+        s[index(i, j)] = s[index(1, j)] - s[index(1, i - 1)]
       }
     }
 
-    // now calculate H[i][j]
+    // now calculate h[i][j]
     for (i = 1; i < COLOR_DEPTH; ++i) {
       for (j = i + 1; j < COLOR_DEPTH; j++) {
         idx = index(i, j)
-        H[idx] = P[idx] !== 0 ? (S[idx] * S[idx]) / P[idx] : 0
+        h[idx] = p[idx] !== 0 ? (s[idx] * s[idx]) / p[idx] : 0
       }
     }
 
-    return (this.#lookup_table_h = H)
+    return (this.#lookup_table_h = h)
   }
 
   /**
