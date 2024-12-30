@@ -1332,7 +1332,6 @@ class Potrace {
   set_parameters(newParams) {
     var key
     var tmpOldVal
-    console.log('this._validate_parameters', this)
     this._validate_parameters(newParams)
 
     for (key in this._params) {
