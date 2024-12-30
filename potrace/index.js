@@ -1389,7 +1389,7 @@ class Potrace {
     if (
       this.#params.steps &&
       !Array.isArray(this.#params.steps) &&
-      (!utils.isNumber(this.#params.steps) ||
+      (!utils.is_number(this.#params.steps) ||
         !utils.between(this.#params.steps, 1, 255))
     ) {
       throw new Error("Bad 'steps' value")
@@ -1424,7 +1424,7 @@ class Potrace {
     let tag = '<path itemprop="path" d="'
 
     this.#pathlist.forEach(path => {
-      tag += utils.renderCurve(path.curve, 1)
+      tag += utils.render_curve(path.curve, 1)
     })
 
     tag += '" style="fill-rule:evenodd"/>'
@@ -1458,7 +1458,7 @@ class Potrace {
     let tag = ''
 
     this.#pathlist.forEach(path => {
-      tag += utils.renderCurve(path.curve, 1)
+      tag += utils.render_curve(path.curve, 1)
     })
 
     return tag
@@ -1799,7 +1799,7 @@ class Potrace {
       this.#set_parameters({ threshold: colorStop.value })
 
       let element = noFillColor ? this.get_path_tag('') : this.get_path_tag()
-      element = utils.setHtmlAttr(
+      element = utils.set_html_attr(
         element,
         'fill-opacity',
         calculatedOpacity.toFixed(3)
@@ -1811,7 +1811,7 @@ class Potrace {
       const c = Math.round(
         Math.abs((blackOnWhite ? 255 : 0) - 255 * thisLayerOpacity)
       )
-      element = utils.setHtmlAttr(
+      element = utils.set_html_attr(
         element,
         'fill',
         'rgb(' + c + ', ' + c + ', ' + c + ')'
