@@ -29,6 +29,16 @@ export const as_paths = (file, options = {}) => {
  * @constructor
  */
 class Potrace {
+  static COLOR_AUTO = 'auto'
+  static COLOR_TRANSPARENT = 'transparent'
+  static THRESHOLD_AUTO = -1
+  static TURNPOLICY_BLACK = 'black'
+  static TURNPOLICY_WHITE = 'white'
+  static TURNPOLICY_LEFT = 'left'
+  static TURNPOLICY_RIGHT = 'right'
+  static TURNPOLICY_MINORITY = 'minority'
+  static TURNPOLICY_MAJORITY = 'majority'
+
   constructor(options) {
     this._luminanceData = null
     this._pathlist = []
@@ -1279,16 +1289,6 @@ class Potrace {
   }
 }
 
-Potrace.COLOR_AUTO = 'auto'
-Potrace.COLOR_TRANSPARENT = 'transparent'
-Potrace.THRESHOLD_AUTO = -1
-Potrace.TURNPOLICY_BLACK = 'black'
-Potrace.TURNPOLICY_WHITE = 'white'
-Potrace.TURNPOLICY_LEFT = 'left'
-Potrace.TURNPOLICY_RIGHT = 'right'
-Potrace.TURNPOLICY_MINORITY = 'minority'
-Potrace.TURNPOLICY_MAJORITY = 'majority'
-
 var SUPPORTED_TURNPOLICY_VALUES = [
   Potrace.TURNPOLICY_BLACK,
   Potrace.TURNPOLICY_WHITE,
@@ -1337,7 +1337,6 @@ class Posterizer {
   static TURNPOLICY_MINORITY = Potrace.TURNPOLICY_MINORITY
   static TURNPOLICY_MAJORITY = Potrace.TURNPOLICY_MAJORITY
 
-  // Add Posterizer-specific constants
   static STEPS_AUTO = -1
   static FILL_SPREAD = 'spread'
   static FILL_DOMINANT = 'dominant'
@@ -1819,15 +1818,6 @@ class Posterizer {
     })
   }
 }
-
-Posterizer.STEPS_AUTO = -1
-Posterizer.FILL_SPREAD = 'spread'
-Posterizer.FILL_DOMINANT = 'dominant'
-Posterizer.FILL_MEDIAN = 'median'
-Posterizer.FILL_MEAN = 'mean'
-
-Posterizer.RANGES_AUTO = 'auto'
-Posterizer.RANGES_EQUAL = 'equal'
 
 export default {
   as_paths,
