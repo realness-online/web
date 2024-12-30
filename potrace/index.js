@@ -332,11 +332,11 @@ class Potrace {
       var n = path.len
       var pt = path.pt
       var dir
-      var pivk = new Array(n)
-      var nc = new Array(n)
-      var ct = new Array(4)
+      var pivk = []
+      var nc = []
+      var ct = []
 
-      path.lon = new Array(n)
+      path.lon = []
 
       var constraint = [new Point(), new Point()],
         cur = new Point(),
@@ -524,12 +524,12 @@ class Potrace {
       var m
       var k
       var n = path.len
-      var pen = new Array(n + 1)
-      var prev = new Array(n + 1)
-      var clip0 = new Array(n)
-      var clip1 = new Array(n + 1)
-      var seg0 = new Array(n + 1)
-      var seg1 = new Array(n + 1)
+      var pen = []
+      var prev = []
+      var clip0 = []
+      var clip1 = []
+      var seg0 = []
+      var seg1 = []
       var thispen
       var best
       var c
@@ -584,7 +584,7 @@ class Potrace {
         }
       }
       path.m = m
-      path.po = new Array(m)
+      path.po = []
 
       for (i = n, j = m - 1; i > 0; j--) {
         i = prev[i]
@@ -674,10 +674,10 @@ class Potrace {
       var pt = path.pt
       var x0 = path.x0
       var y0 = path.y0
-      var ctr = new Array(m)
-      var dir = new Array(m)
-      var q = new Array(m)
-      var v = new Array(3)
+      var ctr = []
+      var dir = []
+      var q = []
+      var v = []
       var d
       var i
       var j
@@ -1086,10 +1086,10 @@ class Potrace {
       var curve = path.curve
       var m = curve.n
       var vert = curve.vertex
-      var pt = new Array(m + 1)
-      var pen = new Array(m + 1)
-      var len = new Array(m + 1)
-      var opt = new Array(m + 1)
+      var pt = []
+      var pen = []
+      var len = []
+      var opt = []
       var om
       var i
       var j
@@ -1103,8 +1103,8 @@ class Potrace {
       var s
       var t
 
-      var convc = new Array(m)
-      var areac = new Array(m + 1)
+      var convc = []
+      var areac = []
 
       for (i = 0; i < m; i++) {
         if (curve.tag[i] == 'CURVE') {
@@ -1174,8 +1174,8 @@ class Potrace {
       }
       om = len[m]
       ocurve = new Curve(om)
-      s = new Array(om)
-      t = new Array(om)
+      s = []
+      t = []
 
       j = m
       for (i = om - 1; i >= 0; i--) {
