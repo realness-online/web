@@ -1327,6 +1327,25 @@ var SUPPORTED_TURNPOLICY_VALUES = [
  * @constructor
  */
 class Posterizer {
+  static COLOR_AUTO = Potrace.COLOR_AUTO
+  static COLOR_TRANSPARENT = Potrace.COLOR_TRANSPARENT
+  static THRESHOLD_AUTO = Potrace.THRESHOLD_AUTO
+  static TURNPOLICY_BLACK = Potrace.TURNPOLICY_BLACK
+  static TURNPOLICY_WHITE = Potrace.TURNPOLICY_WHITE
+  static TURNPOLICY_LEFT = Potrace.TURNPOLICY_LEFT
+  static TURNPOLICY_RIGHT = Potrace.TURNPOLICY_RIGHT
+  static TURNPOLICY_MINORITY = Potrace.TURNPOLICY_MINORITY
+  static TURNPOLICY_MAJORITY = Potrace.TURNPOLICY_MAJORITY
+
+  // Add Posterizer-specific constants
+  static STEPS_AUTO = -1
+  static FILL_SPREAD = 'spread'
+  static FILL_DOMINANT = 'dominant'
+  static FILL_MEDIAN = 'median'
+  static FILL_MEAN = 'mean'
+  static RANGES_AUTO = 'auto'
+  static RANGES_EQUAL = 'equal'
+
   constructor(options) {
     this._potrace = new Potrace()
 
@@ -1798,16 +1817,6 @@ class Posterizer {
         fillOpacity: calculatedOpacity.toFixed(3)
       }
     })
-  }
-}
-
-// Inherit constants from Potrace class
-for (var key in Potrace) {
-  if (
-    Object.prototype.hasOwnProperty.call(Potrace, key) &&
-    key === key.toUpperCase()
-  ) {
-    Posterizer[key] = Potrace[key]
   }
 }
 
