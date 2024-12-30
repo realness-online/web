@@ -26,22 +26,22 @@ class Path {
   /**
    * @type {number} Minimum X coordinate of the path's bounding box
    */
-  minX = 100000
+  min_x = 100000
 
   /**
    * @type {number} Minimum Y coordinate of the path's bounding box
    */
-  minY = 100000
+  min_y = 100000
 
   /**
    * @type {number} Maximum X coordinate of the path's bounding box
    */
-  maxX = -1
+  max_x = -1
 
   /**
    * @type {number} Maximum Y coordinate of the path's bounding box
    */
-  maxY = -1
+  max_y = -1
 }
 
 export default Path

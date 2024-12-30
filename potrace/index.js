@@ -241,10 +241,10 @@ class Potrace {
 
     while (true) {
       path.pt.push(new Point(x, y))
-      path.maxX = Math.max(path.maxX, x)
-      path.minX = Math.min(path.minX, x)
-      path.maxY = Math.max(path.maxY, y)
-      path.minY = Math.min(path.minY, y)
+      path.max_x = Math.max(path.max_x, x)
+      path.min_x = Math.min(path.min_x, x)
+      path.max_y = Math.max(path.max_y, y)
+      path.min_y = Math.min(path.min_y, y)
       path.len++
 
       x += dir_x
@@ -303,7 +303,7 @@ class Potrace {
 
       if (y !== y1) {
         const min_y = Math.min(y1, y)
-        const max_x = path.maxX
+        const max_x = path.max_x
 
         for (let j = x; j < max_x; j++) {
           const indx = black_map.point_to_index(j, min_y)
