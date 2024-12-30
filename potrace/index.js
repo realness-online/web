@@ -38,7 +38,22 @@ export const as_paths = (file, options = {}) => {
 
 /**
  * Potrace class for converting bitmap images to vector graphics
- * @class
+ * @class Potrace
+ * @classdesc Implements the Potrace algorithm for tracing bitmap images into vector graphics
+ *
+ * @typedef {Object} PotraceOptions
+ * @property {string} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition
+ *    One of: 'black', 'white', 'left', 'right', 'minority', 'majority'
+ * @property {number} [turdSize=2] - Suppress speckles of up to this size
+ * @property {number} [alphaMax=1] - Corner threshold parameter
+ * @property {boolean} [optCurve=true] - Enable/disable curve optimization
+ * @property {number} [optTolerance=0.2] - Curve optimization tolerance
+ * @property {number} [threshold=THRESHOLD_AUTO] - Threshold below which color is considered black (0-255)
+ * @property {boolean} [blackOnWhite=true] - Specifies which side of threshold to trace
+ * @property {string} [color='auto'] - Foreground color ('auto', 'black', 'white', or any CSS color)
+ * @property {string} [background='transparent'] - Background color
+ *
+ * @requires {@link https://www.npmjs.com/package/jimp|Jimp}
  */
 class Potrace {
   static COLOR_AUTO = 'auto'
