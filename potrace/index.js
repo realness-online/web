@@ -100,12 +100,8 @@ class Potrace {
   }
 
   constructor(options) {
-    if (options) {
-      this.set_parameters(options)
-    }
-    if (this._params.steps) {
-      this._calculated_threshold = null
-    }
+    if (options) this.set_parameters(options)
+    if (this._params.steps) this._calculated_threshold = null
   }
 
   _find_next(black_map, point) {
@@ -232,9 +228,7 @@ class Potrace {
       const path = this._find_path(black_map, current_point)
       this._xor_path(black_map, path)
 
-      if (path.area > this._params.turdSize) {
-        this._pathlist.push(path)
-      }
+      if (path.area > this._params.turdSize) this._pathlist.push(path)
     }
   }
 
@@ -369,9 +363,7 @@ class Potrace {
           }
           k1 = k
           k = nc[k1]
-          if (!utils.cyclic(k, i, k1)) {
-            break
-          }
+          if (!utils.cyclic(k, i, k1)) break
         }
         if (foundk === 0) {
           dk.x = utils.sign(pt[k].x - pt[k1].x)
@@ -615,9 +607,7 @@ class Potrace {
             dir.y = b / l
           }
         }
-        if (l === 0) {
-          dir.x = dir.y = 0
-        }
+        if (l === 0) dir.x = dir.y = 0
       }
 
       const m = path.m
@@ -704,12 +694,10 @@ class Potrace {
           if (Q.at(0, 0) > Q.at(1, 1)) {
             v[0] = -Q.at(0, 1)
             v[1] = Q.at(0, 0)
-          } else if (Q.at(1, 1)) {
+          }
+          if (Q.at(1, 1)) {
             v[0] = -Q.at(1, 1)
             v[1] = Q.at(1, 0)
-          } else {
-            v[0] = 1
-            v[1] = 0
           }
           d = v[0] * v[0] + v[1] * v[1]
           v[2] = -v[1] * s.y - v[0] * s.x
@@ -938,9 +926,7 @@ class Potrace {
         area = areac[j] - areac[i]
         area -=
           utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
-        if (i >= j) {
-          area += areac[m]
-        }
+        if (i >= j) area += areac[m]
 
         A1 = utils.dpara(p0, p1, p2)
         A2 = utils.dpara(p0, p1, p3)
@@ -1027,9 +1013,7 @@ class Potrace {
           if (d1 < d2 - opttolerance) {
             return 1
           }
-          if (d1 < d2) {
-            res.pen += (d1 - d2) * (d1 - d2)
-          }
+          if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
         }
 
         return 0
@@ -1528,9 +1512,8 @@ class Potrace {
     const lookingForDarkPixels = this._params.blackOnWhite
 
     steps.forEach(item => {
-      if (colorStops.indexOf(item) === -1 && utils.between(item, 0, 255)) {
+      if (colorStops.indexOf(item) === -1 && utils.between(item, 0, 255))
         colorStops.push(item)
-      }
     })
 
     if (!colorStops.length) {
