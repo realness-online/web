@@ -75,7 +75,7 @@ class Potrace {
   }
 
   /**
-   * Creating a new {@link Path} for every group of black pixels.
+   * Creates path list from bitmap data
    * @private
    */
   _bmToPathlist() {
@@ -97,11 +97,10 @@ class Potrace {
     })
 
     /**
-     * finds next black pixel of the image
-     *
-     * @param {Point} point
-     * @returns {boolean}
+     * Finds next black pixel in the bitmap
      * @private
+     * @param {Point} point - Starting point
+     * @returns {boolean|Point} False if no pixel found, or Point object
      */
     function findNext(point) {
       var i = blackMap.pointToIndex(point)
@@ -134,6 +133,12 @@ class Potrace {
       return 0
     }
 
+    /**
+     * Traces a path from given point
+     * @private
+     * @param {Point} point - Starting point
+     * @returns {Path} Traced path object
+     */
     function findPath(point) {
       var path = new Path(),
         x = point.x,
@@ -196,6 +201,11 @@ class Potrace {
       return path
     }
 
+    /**
+     * XOR operation on path pixels
+     * @private
+     * @param {Path} path - Path to XOR
+     */
     function xorPath(path) {
       var y1 = path.pt[0].y,
         len = path.len,
@@ -243,6 +253,11 @@ class Potrace {
   _processPath() {
     var self = this
 
+    /**
+     * Calculates sums for path optimization
+     * @private
+     * @param {Path} path - Path to calculate sums for
+     */
     function calcSums(path) {
       var i, x, y
       path.x0 = path.pt[0].x
@@ -266,6 +281,11 @@ class Potrace {
       }
     }
 
+    /**
+     * Calculates longest sequences for path optimization
+     * @private
+     * @param {Path} path - Path to calculate sequences for
+     */
     function calcLon(path) {
       var n = path.len,
         pt = path.pt,
@@ -397,6 +417,11 @@ class Potrace {
       }
     }
 
+    /**
+     * Determines optimal polygon for path
+     * @private
+     * @param {Path} path - Path to optimize
+     */
     function bestPolygon(path) {
       function penalty3(path, i, j) {
         var n = path.len,
@@ -525,6 +550,11 @@ class Potrace {
       }
     }
 
+    /**
+     * Adjusts vertices of the path
+     * @private
+     * @param {Path} path - Path to adjust
+     */
     function adjustVertices(path) {
       function pointslope(path, i, j, ctr, dir) {
         var n = path.len,
@@ -742,6 +772,11 @@ class Potrace {
       }
     }
 
+    /**
+     * Reverses path direction
+     * @private
+     * @param {Path} path - Path to reverse
+     */
     function reverse(path) {
       var curve = path.curve,
         m = curve.n,
@@ -757,6 +792,11 @@ class Potrace {
       }
     }
 
+    /**
+     * Smooths path curves
+     * @private
+     * @param {Path} path - Path to smooth
+     */
     function smooth(path) {
       var m = path.curve.n,
         curve = path.curve
@@ -812,6 +852,11 @@ class Potrace {
       curve.alphaCurve = 1
     }
 
+    /**
+     * Optimizes path curves
+     * @private
+     * @param {Path} path - Path to optimize
+     */
     function optiCurve(path) {
       function opti_penalty(path, i, j, res, opttolerance, convc, areac) {
         var m = path.curve.n,
@@ -1132,9 +1177,10 @@ class Potrace {
   }
 
   /**
-   * Validates some of parameters
-   * @param params
+   * Validates parameters
    * @private
+   * @param {Object} params - Parameters to validate
+   * @throws {Error} If parameters are invalid
    */
   _validateParameters(params) {
     if (
@@ -1171,6 +1217,11 @@ class Potrace {
     }
   }
 
+  /**
+   * Processes loaded image data
+   * @private
+   * @param {Jimp} image - Loaded image
+   */
   _processLoadedImage(image) {
     var bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
     var pixels = image.bitmap.data
@@ -1239,10 +1290,10 @@ class Potrace {
   }
 
   /**
-   * Generates just <path> tag without rest of the SVG file
-   *
-   * @param {String} [fillColor] - overrides color from parameters
-   * @returns {String}
+   * Gets path tag for SVG output
+   * @param {string} [fillColor] - Override fill color
+   * @returns {string} SVG path tag
+   * @throws {Error} If image not loaded
    */
   getPathTag(fillColor) {
     fillColor = arguments.length === 0 ? this._params.color : fillColor
@@ -1272,6 +1323,12 @@ class Potrace {
     return tag
   }
 
+  /**
+   * Gets path data for SVG output
+   * @param {string} [fillColor] - Override fill color
+   * @returns {string} SVG path data
+   * @throws {Error} If image not loaded
+   */
   getPathData(fillColor) {
     fillColor = arguments.length === 0 ? this._params.color : fillColor
 
@@ -1505,9 +1562,9 @@ class Posterizer {
   }
 
   /**
-   * Processes threshold, steps and rangeDistribution parameters and returns normalized array of color stops
-   * @returns {*}
+   * Gets ranges for posterization
    * @private
+   * @returns {Array<Object>} Color ranges
    */
   _getRanges() {
     var steps = this._paramSteps()
@@ -1551,9 +1608,9 @@ class Posterizer {
   }
 
   /**
-   * Calculates given (or lower) number of thresholds using automatic thresholding algorithm
-   * @returns {*}
+   * Gets auto-calculated ranges
    * @private
+   * @returns {Array<Object>} Auto-calculated ranges
    */
   _getRangesAuto() {
     var histogram = this._getImageHistogram()
@@ -1584,10 +1641,9 @@ class Posterizer {
   }
 
   /**
-   * Calculates color stops and color representing each segment, returning them
-   * from least to most intense color (black or white, depending on blackOnWhite parameter)
-   *
+   * Gets equally distributed ranges
    * @private
+   * @returns {Array<Object>} Equally distributed ranges
    */
   _getRangesEquallyDistributed() {
     var blackOnWhite = this._params.blackOnWhite
@@ -1615,10 +1671,10 @@ class Posterizer {
   }
 
   /**
-   * Returns valid steps value
-   * @param {Boolean} [count=false]
-   * @returns {number|number[]}
+   * Gets valid steps parameter
    * @private
+   * @param {boolean} [count=false] - Return count instead of steps
+   * @returns {number|Array} Steps value or count
    */
   _paramSteps(count) {
     var steps = this._params.steps
@@ -1647,9 +1703,9 @@ class Posterizer {
   }
 
   /**
-   * Returns valid threshold value
-   * @returns {number}
+   * Gets valid threshold parameter
    * @private
+   * @returns {number} Threshold value
    */
   _paramThreshold() {
     if (this._calculatedThreshold !== null) {
@@ -1671,12 +1727,10 @@ class Posterizer {
   }
 
   /**
-   * Running potrace on the image multiple times with different thresholds and returns an array
-   * of path tags
-   *
-   * @param {Boolean} [noFillColor]
-   * @returns {string[]}
+   * Gets path tags for all thresholds
    * @private
+   * @param {boolean} [noFillColor] - Skip fill color
+   * @returns {Array<string>} Array of path tags
    */
   _pathTags(noFillColor) {
     var ranges = this._getRanges()
