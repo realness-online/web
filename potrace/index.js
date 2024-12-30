@@ -226,936 +226,926 @@ class Potrace {
   }
 
   /**
+   * Calculates sums for path optimization
+   * @private
+   * @param {Path} path - Path to calculate sums for
+   */
+  #calc_sums = path => {
+    let i
+    let x
+    let y
+    path.x0 = path.pt[0].x
+    path.y0 = path.pt[0].y
+
+    path.sums = []
+    const s = path.sums
+    s.push(new Sum(0, 0, 0, 0, 0))
+    for (i = 0; i < path.len; i++) {
+      x = path.pt[i].x - path.x0
+      y = path.pt[i].y - path.y0
+      s.push(
+        new Sum(
+          s[i].x + x,
+          s[i].y + y,
+          s[i].xy + x * y,
+          s[i].x2 + x * x,
+          s[i].y2 + y * y
+        )
+      )
+    }
+  }
+
+  /**
+   * Calculates longest sequences for path optimization
+   * @private
+   * @param {Path} path - Path to calculate sequences for
+   */
+  #calc_lon = path => {
+    const n = path.len
+    const pt = path.pt
+    let dir
+    const pivk = []
+    const nc = []
+    const ct = []
+
+    path.lon = []
+
+    const constraint = [new Point(), new Point()]
+    const cur = new Point()
+    const off = new Point()
+    const dk = new Point()
+    let foundk
+
+    let i
+    let j
+    let k1
+    let a
+    let b
+    let c
+    let d
+    let k = 0
+    for (i = n - 1; i >= 0; i--) {
+      if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) {
+        k = i + 1
+      }
+      nc[i] = k
+    }
+
+    for (i = n - 1; i >= 0; i--) {
+      ct[0] = ct[1] = ct[2] = ct[3] = 0
+      dir =
+        (3 +
+          3 * (pt[utils.mod(i + 1, n)].x - pt[i].x) +
+          (pt[utils.mod(i + 1, n)].y - pt[i].y)) /
+        2
+      ct[dir]++
+
+      constraint[0].x = 0
+      constraint[0].y = 0
+      constraint[1].x = 0
+      constraint[1].y = 0
+
+      k = nc[i]
+      k1 = i
+      while (1) {
+        foundk = 0
+        dir =
+          (3 +
+            3 * utils.sign(pt[k].x - pt[k1].x) +
+            utils.sign(pt[k].y - pt[k1].y)) /
+          2
+        ct[dir]++
+
+        if (ct[0] && ct[1] && ct[2] && ct[3]) {
+          pivk[i] = k1
+          foundk = 1
+          break
+        }
+
+        cur.x = pt[k].x - pt[i].x
+        cur.y = pt[k].y - pt[i].y
+
+        if (
+          utils.xprod(constraint[0], cur) < 0 ||
+          utils.xprod(constraint[1], cur) > 0
+        ) {
+          break
+        }
+
+        if (Math.abs(cur.x) <= 1 && Math.abs(cur.y) <= 1) {
+        } else {
+          off.x = cur.x + (cur.y >= 0 && (cur.y > 0 || cur.x < 0) ? 1 : -1)
+          off.y = cur.y + (cur.x <= 0 && (cur.x < 0 || cur.y < 0) ? 1 : -1)
+          if (utils.xprod(constraint[0], off) >= 0) {
+            constraint[0].x = off.x
+            constraint[0].y = off.y
+          }
+          off.x = cur.x + (cur.y <= 0 && (cur.y < 0 || cur.x < 0) ? 1 : -1)
+          off.y = cur.y + (cur.x >= 0 && (cur.x > 0 || cur.y < 0) ? 1 : -1)
+          if (utils.xprod(constraint[1], off) <= 0) {
+            constraint[1].x = off.x
+            constraint[1].y = off.y
+          }
+        }
+        k1 = k
+        k = nc[k1]
+        if (!utils.cyclic(k, i, k1)) break
+      }
+      if (foundk === 0) {
+        dk.x = utils.sign(pt[k].x - pt[k1].x)
+        dk.y = utils.sign(pt[k].y - pt[k1].y)
+        cur.x = pt[k1].x - pt[i].x
+        cur.y = pt[k1].y - pt[i].y
+
+        a = utils.xprod(constraint[0], cur)
+        b = utils.xprod(constraint[0], dk)
+        c = utils.xprod(constraint[1], cur)
+        d = utils.xprod(constraint[1], dk)
+
+        j = 10000000
+
+        if (b < 0) {
+          j = Math.floor(a / -b)
+        }
+        if (d > 0) {
+          j = Math.min(j, Math.floor(-c / d))
+        }
+
+        pivk[i] = utils.mod(k1 + j, n)
+      }
+    }
+
+    j = pivk[n - 1]
+    path.lon[n - 1] = j
+    for (i = n - 2; i >= 0; i--) {
+      if (utils.cyclic(i + 1, pivk[i], j)) {
+        j = pivk[i]
+      }
+      path.lon[i] = j
+    }
+
+    for (i = n - 1; utils.cyclic(utils.mod(i + 1, n), j, path.lon[i]); i--) {
+      path.lon[i] = j
+    }
+  }
+
+  /**
+   * Determines optimal polygon for path
+   * @private
+   * @param {Path} path - Path to optimize
+   */
+  #best_polygon = path => {
+    const penalty3 = (path, i, j) => {
+      const n = path.len
+      const pt = path.pt
+      const sums = path.sums
+      let x
+      let y
+      let xy
+      let x2
+      let y2
+      let k
+      let a
+      let b
+      let c
+      let s
+      let px
+      let py
+      let ex
+      let ey
+      let r = 0
+      if (j >= n) {
+        j -= n
+        r = 1
+      }
+
+      if (r === 0) {
+        x = sums[j + 1].x - sums[i].x
+        y = sums[j + 1].y - sums[i].y
+        x2 = sums[j + 1].x2 - sums[i].x2
+        xy = sums[j + 1].xy - sums[i].xy
+        y2 = sums[j + 1].y2 - sums[i].y2
+        k = j + 1 - i
+      } else {
+        x = sums[j + 1].x - sums[i].x + sums[n].x
+        y = sums[j + 1].y - sums[i].y + sums[n].y
+        x2 = sums[j + 1].x2 - sums[i].x2 + sums[n].x2
+        xy = sums[j + 1].xy - sums[i].xy + sums[n].xy
+        y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
+        k = j + 1 - i + n
+      }
+
+      px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
+      py = (pt[i].y + pt[j].y) / 2.0 - pt[0].y
+      ey = pt[j].x - pt[i].x
+      ex = -(pt[j].y - pt[i].y)
+
+      a = (x2 - 2 * x * px) / k + px * px
+      b = (xy - x * py - y * px) / k + px * py
+      c = (y2 - 2 * y * py) / k + py * py
+
+      s = ex * ex * a + 2 * ex * ey * b + ey * ey * c
+
+      return Math.sqrt(s)
+    }
+
+    let i
+    let j
+    let m
+    let k
+    let n = path.len
+    let pen = []
+    let prev = []
+    let clip0 = []
+    let clip1 = []
+    const seg0 = []
+    const seg1 = []
+    let thispen
+    let best
+    let c
+
+    for (i = 0; i < n; i++) {
+      c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
+      if (c == i) {
+        c = utils.mod(i + 1, n)
+      }
+      if (c < i) {
+        clip0[i] = n
+      } else {
+        clip0[i] = c
+      }
+    }
+
+    j = 1
+    for (i = 0; i < n; i++) {
+      while (j <= clip0[i]) {
+        clip1[j] = i
+        j++
+      }
+    }
+
+    i = 0
+    for (j = 0; i < n; j++) {
+      seg0[j] = i
+      i = clip0[i]
+    }
+    seg0[j] = n
+    m = j
+
+    i = n
+    for (j = m; j > 0; j--) {
+      seg1[j] = i
+      i = clip1[i]
+    }
+    seg1[0] = 0
+
+    pen[0] = 0
+    for (j = 1; j <= m; j++) {
+      for (i = seg1[j]; i <= seg0[j]; i++) {
+        best = -1
+        for (k = seg0[j - 1]; k >= clip1[i]; k--) {
+          thispen = penalty3(path, k, i) + pen[k]
+          if (best < 0 || thispen < best) {
+            prev[i] = k
+            best = thispen
+          }
+        }
+        pen[i] = best
+      }
+    }
+    path.m = m
+    path.po = []
+
+    for (i = n, j = m - 1; i > 0; j--) {
+      i = prev[i]
+      path.po[j] = i
+    }
+  }
+
+  /**
+   * Adjusts vertices of the path
+   * @private
+   * @param {Path} path - Path to adjust
+   */
+  #adjust_vertices = path => {
+    const pointslope = (path, i, j, ctr, dir) => {
+      const n = path.len
+      const sums = path.sums
+      let x
+      let y
+      let x2
+      let xy
+      let y2
+      let k
+      let a
+      let b
+      let c
+      let lambda2
+      let l
+      let r = 0
+
+      while (j >= n) {
+        j -= n
+        r += 1
+      }
+      while (i >= n) {
+        i -= n
+        r -= 1
+      }
+      while (j < 0) {
+        j += n
+        r -= 1
+      }
+      while (i < 0) {
+        i += n
+        r += 1
+      }
+
+      x = sums[j + 1].x - sums[i].x + r * sums[n].x
+      y = sums[j + 1].y - sums[i].y + r * sums[n].y
+      x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
+      xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
+      y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
+      k = j + 1 - i + r * n
+
+      ctr.x = x / k
+      ctr.y = y / k
+
+      a = (x2 - (x * x) / k) / k
+      b = (xy - (x * y) / k) / k
+      c = (y2 - (y * y) / k) / k
+
+      lambda2 = (a + c + Math.sqrt((a - c) * (a - c) + 4 * b * b)) / 2
+
+      a -= lambda2
+      c -= lambda2
+
+      if (Math.abs(a) >= Math.abs(c)) {
+        l = Math.sqrt(a * a + b * b)
+        if (l !== 0) {
+          dir.x = -b / l
+          dir.y = a / l
+        }
+      } else {
+        l = Math.sqrt(c * c + b * b)
+        if (l !== 0) {
+          dir.x = -c / l
+          dir.y = b / l
+        }
+      }
+      if (l === 0) dir.x = dir.y = 0
+    }
+
+    const m = path.m
+    const po = path.po
+    const n = path.len
+    const pt = path.pt
+    const x0 = path.x0
+    const y0 = path.y0
+    const ctr = []
+    const dir = []
+    const q = []
+    const v = []
+    let d
+    let i
+    let j
+    let k
+    let l
+    const s = new Point()
+
+    path.curve = new Curve(m)
+
+    for (i = 0; i < m; i++) {
+      j = utils.mod(i + 1, m)
+      j = utils.mod(j - po[i], n) + po[i]
+      ctr[i] = new Point()
+      dir[i] = new Point()
+      pointslope(path, po[i], j, ctr[i], dir[i])
+    }
+
+    for (i = 0; i < m; i++) {
+      q[i] = new Quad()
+      d = dir[i].x * dir[i].x + dir[i].y * dir[i].y
+      if (d === 0.0) {
+        for (j = 0; j < 3; j++) {
+          for (k = 0; k < 3; k++) {
+            q[i].data[j * 3 + k] = 0
+          }
+        }
+      } else {
+        v[0] = dir[i].y
+        v[1] = -dir[i].x
+        v[2] = -v[1] * ctr[i].y - v[0] * ctr[i].x
+        for (l = 0; l < 3; l++) {
+          for (k = 0; k < 3; k++) {
+            q[i].data[l * 3 + k] = (v[l] * v[k]) / d
+          }
+        }
+      }
+    }
+
+    let Q
+    let w
+    let dx
+    let dy
+    let det
+    let min
+    let cand
+    let xmin
+    let ymin
+    let z
+    for (i = 0; i < m; i++) {
+      Q = new Quad()
+      w = new Point()
+
+      s.x = pt[po[i]].x - x0
+      s.y = pt[po[i]].y - y0
+
+      j = utils.mod(i - 1, m)
+
+      for (l = 0; l < 3; l++) {
+        for (k = 0; k < 3; k++) {
+          Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
+        }
+      }
+
+      while (1) {
+        det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
+        if (det !== 0.0) {
+          w.x = (-Q.at(0, 2) * Q.at(1, 1) + Q.at(1, 2) * Q.at(0, 1)) / det
+          w.y = (Q.at(0, 2) * Q.at(1, 0) - Q.at(1, 2) * Q.at(0, 0)) / det
+          break
+        }
+
+        if (Q.at(0, 0) > Q.at(1, 1)) {
+          v[0] = -Q.at(0, 1)
+          v[1] = Q.at(0, 0)
+        }
+        if (Q.at(1, 1)) {
+          v[0] = -Q.at(1, 1)
+          v[1] = Q.at(1, 0)
+        }
+        d = v[0] * v[0] + v[1] * v[1]
+        v[2] = -v[1] * s.y - v[0] * s.x
+        for (l = 0; l < 3; l++) {
+          for (k = 0; k < 3; k++) {
+            Q.data[l * 3 + k] += (v[l] * v[k]) / d
+          }
+        }
+      }
+      dx = Math.abs(w.x - s.x)
+      dy = Math.abs(w.y - s.y)
+      if (dx <= 0.5 && dy <= 0.5) {
+        path.curve.vertex[i] = new Point(w.x + x0, w.y + y0)
+        continue
+      }
+
+      min = utils.quadform(Q, s)
+      xmin = s.x
+      ymin = s.y
+
+      if (Q.at(0, 0) !== 0.0) {
+        for (z = 0; z < 2; z++) {
+          w.y = s.y - 0.5 + z
+          w.x = -(Q.at(0, 1) * w.y + Q.at(0, 2)) / Q.at(0, 0)
+          dx = Math.abs(w.x - s.x)
+          cand = utils.quadform(Q, w)
+          if (dx <= 0.5 && cand < min) {
+            min = cand
+            xmin = w.x
+            ymin = w.y
+          }
+        }
+      }
+
+      if (Q.at(1, 1) !== 0.0) {
+        for (z = 0; z < 2; z++) {
+          w.x = s.x - 0.5 + z
+          w.y = -(Q.at(1, 0) * w.x + Q.at(1, 2)) / Q.at(1, 1)
+          dy = Math.abs(w.y - s.y)
+          cand = utils.quadform(Q, w)
+          if (dy <= 0.5 && cand < min) {
+            min = cand
+            xmin = w.x
+            ymin = w.y
+          }
+        }
+      }
+
+      for (l = 0; l < 2; l++) {
+        for (k = 0; k < 2; k++) {
+          w.x = s.x - 0.5 + l
+          w.y = s.y - 0.5 + k
+          cand = utils.quadform(Q, w)
+          if (cand < min) {
+            min = cand
+            xmin = w.x
+            ymin = w.y
+          }
+        }
+      }
+
+      path.curve.vertex[i] = new Point(xmin + x0, ymin + y0)
+    }
+  }
+
+  /**
+   * Reverses path direction
+   * @private
+   * @param {Path} path - Path to reverse
+   */
+  #reverse = path => {
+    const curve = path.curve
+    const m = curve.n
+    const v = curve.vertex
+    let i
+    let j
+    let tmp
+
+    for (i = 0, j = m - 1; i < j; i++, j--) {
+      tmp = v[i]
+      v[i] = v[j]
+      v[j] = tmp
+    }
+  }
+
+  /**
+   * Smooths path curves
+   * @private
+   * @param {Path} path - Path to smooth
+   */
+  #smooth = path => {
+    const m = path.curve.n
+    const curve = path.curve
+
+    let i
+    let j
+    let k
+    let dd
+    let denom
+    let alpha
+    let p2
+    let p3
+    let p4
+
+    for (i = 0; i < m; i++) {
+      j = utils.mod(i + 1, m)
+      k = utils.mod(i + 2, m)
+      p4 = utils.interval(1 / 2.0, curve.vertex[k], curve.vertex[j])
+
+      denom = utils.ddenom(curve.vertex[i], curve.vertex[k])
+      if (denom !== 0.0) {
+        dd =
+          utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
+        dd = Math.abs(dd)
+        alpha = dd > 1 ? 1 - 1.0 / dd : 0
+        alpha = alpha / 0.75
+      } else {
+        alpha = 4 / 3.0
+      }
+      curve.alpha0[j] = alpha
+
+      if (alpha >= this.#params.alphaMax) {
+        curve.tag[j] = 'CORNER'
+        curve.c[3 * j + 1] = curve.vertex[j]
+        curve.c[3 * j + 2] = p4
+      } else {
+        if (alpha < 0.55) {
+          alpha = 0.55
+        } else if (alpha > 1) {
+          alpha = 1
+        }
+        p2 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[i], curve.vertex[j])
+        p3 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[k], curve.vertex[j])
+        curve.tag[j] = 'CURVE'
+        curve.c[3 * j + 0] = p2
+        curve.c[3 * j + 1] = p3
+        curve.c[3 * j + 2] = p4
+      }
+      curve.alpha[j] = alpha
+      curve.beta[j] = 0.5
+    }
+    curve.alphaCurve = 1
+  }
+
+  /**
+   * Optimizes path curves
+   * @private
+   * @param {Path} path - Path to optimize
+   */
+  #opti_curve = path => {
+    const opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
+      const m = path.curve.n
+      const curve = path.curve
+      const vertex = curve.vertex
+      let k
+      let k1
+      let k2
+      let conv
+      let i1
+      let area
+      let alpha
+      let d
+      let d1
+      let d2
+      let p0
+      let p1
+      let p2
+      let p3
+      let pt
+      let A
+      let R
+      let A1
+      let A2
+      let A3
+      let A4
+      let s
+      let t
+
+      if (i == j) {
+        return 1
+      }
+
+      k = i
+      i1 = utils.mod(i + 1, m)
+      k1 = utils.mod(k + 1, m)
+      conv = convc[k1]
+      if (conv === 0) {
+        return 1
+      }
+      d = utils.ddist(vertex[i], vertex[i1])
+      for (k = k1; k != j; k = k1) {
+        k1 = utils.mod(k + 1, m)
+        k2 = utils.mod(k + 2, m)
+        if (convc[k1] != conv) {
+          return 1
+        }
+        if (
+          utils.sign(
+            utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
+          ) != conv
+        ) {
+          return 1
+        }
+        if (
+          utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
+          d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
+        ) {
+          return 1
+        }
+      }
+
+      p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
+      p1 = vertex[utils.mod(i + 1, m)].copy()
+      p2 = vertex[utils.mod(j, m)].copy()
+      p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
+
+      area = areac[j] - areac[i]
+      area -= utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
+      if (i >= j) area += areac[m]
+
+      A1 = utils.dpara(p0, p1, p2)
+      A2 = utils.dpara(p0, p1, p3)
+      A3 = utils.dpara(p0, p2, p3)
+
+      A4 = A1 + A3 - A2
+
+      if (A2 == A1) {
+        return 1
+      }
+
+      t = A3 / (A3 - A4)
+      s = A2 / (A2 - A1)
+      A = (A2 * t) / 2.0
+
+      if (A === 0.0) {
+        return 1
+      }
+
+      R = area / A
+      alpha = 2 - Math.sqrt(4 - R / 0.3)
+
+      res.c[0] = utils.interval(t * alpha, p0, p1)
+      res.c[1] = utils.interval(s * alpha, p3, p2)
+      res.alpha = alpha
+      res.t = t
+      res.s = s
+
+      p1 = res.c[0].copy()
+      p2 = res.c[1].copy()
+
+      res.pen = 0
+
+      for (k = utils.mod(i + 1, m); k != j; k = k1) {
+        k1 = utils.mod(k + 1, m)
+        t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
+        if (t < -0.5) {
+          return 1
+        }
+        pt = utils.bezier(t, p0, p1, p2, p3)
+        d = utils.ddist(vertex[k], vertex[k1])
+        if (d === 0.0) {
+          return 1
+        }
+        d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
+        if (Math.abs(d1) > opttolerance) {
+          return 1
+        }
+        if (
+          utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
+          utils.iprod(vertex[k1], vertex[k], pt) < 0
+        ) {
+          return 1
+        }
+        res.pen += d1 * d1
+      }
+
+      for (k = i; k != j; k = k1) {
+        k1 = utils.mod(k + 1, m)
+        t = utils.tangent(
+          p0,
+          p1,
+          p2,
+          p3,
+          curve.c[k * 3 + 2],
+          curve.c[k1 * 3 + 2]
+        )
+        if (t < -0.5) {
+          return 1
+        }
+        pt = utils.bezier(t, p0, p1, p2, p3)
+        d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
+        if (d === 0.0) {
+          return 1
+        }
+        d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
+        d2 =
+          utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
+        d2 *= 0.75 * curve.alpha[k1]
+        if (d2 < 0) {
+          d1 = -d1
+          d2 = -d2
+        }
+        if (d1 < d2 - opttolerance) {
+          return 1
+        }
+        if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
+      }
+
+      return 0
+    }
+
+    const curve = path.curve
+    const m = curve.n
+    const vert = curve.vertex
+    const pt = []
+    const pen = []
+    const len = []
+    const opt = []
+    let om
+    let i
+    let j
+    let r
+    let o = new Opti()
+    let p0
+    let i1
+    let area
+    let alpha
+    let ocurve
+    const s = []
+    const t = []
+
+    const convc = []
+    const areac = []
+
+    for (i = 0; i < m; i++) {
+      if (curve.tag[i] == 'CURVE') {
+        convc[i] = utils.sign(
+          utils.dpara(
+            vert[utils.mod(i - 1, m)],
+            vert[i],
+            vert[utils.mod(i + 1, m)]
+          )
+        )
+      } else {
+        convc[i] = 0
+      }
+    }
+
+    area = 0.0
+    areac[0] = 0.0
+    p0 = curve.vertex[0]
+    for (i = 0; i < m; i++) {
+      i1 = utils.mod(i + 1, m)
+      if (curve.tag[i1] == 'CURVE') {
+        alpha = curve.alpha[i1]
+        area +=
+          (0.3 *
+            alpha *
+            (4 - alpha) *
+            utils.dpara(curve.c[i * 3 + 2], vert[i1], curve.c[i1 * 3 + 2])) /
+          2
+        area += utils.dpara(p0, curve.c[i * 3 + 2], curve.c[i1 * 3 + 2]) / 2
+      }
+      areac[i + 1] = area
+    }
+
+    pt[0] = -1
+    pen[0] = 0
+    len[0] = 0
+
+    for (j = 1; j <= m; j++) {
+      pt[j] = j - 1
+      pen[j] = pen[j - 1]
+      len[j] = len[j - 1] + 1
+
+      for (i = j - 2; i >= 0; i--) {
+        r = opti_penalty(
+          path,
+          i,
+          utils.mod(j, m),
+          o,
+          this.#params.optTolerance,
+          convc,
+          areac
+        )
+        if (r) {
+          break
+        }
+        if (
+          len[j] > len[i] + 1 ||
+          (len[j] == len[i] + 1 && pen[j] > pen[i] + o.pen)
+        ) {
+          pt[j] = i
+          pen[j] = pen[i] + o.pen
+          len[j] = len[i] + 1
+          opt[j] = o
+          o = new Opti()
+        }
+      }
+    }
+    om = len[m]
+    ocurve = new Curve(om)
+
+    j = m
+    for (i = om - 1; i >= 0; i--) {
+      if (pt[j] == j - 1) {
+        ocurve.tag[i] = curve.tag[utils.mod(j, m)]
+        ocurve.c[i * 3 + 0] = curve.c[utils.mod(j, m) * 3 + 0]
+        ocurve.c[i * 3 + 1] = curve.c[utils.mod(j, m) * 3 + 1]
+        ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
+        ocurve.vertex[i] = curve.vertex[utils.mod(j, m)]
+        ocurve.alpha[i] = curve.alpha[utils.mod(j, m)]
+        ocurve.alpha0[i] = curve.alpha0[utils.mod(j, m)]
+        ocurve.beta[i] = curve.beta[utils.mod(j, m)]
+        s[i] = t[i] = 1.0
+      } else {
+        ocurve.tag[i] = 'CURVE'
+        ocurve.c[i * 3 + 0] = opt[j].c[0]
+        ocurve.c[i * 3 + 1] = opt[j].c[1]
+        ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
+        ocurve.vertex[i] = utils.interval(
+          opt[j].s,
+          curve.c[utils.mod(j, m) * 3 + 2],
+          vert[utils.mod(j, m)]
+        )
+        ocurve.alpha[i] = opt[j].alpha
+        ocurve.alpha0[i] = opt[j].alpha
+        s[i] = opt[j].s
+        t[i] = opt[j].t
+      }
+      j = pt[j]
+    }
+
+    for (i = 0; i < om; i++) {
+      i1 = utils.mod(i + 1, om)
+      ocurve.beta[i] = s[i] / (s[i] + t[i1])
+    }
+
+    ocurve.alphaCurve = 1
+    path.curve = ocurve
+  }
+
+  /**
    * Processes path list created by #bitmap_to_pathlist method creating and optimizing {@link Curve}'s
    * @private
    */
   #process_path() {
-    /**
-     * Calculates sums for path optimization
-     * @private
-     * @param {Path} path - Path to calculate sums for
-     */
-    const calc_sums = path => {
-      let i
-      let x
-      let y
-      path.x0 = path.pt[0].x
-      path.y0 = path.pt[0].y
-
-      path.sums = []
-      const s = path.sums
-      s.push(new Sum(0, 0, 0, 0, 0))
-      for (i = 0; i < path.len; i++) {
-        x = path.pt[i].x - path.x0
-        y = path.pt[i].y - path.y0
-        s.push(
-          new Sum(
-            s[i].x + x,
-            s[i].y + y,
-            s[i].xy + x * y,
-            s[i].x2 + x * x,
-            s[i].y2 + y * y
-          )
-        )
-      }
-    }
-
-    /**
-     * Calculates longest sequences for path optimization
-     * @private
-     * @param {Path} path - Path to calculate sequences for
-     */
-    const calc_lon = path => {
-      const n = path.len
-      const pt = path.pt
-      let dir
-      const pivk = []
-      const nc = []
-      const ct = []
-
-      path.lon = []
-
-      const constraint = [new Point(), new Point()]
-      const cur = new Point()
-      const off = new Point()
-      const dk = new Point()
-      let foundk
-
-      let i
-      let j
-      let k1
-      let a
-      let b
-      let c
-      let d
-      let k = 0
-      for (i = n - 1; i >= 0; i--) {
-        if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) {
-          k = i + 1
-        }
-        nc[i] = k
-      }
-
-      for (i = n - 1; i >= 0; i--) {
-        ct[0] = ct[1] = ct[2] = ct[3] = 0
-        dir =
-          (3 +
-            3 * (pt[utils.mod(i + 1, n)].x - pt[i].x) +
-            (pt[utils.mod(i + 1, n)].y - pt[i].y)) /
-          2
-        ct[dir]++
-
-        constraint[0].x = 0
-        constraint[0].y = 0
-        constraint[1].x = 0
-        constraint[1].y = 0
-
-        k = nc[i]
-        k1 = i
-        while (1) {
-          foundk = 0
-          dir =
-            (3 +
-              3 * utils.sign(pt[k].x - pt[k1].x) +
-              utils.sign(pt[k].y - pt[k1].y)) /
-            2
-          ct[dir]++
-
-          if (ct[0] && ct[1] && ct[2] && ct[3]) {
-            pivk[i] = k1
-            foundk = 1
-            break
-          }
-
-          cur.x = pt[k].x - pt[i].x
-          cur.y = pt[k].y - pt[i].y
-
-          if (
-            utils.xprod(constraint[0], cur) < 0 ||
-            utils.xprod(constraint[1], cur) > 0
-          ) {
-            break
-          }
-
-          if (Math.abs(cur.x) <= 1 && Math.abs(cur.y) <= 1) {
-          } else {
-            off.x = cur.x + (cur.y >= 0 && (cur.y > 0 || cur.x < 0) ? 1 : -1)
-            off.y = cur.y + (cur.x <= 0 && (cur.x < 0 || cur.y < 0) ? 1 : -1)
-            if (utils.xprod(constraint[0], off) >= 0) {
-              constraint[0].x = off.x
-              constraint[0].y = off.y
-            }
-            off.x = cur.x + (cur.y <= 0 && (cur.y < 0 || cur.x < 0) ? 1 : -1)
-            off.y = cur.y + (cur.x >= 0 && (cur.x > 0 || cur.y < 0) ? 1 : -1)
-            if (utils.xprod(constraint[1], off) <= 0) {
-              constraint[1].x = off.x
-              constraint[1].y = off.y
-            }
-          }
-          k1 = k
-          k = nc[k1]
-          if (!utils.cyclic(k, i, k1)) break
-        }
-        if (foundk === 0) {
-          dk.x = utils.sign(pt[k].x - pt[k1].x)
-          dk.y = utils.sign(pt[k].y - pt[k1].y)
-          cur.x = pt[k1].x - pt[i].x
-          cur.y = pt[k1].y - pt[i].y
-
-          a = utils.xprod(constraint[0], cur)
-          b = utils.xprod(constraint[0], dk)
-          c = utils.xprod(constraint[1], cur)
-          d = utils.xprod(constraint[1], dk)
-
-          j = 10000000
-
-          if (b < 0) {
-            j = Math.floor(a / -b)
-          }
-          if (d > 0) {
-            j = Math.min(j, Math.floor(-c / d))
-          }
-
-          pivk[i] = utils.mod(k1 + j, n)
-        }
-      }
-
-      j = pivk[n - 1]
-      path.lon[n - 1] = j
-      for (i = n - 2; i >= 0; i--) {
-        if (utils.cyclic(i + 1, pivk[i], j)) {
-          j = pivk[i]
-        }
-        path.lon[i] = j
-      }
-
-      for (i = n - 1; utils.cyclic(utils.mod(i + 1, n), j, path.lon[i]); i--) {
-        path.lon[i] = j
-      }
-    }
-
-    /**
-     * Determines optimal polygon for path
-     * @private
-     * @param {Path} path - Path to optimize
-     */
-    const best_polygon = path => {
-      const penalty3 = (path, i, j) => {
-        const n = path.len
-        const pt = path.pt
-        const sums = path.sums
-        let x
-        let y
-        let xy
-        let x2
-        let y2
-        let k
-        let a
-        let b
-        let c
-        let s
-        let px
-        let py
-        let ex
-        let ey
-        let r = 0
-        if (j >= n) {
-          j -= n
-          r = 1
-        }
-
-        if (r === 0) {
-          x = sums[j + 1].x - sums[i].x
-          y = sums[j + 1].y - sums[i].y
-          x2 = sums[j + 1].x2 - sums[i].x2
-          xy = sums[j + 1].xy - sums[i].xy
-          y2 = sums[j + 1].y2 - sums[i].y2
-          k = j + 1 - i
-        } else {
-          x = sums[j + 1].x - sums[i].x + sums[n].x
-          y = sums[j + 1].y - sums[i].y + sums[n].y
-          x2 = sums[j + 1].x2 - sums[i].x2 + sums[n].x2
-          xy = sums[j + 1].xy - sums[i].xy + sums[n].xy
-          y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
-          k = j + 1 - i + n
-        }
-
-        px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
-        py = (pt[i].y + pt[j].y) / 2.0 - pt[0].y
-        ey = pt[j].x - pt[i].x
-        ex = -(pt[j].y - pt[i].y)
-
-        a = (x2 - 2 * x * px) / k + px * px
-        b = (xy - x * py - y * px) / k + px * py
-        c = (y2 - 2 * y * py) / k + py * py
-
-        s = ex * ex * a + 2 * ex * ey * b + ey * ey * c
-
-        return Math.sqrt(s)
-      }
-
-      let i
-      let j
-      let m
-      let k
-      let n = path.len
-      let pen = []
-      let prev = []
-      let clip0 = []
-      let clip1 = []
-      const seg0 = []
-      const seg1 = []
-      let thispen
-      let best
-      let c
-
-      for (i = 0; i < n; i++) {
-        c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
-        if (c == i) {
-          c = utils.mod(i + 1, n)
-        }
-        if (c < i) {
-          clip0[i] = n
-        } else {
-          clip0[i] = c
-        }
-      }
-
-      j = 1
-      for (i = 0; i < n; i++) {
-        while (j <= clip0[i]) {
-          clip1[j] = i
-          j++
-        }
-      }
-
-      i = 0
-      for (j = 0; i < n; j++) {
-        seg0[j] = i
-        i = clip0[i]
-      }
-      seg0[j] = n
-      m = j
-
-      i = n
-      for (j = m; j > 0; j--) {
-        seg1[j] = i
-        i = clip1[i]
-      }
-      seg1[0] = 0
-
-      pen[0] = 0
-      for (j = 1; j <= m; j++) {
-        for (i = seg1[j]; i <= seg0[j]; i++) {
-          best = -1
-          for (k = seg0[j - 1]; k >= clip1[i]; k--) {
-            thispen = penalty3(path, k, i) + pen[k]
-            if (best < 0 || thispen < best) {
-              prev[i] = k
-              best = thispen
-            }
-          }
-          pen[i] = best
-        }
-      }
-      path.m = m
-      path.po = []
-
-      for (i = n, j = m - 1; i > 0; j--) {
-        i = prev[i]
-        path.po[j] = i
-      }
-    }
-
-    /**
-     * Adjusts vertices of the path
-     * @private
-     * @param {Path} path - Path to adjust
-     */
-    const adjust_vertices = path => {
-      const pointslope = (path, i, j, ctr, dir) => {
-        const n = path.len
-        const sums = path.sums
-        let x
-        let y
-        let x2
-        let xy
-        let y2
-        let k
-        let a
-        let b
-        let c
-        let lambda2
-        let l
-        let r = 0
-
-        while (j >= n) {
-          j -= n
-          r += 1
-        }
-        while (i >= n) {
-          i -= n
-          r -= 1
-        }
-        while (j < 0) {
-          j += n
-          r -= 1
-        }
-        while (i < 0) {
-          i += n
-          r += 1
-        }
-
-        x = sums[j + 1].x - sums[i].x + r * sums[n].x
-        y = sums[j + 1].y - sums[i].y + r * sums[n].y
-        x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
-        xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
-        y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
-        k = j + 1 - i + r * n
-
-        ctr.x = x / k
-        ctr.y = y / k
-
-        a = (x2 - (x * x) / k) / k
-        b = (xy - (x * y) / k) / k
-        c = (y2 - (y * y) / k) / k
-
-        lambda2 = (a + c + Math.sqrt((a - c) * (a - c) + 4 * b * b)) / 2
-
-        a -= lambda2
-        c -= lambda2
-
-        if (Math.abs(a) >= Math.abs(c)) {
-          l = Math.sqrt(a * a + b * b)
-          if (l !== 0) {
-            dir.x = -b / l
-            dir.y = a / l
-          }
-        } else {
-          l = Math.sqrt(c * c + b * b)
-          if (l !== 0) {
-            dir.x = -c / l
-            dir.y = b / l
-          }
-        }
-        if (l === 0) dir.x = dir.y = 0
-      }
-
-      const m = path.m
-      const po = path.po
-      const n = path.len
-      const pt = path.pt
-      const x0 = path.x0
-      const y0 = path.y0
-      const ctr = []
-      const dir = []
-      const q = []
-      const v = []
-      let d
-      let i
-      let j
-      let k
-      let l
-      const s = new Point()
-
-      path.curve = new Curve(m)
-
-      for (i = 0; i < m; i++) {
-        j = utils.mod(i + 1, m)
-        j = utils.mod(j - po[i], n) + po[i]
-        ctr[i] = new Point()
-        dir[i] = new Point()
-        pointslope(path, po[i], j, ctr[i], dir[i])
-      }
-
-      for (i = 0; i < m; i++) {
-        q[i] = new Quad()
-        d = dir[i].x * dir[i].x + dir[i].y * dir[i].y
-        if (d === 0.0) {
-          for (j = 0; j < 3; j++) {
-            for (k = 0; k < 3; k++) {
-              q[i].data[j * 3 + k] = 0
-            }
-          }
-        } else {
-          v[0] = dir[i].y
-          v[1] = -dir[i].x
-          v[2] = -v[1] * ctr[i].y - v[0] * ctr[i].x
-          for (l = 0; l < 3; l++) {
-            for (k = 0; k < 3; k++) {
-              q[i].data[l * 3 + k] = (v[l] * v[k]) / d
-            }
-          }
-        }
-      }
-
-      let Q
-      let w
-      let dx
-      let dy
-      let det
-      let min
-      let cand
-      let xmin
-      let ymin
-      let z
-      for (i = 0; i < m; i++) {
-        Q = new Quad()
-        w = new Point()
-
-        s.x = pt[po[i]].x - x0
-        s.y = pt[po[i]].y - y0
-
-        j = utils.mod(i - 1, m)
-
-        for (l = 0; l < 3; l++) {
-          for (k = 0; k < 3; k++) {
-            Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
-          }
-        }
-
-        while (1) {
-          det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
-          if (det !== 0.0) {
-            w.x = (-Q.at(0, 2) * Q.at(1, 1) + Q.at(1, 2) * Q.at(0, 1)) / det
-            w.y = (Q.at(0, 2) * Q.at(1, 0) - Q.at(1, 2) * Q.at(0, 0)) / det
-            break
-          }
-
-          if (Q.at(0, 0) > Q.at(1, 1)) {
-            v[0] = -Q.at(0, 1)
-            v[1] = Q.at(0, 0)
-          }
-          if (Q.at(1, 1)) {
-            v[0] = -Q.at(1, 1)
-            v[1] = Q.at(1, 0)
-          }
-          d = v[0] * v[0] + v[1] * v[1]
-          v[2] = -v[1] * s.y - v[0] * s.x
-          for (l = 0; l < 3; l++) {
-            for (k = 0; k < 3; k++) {
-              Q.data[l * 3 + k] += (v[l] * v[k]) / d
-            }
-          }
-        }
-        dx = Math.abs(w.x - s.x)
-        dy = Math.abs(w.y - s.y)
-        if (dx <= 0.5 && dy <= 0.5) {
-          path.curve.vertex[i] = new Point(w.x + x0, w.y + y0)
-          continue
-        }
-
-        min = utils.quadform(Q, s)
-        xmin = s.x
-        ymin = s.y
-
-        if (Q.at(0, 0) !== 0.0) {
-          for (z = 0; z < 2; z++) {
-            w.y = s.y - 0.5 + z
-            w.x = -(Q.at(0, 1) * w.y + Q.at(0, 2)) / Q.at(0, 0)
-            dx = Math.abs(w.x - s.x)
-            cand = utils.quadform(Q, w)
-            if (dx <= 0.5 && cand < min) {
-              min = cand
-              xmin = w.x
-              ymin = w.y
-            }
-          }
-        }
-
-        if (Q.at(1, 1) !== 0.0) {
-          for (z = 0; z < 2; z++) {
-            w.x = s.x - 0.5 + z
-            w.y = -(Q.at(1, 0) * w.x + Q.at(1, 2)) / Q.at(1, 1)
-            dy = Math.abs(w.y - s.y)
-            cand = utils.quadform(Q, w)
-            if (dy <= 0.5 && cand < min) {
-              min = cand
-              xmin = w.x
-              ymin = w.y
-            }
-          }
-        }
-
-        for (l = 0; l < 2; l++) {
-          for (k = 0; k < 2; k++) {
-            w.x = s.x - 0.5 + l
-            w.y = s.y - 0.5 + k
-            cand = utils.quadform(Q, w)
-            if (cand < min) {
-              min = cand
-              xmin = w.x
-              ymin = w.y
-            }
-          }
-        }
-
-        path.curve.vertex[i] = new Point(xmin + x0, ymin + y0)
-      }
-    }
-
-    /**
-     * Reverses path direction
-     * @private
-     * @param {Path} path - Path to reverse
-     */
-    const reverse = path => {
-      const curve = path.curve
-      const m = curve.n
-      const v = curve.vertex
-      let i
-      let j
-      let tmp
-
-      for (i = 0, j = m - 1; i < j; i++, j--) {
-        tmp = v[i]
-        v[i] = v[j]
-        v[j] = tmp
-      }
-    }
-
-    /**
-     * Smooths path curves
-     * @private
-     * @param {Path} path - Path to smooth
-     */
-    const smooth = path => {
-      const m = path.curve.n
-      const curve = path.curve
-
-      let i
-      let j
-      let k
-      let dd
-      let denom
-      let alpha
-      let p2
-      let p3
-      let p4
-
-      for (i = 0; i < m; i++) {
-        j = utils.mod(i + 1, m)
-        k = utils.mod(i + 2, m)
-        p4 = utils.interval(1 / 2.0, curve.vertex[k], curve.vertex[j])
-
-        denom = utils.ddenom(curve.vertex[i], curve.vertex[k])
-        if (denom !== 0.0) {
-          dd =
-            utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) /
-            denom
-          dd = Math.abs(dd)
-          alpha = dd > 1 ? 1 - 1.0 / dd : 0
-          alpha = alpha / 0.75
-        } else {
-          alpha = 4 / 3.0
-        }
-        curve.alpha0[j] = alpha
-
-        if (alpha >= this.#params.alphaMax) {
-          curve.tag[j] = 'CORNER'
-          curve.c[3 * j + 1] = curve.vertex[j]
-          curve.c[3 * j + 2] = p4
-        } else {
-          if (alpha < 0.55) {
-            alpha = 0.55
-          } else if (alpha > 1) {
-            alpha = 1
-          }
-          p2 = utils.interval(
-            0.5 + 0.5 * alpha,
-            curve.vertex[i],
-            curve.vertex[j]
-          )
-          p3 = utils.interval(
-            0.5 + 0.5 * alpha,
-            curve.vertex[k],
-            curve.vertex[j]
-          )
-          curve.tag[j] = 'CURVE'
-          curve.c[3 * j + 0] = p2
-          curve.c[3 * j + 1] = p3
-          curve.c[3 * j + 2] = p4
-        }
-        curve.alpha[j] = alpha
-        curve.beta[j] = 0.5
-      }
-      curve.alphaCurve = 1
-    }
-
-    /**
-     * Optimizes path curves
-     * @private
-     * @param {Path} path - Path to optimize
-     */
-    const opti_curve = path => {
-      const opti_penalty = (path, i, j, res, opttolerance, convc, areac) => {
-        const m = path.curve.n
-        const curve = path.curve
-        const vertex = curve.vertex
-        let k
-        let k1
-        let k2
-        let conv
-        let i1
-        let area
-        let alpha
-        let d
-        let d1
-        let d2
-        let p0
-        let p1
-        let p2
-        let p3
-        let pt
-        let A
-        let R
-        let A1
-        let A2
-        let A3
-        let A4
-        let s
-        let t
-
-        if (i == j) {
-          return 1
-        }
-
-        k = i
-        i1 = utils.mod(i + 1, m)
-        k1 = utils.mod(k + 1, m)
-        conv = convc[k1]
-        if (conv === 0) {
-          return 1
-        }
-        d = utils.ddist(vertex[i], vertex[i1])
-        for (k = k1; k != j; k = k1) {
-          k1 = utils.mod(k + 1, m)
-          k2 = utils.mod(k + 2, m)
-          if (convc[k1] != conv) {
-            return 1
-          }
-          if (
-            utils.sign(
-              utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
-            ) != conv
-          ) {
-            return 1
-          }
-          if (
-            utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
-            d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
-          ) {
-            return 1
-          }
-        }
-
-        p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
-        p1 = vertex[utils.mod(i + 1, m)].copy()
-        p2 = vertex[utils.mod(j, m)].copy()
-        p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
-
-        area = areac[j] - areac[i]
-        area -=
-          utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
-        if (i >= j) area += areac[m]
-
-        A1 = utils.dpara(p0, p1, p2)
-        A2 = utils.dpara(p0, p1, p3)
-        A3 = utils.dpara(p0, p2, p3)
-
-        A4 = A1 + A3 - A2
-
-        if (A2 == A1) {
-          return 1
-        }
-
-        t = A3 / (A3 - A4)
-        s = A2 / (A2 - A1)
-        A = (A2 * t) / 2.0
-
-        if (A === 0.0) {
-          return 1
-        }
-
-        R = area / A
-        alpha = 2 - Math.sqrt(4 - R / 0.3)
-
-        res.c[0] = utils.interval(t * alpha, p0, p1)
-        res.c[1] = utils.interval(s * alpha, p3, p2)
-        res.alpha = alpha
-        res.t = t
-        res.s = s
-
-        p1 = res.c[0].copy()
-        p2 = res.c[1].copy()
-
-        res.pen = 0
-
-        for (k = utils.mod(i + 1, m); k != j; k = k1) {
-          k1 = utils.mod(k + 1, m)
-          t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
-          if (t < -0.5) {
-            return 1
-          }
-          pt = utils.bezier(t, p0, p1, p2, p3)
-          d = utils.ddist(vertex[k], vertex[k1])
-          if (d === 0.0) {
-            return 1
-          }
-          d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
-          if (Math.abs(d1) > opttolerance) {
-            return 1
-          }
-          if (
-            utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
-            utils.iprod(vertex[k1], vertex[k], pt) < 0
-          ) {
-            return 1
-          }
-          res.pen += d1 * d1
-        }
-
-        for (k = i; k != j; k = k1) {
-          k1 = utils.mod(k + 1, m)
-          t = utils.tangent(
-            p0,
-            p1,
-            p2,
-            p3,
-            curve.c[k * 3 + 2],
-            curve.c[k1 * 3 + 2]
-          )
-          if (t < -0.5) {
-            return 1
-          }
-          pt = utils.bezier(t, p0, p1, p2, p3)
-          d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-          if (d === 0.0) {
-            return 1
-          }
-          d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
-          d2 =
-            utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
-          d2 *= 0.75 * curve.alpha[k1]
-          if (d2 < 0) {
-            d1 = -d1
-            d2 = -d2
-          }
-          if (d1 < d2 - opttolerance) {
-            return 1
-          }
-          if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
-        }
-
-        return 0
-      }
-
-      const curve = path.curve
-      const m = curve.n
-      const vert = curve.vertex
-      const pt = []
-      const pen = []
-      const len = []
-      const opt = []
-      let om
-      let i
-      let j
-      let r
-      let o = new Opti()
-      let p0
-      let i1
-      let area
-      let alpha
-      let ocurve
-      const s = []
-      const t = []
-
-      const convc = []
-      const areac = []
-
-      for (i = 0; i < m; i++) {
-        if (curve.tag[i] == 'CURVE') {
-          convc[i] = utils.sign(
-            utils.dpara(
-              vert[utils.mod(i - 1, m)],
-              vert[i],
-              vert[utils.mod(i + 1, m)]
-            )
-          )
-        } else {
-          convc[i] = 0
-        }
-      }
-
-      area = 0.0
-      areac[0] = 0.0
-      p0 = curve.vertex[0]
-      for (i = 0; i < m; i++) {
-        i1 = utils.mod(i + 1, m)
-        if (curve.tag[i1] == 'CURVE') {
-          alpha = curve.alpha[i1]
-          area +=
-            (0.3 *
-              alpha *
-              (4 - alpha) *
-              utils.dpara(curve.c[i * 3 + 2], vert[i1], curve.c[i1 * 3 + 2])) /
-            2
-          area += utils.dpara(p0, curve.c[i * 3 + 2], curve.c[i1 * 3 + 2]) / 2
-        }
-        areac[i + 1] = area
-      }
-
-      pt[0] = -1
-      pen[0] = 0
-      len[0] = 0
-
-      for (j = 1; j <= m; j++) {
-        pt[j] = j - 1
-        pen[j] = pen[j - 1]
-        len[j] = len[j - 1] + 1
-
-        for (i = j - 2; i >= 0; i--) {
-          r = opti_penalty(
-            path,
-            i,
-            utils.mod(j, m),
-            o,
-            this.#params.optTolerance,
-            convc,
-            areac
-          )
-          if (r) {
-            break
-          }
-          if (
-            len[j] > len[i] + 1 ||
-            (len[j] == len[i] + 1 && pen[j] > pen[i] + o.pen)
-          ) {
-            pt[j] = i
-            pen[j] = pen[i] + o.pen
-            len[j] = len[i] + 1
-            opt[j] = o
-            o = new Opti()
-          }
-        }
-      }
-      om = len[m]
-      ocurve = new Curve(om)
-
-      j = m
-      for (i = om - 1; i >= 0; i--) {
-        if (pt[j] == j - 1) {
-          ocurve.tag[i] = curve.tag[utils.mod(j, m)]
-          ocurve.c[i * 3 + 0] = curve.c[utils.mod(j, m) * 3 + 0]
-          ocurve.c[i * 3 + 1] = curve.c[utils.mod(j, m) * 3 + 1]
-          ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
-          ocurve.vertex[i] = curve.vertex[utils.mod(j, m)]
-          ocurve.alpha[i] = curve.alpha[utils.mod(j, m)]
-          ocurve.alpha0[i] = curve.alpha0[utils.mod(j, m)]
-          ocurve.beta[i] = curve.beta[utils.mod(j, m)]
-          s[i] = t[i] = 1.0
-        } else {
-          ocurve.tag[i] = 'CURVE'
-          ocurve.c[i * 3 + 0] = opt[j].c[0]
-          ocurve.c[i * 3 + 1] = opt[j].c[1]
-          ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
-          ocurve.vertex[i] = utils.interval(
-            opt[j].s,
-            curve.c[utils.mod(j, m) * 3 + 2],
-            vert[utils.mod(j, m)]
-          )
-          ocurve.alpha[i] = opt[j].alpha
-          ocurve.alpha0[i] = opt[j].alpha
-          s[i] = opt[j].s
-          t[i] = opt[j].t
-        }
-        j = pt[j]
-      }
-
-      for (i = 0; i < om; i++) {
-        i1 = utils.mod(i + 1, om)
-        ocurve.beta[i] = s[i] / (s[i] + t[i1])
-      }
-
-      ocurve.alphaCurve = 1
-      path.curve = ocurve
-    }
-
     for (let i = 0; i < this.#pathlist.length; i++) {
       const path = this.#pathlist[i]
-      calc_sums(path)
-      calc_lon(path)
-      best_polygon(path)
-      adjust_vertices(path)
+      this.#calc_sums(path)
+      this.#calc_lon(path)
+      this.#best_polygon(path)
+      this.#adjust_vertices(path)
 
       if (path.sign === '-') {
-        reverse(path)
+        this.#reverse(path)
       }
 
-      smooth(path)
+      this.#smooth(path)
 
       if (this.#params.optCurve) {
-        opti_curve(path)
+        this.#opti_curve(path)
       }
     }
   }
