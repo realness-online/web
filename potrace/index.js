@@ -24,14 +24,7 @@ import Bitmap from '@/potrace/types/Bitmap'
  */
 export const as_paths = async (file, options = {}) => {
   const potrace = new Potrace(options)
-  potrace.load_image(file)
-
-  const width = potrace._luminance_data.width
-  const height = potrace._luminance_data.height
-  const dark = !potrace._params.black_on_white
-  const paths = potrace.as_curves()
-
-  return { width, height, dark, paths }
+  return potrace.create_paths(file)
 }
 
 /**
@@ -75,13 +68,15 @@ class Potrace {
     majority: 'majority'
   }
   static supported_turn_policy_values = Object.values(Potrace.turn_policy)
-  _luminance_data = null
-  _pathlist = []
-  _image_loading_identifier = null
-  _image_loaded = false
-  _processed = false
 
-  _params = {
+  // Private fields
+  #luminance_data = null
+  #pathlist = []
+  #image_loading_identifier = null
+  #image_loaded = false
+  #processed = false
+  #calculated_threshold = null
+  #params = {
     turnPolicy: Potrace.turn_policy.minority,
     turdSize: 2,
     alphaMax: 1,
@@ -98,11 +93,11 @@ class Potrace {
   }
 
   constructor(options) {
-    if (options) this.set_parameters(options)
-    if (this._params.steps) this._calculated_threshold = null
+    if (options) this.#set_parameters(options)
+    if (this.#params.steps) this.#calculated_threshold = null
   }
 
-  _find_next(black_map, point) {
+  #find_next(black_map, point) {
     let i = black_map.pointToIndex(point)
     while (i < black_map.size && black_map.data[i] !== 1) {
       i++
@@ -110,7 +105,7 @@ class Potrace {
     return i < black_map.size && black_map.indexToPoint(i)
   }
 
-  _get_majority(black_map, x, y) {
+  #get_majority(black_map, x, y) {
     let ct
     for (let i = 2; i < 5; i++) {
       ct = 0
@@ -126,7 +121,7 @@ class Potrace {
     return 0
   }
 
-  _find_path(black_map, point) {
+  #find_path(black_map, point) {
     const path = new Path()
     let x = point.x
     let y = point.y
@@ -160,15 +155,15 @@ class Potrace {
 
       if (r && !l) {
         if (
-          this._params.turnPolicy === Potrace.turn_policy.right ||
-          (this._params.turnPolicy === Potrace.turn_policy.black &&
+          this.#params.turnPolicy === Potrace.turn_policy.right ||
+          (this.#params.turnPolicy === Potrace.turn_policy.black &&
             path.sign === '+') ||
-          (this._params.turnPolicy === Potrace.turn_policy.white &&
+          (this.#params.turnPolicy === Potrace.turn_policy.white &&
             path.sign === '-') ||
-          (this._params.turnPolicy === Potrace.turn_policy.majority &&
-            this._get_majority(black_map, x, y)) ||
-          (this._params.turnPolicy === Potrace.turn_policy.minority &&
-            !this._get_majority(black_map, x, y))
+          (this.#params.turnPolicy === Potrace.turn_policy.majority &&
+            this.#get_majority(black_map, x, y)) ||
+          (this.#params.turnPolicy === Potrace.turn_policy.minority &&
+            !this.#get_majority(black_map, x, y))
         ) {
           ;[dir_x, dir_y] = [-dir_y, dir_x]
         } else {
@@ -183,7 +178,7 @@ class Potrace {
     return path
   }
 
-  _xor_path(black_map, path) {
+  #xor_path(black_map, path) {
     let y1 = path.pt[0].y
     const len = path.len
 
@@ -204,14 +199,14 @@ class Potrace {
     }
   }
 
-  _bm_to_pathlist() {
+  #bm_to_pathlist() {
     const threshold =
-      this._params.threshold === Potrace.THRESHOLD_AUTO
-        ? this._luminance_data.histogram().autoThreshold() || 128
-        : this._params.threshold
+      this.#params.threshold === Potrace.THRESHOLD_AUTO
+        ? this.#luminance_data.histogram().autoThreshold() || 128
+        : this.#params.threshold
 
-    const black_on_white = this._params.blackOnWhite
-    const black_map = this._luminance_data.copy(lum => {
+    const black_on_white = this.#params.blackOnWhite
+    const black_map = this.#luminance_data.copy(lum => {
       const past_the_threshold = black_on_white
         ? lum > threshold
         : lum < threshold
@@ -219,22 +214,22 @@ class Potrace {
     })
 
     let current_point = new Point(0, 0)
-    this._pathlist = []
+    this.#pathlist = []
 
     // Main loop
-    while ((current_point = this._find_next(black_map, current_point))) {
-      const path = this._find_path(black_map, current_point)
-      this._xor_path(black_map, path)
+    while ((current_point = this.#find_next(black_map, current_point))) {
+      const path = this.#find_path(black_map, current_point)
+      this.#xor_path(black_map, path)
 
-      if (path.area > this._params.turdSize) this._pathlist.push(path)
+      if (path.area > this.#params.turdSize) this.#pathlist.push(path)
     }
   }
 
   /**
-   * Processes path list created by _bm_to_pathlist method creating and optimizing {@link Curve}'s
+   * Processes path list created by #bm_to_pathlist method creating and optimizing {@link Curve}'s
    * @private
    */
-  _process_path() {
+  #process_path() {
     /**
      * Calculates sums for path optimization
      * @private
@@ -816,7 +811,7 @@ class Potrace {
         }
         curve.alpha0[j] = alpha
 
-        if (alpha >= this._params.alphaMax) {
+        if (alpha >= this.#params.alphaMax) {
           curve.tag[j] = 'CORNER'
           curve.c[3 * j + 1] = curve.vertex[j]
           curve.c[3 * j + 2] = p4
@@ -1085,7 +1080,7 @@ class Potrace {
             i,
             utils.mod(j, m),
             o,
-            this._params.optTolerance,
+            this.#params.optTolerance,
             convc,
             areac
           )
@@ -1146,8 +1141,8 @@ class Potrace {
       path.curve = ocurve
     }
 
-    for (let i = 0; i < this._pathlist.length; i++) {
-      const path = this._pathlist[i]
+    for (let i = 0; i < this.#pathlist.length; i++) {
+      const path = this.#pathlist[i]
       calc_sums(path)
       calc_lon(path)
       best_polygon(path)
@@ -1159,7 +1154,7 @@ class Potrace {
 
       smooth(path)
 
-      if (this._params.optCurve) {
+      if (this.#params.optCurve) {
         opti_curve(path)
       }
     }
@@ -1171,7 +1166,7 @@ class Potrace {
    * @param {Object} params - Parameters to validate
    * @throws {Error} If parameters are invalid
    */
-  _validate_parameters(params) {
+  #validate_parameters(params) {
     if (
       params &&
       params.turnPolicy &&
@@ -1212,7 +1207,7 @@ class Potrace {
    * @private
    * @param {Jimp} image - Loaded image
    */
-  _process_loaded_image(image) {
+  #process_loaded_image(image) {
     const bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
     const pixels = image.bitmap.data
 
@@ -1227,56 +1222,54 @@ class Potrace {
       bitmap.data[idx / 4] = utils.luminance(r, g, b)
     })
 
-    this._luminance_data = bitmap
-    this._image_loaded = true
+    this.#luminance_data = bitmap
+    this.#image_loaded = true
   }
 
   /**
    * @param {Jimp} target Image source. Could be anything that {@link Jimp} Supported formats are: PNG, JPEG or BMP
    */
-  load_image(target) {
-    this._image_loading_identifier = {}
-    this._image_loaded = false
+  #load_image(target) {
+    this.#image_loading_identifier = {}
+    this.#image_loaded = false
 
     // target instanceof Jimp
-    this._image_loading_identifier = null
-    this._image_loaded = true
-    this._process_loaded_image(target)
+    this.#image_loading_identifier = null
+    this.#image_loaded = true
+    this.#process_loaded_image(target)
   }
 
   /**
    * Sets algorithm parameters
    * @param {Potrace~Options} newParams
    */
-  set_parameters(newParams) {
-    let key
-    let tmpOldVal
-    this._validate_parameters(newParams)
+  #set_parameters(newParams) {
+    this.#validate_parameters(newParams)
 
-    for (key in this._params) {
-      if (this._params.hasOwnProperty(key) && newParams.hasOwnProperty(key)) {
-        tmpOldVal = this._params[key]
-        this._params[key] = newParams[key]
+    for (let key in this.#params) {
+      if (this.#params.hasOwnProperty(key) && newParams.hasOwnProperty(key)) {
+        const tmpOldVal = this.#params[key]
+        this.#params[key] = newParams[key]
 
         if (
-          tmpOldVal !== this._params[key] &&
+          tmpOldVal !== this.#params[key] &&
           ['color', 'background'].indexOf(key) === -1
         ) {
-          this._processed = false
+          this.#processed = false
         }
       }
     }
 
     if (
-      this._params.steps &&
-      !Array.isArray(this._params.steps) &&
-      (!utils.isNumber(this._params.steps) ||
-        !utils.between(this._params.steps, 1, 255))
+      this.#params.steps &&
+      !Array.isArray(this.#params.steps) &&
+      (!utils.isNumber(this.#params.steps) ||
+        !utils.between(this.#params.steps, 1, 255))
     ) {
       throw new Error("Bad 'steps' value")
     }
 
-    this._calculated_threshold = null
+    this.#calculated_threshold = null
   }
 
   /**
@@ -1286,25 +1279,25 @@ class Potrace {
    * @throws {Error} If image not loaded
    */
   get_path_tag(fillColor) {
-    fillColor = arguments.length === 0 ? this._params.color : fillColor
+    fillColor = arguments.length === 0 ? this.#params.color : fillColor
 
     if (fillColor === Potrace.COLOR_AUTO) {
-      fillColor = this._params.blackOnWhite ? 'black' : 'white'
+      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
     }
 
-    if (!this._image_loaded) {
+    if (!this.#image_loaded) {
       throw new Error('Image should be loaded first')
     }
 
-    if (!this._processed) {
-      this._bm_to_pathlist()
-      this._process_path()
-      this._processed = true
+    if (!this.#processed) {
+      this.#bm_to_pathlist()
+      this.#process_path()
+      this.#processed = true
     }
 
     let tag = '<path itemprop="path" d="'
 
-    this._pathlist.forEach(path => {
+    this.#pathlist.forEach(path => {
       tag += utils.renderCurve(path.curve, 1)
     })
 
@@ -1320,25 +1313,25 @@ class Potrace {
    * @throws {Error} If image not loaded
    */
   get_path_data(fillColor) {
-    fillColor = arguments.length === 0 ? this._params.color : fillColor
+    fillColor = arguments.length === 0 ? this.#params.color : fillColor
 
     if (fillColor === Potrace.COLOR_AUTO) {
-      fillColor = this._params.blackOnWhite ? 'black' : 'white'
+      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
     }
 
-    if (!this._image_loaded) {
+    if (!this.#image_loaded) {
       throw new Error('Image should be loaded first')
     }
 
-    if (!this._processed) {
-      this._bm_to_pathlist()
-      this._process_path()
-      this._processed = true
+    if (!this.#processed) {
+      this.#bm_to_pathlist()
+      this.#process_path()
+      this.#processed = true
     }
 
     let tag = ''
 
-    this._pathlist.forEach(path => {
+    this.#pathlist.forEach(path => {
       tag += utils.renderCurve(path.curve, 1)
     })
 
@@ -1351,8 +1344,8 @@ class Potrace {
    * @param {Array<Object>} ranges - Current color ranges
    * @returns {Array<Object>} Modified color ranges
    */
-  _add_extra_color_stop(ranges) {
-    const blackOnWhite = this._params.blackOnWhite
+  #add_extra_color_stop(ranges) {
+    const blackOnWhite = this.#params.blackOnWhite
     const lastColorStop = ranges[ranges.length - 1]
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
     const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
@@ -1361,7 +1354,7 @@ class Potrace {
       lastRangeTo - lastRangeFrom > 25 &&
       lastColorStop.colorIntensity !== 1
     ) {
-      const histogram = this._get_image_histogram()
+      const histogram = this.#get_image_histogram()
       const levels = histogram.getStats(lastRangeFrom, lastRangeTo).levels
 
       const newColorStop =
@@ -1393,15 +1386,15 @@ class Potrace {
    * @param {number[]} colorStops - Array of threshold values
    * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
    */
-  _calc_color_intensity(colorStops) {
-    const blackOnWhite = this._params.blackOnWhite
-    const colorSelectionStrat = this._params.fillStrategy
+  #calc_color_intensity(colorStops) {
+    const blackOnWhite = this.#params.blackOnWhite
+    const colorSelectionStrat = this.#params.fillStrategy
     const histogram =
       colorSelectionStrat !== Potrace.FILL_SPREAD
-        ? this._get_image_histogram()
+        ? this.#get_image_histogram()
         : null
     const fullRange = Math.abs(
-      this._param_threshold() - (blackOnWhite ? 0 : 255)
+      this.#params.threshold - (blackOnWhite ? 0 : 255)
     )
 
     return colorStops.map((threshold, index) => {
@@ -1478,8 +1471,8 @@ class Potrace {
    * @private
    * @returns {Histogram} Image histogram
    */
-  _get_image_histogram() {
-    return this._luminance_data.histogram()
+  #get_image_histogram() {
+    return this.#luminance_data.histogram()
   }
 
   /**
@@ -1487,20 +1480,18 @@ class Potrace {
    * @private
    * @returns {Array<Object>} Color ranges
    */
-  _get_ranges() {
-    const steps = this._param_steps()
+  #get_ranges() {
+    const steps = this.#param_steps()
 
     if (!Array.isArray(steps)) {
-      return this._params.rangeDistribution === Potrace.RANGES_AUTO
-        ? this._get_ranges_auto()
-        : this._get_ranges_equally_distributed()
+      return this.#params.rangeDistribution === Potrace.RANGES_AUTO
+        ? this.#get_ranges_auto()
+        : this.#get_ranges_equally_distributed()
     }
 
-    // Steps is array of thresholds and we want to preprocess it
-
-    const colorStops = []
-    const threshold = this._param_threshold()
-    const lookingForDarkPixels = this._params.blackOnWhite
+    let colorStops = []
+    const threshold = this.#param_threshold()
+    const lookingForDarkPixels = this.#params.blackOnWhite
 
     steps.forEach(item => {
       if (colorStops.indexOf(item) === -1 && utils.between(item, 0, 255))
@@ -1524,7 +1515,7 @@ class Potrace {
       colorStops.push(threshold)
     }
 
-    return this._calc_color_intensity(colorStops)
+    return this.#calc_color_intensity(colorStops)
   }
 
   /**
@@ -1532,32 +1523,32 @@ class Potrace {
    * @private
    * @returns {Array<Object>} Auto-calculated ranges
    */
-  _get_ranges_auto() {
-    const histogram = this._get_image_histogram()
-    const steps = this._param_steps(true)
+  #get_ranges_auto() {
+    const histogram = this.#get_image_histogram()
+    const steps = this.#param_steps(true)
     let colorStops
 
-    if (this._params.threshold === Potrace.THRESHOLD_AUTO) {
+    if (this.#params.threshold === Potrace.THRESHOLD_AUTO) {
       colorStops = histogram.multilevelThresholding(steps)
     } else {
-      const threshold = this._param_threshold()
+      const threshold = this.#param_threshold()
 
-      colorStops = this._params.blackOnWhite
+      colorStops = this.#params.blackOnWhite
         ? histogram.multilevelThresholding(steps - 1, 0, threshold)
         : histogram.multilevelThresholding(steps - 1, threshold, 255)
 
-      if (this._params.blackOnWhite) {
+      if (this.#params.blackOnWhite) {
         colorStops.push(threshold)
       } else {
         colorStops.unshift(threshold)
       }
     }
 
-    if (this._params.blackOnWhite) {
+    if (this.#params.blackOnWhite) {
       colorStops = colorStops.reverse()
     }
 
-    return this._calc_color_intensity(colorStops)
+    return this.#calc_color_intensity(colorStops)
   }
 
   /**
@@ -1565,29 +1556,27 @@ class Potrace {
    * @private
    * @returns {Array<Object>} Equally distributed ranges
    */
-  _get_ranges_equally_distributed() {
-    const blackOnWhite = this._params.blackOnWhite
+  #get_ranges_equally_distributed() {
+    const blackOnWhite = this.#params.blackOnWhite
     const colorsToThreshold = blackOnWhite
-      ? this._param_threshold()
-      : 255 - this._param_threshold()
-    const steps = this._param_steps()
+      ? this.#param_threshold()
+      : 255 - this.#param_threshold()
+    const steps = this.#param_steps()
 
     const stepSize = colorsToThreshold / steps
     const colorStops = []
-    let i = steps - 1,
-      factor,
-      threshold
+    let i = steps - 1
 
     while (i >= 0) {
-      factor = i / (steps - 1)
-      threshold = Math.min(colorsToThreshold, (i + 1) * stepSize)
-      threshold = blackOnWhite ? threshold : 255 - threshold
+      const factor = i / (steps - 1)
+      const threshold = Math.min(colorsToThreshold, (i + 1) * stepSize)
+      const finalThreshold = blackOnWhite ? threshold : 255 - threshold
       i--
 
-      colorStops.push(threshold)
+      colorStops.push(finalThreshold)
     }
 
-    return this._calc_color_intensity(colorStops)
+    return this.#calc_color_intensity(colorStops)
   }
 
   /**
@@ -1596,8 +1585,8 @@ class Potrace {
    * @param {boolean} [count=false] - Return count instead of steps
    * @returns {number|Array} Steps value or count
    */
-  _param_steps(count) {
-    const steps = this._params.steps
+  #param_steps(count) {
+    const steps = this.#params.steps
 
     if (Array.isArray(steps)) {
       return count ? steps.length : steps
@@ -1605,15 +1594,15 @@ class Potrace {
 
     if (
       steps === Potrace.STEPS_AUTO &&
-      this._params.threshold === Potrace.THRESHOLD_AUTO
+      this.#params.threshold === Potrace.THRESHOLD_AUTO
     ) {
       return 4
     }
 
-    const blackOnWhite = this._params.blackOnWhite
+    const blackOnWhite = this.#params.blackOnWhite
     const colorsCount = blackOnWhite
-      ? this._param_threshold()
-      : 255 - this._param_threshold()
+      ? this.#param_threshold()
+      : 255 - this.#param_threshold()
 
     return steps === Potrace.STEPS_AUTO
       ? colorsCount > 200
@@ -1627,23 +1616,23 @@ class Potrace {
    * @private
    * @returns {number} Threshold value
    */
-  _param_threshold() {
-    if (this._calculated_threshold !== null) {
-      return this._calculated_threshold
+  #param_threshold() {
+    if (this.#calculated_threshold !== null) {
+      return this.#calculated_threshold
     }
 
-    if (this._params.threshold !== Potrace.THRESHOLD_AUTO) {
-      this._calculated_threshold = this._params.threshold
-      return this._calculated_threshold
+    if (this.#params.threshold !== Potrace.THRESHOLD_AUTO) {
+      this.#calculated_threshold = this.#params.threshold
+      return this.#calculated_threshold
     }
 
-    const twoThresholds = this._get_image_histogram().multilevelThresholding(2)
-    this._calculated_threshold = this._params.blackOnWhite
+    const twoThresholds = this.#get_image_histogram().multilevelThresholding(2)
+    this.#calculated_threshold = this.#params.blackOnWhite
       ? twoThresholds[1]
       : twoThresholds[0]
-    this._calculated_threshold = this._calculated_threshold || 128
+    this.#calculated_threshold = this.#calculated_threshold || 128
 
-    return this._calculated_threshold
+    return this.#calculated_threshold
   }
 
   /**
@@ -1652,16 +1641,15 @@ class Potrace {
    * @param {boolean} [noFillColor] - Skip fill color
    * @returns {Array<string>} Array of path tags
    */
-  _path_tags(noFillColor) {
-    const ranges = this._get_ranges()
-    const set_parameters = this.set_parameters.bind(this)
-    const blackOnWhite = this._params.blackOnWhite
+  #path_tags(noFillColor) {
+    let ranges = this.#get_ranges()
+    const blackOnWhite = this.#params.blackOnWhite
 
     if (ranges.length >= 10) {
-      ranges = this._add_extra_color_stop(ranges)
+      ranges = this.#add_extra_color_stop(ranges)
     }
 
-    set_parameters({ blackOnWhite: blackOnWhite })
+    this.#set_parameters({ blackOnWhite })
 
     let actualPrevLayersOpacity = 0
 
@@ -1687,7 +1675,7 @@ class Potrace {
         actualPrevLayersOpacity +
         (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-      set_parameters({ threshold: colorStop.value })
+      this.#set_parameters({ threshold: colorStop.value })
 
       let element = noFillColor ? this.get_path_tag('') : this.get_path_tag()
       element = utils.setHtmlAttr(
@@ -1717,11 +1705,10 @@ class Potrace {
    * @returns {Array<{d: string, fillOpacity: string}>} Array of path objects with SVG path data and opacity
    */
   as_curves() {
-    const ranges = this._get_ranges()
-    const set_parameters = this.set_parameters.bind(this)
-    const blackOnWhite = this._params.blackOnWhite
+    const ranges = this.#get_ranges()
+    const blackOnWhite = this.#params.blackOnWhite
 
-    set_parameters({ blackOnWhite: blackOnWhite })
+    this.#set_parameters({ blackOnWhite })
 
     let actualPrevLayersOpacity = 0
 
@@ -1745,13 +1732,27 @@ class Potrace {
         actualPrevLayersOpacity +
         (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-      set_parameters({ threshold: colorStop.value })
+      this.#set_parameters({ threshold: colorStop.value })
 
       return {
         d: this.get_path_data(),
         fillOpacity: calculatedOpacity.toFixed(3)
       }
     })
+  }
+
+  /**
+   * Processes loaded image data
+   * @private
+   * @param {Jimp} image - Loaded image
+   */
+  async create_paths(file) {
+    this.#load_image(file)
+    const width = this.#luminance_data.width
+    const height = this.#luminance_data.height
+    const dark = !this.#params.black_on_white
+    const paths = this.as_curves()
+    return { width, height, dark, paths }
   }
 }
 
