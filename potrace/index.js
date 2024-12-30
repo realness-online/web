@@ -8,6 +8,20 @@ import Opti from '@/potrace/types/Opti'
 import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
 
+/**
+ * Converts an image into SVG paths
+ * @async
+ * @param {string|Buffer|Jimp} file - Image source (buffer, local path or url). Supports PNG, JPEG or BMP
+ * @param {Object} [options={}] - Potrace options
+ * @param {string} [options.turnPolicy='minority'] - How to resolve ambiguities in path decomposition
+ * @param {number} [options.turdSize=2] - Suppress speckles of up to this size
+ * @param {number} [options.alphaMax=1] - Corner threshold parameter
+ * @param {boolean} [options.optCurve=true] - Curve optimization
+ * @param {number} [options.optTolerance=0.2] - Curve optimization tolerance
+ * @param {number} [options.threshold=AUTO] - Threshold below which color is considered black (0-255)
+ * @param {boolean} [options.blackOnWhite=true] - Specifies which side of threshold to trace
+ * @returns {Promise<Object>} - Resolution object containing width, height, dark flag and paths
+ */
 export const as_paths = (file, options = {}) => {
   return new Promise((resolve, reject) => {
     var posterizer = new Posterizer(options)
@@ -23,10 +37,8 @@ export const as_paths = (file, options = {}) => {
 }
 
 /**
- * Potrace class
- *
- * @param {Potrace~Options} [options]
- * @constructor
+ * Potrace class for converting bitmap images to vector graphics
+ * @class
  */
 class Potrace {
   static COLOR_AUTO = 'auto'
@@ -38,27 +50,25 @@ class Potrace {
   static TURNPOLICY_RIGHT = 'right'
   static TURNPOLICY_MINORITY = 'minority'
   static TURNPOLICY_MAJORITY = 'majority'
+  _luminanceData = null
+  _pathlist = []
+  _imageLoadingIdentifier = null
+  _imageLoaded = false
+  _processed = false
+
+  _params = {
+    turnPolicy: Potrace.TURNPOLICY_MINORITY,
+    turdSize: 2,
+    alphaMax: 1,
+    optCurve: true,
+    optTolerance: 0.2,
+    threshold: Potrace.THRESHOLD_AUTO,
+    blackOnWhite: true,
+    color: Potrace.COLOR_AUTO,
+    background: Potrace.COLOR_TRANSPARENT
+  }
 
   constructor(options) {
-    this._luminanceData = null
-    this._pathlist = []
-
-    this._imageLoadingIdentifier = null
-    this._imageLoaded = false
-    this._processed = false
-
-    this._params = {
-      turnPolicy: Potrace.TURNPOLICY_MINORITY,
-      turdSize: 2,
-      alphaMax: 1,
-      optCurve: true,
-      optTolerance: 0.2,
-      threshold: Potrace.THRESHOLD_AUTO,
-      blackOnWhite: true,
-      color: Potrace.COLOR_AUTO,
-      background: Potrace.COLOR_TRANSPARENT
-    }
-
     if (options) {
       this.setParameters(options)
     }
@@ -1320,11 +1330,8 @@ var SUPPORTED_TURNPOLICY_VALUES = [
  */
 
 /**
- * Takes multiple samples using {@link Potrace} with different threshold
- * settings and combines output into a single file.
- *
- * @param {Posterizer~Options} [options]
- * @constructor
+ * Posterizer class for creating multi-level traced paths
+ * @class
  */
 class Posterizer {
   static COLOR_AUTO = Potrace.COLOR_AUTO
@@ -1345,33 +1352,28 @@ class Posterizer {
   static RANGES_AUTO = 'auto'
   static RANGES_EQUAL = 'equal'
 
+  _potrace = new Potrace()
+  _calculatedThreshold = null
+  _params = {
+    threshold: Potrace.THRESHOLD_AUTO,
+    blackOnWhite: true,
+    steps: Posterizer.STEPS_AUTO,
+    background: Potrace.COLOR_TRANSPARENT,
+    fillStrategy: Posterizer.FILL_DOMINANT,
+    rangeDistribution: Posterizer.RANGES_AUTO
+  }
+
   constructor(options) {
-    this._potrace = new Potrace()
-
-    this._calculatedThreshold = null
-
-    this._params = {
-      threshold: Potrace.THRESHOLD_AUTO,
-      blackOnWhite: true,
-      steps: Posterizer.STEPS_AUTO,
-      background: Potrace.COLOR_TRANSPARENT,
-      fillStrategy: Posterizer.FILL_DOMINANT,
-      rangeDistribution: Posterizer.RANGES_AUTO
-    }
-
     if (options) {
       this.setParameters(options)
     }
   }
+
   /**
-   * Fine tuning to color ranges.
-   *
-   * If last range (featuring most saturated color) is larger than 10% of color space (25 units)
-   * then we want to add another color stop, that hopefully will include darkest pixels, improving presence of
-   * shadows and line art
-   *
-   * @param ranges
+   * Fine tunes color ranges by adding extra color stops for better shadow and line art representation
    * @private
+   * @param {Array<Object>} ranges - Current color ranges
+   * @returns {Array<Object>} Modified color ranges
    */
   _addExtraColorStop(ranges) {
     var blackOnWhite = this._params.blackOnWhite
@@ -1411,10 +1413,9 @@ class Posterizer {
 
   /**
    * Calculates color intensity for each element of numeric array
-   *
-   * @param {number[]} colorStops
-   * @returns {{ levels: number, colorIntensity: number }[]}
    * @private
+   * @param {number[]} colorStops - Array of threshold values
+   * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
    */
   _calcColorIntensity(colorStops) {
     var blackOnWhite = this._params.blackOnWhite
@@ -1495,8 +1496,9 @@ class Posterizer {
   }
 
   /**
-   * @returns {Histogram}
+   * Gets image histogram for color analysis
    * @private
+   * @returns {Histogram} Image histogram
    */
   _getImageHistogram() {
     return this._potrace._luminanceData.histogram()
@@ -1780,6 +1782,10 @@ class Posterizer {
     this._calculatedThreshold = null
   }
 
+  /**
+   * Converts the loaded image into an array of curve paths
+   * @returns {Array<{d: string, fillOpacity: string}>} Array of path objects with SVG path data and opacity
+   */
   as_curves() {
     var ranges = this._getRanges()
     var potrace = this._potrace
