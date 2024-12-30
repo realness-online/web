@@ -113,12 +113,12 @@ class Potrace {
    * @private
    */
   _bmToPathlist() {
-    var self = this,
-      threshold = this._params.threshold,
-      blackOnWhite = this._params.blackOnWhite,
-      blackMap,
-      currentPoint = new Point(0, 0),
-      path
+    var self = this
+    var threshold = this._params.threshold
+    var blackOnWhite = this._params.blackOnWhite
+    var blackMap
+    var currentPoint = new Point(0, 0)
+    var path
 
     if (threshold === Potrace.THRESHOLD_AUTO) {
       threshold = this._luminanceData.histogram().autoThreshold() || 128
@@ -147,7 +147,9 @@ class Potrace {
     }
 
     function majority(x, y) {
-      var i, a, ct
+      var i
+      var a
+      var ct
 
       for (i = 2; i < 5; i++) {
         ct = 0
@@ -174,12 +176,12 @@ class Potrace {
      * @returns {Path} Traced path object
      */
     function findPath(point) {
-      var path = new Path(),
-        x = point.x,
-        y = point.y,
-        dirx = 0,
-        diry = 1,
-        tmp
+      var path = new Path()
+      var x = point.x
+      var y = point.y
+      var dirx = 0
+      var diry = 1
+      var tmp
 
       path.sign = blackMap.getValueAt(point.x, point.y) ? '+' : '-'
 
@@ -245,15 +247,15 @@ class Potrace {
      * @param {Path} path - Path to XOR
      */
     function xorPath(path) {
-      var y1 = path.pt[0].y,
-        len = path.len,
-        x,
-        y,
-        maxX,
-        minY,
-        i,
-        j,
-        indx
+      var y1 = path.pt[0].y
+      var len = path.len
+      var x
+      var y
+      var maxX
+      var minY
+      var i
+      var j
+      var indx
 
       for (i = 1; i < len; i++) {
         x = path.pt[i].x
@@ -297,7 +299,9 @@ class Potrace {
      * @param {Path} path - Path to calculate sums for
      */
     function calcSums(path) {
-      var i, x, y
+      var i
+      var x
+      var y
       path.x0 = path.pt[0].x
       path.y0 = path.pt[0].y
 
@@ -325,12 +329,12 @@ class Potrace {
      * @param {Path} path - Path to calculate sequences for
      */
     function calcLon(path) {
-      var n = path.len,
-        pt = path.pt,
-        dir,
-        pivk = new Array(n),
-        nc = new Array(n),
-        ct = new Array(4)
+      var n = path.len
+      var pt = path.pt
+      var dir
+      var pivk = new Array(n)
+      var nc = new Array(n)
+      var ct = new Array(4)
 
       path.lon = new Array(n)
 
@@ -340,14 +344,14 @@ class Potrace {
         dk = new Point(),
         foundk
 
-      var i,
-        j,
-        k1,
-        a,
-        b,
-        c,
-        d,
-        k = 0
+      var i
+      var j
+      var k1
+      var a
+      var b
+      var c
+      var d
+      var k = 0
       for (i = n - 1; i >= 0; i--) {
         if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) {
           k = i + 1
@@ -462,24 +466,24 @@ class Potrace {
      */
     function bestPolygon(path) {
       function penalty3(path, i, j) {
-        var n = path.len,
-          pt = path.pt,
-          sums = path.sums
-        var x,
-          y,
-          xy,
-          x2,
-          y2,
-          k,
-          a,
-          b,
-          c,
-          s,
-          px,
-          py,
-          ex,
-          ey,
-          r = 0
+        var n = path.len
+        var pt = path.pt
+        var sums = path.sums
+        var x
+        var y
+        var xy
+        var x2
+        var y2
+        var k
+        var a
+        var b
+        var c
+        var s
+        var px
+        var py
+        var ex
+        var ey
+        var r = 0
         if (j >= n) {
           j -= n
           r = 1
@@ -515,20 +519,20 @@ class Potrace {
         return Math.sqrt(s)
       }
 
-      var i,
-        j,
-        m,
-        k,
-        n = path.len,
-        pen = new Array(n + 1),
-        prev = new Array(n + 1),
-        clip0 = new Array(n),
-        clip1 = new Array(n + 1),
-        seg0 = new Array(n + 1),
-        seg1 = new Array(n + 1),
-        thispen,
-        best,
-        c
+      var i
+      var j
+      var m
+      var k
+      var n = path.len
+      var pen = new Array(n + 1)
+      var prev = new Array(n + 1)
+      var clip0 = new Array(n)
+      var clip1 = new Array(n + 1)
+      var seg0 = new Array(n + 1)
+      var seg1 = new Array(n + 1)
+      var thispen
+      var best
+      var c
 
       for (i = 0; i < n; i++) {
         c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
@@ -595,20 +599,20 @@ class Potrace {
      */
     function adjustVertices(path) {
       function pointslope(path, i, j, ctr, dir) {
-        var n = path.len,
-          sums = path.sums,
-          x,
-          y,
-          x2,
-          xy,
-          y2,
-          k,
-          a,
-          b,
-          c,
-          lambda2,
-          l,
-          r = 0
+        var n = path.len
+        var sums = path.sums
+        var x
+        var y
+        var x2
+        var xy
+        var y2
+        var k
+        var a
+        var b
+        var c
+        var lambda2
+        var l
+        var r = 0
 
         while (j >= n) {
           j -= n
@@ -664,22 +668,22 @@ class Potrace {
         }
       }
 
-      var m = path.m,
-        po = path.po,
-        n = path.len,
-        pt = path.pt,
-        x0 = path.x0,
-        y0 = path.y0,
-        ctr = new Array(m),
-        dir = new Array(m),
-        q = new Array(m),
-        v = new Array(3),
-        d,
-        i,
-        j,
-        k,
-        l,
-        s = new Point()
+      var m = path.m
+      var po = path.po
+      var n = path.len
+      var pt = path.pt
+      var x0 = path.x0
+      var y0 = path.y0
+      var ctr = new Array(m)
+      var dir = new Array(m)
+      var q = new Array(m)
+      var v = new Array(3)
+      var d
+      var i
+      var j
+      var k
+      var l
+      var s = new Point()
 
       path.curve = new Curve(m)
 
@@ -712,7 +716,16 @@ class Potrace {
         }
       }
 
-      var Q, w, dx, dy, det, min, cand, xmin, ymin, z
+      var Q
+      var w
+      var dx
+      var dy
+      var det
+      var min
+      var cand
+      var xmin
+      var ymin
+      var z
       for (i = 0; i < m; i++) {
         Q = new Quad()
         w = new Point()
@@ -816,12 +829,12 @@ class Potrace {
      * @param {Path} path - Path to reverse
      */
     function reverse(path) {
-      var curve = path.curve,
-        m = curve.n,
-        v = curve.vertex,
-        i,
-        j,
-        tmp
+      var curve = path.curve
+      var m = curve.n
+      var v = curve.vertex
+      var i
+      var j
+      var tmp
 
       for (i = 0, j = m - 1; i < j; i++, j--) {
         tmp = v[i]
@@ -836,10 +849,18 @@ class Potrace {
      * @param {Path} path - Path to smooth
      */
     function smooth(path) {
-      var m = path.curve.n,
-        curve = path.curve
+      var m = path.curve.n
+      var curve = path.curve
 
-      var i, j, k, dd, denom, alpha, p2, p3, p4
+      var i
+      var j
+      var k
+      var dd
+      var denom
+      var alpha
+      var p2
+      var p3
+      var p4
 
       for (i = 0; i < m; i++) {
         j = utils.mod(i + 1, m)
@@ -897,32 +918,32 @@ class Potrace {
      */
     function optiCurve(path) {
       function opti_penalty(path, i, j, res, opttolerance, convc, areac) {
-        var m = path.curve.n,
-          curve = path.curve,
-          vertex = curve.vertex,
-          k,
-          k1,
-          k2,
-          conv,
-          i1,
-          area,
-          alpha,
-          d,
-          d1,
-          d2,
-          p0,
-          p1,
-          p2,
-          p3,
-          pt,
-          A,
-          R,
-          A1,
-          A2,
-          A3,
-          A4,
-          s,
-          t
+        var m = path.curve.n
+        var curve = path.curve
+        var vertex = curve.vertex
+        var k
+        var k1
+        var k2
+        var conv
+        var i1
+        var area
+        var alpha
+        var d
+        var d1
+        var d2
+        var p0
+        var p1
+        var p2
+        var p3
+        var pt
+        var A
+        var R
+        var A1
+        var A2
+        var A3
+        var A4
+        var s
+        var t
 
         if (i == j) {
           return 1
@@ -1062,28 +1083,28 @@ class Potrace {
         return 0
       }
 
-      var curve = path.curve,
-        m = curve.n,
-        vert = curve.vertex,
-        pt = new Array(m + 1),
-        pen = new Array(m + 1),
-        len = new Array(m + 1),
-        opt = new Array(m + 1),
-        om,
-        i,
-        j,
-        r,
-        o = new Opti(),
-        p0,
-        i1,
-        area,
-        alpha,
-        ocurve,
-        s,
-        t
+      var curve = path.curve
+      var m = curve.n
+      var vert = curve.vertex
+      var pt = new Array(m + 1)
+      var pen = new Array(m + 1)
+      var len = new Array(m + 1)
+      var opt = new Array(m + 1)
+      var om
+      var i
+      var j
+      var r
+      var o = new Opti()
+      var p0
+      var i1
+      var area
+      var alpha
+      var ocurve
+      var s
+      var t
 
-      var convc = new Array(m),
-        areac = new Array(m + 1)
+      var convc = new Array(m)
+      var areac = new Array(m + 1)
 
       for (i = 0; i < m; i++) {
         if (curve.tag[i] == 'CURVE') {
@@ -1309,7 +1330,8 @@ class Potrace {
    * @param {Potrace~Options} newParams
    */
   setParameters(newParams) {
-    var key, tmpOldVal
+    var key
+    var tmpOldVal
     console.log('this._validateParameters', this)
     this._validateParameters(newParams)
 
