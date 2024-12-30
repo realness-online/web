@@ -24,13 +24,13 @@ import Bitmap from '@/potrace/types/Bitmap'
  */
 export const as_paths = (file, options = {}) => {
   return new Promise((resolve, reject) => {
-    var posterizer = new Posterizer(options)
-    posterizer.loadImage(file, error => {
+    var potrace = new Potrace(options)
+    potrace.loadImage(file, error => {
       if (error) reject(error)
-      const width = posterizer._potrace._luminanceData.width
-      const height = posterizer._potrace._luminanceData.height
-      const dark = !posterizer._params.blackOnWhite
-      const paths = posterizer.as_curves()
+      const width = potrace._luminanceData.width
+      const height = potrace._luminanceData.height
+      const dark = !potrace._params.blackOnWhite
+      const paths = potrace.as_curves()
       resolve({ width, height, dark, paths })
     })
   })
@@ -59,6 +59,15 @@ class Potrace {
   static COLOR_AUTO = 'auto'
   static COLOR_TRANSPARENT = 'transparent'
   static THRESHOLD_AUTO = -1
+
+  static STEPS_AUTO = -1
+  static FILL_SPREAD = 'spread'
+  static FILL_DOMINANT = 'dominant'
+  static FILL_MEDIAN = 'median'
+  static FILL_MEAN = 'mean'
+  static RANGES_AUTO = 'auto'
+  static RANGES_EQUAL = 'equal'
+
   static turn_policy = {
     black: 'black',
     white: 'white',
@@ -83,12 +92,19 @@ class Potrace {
     threshold: Potrace.THRESHOLD_AUTO,
     blackOnWhite: true,
     color: Potrace.COLOR_AUTO,
-    background: Potrace.COLOR_TRANSPARENT
+    background: Potrace.COLOR_TRANSPARENT,
+    blackOnWhite: true,
+    steps: Potrace.STEPS_AUTO,
+    fillStrategy: Potrace.FILL_DOMINANT,
+    rangeDistribution: Potrace.RANGES_AUTO
   }
 
   constructor(options) {
     if (options) {
       this.setParameters(options)
+    }
+    if (this._params.steps) {
+      this._calculatedThreshold = null
     }
   }
 
@@ -1294,7 +1310,7 @@ class Potrace {
    */
   setParameters(newParams) {
     var key, tmpOldVal
-
+    console.log('this._validateParameters', this)
     this._validateParameters(newParams)
 
     for (key in this._params) {
@@ -1310,6 +1326,17 @@ class Potrace {
         }
       }
     }
+
+    if (
+      this._params.steps &&
+      !Array.isArray(this._params.steps) &&
+      (!utils.isNumber(this._params.steps) ||
+        !utils.between(this._params.steps, 1, 255))
+    ) {
+      throw new Error("Bad 'steps' value")
+    }
+
+    this._calculatedThreshold = null
   }
 
   /**
@@ -1377,43 +1404,6 @@ class Potrace {
 
     return tag
   }
-}
-
-class Posterizer {
-  static COLOR_AUTO = Potrace.COLOR_AUTO
-  static COLOR_TRANSPARENT = Potrace.COLOR_TRANSPARENT
-  static THRESHOLD_AUTO = Potrace.THRESHOLD_AUTO
-  static TURNPOLICY_BLACK = Potrace.TURNPOLICY_BLACK
-  static TURNPOLICY_WHITE = Potrace.TURNPOLICY_WHITE
-  static TURNPOLICY_LEFT = Potrace.TURNPOLICY_LEFT
-  static TURNPOLICY_RIGHT = Potrace.TURNPOLICY_RIGHT
-  static TURNPOLICY_MINORITY = Potrace.TURNPOLICY_MINORITY
-  static TURNPOLICY_MAJORITY = Potrace.TURNPOLICY_MAJORITY
-
-  static STEPS_AUTO = -1
-  static FILL_SPREAD = 'spread'
-  static FILL_DOMINANT = 'dominant'
-  static FILL_MEDIAN = 'median'
-  static FILL_MEAN = 'mean'
-  static RANGES_AUTO = 'auto'
-  static RANGES_EQUAL = 'equal'
-
-  _potrace = new Potrace()
-  _calculatedThreshold = null
-  _params = {
-    threshold: Potrace.THRESHOLD_AUTO,
-    blackOnWhite: true,
-    steps: Posterizer.STEPS_AUTO,
-    background: Potrace.COLOR_TRANSPARENT,
-    fillStrategy: Posterizer.FILL_DOMINANT,
-    rangeDistribution: Posterizer.RANGES_AUTO
-  }
-
-  constructor(options) {
-    if (options) {
-      this.setParameters(options)
-    }
-  }
 
   /**
    * Fine tunes color ranges by adding extra color stops for better shadow and line art representation
@@ -1467,7 +1457,7 @@ class Posterizer {
     var blackOnWhite = this._params.blackOnWhite
     var colorSelectionStrat = this._params.fillStrategy
     var histogram =
-      colorSelectionStrat !== Posterizer.FILL_SPREAD
+      colorSelectionStrat !== Potrace.FILL_SPREAD
         ? this._getImageHistogram()
         : null
     var fullRange = Math.abs(this._paramThreshold() - (blackOnWhite ? 0 : 255))
@@ -1494,7 +1484,7 @@ class Posterizer {
       }
 
       switch (colorSelectionStrat) {
-        case Posterizer.FILL_SPREAD:
+        case Potrace.FILL_SPREAD:
           // We want it to be 0 (255 when white on black) at the most saturated end, so...
           color =
             (blackOnWhite ? rangeStart : rangeEnd) +
@@ -1503,17 +1493,17 @@ class Posterizer {
               Math.max(0.5, fullRange / 255) *
               factor
           break
-        case Posterizer.FILL_DOMINANT:
+        case Potrace.FILL_DOMINANT:
           color = histogram.getDominantColor(
             rangeStart,
             rangeEnd,
             utils.clamp(intervalSize, 1, 5)
           )
           break
-        case Posterizer.FILL_MEAN:
+        case Potrace.FILL_MEAN:
           color = stats.levels.mean
           break
-        case Posterizer.FILL_MEDIAN:
+        case Potrace.FILL_MEDIAN:
           color = stats.levels.median
           break
       }
@@ -1547,7 +1537,7 @@ class Posterizer {
    * @returns {Histogram} Image histogram
    */
   _getImageHistogram() {
-    return this._potrace._luminanceData.histogram()
+    return this._luminanceData.histogram()
   }
 
   /**
@@ -1559,7 +1549,7 @@ class Posterizer {
     var steps = this._paramSteps()
 
     if (!Array.isArray(steps)) {
-      return this._params.rangeDistribution === Posterizer.RANGES_AUTO
+      return this._params.rangeDistribution === Potrace.RANGES_AUTO
         ? this._getRangesAuto()
         : this._getRangesEquallyDistributed()
     }
@@ -1673,7 +1663,7 @@ class Posterizer {
     }
 
     if (
-      steps === Posterizer.STEPS_AUTO &&
+      steps === Potrace.STEPS_AUTO &&
       this._params.threshold === Potrace.THRESHOLD_AUTO
     ) {
       return 4
@@ -1684,7 +1674,7 @@ class Posterizer {
       ? this._paramThreshold()
       : 255 - this._paramThreshold()
 
-    return steps === Posterizer.STEPS_AUTO
+    return steps === Potrace.STEPS_AUTO
       ? colorsCount > 200
         ? 4
         : 3
@@ -1722,26 +1712,26 @@ class Posterizer {
    * @returns {Array<string>} Array of path tags
    */
   _pathTags(noFillColor) {
-    var ranges = this._getRanges()
-    var potrace = this._potrace
-    var blackOnWhite = this._params.blackOnWhite
+    const ranges = this._getRanges()
+    const setParameters = this.setParameters.bind(this)
+    const blackOnWhite = this._params.blackOnWhite
 
     if (ranges.length >= 10) {
       ranges = this._addExtraColorStop(ranges)
     }
 
-    potrace.setParameters({ blackOnWhite: blackOnWhite })
+    setParameters({ blackOnWhite: blackOnWhite })
 
-    var actualPrevLayersOpacity = 0
+    let actualPrevLayersOpacity = 0
 
-    return ranges.map(function (colorStop) {
-      var thisLayerOpacity = colorStop.colorIntensity
+    return ranges.map(colorStop => {
+      const thisLayerOpacity = colorStop.colorIntensity
 
       if (thisLayerOpacity === 0) {
         return ''
       }
 
-      var calculatedOpacity =
+      const calculatedOpacity =
         !actualPrevLayersOpacity || thisLayerOpacity === 1
           ? thisLayerOpacity
           : (actualPrevLayersOpacity - thisLayerOpacity) /
@@ -1756,9 +1746,9 @@ class Posterizer {
         actualPrevLayersOpacity +
         (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-      potrace.setParameters({ threshold: colorStop.value })
+      setParameters({ threshold: colorStop.value })
 
-      var element = noFillColor ? potrace.getPathTag('') : potrace.getPathTag()
+      var element = noFillColor ? this.getPathTag('') : this.getPathTag()
       element = utils.setHtmlAttr(
         element,
         'fill-opacity',
@@ -1782,64 +1772,20 @@ class Posterizer {
   }
 
   /**
-   * Loads image.
-   *
-   * @param {string|Buffer|Jimp} target Image source. Could be anything that {@link Jimp} can read (buffer, local path or url). Supported formats are: PNG, JPEG or BMP
-   * @param {Function} callback
-   */
-  loadImage(target, callback) {
-    var self = this
-
-    this._potrace.loadImage(target, function (err) {
-      self._calculatedThreshold = null
-      callback.call(self, err)
-    })
-  }
-
-  /**
-   * Sets parameters. Accepts same object as {Potrace}
-   *
-   * @param {Posterizer~Options} params
-   */
-  setParameters(params) {
-    if (!params) {
-      return
-    }
-
-    this._potrace.setParameters(params)
-
-    if (
-      params.steps &&
-      !Array.isArray(params.steps) &&
-      (!utils.isNumber(params.steps) || !utils.between(params.steps, 1, 255))
-    ) {
-      throw new Error("Bad 'steps' value")
-    }
-
-    for (var key in this._params) {
-      if (this._params.hasOwnProperty(key) && params.hasOwnProperty(key)) {
-        this._params[key] = params[key]
-      }
-    }
-
-    this._calculatedThreshold = null
-  }
-
-  /**
    * Converts the loaded image into an array of curve paths
    * @returns {Array<{d: string, fillOpacity: string}>} Array of path objects with SVG path data and opacity
    */
   as_curves() {
-    var ranges = this._getRanges()
-    var potrace = this._potrace
-    var blackOnWhite = this._params.blackOnWhite
+    const ranges = this._getRanges()
+    const setParameters = this.setParameters.bind(this)
+    const blackOnWhite = this._params.blackOnWhite
 
-    potrace.setParameters({ blackOnWhite: blackOnWhite })
+    setParameters({ blackOnWhite: blackOnWhite })
 
-    var actualPrevLayersOpacity = 0
+    let actualPrevLayersOpacity = 0
 
-    return ranges.map(function (colorStop) {
-      var thisLayerOpacity = colorStop.colorIntensity
+    return ranges.map(colorStop => {
+      const thisLayerOpacity = colorStop.colorIntensity
 
       if (thisLayerOpacity === 0) return ''
 
@@ -1858,10 +1804,10 @@ class Posterizer {
         actualPrevLayersOpacity +
         (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-      potrace.setParameters({ threshold: colorStop.value })
+      setParameters({ threshold: colorStop.value })
 
       return {
-        d: potrace.getPathData(),
+        d: this.getPathData(),
         fillOpacity: calculatedOpacity.toFixed(3)
       }
     })
@@ -1870,6 +1816,5 @@ class Posterizer {
 
 export default {
   as_paths,
-  Potrace,
-  Posterizer
+  Potrace
 }
