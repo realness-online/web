@@ -108,10 +108,108 @@ class Potrace {
     }
   }
 
-  /**
-   * Creates path list from bitmap data
-   * @private
-   */
+  _find_next(black_map, point) {
+    let i = black_map.pointToIndex(point)
+    while (i < black_map.size && black_map.data[i] !== 1) {
+      i++
+    }
+    return i < black_map.size && black_map.indexToPoint(i)
+  }
+
+  _get_majority(black_map, x, y) {
+    let ct
+    for (let i = 2; i < 5; i++) {
+      ct = 0
+      for (let a = -i + 1; a <= i - 1; a++) {
+        ct += black_map.getValueAt(x + a, y + i - 1) ? 1 : -1
+        ct += black_map.getValueAt(x + i - 1, y + a - 1) ? 1 : -1
+        ct += black_map.getValueAt(x + a - 1, y - i) ? 1 : -1
+        ct += black_map.getValueAt(x - i, y + a) ? 1 : -1
+      }
+      if (ct > 0) return 1
+      if (ct < 0) return 0
+    }
+    return 0
+  }
+
+  _find_path(black_map, point) {
+    const path = new Path()
+    let x = point.x
+    let y = point.y
+    let dir_x = 0
+    let dir_y = 1
+
+    path.sign = black_map.getValueAt(point.x, point.y) ? '+' : '-'
+
+    while (true) {
+      path.pt.push(new Point(x, y))
+      path.maxX = Math.max(path.maxX, x)
+      path.minX = Math.min(path.minX, x)
+      path.maxY = Math.max(path.maxY, y)
+      path.minY = Math.min(path.minY, y)
+      path.len++
+
+      x += dir_x
+      y += dir_y
+      path.area -= x * dir_y
+
+      if (x === point.x && y === point.y) break
+
+      const l = black_map.getValueAt(
+        x + (dir_x + dir_y - 1) / 2,
+        y + (dir_y - dir_x - 1) / 2
+      )
+      const r = black_map.getValueAt(
+        x + (dir_x - dir_y - 1) / 2,
+        y + (dir_y + dir_x - 1) / 2
+      )
+
+      if (r && !l) {
+        if (
+          this._params.turnPolicy === Potrace.turn_policy.right ||
+          (this._params.turnPolicy === Potrace.turn_policy.black &&
+            path.sign === '+') ||
+          (this._params.turnPolicy === Potrace.turn_policy.white &&
+            path.sign === '-') ||
+          (this._params.turnPolicy === Potrace.turn_policy.majority &&
+            this._get_majority(black_map, x, y)) ||
+          (this._params.turnPolicy === Potrace.turn_policy.minority &&
+            !this._get_majority(black_map, x, y))
+        ) {
+          ;[dir_x, dir_y] = [-dir_y, dir_x]
+        } else {
+          ;[dir_x, dir_y] = [dir_y, -dir_x]
+        }
+      } else if (r) {
+        ;[dir_x, dir_y] = [-dir_y, dir_x]
+      } else if (!l) {
+        ;[dir_x, dir_y] = [dir_y, -dir_x]
+      }
+    }
+    return path
+  }
+
+  _xor_path(black_map, path) {
+    let y1 = path.pt[0].y
+    const len = path.len
+
+    for (let i = 1; i < len; i++) {
+      const x = path.pt[i].x
+      const y = path.pt[i].y
+
+      if (y !== y1) {
+        const min_y = Math.min(y1, y)
+        const max_x = path.maxX
+
+        for (let j = x; j < max_x; j++) {
+          const indx = black_map.pointToIndex(j, min_y)
+          black_map.data[indx] = black_map.data[indx] ? 0 : 1
+        }
+        y1 = y
+      }
+    }
+  }
+
   _bm_to_pathlist() {
     const threshold =
       this._params.threshold === Potrace.THRESHOLD_AUTO
@@ -127,114 +225,12 @@ class Potrace {
     })
 
     let current_point = new Point(0, 0)
-    this._pathlist = [] // Clear path list
-
-    const find_next = point => {
-      let i = black_map.pointToIndex(point)
-      while (i < black_map.size && black_map.data[i] !== 1) {
-        i++
-      }
-      return i < black_map.size && black_map.indexToPoint(i)
-    }
-
-    const get_majority = (x, y) => {
-      let ct
-      for (let i = 2; i < 5; i++) {
-        ct = 0
-        for (let a = -i + 1; a <= i - 1; a++) {
-          ct += black_map.getValueAt(x + a, y + i - 1) ? 1 : -1
-          ct += black_map.getValueAt(x + i - 1, y + a - 1) ? 1 : -1
-          ct += black_map.getValueAt(x + a - 1, y - i) ? 1 : -1
-          ct += black_map.getValueAt(x - i, y + a) ? 1 : -1
-        }
-        if (ct > 0) return 1
-        if (ct < 0) return 0
-      }
-      return 0
-    }
-
-    const find_path = point => {
-      const path = new Path()
-      let x = point.x
-      let y = point.y
-      let dir_x = 0
-      let dir_y = 1
-
-      path.sign = black_map.getValueAt(point.x, point.y) ? '+' : '-'
-
-      while (true) {
-        path.pt.push(new Point(x, y))
-        path.maxX = Math.max(path.maxX, x)
-        path.minX = Math.min(path.minX, x)
-        path.maxY = Math.max(path.maxY, y)
-        path.minY = Math.min(path.minY, y)
-        path.len++
-
-        x += dir_x
-        y += dir_y
-        path.area -= x * dir_y
-
-        if (x === point.x && y === point.y) break
-
-        const l = black_map.getValueAt(
-          x + (dir_x + dir_y - 1) / 2,
-          y + (dir_y - dir_x - 1) / 2
-        )
-        const r = black_map.getValueAt(
-          x + (dir_x - dir_y - 1) / 2,
-          y + (dir_y + dir_x - 1) / 2
-        )
-
-        if (r && !l) {
-          if (
-            this._params.turnPolicy === Potrace.turn_policy.right ||
-            (this._params.turnPolicy === Potrace.turn_policy.black &&
-              path.sign === '+') ||
-            (this._params.turnPolicy === Potrace.turn_policy.white &&
-              path.sign === '-') ||
-            (this._params.turnPolicy === Potrace.turn_policy.majority &&
-              get_majority(x, y)) ||
-            (this._params.turnPolicy === Potrace.turn_policy.minority &&
-              !get_majority(x, y))
-          ) {
-            ;[dir_x, dir_y] = [-dir_y, dir_x] // Using array destructuring
-          } else {
-            ;[dir_x, dir_y] = [dir_y, -dir_x]
-          }
-        } else if (r) {
-          ;[dir_x, dir_y] = [-dir_y, dir_x]
-        } else if (!l) {
-          ;[dir_x, dir_y] = [dir_y, -dir_x]
-        }
-      }
-      return path
-    }
-
-    const xor_path = path => {
-      let y1 = path.pt[0].y
-      const len = path.len
-
-      for (let i = 1; i < len; i++) {
-        const x = path.pt[i].x
-        const y = path.pt[i].y
-
-        if (y !== y1) {
-          const min_y = Math.min(y1, y)
-          const max_x = path.maxX
-
-          for (let j = x; j < max_x; j++) {
-            const indx = black_map.pointToIndex(j, min_y)
-            black_map.data[indx] = black_map.data[indx] ? 0 : 1
-          }
-          y1 = y
-        }
-      }
-    }
+    this._pathlist = []
 
     // Main loop
-    while ((current_point = find_next(current_point))) {
-      const path = find_path(current_point)
-      xor_path(path)
+    while ((current_point = this._find_next(black_map, current_point))) {
+      const path = this._find_path(black_map, current_point)
+      this._xor_path(black_map, path)
 
       if (path.area > this._params.turdSize) {
         this._pathlist.push(path)
