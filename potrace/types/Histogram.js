@@ -27,26 +27,26 @@ class Histogram {
   static MODE_G = 'g'
   static MODE_B = 'b'
 
-  // Default property values
+  // Private fields need to be declared first
+  #sorted_indexes = null
+  #cached_stats = {}
+  #lookup_table_h = null
   data = null
   pixels = 0
-  _sorted_indexes = null
-  _cached_stats = {}
-  _lookup_table_h = null
 
   constructor(image_source, mode) {
     if (typeof image_source === 'number') {
-      this._create_array(image_source)
+      this.#create_array(image_source)
     } else if (image_source instanceof Bitmap) {
-      this._collect_values_bitmap(image_source)
+      this.#collect_values_bitmap(image_source)
     } else if (Jimp && image_source instanceof Jimp) {
-      this._collect_values_jimp(image_source, mode)
+      this.#collect_values_jimp(image_source, mode)
     } else {
       throw new Error('Unsupported image source')
     }
   }
 
-  _create_array(image_size) {
+  #create_array(image_size) {
     const ArrayType =
       image_size <= Math.pow(2, 8)
         ? Uint8Array
@@ -63,9 +63,9 @@ class Histogram {
    * @param mode
    * @private
    */
-  _collect_values_jimp(source, mode) {
+  #collect_values_jimp(source, mode) {
     var pixelData = source.bitmap.data
-    var data = this._create_array(source.bitmap.width * source.bitmap.height)
+    var data = this.#create_array(source.bitmap.width * source.bitmap.height)
 
     source.scan(
       0,
@@ -96,8 +96,8 @@ class Histogram {
    * @param {Bitmap} source
    * @private
    */
-  _collect_values_bitmap(source) {
-    var data = this._create_array(source.size)
+  #collect_values_bitmap(source) {
+    var data = this.#create_array(source.size)
     var len = source.data.length
     var color
 
@@ -113,9 +113,9 @@ class Histogram {
    * @returns {*}
    * @private
    */
-  _get_sorted_indexes(refresh) {
-    if (!refresh && this._sorted_indexes) {
-      return this._sorted_indexes
+  #get_sorted_indexes(refresh) {
+    if (!refresh && this.#sorted_indexes) {
+      return this.#sorted_indexes
     }
 
     var data = this.data
@@ -126,11 +126,9 @@ class Histogram {
       indexes[i] = i
     }
 
-    indexes.sort(function (a, b) {
-      return data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0
-    })
+    indexes.sort((a, b) => (data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0))
 
-    this._sorted_indexes = indexes
+    this.#sorted_indexes = indexes
     return indexes
   }
 
@@ -141,7 +139,7 @@ class Histogram {
    * @returns {Float64Array}
    * @private
    */
-  _thresholding_build_lookup_table() {
+  #thresholding_build_lookup_table() {
     var P = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
     var S = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
     var H = new Float64Array(COLOR_DEPTH * COLOR_DEPTH)
@@ -182,7 +180,7 @@ class Histogram {
       }
     }
 
-    return (this._lookup_table_h = H)
+    return (this.#lookup_table_h = H)
   }
 
   /**
@@ -206,11 +204,11 @@ class Histogram {
       return []
     }
 
-    if (!this._lookup_table_h) {
-      this._thresholding_build_lookup_table()
+    if (!this.#lookup_table_h) {
+      this.#thresholding_build_lookup_table()
     }
 
-    var H = this._lookup_table_h
+    var H = this.#lookup_table_h
 
     var colorStops = null
     var maxSig = 0
@@ -335,12 +333,12 @@ class Histogram {
     levelMax = levelMin[1]
     levelMin = levelMin[0]
 
-    if (!refresh && this._cached_stats[levelMin + '-' + levelMax]) {
-      return this._cached_stats[levelMin + '-' + levelMax]
+    if (!refresh && this.#cached_stats[levelMin + '-' + levelMax]) {
+      return this.#cached_stats[levelMin + '-' + levelMax]
     }
 
     var data = this.data
-    var sortedIndexes = this._get_sorted_indexes()
+    var sortedIndexes = this.#get_sorted_indexes()
 
     var pixelsTotal = 0
     var medianValue = null
@@ -392,7 +390,7 @@ class Histogram {
       }
     }
 
-    return (this._cached_stats[levelMin + '-' + levelMax] = {
+    return (this.#cached_stats[levelMin + '-' + levelMax] = {
       // various pixel counts for levels (0..255)
 
       levels: {
