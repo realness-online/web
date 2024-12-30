@@ -59,12 +59,15 @@ class Potrace {
   static COLOR_AUTO = 'auto'
   static COLOR_TRANSPARENT = 'transparent'
   static THRESHOLD_AUTO = -1
-  static TURNPOLICY_BLACK = 'black'
-  static TURNPOLICY_WHITE = 'white'
-  static TURNPOLICY_LEFT = 'left'
-  static TURNPOLICY_RIGHT = 'right'
-  static TURNPOLICY_MINORITY = 'minority'
-  static TURNPOLICY_MAJORITY = 'majority'
+  static turn_policy = {
+    black: 'black',
+    white: 'white',
+    left: 'left',
+    right: 'right',
+    minority: 'minority',
+    majority: 'majority'
+  }
+  static supported_turn_policy_values = Object.values(Potrace.turn_policy)
   _luminanceData = null
   _pathlist = []
   _imageLoadingIdentifier = null
@@ -72,7 +75,7 @@ class Potrace {
   _processed = false
 
   _params = {
-    turnPolicy: Potrace.TURNPOLICY_MINORITY,
+    turnPolicy: Potrace.turn_policy.minority,
     turdSize: 2,
     alphaMax: 1,
     optCurve: true,
@@ -189,11 +192,15 @@ class Potrace {
 
         if (r && !l) {
           if (
-            self._params.turnPolicy === 'right' ||
-            (self._params.turnPolicy === 'black' && path.sign === '+') ||
-            (self._params.turnPolicy === 'white' && path.sign === '-') ||
-            (self._params.turnPolicy === 'majority' && majority(x, y)) ||
-            (self._params.turnPolicy === 'minority' && !majority(x, y))
+            self._params.turnPolicy === Potrace.turn_policy.right ||
+            (self._params.turnPolicy === Potrace.turn_policy.black &&
+              path.sign === '+') ||
+            (self._params.turnPolicy === Potrace.turn_policy.white &&
+              path.sign === '-') ||
+            (self._params.turnPolicy === Potrace.turn_policy.majority &&
+              majority(x, y)) ||
+            (self._params.turnPolicy === Potrace.turn_policy.minority &&
+              !majority(x, y))
           ) {
             tmp = dirx
             dirx = -diry
@@ -1201,9 +1208,10 @@ class Potrace {
     if (
       params &&
       params.turnPolicy &&
-      SUPPORTED_TURNPOLICY_VALUES.indexOf(params.turnPolicy) === -1
+      Potrace.supported_turn_policy_values.indexOf(params.turnPolicy) === -1
     ) {
-      var goodVals = "'" + SUPPORTED_TURNPOLICY_VALUES.join("', '") + "'"
+      var goodVals =
+        "'" + Potrace.supported_turn_policy_values.join("', '") + "'"
 
       throw new Error('Bad turnPolicy value. Allowed values are: ' + goodVals)
     }
@@ -1371,40 +1379,6 @@ class Potrace {
   }
 }
 
-var SUPPORTED_TURNPOLICY_VALUES = [
-  Potrace.TURNPOLICY_BLACK,
-  Potrace.TURNPOLICY_WHITE,
-  Potrace.TURNPOLICY_LEFT,
-  Potrace.TURNPOLICY_RIGHT,
-  Potrace.TURNPOLICY_MINORITY,
-  Potrace.TURNPOLICY_MAJORITY
-]
-
-/**
- * Potrace options
- *
- * @typedef {Object} Potrace~Options
- * @property {*}       [turnPolicy]   - how to resolve ambiguities in path decomposition (default Potrace.TURNPOLICY_MINORITY)
- * @property {Number}  [turdSize]     - suppress speckles of up to this size (default 2)
- * @property {Number}  [alphaMax]     - corner threshold parameter (default 1)
- * @property {Boolean} [optCurve]     - curve optimization (default true)
- * @property {Number}  [optTolerance] - curve optimization tolerance (default 0.2)
- * @property {Number}  [threshold]    - threshold below which color is considered black (0..255, default Potrace.THRESHOLD_AUTO)
- * @property {Boolean} [blackOnWhite] - specifies colors by which side from threshold should be traced (default true)
- * @property {string}  [color]        - foreground color (default: 'auto' (black or white)) Will be ignored when exporting as <symbol>
- * @property {string}  [background]   - background color (default: 'transparent') Will be ignored when exporting as <symbol>
- */
-
-/**
- * Jimp module
- * @external Jimp
- * @see https://www.npmjs.com/package/jimp
- */
-
-/**
- * Posterizer class for creating multi-level traced paths
- * @class
- */
 class Posterizer {
   static COLOR_AUTO = Potrace.COLOR_AUTO
   static COLOR_TRANSPARENT = Potrace.COLOR_TRANSPARENT
