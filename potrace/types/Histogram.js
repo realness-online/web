@@ -198,11 +198,9 @@ class Histogram {
    * @param [levelMax=255] - histogram segment end
    * @returns {number[]}
    */
-  multilevelThresholding(amount, levelMin, levelMax) {
-    levelMin = normalize_min_max(levelMin, levelMax)
-    levelMax = levelMin[1]
-    levelMin = levelMin[0]
-    amount = Math.min(levelMax - levelMin - 2, ~~amount)
+  multilevelThresholding(amount, level_min, level_max) {
+    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
+    amount = Math.min(level_max - level_min - 2, ~~amount)
 
     if (amount < 1) {
       return []
@@ -212,53 +210,23 @@ class Histogram {
       this.#thresholding_build_lookup_table()
     }
 
-    var H = this.#lookup_table_h
-
-    var colorStops = null
-    var maxSig = 0
-
     if (amount > 4) {
       console.log(
         '[Warning]: Threshold computation for more than 5 levels may take a long time'
       )
     }
 
-    function iterateRecursive(
-      startingPoint,
-      prevVariance,
-      indexes,
-      previousDepth
-    ) {
-      startingPoint = (startingPoint || 0) + 1
-      prevVariance = prevVariance || 0
-      indexes = indexes || new Array(amount)
-      previousDepth = previousDepth || 0
+    const [color_stops] = iterate_recursive(
+      level_min || 0,
+      0,
+      null,
+      0,
+      this.#lookup_table_h,
+      amount,
+      level_max
+    )
 
-      var depth = previousDepth + 1 // t
-      var variance
-
-      for (var i = startingPoint; i < levelMax - amount + previousDepth; i++) {
-        variance = prevVariance + H[index(startingPoint, i)]
-        indexes[depth - 1] = i
-
-        if (depth + 1 < amount + 1) {
-          // we need to go deeper
-          iterateRecursive(i, variance, indexes, depth)
-        } else {
-          // enough, we can compare values now
-          variance += H[index(i + 1, levelMax)]
-
-          if (maxSig < variance) {
-            maxSig = variance
-            colorStops = indexes.slice()
-          }
-        }
-      }
-    }
-
-    iterateRecursive(levelMin || 0)
-
-    return colorStops ? colorStops : []
+    return color_stops || []
   }
 
   /**
@@ -429,15 +397,15 @@ class Histogram {
  */
 const index = (x, y) => COLOR_DEPTH * x + y
 
+/**
+ * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
+ *
+ * @param level_min
+ * @param level_max
+ * @returns {number[]}
+ * @private
+ */
 const normalize_min_max = (level_min, level_max) => {
-  /**
-   * Shared parameter normalization for methods 'multilevelThresholding', 'autoThreshold', 'getDominantColor' and 'getStats'
-   *
-   * @param levelMin
-   * @param levelMax
-   * @returns {number[]}
-   * @private
-   */
   level_min =
     typeof level_min === 'number'
       ? utils.clamp(Math.round(level_min), 0, COLOR_RANGE_END)
@@ -453,6 +421,69 @@ const normalize_min_max = (level_min, level_max) => {
   }
 
   return [level_min, level_max]
+}
+
+/**
+ * Recursive function for multilevel thresholding
+ * @param {number} starting_point - Starting point for iteration
+ * @param {number} prev_variance - Previous variance value
+ * @param {Array} indexes - Array to store threshold indexes
+ * @param {number} previous_depth - Previous depth in recursion
+ * @param {Float64Array} h - Lookup table H
+ * @param {number} amount - Number of thresholds
+ * @param {number} level_max - Maximum level
+ * @returns {[Array, number]} - Array of color stops and maximum significance
+ * @private
+ */
+const iterate_recursive = (
+  starting_point,
+  prev_variance,
+  indexes,
+  previous_depth,
+  h,
+  amount,
+  level_max
+) => {
+  starting_point = (starting_point || 0) + 1
+  prev_variance = prev_variance || 0
+  indexes = indexes || new Array(amount)
+  previous_depth = previous_depth || 0
+
+  const depth = previous_depth + 1
+  let max_sig = 0
+  let color_stops = null
+
+  for (let i = starting_point; i < level_max - amount + previous_depth; i++) {
+    const variance = prev_variance + h[index(starting_point, i)]
+    indexes[depth - 1] = i
+
+    if (depth + 1 < amount + 1) {
+      // we need to go deeper
+      const [new_stops, new_sig] = iterate_recursive(
+        i,
+        variance,
+        indexes,
+        depth,
+        h,
+        amount,
+        level_max
+      )
+      if (new_sig > max_sig) {
+        max_sig = new_sig
+        color_stops = new_stops
+      }
+    } else {
+      // enough, we can compare values now
+      const total_variance = variance + h[index(i + 1, level_max)]
+
+      if (max_sig < total_variance) {
+        max_sig = total_variance
+        color_stops = indexes.slice()
+      }
+    }
+  }
+
+  return [color_stops, max_sig]
 }
 
 export default Histogram
