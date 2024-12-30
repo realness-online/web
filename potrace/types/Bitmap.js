@@ -2,49 +2,32 @@ import Point from '@/potrace/types/Point'
 import utils from '@/potrace/utils'
 import Histogram from '@/potrace/types/Histogram'
 
-/**
- * Represents a bitmap where each pixel can be a number in range of 0..255
- * Used internally to store luminance data.
- *
- * @param {Number} w
- * @param {Number} h
- * @constructor
- */
-function Bitmap(w, h) {
-  this._histogram = null
+class Bitmap {
+  #histogram = null
+  width
+  height
+  size
+  arrayBuffer
+  data
 
-  this.width = w
-  this.height = h
-  this.size = w * h
-  this.arrayBuffer = new ArrayBuffer(this.size)
-  this.data = new Uint8Array(this.arrayBuffer)
-}
+  constructor(w, h) {
+    this.width = w
+    this.height = h
+    this.size = w * h
+    this.arrayBuffer = new ArrayBuffer(this.size)
+    this.data = new Uint8Array(this.arrayBuffer)
+  }
 
-export default Bitmap
-
-Bitmap.prototype = {
-  /**
-   * Returns pixel value
-   *
-   * @param {Number|Point} x - index, point or x
-   * @param {Number} [y]
-   */
-  getValueAt: function (x, y) {
-    var index =
+  get_value_at = (x, y) => {
+    const index =
       typeof x === 'number' && typeof y !== 'number'
         ? x
-        : this.pointToIndex(x, y)
+        : this.point_to_index(x, y)
     return this.data[index]
-  },
+  }
 
-  /**
-   * Converts {@link Point} to index value
-   *
-   * @param {Number} index
-   * @returns {Point}
-   */
-  indexToPoint: function (index) {
-    var point = new Point()
+  index_to_point = index => {
+    const point = new Point()
 
     if (utils.between(index, 0, this.size)) {
       point.y = Math.floor(index / this.width)
@@ -55,22 +38,15 @@ Bitmap.prototype = {
     }
 
     return point
-  },
+  }
 
-  /**
-   * Calculates index for point or coordinate pair
-   *
-   * @param {Number|Point} pointOrX
-   * @param {Number} [y]
-   * @returns {Number}
-   */
-  pointToIndex: function (pointOrX, y) {
-    var _x = pointOrX,
-      _y = y
+  point_to_index = (point_or_x, y) => {
+    let _x = point_or_x
+    let _y = y
 
-    if (pointOrX instanceof Point) {
-      _x = pointOrX.x
-      _y = pointOrX.y
+    if (point_or_x instanceof Point) {
+      _x = point_or_x.x
+      _y = point_or_x.y
     }
 
     if (
@@ -81,32 +57,27 @@ Bitmap.prototype = {
     }
 
     return this.width * _y + _x
-  },
+  }
 
-  /**
-   * Makes a copy of current bitmap
-   *
-   * @param {Function} [iterator] optional callback, used for processing pixel value. Accepted arguments: value, index
-   * @returns {Bitmap}
-   */
-  copy: function (iterator) {
-    var bm = new Bitmap(this.width, this.height),
-      iteratorPresent = typeof iterator === 'function',
-      i
+  copy = iterator => {
+    const bm = new Bitmap(this.width, this.height)
+    const iterator_present = typeof iterator === 'function'
 
-    for (i = 0; i < this.size; i++) {
-      bm.data[i] = iteratorPresent ? iterator(this.data[i], i) : this.data[i]
+    for (let i = 0; i < this.size; i++) {
+      bm.data[i] = iterator_present ? iterator(this.data[i], i) : this.data[i]
     }
 
     return bm
-  },
+  }
 
-  histogram: function () {
-    if (this._histogram) {
-      return this._histogram
+  histogram = () => {
+    if (this.#histogram) {
+      return this.#histogram
     }
 
-    this._histogram = new Histogram(this)
-    return this._histogram
+    this.#histogram = new Histogram(this)
+    return this.#histogram
   }
 }
+
+export default Bitmap
