@@ -199,7 +199,7 @@ class Potrace {
     }
   }
 
-  #bm_to_pathlist() {
+  #bitmap_to_pathlist() {
     const threshold =
       this.#params.threshold === Potrace.THRESHOLD_AUTO
         ? this.#luminance_data.histogram().autoThreshold() || 128
@@ -226,7 +226,7 @@ class Potrace {
   }
 
   /**
-   * Processes path list created by #bm_to_pathlist method creating and optimizing {@link Curve}'s
+   * Processes path list created by #bitmap_to_pathlist method creating and optimizing {@link Curve}'s
    * @private
    */
   #process_path() {
@@ -1290,7 +1290,7 @@ class Potrace {
     }
 
     if (!this.#processed) {
-      this.#bm_to_pathlist()
+      this.#bitmap_to_pathlist()
       this.#process_path()
       this.#processed = true
     }
@@ -1324,7 +1324,7 @@ class Potrace {
     }
 
     if (!this.#processed) {
-      this.#bm_to_pathlist()
+      this.#bitmap_to_pathlist()
       this.#process_path()
       this.#processed = true
     }
