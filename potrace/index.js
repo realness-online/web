@@ -194,11 +194,11 @@ class Potrace {
    * @returns {Point|false} Next point or false if not found
    */
   #find_next(black_map, point) {
-    let i = black_map.pointToIndex(point)
+    let i = black_map.point_to_index(point)
     while (i < black_map.size && black_map.data[i] !== 1) {
       i++
     }
-    return i < black_map.size && black_map.indexToPoint(i)
+    return i < black_map.size && black_map.index_to_point(i)
   }
 
   /**
@@ -213,10 +213,10 @@ class Potrace {
     for (let i = 2; i < 5; i++) {
       ct = 0
       for (let a = -i + 1; a <= i - 1; a++) {
-        ct += black_map.getValueAt(x + a, y + i - 1) ? 1 : -1
-        ct += black_map.getValueAt(x + i - 1, y + a - 1) ? 1 : -1
-        ct += black_map.getValueAt(x + a - 1, y - i) ? 1 : -1
-        ct += black_map.getValueAt(x - i, y + a) ? 1 : -1
+        ct += black_map.get_value_at(x + a, y + i - 1) ? 1 : -1
+        ct += black_map.get_value_at(x + i - 1, y + a - 1) ? 1 : -1
+        ct += black_map.get_value_at(x + a - 1, y - i) ? 1 : -1
+        ct += black_map.get_value_at(x - i, y + a) ? 1 : -1
       }
       if (ct > 0) return 1
       if (ct < 0) return 0
@@ -237,7 +237,7 @@ class Potrace {
     let dir_x = 0
     let dir_y = 1
 
-    path.sign = black_map.getValueAt(point.x, point.y) ? '+' : '-'
+    path.sign = black_map.get_value_at(point.x, point.y) ? '+' : '-'
 
     while (true) {
       path.pt.push(new Point(x, y))
@@ -253,11 +253,11 @@ class Potrace {
 
       if (x === point.x && y === point.y) break
 
-      const l = black_map.getValueAt(
+      const l = black_map.get_value_at(
         x + (dir_x + dir_y - 1) / 2,
         y + (dir_y - dir_x - 1) / 2
       )
-      const r = black_map.getValueAt(
+      const r = black_map.get_value_at(
         x + (dir_x - dir_y - 1) / 2,
         y + (dir_y + dir_x - 1) / 2
       )
@@ -306,7 +306,7 @@ class Potrace {
         const max_x = path.maxX
 
         for (let j = x; j < max_x; j++) {
-          const indx = black_map.pointToIndex(j, min_y)
+          const indx = black_map.point_to_index(j, min_y)
           black_map.data[indx] = black_map.data[indx] ? 0 : 1
         }
         y1 = y
