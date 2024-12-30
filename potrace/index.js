@@ -113,25 +113,22 @@ class Potrace {
    * @private
    */
   _bm_to_pathlist() {
-    const self = this
-    const threshold = this._params.threshold
+    const threshold =
+      this._params.threshold === Potrace.THRESHOLD_AUTO
+        ? this._luminance_data.histogram().autoThreshold() || 128
+        : this._params.threshold
+
     const black_on_white = this._params.blackOnWhite
-    let black_map
-    let current_point = new Point(0, 0)
-    let path
-
-    if (threshold === Potrace.THRESHOLD_AUTO) {
-      threshold = this._luminance_data.histogram().autoThreshold() || 128
-    }
-
-    black_map = this._luminance_data.copy(lum => {
+    const black_map = this._luminance_data.copy(lum => {
       const past_the_threshold = black_on_white
         ? lum > threshold
         : lum < threshold
       return past_the_threshold ? 0 : 1
     })
 
-    // Convert nested functions to arrow functions with snake_case
+    let current_point = new Point(0, 0)
+    this._pathlist = [] // Clear path list
+
     const find_next = point => {
       let i = black_map.pointToIndex(point)
       while (i < black_map.size && black_map.data[i] !== 1) {
@@ -162,16 +159,15 @@ class Potrace {
       let y = point.y
       let dir_x = 0
       let dir_y = 1
-      let tmp
 
       path.sign = black_map.getValueAt(point.x, point.y) ? '+' : '-'
 
-      while (1) {
+      while (true) {
         path.pt.push(new Point(x, y))
-        if (x > path.maxX) path.maxX = x
-        if (x < path.minX) path.minX = x
-        if (y > path.maxY) path.maxY = y
-        if (y < path.minY) path.minY = y
+        path.maxX = Math.max(path.maxX, x)
+        path.minX = Math.min(path.minX, x)
+        path.maxY = Math.max(path.maxY, y)
+        path.minY = Math.min(path.minY, y)
         path.len++
 
         x += dir_x
@@ -191,32 +187,24 @@ class Potrace {
 
         if (r && !l) {
           if (
-            self._params.turnPolicy === Potrace.turn_policy.right ||
-            (self._params.turnPolicy === Potrace.turn_policy.black &&
+            this._params.turnPolicy === Potrace.turn_policy.right ||
+            (this._params.turnPolicy === Potrace.turn_policy.black &&
               path.sign === '+') ||
-            (self._params.turnPolicy === Potrace.turn_policy.white &&
+            (this._params.turnPolicy === Potrace.turn_policy.white &&
               path.sign === '-') ||
-            (self._params.turnPolicy === Potrace.turn_policy.majority &&
+            (this._params.turnPolicy === Potrace.turn_policy.majority &&
               get_majority(x, y)) ||
-            (self._params.turnPolicy === Potrace.turn_policy.minority &&
+            (this._params.turnPolicy === Potrace.turn_policy.minority &&
               !get_majority(x, y))
           ) {
-            tmp = dir_x
-            dir_x = -dir_y
-            dir_y = tmp
+            ;[dir_x, dir_y] = [-dir_y, dir_x] // Using array destructuring
           } else {
-            tmp = dir_x
-            dir_x = dir_y
-            dir_y = -tmp
+            ;[dir_x, dir_y] = [dir_y, -dir_x]
           }
         } else if (r) {
-          tmp = dir_x
-          dir_x = -dir_y
-          dir_y = tmp
+          ;[dir_x, dir_y] = [-dir_y, dir_x]
         } else if (!l) {
-          tmp = dir_x
-          dir_x = dir_y
-          dir_y = -tmp
+          ;[dir_x, dir_y] = [dir_y, -dir_x]
         }
       }
       return path
@@ -225,17 +213,17 @@ class Potrace {
     const xor_path = path => {
       let y1 = path.pt[0].y
       const len = path.len
-      let x, y, max_x, min_y, indx
 
       for (let i = 1; i < len; i++) {
-        x = path.pt[i].x
-        y = path.pt[i].y
+        const x = path.pt[i].x
+        const y = path.pt[i].y
 
         if (y !== y1) {
-          min_y = y1 < y ? y1 : y
-          max_x = path.maxX
+          const min_y = Math.min(y1, y)
+          const max_x = path.maxX
+
           for (let j = x; j < max_x; j++) {
-            indx = black_map.pointToIndex(j, min_y)
+            const indx = black_map.pointToIndex(j, min_y)
             black_map.data[indx] = black_map.data[indx] ? 0 : 1
           }
           y1 = y
@@ -243,14 +231,12 @@ class Potrace {
       }
     }
 
-    // Clear path list
-    this._pathlist = []
-
+    // Main loop
     while ((current_point = find_next(current_point))) {
-      path = find_path(current_point)
+      const path = find_path(current_point)
       xor_path(path)
 
-      if (path.area > self._params.turdSize) {
+      if (path.area > this._params.turdSize) {
         this._pathlist.push(path)
       }
     }
@@ -605,7 +591,7 @@ class Potrace {
         y = sums[j + 1].y - sums[i].y + r * sums[n].y
         x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
         xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
-        y2 = sums[j + 1].y2 - sums[i].y2 + r * sums[n].y2
+        y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
         k = j + 1 - i + r * n
 
         ctr.x = x / k
