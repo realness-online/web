@@ -408,26 +408,26 @@ class Potrace {
      * @private
      * @param {Path} path - Path to optimize
      */
-    function best_polygon(path) {
-      function penalty3(path, i, j) {
-        var n = path.len
-        var pt = path.pt
-        var sums = path.sums
-        var x
-        var y
-        var xy
-        var x2
-        var y2
-        var k
-        var a
-        var b
-        var c
-        var s
-        var px
-        var py
-        var ex
-        var ey
-        var r = 0
+    const best_polygon = path => {
+      const penalty3 = (path, i, j) => {
+        const n = path.len
+        const pt = path.pt
+        const sums = path.sums
+        let x
+        let y
+        let xy
+        let x2
+        let y2
+        let k
+        let a
+        let b
+        let c
+        let s
+        let px
+        let py
+        let ex
+        let ey
+        let r = 0
         if (j >= n) {
           j -= n
           r = 1
@@ -463,20 +463,20 @@ class Potrace {
         return Math.sqrt(s)
       }
 
-      var i
-      var j
-      var m
-      var k
-      var n = path.len
-      var pen = []
-      var prev = []
-      var clip0 = []
-      var clip1 = []
-      var seg0 = []
-      var seg1 = []
-      var thispen
-      var best
-      var c
+      let i
+      let j
+      let m
+      let k
+      let n = path.len
+      let pen = []
+      let prev = []
+      let clip0 = []
+      let clip1 = []
+      const seg0 = []
+      const seg1 = []
+      let thispen
+      let best
+      let c
 
       for (i = 0; i < n; i++) {
         c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
