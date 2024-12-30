@@ -74,7 +74,7 @@ import Bitmap from '@/potrace/types/Bitmap'
  * @property {number[]} alpha - Alpha values for each vertex
  * @property {number[]} alpha0 - Initial alpha values
  * @property {number[]} beta - Beta values for each vertex
- * @property {boolean} alphaCurve - Whether curve uses alpha values
+ * @property {boolean} alpha_curve - Whether curve uses alpha values
  */
 
 /**
@@ -951,7 +951,7 @@ class Potrace {
       curve.alpha[j] = alpha
       curve.beta[j] = 0.5
     }
-    curve.alphaCurve = 1
+    curve.alpha_curve = 1
   }
 
   /**
@@ -1089,7 +1089,7 @@ class Potrace {
       ocurve.beta[i] = s[i] / (s[i] + t[i1])
     }
 
-    ocurve.alphaCurve = 1
+    ocurve.alpha_curve = 1
     path.curve = ocurve
   }
 
