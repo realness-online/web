@@ -22,18 +22,16 @@ import Bitmap from '@/potrace/types/Bitmap'
  * @param {boolean} [options.blackOnWhite=true] - Specifies which side of threshold to trace
  * @returns {Promise<Object>} - Resolution object containing width, height, dark flag and paths
  */
-export const as_paths = (file, options = {}) => {
-  return new Promise((resolve, reject) => {
-    var potrace = new Potrace(options)
-    potrace.load_image(file, error => {
-      if (error) reject(error)
-      const width = potrace._luminance_data.width
-      const height = potrace._luminance_data.height
-      const dark = !potrace._params.black_on_white
-      const paths = potrace.as_curves()
-      resolve({ width, height, dark, paths })
-    })
-  })
+export const as_paths = async (file, options = {}) => {
+  const potrace = new Potrace(options)
+  potrace.load_image(file)
+
+  const width = potrace._luminance_data.width
+  const height = potrace._luminance_data.height
+  const dark = !potrace._params.black_on_white
+  const paths = potrace.as_curves()
+
+  return { width, height, dark, paths }
 }
 
 /**
@@ -237,22 +235,20 @@ class Potrace {
    * @private
    */
   _process_path() {
-    var self = this
-
     /**
      * Calculates sums for path optimization
      * @private
      * @param {Path} path - Path to calculate sums for
      */
-    function calc_sums(path) {
-      var i
-      var x
-      var y
+    const calc_sums = path => {
+      let i
+      let x
+      let y
       path.x0 = path.pt[0].x
       path.y0 = path.pt[0].y
 
       path.sums = []
-      var s = path.sums
+      const s = path.sums
       s.push(new Sum(0, 0, 0, 0, 0))
       for (i = 0; i < path.len; i++) {
         x = path.pt[i].x - path.x0
@@ -274,30 +270,30 @@ class Potrace {
      * @private
      * @param {Path} path - Path to calculate sequences for
      */
-    function calc_lon(path) {
-      var n = path.len
-      var pt = path.pt
-      var dir
-      var pivk = []
-      var nc = []
-      var ct = []
+    const calc_lon = path => {
+      const n = path.len
+      const pt = path.pt
+      let dir
+      const pivk = []
+      const nc = []
+      const ct = []
 
       path.lon = []
 
-      var constraint = [new Point(), new Point()],
-        cur = new Point(),
-        off = new Point(),
-        dk = new Point(),
-        foundk
+      const constraint = [new Point(), new Point()]
+      const cur = new Point()
+      const off = new Point()
+      const dk = new Point()
+      let foundk
 
-      var i
-      var j
-      var k1
-      var a
-      var b
-      var c
-      var d
-      var k = 0
+      let i
+      let j
+      let k1
+      let a
+      let b
+      let c
+      let d
+      let k = 0
       for (i = n - 1; i >= 0; i--) {
         if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) {
           k = i + 1
@@ -820,7 +816,7 @@ class Potrace {
         }
         curve.alpha0[j] = alpha
 
-        if (alpha >= self._params.alphaMax) {
+        if (alpha >= this._params.alphaMax) {
           curve.tag[j] = 'CORNER'
           curve.c[3 * j + 1] = curve.vertex[j]
           curve.c[3 * j + 2] = p4
@@ -1089,7 +1085,7 @@ class Potrace {
             i,
             utils.mod(j, m),
             o,
-            self._params.optTolerance,
+            this._params.optTolerance,
             convc,
             areac
           )
@@ -1163,7 +1159,7 @@ class Potrace {
 
       smooth(path)
 
-      if (self._params.optCurve) {
+      if (this._params.optCurve) {
         opti_curve(path)
       }
     }
@@ -1237,20 +1233,15 @@ class Potrace {
 
   /**
    * @param {Jimp} target Image source. Could be anything that {@link Jimp} Supported formats are: PNG, JPEG or BMP
-   * @param {Function} callback
    */
-  load_image(target, callback) {
-    const self = this
-    let jobId = {}
-
-    this._image_loading_identifier = jobId
+  load_image(target) {
+    this._image_loading_identifier = {}
     this._image_loaded = false
 
     // target instanceof Jimp
     this._image_loading_identifier = null
     this._image_loaded = true
-    self._process_loaded_image(target)
-    callback.call(self, null)
+    this._process_loaded_image(target)
   }
 
   /**
