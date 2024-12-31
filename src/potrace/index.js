@@ -9,33 +9,48 @@ import Bitmap from '@/potrace/types/Bitmap'
 import Histogram from '@/potrace/types/Histogram'
 
 /**
+ * Configuration options for the Potrace algorithm
  * @typedef {Object} PotraceOptions
- * @property {('black'|'white'|'left'|'right'|'minority'|'majority')} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition
+ * @property {'black'|'white'|'left'|'right'|'minority'|'majority'} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition.
+ *    - 'black': Always choose the black pixel in ambiguous cases
+ *    - 'white': Always choose the white pixel in ambiguous cases
+ *    - 'left': Always choose the leftmost pixel in ambiguous cases
+ *    - 'right': Always choose the rightmost pixel in ambiguous cases
+ *    - 'minority': Choose the color that occurs least frequently in the local neighborhood
+ *    - 'majority': Choose the color that occurs most frequently in the local neighborhood
  * @property {number} [turdSize=2] - Suppress speckles of up to this size (must be >= 0)
- * @property {number} [alphaMax=1] - Corner threshold parameter (must be >= 0)
- * @property {boolean} [optCurve=true] - Enable/disable curve optimization
- * @property {number} [optTolerance=0.2] - Curve optimization tolerance (must be >= 0)
- * @property {number|'auto'} [threshold='auto'] - Threshold below which color is considered black (0-255 or 'auto')
- * @property {boolean} [blackOnWhite=true] - Specifies which side of threshold to trace
+ * @property {number} [alphaMax=1] - Corner threshold parameter. Higher values detect more corners (must be >= 0)
+ * @property {boolean} [optCurve=true] - Whether to optimize the path curves for smoother rendering
+ * @property {number} [optTolerance=0.2] - Curve optimization tolerance. Higher values create simpler paths (must be >= 0)
+ * @property {number|'auto'} [threshold='auto'] - Color threshold for black/white separation (0-255 or 'auto')
+ * @property {boolean} [blackOnWhite=true] - If true, traces dark areas. If false, traces light areas
  * @property {string} [color='auto'] - Foreground color ('auto', 'black', 'white', or any valid CSS color)
  * @property {string} [background='transparent'] - Background color (any valid CSS color)
  * @property {number|number[]|'auto'} [steps='auto'] - Number of posterization steps or array of threshold values
- * @property {('spread'|'dominant'|'median'|'mean')} [fillStrategy='dominant'] - Color selection strategy for posterization
- * @property {('auto'|'equal')} [rangeDistribution='auto'] - Distribution strategy for posterization ranges
+ * @property {'spread'|'dominant'|'median'|'mean'} [fillStrategy='dominant'] - How to determine colors in posterization:
+ *    - 'spread': Distribute colors evenly
+ *    - 'dominant': Use most frequent colors
+ *    - 'median': Use median color value
+ *    - 'mean': Use average color value
+ * @property {'auto'|'equal'} [rangeDistribution='auto'] - How to distribute posterization ranges:
+ *    - 'auto': Automatically determine optimal ranges
+ *    - 'equal': Use equal-sized ranges
  */
 
 /**
+ * Represents a single SVG path with its rendering properties
  * @typedef {Object} PathData
- * @property {string} d - SVG path data string
- * @property {string} fillOpacity - Fill opacity value
+ * @property {string} d - SVG path data string using moveto, lineto, curveto commands
+ * @property {string} fillOpacity - Fill opacity value between 0 and 1
  */
 
 /**
+ * Result of processing an image into SVG paths
  * @typedef {Object} ProcessedPaths
- * @property {number} width - Image width
- * @property {number} height - Image height
- * @property {boolean} dark - Whether image is dark on light background
- * @property {Array<PathData>} paths - Array of SVG path data
+ * @property {number} width - Original image width in pixels
+ * @property {number} height - Original image height in pixels
+ * @property {boolean} dark - Whether the image is dark on light background
+ * @property {Array<PathData>} paths - Array of SVG path data objects
  */
 
 /**
@@ -186,10 +201,14 @@ class Potrace {
   }
 
   /**
+   * Finds the next point to process in the bitmap
    * @private
-   * @param {Bitmap} black_map - Binary bitmap data
-   * @param {Point} point - Starting point coordinates
-   * @returns {Point|false} Next point or false if not found
+   * @param {Bitmap} black_map - Binary bitmap representation of the image
+   * @param {Point} point - Current point coordinates
+   * @returns {Point|false} Next point to process or false if no more points found
+   * @description
+   * Scans the bitmap from the current point to find the next unprocessed pixel.
+   * Used during path tracing to find starting points for new paths.
    */
   #find_next(black_map, point) {
     let i = black_map.point_to_index(point)
@@ -200,11 +219,16 @@ class Potrace {
   }
 
   /**
+   * Determines majority pixel value in local neighborhood
    * @private
    * @param {Bitmap} black_map - Binary bitmap data
-   * @param {number} x - X coordinate
-   * @param {number} y - Y coordinate
-   * @returns {0|1} Majority value (0 or 1)
+   * @param {number} x - X coordinate of center pixel
+   * @param {number} y - Y coordinate of center pixel
+   * @returns {0|1} Majority value (0 or 1) in the neighborhood
+   * @description
+   * Examines increasingly larger neighborhoods around the point (x,y)
+   * to determine whether black or white pixels are in majority.
+   * Used for resolving ambiguous cases in path tracing.
    */
   #get_majority(black_map, x, y) {
     let ct
@@ -223,10 +247,17 @@ class Potrace {
   }
 
   /**
+   * Traces a complete path from a starting point
    * @private
    * @param {Bitmap} black_map - Binary bitmap data
    * @param {Point} point - Starting point coordinates
-   * @returns {Path} Generated path
+   * @returns {Path} Complete traced path
+   * @description
+   * Implements the main path tracing algorithm:
+   * 1. Starts from given point and follows the edge
+   * 2. Uses turnPolicy to resolve ambiguous cases
+   * 3. Tracks path direction and area
+   * 4. Returns when path closes back to starting point
    */
   #find_path(black_map, point) {
     const path = new Path()
@@ -313,9 +344,16 @@ class Potrace {
   }
 
   /**
+   * Converts bitmap data to vector paths
    * @private
    * @returns {void}
    * @throws {Error} If image is not loaded
+   * @description
+   * Core vectorization process:
+   * 1. Applies threshold to create binary image
+   * 2. Finds and traces all paths in the image
+   * 3. Filters paths based on turdSize
+   * 4. Stores resulting paths in pathlist
    */
   #bitmap_to_pathlist() {
     const threshold =
@@ -348,6 +386,13 @@ class Potrace {
    * @private
    * @param {Path} path - Path to calculate sums for
    * @returns {void}
+   * @description
+   * Computes running sums of:
+   * - x and y coordinates
+   * - x*y products
+   * - x² and y² values
+   * These sums are used later for curve fitting and optimization to minimize
+   * the squared distance between the curve and the original path points.
    */
   #calc_sums = path => {
     let i
@@ -514,6 +559,13 @@ class Potrace {
    * @private
    * @param {Path} path - Path to optimize
    * @returns {void}
+   * @description
+   * This method finds the optimal polygon approximation of the path using the following steps:
+   * 1. Calculates penalty values for all possible vertex combinations
+   * 2. Uses dynamic programming to find the sequence of vertices that minimizes total penalty
+   * 3. Stores the optimal vertex sequence in the path object
+   * The penalty calculation considers both the deviation from the original path and the
+   * number of vertices used.
    */
   #best_polygon = path => {
     const penalty3 = (path, i, j) => {
@@ -648,6 +700,11 @@ class Potrace {
    * @private
    * @param {Path} path - Path to adjust
    * @returns {void}
+   * @description
+   * Adjusts vertices of the path by:
+   * 1. Calculating the slope and center point for each segment
+   * 2. Determining the direction and curvature of the path
+   * 3. Optimizing the path for smoother curves
    */
   #adjust_vertices = path => {
     const pointslope = (path, i, j, ctr, dir) => {
@@ -876,6 +933,8 @@ class Potrace {
    * @private
    * @param {Path} path - Path to reverse
    * @returns {void}
+   * @description
+   * Reverses the direction of the path by swapping its vertices
    */
   #reverse = path => {
     const curve = path.curve
@@ -897,6 +956,11 @@ class Potrace {
    * @private
    * @param {Path} path - Path to smooth
    * @returns {void}
+   * @description
+   * Smooths the path curves by:
+   * 1. Calculating the alpha value for each curve segment
+   * 2. Determining the curve type (corner or curve)
+   * 3. Calculating control points for smooth curves
    */
   #smooth = path => {
     const m = path.curve.n
@@ -958,6 +1022,11 @@ class Potrace {
    * @param {Path} path - Path to optimize
    * @returns {void}
    * @throws {Error} If path is invalid
+   * @description
+   * Optimizes the path curves by:
+   * 1. Calculating the optimal curve for each segment
+   * 2. Determining the best curve sequence
+   * 3. Reconstructing the optimized curve
    */
   #opti_curve = path => {
     const curve = path.curve
@@ -1092,15 +1161,23 @@ class Potrace {
   }
 
   /**
+   * Calculates penalty for curve optimization
    * @private
-   * @param {Path} path - Path to calculate sums for
-   * @param {number} i - Start index
-   * @param {number} j - End index
-   * @param {Opti} res - Result object
-   * @param {number} opttolerance - Optimization tolerance
-   * @param {number[]} convc - Convexity array
-   * @param {number[]} areac - Area array
-   * @returns {0|1} Success flag
+   * @param {Path} path - Path to calculate penalty for
+   * @param {number} i - Start vertex index
+   * @param {number} j - End vertex index
+   * @param {Opti} res - Result object to store optimization data
+   * @param {number} opttolerance - Optimization tolerance threshold
+   * @param {number[]} convc - Array of convexity values for each vertex
+   * @param {number[]} areac - Array of cumulative areas
+   * @returns {0|1} 0 if optimization is possible, 1 if optimization should be rejected
+   * @description
+   * Calculates a penalty value for a potential curve optimization between vertices i and j.
+   * The penalty is based on:
+   * 1. Deviation from original path points
+   * 2. Smoothness of the resulting curve
+   * 3. Distribution of control points
+   * Returns 1 if the optimization would create an invalid curve.
    */
   #opti_penalty(path, i, j, res, opttolerance, convc, areac) {
     const m = path.curve.n
@@ -1256,10 +1333,18 @@ class Potrace {
   }
 
   /**
-   * Processes path list and creates optimized curves
+   * Processes bitmap into vector paths
    * @private
    * @returns {void}
-   * @throws {Error} If pathlist is empty or invalid
+   * @throws {Error} If image is not loaded
+   * @description
+   * Main vectorization process that:
+   * 1. Calculates path sums for optimization
+   * 2. Determines longest sequences for path optimization
+   * 3. Finds optimal polygons for each path
+   * 4. Adjusts vertices for smoother curves
+   * 5. Applies curve smoothing
+   * 6. Optionally optimizes curves for better rendering
    */
   #process_path() {
     for (let i = 0; i < this.#pathlist.length; i++) {
@@ -1287,6 +1372,12 @@ class Potrace {
    * @param {Partial<PotraceOptions>} params - Parameters to validate
    * @throws {Error} If parameters are invalid with specific reason
    * @returns {void}
+   * @description
+   * Validates parameters against constraints and throws an error if invalid.
+   * Checks for:
+   * 1. Valid turn policy values
+   * 2. Threshold value within 0-255 range
+   * 3. OptCurve is a boolean
    */
   #validate_parameters(params) {
     if (
@@ -1352,6 +1443,9 @@ class Potrace {
    * @private
    * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
    * @returns {void}
+   * @description
+   * Loads and initializes image data for processing.
+   * Resets loading state, processes image data, and sets loaded flags.
    */
   #load_image(image_data) {
     this.#image_loading_identifier = {}
@@ -1367,6 +1461,10 @@ class Potrace {
    * @param {PotraceOptions} newParams - New parameters to validate and set
    * @throws {Error} If parameters are invalid
    * @returns {void}
+   * @description
+   * Validates and sets new parameters.
+   * Validates parameters against constraints and updates internal state.
+   * Marks processing as needed if relevant parameters change.
    */
   #set_parameters(newParams) {
     this.#validate_parameters(newParams)
@@ -1402,6 +1500,12 @@ class Potrace {
    * @param {string} [fillColor] - Override fill color (any valid CSS color)
    * @returns {string} SVG path tag
    * @throws {Error} If image not loaded
+   * @description
+   * Generates an SVG path tag for the processed image.
+   * If fillColor is provided, it overrides the default fill color.
+   * If fillColor is not provided, it uses the color specified in the parameters.
+   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
+   * Throws an error if the image is not loaded.
    */
   get_path_tag(fillColor) {
     fillColor = arguments.length === 0 ? this.#params.color : fillColor
@@ -1436,6 +1540,12 @@ class Potrace {
    * @param {string} [fillColor] - Override fill color (any valid CSS color)
    * @returns {string} SVG path data string
    * @throws {Error} If image not loaded
+   * @description
+   * Generates SVG path data for the processed image.
+   * If fillColor is provided, it overrides the default fill color.
+   * If fillColor is not provided, it uses the color specified in the parameters.
+   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
+   * Throws an error if the image is not loaded.
    */
   get_path_data(fillColor) {
     fillColor = arguments.length === 0 ? this.#params.color : fillColor
@@ -1464,9 +1574,15 @@ class Potrace {
   }
 
   /**
+   * Adds an extra color stop for better gradient transitions
    * @private
    * @param {Array<{value: number, colorIntensity: number}>} ranges - Current color ranges
-   * @returns {Array<{value: number, colorIntensity: number}>} Modified color ranges
+   * @returns {Array<{value: number, colorIntensity: number}>} Modified color ranges with extra stop
+   * @description
+   * Improves color transitions by:
+   * 1. Analyzing the last color range
+   * 2. Adding an intermediate stop if the range is too wide
+   * 3. Calculating appropriate color intensity for the new stop
    */
   #add_extra_color_stop(ranges) {
     const blackOnWhite = this.#params.blackOnWhite
@@ -1505,9 +1621,16 @@ class Potrace {
   }
 
   /**
+   * Calculates color intensity values for threshold ranges
    * @private
    * @param {number[]} colorStops - Array of threshold values
    * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
+   * @description
+   * For each color stop:
+   * 1. Determines the range boundaries
+   * 2. Applies the selected fill strategy (spread, dominant, mean, median)
+   * 3. Calculates color intensity based on the strategy
+   * 4. Ensures proper spacing between colors
    */
   #calc_color_intensity(colorStops) {
     const blackOnWhite = this.#params.blackOnWhite
@@ -1592,6 +1715,8 @@ class Potrace {
   /**
    * @private
    * @returns {import('./types/Histogram')} Image histogram
+   * @description
+   * Retrieves the image histogram. If it doesn't exist, creates and initializes it.
    */
   #get_image_histogram() {
     // If histogram doesn't exist yet, create it
@@ -1606,6 +1731,12 @@ class Potrace {
    * Gets ranges for posterization
    * @private
    * @returns {Array<Object>} Color ranges
+   * @description
+   * Determines the color ranges for posterization based on the specified parameters.
+   * If steps are provided as an array, uses those values.
+   * If steps are set to Potrace.STEPS_AUTO, calculates the number of steps automatically.
+   * If rangeDistribution is set to Potrace.RANGES_AUTO, uses auto-calculated ranges.
+   * Otherwise, uses equally distributed ranges.
    */
   #get_ranges() {
     const steps = this.#param_steps()
@@ -1646,9 +1777,14 @@ class Potrace {
   }
 
   /**
-   * Gets auto-calculated ranges
+   * Gets auto-calculated ranges for color posterization
    * @private
-   * @returns {Array<Object>} Auto-calculated ranges
+   * @returns {Array<{value: number, colorIntensity: number}>} Array of color ranges with thresholds and intensities
+   * @description
+   * Calculates optimal color ranges for posterization by:
+   * 1. Using histogram analysis to find natural color breaks
+   * 2. Applying multilevel thresholding when auto threshold is enabled
+   * 3. Adjusting ranges based on black/white preference
    */
   #get_ranges_auto() {
     const histogram = this.#get_image_histogram()
@@ -1679,9 +1815,14 @@ class Potrace {
   }
 
   /**
-   * Gets equally distributed ranges
+   * Gets equally distributed ranges for color posterization
    * @private
-   * @returns {Array<Object>} Equally distributed ranges
+   * @returns {Array<{value: number, colorIntensity: number}>} Array of evenly spaced color ranges
+   * @description
+   * Creates color ranges by:
+   * 1. Dividing the available color space into equal steps
+   * 2. Calculating appropriate thresholds for each step
+   * 3. Computing color intensities for each range
    */
   #get_ranges_equally_distributed() {
     const blackOnWhite = this.#params.blackOnWhite
@@ -1707,9 +1848,16 @@ class Potrace {
   }
 
   /**
+   * Validates and processes step parameters
    * @private
-   * @param {boolean} [count=false] - Return count instead of steps
-   * @returns {number|number[]} Steps value or count
+   * @param {boolean} [count=false] - Whether to return the count instead of steps
+   * @returns {number|number[]} Processed steps value or count
+   * @description
+   * Processes step parameters by:
+   * 1. Handling array input
+   * 2. Calculating automatic step count based on threshold
+   * 3. Ensuring step count is within valid range
+   * 4. Adjusting steps based on available colors
    */
   #param_steps(count) {
     const steps = this.#params.steps
@@ -1738,9 +1886,15 @@ class Potrace {
   }
 
   /**
-   * Gets valid threshold parameter
+   * Gets valid threshold parameter considering auto-threshold
    * @private
-   * @returns {number} Threshold value
+   * @returns {number} Calculated threshold value between 0 and 255
+   * @description
+   * Determines the appropriate threshold by:
+   * 1. Using cached value if available
+   * 2. Using specified threshold if not auto
+   * 3. Calculating optimal threshold using multilevel thresholding
+   * 4. Defaulting to 128 if calculation fails
    */
   #param_threshold() {
     if (this.#calculated_threshold !== null) {
@@ -1762,9 +1916,16 @@ class Potrace {
   }
 
   /**
+   * Generates SVG path tags for each color level
    * @private
-   * @param {boolean} [noFillColor=false] - Skip fill color
-   * @returns {string[]} Array of path tags
+   * @param {boolean} [noFillColor=false] - Whether to skip fill color attributes
+   * @returns {string[]} Array of SVG path tags with opacity and color
+   * @description
+   * Creates path tags by:
+   * 1. Getting color ranges
+   * 2. Calculating appropriate opacity for each layer
+   * 3. Generating path data for each threshold
+   * 4. Adding fill and opacity attributes
    */
   #path_tags(noFillColor) {
     let ranges = this.#get_ranges()
@@ -1829,6 +1990,10 @@ class Potrace {
    * Converts the loaded image into an array of curve paths
    * @returns {PathData[]} Array of path objects with SVG path data and opacity
    * @throws {Error} If image not loaded
+   * @description
+   * Converts the loaded image into an array of curve paths.
+   * Each path object contains the SVG path data and opacity for a specific color level.
+   * Throws an error if the image is not loaded.
    */
   as_curves() {
     const ranges = this.#get_ranges()
@@ -1872,6 +2037,10 @@ class Potrace {
    * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
    * @returns {ProcessedPaths} Processed path data
    * @throws {Error} If image cannot be processed
+   * @description
+   * Processes the image data and creates an array of curve paths.
+   * Each path object contains the SVG path data and opacity for a specific color level.
+   * Throws an error if the image cannot be processed.
    */
   create_paths(image_data) {
     this.#load_image(image_data)
@@ -1883,10 +2052,15 @@ class Potrace {
   }
 
   /**
-   * Creates a bitmap from image data and initializes its histogram
+   * Creates a bitmap from image data
    * @private
-   * @param {ImageData} image_data - Raw image data
-   * @returns {Bitmap} Initialized bitmap
+   * @param {ImageData} image_data - Raw image data from canvas
+   * @returns {Bitmap} Initialized bitmap with histogram
+   * @description
+   * Converts raw image data to internal bitmap format:
+   * 1. Creates new bitmap of appropriate size
+   * 2. Converts RGB(A) pixels to luminance values
+   * 3. Initializes and attaches histogram
    */
   #create_bitmap_from_image = image_data => {
     const bitmap = new Bitmap(image_data.width, image_data.height)
