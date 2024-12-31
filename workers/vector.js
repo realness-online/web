@@ -1,4 +1,3 @@
-import Jimp from 'jimp'
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/use/colors'
 import { optimize } from 'svgo/dist/svgo.browser.js'
@@ -49,8 +48,9 @@ export const to_kb = obj => {
   return (size_of / 1024).toFixed(2)
 }
 export const read = async file => {
-  const reader = new FileReaderSync()
-  return Jimp.default.read(reader.readAsArrayBuffer(file))
+  const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
+  const blob = new Blob([array_buffer])
+  return createImageBitmap(blob)
 }
 export const read_exif = file => {
   const reader = new FileReaderSync()
@@ -62,52 +62,92 @@ export const exif_logger = tags => {
   return cloned
 }
 
-export const size = async (image, size = 512) => {
-  if (image.bitmap.width > image.bitmap.height)
-    image = image.resize(Jimp.default.AUTO, size)
-  else image = image.resize(size, Jimp.default.AUTO)
-  return image
+const size = (image, target_size = 512) => {
+  let new_width = image.width
+  let new_height = image.height
+
+  if (image.width > image.height) {
+    new_height = target_size
+    new_width = Math.round((target_size * image.width) / image.height)
+  } else {
+    new_width = target_size
+    new_height = Math.round((target_size * image.height) / image.width)
+  }
+
+  const canvas = new OffscreenCanvas(new_width, new_height)
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(image, 0, 0, new_width, new_height)
+
+  return canvas
 }
 
-export const as_gradient = (image, height = false) => {
-  let direction = image.bitmap.width
-  let opposite = image.bitmap.height
-  if (height) {
-    direction = image.bitmap.height
-    opposite = image.bitmap.width
+const get_average_color = (canvas, x, y, width, height) => {
+  const ctx = canvas.getContext('2d')
+  const image_data = ctx.getImageData(x, y, width, height)
+  const data = image_data.data
+
+  let r = 0,
+    g = 0,
+    b = 0,
+    a = 0
+  const pixel_count = data.length / 4
+
+  for (let i = 0; i < data.length; i += 4) {
+    r += data[i]
+    g += data[i + 1]
+    b += data[i + 2]
+    a += data[i + 3]
   }
+
+  return {
+    r: Math.round(r / pixel_count),
+    g: Math.round(g / pixel_count),
+    b: Math.round(b / pixel_count),
+    a: Math.round(a / pixel_count)
+  }
+}
+
+export const as_gradient = (canvas, height = false) => {
+  let direction = height ? canvas.height : canvas.width
+  let opposite = height ? canvas.width : canvas.height
   const chunk = fidelity(direction)
   const stops = []
-  for (let i = 0; i < direction; i += chunk) {
-    let color = image
-      .clone()
-      .crop(i, 0, chunk, opposite)
-      .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
-      .getPixelColor(0, 0)
 
-    color = Jimp.default.intToRGBA(color)
-    color = rgba_to_hsla(color)
-    stops.push({ color, offset: scale(i, 0, direction) })
+  for (let i = 0; i < direction; i += chunk) {
+    const color = get_average_color(
+      canvas,
+      height ? 0 : i,
+      height ? i : 0,
+      height ? opposite : chunk,
+      height ? chunk : opposite
+    )
+    stops.push({
+      color: rgba_to_hsla(color),
+      offset: scale(i, 0, direction)
+    })
   }
+
   return stops
 }
-export const as_radial_gradient = image => {
-  let box_size = image.bitmap.width
-  if (image.bitmap.height < box_size) box_size = image.bitmap.height
+
+export const as_radial_gradient = canvas => {
+  let box_size = canvas.width
+  if (canvas.height < box_size) box_size = canvas.height
+
   const chunk = fidelity(box_size)
   const stops = []
+
   for (let i = 0; i < box_size; i += chunk) {
-    let color = image
-      .clone()
-      .crop(i, 0, chunk, box_size)
-      .resize(1, 1, Jimp.default.RESIZE_BICUBIC)
-      .getPixelColor(0, 0)
-    color = Jimp.default.intToRGBA(color)
-    color = rgba_to_hsla(color)
-    stops.push({ color, offset: scale(i, 0, box_size) })
+    const color = get_average_color(canvas, i, 0, chunk, box_size)
+    stops.push({
+      color: rgba_to_hsla(color),
+      offset: scale(i, 0, box_size)
+    })
   }
+
   return stops
 }
+
 export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
@@ -128,13 +168,17 @@ export const is_stop = stop => {
   return true
 }
 
-export const make_vector = async message => {
+const make_vector = async message => {
   console.time('make:vector')
-  let image = await read(message.data.image)
+  const image = await read(message.data.image)
   const tags = ExifReader.load(read_exif(message.data.image))
   const exif = exif_logger(tags)
-  image = await size(image)
-  let poster = as_paths(image, potrace_options)
+
+  const canvas = size(image)
+  const ctx = canvas.getContext('2d')
+  const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const poster = as_paths(image_data, potrace_options)
+
   const vector = {
     light: poster.paths[0],
     regular: poster.paths[1],
@@ -144,19 +188,22 @@ export const make_vector = async message => {
     height: poster.height,
     viewbox: `0 0 ${poster.width} ${poster.height}`
   }
-  image = await image.bitmap
+
   console.timeEnd('make:vector')
-  return { vector, exif, image }
+  return { vector, exif }
 }
 
-export const make_gradient = async message => {
+const make_gradient = async message => {
   console.time('make:gradient')
-  let image = await read(message.data.image)
-  image = await size(image)
-  const horizontal = as_gradient(image)
-  const vertical = as_gradient(image, true)
-  const radial = as_radial_gradient(image)
-  const gradients = { horizontal, vertical, radial }
+  const image = await read(message.data.image)
+
+  const canvas = size(image)
+  const gradients = {
+    horizontal: as_gradient(canvas),
+    vertical: as_gradient(canvas, true),
+    radial: as_radial_gradient(canvas)
+  }
+
   console.timeEnd('make:gradient')
   return { gradients }
 }
@@ -195,6 +242,7 @@ const compress_vector = message => {
 export const route_message = async message => {
   const route = message.data.route
   let reply = {}
+
   switch (route) {
     case 'make:vector':
       reply = await make_vector(message)
@@ -211,6 +259,7 @@ export const route_message = async message => {
     default:
       console.log('unknown route', route)
   }
+
   self.postMessage(reply)
 }
 self.addEventListener('message', route_message)
