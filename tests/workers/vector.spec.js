@@ -1,6 +1,5 @@
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
-import Jimp from 'jimp'
 import fs from 'fs'
 const image = fs.readFileSync('./tests/unit/workers/house.jpeg')
 const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
@@ -36,9 +35,9 @@ describe('/workers/vector.js', () => {
       let postMessage_spy
 
       beforeEach(() => {
-        read_spy = vi
-          .spyOn(Jimp, 'read')
-          .mockImplementation(() => Promise.resolve(mock_image))
+        // read_spy = vi
+        //   .spyOn(Jimp, 'read')
+        //   .mockImplementation(() => Promise.resolve(mock_image))
         postMessage_spy = vi
           .spyOn(global, 'postMessage')
           .mockImplementation(() => true)

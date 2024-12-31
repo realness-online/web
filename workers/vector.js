@@ -53,12 +53,25 @@ export const read = async file => {
   return createImageBitmap(blob)
 }
 export const read_exif = file => {
-  const reader = new FileReaderSync()
-  return reader.readAsArrayBuffer(file)
+  try {
+    const reader = new FileReaderSync()
+    return ExifReader.load(reader.readAsArrayBuffer(file), {
+      xmp: false
+    })
+  } catch (error) {
+    console.warn('Failed to read EXIF data:', error)
+    return {}
+  }
 }
 export const exif_logger = tags => {
   const cloned = structuredClone(tags)
   console.log('EXIF: ', `${to_kb(cloned)}kb`)
+
+  // Log each value in the cloned object
+  Object.entries(cloned).forEach(([key, value]) => {
+    console.log(`${key}:`, value)
+  })
+
   return cloned
 }
 
@@ -75,7 +88,7 @@ const size = (image, target_size = 512) => {
   }
 
   const canvas = new OffscreenCanvas(new_width, new_height)
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.drawImage(image, 0, 0, new_width, new_height)
 
   return canvas
@@ -171,8 +184,9 @@ export const is_stop = stop => {
 const make_vector = async message => {
   console.time('make:vector')
   const image = await read(message.data.image)
-  const tags = ExifReader.load(read_exif(message.data.image))
-  const exif = exif_logger(tags)
+  const exif = read_exif(message.data.image)
+
+  const exif_data = exif_logger(exif)
 
   const canvas = size(image)
   const ctx = canvas.getContext('2d')
@@ -190,7 +204,7 @@ const make_vector = async message => {
   }
 
   console.timeEnd('make:vector')
-  return { vector, exif }
+  return { vector, exif: exif_data }
 }
 
 const make_gradient = async message => {
