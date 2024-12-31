@@ -5,7 +5,25 @@ import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 export default defineConfig({
   build: {
     target: 'esnext',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            'vue',
+            'vue-router',
+            '@vueuse/core',
+            '@headlessui/vue',
+            '@heroicons/vue',
+            '@firebase/app',
+            '@firebase/auth',
+            '@firebase/firestore',
+            '@firebase/storage'
+          ],
+          utilities: ['libphonenumber-js', 'exifreader']
+        }
+      }
+    }
   },
   define: {
     'import.meta.env.PACKAGE_VERSION': JSON.stringify(
