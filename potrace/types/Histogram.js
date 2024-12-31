@@ -1,23 +1,22 @@
 /**
  * Histogram
  *
- * @param Jimp  imageSource - Image to collect pixel data from. Or integer to create empty histogram for image of specific size
- * @param [mode] Used only for Jimp images. {@link Bitmap} currently can only store 256 values per pixel, so it's assumed that it contains values we are looking for
+ * @param {ImageData|Bitmap|number} image_source - Image data to collect pixel data from, or Bitmap instance, or integer to create empty histogram
+ * @param [mode] Used for ImageData. Specifies which channel to use (r,g,b,luminance)
  * @constructor
  * @protected
  */
 
 import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
-import Jimp from 'jimp'
 const COLOR_DEPTH = 256
 const COLOR_RANGE_END = COLOR_DEPTH - 1
 
 /**
  * 1D Histogram
  *
- * @param Jimp  imageSource - Image to collect pixel data from. Or integer to create empty histogram for image of specific size
- * @param [mode] Used only for Jimp images. {@link Bitmap} currently can only store 256 values per pixel, so it's assumed that it contains values we are looking for
+ * @param {ImageData|Bitmap|number} image_source - Image data to collect pixel data from, or Bitmap instance, or integer to create empty histogram
+ * @param [mode] Used for ImageData. Specifies which channel to use (r,g,b,luminance)
  * @constructor
  * @protected
  */
@@ -47,8 +46,8 @@ class Histogram {
       this.#create_array(image_source)
     } else if (image_source instanceof Bitmap) {
       this.#collect_values_bitmap(image_source)
-    } else if (Jimp && image_source instanceof Jimp) {
-      this.#collect_values_jimp(image_source, mode)
+    } else if (image_source instanceof ImageData) {
+      this.#collect_values_image_data(image_source, mode)
     } else {
       throw new Error('Unsupported image source')
     }
@@ -73,21 +72,20 @@ class Histogram {
   }
 
   /**
-   * Collects pixel values from a Jimp image
-   * @param {Jimp} source - Source Jimp image
+   * Collects pixel values from ImageData
+   * @param {ImageData} source - Source image data
    * @param {string} mode - Color mode to use (r, g, b, or luminance)
    * @private
    */
-  #collect_values_jimp(source, mode) {
-    const pixel_data = source.bitmap.data
-    const data = this.#create_array(source.bitmap.width * source.bitmap.height)
+  #collect_values_image_data(source, mode) {
+    const pixel_data = source.data
+    const data = this.#create_array(source.width * source.height)
+    const width = source.width
+    const height = source.height
 
-    source.scan(
-      0,
-      0,
-      source.bitmap.width,
-      source.bitmap.height,
-      (x, y, idx) => {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4
         const val =
           mode === Histogram.MODE_R
             ? pixel_data[idx]
@@ -103,7 +101,7 @@ class Histogram {
 
         data[val]++
       }
-    )
+    }
   }
 
   /**
