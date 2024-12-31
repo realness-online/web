@@ -1,11 +1,10 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove } from '@/use/serverless'
-import hash from 'object-hash'
-import { get, set } from 'idb-keyval'
+import { get, set, del } from 'idb-keyval'
 import { as_filename } from '@/use/itemid'
+import { upload_processor } from '@/use/upload_processor'
 
 const networkable = ['person', 'statements', 'posters', 'events']
-export const hash_options = { encoding: 'base64', algorithm: 'md5' }
 
 export async function sync_later(id, action) {
   const offline = (await get('sync:offline')) || []
@@ -18,14 +17,39 @@ export async function sync_later(id, action) {
 
 export const Cloud = superclass =>
   class extends superclass {
+    constructor() {
+      super()
+      const { prepare_upload_data } = upload_processor()
+      this.prepare_upload_data = prepare_upload_data
+    }
+
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
-        this.metadata.customMetadata = { md5: hash(items, hash_options) }
-        const response = upload(path, items, this.metadata)
+
+        const { data, content_hash, md5_hash } =
+          await this.prepare_upload_data(items, path)
+
+        this.metadata = {
+          cacheControl: 'private, max-age=18000',
+          contentType: 'text/html; charset=utf-8',
+          contentLanguage: navigator.language,
+          contentEncoding: 'gzip',
+          contentDisposition: 'inline',
+          md5Hash: md5_hash,
+          customMetadata: {
+            ETag: `"${content_hash}"`
+          }
+        }
+        const response = await upload(path, data, this.metadata)
+
+        if (response && response.status !== 304) await set(`etag:${this.id}`, this.metadata.customMetadata.ETag)
+
         return response
-      } else if (current_user.value || localStorage.me)
+
+      } else if (current_user.value || localStorage.me) {
         await sync_later(this.id, 'save')
+      }
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)
@@ -39,7 +63,10 @@ export const Cloud = superclass =>
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
         await remove(path)
-      } else await sync_later(this.id, 'delete')
+        await del(`etag:${this.id}`)
+      } else {
+        await sync_later(this.id, 'delete')
+      }
       if (super.delete) await super.delete()
     }
   }

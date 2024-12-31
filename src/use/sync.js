@@ -1,4 +1,3 @@
-import hash from 'object-hash'
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import {
@@ -27,8 +26,7 @@ export const five_minutes = 300000
 export const one_hour = 3600000
 export const eight_hours = one_hour * 8
 export const timeouts = []
-export const hash_options = { encoding: 'base64', algorithm: 'md5' }
-export const does_not_exist = { updated: null, customMetadata: { md5: null } } // Explicitly setting null to indicate that this file doesn't exist
+export const does_not_exist = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
   const { emit } = current_instance()
@@ -73,8 +71,8 @@ export const use = () => {
       else {
         const network = await fresh_metadata(itemid)
         if (!network || !network.customMetadata) return null
-        const md5 = await local_md5(itemid)
-        if (network.customMetadata.md5 !== md5) await del(itemid)
+        const hash = await get_content_hash(itemid)
+        if (network.customMetadata.hash !== hash) await del(itemid)
       }
     })
   }
@@ -112,9 +110,9 @@ export const use = () => {
     let my_info = localStorage.getItem(id)
     if (!my_info) my_info = await get(id)
     if (!my_info || !network) return
-    const md5 = hash(my_info, hash_options)
-    if (md5 !== network.md5) {
-      console.log(`delete_me: ${id}`, 'md5', md5, 'network', network.md5)
+    const hash = await create_hash(my_info)
+    if (hash !== network.hash) {
+      console.log(`delete_me: ${id}`, 'hash', hash, 'network', network.hash)
       localStorage.removeItem(id)
       del(id)
     }
@@ -126,8 +124,8 @@ export const use = () => {
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
-    const md5 = hash(elements.outerHTML, hash_options)
-    if (!network || network.md5 !== md5) {
+    const hash = await create_hash(elements.outerHTML)
+    if (!network || network.hash !== hash) {
       statements.value = await persistance.sync()
       if (statements.value.length) {
         await next_tick()
@@ -144,8 +142,8 @@ export const use = () => {
     const network = (await fresh_metadata(itemid)).customMetadata
     const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
-    const md5 = hash(elements.outerHTML, hash_options)
-    if (!network || network.md5 !== md5) {
+    const hash = await create_hash(elements.outerHTML)
+    if (!network || network.hash !== hash) {
       events.value = await events.sync()
       if (events.value.length) {
         await next_tick()
@@ -171,6 +169,65 @@ export const use = () => {
     sync_poster.value = null
     await del(`/+/posters/${created_at}`)
   }
+  const POSTERS_PER_DIRECTORY = 55 // Maximum posters in main directory
+
+  const sync_posters_directory = async (person_id) => {
+    const directory_path = `${person_id}/posters/`
+    await del(directory_path) // Clear existing directory cache
+
+    // Get all posters
+    const offline_posters = await build_local_directory(directory_path)
+    if (!offline_posters || !offline_posters.items) return
+
+    // Sort ALL items by created_at timestamp (newest first)
+    const sorted_items = offline_posters.items.sort((a, b) => b - a) // Descending order
+
+    if (sorted_items.length > POSTERS_PER_DIRECTORY) {
+      // Keep newest items in main directory
+      const current_items = sorted_items.slice(0, POSTERS_PER_DIRECTORY)
+      const archive_items = sorted_items.slice(POSTERS_PER_DIRECTORY)
+
+      // Create archive batches using newest timestamp in each batch
+      const archive_batches = []
+      for (let i = 0; i < archive_items.length; i += POSTERS_PER_DIRECTORY) {
+        const batch = archive_items.slice(i, i + POSTERS_PER_DIRECTORY)
+        const newest_in_batch = Math.max(...batch) // Use newest timestamp for directory name
+        const archive_path = `${directory_path}${newest_in_batch}/`
+
+        // Save archive directory with items already sorted newest first
+        await set(archive_path, {
+          items: batch, // Items within batch are already sorted newest first
+          has_more: i + POSTERS_PER_DIRECTORY < archive_items.length,
+          timestamp: newest_in_batch
+        })
+
+        archive_batches.push({
+          path: archive_path,
+          timestamp: newest_in_batch,
+          count: batch.length
+        })
+      }
+
+      // Sort archives by timestamp (newest first)
+      archive_batches.sort((a, b) => b.timestamp - a.timestamp)
+
+      // Update main directory with newest items and archive info
+      await set(directory_path, {
+        ...offline_posters,
+        items: current_items,
+        has_more: true,
+        archives: archive_batches
+      })
+    } else {
+      // If under threshold, just update with sorted items
+      await set(directory_path, {
+        ...offline_posters,
+        items: sorted_items, // Already sorted newest first
+        has_more: false,
+        archives: []
+      })
+    }
+  }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
@@ -192,11 +249,10 @@ export const use = () => {
     sync_poster
   }
 }
-export const local_md5 = async itemid => {
-  // always checks the network
+export const get_content_hash = async itemid => {
   const local = await get(itemid)
   if (!local) return null
-  return hash(local, hash_options)
+  return await create_hash(local)
 }
 export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
