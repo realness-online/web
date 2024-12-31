@@ -336,6 +336,7 @@
 </script>
 <style lang="stylus">
   section.page#about
+    max-width: 1600px
     fieldset.preference
       margin-bottom: base-line
     .no
