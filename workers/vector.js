@@ -1,7 +1,7 @@
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/use/colors'
+import { to_kb } from '@/use/number'
 import { optimize } from 'svgo/dist/svgo.browser.js'
-import ExifReader from 'exifreader'
 import pako from 'pako'
 
 const potrace_options = {
@@ -42,37 +42,11 @@ const svgo_options = {
     }
   ]
 }
-export const to_kb = obj => {
-  const as_string = JSON.stringify(obj)
-  const size_of = new Blob([as_string]).size
-  return (size_of / 1024).toFixed(2)
-}
+
 export const read = async file => {
   const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
   const blob = new Blob([array_buffer])
   return createImageBitmap(blob)
-}
-export const read_exif = file => {
-  try {
-    const reader = new FileReaderSync()
-    return ExifReader.load(reader.readAsArrayBuffer(file), {
-      xmp: false
-    })
-  } catch (error) {
-    console.warn('Failed to read EXIF data:', error)
-    return {}
-  }
-}
-export const exif_logger = tags => {
-  const cloned = structuredClone(tags)
-  console.log('EXIF: ', `${to_kb(cloned)}kb`)
-
-  // Log each value in the cloned object
-  Object.entries(cloned).forEach(([key, value]) => {
-    console.log(`${key}:`, value)
-  })
-
-  return cloned
 }
 
 const size = (image, target_size = 512) => {
@@ -184,9 +158,6 @@ export const is_stop = stop => {
 const make_vector = async message => {
   console.time('make:vector')
   const image = await read(message.data.image)
-  const exif = read_exif(message.data.image)
-
-  const exif_data = exif_logger(exif)
 
   const canvas = size(image)
   const ctx = canvas.getContext('2d')
@@ -204,7 +175,7 @@ const make_vector = async message => {
   }
 
   console.timeEnd('make:vector')
-  return { vector, exif: exif_data }
+  return { vector }
 }
 
 const make_gradient = async message => {

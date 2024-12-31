@@ -8,7 +8,8 @@ import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
 import { as_created_at } from '@/use/itemid'
 import { useRouter as use_router } from 'vue-router'
-
+import { to_kb } from '@/use/number'
+import ExifReader from 'exifreader'
 const new_vector = ref(null)
 const new_gradients = ref(null)
 
@@ -62,10 +63,20 @@ export const use = () => {
     }
   }
 
-  const vectorize = image => {
+  const vectorize = async image => {
     working.value = true
-    vectorizer.value.postMessage({ route: 'make:vector', image })
+
+    const tags = await ExifReader.load(image, { expanded: true })
+    const exif = exif_logger(tags)
+
+    vectorizer.value.postMessage({ route: 'make:vector', image, exif })
     gradienter.value.postMessage({ route: 'make:gradient', image })
+  }
+
+  const exif_logger = tags => {
+    const cloned = structuredClone(tags)
+    console.log('EXIF: ', `${to_kb(cloned)}kb`, cloned)
+    return cloned
   }
 
   const vectorized = response => {
