@@ -1,8 +1,10 @@
 // {base_url}/{:author}/{:type}/{:created_at}
 import get_item from '@/use/item'
 import { does_not_exist } from '@/use/sync'
-import { current_user, url, directory } from '@/use/serverless'
+import { url, directory } from '@/use/serverless'
 import { get, set, keys } from 'idb-keyval'
+import { upload_processor } from './upload_processor'
+
 class Directory {
   constructor() {
     this.items = []
@@ -39,10 +41,27 @@ export async function list(itemid, me = localStorage.me) {
   }
 }
 export async function load_from_network(itemid, me = localStorage.me) {
+  const { decompress_data } = upload_processor()
   const url = await as_download_url(itemid, me)
+
   if (url) {
     console.info('download', itemid)
-    const server_text = await (await fetch(url)).text()
+    const response = await fetch(url)
+
+    // Try compressed file first
+    if (response.status === 404) {
+      const compressed_url = url.replace('/index.html', '/index.html.gz').replace('.html', '.html.gz')
+      const compressed_response = await fetch(compressed_url)
+      if (compressed_response.ok) {
+        const compressed_data = await compressed_response.arrayBuffer()
+        const decompressed_text = await decompress_data(compressed_data)
+        await set(itemid, decompressed_text)
+        return get_item(decompressed_text)
+      }
+      return null
+    }
+
+    const server_text = await response.text()
     await set(itemid, server_text)
     return get_item(server_text)
   } else return null
@@ -102,12 +121,13 @@ export function is_history(itemid) {
   if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
   else return false
 }
+
 export function as_filename(itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
   if (created_at.includes(as_type(itemid)) || is_history(itemid))
     return `${filename}.html`
-  else return `${filename}/index.html`
+  else return `${filename}/index.html.gz`
 }
 export function as_storage_path(itemid) {
   const path_parts = as_path_parts(itemid)

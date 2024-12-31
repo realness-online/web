@@ -35,4 +35,7 @@ const create_worker_config = filename => ({
   ]
 })
 
-export default [create_worker_config('vector')]
+export default [
+  create_worker_config('vector'),
+  create_worker_config('compressor')
+]

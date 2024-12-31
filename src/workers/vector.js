@@ -2,7 +2,6 @@ import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/use/colors'
 import { to_kb } from '@/use/number'
 import { optimize } from 'svgo/dist/svgo.browser.js'
-import pako from 'pako'
 
 const potrace_options = {
   turdSize: 40,
@@ -203,27 +202,6 @@ export const optimize_vector = message => {
   return { vector: optimized.data }
 }
 
-const compress_vector = message => {
-  console.time('compress:vector')
-  console.log('Compressor')
-  console.log(`  before: ${to_kb(message.data.vector)}kb`)
-
-  // Convert SVG string to Uint8Array
-  const uint8_array = new TextEncoder().encode(message.data.vector)
-
-  // Compress the data using GZIP
-  const result = pako.gzip(uint8_array, {
-    level: 9, // Maximum compression
-    header: {
-      name: message.data.filename
-    }
-  })
-
-  const blob = new Blob([result], { type: 'application/gzip' })
-  console.log(`  after: ${(blob.size / 1024).toFixed(2)}kb`)
-  console.timeEnd('compress:vector')
-  return result
-}
 export const route_message = async message => {
   const route = message.data.route
   let reply = {}
@@ -237,9 +215,6 @@ export const route_message = async message => {
       break
     case 'optimize:vector':
       reply = optimize_vector(message)
-      break
-    case 'compress:vector':
-      reply = compress_vector(message)
       break
     default:
       console.log('unknown route', route)
