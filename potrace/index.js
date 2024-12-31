@@ -1779,7 +1779,7 @@ class Potrace {
         return ''
       }
 
-      const calculatedOpacity =
+      let calculatedOpacity =
         !actualPrevLayersOpacity || thisLayerOpacity === 1
           ? thisLayerOpacity
           : (actualPrevLayersOpacity - thisLayerOpacity) /
