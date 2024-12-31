@@ -13,8 +13,6 @@ export default defineConfig({
             'vue',
             'vue-router',
             '@vueuse/core',
-            '@headlessui/vue',
-            '@heroicons/vue',
             '@firebase/app',
             '@firebase/auth',
             '@firebase/firestore',
