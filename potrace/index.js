@@ -1330,17 +1330,22 @@ class Potrace {
    * @description Processes raw image data into a bitmap by converting RGB values to luminance
    */
   #process_loaded_image(image_data) {
+    const canvas = new OffscreenCanvas(image_data.width, image_data.height)
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+
+    // Draw and get image data with optimized reading
+    ctx.putImageData(image_data, 0, 0)
+    const optimized_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const pixels = optimized_data.data
+
     const bitmap = new Bitmap(image_data.width, image_data.height)
-    const pixels = image_data.data
 
     for (let i = 0; i < pixels.length; i += 4) {
-      // Get RGB values and alpha
       const opacity = pixels[i + 3] / 255
       const r = 255 + (pixels[i + 0] - 255) * opacity
       const g = 255 + (pixels[i + 1] - 255) * opacity
       const b = 255 + (pixels[i + 2] - 255) * opacity
 
-      // Convert to luminance and store in bitmap
       bitmap.data[i / 4] = utils.luminance(r, g, b)
     }
 
