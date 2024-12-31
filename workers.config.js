@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
-import terser from '@rollup/plugin-terser'
 import alias from '@rollup/plugin-alias'
 import analyzer from 'rollup-plugin-analyzer'
 import path from 'path'
@@ -9,7 +8,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const create_worker_config = filename => ({
-  input: `workers/${filename}.js`,
+  input: `src/workers/${filename}.js`,
   output: {
     file: `public/${filename}.worker.js`,
     format: 'iife',
@@ -20,7 +19,7 @@ const create_worker_config = filename => ({
       entries: [
         {
           find: '@',
-          replacement: path.resolve(__dirname, './') // adjust this path based on your project structure
+          replacement: path.resolve(__dirname, './src') // adjust this path based on your project structure
         }
       ]
     }),

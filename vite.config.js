@@ -1,6 +1,5 @@
 import { configDefaults, defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
-// vite.config.js / vite.config.ts
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 
 export default defineConfig({
@@ -21,7 +20,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@/': new URL('./', import.meta.url).pathname,
+      '@/': new URL('./src/', import.meta.url).pathname,
       '@@/': new URL('./test/', import.meta.url).pathname
     },
     extensions: ['.js', '.json', '.vue']
@@ -29,7 +28,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [new URL('./style/variables.styl', import.meta.url).pathname]
+        imports: [
+          new URL('./src/style/variables.styl', import.meta.url).pathname
+        ]
       }
     }
   },
@@ -44,8 +45,6 @@ export default defineConfig({
       includeAssets: [
         '180.png',
         'vector.worker.js',
-        'optimize.worker.js',
-        'gradient.worker.js',
         'fonts/*.woff2',
         'icons.svg'
       ],
