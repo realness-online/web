@@ -6,6 +6,7 @@ import Sum from '@/potrace/types/Sum'
 import Opti from '@/potrace/types/Opti'
 import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
+import Histogram from '@/potrace/types/Histogram'
 
 /**
  * @typedef {Object} PotraceOptions
@@ -1593,6 +1594,11 @@ class Potrace {
    * @returns {import('./types/Histogram')} Image histogram
    */
   #get_image_histogram() {
+    // If histogram doesn't exist yet, create it
+    if (!this.#luminance_data.histogram()) {
+      const histogram = new Histogram(this.#luminance_data)
+      this.#luminance_data.set_histogram(histogram)
+    }
     return this.#luminance_data.histogram()
   }
 
@@ -1874,6 +1880,23 @@ class Potrace {
     const dark = !this.#params.black_on_white
     const paths = this.as_curves()
     return { width, height, dark, paths }
+  }
+
+  /**
+   * Creates a bitmap from image data and initializes its histogram
+   * @private
+   * @param {ImageData} image_data - Raw image data
+   * @returns {Bitmap} Initialized bitmap
+   */
+  #create_bitmap_from_image = image_data => {
+    const bitmap = new Bitmap(image_data.width, image_data.height)
+    // ... existing bitmap creation code ...
+
+    // Create and set histogram
+    const histogram = new Histogram(bitmap)
+    bitmap.set_histogram(histogram)
+
+    return bitmap
   }
 }
 

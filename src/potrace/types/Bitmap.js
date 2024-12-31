@@ -1,6 +1,5 @@
 import Point from '@/potrace/types/Point'
 import utils from '@/potrace/utils'
-import Histogram from '@/potrace/types/Histogram'
 
 /**
  * Represents a bitmap image as a 1-dimensional array of pixel values
@@ -111,15 +110,18 @@ class Bitmap {
   }
 
   /**
-   * Gets or creates a histogram of the bitmap's pixel values
-   * @returns {Histogram} Histogram instance for this bitmap
+   * Sets the histogram for this bitmap
+   * @param {Histogram} histogram - Histogram instance
+   */
+  set_histogram = histogram => {
+    this.#histogram = histogram
+  }
+
+  /**
+   * Gets the histogram of the bitmap's pixel values
+   * @returns {Histogram|null} Histogram instance for this bitmap
    */
   histogram = () => {
-    if (this.#histogram) {
-      return this.#histogram
-    }
-
-    this.#histogram = new Histogram(this)
     return this.#histogram
   }
 }
