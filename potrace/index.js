@@ -1,4 +1,3 @@
-import Jimp from 'jimp'
 import Curve from '@/potrace/types/Curve'
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
@@ -27,15 +26,15 @@ import Bitmap from '@/potrace/types/Bitmap'
 /**
  * @typedef {Object} PathData
  * @property {string} d - SVG path data string
- * @property {string} fillOpacity - Fill opacity value between 0 and 1
+ * @property {string} fillOpacity - Fill opacity value
  */
 
 /**
  * @typedef {Object} ProcessedPaths
- * @property {number} width - Image width in pixels
- * @property {number} height - Image height in pixels
+ * @property {number} width - Image width
+ * @property {number} height - Image height
  * @property {boolean} dark - Whether image is dark on light background
- * @property {PathData[]} paths - Array of path objects
+ * @property {Array<PathData>} paths - Array of SVG path data
  */
 
 /**
@@ -94,15 +93,13 @@ import Bitmap from '@/potrace/types/Bitmap'
 
 /**
  * Converts an image into SVG paths
- * @async
- * @param {string|Buffer|import('jimp')} file - Image source (buffer, local path or url). Supports PNG, JPEG or BMP
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
  * @param {PotraceOptions} [options={}] - Potrace options
- * @returns {Promise<ProcessedPaths>} Resolution object containing width, height, dark flag and paths
- * @throws {Error} If image cannot be loaded or processed
+ * @returns {ProcessedPaths} Object containing width, height, dark flag and paths
  */
-export const as_paths = (file, options = {}) => {
+export const as_paths = (image_data, options = {}) => {
   const potrace = new Potrace(options)
-  return potrace.create_paths(file)
+  return potrace.create_paths(image_data)
 }
 
 /**
@@ -1328,39 +1325,41 @@ class Potrace {
 
   /**
    * @private
-   * @param {Jimp} image - Loaded image data
+   * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
    * @returns {void}
+   * @description Processes raw image data into a bitmap by converting RGB values to luminance
    */
-  #process_loaded_image(image) {
-    const bitmap = new Bitmap(image.bitmap.width, image.bitmap.height)
-    const pixels = image.bitmap.data
+  #process_loaded_image(image_data) {
+    const bitmap = new Bitmap(image_data.width, image_data.height)
+    const pixels = image_data.data
 
-    image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-      // We want background underneath non-opaque regions to be white
+    for (let i = 0; i < pixels.length; i += 4) {
+      // Get RGB values and alpha
+      const opacity = pixels[i + 3] / 255
+      const r = 255 + (pixels[i + 0] - 255) * opacity
+      const g = 255 + (pixels[i + 1] - 255) * opacity
+      const b = 255 + (pixels[i + 2] - 255) * opacity
 
-      const opacity = pixels[idx + 3] / 255,
-        r = 255 + (pixels[idx + 0] - 255) * opacity,
-        g = 255 + (pixels[idx + 1] - 255) * opacity,
-        b = 255 + (pixels[idx + 2] - 255) * opacity
-
-      bitmap.data[idx / 4] = utils.luminance(r, g, b)
-    })
+      // Convert to luminance and store in bitmap
+      bitmap.data[i / 4] = utils.luminance(r, g, b)
+    }
 
     this.#luminance_data = bitmap
     this.#image_loaded = true
   }
 
   /**
-   * @param {Jimp} target Image source. Could be anything that {@link Jimp} Supported formats are: PNG, JPEG or BMP
+   * @private
+   * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+   * @returns {void}
    */
-  #load_image(target) {
+  #load_image(image_data) {
     this.#image_loading_identifier = {}
     this.#image_loaded = false
 
-    // target instanceof Jimp
     this.#image_loading_identifier = null
     this.#image_loaded = true
-    this.#process_loaded_image(target)
+    this.#process_loaded_image(image_data)
   }
 
   /**
@@ -1864,13 +1863,13 @@ class Potrace {
   }
 
   /**
-   * Creates paths from an image file
-   * @param {string|Buffer|import('jimp')} file - Image source
-   * @returns {Promise<ProcessedPaths>} Processed path data
-   * @throws {Error} If image cannot be loaded or processed
+   * Creates paths from image data
+   * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+   * @returns {ProcessedPaths} Processed path data
+   * @throws {Error} If image cannot be processed
    */
-  create_paths(file) {
-    this.#load_image(file)
+  create_paths(image_data) {
+    this.#load_image(image_data)
     const width = this.#luminance_data.width
     const height = this.#luminance_data.height
     const dark = !this.#params.black_on_white
