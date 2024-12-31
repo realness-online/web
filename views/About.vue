@@ -306,9 +306,9 @@
         <h2>Gallery</h2>
         <preference name="fill" />
         <preference name="stroke" />
-        <preference name="animate" />
         <preference name="light" />
         <preference name="emboss" />
+        <preference name="animate" />
         <preference
           name="fps"
           title="Show frames per second. usefull if you have animation turned on" />

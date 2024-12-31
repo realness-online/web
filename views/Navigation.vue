@@ -65,6 +65,11 @@
 </script>
 <style lang="stylus">
   section#navigation.page
+    display: flex
+    align-items: center
+    flex-direction: column
+    justify-content: center
+    max-width: page-width
     & > header
       opacity: 0.66
       position: fixed
@@ -85,11 +90,6 @@
           line-height: 0
           display: inline-block
           vertical-align: middle
-    display: flex
-    align-items: center
-    flex-direction: column
-    justify-content: center
-    max-width: page-width
     &.posting
       align-self: end
       margin-top: inset(top)
@@ -122,7 +122,7 @@
       align-items: stretch
       min-height: round(base-line * 18, 2)
       max-height: page-width
-      min-width: 55vw
+      min-width: 33vw
       margin-bottom: base-line * 2
       margin-top: base-line * 2
       @media (orientation: landscape) and (display-mode: standalone) and (max-height: pad-begins)
@@ -160,7 +160,8 @@
       display: flex
       justify-content: space-between
       align-items: center
-      width: 50vw
+
+      min-width: 33vw
       padding: 0
       & > button
       & > a
