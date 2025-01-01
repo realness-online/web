@@ -1,8 +1,7 @@
 import Storage from '@/persistance/Storage'
 import Large from '@/persistance/Large'
 import { set, get, del } from 'idb-keyval'
-import fs from 'fs'
-const poster = fs.readFileSync('./mocks/html/poster.html', 'utf8')
+const poster = read_mock_file('@@/html/poster.html')
 describe('@/persistance/Large.js', () => {
   class Picture extends Large(Storage) {}
   let pic

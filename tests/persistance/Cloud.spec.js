@@ -3,9 +3,8 @@ import Cloud from '@/persistance/Cloud'
 import Local from '@/persistance/Local'
 import { get } from 'idb-keyval'
 import { flushPromises } from '@vue/test-utils'
-import fs from 'fs'
 const statements = {
-  outerHTML: fs.readFileSync('./mocks/html/statements.html', 'utf8')
+  outerHTML: read_mock_file('@@/html/statements.html')
 }
 const user = { phoneNumber: '/+16282281824' }
 describe.skip('@/persistance/Cloud.js', () => {

@@ -1,8 +1,7 @@
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
-import fs from 'fs'
-const image = fs.readFileSync('./tests/unit/workers/house.jpeg')
-const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
+const image = read_mock_file('@@/images/house.jpeg')
+const poster_html = read_mock_file('@@/html/poster.html')
 const mock_image = {
   bitmap: {
     width: 333,

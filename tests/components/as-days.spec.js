@@ -3,12 +3,9 @@ import as_days from '@/components/as-days'
 import get_item from '@/use/item'
 import * as as_date from '@/use/date'
 import * as sorting from '@/use/sorting'
-import fs from 'fs'
-const statements_html = fs.readFileSync(
-  '@@/html/statements.html',
-  'utf8'
-)
-const poster_html = fs.readFileSync('@@/html/poster.html', 'utf8')
+
+const statements_html = read_mock_file('@@/html/statements.html')
+const poster_html = read_mock_file('@@/html/poster.html')
 const poster = get_item(poster_html)
 const statements = get_item(statements_html).statements
 describe('@/components/as-days', () => {

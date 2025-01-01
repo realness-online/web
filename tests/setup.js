@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi, expect } from 'vitest'
 import { config } from '@vue/test-utils'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+import fs from 'fs'
 
 // Setup Vue Test Utils global config
 config.global.stubs = {
@@ -34,3 +37,16 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn()
   }))
 })
+
+// Get the tests directory path
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+global.resolve_mock_path = (path) => {
+  // Remove the @@ prefix and resolve from tests directory
+  const clean_path = path.replace('@@/', '')
+  return join(__dirname, clean_path)
+}
+
+global.read_mock_file = (path) => {
+  return fs.readFileSync(resolve_mock_path(path), 'utf8')
+}

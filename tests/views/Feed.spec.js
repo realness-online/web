@@ -2,11 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'
-import fs from 'fs'
-const statements_html = fs.readFileSync(
-  './mocks/html/statements.html',
-  'utf8'
-)
+const statements_html = read_mock_file('@@/html/statements.html')
 const person = {
   first_name: 'Scott',
   last_name: 'Fryxell',

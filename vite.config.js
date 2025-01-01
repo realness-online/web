@@ -112,6 +112,7 @@ export default defineConfig({
     },
     mockReset: false,
     setupFiles: [
+      './tests/setup.js',
       './tests/mocks/default.js',
       './tests/mocks/browser/console.js',
       './tests/mocks/browser/fetch.js',

@@ -1,5 +1,4 @@
 import { beforeEach as before_each, afterEach as after_each } from 'vitest'
-import fs from 'fs'
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
 import {
@@ -19,7 +18,9 @@ import {
   type_as_list
 } from '@/use/itemid'
 import { current_user } from '@/use/serverless'
-const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
+import get_item from '@/use/item'
+
+const poster_html = read_mock_file('@@/html/poster.html')
 
 describe('@/use/itemid', () => {
   const posterid = '/+16282281824/posters/559666932867'

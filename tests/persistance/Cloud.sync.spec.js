@@ -7,20 +7,12 @@ import {
   visit_interval
 } from '@/use/sync'
 import * as itemid from '@/use/itemid'
-import fs from 'fs'
 
-import fs from 'fs'
-const statements_html = fs.readFileSync(
-  './mocks/html/statements.html',
-  'utf8'
-)
-const offline_poster = fs.readFileSync(
-  './mocks/html/poster-offline.html',
-  'utf8'
-)
-const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
-const person_html = fs.readFileSync('./mocks/html/person.html', 'utf8')
-const events_html = fs.readFileSync('./mocks/html/events.html', 'utf8')
+const statements_html = read_mock_file('@@/html/statements.html')
+const offline_poster = read_mock_file('@@/html/poster-offline.html')
+const poster_html = read_mock_file('@@/html/poster.html')
+const person_html = read_mock_file('@@/html/person.html')
+const events_html = read_mock_file('@@/html/events.html')
 const statements = get_item(statements_html).statements
 const events = get_item(events_html).events
 

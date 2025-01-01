@@ -5,6 +5,8 @@ import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
 import { Me, Statements, Events, Poster } from '@/persistance/Storage'
+import mixin_mock from '@@/mixin_mock'
+
 const fake_props = {
   global: {
     stubs: ['router-link', 'router-view']
@@ -31,7 +33,9 @@ describe('@/components/sync', () => {
       visited: '2020-03-03T17:37:22.943Z'
     }
     localStorage.me = `/${current_user.phoneNumber}`
-    wrapper = shallowMount(sync, fake_props)
+    wrapper = shallowMount(sync, {
+      mixins: [mixin_mock]
+    })
     await flush()
   })
   afterEach(() => {
