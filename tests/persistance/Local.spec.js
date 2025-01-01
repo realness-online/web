@@ -1,7 +1,6 @@
 import Storage from '@/persistance/Storage'
 import Local from '@/persistance/Local'
-import fs from 'fs'
-const preferences = fs.readFileSync('./mocks/html/preferences.html', 'utf8')
+const preferences = read_mock_file('@@/html/preferences.html')
 describe('@/persistance/Local.js', () => {
   class Preferences extends Local(Storage) {}
   let local

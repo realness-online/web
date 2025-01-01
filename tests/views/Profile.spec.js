@@ -1,8 +1,7 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Profile from '@/views/Profile'
 import * as itemid from '@/use/itemid'
-import fs from 'fs'
-const person = fs.readFileSync('./mocks/html/person.html', 'utf8')
+const person = read_mock_file('@@/html/person.html')
 import { ref, nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')

@@ -1,15 +1,16 @@
-import { get_item, hydrate } from '@/use/item'
-import fs from 'fs'
-const html_item = fs.readFileSync('./mocks/html/Item.html', 'utf8')
+import get_item from '@/use/item'
+
+const poster_html = read_mock_file('@@/html/poster.html')
+
 describe('@/use/item.js', () => {
   let item
   describe('Methods', () => {
     describe('get_item()', () => {
       beforeEach(() => {
-        item = get_item(html_item)
+        item = get_item(poster_html)
       })
       it('Will work when you feed it elements', () => {
-        document.body.innerHTML = html_item
+        document.body.innerHTML = poster_html
         item = get_item(document.body, '/+16282281824')
         expect(item.type).toBe('person')
         expect(item.id).toBe('/+16282281824')

@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils'
 import as_svg from '@/components/posters/as-svg'
 import get_item from '@/use/item'
-import fs from 'fs'
-const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
+
+const poster_html = read_mock_file('@@/html/poster.html')
 let poster = get_item(poster_html)
 describe('@/components/posters/as-svg.vue', () => {
   describe('Renders', () => {

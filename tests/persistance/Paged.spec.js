@@ -1,6 +1,5 @@
 import { flushPromises } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
-
 import get_item, { hydrate } from '@/use/item'
 import * as itemid from '@/use/itemid'
 import { Statements } from '@/persistance/Storage' // statements extends Paged
@@ -9,16 +8,11 @@ import {
   elements_as_kilobytes,
   is_fat
 } from '@/persistance/Paged'
-import fs from 'fs'
-const statements = fs.readFileSync('@@/html/statements.html', 'utf8')
-const hella_statements = fs.readFileSync(
-  '@@/html/statements-hella.html',
-  'utf8'
-)
-const offline_statements = fs.readFileSync(
-  '@@/html/statements-offline.html',
-  'utf8'
-)
+
+const statements = read_mock_file('./mocks/html/statements.html')
+const hella_statements = read_mock_file('./mocks/html/statements-hella.html')
+const offline_statements = read_mock_file('./mocks/html/statements-offline.html')
+
 const user = { phoneNumber: '/+16282281824' }
 
 describe('@/persistance/Paged.js', () => {

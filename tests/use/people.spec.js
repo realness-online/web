@@ -1,10 +1,7 @@
 import { as_thoughts } from '@/use/statements'
 import { get_item } from '@/use/item'
-import fs from 'fs'
-const statements_html = fs.readFileSync(
-  './mocks/html/statements.html',
-  'utf8'
-)
+import { read_mock_file } from '@/helpers'
+const statements_html = read_mock_file('@@/html/statements.html')
 describe('@/use/thought', () => {
   describe('Methods', () => {
     let person

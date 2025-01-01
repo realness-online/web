@@ -3,18 +3,19 @@ import as_statement from '@/components/statements/as-div'
 import get_item from '@/use/item'
 import { Statements } from '@/persistance/Storage'
 import fs from 'fs'
-const statements_as_html = fs.readFileSync(
-  './mocks/html/statements.html',
-  'utf8'
-)
+
+const statements_as_html = read_mock_file('@@/html/statements.html')
+
 describe('@/components/statements/as-div.vue', () => {
   let wrapper
   const statements = get_item(statements_as_html)
+
   beforeEach(() => {
     wrapper = shallowMount(as_statement, {
       props: { statement: statements.statements[0] }
     })
   })
+
   describe('Renders', () => {
     it('A statement', async () => {
       await flushPromises()
@@ -22,6 +23,7 @@ describe('@/components/statements/as-div.vue', () => {
       wrapper.unmount()
     })
   })
+
   describe('Methods', () => {
     describe('#save', () => {
       it('Saves a statement', async () => {

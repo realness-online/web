@@ -1,7 +1,6 @@
 import * as optimize from '@/workers/optimize'
 import SVGO from 'svgo'
-import fs from 'fs'
-const vector = fs.readFileSync('./mocks/html/vector.html')
+const vector = read_mock_file('@@/html/vector.html')
 describe('/workers/vector.js', () => {
   describe('Methods', () => {
     describe('#listen', () => {
