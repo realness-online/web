@@ -1332,7 +1332,7 @@ class Potrace {
       params.turnPolicy &&
       Potrace.supported_turn_policy_values.indexOf(params.turnPolicy) === -1
     ) {
-      const goodVals = `'${Potrace.supported_turn_policy_values.join("', '")}'`
+      const goodVals = `'${Potrace.supported_turn_policy_values.join('\', \'')}'`
 
       throw new Error(`Bad turnPolicy value. Allowed values are: ${goodVals}`)
     }
@@ -1355,7 +1355,7 @@ class Potrace {
       params.optCurve != null &&
       typeof params.optCurve !== 'boolean'
     )
-      throw new Error("'optCurve' must be Boolean")
+      throw new Error('\'optCurve\' must be Boolean')
   }
 
   /**
@@ -1430,7 +1430,7 @@ class Potrace {
       (!utils.is_number(this.#params.steps) ||
         !utils.between(this.#params.steps, 1, 255))
     )
-      throw new Error("Bad 'steps' value")
+      throw new Error('Bad \'steps\' value')
 
     this.#calculated_threshold = null
   }

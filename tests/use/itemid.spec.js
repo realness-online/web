@@ -179,7 +179,7 @@ describe('@/use/itemid', () => {
     })
   })
   describe('#load', () => {
-    describe("It's someone elses stuff", () => {
+    describe('It\'s someone elses stuff', () => {
       before_each(async () => {
         await load(posterid, '/+14152281824')
       })
@@ -190,7 +190,7 @@ describe('@/use/itemid', () => {
         expect(localStorage.getItem).not.toBeCalled()
       })
     })
-    describe("It's my stuff", () => {
+    describe('It\'s my stuff', () => {
       it('tries local storage first', () => {
         load(posterid, '/+16282281824')
         expect(localStorage.getItem).toHaveBeenCalledTimes(1)
@@ -201,7 +201,7 @@ describe('@/use/itemid', () => {
         expect(get).toHaveBeenCalledTimes(1)
       })
     })
-    describe.skip("Can't find it locally", () => {
+    describe.skip('Can\'t find it locally', () => {
       let network_request, poster
       before_each(async () => {
         current_user.value = user
