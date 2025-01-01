@@ -227,8 +227,7 @@
           </p>
           <p>
             Sign into Realness, and you can message me directly. Visit the code
-            <a href="https://github.com/realness-online/web" rel="external">
-              online</a>. I keep a
+            <a href="https://github.com/realness-online/web" rel="external">online</a>. I keep a
             <a href="https://scott-fryxell.github.io/" rel="external"> blog </a>
             of all my feelings and nerd problems. My resume is on there.
           </p>
@@ -312,10 +311,7 @@
           name="fps"
           title="Show frames per second. usefull if you have animation turned on" />
       </figcaption>
-      <as-svg
-        v-for="poster in posters"
-        :key="poster.id"
-        :itemid="poster.id" />
+      <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
   </section>
 </template>

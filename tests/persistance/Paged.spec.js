@@ -11,7 +11,9 @@ import {
 
 const statements = read_mock_file('./mocks/html/statements.html')
 const hella_statements = read_mock_file('./mocks/html/statements-hella.html')
-const offline_statements = read_mock_file('./mocks/html/statements-offline.html')
+const offline_statements = read_mock_file(
+  './mocks/html/statements-offline.html'
+)
 
 const user = { phoneNumber: '/+16282281824' }
 

@@ -23,7 +23,9 @@ const compress_data = message => {
 
 const decompress_data = message => {
   try {
-    const decompressed = pako.inflate(new Uint8Array(message.data.compressed), { to: 'string' })
+    const decompressed = pako.inflate(new Uint8Array(message.data.compressed), {
+      to: 'string'
+    })
     return decompressed
   } catch (error) {
     return { error: error.message }

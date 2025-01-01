@@ -20,13 +20,6 @@
     "isolatedModules": true,
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": [
-    "src/**/*.js",
-    "src/**/*.vue",
-    "tests/**/*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.js", "src/**/*.vue", "tests/**/*.js"],
+  "exclude": ["node_modules", "dist"]
 }

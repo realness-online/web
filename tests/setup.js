@@ -41,12 +41,12 @@ Object.defineProperty(window, 'matchMedia', {
 // Get the tests directory path
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-global.resolve_mock_path = (path) => {
+global.resolve_mock_path = path => {
   // Remove the @@ prefix and resolve from tests/mocks directory
   const clean_path = path.replace('@@/', 'mocks/')
   return join(__dirname, clean_path)
 }
 
-global.read_mock_file = (path) => {
+global.read_mock_file = path => {
   return fs.readFileSync(resolve_mock_path(path), 'utf8')
 }
