@@ -123,10 +123,10 @@ export default [
         order: ['defineProps', 'defineEmits', 'defineSlots']
       }],
       'vue/define-props-declaration': ['error', 'runtime'],
-      'vue/require-define-props': 'error',
+
       'vue/valid-define-props': 'error',
       'vue/no-empty-component-block': 'error',
-
+      'vue/no-multiple-objects-in-class': 'error',
       'vue/no-static-inline-styles': ['error', {
         allowBinding: true
       }],
@@ -139,7 +139,6 @@ export default [
       'vue/prefer-true-attribute-shorthand': 'error',
       'vue/no-ref-object-destructure': 'error',
       'vue/define-emits-declaration': ['error', 'runtime'],
-      'vue/require-define-emits': 'error',
       'vue/valid-define-emits': 'error',
       'vue/no-unused-refs': 'error',
       'vue/no-useless-v-bind': 'error',
