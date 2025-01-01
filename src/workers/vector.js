@@ -3,7 +3,7 @@ import { rgba_to_hsla } from '@/use/colors'
 import { to_kb } from '@/use/number'
 import { optimize } from 'svgo/dist/svgo.browser.js'
 
-const potrace_options = {
+export const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
   blackOnWhite: true,
@@ -12,7 +12,7 @@ const potrace_options = {
   steps: 4
   // threshold: 255
 }
-const svgo_options = {
+export const svgo_options = {
   multipass: true,
   full: true,
   js2svg: {
@@ -48,7 +48,7 @@ export const read = async file => {
   return createImageBitmap(blob)
 }
 
-const size = (image, target_size = 512) => {
+export const size = (image, target_size = 512) => {
   let new_width = image.width
   let new_height = image.height
 
@@ -67,7 +67,7 @@ const size = (image, target_size = 512) => {
   return canvas
 }
 
-const get_average_color = (canvas, x, y, width, height) => {
+export const get_average_color = (canvas, x, y, width, height) => {
   const ctx = canvas.getContext('2d')
   const image_data = ctx.getImageData(x, y, width, height)
   const { data } = image_data
@@ -154,7 +154,7 @@ export const is_stop = stop => {
   return true
 }
 
-const make_vector = async message => {
+export const make_vector = async message => {
   console.time('make:vector')
   const image = await read(message.data.image)
 
@@ -177,7 +177,7 @@ const make_vector = async message => {
   return { vector }
 }
 
-const make_gradient = async message => {
+export const make_gradient = async message => {
   console.time('make:gradient')
   const image = await read(message.data.image)
 
@@ -194,10 +194,10 @@ const make_gradient = async message => {
 
 export const optimize_vector = message => {
   console.time('optimize:vector')
-  console.log('Optimizer')
-  console.log(`  before: ${to_kb(message.data.vector)}kb`)
+  console.info('Optimizer')
+  console.info(`  before: ${to_kb(message.data.vector)}kb`)
   const optimized = optimize(message.data.vector, svgo_options)
-  console.log(`  after: ${to_kb(optimized.data)}kb`)
+  console.info(`  after: ${to_kb(optimized.data)}kb`)
   console.timeEnd('optimize:vector')
   return { vector: optimized.data }
 }
@@ -217,9 +217,12 @@ export const route_message = async message => {
       reply = optimize_vector(message)
       break
     default:
-      console.log('unknown route', route)
+      console.warn('unknown route', route)
   }
-
-  self.postMessage(reply)
+  return reply
 }
-self.addEventListener('message', route_message)
+self.addEventListener('message', async (event) => {
+  console.log('message', event)
+  const reply = await route_message(event)
+  self.postMessage(reply)
+})
