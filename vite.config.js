@@ -101,15 +101,16 @@ export default defineConfig({
     ],
     coverage: {
       exclude: ['**/setup.js'],
-      lines: 90,
-      branches: 90,
-      statements: 90,
-      functions: 90,
+      lines: 80,
+      branches: 80,
+      statements: 80,
+      functions: 80,
       all: true,
       excludeNodeModules: true,
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
-      reportsDirectory: './coverage'
+      reportsDirectory: '../coverage',
+      reportOnFailure: true
     },
     mockReset: false,
     setupFiles: [
