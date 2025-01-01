@@ -1,9 +1,9 @@
 // {base_url}/{:author}/{:type}/{:created_at}
+import { get, set, keys } from 'idb-keyval'
 import get_item from '@/use/item'
 import { does_not_exist } from '@/use/sync'
 import { url, directory } from '@/use/serverless'
-import { get, set, keys } from 'idb-keyval'
-import { upload_processor } from './upload_processor'
+import { decompress_data } from '@/utils/upload_processor'
 
 class Directory {
   constructor() {
@@ -41,29 +41,15 @@ export async function list(itemid, me = localStorage.me) {
   }
 }
 export async function load_from_network(itemid, me = localStorage.me) {
-  const { decompress_data } = upload_processor()
   const url = await as_download_url(itemid, me)
 
   if (url) {
     console.info('download', itemid)
     const response = await fetch(url)
-
-    // Try compressed file first
-    if (response.status === 404) {
-      const compressed_url = url.replace('/index.html', '/index.html.gz').replace('.html', '.html.gz')
-      const compressed_response = await fetch(compressed_url)
-      if (compressed_response.ok) {
-        const compressed_data = await compressed_response.arrayBuffer()
-        const decompressed_text = await decompress_data(compressed_data)
-        await set(itemid, decompressed_text)
-        return get_item(decompressed_text)
-      }
-      return null
-    }
-
-    const server_text = await response.text()
-    await set(itemid, server_text)
-    return get_item(server_text)
+    const compressed_data = await response.arrayBuffer()
+    const html = await decompress_data(compressed_data)
+    await set(itemid, html)
+    return get_item(html)
   } else return null
 }
 export async function load_directory_from_network(itemid) {

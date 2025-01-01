@@ -314,7 +314,7 @@
           title="Show frames per second. usefull if you have animation turned on" />
       </figcaption>
       <as-svg
-        v-for="poster in posters.slice(0, 33)"
+        v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id" />
     </figure>
