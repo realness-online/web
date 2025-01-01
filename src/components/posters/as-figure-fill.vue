@@ -73,7 +73,6 @@
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   import { as_fragment_id } from '@/use/itemid'
-  const has_opacity = ref(false)
   const props = defineProps({
     itemid: {
       required: true,
@@ -82,6 +81,7 @@
     }
   })
   const emit = defineEmits({ toggle: () => true, loaded: is_vector })
+  const has_opacity = ref(false)
   const figure = ref(null)
   const color = ref('#151518')
   const itemprop = ref('background')

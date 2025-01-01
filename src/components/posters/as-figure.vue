@@ -52,14 +52,14 @@
       default: false
     }
   })
-  const menu = ref(false)
-  const poster = ref(null)
-  const vector = ref(null)
-  const person = ref(null)
   const emit = defineEmits({
     'vector-click': is_click,
     loaded: is_vector
   })
+  const menu = ref(false)
+  const poster = ref(null)
+  const vector = ref(null)
+  const person = ref(null)
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -67,12 +67,8 @@
     const height = parseInt(numbers[3])
     return width > height
   })
-  const query_id = computed(() => {
-    return as_query_id(props.itemid)
-  })
-  const posted_at = computed(() => {
-    return as_time(as_created_at(props.itemid))
-  })
+  const query_id = computed(() => as_query_id(props.itemid))
+  const posted_at = computed(() => as_time(as_created_at(props.itemid)))
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)

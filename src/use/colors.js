@@ -42,10 +42,10 @@ export const to_hsla = (color = '') => {
   return rgba_to_hsla({ r, g, b, a: 255 })
 }
 export const to_complimentary_hsl = (color = '') => {
-  let hsl = to_hsla(color)
+  const hsl = to_hsla(color)
   const h = hsl.h + 180
   const s = 100 - hsl.s
-  let l = 100 - hsl.l
+  const l = 100 - hsl.l
   return color_to_hsla({ h, s, l, a: hsl.a })
 }
 export const luminosity = (color, change_by) => {
@@ -61,9 +61,9 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
   b /= 255
   a /= 255
   a = a.toFixed(2)
-  let cmin = Math.min(r, g, b)
-  let cmax = Math.max(r, g, b)
-  let delta = cmax - cmin
+  const cmin = Math.min(r, g, b)
+  const cmax = Math.max(r, g, b)
+  const delta = cmax - cmin
   let h = 0
   let s = 0
   let l = 0

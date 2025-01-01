@@ -47,6 +47,4 @@ global.resolve_mock_path = path => {
   return join(__dirname, clean_path)
 }
 
-global.read_mock_file = path => {
-  return fs.readFileSync(resolve_mock_path(path), 'utf8')
-}
+global.read_mock_file = path => fs.readFileSync(resolve_mock_path(path), 'utf8')

@@ -9,7 +9,6 @@
   import { computed } from 'vue'
   import { me } from '@/use/serverless'
   import { use_me } from '@/use/people'
-  const { save } = use_me()
   const props = defineProps({
     itemid: {
       type: String,
@@ -17,6 +16,7 @@
       validator: is_vector_id
     }
   })
+  const { save } = use_me()
   const is_avatar = computed(() => {
     if (props.itemid === me.value.avatar) return true
     else return false

@@ -36,9 +36,7 @@
         } else return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month() {
-        const event = this.events.find(event => {
-          return event.url === this.itemid
-        })
+        const event = this.events.find(event => event.url === this.itemid)
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { month: 'long' })

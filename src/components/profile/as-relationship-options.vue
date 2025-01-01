@@ -19,9 +19,7 @@
     }
   })
   const { relations } = use_me()
-  const is_relation = computed(() => {
-    return relations.value.some(relation => relation.id === props.person.id)
-  })
+  const is_relation = computed(() => relations.value.some(relation => relation.id === props.person.id))
   const update_relationship = async () => {
     if (is_relation.value) {
       const index = relations.value.findIndex(p => p.id === props.person.id)

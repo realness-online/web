@@ -121,9 +121,7 @@ class Bitmap {
    * Gets the histogram of the bitmap's pixel values
    * @returns {Histogram|null} Histogram instance for this bitmap
    */
-  histogram = () => {
-    return this.#histogram
-  }
+  histogram = () => this.#histogram
 }
 
 export default Bitmap

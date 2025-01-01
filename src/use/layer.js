@@ -5,7 +5,7 @@ import { svg_ns, use as use_path } from '@/use/path'
 export const change_by = 0.08
 
 export const is_use = path => {
-  if (typeof path != 'object') return false
+  if (typeof path !== 'object') return false
   if (path instanceof SVGUseElement) return true
   else return false
 }
@@ -18,9 +18,7 @@ export const settings_query = name => {
   return settings.querySelector(`[itemprop="${name}"]`)
 }
 
-export const create_use_element = () => {
-  return document.createElementNS(svg_ns, 'use')
-}
+export const create_use_element = () => document.createElementNS(svg_ns, 'use')
 
 const opacity_percentage = ref()
 const selected_layer = ref()

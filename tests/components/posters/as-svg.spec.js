@@ -3,7 +3,7 @@ import as_svg from '@/components/posters/as-svg'
 import get_item from '@/use/item'
 
 const poster_html = read_mock_file('@@/html/poster.html')
-let poster = get_item(poster_html)
+const poster = get_item(poster_html)
 describe('@/components/posters/as-svg.vue', () => {
   describe('Renders', () => {
     it('A working icon initially', () => {

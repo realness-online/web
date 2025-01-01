@@ -49,9 +49,7 @@ describe('@/compontent/profile/as-form-mobile.vue', () => {
         it('Reject invalid mobile number', () => {
           input.trigger('paste', {
             clipboardData: {
-              getData: () => {
-                return 'abc-123-1234'
-              }
+              getData: () => 'abc-123-1234'
             }
           })
           expect(wrapper.emitted('update:person')).toBeTruthy()

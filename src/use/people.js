@@ -79,12 +79,8 @@ export const get_my_itemid = type => {
   if (type) return `${localStorage.me}/${type}`
   else return localStorage.me
 }
-export const as_phone_number = (id = '/+1') => {
-  return id.substring(2)
-}
-export const from_e64 = e64_number => {
-  return `/${e64_number}`
-}
+export const as_phone_number = (id = '/+1') => id.substring(2)
+export const from_e64 = e64_number => `/${e64_number}`
 export const is_person = maybe => {
   if (typeof maybe !== 'object') return false
   if (maybe.type !== 'person') return false

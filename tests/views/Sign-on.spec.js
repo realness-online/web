@@ -32,9 +32,7 @@ describe('@/views/Sign-on.vue', () => {
     })
     it('Renders a form for a returning user', async () => {
       localStorage.me = '/+6282281823'
-      vi.spyOn(itemid, 'load').mockImplementation(() => {
-        return Promise.resolve(person)
-      })
+      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
       wrapper = shallowMount(Sign_on)
       await flush()
       expect(wrapper.element).toMatchSnapshot()

@@ -23,9 +23,7 @@ describe('@/use/statements', () => {
         { id: '/+16282281824/statements/1569909311638' }
       ]
       it("Checks if it's time to load more thoughts", async () => {
-        vi.spyOn(itemid, 'as_directory').mockImplementation(() => {
-          return { items: ['index', '1569909311638'] }
-        })
+        vi.spyOn(itemid, 'as_directory').mockImplementation(() => ({ items: ['index', '1569909311638'] }))
         wrapper.vm.statements = statements
         await wrapper.vm.thought_shown(statements)
       })

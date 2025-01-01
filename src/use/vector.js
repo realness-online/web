@@ -13,7 +13,7 @@ const path_names = ['background', 'light', 'regular', 'medium', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
 export const is_vector = vector => {
-  if (typeof vector != 'object') return false
+  if (typeof vector !== 'object') return false
   if (!is_vector_id(vector.id)) return false
   if (vector.path) return false
   if (!vector.viewbox) return false
@@ -33,17 +33,17 @@ export const is_vector_id = itemid => {
   else return false
 }
 export const is_rect = rect => {
-  if (typeof rect != 'object') return false
+  if (typeof rect !== 'object') return false
   if (rect instanceof SVGRectElement) return true
   else return false
 }
 export const is_stop = stop => {
-  if (typeof stop != 'object') return false
+  if (typeof stop !== 'object') return false
   if (stop instanceof SVGStopElement) return true
   else return false
 }
 export const is_url_query = query => {
-  if (typeof query != 'string') return false
+  if (typeof query !== 'string') return false
   if (query.startsWith('url(') && !query.endsWith(')')) return false
   return true
 }
@@ -104,7 +104,7 @@ export const use_poster = () => {
   }
   const show = async () => {
     if (!vector.value) {
-      let poster = await load(props.itemid)
+      const poster = await load(props.itemid)
       vector.value = poster
     }
     working.value = false
