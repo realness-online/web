@@ -1,10 +1,10 @@
 import pako from 'pako'
 import { to_kb } from '@/use/number'
 
-const compress_data = message => {
+export const compress_data = message => {
   console.time('compress:data')
-  console.log('Compressor')
-  console.log(`  before: ${to_kb(message.data.html)}kb`)
+  console.info('Compressor')
+  console.info(`  before: ${to_kb(message.data.html)}kb`)
 
   const uint8_array = new TextEncoder().encode(message.data.html)
 
@@ -16,12 +16,12 @@ const compress_data = message => {
   })
 
   const blob = new Blob([result], { type: 'application/gzip' })
-  console.log(`  after: ${(blob.size / 1024).toFixed(2)}kb`)
+  console.info(`  after: ${(blob.size / 1024).toFixed(2)}kb`)
   console.timeEnd('compress:data')
   return result
 }
 
-const decompress_data = message => {
+export const decompress_data = message => {
   try {
     const decompressed = pako.inflate(new Uint8Array(message.data.compressed), {
       to: 'string'
@@ -44,9 +44,13 @@ export const route_message = async message => {
       reply = decompress_data(message)
       break
     default:
-      console.log('unknown route', route)
+      console.warn('unknown route', route)
   }
 
-  self.postMessage(reply)
+  return reply
 }
-self.addEventListener('message', route_message)
+self.addEventListener('message', async (event) => {
+  console.info('message', event)
+  const reply = await route_message(event)
+  self.postMessage(reply)
+})
