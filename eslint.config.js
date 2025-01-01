@@ -66,31 +66,8 @@ export default [
       camelcase: 'off',
       indent: 'off',
       'lines-between-class-members': 'off',
-      'vue/multi-word-component-names': 'off',
-      'vue/require-default-prop': 'off',
-      'vue/prop-name-casing': ['error', 'snake_case'],
-      'vue/singleline-html-element-content-newline': 'off',
-      'vue/html-closing-bracket-spacing': [
-        'error',
-        {
-          selfClosingTag: 'always'
-        }
-      ],
-      'vue/component-api-style': ['error', ['script-setup']],
-      'vue/no-unused-refs': 'error',
-      'vue/no-v-html': 'error',
-      'vue/no-unused-properties': ['error', {
-        groups: ['props', 'data', 'computed', 'methods']
-      }],
-      'vue/define-macros-order': ['error', {
-        order: ['defineProps', 'defineEmits', 'defineSlots']
-      }],
-      'vue/define-props-declaration': ['error', 'runtime'],
-      'vue/require-define-props': 'error',
-      'vue/valid-define-props': 'error',
-      'vue/no-empty-component-block': 'error',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-debugger': 'warn',
+      'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
+      'no-debugger': 'error',
       'no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_'
@@ -126,6 +103,30 @@ export default [
         enforceConst: true
       }],
       'no-nested-ternary': 'error',
+      'vue/multi-word-component-names': 'off',
+      'vue/require-default-prop': 'off',
+      'vue/prop-name-casing': ['error', 'snake_case'],
+      'vue/singleline-html-element-content-newline': 'off',
+      'vue/html-closing-bracket-spacing': [
+        'error',
+        {
+          selfClosingTag: 'always'
+        }
+      ],
+      'vue/component-api-style': ['error', ['script-setup']],
+      'vue/no-unused-refs': 'error',
+      'vue/no-v-html': 'error',
+      'vue/no-unused-properties': ['error', {
+        groups: ['props', 'data', 'computed', 'methods']
+      }],
+      'vue/define-macros-order': ['error', {
+        order: ['defineProps', 'defineEmits', 'defineSlots']
+      }],
+      'vue/define-props-declaration': ['error', 'runtime'],
+      'vue/require-define-props': 'error',
+      'vue/valid-define-props': 'error',
+      'vue/no-empty-component-block': 'error',
+
       'vue/no-static-inline-styles': ['error', {
         allowBinding: true
       }],
@@ -172,7 +173,21 @@ export default [
       'require-atomic-updates': 'error',
       'no-await-in-loop': 'warn',
       'no-loss-of-precision': 'error',
-      'comma-dangle': ['error', 'never']
+      'comma-dangle': ['error', 'never'],
+      'no-undef': 'error',
+      'vue/no-mutating-props': 'error',
+      'vue/return-in-computed-property': 'error',
+      'vue/no-side-effects-in-computed-properties': 'error',
+      'vue/no-v-html': 'warn',
+      'vue/v-on-event-hyphenation': ['error', 'always'],
+      'vue/no-template-shadow': 'error',
+      'vue/order-in-components': 'error',
+      'vue/no-duplicate-attributes': 'error',
+      'vue/require-v-for-key': 'error',
+      'vue/no-use-v-if-with-v-for': 'error',
+      'vue/valid-v-for': 'error',
+      'vue/component-api-style': ['error', ['script-setup']],
+      'vue/no-setup-props-destructure': 'error'
     }
   },
   {
