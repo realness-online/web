@@ -59,7 +59,7 @@ export const prepare_upload_data = async (items, path) => {
       contentDisposition: 'inline',
       md5Hash: md5_hash,
       customMetadata: {
-        ETag: `"${content_hash}"`
+        hash: `"${content_hash}"`
       }
     }
   }

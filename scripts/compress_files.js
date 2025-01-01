@@ -3,6 +3,11 @@ import { join, dirname, relative } from 'path'
 import chalk from 'chalk'
 import { prepare_upload_data } from './node_upload_processor.js'
 
+// Define paths relative to project root
+const DATA_DIR = 'storage'
+const SOURCE_DIR = join(DATA_DIR, 'people')
+const OUTPUT_DIR = join(DATA_DIR, 'compressed')
+
 const format_bytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -31,6 +36,18 @@ const get_html_files = async (dir_path, files = []) => {
   }
 
   return files
+}
+
+const create_header_file = async (metadata, output_path) => {
+  const headers = [
+    `add_header Cache-Control "${metadata.cacheControl}";`,
+    `add_header Content-Language "${metadata.contentLanguage}";`,
+    `add_header Content-Disposition "${metadata.contentDisposition}";`,
+    `add_header ETag ${metadata.customMetadata.hash};`
+  ].join('\n')
+
+  const header_path = `${output_path}.headers.conf`
+  await writeFile(header_path, headers)
 }
 
 const process_directory = async (source_dir, output_dir) => {
@@ -76,6 +93,7 @@ const process_directory = async (source_dir, output_dir) => {
 
         await writeFile(compressed_path, data)
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
+        await create_header_file(metadata.metadata, output_path)
 
       } catch (file_error) {
         console.error(chalk.red(`Error processing file ${file_path}:`), file_error)
@@ -96,21 +114,19 @@ const process_directory = async (source_dir, output_dir) => {
 
 const main = async () => {
   try {
-    const source_dir = process.argv[2]
-    if (!source_dir) {
-      throw new Error('Please provide a source directory path')
-    }
-
-    const output_dir = `${source_dir}_compressed`
-
     console.log(chalk`
-{bold Starting script with:}
-{dim Source directory:}  {cyan ${source_dir}}
-{dim Output directory:} {cyan ${output_dir}}
+{bold Directory Setup:}
+{dim Data directory:}       {cyan ${DATA_DIR}}
+{dim Source directory:}     {cyan ${SOURCE_DIR}}
+{dim Compressed directory:} {cyan ${OUTPUT_DIR}}
 `)
 
-    await process_directory(source_dir, output_dir)
-    console.log(chalk.green.bold('\nScript completed successfully'))
+    // Ensure directories exist
+    await ensure_dir(SOURCE_DIR)
+    await ensure_dir(OUTPUT_DIR)
+
+    await process_directory(SOURCE_DIR, OUTPUT_DIR)
+    console.log(chalk.green.bold('\nCompression completed successfully'))
   } catch (error) {
     console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)
