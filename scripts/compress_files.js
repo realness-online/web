@@ -1,18 +1,7 @@
 import { readdir, readFile, writeFile, mkdir } from 'fs/promises'
 import { join, dirname, relative } from 'path'
+import chalk from 'chalk'
 import { prepare_upload_data } from './node_upload_processor.js'
-
-// Terminal colors
-const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  green: '\x1b[32m',
-  blue: '\x1b[34m',
-  cyan: '\x1b[36m',
-  yellow: '\x1b[33m',
-  red: '\x1b[31m'
-}
 
 const format_bytes = (bytes) => {
   if (bytes < 1024) return `${bytes} B`
@@ -46,13 +35,13 @@ const get_html_files = async (dir_path, files = []) => {
 
 const process_directory = async (source_dir, output_dir) => {
   try {
-    console.log(`${colors.bright}Starting to process directory:${colors.reset} ${colors.cyan}${source_dir}${colors.reset}`)
+    console.log(chalk.bold('Starting to process directory: ') + chalk.cyan(source_dir))
 
     const html_files = await get_html_files(source_dir)
-    console.log(`${colors.bright}Found${colors.reset} ${colors.green}${html_files.length}${colors.reset} HTML files to process`)
+    console.log(chalk.bold('Found ') + chalk.green(html_files.length) + chalk.bold(' HTML files to process'))
 
     if (html_files.length === 0) {
-      console.log(`${colors.yellow}No HTML files found in directory tree${colors.reset}`)
+      console.log(chalk.yellow('No HTML files found in directory tree'))
       return
     }
 
@@ -71,16 +60,16 @@ const process_directory = async (source_dir, output_dir) => {
         const original_size = content.length
         total_original += original_size
 
-        console.log(`\n${colors.bright}Processing:${colors.reset} ${colors.cyan}${rel_path}${colors.reset}`)
+        console.log('\n' + chalk.bold('Processing: ') + chalk.cyan(rel_path))
         const { data, metadata } = await prepare_upload_data(content, file_path)
         const compressed_size = data.length
         total_compressed += compressed_size
 
         const compression_ratio = ((original_size - compressed_size) / original_size * 100).toFixed(1)
 
-        console.log(`${colors.dim}Original:${colors.reset}    ${format_bytes(original_size)}`)
-        console.log(`${colors.dim}Compressed:${colors.reset}  ${format_bytes(compressed_size)}`)
-        console.log(`${colors.dim}Reduction:${colors.reset}   ${colors.green}${compression_ratio}%${colors.reset}`)
+        console.log(chalk.dim('Original:    ') + format_bytes(original_size))
+        console.log(chalk.dim('Compressed:  ') + format_bytes(compressed_size))
+        console.log(chalk.dim('Reduction:   ') + chalk.green(`${compression_ratio}%`))
 
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
@@ -89,18 +78,18 @@ const process_directory = async (source_dir, output_dir) => {
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
       } catch (file_error) {
-        console.error(`${colors.red}Error processing file ${file_path}:${colors.reset}`, file_error)
+        console.error(chalk.red(`Error processing file ${file_path}:`), file_error)
       }
     }
 
     const total_ratio = ((total_original - total_compressed) / total_original * 100).toFixed(1)
-    console.log(`\n${colors.bright}Compression Summary:${colors.reset}`)
-    console.log(`${colors.dim}Total original:${colors.reset}    ${format_bytes(total_original)}`)
-    console.log(`${colors.dim}Total compressed:${colors.reset}  ${format_bytes(total_compressed)}`)
-    console.log(`${colors.dim}Overall reduction:${colors.reset} ${colors.green}${total_ratio}%${colors.reset}`)
+    console.log('\n' + chalk.bold('Compression Summary:'))
+    console.log(chalk.dim('Total original:    ') + format_bytes(total_original))
+    console.log(chalk.dim('Total compressed:  ') + format_bytes(total_compressed))
+    console.log(chalk.dim('Overall reduction: ') + chalk.green(`${total_ratio}%`))
 
   } catch (error) {
-    console.error(`${colors.red}Error in process_directory:${colors.reset}`, error)
+    console.error(chalk.red('Error in process_directory:'), error)
     throw error
   }
 }
@@ -112,17 +101,18 @@ const main = async () => {
       throw new Error('Please provide a source directory path')
     }
 
-    // Create output directory next to source
     const output_dir = `${source_dir}_compressed`
 
-    console.log('Starting script with:')
-    console.log('Source directory:', source_dir)
-    console.log('Output directory:', output_dir)
+    console.log(chalk`
+{bold Starting script with:}
+{dim Source directory:}  {cyan ${source_dir}}
+{dim Output directory:} {cyan ${output_dir}}
+`)
 
     await process_directory(source_dir, output_dir)
-    console.log('Script completed successfully')
+    console.log(chalk.green.bold('\nScript completed successfully'))
   } catch (error) {
-    console.error('Script failed:', error)
+    console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)
   }
 }
