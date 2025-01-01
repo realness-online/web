@@ -226,7 +226,7 @@ class Histogram {
       }
     ]
 
-    let best_result = { max_sig: 0, color_stops: null }
+    const best_result = { max_sig: 0, color_stops: null }
 
     while (stack.length > 0) {
       const current = stack.pop()

@@ -49,9 +49,7 @@ export const use = () => {
   const listener = () => {
     const image = image_picker.value.files[0]
     if (image === undefined) return
-    const is_image = ['image/jpeg', 'image/png'].some(type => {
-      return image.type === type
-    })
+    const is_image = ['image/jpeg', 'image/png'].some(type => image.type === type)
     if (is_image) {
       vectorize(image)
       image_picker.value.value = ''

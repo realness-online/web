@@ -11,7 +11,12 @@ export default [
   },
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**']
+    ignores: [
+      '**/dist/**',
+      '**/dist-ssr/**',
+      '**/coverage/**',
+      'public/**/*.js'
+    ]
   },
   {
     plugins: {
@@ -69,7 +74,34 @@ export default [
         {
           selfClosingTag: 'always'
         }
-      ]
+      ],
+      'vue/component-api-style': ['error', ['script-setup']],
+      'vue/no-unused-refs': 'error',
+      'vue/no-v-html': 'error',
+      'vue/no-unused-properties': ['error', {
+        groups: ['props', 'data', 'computed', 'methods']
+      }],
+      'vue/define-macros-order': ['error', {
+        order: ['defineProps', 'defineEmits', 'defineSlots']
+      }],
+      'vue/define-props-declaration': ['error', 'type-based'],
+      'vue/no-empty-component-block': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'warn',
+      'no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_'
+      }],
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'eqeqeq': ['error', 'always'],
+      'no-multiple-empty-lines': ['error', { max: 1 }],
+      'arrow-body-style': ['error', 'as-needed'],
+      'no-param-reassign': 'error',
+      'no-return-await': 'error',
+      'require-await': 'error',
+      'max-lines-per-function': ['warn', 50],
+      'complexity': ['warn', 10]
     }
   },
   {

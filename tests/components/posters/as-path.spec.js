@@ -3,7 +3,7 @@ import as_path from '@/components/posters/as-path'
 import get_item from '@/use/item'
 
 const poster_html = read_mock_file('@@/html/poster.html')
-let poster = get_item(poster_html)
+const poster = get_item(poster_html)
 describe('@/components/posters/as-fill-figure.vue', () => {
   describe('Renders', () => {
     it('a path from one provided', () => {

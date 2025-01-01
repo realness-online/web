@@ -46,7 +46,6 @@
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
   import { stroke as stroke_pref, fill as fill_pref } from '@/use/preference'
-  defineEmits(['focus'])
   const props = defineProps({
     itemprop: {
       type: String,
@@ -81,6 +80,7 @@
       required: true
     }
   })
+  defineEmits(['focus'])
   const wants_both = computed(() => {
     if (inject('new-poster', false)) return false
     return stroke_pref.value && fill_pref.value

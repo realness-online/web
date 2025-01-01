@@ -260,7 +260,7 @@ export const bezier = (t, p0, p1, p2, p3) => {
  * @returns {number} Parameter value t at intersection, or -1 if no intersection
  */
 export const tangent = (p0, p1, p2, p3, q0, q1) => {
-  var A, B, C, a, b, c, d, s, r1, r2
+  let A, B, C, a, b, c, d, s, r1, r2
 
   A = cprod(p0, p1, q0, q1)
   B = cprod(p1, p2, q0, q1)

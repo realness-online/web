@@ -12,10 +12,10 @@
 <script setup>
   import { ref } from 'vue'
   import { use } from '@/use/statements'
+  const emit = defineEmits(['toggle-keyboard'])
   const { save } = use()
   const statement_text = ref(null)
 
-  const emit = defineEmits(['toggle-keyboard'])
   const focused = () => emit('toggle-keyboard')
   const prepare_statement = async () => {
     emit('toggle-keyboard')

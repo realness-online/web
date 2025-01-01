@@ -56,7 +56,7 @@
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
   mounted(async () => {
-    let my = await load(localStorage.me)
+    const my = await load(localStorage.me)
     if (my?.first_name) first_name.value = my.first_name
     else first_name.value = 'You'
     console.info('views:Navigation')

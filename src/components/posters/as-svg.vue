@@ -247,11 +247,6 @@
     emboss as emboss_pref,
     light as light_pref
   } from '@/use/preference'
-  defineEmits({
-    focus: is_focus,
-    click: is_click,
-    loaded: is_vector
-  })
   const props = defineProps({
     itemid: {
       type: String,
@@ -289,6 +284,11 @@
       required: false,
       default: false
     }
+  })
+  defineEmits({
+    focus: is_focus,
+    click: is_click,
+    loaded: is_vector
   })
   const {
     query,

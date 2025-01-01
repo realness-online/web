@@ -4,18 +4,14 @@ import { change } from '@/use/opacity'
 export const svg_ns = 'http://www.w3.org/2000/svg'
 export const change_by = 0.08
 export const is_path = path => {
-  if (typeof path != 'object') return false
+  if (typeof path !== 'object') return false
   if (path instanceof SVGPathElement) return true
   else return false
 }
 
-export const itemprop_query = name => {
-  return document.querySelector(`[itemprop="${name}"]`)
-}
+export const itemprop_query = name => document.querySelector(`[itemprop="${name}"]`)
 
-export const create_path_element = () => {
-  return document.createElementNS(svg_ns, 'path')
-}
+export const create_path_element = () => document.createElementNS(svg_ns, 'path')
 const opacity_percentage = ref()
 const selected_path = ref()
 const as_stroke = ref(false)

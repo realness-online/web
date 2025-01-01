@@ -94,8 +94,8 @@ const get_average_color = (canvas, x, y, width, height) => {
 }
 
 export const as_gradient = (canvas, height = false) => {
-  let direction = height ? canvas.height : canvas.width
-  let opposite = height ? canvas.width : canvas.height
+  const direction = height ? canvas.height : canvas.width
+  const opposite = height ? canvas.width : canvas.height
   const chunk = fidelity(direction)
   const stops = []
 

@@ -626,11 +626,11 @@ class Potrace {
     let j
     let m
     let k
-    let n = path.len
-    let pen = []
-    let prev = []
-    let clip0 = []
-    let clip1 = []
+    const n = path.len
+    const pen = []
+    const prev = []
+    const clip0 = []
+    const clip1 = []
     const seg0 = []
     const seg1 = []
     let thispen
@@ -1469,7 +1469,7 @@ class Potrace {
   #set_parameters(newParams) {
     this.#validate_parameters(newParams)
 
-    for (let key in this.#params) {
+    for (const key in this.#params) {
       if (this.#params.hasOwnProperty(key) && newParams.hasOwnProperty(key)) {
         const tmpOldVal = this.#params[key]
         this.#params[key] = newParams[key]

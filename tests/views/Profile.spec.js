@@ -5,10 +5,8 @@ const person = read_mock_file('@@/html/person.html')
 import { ref, nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')
-vi.mock('@/use/people', () => {
-  return {
-    use: () => {
-      return {
+vi.mock('@/use/people', () => ({
+    use: () => ({
         load_relations: vi.fn(),
         load_person: vi.fn(),
         person: ref({
@@ -16,22 +14,16 @@ vi.mock('@/use/people', () => {
           type: 'person'
         }),
         relations: ref([])
-      }
-    }
-  }
-})
+      })
+  }))
 
-vi.mock('@/use/statements', () => {
-  return {
-    use: () => {
-      return {
+vi.mock('@/use/statements', () => ({
+    use: () => ({
         for_person: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
-      }
-    }
-  }
-})
+      })
+  }))
 
 describe('@/views/Profile.vue', () => {
   describe('Renders', async () => {
@@ -46,9 +38,7 @@ describe('@/views/Profile.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('there not being posters', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
-        return { items: [] }
-      })
+      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => ({ items: [] }))
       const wrapper = shallowMount(Profile)
       wrapper.vm.route = { params: { phone_number: '+14151231234' } }
 

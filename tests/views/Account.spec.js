@@ -13,17 +13,13 @@ const me = {
   id: '/+16282281824'
 }
 vi.mock('vue-router')
-vi.mock('@/use/statements', () => {
-  return {
-    use: () => {
-      return {
+vi.mock('@/use/statements', () => ({
+    use: () => ({
         for_person: vi.fn(),
         statements: ref([]),
         thought_shown: vi.fn()
-      }
-    }
-  }
-})
+      })
+  }))
 describe('@/views/Account.vue', () => {
   let wrapper
   beforeEach(async () => {
