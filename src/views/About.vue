@@ -227,7 +227,9 @@
           </p>
           <p>
             Sign into Realness, and you can message me directly. Visit the code
-            <a href="https://github.com/realness-online/web" rel="external">online</a>. I keep a
+            <a href="https://github.com/realness-online/web" rel="external"
+              >online</a
+            >. I keep a
             <a href="https://scott-fryxell.github.io/" rel="external"> blog </a>
             of all my feelings and nerd problems. My resume is on there.
           </p>
