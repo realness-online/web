@@ -104,7 +104,7 @@ describe('@/persistance/Paged.js', () => {
       it('Exists', () => {
         expect(paged.optimize).toBeDefined()
       })
-      it('It optimizes a list of items accross a set of pages', async () => {
+      it('optimizes a list of items accross a set of pages', async () => {
         firebase.user = user
         localStorage.setItem(paged.id, hella_statements)
         const save_spy = vi.spyOn(paged, 'save')
@@ -115,7 +115,7 @@ describe('@/persistance/Paged.js', () => {
         expect(save_spy).toHaveBeenCalledTimes(2)
         firebase.user = null
       })
-      it('It fails gracefully', async () => {
+      it('fails gracefully', async () => {
         localStorage.setItem(paged.id, '')
         expect(Object.keys(localStorage.__STORE__).length).toBe(2)
         await paged.optimize()

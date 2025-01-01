@@ -1,10 +1,8 @@
 import pluginVue from 'eslint-plugin-vue'
-import { configs as vitestConfigs } from '@vitest/eslint-plugin'
+import vitest from '@vitest/eslint-plugin'
 import compat from 'eslint-plugin-compat'
-import pluginNode from 'eslint-plugin-node'
-
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import globals from 'globals'
+import * as vue_parser from 'vue-eslint-parser'
 
 export default [
   {
@@ -15,9 +13,27 @@ export default [
     name: 'app/files-to-ignore',
     ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**']
   },
-  { rules: { ...compat.configs.recommended.rules } },
-  ...pluginVue.configs['vue3-recommended'],
-  skipFormatting,
+  {
+    plugins: {
+      compat
+    },
+    rules: {
+      ...compat.configs.recommended.rules
+    }
+  },
+  {
+    files: ['**/*.vue'],
+    plugins: {
+      vue: pluginVue
+    },
+    processor: pluginVue.processors['.vue'],
+    languageOptions: {
+      parser: vue_parser
+    },
+    rules: {
+      ...pluginVue.configs['vue3-recommended'].rules
+    }
+  },
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -36,6 +52,9 @@ export default [
     }
   },
   {
+    plugins: {
+      vue: pluginVue
+    },
     rules: {
       'no-import-assign': 'off',
       camelcase: 'off',
@@ -62,7 +81,12 @@ export default [
   },
   {
     files: ['**/*.{test,spec}.{js,vue}', '**/tests/**/*.{js,vue}'],
-    ...vitestConfigs.recommended,
+    plugins: {
+      vitest: vitest
+    },
+    rules: {
+      ...vitest.configs.recommended.rules
+    },
     languageOptions: {
       globals: {
         ...globals.jest

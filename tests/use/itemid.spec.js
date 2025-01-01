@@ -183,7 +183,7 @@ describe('@/use/itemid', () => {
       before_each(async () => {
         await load(posterid, '/+14152281824')
       })
-      it('It tries indexdb', () => {
+      it('tries indexdb', () => {
         expect(get).toBeCalled()
       })
       it('Does NOT try localStorage', () => {
@@ -191,11 +191,11 @@ describe('@/use/itemid', () => {
       })
     })
     describe("It's my stuff", () => {
-      it('It tries local storage first', () => {
+      it('tries local storage first', () => {
         load(posterid, '/+16282281824')
         expect(localStorage.getItem).toHaveBeenCalledTimes(1)
       })
-      it('It tries indexdb', () => {
+      it('tries indexdb', () => {
         load(posterid, '/+16282281824')
         expect(localStorage.getItem).toHaveBeenCalledTimes(1)
         expect(get).toHaveBeenCalledTimes(1)
