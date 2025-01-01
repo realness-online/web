@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { vi } from 'vitest'
 import as_days from '@/components/as-days'
 import get_item from '@/use/item'
 import * as as_date from '@/use/date'

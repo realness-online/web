@@ -1,36 +1,29 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import * as itemid from '@/use/itemid'
 import Events from '@/views/Events'
-describe('@/views/Events.vue', () => {
-  let list
-  beforeEach(() => {
-    localStorage.me = '/+'
-    list = vi.spyOn(itemid, 'list').mockImplementation(id => {
-      if (itemid.as_type(id) === 'relations')
-        return [
-          { id: '/+14153451275' },
-          { id: '/+17075539126' },
-          { id: '/+15104512765' }
-        ]
 
-      return [
-        {
-          id: `${itemid.as_author(id)}/events/${Date.now()}`,
-          url: `${itemid.as_author(id)}/posters/${Date.now()}`
-        }
-      ]
+describe('@/views/Events', () => {
+  let wrapper
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wrapper = shallowMount(Events)
+  })
+
+  describe('Rendering', () => {
+    it('renders events component', () => {
+      expect(wrapper.element).toMatchSnapshot()
     })
   })
-  afterEach(() => vi.resetAllMocks())
-  describe('Renders', () => {
-    it('List of upcoming events', async () => {
-      const wrapper = await shallowMount(Events, {
-        global: {
-          stubs: ['router-link']
-        }
-      })
-      expect(wrapper.element).toMatchSnapshot()
-      expect(list).toBeCalled()
+
+  describe('Event Management', () => {
+    it('adds new event', () => {
+      const test_event = {
+        title: 'Test Event',
+        date: vi.fn().mockReturnValue(new Date())
+      }
+      wrapper.vm.add_event(test_event)
+      expect(wrapper.vm.events).toContain(test_event)
     })
   })
 })

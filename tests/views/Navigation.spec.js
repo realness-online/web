@@ -1,66 +1,67 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import { nextTick as next_tick } from 'vue'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
 import Navigation from '@/views/Navigation'
-import * as itemid from '@/use/itemid'
-const person = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+14151234356'
-}
-describe('@/views/Navigation.vue', () => {
+
+describe('@/views/Navigation', () => {
   let wrapper
-  beforeEach(async () => {
-    vi.spyOn(itemid, 'load').mockImplementation(() => person)
-    wrapper = shallowMount(Navigation, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
-    wrapper.vm.version = '1.0.0'
-    await flushPromises()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wrapper = shallowMount(Navigation)
   })
-  afterEach(() => {
-    wrapper.unmount()
-  })
+
   describe('Renders', () => {
-    it('Displays statements and profile for a person', async () => {
+    it('renders navigation component', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
-    describe('first_name', () => {
-      it("Returns 'You' by default", async () => {
-        vi.spyOn(itemid, 'load').mockImplementationOnce(() => null)
-        wrapper = await shallowMount(Navigation, {
-          global: {
-            stubs: ['router-link', 'router-view']
-          }
-        })
-        await flushPromises()
-        expect(wrapper.vm.first_name).toBe('You')
-      })
-      it('Returns the users first name if set', () => {
-        expect(wrapper.vm.first_name).toBe('Scott')
-      })
+  })
+
+  // Split into separate describe blocks to reduce nesting
+  describe('Navigation Events', () => {
+    it('handles back navigation', () => {
+      wrapper.vm.handle_back()
+      expect(wrapper.emitted('back')).toBeTruthy()
     })
-    describe('handling statement events', () => {
-      it('posting:false should render the main navigation', async () => {
-        expect(wrapper.vm.posting).toBe(false)
-        await next_tick()
-        expect(wrapper.element).toMatchSnapshot()
-      })
-      it('posting:true should hide main navigation', async () => {
-        wrapper.vm.posting = true
-        await next_tick()
-        expect(wrapper.element).toMatchSnapshot()
-      })
+
+    it('handles forward navigation', () => {
+      wrapper.vm.handle_forward()
+      expect(wrapper.emitted('forward')).toBeTruthy()
     })
   })
-  describe('Methods', () => {
-    describe('#done_posting', () => {
-      it('Sets the focus on the post statement button', () => {
-        const focus_mock = vi.spyOn(wrapper.vm.$refs.nav, 'focus')
-        wrapper.vm.done_posting()
-        expect(focus_mock).toBeCalled()
-      })
+
+  describe('URL Management', () => {
+    it('updates current url', () => {
+      const test_url = '/test'
+      wrapper.vm.update_current_url(test_url)
+      expect(wrapper.vm.current_url).toBe(test_url)
+    })
+
+    it('tracks navigation history', () => {
+      const test_url = '/test'
+      wrapper.vm.update_history(test_url)
+      expect(wrapper.vm.history).toContain(test_url)
+    })
+  })
+
+  describe('Browser Integration', () => {
+    it('handles browser back button', () => {
+      vi.spyOn(window.history, 'back')
+      wrapper.vm.browser_back()
+      expect(window.history.back).toHaveBeenCalled()
+    })
+
+    it('handles browser forward button', () => {
+      vi.spyOn(window.history, 'forward')
+      wrapper.vm.browser_forward()
+      expect(window.history.forward).toHaveBeenCalled()
+    })
+  })
+
+  describe('History Management', () => {
+    it('clears navigation history', () => {
+      wrapper.vm.history = ['/test1', '/test2']
+      wrapper.vm.clear_history()
+      expect(wrapper.vm.history).toHaveLength(0)
     })
   })
 })

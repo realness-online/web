@@ -1,19 +1,22 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-
-import { current_user } from '@/use/serverless'
-
 import Editor from '@/views/Editor'
-const user = { phoneNumber: '16282281824' }
-vi.mock('vue-router')
-describe('@/views/Editor.vue', () => {
-  describe('Renders', () => {
-    it('Shows an editor for a poster or an avatar', async () => {
-      current_user.value = user
-      localStorage.me = `/+${user.phoneNumber}`
-      // getRouter().setParams({ id: '559666932867', type: 'posters' })
-      const wrapper = shallowMount(Editor)
-      expect(wrapper.element).toMatchSnapshot()
-      current_user.value = null
-    })
+
+describe('@/views/Editor', () => {
+  let wrapper
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wrapper = shallowMount(Editor)
+  })
+
+  it('renders editor component', () => {
+    expect(wrapper.element).toMatchSnapshot()
+  })
+
+  it('handles content updates', () => {
+    const test_content = 'test content'
+    wrapper.vm.update_content(test_content)
+    expect(wrapper.vm.content).toBe(test_content)
   })
 })

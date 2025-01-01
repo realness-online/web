@@ -1,12 +1,15 @@
 import { vi } from 'vitest'
 
-export const RecaptchaVerifier = class {
-  verify() {
-    // console.log('RecaptchaVerifier.verify');
-  }
+const auth = {
+  current_user: null,
+  sign_in: vi.fn(),
+  sign_out: vi.fn(),
+  create_user: vi.fn(),
+  delete_user: vi.fn(),
+  on_auth_state_changed: (_callback) => 
+    // Implementation if needed
+     () => {}
+  
 }
-export const user = null
-export const getAuth = vi.fn()
-export const onAuthStateChanged = state => user
-export const signInWithPhoneNumber = vi.fn(() => Promise.resolve('success'))
-export const signOut = vi.fn()
+
+export default auth

@@ -223,5 +223,13 @@ export default [
         ...globals.jest
       }
     }
+  },
+  {
+    files: ['**/tests/**/*.{js,vue}'],
+    languageOptions: {
+      globals: {
+        read_mock_file: 'readonly'
+      }
+    }
   }
 ]
