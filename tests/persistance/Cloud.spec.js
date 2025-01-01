@@ -2,7 +2,8 @@ import Storage from '@/persistance/Storage'
 import Cloud from '@/persistance/Cloud'
 import Local from '@/persistance/Local'
 import { get } from 'idb-keyval'
-import { flushPromises } from '@vue/test-utils'
+import { flushPromises } from '@vue/test-utils
+import { vi } from 'vitest'
 const statements = {
   outerHTML: read_mock_file('@@/html/statements.html')
 }

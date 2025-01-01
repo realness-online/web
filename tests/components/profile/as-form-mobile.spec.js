@@ -1,4 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
+import { vi } from 'vitest'
 import as_form from '@/components/profile/as-form-mobile'
 
 describe('@/compontent/profile/as-form-mobile.vue', () => {

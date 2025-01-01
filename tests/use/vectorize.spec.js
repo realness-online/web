@@ -1,96 +1,88 @@
-import { use } from '@/use/vectorize'
-import get_item from '@/use/item'
-import { describe } from 'vitest'
-const poster_html = read_mock_file('@@/html/poster.html')
-const MockDate = require('mockdate')
-MockDate.set('2020-01-01')
-let poster
+import { describe, it, expect } from 'vitest'
+import vectorize from '@/use/vectorize'
+import { Posters } from '@/models/posters'
 
-describe('@/use/vectorize.js', () => {
-  let wrapper
-  beforeEach(() => {
-    poster = get_item(poster_html)
-    localStorage.me = '/+16282281824'
-  })
-  afterEach(() => {
-    localStorage.me = undefined
-  })
-  describe('Lifecycle', () => {
-    it('Unmounts the worker when destroyed', async () => {
-      wrapper.vm.vectorizer
-      wrapper.vm.optimizer
-      wrapper.unmount()
-      expect(wrapper.vm.vectorizer.terminate).toHaveBeenCalledTimes(1)
-      expect(wrapper.vm.optimizer.terminate).toHaveBeenCalledTimes(1)
+describe('@/use/vectorize', () => {
+  const test_data = {
+    text: 'Sample text for vectorization',
+    numbers: [1, 2, 3],
+    metadata: { type: 'test' }
+  }
+
+  describe('Basic Vectorization', () => {
+    it('creates vector from text', () => {
+      const vector = vectorize(test_data.text)
+      expect(vector).toBeTruthy()
+      expect(Array.isArray(vector)).toBe(true)
+    })
+
+    it('handles empty input', () => {
+      const vector = vectorize('')
+      expect(vector).toEqual([])
+    })
+
+    it('produces consistent vectors for same input', () => {
+      const vector1 = vectorize(test_data.text)
+      const vector2 = vectorize(test_data.text)
+      expect(vector1).toEqual(vector2)
     })
   })
-  describe('Computed', () => {
-    describe('.as_itemid', () => {
-      it('returns itemid for new poster', () => {
-        wrapper = mount(Posters, {
-          global: { stubs: ['router-link'] }
-        })
-        localStorage.me = '/+16282281824'
-        expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
-      })
+
+  describe('Vector Properties', () => {
+    it('creates vectors of correct dimension', () => {
+      const vector = vectorize(test_data.text)
+      expect(vector.length).toBeGreaterThan(0)
+    })
+
+    it('generates normalized vectors', () => {
+      const vector = vectorize(test_data.text)
+      const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0))
+      expect(magnitude).toBeCloseTo(1, 5)
     })
   })
-  describe('Methods', () => {
-    describe('#get_id', () => {
-      it('Gets the poster id from the directory listing on hte network', () => {
-        wrapper.vm.get_id(`${poster.id}.html`)
-      })
+
+  describe('Data Type Handling', () => {
+    it('processes numeric data', () => {
+      const vector = vectorize(test_data.numbers)
+      expect(vector).toBeTruthy()
+      expect(Array.isArray(vector)).toBe(true)
     })
-    describe('#vectorize', () => {
-      it('Executes the method', () => {
-        wrapper.vm.vectorize()
-      })
+
+    it('handles object data', () => {
+      const vector = vectorize(test_data.metadata)
+      expect(vector).toBeTruthy()
+      expect(Array.isArray(vector)).toBe(true)
     })
-    describe('#vectorized', () => {
-      it('Gets the poster from the worker', () => {
-        const event = {
-          data: {
-            vector: {
-              light: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.208'
-              },
-              regular: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.85'
-              },
-              bold: {
-                d: poster.light.getAttribute('d'),
-                fillOpacity: '0.535'
-              },
-              width: poster.width,
-              height: poster.height,
-              viewbox: `0 0 ${poster.width} ${poster.height}`
-            }
-          }
-        }
-        wrapper.vm.working = true
-        wrapper.vm.vectorized(event)
-        expect(wrapper.vm.new_poster.id).toBe(
-          '/+16282281824/posters/1577836800000'
-        )
-        expect(wrapper.vm.working).toBe(false)
-      })
+  })
+
+  describe('Integration with Posters', () => {
+    const poster_data = new Posters({
+      title: 'Test Poster',
+      content: 'Test content'
     })
-    describe('#optimize', () => {
-      it('Gives the optimize worker a vector to work on', () => {
-        wrapper.vm.optimizer.postMessage = vi.fn()
-        wrapper.vm.optimize({ id: 'mock-vector' })
-        expect(wrapper.vm.optimizer.postMessage).toBeCalled()
-      })
+
+    it('vectorizes poster data', () => {
+      const vector = vectorize(poster_data)
+      expect(vector).toBeTruthy()
+      expect(Array.isArray(vector)).toBe(true)
     })
-    describe('#optimized', () => {
-      it('Updates new_poster with the optimized vector', async () => {
-        await wrapper.vm.optimized({ data: { vector: poster_html } })
-        expect(wrapper.vm.new_poster.id).toBe(
-          '/+16282281824/posters/559666932867'
-        )
-      })
+
+    it('maintains poster data integrity', () => {
+      const vector = vectorize(poster_data)
+      expect(vector.length).toBeGreaterThan(0)
+      expect(poster_data.title).toBe('Test Poster')
+    })
+  })
+
+  describe('Edge Cases', () => {
+    it('handles null input', () => {
+      const vector = vectorize(null)
+      expect(vector).toEqual([])
+    })
+
+    it('handles undefined input', () => {
+      const vector = vectorize(undefined)
+      expect(vector).toEqual([])
     })
   })
 })

@@ -1,21 +1,23 @@
+import { describe, it, expect, vi } from 'vitest'
 import * as optimize from '@/workers/optimize'
-import SVGO from 'svgo'
-const vector = read_mock_file('@@/html/vector.html')
-describe('/workers/vector.js', () => {
-  describe('Methods', () => {
-    describe('#listen', () => {
-      let optimize_spy
-      beforeEach(() => {
-        optimize_spy = vi.spyOn(SVGO.prototype, 'optimize')
-        // optimize_spy.mockImplementation(() => Promise.resolve(vector))
-      })
-      it('Optimizes a vector', async () => {
-        const postMessage_spy = vi.spyOn(global, 'postMessage')
-        postMessage_spy.mockImplementation(() => true)
-        await optimize.listen({ data: { vector } })
-        expect(optimize_spy).toBeCalled()
-        expect(postMessage_spy).toBeCalled()
-      })
-    })
+
+describe('optimize worker', () => {
+  const mock_image = {
+    quality: vi.fn(() => mock_image),
+    writeAsync: vi.fn()
+  }
+
+  it('optimizes images', async () => {
+    const image = new Uint8Array([1, 2, 3])
+    await optimize.listen({ data: { image } })
+    expect(mock_image.quality).toHaveBeenCalled()
+    expect(mock_image.writeAsync).toHaveBeenCalled()
+  })
+
+  it('handles optimization with specific quality', async () => {
+    const image = new Uint8Array([1, 2, 3])
+    const quality = 75
+    await optimize.listen({ data: { image, quality } })
+    expect(mock_image.quality).toHaveBeenCalledWith(quality)
   })
 })

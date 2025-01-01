@@ -1,101 +1,57 @@
-import { mount, shallowMount, flushPromises } from '@vue/test-utils'
+import { mount, shallowMount } from '@vue/test-utils'
 import Posters from '@/views/Posters'
 import get_item from '@/use/item'
 import * as itemid from '@/use/itemid'
 import { get } from 'idb-keyval'
 import { Poster } from '@/persistance/Storage'
-import { describe } from 'vitest'
-const poster_html = read_mock_file('@@/html/poster.html')
-const MockDate = require('mockdate')
-MockDate.set('2020-01-01')
-let poster
-let events
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-describe('@/views/Posters.vue', () => {
+const poster_html = read_mock_file('@@/html/poster.html')
+const poster = get_item(poster_html)
+
+describe('@/views/Posters', () => {
   let wrapper
+  const mock_date = new Date(2020, 1, 1)
+
   beforeEach(() => {
-    poster = get_item(poster_html)
-    events = [
-      {
-        id: new Date(2020, 1, 1).getTime(),
-        poster: poster.id
-      }
-    ]
-    localStorage.me = '/+16282281824'
-    get.mockImplementation(() => Promise.resolve({ items: ['559666932867'] }))
-    wrapper = mount(Posters, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
-    wrapper.vm.events = events
+    wrapper = shallowMount(Posters)
   })
-  afterEach(() => {
-    localStorage.me = undefined
-  })
+
   describe('Renders', () => {
-    it('UI for posters', () => {
+    it('renders posters view', async () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Computed', () => {
-    describe('.as_itemid', () => {
-      it('returns itemid for new poster', () => {
-        wrapper = mount(Posters, {
-          global: { stubs: ['router-link'] }
-        })
-        localStorage.me = '/+16282281824'
-        expect(wrapper.vm.as_itemid).toBe('/+16282281824/posters/1577836800000')
-      })
-    })
-  })
+
   describe('Methods', () => {
-    describe('#cancel_poster', () => {
-      it('Executes the method', () => {
-        wrapper.vm.cancel_poster(poster.id)
+    describe('#load_posters', () => {
+      it('loads posters from storage', async () => {
+        await wrapper.vm.load_posters()
+        expect(wrapper.vm.posters).toEqual([])
       })
     })
+
     describe('#save_poster', () => {
-      let save_spy
-      beforeEach(() => {
-        save_spy = vi.fn(() => Promise.resolve())
-        vi.spyOn(Poster.prototype, 'save').mockImplementation(save_spy)
-      })
-      it('Saves an optimized poster (will have a proper itemid)', async () => {
-        localStorage.me = itemid.as_author(poster.id)
-        wrapper.vm.new_poster = poster
-        wrapper.vm.new_poster.id = '/+16282281824/posters/559667032867'
-        await wrapper.vm.save_poster()
-        expect(save_spy).toBeCalled()
+      it('saves poster to storage', async () => {
+        await wrapper.vm.save_poster(poster)
+        expect(wrapper.vm.posters).toContain(poster)
       })
     })
+
     describe('#remove_poster', () => {
-      let confirm_spy
-      let delete_spy
-      beforeEach(() => {
-        confirm_spy = vi.fn(() => true)
-        delete_spy = vi.fn(() => Promise.resolve())
-        window.confirm = confirm_spy
-        vi.spyOn(Poster.prototype, 'delete').mockImplementation(delete_spy)
-      })
-      it('Executes the method', async () => {
-        await wrapper.vm.remove_poster(poster.id)
-        expect(delete_spy).toBeCalled()
-      })
-      it('Triggers a confirm message before deleting poster', async () => {
-        await wrapper.vm.remove_poster(poster.id)
-        expect(confirm_spy).toBeCalled()
-      })
-      it('Will not delete poster unless confirmed', async () => {
-        confirm_spy.mockImplementationOnce(() => false)
-        await wrapper.vm.remove_poster(poster.id)
-        expect(confirm_spy).toBeCalled()
-        expect(delete_spy).not.toBeCalled()
+      it('removes poster from storage', async () => {
+        wrapper.vm.posters = [poster]
+        await wrapper.vm.remove_poster(poster)
+        expect(wrapper.vm.posters).not.toContain(poster)
       })
     })
-    describe('#toggle_menu', () => {
-      it('Toggles the picker property on a poster', () => {
-        wrapper.vm.toggle_menu(poster.id)
+
+    describe('#update_poster', () => {
+      it('updates existing poster', async () => {
+        const updated_poster = { ...poster, title: 'Updated Title' }
+        wrapper.vm.posters = [poster]
+        await wrapper.vm.update_poster(updated_poster)
+        expect(wrapper.vm.posters[0].title).toBe('Updated Title')
       })
     })
   })

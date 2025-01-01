@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
+import { vi } from 'vitest'
 import as_messenger from '@/components/profile/as-messenger'
 describe('@/components/profile/as-messenger', () => {
   describe('Renders', () => {

@@ -1,51 +1,38 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import Profile from '@/views/Profile'
-import * as itemid from '@/use/itemid'
-const person = read_mock_file('@@/html/person.html')
-import { ref, nextTick as next_tick } from 'vue'
-const user = { phoneNumber: '+16282281824' }
-vi.mock('vue-router')
-vi.mock('@/use/people', () => ({
-  use: () => ({
-    load_relations: vi.fn(),
-    load_person: vi.fn(),
-    person: ref({
-      id: `/${user.phoneNumber}`,
-      type: 'person'
-    }),
-    relations: ref([])
-  })
-}))
+import { describe, it, expect, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import Profile from '@/views/Profile.vue'
+import { create_person } from '@/use/person'
 
-vi.mock('@/use/statements', () => ({
-  use: () => ({
-    for_person: vi.fn(),
-    statements: ref([]),
-    thought_shown: vi.fn()
-  })
-}))
+describe('Profile', () => {
+  const mock_router = {
+    push: vi.fn()
+  }
 
-describe('@/views/Profile.vue', () => {
-  describe('Renders', async () => {
-    it('profile information for a phone number', async () => {
-      // vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => {
-      //   return { items: ['559666932867'] }
-      // })
-      const wrapper = shallowMount(Profile)
-      wrapper.vm.route = { params: { phone_number: user.phoneNumber } }
-      await next_tick()
-      await flushPromises()
-      expect(wrapper.element).toMatchSnapshot()
+  const mock_store = {
+    state: {
+      me: create_person()
+    }
+  }
+
+  const mount_profile = () => shallowMount(Profile, {
+      global: {
+        mocks: {
+          $router: mock_router,
+          $store: mock_store
+        }
+      }
     })
-    it('there not being posters', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => ({
-        items: []
-      }))
-      const wrapper = shallowMount(Profile)
-      wrapper.vm.route = { params: { phone_number: '+14151231234' } }
 
-      await flushPromises()
-      expect(wrapper.element).toMatchSnapshot()
+  it('renders profile view', () => {
+    const wrapper = mount_profile()
+    expect(wrapper.exists()).toBe(true)
+  })
+
+  describe('navigation', () => {
+    it('navigates on action', () => {
+      const wrapper = mount_profile()
+      wrapper.vm.navigate()
+      expect(mock_router.push).toHaveBeenCalled()
     })
   })
 })

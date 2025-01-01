@@ -1,5 +1,7 @@
-export const get = vi.fn(() => Promise.resolve(undefined))
-export const set = vi.fn(() => Promise.resolve(null))
-export const del = vi.fn(() => Promise.resolve(null))
-export const clear = vi.fn(() => Promise.resolve(null))
-export const keys = vi.fn(() => Promise.resolve([]))
+import { vi } from 'vitest'
+
+export const get = vi.fn()
+export const set = vi.fn()
+export const del = vi.fn()
+export const clear = vi.fn()
+export const keys = vi.fn()

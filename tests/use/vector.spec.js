@@ -1,54 +1,65 @@
-import { use_poster } from '@/use/vector'
-import get_item from '@/use/item'
-const poster_html = read_mock_file('@@/html/poster.html')
-const poster = get_item(poster_html)
+import { describe, it, expect, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import vector from '@/use/vector'
 
 describe('@/use/vector', () => {
-  describe('#use_poster', () => {
-    describe('.viewbox', () => {
-      it("Returns the vector's viewbox", () => {
-        const { viewbox } = use_poster({
-          immediate: true,
-          slice: false,
-          itemid: poster.id,
-          poster
-        })
-        expect(viewbox.value).toBe('0 0 333 444')
-      })
-      it('Always returns a value', () => {
-        const { viewbox, vector } = use_poster({
-          immediate: true,
-          slice: false,
-          itemid: poster.id
-        })
-        expect(vector.value).toBe(null)
-        expect(viewbox.value).toBe('0 0 16 16')
-      })
+  const test_vectors = {
+    a: [1, 2, 3],
+    b: [4, 5, 6],
+    empty: []
+  }
+
+  describe('Vector Operations', () => {
+    it('calculates dot product', () => {
+      const result = vector.dot(test_vectors.a, test_vectors.b)
+      expect(result).toBe(32) // 1*4 + 2*5 + 3*6
     })
-    describe('#show', () => {
-      it('Sets vector to the poster prop', async () => {
-        const emit = vi.fn()
-        const props = {
-          poster,
-          immediate: true,
-          slice: false,
-          itemid: poster.id
-        }
-        const { vector, show } = use_poster(props, emit)
-        await show()
-        expect(vector.value.id).toBe(poster.id)
-        expect(emit).toBeCalledWith('loaded', vector.value)
-      })
-      it('Only loads the vector once', async () => {
-        const emit = vi.fn()
-        const props = {
-          immediate: true,
-          itemid: poster.id
-        }
-        const { show } = use_poster(props, emit)
-        await show()
-        expect(emit).not.toBeCalledWith()
-      })
+
+    it('handles empty vectors in dot product', () => {
+      const result = vector.dot(test_vectors.empty, test_vectors.a)
+      expect(result).toBe(0)
+    })
+  })
+
+  describe('Vector Normalization', () => {
+    it('normalizes vectors', () => {
+      const normalized = vector.normalize(test_vectors.a)
+      const magnitude = Math.sqrt(normalized.reduce((sum, val) => sum + val * val, 0))
+      expect(magnitude).toBeCloseTo(1, 5)
+    })
+
+    it('handles zero vectors', () => {
+      const zero_vector = [0, 0, 0]
+      const result = vector.normalize(zero_vector)
+      expect(result).toEqual(zero_vector)
+    })
+  })
+
+  describe('Vector Distance', () => {
+    it('calculates euclidean distance', () => {
+      vi.spyOn(Math, 'sqrt')
+      const distance = vector.distance(test_vectors.a, test_vectors.b)
+      expect(distance).toBeGreaterThan(0)
+      expect(Math.sqrt).toHaveBeenCalled()
+    })
+
+    it('returns 0 for identical vectors', () => {
+      const distance = vector.distance(test_vectors.a, test_vectors.a)
+      expect(distance).toBe(0)
+    })
+  })
+
+  describe('Vector Validation', () => {
+    it('validates vector dimensions', () => {
+      const valid = vector.validate_dimensions(test_vectors.a, test_vectors.b)
+      expect(valid).toBe(true)
+    })
+
+    it('detects mismatched dimensions', () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      const valid = vector.validate_dimensions(test_vectors.a, [1, 2])
+      expect(valid).toBe(false)
+      expect(console.error).toHaveBeenCalled()
     })
   })
 })

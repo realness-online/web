@@ -1,12 +1,24 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import * as vector from '@/workers/vector'
 import potrace from '@realness.online/potrace'
+
+// Define constants to avoid magic numbers
+const MOCK_RGB_VALUES = [0.3, 0.4, 0.5]
+const MAX_PATHS = 100
+const MOCK_DIMENSIONS = {
+  DEFAULT_WIDTH: 333,
+  DEFAULT_HEIGHT: 444,
+  WIDE_WIDTH: 666
+}
+
 const image = read_mock_file('@@/images/house.jpeg')
 const poster_html = read_mock_file('@@/html/poster.html')
+
 const mock_image = {
   bitmap: {
-    width: 333,
-    height: 444,
-    data: [0.3, 0.4, 0.5]
+    width: MOCK_DIMENSIONS.DEFAULT_WIDTH,
+    height: MOCK_DIMENSIONS.DEFAULT_HEIGHT,
+    data: MOCK_RGB_VALUES
   },
   scan: vi.fn(() => mock_image),
   resize: vi.fn(() => mock_image),
@@ -17,60 +29,55 @@ const mock_image = {
   contrast: vi.fn(() => mock_image),
   color: vi.fn(() => mock_image)
 }
+
 const mock_vector = {
   paths: [poster_html]
 }
 
-describe('/workers/vector.js', () => {
-  describe('Methods', () => {
-    let as_paths_spy
-    beforeEach(() => {
-      as_paths_spy = vi
-        .spyOn(potrace, 'as_paths')
-        .mockImplementation(() => Promise.resolve(mock_vector))
-    })
-    describe('#listen', () => {
-      let read_spy
-      let postMessage_spy
+describe('vector worker', () => {
+  let as_paths_spy
+  let postMessage_spy
 
-      beforeEach(() => {
-        // read_spy = vi
-        //   .spyOn(Jimp, 'read')
-        //   .mockImplementation(() => Promise.resolve(mock_image))
-        postMessage_spy = vi
-          .spyOn(global, 'postMessage')
-          .mockImplementation(() => true)
-      })
-      it('Creates a vector from a jpeg', async () => {
-        await vector.listen({ data: { image } })
-        expect(read_spy).toBeCalled()
-        expect(as_paths_spy).toBeCalled()
-        expect(postMessage_spy).toBeCalled()
-      })
-      it('Can handle different aspect ratios', async () => {
-        const wider_image = { ...mock_image }
-        wider_image.bitmap.width = 666
-        read_spy.mockImplementationOnce(() => Promise.resolve(wider_image))
-        await vector.listen({ data: { image } })
-        expect(read_spy).toBeCalled()
-        expect(as_paths_spy).toBeCalled()
-        expect(postMessage_spy).toBeCalled()
-      })
+  beforeEach(() => {
+    as_paths_spy = vi
+      .spyOn(potrace, 'as_paths')
+      .mockImplementation(() => Promise.resolve(mock_vector))
+
+    postMessage_spy = vi
+      .spyOn(global, 'postMessage')
+      .mockImplementation(() => true)
+  })
+
+  describe('listen', () => {
+    it('creates a vector from a jpeg', async () => {
+      await vector.listen({ data: { image } })
+      expect(as_paths_spy).toBeCalled()
+      expect(postMessage_spy).toBeCalled()
     })
-    describe('#make', () => {
-      it('Handles large vectors', async () => {
-        const large = {
-          paths: []
+
+    it('handles different aspect ratios', async () => {
+      const wider_image = {
+        ...mock_image,
+        bitmap: {
+          ...mock_image.bitmap,
+          width: MOCK_DIMENSIONS.WIDE_WIDTH
         }
-        for (let i = 0; i < 100; i++) large.paths.push(image)
+      }
+      await vector.listen({ data: { wider_image } })
+      expect(as_paths_spy).toBeCalled()
+      expect(postMessage_spy).toBeCalled()
+    })
+  })
 
-        large.paths.push(image)
-        as_paths_spy = vi
-          .spyOn(potrace, 'as_paths')
-          .mockImplementationOnce(() => Promise.resolve(large))
-        await vector.make(mock_image)
-        expect(mock_image.resize).toBeCalled()
-      })
+  describe('make', () => {
+    it('handles large vectors', async () => {
+      const large = {
+        paths: Array(MAX_PATHS).fill(image)
+      }
+
+      as_paths_spy.mockImplementationOnce(() => Promise.resolve(large))
+      await vector.make(mock_image)
+      expect(mock_image.resize).toBeCalled()
     })
   })
 })

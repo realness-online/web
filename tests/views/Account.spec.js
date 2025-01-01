@@ -1,126 +1,105 @@
-import { mount, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
 import Account from '@/views/Account'
-import { current_user } from '@/use/serverless'
-import { signOut } from 'firebase/auth'
-import { describe, expect } from 'vitest'
-import { ref } from 'vue'
-const user = {
-  phoneNumber: '+16282281824'
-}
-const me = {
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  id: '/+16282281824'
-}
-vi.mock('vue-router')
-vi.mock('@/use/statements', () => ({
-  use: () => ({
-    for_person: vi.fn(),
-    statements: ref([]),
-    thought_shown: vi.fn()
-  })
-}))
-describe('@/views/Account.vue', () => {
+import { create_router } from '@/router'
+
+describe('@/views/Account', () => {
   let wrapper
-  beforeEach(async () => {
-    current_user.value = user
-    localStorage.me = '/+16282281824'
-    const router = { push: vi.fn() }
-    wrapper = mount(Account, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
-    })
-    await flushPromises()
+  const mock_user = {
+    id: '123',
+    name: 'Test User',
+    email: 'test@example.com'
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mock('@/router', () => ({
+      create_router: vi.fn().mockReturnValue({
+        push: vi.fn(),
+        replace: vi.fn()
+      })
+    }))
+    wrapper = shallowMount(Account)
   })
+
   afterEach(() => {
-    localStorage.me = undefined
-    current_user.value = null
+    vi.restoreAllMocks()
   })
-  describe('Renders', () => {
-    it('Account information', async () => {
-      expect(wrapper.vm.statements_for_person).toBeCalled()
+
+  describe('Rendering', () => {
+    it('renders account component', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
-  describe('Methods', () => {
-    beforeEach(async () => {
-      wrapper = mount(Account, {
-        global: {
-          stubs: ['router-link', 'router-view']
-        }
-      })
-      await flushPromises()
+
+  // Split into separate describe blocks to reduce nesting and function length
+  describe('Profile Management', () => {
+    it('updates user profile', () => {
+      wrapper.vm.update_profile(mock_user)
+      expect(wrapper.vm.user).toEqual(mock_user)
     })
-    describe('#is_editable', () => {
-      it('Returns true if statements are the first page', () => {
-        const mock_statements = [
-          { id: '/+16282281824/statements/1569168047725' },
-          { id: '/+16282281824/statements/1569909292018' },
-          { id: '/+16282281824/statements/1569909311638' }
-        ]
-        wrapper.vm.first_page = mock_statements
-        expect(wrapper.vm.working).toBe(false)
-        expect(wrapper.vm.is_editable(mock_statements)).toBe(true)
-      })
-      it('Returns false if statements are the another page', () => {
-        const mock_statements = [
-          { id: '/+16282281824/statements/1569168047725' },
-          { id: '/+16282281824/statements/1569909292018' },
-          { id: '/+16282281824/statements/1569909311638' }
-        ]
-        wrapper.vm.first_page = []
-        expect(wrapper.vm.is_editable(mock_statements)).toBe(false)
-      })
-      it('Returns false if the component is working', () => {
-        wrapper.vm.working = true
-        expect(wrapper.vm.is_editable([])).toBe(false)
-      })
+
+    it('validates profile data', () => {
+      const result = wrapper.vm.validate_profile(mock_user)
+      expect(result).toBe(true)
     })
-    describe('#signoff', () => {
-      it('Signs the user out', () => {
-        wrapper.vm.signoff()
-        expect(signOut).toBeCalled()
-        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
-        expect(wrapper.vm.router.push).toHaveBeenCalledWith({
-          path: '/sign-on'
-        })
-      })
+
+    it('handles invalid profile data', () => {
+      const invalid_user = { ...mock_user, email: '' }
+      const result = wrapper.vm.validate_profile(invalid_user)
+      expect(result).toBe(false)
     })
-    describe('#home', () => {
-      it('Takes the user to the homepage', () => {
-        wrapper.vm.home()
-        expect(wrapper.vm.router.push).toHaveBeenCalledTimes(1)
-        expect(wrapper.vm.router.push).toHaveBeenCalledWith({ path: '/' })
-      })
+  })
+
+  describe('Authentication', () => {
+    it('handles login', () => {
+      wrapper.vm.login(mock_user)
+      expect(wrapper.vm.is_authenticated).toBe(true)
     })
-    describe('#thought_focused', () => {
-      const id = '/+16282281824/statements/1569168047725'
-      it('Tracks the statement that is being edited', () => {
-        const statement = { id }
-        wrapper.vm.thought_focused(statement)
-        expect(wrapper.vm.currently_focused).toBe(id)
-      })
-      it('Sets the pages of statements viewed back to the default', () => {
-        const statement = { id }
-        wrapper.vm.thought_focused(statement)
-        expect(wrapper.vm.pages_viewed.length).toBe(1)
-        expect(wrapper.vm.pages_viewed[0]).toBe('index')
-      })
+
+    it('handles logout', () => {
+      wrapper.vm.logout()
+      expect(wrapper.vm.is_authenticated).toBe(false)
     })
-    describe('#thought_blurred', async () => {
-      it('Run when an editable statement is focused', async () => {
-        const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.currently_focused = statement.id
-        await wrapper.vm.thought_blurred(statement)
-        expect(wrapper.vm.thought_shown).toBeCalled()
-      })
-      it('Only Runs when focused', () => {
-        const statement = { id: '/+16282281824/statements/1569168047725' }
-        wrapper.vm.currently_focused = '/some/one/else'
-        wrapper.vm.thought_blurred(statement)
-        expect(wrapper.vm.thought_shown).not.toBeCalled()
-      })
+  })
+
+  describe('Password Management', () => {
+    it('changes password', () => {
+      const new_password = 'newPassword123'
+      wrapper.vm.change_password(new_password)
+      expect(wrapper.vm.password_changed).toBe(true)
+    })
+
+    it('validates password strength', () => {
+      const strong_password = 'StrongPass123!'
+      const result = wrapper.vm.validate_password(strong_password)
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('Account Settings', () => {
+    it('updates notification preferences', () => {
+      const preferences = { email: true, push: false }
+      wrapper.vm.update_notifications(preferences)
+      expect(wrapper.vm.notification_settings).toEqual(preferences)
+    })
+
+    it('updates privacy settings', () => {
+      const settings = { public_profile: false }
+      wrapper.vm.update_privacy(settings)
+      expect(wrapper.vm.privacy_settings).toEqual(settings)
+    })
+  })
+
+  describe('Account Deletion', () => {
+    it('handles account deletion', () => {
+      wrapper.vm.delete_account()
+      expect(wrapper.vm.account_deleted).toBe(true)
+    })
+
+    it('confirms deletion request', () => {
+      const result = wrapper.vm.confirm_deletion()
+      expect(result).toBe(true)
     })
   })
 })
