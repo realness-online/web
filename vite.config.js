@@ -36,8 +36,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@/': new URL('./src/', import.meta.url).pathname,
-      '@@/': new URL('./test/', import.meta.url).pathname
+      '@': '/src'
     },
     extensions: ['.js', '.json', '.vue']
   },
@@ -87,36 +86,40 @@ export default defineConfig({
     })
   ],
   test: {
-    root: 'web',
+    root: 'tests',
     globals: true,
     environment: 'happy-dom',
-    mockReset: false,
-    setupFiles: [
-      './tests/__mocks__/default.js',
-      './tests/__mocks__/browser/console.js',
-      './tests/__mocks__/browser/fetch.js',
-      './tests/__mocks__/browser/worker.js',
-      './tests/__mocks__/browser/indexedDB.js',
-      './tests/__mocks__/browser/localStorage.js',
-      './tests/__mocks__/browser/createrange.js',
-      './tests/__mocks__/browser/scrollIntoView.js',
-      './tests/__mocks__/browser/IntersectionObserver.js',
-      './tests/__mocks__/browser/FileReaderSync.js'
+    include: ['**/*.spec.js'],
+    exclude: [
+      ...configDefaults.exclude,
+      '**/setup.js',
+      '**/tests/**',
+      '**/mocks/**',
+      '**/public/**'
     ],
     coverage: {
+      exclude: ['**/setup.js'],
+      provider: 'v8',
       reporter: ['text', 'html'],
       lines: 90,
       branches: 90,
       statements: 90,
       functions: 90,
       all: true,
-      excludeNodeModules: true,
-      exclude: [
-        ...configDefaults.exclude,
-        '**/tests/**',
-        '**/__mocks__/**',
-        '**/public/**'
-      ]
-    }
+      excludeNodeModules: true
+    },
+    mockReset: false,
+    setupFiles: [
+      './tests/mocks/default.js',
+      './tests/mocks/browser/console.js',
+      './tests/mocks/browser/fetch.js',
+      './tests/mocks/browser/worker.js',
+      './tests/mocks/browser/indexedDB.js',
+      './tests/mocks/browser/localStorage.js',
+      './tests/mocks/browser/createrange.js',
+      './tests/mocks/browser/scrollIntoView.js',
+      './tests/mocks/browser/IntersectionObserver.js',
+      './tests/mocks/browser/FileReaderSync.js'
+    ]
   }
 })
