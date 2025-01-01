@@ -30,14 +30,14 @@ export const to_hsla = (color = '') => {
   let g = 0
   let b = 0
   if (H.length == 4) {
-    r = '0x' + H[1] + H[1]
-    g = '0x' + H[2] + H[2]
-    b = '0x' + H[3] + H[3]
+    r = `0x${  H[1]  }${H[1]}`
+    g = `0x${  H[2]  }${H[2]}`
+    b = `0x${  H[3]  }${H[3]}`
   } else if (H.length == 7) {
     // todo accomidate hex with alpha
-    r = '0x' + H[1] + H[2]
-    g = '0x' + H[3] + H[4]
-    b = '0x' + H[5] + H[6]
+    r = `0x${  H[1]  }${H[2]}`
+    g = `0x${  H[3]  }${H[4]}`
+    b = `0x${  H[5]  }${H[6]}`
   }
   return rgba_to_hsla({ r, g, b, a: 255 })
 }

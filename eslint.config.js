@@ -15,7 +15,8 @@ export default [
       '**/dist/**',
       '**/dist-ssr/**',
       '**/coverage/**',
-      'public/**/*.js'
+      'public/**/*.js',
+      '**/docs/generated/**'
     ]
   },
   {
@@ -101,7 +102,43 @@ export default [
       'no-return-await': 'error',
       'require-await': 'error',
       'max-lines-per-function': ['warn', 50],
-      'complexity': ['warn', 10]
+      'complexity': ['warn', 10],
+      'no-unsafe-optional-chaining': 'error',
+      'no-constant-binary-expression': 'error',
+      'no-unreachable-loop': 'error',
+      'no-unused-private-class-members': 'error',
+      'no-use-before-define': ['error', { functions: false }],
+      'prefer-template': 'error',
+      'prefer-destructuring': ['error', { array: true, object: true }],
+      'prefer-rest-params': 'error',
+      'prefer-spread': 'error',
+      'no-array-constructor': 'error',
+      'no-async-promise-executor': 'error',
+      'no-promise-executor-return': 'error',
+      'max-nested-callbacks': ['error', 3],
+      'prefer-promise-reject-errors': 'error',
+      'max-depth': ['error', 3],
+      'max-params': ['error', 3],
+      'no-magic-numbers': ['warn', {
+        ignore: [-1, 0, 1, 2],
+        enforceConst: true
+      }],
+      'no-nested-ternary': 'error',
+      'vue/no-static-inline-styles': ['error', {
+        allowBinding: true
+      }],
+      'vue/no-template-target-blank': 'error',
+      'vue/no-useless-template-attributes': 'error',
+      'vue/no-potential-component-option-typo': 'error',
+      'vue/no-duplicate-attr-inheritance': 'error',
+      'vue/require-name-property': 'error',
+      'vue/v-on-handler-style': ['error', ['method', 'inline-function']],
+      'vue/prefer-true-attribute-shorthand': 'error',
+      'vue/no-ref-object-destructure': 'error',
+      'vue/define-emits-declaration': ['error', 'type-based'],
+      'vue/no-unused-refs': 'error',
+      'vue/no-useless-v-bind': 'error',
+      'vue/prefer-separate-static-class': 'error'
     }
   },
   {

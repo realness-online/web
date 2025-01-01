@@ -80,8 +80,8 @@ class Histogram {
   #collect_values_image_data(source, mode) {
     const pixel_data = source.data
     const data = this.#create_array(source.width * source.height)
-    const width = source.width
-    const height = source.height
+    const {width} = source
+    const {height} = source
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -128,8 +128,8 @@ class Histogram {
   get_sorted_indexes(refresh) {
     if (!refresh && this.sorted_indexes) return this.sorted_indexes
 
-    const data = this.data
-    const indexes = Histogram.SHARED_ARRAYS.indexes
+    const {data} = this
+    const {indexes} = Histogram.SHARED_ARRAYS
 
     // Traditional for loop is faster than forEach
     for (let i = 0; i < COLOR_DEPTH; i++) {
@@ -330,10 +330,10 @@ class Histogram {
   get_stats(level_min, level_max, refresh) {
     ;[level_min, level_max] = normalize_min_max(level_min, level_max)
 
-    if (!refresh && this.cached_stats[level_min + '-' + level_max])
-      return this.cached_stats[level_min + '-' + level_max]
+    if (!refresh && this.cached_stats[`${level_min  }-${  level_max}`])
+      return this.cached_stats[`${level_min  }-${  level_max}`]
 
-    const data = this.data
+    const {data} = this
     const sorted_indexes = this.get_sorted_indexes()
 
     let pixels_total = 0
@@ -380,7 +380,7 @@ class Histogram {
         median_value = tmp_pixel_value
     }
 
-    return (this.cached_stats[level_min + '-' + level_max] = {
+    return (this.cached_stats[`${level_min  }-${  level_max}`] = {
       levels: {
         mean: mean_value,
         median: median_value,

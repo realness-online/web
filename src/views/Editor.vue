@@ -49,7 +49,7 @@
 
   const back = () => {
     const me = localStorage.me.substring(2)
-    const id = route.params.id
+    const {id} = route.params
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null

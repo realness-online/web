@@ -34,7 +34,7 @@ export const use = () => {
   const get_active_path = () => {
     let path = active_element().value
     if (!is_path(path)) {
-      const href = active_element().value.href
+      const {href} = active_element().value
       if (href) {
         const id = href.baseVal.slice(1)
         const symbol = document.getElementById(id)

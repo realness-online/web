@@ -7,7 +7,7 @@ import * as sorting from '@/use/sorting'
 const statements_html = read_mock_file('@@/html/statements.html')
 const poster_html = read_mock_file('@@/html/poster.html')
 const poster = get_item(poster_html)
-const statements = get_item(statements_html).statements
+const {statements} = get_item(statements_html)
 describe('@/components/as-days', () => {
   let wrapper
   beforeEach(() => {
