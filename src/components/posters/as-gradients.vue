@@ -1,3 +1,65 @@
+<script setup>
+  import AsStops from '@/components/posters/as-stops'
+  import { as_query_id } from '@/use/itemid'
+  import { ref, watchEffect as watch_effect } from 'vue'
+  import { is_vector } from '@/use/vector'
+  import { use as use_vectorize } from '@/use/vectorize'
+  import { hsla_to_color } from '@/use/colors'
+  const props = defineProps({
+    vector: {
+      type: Object,
+      required: true,
+      validator: is_vector
+    }
+  })
+  const { new_gradients: gradients } = use_vectorize()
+  const background = 81
+  const light = 60
+  const regular = 50
+  const medium = 31
+  const bold = 18
+  const query = add => {
+    if (!props.vector) return add
+    if (add) return `${as_query_id(props.vector.id)}-${add}`
+    return as_query_id(props.vector.id)
+  }
+  const default_color = {
+    offset: '0',
+    color: {
+      hsla: 'hsla(300,  1%, 2%, 1)',
+      hsl: 'hsl(300,  1%, 2%)',
+      h: 300,
+      s: 1,
+      l: 2,
+      a: 1
+    }
+  }
+  const horizontal = ref([default_color])
+  const vertical = ref([default_color])
+  const radial = ref([default_color])
+  const convert_stop = stop => ({
+      color: hsla_to_color(stop.getAttribute('stop-color')),
+      offset: stop.getAttribute('offset').replace('%', '')
+    })
+  watch_effect(() => {
+    if (gradients.value) {
+      horizontal.value = gradients.value.horizontal
+      vertical.value = gradients.value.vertical
+      radial.value = gradients.value.radial
+    } else if (props.vector) {
+      if (props.vector.horizontal) 
+        horizontal.value = props.vector.horizontal.map(convert_stop)
+      
+      if (props.vector.vertical) 
+        vertical.value = props.vector.vertical.map(convert_stop)
+      
+      if (props.vector.radial) 
+        radial.value = props.vector.radial.map(convert_stop)
+      
+    }
+  })
+</script>
+
 <template>
   <radialGradient id="lightbar" cx="50%" cy="200%" fy="0" r="301%">
     <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
@@ -161,64 +223,3 @@
     </linearGradient>
   </g>
 </template>
-<script setup>
-  import AsStops from '@/components/posters/as-stops'
-  import { as_query_id } from '@/use/itemid'
-  import { ref, watchEffect as watch_effect } from 'vue'
-  import { is_vector } from '@/use/vector'
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { hsla_to_color } from '@/use/colors'
-  const props = defineProps({
-    vector: {
-      type: Object,
-      required: true,
-      validator: is_vector
-    }
-  })
-  const { new_gradients: gradients } = use_vectorize()
-  const background = 81
-  const light = 60
-  const regular = 50
-  const medium = 31
-  const bold = 18
-  const query = add => {
-    if (!props.vector) return add
-    if (add) return `${as_query_id(props.vector.id)}-${add}`
-    else return as_query_id(props.vector.id)
-  }
-  const default_color = {
-    offset: '0',
-    color: {
-      hsla: 'hsla(300,  1%, 2%, 1)',
-      hsl: 'hsl(300,  1%, 2%)',
-      h: 300,
-      s: 1,
-      l: 2,
-      a: 1
-    }
-  }
-  const horizontal = ref([default_color])
-  const vertical = ref([default_color])
-  const radial = ref([default_color])
-  const convert_stop = stop => ({
-      color: hsla_to_color(stop.getAttribute('stop-color')),
-      offset: stop.getAttribute('offset').replace('%', '')
-    })
-  watch_effect(() => {
-    if (gradients.value) {
-      horizontal.value = gradients.value.horizontal
-      vertical.value = gradients.value.vertical
-      radial.value = gradients.value.radial
-    } else if (props.vector) {
-      if (props.vector.horizontal) {
-        horizontal.value = props.vector.horizontal.map(convert_stop)
-      }
-      if (props.vector.vertical) {
-        vertical.value = props.vector.vertical.map(convert_stop)
-      }
-      if (props.vector.radial) {
-        radial.value = props.vector.radial.map(convert_stop)
-      }
-    }
-  })
-</script>

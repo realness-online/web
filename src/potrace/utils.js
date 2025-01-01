@@ -13,9 +13,8 @@ const attr_regexps = {}
  * @returns {RegExp} A regular expression that matches the attribute and its value
  */
 const get_attr_regexp = attr_name => {
-  if (attr_regexps[attr_name]) {
+  if (attr_regexps[attr_name]) 
     return attr_regexps[attr_name]
-  }
 
   attr_regexps[attr_name] = new RegExp(
     ` ${attr_name}="((?:\\\\(?=")"|[^"])+)"`,
@@ -34,11 +33,10 @@ const get_attr_regexp = attr_name => {
 export const set_html_attr = (html, attr_name, value) => {
   const attr = ` ${attr_name}="${value}"`
 
-  if (html.indexOf(` ${attr_name}="`) === -1) {
+  if (html.indexOf(` ${attr_name}="`) === -1) 
     html = html.replace(/<[a-z]+/i, beginning => beginning + attr)
-  } else {
+   else 
     html = html.replace(get_attr_regexp(attr_name), attr)
-  }
 
   return html
 }
@@ -95,11 +93,10 @@ export const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
   let sum = 0
 
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+  for (let i = 0; i < 3; i++) 
+    for (let j = 0; j < 3; j++) 
       sum += v[i] * Q.at(i, j) * v[j]
-    }
-  }
+  
   return sum
 }
 

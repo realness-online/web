@@ -1,3 +1,18 @@
+<script setup>
+  import { onMounted as mounted } from 'vue'
+  import AsSvg from '@/components/posters/as-svg'
+  import Icon from '@/components/icon'
+  import Preference from '@/components/preference'
+  import CallToAction from '@/components/call-to-action'
+  import LogoAsLink from '@/components/logo-as-link'
+  import { use_posters } from '@/use/vector'
+  sessionStorage.about = true
+  const { posters, for_person: posters_for_admin } = use_posters()
+  mounted(async () => {
+    await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
+  })
+</script>
+
 <template>
   <section id="about" class="page">
     <header>
@@ -317,20 +332,7 @@
     </figure>
   </section>
 </template>
-<script setup>
-  import { onMounted as mounted } from 'vue'
-  import AsSvg from '@/components/posters/as-svg'
-  import Icon from '@/components/icon'
-  import Preference from '@/components/preference'
-  import CallToAction from '@/components/call-to-action'
-  import LogoAsLink from '@/components/logo-as-link'
-  import { use_posters } from '@/use/vector'
-  sessionStorage.about = true
-  const { posters, for_person: posters_for_admin } = use_posters()
-  mounted(async () => {
-    await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
-  })
-</script>
+
 <style lang="stylus">
   section.page#about
     max-width: 1600px

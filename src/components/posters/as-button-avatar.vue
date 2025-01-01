@@ -1,8 +1,3 @@
-<template>
-  <a class="avatar" @click="toggle_avatar">
-    <icon name="silhouette" :class="{ true: is_avatar }" />
-  </a>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import { is_vector_id } from '@/use/vector'
@@ -19,7 +14,7 @@
   const { save } = use_me()
   const is_avatar = computed(() => {
     if (props.itemid === me.value.avatar) return true
-    else return false
+    return false
   })
   const toggle_avatar = async () => {
     if (me.value) {
@@ -29,6 +24,13 @@
     }
   }
 </script>
+
+<template>
+  <a class="avatar" @click="toggle_avatar">
+    <icon name="silhouette" :class="{ true: is_avatar }" />
+  </a>
+</template>
+
 <style lang="stylus">
   menu > a > svg.true
     fill: red !important

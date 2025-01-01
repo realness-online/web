@@ -1,6 +1,3 @@
-<template>
-  <svg :class="name" class="icon"><use :href="icon_location" /></svg>
-</template>
 <script>
   import icons from '/icons.svg'
   export default {
@@ -17,6 +14,11 @@
     }
   }
 </script>
+
+<template>
+  <svg :class="name" class="icon"><use :href="icon_location" /></svg>
+</template>
+
 <style lang="stylus">
   svg.icon:active
     transform: scale(0.95)

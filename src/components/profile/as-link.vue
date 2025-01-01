@@ -1,12 +1,3 @@
-<template>
-  <router-link v-if="person" :to="author" class="profile">
-    <as-avatar v-if="person.avatar" :itemid="person.avatar" />
-    <icon v-else name="silhouette" />
-    <as-address :person="person">
-      <slot />
-    </as-address>
-  </router-link>
-</template>
 <script>
   import icon from '@/components/Icon'
   import { load, as_author } from '@/use/itemid'
@@ -14,7 +5,7 @@
   import as_address from '@/components/profile/as-address'
   export default {
     components: {
-      icon: icon,
+      icon,
       'as-avatar': as_svg,
       'as-address': as_address
     },
@@ -39,6 +30,17 @@
     }
   }
 </script>
+
+<template>
+  <router-link v-if="person" :to="author" class="profile">
+    <as-avatar v-if="person.avatar" :itemid="person.avatar" />
+    <icon v-else name="silhouette" />
+    <as-address :person="person">
+      <slot />
+    </as-address>
+  </router-link>
+</template>
+
 <style lang="stylus">
   a.profile
     display: inline-flex

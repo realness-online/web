@@ -1,10 +1,3 @@
-<template>
-  <main id="realness" :class="status">
-    <router-view />
-    <sync @active="sync_active" />
-    <fps v-if="fps_pref" />
-  </main>
-</template>
 <script setup>
   import sync from '@/components/sync'
   import fps from '@/components/fps'
@@ -42,7 +35,17 @@
     window.removeEventListener('offline', offline)
   })
 </script>
+
+<template>
+  <main id="realness" :class="status">
+    <router-view />
+    <sync @active="sync_active" />
+    <fps v-if="fps_pref" />
+  </main>
+</template>
+
 <style src="@/style/index.styl" lang="stylus"></style>
+
 <style lang="stylus">
   main
     border: (base-line / 16) solid transparent

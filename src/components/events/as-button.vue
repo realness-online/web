@@ -1,12 +1,3 @@
-<template>
-  <a class="event" @click="on_click">
-    <svg viewBox="0 0 150 150" :class="has_event" class="icon">
-      <use :href="date_picker_icon" />
-      <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
-      <text x="57" y="84" text-anchor="middle">{{ day }}</text>
-    </svg>
-  </a>
-</template>
 <script>
   import icons from '/icons.svg'
   import { list } from '@/use/itemid'
@@ -33,14 +24,14 @@
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { day: 'numeric' })
-        } else return new Date().toLocaleString('en-US', { day: 'numeric' })
+        } return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month() {
         const event = this.events.find(event => event.url === this.itemid)
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { month: 'long' })
-        } else return new Date().toLocaleString('en-US', { month: 'long' })
+        } return new Date().toLocaleString('en-US', { month: 'long' })
       },
       has_event() {
         const exists = this.events.some(event => event.url === this.itemid)
@@ -60,6 +51,17 @@
     }
   }
 </script>
+
+<template>
+  <a class="event" @click="on_click">
+    <svg viewBox="0 0 150 150" :class="has_event" class="icon">
+      <use :href="date_picker_icon" />
+      <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
+      <text x="57" y="84" text-anchor="middle">{{ day }}</text>
+    </svg>
+  </a>
+</template>
+
 <style lang="stylus">
   a.event
     position: relative

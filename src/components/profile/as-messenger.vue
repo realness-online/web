@@ -1,8 +1,3 @@
-<template>
-  <a class="phone" @click="open_sms_app">
-    <icon name="message" />
-  </a>
-</template>
 <script>
   import { as_author } from '@/use/itemid'
   import { as_phone_number } from '@/use/people'
@@ -24,6 +19,13 @@
     }
   }
 </script>
+
+<template>
+  <a class="phone" @click="open_sms_app">
+    <icon name="message" />
+  </a>
+</template>
+
 <style lang="stylus">
   figure.profile > figcaption > menu a.phone > svg
     fill: blue

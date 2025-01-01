@@ -22,7 +22,7 @@ export const use = () => {
 
   const can_add = computed(() => {
     if (working.value || new_vector.value) return false
-    else return true
+    return true
   })
   const as_new_itemid = computed(
     () => `${localStorage.me}/posters/${Date.now()}`
@@ -78,7 +78,7 @@ export const use = () => {
   }
 
   const vectorized = response => {
-    const {vector} = response.data
+    const { vector } = response.data
     vector.id = as_new_itemid
     vector.type = 'posters'
     vector.light = make_path(vector.light)

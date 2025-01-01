@@ -1,3 +1,24 @@
+<script setup>
+  import icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsFigure from '@/components/profile/as-figure'
+  import SignOn from '@/components/profile/sign-on'
+
+  import { watch, onMounted as mounted } from 'vue'
+  import { current_user } from '@/use/serverless'
+  import { use as use_people } from '@/use/people'
+
+  const { phonebook, load_phonebook, working } = use_people()
+
+  watch(current_user, async () => {
+    await load_phonebook()
+  })
+  mounted(async () => {
+    await load_phonebook()
+    console.info('views:Phonebook')
+  })
+</script>
+
 <template>
   <section id="directory" class="page">
     <header>
@@ -20,26 +41,7 @@
     </footer>
   </section>
 </template>
-<script setup>
-  import icon from '@/components/icon'
-  import LogoAsLink from '@/components/logo-as-link'
-  import AsFigure from '@/components/profile/as-figure'
-  import SignOn from '@/components/profile/sign-on'
 
-  import { watch, onMounted as mounted } from 'vue'
-  import { current_user } from '@/use/serverless'
-  import { use as use_people } from '@/use/people'
-
-  const { phonebook, load_phonebook, working } = use_people()
-
-  watch(current_user, async () => {
-    await load_phonebook()
-  })
-  mounted(async () => {
-    await load_phonebook()
-    console.info('views:Phonebook')
-  })
-</script>
 <style lang="stylus">
   section#directory
     padding-bottom: base-line * 2

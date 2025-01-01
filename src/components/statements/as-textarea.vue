@@ -1,14 +1,3 @@
-<template>
-  <textarea
-    id="wat"
-    v-model="statement_text"
-    cols="1"
-    rows="1"
-    placeholder=">"
-    :spellcheck="true"
-    @focusout="prepare_statement"
-    @focusin="focused" />
-</template>
 <script setup>
   import { ref } from 'vue'
   import { use } from '@/use/statements'
@@ -24,6 +13,19 @@
     console.info('creates:statement')
   }
 </script>
+
+<template>
+  <textarea
+    id="wat"
+    v-model="statement_text"
+    cols="1"
+    rows="1"
+    placeholder=">"
+    :spellcheck="true"
+    @focusout="prepare_statement"
+    @focusin="focused" />
+</template>
+
 <style lang="stylus">
   section#navigation.page
     & textarea#wat

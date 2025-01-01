@@ -65,7 +65,7 @@ export const use_me = () => {
     else return false // last name is required
 
     if (length > 2) return true
-    else return false // full name is at least 3 characters
+    return false // full name is at least 3 characters
   })
 
   return {
@@ -77,7 +77,7 @@ export const use_me = () => {
 }
 export const get_my_itemid = type => {
   if (type) return `${localStorage.me}/${type}`
-  else return localStorage.me
+  return localStorage.me
 }
 export const as_phone_number = (id = '/+1') => id.substring(2)
 export const from_e64 = e64_number => `/${e64_number}`

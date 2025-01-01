@@ -1,29 +1,3 @@
-<template>
-  <section id="visualizer" class="page" outline>
-    <header v-if="!is_fullscreen">
-      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
-      <logo-as-link />
-    </header>
-    <h1>Camera</h1>
-    <video
-      ref="video"
-      hidden
-      autoplay
-      controls
-      muted
-      playsinline
-      @click="toggle_camera" />
-    <canvas
-      ref="canvas"
-      :width="config.video.width"
-      :height="config.video.height"></canvas>
-    <footer>
-      <menu>
-        <button @click="predict">predict</button>
-      </menu>
-    </footer>
-  </section>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
@@ -72,6 +46,34 @@
     analyze_audio(stream)
   }
 </script>
+
+<template>
+  <section id="visualizer" class="page" outline>
+    <header v-if="!is_fullscreen">
+      <a class="fullscreen" @click="fullscreen"><icon name="fullscreen" /></a>
+      <logo-as-link />
+    </header>
+    <h1>Camera</h1>
+    <video
+      ref="video"
+      hidden
+      autoplay
+      controls
+      muted
+      playsinline
+      @click="toggle_camera" />
+    <canvas
+      ref="canvas"
+      :width="config.video.width"
+      :height="config.video.height"></canvas>
+    <footer>
+      <menu>
+        <button @click="predict">predict</button>
+      </menu>
+    </footer>
+  </section>
+</template>
+
 <style lang="stylus">
   section#visualizer
     & > h1

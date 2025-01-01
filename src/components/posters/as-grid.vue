@@ -6,6 +6,7 @@
     <rect width="1" height="1" />
   </svg>
 </template>
+
 <style lang="stylus">
   svg#grid
     width: 100%

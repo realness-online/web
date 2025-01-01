@@ -7,7 +7,7 @@ export const change_by = 0.08
 export const is_use = path => {
   if (typeof path !== 'object') return false
   if (path instanceof SVGUseElement) return true
-  else return false
+  return false
 }
 export const is_url_query = query => {
   console.log('is_url_query', query)

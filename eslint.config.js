@@ -85,7 +85,9 @@ export default [
       'vue/define-macros-order': ['error', {
         order: ['defineProps', 'defineEmits', 'defineSlots']
       }],
-      'vue/define-props-declaration': ['error', 'type-based'],
+      'vue/define-props-declaration': ['error', 'runtime'],
+      'vue/require-define-props': 'error',
+      'vue/valid-define-props': 'error',
       'vue/no-empty-component-block': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-debugger': 'warn',
@@ -135,16 +137,48 @@ export default [
       'vue/v-on-handler-style': ['error', ['method', 'inline-function']],
       'vue/prefer-true-attribute-shorthand': 'error',
       'vue/no-ref-object-destructure': 'error',
-      'vue/define-emits-declaration': ['error', 'type-based'],
+      'vue/define-emits-declaration': ['error', 'runtime'],
+      'vue/require-define-emits': 'error',
+      'vue/valid-define-emits': 'error',
       'vue/no-unused-refs': 'error',
       'vue/no-useless-v-bind': 'error',
-      'vue/prefer-separate-static-class': 'error'
+      'vue/prefer-separate-static-class': 'error',
+      'arrow-spacing': ['error', { before: true, after: true }],
+      'object-curly-spacing': ['error', 'always'],
+      'array-bracket-spacing': ['error', 'never'],
+      'quotes': ['error', 'single'],
+      'no-else-return': 'error',
+      'no-lonely-if': 'error',
+      'no-unneeded-ternary': 'error',
+      'no-useless-return': 'error',
+      'no-floating-decimal': 'error',
+      'curly': ['error', 'multi'],
+      'object-shorthand': ['error', 'always'],
+      'prefer-arrow-callback': 'error',
+      'prefer-object-spread': 'error',
+      'no-useless-computed-key': 'error',
+      'vue/block-order': ['error', {
+        order: ['script', 'template', 'style']
+      }],
+      'vue/component-name-in-template-casing': ['error', 'kebab-case', {
+          registeredComponentsOnly: false,
+          ignores: []
+      }],
+      'vue/html-comment-content-spacing': ['error', 'always'],
+      'vue/next-tick-style': ['error', 'promise'],
+      'vue/no-reserved-component-names': 'error',
+      'vue/padding-line-between-blocks': 'error',
+      'no-template-curly-in-string': 'error',
+      'require-atomic-updates': 'error',
+      'no-await-in-loop': 'warn',
+      'no-loss-of-precision': 'error',
+      'comma-dangle': ['error', 'never']
     }
   },
   {
     files: ['**/*.{test,spec}.{js,vue}', '**/tests/**/*.{js,vue}'],
     plugins: {
-      vitest: vitest
+      vitest
     },
     rules: {
       ...vitest.configs.recommended.rules

@@ -35,10 +35,10 @@ export function get_itemprops(item) {
     if (value) {
       const name = prop.getAttribute('itemprop')
       const has_value = props[name]
-      if (has_value) {
+      if (has_value) 
         if (Array.isArray(has_value)) has_value.push(value)
         else props[name] = [has_value, value]
-      } else props[name] = value
+       else props[name] = value
     }
   })
   switch (item.tagName.toLowerCase()) {

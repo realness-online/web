@@ -1,17 +1,3 @@
-<template>
-  <section id="relations" class="page">
-    <header>
-      <icon name="nothin" />
-      <router-link to="/phonebook">
-        <icon name="finished" />
-      </router-link>
-    </header>
-    <h1>Relations</h1>
-    <nav v-if="current_user" class="profile-list">
-      <as-figure v-for="person in people" :key="person.id" :person="person" />
-    </nav>
-  </section>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import AsFigure from '@/components/profile/as-figure'
@@ -26,6 +12,22 @@
     console.info('views:Relations')
   })
 </script>
+
+<template>
+  <section id="relations" class="page">
+    <header>
+      <icon name="nothin" />
+      <router-link to="/phonebook">
+        <icon name="finished" />
+      </router-link>
+    </header>
+    <h1>Relations</h1>
+    <nav v-if="current_user" class="profile-list">
+      <as-figure v-for="person in people" :key="person.id" :person="person" />
+    </nav>
+  </section>
+</template>
+
 <style lang="stylus">
   section#relations
     padding-bottom: base-line * 2

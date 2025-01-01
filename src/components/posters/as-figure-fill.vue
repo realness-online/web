@@ -1,3 +1,108 @@
+<script setup>
+  import Icon from '@/components/icon'
+  import AsSvg from '@/components/posters/as-svg'
+  import { ref, provide, computed } from 'vue'
+  import {
+    whenever,
+    useMagicKeys as keyboard,
+    usePointerSwipe as swipe
+  } from '@vueuse/core'
+  import {
+    use as use_path,
+    change_by,
+    itemprop_query as query
+  } from '@/use/path'
+  import { is_vector_id, is_vector } from '@/use/vector'
+  import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
+  import { as_fragment_id } from '@/use/itemid'
+  const props = defineProps({
+    itemid: {
+      required: true,
+      type: String,
+      validator: is_vector_id
+    }
+  })
+  const emit = defineEmits({ toggle: () => true, loaded: is_vector })
+  const has_opacity = ref(false)
+  const figure = ref(null)
+  const color = ref('#151518')
+  const itemprop = ref('background')
+  const fragment = add => `url(${as_fragment_id(props.itemid)}-${add})`
+  const {
+    opacity_percentage,
+    as_stroke,
+    selected_path,
+    fill_opacity,
+    stroke_opacity
+  } = use_path()
+  provide('as_stroke', as_stroke)
+  const focus_on_active = () => query(itemprop.value).focus()
+  const layer_selected = id => {
+    if (id === 'background') has_opacity.value = false
+    else has_opacity.value = true
+    itemprop.value = id
+    const path = query(id)
+    if (as_stroke.value) color.value = to_hex(path.style.color)
+    else {
+      const { fill } = path.style
+      if (fill) color.value = to_hex(fill)
+      else color.value = to_hex()
+    }
+  }
+  const toggle_stroke = () => {
+    as_stroke.value = !as_stroke.value
+    const path = query(itemprop.value)
+    if (as_stroke.value) color.value = to_hex(path.style.color)
+    else color.value = to_hex(path.style.fill)
+    emit('toggle')
+  }
+  const { distanceY: distance_y } = swipe(figure, {
+    onSwipe() {
+      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / 300))
+      else fill_opacity(-1 * (distance_y.value / 300))
+    }
+  })
+  const keys = keyboard()
+  const disable_controls = computed(() => {
+    if (as_stroke.value && selected_path.value === 'background') return true
+    else if (!selected_path.value) return true
+    return false
+  })
+  const is_using = () => {
+    const layer = selected_path.value
+    if (layer) return true
+    return false
+  }
+  const pick_gradient_for = type => {
+    const layer = selected_path.value
+    if (layer) return fragment(`${type}-${layer}`)
+    return fragment(type)
+  }
+  whenever(keys.s, () => toggle_stroke())
+  whenever(keys.up, () => {
+    if (as_stroke.value) stroke_opacity(change_by)
+    else fill_opacity(change_by)
+  })
+  whenever(keys.down, () => {
+    if (as_stroke.value) stroke_opacity(-change_by)
+    else fill_opacity(-change_by)
+  })
+  whenever(color, () => {
+    const path = query(itemprop.value)
+    if (as_stroke.value) {
+      path.style.color = color.value
+      path.style.stroke = 'currentColor'
+    } else {
+      const current_fill = path.style.fill
+      if (to_hex(current_fill) !== color.value) {
+        const compliment = to_complimentary_hsl(color.value)
+        path.style.fill = color.value
+        path.style.color = compliment.color
+      }
+    }
+  })
+</script>
+
 <template>
   <figure id="edit-fill" ref="figure">
     <as-svg
@@ -56,110 +161,7 @@
     </figcaption>
   </figure>
 </template>
-<script setup>
-  import Icon from '@/components/icon'
-  import AsSvg from '@/components/posters/as-svg'
-  import { ref, provide, computed } from 'vue'
-  import {
-    whenever,
-    useMagicKeys as keyboard,
-    usePointerSwipe as swipe
-  } from '@vueuse/core'
-  import {
-    use as use_path,
-    change_by,
-    itemprop_query as query
-  } from '@/use/path'
-  import { is_vector_id, is_vector } from '@/use/vector'
-  import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
-  import { as_fragment_id } from '@/use/itemid'
-  const props = defineProps({
-    itemid: {
-      required: true,
-      type: String,
-      validator: is_vector_id
-    }
-  })
-  const emit = defineEmits({ toggle: () => true, loaded: is_vector })
-  const has_opacity = ref(false)
-  const figure = ref(null)
-  const color = ref('#151518')
-  const itemprop = ref('background')
-  const fragment = add => `url(${as_fragment_id(props.itemid)}-${add})`
-  const {
-    opacity_percentage,
-    as_stroke,
-    selected_path,
-    fill_opacity,
-    stroke_opacity
-  } = use_path()
-  provide('as_stroke', as_stroke)
-  const focus_on_active = () => query(itemprop.value).focus()
-  const layer_selected = id => {
-    if (id === 'background') has_opacity.value = false
-    else has_opacity.value = true
-    itemprop.value = id
-    const path = query(id)
-    if (as_stroke.value) color.value = to_hex(path.style.color)
-    else {
-      const {fill} = path.style
-      if (fill) color.value = to_hex(fill)
-      else color.value = to_hex()
-    }
-  }
-  const toggle_stroke = () => {
-    as_stroke.value = !as_stroke.value
-    const path = query(itemprop.value)
-    if (as_stroke.value) color.value = to_hex(path.style.color)
-    else color.value = to_hex(path.style.fill)
-    emit('toggle')
-  }
-  const { distanceY: distance_y } = swipe(figure, {
-    onSwipe() {
-      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / 300))
-      else fill_opacity(-1 * (distance_y.value / 300))
-    }
-  })
-  const keys = keyboard()
-  const disable_controls = computed(() => {
-    if (as_stroke.value && selected_path.value === 'background') return true
-    else if (!selected_path.value) return true
-    else return false
-  })
-  const is_using = () => {
-    const layer = selected_path.value
-    if (layer) return true
-    return false
-  }
-  const pick_gradient_for = type => {
-    const layer = selected_path.value
-    if (layer) return fragment(`${type}-${layer}`)
-    return fragment(type)
-  }
-  whenever(keys.s, () => toggle_stroke())
-  whenever(keys.up, () => {
-    if (as_stroke.value) stroke_opacity(change_by)
-    else fill_opacity(change_by)
-  })
-  whenever(keys.down, () => {
-    if (as_stroke.value) stroke_opacity(-change_by)
-    else fill_opacity(-change_by)
-  })
-  whenever(color, () => {
-    const path = query(itemprop.value)
-    if (as_stroke.value) {
-      path.style.color = color.value
-      path.style.stroke = 'currentColor'
-    } else {
-      const current_fill = path.style.fill
-      if (to_hex(current_fill) !== color.value) {
-        const compliment = to_complimentary_hsl(color.value)
-        path.style.fill = color.value
-        path.style.color = compliment.color
-      }
-    }
-  })
-</script>
+
 <style lang="stylus">
   figure#edit-fill
     & > svg

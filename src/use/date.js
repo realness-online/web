@@ -32,7 +32,7 @@ export function today_as_date() {
 
 export function is_today(a_date) {
   if (a_date === today_as_date()) return true
-  else return false
+  return false
 }
 export function is_same_day(d1, d2) {
   d1 = new Date(d1)
@@ -47,7 +47,7 @@ export function is_fresh(date = 0) {
   const expires = new Date()
   expires.setDate(expires.getDate() - 13)
   if (new Date(date) > expires) return true
-  else return false
+  return false
 }
 export function as_time(date, format = format_as_time) {
   const time = new Date(date)
@@ -55,9 +55,9 @@ export function as_time(date, format = format_as_time) {
 }
 export function as_day(date) {
   let day
-  if (Date.parse(date) < this_year) {
+  if (Date.parse(date) < this_year) 
     day = as_time(date, format_as_day_and_year)
-  } else day = as_time(date, format_as_day)
+   else day = as_time(date, format_as_day)
   if (is_same_day(date, new Date())) day = 'Today'
   return day
 }

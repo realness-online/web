@@ -26,21 +26,21 @@ export const is_vector = vector => {
     if (!vector.gradients.radial) return false
   }
   if (vector.type === 'posters') return true
-  else return false
+  return false
 }
 export const is_vector_id = itemid => {
   if (as_created_at(itemid)) return true
-  else return false
+  return false
 }
 export const is_rect = rect => {
   if (typeof rect !== 'object') return false
   if (rect instanceof SVGRectElement) return true
-  else return false
+  return false
 }
 export const is_stop = stop => {
   if (typeof stop !== 'object') return false
   if (stop instanceof SVGStopElement) return true
-  else return false
+  return false
 }
 export const is_url_query = query => {
   if (typeof query !== 'string') return false
@@ -68,7 +68,7 @@ export const use_poster = () => {
   const aspect_ratio = computed(() => {
     if (!props.toggle_aspect) return 'xMidYMid slice'
     if (menu.value || !props.slice) return 'xMidYMid meet'
-    else return 'xMidYMid slice'
+    return 'xMidYMid slice'
   })
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -81,22 +81,22 @@ export const use_poster = () => {
     if (working.value || vector) return null
     // then always return a list
     if (Array.isArray(vector.value.path)) return vector.value.path
-    else return [vector.value.path]
+    return [vector.value.path]
   })
   const viewbox = computed(() => {
     if (vector.value) return vector.value.viewbox
-    else return '0 0 16 16' // this is the viewbox for silhouette
+    return '0 0 16 16' // this is the viewbox for silhouette
   })
 
   const query = add => {
     if (!vector.value) return add
     if (add) return `${as_query_id(vector.value.id)}-${add}`
-    else return as_query_id(vector.value.id)
+    return as_query_id(vector.value.id)
   }
   const fragment = add => {
     if (!vector.value) return add
     if (add) return `${as_fragment_id(vector.value.id)}-${add}`
-    else return as_fragment_id(vector.value.id)
+    return as_fragment_id(vector.value.id)
   }
   const click = () => {
     menu.value = !menu.value
@@ -111,9 +111,9 @@ export const use_poster = () => {
     use_intersect(
       vector_element,
       ([{ isIntersecting }]) => {
-        if (isIntersecting) {
+        if (isIntersecting) 
           intersecting.value = true
-        } else intersecting.value = false
+         else intersecting.value = false
       },
       { rootMargin: '0%' }
     )
@@ -121,11 +121,11 @@ export const use_poster = () => {
   }
   const tabindex = computed(() => {
     if (props.tabable) return 0
-    else return -1
+    return -1
   })
   const focusable = computed(() => {
     if (!props.tabable) return 0
-    else return undefined
+    return undefined
   })
   const focus = async layer => {
     get_active_path()

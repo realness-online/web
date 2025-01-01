@@ -22,5 +22,5 @@ export function recent_weirdo_first(first, second) {
 }
 function get_id(thing) {
   if (Array.isArray(thing)) return thing[0].id
-  else return thing.id
+  return thing.id
 }

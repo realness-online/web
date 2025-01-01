@@ -1,20 +1,3 @@
-<template>
-  <event-as-fieldset
-    v-if="poster.picker"
-    :itemid="poster.id"
-    @picker="emit('picker', poster.id)" />
-  <menu v-else>
-    <event-as-button :itemid="poster.id" @picker="emit('picker', poster.id)" />
-    <router-link class="gear" :to="edit_poster(poster.id)">
-      <icon name="gear" />
-    </router-link>
-    <a class="remove" @click="emit('remove', poster.id)">
-      <icon name="remove" />
-    </a>
-    <toggle-avatar :itemid="poster.id" />
-    <as-download :itemid="poster.id" />
-  </menu>
-</template>
 <script setup>
   import icon from '@/components/icon'
   import toggleAvatar from '@/components/posters/as-button-avatar'
@@ -58,6 +41,25 @@
     }
   })
 </script>
+
+<template>
+  <event-as-fieldset
+    v-if="poster.picker"
+    :itemid="poster.id"
+    @picker="emit('picker', poster.id)" />
+  <menu v-else>
+    <event-as-button :itemid="poster.id" @picker="emit('picker', poster.id)" />
+    <router-link class="gear" :to="edit_poster(poster.id)">
+      <icon name="gear" />
+    </router-link>
+    <a class="remove" @click="emit('remove', poster.id)">
+      <icon name="remove" />
+    </a>
+    <toggle-avatar :itemid="poster.id" />
+    <as-download :itemid="poster.id" />
+  </menu>
+</template>
+
 <style lang="stylus">
   section#posters > article > figure.poster
     & > figcaption > menu > a

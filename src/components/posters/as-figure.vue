@@ -1,19 +1,3 @@
-<template>
-  <figure ref="poster" class="poster" :class="{ landscape }">
-    <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
-    <figcaption>
-      <slot v-if="menu">
-        <menu>
-          <as-link :itemid="itemid">
-            <time>{{ posted_at }}</time>
-          </as-link>
-          <as-download :itemid="itemid" />
-          <as-messenger v-if="current_user" :itemid="itemid" />
-        </menu>
-      </slot>
-    </figcaption>
-  </figure>
-</template>
 <script setup>
   import AsDownload from '@/components/download-vector'
   import AsMessenger from '@/components/profile/as-messenger'
@@ -92,6 +76,24 @@
     }
   })
 </script>
+
+<template>
+  <figure ref="poster" class="poster" :class="{ landscape }">
+    <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
+    <figcaption>
+      <slot v-if="menu">
+        <menu>
+          <as-link :itemid="itemid">
+            <time>{{ posted_at }}</time>
+          </as-link>
+          <as-download :itemid="itemid" />
+          <as-messenger v-if="current_user" :itemid="itemid" />
+        </menu>
+      </slot>
+    </figcaption>
+  </figure>
+</template>
+
 <style lang="stylus">
   figure.poster
     border-radius: round((base-line * .03), 2)

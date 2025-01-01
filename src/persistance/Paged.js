@@ -22,16 +22,16 @@ export function is_fat(items, prop_name) {
   if (elements_as_kilobytes(items) > 5 && get_oldest(items, prop_name) < today)
     return true
   // only count stuff before today
-  else return false
+  return false
 }
 export function itemid_as_kilobytes(itemid) {
   const bytes = localStorage.getItem(itemid)
   if (bytes) return (bytes.length / 1024).toFixed(2)
-  else return 0
+  return 0
 }
 export function elements_as_kilobytes(elements) {
   if (elements) return (elements.outerHTML.length / 1024).toFixed(2)
-  else return 0
+  return 0
 }
 const Paged = superclass =>
   class extends superclass {
@@ -58,9 +58,9 @@ const Paged = superclass =>
         await this.save(current)
         const history = new History(id)
         await history.save(div)
-        if (elements_as_kilobytes(current) > 13) {
+        if (elements_as_kilobytes(current) > 13) 
           await this.optimize()
-        }
+        
       }
     }
     async sync() {

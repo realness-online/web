@@ -1,3 +1,18 @@
+<script setup>
+  import { as_fragment_id } from '@/use/itemid'
+  import { is_vector_id } from '@/use/vector'
+
+  import { stroke } from '@/use/preference'
+  const props = defineProps({
+    id: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    }
+  })
+  const fragment = add => `${as_fragment_id(props.id)}-${add}`
+</script>
+
 <template>
   <g itemprop="animation">
     <animate
@@ -114,18 +129,3 @@
       values="0%;66%;100%;33%;100%;66%;0%" />
   </g>
 </template>
-
-<script setup>
-  import { as_fragment_id } from '@/use/itemid'
-  import { is_vector_id } from '@/use/vector'
-
-  import { stroke } from '@/use/preference'
-  const props = defineProps({
-    id: {
-      type: String,
-      required: true,
-      validator: is_vector_id
-    }
-  })
-  const fragment = add => `${as_fragment_id(props.id)}-${add}`
-</script>

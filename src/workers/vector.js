@@ -70,7 +70,7 @@ const size = (image, target_size = 512) => {
 const get_average_color = (canvas, x, y, width, height) => {
   const ctx = canvas.getContext('2d')
   const image_data = ctx.getImageData(x, y, width, height)
-  const {data} = image_data
+  const { data } = image_data
 
   let r = 0,
     g = 0,
@@ -203,7 +203,7 @@ export const optimize_vector = message => {
 }
 
 export const route_message = async message => {
-  const {route} = message.data
+  const { route } = message.data
   let reply = {}
 
   switch (route) {

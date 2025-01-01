@@ -2,9 +2,11 @@
   import { useFps } from '@vueuse/core'
   const fps = useFps()
 </script>
+
 <template>
   <span id="fps">{{ fps }}fps</span>
 </template>
+
 <style lang="stylus">
   span#fps
     position: fixed

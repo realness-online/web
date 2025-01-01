@@ -1,3 +1,136 @@
+<script setup>
+  import Icon from '@/components/icon'
+  import AsPath from '@/components/posters/as-path'
+  import AsMasks from '@/components/posters/as-masks'
+  import AsBackground from '@/components/posters/as-background'
+  import AsGradients from '@/components/posters/as-gradients'
+  import AsAnimation from '@/components/posters/as-animation'
+  import AsHalftone from '@/components/posters/as-halftone'
+  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+  import {
+    watchEffect as watch_effect,
+    onMounted as mounted,
+    ref,
+    inject,
+    computed
+  } from 'vue'
+  import { use as use_vectorize } from '@/use/vectorize'
+  import { use as use_optimizer } from '@/use/optimize'
+  import {
+    use_poster,
+    is_vector,
+    is_vector_id,
+    is_click,
+    is_focus
+  } from '@/use/vector'
+  import {
+    animate as animate_pref,
+    emboss as emboss_pref,
+    light as light_pref
+  } from '@/use/preference'
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    },
+    sync_poster: {
+      type: Object,
+      required: false,
+      default: null,
+      validator: is_vector
+    },
+    optimize: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    toggle_aspect: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
+    slice: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
+    tabable: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    as_stroke: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  })
+  defineEmits({
+    focus: is_focus,
+    click: is_click,
+    loaded: is_vector
+  })
+  const {
+    query,
+    fragment,
+    viewbox,
+    aspect_ratio,
+    click,
+    working,
+    show,
+    focus,
+    focusable,
+    tabindex,
+    vector,
+    vector_element,
+    intersecting
+  } = use_poster()
+  const trigger = ref(null)
+  const emboss = computed(() => emboss_pref.value == true && intersecting.value)
+  const animate = computed(
+    () => animate_pref.value == true && intersecting.value
+  )
+  const light = computed(() => light_pref.value == true && intersecting.value)
+
+  const mask = computed(() => intersecting.value)
+  const landscape = computed(() => {
+    if (!vector.value) return false
+    const numbers = vector.value.viewbox.split(' ')
+    const width = parseInt(numbers[2])
+    const height = parseInt(numbers[3])
+    return width > height
+  })
+  const { optimize } = use_optimizer(vector)
+  const new_poster = inject('new-poster', false)
+  if (new_poster) {
+    const { new_vector } = use_vectorize()
+    vector.value = new_vector.value
+    working.value = false
+  }
+
+  mounted(() => {
+    if (!props.sync_poster && !new_poster) 
+      use_intersect(
+        trigger,
+        ([{ isIntersecting }]) => {
+          if (isIntersecting) show()
+        },
+        { rootMargin: '1024px' }
+      )
+    
+  })
+  watch_effect(() => {
+    if (props.sync_poster) {
+      vector.value = props.sync_poster
+      working.value = false
+    }
+  })
+  watch_effect(() => {
+    if (vector.value && props.optimize && !vector.value.optimized) optimize()
+  })
+</script>
+
 <template>
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
@@ -217,138 +350,7 @@
     <as-halftone />
   </svg>
 </template>
-<script setup>
-  import Icon from '@/components/icon'
-  import AsPath from '@/components/posters/as-path'
-  import AsMasks from '@/components/posters/as-masks'
-  import AsBackground from '@/components/posters/as-background'
-  import AsGradients from '@/components/posters/as-gradients'
-  import AsAnimation from '@/components/posters/as-animation'
-  import AsHalftone from '@/components/posters/as-halftone'
-  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-  import {
-    watchEffect as watch_effect,
-    onMounted as mounted,
-    ref,
-    inject,
-    computed
-  } from 'vue'
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { use as use_optimizer } from '@/use/optimize'
-  import {
-    use_poster,
-    is_vector,
-    is_vector_id,
-    is_click,
-    is_focus
-  } from '@/use/vector'
-  import {
-    animate as animate_pref,
-    emboss as emboss_pref,
-    light as light_pref
-  } from '@/use/preference'
-  const props = defineProps({
-    itemid: {
-      type: String,
-      required: true,
-      validator: is_vector_id
-    },
-    sync_poster: {
-      type: Object,
-      required: false,
-      default: null,
-      validator: is_vector
-    },
-    optimize: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    toggle_aspect: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
-    slice: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
-    tabable: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    as_stroke: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
-  })
-  defineEmits({
-    focus: is_focus,
-    click: is_click,
-    loaded: is_vector
-  })
-  const {
-    query,
-    fragment,
-    viewbox,
-    aspect_ratio,
-    click,
-    working,
-    show,
-    focus,
-    focusable,
-    tabindex,
-    vector,
-    vector_element,
-    intersecting
-  } = use_poster()
-  const trigger = ref(null)
-  const emboss = computed(() => emboss_pref.value == true && intersecting.value)
-  const animate = computed(
-    () => animate_pref.value == true && intersecting.value
-  )
-  const light = computed(() => light_pref.value == true && intersecting.value)
 
-  const mask = computed(() => intersecting.value)
-  const landscape = computed(() => {
-    if (!vector.value) return false
-    const numbers = vector.value.viewbox.split(' ')
-    const width = parseInt(numbers[2])
-    const height = parseInt(numbers[3])
-    return width > height
-  })
-  const { optimize } = use_optimizer(vector)
-  const new_poster = inject('new-poster', false)
-  if (new_poster) {
-    const { new_vector } = use_vectorize()
-    vector.value = new_vector.value
-    working.value = false
-  }
-
-  mounted(() => {
-    if (!props.sync_poster && !new_poster) {
-      use_intersect(
-        trigger,
-        ([{ isIntersecting }]) => {
-          if (isIntersecting) show()
-        },
-        { rootMargin: '1024px' }
-      )
-    }
-  })
-  watch_effect(() => {
-    if (props.sync_poster) {
-      vector.value = props.sync_poster
-      working.value = false
-    }
-  })
-  watch_effect(() => {
-    if (vector.value && props.optimize && !vector.value.optimized) optimize()
-  })
-</script>
 <style lang="stylus">
   // aspect-ratio: 1.618 / 1 // golden-ratio
   // aspect-ratio: 2.35 / 1 // current film

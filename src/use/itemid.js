@@ -26,7 +26,7 @@ export async function load(itemid, me = localStorage.me) {
     item = await load_from_network(itemid, me)
   } catch (e) {
     if (e.code === 'storage/unauthorized') return null
-    else throw e
+    throw e
   }
   if (item) return item
   return null
@@ -35,7 +35,7 @@ export async function list(itemid, me = localStorage.me) {
   try {
     const item = await load(itemid, me)
     if (item) return type_as_list(item)
-    else return []
+    return []
   } catch {
     return []
   }
@@ -50,7 +50,7 @@ export async function load_from_network(itemid, me = localStorage.me) {
     const html = await decompress_data(compressed_data)
     await set(itemid, html)
     return get_item(html)
-  } else return null
+  } return null
 }
 export async function load_directory_from_network(itemid) {
   if (navigator.onLine) {
@@ -78,7 +78,7 @@ export async function as_directory(itemid) {
       directory = await load_directory_from_network(itemid)
     } catch (e) {
       if (e.code === 'storage/unauthorized') return directory
-      else throw e
+      throw e
     }
   }
 
@@ -95,7 +95,7 @@ export async function as_download_url(itemid) {
       index[itemid] = does_not_exist
       await set('sync:index', index)
       return null
-    } else throw e
+    } throw e
   }
 }
 
@@ -105,7 +105,7 @@ const has_history = ['statements', 'events']
 export function is_history(itemid) {
   const parts = as_path_parts(itemid)
   if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
-  else return false
+  return false
 }
 
 export function as_filename(itemid) {
@@ -113,7 +113,7 @@ export function as_filename(itemid) {
   if (itemid.startsWith('/+')) filename = `/people${filename}`
   if (created_at.includes(as_type(itemid)) || is_history(itemid))
     return `${filename}.html`
-  else return `${filename}/index.html.gz`
+  return `${filename}/index.html.gz`
 }
 export function as_storage_path(itemid) {
   const path_parts = as_path_parts(itemid)
@@ -153,13 +153,13 @@ export function as_author(itemid) {
   const path = as_path_parts(itemid)
   const author = path[0] || ''
   if (author.startsWith('+1')) return `/${path[0]}`
-  else return null
+  return null
 }
 export function as_type(itemid) {
   const path = as_path_parts(itemid)
   if (path[1]) return path[1]
   if (itemid.startsWith('/+')) return 'person'
-  else return null
+  return null
 }
 export function as_created_at(itemid) {
   const path = as_path_parts(itemid)
@@ -180,5 +180,5 @@ export function type_as_list(item) {
   const list = item[as_type(item.id)]
   if (list && Array.isArray(list)) return list
   else if (list) return [list]
-  else return []
+  return []
 }

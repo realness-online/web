@@ -1,10 +1,3 @@
-<template>
-  <stop
-    v-for="stop in converted"
-    :key="stop.offset"
-    :stop-color="stop.color.hsla"
-    :offset="`${stop.offset}%`" />
-</template>
 <script setup>
   import { computed } from 'vue'
   import { color_to_hsla } from '@/use/colors'
@@ -40,3 +33,11 @@
       }
     }))
 </script>
+
+<template>
+  <stop
+    v-for="stop in converted"
+    :key="stop.offset"
+    :stop-color="stop.color.hsla"
+    :offset="`${stop.offset}%`" />
+</template>

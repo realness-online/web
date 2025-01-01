@@ -1,19 +1,3 @@
-<template>
-  <address itemscope itemtype="/person" :itemid="person.id">
-    <h3 itemprop="first_name">{{ person.first_name }}</h3>
-    <h3 itemprop="last_name">{{ person.last_name }}</h3>
-    <slot />
-    <link
-      v-if="person.avatar"
-      :key="person.avatar"
-      itemprop="avatar"
-      rel="icon"
-      :href="person.avatar" />
-    <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile" />
-    <meta v-if="person.visited" itemprop="visited" :content="person.visited" />
-  </address>
-</template>
-
 <script setup>
   import { ref, watch, onMounted as mounted } from 'vue'
   import { use_me } from '@/use/people'
@@ -35,6 +19,23 @@
   })
   watch(me, () => (person.value = me.value))
 </script>
+
+<template>
+  <address itemscope itemtype="/person" :itemid="person.id">
+    <h3 itemprop="first_name">{{ person.first_name }}</h3>
+    <h3 itemprop="last_name">{{ person.last_name }}</h3>
+    <slot />
+    <link
+      v-if="person.avatar"
+      :key="person.avatar"
+      itemprop="avatar"
+      rel="icon"
+      :href="person.avatar" />
+    <meta v-if="person.mobile" itemprop="mobile" :content="person.mobile" />
+    <meta v-if="person.visited" itemprop="visited" :content="person.visited" />
+  </address>
+</template>
+
 <style lang="stylus">
   address[itemscope]
     color: black

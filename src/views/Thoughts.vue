@@ -1,34 +1,3 @@
-<template>
-  <section id="thoughts" ref="thoughts" class="page">
-    <header>
-      <logo-as-link tabindex="-1" />
-      <icon v-if="is_fullscreen" name="nothing" />
-      <a v-else tabindex="-1" @click="fullscreen">
-        <icon name="nothin" />
-      </a>
-    </header>
-    <h1>Thoughts</h1>
-    <as-days
-      v-slot="items"
-      :working="working"
-      :posters="posters"
-      :statements="statements">
-      <template v-for="item in items">
-        <poster-as-figure
-          v-if="item.type === 'posters'"
-          :key="slot_key(item)"
-          :itemid="item.id"
-          :verbose="true" />
-        <thought-as-article
-          v-else
-          :key="slot_key(item)"
-          :statements="item"
-          :verbose="true"
-          @show="thought_shown" />
-      </template>
-    </as-days>
-  </section>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
@@ -84,6 +53,39 @@
     console.timeEnd('views:Thoughts')
   })
 </script>
+
+<template>
+  <section id="thoughts" ref="thoughts" class="page">
+    <header>
+      <logo-as-link tabindex="-1" />
+      <icon v-if="is_fullscreen" name="nothing" />
+      <a v-else tabindex="-1" @click="fullscreen">
+        <icon name="nothin" />
+      </a>
+    </header>
+    <h1>Thoughts</h1>
+    <as-days
+      v-slot="items"
+      :working="working"
+      :posters="posters"
+      :statements="statements">
+      <template v-for="item in items">
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :key="slot_key(item)"
+          :itemid="item.id"
+          :verbose="true" />
+        <thought-as-article
+          v-else
+          :key="slot_key(item)"
+          :statements="item"
+          :verbose="true"
+          @show="thought_shown" />
+      </template>
+    </as-days>
+  </section>
+</template>
+
 <style lang="stylus">
   section#thoughts
     position: relative
