@@ -17,8 +17,8 @@ export async function sync_later(id, action) {
 
 export const Cloud = superclass =>
   class extends superclass {
-    constructor() {
-      super()
+    constructor(...args) {
+      super(...args)
     }
 
     async to_network(items) {

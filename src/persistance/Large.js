@@ -4,6 +4,10 @@ import { as_directory_id, as_created_at } from '@/use/itemid'
 
 const Large = superclass =>
   class extends superclass {
+    constructor(...args) {
+      super(...args)
+    }
+
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       if (!items) {
         console.info(`Unable to find ${this.id}`)
