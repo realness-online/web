@@ -48,7 +48,6 @@ describe('@/use/vectorize.js', () => {
     })
     describe('#vectorized', () => {
       it('Gets the poster from the worker', () => {
-        console.log(poster.regular)
         const event = {
           data: {
             vector: {
