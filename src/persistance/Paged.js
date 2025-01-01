@@ -35,6 +35,10 @@ export function elements_as_kilobytes(elements) {
 }
 const Paged = superclass =>
   class extends superclass {
+    constructor(...args) {
+      super(...args)
+    }
+
     async optimize() {
       // First in first out storage (FIFO)
       if (itemid_as_kilobytes(this.id) > 13) {
