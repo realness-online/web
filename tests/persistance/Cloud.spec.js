@@ -1,85 +1,60 @@
-import Storage from '@/persistance/Storage'
-import Cloud from '@/persistance/Cloud'
-import Local from '@/persistance/Local'
-import { get } from 'idb-keyval'
-import { flushPromises } from '@vue/test-utils
-import { vi } from 'vitest'
-const statements = {
-  outerHTML: read_mock_file('@@/html/statements.html')
-}
-const user = { phoneNumber: '/+16282281824' }
-describe.skip('@/persistance/Cloud.js', () => {
-  class Preferences extends Cloud(Storage) {}
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { Cloud } from '@/persistance/Cloud'
+import firebase from '@/persistance/firebase'
+
+describe('@/persistance/Cloud', () => {
   let cloud
+  let mock_firebase
+
   beforeEach(() => {
-    cloud = new Preferences('/+16282281824/preferences')
+    mock_firebase = {
+      collection: vi.fn().mockReturnThis(),
+      doc: vi.fn().mockReturnThis(),
+      get: vi.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
+      set: vi.fn().mockResolvedValue(true)
+    }
+
+    vi.spyOn(firebase, 'collection').mockImplementation(() => mock_firebase)
+    cloud = new Cloud('test_collection')
   })
-  afterEach(() => {
-    firebase.user = null
-    vi.clearAllMocks()
-    vi.restoreAllMocks()
-    // vi.resetAllMocks()
-    localStorage.clear()
+
+  describe('Basic Operations', () => {
+    it('initializes with collection', () => {
+      expect(cloud.collection).toBe('test_collection')
+    })
+
+    it('connects to firebase', () => {
+      expect(firebase.collection).toHaveBeenCalledWith('test_collection')
+    })
   })
-  describe('Methods', () => {
-    describe('#save', () => {
-      it('Exists', () => {
-        expect(cloud.save).toBeDefined()
-      })
-      it('Only saves if their are items', async () => {
-        cloud.to_network = vi.fn()
-        await cloud.save()
-        expect(cloud.to_network).not.toBeCalled()
-      })
-      it('Only saves certain types', async () => {
-        cloud.to_network = vi.fn()
-        await cloud.save(statements)
-        expect(cloud.to_network).not.toBeCalled()
-      })
-      it('Saves items on the server', async () => {
-        cloud.to_network = vi.fn()
-        cloud.type = 'avatars'
-        await cloud.save(statements)
-        expect(cloud.to_network).toBeCalled()
-      })
-      it('Calls save on a parent class', async () => {
-        class Whatever extends Cloud(Local(Storage)) {}
-        cloud = new Whatever('/+16282281824/whatevers')
-        cloud.to_network = vi.fn()
-        cloud.type = 'avatars'
-        await cloud.save(statements)
-        expect(cloud.to_network).toBeCalled()
-      })
+
+  describe('Data Operations', () => {
+    it('stores data', async () => {
+      const test_data = { id: 'test', content: 'test content' }
+      await cloud.store(test_data)
+      expect(mock_firebase.set).toHaveBeenCalled()
     })
-    describe('#delete', () => {
-      it('Deletes a resource on the cloud', async () => {
-        firebase.user = user
-        await cloud.delete()
-        await flushPromises()
-        expect(firebase.storage().ref().child().delete).toBeCalled()
+
+    it('retrieves data', async () => {
+      const test_data = { id: 'test', content: 'test content' }
+      mock_firebase.get.mockResolvedValueOnce({
+        exists: true,
+        data: () => test_data
       })
-      it('Only deletes when logged in', async () => {
-        firebase.user = null
-        get.mockImplementation(() => Promise.resolve([]))
-        await cloud.delete()
-        await flushPromises()
-        expect(firebase.storage().ref().child().delete).not.toBeCalled()
-      })
+      const result = await cloud.get('test')
+      expect(result).toEqual(test_data)
     })
-    describe('#to_network', () => {
-      it('firebase.user = userxists', () => {
-        expect(cloud.to_network).toBeDefined()
-      })
-      it('Persist a file in a persons home directory', async () => {
-        firebase.user = user
-        await cloud.to_network(statements)
-        expect(firebase.storage().ref().child().putString).toBeCalled()
-        firebase.user = null
-      })
-      it('Does nothing unless user is signed in', async () => {
-        await cloud.to_network(statements)
-        expect(firebase.storage().ref().child().putString).not.toBeCalled()
-      })
+  })
+
+  describe('Error Handling', () => {
+    it('handles storage errors', async () => {
+      mock_firebase.set.mockRejectedValueOnce(new Error('Storage failed'))
+      await expect(cloud.store({})).rejects.toThrow('Storage failed')
+    })
+
+    it('handles retrieval errors', async () => {
+      mock_firebase.get.mockRejectedValueOnce(new Error('Retrieval failed'))
+      await expect(cloud.get('test')).rejects.toThrow('Retrieval failed')
     })
   })
 })

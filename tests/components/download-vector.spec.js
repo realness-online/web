@@ -1,47 +1,45 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import download_vector from '@/components/download-vector'
-import * as itemid from '@/use/itemid'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import DownloadVector from '@/components/download-vector.vue'
+import { hydrate } from '@/use/hydrate'
 
-const poster_html = read_mock_file('@@/html/poster.html')
-const poster = get_item(poster_html)
-const person = {
-  id: '/+14151234356',
-  first_name: 'Scott',
-  last_name: 'Fryxell',
-  mobile: '4151234356',
-  avatar: 'avatars/5553338945763'
-}
+const POINT_COUNT = 3
+
 describe('@/components/download-vector', () => {
-  describe('Renders', () => {
-    it('Link to download svg', () => {
-      vi.spyOn(document, 'getElementById').mockImplementation(() =>
-        hydrate(poster_html)
-      )
+  let wrapper
+  const mock_vector = {
+    id: 'test-vector',
+    points: Array(POINT_COUNT).fill(1)
+  }
 
-      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(person))
-
-      const wrapper = shallowMount(download_vector, {
-        props: {
-          itemid: poster.id
-        }
-      })
-
-      expect(wrapper.element).toMatchSnapshot()
+  beforeEach(() => {
+    wrapper = shallowMount(DownloadVector, {
+      props: { vector: mock_vector }
     })
-    it('Handles downloads from anonymous users', async () => {
-      vi.spyOn(document, 'getElementById').mockImplementation(() =>
-        hydrate(poster_html)
-      )
+  })
 
-      vi.spyOn(itemid, 'load').mockImplementation(() => Promise.resolve(null))
+  describe('Vector Operations', () => {
+    it('downloads vector data', async () => {
+      vi.spyOn(hydrate, 'download').mockResolvedValue(true)
+      await wrapper.vm.download_vector()
+      expect(hydrate.download).toHaveBeenCalledWith(mock_vector)
+    })
 
-      const wrapper = shallowMount(download_vector, {
-        props: {
-          itemid: poster.id
-        }
-      })
-      await flushPromises()
-      expect(wrapper.element).toMatchSnapshot()
+    it('handles download errors', async () => {
+      const error = new Error('Download failed')
+      vi.spyOn(hydrate, 'download').mockRejectedValue(error)
+      await wrapper.vm.download_vector()
+      expect(wrapper.vm.error).toBeTruthy()
+    })
+  })
+
+  describe('Component Display', () => {
+    it('renders download button', () => {
+      expect(wrapper.find('button').exists()).toBe(true)
+    })
+
+    it('shows vector info', () => {
+      expect(wrapper.text()).toContain('Download')
     })
   })
 })

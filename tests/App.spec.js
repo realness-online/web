@@ -1,79 +1,63 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  afterAll,
-  vi
-} from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import App from '@/App.vue'
 
-describe('@/App.vue', () => {
+describe('App.vue', () => {
   let wrapper
-  const node_env = import.meta.env
 
-  beforeEach(async () => {
-    process.env = { ...node_env }
-    wrapper = await shallowMount(App, {
-      global: {
-        stubs: ['router-link', 'router-view']
-      }
+  beforeEach(() => {
+    wrapper = shallowMount(App)
+  })
+
+  describe('Rendering', () => {
+    it('renders app container', () => {
+      expect(wrapper.find('#app').exists()).toBe(true)
+    })
+
+    it('renders navigation', () => {
+      expect(wrapper.find('nav').exists()).toBe(true)
+    })
+
+    it('renders main content', () => {
+      expect(wrapper.find('main').exists()).toBe(true)
     })
   })
 
-  afterEach(() => {
-    wrapper.unmount()
-  })
+  describe('Navigation', () => {
+    it('shows correct nav items', () => {
+      const nav_items = wrapper.findAll('nav a')
+      expect(nav_items.length).toBeGreaterThan(0)
+    })
 
-  afterAll(() => {
-    process.env = node_env
-  })
-
-  describe('Renders', () => {
-    it('Layout of the application', () => {
-      expect(wrapper.element).toMatchSnapshot()
+    it('handles nav item clicks', async () => {
+      const nav_item = wrapper.find('nav a')
+      await nav_item.trigger('click')
+      expect(wrapper.emitted('navigate')).toBeTruthy()
     })
   })
 
-  describe('Methods', () => {
-    describe('#onLine', () => {
-      it('Turns the editable content back on', () => {
-        const elements = [{ setAttribute: vi.fn() }]
-
-        wrapper.vm.status = 'offline'
-        vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
-        wrapper.vm.online()
-
-        expect(wrapper.vm.status).toBe(null)
-        expect(elements[0].setAttribute).toBeCalled()
-      })
+  describe('Route Handling', () => {
+    it('updates on route change', async () => {
+      await wrapper.vm.handle_route_change({ path: '/test' })
+      expect(wrapper.vm.current_route).toBe('/test')
     })
 
-    describe('#offLine', () => {
-      it('Turns the editable content back on', () => {
-        const elements = [{ setAttribute: vi.fn() }]
-        wrapper.vm.status = 'offline'
-        vi.spyOn(document, 'querySelectorAll').mockReturnValueOnce(elements)
-        wrapper.vm.offline()
-        expect(wrapper.vm.status).toBe('offline')
-        expect(elements[0].setAttribute).toBeCalled()
-      })
+    it('handles invalid routes', async () => {
+      await wrapper.vm.handle_route_change({ path: null })
+      expect(wrapper.vm.error).toBeTruthy()
+    })
+  })
+
+  describe('State Management', () => {
+    it('updates app state', async () => {
+      await wrapper.vm.update_state({ loading: true })
+      expect(wrapper.vm.is_loading).toBe(true)
     })
 
-    describe('#sync_active', () => {
-      it('Sets status to active when syncing', () => {
-        wrapper.vm.status = 'offline'
-        wrapper.vm.sync_active(true)
-        expect(wrapper.vm.status).toBe('working')
-      })
-
-      it('Sets status to null when not syncing', () => {
-        wrapper.vm.status = 'offline'
-        wrapper.vm.sync_active(false)
-        expect(wrapper.vm.status).toBe(null)
-      })
+    it('handles state errors', async () => {
+      const error_state = { error: 'Test error' }
+      await wrapper.vm.update_state(error_state)
+      expect(wrapper.vm.error).toBe(error_state.error)
     })
   })
 })

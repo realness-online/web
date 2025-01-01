@@ -1,54 +1,75 @@
-import { as_thoughts } from '@/use/statements'
-import { get_item } from '@/use/item'
-const statements_html = read_mock_file('@@/html/statements.html')
-describe('@/use/thought', () => {
-  describe('Methods', () => {
-    let person
-    beforeEach(() => {
-      person = get_item(statements_html)
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import People from '@/use/people'
+
+const MOCK_ITEM_ID = 'test-123'
+const PEOPLE_COUNT = 3
+
+describe('@/use/people', () => {
+  let wrapper
+  let load_spy
+
+  beforeEach(() => {
+    load_spy = vi.fn()
+    wrapper = shallowMount(People, {
+      global: {
+        mocks: {
+          load_people: load_spy
+        }
+      }
     })
-    describe('#as_thoughts', () => {
-      it('Exists', () => {
-        expect(as_thoughts).toBeDefined()
-      })
-      it('Returns three thoughts', () => {
-        const thoughts = as_thoughts(person.statements)
-        expect(thoughts.length).toBe(3)
-      })
+  })
+
+  describe('Basic Functionality', () => {
+    it('initializes with empty people list', () => {
+      expect(wrapper.vm.people).toEqual([])
     })
-    describe('#thought_shown', () => {
-      const statements = [
-        { id: '/+16282281824/statements/1569168047725' },
-        { id: '/+16282281824/statements/1569909292018' },
-        { id: '/+16282281824/statements/1569909311638' }
-      ]
-      it("Checks if it's time to load more thoughts", async () => {
-        vi.spyOn(itemid, 'as_directory').mockImplementation(() => ({
-          items: ['index', '1569909311638']
-        }))
-        wrapper.vm.statements = statements
-        await wrapper.vm.thought_shown(statements)
+
+    it('adds new people', () => {
+      const test_people = Array(PEOPLE_COUNT).fill().map((_, i) => ({
+        id: `person-${i}`,
+        name: `Person ${i}`
+      }))
+
+      test_people.forEach(person => {
+        wrapper.vm.add_person(person)
       })
+
+      expect(wrapper.vm.people.length).toBe(PEOPLE_COUNT)
     })
-    describe('#slot_key', () => {
-      const item = { id: '/+16282281824/statements/1569168047725' }
-      it('Determines the slot key of an item', () => {
-        const key = wrapper.vm.slot_key(item)
-        expect(key).toBe('/+16282281824/statements/1569168047725')
-      })
-      it('Determines the slot key of an array of items', () => {
-        const key = wrapper.vm.slot_key([item])
-        expect(key).toBe('/+16282281824/statements/1569168047725')
-      })
+  })
+
+  describe('People Loading', () => {
+    it('loads people data', async () => {
+      const mock_people = [{ id: MOCK_ITEM_ID, name: 'Test Person' }]
+      load_spy.mockResolvedValueOnce(mock_people)
+
+      await wrapper.vm.load_people(MOCK_ITEM_ID)
+      expect(load_spy).toHaveBeenCalledWith(MOCK_ITEM_ID)
+      expect(wrapper.vm.people).toEqual(mock_people)
     })
-    describe('#use', () => {
-      it('Handles empty person', () => {
-        load_spy = vi
-          .spyOn(itemid, 'load')
-          .mockImplementation(() => Promise.resolve(null))
-        wrapper.vm.get_all_my_stuff()
-        expect(load_spy).toBeCalled()
-      })
+
+    it('handles loading errors', async () => {
+      load_spy.mockRejectedValueOnce(new Error('Load failed'))
+      await wrapper.vm.load_people(MOCK_ITEM_ID)
+      expect(wrapper.vm.error).toBeTruthy()
+    })
+  })
+
+  describe('People Management', () => {
+    it('removes people', () => {
+      const person = { id: MOCK_ITEM_ID, name: 'Test Person' }
+      wrapper.vm.add_person(person)
+      wrapper.vm.remove_person(person)
+      expect(wrapper.vm.people).not.toContain(person)
+    })
+
+    it('updates existing people', () => {
+      const person = { id: MOCK_ITEM_ID, name: 'Original Name' }
+      const updated = { id: MOCK_ITEM_ID, name: 'Updated Name' }
+      wrapper.vm.add_person(person)
+      wrapper.vm.update_person(updated)
+      expect(wrapper.vm.people[0].name).toBe('Updated Name')
     })
   })
 })

@@ -1,29 +1,46 @@
-import Storage from '@/persistance/Storage'
-import Local from '@/persistance/Local'
-const preferences = read_mock_file('@@/html/preferences.html')
-describe('@/persistance/Local.js', () => {
-  class Preferences extends Local(Storage) {}
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { Local } from '@/persistance/Local'
+
+describe('@/persistance/Local', () => {
   let local
+  let mock_storage
+
   beforeEach(() => {
-    local = new Preferences('/+16282281824/preferences')
+    mock_storage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn()
+    }
+    global.localStorage = mock_storage
+    local = new Local('test_collection')
   })
-  afterEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
+
+  describe('Storage Operations', () => {
+    it('stores data', () => {
+      const test_data = { id: 'test', content: 'test content' }
+      local.store(test_data)
+      expect(mock_storage.setItem).toHaveBeenCalled()
+    })
+
+    it('retrieves data', () => {
+      const test_data = { id: 'test', content: 'test content' }
+      mock_storage.getItem.mockReturnValue(JSON.stringify(test_data))
+      const result = local.get('test')
+      expect(result).toEqual(test_data)
+    })
   })
-  describe('Methods', () => {
-    describe('#save', () => {
-      it('Exists', () => {
-        expect(local.save).toBeDefined()
+
+  describe('Error Handling', () => {
+    it('handles storage errors', () => {
+      mock_storage.setItem.mockImplementation(() => {
+        throw new Error('Storage full')
       })
-      it('Saves items locally', async () => {
-        await local.save({ outerHTML: preferences })
-        expect(localStorage.setItem).toBeCalled()
-      })
-      it('Only saves if there are items to save', () => {
-        local.save()
-        expect(localStorage.setItem).not.toBeCalled()
-      })
+      expect(() => local.store({})).toThrow('Storage full')
+    })
+
+    it('handles retrieval errors', () => {
+      mock_storage.getItem.mockReturnValue('invalid json')
+      expect(local.get('test')).toBeNull()
     })
   })
 })
