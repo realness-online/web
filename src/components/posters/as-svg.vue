@@ -5,7 +5,6 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
-  import AsHalftone from '@/components/posters/as-halftone'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
@@ -346,7 +345,6 @@
       width="100%"
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
-    <as-halftone />
   </svg>
 </template>
 

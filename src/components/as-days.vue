@@ -118,13 +118,6 @@
     } else days.set(day_name, [item])
   }
 
-  const as_day = date => {
-    return as_day(date)
-  }
-
-  const is_today = date => {
-    return is_today(date)
-  }
 
   // Lifecycle hooks
   mounted(() => {
