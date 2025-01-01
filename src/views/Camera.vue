@@ -17,13 +17,13 @@
     await start()
   })
   const config = computed(() => ({
-      audio: true,
-      video: {
-        facingMode: facing.value,
-        height: 513,
-        width: 912
-      }
-    }))
+    audio: true,
+    video: {
+      facingMode: facing.value,
+      height: 513,
+      width: 912
+    }
+  }))
   const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen()
   const { analyze_audio } = use_audio_analyzer()
   const { video, canvas, predict } = use_machine_learning()

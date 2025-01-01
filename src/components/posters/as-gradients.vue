@@ -38,24 +38,23 @@
   const vertical = ref([default_color])
   const radial = ref([default_color])
   const convert_stop = stop => ({
-      color: hsla_to_color(stop.getAttribute('stop-color')),
-      offset: stop.getAttribute('offset').replace('%', '')
-    })
+    color: hsla_to_color(stop.getAttribute('stop-color')),
+    offset: stop.getAttribute('offset').replace('%', '')
+  })
   watch_effect(() => {
     if (gradients.value) {
       horizontal.value = gradients.value.horizontal
       vertical.value = gradients.value.vertical
       radial.value = gradients.value.radial
     } else if (props.vector) {
-      if (props.vector.horizontal) 
+      if (props.vector.horizontal)
         horizontal.value = props.vector.horizontal.map(convert_stop)
-      
-      if (props.vector.vertical) 
+
+      if (props.vector.vertical)
         vertical.value = props.vector.vertical.map(convert_stop)
-      
-      if (props.vector.radial) 
+
+      if (props.vector.radial)
         radial.value = props.vector.radial.map(convert_stop)
-      
     }
   })
 </script>

@@ -6,24 +6,24 @@ import { ref, nextTick as next_tick } from 'vue'
 const user = { phoneNumber: '+16282281824' }
 vi.mock('vue-router')
 vi.mock('@/use/people', () => ({
-    use: () => ({
-        load_relations: vi.fn(),
-        load_person: vi.fn(),
-        person: ref({
-          id: `/${user.phoneNumber}`,
-          type: 'person'
-        }),
-        relations: ref([])
-      })
-  }))
+  use: () => ({
+    load_relations: vi.fn(),
+    load_person: vi.fn(),
+    person: ref({
+      id: `/${user.phoneNumber}`,
+      type: 'person'
+    }),
+    relations: ref([])
+  })
+}))
 
 vi.mock('@/use/statements', () => ({
-    use: () => ({
-        for_person: vi.fn(),
-        statements: ref([]),
-        thought_shown: vi.fn()
-      })
-  }))
+  use: () => ({
+    for_person: vi.fn(),
+    statements: ref([]),
+    thought_shown: vi.fn()
+  })
+}))
 
 describe('@/views/Profile.vue', () => {
   describe('Renders', async () => {
@@ -38,7 +38,9 @@ describe('@/views/Profile.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('there not being posters', async () => {
-      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => ({ items: [] }))
+      vi.spyOn(itemid, 'as_directory').mockImplementationOnce(() => ({
+        items: []
+      }))
       const wrapper = shallowMount(Profile)
       wrapper.vm.route = { params: { phone_number: '+14151231234' } }
 

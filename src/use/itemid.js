@@ -50,7 +50,8 @@ export async function load_from_network(itemid, me = localStorage.me) {
     const html = await decompress_data(compressed_data)
     await set(itemid, html)
     return get_item(html)
-  } return null
+  }
+  return null
 }
 export async function load_directory_from_network(itemid) {
   if (navigator.onLine) {
@@ -95,7 +96,8 @@ export async function as_download_url(itemid) {
       index[itemid] = does_not_exist
       await set('sync:index', index)
       return null
-    } throw e
+    }
+    throw e
   }
 }
 

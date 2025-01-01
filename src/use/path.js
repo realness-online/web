@@ -9,9 +9,11 @@ export const is_path = path => {
   return false
 }
 
-export const itemprop_query = name => document.querySelector(`[itemprop="${name}"]`)
+export const itemprop_query = name =>
+  document.querySelector(`[itemprop="${name}"]`)
 
-export const create_path_element = () => document.createElementNS(svg_ns, 'path')
+export const create_path_element = () =>
+  document.createElementNS(svg_ns, 'path')
 const opacity_percentage = ref()
 const selected_path = ref()
 const as_stroke = ref(false)

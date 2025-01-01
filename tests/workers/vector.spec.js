@@ -62,9 +62,8 @@ describe('/workers/vector.js', () => {
         const large = {
           paths: []
         }
-        for (let i = 0; i < 100; i++) 
-          large.paths.push(image)
-        
+        for (let i = 0; i < 100; i++) large.paths.push(image)
+
         large.paths.push(image)
         as_paths_spy = vi
           .spyOn(potrace, 'as_paths')

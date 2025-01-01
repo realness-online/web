@@ -68,20 +68,23 @@ export default [
       'lines-between-class-members': 'off',
       'no-console': ['error', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
-      'no-unused-vars': ['error', {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_'
+        }
+      ],
       'prefer-const': 'error',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always'],
+      eqeqeq: ['error', 'always'],
       'no-multiple-empty-lines': ['error', { max: 1 }],
       'arrow-body-style': ['error', 'as-needed'],
       'no-param-reassign': 'error',
       'no-return-await': 'error',
       'require-await': 'error',
       'max-lines-per-function': ['warn', 50],
-      'complexity': ['warn', 10],
+      complexity: ['warn', 10],
       'no-unsafe-optional-chaining': 'error',
       'no-constant-binary-expression': 'error',
       'no-unreachable-loop': 'error',
@@ -98,10 +101,13 @@ export default [
       'prefer-promise-reject-errors': 'error',
       'max-depth': ['error', 3],
       'max-params': ['error', 3],
-      'no-magic-numbers': ['warn', {
-        ignore: [-1, 0, 1, 2],
-        enforceConst: true
-      }],
+      'no-magic-numbers': [
+        'warn',
+        {
+          ignore: [-1, 0, 1, 2],
+          enforceConst: true
+        }
+      ],
       'no-nested-ternary': 'error',
       'vue/multi-word-component-names': 'off',
       'vue/require-default-prop': 'off',
@@ -116,20 +122,29 @@ export default [
       'vue/component-api-style': ['error', ['script-setup']],
       'vue/no-unused-refs': 'error',
       'vue/no-v-html': 'error',
-      'vue/no-unused-properties': ['error', {
-        groups: ['props', 'data', 'computed', 'methods']
-      }],
-      'vue/define-macros-order': ['error', {
-        order: ['defineProps', 'defineEmits', 'defineSlots']
-      }],
+      'vue/no-unused-properties': [
+        'error',
+        {
+          groups: ['props', 'data', 'computed', 'methods']
+        }
+      ],
+      'vue/define-macros-order': [
+        'error',
+        {
+          order: ['defineProps', 'defineEmits', 'defineSlots']
+        }
+      ],
       'vue/define-props-declaration': ['error', 'runtime'],
 
       'vue/valid-define-props': 'error',
       'vue/no-empty-component-block': 'error',
       'vue/no-multiple-objects-in-class': 'error',
-      'vue/no-static-inline-styles': ['error', {
-        allowBinding: true
-      }],
+      'vue/no-static-inline-styles': [
+        'error',
+        {
+          allowBinding: true
+        }
+      ],
       'vue/no-template-target-blank': 'error',
       'vue/no-useless-template-attributes': 'error',
       'vue/no-potential-component-option-typo': 'error',
@@ -146,24 +161,31 @@ export default [
       'arrow-spacing': ['error', { before: true, after: true }],
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
-      'quotes': ['error', 'single'],
+      quotes: ['error', 'single'],
       'no-else-return': 'error',
       'no-lonely-if': 'error',
       'no-unneeded-ternary': 'error',
       'no-useless-return': 'error',
       'no-floating-decimal': 'error',
-      'curly': ['error', 'multi'],
+      curly: ['error', 'multi'],
       'object-shorthand': ['error', 'always'],
       'prefer-arrow-callback': 'error',
       'prefer-object-spread': 'error',
       'no-useless-computed-key': 'error',
-      'vue/block-order': ['error', {
-        order: ['script', 'template', 'style']
-      }],
-      'vue/component-name-in-template-casing': ['error', 'kebab-case', {
+      'vue/block-order': [
+        'error',
+        {
+          order: ['script', 'template', 'style']
+        }
+      ],
+      'vue/component-name-in-template-casing': [
+        'error',
+        'kebab-case',
+        {
           registeredComponentsOnly: false,
           ignores: []
-      }],
+        }
+      ],
       'vue/html-comment-content-spacing': ['error', 'always'],
       'vue/next-tick-style': ['error', 'promise'],
       'vue/no-reserved-component-names': 'error',

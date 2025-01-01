@@ -111,9 +111,8 @@ export const use_poster = () => {
     use_intersect(
       vector_element,
       ([{ isIntersecting }]) => {
-        if (isIntersecting) 
-          intersecting.value = true
-         else intersecting.value = false
+        if (isIntersecting) intersecting.value = true
+        else intersecting.value = false
       },
       { rootMargin: '0%' }
     )

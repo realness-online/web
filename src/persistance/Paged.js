@@ -58,9 +58,7 @@ const Paged = superclass =>
         await this.save(current)
         const history = new History(id)
         await history.save(div)
-        if (elements_as_kilobytes(current) > 13) 
-          await this.optimize()
-        
+        if (elements_as_kilobytes(current) > 13) await this.optimize()
       }
     }
     async sync() {
@@ -78,9 +76,10 @@ const Paged = superclass =>
       local = local.filter(local_item => {
         const created_at = as_created_at(local_item.id)
         if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
-        return !cloud.some(server_item => 
-          // remove local items that are in the cloud
-           local_item.id === server_item.id
+        return !cloud.some(
+          server_item =>
+            // remove local items that are in the cloud
+            local_item.id === server_item.id
         )
       })
 
