@@ -1,6 +1,5 @@
 import { as_thoughts } from '@/use/statements'
 import { get_item } from '@/use/item'
-import { read_mock_file } from '@/helpers'
 const statements_html = read_mock_file('@@/html/statements.html')
 describe('@/use/statements', () => {
   describe('Methods', () => {
