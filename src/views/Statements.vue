@@ -1,3 +1,25 @@
+<script setup>
+  import Icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDays from '@/components/as-days'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+
+  import { current_user } from '@/use/serverless'
+  import { use as use_statements } from '@/use/statements'
+  import { get_my_itemid } from '@/use/people'
+
+  import { ref, onMounted as mounted } from 'vue'
+  import { useRouter as use_router } from 'vue-router'
+  const working = ref(true)
+  const router = use_router()
+  const { my_statements } = use_statements()
+  const home = () => router.push({ path: '/' })
+  mounted(async () => {
+    working.value = false
+    console.info('views:Statements')
+  })
+</script>
+
 <template>
   <section id="statements" :class="{ 'signed-in': current_user }" class="page">
     <header>
@@ -28,27 +50,7 @@
     </footer>
   </section>
 </template>
-<script setup>
-  import Icon from '@/components/icon'
-  import LogoAsLink from '@/components/logo-as-link'
-  import AsDays from '@/components/as-days'
-  import ThoughtAsArticle from '@/components/statements/as-article'
 
-  import { current_user } from '@/use/serverless'
-  import { use as use_statements } from '@/use/statements'
-  import { get_my_itemid } from '@/use/people'
-
-  import { ref, onMounted as mounted } from 'vue'
-  import { useRouter as use_router } from 'vue-router'
-  const working = ref(true)
-  const router = use_router()
-  const { my_statements } = use_statements()
-  const home = () => router.push({ path: '/' })
-  mounted(async () => {
-    working.value = false
-    console.info('views:Statements')
-  })
-</script>
 <style lang="stylus">
   section#statements
     svg.icon

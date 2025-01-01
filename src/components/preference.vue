@@ -1,17 +1,3 @@
-<template>
-  <fieldset class="preference">
-    <div>
-      <h3>{{ name }}</h3>
-      <label class="switch">
-        <input v-model="preference" type="checkbox" @click="toggle" />
-        <span class="slider"></span>
-      </label>
-    </div>
-    <p v-if="title">{{ title }}</p>
-    <p v-if="subtitle">{{ subtitle }}</p>
-    <slot />
-  </fieldset>
-</template>
 <script setup>
   import * as preferences from '@/use/preference'
   const props = defineProps({
@@ -31,6 +17,22 @@
   const preference = preferences[props.name]
   const toggle = () => (preference.value = !preference.value)
 </script>
+
+<template>
+  <fieldset class="preference">
+    <div>
+      <h3>{{ name }}</h3>
+      <label class="switch">
+        <input v-model="preference" type="checkbox" @click="toggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <p v-if="title">{{ title }}</p>
+    <p v-if="subtitle">{{ subtitle }}</p>
+    <slot />
+  </fieldset>
+</template>
+
 <style lang="stylus">
   fieldset.preference
     & > div

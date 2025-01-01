@@ -16,7 +16,7 @@ export const to_hex = (color = '') => {
   if (color.startsWith('hsl')) hex = hsl_to_hex(color)
   if (hex.length === 9) return hex.slice(0, -2)
   else if (hex.length === 7) return hex
-  else throw `Provided color is unrecognized — ${color}`
+  throw `Provided color is unrecognized — ${color}`
 }
 export const to_hex_number = color => parseInt(color.substring(1))
 
@@ -108,7 +108,7 @@ export const color_to_hsla = ({ h, s, l, a }) => {
   ok.c = ok.c.toFixed(3)
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
-    hsla: hsla,
+    hsla,
     oklch: `oklch(${ok.l}, ${ok.c}, ${ok.h})`,
     h,
     s,

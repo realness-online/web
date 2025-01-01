@@ -16,7 +16,7 @@ describe('@/use/path.js', () => {
   })
   describe('#fill_opacity', () => {
     it('Increases fill opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.025;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.fillOpacity).toBe('0.025')
@@ -24,7 +24,7 @@ describe('@/use/path.js', () => {
       expect(active.value.style.fillOpacity).toBe('0.05')
     })
     it('Decreases fill opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.5;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.fillOpacity).toBe('0.5')
@@ -35,7 +35,7 @@ describe('@/use/path.js', () => {
 
   describe('#stroke_opacity', () => {
     it('Increases stroke opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.025;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.strokeOpacity).toBe('0.025')
@@ -43,7 +43,7 @@ describe('@/use/path.js', () => {
       expect(active.value.style.strokeOpacity).toBe('0.05')
     })
     it('Decreases stroke opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.5;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.strokeOpacity).toBe('0.5')
@@ -54,7 +54,7 @@ describe('@/use/path.js', () => {
 
   describe('#opacity', () => {
     it('Increases opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="opacity:0.025;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.opacity).toBe('0.025')
@@ -62,7 +62,7 @@ describe('@/use/path.js', () => {
       expect(active.value.style.opacity).toBe('0.05')
     })
     it('Decreases opacity', () => {
-      window.document.body.innerHTML = `<path id="test" tabindex="0" itemprop="bold" style="opacity:0.5;"/>`
+      window.document.body.innerHTML = '<path id="test" tabindex="0" itemprop="bold" style="opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
       expect(active.value.style.opacity).toBe('0.5')

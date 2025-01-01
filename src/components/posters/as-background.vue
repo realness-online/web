@@ -1,11 +1,3 @@
-<template>
-  <rect
-    itemprop="background"
-    :fill="fill"
-    width="100%"
-    height="100%"
-    :tabindex="tabindex" />
-</template>
 <script setup>
   import { use_poster, is_rect, is_url_query } from '@/use/vector'
   import { ref, onMounted as mounted } from 'vue'
@@ -34,6 +26,16 @@
     if (props.rect?.fill) fill.value = props.rect?.fill
   })
 </script>
+
+<template>
+  <rect
+    itemprop="background"
+    :fill="fill"
+    width="100%"
+    height="100%"
+    :tabindex="tabindex" />
+</template>
+
 <style lang="stylus">
   rect[itemprop="background"]
     outline: none

@@ -1,3 +1,25 @@
+<script setup>
+  import Icon from '@/components/icon'
+  import StatementAsTextarea from '@/components/statements/as-textarea'
+  import { load } from '@/use/itemid'
+  import { ref, onMounted as mounted } from 'vue'
+  import { use as use_vectorize } from '@/use/vectorize'
+  const version = import.meta.env.PACKAGE_VERSION
+  const posting = ref(false)
+  const first_name = ref('')
+  const nav = ref()
+  const done_posting = () => nav.value.focus()
+  const { vVectorizer, image_picker, open_camera, mount_workers } =
+    use_vectorize()
+  mounted(async () => {
+    const my = await load(localStorage.me)
+    if (my?.first_name) first_name.value = my.first_name
+    else first_name.value = 'You'
+    console.info('views:Navigation')
+    mount_workers()
+  })
+</script>
+
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
@@ -42,27 +64,7 @@
       accept="image/jpeg,image/png" />
   </aside>
 </template>
-<script setup>
-  import Icon from '@/components/icon'
-  import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { load } from '@/use/itemid'
-  import { ref, onMounted as mounted } from 'vue'
-  import { use as use_vectorize } from '@/use/vectorize'
-  const version = import.meta.env.PACKAGE_VERSION
-  const posting = ref(false)
-  const first_name = ref('')
-  const nav = ref()
-  const done_posting = () => nav.value.focus()
-  const { vVectorizer, image_picker, open_camera, mount_workers } =
-    use_vectorize()
-  mounted(async () => {
-    const my = await load(localStorage.me)
-    if (my?.first_name) first_name.value = my.first_name
-    else first_name.value = 'You'
-    console.info('views:Navigation')
-    mount_workers()
-  })
-</script>
+
 <style lang="stylus">
   section#navigation.page
     display: flex

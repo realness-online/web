@@ -17,7 +17,7 @@ describe('@/views/Feed.vue', () => {
     vi.spyOn(itemid, 'load').mockImplementation(() => person)
     list_spy = vi.spyOn(itemid, 'list').mockImplementation(id => {
       if (itemid.as_type(id) === 'relations') return Promise.resolve(relations)
-      else return Promise.resolve(get_item(statements_html).statements)
+      return Promise.resolve(get_item(statements_html).statements)
     })
     vi.spyOn(itemid, 'as_directory').mockImplementation(() =>
       Promise.resolve({ items: ['559666932867'] })

@@ -1,51 +1,3 @@
-<template>
-  <form id="profile-mobile">
-    <fieldset v-if="show_mobile_input" id="phone">
-      <legend :class="{ valid: validate_mobile_number() }">
-        {{ mobile_display }}
-      </legend>
-      <input
-        id="mobile"
-        ref="mobile"
-        v-model="mobile_number"
-        type="tel"
-        placeholder="1 (555) 555-5555"
-        @keypress="mobile_keypress"
-        @keyup="validate_mobile_number"
-        @paste.prevent="mobile_paste" />
-    </fieldset>
-    <fieldset
-      v-if="show_captcha"
-      id="captcha"
-      :class="{ hide: hide_captcha }" />
-    <fieldset v-if="show_code">
-      <input
-        id="verification-code"
-        v-model="code"
-        type="tel"
-        required
-        autocomplete="one-time-code"
-        placeholder="Verification Code"
-        @keypress="code_keypress" />
-    </fieldset>
-    <icon v-if="working" name="working" />
-    <menu v-else>
-      <button
-        v-if="show_authorize"
-        id="authorize"
-        :disabled="disabled_sign_in"
-        @click.prevent="begin_authorization">
-        Sign on
-      </button>
-      <button
-        v-if="show_code"
-        id="submit-verification"
-        @click.prevent="sign_in_with_code">
-        Sign on
-      </button>
-    </menu>
-  </form>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in } from '@/use/serverless'
@@ -80,7 +32,7 @@
       return new validator.value.AsYouType(country_code.value).input(
         mobile_number.value
       )
-    else return 'Mobile'
+    return 'Mobile'
   })
   const validate_mobile_number = () => {
     let is_valid = false
@@ -149,7 +101,7 @@
     if (phone_number) {
       mobile_number.value = phone_number
       return validate_mobile_number()
-    } else return false
+    } return false
   }
   const code_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
@@ -165,6 +117,56 @@
     validate_mobile_number()
   })
 </script>
+
+<template>
+  <form id="profile-mobile">
+    <fieldset v-if="show_mobile_input" id="phone">
+      <legend :class="{ valid: validate_mobile_number() }">
+        {{ mobile_display }}
+      </legend>
+      <input
+        id="mobile"
+        ref="mobile"
+        v-model="mobile_number"
+        type="tel"
+        placeholder="1 (555) 555-5555"
+        @keypress="mobile_keypress"
+        @keyup="validate_mobile_number"
+        @paste.prevent="mobile_paste" />
+    </fieldset>
+    <fieldset
+      v-if="show_captcha"
+      id="captcha"
+      :class="{ hide: hide_captcha }" />
+    <fieldset v-if="show_code">
+      <input
+        id="verification-code"
+        v-model="code"
+        type="tel"
+        required
+        autocomplete="one-time-code"
+        placeholder="Verification Code"
+        @keypress="code_keypress" />
+    </fieldset>
+    <icon v-if="working" name="working" />
+    <menu v-else>
+      <button
+        v-if="show_authorize"
+        id="authorize"
+        :disabled="disabled_sign_in"
+        @click.prevent="begin_authorization">
+        Sign on
+      </button>
+      <button
+        v-if="show_code"
+        id="submit-verification"
+        @click.prevent="sign_in_with_code">
+        Sign on
+      </button>
+    </menu>
+  </form>
+</template>
+
 <style lang="stylus">
   form#profile-mobile
     animation-name: slide-in-left

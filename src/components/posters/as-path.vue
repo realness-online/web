@@ -1,40 +1,3 @@
-<template>
-  <path
-    v-if="wants_both"
-    :id="id"
-    ref="path"
-    :d="d"
-    :mask="mask"
-    :itemprop="itemprop"
-    :fill="fill"
-    :fill-opacity="fill_opacity"
-    :stroke="stroke"
-    :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"
-    fill-rule="evenodd" />
-  <path
-    v-else-if="just_stroke"
-    :id="id"
-    ref="path"
-    :d="d"
-    fill="none"
-    :mask="mask"
-    :itemprop="itemprop"
-    :stroke="stroke"
-    :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width" />
-  <path
-    v-if="just_fill"
-    :id="id"
-    ref="path"
-    :d="d"
-    :mask="mask"
-    :itemprop="itemprop"
-    :fill="fill"
-    :fill-opacity="fill_opacity"
-    fill-rule="evenodd"
-    stroke="none" />
-</template>
 <script setup>
   import {
     ref,
@@ -113,6 +76,45 @@
   })
   watch_effect(() => (d.value = props.path?.getAttribute('d')))
 </script>
+
+<template>
+  <path
+    v-if="wants_both"
+    :id="id"
+    ref="path"
+    :d="d"
+    :mask="mask"
+    :itemprop="itemprop"
+    :fill="fill"
+    :fill-opacity="fill_opacity"
+    :stroke="stroke"
+    :stroke-opacity="stroke_opacity"
+    :stroke-width="stroke_width"
+    fill-rule="evenodd" />
+  <path
+    v-else-if="just_stroke"
+    :id="id"
+    ref="path"
+    :d="d"
+    fill="none"
+    :mask="mask"
+    :itemprop="itemprop"
+    :stroke="stroke"
+    :stroke-opacity="stroke_opacity"
+    :stroke-width="stroke_width" />
+  <path
+    v-if="just_fill"
+    :id="id"
+    ref="path"
+    :d="d"
+    :mask="mask"
+    :itemprop="itemprop"
+    :fill="fill"
+    :fill-opacity="fill_opacity"
+    fill-rule="evenodd"
+    stroke="none" />
+</template>
+
 <style lang="stylus">
   path[itemprop]
     transition-duration: 0.66s

@@ -61,6 +61,7 @@
       })
   })
 </script>
+
 <template>
   <h1>Pure CSS Color Theming 🎨</h1>
   <div class="box-container">
@@ -97,6 +98,7 @@
     </div>
   </fieldset>
 </template>
+
 <style lang="stylus">
   :root {
     /*  Base Values  */

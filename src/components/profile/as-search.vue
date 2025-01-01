@@ -1,16 +1,3 @@
-<template>
-  <label for="search">
-    <input
-      id="search"
-      v-model="query"
-      type="search"
-      placeholder="Search phonebook"
-      autocomplete="off"
-      @focusout="view_friends_mode"
-      @focusin="search_mode" />
-    <icon name="search" />
-  </label>
-</template>
 <script>
   import icon from '@/components/icon'
   export default {
@@ -34,6 +21,21 @@
     }
   }
 </script>
+
+<template>
+  <label for="search">
+    <input
+      id="search"
+      v-model="query"
+      type="search"
+      placeholder="Search phonebook"
+      autocomplete="off"
+      @focusout="view_friends_mode"
+      @focusin="search_mode" />
+    <icon name="search" />
+  </label>
+</template>
+
 <style lang="stylus">
   label[for=search]
     position: relative

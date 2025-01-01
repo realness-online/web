@@ -1,19 +1,3 @@
-<template>
-  <section id="sign-on" class="page">
-    <header>
-      <profile-as-figure v-if="me" :person="me">
-        <p />
-        <!-- defeat the default slot -->
-      </profile-as-figure>
-      <logo-as-link />
-    </header>
-    <name-as-form v-if="nameless" @valid="new_person" />
-    <mobile-as-form v-else @signed-on="signed_on" />
-    <footer>
-      <button v-if="cleanable" @click="clean">Wipe</button>
-    </footer>
-  </section>
-</template>
 <script setup>
   import LogoAsLink from '@/components/logo-as-link'
   import ProfileAsFigure from '@/components/profile/as-figure'
@@ -40,7 +24,7 @@
     if (localStorage.me.length > 2) return true
     if (localStorage.length > 2) return true
     if (index_db_keys.value.length > 1) return true
-    else return false
+    return false
   })
   const clean = async () => {
     localStorage.clear()
@@ -65,6 +49,24 @@
     if (current_user.value && !valid) nameless.value = true
   })
 </script>
+
+<template>
+  <section id="sign-on" class="page">
+    <header>
+      <profile-as-figure v-if="me" :person="me">
+        <p />
+        <!-- defeat the default slot -->
+      </profile-as-figure>
+      <logo-as-link />
+    </header>
+    <name-as-form v-if="nameless" @valid="new_person" />
+    <mobile-as-form v-else @signed-on="signed_on" />
+    <footer>
+      <button v-if="cleanable" @click="clean">Wipe</button>
+    </footer>
+  </section>
+</template>
+
 <style lang="stylus">
   section#sign-on.page
     display: flex

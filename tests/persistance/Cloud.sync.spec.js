@@ -13,8 +13,8 @@ const offline_poster = read_mock_file('@@/html/poster-offline.html')
 const poster_html = read_mock_file('@@/html/poster.html')
 const person_html = read_mock_file('@@/html/person.html')
 const events_html = read_mock_file('@@/html/events.html')
-const {statements} = get_item(statements_html)
-const {events} = get_item(events_html)
+const { statements } = get_item(statements_html)
+const { events } = get_item(events_html)
 
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
@@ -105,7 +105,7 @@ describe('/persistance/Cloud.js', () => {
         get.mockImplementation(query => {
           if (query === 'sync:index') return index
           if (query === id) return Promise.resolve(person_html)
-          else return Promise.resolve()
+          return Promise.resolve()
         })
       })
       it('Gets all my relations', async () => {
@@ -130,7 +130,7 @@ describe('/persistance/Cloud.js', () => {
         MockDate.reset()
         get.mockImplementationOnce(query => {
           if (query === 'sync:index') return index
-          else return Promise.resolve(person_html)
+          return Promise.resolve(person_html)
         })
         await prune()
         expect(keys).toBeCalled()
@@ -395,7 +395,7 @@ describe('/persistance/Cloud.js', () => {
             if (itemid === '/+/posters/') return Promise.resolve(posters)
             else if (itemid === '/+/posters/559666932867')
               return Promise.resolve(offline_poster)
-            else return Promise.resolve([])
+            return Promise.resolve([])
           })
           await flushPromises()
           const save_poster_spy = vi

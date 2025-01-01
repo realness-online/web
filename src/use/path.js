@@ -6,7 +6,7 @@ export const change_by = 0.08
 export const is_path = path => {
   if (typeof path !== 'object') return false
   if (path instanceof SVGPathElement) return true
-  else return false
+  return false
 }
 
 export const itemprop_query = name => document.querySelector(`[itemprop="${name}"]`)
@@ -34,7 +34,7 @@ export const use = () => {
   const get_active_path = () => {
     let path = active_element().value
     if (!is_path(path)) {
-      const {href} = active_element().value
+      const { href } = active_element().value
       if (href) {
         const id = href.baseVal.slice(1)
         const symbol = document.getElementById(id)

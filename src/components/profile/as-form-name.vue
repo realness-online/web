@@ -1,3 +1,22 @@
+<script setup>
+  import { ref } from 'vue'
+  import { me } from '@/use/serverless'
+  import { use_me } from '@/use/people'
+  const emit = defineEmits(['valid'])
+  const { save, is_valid_name } = use_me()
+  const button = ref()
+  const save_me = async () => {
+    if (is_valid_name.value) {
+      await save()
+      emit('valid')
+    }
+  }
+  const modified_check = async () => {
+    if (is_valid_name.value) button.value.disabled = false
+    else button.value.disabled = true
+  }
+</script>
+
 <template>
   <form id="profile-name">
     <fieldset id="name">
@@ -22,24 +41,7 @@
     </menu>
   </form>
 </template>
-<script setup>
-  import { ref } from 'vue'
-  import { me } from '@/use/serverless'
-  import { use_me } from '@/use/people'
-  const emit = defineEmits(['valid'])
-  const { save, is_valid_name } = use_me()
-  const button = ref()
-  const save_me = async () => {
-    if (is_valid_name.value) {
-      await save()
-      emit('valid')
-    }
-  }
-  const modified_check = async () => {
-    if (is_valid_name.value) button.value.disabled = false
-    else button.value.disabled = true
-  }
-</script>
+
 <style lang="stylus">
   form#profile-name
     // animation-name: slide-in-left

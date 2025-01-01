@@ -6,12 +6,12 @@ const poster = get_item(poster_html)
 describe('@/use/vector', () => {
   describe('#use_poster', () => {
     describe('.viewbox', () => {
-      it("Returns the vector's viewbox", () => {
+      it('Returns the vector\'s viewbox', () => {
         const { viewbox } = use_poster({
           immediate: true,
           slice: false,
           itemid: poster.id,
-          poster: poster
+          poster
         })
         expect(viewbox.value).toBe('0 0 333 444')
       })

@@ -1,3 +1,19 @@
+<script setup>
+  import { as_query_id, as_fragment_id } from '@/use/itemid'
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true
+    }
+  })
+  const as_url = add => `url(${as_fragment_id(props.itemid)}-${add})`
+  const query = add => {
+    if (!props.itemid) return add
+    if (add) return `${as_query_id(props.itemid)}-${add}`
+    return as_query_id(props.itemid)
+  }
+</script>
+
 <template>
   <g class="masks">
     <mask
@@ -43,18 +59,3 @@
     </mask>
   </g>
 </template>
-<script setup>
-  import { as_query_id, as_fragment_id } from '@/use/itemid'
-  const props = defineProps({
-    itemid: {
-      type: String,
-      required: true
-    }
-  })
-  const as_url = add => `url(${as_fragment_id(props.itemid)}-${add})`
-  const query = add => {
-    if (!props.itemid) return add
-    if (add) return `${as_query_id(props.itemid)}-${add}`
-    else return as_query_id(props.itemid)
-  }
-</script>

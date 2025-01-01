@@ -1,8 +1,3 @@
-<template>
-  <a :href="content" :download="file_name" class="download" @click="download">
-    <icon name="download" />
-  </a>
-</template>
 <script>
   import { as_day_and_time } from '@/use/date'
   import hsl_to_hex from 'hsl-to-hex'
@@ -56,11 +51,18 @@
         const facts = `${time}.svg`
         if (creator?.first_name)
           return `${creator.first_name}_${creator.last_name}_${facts}`
-        else return facts
+        return facts
       }
     }
   }
 </script>
+
+<template>
+  <a :href="content" :download="file_name" class="download" @click="download">
+    <icon name="download" />
+  </a>
+</template>
+
 <style lang="stylus">
   a.download.working
     animation-name: working

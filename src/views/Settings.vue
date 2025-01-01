@@ -1,3 +1,17 @@
+<script setup>
+  import Preference from '@/components/preference'
+  import LogoAsLink from '@/components/logo-as-link'
+  import CallToAction from '@/components/call-to-action'
+  import NameAsForm from '@/components/profile/as-form-name'
+  import SignOn from '@/components/profile/sign-on'
+
+  import { current_user, sign_off } from '@/use/serverless'
+  import { get_file_system } from '@/use/file'
+  const set_posters_folder = async () => {
+    get_file_system()
+  }
+</script>
+
 <template>
   <section id="settings" class="page">
     <header>
@@ -97,19 +111,7 @@
     </menu>
   </section>
 </template>
-<script setup>
-  import Preference from '@/components/preference'
-  import LogoAsLink from '@/components/logo-as-link'
-  import CallToAction from '@/components/call-to-action'
-  import NameAsForm from '@/components/profile/as-form-name'
-  import SignOn from '@/components/profile/sign-on'
 
-  import { current_user, sign_off } from '@/use/serverless'
-  import { get_file_system } from '@/use/file'
-  const set_posters_folder = async () => {
-    get_file_system()
-  }
-</script>
 <style lang="stylus">
   section#settings
     h6

@@ -1,19 +1,3 @@
-<template>
-  <section class="as-days">
-    <header v-if="working"><icon name="working" /></header>
-    <article
-      v-for="[date, day] in filtered_days"
-      v-else
-      :key="date"
-      :class="{ today: is_today(date) }"
-      class="day">
-      <header v-if="!is_today(date)">
-        <h4>{{ as_day(date) }}</h4>
-      </header>
-      <slot v-for="item in day" :item="item" />
-    </article>
-  </section>
-</template>
 <script>
   import icon from '@/components/icon'
   import {
@@ -64,7 +48,7 @@
     computed: {
       filtered_days() {
         if (this.paginate) return [...this.days].slice(0, this.page * page_size)
-        else return this.days
+        return this.days
       },
       thoughts() {
         let thoughts = []
@@ -161,6 +145,24 @@
     }
   }
 </script>
+
+<template>
+  <section class="as-days">
+    <header v-if="working"><icon name="working" /></header>
+    <article
+      v-for="[date, day] in filtered_days"
+      v-else
+      :key="date"
+      :class="{ today: is_today(date) }"
+      class="day">
+      <header v-if="!is_today(date)">
+        <h4>{{ as_day(date) }}</h4>
+      </header>
+      <slot v-for="item in day" :item="item" />
+    </article>
+  </section>
+</template>
+
 <style lang="stylus">
   section.as-days
     padding: 0 base-line

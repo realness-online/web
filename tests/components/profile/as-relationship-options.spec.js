@@ -21,7 +21,7 @@ describe('@/compontent/profile/as-relationship-options.vue', () => {
   }
   beforeEach(() => {
     wrapper = shallowMount(as_options, {
-      props: { person: me, me: me, relations }
+      props: { person: me, me, relations }
     })
   })
   describe('Renders', () => {

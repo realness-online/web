@@ -12,6 +12,7 @@
     </p>
   </div>
 </template>
+
 <style lang="stylus">
   div.call.to.action
     max-width: base-line * 18rem

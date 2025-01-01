@@ -1,26 +1,3 @@
-<template>
-  <fieldset class="event">
-    <events-list ref="events" :events="events" :itemid="events_id()" />
-    <label for="day">{{ event_label }}</label>
-    <input
-      id="day"
-      ref="day"
-      type="date"
-      required
-      :value="event_day"
-      @input="update_date" />
-    <input
-      ref="time"
-      type="time"
-      required
-      :value="event_time"
-      @input="update_time" />
-    <menu>
-      <a @click="remove"><icon name="remove" /></a>
-      <a @click="save"><icon name="add" /></a>
-    </menu>
-  </fieldset>
-</template>
 <script>
   import icon from '@/components/icon'
   import { list } from '@/use/itemid'
@@ -127,6 +104,31 @@
     }
   }
 </script>
+
+<template>
+  <fieldset class="event">
+    <events-list ref="events" :events="events" :itemid="events_id()" />
+    <label for="day">{{ event_label }}</label>
+    <input
+      id="day"
+      ref="day"
+      type="date"
+      required
+      :value="event_day"
+      @input="update_date" />
+    <input
+      ref="time"
+      type="time"
+      required
+      :value="event_time"
+      @input="update_time" />
+    <menu>
+      <a @click="remove"><icon name="remove" /></a>
+      <a @click="save"><icon name="add" /></a>
+    </menu>
+  </fieldset>
+</template>
+
 <style lang="stylus">
   fieldset.event
     display: flex

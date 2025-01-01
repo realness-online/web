@@ -261,8 +261,8 @@ class Potrace {
    */
   #find_path(black_map, point) {
     const path = new Path()
-    let {x} = point
-    let {y} = point
+    let { x } = point
+    let { y } = point
     let dir_x = 0
     let dir_y = 1
 
@@ -291,7 +291,7 @@ class Potrace {
         y + (dir_y + dir_x - 1) / 2
       )
 
-      if (r && !l) {
+      if (r && !l) 
         if (
           this.#params.turnPolicy === Potrace.turn_policy.right ||
           (this.#params.turnPolicy === Potrace.turn_policy.black &&
@@ -307,7 +307,7 @@ class Potrace {
         } else {
           ;[dir_x, dir_y] = [dir_y, -dir_x]
         }
-      } else if (r) {
+       else if (r) {
         ;[dir_x, dir_y] = [-dir_y, dir_x]
       } else if (!l) {
         ;[dir_x, dir_y] = [dir_y, -dir_x]
@@ -324,15 +324,15 @@ class Potrace {
    */
   #xor_path(black_map, path) {
     let y1 = path.pt[0].y
-    const {len} = path
+    const { len } = path
 
     for (let i = 1; i < len; i++) {
-      const {x} = path.pt[i]
-      const {y} = path.pt[i]
+      const { x } = path.pt[i]
+      const { y } = path.pt[i]
 
       if (y !== y1) {
         const min_y = Math.min(y1, y)
-        const {max_x} = path
+        const { max_x } = path
 
         for (let j = x; j < max_x; j++) {
           const indx = black_map.point_to_index(j, min_y)
@@ -427,7 +427,7 @@ class Potrace {
    */
   #calc_lon = path => {
     const n = path.len
-    const {pt} = path
+    const { pt } = path
     let dir
     const pivk = []
     const nc = []
@@ -450,9 +450,9 @@ class Potrace {
     let d
     let k = 0
     for (i = n - 1; i >= 0; i--) {
-      if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) {
+      if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) 
         k = i + 1
-      }
+      
       nc[i] = k
     }
 
@@ -493,9 +493,8 @@ class Potrace {
         if (
           utils.xprod(constraint[0], cur) < 0 ||
           utils.xprod(constraint[1], cur) > 0
-        ) {
+        ) 
           break
-        }
 
         if (Math.abs(cur.x) <= 1 && Math.abs(cur.y) <= 1) {
         } else {
@@ -529,12 +528,11 @@ class Potrace {
 
         j = 10000000
 
-        if (b < 0) {
+        if (b < 0) 
           j = Math.floor(a / -b)
-        }
-        if (d > 0) {
+        
+        if (d > 0) 
           j = Math.min(j, Math.floor(-c / d))
-        }
 
         pivk[i] = utils.mod(k1 + j, n)
       }
@@ -543,15 +541,15 @@ class Potrace {
     j = pivk[n - 1]
     path.lon[n - 1] = j
     for (i = n - 2; i >= 0; i--) {
-      if (utils.cyclic(i + 1, pivk[i], j)) {
+      if (utils.cyclic(i + 1, pivk[i], j)) 
         j = pivk[i]
-      }
+      
       path.lon[i] = j
     }
 
-    for (i = n - 1; utils.cyclic(utils.mod(i + 1, n), j, path.lon[i]); i--) {
+    for (i = n - 1; utils.cyclic(utils.mod(i + 1, n), j, path.lon[i]); i--) 
       path.lon[i] = j
-    }
+    
   }
 
   /**
@@ -570,8 +568,8 @@ class Potrace {
   #best_polygon = path => {
     const penalty3 = (path, i, j) => {
       const n = path.len
-      const {pt} = path
-      const {sums} = path
+      const { pt } = path
+      const { sums } = path
       let x
       let y
       let xy
@@ -639,23 +637,22 @@ class Potrace {
 
     for (i = 0; i < n; i++) {
       c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
-      if (c == i) {
+      if (c == i) 
         c = utils.mod(i + 1, n)
-      }
-      if (c < i) {
+      
+      if (c < i) 
         clip0[i] = n
-      } else {
+       else 
         clip0[i] = c
-      }
+      
     }
 
     j = 1
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) 
       while (j <= clip0[i]) {
         clip1[j] = i
         j++
       }
-    }
 
     i = 0
     for (j = 0; i < n; j++) {
@@ -673,7 +670,7 @@ class Potrace {
     seg1[0] = 0
 
     pen[0] = 0
-    for (j = 1; j <= m; j++) {
+    for (j = 1; j <= m; j++) 
       for (i = seg1[j]; i <= seg0[j]; i++) {
         best = -1
         for (k = seg0[j - 1]; k >= clip1[i]; k--) {
@@ -685,7 +682,7 @@ class Potrace {
         }
         pen[i] = best
       }
-    }
+    
     path.m = m
     path.po = []
 
@@ -709,7 +706,7 @@ class Potrace {
   #adjust_vertices = path => {
     const pointslope = (path, i, j, ctr, dir) => {
       const n = path.len
-      const {sums} = path
+      const { sums } = path
       let x
       let y
       let x2
@@ -775,12 +772,12 @@ class Potrace {
       if (l === 0) dir.x = dir.y = 0
     }
 
-    const {m} = path
-    const {po} = path
+    const { m } = path
+    const { po } = path
     const n = path.len
-    const {pt} = path
-    const {x0} = path
-    const {y0} = path
+    const { pt } = path
+    const { x0 } = path
+    const { y0 } = path
     const ctr = []
     const dir = []
     const q = []
@@ -805,21 +802,19 @@ class Potrace {
     for (i = 0; i < m; i++) {
       q[i] = new Quad()
       d = dir[i].x * dir[i].x + dir[i].y * dir[i].y
-      if (d === 0.0) {
-        for (j = 0; j < 3; j++) {
-          for (k = 0; k < 3; k++) {
+      if (d === 0.0) 
+        for (j = 0; j < 3; j++) 
+          for (k = 0; k < 3; k++) 
             q[i].data[j * 3 + k] = 0
-          }
-        }
-      } else {
+        
+       else {
         v[0] = dir[i].y
         v[1] = -dir[i].x
         v[2] = -v[1] * ctr[i].y - v[0] * ctr[i].x
-        for (l = 0; l < 3; l++) {
-          for (k = 0; k < 3; k++) {
+        for (l = 0; l < 3; l++) 
+          for (k = 0; k < 3; k++) 
             q[i].data[l * 3 + k] = (v[l] * v[k]) / d
-          }
-        }
+        
       }
     }
 
@@ -842,11 +837,9 @@ class Potrace {
 
       j = utils.mod(i - 1, m)
 
-      for (l = 0; l < 3; l++) {
-        for (k = 0; k < 3; k++) {
+      for (l = 0; l < 3; l++) 
+        for (k = 0; k < 3; k++) 
           Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
-        }
-      }
 
       while (1) {
         det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
@@ -866,11 +859,10 @@ class Potrace {
         }
         d = v[0] * v[0] + v[1] * v[1]
         v[2] = -v[1] * s.y - v[0] * s.x
-        for (l = 0; l < 3; l++) {
-          for (k = 0; k < 3; k++) {
+        for (l = 0; l < 3; l++) 
+          for (k = 0; k < 3; k++) 
             Q.data[l * 3 + k] += (v[l] * v[k]) / d
-          }
-        }
+        
       }
       dx = Math.abs(w.x - s.x)
       dy = Math.abs(w.y - s.y)
@@ -883,7 +875,7 @@ class Potrace {
       xmin = s.x
       ymin = s.y
 
-      if (Q.at(0, 0) !== 0.0) {
+      if (Q.at(0, 0) !== 0.0) 
         for (z = 0; z < 2; z++) {
           w.y = s.y - 0.5 + z
           w.x = -(Q.at(0, 1) * w.y + Q.at(0, 2)) / Q.at(0, 0)
@@ -895,9 +887,8 @@ class Potrace {
             ymin = w.y
           }
         }
-      }
 
-      if (Q.at(1, 1) !== 0.0) {
+      if (Q.at(1, 1) !== 0.0) 
         for (z = 0; z < 2; z++) {
           w.x = s.x - 0.5 + z
           w.y = -(Q.at(1, 0) * w.x + Q.at(1, 2)) / Q.at(1, 1)
@@ -909,9 +900,8 @@ class Potrace {
             ymin = w.y
           }
         }
-      }
 
-      for (l = 0; l < 2; l++) {
+      for (l = 0; l < 2; l++) 
         for (k = 0; k < 2; k++) {
           w.x = s.x - 0.5 + l
           w.y = s.y - 0.5 + k
@@ -922,7 +912,6 @@ class Potrace {
             ymin = w.y
           }
         }
-      }
 
       path.curve.vertex[i] = new Point(xmin + x0, ymin + y0)
     }
@@ -937,7 +926,7 @@ class Potrace {
    * Reverses the direction of the path by swapping its vertices
    */
   #reverse = path => {
-    const {curve} = path
+    const { curve } = path
     const m = curve.n
     const v = curve.vertex
     let i
@@ -964,7 +953,7 @@ class Potrace {
    */
   #smooth = path => {
     const m = path.curve.n
-    const {curve} = path
+    const { curve } = path
 
     let i
     let j
@@ -988,9 +977,9 @@ class Potrace {
         dd = Math.abs(dd)
         alpha = dd > 1 ? 1 - 1.0 / dd : 0
         alpha = alpha / 0.75
-      } else {
+      } else 
         alpha = 4 / 3.0
-      }
+      
       curve.alpha0[j] = alpha
 
       if (alpha >= this.#params.alphaMax) {
@@ -998,11 +987,11 @@ class Potrace {
         curve.c[3 * j + 1] = curve.vertex[j]
         curve.c[3 * j + 2] = p4
       } else {
-        if (alpha < 0.55) {
+        if (alpha < 0.55) 
           alpha = 0.55
-        } else if (alpha > 1) {
+         else if (alpha > 1) 
           alpha = 1
-        }
+        
         p2 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[i], curve.vertex[j])
         p3 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[k], curve.vertex[j])
         curve.tag[j] = 'CURVE'
@@ -1029,7 +1018,7 @@ class Potrace {
    * 3. Reconstructing the optimized curve
    */
   #opti_curve = path => {
-    const {curve} = path
+    const { curve } = path
     const m = curve.n
     const vert = curve.vertex
     const pt = []
@@ -1052,8 +1041,8 @@ class Potrace {
     const convc = []
     const areac = []
 
-    for (i = 0; i < m; i++) {
-      if (curve.tag[i] == 'CURVE') {
+    for (i = 0; i < m; i++) 
+      if (curve.tag[i] == 'CURVE') 
         convc[i] = utils.sign(
           utils.dpara(
             vert[utils.mod(i - 1, m)],
@@ -1061,10 +1050,8 @@ class Potrace {
             vert[utils.mod(i + 1, m)]
           )
         )
-      } else {
+       else 
         convc[i] = 0
-      }
-    }
 
     area = 0.0
     areac[0] = 0.0
@@ -1103,9 +1090,9 @@ class Potrace {
           convc,
           areac
         )
-        if (r) {
+        if (r) 
           break
-        }
+        
         if (
           len[j] > len[i] + 1 ||
           (len[j] == len[i] + 1 && pen[j] > pen[i] + o.pen)
@@ -1181,8 +1168,8 @@ class Potrace {
    */
   #opti_penalty(path, i, j, res, opttolerance, convc, areac) {
     const m = path.curve.n
-    const {curve} = path
-    const {vertex} = curve
+    const { curve } = path
+    const { vertex } = curve
     let k
     let k1
     let k2
@@ -1207,37 +1194,36 @@ class Potrace {
     let s
     let t
 
-    if (i == j) {
+    if (i == j) 
       return 1
-    }
 
     k = i
     i1 = utils.mod(i + 1, m)
     k1 = utils.mod(k + 1, m)
     conv = convc[k1]
-    if (conv === 0) {
+    if (conv === 0) 
       return 1
-    }
+    
     d = utils.ddist(vertex[i], vertex[i1])
     for (k = k1; k != j; k = k1) {
       k1 = utils.mod(k + 1, m)
       k2 = utils.mod(k + 2, m)
-      if (convc[k1] != conv) {
+      if (convc[k1] != conv) 
         return 1
-      }
+      
       if (
         utils.sign(
           utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
         ) != conv
-      ) {
+      ) 
         return 1
-      }
+      
       if (
         utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
         d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
-      ) {
+      ) 
         return 1
-      }
+      
     }
 
     p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
@@ -1255,17 +1241,15 @@ class Potrace {
 
     A4 = A1 + A3 - A2
 
-    if (A2 == A1) {
+    if (A2 == A1) 
       return 1
-    }
 
     t = A3 / (A3 - A4)
     s = A2 / (A2 - A1)
     A = (A2 * t) / 2.0
 
-    if (A === 0.0) {
+    if (A === 0.0) 
       return 1
-    }
 
     R = area / A
     alpha = 2 - Math.sqrt(4 - R / 0.3)
@@ -1284,38 +1268,38 @@ class Potrace {
     for (k = utils.mod(i + 1, m); k != j; k = k1) {
       k1 = utils.mod(k + 1, m)
       t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
-      if (t < -0.5) {
+      if (t < -0.5) 
         return 1
-      }
+      
       pt = utils.bezier(t, p0, p1, p2, p3)
       d = utils.ddist(vertex[k], vertex[k1])
-      if (d === 0.0) {
+      if (d === 0.0) 
         return 1
-      }
+      
       d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
-      if (Math.abs(d1) > opttolerance) {
+      if (Math.abs(d1) > opttolerance) 
         return 1
-      }
+      
       if (
         utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
         utils.iprod(vertex[k1], vertex[k], pt) < 0
-      ) {
+      ) 
         return 1
-      }
+      
       res.pen += d1 * d1
     }
 
     for (k = i; k != j; k = k1) {
       k1 = utils.mod(k + 1, m)
       t = utils.tangent(p0, p1, p2, p3, curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-      if (t < -0.5) {
+      if (t < -0.5) 
         return 1
-      }
+      
       pt = utils.bezier(t, p0, p1, p2, p3)
       d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-      if (d === 0.0) {
+      if (d === 0.0) 
         return 1
-      }
+      
       d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
       d2 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
       d2 *= 0.75 * curve.alpha[k1]
@@ -1323,9 +1307,9 @@ class Potrace {
         d1 = -d1
         d2 = -d2
       }
-      if (d1 < d2 - opttolerance) {
+      if (d1 < d2 - opttolerance) 
         return 1
-      }
+      
       if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
     }
 
@@ -1354,15 +1338,14 @@ class Potrace {
       this.#best_polygon(path)
       this.#adjust_vertices(path)
 
-      if (path.sign === '-') {
+      if (path.sign === '-') 
         this.#reverse(path)
-      }
 
       this.#smooth(path)
 
-      if (this.#params.optCurve) {
+      if (this.#params.optCurve) 
         this.#opti_curve(path)
-      }
+      
     }
   }
 
@@ -1386,7 +1369,7 @@ class Potrace {
       Potrace.supported_turn_policy_values.indexOf(params.turnPolicy) === -1
     ) {
       const goodVals =
-        `'${  Potrace.supported_turn_policy_values.join("', '")  }'`
+        `'${  Potrace.supported_turn_policy_values.join('\', \'')  }'`
 
       throw new Error(`Bad turnPolicy value. Allowed values are: ${  goodVals}`)
     }
@@ -1395,24 +1378,22 @@ class Potrace {
       params &&
       params.threshold != null &&
       params.threshold !== Potrace.THRESHOLD_AUTO
-    ) {
+    ) 
       if (
         typeof params.threshold !== 'number' ||
         !utils.between(params.threshold, 0, 255)
-      ) {
+      ) 
         throw new Error(
           'Bad threshold value. Expected to be an integer in range 0..255'
         )
-      }
-    }
 
     if (
       params &&
       params.optCurve != null &&
       typeof params.optCurve !== 'boolean'
-    ) {
-      throw new Error("'optCurve' must be Boolean")
-    }
+    ) 
+      throw new Error('\'optCurve\' must be Boolean')
+    
   }
 
   /**
@@ -1469,7 +1450,7 @@ class Potrace {
   #set_parameters(newParams) {
     this.#validate_parameters(newParams)
 
-    for (const key in this.#params) {
+    for (const key in this.#params) 
       if (this.#params.hasOwnProperty(key) && newParams.hasOwnProperty(key)) {
         const tmpOldVal = this.#params[key]
         this.#params[key] = newParams[key]
@@ -1477,20 +1458,18 @@ class Potrace {
         if (
           tmpOldVal !== this.#params[key] &&
           ['color', 'background'].indexOf(key) === -1
-        ) {
+        ) 
           this.#processed = false
-        }
+        
       }
-    }
 
     if (
       this.#params.steps &&
       !Array.isArray(this.#params.steps) &&
       (!utils.is_number(this.#params.steps) ||
         !utils.between(this.#params.steps, 1, 255))
-    ) {
-      throw new Error("Bad 'steps' value")
-    }
+    ) 
+      throw new Error('Bad \'steps\' value')
 
     this.#calculated_threshold = null
   }
@@ -1510,13 +1489,11 @@ class Potrace {
   get_path_tag(fillColor) {
     fillColor = arguments.length === 0 ? this.#params.color : fillColor
 
-    if (fillColor === Potrace.COLOR_AUTO) {
+    if (fillColor === Potrace.COLOR_AUTO) 
       fillColor = this.#params.blackOnWhite ? 'black' : 'white'
-    }
 
-    if (!this.#image_loaded) {
+    if (!this.#image_loaded) 
       throw new Error('Image should be loaded first')
-    }
 
     if (!this.#processed) {
       this.#bitmap_to_pathlist()
@@ -1550,13 +1527,11 @@ class Potrace {
   get_path_data(fillColor) {
     fillColor = arguments.length === 0 ? this.#params.color : fillColor
 
-    if (fillColor === Potrace.COLOR_AUTO) {
+    if (fillColor === Potrace.COLOR_AUTO) 
       fillColor = this.#params.blackOnWhite ? 'black' : 'white'
-    }
 
-    if (!this.#image_loaded) {
+    if (!this.#image_loaded) 
       throw new Error('Image should be loaded first')
-    }
 
     if (!this.#processed) {
       this.#bitmap_to_pathlist()
@@ -1585,7 +1560,7 @@ class Potrace {
    * 3. Calculating appropriate color intensity for the new stop
    */
   #add_extra_color_stop(ranges) {
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
     const lastColorStop = ranges[ranges.length - 1]
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
     const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
@@ -1595,7 +1570,7 @@ class Potrace {
       lastColorStop.colorIntensity !== 1
     ) {
       const histogram = this.#get_image_histogram()
-      const {levels} = histogram.get_stats(lastRangeFrom, lastRangeTo)
+      const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
 
       const newColorStop =
         levels.mean + levels.stdDev <= 25
@@ -1633,7 +1608,7 @@ class Potrace {
    * 4. Ensures proper spacing between colors
    */
   #calc_color_intensity(colorStops) {
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
     const colorSelectionStrat = this.#params.fillStrategy
     const histogram =
       colorSelectionStrat !== Potrace.FILL_SPREAD
@@ -1657,12 +1632,11 @@ class Potrace {
       const stats = histogram.get_stats(rangeStart, rangeEnd)
       let color = -1
 
-      if (stats.pixels === 0) {
+      if (stats.pixels === 0) 
         return {
           value: threshold,
           colorIntensity: 0
         }
-      }
 
       switch (colorSelectionStrat) {
         case Potrace.FILL_SPREAD:
@@ -1690,7 +1664,7 @@ class Potrace {
       }
 
       // We don't want colors to be too close to each other, so we introduce some spacing in between
-      if (index !== 0) {
+      if (index !== 0) 
         color = blackOnWhite
           ? utils.clamp(
               color,
@@ -1702,7 +1676,6 @@ class Potrace {
               rangeStart + Math.round(intervalSize * 0.1),
               rangeEnd
             )
-      }
 
       return {
         value: threshold,
@@ -1741,11 +1714,10 @@ class Potrace {
   #get_ranges() {
     const steps = this.#param_steps()
 
-    if (!Array.isArray(steps)) {
+    if (!Array.isArray(steps)) 
       return this.#params.rangeDistribution === Potrace.RANGES_AUTO
         ? this.#get_ranges_auto()
         : this.#get_ranges_equally_distributed()
-    }
 
     let colorStops = []
     const threshold = this.#param_threshold()
@@ -1756,22 +1728,20 @@ class Potrace {
         colorStops.push(item)
     })
 
-    if (!colorStops.length) {
+    if (!colorStops.length) 
       colorStops.push(threshold)
-    }
 
     colorStops = colorStops.sort((a, b) =>
       a < b === lookingForDarkPixels ? 1 : -1
     )
 
-    if (lookingForDarkPixels && colorStops[0] < threshold) {
+    if (lookingForDarkPixels && colorStops[0] < threshold) 
       colorStops.unshift(threshold)
-    } else if (
+     else if (
       !lookingForDarkPixels &&
       colorStops[colorStops.length - 1] < threshold
-    ) {
+    ) 
       colorStops.push(threshold)
-    }
 
     return this.#calc_color_intensity(colorStops)
   }
@@ -1791,25 +1761,24 @@ class Potrace {
     const steps = this.#param_steps(true)
     let colorStops
 
-    if (this.#params.threshold === Potrace.THRESHOLD_AUTO) {
+    if (this.#params.threshold === Potrace.THRESHOLD_AUTO) 
       colorStops = histogram.multilevel_thresholding(steps)
-    } else {
+     else {
       const threshold = this.#param_threshold()
 
       colorStops = this.#params.blackOnWhite
         ? histogram.multilevel_thresholding(steps - 1, 0, threshold)
         : histogram.multilevel_thresholding(steps - 1, threshold, 255)
 
-      if (this.#params.blackOnWhite) {
+      if (this.#params.blackOnWhite) 
         colorStops.push(threshold)
-      } else {
+       else 
         colorStops.unshift(threshold)
-      }
+      
     }
 
-    if (this.#params.blackOnWhite) {
+    if (this.#params.blackOnWhite) 
       colorStops = colorStops.reverse()
-    }
 
     return this.#calc_color_intensity(colorStops)
   }
@@ -1825,7 +1794,7 @@ class Potrace {
    * 3. Computing color intensities for each range
    */
   #get_ranges_equally_distributed() {
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
     const colorsToThreshold = blackOnWhite
       ? this.#param_threshold()
       : 255 - this.#param_threshold()
@@ -1860,20 +1829,18 @@ class Potrace {
    * 4. Adjusting steps based on available colors
    */
   #param_steps(count) {
-    const {steps} = this.#params
+    const { steps } = this.#params
 
-    if (Array.isArray(steps)) {
+    if (Array.isArray(steps)) 
       return count ? steps.length : steps
-    }
 
     if (
       steps === Potrace.STEPS_AUTO &&
       this.#params.threshold === Potrace.THRESHOLD_AUTO
-    ) {
+    ) 
       return 4
-    }
 
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
     const colorsCount = blackOnWhite
       ? this.#param_threshold()
       : 255 - this.#param_threshold()
@@ -1897,9 +1864,8 @@ class Potrace {
    * 4. Defaulting to 128 if calculation fails
    */
   #param_threshold() {
-    if (this.#calculated_threshold !== null) {
+    if (this.#calculated_threshold !== null) 
       return this.#calculated_threshold
-    }
 
     if (this.#params.threshold !== Potrace.THRESHOLD_AUTO) {
       this.#calculated_threshold = this.#params.threshold
@@ -1929,11 +1895,10 @@ class Potrace {
    */
   #path_tags(noFillColor) {
     let ranges = this.#get_ranges()
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
 
-    if (ranges.length >= 10) {
+    if (ranges.length >= 10) 
       ranges = this.#add_extra_color_stop(ranges)
-    }
 
     this.#set_parameters({ blackOnWhite })
 
@@ -1942,9 +1907,8 @@ class Potrace {
     return ranges.map(colorStop => {
       const thisLayerOpacity = colorStop.colorIntensity
 
-      if (thisLayerOpacity === 0) {
+      if (thisLayerOpacity === 0) 
         return ''
-      }
 
       let calculatedOpacity =
         !actualPrevLayersOpacity || thisLayerOpacity === 1
@@ -1997,7 +1961,7 @@ class Potrace {
    */
   as_curves() {
     const ranges = this.#get_ranges()
-    const {blackOnWhite} = this.#params
+    const { blackOnWhite } = this.#params
 
     this.#set_parameters({ blackOnWhite })
 
@@ -2044,8 +2008,8 @@ class Potrace {
    */
   create_paths(image_data) {
     this.#load_image(image_data)
-    const {width} = this.#luminance_data
-    const {height} = this.#luminance_data
+    const { width } = this.#luminance_data
+    const { height } = this.#luminance_data
     const dark = !this.#params.black_on_white
     const paths = this.as_curves()
     return { width, height, dark, paths }

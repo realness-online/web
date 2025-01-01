@@ -27,7 +27,7 @@ describe('@/views/Navigation.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     describe('first_name', () => {
-      it("Returns 'You' by default", async () => {
+      it('Returns \'You\' by default', async () => {
         vi.spyOn(itemid, 'load').mockImplementationOnce(() => null)
         wrapper = await shallowMount(Navigation, {
           global: {

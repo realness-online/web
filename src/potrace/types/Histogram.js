@@ -42,15 +42,15 @@ class Histogram {
   pixels = 0
 
   constructor(image_source, mode) {
-    if (typeof image_source === 'number') {
+    if (typeof image_source === 'number') 
       this.#create_array(image_source)
-    } else if (image_source instanceof Bitmap) {
+     else if (image_source instanceof Bitmap) 
       this.#collect_values_bitmap(image_source)
-    } else if (image_source instanceof ImageData) {
+     else if (image_source instanceof ImageData) 
       this.#collect_values_image_data(image_source, mode)
-    } else {
+     else 
       throw new Error('Unsupported image source')
-    }
+    
   }
 
   /**
@@ -80,10 +80,10 @@ class Histogram {
   #collect_values_image_data(source, mode) {
     const pixel_data = source.data
     const data = this.#create_array(source.width * source.height)
-    const {width} = source
-    const {height} = source
+    const { width } = source
+    const { height } = source
 
-    for (let y = 0; y < height; y++) {
+    for (let y = 0; y < height; y++) 
       for (let x = 0; x < width; x++) {
         const idx = (y * width + x) * 4
         const val =
@@ -101,7 +101,7 @@ class Histogram {
 
         data[val]++
       }
-    }
+    
   }
 
   /**
@@ -128,18 +128,15 @@ class Histogram {
   get_sorted_indexes(refresh) {
     if (!refresh && this.sorted_indexes) return this.sorted_indexes
 
-    const {data} = this
-    const {indexes} = Histogram.SHARED_ARRAYS
+    const { data } = this
+    const { indexes } = Histogram.SHARED_ARRAYS
 
     // Traditional for loop is faster than forEach
-    for (let i = 0; i < COLOR_DEPTH; i++) {
+    for (let i = 0; i < COLOR_DEPTH; i++) 
       indexes[i] = i
-    }
 
     // Use regular function for better performance in sort
-    indexes.sort(function (a, b) {
-      return data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0
-    })
+    indexes.sort((a, b) => data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0)
 
     this.sorted_indexes = indexes.slice() // Create a copy to preserve the shared array
     return this.sorted_indexes
@@ -177,19 +174,17 @@ class Histogram {
       s[idx + 1] = s[idx] + (i + 1) * tmp
     }
 
-    for (let i = 2; i < COLOR_DEPTH; i++) {
+    for (let i = 2; i < COLOR_DEPTH; i++) 
       for (let j = i + 1; j < COLOR_DEPTH; j++) {
         p[index(i, j)] = p[index(1, j)] - p[index(1, i - 1)]
         s[index(i, j)] = s[index(1, j)] - s[index(1, i - 1)]
       }
-    }
 
-    for (let i = 1; i < COLOR_DEPTH; ++i) {
+    for (let i = 1; i < COLOR_DEPTH; ++i) 
       for (let j = i + 1; j < COLOR_DEPTH; j++) {
         const idx = index(i, j)
         h[idx] = p[idx] !== 0 ? (s[idx] * s[idx]) / p[idx] : 0
       }
-    }
 
     this.lookup_table_h = h.slice() // Create a copy to preserve the shared array
     return this.lookup_table_h
@@ -211,9 +206,8 @@ class Histogram {
     amount = Math.min(level_max - level_min - 2, ~~amount)
 
     if (amount < 1) return []
-    if (!this.lookup_table_h) {
+    if (!this.lookup_table_h) 
       this.thresholding_build_lookup_table()
-    }
 
     const stack = [
       {
@@ -237,7 +231,7 @@ class Histogram {
           prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
         indexes[depth] = i
 
-        if (depth + 1 < amount) {
+        if (depth + 1 < amount) 
           stack.push({
             starting_point: i,
             prev_variance: variance,
@@ -246,7 +240,7 @@ class Histogram {
             max_sig: current.max_sig,
             color_stops: current.color_stops
           })
-        } else {
+         else {
           const total_variance =
             variance + this.lookup_table_h[index(i + 1, level_max)]
           if (total_variance > best_result.max_sig) {
@@ -289,16 +283,14 @@ class Histogram {
     let dominant_value = -1
     let tmp
 
-    if (level_min === level_max) {
+    if (level_min === level_max) 
       return colors[level_min] ? level_min : -1
-    }
 
     for (let i = level_min; i <= level_max; i++) {
       tmp = 0
 
-      for (let j = ~~(tolerance / -2); j < tolerance; j++) {
+      for (let j = ~~(tolerance / -2); j < tolerance; j++) 
         tmp += utils.between(i + j, 0, COLOR_RANGE_END) ? colors[i + j] : 0
-      }
 
       const summ_is_bigger = tmp > dominant_value
       const summ_equal_but_main_color_is_bigger =
@@ -333,7 +325,7 @@ class Histogram {
     if (!refresh && this.cached_stats[`${level_min  }-${  level_max}`])
       return this.cached_stats[`${level_min  }-${  level_max}`]
 
-    const {data} = this
+    const { data } = this
     const sorted_indexes = this.get_sorted_indexes()
 
     let pixels_total = 0
@@ -355,9 +347,9 @@ class Histogram {
 
       unique_values += data[i] === 0 ? 0 : 1
 
-      if (most_pixels_per_level < data[i]) {
+      if (most_pixels_per_level < data[i]) 
         most_pixels_per_level = data[i]
-      }
+      
     }
 
     mean_value = all_pixel_values_combined / pixels_total
@@ -429,9 +421,8 @@ const normalize_min_max = (level_min, level_max) => {
       ? utils.clamp(Math.round(level_max), 0, COLOR_RANGE_END)
       : COLOR_RANGE_END
 
-  if (level_min > level_max) {
+  if (level_min > level_max) 
     throw new Error(`Invalid range "${level_min}...${level_max}"`)
-  }
 
   return [level_min, level_max]
 }

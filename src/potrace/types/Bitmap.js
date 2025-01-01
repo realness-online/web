@@ -86,9 +86,8 @@ class Bitmap {
     if (
       !utils.between(_x, 0, this.width) ||
       !utils.between(_y, 0, this.height)
-    ) {
+    ) 
       return -1
-    }
 
     return this.width * _y + _x
   }
@@ -102,9 +101,8 @@ class Bitmap {
     const bm = new Bitmap(this.width, this.height)
     const iterator_present = typeof iterator === 'function'
 
-    for (let i = 0; i < this.size; i++) {
+    for (let i = 0; i < this.size; i++) 
       bm.data[i] = iterator_present ? iterator(this.data[i], i) : this.data[i]
-    }
 
     return bm
   }

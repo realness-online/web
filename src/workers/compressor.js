@@ -33,7 +33,7 @@ const decompress_data = message => {
 }
 
 export const route_message = async message => {
-  const {route} = message.data
+  const { route } = message.data
   let reply = {}
 
   switch (route) {

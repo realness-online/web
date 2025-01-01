@@ -1,21 +1,3 @@
-<template>
-  <section id="editor" class="page">
-    <header v-if="menu" ref="header">
-      <a @click="back"><icon name="remove" /></a>
-      <a @click="save"><icon name="finished" /></a>
-    </header>
-    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
-    <as-grid v-if="grid" :itemid="itemid" />
-    <as-animation v-if="animation" :itemid="itemid" />
-    <footer v-if="!is_fullscreen || !menu" hidden>
-      <menu>
-        <icon :class="{ selected: color }" name="edit-color" />
-        <icon :class="{ selected: grid }" name="grid" />
-        <icon :class="{ selected: animation }" name="animation" />
-      </menu>
-    </footer>
-  </section>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import AsFill from '@/components/posters/as-figure-fill'
@@ -44,19 +26,19 @@
   }
   const color = computed(() => {
     if (stroke.value || fill.value) return true
-    else return false
+    return false
   })
 
   const back = () => {
     const me = localStorage.me.substring(2)
-    const {id} = route.params
+    const { id } = route.params
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
       router.replace({ path: '/' })
-    } else {
+    } else 
       router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
-    }
+    
   }
   const save = async () => {
     await new Poster(itemid).save()
@@ -92,6 +74,26 @@
     just_poster()
   })
 </script>
+
+<template>
+  <section id="editor" class="page">
+    <header v-if="menu" ref="header">
+      <a @click="back"><icon name="remove" /></a>
+      <a @click="save"><icon name="finished" /></a>
+    </header>
+    <as-fill v-if="fill || stroke" :itemid="itemid" @toggle="toggle_stroke" />
+    <as-grid v-if="grid" :itemid="itemid" />
+    <as-animation v-if="animation" :itemid="itemid" />
+    <footer v-if="!is_fullscreen || !menu" hidden>
+      <menu>
+        <icon :class="{ selected: color }" name="edit-color" />
+        <icon :class="{ selected: grid }" name="grid" />
+        <icon :class="{ selected: animation }" name="animation" />
+      </menu>
+    </footer>
+  </section>
+</template>
+
 <style lang="stylus">
   section#editor
     & > header

@@ -1,12 +1,3 @@
-<template>
-  <a
-    class="status"
-    :class="{ relation: is_relation }"
-    @click="update_relationship">
-    <icon name="add" />
-    <icon name="finished" />
-  </a>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import { use_me } from '@/use/people'
@@ -31,6 +22,17 @@
     await new Relations().save()
   }
 </script>
+
+<template>
+  <a
+    class="status"
+    :class="{ relation: is_relation }"
+    @click="update_relationship">
+    <icon name="add" />
+    <icon name="finished" />
+  </a>
+</template>
+
 <style lang="stylus">
   figure.profile > figcaption > menu > a.status
     svg

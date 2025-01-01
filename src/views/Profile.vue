@@ -1,32 +1,3 @@
-<template>
-  <section id="profile" class="page">
-    <header>
-      <icon name="nothing" />
-      <logo-as-link />
-    </header>
-    <div>
-      <as-avatar v-if="person && person.avatar" :itemid="person.avatar" />
-      <menu v-if="person && person.avatar">
-        <as-download v-if="person.avatar" :itemid="person.avatar" />
-        <as-messenger :itemid="person.id" />
-      </menu>
-    </div>
-    <as-figure v-if="person" :person="person" />
-    <as-days v-slot="items" :posters="posters" :statements="statements">
-      <template v-for="item in items">
-        <poster-as-figure
-          v-if="item.type === 'posters'"
-          :key="slot_key(item.id)"
-          :itemid="item.id" />
-        <thought-as-article
-          v-else
-          :key="slot_key(item)"
-          :statements="item"
-          @show="thought_shown" />
-      </template>
-    </as-days>
-  </section>
-</template>
 <script setup>
   import AsDays from '@/components/as-days'
   import LogoAsLink from '@/components/logo-as-link'
@@ -62,6 +33,37 @@
     console.info('views:Profile', id)
   })
 </script>
+
+<template>
+  <section id="profile" class="page">
+    <header>
+      <icon name="nothing" />
+      <logo-as-link />
+    </header>
+    <div>
+      <as-avatar v-if="person && person.avatar" :itemid="person.avatar" />
+      <menu v-if="person && person.avatar">
+        <as-download v-if="person.avatar" :itemid="person.avatar" />
+        <as-messenger :itemid="person.id" />
+      </menu>
+    </div>
+    <as-figure v-if="person" :person="person" />
+    <as-days v-slot="items" :posters="posters" :statements="statements">
+      <template v-for="item in items">
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :key="slot_key(item.id)"
+          :itemid="item.id" />
+        <thought-as-article
+          v-else
+          :key="slot_key(item)"
+          :statements="item"
+          @show="thought_shown" />
+      </template>
+    </as-days>
+  </section>
+</template>
+
 <style lang="stylus">
   section#profile
     padding: 0

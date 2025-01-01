@@ -84,7 +84,7 @@ export const use = () => {
     })
     const is_friend = friends.some(relation => {
       if (relation.id === id) return true
-      else return false
+      return false
     })
     return !is_friend
   }
@@ -156,9 +156,9 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items) {
+    for (const created_at of offline_posters.items) 
       await save_poster(created_at)
-    }
+    
   }
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)
@@ -218,7 +218,7 @@ export const use = () => {
         has_more: true,
         archives: archive_batches
       })
-    } else {
+    } else 
       // If under threshold, just update with sorted items
       await set(directory_path, {
         ...offline_posters,
@@ -226,7 +226,7 @@ export const use = () => {
         has_more: false,
         archives: []
       })
-    }
+    
   }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
@@ -262,9 +262,9 @@ export const fresh_metadata = async itemid => {
     // console.info('request:metadata', itemid)
     network = await metadata(path)
   } catch (e) {
-    if (e.code === 'storage/object-not-found') {
+    if (e.code === 'storage/object-not-found') 
       network = does_not_exist
-    } else throw e
+     else throw e
   }
   if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
   index[itemid] = network
@@ -276,9 +276,9 @@ export function visit_interval() {
 }
 export const i_am_fresh = () => {
   let synced
-  if (localStorage.sync_time) {
+  if (localStorage.sync_time) 
     synced = Date.now() - new Date(localStorage.sync_time).getTime()
-  } else {
+   else {
     localStorage.sync_time = new Date().toISOString()
     synced = eight_hours
   }

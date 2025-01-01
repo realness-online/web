@@ -1,32 +1,3 @@
-<template>
-  <article class="thought" :class="all" @click="click">
-    <header v-if="author">
-      <router-link :to="author.id" tabindex="-1">
-        <as-avatar v-if="author.avatar" :itemid="author.avatar" class="icon" />
-        <icon v-else name="silhouette" />
-      </router-link>
-      <address>
-        <span>{{ author.first_name }}</span>
-        <span>{{ author.last_name }}</span>
-        <time>{{ thought_starts_at }}</time>
-      </address>
-      <menu>
-        <as-messenger :itemid="author.id" />
-      </menu>
-    </header>
-    <header v-else>
-      <time>{{ thought_starts_at }}</time>
-    </header>
-    <as-statement
-      v-for="statement in statements"
-      :key="statement.id"
-      itemprop="statements"
-      :statement="statement"
-      :editable="editable"
-      @focused="has_focus"
-      @blurred="has_blurred" />
-  </article>
-</template>
 <script>
   import { load, as_author, as_created_at } from '@/use/itemid'
   import { as_time } from '@/use/date'
@@ -108,14 +79,45 @@
       has_blurred(statement) {
         this.focused = false
         setTimeout(() => {
-          if (!this.focused) {
+          if (!this.focused) 
             this.$emit('blurred', statement)
-          }
+          
         }, 750)
       }
     }
   }
 </script>
+
+<template>
+  <article class="thought" :class="all" @click="click">
+    <header v-if="author">
+      <router-link :to="author.id" tabindex="-1">
+        <as-avatar v-if="author.avatar" :itemid="author.avatar" class="icon" />
+        <icon v-else name="silhouette" />
+      </router-link>
+      <address>
+        <span>{{ author.first_name }}</span>
+        <span>{{ author.last_name }}</span>
+        <time>{{ thought_starts_at }}</time>
+      </address>
+      <menu>
+        <as-messenger :itemid="author.id" />
+      </menu>
+    </header>
+    <header v-else>
+      <time>{{ thought_starts_at }}</time>
+    </header>
+    <as-statement
+      v-for="statement in statements"
+      :key="statement.id"
+      itemprop="statements"
+      :statement="statement"
+      :editable="editable"
+      @focused="has_focus"
+      @blurred="has_blurred" />
+  </article>
+</template>
+
 <style lang="stylus">
   article.thought
     & > header

@@ -7,7 +7,7 @@ import * as sorting from '@/use/sorting'
 const statements_html = read_mock_file('@@/html/statements.html')
 const poster_html = read_mock_file('@@/html/poster.html')
 const poster = get_item(poster_html)
-const {statements} = get_item(statements_html)
+const { statements } = get_item(statements_html)
 describe('@/components/as-days', () => {
   let wrapper
   beforeEach(() => {
@@ -50,9 +50,9 @@ describe('@/components/as-days', () => {
       it('Increases the number of visible days', () => {
         expect(wrapper.vm.page).toBe(1)
         wrapper.vm.days = new Set()
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 6; i++) 
           wrapper.vm.days.add([])
-        }
+        
         wrapper.vm.check_intersection([{ isIntersecting: true }])
         expect(wrapper.vm.page).toBe(2)
       })

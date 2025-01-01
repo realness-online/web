@@ -1,3 +1,17 @@
+<script setup>
+  import { as_fragment_id, as_query_id } from '@/use/itemid'
+  import { is_vector } from '@/use/vector'
+  const props = defineProps({
+    vector: {
+      type: Object,
+      required: true,
+      validator: is_vector
+    }
+  })
+  const query = add => `${as_query_id(props.vector.id)}-${add}`
+  const fragment = add => `${as_fragment_id(props.vector.id)}-${add}`
+</script>
+
 <template>
   <defs class="texture example">
     <pattern
@@ -113,19 +127,7 @@
   </defs>
   <rect :filter="`url(${fragment('composite')})`" width="100%" height="100%" />
 </template>
-<script setup>
-  import { as_fragment_id, as_query_id } from '@/use/itemid'
-  import { is_vector } from '@/use/vector'
-  const props = defineProps({
-    vector: {
-      type: Object,
-      required: true,
-      validator: is_vector
-    }
-  })
-  const query = add => `${as_query_id(props.vector.id)}-${add}`
-  const fragment = add => `${as_fragment_id(props.vector.id)}-${add}`
-</script>
+
 <style lang="stylus">
   svg[itemtype="/posters"] use.emboss
     pointer-events: none

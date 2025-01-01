@@ -1,3 +1,18 @@
+<script setup>
+  import AsDays from '@/components/as-days'
+  import EventsList from '@/components/events/as-list'
+  import UnsyncedPoster from '@/components/posters/as-svg'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+  import AsAddress from '@/components/profile/as-address'
+  import { use as use_sync } from '@/use/sync'
+  import { use as use_statements } from '@/use/statements'
+  import { use_me, get_my_itemid } from '@/use/people'
+  defineEmits(['active'])
+  const { me } = use_me()
+  const { my_statements: my_editable_statements } = use_statements()
+  const { events, sync_element: sync, sync_poster } = use_sync()
+</script>
+
 <template>
   <aside ref="sync" hidden>
     <as-address v-if="me" :person="me" />
@@ -23,18 +38,3 @@
       :itemid="sync_poster.id" />
   </aside>
 </template>
-
-<script setup>
-  import AsDays from '@/components/as-days'
-  import EventsList from '@/components/events/as-list'
-  import UnsyncedPoster from '@/components/posters/as-svg'
-  import ThoughtAsArticle from '@/components/statements/as-article'
-  import AsAddress from '@/components/profile/as-address'
-  import { use as use_sync } from '@/use/sync'
-  import { use as use_statements } from '@/use/statements'
-  import { use_me, get_my_itemid } from '@/use/people'
-  defineEmits(['active'])
-  const { me } = use_me()
-  const { my_statements: my_editable_statements } = use_statements()
-  const { events, sync_element: sync, sync_poster } = use_sync()
-</script>

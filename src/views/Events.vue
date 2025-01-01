@@ -1,22 +1,3 @@
-<template>
-  <section id="events" class="page">
-    <header>
-      <logo-as-link />
-      <icon name="nothing" />
-    </header>
-    <h1>Events</h1>
-    <icon v-show="working" name="working" />
-    <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
-      <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
-    </as-days>
-    <footer>
-      <p class="message">
-        You create events from
-        <router-link to="/posters">Posters</router-link>
-      </p>
-    </footer>
-  </section>
-</template>
 <script>
   import { list } from '@/use/itemid'
   import { recent_item_first } from '@/use/sorting'
@@ -64,6 +45,27 @@
     }
   }
 </script>
+
+<template>
+  <section id="events" class="page">
+    <header>
+      <logo-as-link />
+      <icon name="nothing" />
+    </header>
+    <h1>Events</h1>
+    <icon v-show="working" name="working" />
+    <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
+      <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
+    </as-days>
+    <footer>
+      <p class="message">
+        You create events from
+        <router-link to="/posters">Posters</router-link>
+      </p>
+    </footer>
+  </section>
+</template>
+
 <style lang="stylus">
   section#events
     & > header > svg

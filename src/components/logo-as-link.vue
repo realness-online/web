@@ -1,14 +1,16 @@
-<template>
-  <router-link id="logo" to="/" tabindex="-1">
-    <icon name="realness" />
-  </router-link>
-</template>
 <script>
   import icon from '@/components/icon'
   export default {
     components: { icon }
   }
 </script>
+
+<template>
+  <router-link id="logo" to="/" tabindex="-1">
+    <icon name="realness" />
+  </router-link>
+</template>
+
 <style lang="stylus">
   svg.realness:active
     outline: 1px double currentColor

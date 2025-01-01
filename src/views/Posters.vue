@@ -1,33 +1,3 @@
-<template>
-  <section id="posters" class="page">
-    <header>
-      <a v-if="can_add" tabindex="-1" @click="select_photo">
-        <icon name="add" />
-      </a>
-      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
-      <logo-as-link tabindex="-1" />
-    </header>
-    <h1>Posters</h1>
-    <icon v-if="working" name="working" />
-    <article v-else>
-      <as-figure
-        v-for="poster in posters"
-        :key="poster.id"
-        :itemid="poster.id"
-        :class="{ 'selecting-event': poster.picker }"
-        @click="() => toggle_menu(poster.id)">
-        <as-author-menu
-          :poster="poster"
-          @remove="remove_poster"
-          @picker="() => picker(poster.id)" />
-      </as-figure>
-    </article>
-  </section>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
@@ -77,6 +47,38 @@
     console.info('views:/posters')
   })
 </script>
+
+<template>
+  <section id="posters" class="page">
+    <header>
+      <a v-if="can_add" tabindex="-1" @click="select_photo">
+        <icon name="add" />
+      </a>
+      <input
+        ref="image_picker"
+        v-vectorizer
+        type="file"
+        accept="image/jpeg,image/png" />
+      <logo-as-link tabindex="-1" />
+    </header>
+    <h1>Posters</h1>
+    <icon v-if="working" name="working" />
+    <article v-else>
+      <as-figure
+        v-for="poster in posters"
+        :key="poster.id"
+        :itemid="poster.id"
+        :class="{ 'selecting-event': poster.picker }"
+        @click="() => toggle_menu(poster.id)">
+        <as-author-menu
+          :poster="poster"
+          @remove="remove_poster"
+          @picker="() => picker(poster.id)" />
+      </as-figure>
+    </article>
+  </section>
+</template>
+
 <style lang="stylus">
   section#posters
     svg, a

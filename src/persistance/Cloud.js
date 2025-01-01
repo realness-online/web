@@ -28,14 +28,13 @@ export const Cloud = superclass =>
 
         const response = await upload(path, data, metadata)
 
-        if (response && response.status !== 304) {
+        if (response && response.status !== 304) 
           await set(`etag:${this.id}`, metadata.customMetadata.ETag)
-        }
 
         return response
-      } else if (current_user.value || localStorage.me) {
+      } else if (current_user.value || localStorage.me) 
         await sync_later(this.id, 'save')
-      }
+      
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)
@@ -50,9 +49,9 @@ export const Cloud = superclass =>
         const path = as_filename(this.id)
         await remove(path)
         await del(`etag:${this.id}`)
-      } else {
+      } else 
         await sync_later(this.id, 'delete')
-      }
+      
       if (super.delete) await super.delete()
     }
   }

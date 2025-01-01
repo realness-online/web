@@ -1,24 +1,3 @@
-<template>
-  <figure class="profile">
-    <as-svg
-      v-if="person.avatar"
-      :itemid="person.avatar"
-      :tabable="editable"
-      @click="avatar_click" />
-    <icon v-else name="silhouette" @click="avatar_click" />
-    <figcaption>
-      <as-address :key="person.id" :person="person" :editable="editable" />
-      <menu>
-        <slot v-if="!is_me">
-          <profile-as-meta :people="relations" />
-          <as-relationship-options :person="person" />
-          <as-messenger :itemid="person.id" />
-        </slot>
-        <slot v-else />
-      </menu>
-    </figcaption>
-  </figure>
-</template>
 <script setup>
   import Icon from '@/components/icon'
   import ProfileAsMeta from '@/components/profile/as-meta'
@@ -46,13 +25,36 @@
 
   const is_me = computed(() => {
     if (localStorage.me === props.person.id) return true
-    else return false
+    return false
   })
   const avatar_click = () => {
     const route = { path: props.person.id }
     router.push(route)
   }
 </script>
+
+<template>
+  <figure class="profile">
+    <as-svg
+      v-if="person.avatar"
+      :itemid="person.avatar"
+      :tabable="editable"
+      @click="avatar_click" />
+    <icon v-else name="silhouette" @click="avatar_click" />
+    <figcaption>
+      <as-address :key="person.id" :person="person" :editable="editable" />
+      <menu>
+        <slot v-if="!is_me">
+          <profile-as-meta :people="relations" />
+          <as-relationship-options :person="person" />
+          <as-messenger :itemid="person.id" />
+        </slot>
+        <slot v-else />
+      </menu>
+    </figcaption>
+  </figure>
+</template>
+
 <style lang="stylus">
   figure.profile
     white-space: nowrap
