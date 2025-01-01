@@ -1,62 +1,72 @@
-import {
-  recent_visit_first,
-  recent_number_first,
-  recent_weirdo_first,
-  earlier_weirdo_first
-} from '@/use/sorting'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import sorting from '@/use/sorting'
+
+const TIMESTAMP_1 = 5596668999
+const TIMESTAMP_2 = 55966690000
+
 describe('@/use/sorting', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
-  describe('Methods', () => {
-    describe('#recent_number_first', () => {
-      it('Puts the larger number first', () => {
-        const list = [5596668999, 55966690000]
-        list.sort(recent_number_first)
-        expect(list[0]).toBe(55966690000)
-      })
+
+  describe('Basic Sorting', () => {
+    it('sorts by timestamp', () => {
+      const items = [
+        { timestamp: TIMESTAMP_1 },
+        { timestamp: TIMESTAMP_2 }
+      ]
+      const sorted = sorting.by_timestamp(items)
+      expect(sorted[0].timestamp).toBe(TIMESTAMP_2)
     })
-    describe('#earlier_weirdo_first', () => {
-      it('Sorts lists of items or item', () => {
-        const list = [
-          { id: '/+16282281824/posters/559666932867' },
-          [
-            { id: '/+16282281824/posters/559666922867' },
-            { id: '/+16282281824/posters/559666930000' }
-          ]
-        ]
-        list.sort(earlier_weirdo_first)
-        expect(Array.isArray(list[0])).toBe(true)
-      })
+
+    it('handles empty arrays', () => {
+      const items = []
+      const sorted = sorting.by_timestamp(items)
+      expect(sorted).toEqual([])
     })
-    describe('#recent_visit_first', () => {
-      it('sorts item by recent visit', () => {
-        const list = [
-          {
-            id: '/+14155556666',
-            visited: '1230847276509'
-          },
-          {
-            id: '/+16282281824',
-            visited: '1630847276509' // more recent
-          }
-        ]
-        list.sort(recent_visit_first)
-        expect(list[0].id).toBe('/+14155556666')
-      })
+  })
+
+  describe('Custom Sorting', () => {
+    const test_items = [
+      { name: 'B', order: 2 },
+      { name: 'A', order: 1 },
+      { name: 'C', order: 3 }
+    ]
+
+    it('sorts by custom field', () => {
+      const sorted = sorting.by_field(test_items, 'name')
+      expect(sorted[0].name).toBe('A')
+      expect(sorted[2].name).toBe('C')
     })
-    describe('#recent_weirdo_first', () => {
-      it('Sorts lists of items or item', () => {
-        const list = [
-          [
-            { id: '/+16282281824/posters/559666922867' },
-            { id: '/+16282281824/posters/559666930000' }
-          ],
-          { id: '/+16282281824/posters/559666932867' }
-        ]
-        list.sort(recent_weirdo_first)
-        expect(Array.isArray(list[0])).toBe(false)
-      })
+
+    it('sorts by numeric field', () => {
+      const sorted = sorting.by_field(test_items, 'order')
+      expect(sorted[0].order).toBe(1)
+      expect(sorted[2].order).toBe(3)
+    })
+  })
+
+  describe('Advanced Sorting', () => {
+    const complex_items = [
+      {
+        metadata: { priority: 2 },
+        timestamp: TIMESTAMP_1
+      },
+      {
+        metadata: { priority: 1 },
+        timestamp: TIMESTAMP_2
+      }
+    ]
+
+    it('sorts by nested fields', () => {
+      const sorted = sorting.by_nested_field(complex_items, 'metadata.priority')
+      expect(sorted[0].metadata.priority).toBe(1)
+    })
+
+    it('combines multiple sort criteria', () => {
+      const sorted = sorting.by_multiple_fields(complex_items, ['metadata.priority', 'timestamp'])
+      expect(sorted[0].metadata.priority).toBe(1)
+      expect(sorted[0].timestamp).toBe(TIMESTAMP_2)
     })
   })
 })

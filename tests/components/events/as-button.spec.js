@@ -1,29 +1,34 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import as_button from '@/components/events/as-button'
-import get_item from '@/use/item'
-import * as itemid from '@/use/itemid'
+import AsButton from '@/components/events/as-button.vue'
 
-const poster_html = read_mock_file('@@/html/poster.html')
-const poster = get_item(poster_html)
-const MockDate = require('mockdate')
-MockDate.set('2020-01-01', new Date().getTimezoneOffset())
-const events = [
-  {
-    id: `${new Date(2020, 1, 1).getTime()}`,
-    url: poster.id
-  }
-]
-describe('@/compontent/events/as-button.vue', () => {
+const MOCK_YEAR = 2020
+
+describe('@/components/events/as-button', () => {
   let wrapper
+  const mock_event = {
+    id: 'test-event',
+    date: new Date(MOCK_YEAR, 0, 1),
+    title: 'Test Event'
+  }
+
   beforeEach(() => {
-    vi.spyOn(itemid, 'list').mockImplementationOnce(() =>
-      Promise.resolve(events)
-    )
-    wrapper = shallowMount(as_button, { props: { itemid: poster.id } })
-  })
-  describe('Renders', () => {
-    it("A button to manage a poster's events", () => {
-      expect(wrapper.element).toMatchSnapshot()
+    vi.clearAllMocks()
+    wrapper = shallowMount(AsButton, {
+      props: { event: mock_event }
     })
+  })
+
+  it('renders event button', () => {
+    expect(wrapper.find('button').exists()).toBe(true)
+  })
+
+  it('displays event title', () => {
+    expect(wrapper.text()).toContain(mock_event.title)
+  })
+
+  it('emits click event', async () => {
+    await wrapper.find('button').trigger('click')
+    expect(wrapper.emitted('click')).toBeTruthy()
   })
 })

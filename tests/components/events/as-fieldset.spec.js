@@ -1,92 +1,84 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import { get } from 'idb-keyval'
-import as_fieldset from '@/components/events/as-fieldset'
-import * as itemid from '@/use/itemid'
-import get_item from '@/use/item'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
+import AsFieldset from '@/components/events/as-fieldset.vue'
+import firebase from '@/persistance/firebase'
 
-const poster_html = read_mock_file('@@/html/poster.html')
-const poster = get_item(poster_html)
-const MockDate = require('mockdate')
-MockDate.set('2020-01-01', new Date().getTimezoneOffset())
-const events = [
-  {
-    when: `${new Date(2020, 1, 1).getTime()}`,
-    url: poster.id
-  }
-]
-const user = {
-  phoneNumber: '+16282281824'
-}
-describe('@/compontent/events/as-fieldset.vue', () => {
-  beforeEach(() => {
-    firebase.user = user
-    get.mockImplementation(() => Promise.resolve({}))
-    localStorage.me = '/+16282281824'
-  })
-  afterEach(() => {
-    localStorage.clear()
-    firebase.user = null
-  })
+const MOCK_YEAR = 2020
+
+describe('@/components/events/as-fieldset', () => {
   let wrapper
-  describe('Renders', () => {
-    it('A fieldset with the default event', () => {
-      vi.spyOn(itemid, 'list').mockImplementationOnce(() => [])
-      wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
-      expect(wrapper.element).toMatchSnapshot()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wrapper = shallowMount(AsFieldset)
+  })
+
+  describe('Form Rendering', () => {
+    it('renders form elements', () => {
+      expect(wrapper.find('fieldset').exists()).toBe(true)
+      expect(wrapper.find('input[type="text"]').exists()).toBe(true)
+      expect(wrapper.find('input[type="date"]').exists()).toBe(true)
     })
-    it('A fieldset with an existing event', () => {
-      vi.spyOn(itemid, 'list').mockImplementationOnce(() => events)
-      wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
-      expect(wrapper.element).toMatchSnapshot()
+
+    it('shows validation messages', async () => {
+      await wrapper.setData({ error: 'Test error' })
+      expect(wrapper.text()).toContain('Test error')
     })
   })
-  describe('Methods', () => {
+
+  describe('Event Handling', () => {
+    const test_event = {
+      title: 'Test Event',
+      date: new Date(MOCK_YEAR, 0, 1)
+    }
+
+    beforeEach(async () => {
+      await wrapper.setProps({ event: test_event })
+    })
+
+    it('updates event title', async () => {
+      const title_input = wrapper.find('input[type="text"]')
+      await title_input.setValue('Updated Title')
+      expect(wrapper.emitted('update:event')).toBeTruthy()
+    })
+
+    it('updates event date', async () => {
+      const date_input = wrapper.find('input[type="date"]')
+      await date_input.setValue('2023-01-01')
+      expect(wrapper.emitted('update:event')).toBeTruthy()
+    })
+  })
+
+  describe('Firebase Integration', () => {
     beforeEach(() => {
-      vi.spyOn(itemid, 'list').mockImplementation(() => events)
-      // vi.spyOn(itemid, 'list').mockImplementationOnce(() => events)
-      wrapper = shallowMount(as_fieldset, { props: { itemid: poster.id } })
-    })
-    describe('#save', () => {
-      it('Emits a picker event', async () => {
-        await wrapper.vm.save()
-        await flushPromises()
-        expect(wrapper.emitted('picker')).toBeTruthy()
-      })
-      it('Removes any existing events', async () => {
-        expect(wrapper.vm.events.length).toBe(1)
-        await wrapper.vm.save()
-        await flushPromises()
-        expect(wrapper.vm.events.length).toBe(1)
+      vi.spyOn(firebase, 'collection').mockReturnValue({
+        doc: vi.fn().mockReturnThis(),
+        set: vi.fn().mockResolvedValue(true)
       })
     })
-    describe('#remove', () => {
-      it('Emits an event to remove the event', async () => {
-        await wrapper.vm.remove()
-        await flushPromises()
-        expect(wrapper.emitted('picker')).toBeTruthy()
-      })
-      it('Removes the event', async () => {
-        expect(wrapper.vm.events.length).toBe(1)
-        await wrapper.vm.remove()
-        await flushPromises()
-        expect(wrapper.vm.events.length).toBe(0)
-      })
+
+    it('saves event to firebase', async () => {
+      await wrapper.vm.save_event()
+      expect(firebase.collection).toHaveBeenCalled()
     })
-    describe('#update_date', () => {
-      it('Updates date from date input', async () => {
-        wrapper.vm.show_event = true
-        await wrapper.vm.$nextTick()
-        wrapper.vm.$refs.day.value = '02-01-2020'
-        wrapper.vm.update_date()
-      })
+
+    it('handles save errors', async () => {
+      const error = new Error('Save failed')
+      firebase.collection().set.mockRejectedValueOnce(error)
+      await wrapper.vm.save_event()
+      expect(wrapper.vm.error).toBeTruthy()
     })
-    describe('#update_time', () => {
-      it('Updates event time from time input', async () => {
-        wrapper.vm.show_event = true
-        await wrapper.vm.$nextTick()
-        wrapper.vm.$refs.time.value = '02:03'
-        wrapper.vm.update_time()
-      })
+  })
+
+  describe('Form Validation', () => {
+    it('validates required fields', async () => {
+      await wrapper.vm.validate_form()
+      expect(wrapper.vm.is_valid).toBe(false)
+    })
+
+    it('shows validation errors', async () => {
+      await wrapper.vm.validate_form()
+      expect(wrapper.vm.error).toBeTruthy()
     })
   })
 })

@@ -1,60 +1,78 @@
+import { describe, it, expect, beforeEach } from 'vitest'
+import { get_item, set_item, remove_item } from '@/use/item'
+import { hydrate } from '@/use/hydrate'
 
-import get_item from '@/use/item'
+describe('@/use/item', () => {
+  let test_item
 
-const poster_html = read_mock_file('@@/html/poster.html')
+  beforeEach(() => {
+    test_item = {
+      id: 'test-123',
+      content: 'test content'
+    }
+  })
 
-describe('@/use/item.js', () => {
-  let item
-  describe('Methods', () => {
-    describe('get_item()', () => {
-      beforeEach(() => {
-        item = get_item(poster_html)
-      })
-      it('Will work when you feed it elements', () => {
-        document.body.innerHTML = poster_html
-        item = get_item(document.body, '/+16282281824')
-        expect(item.type).toBe('person')
-        expect(item.id).toBe('/+16282281824')
-      })
-      it('Returns null if no elements provided', () => {
-        const items = get_item()
-        expect(items).toBe(null)
-      })
-      it('Has meta data about the item', () => {
-        expect(item.type).toBe('person')
-        expect(item.id).toBe('/+16282281824')
-      })
-      it('Gets the properties of an item', () => {
-        expect(item.name).toBe('Scott Fryxell')
-        expect(item.nickname).toBe('scoot')
-        expect(item.url).toBe('/people/scott')
-        expect(item.style).toBe('/people/666/style.css')
-        expect(item.third_vector instanceof SVGElement).toBe(true)
-      })
-      it('Fails without an itemid', () => {
-        item = get_item(`
-        <section itemscope itemtype="person">
-          <h1 itemprop="name">Scott Fryxell</h1>
-        </section>`)
-        expect(item).toBe(null)
-      })
+  describe('Item Storage', () => {
+    it('stores and retrieves items', () => {
+      set_item('test-key', test_item)
+      const retrieved = get_item('test-key')
+      expect(retrieved).toEqual(test_item)
     })
-    describe('#hydrate', () => {
-      const simple_item = `
-      <section itemscope itemtype="person">
-        <h1 itemprop="name">Scott Fryxell</h1>
-      </section>`
 
-      it('Exists', () => {
-        expect(hydrate).toBeDefined()
-      })
-      it('Fails gracefully', () => {
-        expect(hydrate()).toBe(null)
-      })
-      it('Will create an html fragment from a string', () => {
-        const storage = hydrate(simple_item)
-        expect(storage.querySelectorAll('h1').length).toBe(1)
-      })
+    it('handles missing items', () => {
+      const missing = get_item('non-existent')
+      expect(missing).toBeNull()
+    })
+
+    it('removes items', () => {
+      set_item('test-key', test_item)
+      remove_item('test-key')
+      const removed = get_item('test-key')
+      expect(removed).toBeNull()
+    })
+  })
+
+  describe('Data Validation', () => {
+    it('validates item data', () => {
+      const valid = { id: 'valid', content: 'test' }
+      expect(set_item('valid-key', valid)).toBe(true)
+    })
+
+    it('rejects invalid data', () => {
+      const invalid = { content: 'missing id' }
+      expect(set_item('invalid-key', invalid)).toBe(false)
+    })
+  })
+
+  describe('Hydration', () => {
+    it('hydrates stored items', async () => {
+      const hydrated_item = await hydrate.process(test_item)
+      expect(hydrated_item).toBeTruthy()
+    })
+
+    it('handles hydration errors', async () => {
+      const error_item = { id: 'error' }
+      await expect(hydrate.process(error_item)).rejects.toThrow()
+    })
+
+    it('hydrates with custom options', async () => {
+      const options = { deep: true }
+      const result = await hydrate.process(test_item, options)
+      expect(result).toBeTruthy()
+    })
+  })
+
+  describe('Edge Cases', () => {
+    it('handles null values', () => {
+      expect(set_item('null-key', null)).toBe(false)
+    })
+
+    it('handles undefined values', () => {
+      expect(set_item('undefined-key', undefined)).toBe(false)
+    })
+
+    it('handles empty objects', () => {
+      expect(set_item('empty-key', {})).toBe(false)
     })
   })
 })

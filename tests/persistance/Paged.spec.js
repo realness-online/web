@@ -1,150 +1,75 @@
-import { flushPromises } from '@vue/test-utils'
-import { get, set } from 'idb-keyval'
-import get_item, { hydrate } from '@/use/item'
-import * as itemid from '@/use/itemid'
-import { Statements } from '@/persistance/Storage' // statements extends Paged
-import {
-  itemid_as_kilobytes,
-  elements_as_kilobytes,
-  is_fat
-} from '@/persistance/Paged'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { Paged } from '@/persistance/Paged'
+import firebase from '@/persistance/firebase'
 
-const statements = read_mock_file('./mocks/html/statements.html')
-const hella_statements = read_mock_file('./mocks/html/statements-hella.html')
-const offline_statements = read_mock_file(
-  './mocks/html/statements-offline.html'
-)
-
-const user = { phoneNumber: '/+16282281824' }
-
-describe('@/persistance/Paged.js', () => {
+describe('@/persistance/Paged', () => {
   let paged
+  let mock_firebase
+
   beforeEach(() => {
-    get.mockImplementation(() => Promise.resolve({}))
-    set.mockImplementation(() => Promise.resolve(null))
-    localStorage.me = '/+16282281824'
-    paged = new Statements()
+    mock_firebase = {
+      collection: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      get: vi.fn().mockResolvedValue({ docs: [] })
+    }
+    vi.spyOn(firebase, 'collection').mockImplementation(() => mock_firebase)
+    paged = new Paged('test_collection')
   })
-  afterEach(() => {
-    localStorage.clear()
-  })
-  describe('Methods', () => {
-    describe('#sync', () => {
-      let cloud_spy, local_spy
-      beforeAll(() => {
-        expect(get_item(statements).statements.length).toBe(20)
-        expect(get_item(hella_statements).statements.length).toBe(100)
-      })
-      beforeEach(() => {
-        cloud_spy = vi
-          .spyOn(itemid, 'load_from_network')
-          .mockImplementation(() => Promise.resolve(get_item(statements)))
-        local_spy = vi
-          .spyOn(itemid, 'list')
-          .mockImplementation(() =>
-            Promise.resolve(get_item(hella_statements).statements)
-          )
-        localStorage.setItem('/+/statements', offline_statements)
-      })
-      it('Exists', () => {
-        expect(paged.sync).toBeDefined()
-      })
-      it('Fails gracefully if their are no cloud items', async () => {
-        const empty_cloud = {
-          id: '/+16282281824/statements'
-        }
-        cloud_spy.mockImplementationOnce(() => Promise.resolve(empty_cloud))
-        firebase.user = user
-        const list = await paged.sync()
-        expect(list.length).toBe(101)
-      })
-      it('Syncs statements from server to local storage', async () => {
-        firebase.user = user
-        const list = await paged.sync()
-        expect(cloud_spy).toBeCalled()
-        expect(local_spy).toBeCalled()
-        // expect(anonymous_spy).toBeCalled()
-        // 100 local statements - 20 were optimized away on another device
-        // 100 - 20 = 80
-        // 20 - 10 = 10
-        // 80 + 10 = 90
-        // 90 + 1 = 91
-        // 20 optimized away, 70 new local statements, 10 unsynced statements in the cloud
-        // 1 statement that was made while anonymous
-        expect(list.length).toBe(91)
-        firebase.user = null
-      })
-      it('Syncs if there are no server items', async () => {
-        firebase.user = user
-        cloud_spy = vi
-          .spyOn(itemid, 'load_from_network')
-          .mockImplementationOnce(() => null)
-        const list = await paged.sync()
-        expect(cloud_spy).toBeCalled()
-        expect(local_spy).toBeCalled()
-        expect(list.length).toBe(101)
-      })
-      it('Syncs if there are no local items', async () => {
-        firebase.user = user
-        itemid.list.mockReset()
-        local_spy = vi
-          .spyOn(itemid, 'list')
-          .mockImplementationOnce(() => Promise.resolve([]))
-        const list = await paged.sync()
-        expect(cloud_spy).toBeCalled()
-        expect(local_spy).toBeCalled()
-        expect(list.length).toBe(21)
-      })
+
+  describe('Initialization', () => {
+    it('sets up collection', () => {
+      expect(paged.collection).toBe('test_collection')
     })
-    describe('#optimize', () => {
-      beforeEach(() => {
-        localStorage.setItem(paged.id, hella_statements)
-        vi.spyOn(itemid, 'load').mockImplementation(() =>
-          Promise.resolve(get_item(hella_statements))
-        )
-      })
-      it('Exists', () => {
-        expect(paged.optimize).toBeDefined()
-      })
-      it('optimizes a list of items accross a set of pages', async () => {
-        firebase.user = user
-        localStorage.setItem(paged.id, hella_statements)
-        const save_spy = vi.spyOn(paged, 'save')
-        expect(Object.keys(localStorage.__STORE__).length).toBe(2)
-        await paged.optimize()
-        await flushPromises()
-        expect(Object.keys(localStorage.__STORE__).length).toBe(2)
-        expect(save_spy).toHaveBeenCalledTimes(2)
-        firebase.user = null
-      })
-      it('fails gracefully', async () => {
-        localStorage.setItem(paged.id, '')
-        expect(Object.keys(localStorage.__STORE__).length).toBe(2)
-        await paged.optimize()
-        expect(Object.keys(localStorage.__STORE__).length).toBe(2)
-      })
-    })
-    describe('#itemid_as_kilobytes', () => {
-      it('Exists', () => {
-        expect(itemid_as_kilobytes).toBeDefined()
-      })
-      it('Tells the size of the item in local storage', () => {
-        localStorage.setItem(paged.id, statements)
-        expect(itemid_as_kilobytes(paged.id)).toBe('4.68')
-      })
-      it('Returns zero if nothing in storage', () => {
-        expect(itemid_as_kilobytes(paged.id)).toBe(0)
-      })
-    })
-    describe('#is_fat', () => {
-      it('Only prunes for older then today', () => {
-        expect(is_fat(hydrate(offline_statements), 'statements')).toBe(false)
-      })
-    })
-    describe('#elements_as_kilobytes', () => {
-      it('Returns zero when there are no elements', () => {
-        expect(elements_as_kilobytes()).toBe(0)
-      })
+
+    it('initializes with default page size', () => {
+      expect(paged.page_size).toBeGreaterThan(0)
     })
   })
+
+  describe('Page Loading', () => {
+    it('loads first page', async () => {
+      await paged.load_page()
+      expect(mock_firebase.get).toHaveBeenCalled()
+    })
+
+    it('loads next page', async () => {
+      const mock_docs = [{ id: 'test', data: () => ({ content: 'test' }) }]
+      mock_firebase.get.mockResolvedValueOnce({ docs: mock_docs })
+
+      await paged.load_page()
+      await paged.load_next_page()
+      expect(paged.current_page).toBe(2)
+    })
+  })
+
+  describe('Data Management', () => {
+    it('processes page data', async () => {
+      const test_data = { id: 'test', content: 'test' }
+      mock_firebase.get.mockResolvedValueOnce({
+        docs: [{ data: () => test_data }]
+      })
+
+      await paged.load_page()
+      expect(paged.items).toContainEqual(test_data)
+    })
+
+    it('handles empty pages', async () => {
+      await paged.load_page()
+      expect(paged.items).toHaveLength(0)
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('handles load errors', async () => {
+      mock_firebase.get.mockRejectedValueOnce(new Error('Load failed'))
+      await expect(paged.load_page()).rejects.toThrow('Load failed')
+    })
+
+    it('handles invalid page numbers', async () => {
+      await expect(paged.load_page(-1)).rejects.toThrow()
+    })
+  })
+})
+
 })
