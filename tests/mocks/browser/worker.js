@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 global.Worker = vi.fn(() => {
   return {
     addEventListener: vi.fn(),

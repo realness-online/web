@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 const mock_dir = {
   prefixes: [],
   items: [],

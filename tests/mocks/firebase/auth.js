@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 export const RecaptchaVerifier = class {
   verify() {
     // console.log('RecaptchaVerifier.verify');

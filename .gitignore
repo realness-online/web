@@ -21,9 +21,6 @@ firebase-debug.log
 .firebaserc
 
 /.vscode/
-/jsconfig.json
-/tsconfig.json
-
 
 # local env files
 .env.local
