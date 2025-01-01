@@ -45,7 +45,9 @@
     "storage:download": "node scripts/firebase_downloader.js",
     "storage:serve": "node scripts/start_storage_server.js",
     "storage:serve:stop": "nginx -s stop",
-    "storage:vectorize": "node scripts/vectorize_images.js"
+    "storage:vectorize": "node scripts/vectorize_images.js",
+    "storage:vectorize:admin": "node scripts/vectorize_images.js $VITE_ADMIN_ID",
+    "storage:vectorize:phone": "node scripts/vectorize_images.js"
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",

@@ -3,6 +3,13 @@ import { join, dirname } from 'path'
 import { createCanvas, loadImage } from 'canvas'
 import { JSDOM } from 'jsdom'
 import chalk from 'chalk'
+import { route as vector_route } from '@/workers/vector.js'
+import dotenv from 'dotenv'
+import { create_svg } from './lib/render_svg.js'
+
+// Load environment variables
+dotenv.config()
+const ADMIN_ID = process.env.VITE_ADMIN_ID
 
 // Set up minimal browser environment
 const dom = new JSDOM()
@@ -50,7 +57,18 @@ const process_image = async (image_path, phone_number) => {
     // TODO: Add vectorization and gradient generation
     // This is where we'll integrate the worker code
 
+    // Generate SVG
+    const svg = create_svg(poster)
+
+    // Save both JSON and SVG
+    const base_path = join(PEOPLE_DIR, phone_number, 'posters', `${timestamp}`)
+    await ensure_dir(dirname(base_path))
+
+    await writeFile(`${base_path}.json`, JSON.stringify(poster, null, 2))
+    await writeFile(`${base_path}.svg`, svg)
+
     console.log(chalk.green('✓ Processing successful'))
+    console.log(chalk.dim('Saved to: ') + base_path + '.{json,svg}')
     return true
   } catch (error) {
     console.error(chalk.red('Processing failed:'), error)
@@ -60,9 +78,14 @@ const process_image = async (image_path, phone_number) => {
 
 const main = async () => {
   try {
-    const phone_number = process.argv[2]
+    const phone_number = process.argv[2] || ADMIN_ID
+
     if (!phone_number) {
-      throw new Error('Please provide a phone number')
+      throw new Error('No phone number provided and VITE_ADMIN_ID not set in .env')
+    }
+
+    if (!/^\+\d{10,}$/.test(phone_number)) {
+      throw new Error('Phone number must be in format: +1234567890')
     }
 
     console.log(chalk.bold('Starting image vectorization'))
