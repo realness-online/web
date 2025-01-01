@@ -38,37 +38,51 @@ const process_directory = async (source_dir, output_dir) => {
       return
     }
 
+    let total_original = 0
+    let total_compressed = 0
+
     for (const file_path of html_files) {
       console.log(`\nProcessing file: ${file_path}`)
       try {
-        // Get relative path to maintain directory structure
         const rel_path = relative(source_dir, file_path)
         const output_path = join(output_dir, rel_path)
         const output_dir_path = dirname(output_path)
 
-        // Ensure output directory exists
         await ensure_dir(output_dir_path)
 
-        // Read and process file
         const content = await readFile(file_path, 'utf-8')
-        console.log('File content length:', content.length)
+        const original_size = content.length
+        total_original += original_size
 
         console.log('Preparing upload data...')
         const { data, metadata } = await prepare_upload_data(content, file_path)
+        const compressed_size = data.length
+        total_compressed += compressed_size
 
-        // Write compressed file and metadata
+        const compression_ratio = ((original_size - compressed_size) / original_size * 100).toFixed(1)
+
+        console.log(`File: ${rel_path}`)
+        console.log(`Original: ${original_size} bytes`)
+        console.log(`Compressed: ${compressed_size} bytes`)
+        console.log(`Reduction: ${compression_ratio}%`)
+
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
 
         await writeFile(compressed_path, data)
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
-        console.log('Successfully processed:', file_path)
-        console.log('Saved to:', compressed_path)
       } catch (file_error) {
         console.error(`Error processing file ${file_path}:`, file_error)
       }
     }
+
+    const total_ratio = ((total_original - total_compressed) / total_original * 100).toFixed(1)
+    console.log('\nCompression Summary:')
+    console.log(`Total original size: ${total_original} bytes`)
+    console.log(`Total compressed size: ${total_compressed} bytes`)
+    console.log(`Overall reduction: ${total_ratio}%`)
+
   } catch (error) {
     console.error('Error in process_directory:', error)
     throw error
