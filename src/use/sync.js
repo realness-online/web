@@ -171,7 +171,7 @@ export const use = () => {
   }
   const POSTERS_PER_DIRECTORY = 55 // Maximum posters in main directory
 
-  const sync_posters_directory = async (person_id) => {
+  const sync_posters_directory = async person_id => {
     const directory_path = `${person_id}/posters/`
     await del(directory_path) // Clear existing directory cache
 

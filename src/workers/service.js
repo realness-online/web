@@ -1,4 +1,3 @@
- 
 workbox.core.setCacheNameDetails({ prefix: 'Realness' })
 self.__precacheManifest = [].concat(self.__precacheManifest || [])
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
