@@ -91,7 +91,12 @@
     "workbox-window": "7.3.0"
   },
   "browserslist": [
-    "last 2 versions"
+    ">0.5%",
+    "not dead",
+    "not IE 11",
+    "not IE_Mob 11",
+    "not op_mini all",
+    "not ios_saf < 16"
   ],
   "license": "UNLICENSED"
 }
