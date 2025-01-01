@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/posters/as-background.vue > Renders > a new background for a poster without one 1`] = `
+<rect
+  height="100%"
+  itemprop="background"
+  tabindex="-1"
+  width="100%"
+/>
+`;

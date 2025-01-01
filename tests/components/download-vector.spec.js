@@ -2,7 +2,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import download_vector from '@/components/download-vector'
 import * as itemid from '@/use/itemid'
 import fs from 'fs'
-const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 const person = {
   id: '/+14151234356',

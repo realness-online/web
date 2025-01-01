@@ -5,10 +5,10 @@ import * as as_date from '@/use/date'
 import * as sorting from '@/use/sorting'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  '@@/html/statements.html',
   'utf8'
 )
-const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync('@@/html/poster.html', 'utf8')
 const poster = get_item(poster_html)
 const statements = get_item(statements_html).statements
 describe('@/components/as-days', () => {

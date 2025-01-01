@@ -5,7 +5,7 @@ import { get } from 'idb-keyval'
 import { flushPromises } from '@vue/test-utils'
 import fs from 'fs'
 const statements = {
-  outerHTML: fs.readFileSync('./__mocks__/html/statements.html', 'utf8')
+  outerHTML: fs.readFileSync('./mocks/html/statements.html', 'utf8')
 }
 const user = { phoneNumber: '/+16282281824' }
 describe.skip('@/persistance/Cloud.js', () => {

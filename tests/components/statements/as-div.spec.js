@@ -4,7 +4,7 @@ import get_item from '@/use/item'
 import { Statements } from '@/persistance/Storage'
 import fs from 'fs'
 const statements_as_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  './mocks/html/statements.html',
   'utf8'
 )
 describe('@/components/statements/as-div.vue', () => {

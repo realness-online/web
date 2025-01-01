@@ -10,13 +10,13 @@ import {
   is_fat
 } from '@/persistance/Paged'
 import fs from 'fs'
-const statements = fs.readFileSync('./__mocks__/html/statements.html', 'utf8')
+const statements = fs.readFileSync('@@/html/statements.html', 'utf8')
 const hella_statements = fs.readFileSync(
-  './__mocks__/html/statements-hella.html',
+  '@@/html/statements-hella.html',
   'utf8'
 )
 const offline_statements = fs.readFileSync(
-  './__mocks__/html/statements-offline.html',
+  '@@/html/statements-offline.html',
   'utf8'
 )
 const user = { phoneNumber: '/+16282281824' }
