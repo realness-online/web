@@ -29,7 +29,7 @@ export const Cloud = superclass =>
         const response = await upload(path, data, metadata)
 
         if (response && response.status !== 304)
-          await set(`etag:${this.id}`, metadata.customMetadata.ETag)
+          await set(`hash:${this.id}`, metadata.customMetadata.hash)
 
         return response
       } else if (current_user.value || localStorage.me)
@@ -47,7 +47,7 @@ export const Cloud = superclass =>
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
         await remove(path)
-        await del(`etag:${this.id}`)
+        await del(`hash:${this.id}`)
       } else await sync_later(this.id, 'delete')
 
       if (super.delete) await super.delete()

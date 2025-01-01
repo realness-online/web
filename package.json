@@ -37,7 +37,13 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "storage:compress": "node scripts/compress_files.js",
+    "storage:upload": "node scripts/upload_compressed.js",
+    "storage:process-all": "npm run storage:compress && npm run storage:upload",
+    "storage:download": "node scripts/firebase_downloader.js",
+    "storage:serve": "node scripts/start_storage_server.js",
+    "storage:serve:stop": "nginx -s stop"
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
