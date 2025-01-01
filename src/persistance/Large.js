@@ -13,7 +13,6 @@ const Large = superclass =>
         console.info(`Unable to find ${this.id}`)
         return
       }
-      // const exist = await get(this.id)
       await set(this.id, items.outerHTML)
       const path = as_directory_id(this.id)
       await del(path)
