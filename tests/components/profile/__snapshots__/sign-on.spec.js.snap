@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/profile/sign-on > Renders > Sign on button 1`] = `
+<button
+  class="sign-on"
+>
+  
+  Sign on
+  
+</button>
+`;

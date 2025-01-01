@@ -1,6 +1,7 @@
 import { configDefaults, defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
+import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
   build: {
@@ -36,7 +37,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': '/src'
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url))
     },
     extensions: ['.js', '.json', '.vue']
   },

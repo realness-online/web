@@ -2,7 +2,7 @@ import { as_thoughts } from '@/use/statements'
 import { get_item } from '@/use/item'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  './mocks/html/statements.html',
   'utf8'
 )
 describe('@/use/thought', () => {

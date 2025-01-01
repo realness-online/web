@@ -4,7 +4,7 @@ import * as itemid from '@/use/itemid'
 import Feed from '@/views/Feed'
 import fs from 'fs'
 const statements_html = fs.readFileSync(
-  './__mocks__/html/statements.html',
+  './mocks/html/statements.html',
   'utf8'
 )
 const person = {

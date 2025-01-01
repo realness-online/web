@@ -19,7 +19,7 @@ import {
   type_as_list
 } from '@/use/itemid'
 import { current_user } from '@/use/serverless'
-const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
 
 describe('@/use/itemid', () => {
   const posterid = '/+16282281824/posters/559666932867'

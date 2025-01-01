@@ -2,7 +2,7 @@ import { use } from '@/use/vectorize'
 import get_item from '@/use/item'
 import fs from 'fs'
 import { describe } from 'vitest'
-const poster_html = fs.readFileSync('./__mocks__/html/poster.html', 'utf8')
+const poster_html = fs.readFileSync('./mocks/html/poster.html', 'utf8')
 const MockDate = require('mockdate')
 MockDate.set('2020-01-01')
 let poster
