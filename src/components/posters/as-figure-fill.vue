@@ -102,7 +102,7 @@
     const path = query(id)
     if (as_stroke.value) color.value = to_hex(path.style.color)
     else {
-      const fill = path.style.fill
+      const {fill} = path.style
       if (fill) color.value = to_hex(fill)
       else color.value = to_hex()
     }

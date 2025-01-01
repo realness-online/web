@@ -78,7 +78,7 @@ export const use = () => {
   }
 
   const vectorized = response => {
-    const vector = response.data.vector
+    const {vector} = response.data
     vector.id = as_new_itemid
     vector.type = 'posters'
     vector.light = make_path(vector.light)

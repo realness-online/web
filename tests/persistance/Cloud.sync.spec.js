@@ -13,8 +13,8 @@ const offline_poster = read_mock_file('@@/html/poster-offline.html')
 const poster_html = read_mock_file('@@/html/poster.html')
 const person_html = read_mock_file('@@/html/person.html')
 const events_html = read_mock_file('@@/html/events.html')
-const statements = get_item(statements_html).statements
-const events = get_item(events_html).events
+const {statements} = get_item(statements_html)
+const {events} = get_item(events_html)
 
 const user = { phoneNumber: '+16282281824' }
 const local_matches_network = '8ae9Lz4qKYqoyofDaaY0Nw=='
