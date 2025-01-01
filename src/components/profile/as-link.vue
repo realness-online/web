@@ -26,6 +26,7 @@
       }
     },
     async created() {
+      if (!this.author) return
       this.person = await load(this.author)
     }
   }
