@@ -2,7 +2,7 @@
 import { current_user, upload, remove } from '@/use/serverless'
 import { get, set, del } from 'idb-keyval'
 import { as_filename } from '@/use/itemid'
-import { upload_processor } from '@/use/upload_processor'
+import { prepare_upload_data } from '@/utils/upload_processor'
 
 const networkable = ['person', 'statements', 'posters', 'events']
 
@@ -19,34 +19,20 @@ export const Cloud = superclass =>
   class extends superclass {
     constructor() {
       super()
-      const { prepare_upload_data } = upload_processor()
-      this.prepare_upload_data = prepare_upload_data
     }
 
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
         const path = as_filename(this.id)
+        const { data, metadata } = await prepare_upload_data(items, path)
 
-        const { data, content_hash, md5_hash } =
-          await this.prepare_upload_data(items, path)
+        const response = await upload(path, data, metadata)
 
-        this.metadata = {
-          cacheControl: 'private, max-age=18000',
-          contentType: 'text/html; charset=utf-8',
-          contentLanguage: navigator.language,
-          contentEncoding: 'gzip',
-          contentDisposition: 'inline',
-          md5Hash: md5_hash,
-          customMetadata: {
-            ETag: `"${content_hash}"`
-          }
+        if (response && response.status !== 304) {
+          await set(`etag:${this.id}`, metadata.customMetadata.ETag)
         }
-        const response = await upload(path, data, this.metadata)
-
-        if (response && response.status !== 304) await set(`etag:${this.id}`, this.metadata.customMetadata.ETag)
 
         return response
-
       } else if (current_user.value || localStorage.me) {
         await sync_later(this.id, 'save')
       }
