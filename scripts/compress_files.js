@@ -2,6 +2,24 @@ import { readdir, readFile, writeFile, mkdir } from 'fs/promises'
 import { join, dirname, relative } from 'path'
 import { prepare_upload_data } from './node_upload_processor.js'
 
+// Terminal colors
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  green: '\x1b[32m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m'
+}
+
+const format_bytes = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 const ensure_dir = async (dir_path) => {
   try {
     await mkdir(dir_path, { recursive: true })
@@ -28,13 +46,13 @@ const get_html_files = async (dir_path, files = []) => {
 
 const process_directory = async (source_dir, output_dir) => {
   try {
-    console.log('Starting to process directory:', source_dir)
+    console.log(`${colors.bright}Starting to process directory:${colors.reset} ${colors.cyan}${source_dir}${colors.reset}`)
 
     const html_files = await get_html_files(source_dir)
-    console.log('HTML files to process:', html_files)
+    console.log(`${colors.bright}Found${colors.reset} ${colors.green}${html_files.length}${colors.reset} HTML files to process`)
 
     if (html_files.length === 0) {
-      console.log('No HTML files found in directory tree')
+      console.log(`${colors.yellow}No HTML files found in directory tree${colors.reset}`)
       return
     }
 
@@ -42,7 +60,6 @@ const process_directory = async (source_dir, output_dir) => {
     let total_compressed = 0
 
     for (const file_path of html_files) {
-      console.log(`\nProcessing file: ${file_path}`)
       try {
         const rel_path = relative(source_dir, file_path)
         const output_path = join(output_dir, rel_path)
@@ -54,17 +71,16 @@ const process_directory = async (source_dir, output_dir) => {
         const original_size = content.length
         total_original += original_size
 
-        console.log('Preparing upload data...')
+        console.log(`\n${colors.bright}Processing:${colors.reset} ${colors.cyan}${rel_path}${colors.reset}`)
         const { data, metadata } = await prepare_upload_data(content, file_path)
         const compressed_size = data.length
         total_compressed += compressed_size
 
         const compression_ratio = ((original_size - compressed_size) / original_size * 100).toFixed(1)
 
-        console.log(`File: ${rel_path}`)
-        console.log(`Original: ${original_size} bytes`)
-        console.log(`Compressed: ${compressed_size} bytes`)
-        console.log(`Reduction: ${compression_ratio}%`)
+        console.log(`${colors.dim}Original:${colors.reset}    ${format_bytes(original_size)}`)
+        console.log(`${colors.dim}Compressed:${colors.reset}  ${format_bytes(compressed_size)}`)
+        console.log(`${colors.dim}Reduction:${colors.reset}   ${colors.green}${compression_ratio}%${colors.reset}`)
 
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
@@ -73,18 +89,18 @@ const process_directory = async (source_dir, output_dir) => {
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
       } catch (file_error) {
-        console.error(`Error processing file ${file_path}:`, file_error)
+        console.error(`${colors.red}Error processing file ${file_path}:${colors.reset}`, file_error)
       }
     }
 
     const total_ratio = ((total_original - total_compressed) / total_original * 100).toFixed(1)
-    console.log('\nCompression Summary:')
-    console.log(`Total original size: ${total_original} bytes`)
-    console.log(`Total compressed size: ${total_compressed} bytes`)
-    console.log(`Overall reduction: ${total_ratio}%`)
+    console.log(`\n${colors.bright}Compression Summary:${colors.reset}`)
+    console.log(`${colors.dim}Total original:${colors.reset}    ${format_bytes(total_original)}`)
+    console.log(`${colors.dim}Total compressed:${colors.reset}  ${format_bytes(total_compressed)}`)
+    console.log(`${colors.dim}Overall reduction:${colors.reset} ${colors.green}${total_ratio}%${colors.reset}`)
 
   } catch (error) {
-    console.error('Error in process_directory:', error)
+    console.error(`${colors.red}Error in process_directory:${colors.reset}`, error)
     throw error
   }
 }
