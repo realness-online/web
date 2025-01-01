@@ -22,7 +22,7 @@ describe('@/compontent/events/as-button.vue', () => {
     wrapper = shallowMount(as_button, { props: { itemid: poster.id } })
   })
   describe('Renders', () => {
-    it("A button to manage a poster's events", () => {
+    it('A button to manage a poster\'s events', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
