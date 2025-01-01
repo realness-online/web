@@ -22,7 +22,7 @@ describe('@/use/statements', () => {
         { id: '/+16282281824/statements/1569909292018' },
         { id: '/+16282281824/statements/1569909311638' }
       ]
-      it('Checks if it\'s time to load more thoughts', async () => {
+      it("Checks if it's time to load more thoughts", async () => {
         vi.spyOn(itemid, 'as_directory').mockImplementation(() => ({
           items: ['index', '1569909311638']
         }))

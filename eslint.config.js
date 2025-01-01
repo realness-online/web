@@ -161,7 +161,6 @@ export default [
       'arrow-spacing': ['error', { before: true, after: true }],
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
-      quotes: ['error', 'single'],
       'no-else-return': 'error',
       'no-lonely-if': 'error',
       'no-unneeded-ternary': 'error',
