@@ -101,7 +101,8 @@
     if (phone_number) {
       mobile_number.value = phone_number
       return validate_mobile_number()
-    } return false
+    }
+    return false
   }
   const code_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()

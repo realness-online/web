@@ -110,7 +110,7 @@
   }
 
   mounted(() => {
-    if (!props.sync_poster && !new_poster) 
+    if (!props.sync_poster && !new_poster)
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
@@ -118,7 +118,6 @@
         },
         { rootMargin: '1024px' }
       )
-    
   })
   watch_effect(() => {
     if (props.sync_poster) {

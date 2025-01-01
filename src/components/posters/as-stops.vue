@@ -15,7 +15,8 @@
       required: false
     }
   })
-  const converted = computed(() => props.stops.map(stop => {
+  const converted = computed(() =>
+    props.stops.map(stop => {
       let saturation = props.saturation_floor
       if (saturation && stop.color.s < saturation) {
         // leave things bee
@@ -31,7 +32,8 @@
         offset: stop.offset,
         color
       }
-    }))
+    })
+  )
 </script>
 
 <template>

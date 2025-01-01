@@ -11,7 +11,7 @@ const root_directory = async directory => {
   console.log('Directory created: ', directory.fullPath, directory)
   const directoryHandle = await window.showDirectoryPicker()
 
-  for await (const entry of directoryHandle.values()) 
+  for await (const entry of directoryHandle.values())
     console.log(entry.kind, entry.name)
 
   // Use the directory entry

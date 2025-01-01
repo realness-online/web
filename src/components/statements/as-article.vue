@@ -79,9 +79,7 @@
       has_blurred(statement) {
         this.focused = false
         setTimeout(() => {
-          if (!this.focused) 
-            this.$emit('blurred', statement)
-          
+          if (!this.focused) this.$emit('blurred', statement)
         }, 750)
       }
     }

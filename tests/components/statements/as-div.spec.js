@@ -33,7 +33,9 @@ describe('@/components/statements/as-div.vue', () => {
             statement: statements.statements[0]
           }
         })
-        vi.spyOn(Statements.prototype, 'save').mockImplementation(() => vi.fn(() => Promise.resolve()))
+        vi.spyOn(Statements.prototype, 'save').mockImplementation(() =>
+          vi.fn(() => Promise.resolve())
+        )
         wrapper.vm.$refs.editable.textContent = 'changed'
         await wrapper.vm.save()
         expect(Statements.prototype.save).toBeCalled()
@@ -45,7 +47,9 @@ describe('@/components/statements/as-div.vue', () => {
             statement: statements.statements[0]
           }
         })
-        vi.spyOn(Statements.prototype, 'save').mockImplementation(() => vi.fn(() => Promise.resolve()))
+        vi.spyOn(Statements.prototype, 'save').mockImplementation(() =>
+          vi.fn(() => Promise.resolve())
+        )
         await wrapper.vm.save()
         expect(Statements.prototype.save).not.toBeCalled()
       })

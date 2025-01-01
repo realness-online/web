@@ -36,9 +36,7 @@
     if (new_vector.value) {
       new_vector.value = null
       router.replace({ path: '/' })
-    } else 
-      router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
-    
+    } else router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
   }
   const save = async () => {
     await new Poster(itemid).save()

@@ -36,9 +36,9 @@ export const use = () => {
   const for_person = async person => {
     const statement_id = `${person.id}/statements`
     const their_statements = await list(statement_id)
-    if (statements.value) 
+    if (statements.value)
       statements.value = [...statements.value, ...their_statements]
-     else statements.value = their_statements
+    else statements.value = their_statements
     person.viewed = ['index']
     authors.value.push(person)
   }
@@ -72,9 +72,8 @@ export function as_thoughts(sacred_statements) {
   while (statements.length) {
     const statement = statements.pop()
     const thot = [statement]
-    while (is_train_of_thought(thot, statements)) 
-      thot.push(statements.pop())
-    
+    while (is_train_of_thought(thot, statements)) thot.push(statements.pop())
+
     thoughts.push(thot)
   }
   return thoughts
@@ -95,5 +94,6 @@ export function is_train_of_thought(thot, statements) {
     const difference = next - nearest
     if (difference < thirteen_minutes) return true
     return false
-  } return false
+  }
+  return false
 }

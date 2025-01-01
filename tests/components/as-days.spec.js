@@ -50,9 +50,8 @@ describe('@/components/as-days', () => {
       it('Increases the number of visible days', () => {
         expect(wrapper.vm.page).toBe(1)
         wrapper.vm.days = new Set()
-        for (let i = 0; i < 6; i++) 
-          wrapper.vm.days.add([])
-        
+        for (let i = 0; i < 6; i++) wrapper.vm.days.add([])
+
         wrapper.vm.check_intersection([{ isIntersecting: true }])
         expect(wrapper.vm.page).toBe(2)
       })

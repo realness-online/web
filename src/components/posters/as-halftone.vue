@@ -1,4 +1,3 @@
-
 <style>
   svg[itemtype='/posters'] halftone {
     font-size: 17px;

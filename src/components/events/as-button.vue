@@ -24,14 +24,16 @@
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { day: 'numeric' })
-        } return new Date().toLocaleString('en-US', { day: 'numeric' })
+        }
+        return new Date().toLocaleString('en-US', { day: 'numeric' })
       },
       month() {
         const event = this.events.find(event => event.url === this.itemid)
         if (event) {
           const when = new Date(parseInt(event.id))
           return when.toLocaleString('en-US', { month: 'long' })
-        } return new Date().toLocaleString('en-US', { month: 'long' })
+        }
+        return new Date().toLocaleString('en-US', { month: 'long' })
       },
       has_event() {
         const exists = this.events.some(event => event.url === this.itemid)

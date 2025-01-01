@@ -14,12 +14,12 @@ const me = {
 }
 vi.mock('vue-router')
 vi.mock('@/use/statements', () => ({
-    use: () => ({
-        for_person: vi.fn(),
-        statements: ref([]),
-        thought_shown: vi.fn()
-      })
-  }))
+  use: () => ({
+    for_person: vi.fn(),
+    statements: ref([]),
+    thought_shown: vi.fn()
+  })
+}))
 describe('@/views/Account.vue', () => {
   let wrapper
   beforeEach(async () => {
