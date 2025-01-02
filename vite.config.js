@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs'
+import path from 'path'
 
 export default defineConfig({
   build: {
@@ -26,9 +27,7 @@ export default defineConfig({
     }
   },
   define: {
-    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
-      process.env['npm_package_version']
-    )
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(process.env['npm_package_version'])
   },
   server: {
     port: 8080,
@@ -42,7 +41,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': path.resolve(__dirname, './src'),
       '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url))
     },
     extensions: ['.js', '.json', '.vue']
@@ -50,9 +49,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [
-          new URL('./src/style/variables.styl', import.meta.url).pathname
-        ]
+        imports: [new URL('./src/style/variables.styl', import.meta.url).pathname]
       }
     }
   },
@@ -64,12 +61,7 @@ export default defineConfig({
       },
       filename: 'service.worker.js',
       minify: true,
-      includeAssets: [
-        '180.png',
-        'vector.worker.js',
-        'fonts/*.woff2',
-        'icons.svg'
-      ],
+      includeAssets: ['180.png', 'vector.worker.js', 'fonts/*.woff2', 'icons.svg'],
       manifest: {
         display: 'standalone',
         background_color: '#151518',

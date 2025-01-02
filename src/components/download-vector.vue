@@ -31,9 +31,7 @@
         if (!svg) return
         if (localStorage.adobe) this.adobe(svg)
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-        this.content = `data:application/octet-stream,${encodeURIComponent(
-          svg.outerHTML
-        )}`
+        this.content = `data:application/octet-stream,${encodeURIComponent(svg.outerHTML)}`
       },
       adobe(svg) {
         const convert = svg.querySelectorAll('[stop-color]')

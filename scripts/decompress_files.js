@@ -29,12 +29,10 @@ const verify_file = async (decompressed, metadata) => {
   if (!hash_matches || !md5_matches) {
     console.log(chalk.yellow('Hash verification:'))
     console.log(
-      chalk.dim('Content Hash: ') +
-        (hash_matches ? chalk.green('✓') : chalk.red('✗'))
+      chalk.dim('Content Hash: ') + (hash_matches ? chalk.green('✓') : chalk.red('✗'))
     )
     console.log(
-      chalk.dim('MD5 Hash: ') +
-        (md5_matches ? chalk.green('✓') : chalk.red('✗'))
+      chalk.dim('MD5 Hash: ') + (md5_matches ? chalk.green('✓') : chalk.red('✗'))
     )
     return false
   }
@@ -131,9 +129,7 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     console.log(chalk`

@@ -25,10 +25,7 @@ const create_gradient = (id, stops, options = {}) => {
   }
 
   stops.forEach(stop => {
-    const stop_el = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop'
-    )
+    const stop_el = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
     stop_el.setAttribute('offset', stop.offset)
     stop_el.setAttribute('stop-color', stop.color)
     if (stop.opacity) stop_el.setAttribute('stop-opacity', stop.opacity)
@@ -68,8 +65,7 @@ const create_gradients = vector => {
 
     directions.forEach(direction => {
       const gradient_id = `${direction}-${weight}-${vector.id}`
-      const gradient_type =
-        direction === 'radial' ? 'radialGradient' : 'linearGradient'
+      const gradient_type = direction === 'radial' ? 'radialGradient' : 'linearGradient'
       const options = {
         type: gradient_type,
         ...get_gradient_direction(direction)

@@ -25,12 +25,12 @@
           <h3>online</h3>
           <p>Install Realness on your home screen</p>
           <p>
-            Realness creates expressive vector graphics from your designs and
-            photos. It works on any device.
+            Realness creates expressive vector graphics from your designs and photos. It
+            works on any device.
           </p>
           <p>
-            Once you save your creations, they will integrate into any workflow
-            that uses SVG.
+            Once you save your creations, they will integrate into any workflow that uses
+            SVG.
           </p>
         </figcaption>
         <as-svg v-if="posters.length" :itemid="posters[0]?.id" />
@@ -43,15 +43,14 @@
         <figcaption>
           <h2>We call them <strong>Posters</strong></h2>
           <p>
-            Take a picture from your phone, and Realness creates a vector
-            graphic composed into five animatable layers; from a bright
-            background to a dark foreground.
+            Take a picture from your phone, and Realness creates a vector graphic composed
+            into five animatable layers; from a bright background to a dark foreground.
           </p>
           <p>
-            Your Poster is a natural fit for the web. Posters are optimized to
-            be expressive, small, and to run fast. You can extract a color
-            palette, animate a filter or gradient. The individual parts of a
-            Poster are easy to query and feel natural to access and manipulate.
+            Your Poster is a natural fit for the web. Posters are optimized to be
+            expressive, small, and to run fast. You can extract a color palette, animate a
+            filter or gradient. The individual parts of a Poster are easy to query and
+            feel natural to access and manipulate.
           </p>
           <h4>
             Animators, Designers, Hand coders —
@@ -80,37 +79,34 @@
         <li>
           <icon name="finished" />
           <p>
-            Realtime graphics settings to view each poster in your feed with an
-            embossed edge and/or subtle animation
+            Realtime graphics settings to view each poster in your feed with an embossed
+            edge and/or subtle animation
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            Works great on your iPad – Split view and export right into Affinity
-            Designer
+            Works great on your iPad – Split view and export right into Affinity Designer
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            High performance masking and smart use of opacity to merge the
-            colors between each of five layers of detail creating a natural
-            sense of movement and life
+            High performance masking and smart use of opacity to merge the colors between
+            each of five layers of detail creating a natural sense of movement and life
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            Use any one of eighteen gradients generated from your posters
-            prominant colors
+            Use any one of eighteen gradients generated from your posters prominant colors
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            Graphics are optimized to look great on all devices. No other design
-            tools are required to use a realness poster
+            Graphics are optimized to look great on all devices. No other design tools are
+            required to use a realness poster
           </p>
         </li>
       </ol>
@@ -122,25 +118,20 @@
         <figcaption>
           <h2>Shared values</h2>
           <p>
-            You can create your own social network with realness. Use it with
-            your design team as a fun way to play and be creative. While easy to
-            administer Realness encourages internet literacy. The time and
-            investment you put into a realness of your own helps you understand
-            the power of the internet.
+            You can create your own social network with realness. Use it with your design
+            team as a fun way to play and be creative. While easy to administer Realness
+            encourages internet literacy. The time and investment you put into a realness
+            of your own helps you understand the power of the internet.
           </p>
           <p>
             Use it with just your family, union hall, or maybe your
             <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
-            nerdpocalypse users group. Realness set's you up with all the
-            benifits of a serverless web application to advantage intimate
-            useful communities with clear lines of responsibility and
-            communication. There is joy in our care for the maintenance and
-            content on the web.
+            nerdpocalypse users group. Realness set's you up with all the benifits of a
+            serverless web application to advantage intimate useful communities with clear
+            lines of responsibility and communication. There is joy in our care for the
+            maintenance and content on the web.
           </p>
-          <p>
-            The performance is over. Our social health requires more realness
-            online
-          </p>
+          <p>The performance is over. Our social health requires more realness online</p>
           <h4>Let's be fun again</h4>
         </figcaption>
       </figure>
@@ -163,16 +154,12 @@
         </li>
         <li>
           <icon name="finished" />
-          <p>
-            Nurtures web literacy. from command line to the power of firebase
-          </p>
+          <p>Nurtures web literacy. from command line to the power of firebase</p>
         </li>
 
         <li>
           <icon name="finished" />
-          <p>
-            Easy to administer with direct support from the development team
-          </p>
+          <p>Easy to administer with direct support from the development team</p>
         </li>
         <li>
           <icon name="finished" />
@@ -181,16 +168,16 @@
         <li>
           <icon name="finished" />
           <p>
-            Designed to encourage enough internet literacy to empower regular
-            ass people to help manage the web
+            Designed to encourage enough internet literacy to empower regular ass people
+            to help manage the web
           </p>
         </li>
 
         <li>
           <icon name="finished" />
           <p>
-            <b class="no">Email</b>, <b class="no">Likes</b>,
-            <b class="no">Links</b>, <b class="no">SEO</b>
+            <b class="no">Email</b>, <b class="no">Likes</b>, <b class="no">Links</b>,
+            <b class="no">SEO</b>
           </p>
         </li>
       </ol>
@@ -204,47 +191,41 @@
           <h2>HTML is Our Database</h2>
 
           <p>
-            Realness is a way and a support system to help you build web
-            applications.
+            Realness is a way and a support system to help you build web applications.
           </p>
           <p>
             It's natural to build web applications with HTML, especially for
-            <i>Edge first</i>. Orienting to this has helped Realness take
-            advantage of what's possible on the web today. How you build your
-            app can create opportunities over the monetized client-server model
-            we are used to today.
+            <i>Edge first</i>. Orienting to this has helped Realness take advantage of
+            what's possible on the web today. How you build your app can create
+            opportunities over the monetized client-server model we are used to today.
           </p>
           <p>
-            Edge first is native, fast, more secure, and gives you choices
-            around data storage that don't exist traditionally. With an
-            Edge-first approach, you can make a quick and seamless transition
-            from a User Experience demo to product development.
+            Edge first is native, fast, more secure, and gives you choices around data
+            storage that don't exist traditionally. With an Edge-first approach, you can
+            make a quick and seamless transition from a User Experience demo to product
+            development.
           </p>
           <p>
-            Edge on the web opens the DOM up as a typing system and object
-            model. There are natural constraints on HTML that support accessible
-            applications.
+            Edge on the web opens the DOM up as a typing system and object model. There
+            are natural constraints on HTML that support accessible applications.
           </p>
           <p>
-            Developers can use Realness to free themselves from SQL and the
-            tyranny of a full-stack mindset. Development roles can be less
-            hierarchical. Products can be fun to build, naturally more in line
-            with our customers' expectations.
+            Developers can use Realness to free themselves from SQL and the tyranny of a
+            full-stack mindset. Development roles can be less hierarchical. Products can
+            be fun to build, naturally more in line with our customers' expectations.
           </p>
           <p>
-            Build applications faster with less overhead that keeps stakeholders
-            involved. All this using only HTML, CSS, and JavaScript.
+            Build applications faster with less overhead that keeps stakeholders involved.
+            All this using only HTML, CSS, and JavaScript.
           </p>
           <p>
-            Can a single developer provide a service all can use? Scott Fryxell
-            is the developer behind Realness, and that's what I'm trying to find
-            out.
+            Can a single developer provide a service all can use? Scott Fryxell is the
+            developer behind Realness, and that's what I'm trying to find out.
           </p>
           <p>
             Sign into Realness, and you can message me directly. Visit the code
-            <a href="https://github.com/realness-online/web" rel="external"
-              >online</a
-            >. I keep a
+            <a href="https://github.com/realness-online/web" rel="external">online</a>. I
+            keep a
             <a href="https://scott-fryxell.github.io/" rel="external"> blog </a>
             of all my feelings and nerd problems. My resume is on there.
           </p>
@@ -258,8 +239,7 @@
             <a href="https://github.com/realness-online/web" rel="external">
               Open Source
             </a>
-            utilizing modern best practices, with semantic HTML described using
-            microdata.
+            utilizing modern best practices, with semantic HTML described using microdata.
           </p>
         </li>
         <li>
@@ -271,9 +251,7 @@
         </li>
         <li>
           <icon name="finished"></icon>
-          <p>
-            Codebase prioritizes readability and accessibility friendliness.
-          </p>
+          <p>Codebase prioritizes readability and accessibility friendliness.</p>
         </li>
         <li>
           <icon name="finished"></icon>
@@ -282,8 +260,7 @@
         <li>
           <icon name="finished"></icon>
           <p>
-            Opinionated: Tailwind and TypeScript are anti-patterns. CSS to the
-            rescue!
+            Opinionated: Tailwind and TypeScript are anti-patterns. CSS to the rescue!
           </p>
         </li>
         <li>
@@ -293,8 +270,8 @@
         <li>
           <icon name="finished"></icon>
           <p>
-            Eliminate CSS crosstalk and improve legibility with fragment
-            identifiers and child selectors.
+            Eliminate CSS crosstalk and improve legibility with fragment identifiers and
+            child selectors.
           </p>
         </li>
         <li>

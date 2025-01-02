@@ -15,10 +15,7 @@ const attr_regexps = {}
 const get_attr_regexp = attr_name => {
   if (attr_regexps[attr_name]) return attr_regexps[attr_name]
 
-  attr_regexps[attr_name] = new RegExp(
-    ` ${attr_name}="((?:\\\\(?=")"|[^"])+)"`,
-    'i'
-  )
+  attr_regexps[attr_name] = new RegExp(` ${attr_name}="((?:\\\\(?=")"|[^"])+)"`, 'i')
   return attr_regexps[attr_name]
 }
 
@@ -53,8 +50,7 @@ const fixed = number => number.toFixed(3).replace('.000', '')
  * @param {number} n - The divisor
  * @returns {number} The positive modulo result
  */
-export const mod = (a, n) =>
-  a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n)
+export const mod = (a, n) => (a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n))
 
 /**
  * Calculates the cross product of two 2D vectors
@@ -91,8 +87,7 @@ export const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
   let sum = 0
 
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++) sum += v[i] * Q.at(i, j) * v[j]
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) sum += v[i] * Q.at(i, j) * v[j]
 
   return sum
 }
@@ -169,8 +164,7 @@ export const iprod1 = (p0, p1, p2, p3) => {
 export const ddist = (p, q) =>
   Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y))
 
-export const luminance = (r, g, b) =>
-  Math.round(0.2126 * r + 0.7153 * g + 0.0721 * b)
+export const luminance = (r, g, b) => Math.round(0.2126 * r + 0.7153 * g + 0.0721 * b)
 
 export const between = (val, min, max) => val >= min && val <= max
 
@@ -230,15 +224,9 @@ export const bezier = (t, p0, p1, p2, p3) => {
   const res = new Point()
 
   res.x =
-    s * s * s * p0.x +
-    3 * (s * s * t) * p1.x +
-    3 * (t * t * s) * p2.x +
-    t * t * t * p3.x
+    s * s * s * p0.x + 3 * (s * s * t) * p1.x + 3 * (t * t * s) * p2.x + t * t * t * p3.x
   res.y =
-    s * s * s * p0.y +
-    3 * (s * s * t) * p1.y +
-    3 * (t * t * s) * p2.y +
-    t * t * t * p3.y
+    s * s * s * p0.y + 3 * (s * s * t) * p1.y + 3 * (t * t * s) * p2.y + t * t * t * p3.y
 
   return res
 }

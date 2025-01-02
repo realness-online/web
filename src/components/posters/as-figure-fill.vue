@@ -7,11 +7,7 @@
     useMagicKeys as keyboard,
     usePointerSwipe as swipe
   } from '@vueuse/core'
-  import {
-    use as use_path,
-    change_by,
-    itemprop_query as query
-  } from '@/use/path'
+  import { use as use_path, change_by, itemprop_query as query } from '@/use/path'
   import { is_vector_id, is_vector } from '@/use/vector'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/use/colors'
   import { as_fragment_id } from '@/use/itemid'
@@ -28,13 +24,8 @@
   const color = ref('#151518')
   const itemprop = ref('background')
   const fragment = add => `url(${as_fragment_id(props.itemid)}-${add})`
-  const {
-    opacity_percentage,
-    as_stroke,
-    selected_path,
-    fill_opacity,
-    stroke_opacity
-  } = use_path()
+  const { opacity_percentage, as_stroke, selected_path, fill_opacity, stroke_opacity } =
+    use_path()
   provide('as_stroke', as_stroke)
   const focus_on_active = () => query(itemprop.value).focus()
   const layer_selected = id => {

@@ -31,10 +31,7 @@ const use_directory_processor = () => {
       // Count total image files
       let image_count = 0
       for await (const [name, handle] of source_dir.entries())
-        if (
-          handle.kind === 'file' &&
-          name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-        ) {
+        if (handle.kind === 'file' && name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
           image_count++
         }
 

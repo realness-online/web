@@ -22,9 +22,7 @@ export const use = () => {
       if (!directory) return
       let history = directory.items
       history.sort(recent_number_first)
-      history = history.filter(
-        page => !author.viewed.some(viewed => viewed === page)
-      )
+      history = history.filter(page => !author.viewed.some(viewed => viewed === page))
       const next = history.shift()
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
@@ -36,8 +34,7 @@ export const use = () => {
   const for_person = async person => {
     const statement_id = `${person.id}/statements`
     const their_statements = await list(statement_id)
-    if (statements.value)
-      statements.value = [...statements.value, ...their_statements]
+    if (statements.value) statements.value = [...statements.value, ...their_statements]
     else statements.value = their_statements
     person.viewed = ['index']
     authors.value.push(person)

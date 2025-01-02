@@ -15,13 +15,7 @@
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
-  import {
-    use_poster,
-    is_vector,
-    is_vector_id,
-    is_click,
-    is_focus
-  } from '@/use/vector'
+  import { use_poster, is_vector, is_vector_id, is_click, is_focus } from '@/use/vector'
   import {
     animate as animate_pref,
     emboss as emboss_pref,
@@ -87,9 +81,7 @@
   } = use_poster()
   const trigger = ref(null)
   const emboss = computed(() => emboss_pref.value == true && intersecting.value)
-  const animate = computed(
-    () => animate_pref.value == true && intersecting.value
-  )
+  const animate = computed(() => animate_pref.value == true && intersecting.value)
   const light = computed(() => light_pref.value == true && intersecting.value)
 
   const mask = computed(() => intersecting.value)
@@ -320,16 +312,9 @@
           :fill="`url(${fragment('pattern-emboss-bold')})`"
           width="100%"
           height="100%" />
-        <rect
-          id="lightbar-rect"
-          fill="url(#lightbar)"
-          width="100%"
-          height="100%" />
+        <rect id="lightbar-rect" fill="url(#lightbar)" width="100%" height="100%" />
       </defs>
-      <rect
-        :filter="`url(${fragment('composite')})`"
-        width="100%"
-        height="100%" />
+      <rect :filter="`url(${fragment('composite')})`" width="100%" height="100%" />
     </g>
     <g v-else>
       <use :href="fragment('background')" @focus="focus('bold')" />

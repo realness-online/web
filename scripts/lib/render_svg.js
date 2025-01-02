@@ -8,8 +8,7 @@ const create_svg = (vector, options = {}) => {
   // Helper for creating element with attributes
   const create_element = (tag, attrs = {}) => {
     const el = document.createElementNS('http://www.w3.org/2000/svg', tag)
-    for (const [key, value] of Object.entries(attrs))
-      el.setAttribute(key, value)
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value)
 
     return el
   }
