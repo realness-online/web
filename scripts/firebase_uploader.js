@@ -32,9 +32,7 @@ const init_firebase = async () => {
 const upload_file = async (bucket, file_path, metadata_path) => {
   try {
     console.log(chalk.cyan('\nReading metadata for: ') + chalk.dim(file_path))
-    const metadata = JSON.parse(
-      await readFile(metadata_path, 'utf-8')
-    )
+    const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
 
     const destination = file_path.replace('_compressed/', '')
     console.log(chalk.dim('Destination: ') + destination)
@@ -53,7 +51,7 @@ const upload_file = async (bucket, file_path, metadata_path) => {
   }
 }
 
-export const upload_to_firebase = async (files) => {
+export const upload_to_firebase = async files => {
   try {
     const bucket = await init_firebase()
 
@@ -73,7 +71,9 @@ export const upload_to_firebase = async (files) => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
+      console.log(
+        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
+      )
     }
 
     // Final summary

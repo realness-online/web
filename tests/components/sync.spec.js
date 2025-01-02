@@ -5,7 +5,6 @@ import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
 import get_item from '@/use/item'
 import { Me, Statements, Events, Poster } from '@/persistance/Storage'
-import mixin_mock from '@@/mixin_mock'
 
 const fake_props = {
   global: {
@@ -18,7 +17,7 @@ const statement = {
   type: 'statements',
   statement: 'I like to move it'
 }
-const current_user = {
+let current_user = {
   phoneNumber: '+16282281824'
 }
 describe('@/components/sync', () => {
@@ -125,11 +124,7 @@ describe('@/components/sync', () => {
   })
 })
 
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import * as itemid from '@/use/itemid'
-
-import vector_mock from './mixin_mock'
-const current_user = { phoneNumber: '+16282281824' }
+current_user = { phoneNumber: '+16282281824' }
 describe('@/mixins/visit', () => {
   let wrapper
   let person

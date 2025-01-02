@@ -30,15 +30,20 @@ const use_directory_processor = () => {
 
       // Count total image files
       let image_count = 0
-      for await (const [name, handle] of source_dir.entries()) {
-        if (handle.kind === 'file' && name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      for await (const [name, handle] of source_dir.entries())
+        if (
+          handle.kind === 'file' &&
+          name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+        ) {
           image_count++
         }
-      }
+
       progress.value.total = image_count
       console.info(`📂 Found ${image_count} images to process`)
 
-      const posters_dir = await source_dir.getDirectoryHandle('posters', { create: true })
+      const posters_dir = await source_dir.getDirectoryHandle('posters', {
+        create: true
+      })
 
       for await (const [name, handle] of source_dir.entries()) {
         if (handle.kind !== 'file') continue
@@ -52,19 +57,18 @@ const use_directory_processor = () => {
 
         try {
           await process_photo(image_url)
-          while (!new_vector.value) {
-            await new Promise(r => setTimeout(r, 100))
-          }
+          while (!new_vector.value) await new Promise(r => setTimeout(r, 100))
 
           completed_poster.value = new_vector.value
 
           if (!completed_poster.value.optimized)
             completed_poster.value = await optimize(completed_poster.value)
 
-
           const svg_data = completed_poster.value
           const poster_name = name.replace(/\.[^/.]+$/, '.svg')
-          const poster_file = await posters_dir.getFileHandle(poster_name, { create: true })
+          const poster_file = await posters_dir.getFileHandle(poster_name, {
+            create: true
+          })
 
           const writable = await poster_file.createWritable()
           await writable.write(svg_data)

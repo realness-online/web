@@ -11,10 +11,7 @@ describe('@/use/sorting', () => {
 
   describe('Basic Sorting', () => {
     it('sorts by timestamp', () => {
-      const items = [
-        { timestamp: TIMESTAMP_1 },
-        { timestamp: TIMESTAMP_2 }
-      ]
+      const items = [{ timestamp: TIMESTAMP_1 }, { timestamp: TIMESTAMP_2 }]
       const sorted = sorting.by_timestamp(items)
       expect(sorted[0].timestamp).toBe(TIMESTAMP_2)
     })
@@ -64,7 +61,10 @@ describe('@/use/sorting', () => {
     })
 
     it('combines multiple sort criteria', () => {
-      const sorted = sorting.by_multiple_fields(complex_items, ['metadata.priority', 'timestamp'])
+      const sorted = sorting.by_multiple_fields(complex_items, [
+        'metadata.priority',
+        'timestamp'
+      ])
       expect(sorted[0].metadata.priority).toBe(1)
       expect(sorted[0].timestamp).toBe(TIMESTAMP_2)
     })

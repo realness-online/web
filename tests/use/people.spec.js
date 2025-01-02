@@ -26,10 +26,12 @@ describe('@/use/people', () => {
     })
 
     it('adds new people', () => {
-      const test_people = Array(PEOPLE_COUNT).fill().map((_, i) => ({
-        id: `person-${i}`,
-        name: `Person ${i}`
-      }))
+      const test_people = Array(PEOPLE_COUNT)
+        .fill()
+        .map((_, i) => ({
+          id: `person-${i}`,
+          name: `Person ${i}`
+        }))
 
       test_people.forEach(person => {
         wrapper.vm.add_person(person)

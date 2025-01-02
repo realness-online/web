@@ -71,5 +71,3 @@ describe('@/persistance/Paged', () => {
     })
   })
 })
-
-})

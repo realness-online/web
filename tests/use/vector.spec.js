@@ -24,7 +24,9 @@ describe('@/use/vector', () => {
   describe('Vector Normalization', () => {
     it('normalizes vectors', () => {
       const normalized = vector.normalize(test_vectors.a)
-      const magnitude = Math.sqrt(normalized.reduce((sum, val) => sum + val * val, 0))
+      const magnitude = Math.sqrt(
+        normalized.reduce((sum, val) => sum + val * val, 0)
+      )
       expect(magnitude).toBeCloseTo(1, 5)
     })
 

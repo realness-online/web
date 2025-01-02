@@ -11,7 +11,9 @@ const start_server = () => {
   console.log(chalk.dim('Storage path: ') + STORAGE_PATH)
 
   // Update config with correct path
-  exec(`sed -i 's|/absolute/path/to/your/project/storage|${STORAGE_PATH}|' ${CONFIG_PATH}`)
+  exec(
+    `sed -i 's|/absolute/path/to/your/project/storage|${STORAGE_PATH}|' ${CONFIG_PATH}`
+  )
 
   // Start nginx
   exec(`nginx -c ${CONFIG_PATH}`, (error, stdout, stderr) => {
@@ -20,7 +22,7 @@ const start_server = () => {
       return
     }
     console.log(chalk.green('✓ Server started'))
-    console.log(chalk.cyan('Browse storage at: ') + 'http://localhost:8080')
+    console.log(`${chalk.cyan('Browse storage at: ')}http://localhost:8080`)
   })
 }
 

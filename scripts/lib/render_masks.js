@@ -1,4 +1,4 @@
-const create_masks = (vector) => {
+const create_masks = vector => {
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
   defs.setAttribute('class', 'masks')
 
@@ -42,7 +42,10 @@ const create_masks = (vector) => {
     ]
 
     stops.forEach(stop => {
-      const stop_el = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+      const stop_el = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'stop'
+      )
       stop_el.setAttribute('offset', stop.offset)
       stop_el.setAttribute('stop-color', stop.color)
       gradient.appendChild(stop_el)

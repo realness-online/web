@@ -11,7 +11,7 @@ const DATA_DIR = 'storage'
 const PEOPLE_DIR = join(DATA_DIR, 'people')
 const SERVICE_ACCOUNT_PATH = join(DATA_DIR, 'service-account.json')
 
-const ensure_dir = async (dir_path) => {
+const ensure_dir = async dir_path => {
   try {
     await mkdir(dir_path, { recursive: true })
   } catch (error) {
@@ -40,7 +40,7 @@ const init_firebase = async () => {
   }
 }
 
-const download_and_decompress = async (bucket) => {
+const download_and_decompress = async bucket => {
   try {
     console.log(chalk.cyan('\nListing files in Firebase Storage...'))
     const [files] = await bucket.getFiles({ prefix: 'people/' })
@@ -56,7 +56,10 @@ const download_and_decompress = async (bucket) => {
 
         // Get file metadata
         const [metadata] = await file.getMetadata()
-        console.log(chalk.dim('Created: ') + new Date(metadata.timeCreated).toLocaleString())
+        console.log(
+          chalk.dim('Created: ') +
+            new Date(metadata.timeCreated).toLocaleString()
+        )
 
         // Download file
         console.log(chalk.yellow('Downloading...'))
@@ -92,7 +95,9 @@ const download_and_decompress = async (bucket) => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
+      console.log(
+        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
+      )
     }
 
     return { successful, failed }

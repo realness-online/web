@@ -22,13 +22,7 @@ describe('@/use/itemid', () => {
     })
 
     it('rejects invalid format', () => {
-      const invalid_ids = [
-        'invalid',
-        'test_123',
-        '',
-        null,
-        undefined
-      ]
+      const invalid_ids = ['invalid', 'test_123', '', null, undefined]
       invalid_ids.forEach(id => {
         expect(validate_id(id)).toBe(false)
       })
@@ -71,9 +65,8 @@ describe('@/use/itemid', () => {
   describe('Performance', () => {
     it('generates IDs efficiently', () => {
       const start = performance.now()
-      for (let i = 0; i < 1000; i++) 
-        generate_id()
-      
+      for (let i = 0; i < 1000; i++) generate_id()
+
       const duration = performance.now() - start
       expect(duration).toBeLessThan(1000)
     })

@@ -12,9 +12,8 @@ const get_compressed_files = async (dir_path, files = []) => {
   for (const entry of entries) {
     const full_path = join(dir_path, entry.name)
 
-    if (entry.isDirectory()) {
-      await get_compressed_files(full_path, files)
-    } else if (entry.name.endsWith('.html.gz')) {
+    if (entry.isDirectory()) await get_compressed_files(full_path, files)
+    else if (entry.name.endsWith('.html.gz')) {
       const metadata_path = full_path.replace('.gz', '.metadata.json')
       files.push({ compressed_path: full_path, metadata_path })
     }

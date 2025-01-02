@@ -14,7 +14,8 @@ describe('Profile', () => {
     }
   }
 
-  const mount_profile = () => shallowMount(Profile, {
+  const mount_profile = () =>
+    shallowMount(Profile, {
       global: {
         mocks: {
           $router: mock_router,

@@ -28,15 +28,21 @@ const verify_file = async (decompressed, metadata) => {
 
   if (!hash_matches || !md5_matches) {
     console.log(chalk.yellow('Hash verification:'))
-    console.log(chalk.dim('Content Hash: ') + (hash_matches ? chalk.green('✓') : chalk.red('✗')))
-    console.log(chalk.dim('MD5 Hash: ') + (md5_matches ? chalk.green('✓') : chalk.red('✗')))
+    console.log(
+      chalk.dim('Content Hash: ') +
+        (hash_matches ? chalk.green('✓') : chalk.red('✗'))
+    )
+    console.log(
+      chalk.dim('MD5 Hash: ') +
+        (md5_matches ? chalk.green('✓') : chalk.red('✗'))
+    )
     return false
   }
 
   return true
 }
 
-const ensure_dir = async (dir_path) => {
+const ensure_dir = async dir_path => {
   try {
     await mkdir(dir_path, { recursive: true })
   } catch (error) {
@@ -50,9 +56,8 @@ const get_compressed_files = async (dir_path, files = []) => {
   for (const entry of entries) {
     const full_path = join(dir_path, entry.name)
 
-    if (entry.isDirectory()) {
-      await get_compressed_files(full_path, files)
-    } else if (entry.name.endsWith('.html.gz')) {
+    if (entry.isDirectory()) await get_compressed_files(full_path, files)
+    else if (entry.name.endsWith('.html.gz')) {
       const metadata_path = full_path.replace('.gz', '.metadata.json')
       files.push({ compressed_path: full_path, metadata_path })
     }
@@ -83,14 +88,14 @@ const decompress_file = async (compressed_path, metadata_path) => {
 
     // Verify file integrity
     console.log(chalk.yellow('Verifying...'))
-    if (!await verify_file(decompressed, metadata)) {
+    if (!(await verify_file(decompressed, metadata)))
       throw new Error('File verification failed')
-    }
+
     console.log(chalk.green('✓ Verification successful'))
 
     // Write decompressed file and metadata
     await writeFile(output_path, decompressed)
-    await writeFile(output_path + '.metadata.json', metadata_content)
+    await writeFile(`${output_path}.metadata.json`, metadata_content)
 
     console.log(chalk.dim('Saved to: ') + output_path)
     return true
@@ -126,7 +131,9 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
+      console.log(
+        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
+      )
     }
 
     console.log(chalk`

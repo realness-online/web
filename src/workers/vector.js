@@ -221,7 +221,7 @@ export const route_message = async message => {
   }
   return reply
 }
-self.addEventListener('message', async (event) => {
+self.addEventListener('message', async event => {
   console.log('message', event)
   const reply = await route_message(event)
   self.postMessage(reply)
