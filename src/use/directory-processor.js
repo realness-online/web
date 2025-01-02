@@ -2,7 +2,7 @@ import { use as use_vectorize } from '@/use/vectorize'
 import { use as use_optimizer } from '@/use/optimize'
 import { ref } from 'vue'
 
-const use_directory_processor = () => {
+const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
   const { optimize } = use_optimizer()
   const progress = ref({
@@ -14,16 +14,48 @@ const use_directory_processor = () => {
   const current_preview = ref(null)
   const completed_poster = ref(null)
 
-  const process_directory = async () => {
+  const check_persistent_storage = async () => {
     try {
+      const permission_status = await navigator.permissions.query({
+        name: 'persistent-storage'
+      })
+
+      return permission_status.state === 'granted'
+    } catch (error) {
+      console.warn('persistent-storage not supported:', error)
+      return false
+    }
+  }
+
+  const check_storage_access = async () => {
+    try {
+      const permission_status = await navigator.permissions.query({
+        name: 'storage-access'
+      })
+      return permission_status.state === 'granted'
+    } catch (error) {
+      console.warn('persistent-storage not supported:', error)
+      return false
+    }
+  }
+  const process_directory = async () => {
+
       progress.value.processing = true
       current_preview.value = null
       completed_poster.value = null
 
       console.info('🗂️ Starting directory processing...')
+      const persistent_storage = await check_persistent_storage()
+      const storage_access = await check_storage_access()
+
+      if (!persistent_storage && !storage_access) {
+        console.error('No persistent storage or storage access permission granted')
+        return
+      }
+      console.info('🎉 Directory access granted')
 
       const source_dir = await window.showDirectoryPicker({
-        mode: 'read',
+        mode: 'readwrite',
         startIn: 'pictures',
         id: 'source-images'
       })
@@ -86,16 +118,11 @@ const use_directory_processor = () => {
         }
       }
 
-      console.info('🎉 Directory processing complete!')
-    } catch (error) {
-      console.error('❌ Directory processing failed:', error)
-    } finally {
-      progress.value.processing = false
-      progress.value.current = 0
-      progress.value.total = 0
-      progress.value.current_file = ''
-      completed_poster.value = null
-    }
+    progress.value.processing = false
+    progress.value.current = 0
+    progress.value.total = 0
+    progress.value.current_file = ''
+    completed_poster.value = null
   }
 
   return {
@@ -105,4 +132,4 @@ const use_directory_processor = () => {
   }
 }
 
-export { use_directory_processor }
+export { use }

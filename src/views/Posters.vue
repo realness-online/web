@@ -5,11 +5,11 @@
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
 
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { Poster } from '@/persistance/Storage'
   import { onMounted as mounted, ref } from 'vue'
+  import { Poster } from '@/persistance/Storage'
+  import { use as use_vectorize } from '@/use/vectorize'
   import { use_posters } from '@/use/vector'
-  import { use_directory_processor } from '@/use/directory-processor'
+  import { use as use_directory_processor } from '@/use/directory-processor'
 
   const { posters, for_person: posters_for_person } = use_posters()
   const {

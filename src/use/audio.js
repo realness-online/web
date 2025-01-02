@@ -21,8 +21,9 @@ export const use = () => {
    * Processes audio data on each animation frame
    */
   const process_audio = () => {
+    if (!analyser.value) return
     const times = new Uint8Array(analyser.value.frequencyBinCount)
-    analyser.value?.getByteTimeDomainData(times)
+    analyser.value.getByteTimeDomainData(times)
     // for (var i = 0; i < times.length; i++) {
     //   const value = times[i]
     //   const zerod = value - 128
@@ -46,9 +47,8 @@ export const use = () => {
     analyzing.value = true
     requestAnimationFrame(process_audio)
   }
-
   return {
-    analyzing,
+    analyzing: analyzing.value,
     analyze_audio
   }
 }

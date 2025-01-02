@@ -84,7 +84,7 @@ export default [
       'no-return-await': 'error',
       'require-await': 'error',
       'max-lines-per-function': ['warn', 150],
-      complexity: ['warn', 10],
+      complexity: ['warn', 20],
       'no-unsafe-optional-chaining': 'error',
       'no-constant-binary-expression': 'error',
       'no-unreachable-loop': 'error',

@@ -16,7 +16,7 @@
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
   import {
-    use_poster,
+    use as use_poster,
     is_vector,
     is_vector_id,
     is_click,
@@ -27,6 +27,7 @@
     emboss as emboss_pref,
     light as light_pref
   } from '@/utils/preference'
+
   const props = defineProps({
     itemid: {
       type: String,

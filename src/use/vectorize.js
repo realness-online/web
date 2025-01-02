@@ -33,7 +33,7 @@ import ExifReader from 'exifreader'
  * @property {() => void} select_photo
  * @property {() => void} open_selfie_camera
  * @property {() => void} open_camera
- * @property {import('vue').Ref<HTMLInputElement>} image_picker
+ * @property {import('vue').Ref<HTMLInputElement | null>} image_picker
  * @property {Object} vVectorizer - Vue directive for vectorization
  * @property {(image: File) => Promise<void>} vectorize
  * @property {import('vue').Ref<Worker>} vectorizer
@@ -44,9 +44,14 @@ import ExifReader from 'exifreader'
  */
 export const use = () => {
   const router = use_router()
+  /** @type {import('vue').Ref<HTMLInputElement | null>} */
   const image_picker = ref(null)
   const working = ref(false)
+  const new_vector = ref(null)
+  const new_gradients = ref(null)
+  /** @type {import('vue').Ref<Worker | null>} */
   const vectorizer = ref(null)
+  /** @type {import('vue').Ref<Worker | null>} */
   const gradienter = ref(null)
 
   const can_add = computed(() => {
@@ -58,16 +63,17 @@ export const use = () => {
   )
 
   const select_photo = () => {
-    image_picker.value.removeAttribute('capture')
-    image_picker.value.click()
+
+    image_picker.value?.removeAttribute('capture')
+    image_picker.value?.click()
   }
   const open_selfie_camera = () => {
-    image_picker.value.setAttribute('capture', 'user')
-    image_picker.value.click()
+    image_picker.value?.setAttribute('capture', 'user')
+    image_picker.value?.click()
   }
   const open_camera = () => {
-    image_picker.value.setAttribute('capture', 'environment')
-    image_picker.value.click()
+    image_picker.value?.setAttribute('capture', 'environment')
+    image_picker.value?.click()
   }
 
   /**
@@ -82,6 +88,7 @@ export const use = () => {
     return path
   }
   const listener = () => {
+    if (!image_picker.value) return
     const image = image_picker.value.files[0]
     if (image === undefined) return
     const is_image = ['image/jpeg', 'image/png'].some(
@@ -93,19 +100,28 @@ export const use = () => {
     }
   }
   const vVectorizer = {
+    /**
+     * @param {HTMLInputElement} input
+     * @param {any} binding
+     * @param {Event} event
+     */
     mounted: (input, binding) => {
-      input.addEventListener('change', event => listener(input, binding, event))
+      input.addEventListener('change', (event) => listener(input, binding, event))
     }
   }
 
+  /**
+   * @param {File} image - The image file to vectorize
+   * @returns {Promise<void>}
+   */
   const vectorize = async image => {
     working.value = true
 
     const tags = await ExifReader.load(image, { expanded: true })
     const exif = exif_logger(tags)
 
-    vectorizer.value.postMessage({ route: 'make:vector', image, exif })
-    gradienter.value.postMessage({ route: 'make:gradient', image })
+    vectorizer.value?.postMessage({ route: 'make:vector', image, exif })
+    gradienter.value?.postMessage({ route: 'make:gradient', image })
   }
 
   /**
@@ -123,8 +139,9 @@ export const use = () => {
    * Handles vectorization response from worker
    * @param {MessageEvent} response
    */
-  const vectorized = response => {
-    const { vector } = response.data
+  /** @param {MessageEvent} message */
+  const vectorized = message => {
+    const { vector } = message.data
     vector.id = as_new_itemid
     vector.type = 'posters'
     vector.light = make_path(vector.light)
@@ -133,6 +150,7 @@ export const use = () => {
     vector.bold = make_path(vector.bold)
     new_vector.value = vector
   }
+  /** @param {MessageEvent} message */
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const mount_workers = () => {
     vectorizer.value = new Worker('/vector.worker.js')
@@ -169,3 +187,6 @@ export const use = () => {
     mount_workers
   }
 }
+
+
+
