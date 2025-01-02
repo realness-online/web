@@ -8,6 +8,11 @@
   import { Poster } from '@/persistance/Storage'
   import { onMounted as mounted } from 'vue'
   import { use_posters } from '@/use/vector'
+  import { use_directory_processor } from '@/use/directory-processor'
+  import { use as use_poster } from '@/use/poster'
+  import { use as use_me } from '@/use/me'
+  import { use as use_preferences } from '@/use/preferences'
+  import { use as use_router } from '@/use/router'
 
   const { posters, for_person: posters_for_person } = use_posters()
   const {
@@ -18,6 +23,10 @@
     working,
     mount_workers
   } = use_vectorize()
+  const { process_directory } = use_directory_processor()
+  const { me } = use_me()
+  const { preferences } = use_preferences()
+  const { router } = use_router()
 
   const remove_poster = async id => {
     const message = 'Delete poster?'
@@ -51,17 +60,26 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <a v-if="can_add" tabindex="-1" @click="select_photo">
-        <icon name="add" />
-      </a>
-      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
-      <logo-as-link tabindex="-1" />
+      <h1>Posters</h1>
+      <nav v-if="can_add">
+        <button @click="select_photo">
+          <icon name="photo" />
+          <span>Photo</span>
+        </button>
+        <button @click="open_selfie_camera">
+          <icon name="selfie" />
+          <span>Selfie</span>
+        </button>
+        <button @click="open_camera">
+          <icon name="camera" />
+          <span>Camera</span>
+        </button>
+        <button @click="process_directory">
+          <icon name="picker" />
+          <span>Directory</span>
+        </button>
+      </nav>
     </header>
-    <h1>Posters</h1>
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
@@ -109,4 +127,9 @@
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1
+
+nav button
+  &:last-child
+    background: var(--accent)
+    color: var(--on-accent)
 </style>

@@ -50,3 +50,6 @@ pnpm-lock.yaml
 yarn.lock
 bun.lock
 docs/generated/
+
+# SSL Certificates
+*.pem
