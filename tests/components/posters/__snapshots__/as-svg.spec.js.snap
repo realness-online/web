@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`] = `
+<anonymous-stub
+  name="working"
+  tabindex="0"
+/>
+`;
+
+exports[`@/components/posters/as-svg.vue > Renders > Can show a poster immediatly 1`] = `
+<anonymous-stub
+  immediate="true"
+  name="working"
+  poster="[object Object]"
+  tabindex="0"
+/>
+`;

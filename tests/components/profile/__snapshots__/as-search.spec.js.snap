@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/compontent/profile/as-search.vue > Renders > An input for search 1`] = `
+<label
+  for="search"
+>
+  <input
+    autocomplete="off"
+    id="search"
+    placeholder="Search phonebook"
+    type="search"
+  />
+  <icon-stub
+    name="search"
+  />
+</label>
+`;
