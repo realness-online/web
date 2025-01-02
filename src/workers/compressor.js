@@ -1,5 +1,5 @@
 import pako from 'pako'
-import { to_kb } from '@/use/number'
+import { to_kb } from '@/utils/number'
 
 export const compress_data = message => {
   console.time('compress:data')

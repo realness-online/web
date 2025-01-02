@@ -1,6 +1,6 @@
 import { whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
-import { change } from '@/use/opacity'
+import { change } from '@/utils/opacity'
 import { svg_ns, use as use_path } from '@/use/path'
 export const change_by = 0.08
 

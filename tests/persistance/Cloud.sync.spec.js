@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { get_item } from '@/use/item'
+import { get_item } from '@/utils/item'
 import firebase from '@/persistance/firebase'
 import CloudSync from '@/persistance/Cloud.sync'
 

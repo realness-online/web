@@ -8,7 +8,7 @@
   } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/vector'
-  import { stroke as stroke_pref, fill as fill_pref } from '@/use/preference'
+  import { stroke as stroke_pref, fill as fill_pref } from '@/utils/preference'
   const props = defineProps({
     itemprop: {
       type: String,

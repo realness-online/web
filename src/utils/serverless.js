@@ -17,7 +17,7 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import { load } from '@/use/itemid'
+import { load } from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
 export const me = ref(undefined)

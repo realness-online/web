@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import sorting from '@/use/sorting'
+import sorting from '@/utils/sorting'
 
 const TIMESTAMP_1 = 5596668999
 const TIMESTAMP_2 = 55966690000

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsDiv from '@/components/statements/as-div.vue'
-import { get_item } from '@/use/item'
+import { get_item } from '@/utils/item'
 
 describe('@/components/statements/as-div', () => {
   let wrapper

@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_author_menu from '@/components/posters/as-menu-author'
-import get_item from '@/use/item'
+import get_item from '@/utils/item'
 
 const poster_html = read_mock_file('@@/html/poster.html')
 const poster = get_item(poster_html)

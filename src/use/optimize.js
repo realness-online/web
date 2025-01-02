@@ -1,7 +1,7 @@
 import { ref, nextTick as next_tick, onUnmounted as dismount } from 'vue'
 
-import get_item from '@/use/item'
-import { as_query_id } from '@/use/itemid'
+import get_item from '@/utils/item'
+import { as_query_id } from '@/utils/itemid'
 export const use = vector => {
   const optimizer = ref(null)
   const optimize = () => {

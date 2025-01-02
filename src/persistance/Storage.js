@@ -3,8 +3,8 @@ import Local from '@/persistance/Local'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
-import { current_user } from '@/use/serverless'
-import { as_type } from '@/use/itemid'
+import { current_user } from '@/utils/serverless'
+import { as_type } from '@/utils/itemid'
 import { get } from 'idb-keyval'
 export default class Storage {
   constructor(itemid) {

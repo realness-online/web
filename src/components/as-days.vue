@@ -4,9 +4,9 @@
     recent_date_first,
     earlier_weirdo_first,
     recent_weirdo_first
-  } from '@/use/sorting'
-  import { as_author } from '@/use/itemid'
-  import { id_as_day, as_day, is_today } from '@/use/date'
+  } from '@/utils/sorting'
+  import { as_author } from '@/utils/itemid'
+  import { id_as_day, as_day, is_today } from '@/utils/date'
   import { as_thoughts, thoughts_sort } from '@/use/statements'
   const page_size = 5
   export default {

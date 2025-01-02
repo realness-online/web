@@ -1,6 +1,6 @@
 import { as_paths } from '@/potrace/index.js'
-import { rgba_to_hsla } from '@/use/colors'
-import { to_kb } from '@/use/number'
+import { rgba_to_hsla } from '@/utils/colors'
+import { to_kb } from '@/utils/number'
 import { optimize } from 'svgo/dist/svgo.browser.js'
 
 export const potrace_options = {

@@ -1,6 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { auth, Recaptcha, sign_in } from '@/use/serverless'
+  import { auth, Recaptcha, sign_in } from '@/utils/serverless'
   import { as_phone_number, use_me } from '@/use/people'
   import {
     onMounted as mounted,

@@ -2,7 +2,7 @@
   import Icon from '@/components/icon'
   import { is_vector_id } from '@/use/vector'
   import { computed } from 'vue'
-  import { me } from '@/use/serverless'
+  import { me } from '@/utils/serverless'
   import { use_me } from '@/use/people'
   const props = defineProps({
     itemid: {

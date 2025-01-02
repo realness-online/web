@@ -4,10 +4,10 @@ import {
   load,
   as_created_at,
   as_directory
-} from '@/use/itemid'
+} from '@/utils/itemid'
 import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-import { recent_item_first } from '@/use/sorting'
+import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 const path_names = ['background', 'light', 'regular', 'medium', 'bold']
 export const is_click = menu => typeof menu === 'boolean'

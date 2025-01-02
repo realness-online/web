@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { get_item, set_item, remove_item } from '@/use/item'
+import { get_item, set_item, remove_item } from '@/utils/item'
 import { hydrate } from '@/use/hydrate'
 
 describe('@/use/item', () => {

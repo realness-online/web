@@ -1,4 +1,4 @@
-import { to_hex } from '@/use/colors'
+import { to_hex } from '@/utils/colors'
 describe('#to_hex', () => {
   it('converts rgb to a hex', () => {
     expect(to_hex('rgb(199,223,14)')).toBe('#c7df0e')

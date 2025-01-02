@@ -1,5 +1,5 @@
-import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
-import { recent_item_first, recent_number_first } from '@/use/sorting'
+import { as_created_at, list, as_directory, as_author } from '@/utils/itemid'
+import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statements } from '@/persistance/Storage'
 import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
 export const thirteen_minutes = 1000 * 60 * 13 // 780000

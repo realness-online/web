@@ -1,4 +1,4 @@
-import { as_created_at } from '@/use/itemid'
+import { as_created_at } from '@/utils/itemid'
 export function recent_id_first(first, second) {
   return as_created_at(second) - as_created_at(first)
 }

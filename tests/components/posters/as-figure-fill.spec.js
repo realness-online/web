@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import as_fill_figure from '@/components/posters/as-figure-fill'
-import get_item from '@/use/item'
-import * as itemid from '@/use/itemid'
+import get_item from '@/utils/item'
+import * as itemid from '@/utils/itemid'
 
 const poster_html = read_mock_file('@@/html/poster.html')
 let poster = get_item(poster_html)

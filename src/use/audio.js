@@ -1,8 +1,26 @@
 import { ref } from 'vue'
+
+/**
+ * @typedef {Object} AudioAnalyzer
+ * @property {boolean} analyzing - Whether audio analysis is currently active
+ * @property {(stream: MediaStream) => void} analyze_audio - Start analyzing audio from stream
+ */
+
+/**
+ * Audio analysis composable
+ * @returns {AudioAnalyzer}
+ */
 export const use = () => {
+  /** @type {import('vue').Ref<AnalyserNode|null>} */
   const analyser = ref(null)
+
+  /** @type {import('vue').Ref<boolean>} */
   const analyzing = ref(false)
 
+  /**
+   * Initializes audio analysis for a media stream
+   * @param {MediaStream} stream - The audio stream to analyze
+   */
   const analyze_audio = stream => {
     const context = new AudioContext()
     analyser.value = context.createAnalyser()
@@ -14,6 +32,10 @@ export const use = () => {
     analyzing.value = true
     requestAnimationFrame(process_audio)
   }
+
+  /**
+   * Processes audio data on each animation frame
+   */
   const process_audio = () => {
     const times = new Uint8Array(analyser.value.frequencyBinCount)
     analyser.value.getByteTimeDomainData(times)

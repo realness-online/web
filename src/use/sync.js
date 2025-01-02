@@ -1,16 +1,16 @@
-import { location, metadata } from '@/use/serverless'
+import { location, metadata } from '@/utils/serverless'
 import { get, del, set, keys } from 'idb-keyval'
 import {
   as_filename,
   as_author,
   load,
   build_local_directory
-} from '@/use/itemid'
+} from '@/utils/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
-import { current_user } from '@/use/serverless'
+import { current_user } from '@/utils/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
-import get_item from '@/use/item'
+import get_item from '@/utils/item'
 import {
   ref,
   onMounted as mounted,

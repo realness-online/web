@@ -1,8 +1,8 @@
 // {base_url}/{:author}/{:type}/{:created_at}
 import { get, set, keys } from 'idb-keyval'
-import get_item from '@/use/item'
+import get_item from '@/utils/item'
 import { does_not_exist } from '@/use/sync'
-import { url, directory } from '@/use/serverless'
+import { url, directory } from '@/utils/serverless'
 import { decompress_data } from '@/utils/upload_processor'
 
 class Directory {

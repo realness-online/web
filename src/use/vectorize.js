@@ -6,13 +6,42 @@ import {
 } from 'vue'
 import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
-import { as_created_at } from '@/use/itemid'
+import { as_created_at } from '@/utils/itemid'
 import { useRouter as use_router } from 'vue-router'
-import { to_kb } from '@/use/number'
+import { to_kb } from '@/utils/number'
 import ExifReader from 'exifreader'
-const new_vector = ref(null)
-const new_gradients = ref(null)
 
+/**
+ * @typedef {Object} Vector
+ * @property {string} id
+ * @property {'posters'} type
+ * @property {SVGPathElement} light
+ * @property {SVGPathElement} regular
+ * @property {SVGPathElement} medium
+ * @property {SVGPathElement} bold
+ */
+
+/**
+ * @typedef {Object} PathData
+ * @property {string} d - SVG path data string
+ */
+
+/**
+ * Composable for handling image vectorization
+ * @returns {Object} Vectorization methods and state
+ * @property {import('vue').ComputedRef<boolean>} can_add
+ * @property {() => void} select_photo
+ * @property {() => void} open_selfie_camera
+ * @property {() => void} open_camera
+ * @property {import('vue').Ref<HTMLInputElement>} image_picker
+ * @property {Object} vVectorizer - Vue directive for vectorization
+ * @property {(image: File) => Promise<void>} vectorize
+ * @property {import('vue').Ref<Worker>} vectorizer
+ * @property {import('vue').Ref<boolean>} working
+ * @property {import('vue').Ref<Vector|null>} new_vector
+ * @property {import('vue').Ref<Array<string>|null>} new_gradients
+ * @property {() => void} mount_workers
+ */
 export const use = () => {
   const router = use_router()
   const image_picker = ref(null)
@@ -40,6 +69,12 @@ export const use = () => {
     image_picker.value.setAttribute('capture', 'environment')
     image_picker.value.click()
   }
+
+  /**
+   * Creates an SVG path element from path data
+   * @param {PathData} path_data
+   * @returns {SVGPathElement}
+   */
   const make_path = path_data => {
     const path = create_path_element()
     path.setAttribute('d', path_data.d)
@@ -73,12 +108,21 @@ export const use = () => {
     gradienter.value.postMessage({ route: 'make:gradient', image })
   }
 
+  /**
+   * Processes EXIF data and logs it
+   * @param {Object} tags - EXIF tags from ExifReader
+   * @returns {Object} Cloned EXIF data
+   */
   const exif_logger = tags => {
     const cloned = structuredClone(tags)
     console.log('EXIF: ', `${to_kb(cloned)}kb`, cloned)
     return cloned
   }
 
+  /**
+   * Handles vectorization response from worker
+   * @param {MessageEvent} response
+   */
   const vectorized = response => {
     const { vector } = response.data
     vector.id = as_new_itemid

@@ -4,7 +4,7 @@
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/statements/as-article'
 
-  import { current_user } from '@/use/serverless'
+  import { current_user } from '@/utils/serverless'
   import { use as use_statements } from '@/use/statements'
   import { get_my_itemid } from '@/use/people'
 

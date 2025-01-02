@@ -1,7 +1,7 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { current_user, upload, remove } from '@/use/serverless'
+import { current_user, upload, remove } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename } from '@/use/itemid'
+import { as_filename } from '@/utils/itemid'
 import { prepare_upload_data } from '@/utils/upload_processor'
 
 const networkable = ['person', 'statements', 'posters', 'events']

@@ -26,7 +26,7 @@
     animate as animate_pref,
     emboss as emboss_pref,
     light as light_pref
-  } from '@/use/preference'
+  } from '@/utils/preference'
   const props = defineProps({
     itemid: {
       type: String,

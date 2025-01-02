@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { generate_id, validate_id, parse_id } from '@/use/itemid'
+import { generate_id, validate_id, parse_id } from '@/utils/itemid'
 
 describe('@/use/itemid', () => {
   describe('ID Generation', () => {
