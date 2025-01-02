@@ -18,6 +18,20 @@ export const use = () => {
   const analyzing = ref(false)
 
   /**
+   * Processes audio data on each animation frame
+   */
+  const process_audio = () => {
+    const times = new Uint8Array(analyser.value.frequencyBinCount)
+    analyser.value?.getByteTimeDomainData(times)
+    // for (var i = 0; i < times.length; i++) {
+    //   const value = times[i]
+    //   const zerod = value - 128
+    //   console.log(i, value, zerod)
+    // }
+    if (analyzing.value) requestAnimationFrame(process_audio)
+  }
+
+  /**
    * Initializes audio analysis for a media stream
    * @param {MediaStream} stream - The audio stream to analyze
    */
@@ -31,20 +45,6 @@ export const use = () => {
     input.connect(analyser.value)
     analyzing.value = true
     requestAnimationFrame(process_audio)
-  }
-
-  /**
-   * Processes audio data on each animation frame
-   */
-  const process_audio = () => {
-    const times = new Uint8Array(analyser.value.frequencyBinCount)
-    analyser.value.getByteTimeDomainData(times)
-    // for (var i = 0; i < times.length; i++) {
-    //   const value = times[i]
-    //   const zerod = value - 128
-    //   console.log(i, value, zerod)
-    // }
-    if (analyzing.value) requestAnimationFrame(process_audio)
   }
 
   return {
