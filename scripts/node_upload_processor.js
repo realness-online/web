@@ -4,9 +4,7 @@ import crypto from 'crypto'
 
 const gzip_async = promisify(gzip)
 
-const compress_data = async (data, filename = 'data') => {
-  return await gzip_async(data)
-}
+const compress_data = async (data, filename = 'data') => await gzip_async(data)
 
 const create_hash = async (data, algorithm = 'SHA-256') => {
   const hash = crypto.createHash(algorithm.toLowerCase())

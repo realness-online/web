@@ -26,10 +26,12 @@ describe('@/use/statements', () => {
     })
 
     it('adds new statements', () => {
-      const test_statements = Array(STATEMENT_COUNT).fill().map((_, i) => ({
-        id: i,
-        content: `Statement ${i}`
-      }))
+      const test_statements = Array(STATEMENT_COUNT)
+        .fill()
+        .map((_, i) => ({
+          id: i,
+          content: `Statement ${i}`
+        }))
 
       test_statements.forEach(statement => {
         wrapper.vm.add_statement(statement)

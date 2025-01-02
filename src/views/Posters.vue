@@ -20,10 +20,10 @@
     working,
     mount_workers
   } = use_vectorize()
-  const { process_directory, progress, completed_poster } = use_directory_processor()
+  const { process_directory, progress, completed_poster } =
+    use_directory_processor()
 
-
-  const remove_poster = async (poster) => {
+  const remove_poster = async poster => {
     const message = 'Delete poster?'
     if (window.confirm(message)) {
       posters.value = posters.value.filter(item => item.id !== poster.id)
@@ -57,14 +57,13 @@
 <template>
   <section id="posters" class="page">
     <header>
-      <header>
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
       <a v-if="can_add" tabindex="-1" @click="process_directory">
         <icon name="picker" />
       </a>
-      <h1>Posters</h1>
+
       <input
         ref="image_picker"
         v-vectorizer
@@ -72,25 +71,7 @@
         accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
-
-      <div v-if="progress.processing" class="progress">
-        <meter
-          :value="progress.current"
-          :max="progress.total"
-        />
-        <span>{{ progress.current }} / {{ progress.total }}</span>
-
-        <div class="preview">
-          <as-svg
-            v-if="completed_poster"
-            :vector="completed_poster"
-            class="preview-poster"
-          />
-          <span>{{ progress.current_file }}</span>
-        </div>
-      </div>
-    </header>
-
+    <h1>Posters</h1>
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
@@ -105,91 +86,103 @@
           @picker="() => picker(poster.id)" />
       </as-figure>
     </article>
+    <footer v-if="progress.processing" class="progress">
+      <meter :value="progress.current" :max="progress.total" />
+      <span>{{ progress.current }} / {{ progress.total }}</span>
+
+      <div class="preview">
+        <as-svg
+          v-if="completed_poster"
+          :vector="completed_poster"
+          class="preview-poster" />
+        <span>{{ progress.current_file }}</span>
+      </div>
+    </footer>
   </section>
 </template>
 
 <style lang="stylus">
-  section#posters
-    svg, a
-      color: green
-      fill: green
-    & > header
-      justify-content: space-between
-    & > footer
-      border-radius: base-line
-      padding: base-line * 0.5
-      background-color: black-transparent
-      position: fixed
-      bottom: base-line * 0.5
-      left: s('calc( 50% - %s)', (base-line * 1.75) )
-      z-index: 4
-      @media (min-width: typing-begins)
-        visibility: hidden
-    & > h1
-      @media (prefers-color-scheme: dark)
+    section#posters
+      svg, a
         color: green
-    & > article
-      standard-grid: gentle
-      grid-gap: 0
-      padding-bottom: base-line * 3
-      @media (max-width: pad-begins)
-        margin-top: base-line
-      & > figure.poster
-        &.selecting-event
-          & > svg:not(.background)
-            opacity: 0.1
+        fill: green
+      & > header
+        justify-content: space-between
+      & > footer
+        border-radius: base-line
+        padding: base-line * 0.5
+        background-color: black-transparent
+        position: fixed
+        bottom: base-line * 0.5
+        left: s('calc( 50% - %s)', (base-line * 1.75) )
+        z-index: 4
+        @media (min-width: typing-begins)
+          visibility: hidden
+      & > h1
+        @media (prefers-color-scheme: dark)
+          color: green
+      & > article
+        standard-grid: gentle
+        grid-gap: 0
+        padding-bottom: base-line * 3
+        @media (max-width: pad-begins)
+          margin-top: base-line
+        & > figure.poster
+          &.selecting-event
+            & > svg:not(.background)
+              opacity: 0.1
 
-nav button
-  &:last-child
-    background: var(--accent)
-    color: var(--on-accent)
-
-.progress
-  margin-top: base-line
-  display: flex
-  flex-direction: column
-  align-items: center
-  gap: base-line
-
-  meter
-    width: 80%
-    height: base-line
-
-    &::-webkit-meter-bar
-      background: var(--surface)
-      border: 1px solid var(--outline)
-      border-radius: base-line * 0.25
-
-    &::-webkit-meter-optimum-value
+  nav button
+    &:last-child
       background: var(--accent)
-      border-radius: base-line * 0.25
+      color: var(--on-accent)
 
-  span
-    color: var(--on-surface)
-    font-size: 0.9em
-
-  .preview
+  .progress
+    margin-top: base-line
     display: flex
     flex-direction: column
     align-items: center
-    gap: base-line * 0.5
+    gap: base-line
 
-    .preview-image
-      width: 120px
-      height: 120px
-      border-radius: base-line * 0.5
-      background: var(--surface)
-      padding: base-line * 0.5
-      display: flex
-      align-items: center
-      justify-content: center
+    meter
+      width: 80%
+      height: base-line
 
-      :deep(svg)
-        width: 100%
-        height: 100%
-        object-fit: contain
+      &::-webkit-meter-bar
+        background: var(--surface)
+        border: 1px solid var(--outline)
+        border-radius: base-line * 0.25
+
+      &::-webkit-meter-optimum-value
+        background: var(--accent)
+        border-radius: base-line * 0.25
 
     span
-      font-size: 0.8em
-      opacity: 0.8
+      color: var(--on-surface)
+      font-size: 0.9em
+
+    .preview
+      display: flex
+      flex-direction: column
+      align-items: center
+      gap: base-line * 0.5
+
+      .preview-image
+        width: 120px
+        height: 120px
+        border-radius: base-line * 0.5
+        background: var(--surface)
+        padding: base-line * 0.5
+        display: flex
+        align-items: center
+        justify-content: center
+
+        :deep(svg)
+          width: 100%
+          height: 100%
+          object-fit: contain
+
+      span
+        font-size: 0.8em
+        opacity: 0.8
 </style>

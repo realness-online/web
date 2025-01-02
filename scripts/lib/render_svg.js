@@ -3,18 +3,14 @@ import { create_gradients } from './render_gradients'
 import { create_masks } from './render_masks'
 
 const create_svg = (vector, options = {}) => {
-  const {
-    emboss = false,
-    animate = false,
-    light = false
-  } = options
+  const { emboss = false, animate = false, light = false } = options
 
   // Helper for creating element with attributes
   const create_element = (tag, attrs = {}) => {
     const el = document.createElementNS('http://www.w3.org/2000/svg', tag)
-    for (const [key, value] of Object.entries(attrs)) {
+    for (const [key, value] of Object.entries(attrs))
       el.setAttribute(key, value)
-    }
+
     return el
   }
 

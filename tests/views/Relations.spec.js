@@ -12,7 +12,8 @@ describe('Relations', () => {
     dispatch: vi.fn()
   }
 
-  const mount_relations = () => shallowMount(Relations, {
+  const mount_relations = () =>
+    shallowMount(Relations, {
       global: {
         mocks: {
           $store: mock_store

@@ -17,10 +17,10 @@ global.window = dom.window
 global.document = dom.window.document
 
 const DATA_DIR = 'storage'
-const SOURCE_DIR = join(DATA_DIR, 'images')  // Where original images are
-const PEOPLE_DIR = join(DATA_DIR, 'people')  // Where posters will go
+const SOURCE_DIR = join(DATA_DIR, 'images') // Where original images are
+const PEOPLE_DIR = join(DATA_DIR, 'people') // Where posters will go
 
-const ensure_dir = async (dir_path) => {
+const ensure_dir = async dir_path => {
   try {
     await mkdir(dir_path, { recursive: true })
   } catch (error) {
@@ -34,11 +34,8 @@ const get_image_files = async (dir_path, files = []) => {
   for (const entry of entries) {
     const full_path = join(dir_path, entry.name)
 
-    if (entry.isDirectory()) {
-      await get_image_files(full_path, files)
-    } else if (/\.(jpg|jpeg|png)$/i.test(entry.name)) {
-      files.push(full_path)
-    }
+    if (entry.isDirectory()) await get_image_files(full_path, files)
+    else if (/\.(jpg|jpeg|png)$/i.test(entry.name)) files.push(full_path)
   }
 
   return files
@@ -68,7 +65,7 @@ const process_image = async (image_path, phone_number) => {
     await writeFile(`${base_path}.svg`, svg)
 
     console.log(chalk.green('✓ Processing successful'))
-    console.log(chalk.dim('Saved to: ') + base_path + '.{json,svg}')
+    console.log(`${chalk.dim('Saved to: ') + base_path}.{json,svg}`)
     return true
   } catch (error) {
     console.error(chalk.red('Processing failed:'), error)
@@ -80,13 +77,13 @@ const main = async () => {
   try {
     const phone_number = process.argv[2] || ADMIN_ID
 
-    if (!phone_number) {
-      throw new Error('No phone number provided and VITE_ADMIN_ID not set in .env')
-    }
+    if (!phone_number)
+      throw new Error(
+        'No phone number provided and VITE_ADMIN_ID not set in .env'
+      )
 
-    if (!/^\+\d{10,}$/.test(phone_number)) {
+    if (!/^\+\d{10,}$/.test(phone_number))
       throw new Error('Phone number must be in format: +1234567890')
-    }
 
     console.log(chalk.bold('Starting image vectorization'))
     console.log(chalk.dim('Phone number: ') + chalk.cyan(phone_number))
@@ -111,7 +108,9 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / image_files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${image_files.length})`))
+      console.log(
+        chalk.dim(`Progress: ${progress}% (${total}/${image_files.length})`)
+      )
     }
 
     console.log(chalk`
@@ -120,7 +119,6 @@ const main = async () => {
 {dim Successful:}     {green ${successful}}
 {dim Failed:}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}
 `)
-
   } catch (error) {
     console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)

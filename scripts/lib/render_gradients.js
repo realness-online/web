@@ -25,32 +25,38 @@ const create_gradient = (id, stops, options = {}) => {
   }
 
   stops.forEach(stop => {
-    const stop_el = document.createElementNS('http://www.w3.org/2000/svg', 'stop')
+    const stop_el = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop'
+    )
     stop_el.setAttribute('offset', stop.offset)
     stop_el.setAttribute('stop-color', stop.color)
-    if (stop.opacity) {
-      stop_el.setAttribute('stop-opacity', stop.opacity)
-    }
+    if (stop.opacity) stop_el.setAttribute('stop-opacity', stop.opacity)
+
     gradient.appendChild(stop_el)
   })
 
   return gradient
 }
 
-const create_gradients = (vector) => {
+const create_gradients = vector => {
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
   defs.setAttribute('class', 'gradients')
 
   // Background gradients
-  const radial_background = create_gradient(`radial-background-${vector.id}`, [
-    { offset: '0%', color: vector.gradients.background[0] },
-    { offset: '100%', color: vector.gradients.background[1] }
-  ], {
-    type: 'radialGradient',
-    cx: '50%',
-    cy: '0%',
-    r: '100%'
-  })
+  const radial_background = create_gradient(
+    `radial-background-${vector.id}`,
+    [
+      { offset: '0%', color: vector.gradients.background[0] },
+      { offset: '100%', color: vector.gradients.background[1] }
+    ],
+    {
+      type: 'radialGradient',
+      cx: '50%',
+      cy: '0%',
+      r: '100%'
+    }
+  )
   defs.appendChild(radial_background)
 
   // Weight gradients (light, regular, medium, bold)
@@ -62,16 +68,21 @@ const create_gradients = (vector) => {
 
     directions.forEach(direction => {
       const gradient_id = `${direction}-${weight}-${vector.id}`
-      const gradient_type = direction === 'radial' ? 'radialGradient' : 'linearGradient'
+      const gradient_type =
+        direction === 'radial' ? 'radialGradient' : 'linearGradient'
       const options = {
         type: gradient_type,
         ...get_gradient_direction(direction)
       }
 
-      const gradient = create_gradient(gradient_id, [
-        { offset: '0%', color: vector.gradients[weight][0] },
-        { offset: '100%', color: vector.gradients[weight][1] }
-      ], options)
+      const gradient = create_gradient(
+        gradient_id,
+        [
+          { offset: '0%', color: vector.gradients[weight][0] },
+          { offset: '100%', color: vector.gradients[weight][1] }
+        ],
+        options
+      )
 
       defs.appendChild(gradient)
     })
@@ -80,7 +91,7 @@ const create_gradients = (vector) => {
   return defs
 }
 
-const get_gradient_direction = (direction) => {
+const get_gradient_direction = direction => {
   switch (direction) {
     case 'vertical':
       return { x1: '0%', y1: '0%', x2: '0%', y2: '100%' }

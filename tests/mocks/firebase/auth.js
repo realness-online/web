@@ -6,10 +6,10 @@ const auth = {
   sign_out: vi.fn(),
   create_user: vi.fn(),
   delete_user: vi.fn(),
-  on_auth_state_changed: (_callback) => 
+  on_auth_state_changed:
+    _callback =>
     // Implementation if needed
-     () => {}
-  
+    () => {}
 }
 
 export default auth
