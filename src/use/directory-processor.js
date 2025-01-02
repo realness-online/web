@@ -1,10 +1,10 @@
 import { use as use_vectorize } from '@/use/vectorize'
-import { use as use_optimizer } from '@/use/optimizer'
+import { use as use_optimizer } from '@/use/optimize'
 import { ref } from 'vue'
 
 const use_directory_processor = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
-  const { optimize } = use_optimizer(completed_poster)
+  const { optimize } = use_optimizer()
   const progress = ref({
     total: 0,
     current: 0,
@@ -58,9 +58,9 @@ const use_directory_processor = () => {
 
           completed_poster.value = new_vector.value
 
-          if (!completed_poster.value.optimized) {
-            await optimize()
-          }
+          if (!completed_poster.value.optimized)
+            completed_poster.value = await optimize(completed_poster.value)
+
 
           const svg_data = completed_poster.value
           const poster_name = name.replace(/\.[^/.]+$/, '.svg')
