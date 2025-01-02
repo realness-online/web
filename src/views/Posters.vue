@@ -57,19 +57,21 @@
 <template>
   <section id="posters" class="page">
     <header>
+      <header>
+      <a v-if="can_add" tabindex="-1" @click="select_photo">
+        <icon name="add" />
+      </a>
+      <a v-if="can_add" tabindex="-1" @click="process_directory">
+        <icon name="picker" />
+      </a>
       <h1>Posters</h1>
-      <nav v-if="can_add">
-        <logo-as-link />
-        <button v-vectorizer @click="select_photo">
-          <icon name="add" />
-          <span>Upload</span>
-        </button>
-
-        <button @click="process_directory">
-          <icon name="picker" />
-          <span>Directory</span>
-        </button>
-      </nav>
+      <input
+        ref="image_picker"
+        v-vectorizer
+        type="file"
+        accept="image/jpeg,image/png" />
+      <logo-as-link tabindex="-1" />
+    </header>
 
       <div v-if="progress.processing" class="progress">
         <meter
