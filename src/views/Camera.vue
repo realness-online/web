@@ -10,10 +10,7 @@
   // const { f, enter, escape } = use_Keyboard()
   const facing = ref('user')
   mounted(async () => {
-    console.log(
-      'views:/camera',
-      navigator.mediaDevices.getSupportedConstraints()
-    )
+    console.log('views:/camera', navigator.mediaDevices.getSupportedConstraints())
     await start()
   })
   const config = computed(() => ({

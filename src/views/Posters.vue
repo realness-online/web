@@ -12,16 +12,9 @@
   import { use_directory_processor } from '@/use/directory-processor'
 
   const { posters, for_person: posters_for_person } = use_posters()
-  const {
-    can_add,
-    vVectorizer,
-    image_picker,
-    select_photo,
-    working,
-    mount_workers
-  } = use_vectorize()
-  const { process_directory, progress, completed_poster } =
-    use_directory_processor()
+  const { can_add, vVectorizer, image_picker, select_photo, working, mount_workers } =
+    use_vectorize()
+  const { process_directory, progress, completed_poster } = use_directory_processor()
 
   const remove_poster = async poster => {
     const message = 'Delete poster?'
@@ -64,11 +57,7 @@
         <icon name="picker" />
       </a>
 
-      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
+      <input ref="image_picker" v-vectorizer type="file" accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>

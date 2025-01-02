@@ -1,0 +1,5 @@
+dist/
+artifacts/
+coverage/
+public/*.worker.js
+pnpm-lock.yaml

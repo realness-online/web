@@ -37,7 +37,7 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "typecheck": "tsc",
+    "type": "tsc --pretty",
     "storage:compress": "node scripts/compress_files.js",
     "storage:decompress": "node scripts/decompress_files.js",
     "storage:upload": "node scripts/upload_compressed.js",

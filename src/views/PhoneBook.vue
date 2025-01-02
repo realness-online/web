@@ -31,10 +31,7 @@
     <h1>Phonebook</h1>
     <icon v-if="working" name="working" />
     <nav v-if="current_user" class="profile-list">
-      <as-figure
-        v-for="person in phonebook"
-        :key="person.id"
-        :person="person" />
+      <as-figure v-for="person in phonebook" :key="person.id" :person="person" />
     </nav>
     <footer v-if="!working && !current_user">
       <sign-on v-if="!current_user" />

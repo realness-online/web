@@ -2,12 +2,7 @@
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in } from '@/use/serverless'
   import { as_phone_number, use_me } from '@/use/people'
-  import {
-    onMounted as mounted,
-    ref,
-    computed,
-    nextTick as next_tick
-  } from 'vue'
+  import { onMounted as mounted, ref, computed, nextTick as next_tick } from 'vue'
   const emit = defineEmits(['signed-on'])
   const { me } = use_me()
   const validator = ref(null)
@@ -29,9 +24,7 @@
   })
   const mobile_display = computed(() => {
     if (mobile_number.value)
-      return new validator.value.AsYouType(country_code.value).input(
-        mobile_number.value
-      )
+      return new validator.value.AsYouType(country_code.value).input(mobile_number.value)
     return 'Mobile'
   })
   const validate_mobile_number = () => {
@@ -66,11 +59,7 @@
     show_code.value = true
     hide_captcha.value = true
     await next_tick()
-    authorizer.value = await sign_in(
-      auth.value,
-      `+${mobile_number.value}`,
-      human.value
-    )
+    authorizer.value = await sign_in(auth.value, `+${mobile_number.value}`, human.value)
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
@@ -94,10 +83,7 @@
   }
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const phone_number = validator.value.parseNumber(
-      past_text,
-      country_code.value
-    ).phone
+    const phone_number = validator.value.parseNumber(past_text, country_code.value).phone
     if (phone_number) {
       mobile_number.value = phone_number
       return validate_mobile_number()
@@ -135,10 +121,7 @@
         @keyup="validate_mobile_number"
         @paste.prevent="mobile_paste" />
     </fieldset>
-    <fieldset
-      v-if="show_captcha"
-      id="captcha"
-      :class="{ hide: hide_captcha }" />
+    <fieldset v-if="show_captcha" id="captcha" :class="{ hide: hide_captcha }" />
     <fieldset v-if="show_code">
       <input
         id="verification-code"

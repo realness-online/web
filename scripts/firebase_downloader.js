@@ -22,9 +22,7 @@ const ensure_dir = async dir_path => {
 const init_firebase = async () => {
   try {
     console.log(chalk.dim('Initializing Firebase...'))
-    const service_account = JSON.parse(
-      await readFile(SERVICE_ACCOUNT_PATH, 'utf-8')
-    )
+    const service_account = JSON.parse(await readFile(SERVICE_ACCOUNT_PATH, 'utf-8'))
 
     initializeApp({
       credential: cert(service_account),
@@ -57,8 +55,7 @@ const download_and_decompress = async bucket => {
         // Get file metadata
         const [metadata] = await file.getMetadata()
         console.log(
-          chalk.dim('Created: ') +
-            new Date(metadata.timeCreated).toLocaleString()
+          chalk.dim('Created: ') + new Date(metadata.timeCreated).toLocaleString()
         )
 
         // Download file
@@ -95,9 +92,7 @@ const download_and_decompress = async bucket => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     return { successful, failed }

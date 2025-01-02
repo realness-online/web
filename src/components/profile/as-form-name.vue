@@ -35,9 +35,7 @@
         @keyup="modified_check" />
     </fieldset>
     <menu>
-      <button ref="button" disabled @click.prevent="save_me">
-        Yep, That's my name
-      </button>
+      <button ref="button" disabled @click.prevent="save_me">Yep, That's my name</button>
     </menu>
   </form>
 </template>

@@ -41,24 +41,16 @@
     l = +(l * 100).toFixed(1)
 
     document.documentElement.style.setProperty(`--${inputType}-color-h`, h)
-    document.documentElement.style.setProperty(
-      `--${inputType}-color-s`,
-      `${s}%`
-    )
-    document.documentElement.style.setProperty(
-      `--${inputType}-color-l`,
-      `${l}%`
-    )
+    document.documentElement.style.setProperty(`--${inputType}-color-s`, `${s}%`)
+    document.documentElement.style.setProperty(`--${inputType}-color-l`, `${l}%`)
   }
 
   const inputs = ['primary', 'secondary']
 
   inputs.forEach(inputType => {
-    document
-      .querySelector(`#${inputType}-color-input`)
-      .addEventListener('change', e => {
-        setTheme(e.target.value, inputType)
-      })
+    document.querySelector(`#${inputType}-color-input`).addEventListener('change', e => {
+      setTheme(e.target.value, inputType)
+    })
   })
 </script>
 

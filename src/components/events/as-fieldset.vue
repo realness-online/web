@@ -91,9 +91,7 @@
         const year = parseInt(date_list[0])
         const month = parseInt(date_list[1]) - 1
         const day = parseInt(date_list[2])
-        this.main_event = new Date(
-          this.main_event.setFullYear(year, month, day)
-        )
+        this.main_event = new Date(this.main_event.setFullYear(year, month, day))
       },
       update_time() {
         const time_list = this.$refs.time.value.split(':')
@@ -116,12 +114,7 @@
       required
       :value="event_day"
       @input="update_date" />
-    <input
-      ref="time"
-      type="time"
-      required
-      :value="event_time"
-      @input="update_time" />
+    <input ref="time" type="time" required :value="event_time" @input="update_time" />
     <menu>
       <a @click="remove"><icon name="remove" /></a>
       <a @click="save"><icon name="add" /></a>

@@ -9,18 +9,15 @@ node_modules
 /public/**.worker.js
 /public/**.worker.js.map
 /public/**.wasm
-.prettierignore
-/.editorconfig
 /coverage/
 /artifacts/
 /dist
-/public/report.html
+/storage/
 .firebase/
 .firebase/hosting*
 firebase-debug.log
 .firebaserc
-/storage/
-/.vscode/
+
 
 # local env files
 .env.local

@@ -19,7 +19,7 @@ const create_worker_config = filename => ({
       entries: [
         {
           find: '@',
-          replacement: path.resolve(__dirname, './src') // adjust this path based on your project structure
+          replacement: path.resolve(__dirname, './src')
         }
       ]
     }),
@@ -35,7 +35,4 @@ const create_worker_config = filename => ({
   ]
 })
 
-export default [
-  create_worker_config('vector'),
-  create_worker_config('compressor')
-]
+export default [create_worker_config('vector'), create_worker_config('compressor')]

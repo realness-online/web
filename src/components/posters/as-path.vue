@@ -67,8 +67,7 @@
     fill.value = props.fill
     stroke.value = props.stroke
     d.value = props.path.getAttribute('d')
-    if (props.path.style?.fillOpacity)
-      fill_opacity.value = props.path.style.fillOpacity
+    if (props.path.style?.fillOpacity) fill_opacity.value = props.path.style.fillOpacity
     if (props.path.style.strokeOpacity)
       stroke_opacity.value = props.path.style.strokeOpacity
     if (props.path.style.color) stroke.value = props.path.style.color

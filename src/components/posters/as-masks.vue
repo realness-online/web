@@ -40,10 +40,7 @@
       :id="query('horizontal-mask')"
       maskUnits="userSpaceOnUse"
       maskContentUnits="userSpaceOnUse">
-      <rect
-        width="100%"
-        height="100%"
-        :fill="as_url('horizontal-background')" />
+      <rect width="100%" height="100%" :fill="as_url('horizontal-background')" />
     </mask>
     <mask
       :id="query('radial-mask')"

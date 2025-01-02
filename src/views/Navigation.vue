@@ -9,8 +9,7 @@
   const first_name = ref('')
   const nav = ref()
   const done_posting = () => nav.value.focus()
-  const { vVectorizer, image_picker, open_camera, mount_workers } =
-    use_vectorize()
+  const { vVectorizer, image_picker, open_camera, mount_workers } = use_vectorize()
   mounted(async () => {
     const my = await load(localStorage.me)
     if (my?.first_name) first_name.value = my.first_name
@@ -44,9 +43,7 @@
         Thoughts
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea
-        class="red"
-        @toggle-keyboard="posting = !posting" />
+      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" />
     </nav>
     <footer>
       <button>{{ version }}</button>
@@ -57,11 +54,7 @@
     </footer>
   </section>
   <aside>
-    <input
-      ref="image_picker"
-      v-vectorizer
-      type="file"
-      accept="image/jpeg,image/png" />
+    <input ref="image_picker" v-vectorizer type="file" accept="image/jpeg,image/png" />
   </aside>
 </template>
 

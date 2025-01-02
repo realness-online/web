@@ -43,8 +43,8 @@
       v-if="my_statements && my_statements.length === 0 && !working"
       class="message">
       <p>
-        Say some stuff via the <button aria-label="Home" @click="home" /> button
-        on the homepage
+        Say some stuff via the <button aria-label="Home" @click="home" /> button on the
+        homepage
         <br />
       </p>
     </footer>

@@ -11,9 +11,7 @@ const init_firebase = async () => {
   try {
     console.log(chalk.dim('Initializing Firebase...'))
 
-    const service_account = JSON.parse(
-      await readFile(SERVICE_ACCOUNT_PATH, 'utf-8')
-    )
+    const service_account = JSON.parse(await readFile(SERVICE_ACCOUNT_PATH, 'utf-8'))
 
     initializeApp({
       credential: cert(service_account),
@@ -71,9 +69,7 @@ export const upload_to_firebase = async files => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     // Final summary

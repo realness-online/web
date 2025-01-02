@@ -10,8 +10,8 @@
       <header>
         <h1>HTML5 Test Page</h1>
         <p>
-          This is a test page filled with common HTML elements to be used to
-          provide visual feedback whilst building CSS systems and frameworks.
+          This is a test page filled with common HTML elements to be used to provide
+          visual feedback whilst building CSS systems and frameworks.
         </p>
       </header>
       <nav>
@@ -85,12 +85,11 @@
             <header><h2>Paragraphs</h2></header>
             <div>
               <p>
-                A paragraph (from the Greek paragraphos, “to write beside” or
-                “written beside”) is a self-contained unit of a discourse in
-                writing dealing with a particular point or idea. A paragraph
-                consists of one or more sentences. Though not required by the
-                syntax of any language, paragraphs are usually an expected part
-                of formal writing, used to organize longer prose.
+                A paragraph (from the Greek paragraphos, “to write beside” or “written
+                beside”) is a self-contained unit of a discourse in writing dealing with a
+                particular point or idea. A paragraph consists of one or more sentences.
+                Though not required by the syntax of any language, paragraphs are usually
+                an expected part of formal writing, used to organize longer prose.
               </p>
             </div>
             <footer>
@@ -102,14 +101,14 @@
             <div>
               <blockquote>
                 <p>
-                  A block quotation (also known as a long quotation or extract)
-                  is a quotation in a written document, that is set off from the
-                  main text as a paragraph, or block of text.
+                  A block quotation (also known as a long quotation or extract) is a
+                  quotation in a written document, that is set off from the main text as a
+                  paragraph, or block of text.
                 </p>
                 <p>
-                  It is typically distinguished visually using indentation and a
-                  different typeface or smaller size quotation. It may or may
-                  not include a citation, usually placed at the bottom.
+                  It is typically distinguished visually using indentation and a different
+                  typeface or smaller size quotation. It may or may not include a
+                  citation, usually placed at the bottom.
                 </p>
                 <cite><a href="#!">Said no one, ever.</a></cite>
               </blockquote>
@@ -204,14 +203,14 @@
             <div>
               <blockquote>
                 <p>
-                  A block quotation (also known as a long quotation or extract)
-                  is a quotation in a written document, that is set off from the
-                  main text as a paragraph, or block of text.
+                  A block quotation (also known as a long quotation or extract) is a
+                  quotation in a written document, that is set off from the main text as a
+                  paragraph, or block of text.
                 </p>
                 <p>
-                  It is typically distinguished visually using indentation and a
-                  different typeface or smaller size quotation. It may or may
-                  not include a citation, usually placed at the bottom.
+                  It is typically distinguished visually using indentation and a different
+                  typeface or smaller size quotation. It may or may not include a
+                  citation, usually placed at the bottom.
                 </p>
                 <cite><a href="#!">Said no one, ever.</a></cite>
               </blockquote>
@@ -225,10 +224,10 @@
             <details>
               <summary>Expand for details</summary>
               <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum,
-                odio! Odio natus ullam ad quaerat, eaque necessitatibus, aliquid
-                distinctio similique voluptatibus dicta consequuntur animi.
-                Quaerat facilis quidem unde eos! Ipsa.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum, odio! Odio
+                natus ullam ad quaerat, eaque necessitatibus, aliquid distinctio similique
+                voluptatibus dicta consequuntur animi. Quaerat facilis quidem unde eos!
+                Ipsa.
               </p>
             </details>
             <footer>
@@ -353,21 +352,15 @@ P R E F O R M A T T E D T E X T
               </p>
               <p><em>This text has added emphasis.</em></p>
               <p>
-                The <b>b element</b> is stylistically different text from normal
-                text, without any special importance.
+                The <b>b element</b> is stylistically different text from normal text,
+                without any special importance.
               </p>
+              <p>The <i>i element</i> is text that is offset from the normal text.</p>
               <p>
-                The <i>i element</i> is text that is offset from the normal
-                text.
+                The <u>u element</u> is text with an unarticulated, though explicitly
+                rendered, non-textual annotation.
               </p>
-              <p>
-                The <u>u element</u> is text with an unarticulated, though
-                explicitly rendered, non-textual annotation.
-              </p>
-              <p>
-                <del>This text is deleted</del> and
-                <ins>This text is inserted</ins>.
-              </p>
+              <p><del>This text is deleted</del> and <ins>This text is inserted</ins>.</p>
               <p><s>This text has a strikethrough</s>.</p>
               <p>Superscript<sup>®</sup>.</p>
               <p>Subscript for things like H<sub>2</sub>O.</p>
@@ -379,18 +372,14 @@ P R E F O R M A T T E D T E X T
                 <abbr title="HyperText Markup Language">HTML</abbr>
               </p>
               <p>
-                <q
-                  cite="https://developer.mozilla.org/en-US/docs/HTML/Element/q"
+                <q cite="https://developer.mozilla.org/en-US/docs/HTML/Element/q"
                   >This text is a short inline quotation.</q
                 >
               </p>
               <p><cite>This is a citation.</cite></p>
               <p>The <dfn>dfn element</dfn> indicates a definition.</p>
               <p>The <mark>mark element</mark> indicates a highlight.</p>
-              <p>
-                The <var>variable element</var>, such as <var>x</var> =
-                <var>y</var>.
-              </p>
+              <p>The <var>variable element</var>, such as <var>x</var> = <var>y</var>.</p>
               <p>
                 The time element:
                 <time datetime="2013-04-06T12:32+00:00">2 weeks ago</time>
@@ -407,9 +396,7 @@ P R E F O R M A T T E D T E X T
                 There is comment here:
                 <!--This comment should not be displayed-->
               </p>
-              <p>
-                There is a comment spanning multiple tags and lines below here.
-              </p>
+              <p>There is a comment spanning multiple tags and lines below here.</p>
               <!--<p><a href="#!">This is a text link. But it should not be displayed in a comment</a>.</p>
               <p><strong>Strong is used to indicate strong importance. But, it should not be displayed in a comment</strong></p>
               <p><em>This text has added emphasis. But, it should not be displayed in a comment</em></p>-->
@@ -427,28 +414,20 @@ P R E F O R M A T T E D T E X T
             <div>
               <h3>Plain <code>&lt;img&gt;</code> element</h3>
               <p>
-                <img
-                  src="https://placekitten.com/480/480"
-                  alt="Photo of a kitten" />
+                <img src="https://placekitten.com/480/480" alt="Photo of a kitten" />
               </p>
               <h3>
-                <code>&lt;figure&gt;</code> element with
-                <code>&lt;img&gt;</code> element
+                <code>&lt;figure&gt;</code> element with <code>&lt;img&gt;</code> element
               </h3>
               <figure>
-                <img
-                  src="https://placekitten.com/420/420"
-                  alt="Photo of a kitten" />
+                <img src="https://placekitten.com/420/420" alt="Photo of a kitten" />
               </figure>
               <h3>
-                <code>&lt;figure&gt;</code> element with
-                <code>&lt;img&gt;</code> and
+                <code>&lt;figure&gt;</code> element with <code>&lt;img&gt;</code> and
                 <code>&lt;figcaption&gt;</code> elements
               </h3>
               <figure>
-                <img
-                  src="https://placekitten.com/420/420"
-                  alt="Photo of a kitten" />
+                <img src="https://placekitten.com/420/420" alt="Photo of a kitten" />
                 <figcaption>Here is a caption for this image.</figcaption>
               </figure>
               <h3>
@@ -460,9 +439,7 @@ P R E F O R M A T T E D T E X T
                   <source
                     srcset="https://placekitten.com/800/800"
                     media="(min-width: 800px)" />
-                  <img
-                    src="https://placekitten.com/420/420"
-                    alt="Photo of a kitten" />
+                  <img src="https://placekitten.com/420/420" alt="Photo of a kitten" />
                 </picture>
               </figure>
             </div>
@@ -582,24 +559,15 @@ P R E F O R M A T T E D T E X T
               </p>
               <p>
                 <label for="input__phone">Phone Number</label>
-                <input
-                  id="input__phone"
-                  type="tel"
-                  placeholder="(999) 999-9999" />
+                <input id="input__phone" type="tel" placeholder="(999) 999-9999" />
               </p>
               <p>
                 <label for="input__search">Search</label>
-                <input
-                  id="input__search"
-                  type="search"
-                  placeholder="Enter Search Term" />
+                <input id="input__search" type="search" placeholder="Enter Search Term" />
               </p>
               <p>
                 <label for="input__text2">Number Input</label>
-                <input
-                  id="input__text2"
-                  type="number"
-                  placeholder="Enter a Number" />
+                <input id="input__text2" type="number" placeholder="Enter a Number" />
               </p>
               <p>
                 <label for="input__file">File Input</label>
@@ -646,14 +614,14 @@ P R E F O R M A T T E D T E X T
                 </li>
                 <li>
                   <label for="checkbox2"
-                    ><input id="checkbox2" name="checkbox" type="checkbox" />
-                    Choice B</label
+                    ><input id="checkbox2" name="checkbox" type="checkbox" /> Choice
+                    B</label
                   >
                 </li>
                 <li>
                   <label for="checkbox3"
-                    ><input id="checkbox3" name="checkbox" type="checkbox" />
-                    Choice C</label
+                    ><input id="checkbox3" name="checkbox" type="checkbox" /> Choice
+                    C</label
                   >
                 </li>
               </ul>
@@ -664,24 +632,18 @@ P R E F O R M A T T E D T E X T
               <ul>
                 <li>
                   <label for="radio1"
-                    ><input
-                      id="radio1"
-                      name="radio"
-                      type="radio"
-                      checked="checked" />
+                    ><input id="radio1" name="radio" type="radio" checked="checked" />
                     Option 1</label
                   >
                 </li>
                 <li>
                   <label for="radio2"
-                    ><input id="radio2" name="radio" type="radio" /> Option
-                    2</label
+                    ><input id="radio2" name="radio" type="radio" /> Option 2</label
                   >
                 </li>
                 <li>
                   <label for="radio3"
-                    ><input id="radio3" name="radio" type="radio" /> Option
-                    3</label
+                    ><input id="radio3" name="radio" type="radio" /> Option 3</label
                   >
                 </li>
               </ul>
@@ -731,10 +693,7 @@ P R E F O R M A T T E D T E X T
               </p>
               <p>
                 <label for="idtl">Datetime-local input</label>
-                <input
-                  type="datetime-local"
-                  id="idtl"
-                  value="1970-01-01T00:00" />
+                <input type="datetime-local" id="idtl" value="1970-01-01T00:00" />
               </p>
               <p>
                 <label for="idl">Datalist</label>

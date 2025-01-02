@@ -49,9 +49,7 @@ const create_header_file = async (metadata, output_path) => {
 
 const process_directory = async (source_dir, output_dir) => {
   try {
-    console.log(
-      chalk.bold('Starting to process directory: ') + chalk.cyan(source_dir)
-    )
+    console.log(chalk.bold('Starting to process directory: ') + chalk.cyan(source_dir))
 
     const html_files = await get_html_files(source_dir)
     console.log(
@@ -92,9 +90,7 @@ const process_directory = async (source_dir, output_dir) => {
 
         console.log(chalk.dim('Original:    ') + format_bytes(original_size))
         console.log(chalk.dim('Compressed:  ') + format_bytes(compressed_size))
-        console.log(
-          chalk.dim('Reduction:   ') + chalk.green(`${compression_ratio}%`)
-        )
+        console.log(chalk.dim('Reduction:   ') + chalk.green(`${compression_ratio}%`))
 
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
@@ -103,10 +99,7 @@ const process_directory = async (source_dir, output_dir) => {
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
         await create_header_file(metadata.metadata, output_path)
       } catch (file_error) {
-        console.error(
-          chalk.red(`Error processing file ${file_path}:`),
-          file_error
-        )
+        console.error(chalk.red(`Error processing file ${file_path}:`), file_error)
       }
 
     const total_ratio = (
@@ -115,12 +108,8 @@ const process_directory = async (source_dir, output_dir) => {
     ).toFixed(1)
     console.log(`\n${chalk.bold('Compression Summary:')}`)
     console.log(chalk.dim('Total original:    ') + format_bytes(total_original))
-    console.log(
-      chalk.dim('Total compressed:  ') + format_bytes(total_compressed)
-    )
-    console.log(
-      chalk.dim('Overall reduction: ') + chalk.green(`${total_ratio}%`)
-    )
+    console.log(chalk.dim('Total compressed:  ') + format_bytes(total_compressed))
+    console.log(chalk.dim('Overall reduction: ') + chalk.green(`${total_ratio}%`))
   } catch (error) {
     console.error(chalk.red('Error in process_directory:'), error)
     throw error

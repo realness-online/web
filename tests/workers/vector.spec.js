@@ -43,9 +43,7 @@ describe('vector worker', () => {
       .spyOn(potrace, 'as_paths')
       .mockImplementation(() => Promise.resolve(mock_vector))
 
-    postMessage_spy = vi
-      .spyOn(global, 'postMessage')
-      .mockImplementation(() => true)
+    postMessage_spy = vi.spyOn(global, 'postMessage').mockImplementation(() => true)
   })
 
   describe('listen', () => {
