@@ -19,7 +19,7 @@ node_modules
 .firebase/hosting*
 firebase-debug.log
 .firebaserc
-
+/storage/
 /.vscode/
 
 # local env files
