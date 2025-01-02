@@ -85,19 +85,28 @@ export default defineConfig({
     })
   ],
   test: {
-    root: 'tests',
+    root: '.',
     globals: true,
     environment: 'happy-dom',
-    include: ['**/*.spec.js'],
+    include: ['tests/**/*.spec.js'],
     exclude: [
       ...configDefaults.exclude,
       '**/setup.js',
-      '**/tests/**',
-      '**/mocks/**',
-      '**/public/**'
+      '**/mocks/**'
     ],
     coverage: {
-      exclude: ['**/setup.js'],
+      include: [
+        'src/**/*.js',
+        'src/**/*.vue'
+      ],
+      exclude: [
+        'tests/**',
+        'mocks/**',
+        'node_modules/**',
+        'dist/**',
+        'docs/**',
+        'public/**'
+      ],
       lines: 80,
       branches: 80,
       statements: 80,

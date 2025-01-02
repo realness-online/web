@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/compontent/profile/as-form-mobile.vue > Renders > Profile form 1`] = `
+<form
+  id="profile-mobile"
+  person="[object Object]"
+>
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <anonymous-stub
+    name="working"
+  />
+</form>
+`;

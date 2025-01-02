@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a poster 1`] = `
+<menu>
+  <anonymous-stub
+    itemid="/+16282281824/posters/559666932867"
+  />
+  <router-link-stub
+    class="gear"
+    to="/posters/559666932867/editor"
+  />
+  <a
+    class="remove"
+  >
+    <anonymous-stub
+      name="remove"
+    />
+  </a>
+  <as-button-avatar-stub
+    itemid="/+16282281824/posters/559666932867"
+  />
+  <anonymous-stub
+    itemid="/+16282281824/posters/559666932867"
+  />
+</menu>
+`;
