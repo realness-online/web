@@ -55,6 +55,8 @@
     working.value = false
     console.info('views:/posters')
   })
+
+  const current_preview = ref(null)
 </script>
 
 <template>
@@ -86,6 +88,11 @@
           :max="progress.total"
         />
         <span>{{ progress.current }} / {{ progress.total }}</span>
+
+        <div v-if="current_preview" class="preview">
+          <div class="preview-image" v-html="current_preview"></div>
+          <span>{{ progress.current_file }}</span>
+        </div>
       </div>
     </header>
     <icon v-if="working" name="working" />
@@ -146,7 +153,7 @@ nav button
   display: flex
   flex-direction: column
   align-items: center
-  gap: base-line * 0.5
+  gap: base-line
 
   meter
     width: 80%
@@ -164,4 +171,29 @@ nav button
   span
     color: var(--on-surface)
     font-size: 0.9em
+
+  .preview
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: base-line * 0.5
+
+    .preview-image
+      width: 120px
+      height: 120px
+      border-radius: base-line * 0.5
+      background: var(--surface)
+      padding: base-line * 0.5
+      display: flex
+      align-items: center
+      justify-content: center
+
+      :deep(svg)
+        width: 100%
+        height: 100%
+        object-fit: contain
+
+    span
+      font-size: 0.8em
+      opacity: 0.8
 </style>

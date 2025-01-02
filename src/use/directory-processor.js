@@ -6,12 +6,15 @@ const use_directory_processor = () => {
   const progress = ref({
     total: 0,
     current: 0,
-    processing: false
+    processing: false,
+    current_file: ''
   })
+  const current_preview = ref(null)
 
   const process_directory = async () => {
     try {
       progress.value.processing = true
+      current_preview.value = null
       console.info('🗂️ Starting directory processing...')
 
       const source_dir = await window.showDirectoryPicker({
@@ -36,6 +39,7 @@ const use_directory_processor = () => {
         if (handle.kind !== 'file') continue
         if (!name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) continue
 
+        progress.value.current_file = name
         console.info(`🖼️ Processing file: ${name}`)
 
         const file = await handle.getFile()
@@ -46,6 +50,9 @@ const use_directory_processor = () => {
           while (!new_vector.value) {
             await new Promise(r => setTimeout(r, 100))
           }
+
+          // Update preview with current SVG
+          current_preview.value = new_vector.value
 
           const svg_data = new_vector.value
           const poster_name = name.replace(/\.[^/.]+$/, '.svg')
@@ -74,12 +81,15 @@ const use_directory_processor = () => {
       progress.value.processing = false
       progress.value.current = 0
       progress.value.total = 0
+      progress.value.current_file = ''
+      current_preview.value = null
     }
   }
 
   return {
     process_directory,
-    progress
+    progress,
+    current_preview
   }
 }
 
