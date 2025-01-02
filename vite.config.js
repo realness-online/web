@@ -2,6 +2,7 @@ import { configDefaults, defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
+import fs from 'fs'
 
 export default defineConfig({
   build: {
@@ -33,6 +34,10 @@ export default defineConfig({
     port: 8080,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
+    },
+    https: {
+      key: fs.readFileSync('localhost-key.pem'),
+      cert: fs.readFileSync('localhost.pem')
     }
   },
   resolve: {
