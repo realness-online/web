@@ -1,18 +1,15 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
+  import AsSvg from '@/components/posters/as-svg'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
 
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
-  import { onMounted as mounted } from 'vue'
+  import { onMounted as mounted, ref } from 'vue'
   import { use_posters } from '@/use/vector'
   import { use_directory_processor } from '@/use/directory-processor'
-  import { use as use_poster } from '@/use/poster'
-  import { use as use_me } from '@/use/me'
-  import { use as use_preferences } from '@/use/preferences'
-  import { use as use_router } from '@/use/router'
 
   const { posters, for_person: posters_for_person } = use_posters()
   const {
@@ -23,18 +20,16 @@
     working,
     mount_workers
   } = use_vectorize()
-  const { process_directory, progress } = use_directory_processor()
-  const { me } = use_me()
-  const { preferences } = use_preferences()
-  const { router } = use_router()
+  const { process_directory, progress, completed_poster } = use_directory_processor()
 
-  const remove_poster = async id => {
+
+  const remove_poster = async (poster) => {
     const message = 'Delete poster?'
     if (window.confirm(message)) {
-      posters.value = posters.value.filter(item => id !== item.id)
-      const poster = new Poster(id)
+      posters.value = posters.value.filter(item => item.id !== poster.id)
+      const poster = new Poster(poster.id)
       await poster.delete()
-      console.info('delete:poster', id)
+      console.info('delete:poster', poster.id)
     }
   }
   const toggle_menu = itemid => {
@@ -64,18 +59,12 @@
     <header>
       <h1>Posters</h1>
       <nav v-if="can_add">
-        <button @click="select_photo">
-          <icon name="photo" />
-          <span>Photo</span>
+        <logo-as-link />
+        <button v-vectorizer @click="select_photo">
+          <icon name="add" />
+          <span>Upload</span>
         </button>
-        <button @click="open_selfie_camera">
-          <icon name="selfie" />
-          <span>Selfie</span>
-        </button>
-        <button @click="open_camera">
-          <icon name="camera" />
-          <span>Camera</span>
-        </button>
+
         <button @click="process_directory">
           <icon name="picker" />
           <span>Directory</span>
@@ -89,12 +78,17 @@
         />
         <span>{{ progress.current }} / {{ progress.total }}</span>
 
-        <div v-if="current_preview" class="preview">
-          <div class="preview-image" v-html="current_preview"></div>
+        <div class="preview">
+          <as-svg
+            v-if="completed_poster"
+            :vector="completed_poster"
+            class="preview-poster"
+          />
           <span>{{ progress.current_file }}</span>
         </div>
       </div>
     </header>
+
     <icon v-if="working" name="working" />
     <article v-else>
       <as-figure
