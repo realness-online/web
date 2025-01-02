@@ -23,7 +23,7 @@
     working,
     mount_workers
   } = use_vectorize()
-  const { process_directory } = use_directory_processor()
+  const { process_directory, progress } = use_directory_processor()
   const { me } = use_me()
   const { preferences } = use_preferences()
   const { router } = use_router()
@@ -79,6 +79,14 @@
           <span>Directory</span>
         </button>
       </nav>
+
+      <div v-if="progress.processing" class="progress">
+        <meter
+          :value="progress.current"
+          :max="progress.total"
+        />
+        <span>{{ progress.current }} / {{ progress.total }}</span>
+      </div>
     </header>
     <icon v-if="working" name="working" />
     <article v-else>
@@ -132,4 +140,28 @@ nav button
   &:last-child
     background: var(--accent)
     color: var(--on-accent)
+
+.progress
+  margin-top: base-line
+  display: flex
+  flex-direction: column
+  align-items: center
+  gap: base-line * 0.5
+
+  meter
+    width: 80%
+    height: base-line
+
+    &::-webkit-meter-bar
+      background: var(--surface)
+      border: 1px solid var(--outline)
+      border-radius: base-line * 0.25
+
+    &::-webkit-meter-optimum-value
+      background: var(--accent)
+      border-radius: base-line * 0.25
+
+  span
+    color: var(--on-surface)
+    font-size: 0.9em
 </style>
