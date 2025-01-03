@@ -50,16 +50,12 @@ const download_and_decompress = async bucket => {
 
     for (const file of files) {
       try {
-        console.log(chalk.cyan('\nProcessing: ') + chalk.dim(file.name))
+        console.info(chalk.cyan('\nProcessing: ') + chalk.dim(file.name))
 
         // Get file metadata
         const [metadata] = await file.getMetadata()
-        console.log(
-          chalk.dim('Created: ') + new Date(metadata.timeCreated).toLocaleString()
-        )
-
         // Download file
-        console.log(chalk.yellow('Downloading...'))
+        console.info(chalk.yellow('Downloading...'))
         const [content] = await file.download()
 
         // Determine output path (always in people directory)
@@ -72,18 +68,18 @@ const download_and_decompress = async bucket => {
 
         // Decompress if needed and save to people directory
         if (metadata.contentEncoding === 'gzip') {
-          console.log(chalk.yellow('Decompressing...'))
+          console.info(chalk.yellow('Decompressing...'))
           const decompressed = await gunzip_async(content)
           const final_path = output_path.replace('.gz', '')
           await writeFile(final_path, decompressed)
-          console.log(chalk.dim('Saved decompressed file: ') + final_path)
+          console.info(chalk.dim('Saved decompressed file: ') + final_path)
         } else {
           await writeFile(output_path, content)
-          console.log(chalk.dim('Saved file: ') + output_path)
+          console.info(chalk.dim('Saved file: ') + output_path)
         }
 
         successful++
-        console.log(chalk.green('✓ Processing successful'))
+        console.info(chalk.green('✓ Processing successful'))
       } catch (error) {
         failed++
         console.error(chalk.red('✗ Processing failed:'), error)
@@ -92,7 +88,7 @@ const download_and_decompress = async bucket => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
+      console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     return { successful, failed }
@@ -104,19 +100,21 @@ const download_and_decompress = async bucket => {
 
 const main = async () => {
   try {
-    console.log(chalk.bold('Starting download process'))
-    console.log(chalk.dim('Target directory: ') + chalk.cyan(PEOPLE_DIR))
+    console.info(chalk.bold('Starting download process'))
+    console.info(chalk.dim('Target directory: ') + chalk.cyan(PEOPLE_DIR))
 
     await ensure_dir(PEOPLE_DIR)
     const bucket = await init_firebase()
     const { successful, failed } = await download_and_decompress(bucket)
 
-    console.log('\nDownload Summary:')
-    console.log(`${chalk.dim('Total files:')}    ${successful + failed}`)
-    console.log(`${chalk.dim('Successful:')}     ${chalk.green(successful)}`)
-    console.log(`${chalk.dim('Failed:')}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}`)
+    console.info('\nDownload Summary:')
+    console.info(`${chalk.dim('Total files:')}    ${successful + failed}`)
+    console.info(`${chalk.dim('Successful:')}     ${chalk.green(successful)}`)
+    console.info(
+      `${chalk.dim('Failed:')}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}`
+    )
 
-    console.log(chalk.green.bold('\nDownload process completed'))
+    console.info(chalk.green.bold('\nDownload process completed'))
   } catch (error) {
     console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)

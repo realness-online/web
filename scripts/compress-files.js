@@ -36,11 +36,20 @@ const get_html_files = async (dir_path, files = []) => {
 }
 
 const create_header_file = async (metadata, output_path) => {
+  // Default values for metadata properties
+  const default_headers = {
+    cacheControl: 'public, max-age=31536000',
+    contentLanguage: 'en',
+    contentDisposition: 'inline',
+    customMetadata: { hash: '"default-hash"' }
+  }
+
+  // Merge default headers with provided metadata
   const headers = [
-    `add_header Cache-Control "${metadata.cacheControl}";`,
-    `add_header Content-Language "${metadata.contentLanguage}";`,
-    `add_header Content-Disposition "${metadata.contentDisposition}";`,
-    `add_header ETag ${metadata.customMetadata.hash};`
+    `add_header Cache-Control "${metadata?.cacheControl || default_headers.cacheControl}";`,
+    `add_header Content-Language "${metadata?.contentLanguage || default_headers.contentLanguage}";`,
+    `add_header Content-Disposition "${metadata?.contentDisposition || default_headers.contentDisposition}";`,
+    `add_header ETag ${metadata?.customMetadata?.hash || default_headers.customMetadata.hash};`
   ].join('\n')
 
   const header_path = `${output_path}.headers.conf`
