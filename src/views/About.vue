@@ -319,8 +319,6 @@
       text-decoration: line-through
     svg.icon
       fill: green
-      width: base-line
-      height: base-line
     & > header
       display: block
       & > nav

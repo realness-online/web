@@ -1,6 +1,6 @@
 <script>
-  import { load, as_author, as_created_at } from '@/use/itemid'
-  import { as_time } from '@/use/date'
+  import { load, as_author, as_created_at } from '@/utils/itemid'
+  import { as_time } from '@/utils/date'
   import Icon from '@/components/Icon'
   import as_statement from '@/components/statements/as-div'
   import as_avatar from '@/components/posters/as-svg'

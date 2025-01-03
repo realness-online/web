@@ -5,7 +5,7 @@
   import NameAsForm from '@/components/profile/as-form-name'
 
   import { keys, clear } from 'idb-keyval'
-  import { load } from '@/use/itemid'
+  import { load } from '@/utils/itemid'
   import { use_me, default_person } from '@/use/people'
   import { useRouter as use_router } from 'vue-router'
   import { current_user } from '@/use/serverless'

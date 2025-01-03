@@ -1,6 +1,6 @@
 <script setup>
   import { computed } from 'vue'
-  import { color_to_hsla } from '@/use/colors'
+  import { color_to_hsla } from '@/utils/colors'
   const props = defineProps({
     luminosity: {
       type: Number,

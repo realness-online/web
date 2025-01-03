@@ -1,5 +1,5 @@
 <script setup>
-  import { as_fragment_id, as_query_id } from '@/use/itemid'
+  import { as_fragment_id, as_query_id } from '@/utils/itemid'
   import { is_vector } from '@/use/vector'
   const props = defineProps({
     vector: {

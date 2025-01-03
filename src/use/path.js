@@ -1,6 +1,6 @@
 import { useActiveElement as active_element, whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
-import { change } from '@/use/opacity'
+import { change } from '@/utils/opacity'
 export const svg_ns = 'http://www.w3.org/2000/svg'
 export const change_by = 0.08
 export const is_path = path => {
@@ -9,12 +9,15 @@ export const is_path = path => {
   return false
 }
 
-export const itemprop_query = name => document.querySelector(`[itemprop="${name}"]`)
+export const itemprop_query = name =>
+  document.querySelector(`[itemprop="${name}"]`)
 
-export const create_path_element = () => document.createElementNS(svg_ns, 'path')
+export const create_path_element = () =>
+  document.createElementNS(svg_ns, 'path')
 const opacity_percentage = ref()
 const selected_path = ref()
 const as_stroke = ref(false)
+
 export const use = () => {
   const fill_opacity = change_by => {
     const path = get_active_path()

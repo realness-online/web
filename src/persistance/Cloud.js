@@ -1,7 +1,7 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove } from '@/use/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename } from '@/use/itemid'
+import { as_filename } from '@/utils/itemid'
 import { prepare_upload_data } from '@/utils/upload_processor'
 
 const networkable = ['person', 'statements', 'posters', 'events']
@@ -32,13 +32,15 @@ export const Cloud = superclass =>
           await set(`hash:${this.id}`, metadata.customMetadata.hash)
 
         return response
-      } else if (current_user.value || localStorage.me) await sync_later(this.id, 'save')
+      } else if (current_user.value || localStorage.me)
+        await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
+      if (networkable.includes(this.type))
+        await this.to_network(items.outerHTML)
     }
     async delete() {
       console.info('request:delete', this.id)

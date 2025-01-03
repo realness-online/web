@@ -1,5 +1,5 @@
 import { as_paths } from '@/potrace/index.js'
-import { rgba_to_hsla } from '@/use/colors'
+import { rgba_to_hsla } from '@/utils/colors'
 import { to_kb } from '@/utils/numbers'
 import { optimize } from 'svgo/dist/svgo.browser.js'
 

@@ -1,33 +1,39 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { recent_item_first } from '@/use/sorting'
+import { recent_item_first } from '@/utils/sorting'
 import { current_user } from '@/use/serverless'
-import { get_item, hydrate, get_itemprops } from '@/use/item'
+import { get_item, hydrate, get_itemprops } from '@/utils/item'
 import { from_e64 } from '@/use/people'
 import { History } from '@/persistance/Storage'
-import { list, type_as_list, load_from_network, as_created_at } from '@/use/itemid'
-function get_oldest(elements, prop_name) {
+import {
+  list,
+  type_as_list,
+  load_from_network,
+  as_created_at
+} from '@/utils/itemid'
+import {
+  SIZE,
+  itemid_as_kilobytes,
+  elements_as_kilobytes
+} from '@/utils/numbers'
+
+export const get_oldest = (elements, prop_name) => {
   const list = get_itemprops(elements)
   const props = list[prop_name]
   props.sort(recent_item_first)
   const oldest = props[props.length - 1]
   return new Date(as_created_at(oldest.id))
 }
-export function is_fat(items, prop_name) {
+
+export const is_fat = (items, prop_name) => {
   const today = new Date().setHours(0, 0, 0, 0)
-  if (elements_as_kilobytes(items) > 5 && get_oldest(items, prop_name) < today)
+  if (
+    elements_as_kilobytes(items) > SIZE.MIN &&
+    get_oldest(items, prop_name) < today
+  )
     return true
-  // only count stuff before today
   return false
 }
-export function itemid_as_kilobytes(itemid) {
-  const bytes = localStorage.getItem(itemid)
-  if (bytes) return (bytes.length / 1024).toFixed(2)
-  return 0
-}
-export function elements_as_kilobytes(elements) {
-  if (elements) return (elements.outerHTML.length / 1024).toFixed(2)
-  return 0
-}
+
 const Paged = superclass =>
   class extends superclass {
     constructor(...args) {
@@ -36,13 +42,13 @@ const Paged = superclass =>
 
     async optimize() {
       // First in first out storage (FIFO)
-      if (itemid_as_kilobytes(this.id) > 13) {
-        const current = hydrate(localStorage.getItem(this.id)).childNodes[0]
+      if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
+        const [current] = hydrate(localStorage.getItem(this.id)).childNodes
         const oldest = get_oldest(current, this.type)
         const offload = document.createDocumentFragment()
         const original_size = elements_as_kilobytes(current)
         let amount_moved = 0
-        while (is_fat(current, this.type) && amount_moved <= 8) {
+        while (is_fat(current, this.type) && amount_moved <= SIZE.MID) {
           const fatty = current.childNodes[current.childNodes.length - 1]
           const new_sibling = offload.childNodes[0] || null
           offload.insertBefore(current.removeChild(fatty), new_sibling)
@@ -57,7 +63,7 @@ const Paged = superclass =>
         await this.save(current)
         const history = new History(id)
         await history.save(div)
-        if (elements_as_kilobytes(current) > 13) await this.optimize()
+        if (elements_as_kilobytes(current) > SIZE.MAX) await this.optimize()
       }
     }
     async sync() {

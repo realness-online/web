@@ -1,5 +1,5 @@
 <script setup>
-  import { as_query_id, as_fragment_id } from '@/use/itemid'
+  import { as_query_id, as_fragment_id } from '@/utils/itemid'
   const props = defineProps({
     itemid: {
       type: String,

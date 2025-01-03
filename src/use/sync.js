@@ -1,11 +1,17 @@
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, load, build_local_directory } from '@/use/itemid'
+import {
+  as_filename,
+  as_author,
+  load,
+  build_local_directory
+} from '@/utils/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
-import get_item from '@/use/item'
+import get_item from '@/utils/item'
+
 import {
   ref,
   onMounted as mounted,
@@ -60,7 +66,8 @@ export const use = () => {
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value)) await del(itemid) // only relations are cached
+      if (await is_stranger(as_author(itemid), relations.value))
+        await del(itemid) // only relations are cached
       if (await itemid.endsWith('/')) await del(itemid)
       else {
         const network = await fresh_metadata(itemid)
@@ -150,7 +157,8 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items) await save_poster(created_at)
+    for (const created_at of offline_posters.items)
+      await save_poster(created_at)
   }
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)

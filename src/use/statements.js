@@ -1,10 +1,11 @@
-import { as_created_at, list, as_directory, as_author } from '@/use/itemid'
-import { recent_item_first, recent_number_first } from '@/use/sorting'
+import { as_created_at, list, as_directory, as_author } from '@/utils/itemid'
+import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statements } from '@/persistance/Storage'
 import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
-export const thirteen_minutes = 1000 * 60 * 13 // 780000
+import { THIRTEEN_MINUTES } from '@/utils/numbers'
 const links = ['http://', 'https://']
 const my_statements = ref([])
+
 export const use = () => {
   const authors = ref([])
   const statements = ref(null)
@@ -22,7 +23,9 @@ export const use = () => {
       if (!directory) return
       let history = directory.items
       history.sort(recent_number_first)
-      history = history.filter(page => !author.viewed.some(viewed => viewed === page))
+      history = history.filter(
+        page => !author.viewed.some(viewed => viewed === page)
+      )
       const next = history.shift()
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
@@ -34,7 +37,8 @@ export const use = () => {
   const for_person = async person => {
     const statement_id = `${person.id}/statements`
     const their_statements = await list(statement_id)
-    if (statements.value) statements.value = [...statements.value, ...their_statements]
+    if (statements.value)
+      statements.value = [...statements.value, ...their_statements]
     else statements.value = their_statements
     person.viewed = ['index']
     authors.value.push(person)
@@ -89,7 +93,7 @@ export function is_train_of_thought(thot, statements) {
     const nearest = as_created_at(nearest_statement.id)
     const next = as_created_at(next_statement.id)
     const difference = next - nearest
-    if (difference < thirteen_minutes) return true
+    if (difference < THIRTEEN_MINUTES) return true
     return false
   }
   return false

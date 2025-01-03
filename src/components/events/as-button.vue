@@ -1,6 +1,6 @@
 <script>
   import icons from '/icons.svg'
-  import { list } from '@/use/itemid'
+  import { list } from '@/utils/itemid'
   export default {
     props: {
       itemid: {

@@ -1,4 +1,4 @@
-import { as_created_at } from '@/use/itemid'
+import { as_created_at } from '@/utils/itemid'
 const this_year = Date.parse(new Date().getFullYear())
 const format_as_time = {
   hour: 'numeric',

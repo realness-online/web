@@ -1,5 +1,5 @@
 <script setup>
-  import * as preferences from '@/use/preference'
+  import * as preferences from '@/utils/preference'
   const props = defineProps({
     name: {
       type: String,

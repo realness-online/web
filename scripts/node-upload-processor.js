@@ -1,6 +1,6 @@
-import { gzip } from 'zlib'
-import { promisify } from 'util'
-import crypto from 'crypto'
+import { gzip } from 'node:zlib'
+import { promisify } from 'node:util'
+import crypto from 'node:crypto'
 
 const gzip_async = promisify(gzip)
 
@@ -15,19 +15,16 @@ const create_hash = (data, algorithm = 'SHA-256') => {
 export const prepare_upload_data = async (items, path) => {
   const data = await compress_data(items, path)
   const content_hash = create_hash(items)
-  const md5_hash = create_hash(items, 'MD5')
 
   return {
     data,
     content_hash,
-    md5_hash,
     metadata: {
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
-      contentLanguage: 'en-US', // Note: Using default since Node doesn't have navigator
+      contentLanguage: 'en-US',
       contentEncoding: 'gzip',
       contentDisposition: 'inline',
-      md5Hash: md5_hash,
       customMetadata: {
         hash: content_hash
       }

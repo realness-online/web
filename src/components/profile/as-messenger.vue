@@ -1,5 +1,5 @@
 <script>
-  import { as_author } from '@/use/itemid'
+  import { as_author } from '@/utils/itemid'
   import { as_phone_number } from '@/use/people'
   import icon from '@/components/icon'
   export default {

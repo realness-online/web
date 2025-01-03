@@ -1,15 +1,15 @@
 {
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "package.json": "jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js",
-    "firebase.json": "storage.rules, .firebaserc",
+    "package.json": ".env.example,jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js, deno.json",
+    "firebase.json": "storage.rules, .firebaserc"
   },
   "files.eol": "\n",
   "editor.tabSize": 2,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "editor.codeActionsOnSave": {"source.fixAll": "explicit"  },
+  "editor.codeActionsOnSave": { "source.fixAll": "explicit" },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnType": false, // required
   "editor.formatOnPaste": true,

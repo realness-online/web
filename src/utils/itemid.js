@@ -1,6 +1,6 @@
 // {base_url}/{:author}/{:type}/{:created_at}
 import { get, set, keys } from 'idb-keyval'
-import get_item from '@/use/item'
+import get_item from '@/utils/item'
 import { does_not_exist } from '@/use/sync'
 import { url, directory } from '@/use/serverless'
 import { decompress_data } from '@/utils/upload_processor'
@@ -74,7 +74,7 @@ export async function as_directory(itemid) {
   }
   let directory = await build_local_directory(itemid)
   if (navigator.onLine) {
-    console.log('load_directory_from_network')
+    console.trace('load_directory_from_network', itemid)
     try {
       directory = await load_directory_from_network(itemid)
     } catch (e) {

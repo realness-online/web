@@ -1,6 +1,6 @@
 <script>
-  import { list } from '@/use/itemid'
-  import { recent_item_first } from '@/use/sorting'
+  import { list } from '@/utils/itemid'
+  import { recent_item_first } from '@/utils/sorting'
   import icon from '@/components/icon'
   import logo_as_link from '@/components/logo-as-link'
   import as_days from '@/components/as-days'
