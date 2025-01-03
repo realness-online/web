@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from 'fs/promises'
+import { writeFile, mkdir, readFile } from 'fs/promises'
 import { join, dirname } from 'path'
 import { gunzip } from 'zlib'
 import { promisify } from 'util'
@@ -26,7 +26,7 @@ const init_firebase = async () => {
 
     initializeApp({
       credential: cert(service_account),
-      storageBucket: 'your-project-id.appspot.com'
+      storageBucket: 'realness-development.appspot.com'
     })
 
     const bucket = getStorage().bucket()
@@ -111,12 +111,10 @@ const main = async () => {
     const bucket = await init_firebase()
     const { successful, failed } = await download_and_decompress(bucket)
 
-    console.log(chalk`
-{bold Download Summary:}
-{dim Total files:}    ${successful + failed}
-{dim Successful:}     {green ${successful}}
-{dim Failed:}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}
-`)
+    console.log('\nDownload Summary:')
+    console.log(`${chalk.dim('Total files:')}    ${successful + failed}`)
+    console.log(`${chalk.dim('Successful:')}     ${chalk.green(successful)}`)
+    console.log(`${chalk.dim('Failed:')}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}`)
 
     console.log(chalk.green.bold('\nDownload process completed'))
   } catch (error) {

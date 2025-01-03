@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile, mkdir } from 'fs/promises'
 import { join, dirname, relative } from 'path'
 import chalk from 'chalk'
-import { prepare_upload_data } from './node_upload_processor.js'
+import { prepare_upload_data } from './node-upload-processor.js'
 
 // Define paths relative to project root
 const DATA_DIR = 'storage'
