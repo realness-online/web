@@ -51,6 +51,7 @@
     "@vueuse/core": "12.2.0",
     "chalk": "^5.4.1",
     "culori": "4.0.1",
+    "dotenv": "^16.4.7",
     "exifreader": "4.26.0",
     "firebase": "11.1.0",
     "hsl-to-hex": "1.0.0",

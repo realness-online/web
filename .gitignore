@@ -49,3 +49,5 @@ docs/generated/
 
 # SSL Certificates
 *.pem
+
+.env
