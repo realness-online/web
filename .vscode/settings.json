@@ -6,17 +6,11 @@
   },
   "files.eol": "\n",
   "editor.tabSize": 2,
-  "[jsonc]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
-  },
-  "[html]": {
+  "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[svg]": {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
-  },
   "editor.codeActionsOnSave": {"source.fixAll": "explicit"  },
-  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnType": false, // required
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
