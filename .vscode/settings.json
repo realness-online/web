@@ -17,5 +17,7 @@
   "editor.formatOnSaveMode": "file",
   "files.autoSave": "onFocusChange",
   "vs-code-prettier-eslint.prettierLast": true,
-  "deno.enable": true
+  "deno.enable": true,
+  "deno.enablePaths": ["./src", "./scripts", "./tests"],
+  "deno.importMap": "./import_map.json"
 }
