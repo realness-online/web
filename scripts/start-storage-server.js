@@ -1,5 +1,5 @@
-import { exec } from 'child_process'
-import { resolve } from 'path'
+import { exec } from 'node:child_process'
+import { resolve } from 'node:path'
 import chalk from 'chalk'
 
 const PROJECT_ROOT = process.cwd()
@@ -7,8 +7,8 @@ const STORAGE_PATH = resolve(PROJECT_ROOT, 'storage')
 const CONFIG_PATH = resolve(PROJECT_ROOT, 'scripts/nginx/storage.conf')
 
 const start_server = () => {
-  console.log(chalk.cyan('Starting storage server...'))
-  console.log(chalk.dim('Storage path: ') + STORAGE_PATH)
+  console.info(chalk.cyan('Starting storage server...'))
+  console.info(chalk.dim('Storage path: ') + STORAGE_PATH)
 
   // Update config with correct path
   exec(
@@ -21,8 +21,8 @@ const start_server = () => {
       console.error(chalk.red('Failed to start server:'), error)
       return
     }
-    console.log(chalk.green('✓ Server started'))
-    console.log(`${chalk.cyan('Browse storage at: ')}http://localhost:8080`)
+    console.info(chalk.green('✓ Server started'))
+    console.info(`${chalk.cyan('Browse storage at: ')}http://localhost:8080`)
   })
 }
 

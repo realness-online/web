@@ -1,7 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { load } from '@/use/itemid'
+  import { load } from '@/utils/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   const version = import.meta.env.PACKAGE_VERSION

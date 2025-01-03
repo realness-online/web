@@ -1,28 +1,9 @@
 import { whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
-import { change } from '@/use/opacity'
+import { change } from '@/utils/opacity'
 import { svg_ns, use as use_path } from '@/use/path'
 export const change_by = 0.08
 
-export const is_use = path => {
-  if (typeof path !== 'object') return false
-  if (path instanceof SVGUseElement) return true
-  return false
-}
-export const is_url_query = query => {
-  console.log('is_url_query', query)
-  return true
-}
-export const settings_query = name => {
-  const settings = document.querySelector('[itemscope][itemtype=/settings]')
-  return settings.querySelector(`[itemprop="${name}"]`)
-}
-
-export const create_use_element = () => document.createElementNS(svg_ns, 'use')
-
-const opacity_percentage = ref()
-const selected_layer = ref()
-const as_stroke = ref(false)
 export const use = () => {
   const { get_active_path } = use_path()
   const fill_opacity = change_by => {
@@ -73,3 +54,23 @@ export const use = () => {
     get_active_layer
   }
 }
+
+export const is_use = path => {
+  if (typeof path !== 'object') return false
+  if (path instanceof SVGUseElement) return true
+  return false
+}
+export const is_url_query = query => {
+  console.log('is_url_query', query)
+  return true
+}
+export const settings_query = name => {
+  const settings = document.querySelector('[itemscope][itemtype=/settings]')
+  return settings.querySelector(`[itemprop="${name}"]`)
+}
+
+export const create_use_element = () => document.createElementNS(svg_ns, 'use')
+
+const opacity_percentage = ref()
+const selected_layer = ref()
+const as_stroke = ref(false)

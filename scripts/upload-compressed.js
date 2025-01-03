@@ -15,7 +15,15 @@ const get_compressed_files = async (dir_path, files = []) => {
     if (entry.isDirectory()) await get_compressed_files(full_path, files)
     else if (entry.name.endsWith('.html.gz')) {
       const metadata_path = full_path.replace('.gz', '.metadata.json')
-      files.push({ compressed_path: full_path, metadata_path })
+      const upload_path = full_path.replace(
+        `${DATA_DIR}/compressed/`,
+        'people/'
+      )
+      files.push({
+        compressed_path: full_path,
+        metadata_path,
+        upload_path
+      })
     }
   }
   /* eslint-enable no-await-in-loop */

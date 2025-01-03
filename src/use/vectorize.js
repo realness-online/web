@@ -6,7 +6,7 @@ import {
 } from 'vue'
 import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/vector'
-import { as_created_at } from '@/use/itemid'
+import { as_created_at } from '@/utils/itemid'
 import { useRouter as use_router } from 'vue-router'
 import { to_kb } from '@/utils/numbers'
 import ExifReader from 'exifreader'

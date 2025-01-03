@@ -1,6 +1,6 @@
 <script>
   import icon from '@/components/icon'
-  import { list } from '@/use/itemid'
+  import { list } from '@/utils/itemid'
   import events_list from '@/components/events/as-list'
   import { Events } from '@/persistance/Storage'
   export default {

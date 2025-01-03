@@ -4,60 +4,13 @@ import {
   load,
   as_created_at,
   as_directory
-} from '@/use/itemid'
+} from '@/utils/itemid'
 import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-import { recent_item_first } from '@/use/sorting'
+import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-const path_names = ['background', 'light', 'regular', 'medium', 'bold']
-export const is_click = menu => typeof menu === 'boolean'
-export const is_focus = layer => path_names.some(name => name === layer)
-export const is_vector = vector => {
-  if (typeof vector !== 'object') return false
-  if (!is_vector_id(vector.id)) return false
-  if (vector.path) return false
-  if (!vector.viewbox) return false
-  if (!vector.height || !vector.width) return false
-  if (!vector.regular) return false // the only required path
 
-  if (vector.gradients) {
-    if (!vector.gradients.width) return false
-    if (!vector.gradients.height) return false
-    if (!vector.gradients.radial) return false
-  }
-  if (vector.type === 'posters') return true
-  return false
-}
-export const is_vector_id = itemid => {
-  if (as_created_at(itemid)) return true
-  return false
-}
-export const is_rect = rect => {
-  if (typeof rect !== 'object') return false
-  if (rect instanceof SVGRectElement) return true
-  return false
-}
-export const is_stop = stop => {
-  if (typeof stop !== 'object') return false
-  if (stop instanceof SVGStopElement) return true
-  return false
-}
-export const is_url_query = query => {
-  if (typeof query !== 'string') return false
-  if (query.startsWith('url(') && !query.endsWith(')')) return false
-  return true
-}
-export const set_vector_dimensions = (props, item) => {
-  props.viewbox = item.getAttribute('viewBox')
-  const dimensions = props.viewbox.split(' ')
-  let width = item.getAttribute('width')
-  let height = item.getAttribute('height')
-  if (!width) width = dimensions[2]
-  if (!height) height = dimensions[3]
-  props.width = width
-  props.height = height
-}
-export const use_poster = () => {
+export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
   const vector_element = ref(null)
@@ -165,4 +118,53 @@ export const use_posters = () => {
     for_person,
     posters
   }
+}
+
+const path_names = ['background', 'light', 'regular', 'medium', 'bold']
+export const is_click = menu => typeof menu === 'boolean'
+export const is_focus = layer => path_names.some(name => name === layer)
+export const is_vector = vector => {
+  if (typeof vector !== 'object') return false
+  if (!is_vector_id(vector.id)) return false
+  if (vector.path) return false
+  if (!vector.viewbox) return false
+  if (!vector.height || !vector.width) return false
+  if (!vector.regular) return false // the only required path
+
+  if (vector.gradients) {
+    if (!vector.gradients.width) return false
+    if (!vector.gradients.height) return false
+    if (!vector.gradients.radial) return false
+  }
+  if (vector.type === 'posters') return true
+  return false
+}
+export const is_vector_id = itemid => {
+  if (as_created_at(itemid)) return true
+  return false
+}
+export const is_rect = rect => {
+  if (typeof rect !== 'object') return false
+  if (rect instanceof SVGRectElement) return true
+  return false
+}
+export const is_stop = stop => {
+  if (typeof stop !== 'object') return false
+  if (stop instanceof SVGStopElement) return true
+  return false
+}
+export const is_url_query = query => {
+  if (typeof query !== 'string') return false
+  if (query.startsWith('url(') && !query.endsWith(')')) return false
+  return true
+}
+export const set_vector_dimensions = (props, item) => {
+  props.viewbox = item.getAttribute('viewBox')
+  const dimensions = props.viewbox.split(' ')
+  let width = item.getAttribute('width')
+  let height = item.getAttribute('height')
+  if (!width) width = dimensions[2]
+  if (!height) height = dimensions[3]
+  props.width = width
+  props.height = height
 }

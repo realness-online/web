@@ -9,12 +9,12 @@
   import { Poster } from '@/persistance/Storage'
   import { onMounted as mounted, ref } from 'vue'
   import { use_posters } from '@/use/vector'
-  import { use_directory_processor } from '@/use/directory-processor'
+  import { use as directory_processor } from '@/use/directory-processor'
 
   const { posters, for_person: posters_for_person } = use_posters()
   const { can_add, vVectorizer, image_picker, select_photo, working, mount_workers } =
     use_vectorize()
-  const { process_directory, progress, completed_poster } = use_directory_processor()
+  const { process_directory, progress, completed_poster } = directory_processor()
 
   const remove_poster = async poster => {
     const message = 'Delete poster?'

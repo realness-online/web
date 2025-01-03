@@ -2,7 +2,7 @@ import { use as use_vectorize } from '@/use/vectorize'
 import { use as use_optimizer } from '@/use/optimize'
 import { ref } from 'vue'
 
-const use_directory_processor = () => {
+export const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
   const { optimize } = use_optimizer()
   const progress = ref({
@@ -104,5 +104,3 @@ const use_directory_processor = () => {
     completed_poster
   }
 }
-
-export { use_directory_processor }

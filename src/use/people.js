@@ -1,6 +1,6 @@
-import { list, load } from '@/use/itemid'
+import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/use/serverless'
-import { recent_visit_first } from '@/use/sorting'
+import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistance/Storage'
 import { ref, computed, readonly, nextTick as next_tick } from 'vue'
 

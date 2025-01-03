@@ -17,7 +17,7 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import { load } from '@/use/itemid'
+import { load } from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
 export const me = ref(undefined)
@@ -41,7 +41,8 @@ export const remove = async path => {
   try {
     delete_file(location(path))
   } catch (e) {
-    if (e.code === 'storage/object-not-found') console.warn(path, 'already deleted')
+    if (e.code === 'storage/object-not-found')
+      console.warn(path, 'already deleted')
     else throw e
   }
 }
