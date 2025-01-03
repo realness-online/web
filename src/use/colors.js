@@ -1,11 +1,14 @@
 import rgb_to_hex from 'rgb-hex'
 import hsl_to_hex from 'hsl-to-hex'
 import css_var from '@/use/css-var'
-// import { converter } from 'culori'
-//tree shakable import
-import { useMode, modeHsl, modeOklch, converter } from 'culori/fn'
-useMode(modeOklch)
-useMode(modeHsl)
+import {
+  useMode as use_mode,
+  modeHsl as mode_hsl,
+  modeOklch as mode_oklch,
+  converter
+} from 'culori/fn'
+use_mode(mode_oklch)
+use_mode(mode_hsl)
 
 export const to_hex = (color = '') => {
   if (color.length === 0) color = '--black-dark'

@@ -14,24 +14,13 @@ Deploying creates an `artifacts` folder with reports on what files are generated
 
 A standard setup is usually three tabs in a terminal running the following scripts
 
-- `yarn serve` runs the client code on `http://localhost:8080`
-- `yarn workers:dev` keeps the workers current
-- `yarn test --watch --coverage --verbose` runs tests with code coverage on javascript you have changed.
-
-replace `--watch` with `--watchAll` to get full coverage data with each change.
+- `npm run dev` runs the client code on `http://localhost:8080`
+- `npm run dev:workers` keeps the workers current
+- `nmp test` runs tests with code coverage
 
 ### Config
 
-For a fully functioning localhost save a file named `.env.local` to the root of your project with your firebase keys.
-
-```bash
-VUE_APP_API_KEY=${firebase.apiKey}
-VUE_APP_AUTH_DOMAIN=${firebase.authDomain}
-VUE_APP_DATABASE_URL=${firebase.databaseUrl}
-VUE_APP_PROJECT_ID=${firebase.projectId}
-VUE_APP_STORAGE_BUCKET=${firebase.storageBucket}
-VUE_APP_MESSAGING_SENDER_ID=${firebase.messagingSenderId}
-```
+For a fully functioning localhost save a file named `.env.local` to the root of your project with your firebase keys. check out env.example for exact names
 
 Start your local server and `localhost:8080` will be good to go
 

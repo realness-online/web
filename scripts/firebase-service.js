@@ -1,24 +1,16 @@
-import { writeFile, mkdir, readFile } from 'node:fs/promises'
+import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { gunzip } from 'node:zlib'
 import { promisify } from 'node:util'
 import chalk from 'chalk'
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
+import 'dotenv/config'
 
 const gunzip_async = promisify(gunzip)
 const DATA_DIR = 'storage'
-const PEOPLE_DIR = join(DATA_DIR, 'people')
 const SERVICE_ACCOUNT_PATH = join(DATA_DIR, 'service-account.json')
-const PERCENT = 100
-
-const ensure_dir = async dir_path => {
-  try {
-    await mkdir(dir_path, { recursive: true })
-  } catch (error) {
-    if (error.code !== 'EEXIST') throw error
-  }
-}
+const PEOPLE_DIR = join(DATA_DIR, 'people')
 
 const init_firebase = async () => {
   try {
@@ -46,8 +38,65 @@ const init_firebase = async () => {
   }
 }
 
-const download_and_decompress = async bucket => {
+const ensure_dir = async dir_path => {
   try {
+    await mkdir(dir_path, { recursive: true })
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error
+  }
+}
+
+export const upload_to_firebase = async files => {
+  try {
+    const bucket = await init_firebase()
+
+    console.info(chalk.bold('\nStarting uploads:'))
+    console.info(chalk.dim('Files to process: ') + chalk.green(files.length))
+
+    let successful = 0
+    let failed = 0
+
+    for (const { compressed_path, metadata_path } of files) {
+      try {
+        console.info(
+          chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path)
+        )
+        const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
+
+        const destination = compressed_path.replace('_compressed/', '')
+        console.info(chalk.dim('Destination: ') + destination)
+
+        console.info(chalk.yellow('Uploading...'))
+        await bucket.upload(compressed_path, {
+          metadata,
+          destination
+        })
+
+        successful++
+        console.info(chalk.green('✓ Upload successful'))
+      } catch (error) {
+        failed++
+        console.error(chalk.red('✗ Upload failed:'), error)
+      }
+
+      const total = successful + failed
+      const progress = Math.round((total / files.length) * 100)
+      console.info(
+        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
+      )
+    }
+
+    return { successful, failed }
+  } catch (error) {
+    console.error(chalk.red.bold('Upload process failed:'), error)
+    throw error
+  }
+}
+
+export const download_from_firebase = async () => {
+  try {
+    const bucket = await init_firebase()
+
     console.info(chalk.cyan('\nListing files in Firebase Storage...'))
     const [files] = await bucket.getFiles({ prefix: 'people/' })
 
@@ -56,26 +105,20 @@ const download_and_decompress = async bucket => {
     let successful = 0
     let failed = 0
 
-    /* eslint-disable no-await-in-loop */
     for (const file of files) {
       try {
         console.info(chalk.cyan('\nProcessing: ') + chalk.dim(file.name))
 
-        // Get file metadata
         const [metadata] = await file.getMetadata()
-        // Download file
         console.info(chalk.yellow('Downloading...'))
         const [content] = await file.download()
 
-        // Determine output path (always in people directory)
         const output_path = join(PEOPLE_DIR, file.name.replace('people/', ''))
         await ensure_dir(dirname(output_path))
 
-        // Save metadata alongside the file
         const metadata_path = `${output_path}.metadata.json`
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
-        // Decompress if needed and save to people directory
         if (metadata.contentEncoding === 'gzip') {
           console.info(chalk.yellow('Decompressing...'))
           const decompressed = await gunzip_async(content)
@@ -94,14 +137,12 @@ const download_and_decompress = async bucket => {
         console.error(chalk.red('✗ Processing failed:'), error)
       }
 
-      // Show progress
       const total = successful + failed
-      const progress = Math.round((total / files.length) * PERCENT)
+      const progress = Math.round((total / files.length) * 100)
       console.info(
         chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
       )
     }
-    /* eslint-enable no-await-in-loop */
 
     return { successful, failed }
   } catch (error) {
@@ -109,28 +150,3 @@ const download_and_decompress = async bucket => {
     throw error
   }
 }
-
-const main = async () => {
-  try {
-    console.info(chalk.bold('Starting download process'))
-    console.info(chalk.dim('Target directory: ') + chalk.cyan(PEOPLE_DIR))
-
-    await ensure_dir(PEOPLE_DIR)
-    const bucket = await init_firebase()
-    const { successful, failed } = await download_and_decompress(bucket)
-
-    console.info('\nDownload Summary:')
-    console.info(`${chalk.dim('Total files:')}    ${successful + failed}`)
-    console.info(`${chalk.dim('Successful:')}     ${chalk.green(successful)}`)
-    console.info(
-      `${chalk.dim('Failed:')}         ${failed > 0 ? chalk.red(failed) : chalk.green('0')}`
-    )
-
-    console.info(chalk.green.bold('\nDownload process completed'))
-  } catch (error) {
-    console.error(chalk.red.bold('\nScript failed:'), error)
-    process.exit(1)
-  }
-}
-
-main()
