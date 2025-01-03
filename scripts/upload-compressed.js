@@ -1,7 +1,7 @@
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 import chalk from 'chalk'
-import { upload_to_firebase } from './firebase_uploader.js'
+import { upload_to_firebase } from './firebase-uploader.js'
 
 const DATA_DIR = 'storage'
 const COMPRESSED_DIR = join(DATA_DIR, 'compressed')
