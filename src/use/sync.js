@@ -21,13 +21,9 @@ import {
   provide,
   watch
 } from 'vue'
+import { JS_TIME, SIZE } from '@/utils/numbers'
 
-export const three_minutes = 180000
-export const five_minutes = 300000
-export const one_hour = 3600000
-export const eight_hours = one_hour * 8
-export const timeouts = []
-export const does_not_exist = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
+export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
 
 export const use = () => {
   const { emit } = current_instance()
@@ -37,10 +33,11 @@ export const use = () => {
   const sync_element = ref(null)
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
+
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
-    localStorage.sync_time = null // TODO: Re
+    localStorage.sync_time = null // TODO: Remove
     await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -171,7 +168,6 @@ export const use = () => {
     sync_poster.value = null
     await del(`/+/posters/${created_at}`)
   }
-  const POSTERS_PER_DIRECTORY = 55 // Maximum posters in main directory
 
   const sync_posters_directory = async person_id => {
     const directory_path = `${person_id}/posters/`
@@ -184,22 +180,22 @@ export const use = () => {
     // Sort ALL items by created_at timestamp (newest first)
     const sorted_items = offline_posters.items.sort((a, b) => b - a) // Descending order
 
-    if (sorted_items.length > POSTERS_PER_DIRECTORY) {
+    if (sorted_items.length > SIZE.MAX) {
       // Keep newest items in main directory
-      const current_items = sorted_items.slice(0, POSTERS_PER_DIRECTORY)
-      const archive_items = sorted_items.slice(POSTERS_PER_DIRECTORY)
+      const current_items = sorted_items.slice(0, SIZE.MIN)
+      const archive_items = sorted_items.slice(SIZE.MAX)
 
       // Create archive batches using newest timestamp in each batch
       const archive_batches = []
-      for (let i = 0; i < archive_items.length; i += POSTERS_PER_DIRECTORY) {
-        const batch = archive_items.slice(i, i + POSTERS_PER_DIRECTORY)
+      for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
+        const batch = archive_items.slice(i, i + SIZE.MAX)
         const newest_in_batch = Math.max(...batch) // Use newest timestamp for directory name
         const archive_path = `${directory_path}${newest_in_batch}/`
 
         // Save archive directory with items already sorted newest first
         await set(archive_path, {
           items: batch, // Items within batch are already sorted newest first
-          has_more: i + POSTERS_PER_DIRECTORY < archive_items.length,
+          has_more: i + SIZE.MAX < archive_items.length,
           timestamp: newest_in_batch
         })
 
@@ -263,7 +259,7 @@ export const fresh_metadata = async itemid => {
     // console.info('request:metadata', itemid)
     network = await metadata(path)
   } catch (e) {
-    if (e.code === 'storage/object-not-found') network = does_not_exist
+    if (e.code === 'storage/object-not-found') network = DOES_NOT_EXIST
     else throw e
   }
   if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
@@ -272,7 +268,7 @@ export const fresh_metadata = async itemid => {
   return network
 }
 export function visit_interval() {
-  return Date.now() - one_hour
+  return Date.now() - JS_TIME.ONE_HOUR
 }
 export const i_am_fresh = () => {
   let synced
@@ -280,9 +276,9 @@ export const i_am_fresh = () => {
     synced = Date.now() - new Date(localStorage.sync_time).getTime()
   else {
     localStorage.sync_time = new Date().toISOString()
-    synced = eight_hours
+    synced = JS_TIME.EIGHT_HOURS
   }
-  const time_left = eight_hours - synced
+  const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
   console.info('i_am_fresh', am_i_fresh, time_left)
   return am_i_fresh

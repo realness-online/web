@@ -1,26 +1,25 @@
 import crypto from 'node:crypto'
 import pako from 'pako'
 
-const compress_data = data => {
-  const uint8_array = new TextEncoder().encode(data)
+const compress_html = html => {
+  const uint8_array = new TextEncoder().encode(html)
   return pako.deflate(uint8_array, {
     level: 9
   })
 }
 
-const create_hash = (data, algorithm = 'SHA-256') => {
-  const hash = crypto.createHash(algorithm.toLowerCase())
-  hash.update(data)
+const create_hash = html => {
+  const hash = crypto.createHash('SHA-256')
+  hash.update(html)
   return hash.digest('base64')
 }
 
-export const prepare_upload_data = async (items, path) => {
-  const data = compress_data(items, path)
-  const content_hash = create_hash(items)
+export const prepare_upload_html = html => {
+  const compressed = compress_html(html)
+  const hash = create_hash(html)
 
   return {
-    data,
-    content_hash,
+    compressed,
     metadata: {
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
@@ -28,7 +27,7 @@ export const prepare_upload_data = async (items, path) => {
       contentEncoding: 'deflate',
       contentDisposition: 'inline',
       customMetadata: {
-        hash: content_hash
+        hash
       }
     }
   }

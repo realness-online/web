@@ -1,9 +1,9 @@
-export const compress_data = (data, filename = 'data') => {
+export const compress_html = html => {
   const compressor_worker = new Worker('/compressor.worker.js')
   return new Promise((resolve, reject) => {
     compressor_worker.onmessage = ({ data: result }) => {
       compressor_worker.terminate()
-      resolve(result)
+      resolve(result.blob)
     }
     compressor_worker.onerror = error => {
       compressor_worker.terminate()
@@ -11,19 +11,18 @@ export const compress_data = (data, filename = 'data') => {
     }
     compressor_worker.postMessage({
       route: 'compress:html',
-      data: { html: data, filename }
+      html
     })
   })
 }
 export const create_hash = async (data, algorithm = 'SHA-256') => {
-  console.log('algorithm', algorithm)
   const encoder = new TextEncoder()
   const data_buffer = encoder.encode(data)
   const hash_buffer = await crypto.subtle.digest(algorithm, data_buffer)
   return btoa(String.fromCharCode(...new Uint8Array(hash_buffer)))
 }
 
-export const decompress_data = data => {
+export const decompress_html = compressed => {
   const compressor_worker = new Worker('/compressor.worker.js')
 
   return new Promise((resolve, reject) => {
@@ -37,26 +36,30 @@ export const decompress_data = data => {
     }
     compressor_worker.postMessage({
       route: 'decompress:html',
-      compressed: data
+      compressed
     })
   })
 }
 
-export const prepare_upload_data = async (items, path) => {
-  const data = await compress_data(items, path)
-  const content_hash = await create_hash(items)
+export const prepare_upload_html = async html => {
+  const compressed = await compress_html(html)
+  const content_hash = await create_hash(html)
+
+  // Get language code in correct format (ISO 639-1)
+  // Example: 'en-US' -> 'en', 'es-ES' -> 'es'
+  const language = navigator.language?.split('-')[0].toLowerCase()
 
   return {
-    data,
-    content_hash,
+    compressed,
     metadata: {
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
-      contentLanguage: navigator.language,
       contentEncoding: 'deflate',
       contentDisposition: 'inline',
+      contentLanguage: language, // Using ISO 639-1 language code
       customMetadata: {
-        hash: content_hash
+        hash: content_hash,
+        fullLocale: navigator.language // Store full locale in custom metadata
       }
     }
   }

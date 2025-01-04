@@ -1,14 +1,29 @@
 export const KB = 1024
 export const MB = KB * KB
 export const PERCENT = 100
-export const FIVE_HOURS = 5 * 60 * 60 // 18000 seconds
-export const THIRTEEN_MINUTES = 13 * 60 * 1000 // 780000 milliseconds
 export const OPEN_ANGLE = 60 // ASCII 60
+
+export const CACHE_TIME = {
+  THREE_MINUTES: 3 * 60, // 180 seconds
+  FIVE_HOURS: 5 * 60 * 60, // 18000 seconds
+  THIRTEEN_MINUTES: 13 * 60, // 780 seconds
+  ONE_HOUR: 60 * 60, // 3600 seconds
+  EIGHT_HOURS: 8 * 60 * 60 // 28800 seconds
+}
+
+export const JS_TIME = {
+  THREE_MINUTES: 3 * 60 * 1000, // 180000 ms
+  FIVE_MINUTES: 5 * 60 * 1000, // 300000 ms
+  THIRTEEN_MINUTES: 13 * 60 * 1000, // 780000 ms
+  ONE_HOUR: 60 * 60 * 1000, // 3600000 ms
+  EIGHT_HOURS: 8 * 60 * 60 * 1000 // 28800000 ms
+}
+
 // Storage size thresholds in KB
 export const SIZE = {
-  MIN: 13, // Initial threshold for optimization
-  MID: 21, // Target reduction size
-  MAX: 34 // Upper limit requiring optimization
+  MIN: 21, // Initial threshold for optimization
+  MID: 34, // Target reduction size
+  MAX: 55 // Upper limit requiring optimization
 }
 
 export const format_bytes = bytes => {
@@ -17,6 +32,10 @@ export const format_bytes = bytes => {
   return `${(bytes / MB).toFixed(1)} MB`
 }
 export const to_kb = obj => {
+  // If obj is already a Blob, use its size directly
+  if (obj instanceof Blob) return (obj.size / KB).toFixed(2)
+
+  // For other types, convert to string and create blob
   const as_string = JSON.stringify(obj)
   const size_of = new Blob([as_string]).size
   return (size_of / KB).toFixed(2)
