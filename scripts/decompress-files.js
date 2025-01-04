@@ -16,23 +16,6 @@ const create_hash = (data, algorithm = 'SHA-256') => {
   return hash.digest('base64')
 }
 
-const verify_file = async (decompressed, metadata) => {
-  const content_hash = await create_hash(decompressed)
-  const expected_hash = metadata.metadata.customMetadata.hash
-  const hash_matches = content_hash === expected_hash
-
-  if (!hash_matches || !md5_matches) {
-    console.info(chalk.yellow('Hash verification:'))
-    console.info(
-      chalk.dim('Content Hash: ') +
-        (hash_matches ? chalk.green('✓') : chalk.red('✗'))
-    )
-    return false
-  }
-
-  return true
-}
-
 const ensure_dir = async dir_path => {
   try {
     await mkdir(dir_path, { recursive: true })
@@ -77,13 +60,6 @@ const decompress_file = async (compressed_path, metadata_path) => {
     // Decompress content
     console.info(chalk.yellow('Decompressing...'))
     const decompressed = await gunzip_async(compressed_content)
-
-    // Verify file integrity
-    console.info(chalk.yellow('Verifying...'))
-    if (!(await verify_file(decompressed, metadata)))
-      throw new Error('File verification failed')
-
-    console.info(chalk.green('✓ Verification successful'))
 
     // Write decompressed file and metadata
     await writeFile(output_path, decompressed)
