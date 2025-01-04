@@ -53,15 +53,25 @@ export const remove = async path => {
 export const init_serverless = () => {
   me.value = default_person
   const init = {
-    apiKey: import.meta.env.VITE_API_KEY,
-    appId: import.meta.env.VITE_APP_ID,
-    authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID
+    apiKey: String(import.meta.env.VITE_API_KEY || ''),
+    appId: String(import.meta.env.VITE_APP_ID || ''),
+    authDomain: String(import.meta.env.VITE_AUTH_DOMAIN || ''),
+    projectId: String(import.meta.env.VITE_PROJECT_ID || ''),
+    storageBucket: String(import.meta.env.VITE_STORAGE_BUCKET || ''),
+    messagingSenderId: String(import.meta.env.VITE_MESSAGING_SENDER_ID || '')
   }
-  app.value = initialize_firebase(init)
-  auth.value = init_auth(app.value)
+
+  try {
+    const firebase_app = initialize_firebase(init)
+    app.value = firebase_app
+
+    if (firebase_app) auth.value = init_auth(firebase_app)
+    else console.error('Firebase app initialization failed')
+  } catch (error) {
+    console.error('Firebase initialization error:', error)
+    throw error
+  }
+
   storage.value = get_storage(app.value)
   auth_changed(auth.value, async user => {
     if (user) {
