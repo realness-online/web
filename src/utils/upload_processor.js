@@ -24,20 +24,19 @@ export const create_hash = async (data, algorithm = 'SHA-256') => {
 
 export const decompress_data = data => {
   const compressor_worker = new Worker('/compressor.worker.js')
+
   return new Promise((resolve, reject) => {
     compressor_worker.onmessage = ({ data: result }) => {
       compressor_worker.terminate()
-      resolve(result)
+      resolve(result.html)
     }
     compressor_worker.onerror = error => {
       compressor_worker.terminate()
       reject(error)
     }
     compressor_worker.postMessage({
-      route: 'decompress:data',
-      data: {
-        compressed: data
-      }
+      route: 'decompress:html',
+      compressed: data
     })
   })
 }
