@@ -194,10 +194,11 @@ export const make_gradient = async message => {
 
 export const optimize_vector = message => {
   console.time('optimize:vector')
-  console.info('Optimizer')
-  console.info(`  before: ${to_kb(message.data.vector)}kb`)
+  console.group('Optimizer')
+  console.info(`before: ${to_kb(message.data.vector)}kb`)
   const optimized = optimize(message.data.vector, svgo_options)
-  console.info(`  after: ${to_kb(optimized.data)}kb`)
+  console.info(`after: ${to_kb(optimized.data)}kb`)
+  console.groupEnd()
   console.timeEnd('optimize:vector')
   return { vector: optimized.data }
 }
@@ -222,7 +223,6 @@ export const route_message = async message => {
   return reply
 }
 self.addEventListener('message', async event => {
-  console.log('message', event)
   const reply = await route_message(event)
   self.postMessage(reply)
 })
