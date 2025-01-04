@@ -41,29 +41,85 @@ const Paged = superclass =>
     }
 
     async optimize() {
-      // First in first out storage (FIFO)
-      if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
-        const [current] = hydrate(localStorage.getItem(this.id)).childNodes
-        const oldest = get_oldest(current, this.type)
-        const offload = document.createDocumentFragment()
-        const original_size = elements_as_kilobytes(current)
-        let amount_moved = 0
-        while (is_fat(current, this.type) && amount_moved <= SIZE.MID) {
-          const fatty = current.childNodes[current.childNodes.length - 1]
-          const new_sibling = offload.childNodes[0] || null
-          offload.insertBefore(current.removeChild(fatty), new_sibling)
-          amount_moved = original_size - elements_as_kilobytes(current)
+      if (itemid_as_kilobytes(this.id) <= SIZE.MAX) return
+
+      const [current] = hydrate(localStorage.getItem(this.id)).childNodes
+      const oldest = get_oldest(current, this.type)
+      const directory_path = `${this.id}/`
+
+      const all_items = Array.from(current.childNodes)
+        .map(node => ({
+          node,
+          created_at: new Date(
+            as_created_at(node.getAttribute('itemid'))
+          ).getTime()
+        }))
+        .sort((a, b) => b.created_at - a.created_at)
+
+      if (all_items.length > SIZE.MAX) {
+        const current_items = all_items.slice(0, SIZE.MID)
+        const archive_items = all_items.slice(SIZE.MAX)
+
+        if (this.type === 'posters') {
+          // Handle posters as directory entries
+          const archive_batches = []
+          for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
+            const batch = archive_items.slice(i, i + SIZE.MAX)
+            const newest_in_batch = Math.max(
+              ...batch.map(item => item.created_at)
+            )
+            const archive_path = `${directory_path}${newest_in_batch}/`
+
+            await set(archive_path, {
+              items: batch.map(item => item.created_at),
+              count: batch.length
+            })
+
+            archive_batches.push({
+              path: archive_path,
+              timestamp: newest_in_batch,
+              count: batch.length
+            })
+          }
+
+          // Update directory metadata
+          await set(directory_path, {
+            items: current_items.map(item => item.created_at),
+            has_more: true,
+            archives: archive_batches.sort((a, b) => b.timestamp - a.timestamp)
+          })
+        } else {
+          // Handle statements and other types as single files
+          const archive_batches = []
+          for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
+            const batch = archive_items.slice(i, i + SIZE.MAX)
+            const newest_in_batch = Math.max(
+              ...batch.map(item => item.created_at)
+            )
+            const archive_path = `${directory_path}${newest_in_batch}/`
+
+            // Create archive document
+            const archive_div = document.createElement(current.nodeName)
+            archive_div.setAttribute('itemscope', '')
+            archive_div.setAttribute('itemid', archive_path)
+            batch.forEach(item => archive_div.appendChild(item.node))
+
+            // Save archive as file
+            const history = new History(archive_path)
+            await history.save(archive_div)
+
+            archive_batches.push({
+              path: archive_path,
+              timestamp: newest_in_batch,
+              count: batch.length
+            })
+          }
+
+          // Update main collection
+          current.innerHTML = ''
+          current_items.forEach(item => current.appendChild(item.node))
+          await this.save(current)
         }
-        const div = document.createElement(current.nodeName)
-        div.setAttribute('itemscope', '')
-        div.setAttribute('itemid', this.id)
-        div.appendChild(offload)
-        const me = from_e64(current_user.value.phoneNumber)
-        const id = `${me}/${this.type}/${oldest.getTime()}`
-        await this.save(current)
-        const history = new History(id)
-        await history.save(div)
-        if (elements_as_kilobytes(current) > SIZE.MAX) await this.optimize()
       }
     }
     async sync() {
