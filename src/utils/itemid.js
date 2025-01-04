@@ -50,12 +50,12 @@ export async function load_from_network(itemid, me = localStorage.me) {
     // Check Content-Encoding header
     const content_encoding = response.headers.get('Content-Encoding')
     const compressed_html = await response.arrayBuffer()
-
+    let html = null
     // If no content encoding or 'identity', data is already decompressed
     if (!content_encoding || content_encoding === 'identity')
-      return get_item(new TextDecoder().decode(compressed_html))
+      html = new TextDecoder().decode(compressed_html)
+    else html = await decompress_html(compressed_html)
 
-    const html = await decompress_html(compressed_html)
     if (!html) return null
     await set(itemid, html)
     return get_item(html)

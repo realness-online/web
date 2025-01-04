@@ -81,7 +81,7 @@ const process_directory = async (source_dir, output_dir) => {
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
 
-        await writeFile(compressed_path, html)
+        await writeFile(compressed_path, compressed)
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
       } catch (file_error) {
         console.error(

@@ -42,10 +42,10 @@ export const to_kb = obj => {
 }
 export const itemid_as_kilobytes = itemid => {
   const bytes = localStorage.getItem(itemid)
-  if (bytes) return (bytes.length / KB).toFixed(2)
+  if (bytes) return bytes.length / KB
   return 0
 }
 export const elements_as_kilobytes = elements => {
-  if (elements) return (elements.outerHTML.length / KB).toFixed(2)
+  if (elements) return elements.outerHTML.length / KB
   return 0
 }

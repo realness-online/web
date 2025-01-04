@@ -61,16 +61,10 @@ export const init_serverless = () => {
     messagingSenderId: String(import.meta.env.VITE_MESSAGING_SENDER_ID || '')
   }
 
-  try {
-    const firebase_app = initialize_firebase(init)
-    app.value = firebase_app
-
-    if (firebase_app) auth.value = init_auth(firebase_app)
-    else console.error('Firebase app initialization failed')
-  } catch (error) {
-    console.error('Firebase initialization error:', error)
-    throw error
-  }
+  const firebase_app = initialize_firebase(init)
+  app.value = firebase_app
+  if (firebase_app) auth.value = init_auth(firebase_app)
+  else console.error('Firebase app initialization failed')
 
   storage.value = get_storage(app.value)
   auth_changed(auth.value, async user => {

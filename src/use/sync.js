@@ -21,7 +21,7 @@ import {
   provide,
   watch
 } from 'vue'
-import { JS_TIME, SIZE } from '@/utils/numbers'
+import { JS_TIME } from '@/utils/numbers'
 
 export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
 
@@ -37,7 +37,6 @@ export const use = () => {
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
-    localStorage.sync_time = null // TODO: Remove
     await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -92,7 +91,6 @@ export const use = () => {
     console.log('sync_offline_actions', navigator.onLine)
     if (navigator.onLine) {
       const offline = await get('sync:offline')
-      console.log('offline', offline)
       if (!offline) return
       while (offline.length) {
         const item = offline.pop()
@@ -177,53 +175,18 @@ export const use = () => {
     const offline_posters = await build_local_directory(directory_path)
     if (!offline_posters || !offline_posters.items) return
 
-    // Sort ALL items by created_at timestamp (newest first)
-    const sorted_items = offline_posters.items.sort((a, b) => b - a) // Descending order
+    // Sort items by created_at timestamp (newest first)
+    const sorted_items = offline_posters.items.sort((a, b) => b - a)
 
-    if (sorted_items.length > SIZE.MAX) {
-      // Keep newest items in main directory
-      const current_items = sorted_items.slice(0, SIZE.MIN)
-      const archive_items = sorted_items.slice(SIZE.MAX)
+    // Update directory with sorted items
+    await set(directory_path, {
+      ...offline_posters,
+      items: sorted_items,
+      has_more: false,
+      archives: []
+    })
 
-      // Create archive batches using newest timestamp in each batch
-      const archive_batches = []
-      for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
-        const batch = archive_items.slice(i, i + SIZE.MAX)
-        const newest_in_batch = Math.max(...batch) // Use newest timestamp for directory name
-        const archive_path = `${directory_path}${newest_in_batch}/`
-
-        // Save archive directory with items already sorted newest first
-        await set(archive_path, {
-          items: batch, // Items within batch are already sorted newest first
-          has_more: i + SIZE.MAX < archive_items.length,
-          timestamp: newest_in_batch
-        })
-
-        archive_batches.push({
-          path: archive_path,
-          timestamp: newest_in_batch,
-          count: batch.length
-        })
-      }
-
-      // Sort archives by timestamp (newest first)
-      archive_batches.sort((a, b) => b.timestamp - a.timestamp)
-
-      // Update main directory with newest items and archive info
-      await set(directory_path, {
-        ...offline_posters,
-        items: current_items,
-        has_more: true,
-        archives: archive_batches
-      })
-    } else
-      // If under threshold, just update with sorted items
-      await set(directory_path, {
-        ...offline_posters,
-        items: sorted_items, // Already sorted newest first
-        has_more: false,
-        archives: []
-      })
+    // The actual batching/archiving will be handled by Paged.optimize()
   }
   mounted(async () => {
     document.addEventListener('visibilitychange', play)

@@ -58,7 +58,6 @@ export const use = () => {
   const show = async () => {
     if (!vector.value) {
       const poster = await load(props.itemid)
-      console.log('poster', poster)
       vector.value = poster
     }
     working.value = false
