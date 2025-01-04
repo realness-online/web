@@ -66,7 +66,20 @@ export default [
       camelcase: 'off',
       indent: 'off',
       'lines-between-class-members': 'off',
-      'no-console': ['error', { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] }],
+      'no-console': [
+        'error',
+        {
+          allow: [
+            'warn',
+            'error',
+            'info',
+            'time',
+            'timeEnd',
+            'group',
+            'groupEnd'
+          ]
+        }
+      ],
       'no-debugger': 'error',
       'no-unused-vars': [
         'error',
