@@ -1,35 +1,33 @@
 import pako from 'pako'
-import { to_kb } from '@/utils/numbers'
+import { to_kb, KB } from '@/utils/numbers'
 
-export const compress_data = message => {
-  console.time('compress:data')
-  console.info('Compressor')
-  console.info(`  before: ${to_kb(message.data.html)}kb`)
-
+export const compress_html = message => {
+  console.time('compress:html')
   const uint8_array = new TextEncoder().encode(message.data.html)
-
-  const result = pako.gzip(uint8_array, {
-    level: 9,
-    header: {
-      name: message.data.filename
-    }
+  const result = pako.deflate(uint8_array, {
+    level: 9
   })
-
-  const blob = new Blob([result], { type: 'application/gzip' })
-  console.info(`  after: ${(blob.size / 1024).toFixed(2)}kb`)
-  console.timeEnd('compress:data')
-  return result
+  const blob = new Blob([result], { type: 'application/octet-stream' })
+  console.timeEnd('compress:html')
+  return { blob }
 }
 
-export const decompress_data = message => {
-  try {
-    const decompressed = pako.inflate(new Uint8Array(message.data.compressed), {
-      to: 'string'
-    })
-    return decompressed
-  } catch (error) {
-    return { error: error.message }
+export const decompress_html = message => {
+  console.time('decompress:html')
+  const compressed_data = new Uint8Array(message.data.compressed)
+
+  // Check if data starts with '<' (ASCII 60) - indicating uncompressed HTML/SVG
+  if (compressed_data[0] === 60) {
+    console.log('Data is not compressed, returning as-is')
+    return { html: new TextDecoder().decode(compressed_data) }
   }
+
+  // Otherwise proceed with decompression
+  const html = pako.inflate(compressed_data, {
+    to: 'string'
+  })
+  console.timeEnd('decompress:html')
+  return { html }
 }
 
 export const route_message = async message => {
@@ -37,20 +35,20 @@ export const route_message = async message => {
   let reply = {}
 
   switch (route) {
-    case 'compress:data':
-      reply = compress_data(message)
+    case 'compress:html':
+      reply = compress_html(message)
       break
-    case 'decompress:data':
-      reply = decompress_data(message)
+    case 'decompress:html':
+      reply = decompress_html(message)
       break
     default:
       console.warn('unknown route', route)
+      reply = { error: `Unknown route: ${route}` }
   }
 
   return reply
 }
 self.addEventListener('message', async event => {
-  console.info('message', event)
   const reply = await route_message(event)
   self.postMessage(reply)
 })

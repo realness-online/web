@@ -46,8 +46,17 @@ export async function load_from_network(itemid, me = localStorage.me) {
   if (url) {
     console.info('download', itemid)
     const response = await fetch(url)
+
+    // Check Content-Encoding header
+    const content_encoding = response.headers.get('Content-Encoding')
     const compressed_data = await response.arrayBuffer()
+
+    // If no content encoding or 'identity', data is already decompressed
+    if (!content_encoding || content_encoding === 'identity')
+      return get_item(new TextDecoder().decode(compressed_data))
+
     const html = await decompress_data(compressed_data)
+    if (!html) return null
     await set(itemid, html)
     return get_item(html)
   }
@@ -73,21 +82,19 @@ export async function as_directory(itemid) {
     return cached
   }
   let directory = await build_local_directory(itemid)
-  if (navigator.onLine) {
-    console.trace('load_directory_from_network', itemid)
+  if (navigator.onLine)
     try {
       directory = await load_directory_from_network(itemid)
     } catch (e) {
       if (e.code === 'storage/unauthorized') return directory
       throw e
     }
-  }
 
   return directory
 }
 export async function as_download_url(itemid) {
+  if (itemid.startsWith('/+/')) return null
   try {
-    console.info('request:location', itemid)
     return await url(as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
@@ -114,7 +121,7 @@ export function as_filename(itemid) {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `/people${filename}`
   if (created_at.includes(as_type(itemid)) || is_history(itemid))
-    return `${filename}.html`
+    return `${filename}.html.gz`
   return `${filename}/index.html.gz`
 }
 export function as_storage_path(itemid) {
