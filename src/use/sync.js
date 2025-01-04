@@ -11,7 +11,7 @@ import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import get_item from '@/utils/item'
-
+import { create_hash } from '@/utils/upload_processor'
 import {
   ref,
   onMounted as mounted,

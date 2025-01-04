@@ -3,7 +3,7 @@ export const MB = KB * KB
 export const PERCENT = 100
 export const FIVE_HOURS = 5 * 60 * 60 // 18000 seconds
 export const THIRTEEN_MINUTES = 13 * 60 * 1000 // 780000 milliseconds
-
+export const OPEN_ANGLE = 60 // ASCII 60
 // Storage size thresholds in KB
 export const SIZE = {
   MIN: 13, // Initial threshold for optimization
