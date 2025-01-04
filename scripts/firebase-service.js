@@ -118,7 +118,7 @@ export const download_from_firebase = async () => {
         const metadata_path = `${output_path}.metadata.json`
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
-        if (metadata.contentEncoding === 'gzip') {
+        if (metadata.contentEncoding === 'deflate') {
           console.info(chalk.yellow('Decompressing...'))
           const decompressed = await gunzip_async(content)
           const final_path = output_path.replace('.gz', '')

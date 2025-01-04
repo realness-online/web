@@ -18,23 +18,14 @@ const create_hash = (data, algorithm = 'SHA-256') => {
 
 const verify_file = async (decompressed, metadata) => {
   const content_hash = await create_hash(decompressed)
-  const md5_hash = await create_hash(decompressed, 'MD5')
-
-  const expected_hash = metadata.metadata.customMetadata.hash.replace(/"/g, '')
-  const expected_md5 = metadata.metadata.md5Hash
-
+  const expected_hash = metadata.metadata.customMetadata.hash
   const hash_matches = content_hash === expected_hash
-  const md5_matches = md5_hash === expected_md5
 
   if (!hash_matches || !md5_matches) {
     console.info(chalk.yellow('Hash verification:'))
     console.info(
       chalk.dim('Content Hash: ') +
         (hash_matches ? chalk.green('✓') : chalk.red('✗'))
-    )
-    console.info(
-      chalk.dim('MD5 Hash: ') +
-        (md5_matches ? chalk.green('✓') : chalk.red('✗'))
     )
     return false
   }
