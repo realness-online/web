@@ -2,7 +2,7 @@ import { as_created_at, list, as_directory, as_author } from '@/utils/itemid'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statements } from '@/persistance/Storage'
 import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
-import { THIRTEEN_MINUTES } from '@/utils/numbers'
+import { JS_TIME } from '@/utils/numbers'
 const links = ['http://', 'https://']
 const my_statements = ref([])
 
@@ -93,7 +93,7 @@ export function is_train_of_thought(thot, statements) {
     const nearest = as_created_at(nearest_statement.id)
     const next = as_created_at(next_statement.id)
     const difference = next - nearest
-    if (difference < THIRTEEN_MINUTES) return true
+    if (difference < JS_TIME.THIRTEEN_MINUTES) return true
     return false
   }
   return false

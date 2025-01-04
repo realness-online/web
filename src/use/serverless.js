@@ -11,9 +11,10 @@ import {
   ref as reference,
   getMetadata as get_metadata,
   listAll as list_directory,
-  uploadString as upload_file,
+  uploadString as upload_string,
+  uploadBytes as upload_bytes,
   deleteObject as delete_file,
-  StringFormat
+  StringFormat as string_format
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
@@ -33,8 +34,10 @@ export const sign_off = () => sign_out(auth.value)
 // storage methods
 export const location = path => reference(storage.value, path)
 export const metadata = async path => get_metadata(location(path))
-export const upload = (path, data, meta) =>
-  upload_file(location(path), data, StringFormat.RAW, meta)
+export const upload = (path, data, meta) => {
+  if (data instanceof Blob) return upload_bytes(location(path), data, meta)
+  return upload_string(location(path), data, string_format.RAW, meta)
+}
 export const url = async path => await download_url(location(path))
 export const directory = async path => await list_directory(location(path))
 export const remove = async path => {

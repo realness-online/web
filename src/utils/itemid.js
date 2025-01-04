@@ -1,9 +1,9 @@
 // {base_url}/{:author}/{:type}/{:created_at}
 import { get, set, keys } from 'idb-keyval'
 import get_item from '@/utils/item'
-import { does_not_exist } from '@/use/sync'
+import { DOES_NOT_EXIST } from '@/use/sync'
 import { url, directory } from '@/use/serverless'
-import { decompress_data } from '@/utils/upload_processor'
+import { decompress_html } from '@/utils/upload_processor'
 
 class Directory {
   constructor() {
@@ -49,13 +49,13 @@ export async function load_from_network(itemid, me = localStorage.me) {
 
     // Check Content-Encoding header
     const content_encoding = response.headers.get('Content-Encoding')
-    const compressed_data = await response.arrayBuffer()
+    const compressed_html = await response.arrayBuffer()
 
     // If no content encoding or 'identity', data is already decompressed
     if (!content_encoding || content_encoding === 'identity')
-      return get_item(new TextDecoder().decode(compressed_data))
+      return get_item(new TextDecoder().decode(compressed_html))
 
-    const html = await decompress_data(compressed_data)
+    const html = await decompress_html(compressed_html)
     if (!html) return null
     await set(itemid, html)
     return get_item(html)
@@ -100,7 +100,7 @@ export async function as_download_url(itemid) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', as_filename(itemid))
       const index = (await get('sync:index')) || {}
-      index[itemid] = does_not_exist
+      index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)
       return null
     }

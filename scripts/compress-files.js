@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, dirname, relative } from 'node:path'
 import chalk from 'chalk'
-import { prepare_upload_data } from './node-upload-processor.js'
+import { prepare_upload_html } from './node-upload-processor.js'
 import { PERCENT, format_bytes } from '../src/utils/numbers.js'
 
 // Define paths relative to project root
@@ -63,8 +63,8 @@ const process_directory = async (source_dir, output_dir) => {
         total_original += original_size
 
         console.info(`${chalk.bold('Processing: ')}${chalk.cyan(rel_path)}`)
-        const { data, metadata } = await prepare_upload_data(content, file_path)
-        const compressed_size = data.length
+        const { compressed, metadata } = await prepare_upload_html(content)
+        const compressed_size = compressed.length
         total_compressed += compressed_size
 
         const compression_ratio = (
@@ -81,7 +81,7 @@ const process_directory = async (source_dir, output_dir) => {
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`
 
-        await writeFile(compressed_path, data)
+        await writeFile(compressed_path, html)
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
       } catch (file_error) {
         console.error(
