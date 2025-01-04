@@ -40,6 +40,7 @@ export const use = () => {
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
+    localStorage.sync_time = null // TODO: Re
     await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -50,6 +51,7 @@ export const use = () => {
       await sync_me()
       await sync_statements()
       await sync_events()
+      await sync_posters_directory()
       emit('active', false)
     }
   }

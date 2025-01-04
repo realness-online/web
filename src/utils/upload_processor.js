@@ -10,12 +10,13 @@ export const compress_data = (data, filename = 'data') => {
       reject(error)
     }
     compressor_worker.postMessage({
-      route: 'compress:vector',
+      route: 'compress:html',
       data: { html: data, filename }
     })
   })
 }
 export const create_hash = async (data, algorithm = 'SHA-256') => {
+  console.log('algorithm', algorithm)
   const encoder = new TextEncoder()
   const data_buffer = encoder.encode(data)
   const hash_buffer = await crypto.subtle.digest(algorithm, data_buffer)
@@ -44,21 +45,18 @@ export const decompress_data = data => {
 export const prepare_upload_data = async (items, path) => {
   const data = await compress_data(items, path)
   const content_hash = await create_hash(items)
-  const md5_hash = await create_hash(items, 'MD5')
 
   return {
     data,
     content_hash,
-    md5_hash,
     metadata: {
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
       contentLanguage: navigator.language,
-      contentEncoding: 'gzip',
+      contentEncoding: 'deflate',
       contentDisposition: 'inline',
-      md5Hash: md5_hash,
       customMetadata: {
-        hash: `"${content_hash}"`
+        hash: content_hash
       }
     }
   }
