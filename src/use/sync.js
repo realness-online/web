@@ -234,6 +234,7 @@ export function visit_interval() {
   return Date.now() - JS_TIME.ONE_HOUR
 }
 export const i_am_fresh = () => {
+  return false
   let synced
   if (localStorage.sync_time)
     synced = Date.now() - new Date(localStorage.sync_time).getTime()

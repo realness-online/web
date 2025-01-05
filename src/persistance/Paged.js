@@ -8,6 +8,7 @@ import {
   list,
   type_as_list,
   load_from_network,
+  load_directory_from_network,
   as_created_at
 } from '@/utils/itemid'
 import {
@@ -41,85 +42,100 @@ const Paged = superclass =>
     }
 
     async optimize() {
-      if (itemid_as_kilobytes(this.id) <= SIZE.MAX) return
+      console.log('optimize', this.id)
 
-      const [current] = hydrate(localStorage.getItem(this.id)).childNodes
-      const oldest = get_oldest(current, this.type)
-      const directory_path = `${this.id}/`
+      if (this.type === 'posters') {
+        const directory_data = await load_directory_from_network(this.id)
+        if (!directory_data || directory_data.items.length <= SIZE.MAX) return
+        const current_items = directory_data.items.slice(0, SIZE.MID)
+        const archive_items = directory_data.items.slice(SIZE.MAX)
 
-      const all_items = Array.from(current.childNodes)
-        .map(node => ({
-          node,
-          created_at: new Date(
-            as_created_at(node.getAttribute('itemid'))
-          ).getTime()
-        }))
-        .sort((a, b) => b.created_at - a.created_at)
+        // Handle posters as directory entries
+        const archive_batches = []
+        for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
+          const batch = archive_items.slice(i, i + SIZE.MAX)
+          const newest_in_batch = Math.max(
+            ...batch.map(item => item.created_at)
+          )
+          const archive_path = `${directory_path}${newest_in_batch}/`
 
-      if (all_items.length > SIZE.MAX) {
+          await set(archive_path, {
+            items: batch.map(item => item.created_at),
+            count: batch.length
+          })
+
+          archive_batches.push({
+            path: archive_path,
+            timestamp: newest_in_batch,
+            count: batch.length
+          })
+        }
+
+        // Update directory metadata
+        await set(directory_path, {
+          items: current_items.map(item => item.created_at),
+          has_more: true,
+          archives: archive_batches.sort((a, b) => b.timestamp - a.timestamp)
+        })
+      } else if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
+        const current = get_itemprops(hydrate(localStorage.getItem(this.id)))
+        console.log('current', current)
+        const oldest = get_oldest(current, this.type)
+
+        const directory_path = `${this.id}/`
+        const all_items = Array.from(current.childNodes)
+          .map(node => {
+            console.log('node', node)
+            const id = node.getAttribute('itemid')
+            const created_at = new Date(as_created_at(id)).getTime()
+
+            console.log('created_at', created_at)
+            return {
+              node,
+              created_at
+            }
+          })
+          .sort((a, b) => b.created_at - a.created_at)
+          .sort((a, b) => b.created_at - a.created_at)
+
         const current_items = all_items.slice(0, SIZE.MID)
         const archive_items = all_items.slice(SIZE.MAX)
+        // Handle statements and other types as single files
+        const archive_batches = []
+        for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
+          const batch = archive_items.slice(i, i + SIZE.MAX)
+          const newest_in_batch = Math.max(
+            ...batch.map(item => item.created_at)
+          )
+          const archive_path = `${directory_path}${newest_in_batch}/`
 
-        if (this.type === 'posters') {
-          // Handle posters as directory entries
-          const archive_batches = []
-          for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
-            const batch = archive_items.slice(i, i + SIZE.MAX)
-            const newest_in_batch = Math.max(
-              ...batch.map(item => item.created_at)
-            )
-            const archive_path = `${directory_path}${newest_in_batch}/`
+          // Create archive document
+          const archive_div = document.createElement(current.nodeName)
+          archive_div.setAttribute('itemscope', '')
+          archive_div.setAttribute('itemid', archive_path)
+          batch.forEach(item => archive_div.appendChild(item.node))
 
-            await set(archive_path, {
-              items: batch.map(item => item.created_at),
-              count: batch.length
-            })
+          // Save archive as file
+          const history = new History(archive_path)
+          await history.save(archive_div)
 
-            archive_batches.push({
-              path: archive_path,
-              timestamp: newest_in_batch,
-              count: batch.length
-            })
-          }
-
-          // Update directory metadata
-          await set(directory_path, {
-            items: current_items.map(item => item.created_at),
-            has_more: true,
-            archives: archive_batches.sort((a, b) => b.timestamp - a.timestamp)
+          archive_batches.push({
+            path: archive_path,
+            timestamp: newest_in_batch,
+            count: batch.length
           })
-        } else {
-          // Handle statements and other types as single files
-          const archive_batches = []
-          for (let i = 0; i < archive_items.length; i += SIZE.MAX) {
-            const batch = archive_items.slice(i, i + SIZE.MAX)
-            const newest_in_batch = Math.max(
-              ...batch.map(item => item.created_at)
-            )
-            const archive_path = `${directory_path}${newest_in_batch}/`
 
-            // Create archive document
-            const archive_div = document.createElement(current.nodeName)
-            archive_div.setAttribute('itemscope', '')
-            archive_div.setAttribute('itemid', archive_path)
-            batch.forEach(item => archive_div.appendChild(item.node))
-
-            // Save archive as file
-            const history = new History(archive_path)
-            await history.save(archive_div)
-
-            archive_batches.push({
-              path: archive_path,
-              timestamp: newest_in_batch,
-              count: batch.length
-            })
-          }
-
-          // Update main collection
           current.innerHTML = ''
           current_items.forEach(item => current.appendChild(item.node))
           await this.save(current)
         }
+
+        if (all_items.length > SIZE.MAX)
+          if (this.type === 'posters') {
+          } else {
+          }
+
+        // Update main collection
       }
     }
     async sync() {
