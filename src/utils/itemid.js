@@ -73,6 +73,7 @@ export async function load_directory_from_network(itemid) {
     await set(path, meta)
     return meta
   }
+  return null
 }
 export async function as_directory(itemid) {
   const path = as_directory_id(itemid)
