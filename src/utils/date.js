@@ -70,3 +70,12 @@ export function day_name(date) {
 export function id_as_day(itemid) {
   return day_name(as_created_at(itemid))
 }
+export const format_time_remaining = time_ms => {
+  const minutes = Math.floor(time_ms / 60000)
+  const hours = Math.floor(minutes / 60)
+  const remaining_minutes = minutes % 60
+
+  if (hours > 0) return `${hours}h ${remaining_minutes}m`
+
+  return `${minutes}m`
+}

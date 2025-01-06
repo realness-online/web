@@ -1,17 +1,17 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { recent_item_first } from '@/utils/sorting'
-import { current_user } from '@/use/serverless'
-import { get_item, hydrate, get_itemprops } from '@/utils/item'
-import { from_e64 } from '@/use/people'
 import { History } from '@/persistance/Storage'
+import { from_e64 } from '@/use/people'
+import { current_user } from '@/use/serverless'
+import { get_item, get_itemprops, hydrate } from '@/utils/item'
 import {
+  as_created_at,
   list,
-  type_as_list,
-  load_from_network,
   load_directory_from_network,
-  as_created_at
+  load_from_network,
+  type_as_list
 } from '@/utils/itemid'
-import { SIZE, itemid_as_kilobytes, elements_as_kilobytes } from '@/utils/numbers'
+import { SIZE, elements_as_kilobytes, itemid_as_kilobytes } from '@/utils/numbers'
+import { recent_item_first } from '@/utils/sorting'
 
 const Paged = superclass =>
   class extends superclass {
@@ -43,7 +43,9 @@ const Paged = superclass =>
       }
     }
     async optimize_directory() {
-      const directory_list = load_directory_from_network(this.id)
+      const directory_list = await load_directory_from_network(this.id)
+      if (directory_list.length > SIZE.MAX) {
+      } else return
       console.log('directory_list', directory_list)
     }
     async sync() {

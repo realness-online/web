@@ -8,7 +8,7 @@ import { decompress_html } from '@/utils/upload_processor'
 class Directory {
   constructor() {
     this.items = []
-    this.types = [] // folders are types in our vocabulary
+    this.types = [] // at the root of the directory folders are types in our vocabulary
   }
 }
 // Expensive to call
