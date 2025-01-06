@@ -32,7 +32,7 @@ yarn-error.log*
 # reports
 javascript_report.html
 worker_report.html
-
+/.vscode/
 *.LICENSE.txt
 
 # Editor directories and files
