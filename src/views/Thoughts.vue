@@ -70,12 +70,12 @@
           v-if="item.type === 'posters'"
           :key="slot_key(item)"
           :itemid="item.id"
-          :verbose="true" />
+          verbose />
         <thought-as-article
           v-else
           :key="slot_key(item)"
           :statements="item"
-          :verbose="true"
+          verbose
           @show="thought_shown" />
       </template>
     </as-days>

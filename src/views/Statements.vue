@@ -12,11 +12,18 @@
   import { useRouter as use_router } from 'vue-router'
   const working = ref(true)
   const router = use_router()
-  const { my_statements } = use_statements()
+  const { my_statements, statements, thought_shown, authors } = use_statements()
   const home = () => router.push({ path: '/' })
   mounted(async () => {
+    const last_editable = my_statements.value.length - 1
+    statements.value = [my_statements.value[last_editable]]
     working.value = false
     console.info('views:Statements')
+    authors.value.push({
+      id: localStorage.me,
+      type: 'person',
+      viewed: ['index']
+    })
   })
 </script>
 
@@ -26,28 +33,44 @@
       <icon name="nothin" />
       <logo-as-link />
     </header>
-    <h1 v-if="!working">Editable Statements</h1>
-    <as-days
-      v-slot="thoughts"
-      itemscope
-      :itemid="get_my_itemid('statements')"
-      :paginate="false"
-      :statements="my_statements">
-      <thought-as-article
-        v-for="thought in thoughts"
-        :key="thought[0].id"
-        :statements="thought"
-        :editable="true" />
-    </as-days>
-    <footer
-      v-if="my_statements && my_statements.length === 0 && !working"
-      class="message">
-      <p>
-        Say some stuff via the <button aria-label="Home" @click="home" /> button on the
-        homepage
-        <br />
-      </p>
-    </footer>
+    <article id="editable" class="statements">
+      <header>
+        <h1 v-if="!working">Editable Statements</h1>
+      </header>
+      <as-days
+        v-slot="thoughts"
+        itemscope
+        :itemid="get_my_itemid('statements')"
+        :paginate="false"
+        :statements="my_statements">
+          <thought-as-article
+            v-for="thought in thoughts"
+            :key="thought[0].id"
+            :statements="thought"
+            editable
+            @show="thought_shown" />
+      </as-days>
+      <footer v-if="!my_statements?.length && !working" class="message">
+        <p>
+          Say some stuff via the <button aria-label="Home" @click="home" /> button on the
+          homepage
+          <br />
+        </p>
+      </footer>
+    </article>
+
+    <article id="earlier" class="statements">
+      <header>
+        <h1>Earlier Statements</h1>
+      </header>
+      <as-days v-slot="thoughts" :statements="statements">
+        <thought-as-article
+          v-for="thought in thoughts"
+          :key="thought[0].id"
+          :statements="thought"
+          @show="thought_shown" />
+      </as-days>
+    </article>
   </section>
 </template>
 
@@ -60,13 +83,21 @@
     time
       color: red
       border-color: red
-    & > section.as-days
-      padding-top: 0
-      h4
-        margin: base-line 0 0 0
-      article.day p[itemprop="statement"]:focus
-        font-weight: bolder
-        outline: 0px
+    & > article.statements
+      & > header
+        h1
+          width: 100%
+          margin-top: 0
+          text-align: center
+          padding: 0 base-line base-line base-line
+          line-height: 1
+      & > section.as-days
+        padding-top: 0
+        h4
+          margin: base-line 0 0 0
+        article.day p[itemprop="statement"]:focus
+          font-weight: bolder
+          outline: 0px
     & > footer
       text-align: center
       padding: 0 base-line
