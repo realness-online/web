@@ -2,20 +2,12 @@
   "compilerOptions": {
     "strict": true,
     "checkJs": true,
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost",
-      "WebWorker"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost", "WebWorker"]
   },
   "imports": {
     "@/": "/src",
     "@@": "/tests"
   },
   "lock": false,
-  "unstable": [
-    "sloppy-imports"
-  ]
+  "unstable": ["sloppy-imports"]
 }

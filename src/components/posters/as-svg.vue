@@ -15,7 +15,13 @@
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
-  import { use as use_poster, is_vector, is_vector_id, is_click, is_focus } from '@/use/vector'
+  import {
+    use as use_poster,
+    is_vector,
+    is_vector_id,
+    is_click,
+    is_focus
+  } from '@/use/vector'
   import {
     animate as animate_pref,
     emboss as emboss_pref,

@@ -119,6 +119,28 @@ export const as_paths = (image_data, options = {}) => {
 }
 
 /**
+ * Converts an image into single path element
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {string} SVG path data
+ */
+export const as_path_element = (image_data, options = {}) => {
+  const potrace = new Potrace(options)
+  return potrace.path_tag(image_data)
+}
+
+/**
+ * Converts an image into path elements
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {string[]} SVG path elements
+ */
+export const as_path_elements = (image_data, options = {}) => {
+  const potrace = new Potrace(options)
+  return potrace.path_tags(image_data)
+}
+
+/**
  * Potrace class for converting bitmap images to vector graphics
  * @class
  */
@@ -1396,78 +1418,6 @@ class Potrace {
   }
 
   /**
-   * Gets path tag for SVG output
-   * @param {string} [fillColor] - Override fill color (any valid CSS color)
-   * @returns {string} SVG path tag
-   * @throws {Error} If image not loaded
-   * @description
-   * Generates an SVG path tag for the processed image.
-   * If fillColor is provided, it overrides the default fill color.
-   * If fillColor is not provided, it uses the color specified in the parameters.
-   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
-   * Throws an error if the image is not loaded.
-   */
-  get_path_tag(fillColor) {
-    fillColor = arguments.length === 0 ? this.#params.color : fillColor
-
-    if (fillColor === Potrace.COLOR_AUTO)
-      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
-
-    if (!this.#image_loaded) throw new Error('Image should be loaded first')
-
-    if (!this.#processed) {
-      this.#bitmap_to_pathlist()
-      this.#process_path()
-      this.#processed = true
-    }
-
-    let tag = '<path itemprop="path" d="'
-
-    this.#pathlist.forEach(path => {
-      tag += utils.render_curve(path.curve, 1)
-    })
-
-    tag += '" style="fill-rule:evenodd"/>'
-
-    return tag
-  }
-
-  /**
-   * Gets path data for SVG output
-   * @param {string} [fillColor] - Override fill color (any valid CSS color)
-   * @returns {string} SVG path data string
-   * @throws {Error} If image not loaded
-   * @description
-   * Generates SVG path data for the processed image.
-   * If fillColor is provided, it overrides the default fill color.
-   * If fillColor is not provided, it uses the color specified in the parameters.
-   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
-   * Throws an error if the image is not loaded.
-   */
-  get_path_data(fillColor) {
-    fillColor = arguments.length === 0 ? this.#params.color : fillColor
-
-    if (fillColor === Potrace.COLOR_AUTO)
-      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
-
-    if (!this.#image_loaded) throw new Error('Image should be loaded first')
-
-    if (!this.#processed) {
-      this.#bitmap_to_pathlist()
-      this.#process_path()
-      this.#processed = true
-    }
-
-    let tag = ''
-
-    this.#pathlist.forEach(path => {
-      tag += utils.render_curve(path.curve, 1)
-    })
-
-    return tag
-  }
-
-  /**
    * Adds an extra color stop for better gradient transitions
    * @private
    * @param {Array<{value: number, colorIntensity: number}>} ranges - Current color ranges
@@ -1767,8 +1717,44 @@ class Potrace {
   }
 
   /**
+   * Gets path tag for SVG output
+   * @param {string} [fillColor] - Override fill color (any valid CSS color)
+   * @returns {string} SVG path tag
+   * @throws {Error} If image not loaded
+   * @description
+   * Generates an SVG path tag for the processed image.
+   * If fillColor is provided, it overrides the default fill color.
+   * If fillColor is not provided, it uses the color specified in the parameters.
+   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
+   * Throws an error if the image is not loaded.
+   */
+  get_path_tag(fillColor) {
+    fillColor = arguments.length === 0 ? this.#params.color : fillColor
+
+    if (fillColor === Potrace.COLOR_AUTO)
+      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
+
+    if (!this.#image_loaded) throw new Error('Image should be loaded first')
+
+    if (!this.#processed) {
+      this.#bitmap_to_pathlist()
+      this.#process_path()
+      this.#processed = true
+    }
+
+    let tag = '<path itemprop="path" d="'
+
+    this.#pathlist.forEach(path => {
+      tag += utils.render_curve(path.curve, 1)
+    })
+
+    tag += '" style="fill-rule:evenodd"/>'
+
+    return tag
+  }
+
+  /**
    * Generates SVG path tags for each color level
-   * @private
    * @param {boolean} [noFillColor=false] - Whether to skip fill color attributes
    * @returns {string[]} Array of SVG path tags with opacity and color
    * @description
@@ -1778,7 +1764,7 @@ class Potrace {
    * 3. Generating path data for each threshold
    * 4. Adding fill and opacity attributes
    */
-  #path_tags(noFillColor) {
+  path_tags(noFillColor) {
     let ranges = this.#get_ranges()
     const { blackOnWhite } = this.#params
 
@@ -1814,6 +1800,41 @@ class Potrace {
 
       return canBeIgnored ? '' : element
     })
+  }
+
+  /**
+   * Gets path data for SVG output
+   * @param {string} [fillColor] - Override fill color (any valid CSS color)
+   * @returns {string} SVG path data string
+   * @throws {Error} If image not loaded
+   * @description
+   * Generates SVG path data for the processed image.
+   * If fillColor is provided, it overrides the default fill color.
+   * If fillColor is not provided, it uses the color specified in the parameters.
+   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
+   * Throws an error if the image is not loaded.
+   */
+  get_path_data(fillColor) {
+    fillColor = arguments.length === 0 ? this.#params.color : fillColor
+
+    if (fillColor === Potrace.COLOR_AUTO)
+      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
+
+    if (!this.#image_loaded) throw new Error('Image should be loaded first')
+
+    if (!this.#processed) {
+      this.#bitmap_to_pathlist()
+      this.#process_path()
+      this.#processed = true
+    }
+
+    let tag = ''
+
+    this.#pathlist.forEach(path => {
+      tag += utils.render_curve(path.curve, 1)
+    })
+
+    return tag
   }
 
   /**
@@ -1874,31 +1895,11 @@ class Potrace {
     const paths = this.as_curves()
     return { width, height, dark, paths }
   }
-
-  /**
-   * Creates a bitmap from image data
-   * @private
-   * @param {ImageData} image_data - Raw image data from canvas
-   * @returns {Bitmap} Initialized bitmap with histogram
-   * @description
-   * Converts raw image data to internal bitmap format:
-   * 1. Creates new bitmap of appropriate size
-   * 2. Converts RGB(A) pixels to luminance values
-   * 3. Initializes and attaches histogram
-   */
-  #create_bitmap_from_image = image_data => {
-    const bitmap = new Bitmap(image_data.width, image_data.height)
-    // ... existing bitmap creation code ...
-
-    // Create and set histogram
-    const histogram = new Histogram(bitmap)
-    bitmap.set_histogram(histogram)
-
-    return bitmap
-  }
 }
 
 export default {
   as_paths,
+  as_path_element,
+  as_path_elements,
   Potrace
 }

@@ -15,13 +15,10 @@ const PEOPLE_DIR = join(DATA_DIR, 'people')
 const init_firebase = async () => {
   try {
     console.info(chalk.dim('Initializing Firebase...'))
-    const service_account = JSON.parse(
-      await readFile(SERVICE_ACCOUNT_PATH, 'utf-8')
-    )
+    const service_account = JSON.parse(await readFile(SERVICE_ACCOUNT_PATH, 'utf-8'))
 
     console.info(
-      chalk.dim('Storage bucket: ') +
-        chalk.cyan(process.env.VITE_STORAGE_BUCKET)
+      chalk.dim('Storage bucket: ') + chalk.cyan(process.env.VITE_STORAGE_BUCKET)
     )
 
     initializeApp({
@@ -58,9 +55,7 @@ export const upload_to_firebase = async files => {
 
     for (const { compressed_path, metadata_path, upload_path } of files) {
       try {
-        console.info(
-          chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path)
-        )
+        console.info(chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path))
         const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
 
         console.info(chalk.dim('Destination: ') + upload_path)
@@ -80,9 +75,7 @@ export const upload_to_firebase = async files => {
 
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.info(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     return { successful, failed }
@@ -138,9 +131,7 @@ export const download_from_firebase = async () => {
 
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.info(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
 
     return { successful, failed }

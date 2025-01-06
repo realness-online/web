@@ -16,11 +16,12 @@
     use_vectorize()
   const { process_directory, progress, completed_poster } = directory_processor()
 
-  const remove_poster = async poster => {
+  const remove_poster = async id => {
+    console.info('remove_poster', id)
     const message = 'Delete poster?'
     if (window.confirm(message)) {
-      posters.value = posters.value.filter(item => item.id !== poster.id)
-      const poster = new Poster(poster.id)
+      posters.value = posters.value.filter(item => item.id !== id)
+      const poster = new Poster(id)
       await poster.delete()
       console.info('delete:poster', poster.id)
     }

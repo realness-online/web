@@ -59,9 +59,7 @@ const merge_statements = html_files => {
     if (!by_date[statement.date_string].thoughts[statement.time_string])
       by_date[statement.date_string].thoughts[statement.time_string] = []
 
-    by_date[statement.date_string].thoughts[statement.time_string].push(
-      statement.element
-    )
+    by_date[statement.date_string].thoughts[statement.time_string].push(statement.element)
   })
 
   // Build merged HTML structure
@@ -96,10 +94,7 @@ const merge_statements = html_files => {
 
 // Main execution
 async function main() {
-  const statements_dir = join(
-    __dirname,
-    '../storage/people/+16282281824/statements'
-  )
+  const statements_dir = join(__dirname, '../storage/people/+16282281824/statements')
 
   try {
     // Read all HTML files in the statements directory

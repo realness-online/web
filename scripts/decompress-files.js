@@ -100,9 +100,7 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * 100)
-      console.info(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
+      console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
     }
     /* eslint-enable no-await-in-loop */
     console.info(

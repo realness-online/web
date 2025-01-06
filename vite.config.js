@@ -89,16 +89,9 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     include: ['tests/**/*.spec.js'],
-    exclude: [
-      ...configDefaults.exclude,
-      '**/setup.js',
-      '**/mocks/**'
-    ],
+    exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**'],
     coverage: {
-      include: [
-        'src/**/*.js',
-        'src/**/*.vue'
-      ],
+      include: ['src/**/*.js', 'src/**/*.vue'],
       exclude: [
         'tests/**',
         'mocks/**',
