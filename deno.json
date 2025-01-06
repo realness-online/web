@@ -10,6 +10,11 @@
       "WebWorker"
     ]
   },
+  "imports": {
+    "@/": "/src",
+    "@@": "/tests"
+  },
+  "lock": false,
   "unstable": [
     "sloppy-imports"
   ]
