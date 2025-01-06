@@ -6,6 +6,7 @@ import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import get_item from '@/utils/item'
+import { format_time_remaining } from '@/utils/date'
 import { create_hash } from '@/utils/upload_processor'
 import {
   ref,
@@ -55,7 +56,6 @@ export const use = () => {
     }
   }
   const prune = async () => {
-    console.log('prune')
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
@@ -82,7 +82,6 @@ export const use = () => {
     return !is_friend
   }
   const sync_offline_actions = async () => {
-    console.log('sync_offline_actions', navigator.onLine)
     if (navigator.onLine) {
       const offline = await get('sync:offline')
       if (!offline) return
@@ -96,7 +95,6 @@ export const use = () => {
     }
   }
   const sync_me = async () => {
-    console.log('sync_me')
     const id = get_my_itemid()
     const network = (await fresh_metadata(id)).customMetadata
     let my_info = localStorage.getItem(id)
@@ -110,7 +108,6 @@ export const use = () => {
     }
   }
   const sync_statements = async () => {
-    console.log('sync_statements')
     const persistance = new Statements()
     const itemid = get_my_itemid('statements')
     const network = (await fresh_metadata(itemid)).customMetadata
@@ -128,7 +125,6 @@ export const use = () => {
     await persistance.optimize()
   }
   const sync_events = async () => {
-    console.log('sync_events')
     const events = new Events()
     const itemid = get_my_itemid('events')
     const network = (await fresh_metadata(itemid)).customMetadata
@@ -207,7 +203,7 @@ export const use = () => {
 export const get_content_hash = async itemid => {
   const local = await get(itemid)
   if (!local) return null
-  return await create_hash(local)
+  return create_hash(local)
 }
 export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
@@ -228,6 +224,7 @@ export const fresh_metadata = async itemid => {
 export function visit_interval() {
   return Date.now() - JS_TIME.ONE_HOUR
 }
+
 export const i_am_fresh = () => {
   let synced
   if (localStorage.sync_time)
@@ -238,6 +235,6 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  console.info('i_am_fresh', am_i_fresh, time_left)
+  console.info('i_am_fresh', am_i_fresh, format_time_remaining(time_left))
   return am_i_fresh
 }
