@@ -41,9 +41,14 @@ export const decompress_html = compressed => {
   })
 }
 
-export const prepare_upload_html = async html => {
-  const compressed = await compress_html(html)
-  const content_hash = await create_hash(html)
+export const prepare_upload_html = async items => {
+  // Convert HTML element to string if needed
+  const html_string = items instanceof HTMLElement
+    ? items.outerHTML
+    : items
+
+  const compressed = await compress_html(html_string)
+  const content_hash = await create_hash(html_string)
 
   // Get language code in correct format (ISO 639-1)
   // Example: 'en-US' -> 'en', 'es-ES' -> 'es'
