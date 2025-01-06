@@ -161,6 +161,8 @@ export const use = () => {
   }
 
   const sync_posters_directory = async person_id => {
+    if (!person_id) return
+    console.log('sync_posters_directory', person_id)
     const directory_path = `${person_id}/posters/`
     await del(directory_path) // Clear existing directory cache
 

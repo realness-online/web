@@ -44,8 +44,7 @@ export const remove = async path => {
   try {
     delete_file(location(path))
   } catch (e) {
-    if (e.code === 'storage/object-not-found')
-      console.warn(path, 'already deleted')
+    if (e.code === 'storage/object-not-found') console.warn(path, 'already deleted')
     else throw e
   }
 }

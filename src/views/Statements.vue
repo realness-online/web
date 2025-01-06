@@ -43,12 +43,12 @@
         :itemid="get_my_itemid('statements')"
         :paginate="false"
         :statements="my_statements">
-          <thought-as-article
-            v-for="thought in thoughts"
-            :key="thought[0].id"
-            :statements="thought"
-            editable
-            @show="thought_shown" />
+        <thought-as-article
+          v-for="thought in thoughts"
+          :key="thought[0].id"
+          :statements="thought"
+          editable
+          @show="thought_shown" />
       </as-days>
       <footer v-if="!my_statements?.length && !working" class="message">
         <p>

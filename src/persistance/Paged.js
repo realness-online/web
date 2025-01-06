@@ -11,11 +11,7 @@ import {
   load_directory_from_network,
   as_created_at
 } from '@/utils/itemid'
-import {
-  SIZE,
-  itemid_as_kilobytes,
-  elements_as_kilobytes
-} from '@/utils/numbers'
+import { SIZE, itemid_as_kilobytes, elements_as_kilobytes } from '@/utils/numbers'
 
 const Paged = superclass =>
   class extends superclass {
@@ -98,10 +94,7 @@ function get_oldest(elements, prop_name) {
 }
 export const is_fat = (items, prop_name) => {
   const today = new Date().setHours(0, 0, 0, 0)
-  if (
-    elements_as_kilobytes(items) > SIZE.MIN &&
-    get_oldest(items, prop_name) < today
-  )
+  if (elements_as_kilobytes(items) > SIZE.MIN && get_oldest(items, prop_name) < today)
     return true
   // only count stuff before today
   return false
