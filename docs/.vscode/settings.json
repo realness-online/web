@@ -19,5 +19,8 @@
   "vs-code-prettier-eslint.prettierLast": true,
   "deno.enable": true,
   "deno.enablePaths": ["./src", "./scripts", "./tests"],
-  "deno.importMap": "./import_map.json"
+  "deno.importMap": "./import_map.json",
+  "files.exclude": {
+    ".husky/_/**/*": true
+  }
 }
