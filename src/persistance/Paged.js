@@ -10,12 +10,18 @@ import {
   load_from_network,
   type_as_list
 } from '@/utils/itemid'
-import { SIZE, elements_as_kilobytes, itemid_as_kilobytes } from '@/utils/numbers'
+import {
+  SIZE,
+  elements_as_kilobytes,
+  itemid_as_kilobytes
+} from '@/utils/numbers'
 import { recent_item_first } from '@/utils/sorting'
 
 const Paged = superclass =>
   class extends superclass {
     async optimize() {
+      if (super.optimize) await super.optimize()
+
       // First in first out storage (FIFO)
       if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
         const current = hydrate(localStorage.getItem(this.id)).childNodes[0]
@@ -42,12 +48,7 @@ const Paged = superclass =>
         if (elements_as_kilobytes(current) > SIZE.MAX) await this.optimize()
       }
     }
-    async optimize_directory() {
-      const directory_list = await load_directory_from_network(this.id)
-      if (directory_list.length > SIZE.MAX) {
-      } else return
-      console.log('directory_list', directory_list)
-    }
+
     async sync() {
       let oldest_at = 0 // the larger the number the more recent it is
       let cloud = await load_from_network(this.id)
@@ -96,7 +97,10 @@ function get_oldest(elements, prop_name) {
 }
 export const is_fat = (items, prop_name) => {
   const today = new Date().setHours(0, 0, 0, 0)
-  if (elements_as_kilobytes(items) > SIZE.MIN && get_oldest(items, prop_name) < today)
+  if (
+    elements_as_kilobytes(items) > SIZE.MIN &&
+    get_oldest(items, prop_name) < today
+  )
     return true
   // only count stuff before today
   return false

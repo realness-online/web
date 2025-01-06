@@ -10,20 +10,18 @@
   import { onMounted as mounted, ref } from 'vue'
   import { use_posters } from '@/use/vector'
   import { use as directory_processor } from '@/use/directory-processor'
-
+  console.time('views:Posters')
   const { posters, for_person: posters_for_person } = use_posters()
   const { can_add, vVectorizer, image_picker, select_photo, working, mount_workers } =
     use_vectorize()
   const { process_directory, progress, completed_poster } = directory_processor()
 
   const remove_poster = async id => {
-    console.info('remove_poster', id)
     const message = 'Delete poster?'
     if (window.confirm(message)) {
       posters.value = posters.value.filter(item => item.id !== id)
       const poster = new Poster(id)
       await poster.delete()
-      console.info('delete:poster', poster.id)
     }
   }
   const toggle_menu = itemid => {
@@ -42,7 +40,7 @@
     mount_workers()
     await posters_for_person({ id: localStorage.me })
     working.value = false
-    console.info('views:/posters')
+    console.timeEnd('views:Posters')
   })
 
   const current_preview = ref(null)
