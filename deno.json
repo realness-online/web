@@ -5,8 +5,8 @@
     "lib": ["esnext", "dom", "dom.iterable", "scripthost", "WebWorker"]
   },
   "imports": {
-    "@/": "/src",
-    "@@": "/tests"
+    "@/": "./src/",
+    "@/tests/": "./tests/"
   },
   "lock": false,
   "unstable": ["sloppy-imports"]
