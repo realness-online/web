@@ -21,6 +21,10 @@ import { ref } from 'vue'
 import { load } from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
+import { get, set, del } from 'idb-keyval'
+import { prepare_upload_html } from '@/utils/upload_processor'
+import { as_filename } from '@/utils/itemid'
+
 export const me = ref(undefined)
 export const app = ref(undefined)
 export const auth = ref(undefined)
@@ -44,8 +48,46 @@ export const remove = async path => {
   try {
     delete_file(location(path))
   } catch (e) {
-    if (e.code === 'storage/object-not-found') console.warn(path, 'already deleted')
+    if (e.code === 'storage/object-not-found')
+      console.warn(path, 'already deleted')
     else throw e
+  }
+}
+
+export const move = async (type, id, archive_id) => {
+  let upload_successful = false
+  const local_id = `${localStorage.me}/${type}/${id}`
+  const old_id = `${localStorage.me}/${type}/${id}`
+  const new_id = `${localStorage.me}/${type}/${archive_id}/${id}`
+  let html = await get(local_id)
+  if (!html) {
+    // if it isn't found loocally we need to download it
+    html = await load(local_id)
+    html = await get(local_id)
+  }
+  const { compressed, metadata } = await prepare_upload_html(html)
+  try {
+    // Step 1: Upload to new location
+    await upload(as_filename(new_id), compressed, metadata)
+    upload_successful = true
+
+    // Step 2: Only remove old file if upload was successful
+    await remove(as_filename(old_id))
+    console.info(`Moved ${old_id} to ${new_id}`)
+    return true
+  } catch (error) {
+    // Step 3: Cleanup if upload succeeded but remove failed
+    if (upload_successful)
+      try {
+        await remove(as_filename(new_id))
+        await set(old_id, html)
+        console.log(`Rolled back upload of ${new_id}`)
+      } catch (cleanup_error) {
+        console.error(`Failed to cleanup ${new_id}`, cleanup_error)
+      }
+
+    console.error(`Failed to move poster ${old_id}`, error)
+    return false
   }
 }
 
