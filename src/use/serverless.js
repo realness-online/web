@@ -57,8 +57,8 @@ export const remove = async path => {
 export const move = async (type, id, archive_id) => {
   let upload_successful = false
   const local_id = `${localStorage.me}/${type}/${id}`
-  const old_id = `${localStorage.me}/${type}/${id}`
-  const new_id = `${localStorage.me}/${type}/${archive_id}/${id}`
+  const old_location = `${localStorage.me}/${type}/${id}`
+  const new_location = `${localStorage.me}/${type}/${archive_id}/${id}`
   let html = await get(local_id)
   if (!html) {
     // if it isn't found loocally we need to download it
@@ -68,25 +68,25 @@ export const move = async (type, id, archive_id) => {
   const { compressed, metadata } = await prepare_upload_html(html)
   try {
     // Step 1: Upload to new location
-    await upload(as_filename(new_id), compressed, metadata)
+    await upload(as_filename(new_location), compressed, metadata)
     upload_successful = true
 
     // Step 2: Only remove old file if upload was successful
-    await remove(as_filename(old_id))
-    console.info(`Moved ${old_id} to ${new_id}`)
+    await remove(as_filename(old_location))
+    console.info(`Moved ${old_location} to ${new_location}`)
     return true
   } catch (error) {
     // Step 3: Cleanup if upload succeeded but remove failed
     if (upload_successful)
       try {
-        await remove(as_filename(new_id))
-        await set(old_id, html)
-        console.log(`Rolled back upload of ${new_id}`)
+        await remove(as_filename(new_location))
+        await set(old_location, html)
+        console.info(`Rolled back upload of ${new_location}`)
       } catch (cleanup_error) {
-        console.error(`Failed to cleanup ${new_id}`, cleanup_error)
+        console.error(`Failed to cleanup ${new_location}`, cleanup_error)
       }
 
-    console.error(`Failed to move poster ${old_id}`, error)
+    console.error(`Failed to move poster ${old_location}`, error)
     return false
   }
 }
