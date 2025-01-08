@@ -44,16 +44,17 @@
     }
   })
   defineEmits(['focus'])
+  const new_poster = ref(inject('new-poster', false))
   const wants_both = computed(() => {
-    if (inject('new-poster', false)) return false
+    if (new_poster.value) return false
     return stroke_pref.value && fill_pref.value
   })
   const just_stroke = computed(() => {
-    if (inject('new-poster', false)) return false
+    if (new_poster.value) return false
     return !fill_pref.value && stroke_pref.value
   })
   const just_fill = computed(() => {
-    if (inject('new-poster', false)) return true
+    if (new_poster.value) return true
     return fill_pref.value
   })
   const path = ref(null)
