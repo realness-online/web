@@ -22,15 +22,13 @@ export const Cloud = superclass =>
           await set(`hash:${this.id}`, metadata.customMetadata.hash)
 
         return response
-      } else if (current_user.value || localStorage.me)
-        await sync_later(this.id, 'save')
+      } else if (current_user.value || localStorage.me) await sync_later(this.id, 'save')
     }
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type))
-        await this.to_network(items.outerHTML)
+      if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
     }
     async delete() {
       console.info('request:delete', this.id)
@@ -60,8 +58,7 @@ export const Cloud = superclass =>
         const archive = []
         while (archive.length < SIZE.MID) {
           const oldest = items.pop()
-          if (await move_file(this.type, oldest, archive_directory))
-            archive.push(oldest)
+          if (await move_file(this.type, oldest, archive_directory)) archive.push(oldest)
           else break
         }
 
