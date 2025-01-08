@@ -22,11 +22,11 @@
 <template>
   <section id="directory" class="page">
     <header>
+      <logo-as-link />
       <router-link v-if="current_user" to="/relations">
         <icon name="heart" />
       </router-link>
       <icon v-else name="nothing" />
-      <logo-as-link />
     </header>
     <h1>Phonebook</h1>
     <icon v-if="working" name="working" />
@@ -55,6 +55,10 @@
       color: blue
     & > nav.profile-list
       margin-top: base-line
+      figure.profile
+        padding: base-line
+        svg.working
+          fill: blue
       & address > h3
         max-width: base-line * 6
         white-space: nowrap

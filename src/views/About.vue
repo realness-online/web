@@ -307,6 +307,10 @@
       </figcaption>
       <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
+    <footer>
+      <logo-as-link />
+      <call-to-action />
+    </footer>
   </section>
 </template>
 
@@ -474,22 +478,9 @@
           border:1em solid blue
           grid-column-start: span 2
     & > footer
+      display: block
       min-height: 100vh
-      & > article
-        padding: base-line
-        & > header
-          margin-bottom: base-line * 2
-          display: block
-        & > div
-          display: flex
-          & > a > img
-            border-radius: base-line
-            width: base-line * 12
-          & > menu
-            max-width: 21rem
-            display: flex
-            flex-wrap: wrap
-            align-items: flex-start
-            & button
-              margin: base-line
+      padding: base-line
+      & > a.logo
+        display: inline-block
 </style>

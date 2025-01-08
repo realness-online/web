@@ -31,6 +31,9 @@
     const route = { path: props.person.id }
     router.push(route)
   }
+  const avatar_loaded = vector => {
+    console.info('avatar_loaded', vector)
+  }
 </script>
 
 <template>
@@ -39,7 +42,8 @@
       v-if="person.avatar"
       :itemid="person.avatar"
       :tabable="editable"
-      @click="avatar_click" />
+      @click="avatar_click"
+      @loaded="avatar_loaded" />
     <icon v-else name="silhouette" @click="avatar_click" />
     <figcaption>
       <as-address :key="person.id" :person="person" :editable="editable" />

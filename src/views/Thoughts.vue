@@ -53,11 +53,11 @@
 <template>
   <section id="thoughts" ref="thoughts" class="page">
     <header>
-      <logo-as-link tabindex="-1" />
       <icon v-if="is_fullscreen" name="nothing" />
       <a v-else tabindex="-1" @click="fullscreen">
         <icon name="nothin" />
       </a>
+      <logo-as-link tabindex="-1" />
     </header>
     <h1>Thoughts</h1>
     <as-days

@@ -15,6 +15,7 @@
 
 <style lang="stylus">
   div.call.to.action
+    margin:auto
     max-width: base-line * 18rem
     padding: base-line * 2
     display: flex
