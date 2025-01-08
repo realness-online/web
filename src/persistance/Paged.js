@@ -3,13 +3,7 @@ import { History } from '@/persistance/Storage'
 import { from_e64 } from '@/use/people'
 import { current_user } from '@/use/serverless'
 import { get_item, get_itemprops, hydrate } from '@/utils/item'
-import {
-  as_created_at,
-  list,
-  load_directory_from_network,
-  load_from_network,
-  type_as_list
-} from '@/utils/itemid'
+import { as_created_at, list, load_from_network, type_as_list } from '@/utils/itemid'
 import { SIZE, elements_as_kilobytes, itemid_as_kilobytes } from '@/utils/numbers'
 import { recent_item_first } from '@/utils/sorting'
 
@@ -20,7 +14,7 @@ const Paged = superclass =>
 
       // First in first out storage (FIFO)
       if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
-        const current = hydrate(localStorage.getItem(this.id)).childNodes[0]
+        const [current] = hydrate(localStorage.getItem(this.id)).childNodes
         const oldest = get_oldest(current, this.type)
         const offload = document.createDocumentFragment()
         const original_size = elements_as_kilobytes(current)

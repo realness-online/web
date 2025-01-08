@@ -9,6 +9,7 @@ class Directory {
   constructor() {
     this.items = []
     this.types = [] // at the root of the directory folders are types in our vocabulary
+    this.archive = []
   }
 }
 // Expensive to call
@@ -44,7 +45,6 @@ export async function load_from_network(itemid, me = localStorage.me) {
   const url = await as_download_url(itemid, me)
 
   if (url) {
-    console.info('download', itemid)
     const response = await fetch(url)
 
     // Check Content-Encoding header
@@ -69,7 +69,7 @@ export async function load_directory_from_network(itemid) {
     console.info('request:directory', itemid)
     const folder = await directory(`people/${path}`)
     folder.items.forEach(item => meta.items.push(item.name.split('.')[0]))
-    folder.prefixes.forEach(prefix => meta.types.push(prefix.name))
+    folder.prefixes.forEach(prefix => meta.archive.push(prefix.name))
     await set(path, meta)
     return meta
   }
@@ -79,7 +79,7 @@ export async function as_directory(itemid) {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) {
-    console.log('has directory cached')
+    console.info('has directory cached', cached)
     return cached
   }
   let directory = await build_local_directory(itemid)
