@@ -1,6 +1,11 @@
 import { location, metadata } from '@/use/serverless'
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, load, build_local_directory } from '@/utils/itemid'
+import {
+  as_filename,
+  as_author,
+  load,
+  build_local_directory
+} from '@/utils/itemid'
 import { Offline, Statements, Events, Poster, Me } from '@/persistance/Storage'
 import { current_user } from '@/use/serverless'
 import { get_my_itemid, use_me } from '@/use/people'
@@ -33,9 +38,6 @@ export const use = () => {
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
-
-    await sync_posters_directory() // TODO:  temporary
-
     await sync_offline_actions()
     await visit()
     if (!navigator.onLine || !current_user.value) return
@@ -63,7 +65,8 @@ export const use = () => {
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value)) await del(itemid) // only relations are cached
+      if (await is_stranger(as_author(itemid), relations.value))
+        await del(itemid) // only relations are cached
       if (await itemid.endsWith('/')) await del(itemid)
       else {
         const network = await fresh_metadata(itemid)
@@ -148,7 +151,8 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items) await save_poster(created_at)
+    for (const created_at of offline_posters.items)
+      await save_poster(created_at)
   }
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)
@@ -236,6 +240,7 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  if (am_i_fresh) console.info('i_am_fresh for', format_time_remaining(time_left))
+  if (am_i_fresh)
+    console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
 }
