@@ -1,10 +1,24 @@
+/** @typedef {import('@/types').Item_Id} Item_Id */
+/** @typedef {import('@/types').Item} Item */
+
 import { as_type } from '@/utils/itemid'
 import { set_vector_dimensions } from '@/use/vector'
-export function hydrate(item_as_string = new String()) {
+
+/**
+ * @param {string} item_as_string
+ * @returns {DocumentFragment | null}
+ */
+export function hydrate(item_as_string = '') {
   if (!item_as_string.length) return null
   return document.createRange().createContextualFragment(item_as_string)
 }
-export function get_item(elements, itemid) {
+
+/**
+ * @param {DocumentFragment} elements
+ * @param {Item_Id} itemid
+ * @returns {Object | null}
+ */
+export const get_item = (elements, itemid) => {
   if (!elements) return null
   if (typeof elements === 'string') elements = hydrate(elements)
   let main_element = elements.querySelector(`[itemid="${itemid}"]`)
@@ -12,10 +26,11 @@ export function get_item(elements, itemid) {
   if (!main_element) return null
   return make_item(main_element)
 }
-export function make_item(element) {
-  return { ...get_meta(element), ...get_itemprops(element) }
-}
-export function get_meta(item) {
+export const make_item = element => ({
+  ...get_meta(element),
+  ...get_itemprops(element)
+})
+export const get_meta = item => {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')
@@ -25,7 +40,7 @@ export function get_meta(item) {
   if (type) meta.type = type
   return meta
 }
-export function get_itemprops(item) {
+export const get_itemprops = item => {
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
@@ -51,7 +66,7 @@ export function get_itemprops(item) {
   }
   return props
 }
-export function itemprop_value(element) {
+export const itemprop_value = element => {
   if (element.hasAttribute('content')) return element.getAttribute('content')
   if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
   switch (element.tagName.toLowerCase()) {
