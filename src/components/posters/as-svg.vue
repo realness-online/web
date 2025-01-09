@@ -86,9 +86,9 @@
     intersecting
   } = use_poster()
   const trigger = ref(null)
-  const emboss = computed(() => emboss_pref.value == true && intersecting.value)
-  const animate = computed(() => animate_pref.value == true && intersecting.value)
-  const light = computed(() => light_pref.value == true && intersecting.value)
+  const emboss = computed(() => emboss_pref.value === true && intersecting.value)
+  const animate = computed(() => animate_pref.value === true && intersecting.value)
+  const light = computed(() => light_pref.value === true && intersecting.value)
 
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
@@ -120,6 +120,7 @@
     if (props.sync_poster) {
       vector.value = props.sync_poster
       working.value = false
+      emit('loaded', vector.value)
     }
   })
   watch_effect(() => {

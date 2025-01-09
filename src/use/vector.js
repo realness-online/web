@@ -1,3 +1,5 @@
+/** @typedef {import('@/types').Vector} Vector */
+
 import {
   as_query_id,
   as_fragment_id,
@@ -123,6 +125,20 @@ export const use_posters = () => {
 const path_names = ['background', 'light', 'regular', 'medium', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
+
+/**
+ * @param {string} itemid
+ * @returns {boolean}
+ */
+export const is_vector_id = itemid => {
+  if (as_created_at(itemid)) return true
+  return false
+}
+
+/**
+ * @param {Vector} vector
+ * @returns {boolean}
+ */
 export const is_vector = vector => {
   if (typeof vector !== 'object') return false
   if (!is_vector_id(vector.id)) return false
@@ -139,10 +155,7 @@ export const is_vector = vector => {
   if (vector.type === 'posters') return true
   return false
 }
-export const is_vector_id = itemid => {
-  if (as_created_at(itemid)) return true
-  return false
-}
+
 export const is_rect = rect => {
   if (typeof rect !== 'object') return false
   if (rect instanceof SVGRectElement) return true
