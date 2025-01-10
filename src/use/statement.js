@@ -51,6 +51,7 @@ export const use = () => {
     person.viewed = ['index']
     authors.value.push(person)
   }
+
   const save = async statement => {
     if (!statement) return
     const post = {
@@ -62,9 +63,11 @@ export const use = () => {
     await next_tick()
     await new Statement().save()
   }
+
   mounted(async () => {
     my_statements.value = await list(`${localStorage.me}/statements`)
   })
+
   return {
     save,
     statements,

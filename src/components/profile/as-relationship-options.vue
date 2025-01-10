@@ -2,7 +2,7 @@
   import Icon from '@/components/icon'
   import { use_me } from '@/use/people'
   import { nextTick as next_tick, computed } from 'vue'
-  import { Relations } from '@/persistance/Storage'
+  import { Relation } from '@/persistance/Storage'
   const props = defineProps({
     person: {
       type: Object,
@@ -20,7 +20,7 @@
       if (!relations.value.length) localStorage.removeItem(`${localStorage.me}/relations`)
     } else relations.value.push(props.person)
     await next_tick()
-    await new Relations().save()
+    await new Relation().save()
   }
 </script>
 
