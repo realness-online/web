@@ -18,7 +18,8 @@
   const working = ref(true)
   const thoughts = ref(null)
 
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } = use_fullscreen(thoughts)
+  const { toggle: fullscreen, isFullscreen: is_fullscreen } =
+    use_fullscreen(thoughts)
   const { f } = use_magic_keys()
   const { people } = use_people()
   const {
@@ -38,7 +39,10 @@
     people.value.push(me)
     await Promise.all(
       people.value.map(async relation => {
-        await Promise.all([statements_for_person(relation), posters_for_person(relation)])
+        await Promise.all([
+          statements_for_person(relation),
+          posters_for_person(relation)
+        ])
       })
     )
   }

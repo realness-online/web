@@ -59,7 +59,9 @@ const merge_statements = html_files => {
     if (!by_date[statement.date_string].thoughts[statement.time_string])
       by_date[statement.date_string].thoughts[statement.time_string] = []
 
-    by_date[statement.date_string].thoughts[statement.time_string].push(statement.element)
+    by_date[statement.date_string].thoughts[statement.time_string].push(
+      statement.element
+    )
   })
 
   // Build merged HTML structure

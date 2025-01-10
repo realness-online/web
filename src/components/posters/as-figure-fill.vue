@@ -24,8 +24,13 @@
   const color = ref('#151518')
   const itemprop = ref('background')
   const fragment = add => `url(${as_fragment_id(props.itemid)}-${add})`
-  const { opacity_percentage, as_stroke, selected_path, fill_opacity, stroke_opacity } =
-    use_path()
+  const {
+    opacity_percentage,
+    as_stroke,
+    selected_path,
+    fill_opacity,
+    stroke_opacity
+  } = use_path()
   provide('as_stroke', as_stroke)
   const focus_on_active = () => query(itemprop.value).focus()
   const layer_selected = id => {

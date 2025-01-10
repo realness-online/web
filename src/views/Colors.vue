@@ -48,9 +48,11 @@
   const inputs = ['primary', 'secondary']
 
   inputs.forEach(inputType => {
-    document.querySelector(`#${inputType}-color-input`).addEventListener('change', e => {
-      setTheme(e.target.value, inputType)
-    })
+    document
+      .querySelector(`#${inputType}-color-input`)
+      .addEventListener('change', e => {
+        setTheme(e.target.value, inputType)
+      })
   })
 </script>
 

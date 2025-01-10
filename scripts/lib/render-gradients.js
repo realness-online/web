@@ -65,7 +65,8 @@ const create_gradients = vector => {
 
     directions.forEach(direction => {
       const gradient_id = `${direction}-${weight}-${vector.id}`
-      const gradient_type = direction === 'radial' ? 'radialGradient' : 'linearGradient'
+      const gradient_type =
+        direction === 'radial' ? 'radialGradient' : 'linearGradient'
       const options = {
         type: gradient_type,
         ...get_gradient_direction(direction)

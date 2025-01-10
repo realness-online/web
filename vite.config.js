@@ -27,7 +27,9 @@ export default defineConfig({
     }
   },
   define: {
-    'import.meta.env.PACKAGE_VERSION': JSON.stringify(process.env['npm_package_version'])
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
+      process.env['npm_package_version']
+    )
   },
   server: {
     port: 8080,

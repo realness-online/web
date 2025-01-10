@@ -55,7 +55,9 @@ export const upload_to_firebase = async files => {
 
     for (const { compressed_path, metadata_path, upload_path } of files) {
       try {
-        console.info(chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path))
+        console.info(
+          chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path)
+        )
         const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
 
         console.info(chalk.dim('Destination: ') + upload_path)

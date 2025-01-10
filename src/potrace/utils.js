@@ -87,7 +87,8 @@ export const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
   let sum = 0
 
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) sum += v[i] * Q.at(i, j) * v[j]
+  for (let i = 0; i < 3; i++)
+    for (let j = 0; j < 3; j++) sum += v[i] * Q.at(i, j) * v[j]
 
   return sum
 }
@@ -164,7 +165,8 @@ export const iprod1 = (p0, p1, p2, p3) => {
 export const ddist = (p, q) =>
   Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y))
 
-export const luminance = (r, g, b) => Math.round(0.2126 * r + 0.7153 * g + 0.0721 * b)
+export const luminance = (r, g, b) =>
+  Math.round(0.2126 * r + 0.7153 * g + 0.0721 * b)
 
 export const between = (val, min, max) => val >= min && val <= max
 
@@ -224,9 +226,15 @@ export const bezier = (t, p0, p1, p2, p3) => {
   const res = new Point()
 
   res.x =
-    s * s * s * p0.x + 3 * (s * s * t) * p1.x + 3 * (t * t * s) * p2.x + t * t * t * p3.x
+    s * s * s * p0.x +
+    3 * (s * s * t) * p1.x +
+    3 * (t * t * s) * p2.x +
+    t * t * t * p3.x
   res.y =
-    s * s * s * p0.y + 3 * (s * s * t) * p1.y + 3 * (t * t * s) * p2.y + t * t * t * p3.y
+    s * s * s * p0.y +
+    3 * (s * s * t) * p1.y +
+    3 * (t * t * s) * p2.y +
+    t * t * t * p3.y
 
   return res
 }

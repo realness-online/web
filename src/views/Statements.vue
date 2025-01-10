@@ -54,8 +54,8 @@
       </as-days>
       <footer v-if="!my_statements?.length && !working" class="message">
         <p>
-          Say some stuff via the <button aria-label="Home" @click="home" /> button on the
-          homepage
+          Say some stuff via the <button aria-label="Home" @click="home" /> button on
+          the homepage
           <br />
         </p>
       </footer>

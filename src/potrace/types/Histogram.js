@@ -43,7 +43,8 @@ class Histogram {
 
   constructor(image_source, mode) {
     if (typeof image_source === 'number') this.#create_array(image_source)
-    else if (image_source instanceof Bitmap) this.#collect_values_bitmap(image_source)
+    else if (image_source instanceof Bitmap)
+      this.#collect_values_bitmap(image_source)
     else if (image_source instanceof ImageData)
       this.#collect_values_image_data(image_source, mode)
     else throw new Error('Unsupported image source')
@@ -220,7 +221,8 @@ class Histogram {
       const { starting_point, prev_variance, indexes, depth } = current
 
       for (let i = starting_point + 1; i < level_max - amount + depth; i++) {
-        const variance = prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
+        const variance =
+          prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
         indexes[depth] = i
 
         if (depth + 1 < amount)
@@ -233,7 +235,8 @@ class Histogram {
             color_stops: current.color_stops
           })
         else {
-          const total_variance = variance + this.lookup_table_h[index(i + 1, level_max)]
+          const total_variance =
+            variance + this.lookup_table_h[index(i + 1, level_max)]
           if (total_variance > best_result.max_sig) {
             best_result.max_sig = total_variance
             best_result.color_stops = indexes.slice()

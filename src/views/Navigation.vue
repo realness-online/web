@@ -54,7 +54,11 @@
     </footer>
   </section>
   <aside>
-    <input ref="image_picker" v-vectorizer type="file" accept="image/jpeg,image/png" />
+    <input
+      ref="image_picker"
+      v-vectorizer
+      type="file"
+      accept="image/jpeg,image/png" />
   </aside>
 </template>
 
