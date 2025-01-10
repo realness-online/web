@@ -119,6 +119,7 @@
         margin-top: base-line
         max-width: round(base-line * 6)
     & > figcaption > menu
+
       height: 0
       & > a
         z-index: 2
@@ -134,6 +135,12 @@
           bottom: base-line
           right: base-line
         &.profile
+          animation-name: fade-in
+          animation-duration: 0.01s
+          padding: base-line * .33
+          background: black-transparent
+          border-radius: base-line * .25
+          filter: drop-shadow( 0.25px 1px 1.5px black-dark) // the sun is coming from the bottom right
           top: base-line
           left: base-line
           & > address
