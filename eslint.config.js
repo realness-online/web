@@ -70,7 +70,15 @@ export default [
       'no-console': [
         'error',
         {
-          allow: ['warn', 'error', 'info', 'time', 'timeEnd', 'group', 'groupEnd']
+          allow: [
+            'warn',
+            'error',
+            'info',
+            'time',
+            'timeEnd',
+            'group',
+            'groupEnd'
+          ]
         }
       ],
       'no-debugger': 'error',
@@ -95,7 +103,15 @@ export default [
       'no-constant-binary-expression': 'error',
       'no-unreachable-loop': 'error',
       'no-unused-private-class-members': 'error',
-      'no-use-before-define': ['error', { functions: false }],
+      'no-use-before-define': [
+        'error',
+        {
+          functions: false,
+          classes: true,
+          variables: true,
+          allowNamedExports: false
+        }
+      ],
       'prefer-template': 'error',
       'prefer-destructuring': ['error', { array: true, object: true }],
       'prefer-rest-params': 'error',
