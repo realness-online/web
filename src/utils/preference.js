@@ -15,7 +15,13 @@ export const simple = storage('simple', false)
 export const filesystem = storage('filesystem', false)
 export const fps = storage('fps', false) // d
 
-export const left_pad = ['scrollWheel', 'MouseUp', 'MouseRight', 'MouseLeft', 'MouseDown']
+export const left_pad = [
+  'scrollWheel',
+  'MouseUp',
+  'MouseRight',
+  'MouseLeft',
+  'MouseDown'
+]
 
 export const function_row = [
   'Escape',

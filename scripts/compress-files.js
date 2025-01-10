@@ -31,7 +31,9 @@ const get_html_files = async (dir_path, files = []) => {
 
 const process_directory = async (source_dir, output_dir) => {
   try {
-    console.info(chalk.bold('Starting to process directory: ') + chalk.cyan(source_dir))
+    console.info(
+      chalk.bold('Starting to process directory: ') + chalk.cyan(source_dir)
+    )
 
     const html_files = await get_html_files(source_dir)
     console.info(
@@ -72,7 +74,9 @@ const process_directory = async (source_dir, output_dir) => {
 
         console.info(chalk.dim('Original:    ') + format_bytes(original_size))
         console.info(chalk.dim('Compressed:  ') + format_bytes(compressed_size))
-        console.info(chalk.dim('Reduction:   ') + chalk.green(`${compression_ratio}%`))
+        console.info(
+          chalk.dim('Reduction:   ') + chalk.green(`${compression_ratio}%`)
+        )
 
         const compressed_path = `${output_path}.gz`
         const metadata_path = `${output_path}.metadata.json`

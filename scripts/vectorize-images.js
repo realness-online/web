@@ -106,7 +106,9 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / image_files.length) * 100)
-      console.log(chalk.dim(`Progress: ${progress}% (${total}/${image_files.length})`))
+      console.log(
+        chalk.dim(`Progress: ${progress}% (${total}/${image_files.length})`)
+      )
     }
 
     console.log(chalk`

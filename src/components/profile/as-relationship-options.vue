@@ -17,7 +17,8 @@
     if (is_relation.value) {
       const index = relations.value.findIndex(p => p.id === props.person.id)
       if (index > -1) relations.value.splice(index, 1)
-      if (!relations.value.length) localStorage.removeItem(`${localStorage.me}/relations`)
+      if (!relations.value.length)
+        localStorage.removeItem(`${localStorage.me}/relations`)
     } else relations.value.push(props.person)
     await next_tick()
     await new Relation().save()

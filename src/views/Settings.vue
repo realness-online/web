@@ -30,7 +30,9 @@
       <preference name="animate" title="Animate posters">
         <preference name="fps" title="show frames per second on the bottom right" />
       </preference>
-      <preference name="emboss" title="Apply an emboss effect to each layer of a poster">
+      <preference
+        name="emboss"
+        title="Apply an emboss effect to each layer of a poster">
       </preference>
       <preference name="light" title="A subtle lightbar" />
       <preference
@@ -55,25 +57,25 @@
           </router-link>
         </h4>
         <p>
-          By default, Realness supports vector workflows. Take a picture, and Realness
-          will create a super fun rotoscope vector graphic. Each photo has eighteen
-          gradients for you to pull color from. Realness integrates right into Figma,
-          Affinity, Procreate, or Adobe toolchains.
+          By default, Realness supports vector workflows. Take a picture, and
+          Realness will create a super fun rotoscope vector graphic. Each photo has
+          eighteen gradients for you to pull color from. Realness integrates right
+          into Figma, Affinity, Procreate, or Adobe toolchains.
         </p>
         <p>
-          Realness is fast. Save it to your home screen on your phone and iPad. No matter
-          the device, you get a fun experience.
+          Realness is fast. Save it to your home screen on your phone and iPad. No
+          matter the device, you get a fun experience.
         </p>
         <h5>Name</h5>
         <p>
           Fill out your name; nice. If you choose to sign in, you will show up in the
-          phonebook. People can message you directly. Realness is technically the dark web
-          as it's blind to search engines and advertising.
+          phonebook. People can message you directly. Realness is technically the
+          dark web as it's blind to search engines and advertising.
         </p>
         <h5>Sync</h5>
         <p>
-          Home screen installable. You can sync Realness across all your devices. Take a
-          picture on your phone and send it to Procreate from your iPad.
+          Home screen installable. You can sync Realness across all your devices.
+          Take a picture on your phone and send it to Procreate from your iPad.
         </p>
         <p>Realness updates at eight-hour intervals.</p>
         <h6>Lighten Our Burden</h6>
@@ -83,14 +85,16 @@
           specific.
         </p>
         <p>
-          By default a Poster's internal IDs are globally unique which makes them safe to
-          embed and reference in the same document.
+          By default a Poster's internal IDs are globally unique which makes them
+          safe to embed and reference in the same document.
         </p>
-        <p>Simplifying ids makes layers more readable as you export into other tools.</p>
+        <p>
+          Simplifying ids makes layers more readable as you export into other tools.
+        </p>
         <p>Embossing the borders looks amazing, adding a subtle flair.</p>
         <p>
-          Animations will look great if you have a beefy GPU. Just go to your posters to
-          see them all animating at once.
+          Animations will look great if you have a beefy GPU. Just go to your posters
+          to see them all animating at once.
         </p>
         <p>
           SVG's work great for most design tools. If you want to use your poster in

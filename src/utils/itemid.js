@@ -120,9 +120,7 @@ export const as_download_url = async itemid => {
 export const as_path_parts = itemid => {
   const path = itemid.split('/')
   if (path[0].length === 0) path.shift()
-  return /** @type {[Author] | [Author, Type] | [Author, Type, Created]} */ (
-    path
-  )
+  return /** @type {[Author] | [Author, Type] | [Author, Type, Created]} */ (path)
 }
 
 /**

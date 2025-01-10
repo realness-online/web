@@ -385,9 +385,7 @@ class Potrace {
 
     const black_on_white = this.#params.blackOnWhite
     const black_map = this.#luminance_data.copy(lum => {
-      const past_the_threshold = black_on_white
-        ? lum > threshold
-        : lum < threshold
+      const past_the_threshold = black_on_white ? lum > threshold : lum < threshold
       return past_the_threshold ? 0 : 1
     })
 
@@ -496,9 +494,7 @@ class Potrace {
       while (1) {
         foundk = 0
         dir =
-          (3 +
-            3 * utils.sign(pt[k].x - pt[k1].x) +
-            utils.sign(pt[k].y - pt[k1].y)) /
+          (3 + 3 * utils.sign(pt[k].x - pt[k1].x) + utils.sign(pt[k].y - pt[k1].y)) /
           2
         ct[dir]++
 
@@ -846,8 +842,7 @@ class Potrace {
       j = utils.mod(i - 1, m)
 
       for (l = 0; l < 3; l++)
-        for (k = 0; k < 3; k++)
-          Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
+        for (k = 0; k < 3; k++) Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
 
       while (1) {
         det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
@@ -978,8 +973,7 @@ class Potrace {
 
       denom = utils.ddenom(curve.vertex[i], curve.vertex[k])
       if (denom !== 0.0) {
-        dd =
-          utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
+        dd = utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
         dd = Math.abs(dd)
         alpha = dd > 1 ? 1 - 1.0 / dd : 0
         alpha = alpha / 0.75
@@ -1047,11 +1041,7 @@ class Potrace {
     for (i = 0; i < m; i++)
       if (curve.tag[i] == 'CURVE')
         convc[i] = utils.sign(
-          utils.dpara(
-            vert[utils.mod(i - 1, m)],
-            vert[i],
-            vert[utils.mod(i + 1, m)]
-          )
+          utils.dpara(vert[utils.mod(i - 1, m)], vert[i], vert[utils.mod(i + 1, m)])
         )
       else convc[i] = 0
 
@@ -1210,9 +1200,8 @@ class Potrace {
       if (convc[k1] != conv) return 1
 
       if (
-        utils.sign(
-          utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
-        ) != conv
+        utils.sign(utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])) !=
+        conv
       )
         return 1
 
@@ -1372,11 +1361,7 @@ class Potrace {
           'Bad threshold value. Expected to be an integer in range 0..255'
         )
 
-    if (
-      params &&
-      params.optCurve != null &&
-      typeof params.optCurve !== 'boolean'
-    )
+    if (params && params.optCurve != null && typeof params.optCurve !== 'boolean')
       throw new Error("'optCurve' must be Boolean")
   }
 
@@ -1474,10 +1459,7 @@ class Potrace {
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
     const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
 
-    if (
-      lastRangeTo - lastRangeFrom > 25 &&
-      lastColorStop.colorIntensity !== 1
-    ) {
+    if (lastRangeTo - lastRangeFrom > 25 && lastColorStop.colorIntensity !== 1) {
       const histogram = this.#get_image_histogram()
       const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
 
@@ -1495,9 +1477,7 @@ class Potrace {
 
       ranges.push({
         value: Math.abs((blackOnWhite ? 0 : 255) - newColorStop),
-        colorIntensity: isNaN(color)
-          ? 0
-          : (blackOnWhite ? 255 - color : color) / 255
+        colorIntensity: isNaN(color) ? 0 : (blackOnWhite ? 255 - color : color) / 255
       })
     }
 
@@ -1523,9 +1503,7 @@ class Potrace {
       colorSelectionStrat !== Potrace.FILL_SPREAD
         ? this.#get_image_histogram()
         : null
-    const fullRange = Math.abs(
-      this.#params.threshold - (blackOnWhite ? 0 : 255)
-    )
+    const fullRange = Math.abs(this.#params.threshold - (blackOnWhite ? 0 : 255))
 
     return colorStops.map((threshold, index) => {
       const nextValue =
@@ -1575,21 +1553,12 @@ class Potrace {
       // We don't want colors to be too close to each other, so we introduce some spacing in between
       if (index !== 0)
         color = blackOnWhite
-          ? utils.clamp(
-              color,
-              rangeStart,
-              rangeEnd - Math.round(intervalSize * 0.1)
-            )
-          : utils.clamp(
-              color,
-              rangeStart + Math.round(intervalSize * 0.1),
-              rangeEnd
-            )
+          ? utils.clamp(color, rangeStart, rangeEnd - Math.round(intervalSize * 0.1))
+          : utils.clamp(color, rangeStart + Math.round(intervalSize * 0.1), rangeEnd)
 
       return {
         value: threshold,
-        colorIntensity:
-          color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
+        colorIntensity: color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
       }
     })
   }
@@ -1639,16 +1608,11 @@ class Potrace {
 
     if (!colorStops.length) colorStops.push(threshold)
 
-    colorStops = colorStops.sort((a, b) =>
-      a < b === lookingForDarkPixels ? 1 : -1
-    )
+    colorStops = colorStops.sort((a, b) => (a < b === lookingForDarkPixels ? 1 : -1))
 
     if (lookingForDarkPixels && colorStops[0] < threshold)
       colorStops.unshift(threshold)
-    else if (
-      !lookingForDarkPixels &&
-      colorStops[colorStops.length - 1] < threshold
-    )
+    else if (!lookingForDarkPixels && colorStops[colorStops.length - 1] < threshold)
       colorStops.push(threshold)
 
     return this.#calc_color_intensity(colorStops)
@@ -1852,14 +1816,9 @@ class Potrace {
           : (actualPrevLayersOpacity - thisLayerOpacity) /
             (actualPrevLayersOpacity - 1)
 
-      calculatedOpacity = utils.clamp(
-        parseFloat(calculatedOpacity.toFixed(3)),
-        0,
-        1
-      )
+      calculatedOpacity = utils.clamp(parseFloat(calculatedOpacity.toFixed(3)), 0, 1)
       actualPrevLayersOpacity =
-        actualPrevLayersOpacity +
-        (1 - actualPrevLayersOpacity) * calculatedOpacity
+        actualPrevLayersOpacity + (1 - actualPrevLayersOpacity) * calculatedOpacity
 
       this.#set_parameters({ threshold: colorStop.value })
 
@@ -1870,8 +1829,7 @@ class Potrace {
         calculatedOpacity.toFixed(3)
       )
 
-      const canBeIgnored =
-        calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
+      const canBeIgnored = calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
 
       const c = Math.round(
         Math.abs((blackOnWhite ? 255 : 0) - 255 * thisLayerOpacity)
@@ -1945,14 +1903,9 @@ class Potrace {
           : (actualPrevLayersOpacity - thisLayerOpacity) /
             (actualPrevLayersOpacity - 1)
 
-      calculatedOpacity = utils.clamp(
-        parseFloat(calculatedOpacity.toFixed(3)),
-        0,
-        1
-      )
+      calculatedOpacity = utils.clamp(parseFloat(calculatedOpacity.toFixed(3)), 0, 1)
       actualPrevLayersOpacity =
-        actualPrevLayersOpacity +
-        (1 - actualPrevLayersOpacity) * calculatedOpacity
+        actualPrevLayersOpacity + (1 - actualPrevLayersOpacity) * calculatedOpacity
 
       this.#set_parameters({ threshold: colorStop.value })
 

@@ -24,7 +24,9 @@
   })
   const mobile_display = computed(() => {
     if (mobile_number.value)
-      return new validator.value.AsYouType(country_code.value).input(mobile_number.value)
+      return new validator.value.AsYouType(country_code.value).input(
+        mobile_number.value
+      )
     return 'Mobile'
   })
   const validate_mobile_number = () => {
@@ -59,7 +61,11 @@
     show_code.value = true
     hide_captcha.value = true
     await next_tick()
-    authorizer.value = await sign_in(auth.value, `+${mobile_number.value}`, human.value)
+    authorizer.value = await sign_in(
+      auth.value,
+      `+${mobile_number.value}`,
+      human.value
+    )
     document.querySelector('#verification-code').scrollIntoView(false)
     document.querySelector('#verification-code').focus()
   }
@@ -83,7 +89,10 @@
   }
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const phone_number = validator.value.parseNumber(past_text, country_code.value).phone
+    const phone_number = validator.value.parseNumber(
+      past_text,
+      country_code.value
+    ).phone
     if (phone_number) {
       mobile_number.value = phone_number
       return validate_mobile_number()

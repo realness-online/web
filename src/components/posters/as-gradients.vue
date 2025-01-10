@@ -50,7 +50,8 @@
       if (props.vector.horizontal)
         horizontal.value = props.vector.horizontal.map(convert_stop)
 
-      if (props.vector.vertical) vertical.value = props.vector.vertical.map(convert_stop)
+      if (props.vector.vertical)
+        vertical.value = props.vector.vertical.map(convert_stop)
 
       if (props.vector.radial) radial.value = props.vector.radial.map(convert_stop)
     }

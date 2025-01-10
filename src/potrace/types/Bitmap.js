@@ -81,7 +81,8 @@ class Bitmap {
       _y = point_or_x.y
     }
 
-    if (!utils.between(_x, 0, this.width) || !utils.between(_y, 0, this.height)) return -1
+    if (!utils.between(_x, 0, this.width) || !utils.between(_y, 0, this.height))
+      return -1
 
     return this.width * _y + _x
   }

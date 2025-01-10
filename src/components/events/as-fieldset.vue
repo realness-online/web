@@ -114,7 +114,12 @@
       required
       :value="event_day"
       @input="update_date" />
-    <input ref="time" type="time" required :value="event_time" @input="update_time" />
+    <input
+      ref="time"
+      type="time"
+      required
+      :value="event_time"
+      @input="update_time" />
     <menu>
       <a @click="remove"><icon name="remove" /></a>
       <a @click="save"><icon name="add" /></a>
