@@ -1,6 +1,6 @@
 <script setup>
   import { as_fragment_id } from '@/utils/itemid'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector_id } from '@/use/poster'
 
   import { stroke } from '@/utils/preference'
   const props = defineProps({

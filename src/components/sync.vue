@@ -5,7 +5,7 @@
   import ThoughtAsArticle from '@/components/statements/as-article'
   import AsAddress from '@/components/profile/as-address'
   import { use as use_sync } from '@/use/sync'
-  import { use as use_statements } from '@/use/statements'
+  import { use as use_statements } from '@/use/statement'
   import { use_me, get_my_itemid } from '@/use/people'
   defineEmits(['active'])
   const { me } = use_me()

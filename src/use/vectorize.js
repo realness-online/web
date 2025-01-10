@@ -1,6 +1,11 @@
-import { ref, computed, watchEffect as watch_effect, onUnmounted as dismount } from 'vue'
+import {
+  ref,
+  computed,
+  watchEffect as watch_effect,
+  onUnmounted as dismount
+} from 'vue'
 import { create_path_element } from '@/use/path'
-import { is_vector } from '@/use/vector'
+import { is_vector } from '@/use/poster'
 import { as_created_at } from '@/utils/itemid'
 import { useRouter as use_router } from 'vue-router'
 import { to_kb } from '@/utils/numbers'
@@ -19,7 +24,9 @@ export const use = () => {
     if (working.value || new_vector.value) return false
     return true
   })
-  const as_new_itemid = computed(() => `${localStorage.me}/posters/${Date.now()}`)
+  const as_new_itemid = computed(
+    () => `${localStorage.me}/posters/${Date.now()}`
+  )
 
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
@@ -42,7 +49,9 @@ export const use = () => {
   const listener = () => {
     const image = image_picker.value.files[0]
     if (image === undefined) return
-    const is_image = ['image/jpeg', 'image/png'].some(type => image.type === type)
+    const is_image = ['image/jpeg', 'image/png'].some(
+      type => image.type === type
+    )
     if (is_image) {
       vectorize(image)
       image_picker.value.value = ''
@@ -88,7 +97,11 @@ export const use = () => {
     gradienter.value.addEventListener('message', gradientized)
   }
   watch_effect(() => {
-    if (new_gradients.value && new_vector.value && is_vector(new_vector.value)) {
+    if (
+      new_gradients.value &&
+      new_vector.value &&
+      is_vector(new_vector.value)
+    ) {
       const created_at = as_created_at(new_vector.value.id)
       router.replace({ path: `/posters/${created_at}/editor` })
     }

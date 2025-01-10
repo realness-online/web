@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Item} Item */
 
 import { as_type } from '@/utils/itemid'
-import { set_vector_dimensions } from '@/use/vector'
+import { set_vector_dimensions } from '@/use/poster'
 
 /**
  * @param {string} item_as_string

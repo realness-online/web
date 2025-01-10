@@ -7,7 +7,7 @@
   } from '@/utils/sorting'
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { as_thoughts, thoughts_sort } from '@/use/statements'
+  import { as_thoughts, thoughts_sort } from '@/use/statement'
   const page_size = 5
   export default {
     components: { icon },

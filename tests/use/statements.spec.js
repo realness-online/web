@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import Statements from '@/use/statements'
+import Statements from '@/use/statement'
 
 const STATEMENT_COUNT = 3
 const MOCK_ITEM_ID = 'test-123'
 
-describe('@/use/statements', () => {
+describe('@/use/statement', () => {
   let wrapper
   let load_spy
 

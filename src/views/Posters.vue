@@ -1,4 +1,5 @@
 <script setup>
+  import { onMounted as mounted, ref } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsSvg from '@/components/posters/as-svg'
@@ -7,10 +8,12 @@
 
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
-  import { onMounted as mounted, ref } from 'vue'
-  import { use_posters } from '@/use/vector'
+
+  import { use_posters } from '@/use/poster'
   import { use as directory_processor } from '@/use/directory-processor'
+
   console.time('views:Posters')
+
   const { posters, for_person: posters_for_person } = use_posters()
   const { can_add, vVectorizer, image_picker, select_photo, working, mount_workers } =
     use_vectorize()

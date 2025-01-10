@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import vector from '@/use/vector'
+import vector from '@/use/poster'
 
-describe('@/use/vector', () => {
+describe('@/use/poster', () => {
   const test_vectors = {
     a: [1, 2, 3],
     b: [4, 5, 6],
@@ -24,7 +24,9 @@ describe('@/use/vector', () => {
   describe('Vector Normalization', () => {
     it('normalizes vectors', () => {
       const normalized = vector.normalize(test_vectors.a)
-      const magnitude = Math.sqrt(normalized.reduce((sum, val) => sum + val * val, 0))
+      const magnitude = Math.sqrt(
+        normalized.reduce((sum, val) => sum + val * val, 0)
+      )
       expect(magnitude).toBeCloseTo(1, 5)
     })
 

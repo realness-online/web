@@ -5,7 +5,7 @@
   import SignOn from '@/components/profile/sign-on'
 
   import { watch, onMounted as mounted } from 'vue'
-  import { current_user } from '@/use/serverless'
+  import { current_user } from '@/utils/serverless'
   import { use as use_people } from '@/use/people'
 
   const { phonebook, load_phonebook, working } = use_people()

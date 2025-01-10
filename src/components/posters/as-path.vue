@@ -7,7 +7,7 @@
     inject
   } from 'vue'
   import { is_path } from '@/use/path'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector_id } from '@/use/poster'
   import { stroke as stroke_pref, fill as fill_pref } from '@/utils/preference'
   const props = defineProps({
     itemprop: {

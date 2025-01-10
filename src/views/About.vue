@@ -5,7 +5,7 @@
   import Preference from '@/components/preference'
   import CallToAction from '@/components/call-to-action'
   import LogoAsLink from '@/components/logo-as-link'
-  import { use_posters } from '@/use/vector'
+  import { use_posters } from '@/use/poster'
   sessionStorage.about = true
   const { posters, for_person: posters_for_admin } = use_posters()
   mounted(async () => {

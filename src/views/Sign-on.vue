@@ -8,7 +8,7 @@
   import { load } from '@/utils/itemid'
   import { use_me, default_person } from '@/use/people'
   import { useRouter as use_router } from 'vue-router'
-  import { current_user } from '@/use/serverless'
+  import { current_user } from '@/utils/serverless'
   import { ref, computed, watchEffect as watch_effect, onMounted as mounted } from 'vue'
   const router = use_router()
   const { me, is_valid_name } = use_me()

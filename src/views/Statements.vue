@@ -4,16 +4,18 @@
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/statements/as-article'
 
-  import { current_user } from '@/use/serverless'
-  import { use as use_statements } from '@/use/statements'
+  import { current_user } from '@/utils/serverless'
+  import { use as use_statements } from '@/use/statement'
   import { get_my_itemid } from '@/use/people'
 
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
+
   const working = ref(true)
   const router = use_router()
   const { my_statements, statements, thought_shown, authors } = use_statements()
   const home = () => router.push({ path: '/' })
+
   mounted(async () => {
     const last_editable = my_statements.value.length - 1
     statements.value = [my_statements.value[last_editable]]
