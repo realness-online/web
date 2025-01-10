@@ -3,7 +3,7 @@
   import LogoAsLink from '@/components/logo-as-link'
   // import AsSvg from '@/components/posters/as-svg'
   import { use as use_audio_analyzer } from '@/use/audio'
-  import { use as use_machine_learning } from '@/use/machine_learning'
+  import { use as use_machine_learning } from '@/use/machine-learning'
   import { useFullscreen as use_fullscreen } from '@vueuse/core'
   import { ref, computed, onMounted as mounted } from 'vue'
 

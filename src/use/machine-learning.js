@@ -5,6 +5,7 @@
 // import * as coco_ssd from '@tensorflow-models/coco-ssd'
 import { ref, onMounted as mounted } from 'vue'
 //['lite_mobilenet_v2', 'mobilenet_v1', 'mobilenet_v2'],
+
 export const use = () => {
   const coco_model = ref(null)
   const depth_model = ref(null)

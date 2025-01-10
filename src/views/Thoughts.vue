@@ -70,7 +70,7 @@
           v-if="item.type === 'posters'"
           :key="slot_key(item)"
           :itemid="item.id"
-          verbose, @show="poster_shown" />
+          @show="poster_shown" />
         <thought-as-article
           v-else
           :key="slot_key(item)"
