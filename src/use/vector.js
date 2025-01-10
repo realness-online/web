@@ -1,5 +1,5 @@
-/** @typedef {import('@/types').Vector} Vector */
-
+/** @typedef {import('@/types').Poster} Poster */
+/** @typedef {import('@/types').Relation} Relation */
 import {
   as_query_id,
   as_fragment_id,
@@ -71,7 +71,7 @@ export const use = () => {
       },
       { rootMargin: '0%' }
     )
-    emit('loaded', vector.value)
+    emit('show', vector.value)
   }
   const tabindex = computed(() => {
     if (props.tabable) return 0
@@ -106,6 +106,11 @@ export const use = () => {
 }
 export const use_posters = () => {
   const posters = ref([])
+  const authors = ref([])
+
+  /**
+   * @param {Relation} person
+   */
   const for_person = async person => {
     const directory = await as_directory(`${person.id}/posters`)
     directory.items.forEach(created_at => {
@@ -114,11 +119,43 @@ export const use_posters = () => {
         type: 'posters'
       })
     })
+    person.viewed = ['index']
+    authors.value.push(person)
     posters.value.sort(recent_item_first)
   }
+  /**
+   * @param {Statement[]} thought
+   */
+  const poster_shown = async poster => {
+    const oldest = poster[poster.length - 1]
+    let author = as_author(oldest.id)
+    const author_posters = posters.value.filter(
+      poster => author === as_author(poster.id)
+    )
+    const author_oldest = author_posters[author_posters.length - 1]
+    if (oldest.id === author_oldest.id) {
+      author = authors.value.find(relation => relation.id === author)
+      if (!author) return
+      const directory = await as_directory(`${author.id}/posters`)
+      if (!directory) return
+      let history = directory.items
+      history.sort(recent_number_first)
+      history = history.filter(
+        page => !author.viewed.some(viewed => viewed === page)
+      )
+      const next = history.shift()
+      if (next) {
+        const next_posters = await list(`${author.id}/posters/${next}`)
+        author.viewed.push(next)
+        posters.value = [...posters.value, ...next_posters]
+      }
+    }
+  }
+
   return {
     for_person,
-    posters
+    posters,
+    poster_shown
   }
 }
 
@@ -136,7 +173,7 @@ export const is_vector_id = itemid => {
 }
 
 /**
- * @param {Vector} vector
+ * @param {Poster} vector
  * @returns {boolean}
  */
 export const is_vector = vector => {

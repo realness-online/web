@@ -56,7 +56,6 @@
     & > nav.profile-list
       margin-top: base-line
       figure.profile
-        padding: base-line
         svg.working
           fill: blue
       & address > h3

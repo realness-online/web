@@ -2,7 +2,7 @@
   import icon from '@/components/icon'
   import { list } from '@/utils/itemid'
   import events_list from '@/components/events/as-list'
-  import { Events } from '@/persistance/Storage'
+  import { Event } from '@/persistance/Storage'
   export default {
     components: {
       icon,
@@ -69,7 +69,7 @@
           url: this.itemid
         })
         await this.$nextTick()
-        new Events().save(this.$refs.events.$el)
+        new Event().save(this.$refs.events.$el)
         this.$emit('picker', {
           picker: false,
           itemid: this.itemid
@@ -80,7 +80,7 @@
         this.main_event = new Date(this.tonight)
         this.events = this.events.filter(event => event.url !== this.itemid)
         await this.$nextTick()
-        new Events().save(this.$refs.events.$el)
+        new Event().save(this.$refs.events.$el)
         this.$emit('picker', {
           picker: false,
           itemid: this.itemid

@@ -68,7 +68,7 @@
   defineEmits({
     focus: is_focus,
     click: is_click,
-    loaded: is_vector
+    show: is_vector
   })
   const {
     query,
@@ -120,7 +120,7 @@
     if (props.sync_poster) {
       vector.value = props.sync_poster
       working.value = false
-      emit('loaded', vector.value)
+      emit('show', vector.value)
     }
   })
   watch_effect(() => {

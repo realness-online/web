@@ -15,11 +15,21 @@ export const use = () => {
   const working = ref(true)
   const people = ref([])
   const person = computed(() => people.value[0])
+
+  /**
+   * @param {Item} person
+   * adds person to people
+   */
   const load_person = async person => {
-    const loaded = await load(person.id)
-    people.value.push(loaded)
+    const item = await load(person.id)
+    people.value.push(item)
   }
-  const load_people = async ids => await Promise.all(ids.map(load_person))
+
+  /**
+   * @param {Id[]} ids
+   */
+  const load_people = async ids => Promise.all(ids.map(load_person))
+
   const load_phonebook = async () => {
     if (current_user.value) {
       const people = await directory('/people/')

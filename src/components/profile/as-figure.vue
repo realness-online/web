@@ -31,8 +31,8 @@
     const route = { path: props.person.id }
     router.push(route)
   }
-  const avatar_loaded = vector => {
-    console.info('avatar_loaded', vector)
+  const avatar_shown = vector => {
+    console.info('avatar_shown', vector)
   }
 </script>
 
@@ -43,7 +43,7 @@
       :itemid="person.avatar"
       :tabable="editable"
       @click="avatar_click"
-      @loaded="avatar_loaded" />
+      @show="avatar_shown" />
     <icon v-else name="silhouette" @click="avatar_click" />
     <figcaption>
       <as-address :key="person.id" :person="person" :editable="editable" />

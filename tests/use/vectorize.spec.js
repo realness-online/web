@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import vectorize from '@/use/vectorize'
-import { Posters } from '@/models/posters'
+import { Poster } from '@/models/posters'
 
 describe('@/use/vectorize', () => {
   const test_data = {
@@ -36,7 +36,9 @@ describe('@/use/vectorize', () => {
 
     it('generates normalized vectors', () => {
       const vector = vectorize(test_data.text)
-      const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0))
+      const magnitude = Math.sqrt(
+        vector.reduce((sum, val) => sum + val * val, 0)
+      )
       expect(magnitude).toBeCloseTo(1, 5)
     })
   })
@@ -56,7 +58,7 @@ describe('@/use/vectorize', () => {
   })
 
   describe('Integration with Posters', () => {
-    const poster_data = new Posters({
+    const poster_data = new Poster({
       title: 'Test Poster',
       content: 'Test content'
     })

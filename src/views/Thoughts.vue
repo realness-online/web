@@ -24,7 +24,7 @@
     statements,
     thought_shown
   } = use_statements()
-  const { for_person: posters_for_person, posters } = use_posters()
+  const { for_person: posters_for_person, poster_shown, posters } = use_posters()
   const { relations } = use_me()
 
   const fill_thoughts = async () => {
@@ -70,7 +70,7 @@
           v-if="item.type === 'posters'"
           :key="slot_key(item)"
           :itemid="item.id"
-          verbose />
+          verbose, @show="poster_shown" />
         <thought-as-article
           v-else
           :key="slot_key(item)"

@@ -1,14 +1,21 @@
+/** @typedef {import('@/types').Item_Type} Item_Type */
+
 import { as_created_at, list, as_directory, as_author } from '@/utils/itemid'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
-import { Statements } from '@/persistance/Storage'
+import { Statement } from '@/persistance/Storage'
 import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
+
 const links = ['http://', 'https://']
 const my_statements = ref([])
 
 export const use = () => {
   const authors = ref([])
   const statements = ref(null)
+
+  /**
+   * @param {Statement[]} thought
+   */
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
@@ -23,7 +30,9 @@ export const use = () => {
       if (!directory) return
       let history = directory.items
       history.sort(recent_number_first)
-      history = history.filter(page => !author.viewed.some(viewed => viewed === page))
+      history = history.filter(
+        page => !author.viewed.some(viewed => viewed === page)
+      )
       const next = history.shift()
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
@@ -32,10 +41,12 @@ export const use = () => {
       }
     }
   }
+
   const for_person = async person => {
     const statement_id = `${person.id}/statements`
     const their_statements = await list(statement_id)
-    if (statements.value) statements.value = [...statements.value, ...their_statements]
+    if (statements.value)
+      statements.value = [...statements.value, ...their_statements]
     else statements.value = their_statements
     person.viewed = ['index']
     authors.value.push(person)
@@ -49,7 +60,7 @@ export const use = () => {
     if (!statement || links.some(link => statement.includes(link))) return
     my_statements.value.push(post)
     await next_tick()
-    await new Statements().save()
+    await new Statement().save()
   }
   mounted(async () => {
     my_statements.value = await list(`${localStorage.me}/statements`)
@@ -64,6 +75,9 @@ export const use = () => {
   }
 }
 
+/**
+ * @param {Statement[]} sacred_statements
+ */
 export function as_thoughts(sacred_statements) {
   const statements = [...sacred_statements]
   statements.sort(recent_item_first)
@@ -77,13 +91,24 @@ export function as_thoughts(sacred_statements) {
   }
   return thoughts
 }
+
+/**
+ * @param {Statement} first
+ * @param {Statement} second
+ */
 export function thoughts_sort(first, second) {
   return as_created_at(first[0].id) - as_created_at(second[0].id)
 }
+
 export const slot_key = item => {
   if (Array.isArray(item)) return item[0].id
   return item.id
 }
+
+/**
+ * @param {Statement[]} thot
+ * @param {Statement[]} statements
+ */
 export function is_train_of_thought(thot, statements) {
   const next_statement = statements[statements.length - 1]
   const nearest_statement = thot[thot.length - 1]
