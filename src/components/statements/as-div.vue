@@ -1,5 +1,5 @@
 <script>
-  import { Statements } from '@/persistance/Storage'
+  import { Statement } from '@/persistance/Storage'
   export default {
     props: {
       statement: {
@@ -17,7 +17,7 @@
       async save() {
         const possibly_changed = this.$refs.editable.textContent.trim()
         if (this.statement.statement !== possibly_changed) {
-          const statement = new Statements()
+          const statement = new Statement()
           await statement.save()
         }
         this.$emit('blurred', this.statement)

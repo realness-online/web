@@ -18,7 +18,7 @@
       validator: is_vector_id
     }
   })
-  const emit = defineEmits({ toggle: () => true, loaded: is_vector })
+  const emit = defineEmits({ toggle: () => true, show: is_vector })
   const has_opacity = ref(false)
   const figure = ref(null)
   const color = ref('#151518')

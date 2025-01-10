@@ -38,7 +38,7 @@
   })
   const emit = defineEmits({
     'vector-click': is_click,
-    loaded: is_vector
+    show: is_vector
   })
   const menu = ref(false)
   const poster = ref(null)
@@ -57,10 +57,10 @@
     menu.value = !menu.value
     emit('vector-click', menu.value)
   }
-  const on_load = async loaded_vector => {
-    vector.value = loaded_vector
+  const on_show = async shown_vector => {
+    vector.value = shown_vector
     await next_tick()
-    emit('loaded', vector.value)
+    emit('show', vector.value)
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
@@ -79,7 +79,7 @@
 
 <template>
   <figure ref="poster" class="poster" :class="{ landscape }">
-    <as-svg :itemid="itemid" @click="vector_click" @loaded="on_load" />
+    <as-svg :itemid="itemid" @click="vector_click" @show="on_show" />
     <figcaption>
       <slot v-if="menu">
         <menu>

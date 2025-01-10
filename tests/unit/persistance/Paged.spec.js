@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { set, get, del } from 'idb-keyval'
 import { SIZE } from '@/utils/numbers'
-import { History, Statements, Posters } from '@/persistance/Storage'
+import { History, Statement, Poster } from '@/persistance/Storage'
 
 describe('Paged', () => {
   beforeEach(async () => {
@@ -13,7 +13,7 @@ describe('Paged', () => {
 
   describe('optimize()', () => {
     it('should batch posters into directory entries', async () => {
-      const posters = new Posters('test/posters')
+      const posters = new Poster('test/posters')
 
       // Create test data with SIZE.MAX + 10 items
       const test_items = Array.from({ length: SIZE.MAX + 10 }, (_, i) => ({
@@ -41,7 +41,7 @@ describe('Paged', () => {
     })
 
     it('should batch statements into archive files', async () => {
-      const statements = new Statements('test/statements')
+      const statements = new Statement('test/statements')
 
       // Create test data
       const test_items = Array.from({ length: SIZE.MAX + 10 }, (_, i) => ({
@@ -58,20 +58,26 @@ describe('Paged', () => {
 
       // Check main file
       const main_content = await get('test/statements')
-      const main_doc = new DOMParser().parseFromString(main_content, 'text/html')
+      const main_doc = new DOMParser().parseFromString(
+        main_content,
+        'text/html'
+      )
       const main_items = main_doc.querySelectorAll('[itemid]')
       expect(main_items.length).toBe(SIZE.MID)
 
       // Check archive file
       const directory = await get('test/statements/')
       const first_archive = await get(directory.archives[0].path)
-      const archive_doc = new DOMParser().parseFromString(first_archive, 'text/html')
+      const archive_doc = new DOMParser().parseFromString(
+        first_archive,
+        'text/html'
+      )
       const archive_items = archive_doc.querySelectorAll('[itemid]')
       expect(archive_items.length).toBeLessThanOrEqual(SIZE.MAX)
     })
 
     it('should not optimize if under SIZE.MAX', async () => {
-      const posters = new Posters('test/posters')
+      const posters = new Poster('test/posters')
 
       // Create test data with less than SIZE.MAX items
       const test_items = Array.from({ length: SIZE.MAX - 1 }, (_, i) => ({

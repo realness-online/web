@@ -32,21 +32,21 @@ export class Me extends Cloud(Local(Storage)) {
 }
 
 /** @extends {Storage} */
-export class Relations extends Local(Storage) {
+export class Relation extends Local(Storage) {
   constructor() {
     super(`${localStorage.me}/relations`)
   }
 }
 
 /** @extends {Storage} */
-export class Statements extends Paged(Cloud(Local(Storage))) {
+export class Statement extends Paged(Cloud(Local(Storage))) {
   constructor() {
     super(`${localStorage.me}/statements`)
   }
 }
 
 /** @extends {Storage} */
-export class Events extends Paged(Cloud(Local(Storage))) {
+export class Event extends Paged(Cloud(Local(Storage))) {
   constructor() {
     super(`${localStorage.me}/events`)
   }
