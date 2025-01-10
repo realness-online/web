@@ -21,8 +21,8 @@ import { ref } from 'vue'
 import { load } from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
-import { get, set, del } from 'idb-keyval'
-import { prepare_upload_html } from '@/utils/upload_processor'
+import { get, set } from 'idb-keyval'
+import { prepare_upload_html } from '@/utils/upload-processor'
 import { as_filename } from '@/utils/itemid'
 
 export const me = ref(undefined)
@@ -48,7 +48,8 @@ export const remove = async path => {
   try {
     delete_file(location(path))
   } catch (e) {
-    if (e.code === 'storage/object-not-found') console.warn(path, 'already deleted')
+    if (e.code === 'storage/object-not-found')
+      console.warn(path, 'already deleted')
     else throw e
   }
 }

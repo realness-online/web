@@ -9,8 +9,8 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
 
-  import { use as use_statements, slot_key } from '@/use/statements'
-  import { use_posters } from '@/use/vector'
+  import { use as use_statements, slot_key } from '@/use/statement'
+  import { use_posters } from '@/use/poster'
   import { use as use_person, from_e64 } from '@/use/people'
   import { onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'

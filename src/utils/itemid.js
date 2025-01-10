@@ -1,47 +1,28 @@
-/** @typedef {import('@/types').Item_Id} Item_Id */
-/** @typedef {import('@/types').Item_Type} Item_Type */
-/** @typedef {import('@/types').Created_Id} Created_Id */
-/** @typedef {import('@/types').Author_Id} Author_Id */
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Type} Type */
+/** @typedef {import('@/types').Created} Created */
+/** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
-import { get, set, keys } from 'idb-keyval'
+import { get, set } from 'idb-keyval'
 import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
-import { url, directory } from '@/use/serverless'
-import { decompress_html } from '@/utils/upload_processor'
-
-class Directory {
-  /**
-   * @type {Item_Id}
-   */
-  id = ''
-
-  /**
-   * @type {Item_Type[]}
-   */
-  types = [] // at the root of the directory folders are types in our vocabulary
-
-  /**
-   * @type {Created_Id[]}
-   */
-  archive = []
-
-  /**
-   * @type {Created_Id[]}
-   */
-  items = []
-
-  /**
-   * @param {Item_Id} id
-   */
-  constructor(id) {
-    this.id = id
-  }
-}
+import { url } from '@/utils/serverless'
+import { decompress_html } from '@/utils/upload-processor'
 
 /**
- * @param {Item_Id} itemid
- * @param {Author_Id} me
- * @returns {string | null}
+ * @type {Type[]}
+ */
+const created_at = ['posters']
+
+/**
+ * @type {Type[]}
+ */
+const has_history = ['statements', 'events']
+
+/**
+ * @param {Id} itemid
+ * @param {Author} me
+ * @returns {Promise<string | null>}
  */
 export const load_from_network = async (itemid, me = localStorage.me) => {
   const url = await as_download_url(itemid, me)
@@ -66,9 +47,9 @@ export const load_from_network = async (itemid, me = localStorage.me) => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @param {Author_Id} me
- * @returns {Item | null}
+ * @param {Id} itemid
+ * @param {Author} me
+ * @returns {Promise<Item | null>}
  */
 export const load = async (itemid, me = localStorage.me) => {
   let item
@@ -91,13 +72,13 @@ export const load = async (itemid, me = localStorage.me) => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @param {Author_Id} me
- * @returns {Item_Type[]}
+ * @param {Id} itemid
+ * @param {Author} me
+ * @returns {Promise<Type[]>}
  */
 export const list = async (itemid, me = localStorage.me) => {
   try {
-    const item = await load(itemid, me)
+    const item = load(itemid, me)
     if (item) return type_as_list(item)
     return []
   } catch {
@@ -106,49 +87,8 @@ export const list = async (itemid, me = localStorage.me) => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @returns {Directory | null}
- */
-export const load_directory_from_network = async itemid => {
-  if (navigator.onLine) {
-    const path = as_directory_id(itemid)
-    const meta = new Directory()
-    console.info('request:directory', itemid)
-    const folder = await directory(`people/${path}`)
-    folder.items.forEach(item => meta.items.push(item.name.split('.')[0]))
-    folder.prefixes.forEach(prefix => meta.archive.push(prefix.name))
-    await set(path, meta)
-    return meta
-  }
-  return null
-}
-
-/**
- * @param {Item_Id} itemid
- * @returns {Directory | null}
- */
-export const as_directory = async itemid => {
-  const path = as_directory_id(itemid)
-  const cached = await get(path)
-  if (cached) {
-    console.info('has directory cached', cached)
-    return cached
-  }
-  let directory = await build_local_directory(itemid)
-  if (navigator.onLine)
-    try {
-      directory = await load_directory_from_network(itemid)
-    } catch (e) {
-      if (e.code === 'storage/unauthorized') return directory
-      throw e
-    }
-
-  return directory
-}
-
-/**
- * @param {Item_Id} itemid
- * @returns {string | null}
+ * @param {Id} itemid
+ * @returns {Promise<string | null>}
  */
 export const as_download_url = async itemid => {
   if (itemid.startsWith('/+/')) return null
@@ -167,19 +107,9 @@ export const as_download_url = async itemid => {
 }
 
 /**
- * @type {Item_Type[]}
- */
-const created_at = ['posters', 'animations']
-
-/**
- * @type {Item_Type[]}
- */
-const has_history = ['statements', 'events']
-
-/**
  * Splits an item ID path into its constituent parts
- * @param {Item_Id} itemid - The full item path (e.g. '/+123456/statements/789')
- * @returns {[Author_Id] | [Author_Id, Item_Type] | [Author_Id, Item_Type, Created_Id]} Array of path parts where:
+ * @param {Id} itemid - The full item path (e.g. '/+123456/statements/789')
+ * @returns {[Author] | [Author, Type] | [Author, Type, Created]} Array of path parts where:
  *   [0] = author ID (e.g. '+123456')
  *   [1] = item type (e.g. 'statements', 'events', 'posters', etc.)
  *   [2] = created_at timestamp (if applicable)
@@ -190,13 +120,13 @@ const has_history = ['statements', 'events']
 export const as_path_parts = itemid => {
   const path = itemid.split('/')
   if (path[0].length === 0) path.shift()
-  return /** @type {[Author_Id] | [Author_Id, Item_Type] | [Author_Id, Item_Type, Created_Id]} */ (
+  return /** @type {[Author] | [Author, Type] | [Author, Type, Created]} */ (
     path
   )
 }
 
 /**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {boolean}
  */
 export const is_history = itemid => {
@@ -206,7 +136,7 @@ export const is_history = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {string}
  */
 export const as_filename = itemid => {
@@ -218,7 +148,7 @@ export const as_filename = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {string | null}
  */
 export const as_storage_path = itemid => {
@@ -236,33 +166,7 @@ export const as_storage_path = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @returns {Directory | null}
- */
-export const build_local_directory = async itemid => {
-  const path = as_directory_id(itemid)
-  const directory = new Directory()
-  const everything = await keys()
-  everything.forEach(itemid => {
-    if (as_directory_id(itemid) === path) {
-      const id = as_created_at(itemid)
-      if (id) directory.items.push(id)
-    }
-  })
-  return directory
-}
-
-/**
- * @param {Item_Id} itemid
- * @returns {string}
- */
-export const as_directory_id = itemid => {
-  const parts = as_path_parts(itemid)
-  return `/${parts[0]}/${parts[1]}/`
-}
-
-/**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {string | null}
  */
 export const as_author = itemid => {
@@ -273,8 +177,8 @@ export const as_author = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @returns {Item_Type | null}
+ * @param {Id} itemid
+ * @returns {Type | null}
  */
 export const as_type = itemid => {
   const path = as_path_parts(itemid)
@@ -284,8 +188,8 @@ export const as_type = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
- * @returns {Created_Id | null}
+ * @param {Id} itemid
+ * @returns {Created | null}
  */
 export const as_created_at = itemid => {
   const path = as_path_parts(itemid)
@@ -294,21 +198,21 @@ export const as_created_at = itemid => {
 }
 
 /**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {string}
  */
 export const as_query_id = itemid =>
   itemid.substring(2).replace('/', '-').replace('/', '-')
 
 /**
- * @param {Item_Id} itemid
+ * @param {Id} itemid
  * @returns {string}
  */
 export const as_fragment_id = itemid => `#${as_query_id(itemid)}`
 
 /**
  * @param {Item} item
- * @returns {Item_Type[]}
+ * @returns {Type[]}
  */
 export const type_as_list = item => {
   // Returns a list even if loading the item fails

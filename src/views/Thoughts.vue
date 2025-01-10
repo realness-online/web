@@ -4,15 +4,17 @@
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
-  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_statements, slot_key } from '@/use/statement'
   import { use as use_people, use_me } from '@/use/people'
-  import { use_posters } from '@/use/vector'
+  import { use_posters } from '@/use/poster'
   import { ref, watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
   } from '@vueuse/core'
+
   console.time('views:Thoughts')
+
   const working = ref(true)
   const thoughts = ref(null)
 
@@ -68,7 +70,7 @@
       <template v-for="item in items">
         <poster-as-figure
           v-if="item.type === 'posters'"
-          :key="slot_key(item)"
+          :key="slot_key(item.id)"
           :itemid="item.id"
           @show="poster_shown" />
         <thought-as-article

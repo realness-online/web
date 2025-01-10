@@ -4,9 +4,9 @@
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
   import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
-  import { is_vector, is_vector_id, is_click } from '@/use/vector'
+  import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
-  import { current_user } from '@/use/serverless'
+  import { current_user } from '@/utils/serverless'
   import {
     ref,
     computed,

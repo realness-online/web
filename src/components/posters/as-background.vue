@@ -1,5 +1,5 @@
 <script setup>
-  import { use as use_poster, is_rect, is_url_query } from '@/use/vector'
+  import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted } from 'vue'
   const props = defineProps({
     tabable: {

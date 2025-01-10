@@ -5,19 +5,23 @@ import Local from '@/persistance/Local'
 import Large from '@/persistance/Large'
 import Cloud from '@/persistance/Cloud'
 import Paged from '@/persistance/Paged'
-import { current_user, upload } from '@/use/serverless'
+import { current_user, upload } from '@/utils/serverless'
 import { as_type, as_filename } from '@/utils/itemid'
 import { get } from 'idb-keyval'
-import { prepare_upload_html } from '@/utils/upload_processor'
+import { prepare_upload_html } from '@/utils/upload-processor'
 
 export default class Storage {
   /**
-   * @param {Item_Id} itemid
+   * @type {Object}
+   */
+  metadata = { contentType: 'text/html' }
+
+  /**
+   * @param {Id} itemid
    */
   constructor(itemid) {
     this.id = itemid
     this.type = as_type(itemid)
-    this.metadata = { contentType: 'text/html' }
   }
 }
 

@@ -3,7 +3,7 @@
   import hsl_to_hex from 'hsl-to-hex'
   import { hsla_to_color } from '@/utils/colors'
   import { load, as_query_id } from '@/utils/itemid'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector_id } from '@/use/poster'
   import icon from '@/components/icon'
   export default {
     components: { icon },

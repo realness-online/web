@@ -11,7 +11,7 @@
     useActiveElement as use_active_element
   } from '@vueuse/core'
   import { as_created_at, as_type } from '@/utils/itemid'
-  import { is_vector_id } from '@/use/vector'
+  import { is_vector_id } from '@/use/poster'
   const props = defineProps({
     poster: {
       type: Object,

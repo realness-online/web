@@ -2,7 +2,7 @@
   import AsStops from '@/components/posters/as-stops'
   import { as_query_id } from '@/utils/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
-  import { is_vector } from '@/use/vector'
+  import { is_vector } from '@/use/poster'
   import { use as use_vectorize } from '@/use/vectorize'
   import { hsla_to_color } from '@/utils/colors'
   const props = defineProps({

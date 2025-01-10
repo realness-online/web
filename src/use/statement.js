@@ -1,6 +1,7 @@
-/** @typedef {import('@/types').Item_Type} Item_Type */
+/** @typedef {import('@/types').Type} Type */
 
-import { as_created_at, list, as_directory, as_author } from '@/utils/itemid'
+import { as_created_at, list, as_author } from '@/utils/itemid'
+import { as_directory } from '@/persistance/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statement } from '@/persistance/Storage'
 import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'

@@ -21,7 +21,7 @@
     is_vector_id,
     is_click,
     is_focus
-  } from '@/use/vector'
+  } from '@/use/poster'
   import {
     animate as animate_pref,
     emboss as emboss_pref,

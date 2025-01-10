@@ -1,17 +1,21 @@
+import { ref, computed, getCurrentInstance as current_instance } from 'vue'
+import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+
 /** @typedef {import('@/types').Poster} Poster */
 /** @typedef {import('@/types').Relation} Relation */
+
 import {
   as_query_id,
   as_fragment_id,
   load,
   as_created_at,
-  as_directory
+  as_author,
+  list
 } from '@/utils/itemid'
-import { ref, computed, getCurrentInstance as current_instance } from 'vue'
-import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-
+import { recent_number_first } from '@/utils/sorting'
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -123,31 +127,47 @@ export const use_posters = () => {
     authors.value.push(person)
     posters.value.sort(recent_item_first)
   }
+
   /**
-   * @param {Statement[]} thought
+   * @param {Poster} poster
    */
   const poster_shown = async poster => {
-    const oldest = poster[poster.length - 1]
-    let author = as_author(oldest.id)
+    let author = as_author(poster.id)
+
+    /** @type {Poster[]} */
     const author_posters = posters.value.filter(
       poster => author === as_author(poster.id)
     )
+
     const author_oldest = author_posters[author_posters.length - 1]
-    if (oldest.id === author_oldest.id) {
+
+    if (poster.id === author_oldest.id) {
       author = authors.value.find(relation => relation.id === author)
       if (!author) return
+
       const directory = await as_directory(`${author.id}/posters`)
+
       if (!directory) return
-      let history = directory.items
-      history.sort(recent_number_first)
-      history = history.filter(
-        page => !author.viewed.some(viewed => viewed === page)
-      )
-      const next = history.shift()
-      if (next) {
-        const next_posters = await list(`${author.id}/posters/${next}`)
+
+      const history = directory.archive
+      if (!history || !Array.isArray(history)) return
+
+      const next = history.pop()
+
+      // if next is a number, it is a page number and load the archive directory
+      if (isNaN(number)) {
+        const archive_id = `${author.id}/posters/${next}`
+        console.log('archive_id', archive_id)
+        const archive = await as_directory(archive_id)
+        archive.items.forEach(created_at => {
+          console.log('poster', created_at)
+          posters.value.push({
+            id: `${author.id}/posters/${created_at}`,
+            type: 'posters'
+          })
+        })
         author.viewed.push(next)
-        posters.value = [...posters.value, ...next_posters]
+        posters.value.sort(recent_number_first)
       }
     }
   }

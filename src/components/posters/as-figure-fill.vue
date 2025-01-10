@@ -8,7 +8,7 @@
     usePointerSwipe as swipe
   } from '@vueuse/core'
   import { use as use_path, change_by, itemprop_query as query } from '@/use/path'
-  import { is_vector_id, is_vector } from '@/use/vector'
+  import { is_vector_id, is_vector } from '@/use/poster'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/utils/colors'
   import { as_fragment_id } from '@/utils/itemid'
   const props = defineProps({
