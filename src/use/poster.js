@@ -1,21 +1,21 @@
 import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
-
-/** @typedef {import('@/types').Poster} Poster */
-/** @typedef {import('@/types').Relation} Relation */
-
 import {
   as_query_id,
   as_fragment_id,
   load,
   as_created_at,
-  as_author,
-  list
+  as_author
 } from '@/utils/itemid'
-import { as_directory } from '@/persistance/Directory'
+import { as_directory, as_history } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { recent_number_first } from '@/utils/sorting'
+
+/** @typedef {import('@/types').Poster} Poster */
+/** @typedef {import('@/types').Relation} Relation */
+/** @typedef {import('@/types').Created} Created */
+
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -24,11 +24,13 @@ export const use = () => {
   const working = ref(true)
   const menu = ref(false)
   const { get_active_path } = use_path()
+
   const aspect_ratio = computed(() => {
     if (!props.toggle_aspect) return 'xMidYMid slice'
     if (menu.value || !props.slice) return 'xMidYMid meet'
     return 'xMidYMid slice'
   })
+
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -36,15 +38,27 @@ export const use = () => {
     const height = parseInt(numbers[3])
     return width > height
   })
+
   const path = computed(() => {
     if (working.value || vector) return null
     // then always return a list
     if (Array.isArray(vector.value.path)) return vector.value.path
     return [vector.value.path]
   })
+
   const viewbox = computed(() => {
     if (vector.value) return vector.value.viewbox
     return '0 0 16 16' // this is the viewbox for silhouette
+  })
+
+  const tabindex = computed(() => {
+    if (props.tabable) return 0
+    return -1
+  })
+
+  const focusable = computed(() => {
+    if (!props.tabable) return 0
+    return undefined
   })
 
   const query = add => {
@@ -52,15 +66,23 @@ export const use = () => {
     if (add) return `${as_query_id(vector.value.id)}-${add}`
     return as_query_id(vector.value.id)
   }
+
   const fragment = add => {
     if (!vector.value) return add
     if (add) return `${as_fragment_id(vector.value.id)}-${add}`
     return as_fragment_id(vector.value.id)
   }
+
   const click = () => {
     menu.value = !menu.value
     emit('click', menu.value)
   }
+
+  const focus = async layer => {
+    get_active_path()
+    emit('focus', layer)
+  }
+
   const show = async () => {
     if (!vector.value) {
       const poster = await load(props.itemid)
@@ -77,18 +99,7 @@ export const use = () => {
     )
     emit('show', vector.value)
   }
-  const tabindex = computed(() => {
-    if (props.tabable) return 0
-    return -1
-  })
-  const focusable = computed(() => {
-    if (!props.tabable) return 0
-    return undefined
-  })
-  const focus = async layer => {
-    get_active_path()
-    emit('focus', layer)
-  }
+
   return {
     vector,
     vector_element,
@@ -109,7 +120,9 @@ export const use = () => {
   }
 }
 export const use_posters = () => {
+  /** @type {import('vue').Ref<Poster[]>} */
   const posters = ref([])
+  /** @type {import('vue').Ref<Relation[]>} */
   const authors = ref([])
 
   /**
@@ -132,6 +145,7 @@ export const use_posters = () => {
    * @param {Poster} poster
    */
   const poster_shown = async poster => {
+    console.log('poster_shown', poster.id)
     let author = as_author(poster.id)
 
     /** @type {Poster[]} */
@@ -140,10 +154,14 @@ export const use_posters = () => {
     )
 
     const author_oldest = author_posters[author_posters.length - 1]
-
+    console.log('author_oldest', author_oldest.id)
     if (poster.id === author_oldest.id) {
-      author = authors.value.find(relation => relation.id === author)
-      if (!author) return
+      console.log('load archive')
+      const found_author = authors.value.find(
+        relation => relation.id === author
+      )
+      if (!found_author) return
+      author = found_author
 
       const directory = await as_directory(`${author.id}/posters`)
 
@@ -154,21 +172,17 @@ export const use_posters = () => {
 
       const next = history.pop()
 
-      // if next is a number, it is a page number and load the archive directory
-      if (isNaN(number)) {
-        const archive_id = `${author.id}/posters/${next}`
-        console.log('archive_id', archive_id)
-        const archive = await as_directory(archive_id)
-        archive.items.forEach(created_at => {
-          console.log('poster', created_at)
-          posters.value.push({
-            id: `${author.id}/posters/${created_at}`,
-            type: 'posters'
-          })
+      const archive = await as_history(`${author.id}/posters/${next}/`) // Trailing slash indicates directory`
+
+      archive.items.forEach(created_at =>
+        posters.value.push({
+          id: `${author.id}/posters/${next}/${created_at}`,
+          type: 'posters'
         })
-        author.viewed.push(next)
-        posters.value.sort(recent_number_first)
-      }
+      )
+      posters.value.sort(recent_number_first)
+
+      author.viewed.push(next)
     }
   }
 
