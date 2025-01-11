@@ -60,13 +60,23 @@ export const use = () => {
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value)) await del(itemid) // only relations are cached
-      if (await itemid.endsWith('/')) await del(itemid)
+      if (await is_stranger(as_author(itemid), relations.value))
+        await del(itemid) // only relations are cached
+      if (await itemid.endsWith('/'))
+        await del(itemid) // directories are not cached
       else {
         const network = await fresh_metadata(itemid)
         if (!network || !network.customMetadata) return null
         const hash = await get_content_hash(itemid)
-        if (network.customMetadata.hash !== hash) await del(itemid)
+        if (network.customMetadata.hash !== hash) {
+          console.log(
+            'hash mismatch prune',
+            itemid,
+            hash,
+            network.customMetadata.hash
+          )
+          await del(itemid)
+        }
       }
     })
   }
@@ -116,6 +126,7 @@ export const use = () => {
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const hash = await create_hash(elements.outerHTML)
     if (!network || network.hash !== hash) {
+      console.log('sync_statements', itemid, hash, network.hash)
       statements.value = await persistance.sync()
       if (statements.value.length) {
         await next_tick()
@@ -133,6 +144,7 @@ export const use = () => {
     if (!elements) return
     const hash = await create_hash(elements.outerHTML)
     if (!network || network.hash !== hash) {
+      console.log('sync_events', itemid, hash, network.hash)
       events.value = await events.sync()
       if (events.value.length) {
         await next_tick()
@@ -145,7 +157,8 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items) await save_poster(created_at)
+    for (const created_at of offline_posters.items)
+      await save_poster(created_at)
   }
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)
@@ -204,6 +217,7 @@ export const get_content_hash = async itemid => {
   return create_hash(local)
 }
 export const fresh_metadata = async itemid => {
+  console.log('fresh_metadata', itemid)
   const index = (await get('sync:index')) || {}
   const path = location(as_filename(itemid))
   let network
@@ -233,6 +247,7 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  if (am_i_fresh) console.info('i_am_fresh for', format_time_remaining(time_left))
+  if (am_i_fresh)
+    console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
 }

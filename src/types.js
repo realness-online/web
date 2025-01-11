@@ -3,7 +3,7 @@
 
 /** @typedef {string} Author */
 /** @typedef {number} Created */
-/** @typedef {'Poster'|'Statement'|'Event'|'Relation'|'Me'} Type */
+/** @typedef {'posters'|'statements'|'events'|'relations'|'me'} Type */
 /** @typedef {`${Author}/${Type}/${Created}`} Id */
 
 /**
