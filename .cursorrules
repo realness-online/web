@@ -1,0 +1,4 @@
+In this project we enforce type safety via jsdoc comments
+
+We prefer to use snake_case for as much as possible even for class definitions
+

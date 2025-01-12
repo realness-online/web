@@ -30,7 +30,8 @@ export const Cloud = superclass =>
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type)) await this.to_network(items.outerHTML)
+      if (networkable.includes(this.type))
+        await this.to_network(items.outerHTML)
     }
     async delete() {
       console.info('request:delete', this.id)
@@ -78,9 +79,9 @@ export default Cloud
 
 export async function sync_later(id, action) {
   const offline = (await get('sync:offline')) || []
-  offline.push({
-    id,
-    action
-  })
-  await set('sync:offline', offline)
+  const exists = offline.some(item => item.id === id && item.action === action)
+  if (!exists) {
+    offline.push({ id, action })
+    await set('sync:offline', offline)
+  }
 }

@@ -1,17 +1,29 @@
 <script setup>
   import { ref } from 'vue'
   import { use } from '@/use/statement'
+
   const emit = defineEmits(['toggle-keyboard'])
   const { save } = use()
+
+  /** @type {import('vue').Ref<string | null>} */
   const statement_text = ref(null)
 
   const focused = () => emit('toggle-keyboard')
 
   const prepare_statement = async () => {
+    const text = statement_text.value
+    if (typeof text !== 'string') return
+
+    const trimmed = text.trim()
+    if (!trimmed) return
+
     emit('toggle-keyboard')
-    await save(statement_text.value)
-    statement_text.value = null
-    console.info('creates:statement')
+    await save(trimmed)
+
+    if (statement_text.value === text)
+      statement_text.value = null
+
+    console.info('create:Statement')
   }
 </script>
 

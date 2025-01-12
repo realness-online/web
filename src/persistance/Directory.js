@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Type} Type */
 /** @typedef {import('@/types').Created} Created */
 
-import { as_path_parts, as_type, as_created_at } from '@/utils/itemid'
+import { as_path_parts, as_created_at } from '@/utils/itemid'
 import { get, set, keys } from 'idb-keyval'
 import { directory } from '@/utils/serverless'
 const PARTS = {
@@ -75,8 +75,10 @@ export const for_firebase = itemid => {
  * @returns {string}
  */
 export const as_directory_id = itemid => {
-  const [author, type, created = 'index'] = as_path_parts(itemid)
-  return `/${author}/${type}/${created}/` // Trailing slash indicates directory
+  const [author, type, created, archive] = as_path_parts(itemid)
+  let path = `/${author}/${type}/index/` // Trailing slash indicates directory
+  if (archive) path = `/${author}/${type}/index/`
+  return path
 }
 
 /**
@@ -137,6 +139,7 @@ export const as_directory = async itemid => {
     return cached
   }
   let directory = await build_local_directory(itemid)
+  console.log('directory', directory)
   if (navigator.onLine)
     try {
       directory = await load_directory_from_network(itemid)
