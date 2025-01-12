@@ -52,6 +52,7 @@
           editable
           @show="thought_shown" />
       </as-days>
+    </article>
       <footer v-if="!my_statements?.length && !working" class="message">
         <p>
           Say some stuff via the <button aria-label="Home" @click="home" /> button on
@@ -59,9 +60,7 @@
           <br />
         </p>
       </footer>
-    </article>
-
-    <article id="earlier" class="statements">
+    <article v-if="statements?.legth > 1" id="earlier" class="statements">
       <header>
         <h1>Earlier Statements</h1>
       </header>
@@ -104,6 +103,7 @@
       text-align: center
       padding: 0 base-line
       & > p
+        margin: auto
         max-width: inherit
         & > button
           background-color: red
