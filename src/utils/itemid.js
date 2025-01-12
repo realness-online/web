@@ -78,7 +78,7 @@ export const load = async (itemid, me = localStorage.me) => {
  */
 export const list = async (itemid, me = localStorage.me) => {
   try {
-    const item = load(itemid, me)
+    const item = await load(itemid, me)
     if (item) return type_as_list(item)
     return []
   } catch {
