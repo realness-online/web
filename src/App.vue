@@ -5,21 +5,23 @@
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { fps as fps_pref } from '@/utils/preference'
+  /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
   const router = use_router()
 
+  /** @param {boolean} active */
   const sync_active = active => {
     if (active) status.value = 'working'
     else status.value = null
   }
   const online = () => {
     const editable = document.querySelectorAll('[contenteditable]')
-    editable.forEach(e => e.setAttribute('contenteditable', true))
+    editable.forEach(e => e.setAttribute('contenteditable', 'true'))
     status.value = null
   }
   const offline = () => {
     const editable = document.querySelectorAll('[contenteditable]')
-    editable.forEach(e => e.setAttribute('contenteditable', false))
+    editable.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
   mounted(async () => {

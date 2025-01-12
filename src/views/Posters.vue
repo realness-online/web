@@ -1,5 +1,6 @@
 <script setup>
-  import { onMounted as mounted, ref } from 'vue'
+  /** @typedef {import('@/types').Id} Id */
+  import { onMounted as mounted } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsSvg from '@/components/posters/as-svg'
@@ -25,6 +26,9 @@
   } = use_vectorize()
   const { process_directory, progress, completed_poster } = directory_processor()
 
+  /**
+   * @param {Id} id
+   */
   const remove_poster = async id => {
     const message = 'Delete poster?'
     if (window.confirm(message)) {
@@ -33,6 +37,10 @@
       await poster.delete()
     }
   }
+
+  /**
+   * @param {Id} itemid
+   */
   const toggle_menu = itemid => {
     posters.value.forEach(poster => {
       if (poster.menu) poster.menu = false
@@ -52,7 +60,6 @@
     console.timeEnd('views:Posters')
   })
 
-  const current_preview = ref(null)
 </script>
 
 <template>

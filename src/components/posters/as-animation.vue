@@ -1,15 +1,18 @@
 <script setup>
   import { as_fragment_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
+  /** @typedef {import('@/types').Id} Id */
 
   import { stroke } from '@/utils/preference'
   const props = defineProps({
     id: {
       type: String,
       required: true,
+      /** @type {(id: string) => id is Id} */
       validator: is_vector_id
     }
   })
+  /** @param {string} add */
   const fragment = add => `${as_fragment_id(props.id)}-${add}`
 </script>
 
