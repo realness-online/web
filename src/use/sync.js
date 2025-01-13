@@ -44,7 +44,7 @@ export const use = () => {
       await sync_me()
       await sync_statements()
       await sync_events()
-      await sync_posters_directory()
+      // await sync_posters_directory()
       emit('active', false)
     }
   }

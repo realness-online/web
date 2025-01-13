@@ -198,6 +198,7 @@ export const as_created_at = itemid => {
  */
 export const as_query_id = itemid =>
   itemid.substring(2).replace('/', '-').replace('/', '-')
+//
 
 /**
  * @param {Id} itemid
@@ -218,4 +219,15 @@ export const type_as_list = item => {
   if (list && Array.isArray(list)) return list
   else if (list) return [list]
   return []
+}
+
+/**
+ * @param {Id} itemid
+ * @returns {boolean}
+ */
+export const is_history = itemid => {
+  console.log('is_history', itemid)
+  const parts = as_path_parts(itemid)
+  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
+  return false
 }

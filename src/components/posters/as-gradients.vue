@@ -47,13 +47,12 @@
       vertical.value = gradients.value.vertical
       radial.value = gradients.value.radial
     } else if (props.vector) {
-      if (props.vector.horizontal)
-        horizontal.value = props.vector.horizontal.map(convert_stop)
+      if (props.vector.horizontal?.map) horizontal.value = props.vector.horizontal.map(convert_stop)
 
-      if (props.vector.vertical)
+      if (props.vector.vertical?.map)
         vertical.value = props.vector.vertical.map(convert_stop)
 
-      if (props.vector.radial) radial.value = props.vector.radial.map(convert_stop)
+      if (props.vector.radial?.map) radial.value = props.vector.radial.map(convert_stop)
     }
   })
 </script>

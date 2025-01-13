@@ -52,7 +52,6 @@
   mounted(async () => {
     await fill_thoughts()
     working.value = false
-    console.log('posters', posters.value)
     console.timeEnd('views:Thoughts')
   })
 </script>

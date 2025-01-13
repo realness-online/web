@@ -206,7 +206,7 @@
         width="100%"
         height="100%" />
     </defs>
-    <as-gradients :vector="vector" />
+    <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <use :href="fragment('pattern')" />
     <g v-if="emboss">

@@ -24,7 +24,9 @@ export const use = () => {
     if (working.value || new_vector.value) return false
     return true
   })
-  const as_new_itemid = computed(() => `${localStorage.me}/posters/${Date.now()}`)
+  const as_new_itemid = computed(
+    () => `${localStorage.me}/posters/${Date.now()}`
+  )
 
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
@@ -47,7 +49,9 @@ export const use = () => {
   const listener = () => {
     const image = image_picker.value.files[0]
     if (image === undefined) return
-    const is_image = ['image/jpeg', 'image/png'].some(type => image.type === type)
+    const is_image = ['image/jpeg', 'image/png'].some(
+      type => image.type === type
+    )
     if (is_image) {
       vectorize(image)
       image_picker.value.value = ''
@@ -86,14 +90,20 @@ export const use = () => {
     new_vector.value = vector
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
+
   const mount_workers = () => {
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/vector.worker.js')
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
   }
+
   watch_effect(() => {
-    if (new_gradients.value && new_vector.value && is_vector(new_vector.value)) {
+    if (
+      new_gradients.value &&
+      new_vector.value &&
+      is_vector(new_vector.value)
+    ) {
       const created_at = as_created_at(new_vector.value.id)
       router.replace({ path: `/posters/${created_at}/editor` })
     }
