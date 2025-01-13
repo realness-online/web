@@ -146,6 +146,7 @@ export const use_posters = () => {
    * @param {Poster} poster
    */
   const poster_shown = async poster => {
+    console.log('poster_shown', poster.id)
     let author = as_author(poster.id)
 
     /** @type {Poster[]} */
@@ -170,7 +171,8 @@ export const use_posters = () => {
       if (!history || !Array.isArray(history)) return
 
       const next = history.pop()
-
+      author.viewed.push(next)
+      console.log('author.viewed', author.viewed)
       const archive = await as_directory(`${author.id}/posters/${next}/`)
       console.log('archive', archive)
       archive.items.forEach(created_at =>

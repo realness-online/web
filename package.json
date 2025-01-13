@@ -38,6 +38,8 @@
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "type": "tsc --pretty",
+    "storage:fix-itemprop": "node scripts/fix-itemprop-value.js",
+    "storage:merge-statements": "node scripts/merge-statements.js",
     "storage:compress": "node scripts/compress-files.js",
     "storage:decompress": "node scripts/decompress-files.js",
     "storage:upload": "node scripts/upload-compressed.js",
