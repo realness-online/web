@@ -91,6 +91,8 @@
 
 <style lang="stylus">
   section#thoughts
+    .working
+      fill: blue
     position: relative
     display: flex
     flex-direction: column

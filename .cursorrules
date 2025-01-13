@@ -2,3 +2,7 @@ In this project we enforce type safety via jsdoc comments
 
 We prefer to use snake_case for as much as possible even for class definitions
 
+You should use the information inside /src/types.js whenever you are suggesting types
+
+You should use the information inside /src/utils/itemid.js whenever you are suggesting
+functions that return itemids
