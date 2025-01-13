@@ -8,11 +8,11 @@ const on_init = fs =>
 const on_error = error => console.error('filesystem error: ', error)
 
 const root_directory = async directory => {
-  console.log('Directory created: ', directory.fullPath, directory)
+  console.info('Directory created: ', directory.fullPath, directory)
   const directoryHandle = await window.showDirectoryPicker()
 
   for await (const entry of directoryHandle.values())
-    console.log(entry.kind, entry.name)
+    console.info(entry.kind, entry.name)
 
   // Use the directory entry
   // You can perform operations on the directory here

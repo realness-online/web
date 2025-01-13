@@ -68,15 +68,7 @@ export const use = () => {
         const network = await fresh_metadata(itemid)
         if (!network || !network.customMetadata) return null
         const hash = await get_content_hash(itemid)
-        if (network.customMetadata.hash !== hash) {
-          console.log(
-            'hash mismatch prune',
-            itemid,
-            hash,
-            network.customMetadata.hash
-          )
-          await del(itemid)
-        }
+        if (network.customMetadata.hash !== hash) await del(itemid)
       }
     })
   }
@@ -113,7 +105,6 @@ export const use = () => {
     if (!my_info || !network) return
     const hash = await create_hash(my_info)
     if (hash !== network.hash) {
-      console.log(`delete_me: ${id}`, 'hash', hash, 'network', network.hash)
       localStorage.removeItem(id)
       del(id)
     }
@@ -126,7 +117,6 @@ export const use = () => {
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const hash = await create_hash(elements.outerHTML)
     if (!network || network.hash !== hash) {
-      console.log('sync_statements', itemid, hash, network.hash)
       statements.value = await persistance.sync()
       if (statements.value.length) {
         await next_tick()
@@ -144,7 +134,6 @@ export const use = () => {
     if (!elements) return
     const hash = await create_hash(elements.outerHTML)
     if (!network || network.hash !== hash) {
-      console.log('sync_events', itemid, hash, network.hash)
       events.value = await events.sync()
       if (events.value.length) {
         await next_tick()
@@ -173,7 +162,6 @@ export const use = () => {
   const sync_posters_directory = async () => {
     const me = get_my_itemid()
     if (!me) return
-    console.log('sync_posters_directory', me)
     const directory_path = `${me}/posters/`
     await del(directory_path) // Clear existing directory cache
 
@@ -217,12 +205,10 @@ export const get_content_hash = async itemid => {
   return create_hash(local)
 }
 export const fresh_metadata = async itemid => {
-  console.log('fresh_metadata', itemid)
   const index = (await get('sync:index')) || {}
   const path = location(as_filename(itemid))
   let network
   try {
-    // console.info('request:metadata', itemid)
     network = await metadata(path)
   } catch (e) {
     if (e.code === 'storage/object-not-found') network = DOES_NOT_EXIST

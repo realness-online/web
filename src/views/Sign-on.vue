@@ -27,7 +27,12 @@
     return false
   })
   const clean = async () => {
-    localStorage.clear()
+    // Clear all items from localStorage
+    for (const key in localStorage) 
+      if (localStorage.hasOwnProperty(key)) 
+        localStorage.removeItem(key)
+    
+    // Reset required values
     localStorage.me = '/+'
     me.value = default_person
     await clear()

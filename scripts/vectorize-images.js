@@ -43,7 +43,7 @@ const get_image_files = async (dir_path, files = []) => {
 
 const process_image = async (image_path, phone_number) => {
   try {
-    console.log(chalk.cyan('\nProcessing: ') + chalk.dim(image_path))
+    console.info(chalk.cyan('\nProcessing: ') + chalk.dim(image_path))
 
     // Load image
     const image = await loadImage(image_path)
@@ -64,8 +64,8 @@ const process_image = async (image_path, phone_number) => {
     await writeFile(`${base_path}.json`, JSON.stringify(poster, null, 2))
     await writeFile(`${base_path}.svg`, svg)
 
-    console.log(chalk.green('✓ Processing successful'))
-    console.log(`${chalk.dim('Saved to: ') + base_path}.{json,svg}`)
+    console.info(chalk.green('✓ Processing successful'))
+    console.info(`${chalk.dim('Saved to: ') + base_path}.{json,svg}`)
     return true
   } catch (error) {
     console.error(chalk.red('Processing failed:'), error)
@@ -78,20 +78,22 @@ const main = async () => {
     const phone_number = process.argv[2] || ADMIN_ID
 
     if (!phone_number)
-      throw new Error('No phone number provided and VITE_ADMIN_ID not set in .env')
+      throw new Error(
+        'No phone number provided and VITE_ADMIN_ID not set in .env'
+      )
 
     if (!/^\+\d{10,}$/.test(phone_number))
       throw new Error('Phone number must be in format: +1234567890')
 
-    console.log(chalk.bold('Starting image vectorization'))
-    console.log(chalk.dim('Phone number: ') + chalk.cyan(phone_number))
-    console.log(chalk.dim('Source directory: ') + chalk.cyan(SOURCE_DIR))
+    console.info(chalk.bold('Starting image vectorization'))
+    console.info(chalk.dim('Phone number: ') + chalk.cyan(phone_number))
+    console.info(chalk.dim('Source directory: ') + chalk.cyan(SOURCE_DIR))
 
     await ensure_dir(SOURCE_DIR)
     await ensure_dir(join(PEOPLE_DIR, phone_number))
 
     const image_files = await get_image_files(SOURCE_DIR)
-    console.log(chalk.dim('Found images: ') + chalk.green(image_files.length))
+    console.info(chalk.dim('Found images: ') + chalk.green(image_files.length))
 
     let successful = 0
     let failed = 0
@@ -106,12 +108,12 @@ const main = async () => {
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / image_files.length) * 100)
-      console.log(
+      console.info(
         chalk.dim(`Progress: ${progress}% (${total}/${image_files.length})`)
       )
     }
 
-    console.log(chalk`
+    console.info(chalk`
 {bold Processing Summary:}
 {dim Total images:}   ${successful + failed}
 {dim Successful:}     {green ${successful}}

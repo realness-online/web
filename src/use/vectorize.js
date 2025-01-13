@@ -75,7 +75,7 @@ export const use = () => {
 
   const exif_logger = tags => {
     const cloned = structuredClone(tags)
-    console.log('EXIF: ', `${to_kb(cloned)}kb`, cloned)
+    console.info('EXIF: ', `${to_kb(cloned)}kb`, cloned)
     return cloned
   }
 
