@@ -116,23 +116,18 @@ export const as_download_url = async itemid => {
  * @example
  * as_path_parts('/+123456/statements/789') // ['+123456', 'statements', '789']
  * as_path_parts('/+123456') // ['+123456']
+ * as_path_parts('/+123456/statements/789/') // ['+123456', 'statements', null, '789']
  */
 export const as_path_parts = itemid => {
   const path = itemid.split('/')
   if (path[0].length === 0) path.shift()
-  return /** @type {[Author] | [Author, Type] | [Author, Type, Created]} */ (
-    path
-  )
-}
-
-/**
- * @param {Id} itemid
- * @returns {boolean}
- */
-export const is_history = itemid => {
-  const parts = as_path_parts(itemid)
-  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
-  return false
+  if (itemid.endsWith('/')) {
+    //is a directory
+    const [author, type, created = null, archive = null] = path
+    if (!created && !archive) return [author, type, 'index', null]
+    if (created) return [author, type, null, created]
+  }
+  return path
 }
 
 /**

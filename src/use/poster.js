@@ -7,7 +7,7 @@ import {
   as_created_at,
   as_author
 } from '@/utils/itemid'
-import { as_directory, as_history } from '@/persistance/Directory'
+import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { recent_number_first } from '@/utils/sorting'
@@ -129,6 +129,7 @@ export const use_posters = () => {
    * @param {Relation} person
    */
   const for_person = async person => {
+    console.log('for_person', person.id)
     const directory = await as_directory(`${person.id}/posters`)
     directory.items.forEach(created_at => {
       posters.value.push({
@@ -145,7 +146,6 @@ export const use_posters = () => {
    * @param {Poster} poster
    */
   const poster_shown = async poster => {
-    console.log('poster_shown', poster.id)
     let author = as_author(poster.id)
 
     /** @type {Poster[]} */
@@ -154,7 +154,6 @@ export const use_posters = () => {
     )
 
     const author_oldest = author_posters[author_posters.length - 1]
-    console.log('author_oldest', author_oldest.id)
     if (poster.id === author_oldest.id) {
       console.log('load archive')
       const found_author = authors.value.find(
@@ -172,8 +171,8 @@ export const use_posters = () => {
 
       const next = history.pop()
 
-      const archive = await as_history(`${author.id}/posters/${next}/`) // Trailing slash indicates directory`
-
+      const archive = await as_directory(`${author.id}/posters/${next}/`)
+      console.log('archive', archive)
       archive.items.forEach(created_at =>
         posters.value.push({
           id: `${author.id}/posters/${next}/${created_at}`,

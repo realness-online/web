@@ -40,11 +40,6 @@ class Directory {
   constructor(id) {
     this.id = as_directory_id(id)
   }
-
-  for_firebase() {
-    const [author, type] = as_path_parts(this.id)
-    return `/${author}/${type}/` // Trailing slash indicates directory
-  }
 }
 
 /**
@@ -75,10 +70,9 @@ export const for_firebase = itemid => {
  * @returns {string}
  */
 export const as_directory_id = itemid => {
-  const [author, type, created, archive] = as_path_parts(itemid)
-  let path = `/${author}/${type}/index/` // Trailing slash indicates directory
-  if (archive) path = `/${author}/${type}/index/`
-  return path
+  const [author, type] = as_path_parts(itemid)
+  if (itemid?.endsWith('/')) return itemid
+  return `/${author}/${type}/index/` // Trailing slash indicates directory
 }
 
 /**
@@ -104,21 +98,24 @@ export const build_local_directory = async itemid => {
  * @param {Id} itemid
  * @returns {Promise<Directory | null>}
  */
-export const load_directory_from_network = async (itemid, archive = false) => {
+export const load_directory_from_network = async itemid => {
   if (navigator.onLine) {
-    const [author, type, created = null] = as_path_parts(itemid)
-    let path = as_directory_id(itemid)
-    console.log('created', created)
-    if (created) path = as_path_parts(itemid)
+    const [author, type, created = null, archive = null] = as_path_parts(itemid)
 
-    console.log('cleaned for firebase', path)
+    const path = as_directory_id(itemid)
+
     const meta = new Directory(path)
+    console.group('request:directory')
+    console.info('itemid', itemid)
+    console.info('author', author)
+    console.info('type', type)
+    console.info('created', created)
+    console.info('archive', archive)
+    console.groupEnd()
 
-    console.info('request:directory', itemid)
-
-    const for_firebase = path
-
-    const folder = await directory(`people/${meta.for_firebase()}`)
+    let firebase_path = `people/${author}/${type}/`
+    if (archive) firebase_path += `${archive}/`
+    const folder = await directory(firebase_path)
     folder.items.forEach(item => meta.items.push(item.name.split('.')[0]))
     folder.prefixes.forEach(prefix => meta.archive.push(prefix.name))
     await set(path, meta)
@@ -139,7 +136,6 @@ export const as_directory = async itemid => {
     return cached
   }
   let directory = await build_local_directory(itemid)
-  console.log('directory', directory)
   if (navigator.onLine)
     try {
       directory = await load_directory_from_network(itemid)
@@ -148,22 +144,5 @@ export const as_directory = async itemid => {
       throw e
     }
 
-  return directory
-}
-
-/**
- * @param {Id} itemid
- * @returns {boolean}
- */
-export const as_history = async itemid => {
-  console.time('as_history')
-  const cached = await get(itemid)
-  if (cached) {
-    console.info('has directory cached', cached)
-    return cached
-  }
-  const directory = await load_directory_from_network(itemid, true)
-
-  console.timeEnd('as_history')
   return directory
 }
