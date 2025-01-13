@@ -115,7 +115,7 @@ async function main() {
     // Write merged content to index.html
     await fs.writeFile(join(statements_dir, 'index.html'), merged)
 
-    console.log('Successfully merged statements into index.html')
+    console.info('Successfully merged statements into index.html')
   } catch (error) {
     console.error('Error merging statements:', error)
   }

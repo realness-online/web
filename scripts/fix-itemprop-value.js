@@ -33,8 +33,8 @@ const update_path_attributes = file_path => {
     // Only write if there was a change
     if (modified_content !== content) {
       writeFileSync(file_path, modified_content, 'utf8')
-      console.log(`Successfully updated ${file_path}`)
-    } else console.log(`No matching patterns found in ${file_path}`)
+      console.info(`Successfully updated ${file_path}`)
+    } else console.info(`No matching patterns found in ${file_path}`)
   } catch (error) {
     console.error(`Error processing ${file_path}: ${error.message}`)
   }
