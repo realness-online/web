@@ -70,15 +70,7 @@ export default [
       'no-console': [
         'error',
         {
-          allow: [
-            'warn',
-            'error',
-            'info',
-            'time',
-            'timeEnd',
-            'group',
-            'groupEnd'
-          ]
+          allow: ['warn', 'error', 'info', 'time', 'timeEnd', 'group', 'groupEnd']
         }
       ],
       'no-debugger': 'error',
