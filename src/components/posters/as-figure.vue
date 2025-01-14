@@ -85,7 +85,6 @@
         <menu>
           <as-link :itemid="itemid">
             <time>{{ posted_at }}</time>
-            <p>{{ itemid }}</p>
           </as-link>
           <as-download :itemid="itemid" />
           <as-messenger v-if="current_user" :itemid="itemid" />
