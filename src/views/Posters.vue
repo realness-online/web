@@ -138,5 +138,4 @@
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1
-
 </style>
