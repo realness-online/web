@@ -53,13 +53,13 @@
           @show="thought_shown" />
       </as-days>
     </article>
-      <footer v-if="!my_statements?.length && !working" class="message">
-        <p>
-          Say some stuff via the <button aria-label="Home" @click="home" /> button on
-          the homepage
-          <br />
-        </p>
-      </footer>
+    <footer v-if="!my_statements?.length && !working" class="message">
+      <p>
+        Say some stuff via the <button aria-label="Home" @click="home" /> button on
+        the homepage
+        <br />
+      </p>
+    </footer>
     <article v-if="statements?.legth > 1" id="earlier" class="statements">
       <header>
         <h1>Earlier Statements</h1>

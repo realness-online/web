@@ -59,7 +59,6 @@
     working.value = false
     console.timeEnd('views:Posters')
   })
-
 </script>
 
 <template>

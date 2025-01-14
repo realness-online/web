@@ -12,9 +12,7 @@ const update_path_attributes = file_path => {
     const modified_content = content.replace(
       /itemprop="path"/g,
       (match, offset, string) => {
-        const previous_matches = string
-          .slice(0, offset)
-          .match(/itemprop="path"/g)
+        const previous_matches = string.slice(0, offset).match(/itemprop="path"/g)
         const match_index = previous_matches ? previous_matches.length : 0
 
         switch (match_index) {
@@ -58,9 +56,7 @@ const process_directory = directory_path => {
         update_path_attributes(full_path)
     })
   } catch (error) {
-    console.error(
-      `Error processing directory ${directory_path}: ${error.message}`
-    )
+    console.error(`Error processing directory ${directory_path}: ${error.message}`)
   }
 }
 

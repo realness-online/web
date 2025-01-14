@@ -20,8 +20,7 @@
     emit('toggle-keyboard')
     await save(trimmed)
 
-    if (statement_text.value === text)
-      statement_text.value = null
+    if (statement_text.value === text) statement_text.value = null
 
     console.info('create:Statement')
   }

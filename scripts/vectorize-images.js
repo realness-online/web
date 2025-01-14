@@ -78,9 +78,7 @@ const main = async () => {
     const phone_number = process.argv[2] || ADMIN_ID
 
     if (!phone_number)
-      throw new Error(
-        'No phone number provided and VITE_ADMIN_ID not set in .env'
-      )
+      throw new Error('No phone number provided and VITE_ADMIN_ID not set in .env')
 
     if (!/^\+\d{10,}$/.test(phone_number))
       throw new Error('Phone number must be in format: +1234567890')

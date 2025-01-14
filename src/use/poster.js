@@ -154,9 +154,7 @@ export const use_posters = () => {
 
     const author_oldest = author_posters[author_posters.length - 1]
     if (poster.id === author_oldest.id) {
-      const found_author = authors.value.find(
-        relation => relation.id === author
-      )
+      const found_author = authors.value.find(relation => relation.id === author)
       if (!found_author) return
       author = found_author
 

@@ -96,10 +96,7 @@ const merge_statements = html_files => {
 
 // Main execution
 async function main() {
-  const statements_dir = join(
-    __dirname,
-    '../storage/people/+16282281824/statements'
-  )
+  const statements_dir = join(__dirname, '../storage/people/+16282281824/statements')
 
   try {
     // Read all HTML files in the statements directory
