@@ -109,87 +109,34 @@
 </template>
 
 <style lang="stylus">
-    section#posters
-      svg, a
+  section#posters
+    svg, a
+      color: green
+      fill: green
+    & > header
+      justify-content: space-between
+    & > footer
+      border-radius: base-line
+      padding: base-line * 0.5
+      background-color: black-transparent
+      position: fixed
+      bottom: base-line * 0.5
+      left: s('calc( 50% - %s)', (base-line * 1.75) )
+      z-index: 4
+      @media (min-width: typing-begins)
+        visibility: hidden
+    & > h1
+      @media (prefers-color-scheme: dark)
         color: green
-        fill: green
-      & > header
-        justify-content: space-between
-      & > footer
-        border-radius: base-line
-        padding: base-line * 0.5
-        background-color: black-transparent
-        position: fixed
-        bottom: base-line * 0.5
-        left: s('calc( 50% - %s)', (base-line * 1.75) )
-        z-index: 4
-        @media (min-width: typing-begins)
-          visibility: hidden
-      & > h1
-        @media (prefers-color-scheme: dark)
-          color: green
-      & > article
-        standard-grid: gentle
-        grid-gap: 0
-        padding-bottom: base-line * 3
-        @media (max-width: pad-begins)
-          margin-top: base-line
-        & > figure.poster
-          &.selecting-event
-            & > svg:not(.background)
-              opacity: 0.1
+    & > article
+      standard-grid: gentle
+      grid-gap: 0
+      padding-bottom: base-line * 3
+      @media (max-width: pad-begins)
+        margin-top: base-line
+      & > figure.poster
+        &.selecting-event
+          & > svg:not(.background)
+            opacity: 0.1
 
-  nav button
-    &:last-child
-      background: var(--accent)
-      color: var(--on-accent)
-
-  .progress
-    margin-top: base-line
-    display: flex
-    flex-direction: column
-    align-items: center
-    gap: base-line
-
-    meter
-      width: 80%
-      height: base-line
-
-      &::-webkit-meter-bar
-        background: var(--surface)
-        border: 1px solid var(--outline)
-        border-radius: base-line * 0.25
-
-      &::-webkit-meter-optimum-value
-        background: var(--accent)
-        border-radius: base-line * 0.25
-
-    span
-      color: var(--on-surface)
-      font-size: 0.9em
-
-    .preview
-      display: flex
-      flex-direction: column
-      align-items: center
-      gap: base-line * 0.5
-
-      .preview-image
-        width: 120px
-        height: 120px
-        border-radius: base-line * 0.5
-        background: var(--surface)
-        padding: base-line * 0.5
-        display: flex
-        align-items: center
-        justify-content: center
-
-        :deep(svg)
-          width: 100%
-          height: 100%
-          object-fit: contain
-
-      span
-        font-size: 0.8em
-        opacity: 0.8
 </style>
