@@ -68,7 +68,7 @@
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
       </a>
-      <a v-if="can_add" tabindex="-1" @click="process_directory">
+      <a v-if="can_add" hidden tabindex="-1" @click="process_directory">
         <icon name="picker" />
       </a>
 
