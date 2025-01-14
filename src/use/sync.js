@@ -44,10 +44,14 @@ export const use = () => {
       await sync_me()
       await sync_statements()
       await sync_events()
-      // await sync_posters_directory()
+      await sync_posters_directory()
       emit('active', false)
     }
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
     if (visit_interval() > visit_digit) {
@@ -56,11 +60,16 @@ export const use = () => {
       await new Me().save()
     }
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const prune = async () => {
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value)) await del(itemid) // only relations are cached
+      if (await is_stranger(as_author(itemid), relations.value))
+        await del(itemid) // only relations are cached
       if (await itemid.endsWith('/'))
         await del(itemid) // directories are not cached
       else {
@@ -71,6 +80,11 @@ export const use = () => {
       }
     })
   }
+
+  /**
+   * @param {Id} id
+   * @returns {Promise<boolean>}
+   */
   const is_stranger = async id => {
     const friends = [...relations.value]
     friends.push({
@@ -83,6 +97,10 @@ export const use = () => {
     })
     return !is_friend
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_offline_actions = async () => {
     if (navigator.onLine) {
       const offline = await get('sync:offline')
@@ -96,6 +114,10 @@ export const use = () => {
       await del('sync:offline')
     }
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_me = async () => {
     const id = get_my_itemid()
     const network = (await fresh_metadata(id)).customMetadata
@@ -108,6 +130,10 @@ export const use = () => {
       del(id)
     }
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_statements = async () => {
     const persistance = new Statement()
     const itemid = get_my_itemid('statements')
@@ -125,6 +151,10 @@ export const use = () => {
     }
     await persistance.optimize()
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_events = async () => {
     const events = new Event()
     const itemid = get_my_itemid('events')
@@ -141,12 +171,22 @@ export const use = () => {
       }
     }
   }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_anonymous_posters = async () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items) await save_poster(created_at)
+    for (const created_at of offline_posters.items)
+      await save_poster(created_at)
   }
+
+  /**
+   * @param {Created} created_at
+   * @returns {Promise<void>}
+   */
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)
     sync_poster.value = get_item(poster_string)
@@ -157,6 +197,9 @@ export const use = () => {
     await del(`/+/posters/${created_at}`)
   }
 
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_posters_directory = async () => {
     const me = get_my_itemid()
     if (!me) return
@@ -176,15 +219,18 @@ export const use = () => {
 
     await new Poster(directory_path).optimize()
   }
+
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
     relations.value = await load(`${localStorage.me}/relations`)
   })
+
   dismount(() => {
     window.removeEventListener('online', play)
     document.removeEventListener('visibilitychange', play)
   })
+
   watch(current_user, async () => {
     if (current_user.value) {
       await sync_anonymous_posters()
@@ -231,6 +277,7 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  if (am_i_fresh) console.info('i_am_fresh for', format_time_remaining(time_left))
+  if (am_i_fresh)
+    console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
 }
