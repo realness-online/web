@@ -38,15 +38,10 @@
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "type": "tsc --pretty",
-    "storage:fix-itemprop": "node scripts/fix-itemprop-value.js",
-    "storage:merge-statements": "node scripts/merge-statements.js",
     "storage:compress": "node scripts/compress-files.js",
     "storage:decompress": "node scripts/decompress-files.js",
     "storage:upload": "node scripts/upload-compressed.js",
     "storage:download": "node scripts/firebase-downloader.js",
-    "storage:serve": "node scripts/start-storage-server.js",
-    "storage:serve:stop": "nginx -s stop",
-    "storage:vectorize": "node scripts/vectorize-images.js"
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
