@@ -8,16 +8,40 @@ import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
-
+import { as_directory_id } from '@/persistance/Directory'
+import { newest_timestamp_first } from '@/utils/date'
 /**
  * @type {Type[]}
  */
-const created_at = ['posters']
+const has_archive = ['posters']
 
 /**
  * @type {Type[]}
  */
 const has_history = ['statements', 'events']
+
+// this leaves me, history, relations, and offline
+
+/**
+ * @param {Id} itemid
+ * @returns {string}
+ */
+export const as_filename = async itemid => {
+  let filename = itemid
+  if (itemid.startsWith('/+')) filename = `/people${itemid}`
+
+  if (has_archive.includes(as_type(itemid))) {
+    const archive = await as_archive(itemid)
+    if (archive) {
+      console.log('archive returns', `${archive}.html.gz`)
+      return `${archive}.html.gz`
+    }
+
+    return `${filename}.html.gz`
+  } else if (is_history(itemid)) return `${filename}.html.gz`
+
+  return `${filename}/index.html.gz`
+}
 
 /**
  * @param {Id} itemid
@@ -93,10 +117,10 @@ export const list = async (itemid, me = localStorage.me) => {
 export const as_download_url = async itemid => {
   if (itemid.startsWith('/+/')) return null
   try {
-    return await url(as_filename(itemid))
+    return await url(await as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.warn(itemid, '=>', as_filename(itemid))
+      console.warn(itemid, '=>', await as_filename(itemid))
       const index = (await get('sync:index')) || {}
       index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)
@@ -128,18 +152,6 @@ export const as_path_parts = itemid => {
     if (created) return [author, type, null, created]
   }
   return path
-}
-
-/**
- * @param {Id} itemid
- * @returns {string}
- */
-export const as_filename = itemid => {
-  let filename = itemid
-  if (itemid.startsWith('/+')) filename = `/people${filename}`
-  if (created_at.includes(as_type(itemid)) || is_history(itemid))
-    return `${filename}.html.gz`
-  return `${filename}/index.html.gz`
 }
 
 /**
@@ -220,14 +232,44 @@ export const type_as_list = item => {
   else if (list) return [list]
   return []
 }
-
 /**
  * @param {Id} itemid
  * @returns {boolean}
  */
 export const is_history = itemid => {
-  console.log('is_history', itemid)
   const parts = as_path_parts(itemid)
   if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
   return false
+}
+
+/**
+ * @param {Id} itemid
+ * @returns {Promise<string | null>}
+ */
+export const as_archive = async itemid => {
+  const { items, archive } = (await get(as_directory_id(itemid))) || {}
+  const created = as_created_at(itemid)
+
+  if (!created) return null
+
+  if (
+    items?.some(
+      /** @param {number} id */
+      id => id === created
+    )
+  )
+    return null
+
+  if (archive) {
+    archive.sort(newest_timestamp_first)
+
+    const found = archive.find(
+      /** @param {number} timestamp */
+      timestamp => created >= timestamp
+    )
+
+    const result = `people${as_author(itemid)}/${as_type(itemid)}/${found}/${created}`
+    return result
+  }
+  return null
 }

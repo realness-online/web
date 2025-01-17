@@ -79,7 +79,7 @@ export class History extends Cloud(Storage) {
     if (current_user.value && navigator.onLine) {
       const { compressed, metadata } = await prepare_upload_html(items)
       try {
-        await upload(as_filename(this.id), compressed, metadata)
+        await upload(await as_filename(this.id), compressed, metadata)
       } catch (e) {
         console.error(e)
         return false

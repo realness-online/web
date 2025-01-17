@@ -67,18 +67,18 @@ export const move = async (type, id, archive_id) => {
   const { compressed, metadata } = await prepare_upload_html(html)
   try {
     // Step 1: Upload to new location
-    await upload(as_filename(new_location), compressed, metadata)
+    await upload(await as_filename(new_location), compressed, metadata)
     upload_successful = true
 
     // Step 2: Only remove old file if upload was successful
-    await remove(as_filename(old_location))
+    await remove(await as_filename(old_location))
     console.info(`Moved ${old_location} to ${new_location}`)
     return true
   } catch (error) {
     // Step 3: Cleanup if upload succeeded but remove failed
     if (upload_successful)
       try {
-        await remove(as_filename(new_location))
+        await remove(await as_filename(new_location))
         await set(old_location, html)
         console.info(`Rolled back upload of ${new_location}`)
       } catch (cleanup_error) {
