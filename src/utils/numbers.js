@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 export const KB = 1024
 export const MB = KB * KB
 export const PERCENT = 100
@@ -25,6 +26,7 @@ export const SIZE = {
   MID: 34, // Target reduction size
   MAX: 55 // Upper limit requiring optimization
 }
+/* eslint-enable no-magic-numbers */
 
 export const format_bytes = bytes => {
   if (bytes < KB) return `${bytes} B`

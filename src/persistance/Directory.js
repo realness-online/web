@@ -5,19 +5,12 @@
 import { as_path_parts, as_created_at } from '@/utils/itemid'
 import { get, set, keys } from 'idb-keyval'
 import { directory } from '@/utils/serverless'
-const PARTS = {
-  AUTHOR: 0,
-  TYPE: 1,
-  ARCHIVE: 2
-}
+
 /**
  * @implements {Directory}
  */
 class Directory {
-  /**
-   * @type {Id}
-   */
-  id = ''
+  id = /** @type {Id} */ ('')
 
   /**
    * @type {Type[]}
@@ -38,7 +31,7 @@ class Directory {
    * @param {Id} id
    */
   constructor(id) {
-    this.id = as_directory_id(id)
+    this.id = /** @type {Id} */ (as_directory_id(id))
   }
 }
 
@@ -53,17 +46,7 @@ export const is_directory = maybe =>
   'types' in maybe &&
   'archive' in maybe &&
   'items' in maybe
-
 //
-
-/**
- * @param {Id} itemid
- * @returns {string}
- */
-export const for_firebase = itemid => {
-  const [author, type, created = 'index'] = as_path_parts(itemid)
-  return `/${author}/${type}` // Trailing slash indicates directory
-}
 
 /**
  * @param {Id} itemid
@@ -81,13 +64,13 @@ export const as_directory_id = itemid => {
  */
 export const build_local_directory = async itemid => {
   console.time('build_local_directory')
-  const path = as_directory_id(itemid)
+  const path = /** @type {Id} */ (as_directory_id(itemid))
   const directory = new Directory(path)
   const everything = await keys()
   everything.forEach(itemid => {
-    if (as_directory_id(itemid) === path) {
-      const id = as_created_at(itemid)
-      if (id) directory.items.push(id)
+    if (as_directory_id(/** @type {Id} */ (itemid)) === path) {
+      const id = as_created_at(/** @type {Id} */ (itemid))
+      if (id) directory.items.push(/** @type {Id} */ (itemid))
     }
   })
   console.timeEnd('build_local_directory')
@@ -104,7 +87,7 @@ export const load_directory_from_network = async itemid => {
 
     const path = as_directory_id(itemid)
 
-    const meta = new Directory(path)
+    const meta = new Directory(/** @type {Id} */ (path))
     console.group('request:directory')
     console.info('itemid', itemid)
     console.info('author', author)
@@ -116,8 +99,10 @@ export const load_directory_from_network = async itemid => {
     let firebase_path = `people/${author}/${type}/`
     if (archive) firebase_path += `${archive}/`
     const folder = await directory(firebase_path)
-    folder.items.forEach(item => meta.items.push(item.name.split('.')[0]))
-    folder.prefixes.forEach(prefix => meta.archive.push(prefix.name))
+    folder.items.forEach(item =>
+      meta.items.push(/** @type {Id} */ (item.name.split('.')[0]))
+    )
+    folder.prefixes.forEach(prefix => meta.archive.push(parseInt(prefix.name)))
     await set(path, meta)
     return meta
   }

@@ -17,6 +17,7 @@
     console.info('views:Navigation')
     mount_workers()
   })
+  const toggle_keyboard = () => (posting.value = !posting.value)
 </script>
 
 <template>
@@ -43,7 +44,7 @@
         Thoughts
       </router-link>
       <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
-      <statement-as-textarea class="red" @toggle-keyboard="posting = !posting" />
+      <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer>
       <button>{{ version }}</button>

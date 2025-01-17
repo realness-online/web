@@ -1,4 +1,4 @@
-/** @typedef {import('@/types').Item_Id} Item_Id */
+/** @typedef {import('@/types').Id} Id */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { Local } from '@/persistance/Local'

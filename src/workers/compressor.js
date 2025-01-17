@@ -32,7 +32,7 @@ export const decompress_html = message => {
   return { html }
 }
 
-export const route_message = async message => {
+export const route_message = message => {
   const { route } = message.data
   let reply = {}
 

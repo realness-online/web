@@ -86,11 +86,11 @@
         :key="poster.id"
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
-        @click="() => toggle_menu(poster.id)">
+        @click="toggle_menu(poster.id)">
         <as-author-menu
           :poster="poster"
           @remove="remove_poster"
-          @picker="() => picker(poster.id)" />
+          @picker="picker(poster.id)" />
       </as-figure>
     </article>
     <footer v-if="progress.processing" class="progress">
