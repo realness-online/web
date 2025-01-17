@@ -7,9 +7,7 @@
 
   import { current_user, sign_off } from '@/utils/serverless'
   import { get_file_system } from '@/utils/file'
-  const set_posters_folder = async () => {
-    get_file_system()
-  }
+  const set_posters_folder = () => get_file_system()
 </script>
 
 <template>

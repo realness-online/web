@@ -79,10 +79,3 @@ export const format_time_remaining = time_ms => {
 
   return `${minutes}m`
 }
-
-/**
- * @param {number} time_1
- * @param {number} time_2
- * @returns {number}
- */
-export const newest_timestamp_first = (time_1, time_2) => time_2 - time_1

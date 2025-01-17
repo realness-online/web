@@ -1,5 +1,8 @@
 /**
  * Represents a 3x3 quadratic matrix
+ * @class
+ * @property {number[]} data - 3x3 matrix stored as flat array
+ * @property {function(number, number): number} at - Function to get value at position
  */
 class Quad {
   /**

@@ -8,8 +8,9 @@ import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
 import Histogram from '@/potrace/types/Histogram'
 
+/** @typedef {'spread' | 'dominant' | 'median' | 'mean'} FillStrategy */
+
 /**
- * Configuration options for the Potrace algorithm
  * @typedef {Object} PotraceOptions
  * @property {'black'|'white'|'left'|'right'|'minority'|'majority'} [turnPolicy='minority'] - How to resolve ambiguities in path decomposition.
  *    - 'black': Always choose the black pixel in ambiguous cases
@@ -27,7 +28,7 @@ import Histogram from '@/potrace/types/Histogram'
  * @property {string} [color='auto'] - Foreground color ('auto', 'black', 'white', or any valid CSS color)
  * @property {string} [background='transparent'] - Background color (any valid CSS color)
  * @property {number|number[]|'auto'} [steps='auto'] - Number of posterization steps or array of threshold values
- * @property {'spread'|'dominant'|'median'|'mean'} [fillStrategy='dominant'] - How to determine colors in posterization:
+ * @property {FillStrategy} [fillStrategy='dominant'] - How to determine colors in posterization:
  *    - 'spread': Distribute colors evenly
  *    - 'dominant': Use most frequent colors
  *    - 'median': Use median color value
@@ -72,42 +73,6 @@ import Histogram from '@/potrace/types/Histogram'
  */
 
 /**
- * @typedef {Object} Sum
- * @property {number} x - Sum of x coordinates
- * @property {number} y - Sum of y coordinates
- * @property {number} xy - Sum of x*y products
- * @property {number} x2 - Sum of x^2 values
- * @property {number} y2 - Sum of y^2 values
- */
-
-/**
- * @typedef {Object} Curve
- * @property {number} n - Number of vertices
- * @property {Point[]} vertex - Array of vertex points
- * @property {('CORNER'|'CURVE')[]} tag - Type of each vertex
- * @property {Point[]} c - Control points
- * @property {number[]} alpha - Alpha values for each vertex
- * @property {number[]} alpha0 - Initial alpha values
- * @property {number[]} beta - Beta values for each vertex
- * @property {boolean} alpha_curve - Whether curve uses alpha values
- */
-
-/**
- * @typedef {Object} Quad
- * @property {number[]} data - 3x3 matrix stored as flat array
- * @property {function(number, number): number} at - Function to get value at position
- */
-
-/**
- * @typedef {Object} Opti
- * @property {Point[]} c - Control points
- * @property {number} alpha - Alpha value
- * @property {number} t - Parameter t
- * @property {number} s - Parameter s
- * @property {number} pen - Penalty value
- */
-
-/**
  * Converts an image into SVG paths
  * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
  * @param {PotraceOptions} [options={}] - Potrace options
@@ -126,7 +91,7 @@ export const as_paths = (image_data, options = {}) => {
  */
 export const as_path_element = (image_data, options = {}) => {
   const potrace = new Potrace(options)
-  return potrace.path_tag(image_data)
+  return potrace.get_path_tag(image_data)
 }
 
 /**
@@ -155,14 +120,16 @@ class Potrace {
   static THRESHOLD_AUTO = -1
 
   static STEPS_AUTO = -1
-  static FILL_SPREAD = 'spread'
-  static FILL_DOMINANT = 'dominant'
-  static FILL_MEDIAN = 'median'
-  static FILL_MEAN = 'mean'
+  static FILL_SPREAD = /** @type {FillStrategy} */ ('spread')
+  static FILL_DOMINANT = /** @type {FillStrategy} */ ('dominant')
+  static FILL_MEDIAN = /** @type {FillStrategy} */ ('median')
+  static FILL_MEAN = /** @type {FillStrategy} */ ('mean')
   static RANGES_AUTO = 'auto'
   static RANGES_EQUAL = 'equal'
 
-  /** @type {Record<string, string>} */
+  /** @typedef {'black' | 'white' | 'left' | 'right' | 'minority' | 'majority'} TurnPolicy */
+
+  /** @type {Record<string, TurnPolicy>} */
   static turn_policy = {
     black: 'black',
     white: 'white',
@@ -195,7 +162,6 @@ class Potrace {
 
   /**
    * @type {Required<PotraceOptions>}
-   * @private
    */
   #params = {
     turnPolicy: Potrace.turn_policy.minority,
@@ -224,7 +190,6 @@ class Potrace {
 
   /**
    * Finds the next point to process in the bitmap
-   * @private
    * @param {Bitmap} black_map - Binary bitmap representation of the image
    * @param {Point} point - Current point coordinates
    * @returns {Point|false} Next point to process or false if no more points found
@@ -242,7 +207,6 @@ class Potrace {
 
   /**
    * Determines majority pixel value in local neighborhood
-   * @private
    * @param {Bitmap} black_map - Binary bitmap data
    * @param {number} x - X coordinate of center pixel
    * @param {number} y - Y coordinate of center pixel
@@ -270,7 +234,6 @@ class Potrace {
 
   /**
    * Traces a complete path from a starting point
-   * @private
    * @param {Bitmap} black_map - Binary bitmap data
    * @param {Point} point - Starting point coordinates
    * @returns {Path} Complete traced path
@@ -385,7 +348,9 @@ class Potrace {
 
     const black_on_white = this.#params.blackOnWhite
     const black_map = this.#luminance_data.copy(lum => {
-      const past_the_threshold = black_on_white ? lum > threshold : lum < threshold
+      const past_the_threshold = black_on_white
+        ? lum > threshold
+        : lum < threshold
       return past_the_threshold ? 0 : 1
     })
 
@@ -494,7 +459,9 @@ class Potrace {
       while (1) {
         foundk = 0
         dir =
-          (3 + 3 * utils.sign(pt[k].x - pt[k1].x) + utils.sign(pt[k].y - pt[k1].y)) /
+          (3 +
+            3 * utils.sign(pt[k].x - pt[k1].x) +
+            utils.sign(pt[k].y - pt[k1].y)) /
           2
         ct[dir]++
 
@@ -842,7 +809,8 @@ class Potrace {
       j = utils.mod(i - 1, m)
 
       for (l = 0; l < 3; l++)
-        for (k = 0; k < 3; k++) Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
+        for (k = 0; k < 3; k++)
+          Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
 
       while (1) {
         det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
@@ -973,7 +941,8 @@ class Potrace {
 
       denom = utils.ddenom(curve.vertex[i], curve.vertex[k])
       if (denom !== 0.0) {
-        dd = utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
+        dd =
+          utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
         dd = Math.abs(dd)
         alpha = dd > 1 ? 1 - 1.0 / dd : 0
         alpha = alpha / 0.75
@@ -1041,7 +1010,11 @@ class Potrace {
     for (i = 0; i < m; i++)
       if (curve.tag[i] == 'CURVE')
         convc[i] = utils.sign(
-          utils.dpara(vert[utils.mod(i - 1, m)], vert[i], vert[utils.mod(i + 1, m)])
+          utils.dpara(
+            vert[utils.mod(i - 1, m)],
+            vert[i],
+            vert[utils.mod(i + 1, m)]
+          )
         )
       else convc[i] = 0
 
@@ -1200,8 +1173,9 @@ class Potrace {
       if (convc[k1] != conv) return 1
 
       if (
-        utils.sign(utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])) !=
-        conv
+        utils.sign(
+          utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
+        ) != conv
       )
         return 1
 
@@ -1361,7 +1335,11 @@ class Potrace {
           'Bad threshold value. Expected to be an integer in range 0..255'
         )
 
-    if (params && params.optCurve != null && typeof params.optCurve !== 'boolean')
+    if (
+      params &&
+      params.optCurve != null &&
+      typeof params.optCurve !== 'boolean'
+    )
       throw new Error("'optCurve' must be Boolean")
   }
 
@@ -1390,7 +1368,6 @@ class Potrace {
   }
 
   /**
-   * @private
    * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
    * @returns {void}
    * @description
@@ -1459,7 +1436,10 @@ class Potrace {
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
     const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
 
-    if (lastRangeTo - lastRangeFrom > 25 && lastColorStop.colorIntensity !== 1) {
+    if (
+      lastRangeTo - lastRangeFrom > 25 &&
+      lastColorStop.colorIntensity !== 1
+    ) {
       const histogram = this.#get_image_histogram()
       const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
 
@@ -1477,7 +1457,9 @@ class Potrace {
 
       ranges.push({
         value: Math.abs((blackOnWhite ? 0 : 255) - newColorStop),
-        colorIntensity: isNaN(color) ? 0 : (blackOnWhite ? 255 - color : color) / 255
+        colorIntensity: isNaN(color)
+          ? 0
+          : (blackOnWhite ? 255 - color : color) / 255
       })
     }
 
@@ -1503,7 +1485,9 @@ class Potrace {
       colorSelectionStrat !== Potrace.FILL_SPREAD
         ? this.#get_image_histogram()
         : null
-    const fullRange = Math.abs(this.#params.threshold - (blackOnWhite ? 0 : 255))
+    const fullRange = Math.abs(
+      this.#params.threshold - (blackOnWhite ? 0 : 255)
+    )
 
     return colorStops.map((threshold, index) => {
       const nextValue =
@@ -1553,12 +1537,21 @@ class Potrace {
       // We don't want colors to be too close to each other, so we introduce some spacing in between
       if (index !== 0)
         color = blackOnWhite
-          ? utils.clamp(color, rangeStart, rangeEnd - Math.round(intervalSize * 0.1))
-          : utils.clamp(color, rangeStart + Math.round(intervalSize * 0.1), rangeEnd)
+          ? utils.clamp(
+              color,
+              rangeStart,
+              rangeEnd - Math.round(intervalSize * 0.1)
+            )
+          : utils.clamp(
+              color,
+              rangeStart + Math.round(intervalSize * 0.1),
+              rangeEnd
+            )
 
       return {
         value: threshold,
-        colorIntensity: color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
+        colorIntensity:
+          color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
       }
     })
   }
@@ -1608,11 +1601,16 @@ class Potrace {
 
     if (!colorStops.length) colorStops.push(threshold)
 
-    colorStops = colorStops.sort((a, b) => (a < b === lookingForDarkPixels ? 1 : -1))
+    colorStops = colorStops.sort((a, b) =>
+      a < b === lookingForDarkPixels ? 1 : -1
+    )
 
     if (lookingForDarkPixels && colorStops[0] < threshold)
       colorStops.unshift(threshold)
-    else if (!lookingForDarkPixels && colorStops[colorStops.length - 1] < threshold)
+    else if (
+      !lookingForDarkPixels &&
+      colorStops[colorStops.length - 1] < threshold
+    )
       colorStops.push(threshold)
 
     return this.#calc_color_intensity(colorStops)
@@ -1816,9 +1814,14 @@ class Potrace {
           : (actualPrevLayersOpacity - thisLayerOpacity) /
             (actualPrevLayersOpacity - 1)
 
-      calculatedOpacity = utils.clamp(parseFloat(calculatedOpacity.toFixed(3)), 0, 1)
+      calculatedOpacity = utils.clamp(
+        parseFloat(calculatedOpacity.toFixed(3)),
+        0,
+        1
+      )
       actualPrevLayersOpacity =
-        actualPrevLayersOpacity + (1 - actualPrevLayersOpacity) * calculatedOpacity
+        actualPrevLayersOpacity +
+        (1 - actualPrevLayersOpacity) * calculatedOpacity
 
       this.#set_parameters({ threshold: colorStop.value })
 
@@ -1829,7 +1832,8 @@ class Potrace {
         calculatedOpacity.toFixed(3)
       )
 
-      const canBeIgnored = calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
+      const canBeIgnored =
+        calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
 
       const c = Math.round(
         Math.abs((blackOnWhite ? 255 : 0) - 255 * thisLayerOpacity)
@@ -1903,9 +1907,14 @@ class Potrace {
           : (actualPrevLayersOpacity - thisLayerOpacity) /
             (actualPrevLayersOpacity - 1)
 
-      calculatedOpacity = utils.clamp(parseFloat(calculatedOpacity.toFixed(3)), 0, 1)
+      calculatedOpacity = utils.clamp(
+        parseFloat(calculatedOpacity.toFixed(3)),
+        0,
+        1
+      )
       actualPrevLayersOpacity =
-        actualPrevLayersOpacity + (1 - actualPrevLayersOpacity) * calculatedOpacity
+        actualPrevLayersOpacity +
+        (1 - actualPrevLayersOpacity) * calculatedOpacity
 
       this.#set_parameters({ threshold: colorStop.value })
 

@@ -9,7 +9,7 @@ import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
 import { as_directory_id } from '@/persistance/Directory'
-import { newest_timestamp_first } from '@/utils/date'
+import { newest_timestamp_first } from '@/utils/sorting'
 /**
  * @type {Type[]}
  */

@@ -2,6 +2,12 @@ import Point from '@/potrace/types/Point'
 
 /**
  * Represents optimization parameters for curve fitting
+ * @class
+ * @property {Point[]} c - Control points
+ * @property {number} alpha - Alpha value
+ * @property {number} t - Parameter t
+ * @property {number} s - Parameter s
+ * @property {number} pen - Penalty value
  */
 class Opti {
   /**

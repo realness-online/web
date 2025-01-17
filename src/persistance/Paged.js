@@ -3,11 +3,21 @@ import { History } from '@/persistance/Storage'
 import { from_e64 } from '@/use/people'
 import { current_user } from '@/utils/serverless'
 import { get_item, get_itemprops, hydrate } from '@/utils/item'
-import { as_created_at, list, load_from_network, type_as_list } from '@/utils/itemid'
-import { SIZE, elements_as_kilobytes, itemid_as_kilobytes } from '@/utils/numbers'
+import {
+  as_created_at,
+  list,
+  load_from_network,
+  type_as_list
+} from '@/utils/itemid'
+import {
+  SIZE,
+  elements_as_kilobytes,
+  itemid_as_kilobytes
+} from '@/utils/numbers'
 import { recent_item_first } from '@/utils/sorting'
 
-const Paged = superclass =>
+/** @param {any} superclass */
+export const Paged = superclass =>
   class extends superclass {
     async optimize() {
       if (super.optimize) await super.optimize()

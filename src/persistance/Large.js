@@ -3,6 +3,7 @@ import { set, get, del } from 'idb-keyval'
 import { as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
 
+/** @param {any} superclass */
 export const Large = superclass =>
   class extends superclass {
     constructor(...args) {
@@ -33,4 +34,3 @@ export const Large = superclass =>
       if (super.delete) await super.delete()
     }
   }
-export default Large

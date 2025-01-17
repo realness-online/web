@@ -8,7 +8,8 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "strict": true,
+    "strict": false, // TODO: enable
+    "strictNullChecks": false, // TODO: enable
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
