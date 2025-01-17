@@ -1,5 +1,11 @@
 /**
  * Represents a sum of coordinates and their products
+ * @class
+ * @property {number} x - Sum of x coordinates
+ * @property {number} y - Sum of y coordinates
+ * @property {number} xy - Sum of x*y products
+ * @property {number} x2 - Sum of x^2 values
+ * @property {number} y2 - Sum of y^2 values
  */
 class Sum {
   /**

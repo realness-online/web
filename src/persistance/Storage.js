@@ -1,10 +1,10 @@
 /** @typedef {import('@/types').Item_Id} Item_Id */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import Local from '@/persistance/Local'
-import Large from '@/persistance/Large'
-import Cloud from '@/persistance/Cloud'
-import Paged from '@/persistance/Paged'
+import { Local } from '@/persistance/Local'
+import { Large } from '@/persistance/Large'
+import { Cloud } from '@/persistance/Cloud'
+import { Paged } from '@/persistance/Paged'
 import { current_user, upload } from '@/utils/serverless'
 import { as_type, as_filename } from '@/utils/itemid'
 import { get } from 'idb-keyval'
