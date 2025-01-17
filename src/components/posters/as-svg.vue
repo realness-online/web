@@ -64,8 +64,9 @@
       required: false,
       default: false
     }
+
   })
-  defineEmits({
+  const emit = defineEmits({
     focus: is_focus,
     click: is_click,
     show: is_vector
@@ -215,26 +216,26 @@
           <filter id="emboss">
             <feConvolveMatrix
               kernelMatrix="1.5 0 0
-                          0   0 0
-                          0   0 -1.5" />
+                            0   0 0
+                            0   0 -1.5" />
           </filter>
           <filter id="emboss-opposite">
             <feConvolveMatrix
               kernelMatrix="0   0 1.5
-                          0   0 0
-                         -1.5 0 0" />
+                            0   0 0
+                           -1.5 0 0" />
           </filter>
           <filter id="emboss-horizontal">
             <feConvolveMatrix
               kernelMatrix="0   0 0
-                          1.5 0 -1.5
-                          0   0 0" />
+                            1.5 0 -1.5
+                            0   0 0" />
           </filter>
           <filter id="emboss-vertical">
             <feConvolveMatrix
               kernelMatrix="0    1.5 0
-                          0    0   0
-                          0   -1.5 0" />
+                            0    0   0
+                            0   -1.5 0" />
           </filter>
         </defs>
         <filter

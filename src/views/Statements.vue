@@ -16,7 +16,7 @@
   const { my_statements, statements, thought_shown, authors } = use_statements()
   const home = () => router.push({ path: '/' })
 
-  mounted(async () => {
+  mounted(() => {
     const last_editable = my_statements.value.length - 1
     statements.value = [my_statements.value[last_editable]]
     working.value = false

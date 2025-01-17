@@ -16,6 +16,24 @@ import {
 } from '@/utils/numbers'
 import { recent_item_first } from '@/utils/sorting'
 
+const get_oldest = (elements, prop_name) => {
+  const list = get_itemprops(elements)
+  const props = list[prop_name]
+  props.sort(recent_item_first)
+  const oldest = props[props.length - 1]
+  return new Date(as_created_at(oldest.id))
+}
+export const is_fat = (items, prop_name) => {
+  const today = new Date().setHours(0, 0, 0, 0)
+  if (
+    elements_as_kilobytes(items) > SIZE.MIN &&
+    get_oldest(items, prop_name).getTime() < today
+  )
+    return true
+  // only count stuff before today
+  return false
+}
+
 /** @param {any} superclass */
 export const Paged = superclass =>
   class extends superclass {
@@ -86,22 +104,3 @@ export const Paged = superclass =>
       return items
     }
   }
-export default Paged
-
-function get_oldest(elements, prop_name) {
-  const list = get_itemprops(elements)
-  const props = list[prop_name]
-  props.sort(recent_item_first)
-  const oldest = props[props.length - 1]
-  return new Date(as_created_at(oldest.id))
-}
-export const is_fat = (items, prop_name) => {
-  const today = new Date().setHours(0, 0, 0, 0)
-  if (
-    elements_as_kilobytes(items) > SIZE.MIN &&
-    get_oldest(items, prop_name) < today
-  )
-    return true
-  // only count stuff before today
-  return false
-}

@@ -70,7 +70,15 @@ export default [
       'no-console': [
         'error',
         {
-          allow: ['warn', 'error', 'info', 'time', 'timeEnd', 'group', 'groupEnd']
+          allow: [
+            'warn',
+            'error',
+            'info',
+            'time',
+            'timeEnd',
+            'group',
+            'groupEnd'
+          ]
         }
       ],
       'no-debugger': 'error',
@@ -100,7 +108,7 @@ export default [
         {
           functions: false,
           classes: true,
-          variables: true,
+          variables: false,
           allowNamedExports: false
         }
       ],
@@ -164,7 +172,7 @@ export default [
       'vue/no-potential-component-option-typo': 'error',
       'vue/no-duplicate-attr-inheritance': 'error',
       'vue/require-name-property': 'error',
-      'vue/v-on-handler-style': ['error', ['method', 'inline-function']],
+      'vue/v-on-handler-style': ['error', ['method', 'inline']],
       'vue/prefer-true-attribute-shorthand': 'error',
       'vue/no-ref-object-destructure': 'error',
       'vue/define-emits-declaration': ['error', 'runtime'],
