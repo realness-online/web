@@ -68,8 +68,7 @@ export const use = () => {
     const everything = await keys()
     everything.forEach(async itemid => {
       if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value))
-        await del(itemid) // only relations are cached
+      if (await is_stranger(as_author(itemid), relations.value)) await del(itemid) // only relations are cached
       if (await itemid.endsWith('/'))
         await del(itemid) // directories are not cached
       else {
@@ -179,8 +178,7 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items)
-      await save_poster(created_at)
+    for (const created_at of offline_posters.items) await save_poster(created_at)
   }
 
   /**
@@ -250,7 +248,7 @@ export const get_content_hash = async itemid => {
 }
 export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
-  const path = location(as_filename(itemid))
+  const path = location(await as_filename(itemid))
   let network
   try {
     network = await metadata(path)
@@ -277,7 +275,6 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  if (am_i_fresh)
-    console.info('i_am_fresh for', format_time_remaining(time_left))
+  if (am_i_fresh) console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
 }

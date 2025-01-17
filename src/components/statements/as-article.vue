@@ -133,6 +133,7 @@
         margin-right: round((base-line / 4), 2)
         &.icon
           fill: blue
+          scale: 0.6
       & > address
         flex:1
         margin: 0

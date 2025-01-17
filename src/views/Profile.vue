@@ -82,6 +82,8 @@
       & > svg
         width: 100vw
         min-height: 100.5vh
+        &.working
+          fill: blue
       & > menu
         width: 100%
         display: flex

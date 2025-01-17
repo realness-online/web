@@ -15,7 +15,7 @@ export const Cloud = superclass =>
 
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
-        const path = as_filename(this.id)
+        const path = await as_filename(this.id)
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
 
@@ -35,7 +35,7 @@ export const Cloud = superclass =>
     async delete() {
       console.info('request:delete', this.id)
       if (navigator.onLine && current_user.value) {
-        const path = as_filename(this.id)
+        const path = await as_filename(this.id)
         await remove(path)
         await del(`hash:${this.id}`)
       } else await sync_later(this.id, 'delete')
