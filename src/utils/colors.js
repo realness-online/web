@@ -109,9 +109,9 @@ export const luminosity = (color, change_by) => {
  */
 export const rgba_to_hsla = ({ r, g, b, a }) => {
   // Then to HSL
-  let r_norm = r / rgb_max_value
-  let g_norm = g / rgb_max_value
-  let b_norm = b / rgb_max_value
+  const r_norm = r / rgb_max_value
+  const g_norm = g / rgb_max_value
+  const b_norm = b / rgb_max_value
   a /= rgb_max_value
   a = a.toFixed(2)
   const cmin = Math.min(r_norm, g_norm, b_norm)
