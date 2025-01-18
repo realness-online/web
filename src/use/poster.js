@@ -154,14 +154,13 @@ export const use_posters = () => {
     const author_oldest = as_created_at(
       author_posters[author_posters.length - 1].id
     )
-    console.log('author_oldest', author_oldest)
-    console.log('poster.id', as_created_at(poster.id))
+
     if (as_created_at(poster.id) === author_oldest) {
-      console.log('load another archive directory')
       const found_author = authors.value.find(
         relation => relation.id === author
       )
       if (!found_author) return
+
       author = found_author
 
       const directory = await as_directory(`${author.id}/posters`)
@@ -171,8 +170,15 @@ export const use_posters = () => {
       const history = directory.archive
       if (!history || !Array.isArray(history)) return
 
-      const next = history.pop()
+      // Filter out already viewed archives
+      const unviewed_history = history.filter(
+        archive => !author.viewed.includes(archive)
+      )
+      const next = unviewed_history.pop()
+      if (!next) return // No more unviewed archives
+
       author.viewed.push(next)
+
       const archive = await as_directory(`${author.id}/posters/${next}/`)
       archive.items.forEach(created_at =>
         posters.value.push({
