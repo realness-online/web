@@ -3,7 +3,7 @@
   import AsDays from '@/components/as-days'
   import AsFigure from '@/components/posters/as-figure'
 
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted as mounted } from 'vue'
   import { list } from '@/utils/itemid'
   import { recent_item_first } from '@/utils/sorting'
   import icon from '@/components/icon'
@@ -27,7 +27,7 @@
     return all_events.filter(event => event.id > now)
   }
 
-  onMounted(async () => {
+  mounted(async () => {
     events.value = await get_upcoming_events()
     working.value = false
     console.info('views:events', events.value.length)
