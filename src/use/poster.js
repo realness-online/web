@@ -1,3 +1,7 @@
+/** @typedef {import('@/types').Poster} Poster */
+/** @typedef {import('@/types').Relation} Relation */
+/** @typedef {import('@/types').Created} Created */
+
 import { ref, computed, getCurrentInstance as current_instance } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
 import {
@@ -10,10 +14,6 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-
-/** @typedef {import('@/types').Poster} Poster */
-/** @typedef {import('@/types').Relation} Relation */
-/** @typedef {import('@/types').Created} Created */
 
 export const use = () => {
   const { props, emit } = current_instance()
@@ -118,6 +118,7 @@ export const use = () => {
     focusable
   }
 }
+
 export const use_posters = () => {
   /** @type {import('vue').Ref<Poster[]>} */
   const posters = ref([])
@@ -144,52 +145,32 @@ export const use_posters = () => {
    * @param {Poster} poster
    */
   const poster_shown = async poster => {
-    let author = as_author(poster.id)
+    const author_id = as_author(poster.id)
 
-    /** @type {Poster[]} */
     const author_posters = posters.value.filter(
-      poster => author === as_author(poster.id)
+      p => author_id === as_author(p.id)
     )
 
-    const author_oldest = as_created_at(
-      author_posters[author_posters.length - 1].id
+    const is_oldest_poster =
+      as_created_at(poster.id) ===
+      as_created_at(author_posters[author_posters.length - 1].id)
+
+    if (!is_oldest_poster) return
+
+    const author = authors.value.find(relation => relation.id === author_id)
+    if (!author) return
+
+    const next_archive = await get_next_unviewed_archive(
+      author_id,
+      author.viewed
     )
+    if (!next_archive) return
 
-    if (as_created_at(poster.id) === author_oldest) {
-      const found_author = authors.value.find(
-        relation => relation.id === author
-      )
-      if (!found_author) return
+    const new_posters = await load_archive_posters(author_id, next_archive)
+    posters.value.push(...new_posters)
+    posters.value.sort(recent_item_first)
 
-      author = found_author
-
-      const directory = await as_directory(`${author.id}/posters`)
-
-      if (!directory) return
-
-      const history = directory.archive
-      if (!history || !Array.isArray(history)) return
-
-      // Filter out already viewed archives
-      const unviewed_history = history.filter(
-        archive => !author.viewed.includes(archive)
-      )
-      const next = unviewed_history.pop()
-      if (!next) return // No more unviewed archives
-
-      author.viewed.push(next)
-
-      const archive = await as_directory(`${author.id}/posters/${next}/`)
-      archive.items.forEach(created_at =>
-        posters.value.push({
-          id: `${author.id}/posters/${next}/${created_at}`,
-          type: 'posters'
-        })
-      )
-      posters.value.sort(recent_item_first)
-
-      author.viewed.push(next)
-    }
+    author.viewed.push(next_archive)
   }
 
   return {
@@ -202,6 +183,34 @@ export const use_posters = () => {
 const path_names = ['background', 'light', 'regular', 'medium', 'bold']
 export const is_click = menu => typeof menu === 'boolean'
 export const is_focus = layer => path_names.some(name => name === layer)
+
+/**
+ * @param {string} author_id
+ * @param {string[]} viewed
+ * @returns {Promise<string|null>}
+ */
+const get_next_unviewed_archive = async (author_id, viewed) => {
+  const directory = await as_directory(`${author_id}/posters`)
+  if (!directory?.archive || !Array.isArray(directory.archive)) return null
+
+  const unviewed = directory.archive.filter(
+    archive => !viewed.includes(archive)
+  )
+  return unviewed.pop() || null
+}
+
+/**
+ * @param {string} author_id
+ * @param {string} archive_id
+ * @returns {Promise<Poster[]>}
+ */
+const load_archive_posters = async (author_id, archive_id) => {
+  const archive = await as_directory(`${author_id}/posters/${archive_id}/`)
+  return archive.items.map(created_at => ({
+    id: `${author_id}/posters/${archive_id}/${created_at}`,
+    type: 'posters'
+  }))
+}
 
 /**
  * @param {string} itemid
