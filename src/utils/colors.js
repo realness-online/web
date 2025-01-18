@@ -38,8 +38,7 @@ export const to_hex = (input_color = '') => {
   let hex
   if (color.startsWith('rgb')) hex = `#${rgb_to_hex(color)}`
   if (color.startsWith('hsl')) hex = hsl_to_hex(color)
-  if (hex.length === hex_with_alpha_length)
-    return hex.slice(0, alpha_slice_offset)
+  if (hex.length === hex_with_alpha_length) return hex.slice(0, alpha_slice_offset)
   else if (hex.length === hex_length) return hex
   throw `Provided color is unrecognized — ${color}`
 }

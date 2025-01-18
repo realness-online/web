@@ -18,6 +18,7 @@
  * @typedef {Object} Item
  * @property {Id} id
  * @property {Type} type
+ * @property {string} visited
  */
 
 /**
@@ -40,6 +41,16 @@
  * @property {string} name
  * @property {string} avatar
  * @property {string[]} viewed
+ */
+
+/**
+ * @typedef {Object} Person
+ * @property {string} id
+ * @property {string} first_name
+ * @property {string} last_name
+ * @property {string} [avatar]
+ * @property {string} [mobile]
+ * @property {string} [visited] - ISO date string of last visit
  */
 
 export {}

@@ -26,6 +26,10 @@ export const SIZE = {
   MID: 34, // Target reduction size
   MAX: 55 // Upper limit requiring optimization
 }
+
+export const IMAGE = {
+  TARGET_SIZE: 512 // Default size for image processing
+}
 /* eslint-enable no-magic-numbers */
 
 export const format_bytes = bytes => {
