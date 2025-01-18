@@ -24,7 +24,7 @@ const has_history = ['statements', 'events']
 
 /**
  * @param {Id} itemid
- * @returns {string}
+ * @returns {Promise<string>}
  */
 export const as_filename = async itemid => {
   let filename = itemid
@@ -32,11 +32,7 @@ export const as_filename = async itemid => {
 
   if (has_archive.includes(as_type(itemid))) {
     const archive = await as_archive(itemid)
-    if (archive) {
-      console.log('archive returns', `${archive}.html.gz`)
-      return `${archive}.html.gz`
-    }
-
+    if (archive) return `${archive}.html.gz`
     return `${filename}.html.gz`
   } else if (is_history(itemid)) return `${filename}.html.gz`
 
@@ -45,11 +41,10 @@ export const as_filename = async itemid => {
 
 /**
  * @param {Id} itemid
- * @param {Author} me
  * @returns {Promise<string | null>}
  */
-export const load_from_network = async (itemid, me = localStorage.me) => {
-  const url = await as_download_url(itemid, me)
+export const load_from_network = async itemid => {
+  const url = await as_download_url(itemid)
 
   if (url) {
     const response = await fetch(url)
@@ -200,8 +195,11 @@ export const as_type = itemid => {
  */
 export const as_created_at = itemid => {
   const path = as_path_parts(itemid)
-  if (path.length === 1) return parseInt(path[0])
-  return parseInt(path[2])
+  /** @type {1 | 2 | 3 | 4} */
+  const path_length = path.length
+  if (path_length === 3) return parseInt(path[2])
+  if (path_length === 4) return parseInt(path[3])
+  return null
 }
 
 /**
@@ -243,33 +241,22 @@ export const is_history = itemid => {
 }
 
 /**
- * @param {Id} itemid
- * @returns {Promise<string | null>}
+ * Determines if an item needs to be loaded from an archive
+ * @param {Id} itemid - The ID of the item to check
+ * @returns {Promise<string | null>} - Returns null if the item exists in the main items list,
+ *                                    otherwise returns the archive path if found in an archive,
+ *                                    or null if not found in either location
  */
 export const as_archive = async itemid => {
-  const { items, archive } = (await get(as_directory_id(itemid))) || {}
+  const { items = [], archive } = (await get(as_directory_id(itemid))) || {}
   const created = as_created_at(itemid)
-
   if (!created) return null
-
-  if (
-    items?.some(
-      /** @param {number} id */
-      id => id === created
-    )
-  )
-    return null
-
+  if (items.map(Number).includes(created)) return null // Return null if item exists in main items list
   if (archive) {
     archive.sort(newest_timestamp_first)
-
-    const found = archive.find(
-      /** @param {number} timestamp */
-      timestamp => created >= timestamp
-    )
-
-    const result = `people${as_author(itemid)}/${as_type(itemid)}/${found}/${created}`
-    return result
+    const found = archive.find(timestamp => created >= timestamp)
+    if (!found) return null
+    return `people${as_author(itemid)}/${as_type(itemid)}/${found}/${created}`
   }
   return null
 }

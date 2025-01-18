@@ -10,7 +10,6 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-import { recent_number_first } from '@/utils/sorting'
 
 /** @typedef {import('@/types').Poster} Poster */
 /** @typedef {import('@/types').Relation} Relation */
@@ -85,8 +84,8 @@ export const use = () => {
 
   const show = async () => {
     if (!vector.value) {
-      const poster = await load(props.itemid)
-      vector.value = poster
+      const poster = await load(/** @type {Id} */ (props.itemid))
+      if (!vector.value) vector.value = poster
     }
     working.value = false
     use_intersect(
@@ -152,9 +151,16 @@ export const use_posters = () => {
       poster => author === as_author(poster.id)
     )
 
-    const author_oldest = author_posters[author_posters.length - 1]
-    if (poster.id === author_oldest.id) {
-      const found_author = authors.value.find(relation => relation.id === author)
+    const author_oldest = as_created_at(
+      author_posters[author_posters.length - 1].id
+    )
+    console.log('author_oldest', author_oldest)
+    console.log('poster.id', as_created_at(poster.id))
+    if (as_created_at(poster.id) === author_oldest) {
+      console.log('load another archive directory')
+      const found_author = authors.value.find(
+        relation => relation.id === author
+      )
       if (!found_author) return
       author = found_author
 
@@ -174,7 +180,7 @@ export const use_posters = () => {
           type: 'posters'
         })
       )
-      posters.value.sort(recent_number_first)
+      posters.value.sort(recent_item_first)
 
       author.viewed.push(next)
     }

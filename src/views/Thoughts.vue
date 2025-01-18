@@ -1,17 +1,19 @@
 <script setup>
-  import Icon from '@/components/icon'
-  import LogoAsLink from '@/components/logo-as-link'
-  import AsDays from '@/components/as-days'
-  import ThoughtAsArticle from '@/components/statements/as-article'
-  import PosterAsFigure from '@/components/posters/as-figure'
-  import { use as use_statements, slot_key } from '@/use/statement'
-  import { use as use_people, use_me } from '@/use/people'
-  import { use_posters } from '@/use/poster'
   import { ref, watch, onMounted as mounted } from 'vue'
   import {
     useFullscreen as use_fullscreen,
     useMagicKeys as use_magic_keys
   } from '@vueuse/core'
+
+  import Icon from '@/components/icon'
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDays from '@/components/as-days'
+  import ThoughtAsArticle from '@/components/statements/as-article'
+  import PosterAsFigure from '@/components/posters/as-figure'
+
+  import { use as use_statements, slot_key } from '@/use/statement'
+  import { use as use_people, use_me } from '@/use/people'
+  import { use_posters } from '@/use/poster'
 
   console.time('views:Thoughts')
 
@@ -89,31 +91,44 @@
 </template>
 
 <style lang="stylus">
-  section#thoughts
-    .working
-      fill: blue
-    position: relative
-    display: flex
-    flex-direction: column
-    @media (max-width: pad-begins)
-      figure.poster
-        margin-left: -(base-line)
-        margin-right: -(base-line)
-    & > header
-      & > h1
-        width:auto
-        color: blue
-      & > a:hover > svg
-        fill: green
-        transition-timing-function: ease-out
-      & > a > svg
-        fill: blue
-    & > nav
-      display: none
-    & > section.as-days
-      & > article.day
-        margin-bottom: base-line
-        @media (prefers-color-scheme: dark)
-          & > header h4, figure.poster > svg.background
-            color: blue
+  section#thoughts {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    @media (max-width: pad-begins) {
+      figure.poster {
+        margin-left: -(base-line);
+        margin-right: -(base-line);
+      }
+    }
+    & > header {
+      & > h1 {
+        width:auto;
+        color: blue;
+      }
+      & > a:hover > svg {
+        fill: green;
+        transition-timing-function: ease-out;
+      }
+      & > a > svg {
+        fill: blue;
+      }
+    }
+    & > nav {
+      display: none;
+    }
+    & > section.as-days {
+      & > article.day {
+        margin-bottom: base-line;
+        @media (prefers-color-scheme: dark) {
+          & > header h4, figure.poster > svg.background {
+            color: blue;
+          }
+        }
+      }
+    }
+    .working {
+      fill: blue;
+    }
+  }
 </style>

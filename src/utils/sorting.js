@@ -50,8 +50,13 @@ export const recent_date_first = (first, second) =>
  * @param {number} second
  * @returns {number}
  */
-export const recent_number_first = (first, second) =>
-  parseInt(String(second)) - parseInt(String(first))
+export const recent_number_first = (first, second) => {
+  console.log('recent_number_first', first, second)
+  const first_number = parseInt(String(first))
+  const second_number = parseInt(String(second))
+
+  return second_number - first_number
+}
 
 /**
  * @param {Item} first
