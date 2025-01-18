@@ -8,3 +8,5 @@ You should use the information inside /src/utils/itemid.js whenever you are sugg
 functions that return itemids
 
 We use javascript and get our types from jsdoc comments
+
+We like jsdoc imports to happen at the top of the file
