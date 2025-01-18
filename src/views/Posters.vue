@@ -15,7 +15,7 @@
 
   console.time('views:Posters')
 
-  const { posters, for_person: posters_for_person } = use_posters()
+  const { posters, for_person: posters_for_person, poster_shown } = use_posters()
   const {
     can_add,
     vVectorizer,
@@ -86,7 +86,8 @@
         :key="poster.id"
         :itemid="poster.id"
         :class="{ 'selecting-event': poster.picker }"
-        @click="toggle_menu(poster.id)">
+        @click="toggle_menu(poster.id)"
+        @show="poster_shown">
         <as-author-menu
           :poster="poster"
           @remove="remove_poster"
