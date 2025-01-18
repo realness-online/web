@@ -87,7 +87,7 @@ export const load_directory_from_network = async itemid => {
 
     const meta = new Directory(/** @type {Id} */ (path))
     console.group('request:directory')
-    console.trace('itemid', itemid)
+    console.info('itemid', itemid)
     console.info('author', author)
     console.info('type', type)
     console.info('created', created)
