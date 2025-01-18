@@ -63,7 +63,6 @@ export const as_directory_id = itemid => {
  * @returns {Promise<Directory | null>}
  */
 export const build_local_directory = async itemid => {
-  console.time('build_local_directory')
   const path = /** @type {Id} */ (as_directory_id(itemid))
   const directory = new Directory(path)
   const everything = await keys()
@@ -73,7 +72,6 @@ export const build_local_directory = async itemid => {
       if (id) directory.items.push(/** @type {Id} */ (itemid))
     }
   })
-  console.timeEnd('build_local_directory')
   return directory
 }
 
@@ -89,7 +87,7 @@ export const load_directory_from_network = async itemid => {
 
     const meta = new Directory(/** @type {Id} */ (path))
     console.group('request:directory')
-    console.info('itemid', itemid)
+    console.trace('itemid', itemid)
     console.info('author', author)
     console.info('type', type)
     console.info('created', created)
@@ -116,10 +114,7 @@ export const load_directory_from_network = async itemid => {
 export const as_directory = async itemid => {
   const path = as_directory_id(itemid)
   const cached = await get(path)
-  if (cached) {
-    console.info('has directory cached', cached)
-    return cached
-  }
+  if (cached) return cached
   let directory = await build_local_directory(itemid)
   if (navigator.onLine)
     try {
