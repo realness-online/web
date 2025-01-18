@@ -45,7 +45,7 @@
     <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
       <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
     </as-days>
-    <footer>
+    <footer v-if="!events.length">
       <p class="message">
         You create events from
         <router-link to="/posters">Posters</router-link>
