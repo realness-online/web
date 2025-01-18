@@ -2,6 +2,7 @@ import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/utils/colors'
 import { to_kb } from '@/utils/numbers'
 import { optimize } from 'svgo/dist/svgo.browser.js'
+import { IMAGE } from '@/utils/numbers'
 
 export const potrace_options = {
   turdSize: 40,
@@ -42,13 +43,22 @@ export const svgo_options = {
   ]
 }
 
-export const read = async file => {
+/**
+ * @param {File} file
+ * @returns {Promise<ImageBitmap>}
+ */
+export const read = file => {
   const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
   const blob = new Blob([array_buffer])
   return createImageBitmap(blob)
 }
 
-export const size = (image, target_size = 512) => {
+/**
+ * @param {ImageBitmap} image
+ * @param {number} [target_size=IMAGE.TARGET_SIZE]
+ * @returns {OffscreenCanvas}
+ */
+export const size = (image, target_size = IMAGE.TARGET_SIZE) => {
   let new_width = image.width
   let new_height = image.height
 

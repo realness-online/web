@@ -1,49 +1,37 @@
-<script>
+<script setup>
+  import LogoAsLink from '@/components/logo-as-link'
+  import AsDays from '@/components/as-days'
+  import AsFigure from '@/components/posters/as-figure'
+
+  import { ref, onMounted } from 'vue'
   import { list } from '@/utils/itemid'
   import { recent_item_first } from '@/utils/sorting'
   import icon from '@/components/icon'
-  import logo_as_link from '@/components/logo-as-link'
-  import as_days from '@/components/as-days'
-  import as_figure from '@/components/posters/as-figure'
-  export default {
-    components: {
-      'logo-as-link': logo_as_link,
-      'as-figure': as_figure,
-      'as-days': as_days,
-      icon
-    },
-    data() {
-      return {
-        events: [],
-        upcoming: [],
-        working: true
-      }
-    },
-    async created() {
-      this.events = await this.get_upcoming_events()
-      this.working = false
-      console.info('views:events', this.events.length)
-    },
-    methods: {
-      async get_upcoming_events() {
-        const [relations, my_events] = await Promise.all([
-          list(`${localStorage.me}/relations`),
-          list(`${localStorage.me}/events`)
-        ])
-        let events = my_events
-        await Promise.all(
-          relations.map(async person => {
-            const relation_events = await list(`${person.id}/events`)
-            events = [...relation_events, ...events]
-          })
-        )
-        events.sort(recent_item_first)
-        const now = new Date().getTime()
-        events = events.filter(event => event.id > now)
-        return events
-      }
-    }
+  const events = ref([])
+  const working = ref(true)
+
+  const get_upcoming_events = async () => {
+    const [relations, my_events] = await Promise.all([
+      list(`${localStorage.me}/relations`),
+      list(`${localStorage.me}/events`)
+    ])
+    let all_events = my_events
+    await Promise.all(
+      relations.map(async person => {
+        const relation_events = await list(`${person.id}/events`)
+        all_events = [...relation_events, ...all_events]
+      })
+    )
+    all_events.sort(recent_item_first)
+    const now = new Date().getTime()
+    return all_events.filter(event => event.id > now)
   }
+
+  onMounted(async () => {
+    events.value = await get_upcoming_events()
+    working.value = false
+    console.info('views:events', events.value.length)
+  })
 </script>
 
 <template>

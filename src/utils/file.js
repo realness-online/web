@@ -1,7 +1,9 @@
+import { MB } from '@/utils/numbers'
+
 const request_file_system =
   window.requestFileSystem || window.webkitRequestFileSystem
 const storage_type = window.PERSISTENT // or window.TEMPORARY
-const file_size = 1024 * 1024 // 1MB
+const file_size = MB // 1MB
 
 const on_init = fs =>
   fs.root.getDirectory('realness', { create: true }, root_directory, on_error)

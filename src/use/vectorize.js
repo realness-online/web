@@ -10,6 +10,13 @@ import { as_created_at } from '@/utils/itemid'
 import { useRouter as use_router } from 'vue-router'
 import { to_kb } from '@/utils/numbers'
 import ExifReader from 'exifreader'
+
+/**
+ * @typedef {Object} VectorResponse
+ * @property {Object} data
+ * @property {Object} data.vector
+ */
+
 const new_vector = ref(null)
 const new_gradients = ref(null)
 
@@ -24,6 +31,7 @@ export const use = () => {
     if (working.value || new_vector.value) return false
     return true
   })
+
   const as_new_itemid = computed(() => `${localStorage.me}/posters/${Date.now()}`)
 
   const select_photo = () => {
@@ -44,8 +52,9 @@ export const use = () => {
     path.style.fillRule = 'evenodd'
     return path
   }
+
   const listener = () => {
-    const image = image_picker.value.files[0]
+    const [image] = image_picker.value.files
     if (image === undefined) return
     const is_image = ['image/jpeg', 'image/png'].some(type => image.type === type)
     if (is_image) {
@@ -53,12 +62,20 @@ export const use = () => {
       image_picker.value.value = ''
     }
   }
+
   const vVectorizer = {
+    /**
+     * @param {Object} input
+     * @param {Object} binding
+     */
     mounted: (input, binding) => {
       input.addEventListener('change', event => listener(input, binding, event))
     }
   }
 
+  /**
+   * @param {File} image
+   */
   const vectorize = async image => {
     working.value = true
 
@@ -69,12 +86,19 @@ export const use = () => {
     gradienter.value.postMessage({ route: 'make:gradient', image })
   }
 
+  /**
+   * @param {Object} tags
+   * @returns {Object}
+   */
   const exif_logger = tags => {
     const cloned = structuredClone(tags)
     console.info('EXIF: ', `${to_kb(cloned)}kb`, cloned)
     return cloned
   }
 
+  /**
+   * @param {VectorResponse} response
+   */
   const vectorized = response => {
     const { vector } = response.data
     vector.id = as_new_itemid

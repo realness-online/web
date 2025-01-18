@@ -1,6 +1,7 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Type} Type */
+/** @typedef {import('@/types').Person} Person */
 
 import { as_created_at } from '@/utils/itemid'
 
@@ -30,12 +31,12 @@ export const recent_item_first = (first, second) =>
   as_created_at(second.id) - as_created_at(first.id)
 
 /**
- * @param {Item} first
- * @param {Item} second
+ * @param {Person} first
+ * @param {Person} second
  * @returns {number}
  */
 export const recent_visit_first = (first, second) =>
-  new Date(second?.visited) - new Date(first?.visited)
+  new Date(second?.visited).getTime() - new Date(first?.visited).getTime()
 
 /**
  * @param {Array<string>} first

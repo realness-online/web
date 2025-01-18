@@ -52,10 +52,11 @@
     else color.value = to_hex(path.style.fill)
     emit('toggle')
   }
+  const DISTANCE_DIVISOR = 300
   const { distanceY: distance_y } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / 300))
-      else fill_opacity(-1 * (distance_y.value / 300))
+      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / DISTANCE_DIVISOR))
+      else fill_opacity(-1 * (distance_y.value / DISTANCE_DIVISOR))
     }
   })
   const keys = keyboard()
@@ -103,9 +104,9 @@
   <figure id="edit-fill" ref="figure">
     <as-svg
       :itemid="itemid"
-      :optimize="true"
-      :slice="true"
-      :tabable="true"
+      :optimize
+      :slice
+      :tabable
       tabindex="-1"
       @focus="layer_selected" />
     <figcaption hidden>
@@ -125,7 +126,7 @@
         <as-svg
           inert
           :itemid="itemid"
-          :slice="true"
+          :slice
           :toggle_aspect="false"
           tabindex="-1"
           :aria-selected="as_stroke"
