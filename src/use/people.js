@@ -1,3 +1,5 @@
+/** @typedef {import('@/types').Id} Id */
+
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
@@ -28,7 +30,7 @@ export const use = () => {
   /**
    * @param {Id[]} ids
    */
-  const load_people = async ids => Promise.all(ids.map(load_person))
+  const load_people = ids => Promise.all(ids.map(load_person))
 
   const load_phonebook = async () => {
     if (current_user.value) {
