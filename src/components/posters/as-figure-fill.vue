@@ -104,9 +104,9 @@
   <figure id="edit-fill" ref="figure">
     <as-svg
       :itemid="itemid"
-      :optimize
-      :slice
-      :tabable
+      :optimize="true"
+      :slice="true"
+      :tabable="true"
       tabindex="-1"
       @focus="layer_selected" />
     <figcaption hidden>
@@ -126,7 +126,7 @@
         <as-svg
           inert
           :itemid="itemid"
-          :slice
+          :slice="true"
           :toggle_aspect="false"
           tabindex="-1"
           :aria-selected="as_stroke"

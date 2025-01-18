@@ -98,7 +98,7 @@
     const height = parseInt(numbers[3])
     return width > height
   })
-  const { optimize } = use_optimizer(vector)
+  const { optimize: run_optimize } = use_optimizer(vector)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
     const { new_vector } = use_vectorize()
@@ -124,7 +124,7 @@
     }
   })
   watch_effect(() => {
-    if (vector.value && props.optimize && !vector.value.optimized) optimize()
+    if (vector.value && props.optimize && !vector.value.optimized) run_optimize()
   })
 </script>
 
