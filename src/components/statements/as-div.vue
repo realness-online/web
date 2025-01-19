@@ -1,31 +1,34 @@
-<script>
+<script setup>
   import { Statement } from '@/persistance/Storage'
-  export default {
-    props: {
-      statement: {
-        type: Object,
-        required: true
-      },
+  import { ref } from 'vue'
+  const props = defineProps({
+    statement: {
+      type: Object,
+      required: true
+    },
       editable: {
         type: Boolean,
         required: false,
         default: false
-      }
-    },
-    emits: ['blurred', 'focused'],
-    methods: {
-      async save() {
-        const possibly_changed = this.$refs.editable.textContent.trim()
-        if (this.statement.statement !== possibly_changed) {
-          const statement = new Statement()
-          await statement.save()
-        }
-        this.$emit('blurred', this.statement)
-      },
-      focused() {
-        this.$emit('focused', this.statement)
-      }
     }
+  })
+  const emit = defineEmits(['blurred', 'focused'])
+  const is_editable = ref(null)
+
+  /**
+   * @returns {Promise<void>}
+   */
+  const save = async () => {
+    const possibly_changed = is_editable.value?.textContent?.trim()
+    if (props.statement.statement !== possibly_changed) {
+      const statement = new Statement()
+      await statement.save()
+    }
+    emit('blurred', props.statement)
+  }
+
+  const focused = () => {
+    emit('focused', props.statement)
   }
 </script>
 
@@ -33,7 +36,7 @@
   <div itemscope :itemid="statement.id">
     <p
       v-if="editable"
-      ref="editable"
+      ref="is_editable"
       :spellcheck="true"
       :contenteditable="true"
       itemprop="statement"
