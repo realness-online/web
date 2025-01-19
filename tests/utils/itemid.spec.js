@@ -96,7 +96,9 @@ describe('@/utils/itemid', () => {
       get.mockResolvedValue(directory)
 
       const result = await as_archive('/+16282281824/posters/1714021054576')
-      expect(result).toBe('people/+16282281824/posters/1715021054576/1714021054576')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1714021054576'
+      )
     })
 
     it('returns null when directory is missing', async () => {
