@@ -24,6 +24,15 @@ const format_as_day_and_time = {
   minute: 'numeric',
   hour12: true
 }
+const format_as_day_time_year = {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  hour12: true
+}
 
 export function today_as_date() {
   const now = new Date()
@@ -62,6 +71,10 @@ export function as_day(date) {
 }
 export function as_day_and_time(date) {
   return as_time(date, format_as_day_and_time)
+}
+
+export function as_day_time_year(date) {
+  return as_time(date, format_as_day_time_year)
 }
 export function day_name(date) {
   date = new Date(date)

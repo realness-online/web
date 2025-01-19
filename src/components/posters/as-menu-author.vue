@@ -61,6 +61,7 @@
 <style lang="stylus">
   section#posters > article > figure.poster
     & > figcaption > menu > a
+      standard-shadow: boop
       &.avatar
         top: base-line
         left: calc(50% - 1em)
