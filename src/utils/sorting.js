@@ -52,7 +52,6 @@ export const recent_date_first = (first, second) =>
  * @returns {number}
  */
 export const recent_number_first = (first, second) => {
-  console.log('recent_number_first', first, second)
   const first_number = parseInt(String(first))
   const second_number = parseInt(String(second))
 
