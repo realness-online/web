@@ -140,7 +140,7 @@
           padding: base-line * .33
           background: black-transparent
           border-radius: base-line * .25
-          filter: drop-shadow( 0.25px 1px 1.5px black-dark) // the sun is coming from the bottom right
+          standard-shadow: boop
           top: base-line
           left: base-line
           & > address

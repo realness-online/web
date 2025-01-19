@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { generate_id, validate_id, parse_id } from '@/use/itemid'
+import { as_filename, as_archive } from '@/utils/itemid'
+import { get } from 'idb-keyval'
+
+vi.mock('idb-keyval')
 
 describe('@/use/itemid', () => {
   describe('ID Generation', () => {
@@ -69,6 +73,84 @@ describe('@/use/itemid', () => {
 
       const duration = performance.now() - start
       expect(duration).toBeLessThan(1000)
+    })
+  })
+})
+
+describe('@/utils/itemid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('path generation', () => {
+    it('generates correct root path for poster', async () => {
+      get.mockResolvedValue({
+        items: [1737178477987],
+        archive: [1715021054576]
+      })
+
+      const result = await as_filename('/+16282281824/posters/1737178477987')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
+    })
+
+    it('generates correct archive path for archived poster', async () => {
+      get.mockResolvedValue({
+        items: [],
+        archive: [1715021054576]
+      })
+
+      const result = await as_filename('/+16282281824/posters/1714021054576')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1714021054576.html.gz'
+      )
+    })
+
+    it('defaults to root path when no directory exists', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/posters/1737178477987')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
+    })
+  })
+
+  describe('archive detection', () => {
+    it('returns null for items in main list', async () => {
+      get.mockResolvedValue({
+        items: [1737178477987],
+        archive: []
+      })
+
+      const result = await as_archive('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('returns archive path for archived items', async () => {
+      get.mockResolvedValue({
+        items: [],
+        archive: [1715021054576]
+      })
+
+      const result = await as_archive('/+16282281824/posters/1714021054576')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1714021054576'
+      )
+    })
+
+    it('returns null when directory is missing', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_archive('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('returns null when no archives exist', async () => {
+      get.mockResolvedValue({
+        items: [],
+        archive: []
+      })
+
+      const result = await as_archive('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
     })
   })
 })

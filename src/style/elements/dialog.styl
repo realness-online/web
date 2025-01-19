@@ -1,0 +1,56 @@
+body:has(dialog.confirm[open]) {
+  overflow: hidden;
+}
+dialog.confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  padding: base-line;
+  border: 1px solid red;
+  background-color: var(--black-transparent);
+  &::backdrop {
+    backdrop-filter: blur(base-line * 4 );
+  }
+  & > article {
+    border-color: red;
+    border-width: 4px;
+    border-radius: base-line;
+    background-color: var(--black-transparent);
+    @media (prefers-color-scheme: dark) {
+      background-color: var(--black-background);
+    }
+    max-width: var(--page-width);
+    margin: 25vh auto 0;
+    header {
+      padding: base-line;
+      display: flex;
+      flex-direction: column;
+      h1 {
+        text-align: center;
+        width: 100%;
+        color: red;
+      }
+      p {
+        width: 100%;
+        color: blue;
+      }
+    }
+    p {
+      text-align: center;
+      color: var(--white-text);
+    }
+    menu {
+      padding: base-line;
+      display: flex;
+      justify-content: space-between;
+      button.delete {
+        border-color: var(--red);
+        color: var(--red);
+        font-weight: bold;
+      }
+    }
+  }
+}

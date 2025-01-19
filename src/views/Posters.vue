@@ -1,15 +1,15 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
-  import { onMounted as mounted } from 'vue'
+  import { onMounted as mounted, ref, nextTick as next_tick } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsSvg from '@/components/posters/as-svg'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import LogoAsLink from '@/components/logo-as-link'
-
+  import { as_created_at, load } from '@/utils/itemid'
+  import { as_day_time_year } from '@/utils/date'
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
-
   import { use_posters } from '@/use/poster'
   import { use as directory_processor } from '@/use/directory-processor'
 
@@ -25,17 +25,28 @@
     mount_workers
   } = use_vectorize()
   const { process_directory, progress, completed_poster } = directory_processor()
+  const poster_to_remove = ref(null)
+  const delete_dialog = ref(null)
 
   /**
    * @param {Id} id
    */
   const remove_poster = async id => {
-    const message = 'Delete poster?'
-    if (window.confirm(message)) {
-      posters.value = posters.value.filter(item => item.id !== id)
-      const poster = new Poster(id)
-      await poster.delete()
-    }
+    poster_to_remove.value = await load(id)
+    await next_tick()
+    delete_dialog.value.setAttribute('open', '')
+  }
+
+  const confirmed_remove = async () => {
+    delete_dialog.value.removeAttribute('open')
+    console.log(poster_to_remove.value.id)
+    posters.value = posters.value.filter(item => poster_to_remove.value.id !== item.id)
+    const poster = new Poster(poster_to_remove.value.id)
+    await poster.delete()
+  }
+
+  const cancel_remove = () => {
+    delete_dialog.value.removeAttribute('open')
   }
 
   /**
@@ -46,6 +57,7 @@
       if (poster.menu) poster.menu = false
     })
     const poster = posters.value.find(poster => poster.id === itemid)
+
     if (poster) poster.menu = !poster.menu
   }
   const picker = itemid => {
@@ -62,6 +74,21 @@
 </script>
 
 <template>
+  <dialog v-if="poster_to_remove" class="confirm" ref="delete_dialog">
+    <article>
+      <header>
+        <h1>Delete Poster</h1>
+      </header>
+      <p><i>Created:</i></p>
+      <p> {{ as_day_time_year(as_created_at(poster_to_remove.id)) }}</p>
+      <menu>
+        <button class="cancel" @click="cancel_remove">Cancel</button>
+        <button class="delete" @click="confirmed_remove">Delete</button>
+      </menu>
+      <footer>
+      </footer>
+    </article>
+  </dialog>
   <section id="posters" class="page">
     <header>
       <a v-if="can_add" tabindex="-1" @click="select_photo">
@@ -85,7 +112,7 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
-        :class="{ 'selecting-event': poster.picker }"
+        :class="{ 'selecting-event': poster.picker,'fill-screen': poster.menu }"
         @click="toggle_menu(poster.id)"
         @show="poster_shown">
         <as-author-menu
@@ -107,6 +134,7 @@
       </div>
     </footer>
   </section>
+
 </template>
 
 <style lang="stylus">
@@ -136,6 +164,15 @@
       @media (max-width: pad-begins)
         margin-top: base-line
       & > figure.poster
+        &.fill-screen
+          // width: 100vw
+          // height: 100vh
+          // grid-column: 1 / -1
+          // position: fixed
+          // top: 0
+          // left: 0
+          // z-index: 1000
+          // background-color: var(--black-transparent)
         &.selecting-event
           & > svg:not(.background)
             opacity: 0.1
