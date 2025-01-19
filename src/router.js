@@ -10,14 +10,12 @@ import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
 import Editor from '@/views/Editor'
 import About from '@/views/About'
-import Camera from '@/views/Camera'
 import Settings from '@/views/Settings'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
   { path: '/posters/:id/editor', component: Editor },
   { path: '/thoughts', component: Thoughts },
-  { path: '/camera', component: Camera },
   { path: '/sign-on', component: Sign_on },
   { path: '/events', component: Events },
   { path: '/relations', component: Relations },
