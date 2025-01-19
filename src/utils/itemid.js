@@ -28,7 +28,7 @@ const has_history = ['statements', 'events']
  */
 export const as_filename = async itemid => {
   let filename = itemid
-  if (itemid.startsWith('/+')) filename = `/people${itemid}`
+  if (itemid.startsWith('/+')) filename = `people${itemid}`
 
   if (has_archive.includes(as_type(itemid))) {
     const archive = await as_archive(itemid)
@@ -248,15 +248,20 @@ export const is_history = itemid => {
  *                                    or null if not found in either location
  */
 export const as_archive = async itemid => {
-  const { items = [], archive } = (await get(as_directory_id(itemid))) || {}
+  const directory = await get(as_directory_id(itemid))
+  if (!directory) return null
+
+  const { items = [], archive = [] } = directory
   const created = as_created_at(itemid)
   if (!created) return null
-  if (items.map(Number).includes(created)) return null // Return null if item exists in main items list
-  if (archive) {
-    archive.sort(newest_timestamp_first)
-    const found = archive.find(timestamp => created >= timestamp)
-    if (!found) return null
-    return `people${as_author(itemid)}/${as_type(itemid)}/${found}/${created}`
-  }
-  return null
+
+  if (items.includes(created)) return null // Return null if item exists in main items list
+
+  const sorted_archive = [...archive].sort(newest_timestamp_first)
+  const archive_timestamp = sorted_archive.find(
+    timestamp => created < timestamp
+  )
+
+  if (!archive_timestamp) return null
+  return `people${as_author(itemid)}/${as_type(itemid)}/${archive_timestamp}/${created}`
 }

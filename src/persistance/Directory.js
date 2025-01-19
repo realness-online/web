@@ -92,6 +92,7 @@ export const load_directory_from_network = async itemid => {
     console.info('type', type)
     console.info('created', created)
     console.info('archive', archive)
+    console.info('directory', meta)
     console.groupEnd()
 
     let firebase_path = `people/${author}/${type}/`

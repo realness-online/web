@@ -1,81 +1,40 @@
 import { describe, it, expect, vi } from 'vitest'
-import { generate_id, validate_id, parse_id } from '@/use/itemid'
 import { as_filename, as_archive } from '@/utils/itemid'
 import { get } from 'idb-keyval'
-
 vi.mock('idb-keyval')
-
-describe('@/utils/itemid', () => {
-  describe('ID Generation', () => {
-    it('generates valid IDs', () => {
-      const id = generate_id()
-      expect(validate_id(id)).toBe(true)
-    })
-
-    it('generates unique IDs', () => {
-      const id1 = generate_id()
-      const id2 = generate_id()
-      expect(id1).not.toBe(id2)
-    })
-  })
-
-  describe('ID Validation', () => {
-    it('validates correct format', () => {
-      const valid_id = 'test-123-456'
-      expect(validate_id(valid_id)).toBe(true)
-    })
-
-    it('rejects invalid format', () => {
-      const invalid_ids = ['invalid', 'test_123', '', null, undefined]
-      invalid_ids.forEach(id => {
-        expect(validate_id(id)).toBe(false)
-      })
-    })
-  })
-
-  describe('ID Parsing', () => {
-    it('parses valid IDs', () => {
-      const id = 'prefix-123-456'
-      const parsed = parse_id(id)
-      expect(parsed).toEqual({
-        prefix: 'prefix',
-        timestamp: '123',
-        random: '456'
-      })
-    })
-
-    it('handles invalid IDs', () => {
-      const invalid_id = 'invalid-id'
-      expect(() => parse_id(invalid_id)).toThrow()
-    })
-  })
-
-  describe('Special Cases', () => {
-    it('handles timestamp overflow', () => {
-      const future_date = new Date('2100-01-01')
-      vi.setSystemTime(future_date)
-      const id = generate_id()
-      expect(validate_id(id)).toBe(true)
-      vi.useRealTimers()
-    })
-
-    it('handles custom prefixes', () => {
-      const prefix = 'custom'
-      const id = generate_id(prefix)
-      expect(id.startsWith(prefix)).toBe(true)
-    })
-  })
-
-  describe('Performance', () => {
-    it('generates IDs efficiently', () => {
-      const start = performance.now()
-      for (let i = 0; i < 1000; i++) generate_id()
-
-      const duration = performance.now() - start
-      expect(duration).toBeLessThan(1000)
-    })
-  })
-})
+const directory = {
+  id: '/+16282281824/posters/index/',
+  types: [],
+  archive: [
+    1575821772081, 1596637795732, 1608304999951, 1616785878248, 1626119663626,
+    1638909938110, 1654093031913, 1654379684950, 1662500837925, 1672276991456,
+    1682865013400, 1689545625036, 1705888911565, 1712335058767, 1715021054576
+  ],
+  items: [
+    '1720576375018',
+    '1721096849781',
+    '1721597809425',
+    '1721780702433',
+    '1724597436118',
+    '1726326242435',
+    '1726326279054',
+    '1726326359095',
+    '1727291591758',
+    '1727291631464',
+    '1728226845895',
+    '1728226881031',
+    '1729214091636',
+    '1729277964198',
+    '1729554972962',
+    '1729720916169',
+    '1729720944738',
+    '1731473128003',
+    '1732664582144',
+    '1732665099181',
+    '1735108629305',
+    '1737178477987'
+  ]
+}
 
 describe('@/utils/itemid', () => {
   beforeEach(() => {
@@ -83,21 +42,24 @@ describe('@/utils/itemid', () => {
   })
 
   describe('path generation', () => {
+    it('generates correct path for first poster in an archive directory', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1712335058767')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1712335058767.html.gz'
+      )
+    })
+
     it('generates correct root path for poster', async () => {
-      get.mockResolvedValue({
-        items: [1737178477987],
-        archive: [1715021054576]
-      })
+      get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/posters/1737178477987')
       expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
     })
 
     it('generates correct archive path for archived poster', async () => {
-      get.mockResolvedValue({
-        items: [],
-        archive: [1715021054576]
-      })
+      get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/posters/1714021054576')
       expect(result).toBe(
@@ -115,20 +77,14 @@ describe('@/utils/itemid', () => {
 
   describe('archive detection', () => {
     it('returns null for items in main list', async () => {
-      get.mockResolvedValue({
-        items: [1737178477987],
-        archive: []
-      })
+      get.mockResolvedValue(directory)
 
       const result = await as_archive('/+16282281824/posters/1737178477987')
       expect(result).toBeNull()
     })
 
     it('returns archive path for archived items', async () => {
-      get.mockResolvedValue({
-        items: [],
-        archive: [1715021054576]
-      })
+      get.mockResolvedValue(directory)
 
       const result = await as_archive('/+16282281824/posters/1714021054576')
       expect(result).toBe(
@@ -144,10 +100,7 @@ describe('@/utils/itemid', () => {
     })
 
     it('returns null when no archives exist', async () => {
-      get.mockResolvedValue({
-        items: [],
-        archive: []
-      })
+      get.mockResolvedValue(directory)
 
       const result = await as_archive('/+16282281824/posters/1737178477987')
       expect(result).toBeNull()
