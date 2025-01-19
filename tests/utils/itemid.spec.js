@@ -5,7 +5,7 @@ import { get } from 'idb-keyval'
 
 vi.mock('idb-keyval')
 
-describe('@/use/itemid', () => {
+describe('@/utils/itemid', () => {
   describe('ID Generation', () => {
     it('generates valid IDs', () => {
       const id = generate_id()
@@ -131,7 +131,9 @@ describe('@/utils/itemid', () => {
       })
 
       const result = await as_archive('/+16282281824/posters/1714021054576')
-      expect(result).toBe('people/+16282281824/posters/1715021054576/1714021054576')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1714021054576'
+      )
     })
 
     it('returns null when directory is missing', async () => {
