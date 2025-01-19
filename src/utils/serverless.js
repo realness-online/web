@@ -37,16 +37,16 @@ export const sign_off = () => sign_out(auth.value)
 
 // storage methods
 export const location = path => reference(storage.value, path)
-export const metadata = async path => get_metadata(location(path))
+export const metadata = path => get_metadata(location(path))
 export const upload = (path, data, meta) => {
   if (data instanceof Blob) return upload_bytes(location(path), data, meta)
   return upload_string(location(path), data, string_format.RAW, meta)
 }
-export const url = async path => await download_url(location(path))
-export const directory = async path => await list_directory(location(path))
+export const url = path => download_url(location(path))
+export const directory = path => list_directory(location(path))
 export const remove = async path => {
   try {
-    delete_file(location(path))
+    await delete_file(location(path))
   } catch (e) {
     if (e.code === 'storage/object-not-found') console.warn(path, 'already deleted')
     else throw e
