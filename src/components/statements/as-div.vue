@@ -6,10 +6,10 @@
       type: Object,
       required: true
     },
-      editable: {
-        type: Boolean,
-        required: false,
-        default: false
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   })
   const emit = defineEmits(['blurred', 'focused'])
