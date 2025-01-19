@@ -67,6 +67,7 @@ export default [
       camelcase: 'off',
       indent: 'off',
       'lines-between-class-members': 'off',
+      curly: ['error', 'multi'],
       'no-console': [
         'error',
         {
@@ -180,7 +181,6 @@ export default [
       'no-unneeded-ternary': 'error',
       'no-useless-return': 'error',
       'no-floating-decimal': 'error',
-      curly: ['error', 'multi'],
       'object-shorthand': ['error', 'always'],
       'prefer-arrow-callback': 'error',
       'prefer-object-spread': 'error',
