@@ -256,9 +256,7 @@ export const as_archive = async itemid => {
   if (!created) return null
 
   // If the item exists in the main items list, it's not in an archive
-  if (items.map(Number).includes(created)) {
-    return null
-  }
+  if (items.map(Number).includes(created)) return null
 
   // Only check archives if we have them AND the item isn't in the main list
   if (archive?.length) {

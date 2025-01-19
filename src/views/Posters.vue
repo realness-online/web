@@ -40,7 +40,9 @@
   const confirmed_remove = async () => {
     delete_dialog.value.removeAttribute('open')
     console.log(poster_to_remove.value.id)
-    posters.value = posters.value.filter(item => poster_to_remove.value.id !== item.id)
+    posters.value = posters.value.filter(
+      item => poster_to_remove.value.id !== item.id
+    )
     const poster = new Poster(poster_to_remove.value.id)
     await poster.delete()
   }
@@ -74,19 +76,18 @@
 </script>
 
 <template>
-  <dialog v-if="poster_to_remove" class="confirm" ref="delete_dialog">
+  <dialog v-if="poster_to_remove" ref="delete_dialog" class="confirm">
     <article>
       <header>
         <h1>Delete Poster</h1>
       </header>
       <p><i>Created:</i></p>
-      <p> {{ as_day_time_year(as_created_at(poster_to_remove.id)) }}</p>
+      <p>{{ as_day_time_year(as_created_at(poster_to_remove.id)) }}</p>
       <menu>
         <button class="cancel" @click="cancel_remove">Cancel</button>
         <button class="delete" @click="confirmed_remove">Delete</button>
       </menu>
-      <footer>
-      </footer>
+      <footer></footer>
     </article>
   </dialog>
   <section id="posters" class="page">
@@ -112,7 +113,7 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
-        :class="{ 'selecting-event': poster.picker,'fill-screen': poster.menu }"
+        :class="{ 'selecting-event': poster.picker, 'fill-screen': poster.menu }"
         @click="toggle_menu(poster.id)"
         @show="poster_shown">
         <as-author-menu
@@ -134,7 +135,6 @@
       </div>
     </footer>
   </section>
-
 </template>
 
 <style lang="stylus">
