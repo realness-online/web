@@ -200,7 +200,7 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
 const load_archive_posters = async (author_id, archive_id) => {
   const archive = await as_directory(`${author_id}/posters/${archive_id}/`)
   return archive.items.map(created_at => ({
-    id: `${author_id}/posters/${archive_id}/${created_at}`,
+    id: `${author_id}/posters/${created_at}`,
     type: 'posters'
   }))
 }
