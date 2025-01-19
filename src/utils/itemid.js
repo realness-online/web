@@ -258,19 +258,19 @@ export const as_archive = async itemid => {
   const created = as_created_at(itemid)
   if (!created) return null
 
-  if (items.includes(created.toString())) return null
+  if (items.map(Number).includes(created)) return null
 
   if (archive.includes(created))
     return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
 
-  const sorted_archive = [...archive].sort(newest_timestamp_first)
-
-  let closest_timestamp = null // Find the closest archive timestamp that's GREATER than or EQUAL to the created timestamp
-  for (const timestamp of sorted_archive)
+  let closest_timestamp = archive[archive.length - 1]
+  for (const timestamp of archive) {
+    console.log('timestamp', timestamp)
     if (created <= timestamp) {
       closest_timestamp = timestamp
-      break // Stop at the first timestamp that's greater than or equal to created
+      break
     }
+  }
 
   if (!closest_timestamp) return null
   return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
