@@ -248,23 +248,15 @@ export const is_history = itemid => {
  *                                    or null if not found in either location
  */
 export const as_archive = async itemid => {
-  const directory_id = as_directory_id(itemid)
-  const directory = await get(directory_id)
-  const { items = [], archive = [] } = directory || {}
+  const { items = [], archive } = (await get(as_directory_id(itemid))) || {}
   const created = as_created_at(itemid)
-
   if (!created) return null
-
-  // If the item exists in the main items list, it's not in an archive
-  if (items.map(Number).includes(created)) return null
-
-  // Only check archives if we have them AND the item isn't in the main list
-  if (archive?.length) {
+  if (items.map(Number).includes(created)) return null // Return null if item exists in main items list
+  if (archive) {
     archive.sort(newest_timestamp_first)
-    const found = archive.find(timestamp => created < timestamp)
+    const found = archive.find(timestamp => created >= timestamp)
     if (!found) return null
     return `people${as_author(itemid)}/${as_type(itemid)}/${found}/${created}`
   }
-
   return null
 }
