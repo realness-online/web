@@ -32,6 +32,7 @@ export const as_filename = async itemid => {
 
   if (has_archive.includes(as_type(itemid))) {
     const archive = await as_archive(itemid)
+    console.log('archive name', archive)
     if (archive) return `${archive}.html.gz`
     return `${filename}.html.gz`
   } else if (is_history(itemid)) return `${filename}.html.gz`
@@ -59,6 +60,7 @@ export const load_from_network = async itemid => {
     else html = await decompress_html(compressed_html)
 
     if (!html) return null
+    console.log('storage', itemid)
     await set(itemid, html)
     return get_item(html)
   }
@@ -71,6 +73,7 @@ export const load_from_network = async itemid => {
  * @returns {Promise<Item | null>}
  */
 export const load = async (itemid, me = localStorage.me) => {
+  console.trace('load', itemid)
   let item
   if (~itemid.indexOf(me)) {
     item = localStorage.getItem(itemid)
@@ -115,7 +118,7 @@ export const as_download_url = async itemid => {
     return await url(await as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.warn(itemid, '=>', await as_filename(itemid))
+      console.trace(itemid, '=>', await as_filename(itemid))
       const index = (await get('sync:index')) || {}
       index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)
@@ -255,13 +258,20 @@ export const as_archive = async itemid => {
   const created = as_created_at(itemid)
   if (!created) return null
 
-  if (items.includes(created)) return null // Return null if item exists in main items list
+  if (items.includes(created.toString())) return null
+
+  if (archive.includes(created))
+    return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
 
   const sorted_archive = [...archive].sort(newest_timestamp_first)
-  const archive_timestamp = sorted_archive.find(
-    timestamp => created < timestamp
-  )
 
-  if (!archive_timestamp) return null
-  return `people${as_author(itemid)}/${as_type(itemid)}/${archive_timestamp}/${created}`
+  let closest_timestamp = null // Find the closest archive timestamp that's GREATER than or EQUAL to the created timestamp
+  for (const timestamp of sorted_archive)
+    if (created <= timestamp) {
+      closest_timestamp = timestamp
+      break // Stop at the first timestamp that's greater than or equal to created
+    }
+
+  if (!closest_timestamp) return null
+  return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
 }
