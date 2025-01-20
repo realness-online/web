@@ -3,7 +3,7 @@
 
 /** @typedef {string} Author */
 /** @typedef {number} Created */
-/** @typedef {'posters'|'statements'|'events'|'relations'|'me'} Type */
+
 /** @typedef {`${Author}/${Type}/${Created}`} Id */
 
 /**
@@ -51,5 +51,16 @@
  * @property {string} [avatar]
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
  */
+
+/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me']} */
+export const types = ['posters', 'statements', 'events', 'relations', 'me']
+
+/** @typedef {typeof types[number]} Type */
+
+/** @type {readonly ['posters']} */
+export const has_archive = /** @type {Type[]} */ (types.slice(0, 1))
+
+/** @type {readonly ['statements', 'events']} */
+export const has_history = /** @type {Type[]} */ (types.slice(1, 3))
 
 export {}

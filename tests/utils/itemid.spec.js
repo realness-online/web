@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { as_filename, as_archive } from '@/utils/itemid'
+import { as_filename, as_archive, is_itemid } from '@/utils/itemid'
 import { get } from 'idb-keyval'
 vi.mock('idb-keyval')
 const directory = {
@@ -128,6 +128,56 @@ describe('@/utils/itemid', () => {
 
       const result = await as_archive('/+16282281824/posters/1737178477987')
       expect(result).toBeNull()
+    })
+  })
+
+  describe('item id validation', () => {
+    it('validates correct item ids', () => {
+      expect(is_itemid('/+16282281824/events')).toBe(true)
+      expect(is_itemid('/+16282281824/statements')).toBe(true)
+      expect(is_itemid('/+16282281824/posters/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/statements/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/events/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/relations/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/me/1737178477987')).toBe(true)
+    })
+
+    it('rejects invalid item ids', () => {
+      // Invalid format
+      expect(is_itemid('not-an-id')).toBe(false)
+      expect(is_itemid('')).toBe(false)
+      expect(is_itemid(null)).toBe(false)
+      expect(is_itemid(undefined)).toBe(false)
+
+      // Missing leading slash
+      expect(is_itemid('+16282281824/posters/1737178477987')).toBe(false)
+
+      // Invalid author (missing plus)
+      expect(is_itemid('/16282281824/posters/1737178477987')).toBe(false)
+
+      // Invalid type
+      expect(is_itemid('/+16282281824/invalid_type/1737178477987')).toBe(false)
+
+      // Invalid created timestamp (not a number)
+      expect(is_itemid('/+16282281824/posters/abc')).toBe(false)
+      expect(is_itemid('/+16282281824/posters/123.456')).toBe(false)
+
+      // Wrong number of segments
+      expect(is_itemid('/+16282281824/posters')).toBe(false)
+      expect(is_itemid('/+16282281824/posters/1737178477987/extra')).toBe(false)
+    })
+
+    it('validates ids from test directory', () => {
+      // Test with actual IDs from the test directory
+      directory.items.forEach(created => {
+        const id = `/+16282281824/posters/${created}`
+        expect(is_itemid(id)).toBe(true)
+      })
+
+      directory.archive.forEach(created => {
+        const id = `/+16282281824/posters/${created}`
+        expect(is_itemid(id)).toBe(true)
+      })
     })
   })
 })
