@@ -36,15 +36,30 @@ const directory = {
   ]
 }
 
+const sans_archive_directory = {
+  id: '/+16282281824/posters/1715021054576/',
+  types: [],
+  archive: [],
+  items: ['1737178477987']
+}
+
 describe('@/utils/itemid', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('path generation', () => {
-    it('generates correct path for last poster in an archive directory', async () => {
+    it('generates correct path for last poster in second to last archive directory', async () => {
       get.mockResolvedValue(directory)
 
+      const result = await as_filename('/+16282281824/posters/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519.html.gz'
+      )
+    })
+
+    it('generates correct path for last poster in most recent archive directory', async () => {
+      get.mockResolvedValue(directory)
       const result = await as_filename('/+16282281824/posters/1720060222368')
       expect(result).toBe(
         'people/+16282281824/posters/1715021054576/1720060222368.html.gz'
@@ -70,9 +85,9 @@ describe('@/utils/itemid', () => {
     it('generates correct archive path for archived poster', async () => {
       get.mockResolvedValue(directory)
 
-      const result = await as_filename('/+16282281824/posters/1714021054576')
+      const result = await as_filename('/+16282281824/posters/1716520718216')
       expect(result).toBe(
-        'people/+16282281824/posters/1715021054576/1714021054576.html.gz'
+        'people/+16282281824/posters/1715021054576/1716520718216.html.gz'
       )
     })
 
@@ -92,12 +107,12 @@ describe('@/utils/itemid', () => {
       expect(result).toBeNull()
     })
 
-    it('returns archive path for archived items', async () => {
+    it('returns archive path for first poster in archive', async () => {
       get.mockResolvedValue(directory)
 
-      const result = await as_archive('/+16282281824/posters/1714021054576')
+      const result = await as_archive('/+16282281824/posters/1715021054576')
       expect(result).toBe(
-        'people/+16282281824/posters/1715021054576/1714021054576'
+        'people/+16282281824/posters/1715021054576/1715021054576'
       )
     })
 
@@ -109,7 +124,7 @@ describe('@/utils/itemid', () => {
     })
 
     it('returns null when no archives exist', async () => {
-      get.mockResolvedValue(directory)
+      get.mockResolvedValue(sans_archive_directory)
 
       const result = await as_archive('/+16282281824/posters/1737178477987')
       expect(result).toBeNull()

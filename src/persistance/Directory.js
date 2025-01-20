@@ -86,14 +86,6 @@ export const load_directory_from_network = async itemid => {
     const path = as_directory_id(itemid)
 
     const meta = new Directory(/** @type {Id} */ (path))
-    console.group('request:directory')
-    console.info('itemid', itemid)
-    console.info('author', author)
-    console.info('type', type)
-    console.info('created', created)
-    console.info('archive', archive)
-    console.info('directory', meta)
-    console.groupEnd()
 
     let firebase_path = `people/${author}/${type}/`
     if (archive) firebase_path += `${archive}/`
