@@ -3,7 +3,7 @@
   import AsFigure from '@/components/profile/as-figure'
   import { onMounted as mounted } from 'vue'
   import { use_me, use as use_people } from '@/use/people'
-
+  import { current_user } from '@/utils/serverless'
   const { people, load_people } = use_people()
   const { relations } = use_me()
 

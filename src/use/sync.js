@@ -56,10 +56,8 @@ export const use = () => {
    */
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
-    console.log('visited', me.value.visited)
     if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
-      console.log('set visit', me.value.visited)
       await next_tick()
       await new Me().save()
     }
@@ -182,18 +180,21 @@ export const use = () => {
     await del('/+/posters/') // TODO:  Maybe overkill
     const offline_posters = await build_local_directory('/+/posters/')
     if (!offline_posters || !offline_posters.items) return
-    for (const created_at of offline_posters.items)
-      await save_poster(created_at)
+    await Promise.all(
+      offline_posters.items.map(created_at => save_poster(created_at))
+    )
   }
 
   /**
-   * @param {Created} created_at
+   * @param {number} created_at
    * @returns {Promise<void>}
    */
   const save_poster = async created_at => {
     const poster_string = await get(`/+/posters/${created_at}`)
     sync_poster.value = get_item(poster_string)
-    sync_poster.value.id = `${localStorage.me}/posters/${created_at}`
+    sync_poster.value.id = /** @type {Id} */ (
+      `${localStorage.me}/posters/${created_at}`
+    )
     await next_tick()
     await new Poster(sync_poster.value.id).save()
     sync_poster.value = null
@@ -206,7 +207,8 @@ export const use = () => {
   const sync_posters_directory = async () => {
     const me = get_my_itemid()
     if (!me) return
-    const directory_path = `${me}/posters/`
+
+    const directory_path = /** @type {Id} */ (`${me}/posters/`)
     await del(directory_path) // Clear existing directory cache
 
     const offline_posters = await build_local_directory(directory_path) // Get local posters

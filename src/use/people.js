@@ -33,15 +33,41 @@ export const use = () => {
   const load_people = ids => Promise.all(ids.map(load_person))
 
   const load_phonebook = async () => {
-    if (current_user.value) {
+    if (!current_user.value) return
+
+    try {
+      working.value = true
+      // Clear existing entries
+      phonebook.value = []
+
       const people = await directory('/people/')
-      await Promise.all(
+      if (!people?.prefixes?.length) {
+        working.value = false
+        return
+      }
+
+      const loaded_people = await Promise.all(
         people.prefixes.map(async phone_number => {
-          const person = await load(from_e64(phone_number.name))
-          if (person) phonebook.value.push(person)
+          try {
+            const person = await load(from_e64(phone_number.name))
+            return person || null
+          } catch (err) {
+            console.error('Failed to load person:', phone_number.name, err)
+            return null
+          }
         })
       )
+
+      // Filter out nulls and add unique entries
+      phonebook.value = loaded_people.filter(
+        person => person && !phonebook.value.some(p => p.id === person.id)
+      )
+
+      // Re-enable sorting
       phonebook.value.sort(recent_visit_first)
+    } catch (err) {
+      console.error('Failed to load phonebook:', err)
+    } finally {
       working.value = false
     }
   }
