@@ -3,24 +3,14 @@
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
+import { has_archive, has_history, types } from '@/types'
+
 import { get, set } from 'idb-keyval'
 import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
 import { as_directory_id } from '@/persistance/Directory'
-
-/**
- * @type {Type[]}
- */
-const has_archive = ['posters']
-
-/**
- * @type {Type[]}
- */
-const has_history = ['statements', 'events']
-
-// this leaves me, history, relations, and offline
 
 /**
  * @param {Id} itemid
@@ -174,7 +164,7 @@ export const as_storage_path = itemid => {
 export const as_author = itemid => {
   const path = as_path_parts(itemid)
   const author = path[0] || ''
-  if (author.startsWith('+1')) return `/${path[0]}`
+  if (author.startsWith('+1')) return `/${path[0]}` // TODO this does not work for internaional phone numbers
   return null
 }
 
@@ -266,4 +256,37 @@ export const as_archive = async itemid => {
 
   if (!closest_timestamp) return null
   return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
+}
+
+/**
+ * Validates if a string matches the Id type pattern: ${Author}/${Type} or ${Author}/${Type}/${Created}
+ * @param {string} id - String to validate
+ * @returns {id is Id} - True if string matches Id pattern
+ */
+export const is_itemid = id => {
+  if (typeof id !== 'string') return false
+
+  // Ensure id starts with a forward slash
+  if (!id.startsWith('/')) return false
+
+  const parts = as_path_parts(/** @type {Id} */ (id))
+  if (parts.length < 2 || parts.length > 3) return false
+
+  const [author, type, created] = parts
+
+  // Validate author (must start with '+')
+  if (!author.startsWith('+')) return false
+
+  // Validate type against the Type typedef from types.js
+  if (!types.includes(type)) return false
+
+  // Large files require timestamps
+  const requires_timestamp = ['posters']
+  if (requires_timestamp.includes(type)) {
+    if (!created) return false
+    const created_num = Number(created)
+    if (!Number.isInteger(created_num)) return false
+  }
+
+  return true
 }

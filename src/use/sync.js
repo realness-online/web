@@ -1,6 +1,7 @@
+/** @typedef {import('@/types').Id} Id */
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, load } from '@/utils/itemid'
-import { build_local_directory } from '@/persistance/Directory'
+import { as_filename, as_author, load, is_itemid } from '@/utils/itemid'
+import { build_local_directory, is_directory_id } from '@/persistance/Directory'
 import { Offline, Statement, Event, Poster, Me } from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statement'
@@ -8,6 +9,7 @@ import { current_user, location, metadata } from '@/utils/serverless'
 import get_item from '@/utils/item'
 import { format_time_remaining } from '@/utils/date'
 import { create_hash } from '@/utils/upload-processor'
+
 import {
   ref,
   onMounted as mounted,
@@ -54,8 +56,10 @@ export const use = () => {
    */
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
-    if (visit_interval() > visit_digit) {
+    console.log('visited', me.value.visited)
+    if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
+      console.log('set visit', me.value.visited)
       await next_tick()
       await new Me().save()
     }
@@ -65,13 +69,12 @@ export const use = () => {
    * @returns {Promise<void>}
    */
   const prune = async () => {
-    const everything = await keys()
+    const everything = /** @type {Id[]} */ (await keys())
+
     everything.forEach(async itemid => {
-      if (!as_author(itemid)) return // items have authors
-      if (await is_stranger(as_author(itemid), relations.value))
-        await del(itemid) // only relations are cached
-      if (await itemid.endsWith('/'))
-        await del(itemid) // directories are not cached
+      if (!is_itemid(/** @type {string} */ (itemid))) return
+      if (await is_stranger(as_author(itemid))) await del(itemid) // only relations are cached
+      if (is_directory_id(itemid)) await del(itemid)
       else {
         const network = await fresh_metadata(itemid)
         if (!network || !network.customMetadata) return null
@@ -248,6 +251,7 @@ export const get_content_hash = async itemid => {
   if (!local) return null
   return create_hash(local)
 }
+
 export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
   const path = location(await as_filename(itemid))
@@ -262,9 +266,6 @@ export const fresh_metadata = async itemid => {
   index[itemid] = network
   await set('sync:index', index)
   return network
-}
-export function visit_interval() {
-  return Date.now() - JS_TIME.ONE_HOUR
 }
 
 export const i_am_fresh = () => {

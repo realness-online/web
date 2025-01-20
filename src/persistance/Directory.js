@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Type} Type */
 /** @typedef {import('@/types').Created} Created */
 
-import { as_path_parts, as_created_at } from '@/utils/itemid'
+import { as_path_parts, as_created_at, is_itemid } from '@/utils/itemid'
 import { get, set, keys } from 'idb-keyval'
 import { directory } from '@/utils/serverless'
 
@@ -33,6 +33,22 @@ class Directory {
   constructor(id) {
     this.id = /** @type {Id} */ (as_directory_id(id))
   }
+}
+
+/**
+ * Validates if a string is a directory id
+ * @param {string} str - String to validate
+ * @returns {boolean} - True if string matches directory id pattern
+ */
+export const is_directory_id = str => {
+  // Early return if not a string or doesn't end with slash
+  if (typeof str !== 'string' || !str.endsWith('/')) return false
+
+  // Remove trailing slash and validate as itemid
+  const base_id = str.slice(0, -1)
+  if (!is_itemid(base_id)) return false
+
+  return true
 }
 
 /**

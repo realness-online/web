@@ -117,7 +117,7 @@ export default defineConfig({
       excludeNodeModules: true,
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
-      reportsDirectory: '../coverage',
+      reportsDirectory: './coverage',
       reportOnFailure: true
     },
     mockReset: false,
