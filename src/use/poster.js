@@ -2,7 +2,12 @@
 /** @typedef {import('@/types').Relation} Relation */
 /** @typedef {import('@/types').Created} Created */
 
-import { ref, computed, getCurrentInstance as current_instance } from 'vue'
+import {
+  ref,
+  computed,
+  getCurrentInstance as current_instance,
+  nextTick as next_tick
+} from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
 import {
   as_query_id,
@@ -87,6 +92,7 @@ export const use = () => {
       const poster = await load(/** @type {Id} */ (props.itemid))
       if (!vector.value) vector.value = poster
     }
+    await next_tick()
     working.value = false
     use_intersect(
       vector_element,
@@ -169,7 +175,7 @@ export const use_posters = () => {
     const new_posters = await load_archive_posters(author_id, next_archive)
     posters.value.push(...new_posters)
     posters.value.sort(recent_item_first)
-
+    console.log('poster_shown', author.viewed)
     author.viewed.push(next_archive)
   }
 

@@ -35,8 +35,11 @@ export const recent_item_first = (first, second) =>
  * @param {Person} second
  * @returns {number}
  */
-export const recent_visit_first = (first, second) =>
-  new Date(second?.visited).getTime() - new Date(first?.visited).getTime()
+export const recent_visit_first = (first, second) => {
+  const first_visit = first?.visited ? new Date(first.visited).getTime() : 0
+  const second_visit = second?.visited ? new Date(second.visited).getTime() : 0
+  return second_visit - first_visit
+}
 
 /**
  * @param {Array<string>} first

@@ -105,7 +105,7 @@ export const as_download_url = async itemid => {
     return await url(await as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
-      console.error(itemid, '=>', await as_filename(itemid))
+      console.warn(itemid, '=>', await as_filename(itemid))
       const index = (await get('sync:index')) || {}
       index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)

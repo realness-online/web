@@ -52,8 +52,15 @@
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
  */
 
-/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me']} */
-export const types = ['posters', 'statements', 'events', 'relations', 'me']
+/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me', 'person']} */
+export const types = [
+  'posters',
+  'statements',
+  'events',
+  'relations',
+  'me',
+  'person'
+]
 
 /** @typedef {typeof types[number]} Type */
 
