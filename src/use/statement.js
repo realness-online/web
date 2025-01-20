@@ -37,6 +37,7 @@ export const use = () => {
       const next = history.shift()
       if (next) {
         const next_statements = await list(`${author.id}/statements/${next}`)
+        console.log('next_statements', next_statements)
         author.viewed.push(next)
         statements.value = [...statements.value, ...next_statements]
       }
@@ -67,15 +68,20 @@ export const use = () => {
 
   mounted(async () => {
     my_statements.value = await list(`${localStorage.me}/statements`)
+    authors.value.push({
+      id: localStorage.me,
+      type: 'person',
+      viewed: ['index']
+    })
   })
 
   return {
-    save,
+    authors,
     statements,
-    for_person,
-    thought_shown,
     my_statements,
-    authors
+    for_person,
+    save,
+    thought_shown
   }
 }
 
@@ -90,7 +96,6 @@ export function as_thoughts(sacred_statements) {
     const statement = statements.pop()
     const thot = [statement]
     while (is_train_of_thought(thot, statements)) thot.push(statements.pop())
-
     thoughts.push(thot)
   }
   return thoughts
