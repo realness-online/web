@@ -22,8 +22,18 @@
       height="34"
       viewBox="0 0 192 192">
       <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
-      <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" x="104" />
-      <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" y="69" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        x="104" />
+      <rect
+        fill="hsla(136, 47%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="69" />
       <rect
         fill="hsla(203, 58%, 57%, 0.75)"
         width="88"
@@ -31,7 +41,12 @@
         rx="8"
         x="104"
         y="69" />
-      <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" y="138" />
+      <rect
+        fill="hsla(203, 58%, 57%, 0.75)"
+        width="88"
+        height="54"
+        rx="8"
+        y="138" />
       <rect
         fill="hsla(353, 83%, 57%, 0.75)"
         width="88"

@@ -36,7 +36,9 @@ describe('@/use/vectorize', () => {
 
     it('generates normalized vectors', () => {
       const vector = vectorize(test_data.text)
-      const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0))
+      const magnitude = Math.sqrt(
+        vector.reduce((sum, val) => sum + val * val, 0)
+      )
       expect(magnitude).toBeCloseTo(1, 5)
     })
   })

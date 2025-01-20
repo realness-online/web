@@ -132,14 +132,20 @@ describe('Paged', () => {
 
       // Check main file
       const main_content = await get('test/statements')
-      const main_doc = new DOMParser().parseFromString(main_content, 'text/html')
+      const main_doc = new DOMParser().parseFromString(
+        main_content,
+        'text/html'
+      )
       const main_items = main_doc.querySelectorAll('[itemid]')
       expect(main_items.length).toBe(SIZE.MID)
 
       // Check archive file
       const directory = await get('test/statements/')
       const first_archive = await get(directory.archives[0].path)
-      const archive_doc = new DOMParser().parseFromString(first_archive, 'text/html')
+      const archive_doc = new DOMParser().parseFromString(
+        first_archive,
+        'text/html'
+      )
       const archive_items = archive_doc.querySelectorAll('[itemid]')
       expect(archive_items.length).toBeLessThanOrEqual(SIZE.MAX)
     })

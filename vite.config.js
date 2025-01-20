@@ -51,7 +51,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [new URL('./src/style/variables.styl', import.meta.url).pathname]
+        imports: [
+          new URL('./src/style/variables.styl', import.meta.url).pathname
+        ]
       }
     }
   },
@@ -63,7 +65,12 @@ export default defineConfig({
       },
       filename: 'service.worker.js',
       minify: true,
-      includeAssets: ['180.png', 'vector.worker.js', 'fonts/*.woff2', 'icons.svg'],
+      includeAssets: [
+        '180.png',
+        'vector.worker.js',
+        'fonts/*.woff2',
+        'icons.svg'
+      ],
       manifest: {
         display: 'standalone',
         background_color: '#151518',

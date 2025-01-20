@@ -43,7 +43,9 @@ class Bitmap {
    */
   get_value_at = (x, y) => {
     const index =
-      typeof x === 'number' && typeof y !== 'number' ? x : this.point_to_index(x, y)
+      typeof x === 'number' && typeof y !== 'number'
+        ? x
+        : this.point_to_index(x, y)
     return this.data[index]
   }
 

@@ -13,10 +13,13 @@ const init_firebase = async () => {
   try {
     console.info(chalk.dim('Initializing Firebase...'))
 
-    const service_account = JSON.parse(await readFile(SERVICE_ACCOUNT_PATH, 'utf-8'))
+    const service_account = JSON.parse(
+      await readFile(SERVICE_ACCOUNT_PATH, 'utf-8')
+    )
 
     console.info(
-      chalk.dim('Storage bucket: ') + chalk.cyan(process.env.VITE_STORAGE_BUCKET)
+      chalk.dim('Storage bucket: ') +
+        chalk.cyan(process.env.VITE_STORAGE_BUCKET)
     )
 
     initializeApp({
@@ -69,13 +72,16 @@ export const upload_to_firebase = async files => {
 
     /* eslint-disable no-await-in-loop */
     for (const { compressed_path, metadata_path } of files) {
-      if (await upload_file(bucket, compressed_path, metadata_path)) successful++
+      if (await upload_file(bucket, compressed_path, metadata_path))
+        successful++
       else failed++
 
       // Show progress
       const total = successful + failed
       const progress = Math.round((total / files.length) * PERCENT)
-      console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
+      console.info(
+        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
+      )
     }
     /* eslint-enable no-await-in-loop */
 

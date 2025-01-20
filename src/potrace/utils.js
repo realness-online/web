@@ -15,7 +15,10 @@ const attr_regexps = {}
 const get_attr_regexp = attr_name => {
   if (attr_regexps[attr_name]) return attr_regexps[attr_name]
 
-  attr_regexps[attr_name] = new RegExp(` ${attr_name}="((?:\\\\(?=")"|[^"])+)"`, 'i')
+  attr_regexps[attr_name] = new RegExp(
+    ` ${attr_name}="((?:\\\\(?=")"|[^"])+)"`,
+    'i'
+  )
   return attr_regexps[attr_name]
 }
 
@@ -50,7 +53,8 @@ const fixed = number => number.toFixed(3).replace('.000', '')
  * @param {number} n - The divisor
  * @returns {number} The positive modulo result
  */
-export const mod = (a, n) => (a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n))
+export const mod = (a, n) =>
+  a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n)
 
 /**
  * Calculates the cross product of two 2D vectors

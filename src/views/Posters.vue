@@ -15,7 +15,11 @@
 
   console.time('views:Posters')
 
-  const { posters, for_person: posters_for_person, poster_shown } = use_posters()
+  const {
+    posters,
+    for_person: posters_for_person,
+    poster_shown
+  } = use_posters()
   const {
     can_add,
     vVectorizer,
@@ -24,7 +28,8 @@
     working,
     mount_workers
   } = use_vectorize()
-  const { process_directory, progress, completed_poster } = directory_processor()
+  const { process_directory, progress, completed_poster } =
+    directory_processor()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
 
@@ -112,7 +117,10 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
-        :class="{ 'selecting-event': poster.picker, 'fill-screen': poster.menu }"
+        :class="{
+          'selecting-event': poster.picker,
+          'fill-screen': poster.menu
+        }"
         @click="toggle_menu(poster.id)"
         @show="poster_shown">
         <as-author-menu

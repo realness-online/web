@@ -9,7 +9,8 @@
   const first_name = ref('')
   const nav = ref()
   const done_posting = () => nav.value.focus()
-  const { vVectorizer, image_picker, open_camera, mount_workers } = use_vectorize()
+  const { vVectorizer, image_picker, open_camera, mount_workers } =
+    use_vectorize()
   mounted(async () => {
     const my = await load(localStorage.me)
     if (my?.first_name) first_name.value = my.first_name
