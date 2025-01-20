@@ -39,7 +39,6 @@
 
   const confirmed_remove = async () => {
     delete_dialog.value.removeAttribute('open')
-    console.log(poster_to_remove.value.id)
     posters.value = posters.value.filter(
       item => poster_to_remove.value.id !== item.id
     )
