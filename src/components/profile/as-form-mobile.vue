@@ -2,7 +2,12 @@
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in } from '@/utils/serverless'
   import { as_phone_number, use_me } from '@/use/people'
-  import { onMounted as mounted, ref, computed, nextTick as next_tick } from 'vue'
+  import {
+    onMounted as mounted,
+    ref,
+    computed,
+    nextTick as next_tick
+  } from 'vue'
   const emit = defineEmits(['signed-on'])
   const { me } = use_me()
   const validator = ref(null)
@@ -130,7 +135,10 @@
         @keyup="validate_mobile_number"
         @paste.prevent="mobile_paste" />
     </fieldset>
-    <fieldset v-if="show_captcha" id="captcha" :class="{ hide: hide_captcha }" />
+    <fieldset
+      v-if="show_captcha"
+      id="captcha"
+      :class="{ hide: hide_captcha }" />
     <fieldset v-if="show_code">
       <input
         id="verification-code"

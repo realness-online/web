@@ -24,8 +24,10 @@
     avatar: is_vector_id
   })
   const router = use_router()
-  const edit_poster = itemid => `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
-  const open_editor = () => router.replace({ path: edit_poster(props.poster.id) })
+  const edit_poster = itemid =>
+    `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
+  const open_editor = () =>
+    router.replace({ path: edit_poster(props.poster.id) })
   const active = use_active_element()
   const { enter } = use_magic_keys()
   watch(enter, v => {

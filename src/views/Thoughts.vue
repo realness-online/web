@@ -29,7 +29,11 @@
     statements,
     thought_shown
   } = use_statements()
-  const { for_person: posters_for_person, poster_shown, posters } = use_posters()
+  const {
+    for_person: posters_for_person,
+    poster_shown,
+    posters
+  } = use_posters()
   const { relations } = use_me()
 
   const fill_thoughts = async () => {

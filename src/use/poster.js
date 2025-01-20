@@ -147,7 +147,9 @@ export const use_posters = () => {
   const poster_shown = async poster => {
     const author_id = as_author(poster.id)
 
-    const author_posters = posters.value.filter(p => author_id === as_author(p.id))
+    const author_posters = posters.value.filter(
+      p => author_id === as_author(p.id)
+    )
 
     const is_oldest_poster =
       as_created_at(poster.id) ===
@@ -158,7 +160,10 @@ export const use_posters = () => {
     const author = authors.value.find(relation => relation.id === author_id)
     if (!author) return
 
-    const next_archive = await get_next_unviewed_archive(author_id, author.viewed)
+    const next_archive = await get_next_unviewed_archive(
+      author_id,
+      author.viewed
+    )
     if (!next_archive) return
 
     const new_posters = await load_archive_posters(author_id, next_archive)
@@ -188,7 +193,9 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
   const directory = await as_directory(`${author_id}/posters`)
   if (!directory?.archive || !Array.isArray(directory.archive)) return null
 
-  const unviewed = directory.archive.filter(archive => !viewed.includes(archive))
+  const unviewed = directory.archive.filter(
+    archive => !viewed.includes(archive)
+  )
   return unviewed.pop() || null
 }
 

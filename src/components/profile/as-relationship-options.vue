@@ -26,7 +26,10 @@
 </script>
 
 <template>
-  <a class="status" :class="{ relation: is_relation }" @click="update_relationship">
+  <a
+    class="status"
+    :class="{ relation: is_relation }"
+    @click="update_relationship">
     <icon name="add" />
     <icon name="finished" />
   </a>

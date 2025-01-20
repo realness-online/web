@@ -58,12 +58,7 @@ export const use_me = () => {
   list(`${localStorage.me}/relations`).then(list => {
     relations.value = list
   })
-  const save = async () => {
-    if (me.value) {
-      await next_tick()
-      await new Me().save()
-    }
-  }
+  const save = () => me.value?.save()
   const is_valid_name = computed(async () => {
     await next_tick()
     if (!current_user.value) return false
@@ -84,7 +79,7 @@ export const use_me = () => {
     is_valid_name,
     relations,
     save,
-    me: readonly(me)
+    me
   }
 }
 export const get_my_itemid = type => {

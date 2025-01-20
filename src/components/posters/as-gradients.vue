@@ -76,13 +76,20 @@
         :stop-color="stop.color.hsla"
         :offset="`${stop.offset}%`" />
     </radialGradient>
-    <radialGradient :id="query('radial-background')" gradientUnits="userSpaceOnUse">
-      <as-stops :luminosity="background" :saturation_floor="13" :stops="radial" />
+    <radialGradient
+      :id="query('radial-background')"
+      gradientUnits="userSpaceOnUse">
+      <as-stops
+        :luminosity="background"
+        :saturation_floor="13"
+        :stops="radial" />
     </radialGradient>
     <radialGradient :id="query('radial-light')" gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="light" :stops="radial" />
     </radialGradient>
-    <radialGradient :id="query('radial-regular')" gradientUnits="userSpaceOnUse">
+    <radialGradient
+      :id="query('radial-regular')"
+      gradientUnits="userSpaceOnUse">
       <as-stops :luminosity="regular" :stops="radial" />
     </radialGradient>
     <radialGradient :id="query('radial-medium')" gradientUnits="userSpaceOnUse">
@@ -187,7 +194,10 @@
       x2="100%"
       y1="0"
       y2="0">
-      <as-stops :luminosity="regular" :saturation_floor="18" :stops="horizontal" />
+      <as-stops
+        :luminosity="regular"
+        :saturation_floor="18"
+        :stops="horizontal" />
     </linearGradient>
     <linearGradient
       :id="query('horizontal-medium')"
@@ -196,7 +206,10 @@
       x2="100%"
       y1="0"
       y2="0">
-      <as-stops :luminosity="medium" :saturation_floor="18" :stops="horizontal" />
+      <as-stops
+        :luminosity="medium"
+        :saturation_floor="18"
+        :stops="horizontal" />
     </linearGradient>
     <linearGradient
       :id="query('horizontal-bold')"

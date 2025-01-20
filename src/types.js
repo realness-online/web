@@ -18,7 +18,6 @@
  * @typedef {Object} Item
  * @property {Id} id
  * @property {Type} type
- * @property {string} visited
  */
 
 /**
@@ -41,6 +40,7 @@
  * @property {string} name
  * @property {string} avatar
  * @property {string[]} viewed
+ * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} visited - ISO 8601 UTC date string
  */
 
 /**
@@ -49,8 +49,7 @@
  * @property {string} first_name
  * @property {string} last_name
  * @property {string} [avatar]
- * @property {string} [mobile]
- * @property {string} [visited] - ISO date string of last visit
+ * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
  */
 
 export {}

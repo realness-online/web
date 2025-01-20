@@ -356,7 +356,8 @@ class Histogram {
       if (tmp_pixel_value < level_min || tmp_pixel_value > level_max) continue
 
       tmp_pixels_iterated += tmp_pixels
-      tmp_sum_of_deviations += Math.pow(tmp_pixel_value - mean_value, 2) * tmp_pixels
+      tmp_sum_of_deviations +=
+        Math.pow(tmp_pixel_value - mean_value, 2) * tmp_pixels
 
       if (median_value === null && tmp_pixels_iterated >= median_pixel_index)
         median_value = tmp_pixel_value

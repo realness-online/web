@@ -28,7 +28,10 @@
         :key="thought[0].id"
         :statements="thought" />
     </as-days>
-    <events-list v-if="events" :events="events" :itemid="get_my_itemid('events')" />
+    <events-list
+      v-if="events"
+      :events="events"
+      :itemid="get_my_itemid('events')" />
     <unsynced-poster
       v-if="sync_poster"
       :sync_poster="sync_poster"

@@ -89,7 +89,10 @@ const process_directory = async (source_dir, output_dir) => {
         await writeFile(compressed_path, compressed)
         await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
       } catch (file_error) {
-        console.error(chalk.red(`Error processing file ${file_path}:`), file_error)
+        console.error(
+          chalk.red(`Error processing file ${file_path}:`),
+          file_error
+        )
       }
 
     const total_ratio = (
@@ -97,9 +100,15 @@ const process_directory = async (source_dir, output_dir) => {
       PERCENT
     ).toFixed(1)
     console.info(`\n${chalk.bold('Compression Summary:')}`)
-    console.info(chalk.dim('Total original:    ') + format_bytes(total_original))
-    console.info(chalk.dim('Total compressed:  ') + format_bytes(total_compressed))
-    console.info(chalk.dim('Overall reduction: ') + chalk.green(`${total_ratio}%`))
+    console.info(
+      chalk.dim('Total original:    ') + format_bytes(total_original)
+    )
+    console.info(
+      chalk.dim('Total compressed:  ') + format_bytes(total_compressed)
+    )
+    console.info(
+      chalk.dim('Overall reduction: ') + chalk.green(`${total_ratio}%`)
+    )
   } catch (error) {
     console.error(chalk.red('Error in process_directory:'), error)
     throw error

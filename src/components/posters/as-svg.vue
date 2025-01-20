@@ -86,8 +86,12 @@
     intersecting
   } = use_poster()
   const trigger = ref(null)
-  const emboss = computed(() => emboss_pref.value === true && intersecting.value)
-  const animate = computed(() => animate_pref.value === true && intersecting.value)
+  const emboss = computed(
+    () => emboss_pref.value === true && intersecting.value
+  )
+  const animate = computed(
+    () => animate_pref.value === true && intersecting.value
+  )
   const light = computed(() => light_pref.value === true && intersecting.value)
 
   const mask = computed(() => intersecting.value)
@@ -124,7 +128,8 @@
     }
   })
   watch_effect(() => {
-    if (vector.value && props.optimize && !vector.value.optimized) run_optimize()
+    if (vector.value && props.optimize && !vector.value.optimized)
+      run_optimize()
   })
 </script>
 
@@ -319,9 +324,16 @@
           :fill="`url(${fragment('pattern-emboss-bold')})`"
           width="100%"
           height="100%" />
-        <rect id="lightbar-rect" fill="url(#lightbar)" width="100%" height="100%" />
+        <rect
+          id="lightbar-rect"
+          fill="url(#lightbar)"
+          width="100%"
+          height="100%" />
       </defs>
-      <rect :filter="`url(${fragment('composite')})`" width="100%" height="100%" />
+      <rect
+        :filter="`url(${fragment('composite')})`"
+        width="100%"
+        height="100%" />
     </g>
     <g v-else>
       <use :href="fragment('background')" @focus="focus('bold')" />

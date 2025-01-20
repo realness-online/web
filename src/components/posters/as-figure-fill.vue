@@ -7,7 +7,11 @@
     useMagicKeys as keyboard,
     usePointerSwipe as swipe
   } from '@vueuse/core'
-  import { use as use_path, change_by, itemprop_query as query } from '@/use/path'
+  import {
+    use as use_path,
+    change_by,
+    itemprop_query as query
+  } from '@/use/path'
   import { is_vector_id, is_vector } from '@/use/poster'
   import { to_hex as to_hex, to_complimentary_hsl } from '@/utils/colors'
   import { as_fragment_id } from '@/utils/itemid'
@@ -55,7 +59,8 @@
   const DISTANCE_DIVISOR = 300
   const { distanceY: distance_y } = swipe(figure, {
     onSwipe() {
-      if (as_stroke.value) stroke_opacity(-1 * (distance_y.value / DISTANCE_DIVISOR))
+      if (as_stroke.value)
+        stroke_opacity(-1 * (distance_y.value / DISTANCE_DIVISOR))
       else fill_opacity(-1 * (distance_y.value / DISTANCE_DIVISOR))
     }
   })
