@@ -21,11 +21,6 @@
     statements.value = [my_statements.value[last_editable]]
     working.value = false
     console.info('views:Statements')
-    authors.value.push({
-      id: localStorage.me,
-      type: 'person',
-      viewed: ['index']
-    })
   })
 </script>
 
@@ -60,7 +55,7 @@
         <br />
       </p>
     </footer>
-    <article v-if="statements?.legth > 1" id="earlier" class="statements">
+    <article v-if="statements?.length > 1" id="earlier" class="statements">
       <header>
         <h1>Earlier Statements</h1>
       </header>
