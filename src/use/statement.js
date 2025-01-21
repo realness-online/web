@@ -39,6 +39,7 @@ export const use = () => {
         const next_statements = await list(`${author.id}/statements/${next}`)
         console.log('next_statements', next_statements)
         author.viewed.push(next)
+
         statements.value = [...statements.value, ...next_statements]
       }
     }

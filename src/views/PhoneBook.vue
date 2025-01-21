@@ -4,7 +4,7 @@
   import AsFigure from '@/components/profile/as-figure'
   import SignOn from '@/components/profile/sign-on'
 
-  import { watch  } from 'vue'
+  import { watch } from 'vue'
   import { current_user } from '@/utils/serverless'
   import { use as use_people } from '@/use/people'
   console.time('views:PhoneBook')
@@ -12,7 +12,7 @@
 
   watch(
     () => current_user.value,
-    async (new_user) => {
+    async new_user => {
       if (new_user) {
         await load_phonebook()
         console.timeEnd('views:PhoneBook')
