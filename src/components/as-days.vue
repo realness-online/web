@@ -1,4 +1,4 @@
-<script>
+<script setup>
   import icon from '@/components/icon'
   import {
     recent_date_first,
@@ -8,142 +8,124 @@
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
   import { as_thoughts, thoughts_sort } from '@/use/statement'
-  const page_size = 5
-  export default {
-    components: { icon },
-    props: {
-      statements: {
-        type: Array,
-        required: false,
-        default: () => []
-      },
-      posters: {
-        type: Array,
-        required: false,
-        default: () => []
-      },
-      events: {
-        type: Array,
-        required: false,
-        default: () => []
-      },
-      paginate: {
-        type: Boolean,
-        required: false,
-        default: true
-      },
-      working: {
-        type: Boolean,
-        required: false,
-        default: false
-      }
+  import { ref, computed, watch, onMounted, onUpdated } from 'vue'
+
+  // Props
+  const props = defineProps({
+    statements: {
+      type: Array,
+      required: false,
+      default: () => []
     },
-    data() {
-      return {
-        days: new Map(),
-        page: 1,
-        observer: null
-      }
+    posters: {
+      type: Array,
+      required: false,
+      default: () => []
     },
-    computed: {
-      filtered_days() {
-        if (this.paginate) return [...this.days].slice(0, this.page * page_size)
-        return this.days
-      },
-      thoughts() {
-        let thoughts = []
-        const people = this.statements_by_people(this.statements)
-        people.forEach(statements => {
-          thoughts = [...thoughts, ...as_thoughts(statements)]
-        })
-        thoughts.sort(thoughts_sort)
-        return thoughts
-      }
+    events: {
+      type: Array,
+      required: false,
+      default: () => []
     },
-    watch: {
-      statements: {
-        handler() {
-          this.refill_days()
-        },
-        deep: true
-      },
-      posters: {
-        handler() {
-          this.refill_days()
-        },
-        deep: true
-      },
-      events: {
-        handler() {
-          this.refill_days()
-        },
-        deep: true
-      }
+    paginate: {
+      type: Boolean,
+      required: false,
+      default: true
     },
-    mounted() {
-      this.observer = new IntersectionObserver(this.check_intersection, {
-        root: null,
-        threshold: 0.25
-      })
-    },
-    updated() {
-      const element = this.$el.querySelector('article.day:last-of-type')
-      if (element) this.observer.observe(element)
-    },
-    methods: {
-      check_intersection(entries) {
-        entries.forEach(async entry => {
-          if (entry.isIntersecting) {
-            this.observer.unobserve(entry.target)
-            const pages = this.days.size / page_size
-            if (this.page < pages) this.page += 1
-          }
-        })
-      },
-      statements_by_people(statements) {
-        const people = new Map()
-        if (!statements) return []
-        statements.forEach(item => {
-          const author = as_author(item.id)
-          let statements = people.get(author)
-          if (!statements) statements = []
-          statements.push(item)
-          people.set(author, statements)
-        })
-        return people
-      },
-      refill_days() {
-        const days = new Map()
-        days[Symbol.iterator] = function* () {
-          const page = [...this.entries()].sort(recent_date_first)
-          yield* page
-        }
-        this.thoughts.forEach(thought => this.insert_into_day(thought, days))
-        this.posters.forEach(poster => this.insert_into_day(poster, days))
-        this.events.forEach(happening => this.insert_into_day(happening, days))
-        this.days = days
-      },
-      insert_into_day(item, days) {
-        let day_name
-        if (item.id) day_name = id_as_day(item.id)
-        else day_name = id_as_day(item[0].id)
-        const day = days.get(day_name)
-        if (day && is_today(day_name)) {
-          day.unshift(item)
-          day.sort(recent_weirdo_first)
-        } else if (day) {
-          day.push(item)
-          day.sort(earlier_weirdo_first)
-        } else days.set(day_name, [item])
-      },
-      as_day(date) {
-        return as_day(date)
-      },
-      is_today(date) {
-        return is_today(date)
-      }
+    working: {
+      type: Boolean,
+      required: false,
+      default: false
     }
+  })
+
+  const page_size = 5
+  const days = ref(new Map())
+  const page = ref(1)
+  const observer = ref(null)
+
+  const filtered_days = computed(() => {
+    if (props.paginate) return [...days.value].slice(0, page.value * page_size)
+    return days.value
+  })
+
+  const thoughts = computed(() => {
+    let thought_list = []
+    const people = statements_by_people(props.statements)
+    people.forEach(statements => {
+      thought_list = [...thought_list, ...as_thoughts(statements)]
+    })
+    thought_list.sort(thoughts_sort)
+    return thought_list
+  })
+
+  // Methods
+  const check_intersection = entries => {
+    entries.forEach(async entry => {
+      if (entry.isIntersecting) {
+        observer.value.unobserve(entry.target)
+        const pages = days.value.size / page_size
+        if (page.value < pages) page.value += 1
+      }
+    })
   }
+
+  const statements_by_people = statements => {
+    const people = new Map()
+    if (!statements) return []
+    statements.forEach(item => {
+      const author = as_author(item.id)
+      let statements = people.get(author)
+      if (!statements) statements = []
+      statements.push(item)
+      people.set(author, statements)
+    })
+    return people
+  }
+
+  const refill_days = () => {
+    const new_days = new Map()
+    new_days[Symbol.iterator] = function* () {
+      const page = [...this.entries()].sort(recent_date_first)
+      yield* page
+    }
+    thoughts.value.forEach(thought => insert_into_day(thought, new_days))
+    props.posters.forEach(poster => insert_into_day(poster, new_days))
+    props.events.forEach(happening => insert_into_day(happening, new_days))
+    days.value = new_days
+  }
+
+  const insert_into_day = (item, days_map) => {
+    let day_name
+    if (item.id) day_name = id_as_day(item.id)
+    else day_name = id_as_day(item[0].id)
+    const day = days_map.get(day_name)
+    if (day && is_today(day_name)) {
+      day.unshift(item)
+      day.sort(recent_weirdo_first)
+    } else if (day) {
+      day.push(item)
+      day.sort(earlier_weirdo_first)
+    } else days_map.set(day_name, [item])
+  }
+
+  // Watchers
+  watch(() => props.statements, refill_days, { deep: true })
+  watch(() => props.posters, refill_days, { deep: true })
+  watch(() => props.events, refill_days, { deep: true })
+
+  // Lifecycle hooks
+  onMounted(() => {
+    observer.value = new IntersectionObserver(check_intersection, {
+      root: null,
+      threshold: 0.25
+    })
+  })
+
+  onUpdated(() => {
+    const element = document.querySelector('article.day:last-of-type')
+    if (element) observer.value.observe(element)
+  })
 </script>
 
 <template>
