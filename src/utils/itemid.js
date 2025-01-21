@@ -10,7 +10,7 @@ import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
-import { as_directory_id } from '@/persistance/Directory'
+import { as_directory } from '@/persistance/Directory'
 
 /**
  * @param {Id} itemid
@@ -71,7 +71,7 @@ export const load = async (itemid, me = localStorage.me) => {
   item = get_item(result)
   if (item) return item
   try {
-    item = await load_from_network(itemid, me)
+    item = await load_from_network(itemid)
   } catch (e) {
     if (e.code === 'storage/unauthorized') return null
     throw e
@@ -238,7 +238,7 @@ export const is_history = itemid => {
  *                                    or null if not found in either location
  */
 export const as_archive = async itemid => {
-  const directory = await get(as_directory_id(itemid))
+  const directory = await as_directory(itemid)
   if (!directory) return null
 
   const { items = [], archive = [] } = directory

@@ -1,10 +1,9 @@
 /** @typedef {import('@/types').Id} Id */
-
+import { ref, computed, nextTick as next_tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistance/Storage'
-import { ref, computed, readonly, nextTick as next_tick } from 'vue'
 
 export const default_person = {
   id: localStorage.me,
@@ -84,7 +83,10 @@ export const use_me = () => {
   list(`${localStorage.me}/relations`).then(list => {
     relations.value = list
   })
-  const save = () => new Me().save()
+  const save = async () => {
+    await next_tick()
+    new Me().save()
+  }
   const is_valid_name = computed(async () => {
     await next_tick()
     if (!current_user.value) return false

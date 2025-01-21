@@ -111,11 +111,8 @@
     } else if (day) {
       day.push(item)
       day.sort(earlier_weirdo_first)
-    } else {
-      days_map.set(day_name, [item])
-    }
+    } else days_map.set(day_name, [item])
   }
-
 
   watch(
     () => ({
