@@ -59,7 +59,10 @@
       <header>
         <h1>Earlier Statements</h1>
       </header>
-      <as-days v-slot="thoughts" :statements="statements">
+      <as-days
+        v-slot="thoughts"
+        :statements="statements"
+        :paginate="false">
         <thought-as-article
           v-for="thought in thoughts"
           :key="thought[0].id"
