@@ -1,93 +1,98 @@
-<script>
+<script setup>
+  /**
+   * @typedef {import('@/persistance/Storage').Statement} Statement
+   */
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onBeforeUnmount as before_unmounted
+  } from 'vue'
   import { load, as_author, as_created_at } from '@/utils/itemid'
   import { as_time } from '@/utils/date'
   import Icon from '@/components/Icon'
-  import as_statement from '@/components/statements/as-div'
-  import as_avatar from '@/components/posters/as-svg'
-  import as_messenger from '@/components/profile/as-messenger'
-  export default {
-    components: {
-      icon: Icon,
-      'as-avatar': as_avatar,
-      'as-messenger': as_messenger,
-      'as-statement': as_statement
+  import AsStatement from '@/components/statements/as-div'
+  import AsAvatar from '@/components/posters/as-svg'
+  import AsMessenger from '@/components/profile/as-messenger'
+
+  const props = defineProps({
+    statements: {
+      /** @type {import('vue').PropType<Statement[]>} */
+      type: Array,
+      required: true
     },
-    props: {
-      statements: {
-        type: Array,
-        required: true
-      },
-      verbose: {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      editable: {
-        type: Boolean,
-        required: false,
-        default: false
-      }
+    verbose: {
+      type: Boolean,
+      required: false,
+      default: false
     },
-    emits: ['show', 'focused', 'blurred'],
-    data() {
-      return {
-        observer: new IntersectionObserver(this.check_intersection, {
-          rootMargin: '1024px 0px 0px 0px',
-          threshold: 0
-        }),
-        all: null,
-        author: null,
-        focused: false
-      }
-    },
-    computed: {
-      thought_starts_at() {
-        return as_time(as_created_at(this.statements[0].id))
-      }
-    },
-    mounted() {
-      this.observer.observe(this.$el)
-    },
-    beforeUnmount() {
-      this.observer.unobserve(this.$el)
-    },
-    async created() {
-      if (this.verbose) {
-        const author_id = as_author(this.statements[0].id)
-        if (author_id) this.author = await load(author_id)
-      }
-    },
-    methods: {
-      check_intersection(entries) {
-        const entry = entries[0]
-        if (entry.isIntersecting) {
-          this.show()
-          this.observer.unobserve(this.$el)
-        }
-      },
-      click() {
-        if (this.all) this.all = null
-        else this.all = 'all'
-      },
-      show() {
-        this.$emit('show', this.statements)
-      },
-      has_focus(statement) {
-        this.focused = true
-        this.$emit('focused', statement)
-      },
-      has_blurred(statement) {
-        this.focused = false
-        setTimeout(() => {
-          if (!this.focused) this.$emit('blurred', statement)
-        }, 750)
-      }
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
     }
+  })
+
+  const emit = defineEmits({
+    show: (/** @type {Statement[]} */ statements) => Array.isArray(statements),
+    focused: (/** @type {Statement} */ statement) =>
+      statement && typeof statement === 'object',
+    blurred: (/** @type {Statement} */ statement) =>
+      statement && typeof statement === 'object'
+  })
+
+  const observer = ref(null)
+  const all = ref(null)
+  const author = ref(null)
+  const focused = ref(false)
+  const el = ref(null)
+  const thought_starts_at = computed(() =>
+    as_time(as_created_at(props.statements[0].id))
+  )
+
+  mounted(() => {
+    observer.value = new IntersectionObserver(check_intersection, {
+      rootMargin: '1024px 0px 0px 0px',
+      threshold: 0
+    })
+    observer.value.observe(el.value)
+    if (props.verbose) {
+      const author_id = as_author(props.statements[0].id)
+      if (author_id) load(author_id).then(result => (author.value = result))
+    }
+  })
+
+  before_unmounted(() => {
+    observer.value?.unobserve(el.value)
+  })
+
+  const check_intersection = entries => {
+    const [entry] = entries
+    if (entry.isIntersecting) {
+      show()
+      observer.value.unobserve(el.value)
+    }
+  }
+
+  const click = () => (all.value = all.value ? null : 'all')
+
+  const show = () => emit('show', props.statements)
+
+  const has_focus = statement => {
+    focused.value = true
+    emit('focused', statement)
+  }
+
+  const has_blurred = statement => {
+    focused.value = false
+    setTimeout(() => {
+      if (!focused.value) emit('blurred', statement)
+    }, 750)
   }
 </script>
 
 <template>
-  <article class="thought" :class="all" @click="click">
+  <article ref="el" class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
         <as-avatar v-if="author.avatar" :itemid="author.avatar" class="icon" />

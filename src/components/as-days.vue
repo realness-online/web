@@ -8,7 +8,13 @@
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
   import { as_thoughts, thoughts_sort } from '@/use/statement'
-  import { ref, computed, watch, onMounted, onUpdated } from 'vue'
+  import {
+    ref,
+    computed,
+    watch,
+    onMounted as mounted,
+    onUpdated as updated
+  } from 'vue'
 
   // Props
   const props = defineProps({
@@ -59,7 +65,6 @@
     return thought_list
   })
 
-  // Methods
   const check_intersection = entries => {
     entries.forEach(async entry => {
       if (entry.isIntersecting) {
@@ -89,6 +94,7 @@
       const page = [...this.entries()].sort(recent_date_first)
       yield* page
     }
+    console.log('refill_days', thoughts.value.length)
     thoughts.value.forEach(thought => insert_into_day(thought, new_days))
     props.posters.forEach(poster => insert_into_day(poster, new_days))
     props.events.forEach(happening => insert_into_day(happening, new_days))
@@ -96,6 +102,7 @@
   }
 
   const insert_into_day = (item, days_map) => {
+    // console.log('insert_into_day', item)
     let day_name
     if (item.id) day_name = id_as_day(item.id)
     else day_name = id_as_day(item[0].id)
@@ -104,25 +111,36 @@
       day.unshift(item)
       day.sort(recent_weirdo_first)
     } else if (day) {
+      // console.log('push into here', item)
       day.push(item)
       day.sort(earlier_weirdo_first)
-    } else days_map.set(day_name, [item])
+    } else {
+      // console.log('set into here', item)
+      days_map.set(day_name, [item])
+    }
   }
 
-  // Watchers
-  watch(() => props.statements, refill_days, { deep: true })
-  watch(() => props.posters, refill_days, { deep: true })
-  watch(() => props.events, refill_days, { deep: true })
 
-  // Lifecycle hooks
-  onMounted(() => {
+  watch(
+    () => ({
+      statements: props.statements,
+      posters: props.posters,
+      events: props.events
+    }),
+    (new_value, old_value) => {
+      refill_days()
+    },
+    { deep: true, immediate: true }
+  )
+
+  mounted(() => {
     observer.value = new IntersectionObserver(check_intersection, {
       root: null,
       threshold: 0.25
     })
   })
 
-  onUpdated(() => {
+  updated(() => {
     const element = document.querySelector('article.day:last-of-type')
     if (element) observer.value.observe(element)
   })

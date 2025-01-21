@@ -10,7 +10,7 @@
 
   import { ref, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
-
+  console.time('views:Statements')
   const working = ref(true)
   const router = use_router()
   const { my_statements, statements, thought_shown, authors } = use_statements()
@@ -20,7 +20,7 @@
     const last_editable = my_statements.value.length - 1
     statements.value = [my_statements.value[last_editable]]
     working.value = false
-    console.info('views:Statements')
+    console.timeEnd('views:Statements')
   })
 </script>
 
