@@ -94,7 +94,6 @@
       const page = [...this.entries()].sort(recent_date_first)
       yield* page
     }
-    console.log('refill_days', thoughts.value.length)
     thoughts.value.forEach(thought => insert_into_day(thought, new_days))
     props.posters.forEach(poster => insert_into_day(poster, new_days))
     props.events.forEach(happening => insert_into_day(happening, new_days))
@@ -102,7 +101,6 @@
   }
 
   const insert_into_day = (item, days_map) => {
-    // console.log('insert_into_day', item)
     let day_name
     if (item.id) day_name = id_as_day(item.id)
     else day_name = id_as_day(item[0].id)
@@ -111,11 +109,9 @@
       day.unshift(item)
       day.sort(recent_weirdo_first)
     } else if (day) {
-      // console.log('push into here', item)
       day.push(item)
       day.sort(earlier_weirdo_first)
     } else {
-      // console.log('set into here', item)
       days_map.set(day_name, [item])
     }
   }

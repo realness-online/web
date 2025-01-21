@@ -84,7 +84,7 @@ export const use_me = () => {
   list(`${localStorage.me}/relations`).then(list => {
     relations.value = list
   })
-  const save = () => me.value?.save()
+  const save = () => new Me().save()
   const is_valid_name = computed(async () => {
     await next_tick()
     if (!current_user.value) return false

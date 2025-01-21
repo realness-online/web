@@ -18,7 +18,6 @@ export const use = () => {
    * @param {Statement[]} thought
    */
   const thought_shown = async thought => {
-    console.log('thought_shown', thought[0].id)
     const oldest = thought[thought.length - 1]
     let author = as_author(oldest.id)
     const author_statements = statements.value.filter(
