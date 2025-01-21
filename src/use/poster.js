@@ -1,6 +1,7 @@
 /** @typedef {import('@/types').Poster} Poster */
 /** @typedef {import('@/types').Relation} Relation */
 /** @typedef {import('@/types').Created} Created */
+/** @typedef {import('@/types').Id} Id */
 
 import {
   ref,

@@ -30,7 +30,7 @@
       <icon name="nothin" />
       <logo-as-link />
     </header>
-    <article id="editable" class="statements">
+    <article class="editable statements">
       <header>
         <h1 v-if="!working">Editable Statements</h1>
       </header>
@@ -55,14 +55,11 @@
         <br />
       </p>
     </footer>
-    <article v-if="statements?.length > 1" id="earlier" class="statements">
+    <article v-if="statements?.length > 1" class="earlier statements">
       <header>
         <h1>Earlier Statements</h1>
       </header>
-      <as-days
-        v-slot="thoughts"
-        :statements="statements"
-        :paginate="false">
+      <as-days v-slot="thoughts" :statements="statements" :paginate="false">
         <thought-as-article
           v-for="thought in thoughts"
           :key="thought[0].id"
@@ -83,6 +80,8 @@
       color: red
       border-color: red
     & > article.statements
+      &.earlier .day:first-of-type
+        display: none
       & > header
         h1
           width: 100%
