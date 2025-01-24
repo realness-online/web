@@ -245,11 +245,18 @@ export const as_archive = async itemid => {
   const created = as_created_at(itemid)
   if (!created) return null
 
+  // If the item is in the main items list, it's not archived
   if (items.map(Number).includes(created)) return null
 
+  // If the item is an archive timestamp itself, return its own path
   if (archive.includes(created))
     return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
 
+  // If the item is newer than all current items, it belongs in root directory
+  const newest_item = Math.max(...items.map(Number))
+  if (created > newest_item) return null
+
+  // Find the appropriate archive for older items
   let closest_timestamp = null
   for (const archive_id of archive)
     if (archive_id <= created) closest_timestamp = archive_id
