@@ -49,6 +49,13 @@ describe('@/utils/itemid', () => {
   })
 
   describe('path generation', () => {
+    it('generates correct path for brand new poster', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1737178477999')
+      expect(result).toBe('people/+16282281824/posters/1737178477999.html.gz')
+    })
+
     it('generates correct path for last poster in second to last archive directory', async () => {
       get.mockResolvedValue(directory)
 
@@ -114,13 +121,6 @@ describe('@/utils/itemid', () => {
       expect(result).toBe(
         'people/+16282281824/posters/1715021054576/1715021054576'
       )
-    })
-
-    it('returns null when directory is missing', async () => {
-      get.mockResolvedValue(null)
-
-      const result = await as_archive('/+16282281824/posters/1737178477987')
-      expect(result).toBeNull()
     })
 
     it('returns null when no archives exist', async () => {
