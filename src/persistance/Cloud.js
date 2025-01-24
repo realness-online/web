@@ -16,7 +16,8 @@ export const Cloud = superclass =>
 
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
-        const path = await as_filename(this.id)
+        const path = `people${this.id}.html.gz`
+        console.log('path', path)
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
 
