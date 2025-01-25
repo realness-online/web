@@ -4,6 +4,7 @@ import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs'
 import path from 'path'
+import wasm from 'vite-plugin-wasm'
 
 export default defineConfig({
   build: {
@@ -59,6 +60,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    wasm(),
     vite_pwa({
       workbox: {
         maximumFileSizeToCacheInBytes: 4000000
