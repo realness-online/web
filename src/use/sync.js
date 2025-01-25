@@ -36,9 +36,7 @@ export const use = () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
     await sync_offline_actions()
-    await visit()
     if (!navigator.onLine || !current_user.value) return
-
     if (!i_am_fresh()) {
       emit('active', true)
       localStorage.sync_time = new Date().toISOString()
@@ -49,6 +47,7 @@ export const use = () => {
       await sync_posters_directory()
       emit('active', false)
     }
+    await visit()
   }
 
   /**
@@ -56,6 +55,7 @@ export const use = () => {
    */
   const visit = async () => {
     const visit_digit = new Date(me.value.visited).getTime()
+
     if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
       await next_tick()
@@ -113,22 +113,6 @@ export const use = () => {
         else console.info('weird:unknown-offline-action', item.action, item.id)
       }
       await del('sync:offline')
-    }
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_me = async () => {
-    const id = get_my_itemid()
-    const network = (await fresh_metadata(id)).customMetadata
-    let my_info = localStorage.getItem(id)
-    if (!my_info) my_info = await get(id)
-    if (!my_info || !network) return
-    const hash = await create_hash(my_info)
-    if (hash !== network.hash) {
-      localStorage.removeItem(id)
-      del(id)
     }
   }
 
@@ -283,4 +267,20 @@ export const i_am_fresh = () => {
   if (am_i_fresh)
     console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export const sync_me = async () => {
+  const id = get_my_itemid()
+  const network = (await fresh_metadata(id)).customMetadata
+  let my_info = localStorage.getItem(id)
+  if (!my_info) my_info = await get(id)
+  if (!my_info || !network) return
+  const hash = await create_hash(my_info)
+  if (hash !== network.hash) {
+    localStorage.removeItem(id)
+    del(id)
+  }
 }
