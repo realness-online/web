@@ -32,6 +32,9 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
 
+  /**
+   * @returns {Promise<void>}
+   */
   const play = async () => {
     if (!current_user.value) return // Do nothing until there is a person
     if (document.visibilityState !== 'visible') return
@@ -97,23 +100,6 @@ export const use = () => {
       return false
     })
     return !is_friend
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_offline_actions = async () => {
-    if (navigator.onLine) {
-      const offline = await get('sync:offline')
-      if (!offline) return
-      while (offline.length) {
-        const item = offline.pop()
-        if (item.action === 'save') await new Offline(item.id).save()
-        else if (item.action === 'delete') await new Offline(item.id).delete()
-        else console.info('weird:unknown-offline-action', item.action, item.id)
-      }
-      await del('sync:offline')
-    }
   }
 
   /**
@@ -185,30 +171,6 @@ export const use = () => {
     await del(`/+/posters/${created_at}`)
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_posters_directory = async () => {
-    const me = get_my_itemid()
-    if (!me) return
-
-    const directory_path = /** @type {Id} */ (`${me}/posters/`)
-    await del(directory_path) // Clear existing directory cache
-
-    const offline_posters = await build_local_directory(directory_path) // Get local posters
-    if (!offline_posters || !offline_posters.items) return
-
-    const sorted_items = offline_posters.items.sort((a, b) => b - a) // Sort items by created_at timestamp (newest first)
-
-    await set(directory_path, {
-      ...offline_posters,
-      items: sorted_items,
-      archives: []
-    }) // Update directory with sorted items
-
-    await new Poster(directory_path).optimize()
-  }
-
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
@@ -229,15 +191,27 @@ export const use = () => {
   return {
     events,
     sync_element,
-    sync_poster
+    sync_poster,
+    sync_offline_actions,
+    sync_posters_directory,
+    sync_me
   }
 }
+
+/**
+ * @param {Id} itemid
+ * @returns {Promise<string>}
+ */
 export const get_content_hash = async itemid => {
   const local = await get(itemid)
   if (!local) return null
   return create_hash(local)
 }
 
+/**
+ * @param {Id} itemid
+ * @returns {Promise<any>}
+ */
 export const fresh_metadata = async itemid => {
   const index = (await get('sync:index')) || {}
   const path = location(await as_filename(itemid))
@@ -254,6 +228,9 @@ export const fresh_metadata = async itemid => {
   return network
 }
 
+/**
+ * @returns {boolean}
+ */
 export const i_am_fresh = () => {
   let synced
   if (localStorage.sync_time)
@@ -283,4 +260,45 @@ export const sync_me = async () => {
     localStorage.removeItem(id)
     del(id)
   }
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export const sync_offline_actions = async () => {
+  if (navigator.onLine) {
+    const offline = await get('sync:offline')
+    if (!offline) return
+    while (offline.length) {
+      const item = offline.pop()
+      if (item.action === 'save') await new Offline(item.id).save()
+      else if (item.action === 'delete') await new Offline(item.id).delete()
+      else console.info('weird:unknown-offline-action', item.action, item.id)
+    }
+    await del('sync:offline')
+  }
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+export const sync_posters_directory = async () => {
+  const me = get_my_itemid()
+  if (!me) return
+
+  const directory_path = /** @type {Id} */ (`${me}/posters/`)
+  await del(directory_path) // Clear existing directory cache
+
+  const offline_posters = await build_local_directory(directory_path) // Get local posters
+  if (!offline_posters || !offline_posters.items) return
+
+  const sorted_items = offline_posters.items.sort((a, b) => b - a) // Sort items by created_at timestamp (newest first)
+
+  await set(directory_path, {
+    ...offline_posters,
+    items: sorted_items,
+    archives: []
+  }) // Update directory with sorted items
+
+  await new Poster(directory_path).optimize()
 }
