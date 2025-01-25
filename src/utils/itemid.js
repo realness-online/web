@@ -246,7 +246,7 @@ export const as_archive = async itemid => {
   if (!created) return null
 
   // If the item is newer than any current items (or is in the list), it belongs in root directory
-  if (items.map(Number).some(timestamp => created > timestamp)) return null
+  if (items.map(Number).some(timestamp => created >= timestamp)) return null
 
   // If the item is an archive timestamp itself, return its own path
   if (archive.includes(created))

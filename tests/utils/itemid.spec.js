@@ -11,6 +11,7 @@ const directory = {
     1682865013400, 1689545625036, 1705888911565, 1712335058767, 1715021054576
   ],
   items: [
+    '1720119797893',
     '1720576375018',
     '1721096849781',
     '1721597809425',
@@ -64,6 +65,13 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/posters/1737178477999')
       expect(result).toBe('people/+16282281824/posters/1737178477999.html.gz')
+    })
+
+    it('generates correct path for oldest poster in the root directory', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1720119797893')
+      expect(result).toBe('people/+16282281824/posters/1720119797893.html.gz')
     })
 
     it('generates correct path for last poster in second to last archive directory', async () => {
