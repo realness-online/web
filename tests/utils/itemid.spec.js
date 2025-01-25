@@ -49,6 +49,16 @@ describe('@/utils/itemid', () => {
   })
 
   describe('path generation', () => {
+    it('generates correct path for user index', async () => {
+      const result = await as_filename('/+16282281824')
+      expect(result).toBe('people/+16282281824/index.html.gz')
+    })
+
+    it('generates correct path for statements', async () => {
+      const result = await as_filename('/+16282281824/statements')
+      expect(result).toBe('people/+16282281824/statements/index.html.gz')
+    })
+
     it('generates correct path for brand new poster', async () => {
       get.mockResolvedValue(directory)
 
