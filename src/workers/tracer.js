@@ -2,12 +2,12 @@ import init, { process_image } from '@/artifacts/wasm/tracer'
 
 export const tracer_options = {
   // Color quantization options
-  color_count: 4,
-  min_color_count: 2,
-  max_color_count: 8,
+  color_count: 32, // target exactly 32 colors
+  min_color_count: 32, // force minimum 32 colors
+  max_color_count: 32, // force maximum 32 colors
 
   // Shape detection options
-  turd_size: 40, // minimum size of shapes to keep
+  turd_size: 20, // lowered to keep more details since we want many segments
   corner_threshold: 60, // angle threshold for corners (degrees)
 
   // Curve fitting options
@@ -15,8 +15,11 @@ export const tracer_options = {
   filter_speckle: 4, // remove speckles of this size
 
   // Color clustering
-  color_precision: 6, // color precision bits per channel
+  color_precision: 8, // increased for better color distinction
   path_precision: 8, // decimal places in path data
+
+  // Force exact color count
+  force_color_count: true,
 
   // Additional options
   hierarchical: true, // generate hierarchical SVG
