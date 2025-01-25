@@ -6,9 +6,9 @@ import router from '@/router'
 const { me } = localStorage
 if (!me) localStorage.me = '/+'
 
-const update_servie_worker = registerSW({
+const update_service_worker = registerSW({
   onOfflineReady() {
-    console.info('offline-ready', update_servie_worker)
+    console.info('offline-ready', update_service_worker)
   }
 })
 

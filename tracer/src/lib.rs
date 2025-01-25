@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::{ImageData};
 use visioncortex::{
     Color, ColorImage,
-    color_clusters::{Clusters, Runner, RunnerConfig},
+    color_clusters::{Clusters, Runner, RunnerConfig, ClusteringMode},
     PathSimplifier,
     color_clusters::ClusterConfig
 };
@@ -34,10 +34,9 @@ pub struct TraceOptions {
     pub max_color_count: u32,
     pub turd_size: u32,
     pub corner_threshold: f64,
-    pub splice_threshold: f64,
-    pub filter_speckle: u32,
     pub color_precision: u32,
     pub path_precision: u32,
+    pub force_color_count: bool,
     pub hierarchical: bool,
     pub keep_details: bool,
 }
@@ -47,15 +46,14 @@ impl TraceOptions {
     #[wasm_bindgen(constructor)]
     pub fn new() -> TraceOptions {
         TraceOptions {
-            color_count: 4,
-            min_color_count: 2,
-            max_color_count: 8,
-            turd_size: 40,
+            color_count: 32,
+            min_color_count: 32,
+            max_color_count: 32,
+            turd_size: 20,
             corner_threshold: 60.0,
-            splice_threshold: 45.0,
-            filter_speckle: 4,
-            color_precision: 6,
+            color_precision: 8,
             path_precision: 8,
+            force_color_count: true,
             hierarchical: true,
             keep_details: true,
         }
@@ -64,7 +62,6 @@ impl TraceOptions {
 
 #[wasm_bindgen]
 pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsValue, JsValue> {
-    // Convert web ImageData to ColorImage
     let width = image_data.width() as usize;
     let height = image_data.height() as usize;
     let data = image_data.data();
@@ -83,49 +80,53 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
         }
     }
 
-    // Configure clustering
+    // Configure for exact 32 colors
     let cluster_config = ClusterConfig {
-        min_clusters: options.min_color_count as usize,
-        max_clusters: options.max_color_count as usize,
+        min_clusters: 32,
+        max_clusters: 32,
         min_size: options.turd_size as usize,
         color_precision: options.color_precision as usize,
+        mode: ClusteringMode::KMeans, // Use KMeans for better color distribution
         ..ClusterConfig::default()
     };
 
-    // Run color clustering
     let mut runner = Runner::new(
         &color_image,
         RunnerConfig {
             cluster_config,
+            force_cluster_count: true, // Force exact cluster count
             ..RunnerConfig::default()
         }
     );
 
     let clusters = runner.run();
 
-    // Process each cluster to generate paths
+    // Ensure we got exactly 32 clusters
+    assert_eq!(clusters.len(), 32, "Failed to generate exactly 32 color segments");
+
+    // Process clusters into paths
     let mut paths = Vec::new();
     for cluster in clusters.iter() {
+        let color = cluster.color();
         let mut simplifier = PathSimplifier::new(
             cluster.points(),
             options.corner_threshold,
-            options.splice_threshold,
+            45.0, // splice threshold
             options.path_precision as usize,
         );
 
         if let Some(path) = simplifier.build() {
-            paths.push(path);
+            paths.push(serde_wasm_bindgen::to_value(&(path, color))?);
         }
     }
 
-    // Convert result to JavaScript
+    // Create result object
     let result = js_sys::Object::new();
 
-    // Add paths and other data to result
     js_sys::Reflect::set(
         &result,
         &"paths".into(),
-        &serde_wasm_bindgen::to_value(&paths).unwrap()
+        &serde_wasm_bindgen::to_value(&paths)?
     )?;
 
     js_sys::Reflect::set(
