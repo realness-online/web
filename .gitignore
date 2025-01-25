@@ -52,3 +52,18 @@ docs/generated/
 *.pem
 
 .env
+
+
+# Rust build directory
+/target/
+**/target/
+
+# Rust generated files
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# WASM build artifacts
+/artifacts/
+**/artifacts/
+*.wasm

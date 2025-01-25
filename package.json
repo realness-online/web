@@ -42,7 +42,8 @@
     "storage:compress": "node scripts/compress-files.js",
     "storage:decompress": "node scripts/decompress-files.js",
     "storage:upload": "node scripts/upload-compressed.js",
-    "storage:download": "node scripts/firebase-downloader.js"
+    "storage:download": "node scripts/firebase-downloader.js",
+    "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm"
   },
   "dependencies": {
     "@davidmarkclements/hsl-to-hex": "1.0.2",
@@ -96,6 +97,7 @@
     "vite": "6.0.6",
     "vite-plugin-package-version": "1.1.0",
     "vite-plugin-pwa": "0.21.1",
+    "vite-plugin-wasm": "^3.4.1",
     "vitest": "2.1.8",
     "workbox-build": "7.3.0",
     "workbox-window": "7.3.0"
