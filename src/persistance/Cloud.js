@@ -2,7 +2,10 @@
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { as_filename } from '@/utils/itemid'
-import { load_directory_from_network } from '@/persistance/Directory'
+import {
+  load_directory_from_network,
+  as_directory
+} from '@/persistance/Directory'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = ['person', 'statements', 'posters', 'events']
@@ -17,9 +20,11 @@ export const Cloud = superclass =>
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
         const path = await as_filename(this.id)
-        console.log('path', path)
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
+        const directory = await as_directory(this.id)
+
+        await del(directory.id)
 
         if (response && response.status !== 304)
           await set(`hash:${this.id}`, metadata.customMetadata.hash)
