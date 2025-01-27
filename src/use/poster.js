@@ -176,7 +176,6 @@ export const use_posters = () => {
     const new_posters = await load_archive_posters(author_id, next_archive)
     posters.value.push(...new_posters)
     posters.value.sort(recent_item_first)
-    console.log('poster_shown', author.viewed)
     author.viewed.push(next_archive)
   }
 

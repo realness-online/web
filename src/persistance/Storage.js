@@ -10,7 +10,10 @@ import { as_type, as_filename } from '@/utils/itemid'
 import { get } from 'idb-keyval'
 import { prepare_upload_html } from '@/utils/upload-processor'
 
-export default class Storage {
+/**
+ * @interface
+ */
+export class Storage {
   /**
    * @type {Object}
    */
@@ -23,12 +26,21 @@ export default class Storage {
     this.id = itemid
     this.type = as_type(itemid)
   }
+
+  save(_items) {}
+  delete() {}
+  sync() {}
+  optimize() {}
 }
 
-/** @extends {Storage} */
+/**
+ * @extends {Storage}
+ */
 export class Poster extends Large(Cloud(Storage)) {}
 
-/** @extends {Storage} */
+/**
+ * @extends {Storage}
+ */
 export class Me extends Cloud(Local(Storage)) {
   constructor() {
     super(localStorage.me)
@@ -38,21 +50,21 @@ export class Me extends Cloud(Local(Storage)) {
 /** @extends {Storage} */
 export class Relation extends Local(Storage) {
   constructor() {
-    super(`${localStorage.me}/relations`)
+    super(/** @type {Id} */ (`${localStorage.me}/relations`))
   }
 }
 
 /** @extends {Storage} */
 export class Statement extends Paged(Cloud(Local(Storage))) {
   constructor() {
-    super(`${localStorage.me}/statements`)
+    super(/** @type {Id} */ (`${localStorage.me}/statements`))
   }
 }
 
 /** @extends {Storage} */
 export class Event extends Paged(Cloud(Local(Storage))) {
   constructor() {
-    super(`${localStorage.me}/events`)
+    super(/** @type {Id} */ (`${localStorage.me}/events`))
   }
 }
 
@@ -67,12 +79,14 @@ export class Offline extends Cloud(Storage) {
 /** @extends {Storage} */
 export class History extends Cloud(Storage) {
   /**
-   * @param {Item_Id} itemid
+   * @param {Id} itemid
    */
   constructor(itemid) {
     super(itemid)
+    this.id = itemid
   }
 
+  /** @param {Element | {outerHTML: string}} items */
   async save(items) {
     // on purpose doesn't call super.save
     if (!items) return false

@@ -66,7 +66,7 @@
   })
 
   const check_intersection = entries => {
-    entries.forEach(async entry => {
+    entries.forEach(entry => {
       if (entry.isIntersecting) {
         observer.value.unobserve(entry.target)
         const pages = days.value.size / page_size
@@ -120,7 +120,7 @@
       posters: props.posters,
       events: props.events
     }),
-    (new_value, old_value) => {
+    () => {
       refill_days()
     },
     { deep: true, immediate: true }

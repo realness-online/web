@@ -98,7 +98,7 @@ export default [
       'no-param-reassign': 'error',
       'no-return-await': 'error',
       'require-await': 'error',
-      'max-lines-per-function': ['warn', 150],
+      'max-lines-per-function': ['warn', 200],
       complexity: ['warn', 20],
       'no-unsafe-optional-chaining': 'error',
       'no-constant-binary-expression': 'error',

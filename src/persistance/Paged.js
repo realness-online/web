@@ -1,4 +1,5 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+/** @typedef {import('@/persistance/Storage').Storage} Storage */
 import { History } from '@/persistance/Storage'
 import { from_e64 } from '@/use/people'
 import { current_user } from '@/utils/serverless'
@@ -34,7 +35,11 @@ export const is_fat = (items, prop_name) => {
   return false
 }
 
-/** @param {any} superclass */
+/**
+ * @template {new (...args: any[]) => Storage} T
+ * @param {T} superclass
+ * @returns {T}
+ */
 export const Paged = superclass =>
   class extends superclass {
     async optimize() {
