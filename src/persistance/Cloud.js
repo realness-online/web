@@ -1,3 +1,6 @@
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/persistance/Storage').Storage} Storage */
+
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
@@ -10,7 +13,11 @@ import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = ['person', 'statements', 'posters', 'events']
 
-/** @param {any} superclass */
+/**
+ * @template {new (...args: any[]) => Storage} T
+ * @param {T} superclass
+ * @returns {T}
+ */
 export const Cloud = superclass =>
   class extends superclass {
     constructor(...args) {
@@ -25,9 +32,6 @@ export const Cloud = superclass =>
         const directory = await as_directory(this.id)
 
         await del(directory.id)
-
-        if (response && response.status !== 304)
-          await set(`hash:${this.id}`, metadata.customMetadata.hash)
 
         return response
       } else if (current_user.value || localStorage.me)
@@ -45,10 +49,9 @@ export const Cloud = superclass =>
       if (navigator.onLine && current_user.value) {
         const path = await as_filename(this.id)
         await remove(path)
-        await del(`hash:${this.id}`)
       } else await sync_later(this.id, 'delete')
 
-      if (super.delete) await super.delete()
+      if (super.delete) super.delete()
     }
 
     /**
@@ -62,7 +65,7 @@ export const Cloud = superclass =>
       if (!directory_list?.items) return
       const { items } = directory_list
       if (items?.length > SIZE.MAX) {
-        const sorted_items = items.sort((a, b) => b - a)
+        const sorted_items = items.sort((a, b) => Number(b) - Number(a))
         const index = sorted_items.length - 1
         const archive_directory = sorted_items[index]
         const archive = []

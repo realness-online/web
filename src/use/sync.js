@@ -1,7 +1,7 @@
 /** @typedef {import('@/types').Id} Id */
 import { get, del, set, keys } from 'idb-keyval'
 import { as_filename, as_author, load, is_itemid } from '@/utils/itemid'
-import { build_local_directory, is_directory_id } from '@/persistance/Directory'
+import { build_local_directory } from '@/persistance/Directory'
 import { Offline, Statement, Event, Poster, Me } from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statement'
@@ -71,25 +71,30 @@ export const use = () => {
    */
   const prune = async () => {
     const everything = /** @type {Id[]} */ (await keys())
-
-    everything.forEach(async itemid => {
-      if (!is_itemid(/** @type {string} */ (itemid))) return
-      if (await is_stranger(as_author(itemid))) await del(itemid) // only relations are cached
-      if (is_directory_id(itemid)) await del(itemid)
-      else {
+    await Promise.all(
+      everything.map(async itemid => {
+        if (itemid.endsWith('/')) {
+          await del(itemid)
+          return
+        }
+        if (!is_itemid(/** @type {string} */ (itemid))) return
+        if (is_stranger(/** @type {Id} */ (as_author(itemid)))) {
+          await del(itemid)
+          return
+        }
         const network = await fresh_metadata(itemid)
-        if (!network || !network.customMetadata) return null
-        const hash = await get_content_hash(itemid)
+        if (!network?.customMetadata) return
+        const hash = await create_hash(await get(itemid))
         if (network.customMetadata.hash !== hash) await del(itemid)
-      }
-    })
+      })
+    )
   }
 
   /**
    * @param {Id} id
-   * @returns {Promise<boolean>}
+   * @returns {boolean}
    */
-  const is_stranger = async id => {
+  const is_stranger = id => {
     const friends = [...relations.value]
     friends.push({
       id: localStorage.me,
@@ -108,11 +113,11 @@ export const use = () => {
   const sync_statements = async () => {
     const persistance = new Statement()
     const itemid = get_my_itemid('statements')
-    const network = (await fresh_metadata(itemid)).customMetadata
+    const index_hash = await get_index_hash(itemid)
     const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const hash = await create_hash(elements.outerHTML)
-    if (!network || network.hash !== hash) {
+    if (index_hash !== hash) {
       statements.value = await persistance.sync()
       if (statements.value.length) {
         await next_tick()
@@ -129,11 +134,11 @@ export const use = () => {
   const sync_events = async () => {
     const events = new Event()
     const itemid = get_my_itemid('events')
-    const network = (await fresh_metadata(itemid)).customMetadata
+    const index_hash = await get_index_hash(itemid)
     const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
     const hash = await create_hash(elements.outerHTML)
-    if (!network || network.hash !== hash) {
+    if (index_hash !== hash) {
       events.value = await events.sync()
       if (events.value.length) {
         await next_tick()
@@ -198,14 +203,24 @@ export const use = () => {
   }
 }
 
-/**
- * @param {Id} itemid
- * @returns {Promise<string>}
- */
-export const get_content_hash = async itemid => {
-  const local = await get(itemid)
-  if (!local) return null
-  return create_hash(local)
+const get_index_hash = async itemid =>
+  ((await get('sync:index')) || {})[itemid]?.customMetadata?.hash
+
+const mutex = {
+  locked: false,
+  queue: [],
+  lock: async () => {
+    if (mutex.locked)
+      await new Promise(resolve => {
+        mutex.queue.push(resolve)
+      })
+    else mutex.locked = true
+  },
+  unlock: () => {
+    mutex.locked = false
+    const next = mutex.queue.shift()
+    if (next) next()
+  }
 }
 
 /**
@@ -213,19 +228,26 @@ export const get_content_hash = async itemid => {
  * @returns {Promise<any>}
  */
 export const fresh_metadata = async itemid => {
-  const index = (await get('sync:index')) || {}
-  const path = location(await as_filename(itemid))
-  let network
+  await mutex.lock()
   try {
-    network = await metadata(path)
-  } catch (e) {
-    if (e.code === 'storage/object-not-found') network = DOES_NOT_EXIST
-    else throw e
+    const index = (await get('sync:index')) || {}
+    const path = location(await as_filename(itemid))
+    let network
+    try {
+      network = await metadata(path)
+    } catch (e) {
+      if (e.code === 'storage/object-not-found') network = DOES_NOT_EXIST
+      else throw e
+    }
+    if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
+
+    // Create a new index object with the existing data plus the new entry
+    const updated_index = { ...index, [itemid]: network }
+    await set('sync:index', updated_index)
+    return network
+  } finally {
+    mutex.unlock()
   }
-  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
-  index[itemid] = network
-  await set('sync:index', index)
-  return network
 }
 
 /**
@@ -251,12 +273,12 @@ export const i_am_fresh = () => {
  */
 export const sync_me = async () => {
   const id = get_my_itemid()
-  const network = (await fresh_metadata(id)).customMetadata
+  const index_hash = await get_index_hash(id)
   let my_info = localStorage.getItem(id)
   if (!my_info) my_info = await get(id)
-  if (!my_info || !network) return
+  if (!my_info || !index_hash) return
   const hash = await create_hash(my_info)
-  if (hash !== network.hash) {
+  if (hash !== index_hash) {
     localStorage.removeItem(id)
     del(id)
   }

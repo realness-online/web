@@ -1,9 +1,15 @@
+/** @typedef {import('@/persistance/Storage').Storage} Storage */
+/** @typedef {import('@/types').Id} Id */
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
 import { as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
 
-/** @param {any} superclass */
+/**
+ * @template {new (...args: any[]) => Storage} T
+ * @param {T} superclass
+ * @returns {T}
+ */
 export const Large = superclass =>
   class extends superclass {
     constructor(...args) {
