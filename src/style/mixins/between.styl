@@ -11,7 +11,7 @@ between($properties, $min-value=min-font, $max-value=max-font, $min-vw=pad-begin
   $max-vw-stripped    = remove-unit($max-vw)
 
   // calc requires that division and multiplication be stripped of units
-  calculation = s('calc( %s + (%s - %s) * (100vw - %s) / (%s - %s) )', $min-value, $max-value-stripped, $min-value-stripped, $min-vw, $max-vw-stripped, $min-vw-stripped)
+  calculation = s('calc( %s + (%s - %s) * (100dvw - %s) / (%s - %s) )', $min-value, $max-value-stripped, $min-value-stripped, $min-vw, $max-vw-stripped, $min-vw-stripped)
 
   for $property in $properties
     {$property}: $min-value

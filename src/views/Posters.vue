@@ -176,17 +176,6 @@
       padding-bottom: base-line * 3
       @media (max-width: pad-begins)
         margin-top: base-line
-      & > figure.poster
-        &.fill-screen
-          // width: 100vw
-          // height: 100vh
-          // grid-column: 1 / -1
-          // position: fixed
-          // top: 0
-          // left: 0
-          // z-index: 1000
-          // background-color: var(--black-transparent)
-        &.selecting-event
-          & > svg:not(.background)
-            opacity: 0.1
+      & > figure.poster.selecting-event > svg:not(.background)
+        opacity: 0.1
 </style>

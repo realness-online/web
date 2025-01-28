@@ -1,11 +1,15 @@
 <script setup>
   import NameAsForm from '@/components/profile/as-form-name'
   import CallToAction from '@/components/call-to-action'
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted, inject } from 'vue'
   import SignOn from '@/components/profile/sign-on'
   import { current_user, sign_off } from '@/utils/serverless'
   import { load } from '@/utils/itemid'
   import Icon from '@/components/icon'
+
+  /** @type {import('vue').Ref<boolean>} */
+  const show_utility_components = inject('show_utility_components')
+
   const form = ref(null)
   const first_name = ref('You')
   const show_form = () => form.value.showModal()
@@ -22,7 +26,7 @@
 </script>
 
 <template>
-  <a id="toggle-account" @click="show_form">{{ first_name }}</a>
+  <a v-if="show_utility_components" id="toggle-account" @click="show_form">{{ first_name }}</a>
   <dialog id="account" ref="form" @click="dialog_click">
     <a @click="close_settings">
       <icon name="finished" />

@@ -30,7 +30,7 @@
       & > a
         padding-right: base-line * 0.25
         color: red
-        min-width: 50vw
+        min-width: 50dvw
         & > h1
           font-weight: 300
           margin: 0
