@@ -23,8 +23,7 @@
 
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
-  mounted(() => mount_workers() )
-
+  mounted(() => mount_workers())
 </script>
 
 <template>

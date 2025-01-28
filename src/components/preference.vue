@@ -85,5 +85,4 @@
             opacity: 0.75
             -webkit-transition: .4s
             transition: .4s
-
 </style>

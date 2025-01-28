@@ -52,7 +52,9 @@
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
         @on="set_posters_folder" />
       <preference name="animate" title="Animate posters" />
-      <preference name="fps" title="show frames per second on the bottom right" />
+      <preference
+        name="fps"
+        title="show frames per second on the bottom right" />
     </menu>
   </dialog>
 </template>

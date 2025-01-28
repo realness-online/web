@@ -2,7 +2,12 @@
   import sync from '@/components/sync'
   import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
   import fps from '@/components/fps'
-  import { ref, onUnmounted as dismount, onMounted as mounted, provide } from 'vue'
+  import {
+    ref,
+    onUnmounted as dismount,
+    onMounted as mounted,
+    provide
+  } from 'vue'
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { fps as fps_pref } from '@/utils/preference'
