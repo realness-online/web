@@ -1,16 +1,11 @@
 <script setup>
   import Icon from '@/components/icon'
-  import NameAsForm from '@/components/profile/as-form-name'
-  import CallToAction from '@/components/call-to-action'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import SignOn from '@/components/profile/sign-on'
-  import { current_user, sign_off } from '@/utils/serverless'
-  import { load } from '@/utils/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
+  import AccountDialog from '@/components/profile/as-dialog-account'
   const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
-  const first_name = ref('')
   const nav = ref()
   const done_posting = () => {
     nav.value.focus()
@@ -18,34 +13,15 @@
   }
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
-  const form = ref(null)
-  mounted(async () => {
-    const my = await load(localStorage.me)
-    if (my?.first_name) first_name.value = my.first_name
-    else first_name.value = 'You'
-    console.info('views:Navigation')
-    mount_workers()
-  })
+  mounted(() => mount_workers() )
   const toggle_keyboard = () => (posting.value = !posting.value)
-  const show_form = () => form.value.showModal()
-  const dialog_click = event => {
-    if (event.target === form.value) form.value.close()
-  }
+
 </script>
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
-      <a id="toggle-name" @click="show_form">{{ first_name }}</a>
-      <dialog ref="form" @click="dialog_click">
-        <name-as-form />
-        <call-to-action />
-        <menu>
-          <button v-if="current_user" @click="sign_off">Sign off</button>
-          <sign-on v-else />
-          <router-link to="/docs">Docs</router-link>
-        </menu>
-      </dialog>
+      <account-dialog />
     </header>
     <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
@@ -92,7 +68,7 @@
     max-width: page-width
     a#toggle-name
       position: fixed
-      top: base-line
+      top: inset(top,  base-line )
       left: base-line
     & > header
       opacity: 0.66
@@ -103,33 +79,6 @@
         top: env(safe-area-inset-top) !important
       &:hover, &:active
         opacity: 1
-      & > dialog
-        border: 3px solid red;
-        border-radius: base-line *.5
-        padding: base-line;
-        & > menu
-          display: flex
-          justify-content: space-between
-          align-items: center
-          & > button
-            border-color: red
-            color: red
-            &:hover
-              background-color: red
-              color: white
-      & > a
-        display: flex
-        align-items: center
-        & > svg
-          width: base-line * 0.75
-          height: base-line * 0.75
-          display: inline-block
-          fill: red
-        & > span
-          margin-left: base-line * .5
-          line-height: 0
-          display: inline-block
-          vertical-align: middle
     &.posting
       align-self: start
       margin-top: inset(top)
