@@ -1,20 +1,29 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted, inject } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import AccountDialog from '@/components/profile/as-dialog-account'
   const version = import.meta.env.PACKAGE_VERSION
+
+  const show_utility_components = inject('show_utility_components')
   const posting = ref(false)
   const nav = ref()
-  const done_posting = () => {
-    nav.value.focus()
-    posting.value = false
+
+  const toggle_keyboard = () => {
+    posting.value = !posting.value
+    if (show_utility_components) show_utility_components.value = !posting.value
   }
+
+  const done_posting = () => {
+    document.querySelector('textarea#wat').blur()
+    posting.value = false
+    if (show_utility_components) show_utility_components.value = true
+  }
+
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
   mounted(() => mount_workers() )
-  const toggle_keyboard = () => (posting.value = !posting.value)
 
 </script>
 
@@ -86,12 +95,12 @@
       @media (max-width: pad-begins)
         align-items: flex-start
       & > footer
-        height: 50vh
+        height: 50dvh
       & > nav
         width: 100%
         transition-duration: 0.5s
         min-height: round(base-line * 10)
-        height: round(base-line * 15)
+
         & > button
           width: base-line * 3
           height: base-line * 1.66
@@ -111,7 +120,7 @@
       align-items: stretch
       min-height: round(base-line * 18, 2)
       max-height: page-width
-      min-width: 33vw
+      min-width: 33dvw
       margin-bottom: base-line * 2
       margin-top: base-line * 2
       @media (orientation: landscape) and (display-mode: standalone) and (max-height: pad-begins)
@@ -149,8 +158,7 @@
       display: flex
       justify-content: space-between
       align-items: center
-
-      min-width: 33vw
+      min-width: 33dvw
       padding: 0
       & > button
       & > a

@@ -387,7 +387,7 @@
           display: block
           border-radius: base-line
           @media (min-width: pad-begins)
-            width: 50vw
+            width: 50dvw
     & > menu
       border-radius: base-line
       display: flex
@@ -444,7 +444,7 @@
           padding: base-line
           display: flex
           & > img
-            width: 40vw
+            width: 40dvw
         & > figcaption
           display: flex
           flex-direction: column

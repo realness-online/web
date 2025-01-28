@@ -174,7 +174,7 @@
       left: 0
       right: 0
       @media (orientation: landscape) and (max-height: page-width)
-        max-height: 100vh
+        max-height: 100dvh
         min-height: inherit
     & > figcaption
       position: fixed

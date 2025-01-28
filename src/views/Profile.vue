@@ -80,8 +80,8 @@
       position: relative
       overflow: hidden
       & > svg
-        width: 100vw
-        min-height: 100.5vh
+        width: 100dvw
+        min-height: 100dvh
         &.working
           fill: blue
       & > menu
