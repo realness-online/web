@@ -16,7 +16,9 @@
 
     if (posting.value) {
       await next_tick()
-      document.querySelector('textarea#wat').scrollIntoView({ behavior: 'smooth', block: 'center' })
+      document
+        .querySelector('textarea#wat')
+        .scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }
 
@@ -79,6 +81,11 @@
     flex-direction: column
     justify-content: center
     max-width: page-width
+    @media (max-width: pad-begins) and (orientation: portrait)
+      padding: 0 base-line
+    @media (max-height: pad-begins) and (orientation: landscape)
+      height: auto
+      max-width: none
     a#toggle-name
       position: fixed
       top: inset(top,  base-line )
@@ -103,19 +110,13 @@
       & > nav
         width: 100%
         transition-duration: 0.5s
-        min-height: round(base-line * 10)
-
+        min-height: inherit
         & > button
           width: base-line * 3
           height: base-line * 1.66
           line-height: 0
           padding: 0
           display: block
-    @media (max-width: pad-begins) and (orientation: portrait)
-      padding: 0 base-line
-    @media (max-height: pad-begins) and (orientation: landscape)
-      height: auto
-      max-width: none
     & > nav
       transition-duration: 0s
       display: grid
@@ -170,17 +171,17 @@
         margin: 0
         padding: 0
         bottom: base-line
-        &#camera
-          border-radius: base-line
-          padding: base-line * 0.5
-          position: fixed
-          bottom: base-line
-          right: s('calc( 50% - %s)', (base-line * 1.75) )
-          z-index: 4
-          @media (min-width: pad-begins)
-            position:inherit
-          svg
-            fill: red
+      &#camera
+        border-radius: base-line
+        padding: base-line * 0.5
+        position: fixed
+        bottom: base-line
+        right: s('calc( 50% - %s)', (base-line * 1.75) )
+        z-index: 4
+        @media (min-width: pad-begins)
+          position:inherit
+        svg
+          fill: red
       & > button
         left: base-line
         border: none
