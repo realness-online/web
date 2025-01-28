@@ -26,7 +26,9 @@
 </script>
 
 <template>
-  <a v-if="show_utility_components" id="toggle-account" @click="show_form">{{ first_name }}</a>
+  <a v-if="show_utility_components" id="toggle-account" @click="show_form">{{
+    first_name
+  }}</a>
   <dialog id="account" ref="form" @click="dialog_click">
     <a @click="close_settings">
       <icon name="finished" />
