@@ -1,7 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { ref, onMounted as mounted, inject } from 'vue'
+  import { ref, onMounted as mounted, inject, nextTick as next_tick } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import AccountDialog from '@/components/profile/as-dialog-account'
   const version = import.meta.env.PACKAGE_VERSION
@@ -10,9 +10,14 @@
   const posting = ref(false)
   const nav = ref()
 
-  const toggle_keyboard = () => {
+  const toggle_keyboard = async () => {
     posting.value = !posting.value
     if (show_utility_components) show_utility_components.value = !posting.value
+
+    if (posting.value) {
+      await next_tick()
+      document.querySelector('textarea#wat').scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
   }
 
   const done_posting = () => {
