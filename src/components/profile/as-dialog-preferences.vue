@@ -5,8 +5,11 @@
   import { get_file_system } from '@/utils/file'
   const set_posters_folder = () => get_file_system()
   const settings = ref(null)
-  const toggle_settings = () => {
+  const show_settings = () => {
     settings.value.showModal()
+  }
+  const close_settings = () => {
+    settings.value.close()
   }
   const handle_click = event => {
     if (event.target === settings.value) settings.value.close()
@@ -14,12 +17,15 @@
 </script>
 
 <template>
-  <a id="toggle-settings" @click="toggle_settings">
+  <a id="toggle-preferences" @click="show_settings">
     <icon name="gear" />
   </a>
-  <dialog id="settings" ref="settings" @click="handle_click">
+  <dialog id="preferences" ref="settings" @click="handle_click">
     <header>
-      <h1>Settings</h1>
+      <h1>Preferences</h1>
+      <a id="close-settings" @click="close_settings">
+        <icon name="finished" />
+      </a>
     </header>
     <menu>
       <preference name="fill" title="Use a gradient to fill up your poster" />
@@ -45,17 +51,14 @@
         title="Sync posters with a directory"
         subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
         @on="set_posters_folder" />
-      <preference name="animate" title="Animate posters">
-        <preference
-          name="fps"
-          title="show frames per second on the bottom right" />
-      </preference>
+      <preference name="animate" title="Animate posters" />
+      <preference name="fps" title="show frames per second on the bottom right" />
     </menu>
   </dialog>
 </template>
 
 <style lang="stylus">
-  a#toggle-settings {
+  a#toggle-preferences {
     position: fixed;
     bottom: base-line;
     left: base-line;
@@ -67,11 +70,24 @@
     }
 
   }
-  dialog#settings {
-    padding: 0;
+  dialog#preferences {
+    padding-top: 0;
     margin-bottom: base-line * 2;
-    h6 {
-      text-align: center;
+    & > header {
+      > h1 {
+        margin-top: base-line;
+        text-align: center;
+      }
+      > a {
+        position: absolute;
+        top: base-line * .5;
+        right: base-line * .5;
+        svg.icon {
+          fill: black;
+          width: base-line ;
+          height: base-line;
+        }
+      }
     }
     .download {
       display: inline-block;
@@ -86,35 +102,15 @@
       color: red;
       fill: red;
     }
-
     & > article {
       padding: 0 base-line;
     }
-    & > form {
-      standard-grid: 'nothing';
-      & > *:not(:last-child) {
-        height: 100%;
-        list-style: none;
-        margin-bottom: base-line;
-      }
-      & > fieldset {
-        & > kbd {
-          line-height: 4;
-        }
-        & > legend {
-          color: green;
-          margin-bottom: base-line * 0.55;
-        }
-      }
-    }
     & > menu {
-      standard-grid: 'nothing';
       margin: 0;
       padding: 0;
       & > *:not(:last-child) {
         height: 100%;
         list-style: none;
-        margin-bottom: base-line;
       }
       & > h4 {
         margin-top: base-line;

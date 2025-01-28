@@ -1,6 +1,6 @@
 <script setup>
   import sync from '@/components/sync'
-  import SettingsDialog from '@/components/profile/as-dialog.vue'
+  import SettingsDialog from '@/components/profile/as-dialog-preferences.vue'
   import fps from '@/components/fps'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { init_serverless } from '@/utils/serverless'

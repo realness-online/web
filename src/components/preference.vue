@@ -35,6 +35,9 @@
 
 <style lang="stylus">
   fieldset.preference
+    margin-bottom: base-line
+    & > p:last-of-type
+      margin-bottom: 0
     & > div
       display: flex
       justify-content: space-between
@@ -82,4 +85,5 @@
             opacity: 0.75
             -webkit-transition: .4s
             transition: .4s
+
 </style>

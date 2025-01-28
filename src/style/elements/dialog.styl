@@ -3,7 +3,9 @@ body:has(dialog.confirm[open]) {
 }
 dialog {
   margin: base-line auto 0;
-  border:none
+  padding: base-line * 0.5;
+  border: 3px solid red;
+  border-radius: base-line * 0.5;
   color: var(--text-color);
   background-color: var(--black-transparent);
   &::backdrop {
