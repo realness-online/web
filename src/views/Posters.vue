@@ -70,7 +70,9 @@
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
   }
-
+  const dialog_click = event => {
+    if (event.target === delete_dialog.value) delete_dialog.value.close()
+  }
   mounted(async () => {
     mount_workers()
     await posters_for_person({ id: localStorage.me })
@@ -80,7 +82,11 @@
 </script>
 
 <template>
-  <dialog v-if="poster_to_remove" ref="delete_dialog" class="confirm">
+  <dialog
+    v-if="poster_to_remove"
+    ref="delete_dialog"
+    class="confirm"
+    @click="dialog_click">
     <article>
       <header>
         <h1>Delete Poster</h1>

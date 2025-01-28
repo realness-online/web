@@ -1,18 +1,13 @@
-<script>
+<script setup>
   import icons from '/icons.svg'
-  export default {
-    props: {
-      name: {
-        type: String,
-        required: true
-      }
-    },
-    computed: {
-      icon_location() {
-        return `${icons}#${this.name}`
-      }
+  import { computed } from 'vue'
+  const props = defineProps({
+    name: {
+      type: String,
+      required: true
     }
-  }
+  })
+  const icon_location = computed(() => `${icons}#${props.name}`)
 </script>
 
 <template>
@@ -20,14 +15,25 @@
 </template>
 
 <style lang="stylus">
-  svg.icon:active
-    transform: scale(0.95)
-    outline: 1px double currentColor
-    outline-offset: base-line * 0.25
-  svg.icon.gear:active
-    transition-timing-function: ease
-    transition-duration: 0.66s
-    transition-property: all
-    fill:green
-    transform: rotate(60deg) scale(0.95)
+  svg.icon {
+    fill: currentColor
+    standard-shadow: boop;
+    &:active {
+      transform: scale(0.95);
+      outline: 1px double currentColor;
+      outline-offset: base-line * 0.25;
+    }
+    &.gear {
+      transition-timing-function: ease;
+      transition-duration: 1.66s;
+      transition-property: all;
+      &:active {
+        transform: rotate(-60deg) scale(1.05);
+        transition-duration: 0.66s;
+      }
+      &:hover {
+        transform: rotate(60deg) scale(0.95);
+      }
+    }
+  }
 </style>

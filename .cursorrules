@@ -11,8 +11,9 @@ We use javascript and get our types from jsdoc comments
 
 We like jsdoc imports to happen at the top of the file
 
-please follow the formating rules laid out in the following fiels:
+When we use compenents we prefer to reference them as lower case dash seperated html elements
 
+Please follow the formating rules laid out in the following fiels:
 /.editorconfig
 /prettier.confi.js
 /eslint.config.js
