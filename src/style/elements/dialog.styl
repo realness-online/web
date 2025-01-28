@@ -1,6 +1,16 @@
 body:has(dialog.confirm[open]) {
   overflow: hidden;
 }
+dialog {
+  margin: base-line auto 0;
+  border:none
+  color: var(--text-color);
+  background-color: var(--black-transparent);
+  &::backdrop {
+    backdrop-filter: blur(base-line * 0.25 );
+  }
+}
+
 dialog.confirm {
   position: fixed;
   top: 0;
@@ -8,12 +18,6 @@ dialog.confirm {
   z-index: 1000;
   width: 100vw;
   height: 100vh;
-  padding: base-line;
-  border: 1px solid red;
-  background-color: var(--black-transparent);
-  &::backdrop {
-    backdrop-filter: blur(base-line * 4 );
-  }
   & > article {
     border-color: red;
     border-width: 4px;

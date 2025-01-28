@@ -17,11 +17,12 @@
   div.call.to.action
     margin:auto
     max-width: base-line * 18rem
-    padding: base-line * 2
-    display: flex
-    flex-direction: column
-    justify-content: center
-    align-items: center
+    padding: base-line * 1.5
+    @media (min-width: pad-begins)
+      display: flex
+      flex-direction: column
+      justify-content: center
+      align-items: center
     svg.icon
       fill: blue
     & > h3

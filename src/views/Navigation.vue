@@ -1,6 +1,10 @@
 <script setup>
   import Icon from '@/components/icon'
+  import NameAsForm from '@/components/profile/as-form-name'
+  import CallToAction from '@/components/call-to-action'
   import StatementAsTextarea from '@/components/statements/as-textarea'
+  import SignOn from '@/components/profile/sign-on'
+  import { current_user, sign_off } from '@/utils/serverless'
   import { load } from '@/utils/itemid'
   import { ref, onMounted as mounted } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
@@ -8,9 +12,13 @@
   const posting = ref(false)
   const first_name = ref('')
   const nav = ref()
-  const done_posting = () => nav.value.focus()
+  const done_posting = () => {
+    nav.value.focus()
+    posting.value = false
+  }
   const { vVectorizer, image_picker, open_camera, mount_workers } =
     use_vectorize()
+  const form = ref(null)
   mounted(async () => {
     const my = await load(localStorage.me)
     if (my?.first_name) first_name.value = my.first_name
@@ -19,14 +27,25 @@
     mount_workers()
   })
   const toggle_keyboard = () => (posting.value = !posting.value)
+  const show_form = () => form.value.showModal()
+  const dialog_click = event => {
+    if (event.target === form.value) form.value.close()
+  }
 </script>
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
-      <router-link id="settings" to="/settings" tabindex="-1">
-        <icon name="gear" /> <span>{{ first_name }}</span>
-      </router-link>
+      <a id="toggle-name" @click="show_form">{{ first_name }}</a>
+      <dialog ref="form" @click="dialog_click">
+        <name-as-form />
+        <call-to-action />
+        <menu>
+          <button v-if="current_user" @click="sign_off">Sign off</button>
+          <sign-on v-else />
+          <router-link to="/docs">Docs</router-link>
+        </menu>
+      </dialog>
     </header>
     <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
@@ -44,10 +63,10 @@
       <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
         Thoughts
       </router-link>
-      <button v-if="posting" tabindex="-1" @click="done_posting">Done</button>
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
+      <button v-if="posting" @click="done_posting">Done</button>
     </nav>
-    <footer>
+    <footer v-if="!posting">
       <button>{{ version }}</button>
       <a id="camera" @click="open_camera">
         <icon name="camera" />
@@ -71,19 +90,39 @@
     flex-direction: column
     justify-content: center
     max-width: page-width
+    a#toggle-name
+      position: fixed
+      top: base-line
+      left: base-line
     & > header
       opacity: 0.66
       position: fixed
-      top: base-line * 1.5
+      bottom: 0
       left: 0
       @media (min-width: pad-begins)
         top: env(safe-area-inset-top) !important
       &:hover, &:active
         opacity: 1
+      & > dialog
+        border: 3px solid red;
+        border-radius: base-line *.5
+        padding: base-line;
+        & > menu
+          display: flex
+          justify-content: space-between
+          align-items: center
+          & > button
+            border-color: red
+            color: red
+            &:hover
+              background-color: red
+              color: white
       & > a
         display: flex
         align-items: center
         & > svg
+          width: base-line * 0.75
+          height: base-line * 0.75
           display: inline-block
           fill: red
         & > span
@@ -92,7 +131,7 @@
           display: inline-block
           vertical-align: middle
     &.posting
-      align-self: end
+      align-self: start
       margin-top: inset(top)
       height: inherit
       @media (max-width: pad-begins)
@@ -100,11 +139,11 @@
       & > footer
         height: 50vh
       & > nav
+        width: 100%
         transition-duration: 0.5s
         min-height: round(base-line * 10)
         height: round(base-line * 15)
         & > button
-          top: 0
           width: base-line * 3
           height: base-line * 1.66
           line-height: 0

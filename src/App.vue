@@ -1,5 +1,6 @@
 <script setup>
   import sync from '@/components/sync'
+  import SettingsDialog from '@/components/profile/as-dialog.vue'
   import fps from '@/components/fps'
   import { ref, onUnmounted as dismount, onMounted as mounted } from 'vue'
   import { init_serverless } from '@/utils/serverless'
@@ -43,6 +44,7 @@
     <router-view />
     <sync @active="sync_active" />
     <fps v-if="fps_pref" />
+    <settings-dialog />
   </main>
 </template>
 
