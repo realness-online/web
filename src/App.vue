@@ -34,9 +34,15 @@
     status.value = 'offline'
   }
   mounted(async () => {
-    if (window.matchMedia('(display-mode: standalone)').matches)
-      sessionStorage.about = true
+    const is_standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone || // for iOS
+      document.referrer.includes('android-app://')
+
+    if (is_standalone) sessionStorage.about = true
+
     if (!sessionStorage.about) router.push('/about')
+
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     await init_serverless()
