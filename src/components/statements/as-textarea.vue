@@ -120,8 +120,8 @@
       display: none;
       border: none;
       position: absolute;
-      top: base-line;
-      right: base-line;
+      top: inset(top, base-line);
+      right: inset(right, base-line);
       width: fit-content;
       height: fit-content;
       padding: 0;
