@@ -2,12 +2,15 @@ body:has(dialog.confirm[open]) {
   overflow: hidden;
 }
 dialog {
-  margin: base-line auto 0;
+  margin: 25dvh auto 0;
   padding: base-line * 0.5;
   border: 3px solid red;
   border-radius: base-line * 0.5;
   color: var(--text-color);
   background-color: var(--black-transparent);
+  @media (max-width: pad-begins){
+    margin: base-line auto 0;
+  }
   &::backdrop {
     backdrop-filter: blur(base-line * 0.25 );
   }
