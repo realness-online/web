@@ -43,7 +43,9 @@
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
-      <router-link :to="`/docs#${version}`" tabindex="-1">{{version}}</router-link>
+      <router-link :to="`/docs#${version}`" tabindex="-1">{{
+        version
+      }}</router-link>
       <a id="camera" @click="open_camera">
         <icon name="camera" />
       </a>
