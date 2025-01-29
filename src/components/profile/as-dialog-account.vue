@@ -30,15 +30,14 @@
     first_name
   }}</a>
   <dialog id="account" ref="form" @click="dialog_click">
-    <a @click="close_settings">
-      <icon name="finished" />
-    </a>
     <name-as-form />
     <call-to-action />
     <menu>
       <button v-if="current_user" @click="sign_off">Sign off</button>
       <sign-on v-else />
-      <router-link to="/docs">Docs</router-link>
+      <a class="close" @click="close_settings">
+        <icon name="finished" />
+      </a>
     </menu>
   </dialog>
 </template>
@@ -63,19 +62,18 @@
       position: absolute;
       top: base-line * .5;
       right: base-line * .5;
-      & > svg {
-        width: base-line * .75;
-        height: base-line * .75;
-        fill: black;
-      }
+
     }
     & > menu {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      & > a.close > svg {
+        fill: red;
+      }
       & > button {
         border-color: red;
-        color: red;
+        // color: red;
         &:hover {
           background-color: red;
           color: white;
