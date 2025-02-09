@@ -176,7 +176,6 @@ export const use = () => {
  * @returns {Promise<void>}
  */
 export const sync_offline_actions = async () => {
-  console.log('sync_offline_actions')
   if (!navigator.onLine) return
 
   // Handle offline queue (includes both anonymous and logged-in statements)
