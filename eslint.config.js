@@ -16,6 +16,7 @@ export default [
       '**/dist-ssr/**',
       '**/coverage/**',
       'public/**/*.js',
+      'tracer/**',
       '**/docs/generated/**',
       '**/tests/**'
     ]
