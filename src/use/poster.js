@@ -7,7 +7,7 @@ import {
   ref,
   computed,
   getCurrentInstance as current_instance,
-  nextTick as next_tick
+  nextTick as tick
 } from 'vue'
 import { useIntersectionObserver as use_intersect } from '@vueuse/core'
 import {
@@ -93,7 +93,7 @@ export const use = () => {
       const poster = await load(/** @type {Id} */ (props.itemid))
       if (!vector.value) vector.value = poster
     }
-    await next_tick()
+    await tick()
     working.value = false
     use_intersect(
       vector_element,

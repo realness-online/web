@@ -1,6 +1,6 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
-  import { onMounted as mounted, ref, nextTick as next_tick } from 'vue'
+  import { onMounted as mounted, ref, nextTick as tick } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsSvg from '@/components/posters/as-svg'
@@ -38,7 +38,7 @@
    */
   const remove_poster = async id => {
     poster_to_remove.value = await load(id)
-    await next_tick()
+    await tick()
     delete_dialog.value.setAttribute('open', '')
   }
 

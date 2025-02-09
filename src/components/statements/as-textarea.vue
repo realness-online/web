@@ -1,6 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { ref, nextTick as next_tick, inject } from 'vue'
+  import { ref, nextTick as tick, inject } from 'vue'
 
   import { use } from '@/use/statement'
 
@@ -16,7 +16,7 @@
     show_regular.value = false
     const textarea = document.querySelector('textarea#wat')
     textarea.focus()
-    await next_tick()
+    await tick()
     setTimeout(() => {
       window.scrollTo({
         top: 0,

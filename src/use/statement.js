@@ -4,7 +4,7 @@ import { as_created_at, list, as_author } from '@/utils/itemid'
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statement } from '@/persistance/Storage'
-import { ref, onMounted as mounted, nextTick as next_tick } from 'vue'
+import { ref, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 
 const links = ['http://', 'https://']
@@ -61,7 +61,7 @@ export const use = () => {
     }
     if (!statement || links.some(link => statement.includes(link))) return
     my_statements.value.push(post)
-    await next_tick()
+    await tick()
     await new Statement().save()
   }
 

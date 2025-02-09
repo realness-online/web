@@ -12,7 +12,7 @@
     ref,
     inject,
     computed,
-    nextTick as next_tick
+    nextTick as tick
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
@@ -130,7 +130,7 @@
   })
   watch_effect(async () => {
     if (vector.value && props.optimize && !vector.value.optimized) {
-      await next_tick()
+      await tick()
       await run_optimize()
 
     }

@@ -1,4 +1,4 @@
-import { ref, nextTick as next_tick, onUnmounted as dismount } from 'vue'
+import { ref, nextTick as tick, onUnmounted as dismount } from 'vue'
 import get_item from '@/utils/item'
 import { as_query_id } from '@/utils/itemid'
 
@@ -7,7 +7,7 @@ export const use = vector => {
   const optimize = () => {
     optimizer.value = new Worker('/vector.worker.js')
     optimizer.value.addEventListener('message', optimized)
-    next_tick().then(() => {
+    tick().then(() => {
       const element = document.getElementById(as_query_id(vector.value.id))
       optimizer.value.postMessage({
         route: 'optimize:vector',
