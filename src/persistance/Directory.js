@@ -85,7 +85,7 @@ export const build_local_directory = async itemid => {
   everything?.forEach(itemid => {
     if (as_directory_id(/** @type {Id} */ (itemid)) === path) {
       const id = as_created_at(/** @type {Id} */ (itemid))
-      if (id) directory.items.push(/** @type {Id} */ (itemid))
+      if (id) directory.items.push(/** @type {Id} */ (id))
     }
   })
   return directory
