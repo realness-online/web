@@ -72,7 +72,20 @@ export class Event extends Paged(Cloud(Local(Storage))) {
 export class Offline extends Cloud(Storage) {
   async save() {
     const outerHTML = await get(this.id)
-    if (outerHTML) await super.save({ outerHTML })
+    if (!outerHTML) return
+
+    // Transform anonymous IDs to user IDs
+    let target_id = this.id
+    if (target_id.startsWith('/+/')) {
+      const path_parts = target_id.split('/')
+      // Remove the /+/ prefix and replace with user ID
+      path_parts[1] = localStorage.me.replace('/', '')
+      target_id = path_parts.join('/')
+    }
+
+    // Update the instance id to use the transformed id
+    this.id = target_id
+    await super.save({ outerHTML })
   }
 }
 
