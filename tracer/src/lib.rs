@@ -2,9 +2,11 @@ use wasm_bindgen::prelude::*;
 use web_sys::{ImageData};
 use visioncortex::{
     Color, ColorImage,
-    color_clusters::{Clusters, Runner, RunnerConfig, ClusteringMode},
-    PathSimplifier,
-    color_clusters::ClusterConfig
+    color_clusters::{
+        Runner,
+        RunnerConfig,
+    },
+    codebook::BezierPath,
 };
 
 pub fn add(left: u64, right: u64) -> u64 {
@@ -80,42 +82,37 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
         }
     }
 
-    // Configure for exact 32 colors
-    let cluster_config = ClusterConfig {
-        min_clusters: 32,
-        max_clusters: 32,
+    // Updated configuration for 0.7.2
+    let runner_config = RunnerConfig {
+        min_clusters: options.min_color_count as usize,
+        max_clusters: options.max_color_count as usize,
         min_size: options.turd_size as usize,
         color_precision: options.color_precision as usize,
-        mode: ClusteringMode::KMeans, // Use KMeans for better color distribution
-        ..ClusterConfig::default()
+        force_cluster_count: options.force_color_count,
+        hierarchical: options.hierarchical,
+        ..RunnerConfig::default()
     };
 
-    let mut runner = Runner::new(
-        &color_image,
-        RunnerConfig {
-            cluster_config,
-            force_cluster_count: true, // Force exact cluster count
-            ..RunnerConfig::default()
-        }
-    );
-
+    let mut runner = Runner::new(&color_image, runner_config);
     let clusters = runner.run();
 
-    // Ensure we got exactly 32 clusters
-    assert_eq!(clusters.len(), 32, "Failed to generate exactly 32 color segments");
+    // Ensure we got expected number of clusters
+    assert_eq!(clusters.len(), options.color_count as usize,
+        "Failed to generate expected number of color segments");
 
     // Process clusters into paths
     let mut paths = Vec::new();
     for cluster in clusters.iter() {
         let color = cluster.color();
-        let mut simplifier = PathSimplifier::new(
-            cluster.points(),
+        let points = cluster.points();
+
+        // Create a bezier path from points
+        if let Some(path) = BezierPath::from_points(
+            points,
             options.corner_threshold,
             45.0, // splice threshold
             options.path_precision as usize,
-        );
-
-        if let Some(path) = simplifier.build() {
+        ) {
             paths.push(serde_wasm_bindgen::to_value(&(path, color))?);
         }
     }

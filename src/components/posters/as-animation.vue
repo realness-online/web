@@ -23,28 +23,28 @@
       :href="fragment('light')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="5s"
+      dur="34s"
       values="0.9;0.0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="4s"
+      dur="13s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="5s"
+      dur="21s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="3s"
+      dur="34s"
       values="0.9;0;0.9" />
 
     <animate
