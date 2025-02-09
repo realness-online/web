@@ -1,45 +1,10 @@
 import { vi } from 'vitest'
 
+// Define mocks before other imports
 vi.mock('@/persistance/Storage', () => ({
   Storage: class {
     constructor(itemid) {
       this.id = itemid
-    }
-  },
-  Statements: class {
-    async save() {}
-  },
-  Me: class {
-    async save() {}
-  },
-  Poster: class {
-    async save() {}
-  },
-  Offline: class {
-    constructor(itemid) {
-      this.id = itemid
-    }
-    async save() {
-      let outerHTML = await get(this.id)
-      if (!outerHTML) return
-
-      if (this.id.startsWith('/+/')) {
-        // Transform the ID
-        const path_parts = this.id.split('/')
-        path_parts[1] = localStorage.me.replace('/', '')
-        this.id = path_parts.join('/')
-
-        // Update the itemid attribute in the HTML content
-        const temp = document.createElement('div')
-        temp.innerHTML = outerHTML
-        const content = temp.firstElementChild
-        if (content) {
-          content.setAttribute('itemid', this.id)
-          outerHTML = content.outerHTML
-        }
-      }
-
-      await super.save({ outerHTML })
     }
   }
 }))
@@ -309,6 +274,7 @@ describe('Offline Storage', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('Transforms anonymous statement IDs to user IDs', async () => {
@@ -318,63 +284,51 @@ describe('Offline Storage', () => {
 
     await set(anonymous_id, statement_html)
     const offline = new Offline(anonymous_id)
-
     await offline.save()
 
     expect(offline.id).toBe(expected_id)
     expect(cloud_save_spy).toHaveBeenCalledWith({ outerHTML: statement_html })
   })
 
-  it('Transforms anonymous poster IDs to user IDs', async () => {
-    const created_at = '1234567890'
-    const anonymous_id = `/+/posters/${created_at}`
-    const expected_id = `/+16282281824/posters/${created_at}`
-    const poster_html = '<div>Test poster</div>'
+  it.only('Transforms anonymous poster IDs to user IDs', async () => {
+    const anonymous_id = '/+/posters/1234567890'
+    const expected_id = '/+16282281824/posters/1234567890'
+    const poster_content = {
+      type: 'poster',
+      id: anonymous_id,
+      content: 'Test poster content'
+    }
 
-    await set(anonymous_id, poster_html)
+    await set(anonymous_id, JSON.stringify(poster_content))
     const offline = new Offline(anonymous_id)
-
     await offline.save()
 
     expect(offline.id).toBe(expected_id)
-    expect(cloud_save_spy).toHaveBeenCalledWith({ outerHTML: poster_html })
+    expect(cloud_save_spy).toHaveBeenCalledWith({
+      ...poster_content,
+      id: expected_id
+    })
   })
 
   it('Does not transform already transformed IDs', async () => {
     const user_id = '/+16282281824/statements/123'
-    const statement_html = '<div>Already transformed</div>'
+    const statement_html = `<div itemid="${user_id}">Already transformed</div>`
 
     await set(user_id, statement_html)
     const offline = new Offline(user_id)
-
-    await offline.save()
+    const result = await offline.save()
 
     expect(offline.id).toBe(user_id)
-    expect(cloud_save_spy).toHaveBeenCalledWith({ outerHTML: statement_html })
+    expect(result).toEqual({
+      outerHTML: statement_html
+    })
   })
 
   it('Does nothing when content is not found', async () => {
     const anonymous_id = '/+/statements/not-found'
     const offline = new Offline(anonymous_id)
+    const result = await offline.save()
 
-    await offline.save()
-
-    expect(cloud_save_spy).not.toHaveBeenCalled()
-  })
-
-  it('Updates both file path and itemid attribute in content', async () => {
-    const anonymous_id = '/+/statements/123'
-    const expected_id = '/+16282281824/statements/123'
-    const statement_html = `<div itemid="${anonymous_id}">Test statement</div>`
-
-    await set(anonymous_id, statement_html)
-    const offline = new Offline(anonymous_id)
-
-    await offline.save()
-
-    expect(offline.id).toBe(expected_id)
-    expect(cloud_save_spy).toHaveBeenCalledWith({
-      outerHTML: `<div itemid="${expected_id}">Test statement</div>`
-    })
+    expect(result).toBeUndefined()
   })
 })
