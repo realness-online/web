@@ -63,7 +63,7 @@
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
   const stroke_opacity = ref('0.90')
-  const stroke_width = ref('1.0')
+  const stroke_width = ref('0.66')
   mounted(() => {
     fill.value = props.fill
     stroke.value = props.stroke
