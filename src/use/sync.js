@@ -6,10 +6,10 @@ import { Offline, Statement, Event, Poster, Me } from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statement'
 import { current_user, location, metadata } from '@/utils/serverless'
-import get_item from '@/utils/item'
 import { format_time_remaining } from '@/utils/date'
 import { create_hash } from '@/utils/upload-processor'
-
+import { mutex } from '@/utils/algorithms'
+import get_item from '@/utils/item'
 import {
   ref,
   onMounted as mounted,
@@ -148,34 +148,6 @@ export const use = () => {
     }
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_anonymous_posters = async () => {
-    await del('/+/posters/') // TODO:  Maybe overkill
-    const offline_posters = await build_local_directory('/+/posters/')
-    if (!offline_posters || !offline_posters.items) return
-    await Promise.all(
-      offline_posters.items.map(created_at => save_poster(created_at))
-    )
-  }
-
-  /**
-   * @param {number} created_at
-   * @returns {Promise<void>}
-   */
-  const save_poster = async created_at => {
-    const poster_string = await get(`/+/posters/${created_at}`)
-    sync_poster.value = get_item(poster_string)
-    sync_poster.value.id = /** @type {Id} */ (
-      `${localStorage.me}/posters/${created_at}`
-    )
-    await tick()
-    await new Poster(sync_poster.value.id).save()
-    sync_poster.value = null
-    await del(`/+/posters/${created_at}`)
-  }
-
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
@@ -188,10 +160,7 @@ export const use = () => {
   })
 
   watch(current_user, async () => {
-    if (current_user.value) {
-      await sync_anonymous_posters()
-      await play()
-    }
+    if (current_user.value) await play()
   })
   return {
     events,
@@ -203,25 +172,41 @@ export const use = () => {
   }
 }
 
-const get_index_hash = async itemid =>
-  ((await get('sync:index')) || {})[itemid]?.customMetadata?.hash
+/**
+ * @returns {Promise<void>}
+ */
+export const sync_offline_actions = async () => {
+  console.log('sync_offline_actions')
+  if (!navigator.onLine) return
 
-const mutex = {
-  locked: false,
-  queue: [],
-  lock: async () => {
-    if (mutex.locked)
-      await new Promise(resolve => {
-        mutex.queue.push(resolve)
+  // Handle offline queue (includes both anonymous and logged-in statements)
+  const offline = await get('sync:offline')
+  if (offline) {
+    while (offline.length) {
+      const item = offline.pop()
+      if (item.action === 'save') await new Offline(item.id).save()
+      else if (item.action === 'delete') await new Offline(item.id).delete()
+      else console.info('weird:unknown-offline-action', item.action, item.id)
+    }
+    await del('sync:offline')
+  }
+
+  // Handle anonymous posters using the same Offline mechanism
+  const offline_posters = await build_local_directory('/+/posters/')
+  if (offline_posters?.items?.length) {
+    await Promise.all(
+      offline_posters.items.map(async created_at => {
+        const anonymous_id = /** @type {Id} */ (`/+/posters/${created_at}`)
+        await new Offline(anonymous_id).save()
+        await del(anonymous_id)
       })
-    else mutex.locked = true
-  },
-  unlock: () => {
-    mutex.locked = false
-    const next = mutex.queue.shift()
-    if (next) next()
+    )
+    await del('/+/posters/') // Clean up the directory after migration
   }
 }
+
+const get_index_hash = async itemid =>
+  ((await get('sync:index')) || {})[itemid]?.customMetadata?.hash
 
 /**
  * @param {Id} itemid
@@ -281,23 +266,6 @@ export const sync_me = async () => {
   if (hash !== index_hash) {
     localStorage.removeItem(id)
     del(id)
-  }
-}
-
-/**
- * @returns {Promise<void>}
- */
-export const sync_offline_actions = async () => {
-  if (navigator.onLine) {
-    const offline = await get('sync:offline')
-    if (!offline) return
-    while (offline.length) {
-      const item = offline.pop()
-      if (item.action === 'save') await new Offline(item.id).save()
-      else if (item.action === 'delete') await new Offline(item.id).delete()
-      else console.info('weird:unknown-offline-action', item.action, item.id)
-    }
-    await del('sync:offline')
   }
 }
 
