@@ -67,3 +67,4 @@ Cargo.lock
 /artifacts/
 **/artifacts/
 *.wasm
+/tracer/tracer
