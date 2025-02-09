@@ -132,7 +132,6 @@
     if (vector.value && props.optimize && !vector.value.optimized) {
       await tick()
       await run_optimize()
-
     }
   })
 </script>
