@@ -12,7 +12,7 @@
     computed,
     watchEffect as watch_effect,
     onUpdated as updated,
-    nextTick as next_tick
+    nextTick as tick
   } from 'vue'
   const props = defineProps({
     slice: {
@@ -59,7 +59,7 @@
   }
   const on_show = async shown_vector => {
     vector.value = shown_vector
-    await next_tick()
+    await tick()
     emit('show', vector.value)
   }
   watch_effect(async () => {

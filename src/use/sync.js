@@ -14,7 +14,7 @@ import {
   ref,
   onMounted as mounted,
   onUnmounted as dismount,
-  nextTick as next_tick,
+  nextTick as tick,
   getCurrentInstance as current_instance,
   provide,
   watch
@@ -61,7 +61,7 @@ export const use = () => {
 
     if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
-      await next_tick()
+      await tick()
       await new Me().save()
     }
   }
@@ -120,7 +120,7 @@ export const use = () => {
     if (index_hash !== hash) {
       statements.value = await persistance.sync()
       if (statements.value.length) {
-        await next_tick()
+        await tick()
         await persistance.save(elements)
         localStorage.removeItem('/+/statements')
       }
@@ -141,7 +141,7 @@ export const use = () => {
     if (index_hash !== hash) {
       events.value = await events.sync()
       if (events.value.length) {
-        await next_tick()
+        await tick()
         await events.save(elements)
         localStorage.removeItem('/+/events')
       }
@@ -170,7 +170,7 @@ export const use = () => {
     sync_poster.value.id = /** @type {Id} */ (
       `${localStorage.me}/posters/${created_at}`
     )
-    await next_tick()
+    await tick()
     await new Poster(sync_poster.value.id).save()
     sync_poster.value = null
     await del(`/+/posters/${created_at}`)

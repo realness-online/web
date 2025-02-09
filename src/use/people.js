@@ -1,5 +1,5 @@
 /** @typedef {import('@/types').Id} Id */
-import { ref, computed, nextTick as next_tick } from 'vue'
+import { ref, computed, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
@@ -84,11 +84,11 @@ export const use_me = () => {
     relations.value = list
   })
   const save = async () => {
-    await next_tick()
+    await tick()
     new Me().save()
   }
   const is_valid_name = computed(async () => {
-    await next_tick()
+    await tick()
     if (!current_user.value) return false
     let length = 0
     if (!me.value) return false

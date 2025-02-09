@@ -6,7 +6,7 @@
     onMounted as mounted,
     ref,
     computed,
-    nextTick as next_tick
+    nextTick as tick
   } from 'vue'
   const emit = defineEmits(['signed-on'])
   const { me } = use_me()
@@ -54,7 +54,7 @@
     disable_input()
     show_authorize.value = false
     show_captcha.value = true
-    await next_tick()
+    await tick()
     human.value = new Recaptcha(auth.value, 'captcha', {
       size: 'invisible',
       callback: text_human_verify_code
@@ -65,7 +65,7 @@
     working.value = false
     show_code.value = true
     hide_captcha.value = true
-    await next_tick()
+    await tick()
     authorizer.value = await sign_in(
       auth.value,
       `+${mobile_number.value}`,
