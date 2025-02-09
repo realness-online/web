@@ -6,7 +6,13 @@ import { Large } from '@/persistance/Large'
 import { Cloud } from '@/persistance/Cloud'
 import { Paged } from '@/persistance/Paged'
 import { current_user, upload } from '@/utils/serverless'
-import { as_type, as_filename } from '@/utils/itemid'
+import {
+  as_type,
+  as_filename,
+  as_created_at,
+  as_query_id,
+  is_itemid
+} from '@/utils/itemid'
 import { get } from 'idb-keyval'
 import { prepare_upload_html } from '@/utils/upload-processor'
 
@@ -71,21 +77,30 @@ export class Event extends Paged(Cloud(Local(Storage))) {
 /** @extends {Storage} */
 export class Offline extends Cloud(Storage) {
   async save() {
-    const outerHTML = await get(this.id)
-    if (!outerHTML) return
+    const outer_html = await get(this.id)
+    if (!outer_html) return
 
-    // Transform anonymous IDs to user IDs
-    let target_id = this.id
-    if (target_id.startsWith('/+/')) {
-      const path_parts = target_id.split('/')
-      // Remove the /+/ prefix and replace with user ID
-      path_parts[1] = localStorage.me.replace('/', '')
-      target_id = path_parts.join('/')
+    let { id } = this
+    if (id.startsWith('/+/'))
+      id = /** @type {Id} */ (
+        `${localStorage.me}/${as_type(id)}/${as_created_at(id)}`
+      )
+    if (!is_itemid(id)) {
+      console.error('invalid itemid', id)
+      return
     }
 
-    // Update the instance id to use the transformed id
-    this.id = target_id
-    await super.save({ outerHTML })
+    const temp_container = document.createElement('div')
+    temp_container.innerHTML = outer_html
+
+    const content = temp_container.firstElementChild
+    if (content) {
+      content.setAttribute('itemid', id)
+      content.id = as_query_id(id)
+    }
+
+    this.id = id
+    await super.save({ outerHTML: temp_container.innerHTML })
   }
 }
 

@@ -37,6 +37,7 @@ export const Cloud = superclass =>
       } else if (current_user.value || localStorage.me)
         await sync_later(this.id, 'save')
     }
+
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
@@ -44,6 +45,7 @@ export const Cloud = superclass =>
       if (networkable.includes(this.type))
         await this.to_network(items.outerHTML)
     }
+
     async delete() {
       console.info('request:delete', this.id)
       if (navigator.onLine && current_user.value) {
