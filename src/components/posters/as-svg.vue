@@ -11,7 +11,8 @@
     onMounted as mounted,
     ref,
     inject,
-    computed
+    computed,
+    nextTick as next_tick
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
@@ -127,9 +128,12 @@
       emit('show', vector.value)
     }
   })
-  watch_effect(() => {
-    if (vector.value && props.optimize && !vector.value.optimized)
-      run_optimize()
+  watch_effect(async () => {
+    if (vector.value && props.optimize && !vector.value.optimized) {
+      await next_tick()
+      await run_optimize()
+
+    }
   })
 </script>
 
