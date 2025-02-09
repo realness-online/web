@@ -9,7 +9,6 @@ import { current_user, location, metadata } from '@/utils/serverless'
 import { format_time_remaining } from '@/utils/date'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex } from '@/utils/algorithms'
-import get_item from '@/utils/item'
 import {
   ref,
   onMounted as mounted,

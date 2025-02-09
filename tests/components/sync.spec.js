@@ -20,13 +20,23 @@ vi.mock('@/persistance/Storage', () => ({
       this.id = itemid
     }
     async save() {
-      const outerHTML = await get(this.id)
+      let outerHTML = await get(this.id)
       if (!outerHTML) return
 
       if (this.id.startsWith('/+/')) {
+        // Transform the ID
         const path_parts = this.id.split('/')
         path_parts[1] = localStorage.me.replace('/', '')
         this.id = path_parts.join('/')
+
+        // Update the itemid attribute in the HTML content
+        const temp = document.createElement('div')
+        temp.innerHTML = outerHTML
+        const content = temp.firstElementChild
+        if (content) {
+          content.setAttribute('itemid', this.id)
+          outerHTML = content.outerHTML
+        }
       }
 
       await super.save({ outerHTML })
@@ -350,5 +360,21 @@ describe('Offline Storage', () => {
     await offline.save()
 
     expect(cloud_save_spy).not.toHaveBeenCalled()
+  })
+
+  it('Updates both file path and itemid attribute in content', async () => {
+    const anonymous_id = '/+/statements/123'
+    const expected_id = '/+16282281824/statements/123'
+    const statement_html = `<div itemid="${anonymous_id}">Test statement</div>`
+
+    await set(anonymous_id, statement_html)
+    const offline = new Offline(anonymous_id)
+
+    await offline.save()
+
+    expect(offline.id).toBe(expected_id)
+    expect(cloud_save_spy).toHaveBeenCalledWith({
+      outerHTML: `<div itemid="${expected_id}">Test statement</div>`
+    })
   })
 })
