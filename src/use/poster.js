@@ -137,9 +137,7 @@ export const use_posters = () => {
    */
   const for_person = async person => {
     const directory = await as_directory(`${person.id}/posters`)
-    console.log('directory', directory)
     directory.items.forEach(created_at => {
-      console.log('for person', person.id, created_at)
       posters.value.push({
         id: `${person.id}/posters/${created_at}`,
         type: 'posters'
@@ -234,7 +232,6 @@ export const is_vector_id = itemid => {
  * @returns {boolean}
  */
 export const is_vector = vector => {
-  console.log('vector', vector)
   if (!vector || typeof vector !== 'object') return false
   if (!is_vector_id(vector.id)) return false
   if (vector.path) return false
