@@ -48,7 +48,7 @@
         const creator = await load(author_id)
         const facts = `${time}.svg`
         if (creator?.first_name)
-          return `${creator.first_name}_${creator.last_name}_${facts}`
+          return `${creator.first_name}-${creator.last_name}, ${facts}`
         return facts
       }
     }
