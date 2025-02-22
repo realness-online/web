@@ -170,10 +170,10 @@
       }
       #camera {
         border-radius: base-line;
-        padding: base-line * 0.5;
+
         position: fixed;
-        bottom: base-line;
-        right: s('calc( 50% - %s)', (base-line * 1.5));
+        bottom: base-line * 2;
+        right: s('calc( 50% - %s)', (3.3325rem * 0.5));
         z-index: 4;
         svg {
           fill: red;
