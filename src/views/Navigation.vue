@@ -170,7 +170,6 @@
       }
       #camera {
         border-radius: base-line;
-
         position: fixed;
         bottom: base-line * 2;
         right: s('calc( 50% - %s)', (3.3325rem * 0.5));
