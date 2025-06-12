@@ -5,10 +5,11 @@ let tracer_options
 let initialized = false
 
 const init_tracer = async () => {
-  const wasm = await WebAssembly.instantiateStreaming(
-    fetch(new URL('@/wasm/tracer_bg.wasm', import.meta.url))
+  const response = await fetch(
+    new URL('@/wasm/tracer_bg.wasm', import.meta.url)
   )
-  initSync({ module: wasm.instance.exports })
+  const wasm_bytes = await response.arrayBuffer()
+  initSync({ module: wasm_bytes })
 
   tracer_options = new TraceOptions()
   tracer_options.color_count = 32
