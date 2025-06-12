@@ -33,7 +33,11 @@ const create_worker_config = filename => ({
           copy({
             targets: [
               {
-                src: ['tracer/pkg/tracer_bg.wasm', 'tracer/pkg/tracer.js'],
+                src: 'tracer/pkg/tracer_bg.wasm',
+                dest: 'public/wasm'
+              },
+              {
+                src: 'tracer/pkg/tracer.js',
                 dest: 'src/wasm'
               }
             ],
