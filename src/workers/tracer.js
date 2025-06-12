@@ -1,4 +1,4 @@
-import init, { process_image } from '@/artifacts/wasm/tracer'
+import init, { process_image } from '/wasm/tracer'
 
 export const tracer_options = {
   // Color quantization options
@@ -22,8 +22,16 @@ export const tracer_options = {
   force_color_count: true,
 
   // Additional options
-  hierarchical: true, // generate hierarchical SVG
-  keep_details: true // preserve small details
+  hierarchical: 1,
+  keep_details: true,
+  diagonal: false,
+  batch_size: 25600,
+  good_min_area: 16,
+  good_max_area: 256 * 256,
+  is_same_color_a: 4,
+  is_same_color_b: 1,
+  deepen_diff: 64,
+  hollow_neighbours: 1
 }
 
 /**
