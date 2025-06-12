@@ -13,10 +13,7 @@ const create_worker_config = filename => ({
   output: {
     file: `public/${filename}.worker.js`,
     format: 'iife',
-    name: 'worker',
-    globals: {
-      '/wasm/tracer': 'init'
-    }
+    name: 'worker'
   },
   plugins: [
     alias({
@@ -31,22 +28,25 @@ const create_worker_config = filename => ({
       browser: true
     }),
     commonjs(),
-    copy({
-      targets: [
-        {
-          src: ['tracer/pkg/tracer_bg.wasm', 'tracer/pkg/tracer.js'],
-          dest: 'public/wasm',
-          rename: (name) => name === 'tracer.js' ? 'tracer.js' : 'tracer_bg.wasm'
-        }
-      ]
-    }),
+    ...(filename === 'tracer'
+      ? [
+          copy({
+            targets: [
+              {
+                src: ['tracer/pkg/tracer_bg.wasm', 'tracer/pkg/tracer.js'],
+                dest: 'src/wasm'
+              }
+            ],
+            hook: 'buildStart'
+          })
+        ]
+      : []),
     analyzer({
       summaryOnly: true,
       limit: 10,
       filter: ({ size }) => size > 1000
     })
-  ],
-  external: ['/wasm/tracer']
+  ]
 })
 
 export default [

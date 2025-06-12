@@ -1,74 +1,69 @@
-import init, { process_image } from '/wasm/tracer'
+import { initSync, process_image, TraceOptions } from '@/wasm/tracer.js'
+import { size } from '@/utils/image.js'
 
-export const tracer_options = {
-  // Color quantization options
-  color_count: 32, // target exactly 32 colors
-  min_color_count: 32, // force minimum 32 colors
-  max_color_count: 32, // force maximum 32 colors
+let tracer_options
+let initialized = false
 
-  // Shape detection options
-  turd_size: 20, // lowered to keep more details since we want many segments
-  corner_threshold: 60, // angle threshold for corners (degrees)
+const init_tracer = async () => {
+  const response = await fetch('/wasm/tracer_bg.wasm')
+  const wasm_bytes = await response.arrayBuffer()
+  initSync({ module: wasm_bytes })
 
-  // Curve fitting options
-  splice_threshold: 45, // max angle for curve splicing
-  filter_speckle: 4, // remove speckles of this size
+  tracer_options = new TraceOptions()
+  tracer_options.color_count = 32
+  tracer_options.min_color_count = 32
+  tracer_options.max_color_count = 32
+  tracer_options.turd_size = 20
+  tracer_options.corner_threshold = 60
+  tracer_options.color_precision = 8
+  tracer_options.path_precision = 8
+  tracer_options.force_color_count = true
+  tracer_options.hierarchical = 1
+  tracer_options.keep_details = true
+  tracer_options.diagonal = false
+  tracer_options.batch_size = 25600
+  tracer_options.good_min_area = 16
+  tracer_options.good_max_area = 256 * 256
+  tracer_options.is_same_color_a = 4
+  tracer_options.is_same_color_b = 1
+  tracer_options.deepen_diff = 64
+  tracer_options.hollow_neighbours = 1
 
-  // Color clustering
-  color_precision: 8, // increased for better color distinction
-  path_precision: 8, // decimal places in path data
-
-  // Force exact color count
-  force_color_count: true,
-
-  // Additional options
-  hierarchical: 1,
-  keep_details: true,
-  diagonal: false,
-  batch_size: 25600,
-  good_min_area: 16,
-  good_max_area: 256 * 256,
-  is_same_color_a: 4,
-  is_same_color_b: 1,
-  deepen_diff: 64,
-  hollow_neighbours: 1
+  initialized = true
 }
 
 /**
  * @param {File} file
  * @returns {Promise<ImageBitmap>}
  */
-export const read = file => {
+const read = file => {
   const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
   const blob = new Blob([array_buffer])
   return createImageBitmap(blob)
 }
 
-/**
- * @param {MessageEvent} message
- * @returns {Promise<Object>}
- */
-export const make_trace = async message => {
-  console.time('make:trace')
-
-  // Initialize WASM module
-  await init()
-
+const make_trace = async message => {
   const image = await read(message.data.image)
-  const canvas = new OffscreenCanvas(image.width, image.height)
+  console.log('Image loaded:', image.width, 'x', image.height)
+
+  const canvas = size(image)
   const ctx = canvas.getContext('2d')
-
-  ctx.drawImage(image, 0, 0)
   const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  console.log(
+    'Image data:',
+    image_data.width,
+    'x',
+    image_data.height,
+    'bytes:',
+    image_data.data.length
+  )
 
-  // Call our Rust/WASM function
   const trace = await process_image(image_data, tracer_options)
-
-  console.timeEnd('make:trace')
+  console.log('Trace complete')
   return { trace }
 }
 
-export const route_message = async message => {
+const route_message = async message => {
   const { route } = message.data
   let reply = {}
 
@@ -82,7 +77,19 @@ export const route_message = async message => {
   return reply
 }
 
+// Initialize on worker start
+let init_promise = init_tracer().catch(error => {
+  console.error('Failed to initialize tracer:', error)
+  self.postMessage({ error: 'Failed to initialize tracer' })
+})
+
 self.addEventListener('message', async event => {
-  const reply = await route_message(event)
-  self.postMessage(reply)
+  try {
+    await init_promise
+    const reply = await route_message(event)
+    self.postMessage({ data: reply })
+  } catch (error) {
+    console.error('Error in message handler:', error)
+    self.postMessage({ error: error.message })
+  }
 })

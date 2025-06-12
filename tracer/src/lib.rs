@@ -37,6 +37,7 @@ pub struct TraceOptions {
     pub max_color_count: u32,
     pub turd_size: u32,
     pub corner_threshold: f64,
+    pub splice_threshold: f64,
     pub color_precision: u32,
     pub path_precision: u32,
     pub force_color_count: bool,
@@ -62,6 +63,7 @@ impl TraceOptions {
             max_color_count: 32,
             turd_size: 20,
             corner_threshold: 60.0,
+            splice_threshold: 45.0,
             color_precision: 8,
             path_precision: 8,
             force_color_count: true,
@@ -136,7 +138,7 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
             1.0, // outset_ratio
             1.0, // segment_length
             4,   // max_iterations
-            45.0_f64.to_radians(), // splice_threshold
+            options.splice_threshold.to_radians(), // splice_threshold
         );
 
         // Convert spline to SVG path string
