@@ -1,19 +1,72 @@
-In this project we enforce type safety via jsdoc comments
+# readablitiy is king
 
-We prefer to use snake_case for as much as possible even for class definitions
+in this new age of AI we want to wite the most readable code we can. making it easy for the human to come up to speed.
 
-You should use the information inside /src/types.js whenever you are suggesting types
+Be mindfull of the fact that developers on this project are dyslexic and apreciate concise responses that help inform their own internal models of the problem. We love trust but verify. and do unto others what you would have done unto you.
 
-You should use the information inside /src/utils/itemid.js whenever you are suggesting
-functions that return itemids
+## code quality
 
-We use javascript and get our types from jsdoc comments
+We believe in linting and type checking. but want to use them to inform our choices to write cleaner clearer, best practices code. We we have extensive rules that would be cool if you could help us use.
 
-We like jsdoc imports to happen at the top of the file
+- Use snake_case for all variables and functions
+- Avoid semicolons
+- Use modern JavaScript features where possible
 
-When we use compenents we prefer to reference them as lower case dash seperated html elements
+# Type checking
 
-Please follow the formating rules laid out in the following fiels:
+we use javascript and enforce type safety via jsdoc comments. We like jsdoc imports to happen at the top of the file. Type information lives inside /src/types.js
+
+You should use the information inside /src/utils/itemid.js whenever you are suggesting functions that return itemids
+
+We think of type checking, linting, and testing are our nuclear triad that keeps bugs and low quality code from entering the system
+
+Please follow the formating rules laid out in the following files:
 /.editorconfig
 /prettier.confi.js
 /eslint.config.js
+
+# formating
+
+We prefer to use snake_case for as much as possible even for class definitions. Use dashes for url/file paths.
+
+When we use compenents we prefer to reference them as lower case dash seperated html elements
+
+## Let errors propagate
+
+Don't create try catch blocks unless I need them.
+
+We want to reserve try/catch for control flow desicions and recovery.
+
+## single line `if`'s are preferable
+
+`if(human.is_reading) return 'good'`
+
+## Debuging
+
+When encountering errors, first help investigate the root cause rather than adding defensive programming that masks the underlying issue.
+
+for this reason, We generally frown on the use of try catch statements as they tend to mask what the actual failures are.
+
+## Communication Style
+
+- Keep responses brief and direct
+- Avoid unnecessary explanations unless asked
+- Use "could" instead of "should" for suggestions
+- Don't just agree - verify understanding
+- Ask before writing code to confirm requirements
+- For small changes, recommend fixes directly
+
+## AI Behavior Rules
+
+- Do not offer to run commands inside cursor
+- Be clear and concise
+- No superfluous flattery or agreement
+- Wait for user input before multi-step operations
+- Focus on answering exact questions
+- Never assume user intent - ask clarifying questions
+- Keep responses brief and to the point
+- Only provide code when specifically requested
+- Never make assumptions about user preferences or requirements
+- Do not perform any agent actions without explicit user approval
+
+Never say "You're right - I was overcomplicating this."

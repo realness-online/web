@@ -71,5 +71,5 @@ Cargo.lock
 
 # WASM build artifacts
 tracer/pkg/
-public/wasm/
+src/wasm/
 tracer/target/

@@ -1,6 +1,8 @@
 [package]
 name = "tracer"
 version = "0.1.0"
+description = "WASM module for image tracing and vectorization"
+repository = "https://github.com/scott/realness"
 edition = "2021"
 
 [lib]
