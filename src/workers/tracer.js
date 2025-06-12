@@ -11,9 +11,9 @@ const init_tracer = async () => {
 
   tracer_options = new TraceOptions()
   tracer_options.color_count = 32
-  tracer_options.min_color_count = 32
+  tracer_options.min_color_count = 16
   tracer_options.max_color_count = 32
-  tracer_options.turd_size = 20
+  tracer_options.turd_size = 10
   tracer_options.corner_threshold = 60
   tracer_options.color_precision = 8
   tracer_options.path_precision = 8
@@ -21,12 +21,12 @@ const init_tracer = async () => {
   tracer_options.hierarchical = 1
   tracer_options.keep_details = true
   tracer_options.diagonal = false
-  tracer_options.batch_size = 25600
+  tracer_options.batch_size = 512
   tracer_options.good_min_area = 16
-  tracer_options.good_max_area = 256 * 256
-  tracer_options.is_same_color_a = 4
-  tracer_options.is_same_color_b = 1
-  tracer_options.deepen_diff = 64
+  tracer_options.good_max_area = 512 * 1024
+  tracer_options.is_same_color_a = 8
+  tracer_options.is_same_color_b = 2
+  tracer_options.deepen_diff = 32
   tracer_options.hollow_neighbours = 1
 
   initialized = true
@@ -55,11 +55,42 @@ const make_trace = async message => {
     'x',
     image_data.height,
     'bytes:',
-    image_data.data.length
+    image_data.data.length,
+    'first few pixels:',
+    Array.from(image_data.data.slice(0, 16))
   )
 
+  // Verify image data is valid
+  if (image_data.data.length !== image_data.width * image_data.height * 4) {
+    throw new Error(
+      `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * 4}`
+    )
+  }
+
+  // Adjust tracer options based on image dimensions
+  const short_side = Math.min(image_data.width, image_data.height)
+  const area = image_data.width * image_data.height
+
+  // Scale batch size with image dimensions
+  tracer_options.batch_size = short_side
+
+  // Scale good_min_area with image size
+  tracer_options.good_min_area = Math.floor(area * 0.0001)
+
+  // Scale good_max_area with image size
+  tracer_options.good_max_area = area
+
+  console.log('Adjusted tracer options:', {
+    batch_size: tracer_options.batch_size,
+    good_min_area: tracer_options.good_min_area,
+    good_max_area: tracer_options.good_max_area,
+    is_same_color_a: tracer_options.is_same_color_a,
+    is_same_color_b: tracer_options.is_same_color_b,
+    deepen_diff: tracer_options.deepen_diff
+  })
+
   const trace = await process_image(image_data, tracer_options)
-  console.log('Trace complete')
+  console.log('Trace complete:', trace)
   return { trace }
 }
 
