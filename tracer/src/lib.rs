@@ -5,8 +5,9 @@ use visioncortex::{
     color_clusters::{
         Runner,
         RunnerConfig,
+        KeyingAction,
     },
-    codebook::BezierPath,
+    BinaryImage,
 };
 
 pub fn add(left: u64, right: u64) -> u64 {
@@ -39,8 +40,16 @@ pub struct TraceOptions {
     pub color_precision: u32,
     pub path_precision: u32,
     pub force_color_count: bool,
-    pub hierarchical: bool,
+    pub hierarchical: u32,
     pub keep_details: bool,
+    pub diagonal: bool,
+    pub batch_size: i32,
+    pub good_min_area: usize,
+    pub good_max_area: usize,
+    pub is_same_color_a: i32,
+    pub is_same_color_b: i32,
+    pub deepen_diff: i32,
+    pub hollow_neighbours: usize,
 }
 
 #[wasm_bindgen]
@@ -56,8 +65,16 @@ impl TraceOptions {
             color_precision: 8,
             path_precision: 8,
             force_color_count: true,
-            hierarchical: true,
+            hierarchical: 1,
             keep_details: true,
+            diagonal: false,
+            batch_size: 25600,
+            good_min_area: 16,
+            good_max_area: 256 * 256,
+            is_same_color_a: 4,
+            is_same_color_b: 1,
+            deepen_diff: 64,
+            hollow_neighbours: 1,
         }
     }
 }
@@ -68,7 +85,9 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
     let height = image_data.height() as usize;
     let data = image_data.data();
 
-    let mut color_image = ColorImage::new(width, height);
+    let mut color_image = ColorImage::new();
+    color_image.pixels.resize(width * height, 0);
+
     for y in 0..height {
         for x in 0..width {
             let i = (y * width + x) * 4;
@@ -76,45 +95,63 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
                 data[i],     // r
                 data[i + 1], // g
                 data[i + 2], // b
-                data[i + 3], // a
             );
-            color_image.set(x, y, color);
+            color_image.set_pixel(x, y, &color);
         }
     }
 
-    // Updated configuration for 0.7.2
     let runner_config = RunnerConfig {
-        min_clusters: options.min_color_count as usize,
-        max_clusters: options.max_color_count as usize,
-        min_size: options.turd_size as usize,
-        color_precision: options.color_precision as usize,
-        force_cluster_count: options.force_color_count,
+        diagonal: options.diagonal,
         hierarchical: options.hierarchical,
-        ..RunnerConfig::default()
+        batch_size: options.batch_size,
+        good_min_area: options.good_min_area,
+        good_max_area: options.good_max_area,
+        is_same_color_a: options.is_same_color_a,
+        is_same_color_b: options.is_same_color_b,
+        deepen_diff: options.deepen_diff,
+        hollow_neighbours: options.hollow_neighbours,
+        key_color: Color::default(),
+        keying_action: KeyingAction::default(),
     };
 
-    let mut runner = Runner::new(&color_image, runner_config);
+    let runner = Runner::new(runner_config, color_image);
     let clusters = runner.run();
 
-    // Ensure we got expected number of clusters
-    assert_eq!(clusters.len(), options.color_count as usize,
-        "Failed to generate expected number of color segments");
-
     // Process clusters into paths
-    let mut paths = Vec::new();
-    for cluster in clusters.iter() {
-        let color = cluster.color();
-        let points = cluster.points();
+    let paths = js_sys::Array::new();
+    let view = clusters.view();
+    for index in view.clusters_output.iter() {
+        let cluster = view.get_cluster(*index);
+        let color = cluster.residue_color();
 
-        // Create a bezier path from points
-        if let Some(path) = BezierPath::from_points(
-            points,
-            options.corner_threshold,
-            45.0, // splice threshold
-            options.path_precision as usize,
-        ) {
-            paths.push(serde_wasm_bindgen::to_value(&(path, color))?);
-        }
+        // Create binary image for this cluster
+        let mut binary_image = BinaryImage::new_w_h(view.width as usize, view.height as usize);
+        cluster.render_to_binary_image(&view, &mut binary_image);
+
+        // Create a spline from the binary image
+        let spline = visioncortex::Spline::from_image(
+            &binary_image,
+            true, // clockwise
+            options.corner_threshold.to_radians(),
+            1.0, // outset_ratio
+            1.0, // segment_length
+            4,   // max_iterations
+            45.0_f64.to_radians(), // splice_threshold
+        );
+
+        // Convert spline to SVG path string
+        let path_string = spline.to_svg_string(true, &visioncortex::PointF64::default(), Some(options.path_precision));
+
+        let path_obj = js_sys::Object::new();
+        js_sys::Reflect::set(&path_obj, &"path".into(), &JsValue::from_str(&path_string))?;
+
+        let color_obj = js_sys::Object::new();
+        js_sys::Reflect::set(&color_obj, &"r".into(), &JsValue::from_f64(color.r as f64))?;
+        js_sys::Reflect::set(&color_obj, &"g".into(), &JsValue::from_f64(color.g as f64))?;
+        js_sys::Reflect::set(&color_obj, &"b".into(), &JsValue::from_f64(color.b as f64))?;
+
+        js_sys::Reflect::set(&path_obj, &"color".into(), &color_obj)?;
+        paths.push(&path_obj);
     }
 
     // Create result object
@@ -123,7 +160,7 @@ pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsV
     js_sys::Reflect::set(
         &result,
         &"paths".into(),
-        &serde_wasm_bindgen::to_value(&paths)?
+        &paths.into()
     )?;
 
     js_sys::Reflect::set(

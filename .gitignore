@@ -68,3 +68,8 @@ Cargo.lock
 **/artifacts/
 *.wasm
 /tracer/tracer
+
+# WASM build artifacts
+tracer/pkg/
+public/wasm/
+tracer/target/

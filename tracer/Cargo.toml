@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 image = "0.23"
 visioncortex = "0.8.8"
 wasm-bindgen = "0.2"
+
 js-sys = "0.3"
 web-sys = { version = "0.3", features = [
     "console",
@@ -19,3 +20,4 @@ web-sys = { version = "0.3", features = [
 ]}
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.5"
+console_error_panic_hook = "0.1"
