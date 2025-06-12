@@ -19,6 +19,7 @@ import ExifReader from 'exifreader'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
+const new_trace = ref(null)
 
 export const use = () => {
   const router = use_router()
@@ -26,6 +27,7 @@ export const use = () => {
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
+  const tracer = ref(null)
 
   const can_add = computed(() => {
     if (working.value || new_vector.value) return false
@@ -73,7 +75,7 @@ export const use = () => {
      * @param {Object} binding
      */
     mounted: (input, binding) => {
-      input.addEventListener('change', event => listener(input, binding, event))
+      input.addEventListener('change', listener)
     }
   }
 
@@ -88,6 +90,7 @@ export const use = () => {
 
     vectorizer.value.postMessage({ route: 'make:vector', image, exif })
     gradienter.value.postMessage({ route: 'make:gradient', image })
+    tracer.value.postMessage({ route: 'make:trace', image })
   }
 
   /**
@@ -114,12 +117,15 @@ export const use = () => {
     new_vector.value = vector
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
+  const traced = message => (new_vector.value.trace = message.data.trace)
 
   const mount_workers = () => {
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/vector.worker.js')
+    tracer.value = new Worker('/tracer.worker.js')
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
+    tracer.value.addEventListener('message', traced)
   }
 
   watch_effect(() => {
@@ -135,6 +141,7 @@ export const use = () => {
   dismount(() => {
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
+    if (tracer.value) tracer.value.terminate()
   })
   return {
     can_add,
@@ -148,6 +155,7 @@ export const use = () => {
     working,
     new_vector,
     new_gradients,
+    new_trace,
     mount_workers
   }
 }

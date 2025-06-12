@@ -5,6 +5,7 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
+  import AsTrace from '@/components/posters/as-trace'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
@@ -167,6 +168,12 @@
           fill-opacity="1"
           :fill="`url(${fragment('radial-background')})`"
           @focus="focus('background')" />
+        <as-trace
+          v-if="vector.trace"
+          :trace="vector.trace"
+          :itemid="itemid"
+          :tabindex="tabindex"
+          @focus="focus('trace')" />
         <as-path
           v-if="vector.light"
           :id="query('light')"
