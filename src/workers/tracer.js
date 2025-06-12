@@ -5,9 +5,7 @@ let tracer_options
 let initialized = false
 
 const init_tracer = async () => {
-  const response = await fetch(
-    new URL('@/wasm/tracer_bg.wasm', import.meta.url)
-  )
+  const response = await fetch('/wasm/tracer_bg.wasm')
   const wasm_bytes = await response.arrayBuffer()
   initSync({ module: wasm_bytes })
 
