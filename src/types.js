@@ -31,6 +31,8 @@
  * @property {number} width
  * @property {number} height
  * @property {string} viewbox
+ * @property {Object} [trace] - Traced paths with color quantization
+ * @property {Array<{d: string, fill: string, stroke: string, stroke_width: number}>} trace.paths
  */
 
 /**
