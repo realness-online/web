@@ -1,7 +1,7 @@
-import { initSync, process_image, TraceOptions } from '@/wasm/tracer.js'
+import { initSync, Tracer, TraceOptions } from '@/wasm/tracer.js'
 import { size } from '@/utils/image.js'
 
-let tracer_options
+let tracer
 let initialized = false
 
 const init_tracer = async () => {
@@ -9,26 +9,27 @@ const init_tracer = async () => {
   const wasm_bytes = await response.arrayBuffer()
   initSync({ module: wasm_bytes })
 
-  tracer_options = new TraceOptions()
-  tracer_options.color_count = 32
-  tracer_options.min_color_count = 16
-  tracer_options.max_color_count = 32
-  tracer_options.turd_size = 10
-  tracer_options.corner_threshold = 60
-  tracer_options.color_precision = 8
-  tracer_options.path_precision = 8
-  tracer_options.force_color_count = true
-  tracer_options.hierarchical = 1
-  tracer_options.keep_details = true
-  tracer_options.diagonal = false
-  tracer_options.batch_size = 512
-  tracer_options.good_min_area = 16
-  tracer_options.good_max_area = 512 * 1024
-  tracer_options.is_same_color_a = 8
-  tracer_options.is_same_color_b = 2
-  tracer_options.deepen_diff = 32
-  tracer_options.hollow_neighbours = 1
+  const options = new TraceOptions()
+  options.color_count = 32
+  options.min_color_count = 16
+  options.max_color_count = 32
+  options.turd_size = 10
+  options.corner_threshold = 60
+  options.color_precision = 8
+  options.path_precision = 8
+  options.force_color_count = true
+  options.hierarchical = 1
+  options.keep_details = true
+  options.diagonal = false
+  options.batch_size = 25600
+  options.good_min_area = 16
+  options.good_max_area = 512 * 1024
+  options.is_same_color_a = 8
+  options.is_same_color_b = 2
+  options.deepen_diff = 32
+  options.hollow_neighbours = 1
 
+  tracer = new Tracer(options)
   initialized = true
 }
 
@@ -46,19 +47,11 @@ const make_trace = async message => {
   const image = await read(message.data.image)
   console.log('Image loaded:', image.width, 'x', image.height)
 
-  const canvas = size(image)
-  const ctx = canvas.getContext('2d')
+  // Create canvas with original dimensions
+  const canvas = new OffscreenCanvas(image.width, image.height)
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.drawImage(image, 0, 0)
   const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  console.log(
-    'Image data:',
-    image_data.width,
-    'x',
-    image_data.height,
-    'bytes:',
-    image_data.data.length,
-    'first few pixels:',
-    Array.from(image_data.data.slice(0, 16))
-  )
 
   // Verify image data is valid
   if (image_data.data.length !== image_data.width * image_data.height * 4) {
@@ -67,31 +60,54 @@ const make_trace = async message => {
     )
   }
 
-  // Adjust tracer options based on image dimensions
-  const short_side = Math.min(image_data.width, image_data.height)
+  // Scale good_min_area with image size but cap it
   const area = image_data.width * image_data.height
-
-  // Scale batch size with image dimensions
-  tracer_options.batch_size = short_side
-
-  // Scale good_min_area with image size
-  tracer_options.good_min_area = Math.floor(area * 0.0001)
-
-  // Scale good_max_area with image size
-  tracer_options.good_max_area = area
+  tracer.options.good_min_area = Math.min(Math.floor(area * 0.0001), 100)
+  tracer.options.good_max_area = Math.min(area, 1024 * 1024) // Cap at 1M pixels
 
   console.log('Adjusted tracer options:', {
-    batch_size: tracer_options.batch_size,
-    good_min_area: tracer_options.good_min_area,
-    good_max_area: tracer_options.good_max_area,
-    is_same_color_a: tracer_options.is_same_color_a,
-    is_same_color_b: tracer_options.is_same_color_b,
-    deepen_diff: tracer_options.deepen_diff
+    batch_size: tracer.options.batch_size,
+    good_min_area: tracer.options.good_min_area,
+    good_max_area: tracer.options.good_max_area
   })
 
-  const trace = await process_image(image_data, tracer_options)
-  console.log('Trace complete:', trace)
-  return { trace }
+  // Initialize the tracer with the image
+  tracer.init(image_data)
+
+  // Start the processing loop
+  const process = () => {
+    try {
+      const done = tracer.tick()
+      const progress = tracer.progress()
+
+      // Send progress update
+      self.postMessage({
+        type: 'progress',
+        progress
+      })
+
+      if (!done) {
+        // Schedule next tick
+        setTimeout(process, 1)
+      } else {
+        // Send completion message
+        self.postMessage({
+          type: 'complete',
+          width: image_data.width,
+          height: image_data.height
+        })
+      }
+    } catch (error) {
+      console.error('Error in processing loop:', error)
+      self.postMessage({
+        type: 'error',
+        error: error.message
+      })
+    }
+  }
+
+  // Start processing
+  process()
 }
 
 const route_message = async message => {
