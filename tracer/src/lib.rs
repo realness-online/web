@@ -6,6 +6,9 @@ use visioncortex::{
         Runner,
         RunnerConfig,
         KeyingAction,
+        HIERARCHICAL_MAX,
+        IncrementalBuilder,
+        Clusters,
     },
     BinaryImage,
 };
@@ -31,6 +34,7 @@ pub fn init_panic_hook() {
 }
 
 #[wasm_bindgen]
+#[derive(Copy, Clone)]
 pub struct TraceOptions {
     pub color_count: u32,
     pub min_color_count: u32,
@@ -81,145 +85,284 @@ impl TraceOptions {
     }
 }
 
+pub enum Stage {
+    New,
+    Clustering(IncrementalBuilder),
+    Reclustering(IncrementalBuilder),
+    Vectorize(Clusters),
+}
+
 #[wasm_bindgen]
-pub fn process_image(image_data: ImageData, options: TraceOptions) -> Result<JsValue, JsValue> {
-    console::log_1(&"Starting image processing".into());
+pub struct Tracer {
+    stage: Stage,
+    counter: usize,
+    pub options: TraceOptions,
+}
 
-    let width = image_data.width() as usize;
-    let height = image_data.height() as usize;
-    let data = image_data.data();
-
-    console::log_1(&format!("Image dimensions: {}x{}", width, height).into());
-
-    // Create color image directly from raw data
-    let mut color_image = ColorImage::new();
-    color_image.pixels = data.to_vec();
-    color_image.width = width;
-    color_image.height = height;
-
-    // Verify image data
-    if color_image.pixels.len() != width * height * 4 {
-        return Err(JsValue::from_str(&format!(
-            "Invalid image data size: {} != {}",
-            color_image.pixels.len(),
-            width * height * 4
-        )));
+#[wasm_bindgen]
+impl Tracer {
+    #[wasm_bindgen(constructor)]
+    pub fn new(options: TraceOptions) -> Self {
+        Self {
+            stage: Stage::New,
+            counter: 0,
+            options,
+        }
     }
 
-    console::log_1(&"Color image created".into());
+    pub fn init(&mut self, image_data: ImageData) -> Result<(), JsValue> {
+        let width = image_data.width() as usize;
+        let height = image_data.height() as usize;
+        let data = image_data.data();
 
-    // Verify config values before creating runner
-    if options.batch_size <= 0 {
-        return Err(JsValue::from_str("Invalid batch size"));
-    }
-    if options.good_min_area <= 0 {
-        return Err(JsValue::from_str("Invalid good_min_area"));
-    }
-    if options.good_max_area <= 0 {
-        return Err(JsValue::from_str("Invalid good_max_area"));
-    }
-    if options.is_same_color_a <= 0 {
-        return Err(JsValue::from_str("Invalid is_same_color_a"));
-    }
-    if options.is_same_color_b <= 0 {
-        return Err(JsValue::from_str("Invalid is_same_color_b"));
-    }
-    if options.deepen_diff <= 0 {
-        return Err(JsValue::from_str("Invalid deepen_diff"));
-    }
+        console::log_1(&format!("Creating color image: {}x{}", width, height).into());
+        console::log_1(&format!("Data length: {}", data.len()).into());
 
-    let runner_config = RunnerConfig {
-        diagonal: options.diagonal,
-        hierarchical: options.hierarchical,
-        batch_size: options.batch_size,
-        good_min_area: options.good_min_area,
-        good_max_area: options.good_max_area,
-        is_same_color_a: options.is_same_color_a,
-        is_same_color_b: options.is_same_color_b,
-        deepen_diff: options.deepen_diff,
-        hollow_neighbours: options.hollow_neighbours,
-        key_color: Color::default(),
-        keying_action: KeyingAction::default(),
-    };
+        // Create color image directly from raw data
+        console::log_1(&"About to create ColorImage struct".into());
+        let mut color_image = ColorImage {
+            pixels: data.to_vec(),
+            width,
+            height,
+        };
+        console::log_1(&"ColorImage struct created".into());
 
-    console::log_1(&format!(
-        "Runner config: batch_size={}, good_min_area={}, good_max_area={}, is_same_color_a={}, is_same_color_b={}, deepen_diff={}",
-        runner_config.batch_size,
-        runner_config.good_min_area,
-        runner_config.good_max_area,
-        runner_config.is_same_color_a,
-        runner_config.is_same_color_b,
-        runner_config.deepen_diff
-    ).into());
+        // Verify data length matches expected size
+        let expected_size = width * height * 4;
+        if color_image.pixels.len() != expected_size {
+            return Err(JsValue::from_str(&format!(
+                "Invalid image data size: {} != {}",
+                color_image.pixels.len(),
+                expected_size
+            )));
+        }
 
-    console::log_1(&"Starting color clustering".into());
-    let runner = Runner::new(runner_config, color_image);
+        console::log_1(&"Color image created successfully".into());
 
-    let clusters = runner.run();
-    console::log_1(&format!("Found {} clusters", clusters.view().clusters_output.len()).into());
+        // Check for transparency and handle keying
+        console::log_1(&"Checking for transparency".into());
+        let key_color = if should_key_image(&color_image) {
+            console::log_1(&"Image has transparency, finding key color".into());
+            if let Ok(key_color) = find_unused_color_in_image(&color_image) {
+                console::log_1(&"Found unused color, applying keying".into());
+                for y in 0..height {
+                    for x in 0..width {
+                        if color_image.get_pixel(x, y).a == 0 {
+                            color_image.set_pixel(x, y, &key_color);
+                        }
+                    }
+                }
+                key_color
+            } else {
+                console::log_1(&"No unused color found, using default".into());
+                Color::default()
+            }
+        } else {
+            console::log_1(&"No transparency detected".into());
+            Color::default()
+        };
 
-    // Process clusters into paths
-    let paths = js_sys::Array::new();
-    let view = clusters.view();
+        // First phase: Full hierarchical clustering
+        console::log_1(&"Creating RunnerConfig".into());
+        console::log_1(&format!("Image dimensions: {}x{}", width, height).into());
+        console::log_1(&format!("Batch size: {}", 25600).into());
+        console::log_1(&format!("Good min area: {}", self.options.good_min_area).into());
+        console::log_1(&format!("Good max area: {}", (width * height) as usize).into());
+        console::log_1(&format!("Color precision: {}", self.options.color_precision).into());
+        console::log_1(&format!("Deepen diff: {}", self.options.deepen_diff).into());
 
-    for (index, cluster_idx) in view.clusters_output.iter().enumerate() {
-        console::log_1(&format!("Processing cluster {}", index).into());
+        let runner_config = RunnerConfig {
+            diagonal: self.options.diagonal,
+            hierarchical: HIERARCHICAL_MAX,
+            batch_size: 25600,
+            good_min_area: self.options.good_min_area,
+            good_max_area: (width * height) as usize,
+            is_same_color_a: self.options.color_precision as i32,
+            is_same_color_b: 1,
+            deepen_diff: self.options.deepen_diff,
+            hollow_neighbours: 1,
+            key_color,
+            keying_action: KeyingAction::Discard,
+        };
+        console::log_1(&"RunnerConfig created".into());
 
-        let cluster = view.get_cluster(*cluster_idx);
-        let color = cluster.residue_color();
+        console::log_1(&"About to create Runner".into());
+        let runner = Runner::new(runner_config, color_image);
+        console::log_1(&"Runner created".into());
 
-        // Create binary image for this cluster
-        let mut binary_image = BinaryImage::new_w_h(view.width as usize, view.height as usize);
-        cluster.render_to_binary_image(&view, &mut binary_image);
+        console::log_1(&"About to start clustering".into());
+        let clusters = runner.run();
+        console::log_1(&"Clustering completed".into());
+        self.stage = Stage::Vectorize(clusters);
+        console::log_1(&"Stage set to Vectorize".into());
 
-        // Create a spline from the binary image
-        let spline = visioncortex::Spline::from_image(
-            &binary_image,
-            true, // clockwise
-            options.corner_threshold.to_radians(),
-            1.0, // outset_ratio
-            1.0, // segment_length
-            4,   // max_iterations
-            options.splice_threshold.to_radians(), // splice_threshold
-        );
-
-        // Convert spline to SVG path string
-        let path_string = spline.to_svg_string(true, &visioncortex::PointF64::default(), Some(options.path_precision));
-
-        let path_obj = js_sys::Object::new();
-        js_sys::Reflect::set(&path_obj, &"path".into(), &JsValue::from_str(&path_string))?;
-
-        let color_obj = js_sys::Object::new();
-        js_sys::Reflect::set(&color_obj, &"r".into(), &JsValue::from_f64(color.r as f64))?;
-        js_sys::Reflect::set(&color_obj, &"g".into(), &JsValue::from_f64(color.g as f64))?;
-        js_sys::Reflect::set(&color_obj, &"b".into(), &JsValue::from_f64(color.b as f64))?;
-
-        js_sys::Reflect::set(&path_obj, &"color".into(), &color_obj)?;
-        paths.push(&path_obj);
+        Ok(())
     }
 
-    console::log_1(&"Creating result object".into());
-    // Create result object
-    let result = js_sys::Object::new();
+    pub fn tick(&mut self) -> Result<bool, JsValue> {
+        let progress = self.progress();
+        match &mut self.stage {
+            Stage::New => {
+                console::log_1(&format!("Stage: New, Progress: {}%", progress).into());
+                Err(JsValue::from_str("uninitialized"))
+            },
+            Stage::Clustering(builder) => {
+                console::log_1(&format!("Stage: Clustering, Progress: {}%", progress).into());
+                if builder.tick() {
+                    let clusters = builder.result();
+                    let view = clusters.view();
+                    let image = view.to_color_image();
 
-    js_sys::Reflect::set(
-        &result,
-        &"paths".into(),
-        &paths.into()
-    )?;
+                    // Second phase: Reclustering
+                    let runner = Runner::new(RunnerConfig {
+                        diagonal: false,
+                        hierarchical: 64,
+                        batch_size: 25600,
+                        good_min_area: 0,
+                        good_max_area: (image.width * image.height) as usize,
+                        is_same_color_a: 0,
+                        is_same_color_b: 1,
+                        deepen_diff: 0,
+                        hollow_neighbours: 0,
+                        key_color: Default::default(),
+                        keying_action: KeyingAction::Discard,
+                    }, image);
 
-    js_sys::Reflect::set(
-        &result,
-        &"width".into(),
-        &JsValue::from_f64(width as f64)
-    )?;
+                    console::log_1(&"Starting reclustering".into());
+                    self.stage = Stage::Reclustering(runner.start());
+                }
+                Ok(false)
+            },
+            Stage::Reclustering(builder) => {
+                console::log_1(&format!("Stage: Reclustering, Progress: {}%", progress).into());
+                if builder.tick() {
+                    self.stage = Stage::Vectorize(builder.result());
+                }
+                Ok(false)
+            },
+            Stage::Vectorize(clusters) => {
+                let view = clusters.view();
+                if self.counter < view.clusters_output.len() {
+                    console::log_1(&format!("Stage: Vectorize, Progress: {}%, Processing cluster {}/{}",
+                        progress,
+                        self.counter + 1,
+                        view.clusters_output.len()
+                    ).into());
+                    let cluster = view.get_cluster(view.clusters_output[self.counter]);
+                    let color = cluster.residue_color();
 
-    js_sys::Reflect::set(
-        &result,
-        &"height".into(),
-        &JsValue::from_f64(height as f64)
-    )?;
+                    {
+                        let mut binary_image = BinaryImage::new_w_h(view.width as usize, view.height as usize);
+                        cluster.render_to_binary_image(&view, &mut binary_image);
 
-    console::log_1(&"Image processing complete".into());
-    Ok(result.into())
+                        let spline = visioncortex::Spline::from_image(
+                            &binary_image,
+                            true,
+                            self.options.corner_threshold.to_radians(),
+                            1.0,
+                            1.0,
+                            4,
+                            self.options.splice_threshold.to_radians(),
+                        );
+
+                        let path_string = spline.to_svg_string(true, &visioncortex::PointF64::default(), Some(self.options.path_precision));
+
+                        let path_obj = js_sys::Object::new();
+                        js_sys::Reflect::set(&path_obj, &"path".into(), &JsValue::from_str(&path_string))?;
+
+                        let color_obj = js_sys::Object::new();
+                        js_sys::Reflect::set(&color_obj, &"r".into(), &JsValue::from_f64(color.r as f64))?;
+                        js_sys::Reflect::set(&color_obj, &"g".into(), &JsValue::from_f64(color.g as f64))?;
+                        js_sys::Reflect::set(&color_obj, &"b".into(), &JsValue::from_f64(color.b as f64))?;
+
+                        js_sys::Reflect::set(&path_obj, &"color".into(), &color_obj)?;
+                        self.post_message(&path_obj)?;
+                    }
+
+                    self.counter += 1;
+                    Ok(false)
+                } else {
+                    console::log_1(&format!("Stage: Complete, Progress: {}%", progress).into());
+                    Ok(true)
+                }
+            }
+        }
+    }
+
+    pub fn progress(&self) -> i32 {
+        (match &self.stage {
+            Stage::New => 0,
+            Stage::Clustering(builder) => builder.progress() / 2,
+            Stage::Reclustering(_) => 50,
+            Stage::Vectorize(clusters) => {
+                50 + 50 * self.counter as u32 / clusters.view().clusters_output.len() as u32
+            }
+        }) as i32
+    }
+
+    fn post_message(&self, path_obj: &js_sys::Object) -> Result<(), JsValue> {
+        let message = js_sys::Object::new();
+        js_sys::Reflect::set(&message, &"type".into(), &JsValue::from_str("path"))?;
+        js_sys::Reflect::set(&message, &"data".into(), path_obj)?;
+        web_sys::window()
+            .unwrap()
+            .post_message(&message.into(), "*")?;
+        Ok(())
+    }
+}
+
+fn should_key_image(img: &ColorImage) -> bool {
+    if img.width == 0 || img.height == 0 {
+        return false;
+    }
+
+    const KEYING_THRESHOLD: f32 = 0.2;
+    let threshold = ((img.width * 2) as f32 * KEYING_THRESHOLD) as usize;
+    let mut num_transparent_pixels = 0;
+    let y_positions = [0, img.height / 4, img.height / 2, 3 * img.height / 4, img.height - 1];
+
+    for y in y_positions {
+        for x in 0..img.width {
+            if img.get_pixel(x, y).a == 0 {
+                num_transparent_pixels += 1;
+            }
+            if num_transparent_pixels >= threshold {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+fn find_unused_color_in_image(img: &ColorImage) -> Result<Color, String> {
+    let special_colors = IntoIterator::into_iter([
+        Color::new(255, 0,   0),
+        Color::new(0,   255, 0),
+        Color::new(0,   0,   255),
+        Color::new(255, 255, 0),
+        Color::new(0,   255, 255),
+        Color::new(255, 0,   255),
+        Color::new(128, 128, 128),
+    ]);
+
+    for color in special_colors {
+        if !color_exists_in_image(img, color) {
+            return Ok(color);
+        }
+    }
+
+    Err(String::from("unable to find unused color in image to use as key"))
+}
+
+fn color_exists_in_image(img: &ColorImage, color: Color) -> bool {
+    for y in 0..img.height {
+        for x in 0..img.width {
+            let pixel_color = img.get_pixel(x, y);
+            if pixel_color.r == color.r && pixel_color.g == color.g && pixel_color.b == color.b {
+                return true;
+            }
+        }
+    }
+    false
 }
