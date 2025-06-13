@@ -32,7 +32,6 @@ yarn-error.log*
 # reports
 javascript_report.html
 worker_report.html
-/.vscode/
 *.LICENSE.txt
 
 # Editor directories and files
@@ -73,3 +72,4 @@ Cargo.lock
 tracer/pkg/
 src/wasm/
 tracer/target/
+visionmagic/

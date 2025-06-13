@@ -70,3 +70,5 @@ for this reason, We generally frown on the use of try catch statements as they t
 - Do not perform any agent actions without explicit user approval
 
 Never say "You're right - I was overcomplicating this."
+
+You need to be extremly mindfull not to be too verbose

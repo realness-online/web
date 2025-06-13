@@ -1,0 +1,25 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": ".firebaserc, localhost.pem, localhost-key.pem, .gitignore, firebase.json,storage.rules, .env.example,jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js, deno.json, .cursorrules"
+  },
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": { "source.fixAll": "explicit" },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnType": false, // required
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "onFocusChange",
+  "vs-code-prettier-eslint.prettierLast": true,
+  "deno.enable": true,
+  "deno.enablePaths": ["./src", "./scripts", "./tests"],
+  "deno.importMap": "./import_map.json",
+  "files.exclude": {
+    ".husky/_/**/*": true
+  }
+}
