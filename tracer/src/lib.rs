@@ -191,10 +191,10 @@ impl Tracer {
         console::log_1(&"Runner created".into());
 
         console::log_1(&"About to start clustering".into());
-        let clusters = runner.run();
-        console::log_1(&"Clustering completed".into());
-        self.stage = Stage::Vectorize(clusters);
-        console::log_1(&"Stage set to Vectorize".into());
+        let builder = runner.start();
+        console::log_1(&"Builder created".into());
+        self.stage = Stage::Clustering(builder);
+        console::log_1(&"Stage set to Clustering".into());
 
         Ok(())
     }
