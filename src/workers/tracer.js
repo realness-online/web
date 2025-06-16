@@ -16,7 +16,7 @@ const init_tracer = async () => {
   options.max_color_count = 8
   options.turd_size = 48
   options.corner_threshold = 60
-  options.color_precision = 8
+  options.color_precision = 4
   options.path_precision = 0
   options.force_color_count = true
   options.hierarchical = 1
@@ -25,7 +25,7 @@ const init_tracer = async () => {
   options.batch_size = 25600
   options.good_min_area = 16
   options.good_max_area = 512 * 1024
-  options.is_same_color_a = 8
+  options.is_same_color_a = 4
   options.is_same_color_b = 2
   options.deepen_diff = 5
   options.hollow_neighbours = 1

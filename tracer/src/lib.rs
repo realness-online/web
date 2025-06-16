@@ -6,7 +6,6 @@ use visioncortex::{
         Runner,
         RunnerConfig,
         KeyingAction,
-        HIERARCHICAL_MAX,
         IncrementalBuilder,
         Clusters,
     },
@@ -173,14 +172,14 @@ impl Tracer {
 
         let runner_config = RunnerConfig {
             diagonal: self.options.diagonal,
-            hierarchical: HIERARCHICAL_MAX,
-            batch_size: 25600,
+            hierarchical: self.options.hierarchical,
+            batch_size: self.options.batch_size,
             good_min_area: self.options.good_min_area,
-            good_max_area: (width * height) as usize,
-            is_same_color_a: self.options.color_precision as i32,
-            is_same_color_b: 1,
+            good_max_area: self.options.good_max_area,
+            is_same_color_a: self.options.is_same_color_a,
+            is_same_color_b: self.options.is_same_color_b,
             deepen_diff: self.options.deepen_diff,
-            hollow_neighbours: 1,
+            hollow_neighbours: self.options.hollow_neighbours,
             key_color,
             keying_action: KeyingAction::Discard,
         };
@@ -304,10 +303,13 @@ impl Tracer {
         let message = js_sys::Object::new();
         js_sys::Reflect::set(&message, &"type".into(), &JsValue::from_str("path"))?;
         js_sys::Reflect::set(&message, &"data".into(), path_obj)?;
-        web_sys::window()
-            .unwrap()
-            .post_message(&message.into(), "*")?;
-        Ok(())
+
+        if let Some(window) = web_sys::window() {
+            window.post_message(&message.into(), "*")?;
+            Ok(())
+        } else {
+            Err(JsValue::from_str("window not available"))
+        }
     }
 }
 
