@@ -78,7 +78,7 @@ const make_trace = async message => {
   // Start the processing loop
   const process = () => {
     try {
-      const done = tracer.tick()
+      const result = tracer.tick()
       const progress = tracer.progress()
 
       // Send progress update
@@ -87,11 +87,19 @@ const make_trace = async message => {
         progress
       })
 
-      if (!done) {
+      if (result) {
+        // If we got a path, send it
+        self.postMessage({
+          type: 'path',
+          data: result
+        })
         // Schedule next tick
         setTimeout(process, 1)
+      } else if (progress < 100) {
+        // If no result but not complete, continue processing
+        setTimeout(process, 1)
       } else {
-        // Send completion message
+        // Only send completion when we're at 100%
         self.postMessage({
           type: 'complete',
           width: image_data.width,

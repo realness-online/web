@@ -26,10 +26,8 @@
     <path
       v-for="(path, index) in trace.paths"
       :key="index"
-      :d="path.d"
-      :fill="path.fill"
-      :stroke="path.stroke"
-      :stroke-width="path.stroke_width"
+      :d="path.path"
+      :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
       :tabindex="tabindex"
       @focus="$emit('focus', 'trace')" />
   </g>
