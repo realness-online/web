@@ -1,4 +1,4 @@
-import { initSync, Tracer, TraceOptions } from '@/wasm/tracer.js'
+import { initSync, Tracer, TraceOptions, init_panic_hook } from '@/wasm/tracer.js'
 import { size } from '@/utils/image.js'
 
 let tracer
@@ -8,15 +8,16 @@ const init_tracer = async () => {
   const response = await fetch('/wasm/tracer_bg.wasm')
   const wasm_bytes = await response.arrayBuffer()
   initSync({ module: wasm_bytes })
+  init_panic_hook()
 
   const options = new TraceOptions()
-  options.color_count = 32
-  options.min_color_count = 16
-  options.max_color_count = 32
-  options.turd_size = 10
+  options.color_count = 8
+  options.min_color_count = 8
+  options.max_color_count = 8
+  options.turd_size = 48
   options.corner_threshold = 60
   options.color_precision = 8
-  options.path_precision = 8
+  options.path_precision = 0
   options.force_color_count = true
   options.hierarchical = 1
   options.keep_details = true
@@ -26,7 +27,7 @@ const init_tracer = async () => {
   options.good_max_area = 512 * 1024
   options.is_same_color_a = 8
   options.is_same_color_b = 2
-  options.deepen_diff = 32
+  options.deepen_diff = 5
   options.hollow_neighbours = 1
 
   tracer = new Tracer(options)
@@ -108,6 +109,7 @@ const make_trace = async message => {
 
   // Start processing
   process()
+  return {} // Return empty object to satisfy type
 }
 
 const route_message = async message => {
