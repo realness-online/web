@@ -198,7 +198,7 @@ impl Tracer {
         Ok(())
     }
 
-    pub fn tick(&mut self) -> Result<bool, JsValue> {
+    pub fn tick(&mut self) -> Result<Option<js_sys::Object>, JsValue> {
         let progress = self.progress();
         match &mut self.stage {
             Stage::New => {
@@ -230,14 +230,14 @@ impl Tracer {
                     console::log_1(&"Starting reclustering".into());
                     self.stage = Stage::Reclustering(runner.start());
                 }
-                Ok(false)
+                Ok(None)
             },
             Stage::Reclustering(builder) => {
                 console::log_1(&format!("Stage: Reclustering, Progress: {}%", progress).into());
                 if builder.tick() {
                     self.stage = Stage::Vectorize(builder.result());
                 }
-                Ok(false)
+                Ok(None)
             },
             Stage::Vectorize(clusters) => {
                 let view = clusters.view();
@@ -250,39 +250,35 @@ impl Tracer {
                     let cluster = view.get_cluster(view.clusters_output[self.counter]);
                     let color = cluster.residue_color();
 
-                    {
-                        let mut binary_image = BinaryImage::new_w_h(view.width as usize, view.height as usize);
-                        cluster.render_to_binary_image(&view, &mut binary_image);
+                    let mut binary_image = BinaryImage::new_w_h(view.width as usize, view.height as usize);
+                    cluster.render_to_binary_image(&view, &mut binary_image);
 
-                        let spline = visioncortex::Spline::from_image(
-                            &binary_image,
-                            true,
-                            self.options.corner_threshold.to_radians(),
-                            1.0,
-                            1.0,
-                            4,
-                            self.options.splice_threshold.to_radians(),
-                        );
+                    let spline = visioncortex::Spline::from_image(
+                        &binary_image,
+                        true,
+                        self.options.corner_threshold.to_radians(),
+                        1.0,
+                        1.0,
+                        4,
+                        self.options.splice_threshold.to_radians(),
+                    );
 
-                        let path_string = spline.to_svg_string(true, &visioncortex::PointF64::default(), Some(self.options.path_precision));
+                    let path_string = spline.to_svg_string(true, &visioncortex::PointF64::default(), Some(self.options.path_precision));
 
-                        let path_obj = js_sys::Object::new();
-                        js_sys::Reflect::set(&path_obj, &"path".into(), &JsValue::from_str(&path_string))?;
+                    let path_obj = js_sys::Object::new();
+                    js_sys::Reflect::set(&path_obj, &"path".into(), &JsValue::from_str(&path_string))?;
 
-                        let color_obj = js_sys::Object::new();
-                        js_sys::Reflect::set(&color_obj, &"r".into(), &JsValue::from_f64(color.r as f64))?;
-                        js_sys::Reflect::set(&color_obj, &"g".into(), &JsValue::from_f64(color.g as f64))?;
-                        js_sys::Reflect::set(&color_obj, &"b".into(), &JsValue::from_f64(color.b as f64))?;
+                    let color_obj = js_sys::Object::new();
+                    js_sys::Reflect::set(&color_obj, &"r".into(), &JsValue::from_f64(color.r as f64))?;
+                    js_sys::Reflect::set(&color_obj, &"g".into(), &JsValue::from_f64(color.g as f64))?;
+                    js_sys::Reflect::set(&color_obj, &"b".into(), &JsValue::from_f64(color.b as f64))?;
 
-                        js_sys::Reflect::set(&path_obj, &"color".into(), &color_obj)?;
-                        self.post_message(&path_obj)?;
-                    }
-
+                    js_sys::Reflect::set(&path_obj, &"color".into(), &color_obj)?;
                     self.counter += 1;
-                    Ok(false)
+                    Ok(Some(path_obj))
                 } else {
                     console::log_1(&format!("Stage: Complete, Progress: {}%", progress).into());
-                    Ok(true)
+                    Ok(None)
                 }
             }
         }
@@ -297,18 +293,6 @@ impl Tracer {
                 50 + 50 * self.counter as u32 / clusters.view().clusters_output.len() as u32
             }
         }) as i32
-    }
-
-    fn post_message(&self, path_obj: &js_sys::Object) -> Result<(), JsValue> {
-        let message = js_sys::Object::new();
-        js_sys::Reflect::set(&message, &"type".into(), &JsValue::from_str("path"))?;
-        js_sys::Reflect::set(&message, &"data".into(), path_obj)?;
-
-        let global = js_sys::global();
-        let post_message = js_sys::Reflect::get(&global, &"postMessage".into())?;
-        let post_message_fn = js_sys::Function::from(post_message);
-        post_message_fn.call1(&global, &message.into())?;
-        Ok(())
     }
 }
 
