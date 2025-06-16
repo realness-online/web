@@ -119,15 +119,15 @@ export const use = () => {
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const traced = message => {
-    console.log('Tracer message:', message.type, message)
+
     switch(message.type) {
       case 'progress':
         // Update progress indicator
         progress.value = message.progress
         break
-
       case 'path':
         // Add new path to trace
+        console.log('path:', message.data)
         if(!new_vector.value.trace) {
           new_vector.value.trace = { paths: [] }
         }
