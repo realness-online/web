@@ -304,12 +304,11 @@ impl Tracer {
         js_sys::Reflect::set(&message, &"type".into(), &JsValue::from_str("path"))?;
         js_sys::Reflect::set(&message, &"data".into(), path_obj)?;
 
-        if let Some(window) = web_sys::window() {
-            window.post_message(&message.into(), "*")?;
-            Ok(())
-        } else {
-            Err(JsValue::from_str("window not available"))
-        }
+        let global = js_sys::global();
+        let post_message = js_sys::Reflect::get(&global, &"postMessage".into())?;
+        let post_message_fn = js_sys::Function::from(post_message);
+        post_message_fn.call1(&global, &message.into())?;
+        Ok(())
     }
 }
 
