@@ -1,7 +1,7 @@
-import { initSync, Tracer, TraceOptions, init_panic_hook } from '@/wasm/tracer.js'
+import { initSync, ColorImageConverter, init_panic_hook } from '@/wasm/tracer.js'
 import { size } from '@/utils/image.js'
 
-let tracer
+let converter
 let initialized = false
 
 const init_tracer = async () => {
@@ -10,27 +10,20 @@ const init_tracer = async () => {
   initSync({ module: wasm_bytes })
   init_panic_hook()
 
-  const options = new TraceOptions()
-  options.color_count = 8
-  options.min_color_count = 8
-  options.max_color_count = 8
-  options.turd_size = 48
-  options.corner_threshold = 60
-  options.color_precision = 4
-  options.path_precision = 0
-  options.force_color_count = true
-  options.hierarchical = 1
-  options.keep_details = true
-  options.diagonal = false
-  options.batch_size = 25600
-  options.good_min_area = 16
-  options.good_max_area = 512 * 1024
-  options.is_same_color_a = 7
-  options.is_same_color_b = 1
-  options.deepen_diff = 5
-  options.hollow_neighbours = 1
+  const params = {
+    mode: "polygon",
+    hierarchical: "stacked",
+    corner_threshold: 60,
+    length_threshold: 4,
+    max_iterations: 10,
+    splice_threshold: 2,
+    filter_speckle: 50,
+    color_precision: 3,
+    layer_difference: 1,
+    path_precision: 0
+  }
 
-  tracer = new Tracer(options)
+  converter = ColorImageConverter.new_with_string(JSON.stringify(params))
   initialized = true
 }
 
@@ -48,8 +41,8 @@ const make_trace = async message => {
   const image = await read(message.data.image)
   console.log('Image loaded:', image.width, 'x', image.height)
 
-  // Create canvas with original dimensions
-  const canvas = new OffscreenCanvas(image.width, image.height)
+  // Resize image before tracing
+  const canvas = size(image) // Default target size is 512px
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.drawImage(image, 0, 0)
   const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -61,25 +54,18 @@ const make_trace = async message => {
     )
   }
 
-  // Scale good_min_area with image size but cap it
-  const area = image_data.width * image_data.height
-  tracer.options.good_min_area = Math.min(Math.floor(area * 0.0001), 100)
-  tracer.options.good_max_area = Math.min(area, 1024 * 1024) // Cap at 1M pixels
+  console.log('Processing image:', image_data.width, 'x', image_data.height)
 
-  console.log('Adjusted tracer options:', {
-    batch_size: tracer.options.batch_size,
-    good_min_area: tracer.options.good_min_area,
-    good_max_area: tracer.options.good_max_area
-  })
-
-  // Initialize the tracer with the image
-  tracer.init(image_data)
+  // Initialize the converter with the image
+  converter.init(image_data)
 
   // Start the processing loop
   const process = () => {
     try {
-      const result = tracer.tick()
-      const progress = tracer.progress()
+      const result = converter.tick()
+      const progress = converter.progress()
+
+      console.log('Tick result:', result, 'Progress:', progress)
 
       // Send progress update
       self.postMessage({
@@ -87,7 +73,17 @@ const make_trace = async message => {
         progress
       })
 
-      if (result) {
+      if (result === "complete") {
+        // Processing is complete
+        console.log('Processing complete')
+        self.postMessage({
+          type: 'complete',
+          width: image_data.width,
+          height: image_data.height
+        })
+      } else if (result) {
+        // Log the path data result
+        console.log('Path data:', result)
         // If we got a path, send it
         self.postMessage({
           type: 'path',
@@ -97,9 +93,11 @@ const make_trace = async message => {
         setTimeout(process, 1)
       } else if (progress < 100) {
         // If no result but not complete, continue processing
+        console.log('No result, continuing...')
         setTimeout(process, 1)
       } else {
         // Only send completion when we're at 100%
+        console.log('Progress 100%, sending completion')
         self.postMessage({
           type: 'complete',
           width: image_data.width,
@@ -136,8 +134,8 @@ const route_message = async message => {
 
 // Initialize on worker start
 let init_promise = init_tracer().catch(error => {
-  console.error('Failed to initialize tracer:', error)
-  self.postMessage({ error: 'Failed to initialize tracer' })
+  console.error('Failed to initialize converter:', error)
+  self.postMessage({ error: 'Failed to initialize converter' })
 })
 
 self.addEventListener('message', async event => {
