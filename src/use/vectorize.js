@@ -125,7 +125,6 @@ export const use = () => {
         progress.value = message.data.progress
         break
       case 'path':
-        console.log('path:', message.data.path)
         new_cutouts.value.push(message.data.path)
         break
       case 'complete':
@@ -159,7 +158,7 @@ export const use = () => {
   dismount(() => {
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
-    if (tracer.value) tracer.value.terminate()
+    // if (tracer.value) tracer.value.terminate()
   })
   return {
     can_add,

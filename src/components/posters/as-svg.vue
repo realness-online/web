@@ -219,6 +219,11 @@
       </pattern>
 
       <rect
+        :id="query('cutouts-render')"
+        :fill="`url(${fragment('cutouts')})`"
+        width="100%"
+        height="100%" />
+      <rect
         :id="query('pattern-render')"
         :fill="`url(${fragment('pattern')})`"
         width="100%"
@@ -362,11 +367,11 @@
       width="100%"
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
-    <g :id="query('cutouts')">
-        <path
-        v-for="(path, index) in new_cutouts"
-        :key="`path-${index}`"
+    <g>
+      <path v-for="(path, index) in new_cutouts" :key="`path-${index}`"
+          itemprop="cutouts"
           :d="path.d"
+          fill-opacity="0.5"
           :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
           :transform="`translate(${path.offset.x}, ${path.offset.y})`" />
 

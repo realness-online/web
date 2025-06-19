@@ -8,6 +8,8 @@ import { size } from '@/utils/image.js'
 let converter
 let initialized = false
 
+const deg2rad = deg => deg / 180 * Math.PI
+
 const init_tracer = async () => {
   const response = await fetch('/wasm/tracer_bg.wasm')
   const wasm_bytes = await response.arrayBuffer()
@@ -16,14 +18,14 @@ const init_tracer = async () => {
 
   const params = {
     mode: 'polygon',
-    hierarchical: 'stacked',
-    corner_threshold: 60,
-    length_threshold: 4,
+    hierarchical: 'cutout',
+    corner_threshold: deg2rad(120),
+    length_threshold: 20,
     max_iterations: 10,
-    splice_threshold: 2,
-    filter_speckle: 50,
-    color_precision: 3,
-    layer_difference: 1,
+    splice_threshold: deg2rad(2),
+    filter_speckle: 48,
+    color_precision: 2,
+    layer_difference: 15,
     path_precision: 0
   }
 
