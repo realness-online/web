@@ -19,7 +19,7 @@ import ExifReader from 'exifreader'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
-const new_trace = ref(null)
+const new_cutouts = ref([])
 const progress = ref(0)
 
 export const use = () => {
@@ -119,27 +119,18 @@ export const use = () => {
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
   const traced = message => {
-
-    switch(message.type) {
+    switch (message.data.type) {
       case 'progress':
-        // Update progress indicator
-        progress.value = message.progress
+        console.log('progress:', message.data.progress)
+        progress.value = message.data.progress
         break
       case 'path':
-        // Add new path to trace
-        console.log('path:', message.data)
-        if(!new_vector.value.trace) {
-          new_vector.value.trace = { paths: [] }
-        }
-        new_vector.value.trace.paths.push(message.data)
+        console.log('path:', message.data.path)
+        new_cutouts.value.push(message.data.path)
         break
-
       case 'complete':
-        // Set final dimensions
-        new_vector.value.width = message.width
-        new_vector.value.height = message.height
+        console.log('trace completed')
         break
-
       case 'error':
         console.error('Tracer error:', message.error)
         break
@@ -182,7 +173,7 @@ export const use = () => {
     working,
     new_vector,
     new_gradients,
-    new_trace,
+    new_cutouts,
     mount_workers,
     progress
   }

@@ -23,7 +23,7 @@ pub struct ColorImageConverterParams {
 
 #[derive(Debug, Serialize)]
 pub struct PathData {
-    pub path: String,
+    pub d: String,
     pub color: ColorData,
     pub offset: PointData,
 }
@@ -190,7 +190,7 @@ impl ColorImageConverter {
                     let color = cluster.residue_color();
 
                     let path_data = PathData {
-                        path: path_string,
+                        d: path_string,
                         color: ColorData {
                             r: color.r,
                             g: color.g,

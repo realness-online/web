@@ -5,12 +5,14 @@ This module provides vector tracing functionality via WebAssembly.
 ## Build Process
 
 1. Build WASM:
+
 ```bash
 cd web/tracer
 wasm-pack build --target web
 ```
 
 2. Build Workers:
+
 ```bash
 cd web
 npm run build:workers
