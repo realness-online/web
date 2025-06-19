@@ -87,6 +87,7 @@
     vector_element,
     intersecting
   } = use_poster()
+  const { new_cutouts } = use_vectorize()
   const trigger = ref(null)
   const emboss = computed(
     () => emboss_pref.value === true && intersecting.value
@@ -107,7 +108,7 @@
   const { optimize: run_optimize } = use_optimizer(vector)
   const new_poster = inject('new-poster', false)
   if (new_poster) {
-    const { new_vector } = use_vectorize()
+    const { new_vector, new_cutouts } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
   }
@@ -122,6 +123,7 @@
         { rootMargin: '1024px' }
       )
   })
+
   watch_effect(() => {
     if (props.sync_poster) {
       vector.value = props.sync_poster
@@ -215,6 +217,7 @@
           :stroke="`url(${fragment('radial-regular')})`"
           @focus="focus('bold')" />
       </pattern>
+
       <rect
         :id="query('pattern-render')"
         :fill="`url(${fragment('pattern')})`"
@@ -359,6 +362,15 @@
       width="100%"
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
+    <g :id="query('cutouts')">
+        <path
+        v-for="(path, index) in new_cutouts"
+        :key="`path-${index}`"
+          :d="path.d"
+          :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
+          :transform="`translate(${path.offset.x}, ${path.offset.y})`" />
+
+    </g>
   </svg>
 </template>
 

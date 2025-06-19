@@ -1,4 +1,8 @@
-import { initSync, ColorImageConverter, init_panic_hook } from '@/wasm/tracer.js'
+import {
+  initSync,
+  ColorImageConverter,
+  init_panic_hook
+} from '@/wasm/tracer.js'
 import { size } from '@/utils/image.js'
 
 let converter
@@ -11,8 +15,8 @@ const init_tracer = async () => {
   init_panic_hook()
 
   const params = {
-    mode: "polygon",
-    hierarchical: "stacked",
+    mode: 'polygon',
+    hierarchical: 'stacked',
     corner_threshold: 60,
     length_threshold: 4,
     max_iterations: 10,
@@ -53,10 +57,7 @@ const make_trace = async message => {
       `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * 4}`
     )
   }
-
   console.log('Processing image:', image_data.width, 'x', image_data.height)
-
-  // Initialize the converter with the image
   converter.init(image_data)
 
   // Start the processing loop
@@ -65,16 +66,12 @@ const make_trace = async message => {
       const result = converter.tick()
       const progress = converter.progress()
 
-      console.log('Tick result:', result, 'Progress:', progress)
-
-      // Send progress update
       self.postMessage({
         type: 'progress',
         progress
       })
 
-      if (result === "complete") {
-        // Processing is complete
+      if (result === 'complete') {
         console.log('Processing complete')
         self.postMessage({
           type: 'complete',
@@ -82,21 +79,17 @@ const make_trace = async message => {
           height: image_data.height
         })
       } else if (result) {
-        // Log the path data result
-        console.log('Path data:', result)
-        // If we got a path, send it
+        const path_data = JSON.parse(result)
         self.postMessage({
           type: 'path',
-          data: result
+          path: path_data
         })
         // Schedule next tick
         setTimeout(process, 1)
       } else if (progress < 100) {
-        // If no result but not complete, continue processing
         console.log('No result, continuing...')
-        setTimeout(process, 1)
+        setTimeout(process, 3)
       } else {
-        // Only send completion when we're at 100%
         console.log('Progress 100%, sending completion')
         self.postMessage({
           type: 'complete',
