@@ -371,7 +371,7 @@
       <path v-for="(path, index) in new_cutouts" :key="`path-${index}`"
           itemprop="cutouts"
           :d="path.d"
-          fill-opacity="0.5"
+          fill-opacity="0.66"
           :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
           :transform="`translate(${path.offset.x}, ${path.offset.y})`" />
 
