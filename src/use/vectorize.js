@@ -2,7 +2,8 @@ import {
   ref,
   computed,
   watchEffect as watch_effect,
-  onUnmounted as dismount
+  onUnmounted as dismount,
+  inject
 } from 'vue'
 import { create_path_element } from '@/use/path'
 import { is_vector } from '@/use/poster'
@@ -24,7 +25,7 @@ const progress = ref(0)
 
 export const use = () => {
   const router = use_router()
-  const image_picker = ref(null)
+  const image_picker = inject('image_picker', ref(null))
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
@@ -158,7 +159,7 @@ export const use = () => {
   dismount(() => {
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
-    // if (tracer.value) tracer.value.terminate()
+    if (tracer.value) tracer.value.terminate()
   })
   return {
     can_add,

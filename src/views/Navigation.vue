@@ -1,22 +1,18 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import AccountDialog from '@/components/profile/as-dialog-account'
   const version = import.meta.env.PACKAGE_VERSION
 
   const posting = ref(false)
-  const nav = ref()
 
   const toggle_keyboard = () => {
     posting.value = !posting.value
   }
 
-  const { vVectorizer, image_picker, open_camera, mount_workers } =
-    use_vectorize()
-
-  mounted(() => mount_workers())
+  const { open_camera } = use_vectorize()
 </script>
 
 <template>
@@ -24,7 +20,7 @@
     <header>
       <account-dialog />
     </header>
-    <nav ref="nav">
+    <nav>
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
       </router-link>
@@ -52,13 +48,6 @@
       <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
-  <aside>
-    <input
-      ref="image_picker"
-      v-vectorizer
-      type="file"
-      accept="image/jpeg,image/png" />
-  </aside>
 </template>
 
 <style lang="stylus">
