@@ -11,12 +11,17 @@
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { fps as fps_pref } from '@/utils/preference'
+  import { use as use_vectorize } from '@/use/vectorize'
+
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
   const router = use_router()
 
   const show_utility_components = ref(true)
   provide('show_utility_components', show_utility_components)
+
+  const { vVectorizer, image_picker, mount_workers } = use_vectorize()
+  provide('image_picker', image_picker)
 
   /** @param {boolean} active */
   const sync_active = active => {
@@ -46,6 +51,7 @@
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     await init_serverless()
+    mount_workers()
   })
   dismount(() => {
     window.removeEventListener('online', online)
@@ -59,6 +65,11 @@
     <sync @active="sync_active" />
     <fps v-if="fps_pref && show_utility_components" />
     <preferences-dialog v-if="show_utility_components" />
+    <input
+      ref="image_picker"
+      v-vectorizer
+      type="file"
+      accept="image/jpeg,image/png" />
   </main>
 </template>
 

@@ -22,11 +22,8 @@
   } = use_posters()
   const {
     can_add,
-    vVectorizer,
-    image_picker,
     select_photo,
-    working,
-    mount_workers
+    working
   } = use_vectorize()
   const { process_directory, progress, completed_poster } =
     directory_processor()
@@ -74,7 +71,6 @@
     if (event.target === delete_dialog.value) delete_dialog.value.close()
   }
   mounted(async () => {
-    mount_workers()
     await posters_for_person({ id: localStorage.me })
     working.value = false
     console.timeEnd('views:Posters')
@@ -108,12 +104,6 @@
       <a v-if="can_add" hidden tabindex="-1" @click="process_directory">
         <icon name="picker" />
       </a>
-
-      <input
-        ref="image_picker"
-        v-vectorizer
-        type="file"
-        accept="image/jpeg,image/png" />
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>
