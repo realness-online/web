@@ -41,7 +41,8 @@ const create_worker_config = filename => ({
                 dest: 'src/wasm'
               }
             ],
-            hook: 'buildStart'
+            hook: 'buildStart',
+            copyOnce: true
           })
         ]
       : []),
@@ -50,7 +51,10 @@ const create_worker_config = filename => ({
       limit: 10,
       filter: ({ size }) => size > 1000
     })
-  ]
+  ],
+  watch: {
+    exclude: ['public/wasm/**', 'src/wasm/**']
+  }
 })
 
 export default [

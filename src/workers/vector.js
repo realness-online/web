@@ -44,7 +44,7 @@ export const svgo_options = {
 }
 
 export const get_average_color = (canvas, x, y, width, height) => {
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   const image_data = ctx.getImageData(x, y, width, height)
   const { data } = image_data
 
@@ -156,7 +156,7 @@ export const make_gradient = async message => {
 
   // Create a temporary canvas to work with the image data
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
   ctx.putImageData(image_data, 0, 0)
 
   const gradients = {
