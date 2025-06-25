@@ -43,40 +43,6 @@ export const svgo_options = {
   ]
 }
 
-/**
- * @param {File} file
- * @returns {Promise<ImageBitmap>}
- */
-export const read = file => {
-  const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
-  const blob = new Blob([array_buffer])
-  return createImageBitmap(blob)
-}
-
-/**
- * @param {ImageBitmap} image
- * @param {number} [target_size=IMAGE.TARGET_SIZE]
- * @returns {OffscreenCanvas}
- */
-export const size = (image, target_size = IMAGE.TARGET_SIZE) => {
-  let new_width = image.width
-  let new_height = image.height
-
-  if (image.width > image.height) {
-    new_height = target_size
-    new_width = Math.round((target_size * image.width) / image.height)
-  } else {
-    new_width = target_size
-    new_height = Math.round((target_size * image.height) / image.width)
-  }
-
-  const canvas = new OffscreenCanvas(new_width, new_height)
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  ctx.drawImage(image, 0, 0, new_width, new_height)
-
-  return canvas
-}
-
 export const get_average_color = (canvas, x, y, width, height) => {
   const ctx = canvas.getContext('2d')
   const image_data = ctx.getImageData(x, y, width, height)
@@ -166,11 +132,8 @@ export const is_stop = stop => {
 
 export const make_vector = async message => {
   console.time('make:vector')
-  const image = await read(message.data.image)
+  const image_data = message.data.image_data
 
-  const canvas = size(image)
-  const ctx = canvas.getContext('2d')
-  const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
   const poster = as_paths(image_data, potrace_options)
 
   const vector = {
@@ -189,9 +152,13 @@ export const make_vector = async message => {
 
 export const make_gradient = async message => {
   console.time('make:gradient')
-  const image = await read(message.data.image)
+  const image_data = message.data.image_data
 
-  const canvas = size(image)
+  // Create a temporary canvas to work with the image data
+  const canvas = new OffscreenCanvas(image_data.width, image_data.height)
+  const ctx = canvas.getContext('2d')
+  ctx.putImageData(image_data, 0, 0)
+
   const gradients = {
     horizontal: as_gradient(canvas),
     vertical: as_gradient(canvas, true),

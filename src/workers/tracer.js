@@ -3,12 +3,11 @@ import {
   ColorImageConverter,
   init_panic_hook
 } from '@/wasm/tracer.js'
-import { size } from '@/utils/image.js'
 
 let converter
 let initialized = false
 
-const deg2rad = deg => deg / 180 * Math.PI
+const deg2rad = deg => (deg / 180) * Math.PI
 
 const init_tracer = async () => {
   const response = await fetch('/wasm/tracer_bg.wasm')
@@ -33,25 +32,14 @@ const init_tracer = async () => {
   initialized = true
 }
 
-/**
- * @param {File} file
- * @returns {Promise<ImageBitmap>}
- */
-const read = file => {
-  const array_buffer = new FileReaderSync().readAsArrayBuffer(file)
-  const blob = new Blob([array_buffer])
-  return createImageBitmap(blob)
-}
-
 const make_trace = async message => {
-  const image = await read(message.data.image)
-  console.log('Image loaded:', image.width, 'x', image.height)
-
-  // Resize image before tracing
-  const canvas = size(image) // Default target size is 512px
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  ctx.drawImage(image, 0, 0)
-  const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const image_data = message.data.image_data
+  console.log(
+    'Processing image data:',
+    image_data.width,
+    'x',
+    image_data.height
+  )
 
   // Verify image data is valid
   if (image_data.data.length !== image_data.width * image_data.height * 4) {
