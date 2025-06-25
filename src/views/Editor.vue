@@ -35,7 +35,7 @@
     new_gradients.value = null
     if (new_vector.value) {
       new_vector.value = null
-      router.replace({ path: '/' })
+      router.back()
     } else router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
   }
   const save = async () => {

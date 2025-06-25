@@ -153,7 +153,7 @@ export const use = () => {
       is_vector(new_vector.value)
     ) {
       const created_at = as_created_at(new_vector.value.id)
-      router.replace({ path: `/posters/${created_at}/editor` })
+      router.push({ path: `/posters/${created_at}/editor` })
     }
   })
   dismount(() => {
