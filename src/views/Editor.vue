@@ -1,14 +1,16 @@
 <script setup>
 
   import Icon from '@/components/icon'
-  import AsFill from '@/components/posters/as-figure-fill'
+  import AsSvg from '@/components/posters/as-svg'
   import { Poster } from '@/persistance/Storage'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
-  import { provide } from 'vue'
+  import { provide, ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
+
   const route = use_route()
   const router = use_router()
   const itemid = /** @type {import('@/types').Id} */ (`${localStorage.me}/posters/${Number(route.params.id)}`)
+  const figure = ref(null)
 
   const back = () => {
     const me = localStorage.me.substring(2)
@@ -36,7 +38,14 @@
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
     </header>
-    <as-fill :itemid="itemid"/>
+    <figure ref="figure">
+      <as-svg
+        :itemid="itemid"
+        :optimize="true"
+        :slice="true"
+        :tabable="true"
+        tabindex="-1"/>
+    </figure>
   </section>
 </template>
 
@@ -59,33 +68,44 @@
         position: relative
         z-index: 2
         text-shadow: 1px 1px 1px black-background
-    & > header > a  > svg
-      cursor: pointer
-      fill: green
-      .selected
-        fill:red
-      &:hover
-        fill: red
-      &.color > svg.opacity
-        fill: black-background
+      & > a  > svg
+        cursor: pointer
+        fill: green
+        .selected
+          fill:red
         &:hover
-          fill:transparent
-      &.remove
-      &.fullscreen
-      &.finished
-        fill-opacity: inherit
-
-      & > svg
-        z-index: 2
-        &.selected
-          stroke: red
-          fill red
-        &.grid
-          border: 1px solid green
-          border-radius: base-line * 0.15
-          transition: border-color
+          fill: red
+        &.color > svg.opacity
+          fill: black-background
           &:hover
+            fill:transparent
+        &.remove
+        &.fullscreen
+        &.finished
+          fill-opacity: inherit
+
+        & > svg
+          z-index: 2
+          &.selected
+            stroke: red
+            fill red
+          &.grid
+            border: 1px solid green
+            border-radius: base-line * 0.15
             transition: border-color
-            fill: green
-            border-color: red
+            &:hover
+              transition: border-color
+              fill: green
+              border-color: red
+
+    & > figure > svg
+      position: fixed
+      z-index: 0
+      top: 0
+      bottom: 0
+      left: 0
+      right: 0
+      @media (orientation: landscape) and (max-height: page-width)
+        max-height: 100dvh
+        min-height: inherit
 </style>

@@ -34,12 +34,6 @@ const init_tracer = async () => {
 
 const make_trace = async message => {
   const image_data = message.data.image_data
-  console.log(
-    'Processing image data:',
-    image_data.width,
-    'x',
-    image_data.height
-  )
 
   // Verify image data is valid
   if (image_data.data.length !== image_data.width * image_data.height * 4) {
@@ -47,7 +41,6 @@ const make_trace = async message => {
       `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * 4}`
     )
   }
-  console.log('Processing image:', image_data.width, 'x', image_data.height)
   converter.init(image_data)
 
   // Start the processing loop
@@ -62,7 +55,6 @@ const make_trace = async message => {
       })
 
       if (result === 'complete') {
-        console.log('Processing complete')
         self.postMessage({
           type: 'complete',
           width: image_data.width,
@@ -77,10 +69,8 @@ const make_trace = async message => {
         // Schedule next tick
         setTimeout(process, 1)
       } else if (progress < 100) {
-        console.log('No result, continuing...')
         setTimeout(process, 3)
       } else {
-        console.log('Progress 100%, sending completion')
         self.postMessage({
           type: 'complete',
           width: image_data.width,

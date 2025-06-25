@@ -163,14 +163,12 @@ export const use = () => {
   const traced = message => {
     switch (message.data.type) {
       case 'progress':
-        console.log('progress:', message.data.progress)
         progress.value = message.data.progress
         break
       case 'path':
         new_cutouts.value.push(message.data.path)
         break
       case 'complete':
-        console.log('trace completed')
         break
       case 'error':
         console.error('Tracer error:', message.error)
