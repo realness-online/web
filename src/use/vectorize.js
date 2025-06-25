@@ -10,6 +10,7 @@ import { is_vector } from '@/use/poster'
 import { as_created_at } from '@/utils/itemid'
 import { useRouter as use_router } from 'vue-router'
 import { to_kb } from '@/utils/numbers'
+import { IMAGE } from '@/utils/numbers'
 import ExifReader from 'exifreader'
 
 /**
@@ -59,6 +60,29 @@ export const use = () => {
     return path
   }
 
+  /**
+   * @param {ImageBitmap} image
+   * @param {number} [target_size=IMAGE.TARGET_SIZE]
+   * @returns {ImageData}
+   */
+  const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
+    let new_width = image.width
+    let new_height = image.height
+
+    if (image.width > image.height) {
+      new_height = target_size
+      new_width = Math.round((target_size * image.width) / image.height)
+    } else {
+      new_width = target_size
+      new_height = Math.round((target_size * image.height) / image.width)
+    }
+
+    const canvas = new OffscreenCanvas(new_width, new_height)
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    ctx.drawImage(image, 0, 0, new_width, new_height)
+    return ctx.getImageData(0, 0, new_width, new_height)
+  }
+
   const listener = () => {
     const [image] = image_picker.value.files
     if (image === undefined) return
@@ -90,9 +114,26 @@ export const use = () => {
     const tags = await ExifReader.load(image, { expanded: true })
     const exif = exif_logger(tags)
 
-    vectorizer.value.postMessage({ route: 'make:vector', image, exif })
-    gradienter.value.postMessage({ route: 'make:gradient', image })
-    tracer.value.postMessage({ route: 'make:trace', image })
+    // Create ImageBitmap and resize once
+    const array_buffer = await image.arrayBuffer()
+    const blob = new Blob([array_buffer])
+    const image_bitmap = await createImageBitmap(blob)
+    const resized_image_data = resize_image(image_bitmap)
+
+    // Send resized image data to workers
+    vectorizer.value.postMessage({
+      route: 'make:vector',
+      image_data: resized_image_data,
+      exif
+    })
+    gradienter.value.postMessage({
+      route: 'make:gradient',
+      image_data: resized_image_data
+    })
+    tracer.value.postMessage({
+      route: 'make:trace',
+      image_data: resized_image_data
+    })
   }
 
   /**
