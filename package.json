@@ -19,7 +19,7 @@
   "description": "When people search for 'outsider social network' they'll find realness online. The medium is the message",
   "author": "Scott Fryxell <sfryxell@gmail.com>",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite --host 127.0.0.1",
     "dev:workers": "rollup -c workers.config.js --watch",
     "build": "vite build",
     "build:workers": "rollup -c workers.config.js",
