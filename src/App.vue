@@ -2,6 +2,7 @@
   import sync from '@/components/sync'
   import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
   import fps from '@/components/fps'
+  import ViewboxCoords from '@/components/viewbox-coords'
   import {
     ref,
     onUnmounted as dismount,
@@ -64,6 +65,7 @@
     <router-view />
     <sync @active="sync_active" />
     <fps v-if="fps_pref && show_utility_components" />
+    <viewbox-coords v-if="show_utility_components" />
     <preferences-dialog v-if="show_utility_components" />
     <input
       ref="image_picker"

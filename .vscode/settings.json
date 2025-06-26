@@ -1,7 +1,7 @@
 {
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "package.json": ".env, .env.production.local, .env.development, .firebaserc, localhost.pem, localhost-key.pem, .gitignore, firebase.json,storage.rules, .env.example,jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js, deno.json, .cursorrules"
+    "package.json": "generate-certs.sh,.env, .env.production.local, .env.development, .firebaserc, localhost.pem, localhost-key.pem, .gitignore, firebase.json,storage.rules, .env.example,jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js, deno.json, .cursorrules"
   },
   "files.eol": "\n",
   "editor.tabSize": 2,

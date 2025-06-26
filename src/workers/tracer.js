@@ -18,10 +18,10 @@ const init_tracer = async () => {
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
-    corner_threshold: deg2rad(60),
+    corner_threshold: deg2rad(180),
     length_threshold: 21,
     max_iterations: 10,
-    splice_threshold: deg2rad(2),
+    splice_threshold: deg2rad(90tas),
     filter_speckle: 48,
     color_precision: 0,
     layer_difference: 13,
