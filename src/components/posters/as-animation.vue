@@ -52,7 +52,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="5s"
-      values="0.9;0.75;1;0.21;0.9" />
+      values="0.9;1;0;0.21;0.9" />
     <animate
       :href="fragment('medium')"
       attributeName="fill-opacity"
