@@ -116,7 +116,7 @@
     vector.value = new_vector.value
     working.value = false
     const cutout_paths = new_cutouts.value.map(cutout => {
-      const path = create_path_element()
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
       path.setAttribute('d', cutout.d)
       path.setAttribute(
         'fill',
@@ -343,13 +343,14 @@
   const animated_cutouts = ref(new Set())
 
   const animate_random_cutouts = () => {
+    console.log('animate_random_cutouts', animated_cutouts.value)
     if (!animate.value || !new_cutouts.value || new_cutouts.value.length === 0) return
 
     // Clear previous animated cutouts
     animated_cutouts.value.clear()
 
-    // Randomly select many cutouts to animate (up to 100 or all available)
-    const max_to_animate = Math.min(100, new_cutouts.value.length)
+    // Randomly select a smaller number of cutouts to animate (more subtle)
+    const max_to_animate = Math.min(20, new_cutouts.value.length)
     const num_to_animate = Math.floor(Math.random() * max_to_animate) + 1
     const available_indices = Array.from({ length: new_cutouts.value.length }, (_, i) => i)
 
@@ -359,8 +360,8 @@
       animated_cutouts.value.add(cutout_index)
     }
 
-    // Schedule next animation - more frequent for dramatic effect
-    setTimeout(animate_random_cutouts, Math.random() * 1000 + 500) // 0.5-1.5 seconds
+    // Schedule next animation - less frequent for subtlety
+    setTimeout(animate_random_cutouts, Math.random() * 2000 + 1000) // 1-3 seconds
   }
 
   // Start animation when animate becomes true
@@ -608,18 +609,18 @@
     <as-animation v-if="animate" :id="vector.id" />
     <g>
       <!-- For new vectors (before saving) - render as objects with color/offset properties -->
-      <path v-if="new_poster" v-for="(path, index) in new_cutouts" :key="`path-${index}`"
+      <path v-if="new_poster" v-for="(path, index) in new_cutouts" :key="`new-path-${index}`"
           :d="path.d"
           itemprop="cutouts"
           :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
-          fill-opacity="0.5"
+          fill-opacity="0.75"
           :transform="`translate(${path.offset.x}, ${path.offset.y})`"
           :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
           @touchstart="(event) => handle_cutout_touch_start(event, index)"
           @touchend="handle_cutout_touch_end" />
 
       <!-- For saved vectors - render as SVG path elements -->
-      <path v-else v-for="(path, index) in new_cutouts" :key="`path-${index}`"
+      <path v-else v-for="(path, index) in new_cutouts" :key="`saved-path-${index}`"
           itemprop="cutouts"
           :d="path.getAttribute('d')"
           :fill="path.getAttribute('fill')"
@@ -651,6 +652,8 @@
     // Active state for touch
     &:active
       cursor: grabbing
+    filter: brightness(1.1)
+    transition: filter 0.3s ease
 
     // Hover effects on individual cutout path elements (mouse and touch)
     path[itemprop="cutouts"]:hover,
@@ -658,10 +661,12 @@
       filter: brightness(1.25)
       transition: filter 0.3s ease
 
-    // Random animation effects on cutout path elements
+    // Animation effects for cutouts
     path[itemprop="cutouts"].animated
-      filter: brightness(2.5)
-      transition: filter 0.8s ease
+      filter: brightness(1.4) saturate(1.2)
+      transition: all 0.5s ease
+      transform-origin: center
+      animation: cutout-pulse 1s ease-in-out infinite alternate
 
     use:focus
       outline: none
@@ -669,4 +674,13 @@
     & rect.emboss
       pointer-events: none
       user-select: none
+
+  // Keyframe animation for cutout pulsing
+  @keyframes cutout-pulse
+    0%
+      opacity: 0.75
+      transform: scale(1)
+    100%
+      opacity: 1
+      transform: scale(1.05)
 </style>

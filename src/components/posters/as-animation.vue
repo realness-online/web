@@ -23,28 +23,28 @@
       :href="fragment('light')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="3s"
+      dur="34s"
       values="0.9;0.0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="1s"
+      dur="13s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="2s"
+      dur="21s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="4s"
+      dur="34s"
       values="0.9;0;0.9" />
 
     <animate
@@ -52,7 +52,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="5s"
-      values="0.9;1;0;0.21;0.9" />
+      values="0.9;0.75;1;0.21;0.9" />
     <animate
       :href="fragment('medium')"
       attributeName="fill-opacity"
@@ -71,7 +71,7 @@
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
-      dur="3s"
+      dur="34s"
       values="0%;33%;100%;0%;100%;0%;" />
     <animate
       :href="fragment('radial-background')"
@@ -83,7 +83,7 @@
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="5s"
+      dur="55s"
       values="0%;33%;100%;0%;133%;0%;" />
     <animate
       :href="fragment('vertical-light')"
@@ -96,39 +96,39 @@
       :href="fragment('horizontal-regular')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="4s"
+      dur="34s"
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="5s"
+      dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
 
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="3s"
+      dur="34s"
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="5s"
+      dur="55s"
       val
       bues="0%;66%;100%;33%;100%;66%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="3s"
+      dur="34s"
       values="0%;100%;66%;0%;33%;133%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="5s"
+      dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
   </g>
 </template>
