@@ -54,7 +54,7 @@
       <preference name="animate" title="Animate posters" />
       <preference
         name="fps"
-        title="show frames per second on the bottom right" />
+        title="Show frames per second and other diagnostics" />
     </menu>
   </dialog>
 </template>

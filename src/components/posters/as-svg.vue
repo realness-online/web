@@ -115,6 +115,22 @@
     const { new_vector, new_cutouts } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
+    const cutout_paths = new_cutouts.value.map(cutout => {
+      const path = create_path_element()
+      path.setAttribute('d', cutout.d)
+      path.setAttribute(
+        'fill',
+        `rgb(${cutout.color.r}, ${cutout.color.g}, ${cutout.color.b})`
+      )
+      path.setAttribute('fill-opacity', '0.5')
+      path.setAttribute(
+        'transform',
+        `translate(${cutout.offset.x}, ${cutout.offset.y})`
+      )
+      path.setAttribute('itemprop', 'cutouts')
+      return path
+    })
+    new_cutouts.value = cutout_paths
   }
 
   mounted(() => {
@@ -591,11 +607,24 @@
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
     <g>
-      <path v-for="(path, index) in new_cutouts" :key="`path-${index}`"
-          itemprop="cutouts"
+      <!-- For new vectors (before saving) - render as objects with color/offset properties -->
+      <path v-if="new_poster" v-for="(path, index) in new_cutouts" :key="`path-${index}`"
           :d="path.d"
-          :style="`fill:rgb(${path.color.r}, ${path.color.g}, ${path.color.b}); fill-opacity:0.5`"
+          itemprop="cutouts"
+          :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
+          fill-opacity="0.5"
           :transform="`translate(${path.offset.x}, ${path.offset.y})`"
+          :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
+          @touchstart="(event) => handle_cutout_touch_start(event, index)"
+          @touchend="handle_cutout_touch_end" />
+
+      <!-- For saved vectors - render as SVG path elements -->
+      <path v-else v-for="(path, index) in new_cutouts" :key="`path-${index}`"
+          itemprop="cutouts"
+          :d="path.getAttribute('d')"
+          :fill="path.getAttribute('fill')"
+          :fill-opacity="path.getAttribute('fill-opacity')"
+          :transform="path.getAttribute('transform')"
           :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
           @touchstart="(event) => handle_cutout_touch_start(event, index)"
           @touchend="handle_cutout_touch_end" />

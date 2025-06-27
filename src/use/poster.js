@@ -31,8 +31,8 @@ export const use = () => {
   const { get_active_path } = use_path()
 
   const aspect_ratio = computed(() => {
-    // if (!props.toggle_aspect) return 'xMidYMid slice'
-    // if (menu.value || !props.slice) return 'xMidYMid meet'
+    if (!props.toggle_aspect) return 'xMidYMid slice'
+    if (menu.value || !props.slice) return 'xMidYMid meet'
     return 'xMidYMid slice'
   })
 

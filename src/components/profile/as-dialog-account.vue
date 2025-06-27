@@ -1,17 +1,20 @@
 <script setup>
   import NameAsForm from '@/components/profile/as-form-name'
   import CallToAction from '@/components/call-to-action'
-  import { ref, onMounted as mounted, inject } from 'vue'
+  import { ref, onMounted as mounted, inject, watch } from 'vue'
   import SignOn from '@/components/profile/sign-on'
   import { current_user, sign_off } from '@/utils/serverless'
   import { load } from '@/utils/itemid'
   import Icon from '@/components/icon'
+  import { useRoute as use_route } from 'vue-router'
 
   /** @type {import('vue').Ref<boolean>} */
   const show_utility_components = inject('show_utility_components')
 
   const form = ref(null)
   const first_name = ref('You')
+  const route = use_route()
+
   const show_form = () => form.value.showModal()
   const dialog_click = event => {
     if (event.target === form.value) form.value.close()
@@ -19,9 +22,22 @@
   const close_settings = () => {
     form.value.close()
   }
+
+  // Watch for hash changes to show dialog
+  watch(() => route.hash, (new_hash) => {
+    if (new_hash === '#account' && form.value) {
+      form.value.showModal()
+    }
+  }, { immediate: true })
+
   mounted(async () => {
     const my = await load(localStorage.me)
     if (my?.first_name) first_name.value = my.first_name
+
+    // Check if we should show dialog on mount (e.g., if URL has #account)
+    if (route.hash === '#account' && form.value) {
+      form.value.showModal()
+    }
   })
 </script>
 
@@ -35,9 +51,6 @@
     <menu>
       <button v-if="current_user" @click="sign_off">Sign off</button>
       <sign-on v-else />
-      <a class="close" @click="close_settings">
-        <icon name="finished" />
-      </a>
     </menu>
   </dialog>
 </template>

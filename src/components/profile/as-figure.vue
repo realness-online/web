@@ -5,7 +5,7 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
-  import { useRouter as use_router } from 'vue-router'
+  import { useRouter as use_router, useRoute as use_route } from 'vue-router'
   import { computed } from 'vue'
   import { use_me, is_person } from '@/use/people'
   const props = defineProps({
@@ -21,15 +21,23 @@
     }
   })
   const router = use_router()
+  const route = use_route()
   const { relations } = use_me()
 
   const is_me = computed(() => {
     if (localStorage.me === props.person.id) return true
     return false
   })
+
   const avatar_click = () => {
-    const route = { path: props.person.id }
-    router.push(route)
+    // If we're on the sign-on page, go to home with account dialog fragment
+    if (route.path === '/sign-on') {
+      router.push('/#account')
+    } else {
+      // Default behavior - go to person's profile
+      const route_path = { path: props.person.id }
+      router.push(route_path)
+    }
   }
 </script>
 
