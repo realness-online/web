@@ -214,11 +214,31 @@
     event.preventDefault()
 
     if (event.shiftKey && event.metaKey) {
-      // Shift + Command + wheel = zoom in/out
-      const delta = event.deltaY > 0 ? 0.9 : 1.1
+      // Shift + Command + wheel = zoom in/out centered on viewport
+      const delta = event.deltaY > 0 ? 1.1 : 0.9
       const new_scale = Math.max(0.5, Math.min(3, viewbox_transform.value.scale * delta))
+
+      // Calculate zoom center (middle of current viewport)
+      const svg_rect = svg_element.value.getBoundingClientRect()
+      const center_x = svg_rect.width / 2
+      const center_y = svg_rect.height / 2
+
+      // Convert screen coordinates to viewBox coordinates
+      const current_viewbox = dynamic_viewbox.value.split(' ').map(Number)
+      const viewbox_width = current_viewbox[2]
+      const viewbox_height = current_viewbox[3]
+
+      const scale_ratio = new_scale / viewbox_transform.value.scale
+      const zoom_center_x = center_x / svg_rect.width * viewbox_width
+      const zoom_center_y = center_y / svg_rect.height * viewbox_height
+
+      // Adjust position to keep zoom center fixed
+      const new_x = viewbox_transform.value.x + (zoom_center_x * (1 - scale_ratio))
+      const new_y = viewbox_transform.value.y + (zoom_center_y * (1 - scale_ratio))
+
       viewbox_transform.value = {
-        ...viewbox_transform.value,
+        x: new_x,
+        y: new_y,
         scale: new_scale
       }
     } else if (event.shiftKey) {
@@ -302,6 +322,39 @@
     event.preventDefault()
     hovered_cutout.value = null
   }
+
+  // Random cutout animation when animation is enabled
+  const animated_cutouts = ref(new Set())
+
+  const animate_random_cutouts = () => {
+    if (!animate.value || !new_cutouts.value || new_cutouts.value.length === 0) return
+
+    // Clear previous animated cutouts
+    animated_cutouts.value.clear()
+
+    // Randomly select many cutouts to animate (up to 100 or all available)
+    const max_to_animate = Math.min(100, new_cutouts.value.length)
+    const num_to_animate = Math.floor(Math.random() * max_to_animate) + 1
+    const available_indices = Array.from({ length: new_cutouts.value.length }, (_, i) => i)
+
+    for (let i = 0; i < num_to_animate && available_indices.length > 0; i++) {
+      const random_index = Math.floor(Math.random() * available_indices.length)
+      const cutout_index = available_indices.splice(random_index, 1)[0]
+      animated_cutouts.value.add(cutout_index)
+    }
+
+    // Schedule next animation - more frequent for dramatic effect
+    setTimeout(animate_random_cutouts, Math.random() * 1000 + 500) // 0.5-1.5 seconds
+  }
+
+  // Start animation when animate becomes true
+  watch_effect(() => {
+    if (animate.value) {
+      animate_random_cutouts()
+    } else {
+      animated_cutouts.value.clear()
+    }
+  })
 </script>
 
 <template>
@@ -543,7 +596,7 @@
           :d="path.d"
           :style="`fill:rgb(${path.color.r}, ${path.color.g}, ${path.color.b}); fill-opacity:0.5`"
           :transform="`translate(${path.offset.x}, ${path.offset.y})`"
-          :class="{ 'hovered': hovered_cutout === index }"
+          :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
           @touchstart="(event) => handle_cutout_touch_start(event, index)"
           @touchend="handle_cutout_touch_end" />
     </g>
@@ -573,8 +626,13 @@
     // Hover effects on individual cutout path elements (mouse and touch)
     path[itemprop="cutouts"]:hover,
     path[itemprop="cutouts"].hovered
-      filter: brightness(1.1)
+      filter: brightness(1.25)
       transition: filter 0.3s ease
+
+    // Random animation effects on cutout path elements
+    path[itemprop="cutouts"].animated
+      filter: brightness(2.5)
+      transition: filter 0.8s ease
 
     use:focus
       outline: none

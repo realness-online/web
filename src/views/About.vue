@@ -48,6 +48,10 @@
             background to a dark foreground.
           </p>
           <p>
+            This is a serviece for people who want to trust each other and
+            commited to the dicipline and work to make that happen.
+          </p>
+          <p>
             Your Poster is a natural fit for the web. Posters are optimized to
             be expressive, small, and to run fast. You can extract a color
             palette, animate a filter or gradient. The individual parts of a

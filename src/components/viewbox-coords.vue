@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, computed } from 'vue'
+  import { computed } from 'vue'
   import { useStorage as use_storage } from '@vueuse/core'
 
   const props = defineProps({
@@ -10,20 +10,18 @@
     }
   })
 
-  // Get viewBox transform from localStorage if itemid is provided
-  const storage_key = computed(() => props.itemid ? `viewbox-${props.itemid}` : null)
+  // Get viewBox transform from localStorage
+  const storage_key = computed(() => props.itemid ? `viewbox-${props.itemid}` : 'viewbox-current')
   const viewbox_transform = use_storage(storage_key, {
     x: 0,
     y: 0,
     scale: 1
   })
 
-  // Format coordinates for display
+  // Format coordinates for display - much more concise
   const formatted_coords = computed(() => {
-    if (!props.itemid) return 'No poster selected'
-
     const { x, y, scale } = viewbox_transform.value
-    return `x: ${Math.round(x)} y: ${Math.round(y)} zoom: ${scale.toFixed(2)}x`
+    return `${Math.round(x)},${Math.round(y)} ${scale.toFixed(1)}x`
   })
 </script>
 
