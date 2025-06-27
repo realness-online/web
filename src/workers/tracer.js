@@ -21,8 +21,8 @@ const init_tracer = async () => {
     corner_threshold: deg2rad(180),
     length_threshold: 21,
     max_iterations: 10,
-    splice_threshold: deg2rad(90tas),
-    filter_speckle: 48,
+    splice_threshold: deg2rad(90),
+    filter_speckle: 78,
     color_precision: 0,
     layer_difference: 13,
     path_precision: 2

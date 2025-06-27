@@ -2,24 +2,31 @@
   import sync from '@/components/sync'
   import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
   import fps from '@/components/fps'
-  import ViewboxCoords from '@/components/viewbox-coords'
+  import Viewbox from '@/components/viewbox'
   import {
     ref,
     onUnmounted as dismount,
     onMounted as mounted,
-    provide
+    provide,
+    computed
   } from 'vue'
   import { init_serverless } from '@/utils/serverless'
-  import { useRouter as use_router } from 'vue-router'
+  import { useRouter as use_router, useRoute as use_route } from 'vue-router'
   import { fps as fps_pref } from '@/utils/preference'
   import { use as use_vectorize } from '@/use/vectorize'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
   const router = use_router()
+  const route = use_route()
 
   const show_utility_components = ref(true)
   provide('show_utility_components', show_utility_components)
+
+  const show_viewbox = computed(() => {
+    return show_utility_components.value &&
+           (route.path === '/posters' || route.path.includes('/posters/') && route.path.includes('/editor'))
+  })
 
   const { vVectorizer, image_picker, mount_workers } = use_vectorize()
   provide('image_picker', image_picker)
@@ -65,7 +72,7 @@
     <router-view />
     <sync @active="sync_active" />
     <fps v-if="fps_pref && show_utility_components" />
-    <viewbox-coords v-if="show_utility_components" />
+    <viewbox v-if="fps_pref && show_viewbox" />
     <preferences-dialog v-if="show_utility_components" />
     <input
       ref="image_picker"

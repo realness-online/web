@@ -26,19 +26,20 @@
 </script>
 
 <template>
-  <span id="viewbox-coords">{{ formatted_coords }}</span>
+  <span id="viewbox">{{ formatted_coords }}</span>
 </template>
 
 <style lang="stylus">
-  span#viewbox-coords
+  span#viewbox
     position: fixed
-    bottom: base-line * .5
-    left: base-line * .5
+    bottom: base-line * 1.5
+    left: 50%
+    transform: translateX(-50%)
     padding: base-line * .5
     border-radius: base-line * .5
     background: rgba(0, 0, 0, 0.66)
     color: blue
-    font-size: base-line
+    font-size: smaller
     text-shadow: -0.66px -0.66px .51px red
     z-index: 1000
     font-family: monospace

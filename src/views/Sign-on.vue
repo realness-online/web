@@ -92,6 +92,9 @@
       padding: base-line
       padding-top: 0
     & > footer > button
+      position: absolute
+      bottom: base-line * 3
+      margin: 0 auto
       opacity: 0.5
       &:hover
         opacity: 1

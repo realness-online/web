@@ -4,16 +4,11 @@
   import { use_me } from '@/use/people'
   const emit = defineEmits(['valid'])
   const { save, is_valid_name } = use_me()
-  const button = ref()
   const save_me = async () => {
     if (is_valid_name.value) {
       await save()
       emit('valid')
     }
-  }
-  const modified_check = async () => {
-    if (is_valid_name.value) button.value.disabled = false
-    else button.value.disabled = true
   }
 </script>
 
@@ -25,20 +20,13 @@
         id="first-name"
         v-model="me.first_name"
         type="text"
-        placeholder="First"
-        @keyup="modified_check" />
+        placeholder="First" />
       <input
         id="last-name"
         v-model="me.last_name"
         type="text"
-        placeholder="Last"
-        @keyup="modified_check" />
+        placeholder="Last" />
     </fieldset>
-    <menu>
-      <button ref="button" disabled @click.prevent="save_me">
-        Yep, That's my name
-      </button>
-    </menu>
   </form>
 </template>
 

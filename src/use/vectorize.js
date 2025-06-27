@@ -160,15 +160,55 @@ export const use = () => {
     new_vector.value = vector
   }
   const gradientized = message => (new_gradients.value = message.data.gradients)
+
+  /**
+   * Handles messages from the tracer worker
+   * @param {Object} message - Message from tracer worker
+   * @description
+   * The tracer worker sends cutout data as objects with d, color, and offset properties.
+   * When tracing completes, we convert these objects to SVG path elements to maintain
+   * consistency with the main paths (light, regular, medium, bold) and enable SVGO optimization.
+   *
+   * Cutout objects structure:
+   * - d: SVG path data string
+   * - color: {r, g, b} RGB values
+   * - offset: {x, y} translation coordinates
+   *
+   * Converted path elements have:
+   * - d: SVG path data
+   * - fill: RGB color string
+   * - fill-opacity: 0.5 (semi-transparent)
+   * - transform: translate(x, y)
+   * - itemprop: 'cutouts' (for semantic markup)
+   */
   const traced = message => {
     switch (message.data.type) {
       case 'progress':
         progress.value = message.data.progress
         break
       case 'path':
+        // Accumulate cutout objects from tracer
         new_cutouts.value.push(message.data.path)
         break
       case 'complete':
+        // Convert cutout objects to SVG path elements for consistency
+        // This enables SVGO optimization and maintains uniform path handling
+        const cutout_paths = new_cutouts.value.map(cutout => {
+          const path = create_path_element()
+          path.setAttribute('d', cutout.d)
+          path.setAttribute(
+            'fill',
+            `rgb(${cutout.color.r}, ${cutout.color.g}, ${cutout.color.b})`
+          )
+          path.setAttribute('fill-opacity', '0.5')
+          path.setAttribute(
+            'transform',
+            `translate(${cutout.offset.x}, ${cutout.offset.y})`
+          )
+          path.setAttribute('itemprop', 'cutouts')
+          return path
+        })
+        new_cutouts.value = cutout_paths
         break
       case 'error':
         console.error('Tracer error:', message.error)
