@@ -4,7 +4,8 @@
     watchEffect as watch_effect,
     onMounted as mounted,
     computed,
-    inject
+    inject,
+    nextTick
   } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/poster'
@@ -64,6 +65,8 @@
   const fill_opacity = ref('0.90')
   const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.66')
+  const path_length = ref(0)
+
   mounted(() => {
     fill.value = props.fill
     stroke.value = props.stroke
@@ -74,6 +77,13 @@
       stroke_opacity.value = props.path.style.strokeOpacity
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
+
+    // Calculate path length for dash animation
+    nextTick(() => {
+      if (path.value) {
+        path_length.value = path.value.getTotalLength()
+      }
+    })
   })
   watch_effect(() => (d.value = props.path?.getAttribute('d')))
 </script>
@@ -81,46 +91,53 @@
 <template>
   <path
     v-if="wants_both"
-    :id="id"
+    :id="props.id"
     ref="path"
     :d="d"
-    :mask="mask"
-    :itemprop="itemprop"
+    :mask="props.mask"
+    :itemprop="props.itemprop"
     :fill="fill"
     :fill-opacity="fill_opacity"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
+    stroke-dasharray="20,10"
+    stroke-dashoffset="0"
     fill-rule="evenodd" />
   <path
     v-else-if="just_stroke"
-    :id="id"
+    :id="props.id"
     ref="path"
     :d="d"
     fill="none"
-    :mask="mask"
-    :itemprop="itemprop"
+    :mask="props.mask"
+    :itemprop="props.itemprop"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width" />
+    :stroke-width="stroke_width"
+    stroke-dasharray="20,10"
+    stroke-dashoffset="0" />
   <path
     v-if="just_fill"
-    :id="id"
+    :id="props.id"
     ref="path"
     :d="d"
-    :mask="mask"
-    :itemprop="itemprop"
+    :mask="props.mask"
+    :itemprop="props.itemprop"
     :fill="fill"
     :fill-opacity="fill_opacity"
     fill-rule="evenodd"
     stroke="none" />
 </template>
 
-<style lang="stylus">
-  path[itemprop]
-    transition-duration: 0.66s
-    &:focus
-      outline: none
-    &:active
-      fill-opacity: 0.99
+<style>
+  path[itemprop] {
+    transition-duration: 0.66s;
+    &:focus {
+      outline: none;
+    }
+    &:active {
+      fill-opacity: 0.99;
+    }
+  }
 </style>

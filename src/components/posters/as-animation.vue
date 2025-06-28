@@ -47,6 +47,36 @@
       dur="34s"
       values="0.9;0;0.9" />
 
+    <!-- Stroke dasharray animations for flowing lines effect -->
+    <animate
+      v-if="stroke"
+      :href="fragment('light')"
+      attributeName="stroke-dashoffset"
+      repeatCount="indefinite"
+      dur="2s"
+      values="0;-30" />
+    <animate
+      v-if="stroke"
+      :href="fragment('regular')"
+      attributeName="stroke-dashoffset"
+      repeatCount="indefinite"
+      dur="1s"
+      values="0;-30" />
+    <animate
+      v-if="stroke"
+      :href="fragment('medium')"
+      attributeName="stroke-dashoffset"
+      repeatCount="indefinite"
+      dur="4s"
+      values="0;-30" />
+    <animate
+      v-if="stroke"
+      :href="fragment('bold')"
+      attributeName="stroke-dashoffset"
+      repeatCount="indefinite"
+      dur="3s"
+      values="0;-30" />
+
     <animate
       :href="fragment('light')"
       attributeName="fill-opacity"
@@ -116,8 +146,7 @@
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      val
-      bues="0%;66%;100%;33%;100%;66%;0%" />
+      values="0%;66%;100%;33%;100%;66%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"

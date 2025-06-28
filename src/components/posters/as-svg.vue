@@ -661,6 +661,9 @@
       filter: brightness(1.25)
       transition: filter 0.3s ease
 
+    path[itemprop="cutouts"]
+      transition: filter 0.3s ease 0.1s // Delay on hover out
+
     // Animation effects for cutouts
     path[itemprop="cutouts"].animated
       filter: brightness(1.4) saturate(1.2)
