@@ -18,14 +18,14 @@ const init_tracer = async () => {
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
-    corner_threshold: deg2rad(180),
-    length_threshold: 21,
+    corner_threshold: deg2rad(18),
+    length_threshold: 61,
     max_iterations: 10,
     splice_threshold: deg2rad(2),
-    filter_speckle: 78,
+    filter_speckle: 54,
     color_precision: 0,
     layer_difference: 13,
-    path_precision: 2
+    path_precision: 3
   }
 
   converter = ColorImageConverter.new_with_string(JSON.stringify(params))

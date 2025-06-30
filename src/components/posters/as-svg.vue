@@ -457,12 +457,6 @@
           :stroke="`url(${fragment('radial-regular')})`"
           @focus="focus('bold')" />
       </pattern>
-
-      <rect
-        :id="query('cutouts-render')"
-        :fill="`url(${fragment('cutouts')})`"
-        width="100%"
-        height="100%" />
       <rect
         :id="query('pattern-render')"
         :fill="`url(${fragment('pattern')})`"
@@ -472,128 +466,7 @@
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <use :href="fragment('pattern')" />
-    <g v-if="emboss">
-      <defs class="emboss">
-        <defs class="static filters">
-          <filter id="emboss">
-            <feConvolveMatrix
-              kernelMatrix="1.5 0 0
-                            0   0 0
-                            0   0 -1.5" />
-          </filter>
-          <filter id="emboss-opposite">
-            <feConvolveMatrix
-              kernelMatrix="0   0 1.5
-                            0   0 0
-                           -1.5 0 0" />
-          </filter>
-          <filter id="emboss-horizontal">
-            <feConvolveMatrix
-              kernelMatrix="0   0 0
-                            1.5 0 -1.5
-                            0   0 0" />
-          </filter>
-          <filter id="emboss-vertical">
-            <feConvolveMatrix
-              kernelMatrix="0    1.5 0
-                            0    0   0
-                            0   -1.5 0" />
-          </filter>
-        </defs>
-        <filter
-          :id="query('composite')"
-          color-interpolation-filters="sRGB"
-          y="0"
-          x="0"
-          width="100%"
-          height="100%">
-          <feImage :href="fragment('emboss-render-light')" result="light" />
-          <feImage :href="fragment('emboss-render-regular')" result="regular" />
-          <feImage :href="fragment('emboss-render-medium')" result="medium" />
-          <feImage :href="fragment('emboss-render-bold')" result="bold" />
-          <feImage :href="fragment('pattern-render')" result="framing" />
-          <feMerge>
-            <feMergeNode in="framing" />
-            <feMergeNode in="bold" />
-            <feMergeNode in="medium" />
-            <feMergeNode in="regular" />
-            <feMergeNode in="light" />
-          </feMerge>
-        </filter>
-
-        <pattern
-          :id="query('pattern-emboss-light')"
-          :width="vector.width"
-          :height="vector.height"
-          :viewBox="vector.viewbox"
-          patternUnits="userSpaceOnUse"
-          :preserveAspectRatio="aspect_ratio">
-          <use :href="fragment('light')" filter="url(#emboss)" opacity="0.45" />
-        </pattern>
-        <pattern
-          :id="query('pattern-emboss-regular')"
-          :width="vector.width"
-          :height="vector.height"
-          :viewBox="vector.viewbox"
-          patternUnits="userSpaceOnUse"
-          :preserveAspectRatio="aspect_ratio">
-          <use :href="fragment('regular')" filter="url(#emboss-vertical)" />
-        </pattern>
-        <pattern
-          :id="query('pattern-emboss-medium')"
-          :width="vector.width"
-          :height="vector.height"
-          :viewBox="vector.viewbox"
-          patternUnits="userSpaceOnUse"
-          :preserveAspectRatio="aspect_ratio">
-          <use :href="fragment('medium')" filter="url(#emboss-opposite)" />
-        </pattern>
-        <pattern
-          :id="query('pattern-emboss-bold')"
-          :width="vector.width"
-          :height="vector.height"
-          :viewBox="vector.viewbox"
-          patternUnits="userSpaceOnUse"
-          :preserveAspectRatio="aspect_ratio">
-          <use :href="fragment('bold')" filter="url(#emboss-horizontal)" />
-        </pattern>
-        <rect
-          :id="query('emboss-render')"
-          :fill="`url(${fragment('pattern-emboss')})`"
-          width="100%"
-          height="100%" />
-        <rect
-          :id="query('emboss-render-light')"
-          :fill="`url(${fragment('pattern-emboss-light')})`"
-          width="100%"
-          height="100%" />
-        <rect
-          :id="query('emboss-render-regular')"
-          :fill="`url(${fragment('pattern-emboss-regular')})`"
-          width="100%"
-          height="100%" />
-        <rect
-          :id="query('emboss-render-medium')"
-          :fill="`url(${fragment('pattern-emboss-medium')})`"
-          width="100%"
-          height="100%" />
-        <rect
-          :id="query('emboss-render-bold')"
-          :fill="`url(${fragment('pattern-emboss-bold')})`"
-          width="100%"
-          height="100%" />
-        <rect
-          id="lightbar-rect"
-          fill="url(#lightbar)"
-          width="100%"
-          height="100%" />
-      </defs>
-      <rect
-        :filter="`url(${fragment('composite')})`"
-        width="100%"
-        height="100%" />
-    </g>
-    <g v-else>
+    <g>
       <use :href="fragment('background')" @focus="focus('bold')" />
       <use :href="fragment('light')" @focus="focus('light')" />
       <use :href="fragment('regular')" @focus="focus('regular')" />
@@ -633,57 +506,68 @@
   </svg>
 </template>
 
-<style lang="stylus">
-  // aspect-ratio: 1.618 / 1 // golden-ratio
-  // aspect-ratio: 2.35 / 1 // current film
-  // aspect-ratio: 16 / 9 // most like human vision
-  // aspect-ratio: 1 / 1 // square
-  svg[itemtype="/posters"]
-    display: block
-    min-height: 512px
-    height: 100%
-    width: 100%
-    outline: none
-    cursor: grab
-    transition: all 0.3s ease
-    -webkit-tap-highlight-color: transparent
-    touch-action: none // Prevent browser gestures
+<style>
+  /* aspect-ratio: 1.618 / 1 // golden-ratio */
+  /* aspect-ratio: 2.35 / 1 // current film */
+  /* aspect-ratio: 16 / 9 // most like human vision */
+  /* aspect-ratio: 1 / 1 // square */
+  svg[itemtype="/posters"] {
+    display: block;
+    min-height: 512px;
+    height: 100%;
+    width: 100%;
+    outline: none;
+    cursor: grab;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none; /* Prevent browser gestures */
 
-    // Active state for touch
-    &:active
-      cursor: grabbing
-    filter: brightness(1.1)
-    transition: filter 0.3s ease
+    /* Active state for touch */
+    &:active {
+      cursor: grabbing;
+    }
 
-    // Hover effects on individual cutout path elements (mouse and touch)
+    filter: brightness(1.1);
+    transition: filter 0.3s ease;
+
+    /* Hover effects on individual cutout path elements (mouse and touch) */
     path[itemprop="cutouts"]:hover,
-    path[itemprop="cutouts"].hovered
-      filter: brightness(1.25)
-      transition: filter 0.3s ease
+    path[itemprop="cutouts"].hovered {
+      filter: brightness(1.25);
+      transition: filter 0.3s ease;
+    }
 
-    path[itemprop="cutouts"]
-      transition: filter 0.3s ease 0.1s // Delay on hover out
+    path[itemprop="cutouts"] {
+      transition: filter 0.3s ease 0.1s; /* Delay on hover out */
+    }
 
-    // Animation effects for cutouts
-    path[itemprop="cutouts"].animated
-      filter: brightness(1.4) saturate(1.2)
-      transition: all 0.5s ease
-      transform-origin: center
-      animation: cutout-pulse 1s ease-in-out infinite alternate
+    /* Animation effects for cutouts */
+    path[itemprop="cutouts"].animated {
+      filter: brightness(1.4) saturate(1.2);
+      transition: all 0.5s ease;
+      transform-origin: center;
+      animation: cutout-pulse 1s ease-in-out infinite alternate;
+    }
 
-    use:focus
-      outline: none
+    use:focus {
+      outline: none;
+    }
 
-    & rect.emboss
-      pointer-events: none
-      user-select: none
+    & rect.emboss {
+      pointer-events: none;
+      user-select: none;
+    }
+  }
 
-  // Keyframe animation for cutout pulsing
-  @keyframes cutout-pulse
-    0%
-      opacity: 0.75
-      transform: scale(1)
-    100%
-      opacity: 1
-      transform: scale(1.05)
+  /* Keyframe animation for cutout pulsing */
+  @keyframes cutout-pulse {
+    0% {
+      opacity: 0.75;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
 </style>
