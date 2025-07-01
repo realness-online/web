@@ -9,30 +9,12 @@
       </div>
     </header>
 
-    <aside v-if="validation.warnings.length > 0" class="keymap-warnings">
-      <h3>⚠️ Warnings</h3>
-      <ul>
-        <li v-for="warning in validation.warnings" :key="warning">
-          {{ warning }}
-        </li>
-      </ul>
-    </aside>
-
-    <aside v-if="validation.errors.length > 0" class="keymap-errors">
-      <h3>❌ Errors</h3>
-      <ul>
-        <li v-for="error in validation.errors" :key="error">
-          {{ error }}
-        </li>
-      </ul>
-    </aside>
-
     <section class="keymap-contexts">
       <section
         v-for="context in available_contexts"
         :key="context"
         class="keymap-context">
-        <h2>{{ context }} Context</h2>
+        <h2>{{ context }}</h2>
         <table class="keymap-table">
           <thead>
             <tr>
