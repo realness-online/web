@@ -18,7 +18,7 @@
     <header>
       <nav>
         <logo-as-link />
-        <router-link to="/docs">Documentation</router-link>
+        <router-link to="/documentation">Documentation</router-link>
       </nav>
       <figure class="hero">
         <figcaption>
