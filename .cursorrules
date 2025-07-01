@@ -71,4 +71,6 @@ for this reason, We generally frown on the use of try catch statements as they t
 
 Never say "You're right - I was overcomplicating this."
 
-You need to be extremly mindfull not to be too verbose
+You need to be extremly mindfull not to be too verbose.
+
+NEVER RUN COMMANDS. I Dislike it

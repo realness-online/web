@@ -74,3 +74,9 @@ src/wasm/
 tracer/target/
 visionmagic/
 vtracer/
+
+
+# Keymap generated files
+docs/keymap.md
+docs/keymap.schema.json
+docs/keymap.ref.json
