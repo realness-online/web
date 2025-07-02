@@ -11,7 +11,9 @@
   })
 
   // Get viewBox transform from localStorage
-  const storage_key = computed(() => props.itemid ? `viewbox-${props.itemid}` : 'viewbox-current')
+  const storage_key = computed(() =>
+    props.itemid ? `viewbox-${props.itemid}` : 'viewbox-current'
+  )
   const viewbox_transform = use_storage(storage_key, {
     x: 0,
     y: 0,
@@ -30,17 +32,18 @@
 </template>
 
 <style lang="stylus">
-  span#viewbox
-    position: fixed
-    bottom: base-line * 1.5
-    left: 50%
-    transform: translateX(-50%)
-    padding: base-line * .5
-    border-radius: base-line * .5
-    background: rgba(0, 0, 0, 0.66)
-    color: blue
-    font-size: smaller
-    text-shadow: -0.66px -0.66px .51px red
-    z-index: 1000
-    font-family: monospace
+  span#viewbox {
+    position: fixed;
+    top: base-line * 1.5;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: base-line * .5;
+    border-radius: base-line * .5;
+    background: rgba(0, 0, 0, 0.66);
+    color: blue;
+    font-size: smaller;
+    text-shadow: -0.66px -0.66px .51px red;
+    z-index: 1000;
+    font-family: monospace;
+  }
 </style>

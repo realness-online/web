@@ -7,6 +7,8 @@
   import { list } from '@/utils/itemid'
   import { recent_item_first } from '@/utils/sorting'
   import icon from '@/components/icon'
+  import { use_keymap } from '@/use/key-commands'
+
   const events = ref([])
   const working = ref(true)
 
@@ -26,6 +28,12 @@
     const now = new Date().getTime()
     return all_events.filter(event => event.id > now)
   }
+  const { register } = use_keymap('Events')
+
+  register('events::New_Event', () => console.log('TODO: Create new event'))
+  register('events::Search', () => console.log('TODO: Search events'))
+  register('events::Open_Event', () => console.log('TODO: Open event'))
+  register('events::Remove_Event', () => console.log('TODO: Remove event'))
 
   mounted(async () => {
     events.value = await get_upcoming_events()
@@ -55,40 +63,53 @@
 </template>
 
 <style lang="stylus">
-  section#events
-    & > header > svg
-      width: base-line * 2
-      height: base-line * 2
-      fill: transparent
-    & > h1
-      color: green
-    & > article
-      standard-grid: howdy
-      & > figure
-        & > svg.background
-          fill: green
-        & > figcaption menu a
-          svg.message
-          svg.download
-          svg.background
-            fill: green
-          address > h3,
-          address > time
-            color: green
-      & > header
-        max-height: base-line * 6
-      @media (min-width: pad-begins)
-        & > header > h1
-          padding: 0
-    & > footer
-      display: flex
-      flex-direction: column
-      justify-content: space-evenly
-      align-items: center
-      p.message
-        padding: 0 base-line
-        svg, a, button, span
-          border-color: green
-          fill: green
-          color: green
+  section#events {
+    & > header > svg {
+      width: base-line * 2;
+      height: base-line * 2;
+      fill: transparent;
+    }
+    & > h1 {
+      color: green;
+    }
+    & > article {
+      standard-grid: howdy;
+      & > figure {
+        & > svg.background {
+          fill: green;
+        }
+        & > figcaption menu a {
+          svg.message, svg.download, svg.background {
+            fill: green;
+          }
+          & address > h3,
+          & address > time {
+            color: green;
+          }
+        }
+      }
+      & > header {
+        max-height: base-line * 6;
+      }
+      @media (min-width: pad-begins) {
+        & > header > h1 {
+          padding: 0;
+        }
+      }
+    }
+    & > footer {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      align-items: center;
+      p.message {
+        padding: 0 base-line;
+        svg, a, button, span {
+          border-color: green;
+          fill: green;
+          color: green;
+        }
+      }
+    }
+  }
 </style>

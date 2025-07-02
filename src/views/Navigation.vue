@@ -3,7 +3,9 @@
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
+  import { use_keymap } from '@/use/key-commands'
   import AccountDialog from '@/components/profile/as-dialog-account'
+  import { useRouter } from 'vue-router'
   const version = import.meta.env.PACKAGE_VERSION
 
   const posting = ref(false)
@@ -13,6 +15,12 @@
   }
 
   const { open_camera } = use_vectorize()
+  const router = useRouter()
+
+  // Use keymap context with automatic lifecycle management
+  const { register } = use_keymap('Navigation')
+
+
 </script>
 
 <template>
@@ -51,8 +59,8 @@
 </template>
 
 <style lang="stylus">
-  section#navigation.page
-    display: flex
+  section#navigation.page {
+    display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
@@ -185,4 +193,5 @@
         justify-content: space-between;
       }
     }
+  }
 </style>

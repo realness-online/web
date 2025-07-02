@@ -72,4 +72,41 @@ export const has_archive = /** @type {Type[]} */ (types.slice(0, 1))
 /** @type {readonly ['statements', 'events']} */
 export const has_history = /** @type {Type[]} */ (types.slice(1, 3))
 
+/**
+ * @typedef {Object} Available_Command
+ * @property {string} key - Normalized key combination
+ * @property {string} command - Command identifier
+ * @property {Object} parameters - Command parameters
+ * @property {string} context - Context name
+ */
+
+/**
+ * @typedef {Object} Toc_Item
+ * @property {string} id - Section ID
+ * @property {string} title - Section title
+ * @property {number} level - Heading level (2-6)
+ */
+
+/**
+ * @typedef {Object} Content_File
+ * @property {string} name - File name without extension
+ * @property {string} title - Display title
+ * @property {string} content - Markdown content
+ */
+
+/**
+ * @typedef {Object} Key_Binding
+ * @property {string} key - Key combination (e.g., "ctrl+s", "enter", "f")
+ * @property {string|Array} command - Command to execute, optionally with parameters
+ * @property {string} [description] - Human-readable description of the command
+ */
+
+/**
+ * @typedef {Object} Keymap_Context
+ * @property {string} [context] - Context identifier (e.g., "Editor", "PosterMenu")
+ * @property {boolean} use_key_equivalents - Use platform-specific key equivalents
+ * @property {Object.<string, string|Array>} bindings - Key to command mappings
+ * @property {Object.<string, string>} [descriptions] - Command descriptions for this context
+ */
+
 export {}

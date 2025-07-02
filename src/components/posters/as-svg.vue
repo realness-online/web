@@ -97,7 +97,15 @@
     () => emboss_pref.value === true && intersecting.value
   )
   const animate = computed(
-    () => animate_pref.value === true && intersecting.value
+    () => {
+      const result = animate_pref.value === true && intersecting.value
+      console.log('animate computed:', {
+        animate_pref: animate_pref.value,
+        intersecting: intersecting.value,
+        result: result
+      })
+      return result
+    }
   )
   const light = computed(() => light_pref.value === true && intersecting.value)
 
@@ -116,7 +124,10 @@
     vector.value = new_vector.value
     working.value = false
     const cutout_paths = new_cutouts.value.map(cutout => {
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      const path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
       path.setAttribute('d', cutout.d)
       path.setAttribute(
         'fill',
@@ -134,14 +145,20 @@
   }
 
   mounted(() => {
-    if (!props.sync_poster && !new_poster)
+    console.log('mounted - working:', working.value, 'sync_poster:', !!props.sync_poster, 'new_poster:', new_poster)
+    if (!props.sync_poster && !new_poster) {
+      console.log('Setting up intersection observer on trigger')
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
+          console.log('Intersection observer fired:', isIntersecting)
           if (isIntersecting) show()
         },
         { rootMargin: '1024px' }
       )
+    } else {
+      console.log('Skipping intersection observer setup')
+    }
   })
 
   watch_effect(() => {
@@ -199,7 +216,7 @@
   let start_y = 0
   let start_transform = null
 
-  const handle_pointer_down = (event) => {
+  const handle_pointer_down = event => {
     is_dragging = true
     start_x = event.clientX
     start_y = event.clientY
@@ -207,7 +224,7 @@
     is_hovered.value = true
   }
 
-  const handle_pointer_move = (event) => {
+  const handle_pointer_move = event => {
     if (!is_dragging) return
 
     const delta_x = event.clientX - start_x
@@ -225,14 +242,17 @@
     is_hovered.value = false
   }
 
-  const handle_wheel = (event) => {
+  const handle_wheel = event => {
     // Always handle wheel events for viewBox control
     event.preventDefault()
 
     if (event.shiftKey && event.metaKey) {
       // Shift + Command + wheel = zoom in/out centered on viewport
       const delta = event.deltaY > 0 ? 1.1 : 0.9
-      const new_scale = Math.max(0.5, Math.min(3, viewbox_transform.value.scale * delta))
+      const new_scale = Math.max(
+        0.5,
+        Math.min(3, viewbox_transform.value.scale * delta)
+      )
 
       // Calculate zoom center (middle of current viewport)
       const svg_rect = svg_element.value.getBoundingClientRect()
@@ -245,12 +265,14 @@
       const viewbox_height = current_viewbox[3]
 
       const scale_ratio = new_scale / viewbox_transform.value.scale
-      const zoom_center_x = center_x / svg_rect.width * viewbox_width
-      const zoom_center_y = center_y / svg_rect.height * viewbox_height
+      const zoom_center_x = (center_x / svg_rect.width) * viewbox_width
+      const zoom_center_y = (center_y / svg_rect.height) * viewbox_height
 
       // Adjust position to keep zoom center fixed
-      const new_x = viewbox_transform.value.x + (zoom_center_x * (1 - scale_ratio))
-      const new_y = viewbox_transform.value.y + (zoom_center_y * (1 - scale_ratio))
+      const new_x =
+        viewbox_transform.value.x + zoom_center_x * (1 - scale_ratio)
+      const new_y =
+        viewbox_transform.value.y + zoom_center_y * (1 - scale_ratio)
 
       viewbox_transform.value = {
         x: new_x,
@@ -285,14 +307,14 @@
   let touch_start_distance = 0
   let touch_start_scale = 1
 
-  const get_touch_distance = (touches) => {
+  const get_touch_distance = touches => {
     if (touches.length < 2) return 0
     const dx = touches[0].clientX - touches[1].clientX
     const dy = touches[0].clientY - touches[1].clientY
     return Math.sqrt(dx * dx + dy * dy)
   }
 
-  const handle_touch_start = (event) => {
+  const handle_touch_start = event => {
     event.preventDefault()
     if (event.touches.length === 2) {
       touch_start_distance = get_touch_distance(event.touches)
@@ -302,13 +324,16 @@
     }
   }
 
-  const handle_touch_move = (event) => {
+  const handle_touch_move = event => {
     event.preventDefault()
     if (event.touches.length === 2) {
       const current_distance = get_touch_distance(event.touches)
       if (touch_start_distance > 0) {
         const scale_factor = current_distance / touch_start_distance
-        const new_scale = Math.max(0.5, Math.min(3, touch_start_scale * scale_factor))
+        const new_scale = Math.max(
+          0.5,
+          Math.min(3, touch_start_scale * scale_factor)
+        )
         viewbox_transform.value = {
           ...viewbox_transform.value,
           scale: new_scale
@@ -319,7 +344,7 @@
     }
   }
 
-  const handle_touch_end = (event) => {
+  const handle_touch_end = event => {
     event.preventDefault()
     if (event.touches.length === 0) {
       handle_pointer_up()
@@ -334,7 +359,7 @@
     hovered_cutout.value = index
   }
 
-  const handle_cutout_touch_end = (event) => {
+  const handle_cutout_touch_end = event => {
     event.preventDefault()
     hovered_cutout.value = null
   }
@@ -344,7 +369,8 @@
 
   const animate_random_cutouts = () => {
     console.log('animate_random_cutouts', animated_cutouts.value)
-    if (!animate.value || !new_cutouts.value || new_cutouts.value.length === 0) return
+    if (!animate.value || !new_cutouts.value || new_cutouts.value.length === 0)
+      return
 
     // Clear previous animated cutouts
     animated_cutouts.value.clear()
@@ -352,7 +378,10 @@
     // Randomly select a smaller number of cutouts to animate (more subtle)
     const max_to_animate = Math.min(20, new_cutouts.value.length)
     const num_to_animate = Math.floor(Math.random() * max_to_animate) + 1
-    const available_indices = Array.from({ length: new_cutouts.value.length }, (_, i) => i)
+    const available_indices = Array.from(
+      { length: new_cutouts.value.length },
+      (_, i) => i
+    )
 
     for (let i = 0; i < num_to_animate && available_indices.length > 0; i++) {
       const random_index = Math.floor(Math.random() * available_indices.length)
@@ -424,7 +453,7 @@
           :tabindex="tabindex"
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-light')})`"
-          :stroke="`url(${fragment('horizontal-regular')})`"
+          :stroke="`url(${fragment('horizontal-medium')})`"
           @focus="focus('light')" />
         <as-path
           v-if="vector.regular"
@@ -434,7 +463,7 @@
           :tabindex="tabindex"
           :mask="`url(${fragment('radial-mask')})`"
           :fill="`url(${fragment('horizontal-regular')})`"
-          :stroke="`url(${fragment('radial-light')})`"
+          :stroke="`url(${fragment('radial-bold')})`"
           @focus="focus('regular')" />
         <as-path
           v-if="vector.medium"
@@ -479,29 +508,41 @@
       fill="url(#lightbar)"
       width="100%"
       height="100%" />
-    <as-animation v-if="animate" :id="vector.id" />
+    <as-animation :id="vector.id" />
     <g>
       <!-- For new vectors (before saving) - render as objects with color/offset properties -->
-      <path v-if="new_poster" v-for="(path, index) in new_cutouts" :key="`new-path-${index}`"
-          :d="path.d"
-          itemprop="cutouts"
-          :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
-          fill-opacity="0.75"
-          :transform="`translate(${path.offset.x}, ${path.offset.y})`"
-          :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
-          @touchstart="(event) => handle_cutout_touch_start(event, index)"
-          @touchend="handle_cutout_touch_end" />
+      <path
+        v-if="new_poster"
+        v-for="(path, index) in new_cutouts"
+        :key="`new-path-${index}`"
+        :d="path.d"
+        itemprop="cutouts"
+        :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
+        fill-opacity="0.75"
+        :transform="`translate(${path.offset.x}, ${path.offset.y})`"
+        :class="{
+          hovered: hovered_cutout === index,
+          animated: animated_cutouts.has(index)
+        }"
+        @touchstart="event => handle_cutout_touch_start(event, index)"
+        @touchend="handle_cutout_touch_end" />
 
       <!-- For saved vectors - render as SVG path elements -->
-      <path v-else v-for="(path, index) in new_cutouts" :key="`saved-path-${index}`"
-          itemprop="cutouts"
-          :d="path.getAttribute('d')"
-          :fill="path.getAttribute('fill')"
-          :fill-opacity="path.getAttribute('fill-opacity')"
-          :transform="path.getAttribute('transform')"
-          :class="{ 'hovered': hovered_cutout === index, 'animated': animated_cutouts.has(index) }"
-          @touchstart="(event) => handle_cutout_touch_start(event, index)"
-          @touchend="handle_cutout_touch_end" />
+      <path
+        v-else
+        v-for="(path, index) in new_cutouts"
+        :key="`saved-path-${index}`"
+        itemprop="cutouts"
+        :d="path.getAttribute('d')"
+        :fill="path.getAttribute('fill')"
+        :fill-opacity="path.getAttribute('fill-opacity')"
+        :transform="path.getAttribute('transform')"
+        :class="{
+          hovered: hovered_cutout === index,
+          animated: animated_cutouts.has(index)
+        }"
+        @touchstart="event => handle_cutout_touch_start(event, index)"
+        @touchend="handle_cutout_touch_end" />
     </g>
   </svg>
 </template>
@@ -511,7 +552,7 @@
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 16 / 9 // most like human vision */
   /* aspect-ratio: 1 / 1 // square */
-  svg[itemtype="/posters"] {
+  svg[itemtype='/posters'] {
     display: block;
     min-height: 512px;
     height: 100%;
@@ -531,18 +572,18 @@
     transition: filter 0.3s ease;
 
     /* Hover effects on individual cutout path elements (mouse and touch) */
-    path[itemprop="cutouts"]:hover,
-    path[itemprop="cutouts"].hovered {
+    path[itemprop='cutouts']:hover,
+    path[itemprop='cutouts'].hovered {
       filter: brightness(1.25);
       transition: filter 0.3s ease;
     }
 
-    path[itemprop="cutouts"] {
+    path[itemprop='cutouts'] {
       transition: filter 0.3s ease 0.1s; /* Delay on hover out */
     }
 
     /* Animation effects for cutouts */
-    path[itemprop="cutouts"].animated {
+    path[itemprop='cutouts'].animated {
       filter: brightness(1.4) saturate(1.2);
       transition: all 0.5s ease;
       transform-origin: center;

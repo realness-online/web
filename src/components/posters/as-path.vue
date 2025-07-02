@@ -64,7 +64,7 @@
   const d = ref(undefined)
   const fill_opacity = ref('0.90')
   const stroke_opacity = ref('0.90')
-  const stroke_width = ref('0.66')
+  const stroke_width = ref('0.33')
   const path_length = ref(0)
 
   mounted(() => {
@@ -101,8 +101,6 @@
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
-    stroke-dasharray="20,10"
-    stroke-dashoffset="0"
     fill-rule="evenodd" />
   <path
     v-else-if="just_stroke"
@@ -114,9 +112,7 @@
     :itemprop="props.itemprop"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"
-    stroke-dasharray="20,10"
-    stroke-dashoffset="0" />
+    :stroke-width="stroke_width"/>
   <path
     v-if="just_fill"
     :id="props.id"
@@ -132,7 +128,9 @@
 
 <style>
   path[itemprop] {
-    transition-duration: 0.66s;
+    stroke-dasharray: 21,13;
+    stroke-dashoffset: 0;
+    transition-duration: 2.66s;
     &:focus {
       outline: none;
     }

@@ -1,5 +1,4 @@
 <script setup>
-
   import Icon from '@/components/icon'
   import AsSvg from '@/components/posters/as-svg'
   import { Poster } from '@/persistance/Storage'
@@ -9,7 +8,9 @@
 
   const route = use_route()
   const router = use_router()
-  const itemid = /** @type {import('@/types').Id} */ (`${localStorage.me}/posters/${Number(route.params.id)}`)
+  const itemid = /** @type {import('@/types').Id} */ (
+    `${localStorage.me}/posters/${Number(route.params.id)}`
+  )
   const figure = ref(null)
 
   const back = () => {
@@ -21,6 +22,7 @@
       router.back()
     } else router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
   }
+
   const save = async () => {
     await new Poster(itemid).save()
     if (new_gradients.value) new_gradients.value = null
@@ -29,7 +31,6 @@
 
   const { new_vector, new_gradients } = use_vectorize()
   if (new_vector.value) provide('new-poster', true)
-
 </script>
 
 <template>
@@ -44,68 +45,77 @@
         :optimize="true"
         :slice="true"
         :tabable="true"
-        tabindex="-1"/>
+        tabindex="-1" />
     </figure>
   </section>
 </template>
 
 <style lang="stylus">
-  section#editor
-    & > header
-      align-items: center
-      z-index: 2
-      position: absolute
-      top: inset(0)
-      left: 0
-      right: 0
-      padding: base-line
-      @media (min-width: pad-begins)
-        padding: (base-line * 2) base-line base-line base-line
-      & > h1
-        cursor: pointer
-        margin: 0
-        color: red
-        position: relative
+  section#editor {
+    & > header {
+      align-items: center;
+      z-index: 2;
+      position: absolute;
+      top: inset(0);
+      left: 0;
+      right: 0;
+      padding: base-line;
+      @media (min-width: pad-begins){
+        padding: (base-line * 2) base-line base-line base-line;
+      }
+      & > h1 {
+        cursor: pointer;
+        margin: 0;
+        color: red;
+        position: relative;
         z-index: 2
         text-shadow: 1px 1px 1px black-background
-      & > a  > svg
-        cursor: pointer
-        fill: green
-        .selected
-          fill:red
-        &:hover
-          fill: red
-        &.color > svg.opacity
-          fill: black-background
-          &:hover
-            fill:transparent
-        &.remove
-        &.fullscreen
-        &.finished
-          fill-opacity: inherit
-
-        & > svg
-          z-index: 2
-          &.selected
-            stroke: red
-            fill red
-          &.grid
-            border: 1px solid green
-            border-radius: base-line * 0.15
-            transition: border-color
-            &:hover
-              transition: border-color
-              fill: green
-              border-color: red
-
-    & > figure > svg
-      position: fixed
-      z-index: 0
-      top: 0
-      bottom: 0
-      left: 0
-      right: 0
-      @media (orientation: landscape) and (max-height: page-width)
-        max-height: 100dvh
-        min-height: inherit
+      }
+      & > a  > svg {
+        cursor: pointer;
+        fill: green;
+        &.selected, &:hover {
+          fill: red;
+        }
+        &.color > svg.opacity {
+          fill: black-background;
+          &:hover {
+            fill: transparent;
+          }
+        }
+        &.remove .fullscreen .finished {
+          fill-opacity: inherit;
+        }
+        & > svg {
+          z-index: 2;
+          &.selected {
+            stroke: red;
+            fill: red;
+          }
+          &.grid {
+            border: 1px solid green;
+            border-radius: base-line * 0.15;
+            transition: border-color;
+            &:hover {
+              transition: border-color;
+              fill: green;
+              border-color: red;
+            }
+          }
+        }
+      }
+    }
+    & > figure > svg {
+      position: fixed;
+      z-index: 0;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      @media (orientation: landscape) and (max-height: page-width) {
+        max-height: 100dvh;
+        min-height: inherit;
+      }
+    }
+  }
 </style>

@@ -6,7 +6,6 @@
   import { marked } from 'marked'
   import { gfmHeadingId } from 'marked-gfm-heading-id'
   import DOMPurify from 'dompurify'
-  import { get_command_description } from '@/utils/keymap-docs'
 
   console.info('views:documentation')
 

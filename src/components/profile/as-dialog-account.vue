@@ -8,9 +8,6 @@
   import Icon from '@/components/icon'
   import { useRoute as use_route } from 'vue-router'
 
-  /** @type {import('vue').Ref<boolean>} */
-  const show_utility_components = inject('show_utility_components')
-
   const form = ref(null)
   const first_name = ref('You')
   const route = use_route()
@@ -24,11 +21,15 @@
   }
 
   // Watch for hash changes to show dialog
-  watch(() => route.hash, (new_hash) => {
-    if (new_hash === '#account' && form.value) {
-      form.value.showModal()
-    }
-  }, { immediate: true })
+  watch(
+    () => route.hash,
+    new_hash => {
+      if (new_hash === '#account' && form.value) {
+        form.value.showModal()
+      }
+    },
+    { immediate: true }
+  )
 
   mounted(async () => {
     const my = await load(localStorage.me)
@@ -42,7 +43,7 @@
 </script>
 
 <template>
-  <a v-if="show_utility_components" id="toggle-account" @click="show_form">{{
+  <a id="toggle-account" @click="show_form">{{
     first_name
   }}</a>
   <dialog id="account" ref="form" @click="dialog_click">
@@ -75,7 +76,6 @@
       position: absolute;
       top: base-line * .5;
       right: base-line * .5;
-
     }
     & > menu {
       display: flex;
@@ -86,7 +86,6 @@
       }
       & > button {
         border-color: red;
-        // color: red;
         &:hover {
           background-color: red;
           color: white;

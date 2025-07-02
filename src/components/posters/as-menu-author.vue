@@ -5,13 +5,11 @@
   import eventAsButton from '@/components/events/as-button'
   import asDownload from '@/components/download-vector'
   import { useRouter as use_router } from 'vue-router'
-  import { watch } from 'vue'
-  import {
-    useMagicKeys as use_magic_keys,
-    useActiveElement as use_active_element
-  } from '@vueuse/core'
+  import { useActiveElement as use_active_element } from '@vueuse/core'
   import { as_created_at, as_type } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
+  import { use_keymap } from '@/use/key-commands'
+
   const props = defineProps({
     poster: {
       type: Object,
@@ -24,15 +22,19 @@
     avatar: is_vector_id
   })
   const router = use_router()
+  const active = use_active_element()
+
   const edit_poster = itemid =>
     `/${as_type(itemid)}/${as_created_at(itemid)}/editor`
   const open_editor = () =>
     router.replace({ path: edit_poster(props.poster.id) })
-  const active = use_active_element()
-  const { enter } = use_magic_keys()
-  watch(enter, v => {
-    if (v && active.value) {
-      const clicked_created_at = active.value.id.split('-')[2]
+
+  const { register } = use_keymap('Poster_Menu')
+
+  register('poster::Open_Editor', () => {
+    // Check if the active element is this poster's element
+    if (active.value) {
+      const clicked_created_at = active.value.id?.split('-')[2]
       if (clicked_created_at) {
         const clicked = parseInt(clicked_created_at)
         const i_am_created_at = as_created_at(props.poster.id)
@@ -40,6 +42,14 @@
       }
     }
   })
+
+  register('poster::Remove', () => {
+    emit('remove', props.poster.id)
+  })
+  register('poster::Make_Avatar', () => {
+    emit('avatar', props.poster.id)
+  })
+
 </script>
 
 <template>
