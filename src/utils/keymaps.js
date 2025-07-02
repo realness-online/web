@@ -13,7 +13,8 @@ export const default_keymap = [
       f: 'ui::Toggle_Fullscreen',
       'ctrl-,': 'ui::Open_Settings',
       'ctrl-k': 'ui::Show_Key_Commands',
-      'ctrl-o': 'ui::Open_File_Browser',
+      'ctrl-?': 'ui::Show_Documentation',
+      'ctrl-/': 'ui::Show_Documentation',
       0: 'nav::Go_Home',
       1: 'nav::Go_Statements',
       2: 'nav::Go_Events',
@@ -25,7 +26,8 @@ export const default_keymap = [
       'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
       'ui::Open_Settings': 'Open application settings',
       'ui::Show_Key_Commands': 'Show keyboard shortcuts for current view',
-      'ui::Go_Home': 'Go to home page',
+      'ui::Show_Documentation': 'Show application documentation',
+      'nav::Go_Home': 'Go to home page',
       'nav::Go_Statements': 'Navigate to statements',
       'nav::Go_Events': 'Navigate to events',
       'nav::Go_Posters': 'Navigate to posters',
@@ -139,26 +141,6 @@ export const default_keymap = [
       'events::Open_Event': 'Open selected event',
       'events::Remove_Event': 'Remove event',
       'events::Clear_Search': 'Clear search'
-    }
-  },
-
-  {
-    context: 'Statements',
-    use_key_equivalents: true,
-    bindings: {
-      enter: 'statement::Save',
-      'shift-enter': 'statement::New_Line',
-      escape: 'statement::Cancel',
-      'ctrl-s': 'statement::Save',
-      'ctrl-z': 'statement::Undo',
-      'ctrl-shift-z': 'statement::Redo'
-    },
-    descriptions: {
-      'statement::Save': 'Save current statement',
-      'statement::New_Line': 'Add new line',
-      'statement::Cancel': 'Cancel editing',
-      'statement::Undo': 'Undo statement changes',
-      'statement::Redo': 'Redo statement changes'
     }
   }
 ]

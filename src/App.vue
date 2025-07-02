@@ -2,6 +2,7 @@
   import sync from '@/components/sync'
   import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
   import KeyCommandsModal from '@/components/key-commands-modal.vue'
+  import DocumentationModal from '@/components/documentation-modal.vue'
   import fps from '@/components/fps'
   import Viewbox from '@/components/viewbox'
   import {
@@ -28,10 +29,18 @@
 
   const key_commands_modal = ref(null)
   provide('key-commands-modal', key_commands_modal)
+
+  const documentation_modal = ref(null)
+  provide('documentation-modal', documentation_modal)
+
   const { register } = use_keymap('Global')
 
   register('ui::Show_Key_Commands', () => {
     if (key_commands_modal.value) key_commands_modal.value.show()
+  })
+
+  register('ui::Show_Documentation', () => {
+    if (documentation_modal.value) documentation_modal.value.show()
   })
 
   register('ui::Close_Modal', () => {
@@ -39,7 +48,7 @@
     open_dialogs.forEach(dialog => dialog.close())
   })
 
-  register('ui:: ', () => {
+  register('ui::Open_Settings', () => {
     const settings_dialog = document.querySelector('dialog#preferences')
     if (settings_dialog) settings_dialog.showModal()
   })
@@ -110,6 +119,7 @@
     <viewbox v-if="fps_pref" />
     <preferences-dialog />
     <key-commands-modal ref="key_commands_modal" />
+    <documentation-modal ref="documentation_modal" />
     <input
       ref="image_picker"
       v-vectorizer

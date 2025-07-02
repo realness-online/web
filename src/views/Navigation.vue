@@ -20,7 +20,6 @@
   // Use keymap context with automatic lifecycle management
   const { register } = use_keymap('Navigation')
 
-
 </script>
 
 <template>

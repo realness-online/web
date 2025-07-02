@@ -7,7 +7,10 @@ dialog {
   border: 3px solid red;
   border-radius: base-line * 0.5;
   color: var(--text-color);
-  background-color: var(--black-transparent);
+  background-color: var(--black-background);
+  &:focus {
+    outline: none;
+  }
   &::backdrop {
     backdrop-filter: blur(base-line * 0.25 );
   }

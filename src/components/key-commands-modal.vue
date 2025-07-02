@@ -48,14 +48,8 @@
   <dialog ref="dialog" class="key-commands" @click="handle_click">
     <article>
       <header>
-        <h1>Keyboard Shortcuts</h1>
-        <a @click="close_modal">
-          <icon name="remove" />
-        </a>
+        <h1>Keymap</h1>
       </header>
-
-      <p>{{ stats.total_contexts }} contexts, {{ stats.total_bindings }} bindings</p>
-
       <section v-for="(commands, context) in commands_by_context" :key="context">
         <h2>{{ context }}</h2>
         <ul>
@@ -70,7 +64,7 @@
 </template>
 
 <style lang="stylus">
-  dialog.key-commands
+  dialog.key-commands{
     & > article {
       max-width: var(--page-width);
       max-height: 80vh;
@@ -79,6 +73,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        h1 {
+          color: var(--red);
+        }
         & > a {
           cursor: pointer;
           & > svg.remove {
@@ -127,4 +124,5 @@
         }
       }
     }
+  }
 </style>

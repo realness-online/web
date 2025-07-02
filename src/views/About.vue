@@ -1,5 +1,5 @@
 <script setup>
-  import { onMounted as mounted } from 'vue'
+  import { onMounted as mounted, inject } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
@@ -8,6 +8,13 @@
   import { use_posters } from '@/use/poster'
   sessionStorage.about = true
   const { posters, for_person: posters_for_admin } = use_posters()
+
+  const documentation_modal = inject('documentation-modal')
+
+  const show_documentation = () => {
+    if (documentation_modal?.value) documentation_modal.value.show()
+  }
+
   mounted(async () => {
     await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
   })
@@ -18,7 +25,7 @@
     <header>
       <nav>
         <logo-as-link />
-        <router-link to="/documentation">Documentation</router-link>
+        <a @click="show_documentation">Documentation</a>
       </nav>
       <figure class="hero">
         <figcaption>
