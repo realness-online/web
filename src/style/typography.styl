@@ -13,6 +13,25 @@
 // implementation from:
 //   https://www.smashingmagazine.com/2016/05/fluid-typography/
 
+// ***************** CSS Variables for future migration **********************
+:root
+  // Typography calculations
+  --h1-min round(min-modular ** 4 * 1rem, 3)
+  --h1-max round(max-modular ** 4 * 1rem, 3)
+  --h2-min round(min-modular ** 3 * 1rem, 3)
+  --h2-max round(max-modular ** 3 * 1rem, 3)
+  --h3-min round(min-modular ** 2 * 1rem, 3)
+  --h3-max round(max-modular ** 2 * 1rem, 3)
+  --h4-min round(min-modular * 1rem, 3)
+  --h4-max round(max-modular * 1rem, 3)
+  --h5-min 1rem
+  --h5-max 1rem
+  --h6-min round(1rem / min-modular, 3)
+  --h6-max round(1rem / max-modular, 3)
+
+  // Fluid typography calculations
+  --font-size-calc s('calc(%s + (%s - %s) * (100dvw - %s) / (%s - %s))', min-font, max-font, min-font, pad-begins, display-begins, pad-begins)
+
 // ***************** fluid-typography *****************************************
 html
   font-family: 'Lato', -apple-system, system-ui
