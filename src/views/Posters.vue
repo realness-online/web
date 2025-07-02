@@ -12,6 +12,7 @@
   import { Poster } from '@/persistance/Storage'
   import { use_posters } from '@/use/poster'
   import { use as directory_processor } from '@/use/directory-processor'
+  import { use_keymap } from '@/use/key-commands'
 
   console.time('views:Posters')
 
@@ -20,11 +21,7 @@
     for_person: posters_for_person,
     poster_shown
   } = use_posters()
-  const {
-    can_add,
-    select_photo,
-    working
-  } = use_vectorize()
+  const { can_add, select_photo, working } = use_vectorize()
   const { process_directory, progress, completed_poster } =
     directory_processor()
   const poster_to_remove = ref(null)
@@ -70,6 +67,18 @@
   const dialog_click = event => {
     if (event.target === delete_dialog.value) delete_dialog.value.close()
   }
+
+  const { register } = use_keymap('Posters')
+
+  register('poster::Create_New', () => {
+    if (can_add.value) select_photo()
+  })
+  register('poster::Search', () => console.log('TODO: Search posters'))
+  register('poster::Download', () => console.log('TODO: Download poster'))
+  register('poster::Copy', () => console.log('TODO: Copy poster'))
+  register('poster::Remove', () => console.log('TODO: Remove poster'))
+  register('poster::OpenEditor', () => console.log('TODO: Open poster editor'))
+
   mounted(async () => {
     await posters_for_person({ id: localStorage.me })
     working.value = false

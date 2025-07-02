@@ -1,14 +1,12 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { ref, nextTick as tick, inject } from 'vue'
-
+  import { ref, nextTick as tick, inject, onMounted, onUnmounted } from 'vue'
   import { use } from '@/use/statement'
+  import { use_keymap } from '@/use/key-commands'
 
   const emit = defineEmits(['toggle-keyboard'])
   const { save } = use()
-  const show_regular = inject('show_utility_components')
-
-  /** @type {import('vue').Ref<string | null>} */
+  const show_regular = inject('show-utility-components')
   const statement_text = ref(null)
 
   const focused = async () => {
@@ -55,6 +53,36 @@
     textarea.style.height = 'auto'
     textarea.style.height = `${textarea.scrollHeight}px`
   }
+
+  // Use keymap context with automatic lifecycle management
+  const { register } = use_keymap('Statement')
+
+  register('statement::Save', () => prepare_statement())
+  register('statement::NewLine', () => {
+    // Add new line to textarea
+    const textarea = document.querySelector('textarea#wat')
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const value = textarea.value
+      textarea.value = value.substring(0, start) + '\n' + value.substring(end)
+      textarea.selectionStart = textarea.selectionEnd = start + 1
+      adjust_height({ target: textarea })
+    }
+  })
+  register('statement::Cancel', () => {
+    statement_text.value = null
+    emit('toggle-keyboard')
+    show_regular.value = true
+  })
+  register('statement::Undo', () => {
+    // TODO: Implement undo functionality
+    console.log('Undo statement')
+  })
+  register('statement::Redo', () => {
+    // TODO: Implement redo functionality
+    console.log('Redo statement')
+  })
 </script>
 
 <template>
@@ -75,7 +103,7 @@
 </template>
 
 <style lang="stylus">
-  section#navigation.page
+  section#navigation.page {
     & textarea#wat {
       padding: base-line;
       border-radius: base-line;
@@ -162,4 +190,5 @@
         }
       }
     }
+  }
 </style>

@@ -26,7 +26,7 @@ const progress = ref(0)
 
 export const use = () => {
   const router = use_router()
-  const image_picker = inject('image_picker', ref(null))
+  const image_picker = inject('image-picker', ref(null))
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)

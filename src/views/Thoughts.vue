@@ -1,10 +1,5 @@
 <script setup>
-  import { ref, watch, onMounted as mounted } from 'vue'
-  import {
-    useFullscreen as use_fullscreen,
-    useMagicKeys as use_magic_keys
-  } from '@vueuse/core'
-
+  import { ref, onMounted as mounted } from 'vue'
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
@@ -14,15 +9,13 @@
   import { use as use_statements, slot_key } from '@/use/statement'
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/poster'
+  import { use_keymap } from '@/use/key-commands'
 
   console.time('views:Thoughts')
 
   const working = ref(true)
   const thoughts = ref(null)
 
-  const { toggle: fullscreen, isFullscreen: is_fullscreen } =
-    use_fullscreen(thoughts)
-  const { f } = use_magic_keys()
   const { people } = use_people()
   const {
     for_person: statements_for_person,
@@ -52,9 +45,24 @@
       })
     )
   }
-  watch(f, v => {
-    if (v) fullscreen()
+
+  // Use keymap context with automatic lifecycle management
+  const { register } = use_keymap('Thoughts')
+
+  register('ui::ToggleFullscreen', () => fullscreen())
+  register('thoughts::Search', () => {
+    // TODO: Implement search functionality
+    console.log('Search thoughts')
   })
+  register('thoughts::NewThought', () => {
+    // TODO: Implement new thought creation
+    console.log('Create new thought')
+  })
+  register('thoughts::ClearSearch', () => {
+    // TODO: Clear search
+    console.log('Clear search')
+  })
+
   mounted(async () => {
     await fill_thoughts()
     working.value = false

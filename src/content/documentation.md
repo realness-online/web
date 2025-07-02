@@ -150,6 +150,6 @@ All text is stored locally with no server-side content moderation. You control y
 
 ## Keyboard Shortcuts
 
-All keyboard shortcuts are context-aware and automatically generated from the application's keymap configuration. For a complete, up-to-date reference of all available shortcuts, see the [keymap](documentation-keymap) view in the application.
+All keyboard shortcuts are context-aware and automatically generated from the application's keymap configuration. For a complete, up-to-date reference of all available shortcuts, press `Ctrl+K` or `F1` from any view to see the available shortcuts for that context.
 
-**Tip**: Press `Ctrl+K` or `F1` from any view to see the available shortcuts for that context.
+**Tip**: The keyboard shortcuts modal shows all available commands organized by context, with descriptions for each command.

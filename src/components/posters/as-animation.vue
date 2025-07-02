@@ -23,28 +23,28 @@
       :href="fragment('light')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="34s"
+      dur="3s"
       values="0.9;0.0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="13s"
+      dur="5s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="21s"
+      dur="2s"
       values="0.9;0;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="34s"
+      dur="8s"
       values="0.9;0;0.9" />
 
     <!-- Stroke dasharray animations for flowing lines effect -->
@@ -54,28 +54,28 @@
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="2s"
-      values="0;-30" />
+      values="0;-34" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
-      dur="1s"
-      values="0;-30" />
+      dur="3s"
+      values="0;-34" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="4s"
-      values="0;-30" />
+      values="0;-34" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="3s"
-      values="0;-30" />
+      values="0;-34" />
 
     <animate
       :href="fragment('light')"
