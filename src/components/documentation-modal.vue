@@ -1,0 +1,234 @@
+<script setup>
+  import Icon from '@/components/icon'
+  import { ref, computed, onMounted as mounted } from 'vue'
+  import { marked } from 'marked'
+  import { gfmHeadingId } from 'marked-gfm-heading-id'
+  import DOMPurify from 'dompurify'
+
+  const dialog = ref(null)
+  const toc_items = ref([])
+  const rendered_content = ref('')
+  const current_file = ref('documentation')
+
+  const show_modal = () => {
+    dialog.value.showModal()
+  }
+
+  const close_modal = () => {
+    dialog.value.close()
+  }
+
+  const handle_click = event => {
+    if (event.target === dialog.value) dialog.value.close()
+  }
+
+  // Scroll to section
+  const scroll_to_section = id => {
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Generate TOC from markdown headings
+  const generate_toc_from_markdown = content => {
+    const lines = content.split('\n')
+    const toc = []
+
+    lines.forEach((line, index) => {
+      const heading_match = line.match(/^(#{2,6})\s+(.+)$/)
+      if (heading_match) {
+        const level = heading_match[1].length
+        const title = heading_match[2].trim()
+        const title_str = String(title || '')
+        const id = title_str
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+
+        toc.push({ id, title: title_str, level })
+      }
+    })
+
+    return toc
+  }
+
+  // Load markdown content
+  const load_markdown_content = async filename => {
+    try {
+      const response = await fetch(`/src/content/${filename}`)
+      if (!response.ok) {
+        throw new Error(`Failed to load ${filename}: ${response.status}`)
+      }
+      const content = await response.text()
+
+      // Update current file
+      current_file.value = filename.replace('.md', '')
+
+      // Generate TOC
+      toc_items.value = generate_toc_from_markdown(content)
+
+      // Configure marked with GitHub-style heading IDs
+      marked.use(gfmHeadingId())
+
+      // Render markdown content and sanitize
+      const rendered = await marked.parse(content)
+      const sanitized = DOMPurify.sanitize(rendered)
+
+      rendered_content.value = sanitized
+    } catch (error) {
+      console.error('Failed to load markdown content:', error)
+      // Fallback to basic content
+      rendered_content.value =
+        '<h1>Content Loading Failed</h1><p>Unable to load the requested documentation file.</p>'
+      toc_items.value = []
+    }
+  }
+
+  mounted(() => load_markdown_content('documentation.md'))
+
+  // Expose show method for external use
+  defineExpose({ show: show_modal })
+</script>
+
+<template>
+  <dialog ref="dialog" class="documentation" @click="handle_click">
+    <article>
+      <header>
+        <h1>Documentation</h1>
+      </header>
+
+      <nav v-if="toc_items.length > 0" class="toc">
+        <a
+          v-for="item in toc_items"
+          :key="item.id"
+          :href="`#${item.id}`"
+          @click="scroll_to_section(item.id)">
+          {{ item.title }}
+        </a>
+      </nav>
+
+      <section class="content" v-html="rendered_content" />
+    </article>
+  </dialog>
+</template>
+
+<style lang="stylus">
+  dialog.documentation
+    & > article {
+      max-width: var(--page-width);
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--black-background);
+      &:focus {
+        outline: none;
+      }
+      & > header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: base-line;
+        h1 {
+          color: var(--blue);
+        }
+        & > a {
+          cursor: pointer;
+          & > svg.remove {
+            fill: var(--white-text);
+            width: base-line;
+            height: base-line;
+            &:hover {
+              fill: var(--red);
+            }
+          }
+        }
+      }
+
+      & > nav.toc {
+        border-bottom: 1px solid var(--red);
+        padding-bottom: base-line;
+        margin-bottom: base-line * 2;
+
+        & > a {
+          display: block;
+          font-size: smaller;
+          margin: round((base-line / 4), 2) 0;
+          color: var(--blue);
+          text-decoration: none;
+
+          &:hover {
+            color: var(--red);
+          }
+        }
+      }
+
+      & > section.content {
+        flex: 1;
+
+        & > h1, & > h2, & > h3, & > h4, & > h5, & > h6 {
+          color: var(--red);
+          margin-top: base-line * 2;
+          margin-bottom: base-line;
+
+          &:first-child {
+            margin-top: 0;
+          }
+        }
+
+        & > p {
+          margin-bottom: base-line;
+          line-height: 1.6;
+        }
+
+        & > ul, & > ol {
+          margin-bottom: base-line;
+          padding-left: base-line * 2;
+
+          & > li {
+            margin-bottom: round((base-line / 2), 2);
+          }
+        }
+
+        & > code {
+          background: var(--black-background);
+          padding: round((base-line / 4), 2) round((base-line / 2), 2);
+          border-radius: round((base-line / 4), 2);
+          font-family: 'Monaco', 'Menlo', monospace;
+          font-size: 0.875rem;
+        }
+
+        & > pre {
+          background: var(--black-background);
+          padding: base-line;
+          border-radius: round((base-line / 4), 2);
+          overflow-x: auto;
+          margin-bottom: base-line;
+
+          & > code {
+            background: none;
+            padding: 0;
+          }
+        }
+
+        & > blockquote {
+          border-left: 3px solid var(--red);
+          padding-left: base-line;
+          margin-bottom: base-line;
+          font-style: italic;
+        }
+
+        & > a {
+          color: var(--blue);
+          text-decoration: none;
+
+          &:hover {
+            color: var(--red);
+          }
+        }
+      }
+    }
+</style>
