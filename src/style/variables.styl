@@ -1,5 +1,6 @@
 @require 'mixins'
 
+
 // https://nice-converter.com/color/hsla-to-rgba
 black             = hsla(300,  1%, 33%, 0.75)
 black-dark        = hsla(300,  1%, 2%, 0.99)
@@ -43,4 +44,44 @@ poster-min-width = round(base-line * 10, 0)
 poster-grid-height = round(base-line * 22, 0)
 
 poster-thoughts-height = round((page-width), 2)
+
+
+
+
+// CSS Variables for gradual migration
+:root
+  // Colors
+  --black black
+  --black-dark black-dark
+  --black-background black-background
+  --black-transparent black-transparent
+  --black-barely black-barely
+
+  --white white
+  --white-text white-text
+  --white-background white-background
+  --white-poster white-poster
+
+  --blue blue
+  --green green
+  --red red
+  --yellow yellow
+  --orange orange
+
+  // Typography
+  --base-line base-line
+  --min-modular min-modular
+  --max-modular max-modular
+  --min-font min-font
+  --max-font max-font
+
+  // Layout
+  --pad-begins pad-begins
+  --typing-begins typing-begins
+  --display-begins display-begins
+  --page-width page-width
+  --page-width-large page-width-large
+  --poster-min-width poster-min-width
+  --poster-grid-height poster-grid-height
+  --poster-thoughts-height poster-thoughts-height
 
