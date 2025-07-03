@@ -58,24 +58,12 @@
     else document.exitFullscreen()
   })
 
-  register('nav::Go_Home', () => {
-    if (window.location.pathname !== '/') window.location.href = '/'
-  })
-  register('nav::Go_Statements', () => {
-    router.push('/statements')
-  })
-  register('nav::Go_Events', () => {
-    router.push('/events')
-  })
-  register('nav::Go_Posters', () => {
-    router.push('/posters')
-  })
-  register('nav::Go_Phonebook', () => {
-    router.push('/phonebook')
-  })
-  register('nav::Go_Thoughts', () => {
-    router.push('/thoughts')
-  })
+  register('nav::Go_Home', () => router.push('/') )
+  register('nav::Go_Statements', () => router.push('/statements')  )
+  register('nav::Go_Events', () => router.push('/events'))
+  register('nav::Go_Posters', () => router.push('/posters'))
+  register('nav::Go_Phonebook', () =>  router.push('/phonebook'))
+  register('nav::Go_Thoughts', () => router.push('/thoughts'))
 
   /** @param {boolean} active */
   const sync_active = active => {

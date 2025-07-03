@@ -176,7 +176,6 @@
   })
 
   // Add pan and zoom state with storage
-  const svg_element = ref(null)
   const is_hovered = ref(false)
 
   // Store viewBox transforms in localStorage
@@ -188,7 +187,7 @@
   })
 
   // Pointer tracking for hover and gestures
-  const { x, y, pressure } = use_pointer({ target: svg_element })
+  const { x, y, pressure } = use_pointer({ target: vector_element })
 
   // Original viewBox values
   const original_viewbox = computed(() => {
@@ -255,7 +254,7 @@
       )
 
       // Calculate zoom center (middle of current viewport)
-      const svg_rect = svg_element.value.getBoundingClientRect()
+      const svg_rect = vector_element.value.getBoundingClientRect()
       const center_x = svg_rect.width / 2
       const center_y = svg_rect.height / 2
 
@@ -364,50 +363,13 @@
     hovered_cutout.value = null
   }
 
-  // Random cutout animation when animation is enabled
-  const animated_cutouts = ref(new Set())
-
-  const animate_random_cutouts = () => {
-    console.log('animate_random_cutouts', animated_cutouts.value)
-    if (!animate.value || !new_cutouts.value || new_cutouts.value.length === 0)
-      return
-
-    // Clear previous animated cutouts
-    animated_cutouts.value.clear()
-
-    // Randomly select a smaller number of cutouts to animate (more subtle)
-    const max_to_animate = Math.min(20, new_cutouts.value.length)
-    const num_to_animate = Math.floor(Math.random() * max_to_animate) + 1
-    const available_indices = Array.from(
-      { length: new_cutouts.value.length },
-      (_, i) => i
-    )
-
-    for (let i = 0; i < num_to_animate && available_indices.length > 0; i++) {
-      const random_index = Math.floor(Math.random() * available_indices.length)
-      const cutout_index = available_indices.splice(random_index, 1)[0]
-      animated_cutouts.value.add(cutout_index)
-    }
-
-    // Schedule next animation - less frequent for subtlety
-    setTimeout(animate_random_cutouts, Math.random() * 2000 + 1000) // 1-3 seconds
-  }
-
-  // Start animation when animate becomes true
-  watch_effect(() => {
-    if (animate.value) {
-      animate_random_cutouts()
-    } else {
-      animated_cutouts.value.clear()
-    }
-  })
 </script>
 
 <template>
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
-    ref="svg_element"
+    ref="vector_element"
     :id="query()"
     itemscope
     itemtype="/posters"
@@ -502,13 +464,6 @@
       <use :href="fragment('medium')" @focus="focus('medium')" />
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
-    <rect
-      v-if="light"
-      id="lightbar-rect"
-      fill="url(#lightbar)"
-      width="100%"
-      height="100%" />
-    <as-animation :id="vector.id" />
     <g>
       <!-- For new vectors (before saving) - render as objects with color/offset properties -->
       <path
@@ -521,8 +476,7 @@
         fill-opacity="0.75"
         :transform="`translate(${path.offset.x}, ${path.offset.y})`"
         :class="{
-          hovered: hovered_cutout === index,
-          animated: animated_cutouts.has(index)
+          hovered: hovered_cutout === index
         }"
         @touchstart="event => handle_cutout_touch_start(event, index)"
         @touchend="handle_cutout_touch_end" />
@@ -538,12 +492,18 @@
         :fill-opacity="path.getAttribute('fill-opacity')"
         :transform="path.getAttribute('transform')"
         :class="{
-          hovered: hovered_cutout === index,
-          animated: animated_cutouts.has(index)
+          hovered: hovered_cutout === index
         }"
         @touchstart="event => handle_cutout_touch_start(event, index)"
         @touchend="handle_cutout_touch_end" />
     </g>
+    <rect
+      v-if="light"
+      id="lightbar-rect"
+      fill="url(#lightbar)"
+      width="100%"
+      height="100%" />
+    <as-animation v-if="animate" :id="vector.id" />
   </svg>
 </template>
 

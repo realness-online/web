@@ -39,7 +39,7 @@
     </header>
     <article class="editable statements">
       <header>
-        <h1 v-if="!working">Editable Statements</h1>
+        <h1 v-if="!working">Statements</h1>
       </header>
       <as-days
         v-slot="thoughts"
