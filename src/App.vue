@@ -31,10 +31,7 @@
   const documentation = ref(null)
   provide('documentation', documentation)
 
-  const key_commands = inject('key-commands')
   const { register } = use_keymap('Global')
-
-  const key_commands_dialog = ref(null)
 
   register('ui::Show_Key_Commands', () => key_commands_dialog.value?.show())
   register('ui::Show_Documentation', () => documentation.value?.show())
@@ -48,6 +45,7 @@
   register('nav::Go_Phonebook', () =>  router.push('/phonebook'))
   register('nav::Go_Thoughts', () => router.push('/thoughts'))
 
+  const key_commands_dialog = ref(null)
   /** @param {boolean} active */
   const sync_active = active => {
     if (active) status.value = 'working'
