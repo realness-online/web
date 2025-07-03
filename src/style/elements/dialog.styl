@@ -17,22 +17,8 @@ dialog {
 }
 
 dialog.confirm {
-  position: fixed;
-  top: 0;
-  left: 0;
   z-index: 1000;
-  width: 100dvw;
-  height: 100dvh;
   & > article {
-    border-color: red;
-    border-width: 4px;
-    border-radius: base-line;
-    background-color: var(--black-transparent);
-    @media (prefers-color-scheme: dark) {
-      background-color: var(--black-background);
-    }
-    max-width: var(--page-width);
-    margin: 25dvh auto 0;
     header {
       padding: base-line;
       display: flex;

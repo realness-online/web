@@ -6,12 +6,10 @@
 
   const emit = defineEmits(['toggle-keyboard'])
   const { save } = use()
-  const show_regular = inject('show-utility-components')
   const statement_text = ref(null)
 
   const focused = async () => {
     emit('toggle-keyboard')
-    show_regular.value = false
     const textarea = document.querySelector('textarea#wat')
     textarea.focus()
     await tick()
@@ -30,7 +28,6 @@
 
   const prepare_statement = async () => {
     console.info('prepare_statement')
-    show_regular.value = true
     emit('toggle-keyboard')
     const textarea = document.querySelector('textarea#wat')
     textarea.style.height = ''
@@ -73,7 +70,6 @@
   register('statement::Cancel', () => {
     statement_text.value = null
     emit('toggle-keyboard')
-    show_regular.value = true
   })
   register('statement::Undo', () => {
     // TODO: Implement undo functionality
@@ -97,7 +93,7 @@
     @input="adjust_height"
     @focusout="prepare_statement"
     @focusin="focused" />
-  <button v-if="!show_regular" id="done">
+  <button id="done">
     <icon name="finished" />
   </button>
 </template>

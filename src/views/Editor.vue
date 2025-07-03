@@ -3,7 +3,7 @@
   import AsSvg from '@/components/posters/as-svg'
   import { Poster } from '@/persistance/Storage'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
-  import { provide, ref } from 'vue'
+  import { provide, ref, watch, computed } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
 
   const route = use_route()
@@ -29,8 +29,24 @@
     back()
   }
 
-  const { new_vector, new_gradients } = use_vectorize()
-  if (new_vector.value) provide('new-poster', true)
+  const { new_vector, new_gradients, new_cutouts, progress } = use_vectorize()
+
+  // Watch for new_vector to arrive and inform the editor
+  watch(new_vector, (vector) => {
+    if (vector) {
+      provide('new-poster', true)
+      // The vector is now available for display
+    }
+  }, { immediate: true })
+
+  const is_processing = computed(() => {
+    return !new_vector.value && progress.value < 100
+  })
+
+  const progress_text = computed(() => {
+    if (!is_processing.value) return ''
+    return `Processing: ${Math.round(progress.value)}%`
+  })
 </script>
 
 <template>
@@ -39,6 +55,7 @@
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
     </header>
+
     <figure ref="figure">
       <as-svg
         :itemid="itemid"
@@ -47,6 +64,11 @@
         :tabable="true"
         tabindex="-1" />
     </figure>
+
+    <footer v-if="progress < 100">
+      <progress :value="progress" max="100"></progress>
+      <span>{{ Math.round(progress) }}% – Cutouts: {{ new_cutouts.length }}</span>
+    </footer>
   </section>
 </template>
 
@@ -117,5 +139,25 @@
         min-height: inherit;
       }
     }
+    & > footer {
+      position fixed;
+      left 0;
+      right 0;
+      top 0;
+      z-index 20;
+      display flex;
+      align-items center;
+      justify-content center;
+      progress {
+        width 80vw;
+        margin-right 1em;
+        accent-color var(--green);
+      }
+      span {
+        font-size smaller;
+      }
+    }
   }
+
+
 </style>

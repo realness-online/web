@@ -11,28 +11,28 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       f: 'ui::Toggle_Fullscreen',
-      'ctrl-,': 'ui::Open_Settings',
+      'ctrl-.': 'ui::Open_Settings',
       'ctrl-k': 'ui::Show_Key_Commands',
       'ctrl-?': 'ui::Show_Documentation',
       'ctrl-/': 'ui::Show_Documentation',
       0: 'nav::Go_Home',
-      1: 'nav::Go_Statements',
-      2: 'nav::Go_Events',
-      3: 'nav::Go_Posters',
-      4: 'nav::Go_Phonebook',
-      5: 'nav::Go_Thoughts'
+      1: 'nav::Go_Thoughts',
+      2: 'nav::Go_Posters',
+      3: 'nav::Go_Statements',
+      4: 'nav::Go_Events',
+      5: 'nav::Go_Phonebook'
     },
     descriptions: {
       'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
       'ui::Open_Settings': 'Open application settings',
       'ui::Show_Key_Commands': 'Show keyboard shortcuts for current view',
       'ui::Show_Documentation': 'Show application documentation',
-      'nav::Go_Home': 'Go to home page',
-      'nav::Go_Statements': 'Navigate to statements',
-      'nav::Go_Events': 'Navigate to events',
-      'nav::Go_Posters': 'Navigate to posters',
-      'nav::Go_Phonebook': 'Navigate to phonebook',
-      'nav::Go_Thoughts': 'Navigate to thoughts'
+      'nav::Go_Home': 'To home',
+      'nav::Go_Statements': 'To statements',
+      'nav::Go_Events': 'To events',
+      'nav::Go_Posters': 'To posters',
+      'nav::Go_Phonebook': 'To phonebook',
+      'nav::Go_Thoughts': 'To thoughts'
     }
   },
   {

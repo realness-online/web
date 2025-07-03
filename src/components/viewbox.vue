@@ -43,7 +43,7 @@
     color: blue;
     font-size: smaller;
     text-shadow: -0.66px -0.66px .51px red;
-    z-index: 1000;
+    z-index: 10;
     font-family: monospace;
   }
 </style>

@@ -17,9 +17,6 @@
   const { open_camera } = use_vectorize()
   const router = useRouter()
 
-  // Use keymap context with automatic lifecycle management
-  const { register } = use_keymap('Navigation')
-
 </script>
 
 <template>
