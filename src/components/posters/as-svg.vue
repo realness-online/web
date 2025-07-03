@@ -239,59 +239,60 @@
   }
 
   const handle_wheel = event => {
-    // Always handle wheel events for viewBox control
-    event.preventDefault()
+    console.log('handle_wheel', event)
+    // // Always handle wheel events for viewBox control
+    // event.preventDefault()
 
-    if (event.shiftKey && event.metaKey) {
-      // Shift + Command + wheel = zoom in/out centered on viewport
-      const delta = event.deltaY > 0 ? 1.1 : 0.9
-      const new_scale = Math.max(
-        0.5,
-        Math.min(3, viewbox_transform.value.scale * delta)
-      )
+    // if (event.shiftKey && event.metaKey) {
+    //   // Shift + Command + wheel = zoom in/out centered on viewport
+    //   const delta = event.deltaY > 0 ? 1.1 : 0.9
+    //   const new_scale = Math.max(
+    //     0.5,
+    //     Math.min(3, viewbox_transform.value.scale * delta)
+    //   )
 
-      // Calculate zoom center (middle of current viewport)
-      const svg_rect = vector_element.value.getBoundingClientRect()
-      const center_x = svg_rect.width / 2
-      const center_y = svg_rect.height / 2
+    //   // Calculate zoom center (middle of current viewport)
+    //   const svg_rect = vector_element.value.getBoundingClientRect()
+    //   const center_x = svg_rect.width / 2
+    //   const center_y = svg_rect.height / 2
 
-      // Convert screen coordinates to viewBox coordinates
-      const current_viewbox = dynamic_viewbox.value.split(' ').map(Number)
-      const viewbox_width = current_viewbox[2]
-      const viewbox_height = current_viewbox[3]
+    //   // Convert screen coordinates to viewBox coordinates
+    //   const current_viewbox = dynamic_viewbox.value.split(' ').map(Number)
+    //   const viewbox_width = current_viewbox[2]
+    //   const viewbox_height = current_viewbox[3]
 
-      const scale_ratio = new_scale / viewbox_transform.value.scale
-      const zoom_center_x = (center_x / svg_rect.width) * viewbox_width
-      const zoom_center_y = (center_y / svg_rect.height) * viewbox_height
+    //   const scale_ratio = new_scale / viewbox_transform.value.scale
+    //   const zoom_center_x = (center_x / svg_rect.width) * viewbox_width
+    //   const zoom_center_y = (center_y / svg_rect.height) * viewbox_height
 
-      // Adjust position to keep zoom center fixed
-      const new_x =
-        viewbox_transform.value.x + zoom_center_x * (1 - scale_ratio)
-      const new_y =
-        viewbox_transform.value.y + zoom_center_y * (1 - scale_ratio)
+    //   // Adjust position to keep zoom center fixed
+    //   const new_x =
+    //     viewbox_transform.value.x + zoom_center_x * (1 - scale_ratio)
+    //   const new_y =
+    //     viewbox_transform.value.y + zoom_center_y * (1 - scale_ratio)
 
-      viewbox_transform.value = {
-        x: new_x,
-        y: new_y,
-        scale: new_scale
-      }
-    } else if (event.shiftKey) {
-      // Shift + wheel = horizontal panning (left/right)
-      // Use deltaX for horizontal scrolling when shift is held
-      const delta_x = event.deltaX || event.deltaY
-      const pan_amount = delta_x > 0 ? -20 : 20
-      viewbox_transform.value = {
-        ...viewbox_transform.value,
-        x: viewbox_transform.value.x + pan_amount
-      }
-    } else {
-      // Regular wheel = vertical panning (up/down)
-      const delta_y = event.deltaY > 0 ? 20 : -20
-      viewbox_transform.value = {
-        ...viewbox_transform.value,
-        y: viewbox_transform.value.y + delta_y
-      }
-    }
+    //   viewbox_transform.value = {
+    //     x: new_x,
+    //     y: new_y,
+    //     scale: new_scale
+    //   }
+    // } else if (event.shiftKey) {
+    //   // Shift + wheel = horizontal panning (left/right)
+    //   // Use deltaX for horizontal scrolling when shift is held
+    //   const delta_x = event.deltaX || event.deltaY
+    //   const pan_amount = delta_x > 0 ? -20 : 20
+    //   viewbox_transform.value = {
+    //     ...viewbox_transform.value,
+    //     x: viewbox_transform.value.x + pan_amount
+    //   }
+    // } else {
+    //   // Regular wheel = vertical panning (up/down)
+    //   const delta_y = event.deltaY > 0 ? 20 : -20
+    //   viewbox_transform.value = {
+    //     ...viewbox_transform.value,
+    //     y: viewbox_transform.value.y + delta_y
+    //   }
+    // }
   }
 
   // Reset viewBox on double tap
@@ -299,9 +300,9 @@
     viewbox_transform.value = { x: 0, y: 0, scale: 1 }
   }
 
-  // Touch gesture handling
-  let touch_start_distance = 0
-  let touch_start_scale = 1
+  // // Touch gesture handling
+  // let touch_start_distance = 0
+  // let touch_start_scale = 1
 
   const get_touch_distance = touches => {
     if (touches.length < 2) return 0
@@ -311,50 +312,50 @@
   }
 
   const handle_touch_start = event => {
-    event.preventDefault()
-    if (event.touches.length === 2) {
-      touch_start_distance = get_touch_distance(event.touches)
-      touch_start_scale = viewbox_transform.value.scale
-    } else if (event.touches.length === 1) {
-      handle_pointer_down(event.touches[0])
-    }
+    console.log('handle_touch_start', event.touches)
+    // event.preventDefault()
+    // if (event.touches.length === 2) {
+    //   touch_start_distance = get_touch_distance(event.touches)
+    //   touch_start_scale = viewbox_transform.value.scale
+    // } else if (event.touches.length === 1) {
+    //   handle_pointer_down(event.touches[0])
+    // }
   }
 
   const handle_touch_move = event => {
-    event.preventDefault()
-    if (event.touches.length === 2) {
-      const current_distance = get_touch_distance(event.touches)
-      if (touch_start_distance > 0) {
-        const scale_factor = current_distance / touch_start_distance
-        const new_scale = Math.max(
-          0.5,
-          Math.min(3, touch_start_scale * scale_factor)
-        )
-        viewbox_transform.value = {
-          ...viewbox_transform.value,
-          scale: new_scale
-        }
-      }
-    } else if (event.touches.length === 1) {
-      handle_pointer_move(event.touches[0])
-    }
+    console.log('handle_touch_move', event.touches)
+    // event.preventDefault()
+    // if (event.touches.length === 2) {
+    //   const current_distance = get_touch_distance(event.touches)
+    //   if (touch_start_distance > 0) {
+    //     const scale_factor = current_distance / touch_start_distance
+    //     const new_scale = Math.max(
+    //       0.5,
+    //       Math.min(3, touch_start_scale * scale_factor)
+    //     )
+    //     viewbox_transform.value = {
+    //       ...viewbox_transform.value,
+    //       scale: new_scale
+    //     }
+    //   }
+    // } else if (event.touches.length === 1) {
+    //   handle_pointer_move(event.touches[0])
+    // }
   }
 
   const handle_touch_end = event => {
-    event.preventDefault()
-    if (event.touches.length === 0) {
-      handle_pointer_up()
-    }
+    console.log('handle_touch_end', event.touches)
+    //   event.preventDefault()
+    //   if (event.touches.length === 0) {
+    //     handle_pointer_up()
+    // }
   }
 
-  // Cutout hover state for touch devices
   const hovered_cutout = ref(null)
-
   const handle_cutout_touch_start = (event, index) => {
     event.preventDefault()
     hovered_cutout.value = index
   }
-
   const handle_cutout_touch_end = event => {
     event.preventDefault()
     hovered_cutout.value = null
@@ -383,7 +384,7 @@
     @touchend="handle_touch_end">
     <defs class="graphic">
       <pattern
-        :id="query('pattern')"
+        :id="query('overlay')"
         :width="vector.width"
         :height="vector.height"
         :viewBox="viewbox"
@@ -449,6 +450,24 @@
           stroke-dasharray="24,32"
           @focus="focus('bold')" />
       </pattern>
+      <pattern
+        :id="query('cutout')"
+        :width="vector.width"
+        :height="vector.height"
+        :viewBox="viewbox"
+        patternUnits="userSpaceOnUse"
+        :preserveAspectRatio="aspect_ratio">
+        <path
+          v-for="(path, index) in vector.cutout"
+          :key="`cutout-${index}`"
+          :d="path.d"
+          itemprop="cutout"
+          :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
+          fill-opacity="0.5"
+          :class="{ hovered: hovered_cutout === index }"
+          @touchstart="event => handle_cutout_touch_start(event, index)"
+          @touchend="handle_cutout_touch_end" />
+      </pattern>
       <rect
         :id="query('pattern-render')"
         :fill="`url(${fragment('pattern')})`"
@@ -465,36 +484,17 @@
       <use :href="fragment('medium')" @focus="focus('medium')" />
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
-    <g id="cutouts" v-if="cutouts">
-      <!-- For new vectors (before saving) - render as objects with color/offset properties -->
+    <g id="cutouts" v-if="cutout">
       <path
         v-if="new_poster"
         v-for="(path, index) in new_cutouts"
         :key="`new-path-${index}`"
         :d="path.d"
-        itemprop="cutouts"
+        itemprop="cutout"
         :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
-        fill-opacity="0.75"
+        fill-opacity="0.5"
         :transform="`translate(${path.offset.x}, ${path.offset.y})`"
-        :class="{
-          hovered: hovered_cutout === index
-        }"
-        @touchstart="event => handle_cutout_touch_start(event, index)"
-        @touchend="handle_cutout_touch_end" />
-
-      <!-- For saved vectors - render as SVG path elements -->
-      <path
-        v-else
-        v-for="(path, index) in new_cutouts"
-        :key="`saved-path-${index}`"
-        itemprop="cutouts"
-        :d="path.getAttribute('d')"
-        :fill="path.getAttribute('fill')"
-        :fill-opacity="path.getAttribute('fill-opacity')"
-        :transform="path.getAttribute('transform')"
-        :class="{
-          hovered: hovered_cutout === index
-        }"
+        :class="{ hovered: hovered_cutout === index }"
         @touchstart="event => handle_cutout_touch_start(event, index)"
         @touchend="handle_cutout_touch_end" />
     </g>
@@ -522,7 +522,7 @@
     cursor: grab;
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
-    touch-action: none; /* Prevent browser gestures */
+    /* touch-action: none; Prevent browser gestures */
 
     /* Active state for touch */
     &:active {

@@ -48,6 +48,36 @@
       dur="3s"
       values="0.9;0.1;0.9" />
 
+    <!-- Stroke width animations -->
+    <animate
+      v-if="stroke"
+      :href="fragment('light')"
+      attributeName="stroke-width"
+      repeatCount="indefinite"
+      dur="4s"
+      values="0.33;0.66;0.33" />
+    <animate
+      v-if="stroke"
+      :href="fragment('regular')"
+      attributeName="stroke-width"
+      repeatCount="indefinite"
+      dur="6s"
+      values="0.33;0.55;0.33" />
+    <animate
+      v-if="stroke"
+      :href="fragment('medium')"
+      attributeName="stroke-width"
+      repeatCount="indefinite"
+      dur="3s"
+      values="0.33;0.83;0.33" />
+    <animate
+      v-if="stroke"
+      :href="fragment('bold')"
+      attributeName="stroke-width"
+      repeatCount="indefinite"
+      dur="4s"
+      values="0.33;1;0.33" />
+
     <!-- Stroke dasharray animations for flowing lines effect -->
     <animate
       v-if="stroke"
@@ -167,5 +197,15 @@
       repeatCount="indefinite"
       dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
+
+    <!-- Light bar brightness animation -->
+    <animate
+      href="#lightbar-rect"
+      attributeName="filter"
+      repeatCount="indefinite"
+      dur="8s"
+      values="brightness(1);brightness(0.9);brightness(1);brightness(1.1);brightness(1)"
+      keyTimes="0;0.25;0.5;0.75;1"
+      keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" />
   </g>
 </template>

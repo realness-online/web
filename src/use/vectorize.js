@@ -191,24 +191,7 @@ export const use = () => {
         new_cutouts.value.push(message.data.path)
         break
       case 'complete':
-        // Convert cutout objects to SVG path elements for consistency
-        // This enables SVGO optimization and maintains uniform path handling
-        const cutout_paths = new_cutouts.value.map(cutout => {
-          const path = create_path_element()
-          path.setAttribute('d', cutout.d)
-          path.setAttribute(
-            'fill',
-            `rgb(${cutout.color.r}, ${cutout.color.g}, ${cutout.color.b})`
-          )
-          path.setAttribute('fill-opacity', '0.5')
-          path.setAttribute(
-            'transform',
-            `translate(${cutout.offset.x}, ${cutout.offset.y})`
-          )
-          path.setAttribute('itemprop', 'cutouts')
-          return path
-        })
-        new_cutouts.value = cutout_paths
+        // TODO: Trigger optimization
         break
       case 'error':
         console.error('Tracer error:', message.error)
