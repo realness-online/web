@@ -10,7 +10,6 @@ import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
 import Editor from '@/views/Editor'
 import About from '@/views/About'
-import Documentation from '@/views/Documentation'
 
 const routes = [
   { path: '/', component: Navigation },
@@ -24,8 +23,7 @@ const routes = [
   { path: '/profile', component: Profile },
   { path: '/statements', component: Statements },
   { path: '/about', component: About },
-  { path: '/:phone_number', component: Profile },
-  { path: '/documentation', component: Documentation }
+  { path: '/:phone_number', component: Profile }
 ]
 const router = createRouter({
   history: createWebHistory(),

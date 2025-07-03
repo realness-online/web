@@ -30,8 +30,8 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
-    emboss as emboss_pref,
-    light as light_pref
+    light as light_pref,
+    cutout as cutout_pref
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -93,9 +93,6 @@
   } = use_poster()
   const { new_cutouts } = use_vectorize()
   const trigger = ref(null)
-  const emboss = computed(
-    () => emboss_pref.value === true && intersecting.value
-  )
   const animate = computed(
     () => {
       const result = animate_pref.value === true && intersecting.value
@@ -108,7 +105,7 @@
     }
   )
   const light = computed(() => light_pref.value === true && intersecting.value)
-
+  const cutouts = computed(() => cutout_pref.value === true && intersecting.value)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -416,6 +413,7 @@
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-light')})`"
           :stroke="`url(${fragment('horizontal-medium')})`"
+          stroke-dasharray="8,16"
           @focus="focus('light')" />
         <as-path
           v-if="vector.regular"
@@ -425,7 +423,8 @@
           :tabindex="tabindex"
           :mask="`url(${fragment('radial-mask')})`"
           :fill="`url(${fragment('horizontal-regular')})`"
-          :stroke="`url(${fragment('radial-bold')})`"
+          :stroke="`url(${fragment('radial-medium')})`"
+          stroke-dasharray="13,21"
           @focus="focus('regular')" />
         <as-path
           v-if="vector.medium"
@@ -436,6 +435,7 @@
           :mask="`url(${fragment('vertical-mask')})`"
           :fill="`url(${fragment('vertical-medium')})`"
           :stroke="`url(${fragment('vertical-light')})`"
+          stroke-dasharray="18,26"
           @focus="focus('medium')" />
         <as-path
           v-if="vector.bold"
@@ -446,6 +446,7 @@
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-bold')})`"
           :stroke="`url(${fragment('radial-regular')})`"
+          stroke-dasharray="24,32"
           @focus="focus('bold')" />
       </pattern>
       <rect
@@ -464,7 +465,7 @@
       <use :href="fragment('medium')" @focus="focus('medium')" />
       <use :href="fragment('bold')" @focus="focus('bold')" />
     </g>
-    <g>
+    <g id="cutouts" v-if="cutouts">
       <!-- For new vectors (before saving) - render as objects with color/offset properties -->
       <path
         v-if="new_poster"
@@ -557,18 +558,6 @@
     & rect.emboss {
       pointer-events: none;
       user-select: none;
-    }
-  }
-
-  /* Keyframe animation for cutout pulsing */
-  @keyframes cutout-pulse {
-    0% {
-      opacity: 0.75;
-      transform: scale(1);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1.05);
     }
   }
 </style>

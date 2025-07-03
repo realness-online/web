@@ -27,9 +27,7 @@
     const groups = {}
     available_commands.value.forEach(cmd => {
       const context = cmd.context || 'Global'
-      if (!groups[context]) {
-        groups[context] = []
-      }
+      if (!groups[context]) groups[context] = []
       groups[context].push({
         key: cmd.key,
         command: cmd.command,

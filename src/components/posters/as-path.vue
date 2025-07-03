@@ -128,7 +128,9 @@
 
 <style>
   path[itemprop] {
-    stroke-dasharray: 21,13;
+    stroke-miterlimit: 3.14;
+    stroke-linecap: round;
+    stroke-dasharray: 13,21;
     stroke-dashoffset: 0;
     transition-duration: 2.66s;
     &:focus {

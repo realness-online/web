@@ -1,8 +1,8 @@
 <script setup>
   import sync from '@/components/sync'
   import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
-  import KeyCommandsModal from '@/components/key-commands-modal.vue'
-  import DocumentationModal from '@/components/documentation-modal.vue'
+  import DialogKeyCommands from '@/components/as-dialog-keymap.vue'
+  import DialogDocumentation from '@/components/as-dialog-documentation.vue'
   import fps from '@/components/fps'
   import Viewbox from '@/components/viewbox'
   import {
@@ -10,7 +10,8 @@
     onUnmounted as dismount,
     onMounted as mounted,
     provide,
-    computed
+    computed,
+    inject
   } from 'vue'
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router, useRoute as use_route } from 'vue-router'
@@ -27,36 +28,18 @@
   const { vVectorizer, image_picker, mount_workers } = use_vectorize()
   provide('image-picker', image_picker)
 
-  const key_commands_modal = ref(null)
-  provide('key-commands-modal', key_commands_modal)
+  const documentation = ref(null)
+  provide('documentation', documentation)
 
-  const documentation_modal = ref(null)
-  provide('documentation-modal', documentation_modal)
-
+  const key_commands = inject('key-commands')
   const { register } = use_keymap('Global')
 
-  register('ui::Show_Key_Commands', () => {
-    if (key_commands_modal.value) key_commands_modal.value.show()
-  })
+  const key_commands_dialog = ref(null)
 
-  register('ui::Show_Documentation', () => {
-    if (documentation_modal.value) documentation_modal.value.show()
-  })
-
-  register('ui::Close_Modal', () => {
-    const open_dialogs = document.querySelectorAll('dialog[open]')
-    open_dialogs.forEach(dialog => dialog.close())
-  })
-
-  register('ui::Open_Settings', () => {
-    const settings_dialog = document.querySelector('dialog#preferences')
-    if (settings_dialog) settings_dialog.showModal()
-  })
-
-  register('ui::Toggle_Fullscreen', () => {
-    if (!document.fullscreenElement)  document.documentElement.requestFullscreen()
-    else document.exitFullscreen()
-  })
+  register('ui::Show_Key_Commands', () => key_commands_dialog.value?.show())
+  register('ui::Show_Documentation', () => documentation.value?.show())
+  register('ui::Open_Settings', () => document.querySelector('dialog#preferences')?.showModal())
+  register('ui::Toggle_Fullscreen', () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen())
 
   register('nav::Go_Home', () => router.push('/') )
   register('nav::Go_Statements', () => router.push('/statements')  )
@@ -71,13 +54,11 @@
     else status.value = null
   }
   const online = () => {
-    const editable = document.querySelectorAll('[contenteditable]')
-    editable.forEach(e => e.setAttribute('contenteditable', 'true'))
+    document.querySelectorAll('[contenteditable]')?.forEach(e => e.setAttribute('contenteditable', 'true'))
     status.value = null
   }
   const offline = () => {
-    const editable = document.querySelectorAll('[contenteditable]')
-    editable.forEach(e => e.setAttribute('contenteditable', 'false'))
+    document.querySelectorAll('[contenteditable]')?.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
   mounted(async () => {
@@ -106,8 +87,8 @@
     <fps v-if="fps_pref" />
     <viewbox v-if="fps_pref" />
     <preferences-dialog />
-    <key-commands-modal ref="key_commands_modal" />
-    <documentation-modal ref="documentation_modal" />
+    <dialog-key-commands ref="key_commands_dialog" />
+    <dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
       v-vectorizer
