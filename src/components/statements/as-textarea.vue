@@ -51,11 +51,9 @@
     textarea.style.height = `${textarea.scrollHeight}px`
   }
 
-  // Use keymap context with automatic lifecycle management
   const { register } = use_keymap('Statement')
-
   register('statement::Save', () => prepare_statement())
-  register('statement::NewLine', () => {
+  register('statement::New_Line', () => {
     // Add new line to textarea
     const textarea = document.querySelector('textarea#wat')
     if (textarea) {
@@ -70,14 +68,6 @@
   register('statement::Cancel', () => {
     statement_text.value = null
     emit('toggle-keyboard')
-  })
-  register('statement::Undo', () => {
-    // TODO: Implement undo functionality
-    console.log('Undo statement')
-  })
-  register('statement::Redo', () => {
-    // TODO: Implement redo functionality
-    console.log('Redo statement')
   })
 </script>
 

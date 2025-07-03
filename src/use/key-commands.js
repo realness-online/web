@@ -228,7 +228,24 @@ export function use_keymap(context_name) {
   })
 
   return {
-    ...key_commands,
+    active_contexts: key_commands.active_contexts,
+    command_handlers: key_commands.command_handlers,
+    keymap: key_commands.keymap,
+
+    unregister_handler: key_commands.unregister_handler,
+    set_contexts: key_commands.set_contexts,
+    add_context: key_commands.add_context,
+    remove_context: key_commands.remove_context,
+    execute_command: key_commands.execute_command,
+    get_available_commands: key_commands.get_available_commands,
+    is_key_bound: key_commands.is_key_bound,
+    get_command_for_key: key_commands.get_command_for_key,
+    update_keymap: key_commands.update_keymap,
+    load_keymap: key_commands.load_keymap,
+    save_keymap: key_commands.save_keymap,
+    validate_current_keymap: key_commands.validate_current_keymap,
+    get_statistics: key_commands.get_statistics,
+    register_handler: key_commands.register_handler,
     register: (command, handler, options = {}) => {
       key_commands.register_handler(command, {
         handler,

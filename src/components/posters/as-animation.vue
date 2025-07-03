@@ -18,34 +18,35 @@
 
 <template>
   <g itemprop="animation">
+    <!-- Stroke opacity animations -->
     <animate
       v-if="stroke"
       :href="fragment('light')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="3s"
-      values="0.9;0.0;0.9" />
+      values="0.9;0.1;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="5s"
-      values="0.9;0;0.9" />
+      values="0.9;0.1;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
       dur="2s"
-      values="0.9;0;0.9" />
+      values="0.9;0.1;0.9" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-opacity"
       repeatCount="indefinite"
-      dur="8s"
-      values="0.9;0;0.9" />
+      dur="3s"
+      values="0.9;0.1;0.9" />
 
     <!-- Stroke dasharray animations for flowing lines effect -->
     <animate
@@ -53,50 +54,59 @@
       :href="fragment('light')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
-      dur="2s"
-      values="0;-34" />
+      dur="3s"
+      values="0;-34"
+      keyTimes="0;1"
+      keySplines="0.4 0 0.6 1" />
     <animate
       v-if="stroke"
       :href="fragment('regular')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
-      dur="3s"
-      values="0;-34" />
+      dur="5s"
+      values="0;-34"
+      keyTimes="0;1"
+      keySplines="0.4 0 0.6 1" />
     <animate
       v-if="stroke"
       :href="fragment('medium')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
-      dur="4s"
-      values="0;-34" />
+      dur="2s"
+      values="0;-34"
+      keyTimes="0;1"
+      keySplines="0.4 0 0.6 1" />
     <animate
       v-if="stroke"
       :href="fragment('bold')"
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="3s"
-      values="0;-34" />
+      values="0;-34"
+      keyTimes="0;1"
+      keySplines="0.4 0 0.6 1" />
 
+    <!-- Fill opacity animations -->
     <animate
       :href="fragment('light')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="5s"
-      values="0.9;0.75;1;0.21;0.9" />
+      values="0.9;0.75;0.9;0.21;0.9" />
     <animate
       :href="fragment('medium')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="13s"
-      values="0.9;0.6;1;0.5;0.9;" />
-
+      values="0.9;0.6;0.9;0.5;0.9;" />
     <animate
       :href="fragment('bold')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="8s"
-      values="0.9;0.75;1;0.6;0.8;0.9;" />
+      values="0.9;0.75;0.9;0.6;0.8;0.9;" />
 
+    <!-- Background and line position animations -->
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
@@ -121,7 +131,6 @@
       repeatCount="indefinite"
       dur="86s"
       values="0%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
@@ -134,7 +143,6 @@
       repeatCount="indefinite"
       dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
-
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"

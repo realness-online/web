@@ -9,11 +9,9 @@
   sessionStorage.about = true
   const { posters, for_person: posters_for_admin } = use_posters()
 
-  const documentation_modal = inject('documentation-modal')
+  const documentation = inject('documentation')
 
-  const show_documentation = () => {
-    if (documentation_modal?.value) documentation_modal.value.show()
-  }
+  const show_documentation = () => documentation?.value?.show()
 
   mounted(async () => {
     await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
