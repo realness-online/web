@@ -93,19 +93,9 @@
   } = use_poster()
   const { new_cutouts } = use_vectorize()
   const trigger = ref(null)
-  const animate = computed(
-    () => {
-      const result = animate_pref.value === true && intersecting.value
-      console.log('animate computed:', {
-        animate_pref: animate_pref.value,
-        intersecting: intersecting.value,
-        result: result
-      })
-      return result
-    }
-  )
+  const animate = computed(() => animate_pref.value === true && intersecting.value)
   const light = computed(() => light_pref.value === true && intersecting.value)
-  const cutouts = computed(() => cutout_pref.value === true && intersecting.value)
+  const cutout = computed(() => cutout_pref.value === true && intersecting.value)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -490,6 +480,7 @@
         v-for="(path, index) in new_cutouts"
         :key="`new-path-${index}`"
         :d="path.d"
+        itemprop="cutout"
         itemprop="cutout"
         :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
         fill-opacity="0.5"

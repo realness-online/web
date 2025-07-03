@@ -33,8 +33,8 @@
         name="stroke"
         title="Outline your graphic with a stroke in relevant color" />
       <preference
-        name="emboss"
-        title="Apply an emboss effect to each layer of a poster">
+        name="cutout"
+        title="Display coutouts of the poster">
       </preference>
       <preference name="light" title="A subtle lightbar" />
       <preference
@@ -44,7 +44,7 @@
       <preference
         hidden
         name="simple"
-        title="Download posters with simple readable ids " />
+        title="Download posters with simple readable ids" />
       <preference
         hidden
         name="filesystem"
