@@ -31,11 +31,9 @@
 
   const { new_vector, new_gradients, new_cutouts, progress } = use_vectorize()
 
-  // Watch for new_vector to arrive and inform the editor
   watch(new_vector, (vector) => {
     if (vector) {
       provide('new-poster', true)
-      // The vector is now available for display
     }
   }, { immediate: true })
 
@@ -65,9 +63,9 @@
         tabindex="-1" />
     </figure>
 
-    <footer v-if="progress < 100">
+    <footer v-if="progress < 100 && new_vector">
       <progress :value="progress" max="100"></progress>
-      <span>{{ Math.round(progress) }}% – Cutouts: {{ new_cutouts.length }}</span>
+      <span>{{ Math.round(progress) }}% – Cutouts: {{ new_vector.cutout.length }}</span>
     </footer>
   </section>
 </template>

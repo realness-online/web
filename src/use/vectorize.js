@@ -21,7 +21,6 @@ import ExifReader from 'exifreader'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
-const new_cutouts = ref([])
 const progress = ref(0)
 
 export const use = () => {
@@ -188,10 +187,11 @@ export const use = () => {
         break
       case 'path':
         // Accumulate cutout objects from tracer
-        new_cutouts.value.push(message.data.path)
+        if (!new_vector.value.cutout) new_vector.value.cutout = []
+        new_vector.value.cutout.push(message.data.path)
         break
       case 'complete':
-        // TODO: Trigger optimization
+        console.log('Tracer complete')
         break
       case 'error':
         console.error('Tracer error:', message.error)
@@ -235,7 +235,6 @@ export const use = () => {
     working,
     new_vector,
     new_gradients,
-    new_cutouts,
     mount_workers,
     progress
   }

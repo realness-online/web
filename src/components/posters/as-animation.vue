@@ -201,11 +201,11 @@
     <!-- Light bar brightness animation -->
     <animate
       href="#lightbar-rect"
-      attributeName="filter"
+      attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="8s"
-      values="brightness(1);brightness(0.9);brightness(1);brightness(1.1);brightness(1)"
-      keyTimes="0;0.25;0.5;0.75;1"
-      keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" />
+      dur="5s"
+      values="1;0.33;1"
+      keyTimes="0;0.33;1"
+      keySplines="0.4 0 0.6 1" />
   </g>
 </template>
