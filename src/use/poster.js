@@ -9,7 +9,11 @@ import {
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
-import { useIntersectionObserver as use_intersect } from '@vueuse/core'
+import {
+  useIntersectionObserver as use_intersect,
+  useStorage as use_storage,
+  usePointer as use_pointer
+} from '@vueuse/core'
 import {
   as_query_id,
   as_fragment_id,
@@ -29,6 +33,46 @@ export const use = () => {
   const working = ref(true)
   const menu = ref(false)
   const { get_active_path } = use_path()
+
+  // Pan and zoom state
+  const is_hovered = ref(false)
+  const storage_key = computed(() => `viewbox-${props.itemid}`)
+  const viewbox_transform = use_storage(storage_key, {
+    x: 0,
+    y: 0,
+    scale: 1
+  })
+
+  // Pointer tracking
+  const { x, y, pressure } = use_pointer({ target: vector_element })
+
+  // Original viewBox values
+  const original_viewbox = computed(() => {
+    if (!vector.value) return { x: 0, y: 0, width: 16, height: 16 }
+    const [x, y, width, height] = vector.value.viewbox.split(' ').map(Number)
+    return { x, y, width, height }
+  })
+
+  // Computed viewBox with transforms
+  const dynamic_viewbox = computed(() => {
+    const { x, y, width, height } = original_viewbox.value
+    const { x: dx, y: dy, scale } = viewbox_transform.value
+
+    const new_width = width / scale
+    const new_height = height / scale
+    const new_x = x + dx / scale
+    const new_y = y + dy / scale
+
+    return `${new_x} ${new_y} ${new_width} ${new_height}`
+  })
+
+  // Gesture state
+  let is_dragging = false
+  let start_x = 0
+  let start_y = 0
+  let start_transform = null
+  let touch_start_distance = 0
+  let touch_start_scale = 1
 
   const aspect_ratio = computed(() => {
     if (!props.toggle_aspect) return 'xMidYMid slice'
@@ -106,6 +150,139 @@ export const use = () => {
     emit('show', vector.value)
   }
 
+  // Event handlers with shorter names
+  const down = event => {
+    is_dragging = true
+    start_x = event.clientX
+    start_y = event.clientY
+    start_transform = { ...viewbox_transform.value }
+    is_hovered.value = true
+  }
+
+  const move = event => {
+    if (!is_dragging) return
+
+    const delta_x = event.clientX - start_x
+    const delta_y = event.clientY - start_y
+
+    viewbox_transform.value = {
+      ...start_transform,
+      x: start_transform.x + delta_x,
+      y: start_transform.y + delta_y
+    }
+  }
+
+  const up = () => {
+    is_dragging = false
+    is_hovered.value = false
+  }
+
+  const wheel = event => {
+    console.log('wheel', event)
+    event.preventDefault()
+
+    if (event.shiftKey && event.metaKey) {
+      const delta = event.deltaY > 0 ? 1.1 : 0.9
+      const new_scale = Math.max(
+        0.5,
+        Math.min(3, viewbox_transform.value.scale * delta)
+      )
+
+      const svg_rect = vector_element.value.getBoundingClientRect()
+      const center_x = svg_rect.width / 2
+      const center_y = svg_rect.height / 2
+
+      const current_viewbox = dynamic_viewbox.value.split(' ').map(Number)
+      const viewbox_width = current_viewbox[2]
+      const viewbox_height = current_viewbox[3]
+
+      const scale_ratio = new_scale / viewbox_transform.value.scale
+      const zoom_center_x = (center_x / svg_rect.width) * viewbox_width
+      const zoom_center_y = (center_y / svg_rect.height) * viewbox_height
+
+      const new_x =
+        viewbox_transform.value.x + zoom_center_x * (1 - scale_ratio)
+      const new_y =
+        viewbox_transform.value.y + zoom_center_y * (1 - scale_ratio)
+
+      viewbox_transform.value = {
+        x: new_x,
+        y: new_y,
+        scale: new_scale
+      }
+    } else if (event.shiftKey) {
+      const delta_x = event.deltaX || event.deltaY
+      const pan_amount = delta_x > 0 ? -20 : 20
+      viewbox_transform.value = {
+        ...viewbox_transform.value,
+        x: viewbox_transform.value.x + pan_amount
+      }
+    } else {
+      const delta_y = event.deltaY > 0 ? 20 : -20
+      viewbox_transform.value = {
+        ...viewbox_transform.value,
+        y: viewbox_transform.value.y + delta_y
+      }
+    }
+  }
+
+  const reset = () => {
+    viewbox_transform.value = { x: 0, y: 0, scale: 1 }
+  }
+
+  const touch_dist = touches => {
+    if (touches.length < 2) return 0
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  const touch_start = event => {
+    console.log('touch_start', event.touches)
+    event.preventDefault()
+    if (event.touches.length === 2) {
+      touch_start_distance = touch_dist(event.touches)
+      touch_start_scale = viewbox_transform.value.scale
+    } else if (event.touches.length === 1) {
+      down(event.touches[0])
+    }
+  }
+
+  const touch_move = event => {
+    if (event.touches.length === 2) {
+      const current_distance = touch_dist(event.touches)
+      const scale_factor = current_distance / touch_start_distance
+      const new_scale = Math.max(
+        0.5,
+        Math.min(3, touch_start_scale * scale_factor)
+      )
+      viewbox_transform.value = {
+        ...viewbox_transform.value,
+        scale: new_scale
+      }
+    } else if (event.touches.length === 1) {
+      move(event.touches[0])
+    }
+  }
+
+  const touch_end = event => {
+    console.log('touch_end', event.touches)
+    event.preventDefault()
+    if (event.touches.length === 0) {
+      up()
+    }
+  }
+
+  const cutout_start = (event, index) => {
+    event.preventDefault()
+    // Note: hovered_cutout would need to be passed in or managed separately
+  }
+
+  const cutout_end = event => {
+    event.preventDefault()
+    // Note: hovered_cutout would need to be passed in or managed separately
+  }
+
   return {
     vector,
     vector_element,
@@ -122,7 +299,32 @@ export const use = () => {
     show,
     focus,
     tabindex,
-    focusable
+    focusable,
+    is_hovered,
+    storage_key,
+    viewbox_transform,
+    x,
+    y,
+    pressure,
+    original_viewbox,
+    dynamic_viewbox,
+    is_dragging,
+    start_x,
+    start_y,
+    start_transform,
+    touch_start_distance,
+    touch_start_scale,
+    down,
+    move,
+    up,
+    wheel,
+    reset,
+    touch_dist,
+    touch_start,
+    touch_move,
+    touch_end,
+    cutout_start,
+    cutout_end
   }
 }
 

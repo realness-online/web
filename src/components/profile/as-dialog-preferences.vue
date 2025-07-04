@@ -8,9 +8,6 @@
   const show_settings = () => {
     settings.value.showModal()
   }
-  const close_settings = () => {
-    settings.value.close()
-  }
   const handle_click = event => {
     if (event.target === settings.value) settings.value.close()
   }
@@ -23,9 +20,6 @@
   <dialog id="preferences" ref="settings" @click="handle_click">
     <header>
       <h1>Preferences</h1>
-      <a id="close-settings" @click="close_settings">
-        <icon name="finished" />
-      </a>
     </header>
     <menu>
       <preference name="fill" title="Use a gradient to fill up your poster" />
@@ -35,6 +29,10 @@
       <preference
         name="cutout"
         title="Display coutouts of the poster">
+      </preference>
+      <preference
+        name="background"
+        title="Display a background fill">
       </preference>
       <preference name="light" title="A subtle lightbar" />
       <preference
