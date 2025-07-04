@@ -85,7 +85,7 @@
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="3s"
-      values="0;-34"
+      values="0;-24"
       keyTimes="0;1"
       keySplines="0.4 0 0.6 1" />
     <animate
@@ -103,7 +103,7 @@
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="2s"
-      values="0;-34"
+      values="0;-44"
       keyTimes="0;1"
       keySplines="0.4 0 0.6 1" />
     <animate
@@ -112,7 +112,7 @@
       attributeName="stroke-dashoffset"
       repeatCount="indefinite"
       dur="3s"
-      values="0;-34"
+      values="0;-56"
       keyTimes="0;1"
       keySplines="0.4 0 0.6 1" />
 
@@ -203,8 +203,8 @@
       href="#lightbar-rect"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="5s"
-      values="1;0.33;1"
+      dur="21s"
+      values="1;0.66;1"
       keyTimes="0;0.33;1"
       keySplines="0.4 0 0.6 1" />
   </g>
