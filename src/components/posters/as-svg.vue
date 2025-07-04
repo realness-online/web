@@ -197,7 +197,6 @@
         :mask="`url(${fragment('horizontal-mask')})`"
         :fill="`url(${fragment('vertical-light')})`"
         :stroke="`url(${fragment('horizontal-medium')})`"
-        stroke-dasharray="8,16"
         @focus="focus('light')" />
       <as-path
         v-if="vector.regular"
@@ -208,7 +207,6 @@
         :mask="`url(${fragment('radial-mask')})`"
         :fill="`url(${fragment('horizontal-regular')})`"
         :stroke="`url(${fragment('vertical-background')})`"
-        stroke-dasharray="13,21"
         @focus="focus('regular')" />
       <as-path
         v-if="vector.medium"
@@ -219,7 +217,6 @@
         :mask="`url(${fragment('vertical-mask')})`"
         :fill="`url(${fragment('vertical-medium')})`"
         :stroke="`url(${fragment('vertical-light')})`"
-        stroke-dasharray="18,26"
         @focus="focus('medium')" />
       <as-path
         v-if="vector.bold"
@@ -230,7 +227,6 @@
         :mask="`url(${fragment('horizontal-mask')})`"
         :fill="`url(${fragment('vertical-bold')})`"
         :stroke="`url(${fragment('radial-regular')})`"
-        stroke-dasharray="24,32"
         @focus="focus('bold')" />
     </pattern>
     <pattern
