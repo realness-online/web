@@ -109,6 +109,7 @@ export const use = () => {
    */
   const vectorize = async image => {
     working.value = true
+    progress.value = 0
 
     const tags = await ExifReader.load(image, { expanded: true })
     const exif = exif_logger(tags)
@@ -167,18 +168,6 @@ export const use = () => {
    * The tracer worker sends cutout data as objects with d, color, and offset properties.
    * When tracing completes, we convert these objects to SVG path elements to maintain
    * consistency with the main paths (light, regular, medium, bold) and enable SVGO optimization.
-   *
-   * Cutout objects structure:
-   * - d: SVG path data string
-   * - color: {r, g, b} RGB values
-   * - offset: {x, y} translation coordinates
-   *
-   * Converted path elements have:
-   * - d: SVG path data
-   * - fill: RGB color string
-   * - fill-opacity: 0.5 (semi-transparent)
-   * - transform: translate(x, y)
-   * - itemprop: 'cutouts' (for semantic markup)
    */
   const traced = message => {
     switch (message.data.type) {
@@ -186,12 +175,17 @@ export const use = () => {
         progress.value = message.data.progress
         break
       case 'path':
-        // Accumulate cutout objects from tracer
         if (!new_vector.value.cutout) new_vector.value.cutout = []
-        new_vector.value.cutout.push(message.data.path)
+        const path_with_progress = {
+          ...message.data.path,
+          progress: progress.value
+        }
+        new_vector.value.cutout.push(path_with_progress)
         break
       case 'complete':
-        console.log('Tracer complete')
+        console.log('Tracer complete:', message.data)
+        if (new_vector.value && !new_vector.value.optimized)
+          new_vector.value.completed = true
         break
       case 'error':
         console.error('Tracer error:', message.error)

@@ -43,9 +43,7 @@
 </script>
 
 <template>
-  <a id="toggle-account" @click="show_form">{{
-    first_name
-  }}</a>
+  <a id="toggle-account" @click="show_form">{{ first_name }}</a>
   <dialog id="account" ref="form" @click="dialog_click">
     <name-as-form />
     <call-to-action />

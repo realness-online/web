@@ -5,9 +5,7 @@
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
-  import {
-    useIntersectionObserver as use_intersect
-  } from '@vueuse/core'
+  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch_effect,
     onMounted as mounted,
@@ -101,7 +99,9 @@
   } = use_poster()
 
   const trigger = ref(null)
-  const animate = computed(() => animate_pref.value === true && intersecting.value)
+  const animate = computed(
+    () => animate_pref.value === true && intersecting.value
+  )
   const light = computed(() => light_pref.value === true && intersecting.value)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
@@ -113,16 +113,22 @@
   })
   const { optimize: run_optimize } = use_optimizer(vector)
   const new_poster = inject('new-poster', false)
+  const { new_vector } = use_vectorize()
+
   if (new_poster) {
-    const { new_vector } = use_vectorize()
     vector.value = new_vector.value
     working.value = false
+    watch_effect(() => {
+      if (new_vector.value?.cutout)
+        vector.value.cutout = new_vector.value.cutout
+    })
+    watch_effect(() => {
+      if (new_vector.value?.completed && !vector.value.optimized) run_optimize()
+    })
   }
 
   mounted(() => {
-    console.log('mounted - working:', working.value, 'sync_poster:', !!props.sync_poster, 'new_poster:', new_poster)
-    if (!props.sync_poster && !new_poster) {
-      console.log('Setting up intersection observer on trigger')
+    if (!props.sync_poster && !new_poster)
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
@@ -131,9 +137,7 @@
         },
         { rootMargin: '1024px' }
       )
-    } else {
-      console.log('Skipping intersection observer setup')
-    }
+    else console.log('Skipping intersection observer setup')
   })
 
   watch_effect(() => {
@@ -141,12 +145,6 @@
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
-    }
-  })
-  watch_effect(async () => {
-    if (vector.value && props.optimize && !vector.value.optimized) {
-      await tick()
-      await run_optimize()
     }
   })
 </script>
@@ -171,7 +169,7 @@
     @touchmove="touch_move"
     @touchend="touch_end">
     <pattern
-      :id="query('foundation')"
+      :id="query('shadow')"
       :width="vector.width"
       :height="vector.height"
       :viewBox="viewbox"
@@ -241,19 +239,18 @@
         v-for="(path, index) in vector.cutout"
         :key="`cutout-${index}`"
         :d="path.d"
-        itemprop="progress"
+        itemprop="cutout"
         :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
+        :data-progress="path.progress"
         fill-opacity="0.5"
         :class="{ hovered: hovered_cutout === index }"
+        :transform="`translate(${path.offset.x}, ${path.offset.y})`"
         @touchstart="event => cutout_start(event, index)"
         @touchend="cutout_end" />
     </pattern>
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
-    <rect
-      :fill="`url(${fragment('foundation')})`"
-      width="100%"
-      height="100%" />
+    <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
     <rect
       v-if="cutout"
       :fill="`url(${fragment('cutouts')})`"

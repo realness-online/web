@@ -49,7 +49,6 @@
   register('poster::Make_Avatar', () => {
     emit('avatar', props.poster.id)
   })
-
 </script>
 
 <template>

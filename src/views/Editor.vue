@@ -31,11 +31,15 @@
 
   const { new_vector, new_gradients, new_cutouts, progress } = use_vectorize()
 
-  watch(new_vector, (vector) => {
-    if (vector) {
-      provide('new-poster', true)
-    }
-  }, { immediate: true })
+  watch(
+    new_vector,
+    vector => {
+      if (vector) {
+        provide('new-poster', true)
+      }
+    },
+    { immediate: true }
+  )
 
   const is_processing = computed(() => {
     return !new_vector.value && progress.value < 100
@@ -65,7 +69,10 @@
 
     <footer v-if="progress < 100 && new_vector">
       <progress :value="progress" max="100"></progress>
-      <span>{{ Math.round(progress) }}% – Cutouts: {{ new_vector.cutout.length }}</span>
+      <span
+        >{{ Math.round(progress) }}% – Cutouts:
+        {{ new_vector.cutout?.length || 0 }}</span
+      >
     </footer>
   </section>
 </template>
@@ -156,6 +163,4 @@
       }
     }
   }
-
-
 </style>

@@ -48,7 +48,6 @@
       dur="3s"
       values="0.9;0.1;0.9" />
 
-    <!-- Stroke width animations -->
     <animate
       v-if="stroke"
       :href="fragment('light')"
@@ -78,7 +77,6 @@
       dur="4s"
       values="0.33;1;0.33" />
 
-    <!-- Stroke dasharray animations for flowing lines effect -->
     <animate
       v-if="stroke"
       :href="fragment('light')"
@@ -116,7 +114,6 @@
       keyTimes="0;1"
       keySplines="0.4 0 0.6 1" />
 
-    <!-- Fill opacity animations -->
     <animate
       :href="fragment('light')"
       attributeName="fill-opacity"
@@ -136,7 +133,6 @@
       dur="8s"
       values="0.9;0.75;0.9;0.6;0.8;0.9;" />
 
-    <!-- Background and line position animations -->
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
@@ -198,14 +194,13 @@
       dur="55s"
       values="0%;66%;100%;33%;100%;66%;0%" />
 
-    <!-- Light bar brightness animation -->
     <animate
       href="#lightbar-rect"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="21s"
       values="1;0.66;1"
-      keyTimes="0;0.33;1"
+      keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
   </g>
 </template>

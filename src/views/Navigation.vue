@@ -16,7 +16,6 @@
 
   const { open_camera } = use_vectorize()
   const router = useRouter()
-
 </script>
 
 <template>
