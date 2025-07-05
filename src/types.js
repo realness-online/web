@@ -28,9 +28,11 @@
  * @property {Path} regular
  * @property {Path} medium
  * @property {Path} bold
+ * @property {Path[] | Path} cutout
  * @property {number} width
  * @property {number} height
  * @property {string} viewbox
+ * @property {boolean} optimized
  * @property {Object} [trace] - Traced paths with color quantization
  * @property {Array<{d: string, fill: string, stroke: string, stroke_width: number}>} trace.paths
  */

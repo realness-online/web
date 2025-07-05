@@ -1,6 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
+  import AsPathCutout from '@/components/posters/as-path-cutout'
   import AsMasks from '@/components/posters/as-masks'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
@@ -80,7 +81,7 @@
     click,
     working,
     show,
-    focus,
+
     focusable,
     tabindex,
     vector,
@@ -88,6 +89,8 @@
     intersecting,
     is_hovered,
     dynamic_viewbox,
+    focus,
+    focus_cutout,
     wheel,
     reset,
     touch_start,
@@ -230,17 +233,15 @@
     <as-masks v-if="mask" :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
     <g :id="query('cutouts')" v-if="vector.cutout">
-      <path
-        v-for="(path, index) in vector.cutout"
+      <as-path-cutout
+        v-for="(cutout, index) in vector.cutout"
         :key="`cutout-${index}`"
-        :d="path.d"
-        itemprop="cutout"
-        :fill="path.fill"
-        :data-progress="path.data_progress"
-        :fill-opacity="path.fill_opacity"
+        :cutout="cutout"
+        :index="index"
         :class="{ hovered: hovered_cutout === index }"
-        @touchstart.passive="event => cutout_start(event, index)"
-        @touchend.passive="cutout_end" />
+        @focus="focus_cutout"
+        @touchstart="cutout_start"
+        @touchend="cutout_end" />
     </g>
     <rect
       v-if="light"
