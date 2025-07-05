@@ -58,6 +58,21 @@ export const use = () => {
     path.style.fillRule = 'evenodd'
     return path
   }
+  const make_cutout_path = path_data => {
+    const path = create_path_element()
+    path.setAttribute('d', path_data.d)
+    path.setAttribute('fill-opacity', '0.5')
+    path.setAttribute(
+      'fill',
+      `rgb(${path_data.color.r}, ${path_data.color.g}, ${path_data.color.b})`
+    )
+    path.setAttribute(
+      'transform',
+      `translate(${path_data.offset.x}, ${path_data.offset.y})`
+    )
+    console.log('make_cutout_path', path)
+    return path
+  }
 
   /**
    * @param {ImageBitmap} image
@@ -176,11 +191,12 @@ export const use = () => {
         break
       case 'path':
         if (!new_vector.value.cutout) new_vector.value.cutout = []
-        const path_with_progress = {
-          ...message.data.path,
-          progress: progress.value
-        }
-        new_vector.value.cutout.push(path_with_progress)
+        new_vector.value.cutout.push(
+          make_cutout_path({
+            ...message.data.path,
+            progress: progress.value
+          })
+        )
         break
       case 'complete':
         console.log('Tracer complete:', message.data)

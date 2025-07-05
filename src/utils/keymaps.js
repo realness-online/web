@@ -35,25 +35,6 @@ export const default_keymap = [
       'nav::Go_Thoughts': 'To thoughts'
     }
   },
-  {
-    context: 'Statement',
-    use_key_equivalents: true,
-    bindings: {
-      enter: 'statement::Save',
-      'shift-enter': 'statement::NewLine',
-      escape: 'statement::Cancel',
-      'ctrl-s': 'statement::Save',
-      'ctrl-z': 'statement::Undo',
-      'ctrl-shift-z': 'statement::Redo'
-    },
-    descriptions: {
-      'statement::Save': 'Save current statement',
-      'statement::NewLine': 'Add new line',
-      'statement::Cancel': 'Cancel editing',
-      'statement::Undo': 'Undo statement changes',
-      'statement::Redo': 'Redo statement changes'
-    }
-  },
 
   {
     context: 'Poster',
