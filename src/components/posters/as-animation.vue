@@ -127,126 +127,126 @@
       attributeName="cx"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;50%;100%;25%;0%" />
+      values="0%;150%;-50%;200%;0%" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;75%;25%;100%;0%" />
+      values="0%;200%;-25%;150%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;25%;75%;100%;0%" />
+      values="0%;-50%;150%;200%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="86s"
-      values="0%;100%;50%;25%;0%" />
+      values="0%;250%;-75%;175%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;33%;66%;0%" />
+      values="0%;200%;-100%;300%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;33%;100%;66%;0%" />
+      values="0%;-50%;200%;150%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;66%;100%;33%;0%" />
+      values="0%;175%;-75%;225%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;100%;66%;33%;0%" />
+      values="0%;300%;-100%;200%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;33%;66%;100%;0%" />
+      values="0%;-100%;200%;300%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;66%;33%;100%;0%" />
+      values="0%;250%;-150%;175%;0%" />
 
     <animate
       :href="fragment('radial')"
       attributeName="cx"
       repeatCount="indefinite"
       dur="42s"
-      values="0%;75%;25%;100%;0%" />
+      values="0%;200%;-100%;250%;0%" />
     <animate
       :href="fragment('radial')"
       attributeName="cy"
       repeatCount="indefinite"
       dur="67s"
-      values="0%;25%;75%;100%;0%" />
+      values="0%;-75%;300%;150%;0%" />
 
     <animate
       :href="fragment('vertical-background')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="38s"
-      values="0%;100%;25%;75%;0%" />
+      values="0%;300%;-150%;200%;0%" />
     <animate
       :href="fragment('vertical-background')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="61s"
-      values="0%;75%;100%;25%;0%" />
+      values="0%;175%;-100%;250%;0%" />
 
     <animate
       :href="fragment('horizontal-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="47s"
-      values="0%;25%;100%;75%;0%" />
+      values="0%;-100%;250%;300%;0%" />
     <animate
       :href="fragment('horizontal-light')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="73s"
-      values="0%;100%;25%;75%;0%" />
+      values="0%;300%;-200%;175%;0%" />
 
     <animate
       :href="fragment('horizontal-medium')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="29s"
-      values="0%;75%;100%;25%;0%" />
+      values="0%;225%;-125%;275%;0%" />
     <animate
       :href="fragment('horizontal-medium')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="51s"
-      values="0%;25%;100%;75%;0%" />
+      values="0%;-150%;250%;200%;0%" />
 
     <animate
       :href="fragment('horizontal-bold')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="36s"
-      values="0%;100%;75%;25%;0%" />
+      values="0%;350%;-200%;300%;0%" />
     <animate
       :href="fragment('horizontal-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="58s"
-      values="0%;75%;25%;100%;0%" />
+      values="0%;275%;-175%;225%;0%" />
 
     <animate
       href="#lightbar-rect"
