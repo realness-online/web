@@ -112,7 +112,7 @@
     :itemprop="props.itemprop"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"/>
+    :stroke-width="stroke_width" />
   <path
     v-if="just_fill"
     :id="props.id"
@@ -130,7 +130,7 @@
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-    stroke-dasharray: 13,21;
+    stroke-dasharray: 13, 21;
     stroke-dashoffset: 0;
     transition-duration: 0.66s;
     &:focus {
@@ -140,17 +140,16 @@
       fill-opacity: 0.99;
     }
   }
-  path[itemprop="light"] {
-    stroke-dasharray: 8,16;
+  path[itemprop='light'] {
+    stroke-dasharray: 8, 16;
   }
-  path[itemprop="regular"] {
-    stroke-dasharray: 13,21;
+  path[itemprop='regular'] {
+    stroke-dasharray: 13, 21;
   }
-  path[itemprop="medium"] {
-    stroke-dasharray: 18,26;
+  path[itemprop='medium'] {
+    stroke-dasharray: 18, 26;
   }
-  path[itemprop="bold"] {
-    stroke-dasharray: 24,32;
+  path[itemprop='bold'] {
+    stroke-dasharray: 24, 32;
   }
-
 </style>

@@ -178,52 +178,8 @@ export const use = () => {
   }
 
   const wheel = event => {
-    console.log('wheel', event)
+    // console.log('wheel', event)
     event.preventDefault()
-
-    if (event.shiftKey && event.metaKey) {
-      const delta = event.deltaY > 0 ? 1.1 : 0.9
-      const new_scale = Math.max(
-        0.5,
-        Math.min(3, viewbox_transform.value.scale * delta)
-      )
-
-      const svg_rect = vector_element.value.getBoundingClientRect()
-      const center_x = svg_rect.width / 2
-      const center_y = svg_rect.height / 2
-
-      const current_viewbox = dynamic_viewbox.value.split(' ').map(Number)
-      const viewbox_width = current_viewbox[2]
-      const viewbox_height = current_viewbox[3]
-
-      const scale_ratio = new_scale / viewbox_transform.value.scale
-      const zoom_center_x = (center_x / svg_rect.width) * viewbox_width
-      const zoom_center_y = (center_y / svg_rect.height) * viewbox_height
-
-      const new_x =
-        viewbox_transform.value.x + zoom_center_x * (1 - scale_ratio)
-      const new_y =
-        viewbox_transform.value.y + zoom_center_y * (1 - scale_ratio)
-
-      viewbox_transform.value = {
-        x: new_x,
-        y: new_y,
-        scale: new_scale
-      }
-    } else if (event.shiftKey) {
-      const delta_x = event.deltaX || event.deltaY
-      const pan_amount = delta_x > 0 ? -20 : 20
-      viewbox_transform.value = {
-        ...viewbox_transform.value,
-        x: viewbox_transform.value.x + pan_amount
-      }
-    } else {
-      const delta_y = event.deltaY > 0 ? 20 : -20
-      viewbox_transform.value = {
-        ...viewbox_transform.value,
-        y: viewbox_transform.value.y + delta_y
-      }
-    }
   }
 
   const reset = () => {
@@ -329,9 +285,7 @@ export const use = () => {
 }
 
 export const use_posters = () => {
-  /** @type {import('vue').Ref<Poster[]>} */
   const posters = ref([])
-  /** @type {import('vue').Ref<Relation[]>} */
   const authors = ref([])
 
   /**
@@ -409,7 +363,7 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
 
 /**
  * @param {string} author_id
- * @param {string} archive_id
+ * @param {number} archive_id
  * @returns {Promise<Poster[]>}
  */
 const load_archive_posters = async (author_id, archive_id) => {

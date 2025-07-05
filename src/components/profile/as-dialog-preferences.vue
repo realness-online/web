@@ -26,13 +26,9 @@
       <preference
         name="stroke"
         title="Outline your graphic with a stroke in relevant color" />
-      <preference
-        name="cutout"
-        title="Display coutouts of the poster">
+      <preference name="cutout" title="Display coutouts of the poster">
       </preference>
-      <preference
-        name="background"
-        title="Display a background fill">
+      <preference name="background" title="Display a background fill">
       </preference>
       <preference name="light" title="A subtle lightbar" />
       <preference

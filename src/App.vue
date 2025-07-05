@@ -24,7 +24,6 @@
   const router = use_router()
   const route = use_route()
 
-
   const { vVectorizer, image_picker, mount_workers } = use_vectorize()
   provide('image-picker', image_picker)
 
@@ -35,14 +34,20 @@
 
   register('ui::Show_Key_Commands', () => key_commands_dialog.value?.show())
   register('ui::Show_Documentation', () => documentation.value?.show())
-  register('ui::Open_Settings', () => document.querySelector('dialog#preferences')?.showModal())
-  register('ui::Toggle_Fullscreen', () => !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen())
+  register('ui::Open_Settings', () =>
+    document.querySelector('dialog#preferences')?.showModal()
+  )
+  register('ui::Toggle_Fullscreen', () =>
+    !document.fullscreenElement
+      ? document.documentElement.requestFullscreen()
+      : document.exitFullscreen()
+  )
 
-  register('nav::Go_Home', () => router.push('/') )
-  register('nav::Go_Statements', () => router.push('/statements')  )
+  register('nav::Go_Home', () => router.push('/'))
+  register('nav::Go_Statements', () => router.push('/statements'))
   register('nav::Go_Events', () => router.push('/events'))
   register('nav::Go_Posters', () => router.push('/posters'))
-  register('nav::Go_Phonebook', () =>  router.push('/phonebook'))
+  register('nav::Go_Phonebook', () => router.push('/phonebook'))
   register('nav::Go_Thoughts', () => router.push('/thoughts'))
 
   const key_commands_dialog = ref(null)
@@ -52,11 +57,15 @@
     else status.value = null
   }
   const online = () => {
-    document.querySelectorAll('[contenteditable]')?.forEach(e => e.setAttribute('contenteditable', 'true'))
+    document
+      .querySelectorAll('[contenteditable]')
+      ?.forEach(e => e.setAttribute('contenteditable', 'true'))
     status.value = null
   }
   const offline = () => {
-    document.querySelectorAll('[contenteditable]')?.forEach(e => e.setAttribute('contenteditable', 'false'))
+    document
+      .querySelectorAll('[contenteditable]')
+      ?.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
   mounted(async () => {

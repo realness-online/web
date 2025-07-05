@@ -19,7 +19,9 @@
     if (event.target === dialog.value) dialog.value.close()
   }
 
-  const available_commands = computed(() => key_commands.get_available_commands.value)
+  const available_commands = computed(
+    () => key_commands.get_available_commands.value
+  )
   const stats = computed(() => key_commands.get_statistics())
 
   // Group commands by context
@@ -48,7 +50,9 @@
       <header>
         <h1>Keymap</h1>
       </header>
-      <section v-for="(commands, context) in commands_by_context" :key="context">
+      <section
+        v-for="(commands, context) in commands_by_context"
+        :key="context">
         <h2>{{ context }}</h2>
         <ul>
           <li v-for="cmd in commands" :key="`${context}-${cmd.key}`">
