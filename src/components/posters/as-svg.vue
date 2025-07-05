@@ -174,18 +174,6 @@
     @touchmove.passive="touch_move"
     @touchend.passive="touch_end">
 
-    <symbol :id="query('cutouts')">
-      <as-path-cutout
-        v-for="(path, index) in vector.cutout"
-        :key="`cutout-${index}`"
-        :cutout="path"
-        :index="index"
-        :class="{ hovered: hovered_cutout === index }"
-        @focus="focus_cutout"
-        @touchstart="cutout_start"
-        @touchend="cutout_end" />
-    </symbol>
-
     <pattern
       :id="query('shadow')"
       :width="vector.width"
@@ -247,7 +235,17 @@
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
-    <use :href="fragment('cutouts')"/>
+    <g :id="query('cutouts')" v-if="vector.cutout">
+      <as-path-cutout
+        v-for="(cutout, index) in vector.cutout"
+        :key="`cutout-${index}`"
+        :cutout="cutout"
+        :index="index"
+        :class="{ hovered: hovered_cutout === index }"
+        @focus="focus_cutout"
+        @touchstart="cutout_start"
+        @touchend="cutout_end" />
+    </g>
     <rect
       v-if="light"
       id="lightbar-rect"
@@ -279,9 +277,12 @@
       transition: filter 0.3s ease 0.1s; /* Delay on hover out */
       &:hover,
       &.hovered {
-        filter: brightness(1.25) saturate(1.2);
+        filter: brightness(1.5) saturate(1.4);
         transition: filter 0.3s ease;
       }
+    }
+    & rect#lightbar-rect {
+      pointer-events: none;
     }
   }
 </style>
