@@ -16,7 +16,7 @@
   const background = 81
   const light = 60
   const regular = 50
-  const medium = 31
+  const medium = 33
   const bold = 18
   const query = add => {
     if (!props.vector) return add
