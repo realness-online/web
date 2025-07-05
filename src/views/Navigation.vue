@@ -3,26 +3,16 @@
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
-  import { use_keymap } from '@/use/key-commands'
-  import AccountDialog from '@/components/profile/as-dialog-account'
-  import { useRouter } from 'vue-router'
+  const { open_camera } = use_vectorize()
   const version = import.meta.env.PACKAGE_VERSION
-
   const posting = ref(false)
-
   const toggle_keyboard = () => {
     posting.value = !posting.value
   }
-
-  const { open_camera } = use_vectorize()
-  const router = useRouter()
 </script>
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <header>
-      <account-dialog />
-    </header>
     <nav>
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
@@ -42,10 +32,8 @@
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
-      <router-link :to="`/docs#${version}`" tabindex="-1">{{
-        version
-      }}</router-link>
-      <a id="camera" @click="open_camera">
+      <span tabindex="-1">{{version}}</span>
+      <a id="camera" tabindex="3" @click="open_camera" @keydown.enter="open_camera">
         <icon name="camera" />
       </a>
       <router-link to="/about" tabindex="-1">?</router-link>
@@ -67,7 +55,6 @@
       height: auto;
       max-width: none;
     }
-
     & > header {
       opacity: 0.66;
       position: fixed;
@@ -167,6 +154,9 @@
         bottom: base-line;
         right: s('calc( 50% - %s)', (base-line * 1.5));
         z-index: 4;
+        &:focus {
+          outline: 2px solid yellow
+        }
         svg {
           fill: red;
         }
