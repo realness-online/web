@@ -28,7 +28,6 @@
   import {
     animate as animate_pref,
     light as light_pref,
-    cutout,
     background
   } from '@/utils/preference'
   const props = defineProps({
