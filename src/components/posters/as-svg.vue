@@ -164,9 +164,9 @@
     @click="click"
     @dblclick="reset"
     @wheel="wheel"
-    @touchstart="touch_start"
-    @touchmove="touch_move"
-    @touchend="touch_end">
+    @touchstart.passive="touch_start"
+    @touchmove.passive="touch_move"
+    @touchend.passive="touch_end">
     <pattern
       :id="query('shadow')"
       :width="vector.width"
@@ -203,7 +203,7 @@
         :tabindex="tabindex"
         :mask="`url(${fragment('radial-mask')})`"
         :fill="`url(${fragment('horizontal-regular')})`"
-        :stroke="`url(${fragment('vertical-background')})`"
+        :stroke="`url(${fragment('vertical-bold')})`"
         @focus="focus('regular')" />
       <as-path
         v-if="vector.medium"
@@ -213,7 +213,7 @@
         :tabindex="tabindex"
         :mask="`url(${fragment('vertical-mask')})`"
         :fill="`url(${fragment('vertical-medium')})`"
-        :stroke="`url(${fragment('vertical-light')})`"
+        :stroke="`url(${fragment('vertical-background')})`"
         @focus="focus('medium')" />
       <as-path
         v-if="vector.bold"
@@ -223,38 +223,25 @@
         :path="vector.bold"
         :mask="`url(${fragment('horizontal-mask')})`"
         :fill="`url(${fragment('vertical-bold')})`"
-        :stroke="`url(${fragment('radial-regular')})`"
+        :stroke="`url(${fragment('radial-light')})`"
         @focus="focus('bold')" />
     </pattern>
-    <pattern
-      :id="query('cutouts')"
-      :width="vector.width"
-      :height="vector.height"
-      :viewBox="viewbox"
-      itemprop="cutouts"
-      patternUnits="userSpaceOnUse"
-      :preserveAspectRatio="aspect_ratio">
+    <as-gradients v-if="vector" :vector="vector" />
+    <as-masks v-if="mask" :itemid="itemid" />
+    <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
+    <g :id="query('cutouts')" v-if="vector.cutout">
       <path
         v-for="(path, index) in vector.cutout"
         :key="`cutout-${index}`"
         :d="path.d"
         itemprop="cutout"
-        :fill="`rgb(${path.color.r}, ${path.color.g}, ${path.color.b})`"
-        :data-progress="path.progress"
-        fill-opacity="0.5"
+        :fill="path.fill"
+        :data-progress="path.data_progress"
+        :fill-opacity="path.fill_opacity"
         :class="{ hovered: hovered_cutout === index }"
-        :transform="`translate(${path.offset.x}, ${path.offset.y})`"
-        @touchstart="event => cutout_start(event, index)"
-        @touchend="cutout_end" />
-    </pattern>
-    <as-gradients v-if="vector" :vector="vector" />
-    <as-masks v-if="mask" :itemid="itemid" />
-    <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
-    <rect
-      v-if="cutout"
-      :fill="`url(${fragment('cutouts')})`"
-      width="100%"
-      height="100%" />
+        @touchstart.passive="event => cutout_start(event, index)"
+        @touchend.passive="cutout_end" />
+    </g>
     <rect
       v-if="light"
       id="lightbar-rect"
@@ -285,18 +272,18 @@
     &:active {
       cursor: grabbing;
     }
-    & path[itemprop='cutouts']:hover,
-    & path[itemprop='cutouts'].hovered {
-      filter: brightness(1.25);
+    & path[itemprop='cutout']:hover,
+    & path[itemprop='cutout'].hovered {
+      filter: brightness(1.25) saturate(1.2);
       transition: filter 0.3s ease;
     }
 
-    & path[itemprop='cutouts'] {
+    & path[itemprop='cutout'] {
       transition: filter 0.3s ease 0.1s; /* Delay on hover out */
     }
 
     /* Animation effects for cutouts */
-    & path[itemprop='cutouts'].animated {
+    & path[itemprop='cutout'].animated {
       filter: brightness(1.4) saturate(1.2);
       transition: all 0.5s ease;
       transform-origin: center;

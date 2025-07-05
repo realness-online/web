@@ -150,7 +150,6 @@ export const use = () => {
     emit('show', vector.value)
   }
 
-  // Event handlers with shorter names
   const down = event => {
     is_dragging = true
     start_x = event.clientX
@@ -179,7 +178,6 @@ export const use = () => {
 
   const wheel = event => {
     // console.log('wheel', event)
-    event.preventDefault()
   }
 
   const reset = () => {
@@ -195,7 +193,6 @@ export const use = () => {
 
   const touch_start = event => {
     console.log('touch_start', event.touches)
-    event.preventDefault()
     if (event.touches.length === 2) {
       touch_start_distance = touch_dist(event.touches)
       touch_start_scale = viewbox_transform.value.scale
@@ -205,38 +202,20 @@ export const use = () => {
   }
 
   const touch_move = event => {
-    if (event.touches.length === 2) {
-      const current_distance = touch_dist(event.touches)
-      const scale_factor = current_distance / touch_start_distance
-      const new_scale = Math.max(
-        0.5,
-        Math.min(3, touch_start_scale * scale_factor)
-      )
-      viewbox_transform.value = {
-        ...viewbox_transform.value,
-        scale: new_scale
-      }
-    } else if (event.touches.length === 1) {
-      move(event.touches[0])
-    }
+    console.log('touch_move', event.touches)
   }
 
   const touch_end = event => {
     console.log('touch_end', event.touches)
-    event.preventDefault()
-    if (event.touches.length === 0) {
-      up()
-    }
+    if (event.touches.length === 0) up()
   }
 
   const cutout_start = (event, index) => {
-    event.preventDefault()
-    // Note: hovered_cutout would need to be passed in or managed separately
+    console.log('cutout_start', event.touches, index)
   }
 
   const cutout_end = event => {
-    event.preventDefault()
-    // Note: hovered_cutout would need to be passed in or managed separately
+    console.log('cutout_end', event.touches)
   }
 
   return {
