@@ -62,6 +62,8 @@ export const use = () => {
     const path = create_path_element()
     path.setAttribute('d', path_data.d)
     path.setAttribute('fill-opacity', '0.5')
+    path.dataset.transform = 'true'
+
     path.setAttribute(
       'fill',
       `rgb(${path_data.color.r}, ${path_data.color.g}, ${path_data.color.b})`
@@ -70,7 +72,6 @@ export const use = () => {
       'transform',
       `translate(${path_data.offset.x}, ${path_data.offset.y})`
     )
-    console.log('make_cutout_path', path)
     return path
   }
 

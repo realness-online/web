@@ -132,6 +132,10 @@ export const use = () => {
     emit('focus', layer)
   }
 
+  const focus_cutout = event => {
+    console.log('focus_cutout', event)
+  }
+
   const show = async () => {
     if (!vector.value) {
       const poster = await load(/** @type {Id} */ (props.itemid))
@@ -233,6 +237,7 @@ export const use = () => {
     working,
     show,
     focus,
+    focus_cutout,
     tabindex,
     focusable,
     is_hovered,
