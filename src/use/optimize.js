@@ -21,6 +21,7 @@ export const use = vector => {
     vector.value.regular = optimized.regular
     vector.value.medium = optimized.medium
     vector.value.bold = optimized.bold
+    vector.value.cutout = optimized.cutout
     vector.value.optimized = true
     optimizer.value.removeEventListener('message', optimized)
   }

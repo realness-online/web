@@ -132,7 +132,6 @@
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
-          console.log('Intersection observer fired:', isIntersecting)
           if (isIntersecting) show()
         },
         { rootMargin: '1024px' }
@@ -286,36 +285,26 @@
     &:active {
       cursor: grabbing;
     }
-
-    filter: brightness(1.1);
-    transition: filter 0.3s ease;
-
-    /* Hover effects on individual cutout path elements (mouse and touch) */
-    path[itemprop='cutouts']:hover,
-    path[itemprop='cutouts'].hovered {
+    & path[itemprop='cutouts']:hover,
+    & path[itemprop='cutouts'].hovered {
       filter: brightness(1.25);
       transition: filter 0.3s ease;
     }
 
-    path[itemprop='cutouts'] {
+    & path[itemprop='cutouts'] {
       transition: filter 0.3s ease 0.1s; /* Delay on hover out */
     }
 
     /* Animation effects for cutouts */
-    path[itemprop='cutouts'].animated {
+    & path[itemprop='cutouts'].animated {
       filter: brightness(1.4) saturate(1.2);
       transition: all 0.5s ease;
       transform-origin: center;
       animation: cutout-pulse 1s ease-in-out infinite alternate;
     }
 
-    use:focus {
+    & use:focus {
       outline: none;
-    }
-
-    & rect.emboss {
-      pointer-events: none;
-      user-select: none;
     }
   }
 </style>
