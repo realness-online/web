@@ -127,61 +127,126 @@
       attributeName="cx"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;33%;100%;0%;100%;0%;" />
+      values="0%;50%;100%;25%;0%" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;100%;33%;100%;66%;0%" />
+      values="0%;75%;25%;100%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;33%;100%;0%;133%;0%;" />
+      values="0%;25%;75%;100%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="86s"
-      values="0%;100%;33%;100%;66%;0%" />
+      values="0%;100%;50%;25%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;66%;0%;33%;133%;0%" />
+      values="0%;100%;33%;66%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;66%;100%;33%;100%;66%;0%" />
+      values="0%;33%;100%;66%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;66%;0%;33%;133%;0%" />
+      values="0%;66%;100%;33%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;66%;100%;33%;100%;66%;0%" />
+      values="0%;100%;66%;33%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
       repeatCount="indefinite"
       dur="34s"
-      values="0%;100%;66%;0%;33%;133%;0%" />
+      values="0%;33%;66%;100%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       dur="55s"
-      values="0%;66%;100%;33%;100%;66%;0%" />
+      values="0%;66%;33%;100%;0%" />
+
+    <animate
+      :href="fragment('radial')"
+      attributeName="cx"
+      repeatCount="indefinite"
+      dur="42s"
+      values="0%;75%;25%;100%;0%" />
+    <animate
+      :href="fragment('radial')"
+      attributeName="cy"
+      repeatCount="indefinite"
+      dur="67s"
+      values="0%;25%;75%;100%;0%" />
+
+    <animate
+      :href="fragment('vertical-background')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="38s"
+      values="0%;100%;25%;75%;0%" />
+    <animate
+      :href="fragment('vertical-background')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="61s"
+      values="0%;75%;100%;25%;0%" />
+
+    <animate
+      :href="fragment('horizontal-light')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="47s"
+      values="0%;25%;100%;75%;0%" />
+    <animate
+      :href="fragment('horizontal-light')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="73s"
+      values="0%;100%;25%;75%;0%" />
+
+    <animate
+      :href="fragment('horizontal-medium')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="29s"
+      values="0%;75%;100%;25%;0%" />
+    <animate
+      :href="fragment('horizontal-medium')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="51s"
+      values="0%;25%;100%;75%;0%" />
+
+    <animate
+      :href="fragment('horizontal-bold')"
+      attributeName="x1"
+      repeatCount="indefinite"
+      dur="36s"
+      values="0%;100%;75%;25%;0%" />
+    <animate
+      :href="fragment('horizontal-bold')"
+      attributeName="y1"
+      repeatCount="indefinite"
+      dur="58s"
+      values="0%;75%;25%;100%;0%" />
 
     <animate
       href="#lightbar-rect"
