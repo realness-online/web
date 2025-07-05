@@ -20,7 +20,8 @@ export const default_keymap = [
       2: 'nav::Go_Posters',
       3: 'nav::Go_Statements',
       4: 'nav::Go_Events',
-      5: 'nav::Go_Phonebook'
+      5: 'nav::Go_Phonebook',
+      6: 'nav::Go_About'
     },
     descriptions: {
       'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
@@ -32,7 +33,8 @@ export const default_keymap = [
       'nav::Go_Events': 'To events',
       'nav::Go_Posters': 'To posters',
       'nav::Go_Phonebook': 'To phonebook',
-      'nav::Go_Thoughts': 'To thoughts'
+      'nav::Go_Thoughts': 'To thoughts',
+      'nav::Go_About': 'Learn more about the app and read the documentation'
     }
   },
 

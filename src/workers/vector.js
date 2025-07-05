@@ -28,7 +28,7 @@ export const svgo_options = {
           removeUnknownsAndDefaults: false,
           removeViewBox: false,
           removeEmptyAttrs: false,
-          mergePaths: true,
+          mergePaths: false,
           convertPathData: {
             floatPrecision: 0,
             transformPrecision: 0,

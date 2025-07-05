@@ -1,6 +1,6 @@
 <script setup>
   import sync from '@/components/sync'
-  import PreferencesDialog from '@/components/profile/as-dialog-preferences.vue'
+  import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
   import DialogKeyCommands from '@/components/as-dialog-keymap.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
   import fps from '@/components/fps'
@@ -49,6 +49,7 @@
   register('nav::Go_Posters', () => router.push('/posters'))
   register('nav::Go_Phonebook', () => router.push('/phonebook'))
   register('nav::Go_Thoughts', () => router.push('/thoughts'))
+  register('nav::Go_About', () => router.push('/about'))
 
   const key_commands_dialog = ref(null)
   /** @param {boolean} active */
@@ -93,11 +94,12 @@
     <sync @active="sync_active" />
     <fps v-if="fps_pref" />
     <viewbox v-if="fps_pref" />
-    <preferences-dialog />
+    <dialog-preferences />
     <dialog-key-commands ref="key_commands_dialog" />
     <dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
+      class="poster picker"
       v-vectorizer
       type="file"
       accept="image/jpeg,image/png" />
@@ -110,6 +112,10 @@
   main#realness {
     border: (base-line / 16) solid transparent;
     border-radius (base-line / 16);
+    & > input.poster.picker {
+
+    }
+
     &.offline {
       border-color: var(--yellow);
     }

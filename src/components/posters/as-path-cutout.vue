@@ -33,6 +33,7 @@
   defineEmits(['focus', 'touchstart', 'touchend'])
 
   const new_poster = ref(inject('new-poster', false))
+  const vector = inject('vector', ref(null))
   const show_cutout = computed(() => {
     if (new_poster.value) return true
     return cutout_pref.value
@@ -62,7 +63,7 @@
     }
   })
   watch_effect(() => {
-    if (new_poster.value?.optimized) transform.value = undefined
+    if (vector.value?.optimized) transform.value = undefined
   })
 </script>
 

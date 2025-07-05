@@ -13,7 +13,8 @@
     ref,
     inject,
     computed,
-    nextTick as tick
+    nextTick as tick,
+    provide
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use as use_optimizer } from '@/use/optimize'
@@ -81,7 +82,6 @@
     click,
     working,
     show,
-
     focusable,
     tabindex,
     vector,
@@ -90,12 +90,12 @@
     is_hovered,
     dynamic_viewbox,
     focus,
-    focus_cutout,
     wheel,
     reset,
     touch_start,
     touch_move,
     touch_end,
+    focus_cutout,
     cutout_start,
     cutout_end,
     hovered_cutout
@@ -117,6 +117,9 @@
   const { optimize: run_optimize } = use_optimizer(vector)
   const new_poster = inject('new-poster', false)
   const { new_vector } = use_vectorize()
+
+  // Provide vector to child components
+  provide('vector', vector)
 
   if (new_poster) {
     vector.value = new_vector.value
@@ -166,10 +169,23 @@
     :class="{ animate, landscape, hovered: is_hovered }"
     @click="click"
     @dblclick="reset"
-    @wheel="wheel"
+    @wheel.passive="wheel"
     @touchstart.passive="touch_start"
     @touchmove.passive="touch_move"
     @touchend.passive="touch_end">
+
+    <symbol :id="query('cutouts')">
+      <as-path-cutout
+        v-for="(path, index) in vector.cutout"
+        :key="`cutout-${index}`"
+        :cutout="path"
+        :index="index"
+        :class="{ hovered: hovered_cutout === index }"
+        @focus="focus_cutout"
+        @touchstart="cutout_start"
+        @touchend="cutout_end" />
+    </symbol>
+
     <pattern
       :id="query('shadow')"
       :width="vector.width"
@@ -187,7 +203,6 @@
         fill-opacity="1"
         :fill="`url(${fragment('radial-background')})`"
         @focus="focus('background')" />
-
       <as-path
         v-if="vector.light"
         :id="query('light')"
@@ -232,17 +247,7 @@
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
-    <g :id="query('cutouts')" v-if="vector.cutout">
-      <as-path-cutout
-        v-for="(cutout, index) in vector.cutout"
-        :key="`cutout-${index}`"
-        :cutout="cutout"
-        :index="index"
-        :class="{ hovered: hovered_cutout === index }"
-        @focus="focus_cutout"
-        @touchstart="cutout_start"
-        @touchend="cutout_end" />
-    </g>
+    <use :href="fragment('cutouts')"/>
     <rect
       v-if="light"
       id="lightbar-rect"
@@ -267,32 +272,16 @@
     cursor: grab;
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
-    /* touch-action: none; Prevent browser gestures */
-
-    /* Active state for touch */
     &:active {
       cursor: grabbing;
     }
-    & path[itemprop='cutout']:hover,
-    & path[itemprop='cutout'].hovered {
-      filter: brightness(1.25) saturate(1.2);
-      transition: filter 0.3s ease;
-    }
-
     & path[itemprop='cutout'] {
       transition: filter 0.3s ease 0.1s; /* Delay on hover out */
-    }
-
-    /* Animation effects for cutouts */
-    & path[itemprop='cutout'].animated {
-      filter: brightness(1.4) saturate(1.2);
-      transition: all 0.5s ease;
-      transform-origin: center;
-      animation: cutout-pulse 1s ease-in-out infinite alternate;
-    }
-
-    & use:focus {
-      outline: none;
+      &:hover,
+      &.hovered {
+        filter: brightness(1.25) saturate(1.2);
+        transition: filter 0.3s ease;
+      }
     }
   }
 </style>
