@@ -249,10 +249,10 @@
       values="0%;275%;-175%;225%;0%" />
 
     <animate
-      href="#lightbar-rect"
+      href="#lightbar-front"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="21s"
+      dur="5s"
       values="1;0.66;1"
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
