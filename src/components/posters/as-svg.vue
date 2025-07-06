@@ -234,6 +234,12 @@
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks v-if="mask" :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
+    <rect
+      v-if="light"
+      id="lightbar-back"
+      fill="url(#lightbar)"
+      width="100%"
+      height="100%" />
     <g :id="query('cutouts')" v-if="vector.cutout">
       <as-path-cutout
         v-for="(cutout, index) in vector.cutout"
@@ -247,7 +253,7 @@
     </g>
     <rect
       v-if="light"
-      id="lightbar-rect"
+      id="lightbar-front"
       fill="url(#lightbar)"
       width="100%"
       height="100%" />
