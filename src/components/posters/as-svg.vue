@@ -104,7 +104,7 @@
   const animate = computed(
     () => animate_pref.value === true && intersecting.value
   )
-  const light = computed(() => light_pref.value === true && intersecting.value)
+  const light = computed(() => light_pref.value === true)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -232,7 +232,7 @@
         @focus="focus('bold')" />
     </pattern>
     <as-gradients v-if="vector" :vector="vector" />
-    <as-masks v-if="mask" :itemid="itemid" />
+    <as-masks :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
     <rect
       v-if="light"
@@ -286,7 +286,8 @@
         transition: filter 0.3s ease;
       }
     }
-    & rect#lightbar-rect {
+    & rect#lightbar-back,
+    & rect#lightbar-front {
       pointer-events: none;
     }
   }
