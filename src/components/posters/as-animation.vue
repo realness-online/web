@@ -114,7 +114,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       dur="24s"
-      values="0.9;0.6;0.9;0.5;0.9;" />
+      values="0.9;0.6;0.9;0.5;0.9" />
     <animate
       :href="fragment('bold')"
       attributeName="fill-opacity"
