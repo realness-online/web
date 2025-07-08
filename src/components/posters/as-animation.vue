@@ -23,25 +23,25 @@
         :href="fragment('light')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="8s"
+        dur="5s"
         values="0.9;0.1;0.9" />
       <animate
         :href="fragment('regular')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="12s"
+        dur="8s"
         values="0.9;0.1;0.9" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="16s"
+        dur="13s"
         values="0.9;0.1;0.9" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="8s"
+        dur="11s"
         values="0.9;0.1;0.9" />
 
       <animate
@@ -249,10 +249,18 @@
       values="0%;275%;-175%;225%;0%" />
 
     <animate
+      href="#lightbar-back"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      dur="3s"
+      values="1;0.66;1"
+      keyTimes="0;0.33;1"
+      keySplines="0.4 0 0.6 1" />
+    <animate
       href="#lightbar-front"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="12s"
+      dur="5s"
       values="1;0.66;1"
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />

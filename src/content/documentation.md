@@ -153,3 +153,7 @@ All text is stored locally with no server-side content moderation. You control y
 All keyboard shortcuts are context-aware and automatically generated from the application's keymap configuration. For a complete, up-to-date reference of all available shortcuts, press `Ctrl+K` or `F1` from any view to see the available shortcuts for that context.
 
 **Tip**: The keyboard shortcuts modal shows all available commands organized by context, with descriptions for each command.
+
+# preferences
+
+_Animation_ designed to bring posters into the room. turning this on will put your GPU to work. But the effect is fun colors swoosh and change swell and unplacable movements.
