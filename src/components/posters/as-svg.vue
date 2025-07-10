@@ -275,16 +275,9 @@
     cursor: grab;
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
+    contain: layout;
     &:active {
       cursor: grabbing;
-    }
-    & path[itemprop='cutout'] {
-      transition: filter 0.3s ease-in-out;
-      &:hover,
-      &.hovered {
-        filter: brightness(1.5) saturate(1.4);
-        transition: filter 0.3s ease-in-out;
-      }
     }
     & rect#lightbar-back,
     & rect#lightbar-front {

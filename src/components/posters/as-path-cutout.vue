@@ -84,15 +84,14 @@
 
 <style>
   path[itemprop='cutout'] {
-    transition: filter 0.3s ease;
+    transition: filter 0.3s ease-in-out;
     &:focus {
       outline: none;
     }
-    &:hover {
-      filter: brightness(1.25) saturate(1.2);
-    }
+    &:hover,
     &.hovered {
-      filter: brightness(1.25) saturate(1.2);
+      transition: filter 0.3s ease-in-out;
+      filter: brightness(1.25);
     }
   }
 </style>

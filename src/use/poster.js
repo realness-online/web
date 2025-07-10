@@ -12,7 +12,8 @@ import {
 import {
   useIntersectionObserver as use_intersect,
   useStorage as use_storage,
-  usePointer as use_pointer
+  usePointer as use_pointer,
+  useMagicKeys
 } from '@vueuse/core'
 import {
   as_query_id,
@@ -33,6 +34,12 @@ export const use = () => {
   const working = ref(true)
   const menu = ref(false)
   const { get_active_path } = use_path()
+
+  // Add magic keys for shift detection
+  const magic_keys = useMagicKeys()
+
+  // Add state for aspect ratio toggle
+  const aspect_toggle = ref(false)
 
   // Pan and zoom state
   const is_hovered = ref(false)
@@ -76,7 +83,7 @@ export const use = () => {
 
   const aspect_ratio = computed(() => {
     if (!props.toggle_aspect) return 'xMidYMid slice'
-    if (menu.value || !props.slice) return 'xMidYMid meet'
+    if (!props.slice || aspect_toggle.value) return 'xMidYMid meet'
     return 'xMidYMid slice'
   })
 
@@ -123,6 +130,12 @@ export const use = () => {
   }
 
   const click = () => {
+    // Toggle aspect ratio if shift is held
+    if (magic_keys.shift.value) {
+      aspect_toggle.value = !aspect_toggle.value
+    }
+
+    // Always toggle menu
     menu.value = !menu.value
     emit('click', menu.value)
   }
@@ -264,7 +277,8 @@ export const use = () => {
     touch_move,
     touch_end,
     cutout_start,
-    cutout_end
+    cutout_end,
+    aspect_toggle
   }
 }
 
