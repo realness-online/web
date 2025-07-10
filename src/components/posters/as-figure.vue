@@ -96,6 +96,8 @@
 
 <style lang="stylus">
   figure.poster
+    outline: 1px solid var(--red);
+    min-height: 512px;
     border-radius: round((base-line * .03), 2)
     position: relative
     overflow: hidden
@@ -119,7 +121,6 @@
         margin-top: base-line
         max-width: round(base-line * 6)
     & > figcaption > menu
-
       height: 0
       & > a
         z-index: 2
