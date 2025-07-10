@@ -240,7 +240,7 @@
       fill="url(#lightbar)"
       width="100%"
       height="100%" />
-    <g :id="query('cutouts')" v-if="vector.cutout">
+    <g :id="query('cutouts')" v-if="vector.cutout" style="fill-opacity: 0.5">
       <as-path-cutout
         v-for="(cutout, index) in vector.cutout"
         :key="`cutout-${index}`"

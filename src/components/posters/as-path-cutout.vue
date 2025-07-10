@@ -74,7 +74,6 @@
     :d="d"
     itemprop="cutout"
     :fill="fill"
-    :fill-opacity="fill_opacity"
     v-bind="transform ? { transform } : {}"
     :data-progress="data_progress"
     @focus="$emit('focus', 'cutout')"
