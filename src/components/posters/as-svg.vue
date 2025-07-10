@@ -279,11 +279,11 @@
       cursor: grabbing;
     }
     & path[itemprop='cutout'] {
-      transition: filter 0.3s ease 0.1s; /* Delay on hover out */
+      transition: filter 0.3s ease-in-out;
       &:hover,
       &.hovered {
         filter: brightness(1.5) saturate(1.4);
-        transition: filter 0.3s ease;
+        transition: filter 0.3s ease-in-out;
       }
     }
     & rect#lightbar-back,
