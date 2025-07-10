@@ -30,21 +30,31 @@ You can sync Realness across all your devices. Take a picture on your phone and 
 
 ---
 
-## Preferences
+## Shortcuts
 
-The settings Dialog is accessed from the bottom left on most screens of the app.
+The _settings_ Dialog (<kbd>ctrl</kbd><kbd>.</kbd>) is accessed from the bottom left on most screens of the app.
 
-Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are downloaded. You'll also find performance settings including FPS display and export options for Adobe and simple IDs.
-<kbd>ctrl</kbd><kbd>.</kbd>
+Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
+
+<kbd>A</kbd> toggles _animation_ designed to bring posters into the room. turning this on will put your GPU to work. But the effect is fun colors swoosh and change swell and unplacable movements.
 All preferences are stored locally with no server-side sync, giving you complete control over your settings while working offline.
 
-_Animation_ designed to bring posters into the room. turning this on will put your GPU to work. But the effect is fun colors swoosh and change swell and unplacable movements.
+**Key Pattern**:
 
-## Keyboard Shortcuts
+- **Letters** (F, S, C, B, L, A, D) toggle persistent UI preferences that are saved to your device
+- **Ctrl+key combinations** (Ctrl+F, Ctrl+.) perform temporary actions that don't persist
 
-All keyboard shortcuts are context-aware and automatically generated from the application's keymap configuration. For a complete, up-to-date reference of all available shortcuts, press <kbd>ctrl</kbd> <kbd>K</kbd> from any view to see the available shortcuts for that context.
+**Common Shortcuts**:
 
-**Tip**: The keyboard shortcuts modal shows all available commands organized by context, with descriptions for each command.
+- <kbd>F</kbd> - Toggle fill gradient on posters
+- <kbd>S</kbd> - Toggle stroke outline on posters
+- <kbd>C</kbd> - Toggle cutout display on posters
+- <kbd>B</kbd> - Toggle background fill on posters
+- <kbd>L</kbd> - Toggle lightbar on posters
+- <kbd>A</kbd> - Toggle poster animation
+- <kbd>D</kbd> - Toggle FPS display
+- <kbd>ctrl</kbd><kbd>F</kbd> - Toggle fullscreen mode
+- <kbd>ctrl</kbd><kbd>.</kbd> - Open settings dialog
 
 ---
 
@@ -94,7 +104,7 @@ Time is organized into thoughts. for thirteen minutes after a poster is created 
 
 You can view a timeline of your thoughts view of all content from you and your relations
 
-The thoughts view shows a chronological feed of [posters](#posters) and [statements](#statements) from everyone you follow. You can enter fullscreen mode by pressing 'F' key, and the feed combines content from all your [relations](#relations) with real-time updates from local storage.
+The thoughts view shows a chronological feed of [posters](#posters) and [statements](#statements) from everyone you follow. The feed combines content from all your [relations](#relations) with real-time updates from local storage.
 
 All content is stored locally and works completely offline. There are no server-side feed algorithms - you control what content appears in your timeline.
 
