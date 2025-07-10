@@ -32,8 +32,12 @@
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
-      <span tabindex="-1">{{version}}</span>
-      <a id="camera" tabindex="3" @click="open_camera" @keydown.enter="open_camera">
+      <span tabindex="-1">{{ version }}</span>
+      <a
+        id="camera"
+        tabindex="3"
+        @click="open_camera"
+        @keydown.enter="open_camera">
         <icon name="camera" />
       </a>
       <router-link to="/about" tabindex="-1">?</router-link>

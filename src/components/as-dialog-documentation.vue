@@ -55,7 +55,6 @@
     return toc
   }
   const load_markdown_content = async filename => {
-
     const response = await fetch(`/src/content/${filename}`)
     if (!response.ok) {
       throw new Error(`Failed to load ${filename}: ${response.status}`)
@@ -76,7 +75,6 @@
     const sanitized = DOMPurify.sanitize(rendered)
 
     rendered_content.value = sanitized
-
   }
 
   mounted(() => load_markdown_content('documentation.md'))

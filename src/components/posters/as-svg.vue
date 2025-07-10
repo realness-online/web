@@ -172,7 +172,6 @@
     @touchstart.passive="touch_start"
     @touchmove.passive="touch_move"
     @touchend.passive="touch_end">
-
     <pattern
       :id="query('shadow')"
       :width="vector.width"
