@@ -71,10 +71,6 @@
     fill.value = props.fill
     stroke.value = props.stroke
     d.value = props.path.getAttribute('d')
-    if (props.path.style?.fillOpacity)
-      fill_opacity.value = props.path.style.fillOpacity
-    if (props.path.style.strokeOpacity)
-      stroke_opacity.value = props.path.style.strokeOpacity
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
 
@@ -90,40 +86,17 @@
 
 <template>
   <path
-    v-if="wants_both"
     :id="props.id"
     ref="path"
     :d="d"
     :mask="props.mask"
     :itemprop="props.itemprop"
-    :fill="fill"
-    :fill-opacity="fill_opacity"
-    :stroke="stroke"
-    :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"
-    fill-rule="evenodd" />
-  <path
-    v-else-if="just_stroke"
-    :id="props.id"
-    ref="path"
-    :d="d"
-    fill="none"
-    :mask="props.mask"
-    :itemprop="props.itemprop"
-    :stroke="stroke"
-    :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width" />
-  <path
-    v-if="just_fill"
-    :id="props.id"
-    ref="path"
-    :d="d"
-    :mask="props.mask"
-    :itemprop="props.itemprop"
-    :fill="fill"
-    :fill-opacity="fill_opacity"
-    fill-rule="evenodd"
-    stroke="none" />
+    :fill="wants_both || just_fill ? fill : 'none'"
+    :fill-opacity="wants_both || just_fill ? '0.90' : undefined"
+    :fill-rule="wants_both || just_fill ? 'evenodd' : undefined"
+    :stroke="wants_both || just_stroke ? stroke : 'none'"
+    :stroke-opacity="wants_both || just_stroke ? stroke_opacity : undefined"
+    :stroke-width="wants_both || just_stroke ? stroke_width : undefined" />
 </template>
 
 <style>
