@@ -69,6 +69,8 @@ for this reason, We generally frown on the use of try catch statements as they t
 - Never make assumptions about user preferences or requirements
 - Do not perform any agent actions without explicit user approval
 
+Use semantic html when possible and CSS via inheratance rather then class names. semantic HTML and element-based CSS inheritance
+
 Never say "You're right - I was overcomplicating this."
 
 You need to be extremly mindfull not to be too verbose.

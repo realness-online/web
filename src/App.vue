@@ -1,7 +1,6 @@
 <script setup>
   import sync from '@/components/sync'
   import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
-  import DialogKeyCommands from '@/components/as-dialog-keymap.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
   import fps from '@/components/fps'
   import Viewbox from '@/components/viewbox'
@@ -18,6 +17,8 @@
   import { fps as fps_pref } from '@/utils/preference'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
+  import * as preferences from '@/utils/preference'
+  import { useMagicKeys } from '@vueuse/core'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
@@ -30,13 +31,42 @@
   const documentation = ref(null)
   provide('documentation', documentation)
 
+  const preferences_dialog = ref(null)
   const { register } = use_keymap('Global')
+  const magic_keys = useMagicKeys()
 
-  register('ui::Show_Key_Commands', () => key_commands_dialog.value?.show())
-  register('ui::Show_Documentation', () => documentation.value?.show())
-  register('ui::Open_Settings', () =>
-    document.querySelector('dialog#preferences')?.showModal()
+  // Preference toggle commands
+  register(
+    'pref::Toggle_Fill',
+    () => (preferences.fill.value = !preferences.fill.value)
   )
+  register(
+    'pref::Toggle_Stroke',
+    () => (preferences.stroke.value = !preferences.stroke.value)
+  )
+  register(
+    'pref::Toggle_Cutout',
+    () => (preferences.cutout.value = !preferences.cutout.value)
+  )
+  register(
+    'pref::Toggle_Background',
+    () => (preferences.background.value = !preferences.background.value)
+  )
+  register(
+    'pref::Toggle_Light',
+    () => (preferences.light.value = !preferences.light.value)
+  )
+  register(
+    'pref::Toggle_Animate',
+    () => (preferences.animate.value = !preferences.animate.value)
+  )
+  register(
+    'pref::Toggle_FPS',
+    () => (preferences.fps.value = !preferences.fps.value)
+  )
+
+  register('ui::Show_Documentation', () => documentation.value?.show())
+  register('ui::Open_Settings', () => preferences_dialog.value?.show())
   register('ui::Toggle_Fullscreen', () =>
     !document.fullscreenElement
       ? document.documentElement.requestFullscreen()
@@ -51,7 +81,6 @@
   register('nav::Go_Thoughts', () => router.push('/thoughts'))
   register('nav::Go_About', () => router.push('/about'))
 
-  const key_commands_dialog = ref(null)
   /** @param {boolean} active */
   const sync_active = active => {
     if (active) status.value = 'working'
@@ -72,7 +101,7 @@
   mounted(async () => {
     const is_standalone =
       window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone || // for iOS
+      window.navigator['standalone'] || // for iOS
       document.referrer.includes('android-app://')
 
     if (is_standalone) sessionStorage.about = true
@@ -94,8 +123,7 @@
     <sync @active="sync_active" />
     <fps v-if="fps_pref" />
     <viewbox v-if="fps_pref" />
-    <dialog-preferences />
-    <dialog-key-commands ref="key_commands_dialog" />
+    <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
@@ -112,10 +140,6 @@
   main#realness {
     border: (base-line / 16) solid transparent;
     border-radius (base-line / 16);
-    & > input.poster.picker {
-
-    }
-
     &.offline {
       border-color: var(--yellow);
     }
