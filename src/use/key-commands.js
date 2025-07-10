@@ -35,6 +35,25 @@ export const use_key_commands = () => {
   const command_handlers = reactive(new Map())
   const keymap = ref([...default_keymap])
   const magic_keys = useMagicKeys()
+  const is_input_focused = ref(false)
+
+  const check_input_focus = () => {
+    const active = document.activeElement
+    if (!active) return false
+
+    // If focus is on BODY, allow key commands
+    if (active.tagName === 'BODY') return false
+
+    const input_tags = ['INPUT', 'TEXTAREA', 'SELECT']
+    const is_input = input_tags.includes(active.tagName)
+    const is_contenteditable = active.getAttribute('contenteditable') === 'true'
+
+    return is_input || is_contenteditable
+  }
+
+  const update_input_focus = () => {
+    is_input_focused.value = check_input_focus()
+  }
 
   /**
    * Register a command handler
@@ -88,6 +107,10 @@ export const use_key_commands = () => {
    * @param {...any} args
    */
   const execute_command = (command, ...args) => {
+    if (is_input_focused.value) {
+      return
+    }
+
     const handler_config = command_handlers.get(command)
     if (
       handler_config &&
@@ -207,7 +230,8 @@ export const use_key_commands = () => {
     load_keymap,
     save_keymap,
     validate_current_keymap,
-    get_statistics
+    get_statistics,
+    update_input_focus
   }
 }
 
