@@ -2,7 +2,9 @@
 
 ## Overview
 
-Realness makes vector graphics from images. It's an excellent way to create reference to draw from. Each poster is an SVG graphic that is small enough to embed on websites yet expressive enough for creative pursuites. Realness is designed to integrate into toolchains. It works best on a phone for when you want to take quick photos. it works great even with digital zoom. Walking around making posters a good time. You save it to your home screen. It's a fun way to play with composition or framing. Realness is a tool to spark your creative journeys.
+[Posters](#posters) and [Thoughts](#thoughts) are what you make with Realness. It's an Each poster is an SVG graphic that is small enough to embed on websites yet expressive enough for creative pursuites. Posters are designed to be flexible, they integrate into toolchains, or can be efficently embeded into websites without optimiztions.
+
+Realness works best on a phone for when you want to take quick photos. it works great even with digital zoom. Walking around making posters a good time. You save it to your home screen. It's a fun way to play with composition or framing. Realness is a tool to spark your creative journeys.
 
 from the [homepage](https://realness.online) click on the camera, take a picture, and Realness will create a super fun rotoscope vector graphic.
 
@@ -64,7 +66,7 @@ The posters view shows a grid display of all your vector graphics. You can add n
 
 Vector graphics are created locally with image processing happening in web workers. All poster data is stored locally with no cloud processing required.
 
-The edit view provides a full-screen SVG viewer with pan and zoom controls for vector optimization. You can save your changes and navigate back, with the interface tab-indexed for accessibility. The interactive pan & zoom feature lets you dive deep into your vector posters with intuitive touch and mouse controls.
+The edit view provides a full-screen SVG viewer with pan and zoom controls for vector optimization. You can save your changes and navigate back, with the interface tab-indexed for accessibility. The interactive pan & zoom feature lets you dive deep into your vector posters with intuitive touch and mouse controls. Shift click or three finger tap a poster to toggle between filling the all available space and viewing the entire poster in your viewport.
 
 **Pan & Zoom Features**:
 

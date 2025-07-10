@@ -191,11 +191,11 @@
 
       & > section.content {
         flex: 1;
+        padding: 0 base-line * .5;
         & > h1, & > h2, & > h3, & > h4, & > h5, & > h6 {
           color: var(--red);
           margin-top: base-line * 2;
           margin-bottom: base-line;
-
           &:first-child {
             margin-top: 0;
           }
