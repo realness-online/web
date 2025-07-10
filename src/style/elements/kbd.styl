@@ -1,6 +1,8 @@
 kbd
-  margin: base-line
-  padding: base-line
-  border: 0.025rem solid red
-  border-radius: base-line
-
+  display: inline-block
+  margin: base-line * 0.33
+  padding: base-line * 0.33 base-line * 0.66
+  border: 0.025rem solid var(--red)
+  border-radius: base-line * 0.33
+  & + kbd
+    margin-left: base-line * 0.33

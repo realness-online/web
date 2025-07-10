@@ -18,8 +18,8 @@ export const default_keymap = [
       0: 'nav::Go_Home',
       1: 'nav::Go_Thoughts',
       2: 'nav::Go_Posters',
-      3: 'nav::Go_Statements',
-      4: 'nav::Go_Events',
+      3: 'nav::Go_Events',
+      4: 'nav::Go_Statements',
       5: 'nav::Go_Phonebook',
       6: 'nav::Go_About'
     },

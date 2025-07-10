@@ -54,37 +54,29 @@
 
     return toc
   }
-
-  // Load markdown content
   const load_markdown_content = async filename => {
-    try {
-      const response = await fetch(`/src/content/${filename}`)
-      if (!response.ok) {
-        throw new Error(`Failed to load ${filename}: ${response.status}`)
-      }
-      const content = await response.text()
 
-      // Update current file
-      current_file.value = filename.replace('.md', '')
-
-      // Generate TOC
-      toc_items.value = generate_toc_from_markdown(content)
-
-      // Configure marked with GitHub-style heading IDs
-      marked.use(gfmHeadingId())
-
-      // Render markdown content and sanitize
-      const rendered = await marked.parse(content)
-      const sanitized = DOMPurify.sanitize(rendered)
-
-      rendered_content.value = sanitized
-    } catch (error) {
-      console.error('Failed to load markdown content:', error)
-      // Fallback to basic content
-      rendered_content.value =
-        '<h1>Content Loading Failed</h1><p>Unable to load the requested documentation file.</p>'
-      toc_items.value = []
+    const response = await fetch(`/src/content/${filename}`)
+    if (!response.ok) {
+      throw new Error(`Failed to load ${filename}: ${response.status}`)
     }
+    const content = await response.text()
+
+    // Update current file
+    current_file.value = filename.replace('.md', '')
+
+    // Generate TOC
+    toc_items.value = generate_toc_from_markdown(content)
+
+    // Configure marked with GitHub-style heading IDs
+    marked.use(gfmHeadingId())
+
+    // Render markdown content and sanitize
+    const rendered = await marked.parse(content)
+    const sanitized = DOMPurify.sanitize(rendered)
+
+    rendered_content.value = sanitized
+
   }
 
   mounted(() => load_markdown_content('documentation.md'))
@@ -105,6 +97,7 @@
           v-for="item in toc_items"
           :key="item.id"
           :href="`#${item.id}`"
+          :class="`level-${item.level}`"
           @click="scroll_to_section(item.id)">
           {{ item.title }}
         </a>
@@ -133,7 +126,7 @@
         align-items: center;
         margin-bottom: base-line;
         h1 {
-          color: var(--blue);
+          color: var(--red);
         }
         & > a {
           cursor: pointer;
@@ -149,26 +142,57 @@
       }
 
       & > nav.toc {
-        border-bottom: 1px solid var(--red);
-        padding-bottom: base-line;
+        display: block;
+        column-width: 166px;
+        column-gap: base-line;
+        column-fill: balance;
+        column-rule: 1px solid var(--red);
+        padding-left: base-line * 1.33;
         margin-bottom: base-line * 2;
-
         & > a {
           display: block;
           font-size: smaller;
           margin: round((base-line / 4), 2) 0;
           color: var(--blue);
           text-decoration: none;
+          break-inside: avoid;
+          line-height: 1.66;
+          text-align: left;
 
           &:hover {
             color: var(--red);
+          }
+
+          // Level 3 and deeper get indentation
+          &.level-3 {
+            padding-left: base-line * 0.11;
+            line-height: 1.33;
+            font-size: 0.66em;
+            &:before {
+              content: '-';
+              margin-right: base-line * 0.11;
+            }
+          }
+
+          &.level-4 {
+            padding-left: base-line * 0.66;
+            font-size: 0.85em;
+          }
+
+          &.level-5 {
+            padding-left: base-line * 0.66;
+            font-size: 0.8em;
+          }
+
+          &.level-6 {
+            padding-left: base-line * 0.66;
+            font-size: 0.75em;
           }
         }
       }
 
       & > section.content {
         flex: 1;
-
         & > h1, & > h2, & > h3, & > h4, & > h5, & > h6 {
           color: var(--red);
           margin-top: base-line * 2;
@@ -178,7 +202,14 @@
             margin-top: 0;
           }
         }
-
+        & > h1 {
+          color: var(--blue);
+          & > span {
+            color: var(--green);
+            font-size: 0.66em;
+            font-weight: 300;
+          }
+        }
         & > p {
           margin-bottom: base-line;
           line-height: 1.6;
