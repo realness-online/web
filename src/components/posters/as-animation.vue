@@ -49,25 +49,25 @@
         attributeName="stroke-width"
         repeatCount="indefinite"
         dur="10s"
-        values="0.33;0.66;0.33" />
+        values="0.33;0.1;0.45;0.33" />
       <animate
         :href="fragment('regular')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         dur="14s"
-        values="0.33;0.55;0.33" />
+        values="0.33;0.66;0.1;0.33" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         dur="8s"
-        values="0.33;0.83;0.33" />
+        values="0.33;0.1;0.77;0.1;0.33" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         dur="10s"
-        values="0.33;1;0.33" />
+        values="0.33;0.1;0.66;0.1;0.33" />
 
       <animate
         :href="fragment('light')"

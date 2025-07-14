@@ -28,7 +28,11 @@
   import {
     animate as animate_pref,
     light as light_pref,
-    background
+    background,
+    bold_layer,
+    medium_layer,
+    regular_layer,
+    light_layer
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -190,7 +194,7 @@
         :fill="`url(${fragment('radial-background')})`"
         @focus="focus('background')" />
       <as-path
-        v-if="vector.light"
+        v-if="vector.light && light_layer"
         :id="query('light')"
         itemprop="light"
         :path="vector.light"
@@ -200,7 +204,7 @@
         :stroke="`url(${fragment('horizontal-medium')})`"
         @focus="focus('light')" />
       <as-path
-        v-if="vector.regular"
+        v-if="vector.regular && regular_layer"
         :id="query('regular')"
         itemprop="regular"
         :path="vector.regular"
@@ -210,7 +214,7 @@
         :stroke="`url(${fragment('vertical-bold')})`"
         @focus="focus('regular')" />
       <as-path
-        v-if="vector.medium"
+        v-if="vector.medium && medium_layer"
         :id="query('medium')"
         itemprop="medium"
         :path="vector.medium"
@@ -220,7 +224,7 @@
         :stroke="`url(${fragment('vertical-background')})`"
         @focus="focus('medium')" />
       <as-path
-        v-if="vector.bold"
+        v-if="vector.bold && bold_layer"
         :id="query('bold')"
         itemprop="bold"
         :tabindex="tabindex"
@@ -261,8 +265,9 @@
 </template>
 
 <style>
-  /* aspect-ratio: 1.618 / 1 // golden-ratio */
+  /* aspect-ratio: 2.76 / 1 // also film  28 years later used*/
   /* aspect-ratio: 2.35 / 1 // current film */
+  /* aspect-ratio: 1.618 / 1 // golden-ratio */
   /* aspect-ratio: 16 / 9 // most like human vision */
   /* aspect-ratio: 1 / 1 // square */
   svg[itemtype='/posters'] {

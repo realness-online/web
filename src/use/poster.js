@@ -25,6 +25,7 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
+import { storytelling } from '@/utils/preference'
 
 export const use = () => {
   const { props, emit } = current_instance()
@@ -82,6 +83,7 @@ export const use = () => {
   let touch_start_scale = 1
 
   const aspect_ratio = computed(() => {
+    // if (storytelling.value) return 'xMidYMid meet'
     if (!props.toggle_aspect) return 'xMidYMid slice'
     if (!props.slice || aspect_toggle.value) return 'xMidYMid meet'
     return 'xMidYMid slice'
