@@ -43,6 +43,7 @@
       required: false,
       default: false
     }
+
   })
 
   const page_size = 5
@@ -157,6 +158,57 @@
 </template>
 
 <style lang="stylus">
+  section.page.storytelling .as-days
+      aspect-ratio: 16/9
+      overflow-x: auto
+      overflow-y: hidden
+      white-space: nowrap
+      display: flex
+      flex-direction: row
+      gap: 0
+      padding: 0
+      & > header
+        display: none
+      & > article.day
+        flex-shrink: 0
+        width: 100vw
+        height: 100vh
+        margin: 0
+        padding: base-line
+        display: flex
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        overflow: hidden
+        position: relative
+        & > header
+          position: absolute
+          top: base-line
+          left: base-line
+          z-index: 10
+          & > h4
+            color: blue
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8)
+        & > *:not(header)
+          position: absolute
+          top: 0
+          left: 0
+          width: 100%
+          height: 100%
+          object-fit: cover
+          z-index: 1
+        & > slot
+          position: absolute
+          top: 50%
+          left: 50%
+          transform: translate(-50%, -50%)
+          z-index: 2
+          color: white
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.8)
+          text-align: center
+          max-width: 80%
+          max-height: 80%
+          overflow: hidden
   section.as-days
     padding: 0 base-line
     margin-bottom: base-line * 2

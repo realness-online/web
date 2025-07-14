@@ -10,17 +10,30 @@ export const default_keymap = [
   {
     use_key_equivalents: true,
     bindings: {
-      'ctrl-f': 'ui::Toggle_Fullscreen',
+      // CapsLock row
+      A: 'pref::Toggle_Animate',
+      S: 'pref::Toggle_Stroke',
+      D: 'pref::Toggle_Light',
+      F: 'pref::Toggle_Fill',
+      G: 'pref::Toggle_Cutout',
+      B: 'pref::Toggle_Background',
+
+      // Tab row
+      I: 'pref::Toggle_FPS',
+      O: 'pref::Toggle_Storytelling',
+      P: 'ui::Toggle_Fullscreen',
+
+      // Shift row
+      Z: 'pref::Toggle_Bold_Layer',
+      X: 'pref::Toggle_Medium_Layer',
+      C: 'pref::Toggle_Regular_Layer',
+      V: 'pref::Toggle_Light_Layer',
+      B: 'pref::Toggle_Background',
       'ctrl-.': 'ui::Open_Settings',
       'ctrl-?': 'ui::Show_Documentation',
       'ctrl-/': 'ui::Show_Documentation',
-      F: 'pref::Toggle_Fill',
-      S: 'pref::Toggle_Stroke',
-      C: 'pref::Toggle_Cutout',
-      B: 'pref::Toggle_Background',
-      L: 'pref::Toggle_Light',
-      A: 'pref::Toggle_Animate',
-      D: 'pref::Toggle_FPS',
+
+      // Number row
       0: 'nav::Go_Home',
       1: 'nav::Go_Thoughts',
       2: 'nav::Go_Posters',
@@ -41,6 +54,11 @@ export const default_keymap = [
       'pref::Toggle_Light': 'Toggle lightbar on posters (L)',
       'pref::Toggle_Animate': 'Toggle poster animation (A)',
       'pref::Toggle_FPS': 'Toggle FPS display (D)',
+      'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view (W)',
+      'pref::Toggle_Bold_Layer': 'Toggle bold layer visibility (Z)',
+      'pref::Toggle_Medium_Layer': 'Toggle medium layer visibility (X)',
+      'pref::Toggle_Regular_Layer': 'Toggle regular layer visibility (C)',
+      'pref::Toggle_Light_Layer': 'Toggle light layer visibility (V)',
       'nav::Go_Home': 'To home',
       'nav::Go_Statements': 'To statements',
       'nav::Go_Events': 'To events',

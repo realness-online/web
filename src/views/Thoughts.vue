@@ -10,6 +10,7 @@
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
+  import { storytelling } from '@/utils/preference'
 
   console.time('views:Thoughts')
 
@@ -71,7 +72,7 @@
 </script>
 
 <template>
-  <section id="thoughts" ref="thoughts" class="page">
+  <section id="thoughts" ref="thoughts" class="page" :class="{ storytelling: storytelling }" outline>
     <header>
       <icon name="nothing" />
       <logo-as-link tabindex="-1" />
@@ -105,7 +106,7 @@
     display: flex;
     flex-direction: column;
     @media (max-width: pad-begins) {
-      figure.poster {
+      & > figure.poster {
         margin-left: -(base-line);
         margin-right: -(base-line);
       }

@@ -2,28 +2,36 @@
   import sync from '@/components/sync'
   import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
-  import fps from '@/components/fps'
+  import fps_component from '@/components/fps'
   import Viewbox from '@/components/viewbox'
   import {
     ref,
     onUnmounted as dismount,
     onMounted as mounted,
-    provide,
-    computed,
-    inject
+    provide
   } from 'vue'
   import { init_serverless } from '@/utils/serverless'
-  import { useRouter as use_router, useRoute as use_route } from 'vue-router'
-  import { fps as fps_pref } from '@/utils/preference'
+  import { useRouter as use_router} from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
-  import * as preferences from '@/utils/preference'
-  import { useMagicKeys } from '@vueuse/core'
+  import {
+    fill,
+    stroke,
+    cutout,
+    background,
+    light,
+    animate,
+    fps,
+    storytelling,
+    bold_layer,
+    medium_layer,
+    regular_layer,
+    light_layer
+  } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
   const router = use_router()
-  const route = use_route()
 
   const { vVectorizer, image_picker, mount_workers } = use_vectorize()
   provide('image-picker', image_picker)
@@ -32,38 +40,39 @@
   provide('documentation', documentation)
 
   const preferences_dialog = ref(null)
-  const { register } = use_keymap('Global')
-  const magic_keys = useMagicKeys()
+  const { register, register_preference } = use_keymap('Global')
 
-  // Preference toggle commands
-  register(
-    'pref::Toggle_Fill',
-    () => (preferences.fill.value = !preferences.fill.value)
-  )
-  register(
-    'pref::Toggle_Stroke',
-    () => (preferences.stroke.value = !preferences.stroke.value)
-  )
-  register(
-    'pref::Toggle_Cutout',
-    () => (preferences.cutout.value = !preferences.cutout.value)
-  )
-  register(
-    'pref::Toggle_Background',
-    () => (preferences.background.value = !preferences.background.value)
-  )
-  register(
-    'pref::Toggle_Light',
-    () => (preferences.light.value = !preferences.light.value)
-  )
-  register(
-    'pref::Toggle_Animate',
-    () => (preferences.animate.value = !preferences.animate.value)
-  )
-  register(
-    'pref::Toggle_FPS',
-    () => (preferences.fps.value = !preferences.fps.value)
-  )
+  // Special handler for fill (F key) - master control for all layers
+  register('pref::Toggle_Fill', () => {
+    if (fill.value) {
+      // Turning fill off - turn off all layers
+      bold_layer.value = false
+      medium_layer.value = false
+      regular_layer.value = false
+      light_layer.value = false
+      fill.value = false
+    } else {
+      // Turning fill on - turn on all layers (default state)
+      bold_layer.value = true
+      medium_layer.value = true
+      regular_layer.value = true
+      light_layer.value = true
+      fill.value = true
+    }
+  })
+
+  // Regular preference toggles for individual layers
+  register_preference('pref::Toggle_Stroke', stroke)
+  register_preference('pref::Toggle_Cutout', cutout)
+  register_preference('pref::Toggle_Background', background)
+  register_preference('pref::Toggle_Light', light)
+  register_preference('pref::Toggle_Animate', animate)
+  register_preference('pref::Toggle_FPS', fps)
+  register_preference('pref::Toggle_Storytelling', storytelling)
+  register_preference('pref::Toggle_Bold_Layer', bold_layer)
+  register_preference('pref::Toggle_Medium_Layer', medium_layer)
+  register_preference('pref::Toggle_Regular_Layer', regular_layer)
+  register_preference('pref::Toggle_Light_Layer', light_layer)
 
   register('ui::Show_Documentation', () => documentation.value?.show())
   register('ui::Open_Settings', () => preferences_dialog.value?.show())
@@ -121,8 +130,8 @@
   <main id="realness" :class="status">
     <router-view />
     <sync @active="sync_active" />
-    <fps v-if="fps_pref" />
-    <viewbox v-if="fps_pref" />
+    <fps_component v-if="fps" />
+    <viewbox v-if="fps" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
     <input

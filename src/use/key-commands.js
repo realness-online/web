@@ -276,6 +276,12 @@ export function use_keymap(context_name) {
         context: context_name,
         ...options
       })
+    },
+    register_preference: (command, preference) => {
+      key_commands.register_handler(command, {
+        handler: () => (preference.value = !preference.value),
+        context: context_name
+      })
     }
   }
 }

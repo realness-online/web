@@ -123,6 +123,6 @@
     stroke-dasharray: 18, 26;
   }
   path[itemprop='bold'] {
-    stroke-dasharray: 24, 32;
+    stroke-dasharray: 4, 32;
   }
 </style>

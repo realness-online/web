@@ -90,7 +90,12 @@
     &:hover,
     &.hovered {
       transition: filter 0.3s ease-in-out;
-      filter: brightness(1.25);
+      filter: brightness(1.5) saturate(1.5);
+      fill-opacity: 0.75;
+    }
+    &:active {
+      filter: brightness(1.25) saturate(1.25);
+      fill-opacity: 1;
     }
   }
 </style>

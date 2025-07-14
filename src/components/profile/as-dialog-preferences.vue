@@ -83,6 +83,10 @@
         <preference
           name="fps"
           title="Show frames per second and other diagnostics" />
+        <preference
+          name="storytelling"
+          title="Storytelling (side-scroll) view"
+          subtitle="Show content in a horizontal, story-like format. Portraits animate up/down." />
       </menu>
     </section>
 

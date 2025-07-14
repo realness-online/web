@@ -53,6 +53,7 @@ All preferences are stored locally with no server-side sync, giving you complete
 - <kbd>L</kbd> - Toggle lightbar on posters
 - <kbd>A</kbd> - Toggle poster animation
 - <kbd>D</kbd> - Toggle FPS display
+- <kbd>W</kbd> - Toggle storytelling (side-scroll) view
 - <kbd>ctrl</kbd><kbd>F</kbd> - Toggle fullscreen mode
 - <kbd>ctrl</kbd><kbd>.</kbd> - Open settings dialog
 
