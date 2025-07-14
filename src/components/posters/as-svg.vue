@@ -155,6 +155,12 @@
       emit('show', vector.value)
     }
   })
+
+  // Add computed properties for layer visibility
+  const light_visible = computed(() => vector.value?.light && light_layer.value)
+  const regular_visible = computed(() => vector.value?.regular && regular_layer.value)
+  const medium_visible = computed(() => vector.value?.medium && medium_layer.value)
+  const bold_visible = computed(() => vector.value?.bold && bold_layer.value)
 </script>
 
 <template>
@@ -194,7 +200,7 @@
         :fill="`url(${fragment('radial-background')})`"
         @focus="focus('background')" />
       <as-path
-        v-if="vector.light && light_layer"
+        v-show="light_visible"
         :id="query('light')"
         itemprop="light"
         :path="vector.light"
@@ -204,7 +210,7 @@
         :stroke="`url(${fragment('horizontal-medium')})`"
         @focus="focus('light')" />
       <as-path
-        v-if="vector.regular && regular_layer"
+        v-show="regular_visible"
         :id="query('regular')"
         itemprop="regular"
         :path="vector.regular"
@@ -214,7 +220,7 @@
         :stroke="`url(${fragment('vertical-bold')})`"
         @focus="focus('regular')" />
       <as-path
-        v-if="vector.medium && medium_layer"
+        v-show="medium_visible"
         :id="query('medium')"
         itemprop="medium"
         :path="vector.medium"
@@ -224,7 +230,7 @@
         :stroke="`url(${fragment('vertical-background')})`"
         @focus="focus('medium')" />
       <as-path
-        v-if="vector.bold && bold_layer"
+        v-show="bold_visible"
         :id="query('bold')"
         itemprop="bold"
         :tabindex="tabindex"

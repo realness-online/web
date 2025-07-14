@@ -8,7 +8,8 @@
     ref,
     onUnmounted as dismount,
     onMounted as mounted,
-    provide
+    provide,
+    computed
   } from 'vue'
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router} from 'vue-router'
@@ -44,20 +45,22 @@
 
   // Special handler for fill (F key) - master control for all layers
   register('pref::Toggle_Fill', () => {
-    if (fill.value) {
-      // Turning fill off - turn off all layers
-      bold_layer.value = false
-      medium_layer.value = false
-      regular_layer.value = false
-      light_layer.value = false
-      fill.value = false
-    } else {
-      // Turning fill on - turn on all layers (default state)
+    const new_state = !fill.value
+    fill.value = new_state
+
+    // Batch all layer updates
+    if (new_state) {
+      // Turn all on
       bold_layer.value = true
       medium_layer.value = true
       regular_layer.value = true
       light_layer.value = true
-      fill.value = true
+    } else {
+      // Turn all off
+      bold_layer.value = false
+      medium_layer.value = false
+      regular_layer.value = false
+      light_layer.value = false
     }
   })
 
