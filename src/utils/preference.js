@@ -6,7 +6,7 @@ export const cutout = storage('cutout', true) // ⇧c
 export const background = storage('background', true) // ⇧b
 export const drama = storage('drama', false) // ⇧l
 export const animate = storage('animate', false) // ⇧a
-export const fps = storage('fps', false) // ⇧d
+export const info = storage('info', false) // ⇧d
 export const storytelling = storage('storytelling', false) // ⇧w
 
 // Layer visibility preferences

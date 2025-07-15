@@ -103,8 +103,7 @@
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-    stroke-dasharray: 13, 21;
-    stroke-dashoffset: 0;
+
     transition-duration: 0.66s;
     &:focus {
       outline: none;
@@ -113,16 +112,5 @@
       fill-opacity: 0.99;
     }
   }
-  path[itemprop='light'] {
-    stroke-dasharray: 8, 16;
-  }
-  path[itemprop='regular'] {
-    stroke-dasharray: 13, 21;
-  }
-  path[itemprop='medium'] {
-    stroke-dasharray: 18, 26;
-  }
-  path[itemprop='bold'] {
-    stroke-dasharray: 4, 32;
-  }
+
 </style>

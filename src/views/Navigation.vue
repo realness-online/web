@@ -4,7 +4,6 @@
   import { ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
   const { open_camera } = use_vectorize()
-  const version = import.meta.env.PACKAGE_VERSION
   const posting = ref(false)
   const toggle_keyboard = () => {
     posting.value = !posting.value
@@ -32,7 +31,6 @@
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
-      <span tabindex="-1">{{ version }}</span>
       <a
         id="camera"
         tabindex="3"

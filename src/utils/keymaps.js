@@ -20,7 +20,7 @@ export const default_keymap = [
       0: 'nav::Go_Home',
 
       'Tab Row': '',
-      I: 'pref::Toggle_FPS',
+      I: 'pref::Toggle_Info',
       O: 'pref::Toggle_Storytelling',
       P: 'ui::Toggle_Fullscreen',
 
@@ -38,9 +38,8 @@ export const default_keymap = [
       V: 'pref::Toggle_Light',
       B: 'pref::Toggle_Background',
 
-      'ctrl-.': 'ui::Open_Settings',
-      'ctrl-?': 'ui::Show_Documentation',
-      'ctrl-/': 'ui::Show_Documentation'
+      '.': 'ui::Open_Settings',
+      '?': 'ui::Show_Documentation'
     },
     descriptions: {
       'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
@@ -52,7 +51,7 @@ export const default_keymap = [
       'pref::Toggle_Background': 'Toggle background fill on posters',
       'pref::Toggle_Drama': 'Toggle dynamic lighting on posters',
       'pref::Toggle_Animate': 'Toggle poster animation',
-      'pref::Toggle_FPS': 'Toggle FPS display',
+      'pref::Toggle_Info': 'Toggle FPS and viewbox display',
       'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view',
       'pref::Toggle_Bold': 'Toggle bold layer visibility',
       'pref::Toggle_Medium': 'Toggle medium layer visibility',

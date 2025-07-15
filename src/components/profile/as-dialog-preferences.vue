@@ -28,38 +28,43 @@
 
     // Get the keymap directly to preserve order
     const keymap = key_commands.keymap.value
+    const active_contexts = key_commands.active_contexts.value
 
     keymap.forEach(context_config => {
       const context = context_config.context || 'Global'
-      if (!groups[context]) groups[context] = {}
 
-      // Use getOwnPropertyNames to preserve the order properties were defined
-      const keys = Object.getOwnPropertyNames(context_config.bindings || {})
-      let current_row = 'Number Row' // Default to Number Row
+      // Only include contexts that are currently active
+      if (context === 'Global' || active_contexts.includes(context)) {
+        if (!groups[context]) groups[context] = {}
 
-      keys.forEach(key => {
-        const command = context_config.bindings[key]
+        // Use getOwnPropertyNames to preserve the order properties were defined
+        const keys = Object.getOwnPropertyNames(context_config.bindings || {})
+        let current_row = 'Number Row' // Default to Number Row
 
-        // Check if this is a row label
-        if (typeof command === 'string' && command === '') {
-          current_row = key
-          if (!groups[context][current_row]) groups[context][current_row] = []
-          return
-        }
+        keys.forEach(key => {
+          const command = context_config.bindings[key]
 
-        // Add command to current row
-        if (typeof command === 'string' && command) {
-          if (!groups[context][current_row]) groups[context][current_row] = []
-
-          const cmd_obj = {
-            key: key,
-            command: command,
-            description: get_command_description(command),
-            context: context
+          // Check if this is a row label
+          if (typeof command === 'string' && command === '') {
+            current_row = key
+            if (!groups[context][current_row]) groups[context][current_row] = []
+            return
           }
-          groups[context][current_row].push(cmd_obj)
-        }
-      })
+
+          // Add command to current row
+          if (typeof command === 'string' && command) {
+            if (!groups[context][current_row]) groups[context][current_row] = []
+
+            const cmd_obj = {
+              key: key,
+              command: command,
+              description: get_command_description(command),
+              context: context
+            }
+            groups[context][current_row].push(cmd_obj)
+          }
+        })
+      }
     })
 
     return groups
@@ -97,7 +102,7 @@
         <preference name="background" title="Display a background fill">
         </preference>
         <preference name="drama" title="Dynamic lighting" />
-        <preferencez
+        <preference
           name="adobe"
           hidden
           title="Posters download with HEX (#FFF000) values for color" />
@@ -113,7 +118,7 @@
           @on="set_posters_folder" />
         <preference name="animate" title="Animate posters" />
         <preference
-          name="fps"
+          name="info"
           title="Show frames per second and other diagnostics" />
         <preference
           name="storytelling"
@@ -212,13 +217,6 @@
 
 
     & > section:first-child {
-      h2 {
-        color: var(--red);
-        margin-bottom: base-line;
-        padding-bottom: round((base-line / 2), 2);
-        border-bottom: 1px solid var(--red);
-      }
-
       menu {
         margin: 0;
         padding: 0;
@@ -250,6 +248,7 @@
             margin-bottom: round((base-line / 2), 2);
 
             kbd {
+              standard-border: red
               flex-shrink: 0;
               margin: 0;
               padding: round((base-line / 4), 2) round((base-line / 2), 2);

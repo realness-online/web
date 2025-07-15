@@ -36,8 +36,6 @@
 <style lang="stylus">
   fieldset.preference
     margin-bottom: base-line
-    & > p:last-of-type
-
     & > div
       display: flex
       justify-content: space-between
