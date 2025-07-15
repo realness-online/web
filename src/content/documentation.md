@@ -43,19 +43,111 @@ All preferences are stored locally with no server-side sync, giving you complete
 
 - **Letters** (F, S, C, B, L, A, D) toggle persistent UI preferences that are saved to your device
 - **Ctrl+key combinations** (Ctrl+F, Ctrl+.) perform temporary actions that don't persist
+- **Numpad keys** provide additional shortcuts for artists using external keypads
+- **Touch gestures** work on mobile and tablet devices
 
 **Common Shortcuts**:
 
-- <kbd>F</kbd> - Toggle fill gradient on posters
-- <kbd>S</kbd> - Toggle stroke outline on posters
-- <kbd>C</kbd> - Toggle cutout display on posters
-- <kbd>B</kbd> - Toggle background fill on posters
-- <kbd>L</kbd> - Toggle lightbar on posters
+**Number Row** (Navigation):
+
+- <kbd>0</kbd> - Go to home
+- <kbd>1</kbd> - Go to thoughts
+- <kbd>2</kbd> - Go to posters
+- <kbd>3</kbd> - Go to statements
+- <kbd>4</kbd> - Go to events
+- <kbd>5</kbd> - Go to phonebook
+- <kbd>6</kbd> - Go to about
+
+**Left Side** (UI Controls):
+
+- <kbd>I</kbd> - Toggle FPS display
+- <kbd>O</kbd> - Toggle storytelling (side-scroll) view
+- <kbd>P</kbd> - Toggle fullscreen mode
+
+**Center** (Preferences):
+
 - <kbd>A</kbd> - Toggle poster animation
-- <kbd>D</kbd> - Toggle FPS display
-- <kbd>W</kbd> - Toggle storytelling (side-scroll) view
-- <kbd>ctrl</kbd><kbd>F</kbd> - Toggle fullscreen mode
+- <kbd>S</kbd> - Toggle stroke outline on posters
+- <kbd>D</kbd> - Toggle lightbar on posters
+- <kbd>F</kbd> - Toggle fill gradient on posters
+- <kbd>G</kbd> - Toggle cutout display on posters
+
+**Left Side** (Layers):
+
+- <kbd>Z</kbd> - Toggle bold layer visibility
+- <kbd>X</kbd> - Toggle medium layer visibility
+- <kbd>C</kbd> - Toggle regular layer visibility
+- <kbd>V</kbd> - Toggle light layer visibility
+
+**Right Side** (Other Controls):
+
+- <kbd>B</kbd> - Toggle background fill on posters
+
+**Other Shortcuts**:
+
 - <kbd>ctrl</kbd><kbd>.</kbd> - Open settings dialog
+- <kbd>ctrl</kbd><kbd>?</kbd> - Show documentation
+- <kbd>ctrl</kbd><kbd>/</kbd> - Show documentation
+
+**Numpad Shortcuts** (for external keypads):
+
+**Numpad Numbers** (Navigation):
+
+- <kbd>Numpad 0</kbd> - Go to home
+- <kbd>Numpad 1-6</kbd> - Navigate to different sections
+
+**Numpad Numbers** (Layers):
+
+- <kbd>Numpad 7</kbd> - Toggle bold layer
+- <kbd>Numpad 8</kbd> - Toggle medium layer
+- <kbd>Numpad 9</kbd> - Toggle regular layer
+
+**Numpad Operators** (Preferences):
+
+- <kbd>Numpad +</kbd> - Toggle light layer
+- <kbd>Numpad -</kbd> - Toggle background
+- <kbd>Numpad \*</kbd> - Toggle fill
+- <kbd>Numpad /</kbd> - Toggle stroke
+- <kbd>Numpad Enter</kbd> - Toggle animation
+- <kbd>Numpad Clear</kbd> - Toggle cutout
+
+**Touch Gestures** (mobile/tablet):
+
+- **Tap** - Select items
+- **Double tap** - Quick actions
+- **Long press** - Context menus
+- **Swipe** - Navigate between sections
+- **Pinch** - Zoom in/out on posters
+
+**Keyboard Layout**:
+
+The shortcuts are organized by keyboard row for easy learning:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 1 2 3 4 5 6 7 8 9 0    ← Navigation (Number Row)     │
+├─────────────────────────────────────────────────────────┤
+│ Q W E R T Y U I O P    ← I=Toggle FPS, O=Storytelling│
+├─────────────────────────────────────────────────────────┤
+│ A S D F G H J K L      ← Preferences (Home Row)      │
+├─────────────────────────────────────────────────────────┤
+│ Z X C V B N M          ← Layers (Shift Row)          │
+├─────────────────────────────────────────────────────────┤
+│ Ctrl Alt Space         ← Actions (Bottom Row)         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Context-Aware Shortcuts**:
+
+Different shortcuts are available depending on what you're viewing:
+
+- **Global** - Available everywhere
+- **Poster** - When viewing posters (zoom, save, edit)
+- **Poster_Menu** - When poster menu is open
+- **Poster_Editor** - When editing posters
+- **Thoughts** - When browsing thoughts
+- **Events** - When viewing events
+- **Numpad** - Numpad-specific shortcuts
 
 ---
 
