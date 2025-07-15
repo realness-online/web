@@ -2,7 +2,7 @@
   /** @typedef {import('@/types').Available_Command} Available_Command */
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
-  import { ref, computed, inject } from 'vue'
+  import { ref, computed, inject, onMounted as mounted } from 'vue'
   import { get_file_system } from '@/utils/file'
   import { get_command_description } from '@/utils/keymaps'
 
@@ -22,20 +22,46 @@
     () => key_commands.get_available_commands.value
   )
 
-  // Group commands by context
+  // Group commands by keyboard rows
   const commands_by_context = computed(() => {
     const groups = {}
-    available_commands.value.forEach(cmd => {
-      if (!cmd || typeof cmd !== 'object') return
-      const context = cmd.context || 'Global'
-      if (!groups[context]) groups[context] = []
-      groups[context].push({
-        key: cmd.key || '',
-        command: cmd.command || '',
-        description: get_command_description(cmd.command || ''),
-        context: cmd.context || 'Global'
+
+    // Get the keymap directly to preserve order
+    const keymap = key_commands.keymap.value
+
+    keymap.forEach(context_config => {
+      const context = context_config.context || 'Global'
+      if (!groups[context]) groups[context] = {}
+
+      // Use getOwnPropertyNames to preserve the order properties were defined
+      const keys = Object.getOwnPropertyNames(context_config.bindings || {})
+      let current_row = 'Number Row' // Default to Number Row
+
+      keys.forEach(key => {
+        const command = context_config.bindings[key]
+
+        // Check if this is a row label
+        if (typeof command === 'string' && command === '') {
+          current_row = key
+          if (!groups[context][current_row]) groups[context][current_row] = []
+          return
+        }
+
+        // Add command to current row
+        if (typeof command === 'string' && command) {
+          if (!groups[context][current_row]) groups[context][current_row] = []
+
+          const cmd_obj = {
+            key: key,
+            command: command,
+            description: get_command_description(command),
+            context: context
+          }
+          groups[context][current_row].push(cmd_obj)
+        }
       })
     })
+
     return groups
   })
 
@@ -52,11 +78,17 @@
       <h1>Preferences</h1>
     </header>
 
-    <div>
     <section>
-      <h2>Settings</h2>
+      <header>
+        <h2>Settings</h2>
+      </header>
       <menu>
-        <preference name="fill" title="Use a gradient to fill up your poster" />
+        <preference name="fill" title="Use a gradient to fill up your poster" >
+          <preference name="bold" />
+          <preference name="medium" />
+          <preference name="regular" />
+          <preference name="light" />
+        </preference>
         <preference
           name="stroke"
           title="Outline your graphic with a stroke in relevant color" />
@@ -64,8 +96,8 @@
         </preference>
         <preference name="background" title="Display a background fill">
         </preference>
-        <preference name="light" title="A subtle lightbar" />
-        <preference
+        <preference name="drama" title="Dynamic lighting" />
+        <preferencez
           name="adobe"
           hidden
           title="Posters download with HEX (#FFF000) values for color" />
@@ -91,21 +123,28 @@
     </section>
 
     <section>
-      <h2>Keymap</h2>
+      <header>
+        <h2>Keymap</h2>
+      </header>
       <div
-        v-for="(commands, context) in commands_by_context"
+        v-for="(context_commands, context) in commands_by_context"
         :key="context"
         class="command-group">
         <h3>{{ context }}</h3>
-        <ul>
-          <li v-for="cmd in commands" :key="`${context}-${cmd.key}`">
-            <kbd>{{ cmd.key }}</kbd>
-            <span>{{ cmd.description }}</span>
-          </li>
-        </ul>
+        <div
+          v-for="(commands, row) in context_commands"
+          :key="`${context}-${row}`"
+          class="row-group">
+          <h4>{{ row }}</h4>
+          <ul>
+            <li v-for="cmd in commands" :key="`${context}-${row}-${cmd.key}`">
+              <kbd>{{ cmd.key }}</kbd>
+              <span>{{ cmd.description }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </section>
-    </div>
   </dialog>
 </template>
 
@@ -127,8 +166,17 @@
     margin-bottom: base-line * 2;
     max-width: 90vw;
     max-height: 90vh;
+    &[open] {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: base-line * 2;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 0 base-line;
+    }
 
     & > header {
+      grid-column: 1 / -1;
       & > h1 {
         margin-top: base-line;
         text-align: center;
@@ -145,88 +193,91 @@
       }
     }
 
-    & > div {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: base-line * 2;
-      max-height: 70vh;
-      overflow-y: auto;
-      padding: 0 base-line;
 
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-        gap: base-line;
+
+    @media (max-width: pad-begins) {
+      grid-template-columns: 1fr;
+      gap: base-line;
+    }
+
+    & > section {
+      & > header > h2 {
+        color: var(--red);
+        margin-bottom: base-line;
+        padding-bottom: round((base-line / 2), 2);
+        border-bottom: 1px solid var(--red);
+
+      }
+    }
+
+
+    & > section:first-child {
+      h2 {
+        color: var(--red);
+        margin-bottom: base-line;
+        padding-bottom: round((base-line / 2), 2);
+        border-bottom: 1px solid var(--red);
       }
 
-      & > section:first-child {
-        h2 {
-          color: var(--red);
-          margin-bottom: base-line;
-          padding-bottom: round((base-line / 2), 2);
-          border-bottom: 1px solid var(--red);
+      menu {
+        margin: 0;
+        padding: 0;
+        & > *:not(:last-child) {
+          height: 100%;
+          list-style: none;
         }
-
-        menu {
-          margin: 0;
-          padding: 0;
-          & > *:not(:last-child) {
-            height: 100%;
-            list-style: none;
-          }
-          & > h4 {
-            margin-top: base-line;
-          }
+        & > h4 {
+          margin-top: base-line;
         }
       }
+    }
 
-      & > section:last-child {
-        h2 {
+    & > section:last-child {
+      & > div {
+        h3 {
           color: var(--red);
-          padding-bottom: round((base-line / 2), 2);
-          border-bottom: 1px solid var(--red);
+          margin-top: base-line;
+          margin-bottom: round((base-line / 2), 2);
+
         }
-        & > div {
-          h3 {
-            color: var(--red);
-          }
-          ul {
-            list-style: none;
+        ul {
+          list-style: none;
 
-            li {
-              display: flex;
-              align-items: center;
-              gap: base-line;
-              margin-bottom: round((base-line / 2), 2);
+          li {
+            display: flex;
+            align-items: center;
+            gap: base-line;
+            margin-bottom: round((base-line / 2), 2);
 
-              kbd {
-                flex-shrink: 0;
-                margin: 0;
-                padding: round((base-line / 4), 2) round((base-line / 2), 2);
-                font-family: 'Monaco', 'Menlo', monospace;
-              }
+            kbd {
+              flex-shrink: 0;
+              margin: 0;
+              padding: round((base-line / 4), 2) round((base-line / 2), 2);
+              font-family: 'Monaco', 'Menlo', monospace;
+            }
 
-              span {
-                color: var(--white-text);
-                font-size: smaller;
-              }
+            span {
+              color: var(--white-text);
+              font-size: smaller;
             }
           }
         }
       }
     }
-
-    .download {
-      display: inline-block;
-      width: base-line * .75;
-      height: base-line * .75;
-    }
-    a {
-      color: green;
-      border-color: green;
-    }
-    h1, svg.icon {
-      color: red;
-      fill: red;
-    }
   }
+
+  .download {
+    display: inline-block;
+    width: base-line * .75;
+    height: base-line * .75;
+  }
+  a {
+    color: green;
+    border-color: green;
+  }
+  h1, svg.icon {
+    color: red;
+    fill: red;
+  }
+
 </style>

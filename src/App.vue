@@ -24,10 +24,10 @@
     animate,
     fps,
     storytelling,
-    bold_layer,
-    medium_layer,
-    regular_layer,
-    light_layer
+    bold,
+    medium,
+    regular,
+    drama
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -51,16 +51,16 @@
     // Batch all layer updates
     if (new_state) {
       // Turn all on
-      bold_layer.value = true
-      medium_layer.value = true
-      regular_layer.value = true
-      light_layer.value = true
+      bold.value = true
+      medium.value = true
+      regular.value = true
+      light.value = true
     } else {
       // Turn all off
-      bold_layer.value = false
-      medium_layer.value = false
-      regular_layer.value = false
-      light_layer.value = false
+      bold.value = false
+      medium.value = false
+      regular.value = false
+      light.value = false
     }
   })
 
@@ -68,14 +68,14 @@
   register_preference('pref::Toggle_Stroke', stroke)
   register_preference('pref::Toggle_Cutout', cutout)
   register_preference('pref::Toggle_Background', background)
-  register_preference('pref::Toggle_Light', light)
+  register_preference('pref::Toggle_Drama', drama)
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_FPS', fps)
   register_preference('pref::Toggle_Storytelling', storytelling)
-  register_preference('pref::Toggle_Bold_Layer', bold_layer)
-  register_preference('pref::Toggle_Medium_Layer', medium_layer)
-  register_preference('pref::Toggle_Regular_Layer', regular_layer)
-  register_preference('pref::Toggle_Light_Layer', light_layer)
+  register_preference('pref::Toggle_Bold', bold)
+  register_preference('pref::Toggle_Medium', medium)
+  register_preference('pref::Toggle_Regular', regular)
+  register_preference('pref::Toggle_Light', light)
 
   register('ui::Show_Documentation', () => documentation.value?.show())
   register('ui::Open_Settings', () => preferences_dialog.value?.show())

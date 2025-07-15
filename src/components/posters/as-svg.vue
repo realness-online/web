@@ -27,12 +27,11 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
-    light as light_pref,
     background,
-    bold_layer,
-    medium_layer,
-    regular_layer,
-    light_layer
+    bold,
+    medium,
+    regular,
+    drama
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -108,7 +107,6 @@
   const animate = computed(
     () => animate_pref.value === true && intersecting.value
   )
-  const light = computed(() => light_pref.value === true)
   const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -157,10 +155,10 @@
   })
 
   // Add computed properties for layer visibility
-  const light_visible = computed(() => vector.value?.light && light_layer.value)
-  const regular_visible = computed(() => vector.value?.regular && regular_layer.value)
-  const medium_visible = computed(() => vector.value?.medium && medium_layer.value)
-  const bold_visible = computed(() => vector.value?.bold && bold_layer.value)
+  const light_visible = computed(() => vector.value?.light && drama.value)
+  const regular_visible = computed(() => vector.value?.regular && regular.value)
+  const medium_visible = computed(() => vector.value?.medium && medium.value)
+  const bold_visible = computed(() => vector.value?.bold && bold.value)
 </script>
 
 <template>
@@ -244,7 +242,7 @@
     <as-masks :itemid="itemid" />
     <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
     <rect
-      v-if="light"
+      v-if="drama"
       id="lightbar-back"
       fill="url(#lightbar)"
       width="100%"
@@ -261,7 +259,7 @@
         @touchend="cutout_end" />
     </g>
     <rect
-      v-if="light"
+      v-if="drama"
       id="lightbar-front"
       fill="url(#lightbar)"
       width="100%"

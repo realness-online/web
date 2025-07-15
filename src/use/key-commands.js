@@ -131,7 +131,11 @@ export const use_key_commands = () => {
     keymap.value.forEach(context_config => {
       const context = context_config.context || 'global'
       if (context === 'global' || active_contexts.value.includes(context)) {
-        Object.entries(context_config.bindings).forEach(([key, command]) => {
+        // Use getOwnPropertyNames to preserve the order properties were defined
+        const keys = Object.getOwnPropertyNames(context_config.bindings)
+
+        keys.forEach(key => {
+          const command = context_config.bindings[key]
           available.push({
             key: normalize_key_for_platform(key),
             command: typeof command === 'string' ? command : command[0],
