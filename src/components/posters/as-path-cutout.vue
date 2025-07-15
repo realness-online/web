@@ -87,15 +87,22 @@
     &:focus {
       outline: none;
     }
-    &:hover,
-    &.hovered {
-      transition: filter 0.3s ease-in-out;
+    &:hover {
+      transition: filter 0.3s ease-in-out 0.3s; /* 300ms delay */
       filter: brightness(1.5) saturate(1.5);
       fill-opacity: 0.75;
+      animation: auto-hide 3s ease-in-out 0.6s forwards; /* Auto-hide after 3s */
     }
     &:active {
       filter: brightness(1.25) saturate(1.25);
       fill-opacity: 1;
+    }
+  }
+
+  @keyframes auto-hide {
+    to {
+      filter: brightness(1) saturate(1);
+      fill-opacity: 0.5;
     }
   }
 </style>
