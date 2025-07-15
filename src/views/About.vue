@@ -7,6 +7,7 @@
   import LogoAsLink from '@/components/logo-as-link'
   import { use_posters } from '@/use/poster'
   sessionStorage.about = true
+  const version = import.meta.env.PACKAGE_VERSION
   const { posters, for_person: posters_for_admin } = use_posters()
 
   const documentation = inject('documentation')
@@ -23,7 +24,7 @@
     <header>
       <nav>
         <logo-as-link />
-        <a @click="show_documentation">Documentation</a>
+        <a @click="show_documentation">Documentation <span>{{ version }}</span></a>
       </nav>
       <figure class="hero">
         <figcaption>
@@ -332,12 +333,12 @@
         <h2>Gallery</h2>
         <preference name="fill" />
         <preference name="stroke" />
-        <preference name="light" />
-        <preference name="emboss" />
+        <preference name="drama" />
+        <preference name="cutout" />
         <preference name="animate" />
         <preference
-          name="fps"
-          title="Show frames per second. usefull if you have animation turned on" />
+          name="info"
+          title="Show frames per second and viewbox info" />
       </figcaption>
       <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
@@ -363,6 +364,10 @@
         display: flex
         justify-content: space-between
         margin-bottom: base-line * 2
+        & > a > span
+          font-size:small
+          font-weight: 400
+          color: green
         svg.icon
           fill: blue
       & > figure

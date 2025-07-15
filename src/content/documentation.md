@@ -1,20 +1,25 @@
-# Realness <span>online</span>
+<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD024 -->
+
+# Realness.<span>online</span>
 
 ## Overview
 
-[Posters](#posters) and [Thoughts](#thoughts) are what you make with Realness. It's an Each poster is an SVG graphic that is small enough to embed on websites yet expressive enough for creative pursuites. Posters are designed to be flexible, they integrate into toolchains, or can be efficently embeded into websites without optimiztions.
+[Posters](#posters) and [Thoughts](#thoughts) are what you make with Realness. Each poster is an SVG graphic that is small; able to go directly on the web yet expressive and fun designed to encourage drawing and supportive to the myriad of digital pursuites. Posters are designed to be flexible, they integrate into toolchains, or can be efficently embeded into websites without optimiztions.
 
-Realness works best on a phone for when you want to take quick photos. it works great even with digital zoom. Walking around making posters a good time. You save it to your home screen. It's a fun way to play with composition or framing. Realness is a tool to spark your creative journeys.
+### Where to begin
+
+Realness works best on a phone for when you want to take quick photos. Dramatic and delivering the same quality with digital zoom. Walking around making posters is a good time. You save it to your home screen. Explore composition or framing – Realness is a tool to spark your creative journeys.
 
 from the [homepage](https://realness.online) click on the camera, take a picture, and Realness will create a super fun rotoscope vector graphic.
 
-Multilayered your image is a digital paintbrush designed to to be endlessly usefull. Each photo has eighteen gradients for you to pull color from. Realness integrates right into Figma, Affinity, Procreate, or Adobe toolchains.
+Multilayered and designed to give you the most creative direction. Each photo has eighteen gradients for you to pull color from. Realness integrates right into Figma, Affinity, Procreate, or Adobe toolchains.
 
 enabling EXIF, and Model Context Protocol integration will provide an elegent interfact for integrating realness into 3d worflows (blender first). With chat and audio integration on the way it's a powerful tool for a new age of creative work.
 
 ---
 
-## What You Can Do
+### What You Can Do
 
 Start by [signing up](#sign-on) with your phone number and creating an avatar to join the community. Once you're in, you can begin creating [statements](#statements) that become trains of thought as you add to them over time.
 
@@ -27,127 +32,6 @@ View upcoming [events](#events); create your own. When something moves you, reac
 Realness updates at eight-hour intervals.
 
 You can sync Realness across all your devices. Take a picture on your phone and then open realness on your ipad and send it to Procreate (via affinity designer).
-
----
-
-## Shortcuts
-
-The _settings_ Dialog (<kbd>ctrl</kbd><kbd>.</kbd>) is accessed from the bottom left on most screens of the app.
-
-Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
-
-<kbd>A</kbd> toggles _animation_ designed to bring posters into the room. turning this on will put your GPU to work. But the effect is fun colors swoosh and change swell and unplacable movements.
-All preferences are stored locally with no server-side sync, giving you complete control over your settings while working offline.
-
-**Key Pattern**:
-
-- **Letters** (F, S, C, B, L, A, D) toggle persistent UI preferences that are saved to your device
-- **Ctrl+key combinations** (Ctrl+F, Ctrl+.) perform temporary actions that don't persist
-- **Numpad keys** provide additional shortcuts for artists using external keypads
-- **Touch gestures** work on mobile and tablet devices
-
-**Common Shortcuts**:
-
-**Number Row** (Navigation):
-
-- <kbd>0</kbd> - Go to home
-- <kbd>1</kbd> - Go to thoughts
-- <kbd>2</kbd> - Go to posters
-- <kbd>3</kbd> - Go to statements
-- <kbd>4</kbd> - Go to events
-- <kbd>5</kbd> - Go to phonebook
-- <kbd>6</kbd> - Go to about
-
-**Left Side** (UI Controls):
-
-- <kbd>I</kbd> - Toggle FPS display
-- <kbd>O</kbd> - Toggle storytelling (side-scroll) view
-- <kbd>P</kbd> - Toggle fullscreen mode
-
-**Center** (Preferences):
-
-- <kbd>A</kbd> - Toggle poster animation
-- <kbd>S</kbd> - Toggle stroke outline on posters
-- <kbd>D</kbd> - Toggle lightbar on posters
-- <kbd>F</kbd> - Toggle fill gradient on posters
-- <kbd>G</kbd> - Toggle cutout display on posters
-
-**Left Side** (Layers):
-
-- <kbd>Z</kbd> - Toggle bold layer visibility
-- <kbd>X</kbd> - Toggle medium layer visibility
-- <kbd>C</kbd> - Toggle regular layer visibility
-- <kbd>V</kbd> - Toggle light layer visibility
-
-**Right Side** (Other Controls):
-
-- <kbd>B</kbd> - Toggle background fill on posters
-
-**Other Shortcuts**:
-
-- <kbd>ctrl</kbd><kbd>.</kbd> - Open settings dialog
-- <kbd>ctrl</kbd><kbd>?</kbd> - Show documentation
-- <kbd>ctrl</kbd><kbd>/</kbd> - Show documentation
-
-**Numpad Shortcuts** (for external keypads):
-
-**Numpad Numbers** (Navigation):
-
-- <kbd>Numpad 0</kbd> - Go to home
-- <kbd>Numpad 1-6</kbd> - Navigate to different sections
-
-**Numpad Numbers** (Layers):
-
-- <kbd>Numpad 7</kbd> - Toggle bold layer
-- <kbd>Numpad 8</kbd> - Toggle medium layer
-- <kbd>Numpad 9</kbd> - Toggle regular layer
-
-**Numpad Operators** (Preferences):
-
-- <kbd>Numpad +</kbd> - Toggle light layer
-- <kbd>Numpad -</kbd> - Toggle background
-- <kbd>Numpad \*</kbd> - Toggle fill
-- <kbd>Numpad /</kbd> - Toggle stroke
-- <kbd>Numpad Enter</kbd> - Toggle animation
-- <kbd>Numpad Clear</kbd> - Toggle cutout
-
-**Touch Gestures** (mobile/tablet):
-
-- **Tap** - Select items
-- **Double tap** - Quick actions
-- **Long press** - Context menus
-- **Swipe** - Navigate between sections
-- **Pinch** - Zoom in/out on posters
-
-**Keyboard Layout**:
-
-The shortcuts are organized by keyboard row for easy learning:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1 2 3 4 5 6 7 8 9 0    ← Navigation (Number Row)     │
-├─────────────────────────────────────────────────────────┤
-│ Q W E R T Y U I O P    ← I=Toggle FPS, O=Storytelling│
-├─────────────────────────────────────────────────────────┤
-│ A S D F G H J K L      ← Preferences (Home Row)      │
-├─────────────────────────────────────────────────────────┤
-│ Z X C V B N M          ← Layers (Shift Row)          │
-├─────────────────────────────────────────────────────────┤
-│ Ctrl Alt Space         ← Actions (Bottom Row)         │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Context-Aware Shortcuts**:
-
-Different shortcuts are available depending on what you're viewing:
-
-- **Global** - Available everywhere
-- **Poster** - When viewing posters (zoom, save, edit)
-- **Poster_Menu** - When poster menu is open
-- **Poster_Editor** - When editing posters
-- **Thoughts** - When browsing thoughts
-- **Events** - When viewing events
-- **Numpad** - Numpad-specific shortcuts
 
 ---
 
@@ -167,17 +51,52 @@ All navigation works offline, with camera access for poster creation and local s
 
 The posters view shows a grid display of all your vector graphics. You can add new posters through the camera or file picker, process entire directories of images in batch, and delete posters with a confirmation dialog. Each poster has an author menu for additional options.
 
-Vector graphics are created locally with image processing happening in web workers. All poster data is stored locally with no cloud processing required.
+### Anatomy of a Poster
 
-The edit view provides a full-screen SVG viewer with pan and zoom controls for vector optimization. You can save your changes and navigate back, with the interface tab-indexed for accessibility. The interactive pan & zoom feature lets you dive deep into your vector posters with intuitive touch and mouse controls. Shift click or three finger tap a poster to toggle between filling the all available space and viewing the entire poster in your viewport.
+Each poster is a layered SVG vector graphic with multiple components that give you creative control over the final result. Understanding these parts helps you make the most of your posters.
 
-**Pan & Zoom Features**:
+**Core Layers** (from lightest to boldest):
 
-The system uses true SVG zoom that manipulates the actual SVG viewBox for crisp rendering at all zoom levels from 50% to 300%. It works across all devices - desktop users can drag with the mouse and zoom with the wheel, mobile users get touch drag and pinch zoom, while tablets have full touch gesture support. Your view state is automatically saved to localStorage, with each poster maintaining its own zoom and pan state. The smart memory feature means your preferred view is automatically saved and restored when you return to [posters](#posters).
+- **Light Layer** - Subtle highlights and fine details that add depth and texture
+- **Regular Layer** - The main form and structure of your image, the foundation
+- **Medium Layer** - Stronger shapes and mid-tones for definition and contrast
+- **Bold Layer** - Darkest elements and strong contrast areas that create impact
 
-**User Experience Benefits**:
+**Visual Elements**:
 
-The enhanced exploration lets you zoom in to examine fine details and pan around large posters. The mobile-first design makes touch gestures feel natural, while the seamless workflow means you don't need to re-zoom when returning to posters. Everything stays crisp at any zoom level thanks to true SVG scaling with no quality loss.
+- **Fill Gradients** - Eighteen color gradients automatically extracted from your photo that you can apply to any layer
+- **Stroke Outlines** - Vector paths that trace the edges of shapes for definition and emphasis
+- **Background** - Optional fill that can be toggled on/off to frame your poster
+- **Cutouts** - Special transparent areas that let background content show through, creating windows in your poster
+
+**Cutouts Layer**:
+
+The cutouts layer is generated using the vtracer algorithm and creates transparent windows through your poster. Each cutout is a vector path with:
+
+- **Interactive Touch Response** - Cutouts respond to touch with brightness and saturation effects that create visual feedback
+- **Auto-hide Animation** - After interaction, cutouts automatically return to their base state over 3 seconds
+- **Opacity Control** - Cutouts have a default 50% opacity that increases to 75% on hover and 100% on active touch
+- **Visual Effects** - Brightness and saturation filters create dramatic lighting effects when interacting with cutouts
+- **Toggle Visibility** - Use <kbd>G</kbd> to show/hide all cutouts across your posters
+
+Cutouts are perfect for creating layered compositions, overlaying on other content, or adding interactive elements to your posters. They're generated automatically from your photo's contrast areas and provide a unique way to frame and highlight different parts of your image.
+
+**Interactive Features**:
+
+- **Animation** - GPU-powered color transitions that bring posters to life with flowing movements
+- **Lightbar** - Dramatic lighting effect that adds cinematic flair and depth
+- **Pan & Zoom** - True SVG scaling from 50% to 300% with crisp rendering at any size
+- **Layer Visibility** - Toggle individual layers on/off to explore the different parts of a poster
+
+**Creative Possibilities**:
+
+Posters are downloaded in the state of the UI So that what you see is what you download. Playing these preferences let you create various effects - from solid fills to outline-only looks, or combinations that give you maximum flexibility.
+
+The cutout system creates transparent windows through your poster, perfect for overlaying on other content or creating layered compositions. Cutouts respond to touch with brightness and saturation effects, making them interactive elements.
+
+The animation system uses your GPU to create flowing color transitions that make static images feel alive. Combined with the lightbar effect, you can create cinematic moments that draw attention and add emotional impact.
+
+All these elements work together to transform your photos into expressive vector graphics that maintain their quality at any size while giving you the creative tools to make them uniquely yours.
 
 All editing happens locally with vector optimization in web workers and view state persisted in localStorage. There's no server-side processing required.
 
@@ -250,3 +169,157 @@ Relations are stored locally with no server-side friend suggestions. You control
 ## Procreate
 
 If you want to use your poster in Procreate You'll need to convert it to PSD with Affinity Designer or Adobe Illustrator. each realness vector exports as much information as possible. There are 5 value layers and a special cutouts layer created when you do. You have access to a tremendous amount of design options. in a small file optimized from the get go to be used creatively.
+
+---
+
+## Desktop Installation
+
+Realness is a Progressive Web App (PWA) that you can install on your desktop for a native experience. Once installed, it works offline and feels like a native application.
+
+**Installation**:
+
+1. Visit [realness.online](https://realness.online) in any modern browser
+2. Look for the install prompt in your browser's address bar or menu
+3. Click "Install" to add Realness to your desktop
+4. Launch from your desktop, start menu, or applications folder
+
+**Browser-Specific Instructions**:
+
+- **Chrome/Edge**: Install icon appears in address bar
+- **Firefox**: Menu → "Install App"
+- **Safari**: File → "Add to Dock"
+
+**Desktop Benefits**:
+
+- Full keyboard shortcut support for power users
+- Larger screen real estate for poster editing
+- Native app performance and offline access
+- Automatic updates when you visit the site
+- Works seamlessly with your existing creative workflow
+
+The desktop version maintains the same functionality as the web version, But lets you take advantage of desktop GPU's with enhanced performance for intensive poster editing.
+
+---
+
+## Shortcuts
+
+The _settings_ Dialog (<kbd>ctrl</kbd><kbd>.</kbd>) is accessed from the bottom left of the app.
+
+Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
+
+All preferences are stored locally with no server-side sync, giving you control over your settings while working offline.
+
+Some preferences can be resource intensive. Especially when you enable animation. The effect is fun though, bringing your Poster to life in subtle ways
+
+### keyboard
+
+<kbd>0</kbd> - Go to home
+
+<kbd>1</kbd> - Go to thoughts
+
+<kbd>2</kbd> - Go to posters
+
+<kbd>3</kbd> - Go to statements
+
+<kbd>4</kbd> - Go to events
+
+<kbd>5</kbd> - Go to phonebook
+
+<kbd>6</kbd> - Go to about
+
+---
+
+<kbd>I</kbd> - Toggle Info FPS / Viewport
+
+<kbd>O</kbd> - Toggle storytelling (side-scroll) view
+
+<kbd>P</kbd> - Toggle fullscreen mode
+
+---
+
+<kbd>A</kbd> - Toggle Animation
+
+<kbd>S</kbd> - Toggle Shadow Stroke
+
+<kbd>D</kbd> - Toggle Dramatic lighting
+
+<kbd>F</kbd> - Toggle Shadow Fill
+
+<kbd>G</kbd> - Toggle Cutouts
+
+---
+
+<kbd>Z</kbd> - Toggle bold
+
+<kbd>X</kbd> - Toggle medium
+
+<kbd>C</kbd> - Toggle regular
+
+<kbd>V</kbd> - Toggle light
+
+<kbd>B</kbd> - Toggle background
+
+---
+
+<kbd>.</kbd> - Open settings dialog
+
+<kbd>?</kbd> - Show documentation
+
+<kbd>/</kbd> - Show documentation
+
+---
+
+### Numpad
+
+<kbd>0</kbd> - Toggle Animation
+
+<kbd>.</kbd> - Toggle Drama
+
+---
+
+<kbd>1</kbd> - Toggle Cutouts
+
+<kbd>2</kbd> - Toggle Fill
+
+<kbd>3</kbd> - Toggle Stroke
+
+---
+
+<kbd>4</kbd> - Go To Thoughts
+
+<kbd>5</kbd> - Go To Posters
+
+<kbd>6</kbd> - Go To Navigation
+
+---
+
+<kbd>7</kbd> - Toggle Info
+
+<kbd>8</kbd> - Toggle Storytelling
+
+<kbd>9</kbd> - Toggle Fullscreen
+
+---
+
+<kbd>/</kbd> - Toggle Bold
+
+<kbd>\*</kbd> - Toggle Medium
+
+<kbd>-</kbd> - Toggle Regular
+
+<kbd>+</kbd> - Toggle Light
+
+<kbd>Enter</kbd> - Toggle Background
+
+---
+
+## Artificial Intelligence
+
+Realness does not use any artificial intelligence or machine learning. All vector graphics are created using traditional computer vision techniques.
+
+Posters are generated using:
+
+- **[vtracer](https://github.com/visioncortex/vtracer)** - Creates the poster cutouts
+- **[potrace](http://potrace.sourceforge.net/)** - creates shadow layers
+
+You are free to use posters however you wish.

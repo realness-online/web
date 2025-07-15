@@ -22,7 +22,7 @@
     background,
     light,
     animate,
-    fps,
+    info,
     storytelling,
     bold,
     medium,
@@ -70,7 +70,7 @@
   register_preference('pref::Toggle_Background', background)
   register_preference('pref::Toggle_Drama', drama)
   register_preference('pref::Toggle_Animate', animate)
-  register_preference('pref::Toggle_FPS', fps)
+  register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Bold', bold)
   register_preference('pref::Toggle_Medium', medium)
@@ -133,8 +133,8 @@
   <main id="realness" :class="status">
     <router-view />
     <sync @active="sync_active" />
-    <fps_component v-if="fps" />
-    <viewbox v-if="fps" />
+    <fps_component v-if="info" />
+    <viewbox v-if="info" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
     <input
