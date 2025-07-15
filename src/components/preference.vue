@@ -21,7 +21,7 @@
 <template>
   <fieldset class="preference">
     <div>
-      <h3>{{ name }}</h3>
+      <h4>{{ name }}</h4>
       <label class="switch">
         <input v-model="preference" type="checkbox" @click="toggle" />
         <span class="slider"></span>
@@ -37,16 +37,17 @@
   fieldset.preference
     margin-bottom: base-line
     & > p:last-of-type
-      margin-bottom: 0
+
     & > div
       display: flex
       justify-content: space-between
-      h3
+      h4
         text-transform: capitalize
         display: inline-block
         line-height: 1
         margin: 0 0 base-line 0
         padding: 0
+        font-size: normal;
       & > label.switch
         position: relative
         display: inline-block
