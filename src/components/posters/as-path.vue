@@ -97,7 +97,6 @@
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-    transition-duration: 0.66s;
     &:focus {
       outline: none;
     }

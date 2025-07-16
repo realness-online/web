@@ -3,12 +3,8 @@
     ref,
     watchEffect as watch_effect,
     onMounted as mounted,
-    computed,
     inject,
-    nextTick
   } from 'vue'
-  import { is_vector_id } from '@/use/poster'
-  import { cutout as cutout_pref } from '@/utils/preference'
 
   const props = defineProps({
     cutout: {
@@ -34,10 +30,6 @@
 
   const new_poster = ref(inject('new-poster', false))
   const vector = inject('vector', ref(null))
-  const show_cutout = computed(() => {
-    if (new_poster.value) return true
-    return cutout_pref.value
-  })
 
   const path = ref(null)
   const d = ref(undefined)
@@ -69,12 +61,10 @@
 
 <template>
   <path
-    v-if="show_cutout"
     ref="path"
     :d="d"
     itemprop="cutout"
     :fill="fill"
-    v-bind="transform ? { transform } : {}"
     :data-progress="data_progress"
     @focus="$emit('focus', 'cutout')"
     @touchstart.passive="$emit('touchstart', $event, props.index)"
@@ -83,15 +73,17 @@
 
 <style>
   path[itemprop='cutout'] {
-    transition: all 0.2s ease-in-out
+    transition: filter ease-in 0.66s, fill-opacity ease-in 0.66s;
+    animation-play-state: paused;
     &:focus {
       outline: none;
     }
     &:hover {
-      transition: filter ease-in 0.25s, fill-opacity ease-in 0.25s;
+      transition: filter ease-in 0.66s, fill-opacity ease-in 0.66s;
       filter: brightness(1.3) saturate(1.3);
       fill-opacity: 0.75;
-      animation: auto-hide 1s ease-in-out 1s forwards;
+      animation: auto-hide ease-in-out 1.66s 0.66s forwards;
+      animation-play-state: running;
     }
     &:active {
       filter: brightness(1.6) saturate(1.4);
