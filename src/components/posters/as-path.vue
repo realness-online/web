@@ -5,7 +5,7 @@
     onMounted as mounted,
     computed,
     inject,
-    nextTick
+    nextTick as tick
   } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/poster'
@@ -62,24 +62,18 @@
   const fill = ref(undefined)
   const stroke = ref(undefined)
   const d = ref(undefined)
-  const fill_opacity = ref('0.90')
   const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.33')
   const path_length = ref(0)
 
-  mounted(() => {
+  mounted(async () => {
     fill.value = props.fill
     stroke.value = props.stroke
     d.value = props.path.getAttribute('d')
     if (props.path.style.color) stroke.value = props.path.style.color
     if (props.path.style.fill) fill.value = props.path.style.fill
-
-    // Calculate path length for dash animation
-    nextTick(() => {
-      if (path.value) {
-        path_length.value = path.value.getTotalLength()
-      }
-    })
+    await tick()
+    if (path.value) path_length.value = path.value.getTotalLength()
   })
   watch_effect(() => (d.value = props.path?.getAttribute('d')))
 </script>
@@ -103,7 +97,6 @@
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-
     transition-duration: 0.66s;
     &:focus {
       outline: none;
@@ -112,5 +105,4 @@
       fill-opacity: 0.99;
     }
   }
-
 </style>

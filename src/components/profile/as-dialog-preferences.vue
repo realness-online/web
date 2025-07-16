@@ -88,19 +88,19 @@
         <h2>Settings</h2>
       </header>
       <menu>
-        <preference name="fill" title="Use a gradient to fill up your poster" >
+        <preference name="animate" title="Animate posters" />
+        <preference name="fill" title="Use a gradient to fill up your poster">
           <preference name="bold" />
           <preference name="medium" />
           <preference name="regular" />
           <preference name="light" />
+          <preference name="background" />
         </preference>
+
         <preference
           name="stroke"
           title="Outline your graphic with a stroke in relevant color" />
-        <preference name="cutout" title="Display coutouts of the poster">
-        </preference>
-        <preference name="background" title="Display a background fill">
-        </preference>
+        <preference name="cutout" title="Display coutouts of the poster" />
         <preference name="drama" title="Dynamic lighting" />
         <preference
           name="adobe"
@@ -116,7 +116,7 @@
           title="Sync posters with a directory"
           subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
           @on="set_posters_folder" />
-        <preference name="animate" title="Animate posters" />
+
         <preference
           name="info"
           title="Show frames per second and other diagnostics" />
@@ -278,5 +278,4 @@
     color: red;
     fill: red;
   }
-
 </style>

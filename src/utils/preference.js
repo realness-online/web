@@ -1,21 +1,21 @@
 import { useStorage as storage } from '@vueuse/core'
 
-export const fill = storage('fill', true) // ⇧f
-export const stroke = storage('stroke', false) // ⇧s
-export const cutout = storage('cutout', true) // ⇧c
-export const background = storage('background', true) // ⇧b
-export const drama = storage('drama', false) // ⇧l
-export const animate = storage('animate', false) // ⇧a
-export const info = storage('info', false) // ⇧d
-export const storytelling = storage('storytelling', false) // ⇧w
+export const animate = storage('animate', false)
+export const drama = storage('drama', false)
 
-// Layer visibility preferences
-export const bold = storage('bold', true) // Z
-export const medium = storage('medium', true) // X
-export const regular = storage('regular', true) // C
-export const light = storage('light', true) // V
+export const fill = storage('fill', true)
+export const stroke = storage('stroke', false)
+export const cutout = storage('cutout', true)
 
-// export const dash = storage('dash', false) // ⇧d // animate dash
+export const bold = storage('bold', true)
+export const medium = storage('medium', true)
+export const regular = storage('regular', true)
+export const light = storage('light', true)
+export const background = storage('background', true)
+
+export const info = storage('info', false)
+export const storytelling = storage('storytelling', false)
+
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)
 // export const filesystem = storage('filesystem', false)

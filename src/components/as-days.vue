@@ -43,7 +43,6 @@
       required: false,
       default: false
     }
-
   })
 
   const page_size = 5

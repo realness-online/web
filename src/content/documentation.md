@@ -1,23 +1,19 @@
 <!-- markdownlint-disable MD033 -->
 <!-- markdownlint-disable MD024 -->
 
-# Realness.<span>online</span>
-
 ## Overview
 
 [Posters](#posters) and [Thoughts](#thoughts) are what you make with Realness. Each poster is an SVG graphic that is small; able to go directly on the web yet expressive and fun designed to encourage drawing and supportive to the myriad of digital pursuites. Posters are designed to be flexible, they integrate into toolchains, or can be efficently embeded into websites without optimiztions.
 
 ### Where to begin
 
-Realness works best on a phone for when you want to take quick photos. Dramatic and delivering the same quality with digital zoom. Walking around making posters is a good time. You save it to your home screen. Explore composition or framing – Realness is a tool to spark your creative journeys.
+You save it to your home screen; Realness works great on a phone for when you want to take photos and turn them into Posters. Dramatic with low fidelity, you get the quality visuals even with digital zoom. Walking around making posters is a good time. Explore composition or framing – Realness is a tool to spark your creative journeys.
 
 from the [homepage](https://realness.online) click on the camera, take a picture, and Realness will create a super fun rotoscope vector graphic.
 
 Multilayered and designed to give you the most creative direction. Each photo has eighteen gradients for you to pull color from. Realness integrates right into Figma, Affinity, Procreate, or Adobe toolchains.
 
 enabling EXIF, and Model Context Protocol integration will provide an elegent interfact for integrating realness into 3d worflows (blender first). With chat and audio integration on the way it's a powerful tool for a new age of creative work.
-
----
 
 ### What You Can Do
 
@@ -164,7 +160,7 @@ Relations are stored locally with no server-side friend suggestions. You control
 
 ---
 
-# Integration
+# Integrations
 
 ## Procreate
 
@@ -172,7 +168,7 @@ If you want to use your poster in Procreate You'll need to convert it to PSD wit
 
 ---
 
-## Desktop Installation
+## Desktop
 
 Realness is a Progressive Web App (PWA) that you can install on your desktop for a native experience. Once installed, it works offline and feels like a native application.
 
@@ -203,15 +199,13 @@ The desktop version maintains the same functionality as the web version, But let
 
 ## Shortcuts
 
-The _settings_ Dialog (<kbd>ctrl</kbd><kbd>.</kbd>) is accessed from the bottom left of the app.
+The _settings_ Dialog <kbd>.</kbd> is accessed from the bottom left of the app.
 
 Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
 
 All preferences are stored locally with no server-side sync, giving you control over your settings while working offline.
 
-Some preferences can be resource intensive. Especially when you enable animation. The effect is fun though, bringing your Poster to life in subtle ways
-
-### keyboard
+### Keyboard
 
 <kbd>0</kbd> - Go to home
 
@@ -263,9 +257,7 @@ Some preferences can be resource intensive. Especially when you enable animation
 
 <kbd>.</kbd> - Open settings dialog
 
-<kbd>?</kbd> - Show documentation
-
-<kbd>/</kbd> - Show documentation
+<kbd>?/</kbd> - Show documentation
 
 ---
 

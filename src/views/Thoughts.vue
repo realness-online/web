@@ -72,7 +72,12 @@
 </script>
 
 <template>
-  <section id="thoughts" ref="thoughts" class="page" :class="{ storytelling: storytelling }" outline>
+  <section
+    id="thoughts"
+    ref="thoughts"
+    class="page"
+    :class="{ storytelling: storytelling }"
+    outline>
     <header>
       <icon name="nothing" />
       <logo-as-link tabindex="-1" />

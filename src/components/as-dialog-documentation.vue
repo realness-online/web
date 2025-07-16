@@ -85,11 +85,11 @@
 
 <template>
   <dialog ref="dialog" class="documentation" @click="handle_click">
+    <header>
+      <h1>Documentation</h1>
+      <h2>Realness.<span>online</span></h2>
+    </header>
     <article>
-      <header>
-        <h1>Documentation</h1>
-      </header>
-
       <nav v-if="toc_items.length > 0" class="toc">
         <a
           v-for="item in toc_items"
@@ -100,7 +100,6 @@
           {{ item.title }}
         </a>
       </nav>
-
       <section class="content" v-html="rendered_content" />
     </article>
   </dialog>
@@ -108,6 +107,21 @@
 
 <style lang="stylus">
   dialog.documentation
+    &> header {
+      h1 {
+        text-align: center
+      }
+      h2 {
+        margin-right:base-line
+        text-align: center
+        color: blue
+
+        span {
+          font-size:smaller
+          color:green
+        }
+      }
+    }
     & > article {
       max-width: var(--page-width);
       max-height: 80vh;

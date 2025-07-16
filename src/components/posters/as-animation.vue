@@ -267,20 +267,21 @@
   </g>
 </template>
 <style>
-  path[itemprop] {
-    stroke-dashoffset: 0;
+  svg.animate {
+    & path[itemprop] {
+      stroke-dashoffset: 0;
+    }
+    & path[itemprop='light'] {
+      stroke-dasharray: 8, 16;
+    }
+    & path[itemprop='regular'] {
+      stroke-dasharray: 13, 21;
+    }
+    & path[itemprop='medium'] {
+      stroke-dasharray: 18, 26;
+    }
+    & path[itemprop='bold'] {
+      stroke-dasharray: 4, 32;
+    }
   }
-  path[itemprop='light'] {
-    stroke-dasharray: 8, 16;
-  }
-  path[itemprop='regular'] {
-    stroke-dasharray: 13, 21;
-  }
-  path[itemprop='medium'] {
-    stroke-dasharray: 18, 26;
-  }
-  path[itemprop='bold'] {
-    stroke-dasharray: 4, 32;
-  }
-
 </style>

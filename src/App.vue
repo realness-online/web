@@ -8,26 +8,25 @@
     ref,
     onUnmounted as dismount,
     onMounted as mounted,
-    provide,
-    computed
+    provide
   } from 'vue'
   import { init_serverless } from '@/utils/serverless'
-  import { useRouter as use_router} from 'vue-router'
+  import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
   import {
     fill,
     stroke,
     cutout,
-    background,
-    light,
-    animate,
-    info,
-    storytelling,
+    drama,
     bold,
     medium,
     regular,
-    drama
+    light,
+    background,
+    animate,
+    info,
+    storytelling
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -43,28 +42,18 @@
   const preferences_dialog = ref(null)
   const { register, register_preference } = use_keymap('Global')
 
-  // Special handler for fill (F key) - master control for all layers
   register('pref::Toggle_Fill', () => {
     const new_state = !fill.value
     fill.value = new_state
-
-    // Batch all layer updates
     if (new_state) {
-      // Turn all on
       bold.value = true
       medium.value = true
       regular.value = true
       light.value = true
-    } else {
-      // Turn all off
-      bold.value = false
-      medium.value = false
-      regular.value = false
-      light.value = false
+      background.value = true
     }
   })
 
-  // Regular preference toggles for individual layers
   register_preference('pref::Toggle_Stroke', stroke)
   register_preference('pref::Toggle_Cutout', cutout)
   register_preference('pref::Toggle_Background', background)
@@ -72,13 +61,23 @@
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
+
   register_preference('pref::Toggle_Bold', bold)
   register_preference('pref::Toggle_Medium', medium)
   register_preference('pref::Toggle_Regular', regular)
   register_preference('pref::Toggle_Light', light)
 
-  register('ui::Show_Documentation', () => documentation.value?.show())
-  register('ui::Open_Settings', () => preferences_dialog.value?.show())
+  register('ui::Show_Documentation', () => {
+    console.log('ui::Show_Documentation')
+    if (documentation.value?.dialog?.open) documentation.value.dialog.close()
+    else documentation.value?.show()
+  })
+  register('ui::Open_Settings', () => {
+    console.log('ui::Open_Settings')
+    if (preferences_dialog.value?.settings?.open)
+      preferences_dialog.value.settings.close()
+    else preferences_dialog.value?.show()
+  })
   register('ui::Toggle_Fullscreen', () =>
     !document.fullscreenElement
       ? document.documentElement.requestFullscreen()

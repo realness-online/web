@@ -39,7 +39,7 @@ export const default_keymap = [
       B: 'pref::Toggle_Background',
 
       '.': 'ui::Open_Settings',
-      '?': 'ui::Show_Documentation'
+      '/': 'ui::Show_Documentation'
     },
     descriptions: {
       'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
