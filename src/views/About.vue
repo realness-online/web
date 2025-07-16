@@ -24,7 +24,9 @@
     <header>
       <nav>
         <logo-as-link />
-        <a @click="show_documentation">Documentation <span>{{ version }}</span></a>
+        <a @click="show_documentation"
+          >Documentation <span>{{ version }}</span></a
+        >
       </nav>
       <figure class="hero">
         <figcaption>

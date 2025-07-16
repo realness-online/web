@@ -27,11 +27,12 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
+    drama,
     background,
     bold,
     medium,
     regular,
-    drama
+    light
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -107,7 +108,6 @@
   const animate = computed(
     () => animate_pref.value === true && intersecting.value
   )
-  const mask = computed(() => intersecting.value)
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -119,7 +119,6 @@
   const new_poster = inject('new-poster', false)
   const { new_vector } = use_vectorize()
 
-  // Provide vector to child components
   provide('vector', vector)
 
   if (new_poster) {
@@ -154,8 +153,10 @@
     }
   })
 
-  // Add computed properties for layer visibility
-  const light_visible = computed(() => vector.value?.light && drama.value)
+  const background_visible = computed(
+    () => vector.value?.background && background.value
+  )
+  const light_visible = computed(() => vector.value?.light && light.value)
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
@@ -188,7 +189,7 @@
       patternUnits="userSpaceOnUse"
       :preserveAspectRatio="aspect_ratio">
       <as-background
-        v-if="background"
+        v-show="background_visible"
         :id="query('background')"
         :rect="vector.background"
         :width="vector.width"

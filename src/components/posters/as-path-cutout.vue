@@ -83,22 +83,27 @@
 
 <style>
   path[itemprop='cutout'] {
-    transition: filter 0.3s ease-in-out;
+    transition: all 0.2s ease-in-out
     &:focus {
       outline: none;
     }
     &:hover {
-      transition: filter 0.3s ease-in-out 0.3s; /* 300ms delay */
-      filter: brightness(1.5) saturate(1.5);
+      transition: filter ease-in 0.25s, fill-opacity ease-in 0.25s;
+      filter: brightness(1.3) saturate(1.3);
       fill-opacity: 0.75;
-      animation: auto-hide 3s ease-in-out 0.6s forwards; /* Auto-hide after 3s */
+      animation: auto-hide 1s ease-in-out 1s forwards;
     }
     &:active {
-      filter: brightness(1.25) saturate(1.25);
-      fill-opacity: 1;
+      filter: brightness(1.6) saturate(1.4);
+      animation: boost ease-out 1s forwards;
     }
   }
-
+  @keyframes boost {
+    to {
+      filter: brightness(1.6) saturate(1.6);
+      fill-opacity: 0.99;
+    }
+  }
   @keyframes auto-hide {
     to {
       filter: brightness(1) saturate(1);
