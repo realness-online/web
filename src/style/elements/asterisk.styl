@@ -24,3 +24,21 @@ html *
   opacity: 0
   visibility: hidden
   transition-delay: 0s, 0.5s
+
+* {
+  &[style*="display: none"] {
+    transition-property: opacity,  display;
+    transition-duration: 0.66s;
+    transition-behavior: allow-discrete;
+    transition-delay: 0;
+    opacity: 0;
+
+  }
+  &:not([style*="display: none"]) {
+    transition-property: opacity,  display;
+    transition-duration: 0.66s;
+    transition-behavior: allow-discrete;
+    transition-delay: 0;
+    opacity: 1;
+  }
+}

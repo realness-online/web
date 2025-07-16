@@ -32,7 +32,10 @@
     bold,
     medium,
     regular,
-    light
+    light,
+    cutout,
+    fill,
+    stroke
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -160,6 +163,7 @@
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
+  const cutout_visible = computed(() => vector.value?.cutout && cutout.value)
 </script>
 
 <template>
@@ -241,14 +245,14 @@
     </pattern>
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks :itemid="itemid" />
-    <rect :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
+    <rect v-show="fill|| stroke" :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
     <rect
-      v-if="drama"
+      v-show="drama"
       id="lightbar-back"
       fill="url(#lightbar)"
       width="100%"
       height="100%" />
-    <g :id="query('cutouts')" v-if="vector.cutout" style="fill-opacity: 0.5">
+    <g :id="query('cutouts')" v-show="cutout_visible" style="fill-opacity: 0.5">
       <as-path-cutout
         v-for="(cutout, index) in vector.cutout"
         :key="`cutout-${index}`"
@@ -260,7 +264,7 @@
         @touchend="cutout_end" />
     </g>
     <rect
-      v-if="drama"
+      v-show="drama"
       id="lightbar-front"
       fill="url(#lightbar)"
       width="100%"
