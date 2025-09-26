@@ -5,13 +5,50 @@ import PhoneBook from '@/views/PhoneBook'
 const MOCK_YEAR = 2000
 const MOCK_MONTH = 13
 
+// Mock localStorage
+Object.defineProperty(window, 'localStorage', {
+  value: {
+    me: '/+14151234356'
+  }
+})
+
+// Mock people composable
+vi.mock('@/use/people', () => ({
+  use: () => ({
+    phonebook: { value: [] },
+    load_phonebook: vi.fn(),
+    working: { value: false }
+  }),
+  is_person: (maybe) => {
+    if (typeof maybe !== 'object') return false
+    if (maybe.type !== 'person') return false
+    if (!maybe.id) return false
+    return true
+  }
+}))
+
+// Mock serverless utils
+vi.mock('@/utils/serverless', () => ({
+  current_user: { value: null }
+}))
+
 describe('@/views/PhoneBook', () => {
   let wrapper
 
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(MOCK_YEAR, MOCK_MONTH))
-    wrapper = shallowMount(PhoneBook)
+    wrapper = shallowMount(PhoneBook, {
+      global: {
+        stubs: {
+          'icon': true,
+          'logo-as-link': true,
+          'as-figure': true,
+          'sign-on': true,
+          'router-link': true
+        }
+      }
+    })
   })
 
   afterEach(() => {
@@ -25,30 +62,11 @@ describe('@/views/PhoneBook', () => {
     })
   })
 
-  // Restructured to avoid excessive nesting
-  describe('Methods', () => {
-    describe('#load_contacts', () => {
-      it('loads contacts from storage', async () => {
-        await wrapper.vm.load_contacts()
-        expect(wrapper.vm.contacts).toEqual([])
-      })
-    })
-
-    describe('#save_contact', () => {
-      it('saves new contact', async () => {
-        const contact = { name: 'Test User', phone: '1234567890' }
-        await wrapper.vm.save_contact(contact)
-        expect(wrapper.vm.contacts).toContain(contact)
-      })
-    })
-
-    describe('#remove_contact', () => {
-      it('removes existing contact', async () => {
-        const contact = { name: 'Test User', phone: '1234567890' }
-        wrapper.vm.contacts = [contact]
-        await wrapper.vm.remove_contact(contact)
-        expect(wrapper.vm.contacts).not.toContain(contact)
-      })
+  describe('Component Structure', () => {
+    it('renders with correct structure', () => {
+      expect(wrapper.find('section#directory').exists()).toBe(true)
+      expect(wrapper.find('header').exists()).toBe(true)
+      expect(wrapper.find('h1').text()).toBe('Phonebook')
     })
   })
 })

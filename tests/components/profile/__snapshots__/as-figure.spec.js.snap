@@ -3,7 +3,6 @@
 exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile info 1`] = `
 <figure
   class="profile"
-  relations="[object Object],[object Object],[object Object]"
 >
   <icon-stub
     name="silhouette"
@@ -21,7 +20,7 @@ exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile
       <as-relationship-options-stub
         person="[object Object]"
       />
-      <anonymous-stub
+      <profile-messenger-stub
         itemid="/+16282281823"
       />
       

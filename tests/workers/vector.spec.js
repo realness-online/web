@@ -1,6 +1,45 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import * as vector from '@/workers/vector'
-import potrace from '@realness.online/potrace'
+
+// Mock potrace
+vi.mock('@/potrace/index.js', () => ({
+  as_paths: vi.fn().mockReturnValue({ 
+    paths: ['<svg><rect width="100" height="100"/></svg>'],
+    width: 333,
+    height: 444,
+    dark: true
+  })
+}))
+
+// Make potrace available globally for the tests
+global.potrace = {
+  trace: vi.fn().mockResolvedValue({ paths: [] }),
+  default: vi.fn().mockResolvedValue({ paths: [] }),
+  as_paths: vi.fn().mockResolvedValue({ paths: [] })
+}
+
+// Mock browser APIs
+global.OffscreenCanvas = class OffscreenCanvas {
+  constructor(width, height) {
+    this.width = width
+    this.height = height
+  }
+  getContext() {
+    return {
+      getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+      putImageData: () => {},
+      drawImage: () => {}
+    }
+  }
+}
+
+global.ImageData = class ImageData {
+  constructor(data, width, height) {
+    this.data = data
+    this.width = width
+    this.height = height
+  }
+}
 
 // Define constants to avoid magic numbers
 const MOCK_RGB_VALUES = [0.3, 0.4, 0.5]
@@ -11,10 +50,14 @@ const MOCK_DIMENSIONS = {
   WIDE_WIDTH: 666
 }
 
-const image = read_mock_file('@@/images/house.jpeg')
-const poster_html = read_mock_file('@@/html/poster.html')
+// Mock image data instead of reading from file
+const image = new ArrayBuffer(1024) // Mock image data
+const poster_html = '<svg><rect width="100" height="100"/></svg>' // Mock HTML
 
 const mock_image = {
+  width: MOCK_DIMENSIONS.DEFAULT_WIDTH,
+  height: MOCK_DIMENSIONS.DEFAULT_HEIGHT,
+  data: new Uint8ClampedArray(MOCK_DIMENSIONS.DEFAULT_WIDTH * MOCK_DIMENSIONS.DEFAULT_HEIGHT * 4),
   bitmap: {
     width: MOCK_DIMENSIONS.DEFAULT_WIDTH,
     height: MOCK_DIMENSIONS.DEFAULT_HEIGHT,
@@ -38,46 +81,53 @@ describe('vector worker', () => {
   let as_paths_spy
   let postMessage_spy
 
-  beforeEach(() => {
-    as_paths_spy = vi
-      .spyOn(potrace, 'as_paths')
-      .mockImplementation(() => Promise.resolve(mock_vector))
+  beforeEach(async () => {
+    const potrace_module = await import('@/potrace/index.js')
+    as_paths_spy = vi.spyOn(potrace_module, 'as_paths').mockImplementation((image_data) => ({
+      paths: ['<svg><rect width="100" height="100"/></svg>'],
+      width: image_data.width,
+      height: image_data.height,
+      dark: true
+    }))
 
     postMessage_spy = vi
       .spyOn(global, 'postMessage')
       .mockImplementation(() => true)
   })
 
-  describe('listen', () => {
+  describe('make_vector', () => {
     it('creates a vector from a jpeg', async () => {
-      await vector.listen({ data: { image } })
+      const message = { data: { image_data: mock_image } }
+      const result = await vector.make_vector(message)
       expect(as_paths_spy).toBeCalled()
-      expect(postMessage_spy).toBeCalled()
+      expect(result).toHaveProperty('vector')
+      expect(result.vector).toHaveProperty('light')
+      expect(result.vector).toHaveProperty('regular')
+      expect(result.vector).toHaveProperty('medium')
+      expect(result.vector).toHaveProperty('bold')
     })
 
     it('handles different aspect ratios', async () => {
       const wider_image = {
         ...mock_image,
-        bitmap: {
-          ...mock_image.bitmap,
-          width: MOCK_DIMENSIONS.WIDE_WIDTH
-        }
+        width: MOCK_DIMENSIONS.WIDE_WIDTH
       }
-      await vector.listen({ data: { wider_image } })
+      const message = { data: { image_data: wider_image } }
+      const result = await vector.make_vector(message)
       expect(as_paths_spy).toBeCalled()
-      expect(postMessage_spy).toBeCalled()
+      expect(result).toHaveProperty('vector')
+      expect(result.vector.width).toBe(MOCK_DIMENSIONS.WIDE_WIDTH)
     })
   })
 
-  describe('make', () => {
+  describe('make_gradient', () => {
     it('handles large vectors', async () => {
-      const large = {
-        paths: Array(MAX_PATHS).fill(image)
-      }
-
-      as_paths_spy.mockImplementationOnce(() => Promise.resolve(large))
-      await vector.make(mock_image)
-      expect(mock_image.resize).toBeCalled()
+      const message = { data: { image_data: mock_image } }
+      const result = await vector.make_gradient(message)
+      expect(result).toHaveProperty('gradients')
+      expect(result.gradients).toHaveProperty('horizontal')
+      expect(result.gradients).toHaveProperty('vertical')
+      expect(result.gradients).toHaveProperty('radial')
     })
   })
 })

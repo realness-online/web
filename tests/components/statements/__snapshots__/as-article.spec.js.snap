@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/statements/as-article.vue > Renders > Loads the statement author if verbose is true 1`] = `
+<article
+  class="thought"
+>
+  <header>
+    <time>
+      3:40 PM
+    </time>
+  </header>
+  
+  <as-div-stub
+    editable="false"
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  <as-div-stub
+    editable="false"
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  
+</article>
+`;
+
+exports[`@/components/statements/as-article.vue > Renders > Render a statement as an article element 1`] = `
+<article
+  class="thought"
+>
+  <header>
+    <time>
+      3:40 PM
+    </time>
+  </header>
+  
+  <as-div-stub
+    editable="false"
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  <as-div-stub
+    editable="false"
+    itemprop="statements"
+    statement="[object Object]"
+  />
+  
+</article>
+`;

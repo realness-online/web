@@ -1,58 +1,44 @@
 # Release Plan: vtracer Integration
 
-## Problem
+Before working on these features, do a run through on tests, linting and type checking.
 
-vtracer integration increased poster file sizes by 300-500% due to trace paths. Current system blocks UI during tracing and only processes one poster at a time.
+## The Problem
 
-## Solution
+vtracer allowed us to create a cutouts feature which improves the fidelity and animation potential of of our Posters But file size has increase by 300-500% due to the number of cutouts. We need a to store cutouts outside our poster and load them apropriatly.
 
-Decouple poster creation from UI allowing for multi file conversion. We'd like to support converting multiple files at a time. maybe by first converting each uploaded file to the proper dimentions and keeping in indexdb until we can get to them
+we'd also like to improve the user experience for poster creation by creating directly in the [posters]('/posters') list.
+
+Decouple poster creation from the UI to allow for multi-file selection and selecting and converting whole folders of images.
 
 ## Tasks
 
-### 1. Migration Script (Start Here)
+### Migration Script (Start Here)
 
 - [ ] Create migration script to download all existing posters
 - [ ] Convert single-file posters to folder structure (`index.html.gz`)
 - [ ] Upload migrated posters with new folder format
 - [ ] Verify migration success and data integrity
 
-### 2. Queue-Based vtracer System
+### User Experience Improvement
 
-- [ ] Create persistent trace queue in IndexedDB
-- [ ] Build single background worker for trace processing
-- [ ] Decouple poster creation from tracing (immediate UI navigation)
-- [ ] Add queue status display in UI
+We want to change the user experience around creating posters. Instead of going to an edit screen where we approve each poster, they should be rendered into the posters view with their menus showing up ready to be deleted (but it's assumed they're being kept).
 
-### 3. Segmented Storage Architecture
+This approach lets us handle multiple files and queues up vtracer conversion, which is much more expensive.
 
-- [ ] Update `src/utils/itemid.js#as_filename()` for folder structure
-- [ ] Update `src/utils/itemid.js#load_from_network()` for folder loading
-- [ ] Modify `src/persistance/Cloud.js` for multi-file uploads
-- [ ] Add trace segmentation logic (~100KB per file)
+We need to temporarily store the image we're creating and should consider uploading it to the directory to be mixed into the poster.
 
-### 4. Backwards Compatibility
+we then need a way to monitor posters that have vtracer work remaining.
 
-- [ ] Detect folder vs single-file format on load
-- [ ] Maintain fallback to existing poster format
-- [ ] Test migration of existing posters
+### Cutouts Storage Architecture
 
-### 5. Progressive Loading
+We want to store poster from `/users/{phone}/posters/{created_at}.html` to `/users/{phone}/posters/{created_at}/index.html` thereby creating a folder in which we can store the cutouts and on the client the image itself.
 
-- [ ] Load core poster first (`index.html`)
-- [ ] Load trace segments on-demand
-- [ ] Add loading states for trace data
+We want the filesystem approach to mirror on the client and really need to think about how to do that with our current indexdb and persistance implementation.
 
-## Files to Modify
+### Progressive Loading
 
-- `src/utils/itemid.js` - Storage path handling
-- `src/persistance/Cloud.js` - Upload/download logic
-- `src/use/vectorize.js` - Queue integration
-- `src/utils/upload-processor.js` - Segmentation logic
-- `src/persistance/Storage.js` - Multi-file operations
+We'll load the core poster first (`index.html`) and then load trace segments on-demand. we can be aware of our network latency and toggle between auto loading traces and waiting for the user to click on them. maybe we wait and make people click so that their is this event calendar vibe to viewing posters.
 
-## Success Criteria
+### Randoms
 
-- Poster load time <2s for core, <5s with trace
-- Zero data loss during migration
-- 100% backwards compatibility
+We have an issue with statements not being available on devices where they are created - we need to explore how statement syncing works

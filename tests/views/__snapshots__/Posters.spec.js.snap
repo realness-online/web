@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/views/Posters > Rendering > renders posters view 1`] = `
+<div
+  data-v-app=""
+>
+  
+  <!--v-if-->
+  <section
+    class="page"
+    id="posters"
+  >
+    <header>
+      <a
+        tabindex="-1"
+      >
+        <icon-stub
+          name="add"
+        />
+      </a>
+      <a
+        hidden=""
+        tabindex="-1"
+      >
+        <icon-stub
+          name="picker"
+        />
+      </a>
+      <anonymous-stub
+        tabindex="-1"
+      />
+    </header>
+    <h1>
+      Posters
+    </h1>
+    <icon-stub
+      name="working"
+    />
+    <!--v-if-->
+  </section>
+  
+</div>
+`;

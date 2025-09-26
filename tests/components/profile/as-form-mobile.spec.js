@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { vi } from 'vitest'
 import as_form from '@/components/profile/as-form-mobile'
 
@@ -44,7 +44,7 @@ describe('@/component/profile/as-form-mobile.vue', () => {
   }
   let wrapper
   beforeEach(async () => {
-    wrapper = await shallowMount(as_form, { 
+    wrapper = await shallowMount(as_form, {
       props: { person },
       global: {
         stubs: {

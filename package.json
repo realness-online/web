@@ -36,6 +36,7 @@
     "prepare": "husky",
     "docs": "jsdoc -c jsdoc.json",
     "test": "vitest run",
+    "test:update": "vitest run -u",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",

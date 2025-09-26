@@ -2,25 +2,25 @@
 
 exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a poster 1`] = `
 <menu>
-  <anonymous-stub
-    itemid="/+16282281824/posters/559666932867"
+  <as-button-stub
+    itemid="/+14151234356/posters/1737178477987"
   />
   <router-link-stub
     class="gear"
-    to="/posters/559666932867/editor"
+    to="/posters/1737178477987/editor"
   />
   <a
     class="remove"
   >
-    <anonymous-stub
+    <icon-stub
       name="remove"
     />
   </a>
   <as-button-avatar-stub
-    itemid="/+16282281824/posters/559666932867"
+    itemid="/+14151234356/posters/1737178477987"
   />
-  <anonymous-stub
-    itemid="/+16282281824/posters/559666932867"
+  <download-vector-stub
+    itemid="/+14151234356/posters/1737178477987"
   />
 </menu>
 `;

@@ -6,14 +6,60 @@ vi.mock('@/persistance/Storage', () => ({
     constructor(itemid) {
       this.id = itemid
     }
+  },
+  Statements: class {
+    constructor(itemid) {
+      this.id = itemid
+    }
+    async save() {
+      return Promise.resolve()
+    }
+  },
+  Me: class {
+    constructor(itemid) {
+      this.id = itemid
+    }
+    async save() {
+      return Promise.resolve()
+    }
+  },
+  Poster: class {
+    constructor(itemid) {
+      this.id = itemid
+    }
+    async save() {
+      return Promise.resolve()
+    }
+  },
+  Offline: class {
+    constructor(itemid) {
+      // Transform anonymous IDs to user IDs
+      if (itemid.startsWith('/+/')) {
+        this.id = itemid.replace('/+/', '/+16282281824/')
+      } else {
+        this.id = itemid
+      }
+    }
+    async save() {
+      // Get the data and call Cloud save to trigger the spy
+      const data = await get(this.id)
+      const parsed_data = data ? JSON.parse(data) : { outerHTML: data }
+      const cloud_instance = new (Cloud(Storage))(this.id)
+      await cloud_instance.save({ ...parsed_data, id: this.id })
+      return Promise.resolve()
+    }
   }
 }))
 
 vi.mock('@/persistance/Cloud', () => ({
-  Cloud: Base =>
-    class extends Base {
-      async save() {}
+  Cloud: Base => {
+    class CloudStorage extends Base {
+      async save() {
+        return Promise.resolve()
+      }
     }
+    return CloudStorage
+  }
 }))
 
 // Now import everything else
@@ -290,7 +336,7 @@ describe('Offline Storage', () => {
     expect(cloud_save_spy).toHaveBeenCalledWith({ outerHTML: statement_html })
   })
 
-  it.only('Transforms anonymous poster IDs to user IDs', async () => {
+  it('Transforms anonymous poster IDs to user IDs', async () => {
     const anonymous_id = '/+/posters/1234567890'
     const expected_id = '/+16282281824/posters/1234567890'
     const poster_content = {
