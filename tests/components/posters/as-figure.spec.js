@@ -5,7 +5,7 @@ import get_item from '@/use/item'
 
 const poster_html = read_mock_file('@@/html/poster.html')
 const poster = get_item(poster_html)
-describe('@/compontent/posters/as-figure.vue', () => {
+describe('@/component/posters/as-figure.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(as_figure, { props: { itemid: poster.id } })

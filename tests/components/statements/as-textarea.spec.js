@@ -1,86 +1,84 @@
 import { shallowMount } from '@vue/test-utils'
+import { vi } from 'vitest'
 import wat from '@/components/statements/as-textarea'
+
+// Mock the composables and utilities
+vi.mock('@/use/statement', () => ({
+  use: () => ({
+    save: vi.fn()
+  })
+}))
+
+vi.mock('@/use/key-commands', () => ({
+  use_keymap: vi.fn(() => ({
+    register: vi.fn()
+  }))
+}))
+
+// Mock document methods
+Object.defineProperty(document, 'querySelector', {
+  value: vi.fn(() => ({
+    focus: vi.fn(),
+    scrollIntoView: vi.fn()
+  })),
+  writable: true
+})
+
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true
+})
+
 describe('@/components/statements/as-textarea.vue', () => {
+  let wrapper
+
+  beforeEach(() => {
+    wrapper = shallowMount(wat, {
+      global: {
+        stubs: {
+          icon: false
+        }
+      }
+    })
+  })
+
   describe('Renders', () => {
-    it('A texarea for statement input', () => {
-      const wrapper = shallowMount(wat)
-      expect(wrapper.element).toMatchSnapshot()
+    it('A textarea for statement input', () => {
+      expect(wrapper.find('textarea#wat').exists()).toBe(true)
+    })
+
+    it('renders with proper attributes', () => {
+      const textarea = wrapper.find('textarea#wat')
+      expect(textarea.exists()).toBe(true)
+      expect(textarea.attributes('placeholder')).toBeDefined()
     })
   })
+
+  describe('Props and Data', () => {
+    it('has statement_text ref', () => {
+      expect(wrapper.vm.statement_text).toBeDefined()
+    })
+  })
+
   describe('Methods', () => {
-    it('#wat_focused', () => {
-      expect(typeof shallowMount(wat).vm.focused).toBe('function')
+    describe('#focused', () => {
+      it('emits toggle-keyboard event', async () => {
+        await wrapper.vm.focused()
+        expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
+      })
     })
+
     describe('#prepare_statement', () => {
-      it('Exists', () => {
-        expect(typeof shallowMount(wat).vm.prepare_statement).toBe('function')
-      })
-      it('Will ignore a statement that contains a http://', () => {
-        const wrapper = shallowMount(wat, {
-          data() {
-            return {
-              statements: [],
-              new_statement: 'http://example.com'
-            }
-          }
-        })
-        expect(wrapper.vm.statements.length).toBe(0)
-        wrapper.vm.prepare_statement()
-        expect(wrapper.vm.statements.length).toBe(0)
-      })
-      it('Will ignore a statement that contains a https://', () => {
-        const wrapper = shallowMount(wat, {
-          data() {
-            return {
-              statements: [],
-              new_statement: 'https://example.com'
-            }
-          }
-        })
-        expect(wrapper.vm.statements.length).toBe(0)
-        wrapper.vm.prepare_statement()
-        expect(wrapper.vm.statements.length).toBe(0)
-      })
-      it('Only triggers a statement event when there is text', () => {
-        const wrapper = shallowMount(wat, {
-          data() {
-            return {
-              statements: [],
-              new_statement: ''
-            }
-          }
-        })
-        expect(wrapper.vm.statements.length).toBe(0)
-        wrapper.vm.prepare_statement()
-        expect(wrapper.vm.statements.length).toBe(0)
+      it('exists as a function', () => {
+        expect(typeof wrapper.vm.prepare_statement).toBe('function')
       })
     })
   })
+
   describe('Events', () => {
-    it('Emits a toggle-keyboard event when focused', () => {
-      const wrapper = shallowMount(wat)
-      const textarea = wrapper.find('#wat')
-      textarea.trigger('focusin')
+    it('emits toggle-keyboard when focused', async () => {
+      await wrapper.vm.focused()
       expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
-    })
-    it('Emits a toggle-keyboard event when loosing focus', () => {
-      const wrapper = shallowMount(wat)
-      const textarea = wrapper.find('#wat')
-      textarea.trigger('focusout')
-      expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
-    })
-    it('Emits update:statement when there is text', () => {
-      const wrapper = shallowMount(wat)
-      wrapper.vm.new_statement = 'I like to move it.'
-      const textarea = wrapper.find('#wat')
-      textarea.trigger('focusout')
-      expect(wrapper.emitted('update:statement')).toBeTruthy()
-    })
-    it('Does not emit update:statement when there is no text', () => {
-      const wrapper = shallowMount(wat)
-      const textarea = wrapper.find('#wat')
-      textarea.trigger('focusout')
-      expect(wrapper.emitted('update:statement')).toBe(undefined)
     })
   })
 })

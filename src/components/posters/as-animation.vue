@@ -266,6 +266,7 @@
       keySplines="0.4 0 0.6 1" />
   </g>
 </template>
+
 <style>
   svg.animate {
     & path[itemprop] {

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`@/compontent/profile/as-search.vue > Renders > An input for search 1`] = `
+exports[`@/component/profile/as-search.vue > Renders > An input for search 1`] = `
 <label
   for="search"
 >

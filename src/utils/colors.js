@@ -1,24 +1,43 @@
-import rgb_to_hex from 'rgb-hex'
-import hsl_to_hex from 'hsl-to-hex'
 import css_var from '@/utils/css-var'
 import {
-  useMode as use_mode,
-  modeHsl as mode_hsl,
-  modeOklch as mode_oklch,
-  converter
-} from 'culori/fn'
-use_mode(mode_oklch)
-use_mode(mode_hsl)
+  rgb_to_hex,
+  hsl_to_hex,
+  hsl_to_oklch
+} from '@/utils/color-converters'
 
-export const to_hex = (color = '') => {
+export const to_hex = (color = '', green, blue) => {
+  // Handle individual RGB values
+  if (typeof color === 'number' && typeof green === 'number' && typeof blue === 'number') 
+    return rgb_to_hex(color, green, blue)
+  
+  // Handle string inputs
+  if (typeof color !== 'string') 
+    throw `Provided color is unrecognized — ${color}`
+  
   if (color.length === 0) color = '--black-dark'
   if (color.startsWith('--')) color = css_var(color).trim()
   if (color.startsWith('#')) return color
+  
   let hex
-  if (color.startsWith('rgb')) hex = `#${rgb_to_hex(color)}`
-  if (color.startsWith('hsl')) hex = hsl_to_hex(color)
-  if (hex.length === 9) return hex.slice(0, -2)
-  else if (hex.length === 7) return hex
+  if (color.startsWith('rgb')) 
+    hex = rgb_to_hex(color)
+   else if (color.startsWith('hsl')) 
+    hex = hsl_to_hex(color)
+   else {
+    // Try to parse as individual RGB values
+    const parts = color.toString().split(',')
+    if (parts.length === 3) {
+      const r = parseInt(parts[0].trim())
+      const g = parseInt(parts[1].trim())
+      const b = parseInt(parts[2].trim())
+      hex = rgb_to_hex(r, g, b)
+    } else 
+      throw `Provided color is unrecognized — ${color}`
+    
+  }
+  
+  if (hex && hex.length === 9) return hex.slice(0, -2)
+  else if (hex && hex.length === 7) return hex
   throw `Provided color is unrecognized — ${color}`
 }
 export const to_hex_number = color => parseInt(color.substring(1))
@@ -105,7 +124,7 @@ export const hsla_to_color = hsla => {
 }
 export const color_to_hsla = ({ h, s, l, a }) => {
   const hsla = `hsla(${h}, ${s}%, ${l}%, ${a})`
-  const ok = converter('oklch')(hsla)
+  const ok = hsl_to_oklch(h, s, l)
   ok.h = Math.round(ok.h)
   ok.l = ok.l.toFixed(3)
   ok.c = ok.c.toFixed(3)

@@ -7,7 +7,19 @@ describe('@/components/icon', () => {
       const wrapper = shallowMount(icon, {
         props: { name: 'realness' }
       })
-      expect(wrapper.element).toMatchSnapshot()
+      expect(wrapper.find('svg.icon').exists()).toBe(true)
+      expect(wrapper.find('svg').classes()).toContain('realness')
+      expect(wrapper.find('use').attributes('href')).toContain('#realness')
+    })
+  })
+
+  describe('Props', () => {
+    it('accepts name prop', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'test-icon' }
+      })
+      expect(wrapper.props('name')).toBe('test-icon')
+      expect(wrapper.find('svg').classes()).toContain('test-icon')
     })
   })
 })

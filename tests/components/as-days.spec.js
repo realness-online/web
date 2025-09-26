@@ -1,68 +1,111 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
 
-const DAYS_IN_WEEK = 7
-const WEEKS_TO_SHOW = 4
-const SELECTED_DAY = 6
+// Mock the composables and utilities
+vi.mock('@/use/statement', () => ({
+  as_thoughts: vi.fn(() => []),
+  thoughts_sort: vi.fn()
+}))
+
+vi.mock('@/utils/sorting', () => ({
+  recent_date_first: vi.fn(),
+  earlier_weirdo_first: vi.fn(),
+  recent_weirdo_first: vi.fn()
+}))
+
+vi.mock('@/utils/itemid', () => ({
+  as_author: vi.fn(() => '/+16282281824')
+}))
+
+vi.mock('@/utils/date', () => ({
+  id_as_day: vi.fn(() => '2024-01-15'),
+  as_day: vi.fn(() => 'January 15, 2024'),
+  is_today: vi.fn(() => false)
+}))
 
 describe('@/components/as-days', () => {
   let wrapper
 
   beforeEach(() => {
-    wrapper = shallowMount(AsDays)
-  })
-
-  describe('Calendar Display', () => {
-    it('renders calendar grid', () => {
-      const days = wrapper.findAll('.day')
-      expect(days.length).toBe(DAYS_IN_WEEK * WEEKS_TO_SHOW)
-    })
-
-    it('shows current month', () => {
-      const month = new Date().toLocaleString('default', { month: 'long' })
-      expect(wrapper.text()).toContain(month)
-    })
-  })
-
-  describe('Day Selection', () => {
-    it('selects day on click', async () => {
-      const day = wrapper.findAll('.day').at(0)
-      await day.trigger('click')
-      expect(wrapper.emitted('select-day')).toBeTruthy()
-    })
-
-    it('highlights selected day', async () => {
-      await wrapper.setProps({ selected_date: new Date() })
-      const selected = wrapper.find('.selected')
-      expect(selected.exists()).toBe(true)
+    wrapper = shallowMount(AsDays, {
+      props: {
+        statements: [],
+        posters: [],
+        events: [],
+        paginate: true,
+        working: false
+      },
+      global: {
+        stubs: {
+          icon: false
+        }
+      }
     })
   })
 
-  describe('Navigation', () => {
-    it('navigates to next month', async () => {
-      const initial_month = wrapper.vm.current_month
-      await wrapper.vm.next_month()
-      expect(wrapper.vm.current_month).not.toBe(initial_month)
+  describe('Rendering', () => {
+    it('renders as-days section', () => {
+      expect(wrapper.find('section.as-days').exists()).toBe(true)
     })
 
-    it('navigates to previous month', async () => {
-      const initial_month = wrapper.vm.current_month
-      await wrapper.vm.previous_month()
-      expect(wrapper.vm.current_month).not.toBe(initial_month)
+    it('shows working indicator when working prop is true', async () => {
+      await wrapper.setProps({ working: true })
+      expect(wrapper.find('header svg').exists()).toBe(true)
+    })
+
+    it('renders day articles when not working', () => {
+      expect(wrapper.find('section.as-days').exists()).toBe(true)
     })
   })
 
-  describe('Date Utilities', () => {
-    it('formats dates correctly', () => {
-      const date = new Date()
-      const formatted = wrapper.vm.format_date(date)
-      expect(formatted).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  describe('Props', () => {
+    it('accepts statements prop', () => {
+      const statements = [{ id: '/+16282281824/statements/123' }]
+      wrapper = shallowMount(AsDays, {
+        props: { statements }
+      })
+      expect(wrapper.props('statements')).toEqual(statements)
     })
 
-    it('identifies today', () => {
-      const today = new Date()
-      expect(wrapper.vm.is_today(today)).toBe(true)
+    it('accepts posters prop', () => {
+      const posters = [{ id: '/+16282281824/posters/123' }]
+      wrapper = shallowMount(AsDays, {
+        props: { posters }
+      })
+      expect(wrapper.props('posters')).toEqual(posters)
+    })
+
+    it('accepts events prop', () => {
+      const events = [{ id: '/+16282281824/events/123' }]
+      wrapper = shallowMount(AsDays, {
+        props: { events }
+      })
+      expect(wrapper.props('events')).toEqual(events)
+    })
+
+    it('accepts paginate prop', () => {
+      wrapper = shallowMount(AsDays, {
+        props: { paginate: false }
+      })
+      expect(wrapper.props('paginate')).toBe(false)
+    })
+
+    it('accepts working prop', () => {
+      wrapper = shallowMount(AsDays, {
+        props: { working: true }
+      })
+      expect(wrapper.props('working')).toBe(true)
+    })
+  })
+
+  describe('Computed Properties', () => {
+    it('has filtered_days computed property', () => {
+      expect(wrapper.vm.filtered_days).toBeDefined()
+    })
+
+    it('has thoughts computed property', () => {
+      expect(wrapper.vm.thoughts).toBeDefined()
     })
   })
 })

@@ -132,7 +132,7 @@
   <main id="realness" :class="status">
     <router-view />
     <sync @active="sync_active" />
-    <fps_component v-if="info" />
+    <fps-component v-if="info" />
     <viewbox v-if="info" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
