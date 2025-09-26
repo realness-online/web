@@ -132,7 +132,7 @@ export const is_stop = stop => {
 
 export const make_vector = async message => {
   console.time('make:vector')
-  const image_data = message.data.image_data
+  const { image_data } = message.data
 
   const poster = as_paths(image_data, potrace_options)
 
@@ -152,7 +152,7 @@ export const make_vector = async message => {
 
 export const make_gradient = async message => {
   console.time('make:gradient')
-  const image_data = message.data.image_data
+  const { image_data } = message.data
 
   // Create a temporary canvas to work with the image data
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)

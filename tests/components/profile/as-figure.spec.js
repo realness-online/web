@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import as_figure from '@/components/profile/as-figure'
-describe('@/compontent/profile/as-figure.vue', () => {
+describe('@/component/profile/as-figure.vue', () => {
   let person, wrapper
   beforeEach(() => {
     get.mockImplementation(() => Promise.resolve({}))

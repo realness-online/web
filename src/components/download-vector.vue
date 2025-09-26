@@ -1,6 +1,6 @@
 <script>
   import { as_day_and_time } from '@/utils/date'
-  import hsl_to_hex from 'hsl-to-hex'
+  import { hsl_to_hex } from '@/utils/color-converters'
   import { hsla_to_color } from '@/utils/colors'
   import { load, as_query_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'

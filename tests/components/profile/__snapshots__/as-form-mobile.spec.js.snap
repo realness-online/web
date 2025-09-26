@@ -8,7 +8,7 @@ exports[`@/compontent/profile/as-form-mobile.vue > Renders > Profile form 1`] = 
   <!--v-if-->
   <!--v-if-->
   <!--v-if-->
-  <anonymous-stub
+  <icon-stub
     name="working"
   />
 </form>

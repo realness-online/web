@@ -1,60 +1,214 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Cloud } from '@/persistance/Cloud'
-import firebase from '@/persistance/firebase'
+import { Cloud, sync_later } from '@/persistance/Cloud'
+import { Storage } from '@/persistance/Storage'
+
+// Mock dependencies
+vi.mock('@/utils/serverless', () => ({
+  current_user: { value: { uid: 'test-user' } },
+  upload: vi.fn(() => Promise.resolve()),
+  remove: vi.fn(() => Promise.resolve()),
+  move: vi.fn(() => Promise.resolve())
+}))
+
+vi.mock('@/utils/itemid', () => ({
+  as_filename: vi.fn(() => 'test-filename.html.gz'),
+  as_type: vi.fn(() => 'posters')
+}))
+
+vi.mock('idb-keyval', () => ({
+  get: vi.fn(() => Promise.resolve([])),
+  set: vi.fn(() => Promise.resolve()),
+  del: vi.fn(() => Promise.resolve())
+}))
+
+vi.mock('@/persistance/Directory', () => ({
+  as_directory: vi.fn(() => Promise.resolve({ id: 'test-directory' })),
+  load_directory_from_network: vi.fn(() => Promise.resolve({ items: [] }))
+}))
+
+vi.mock('@/utils/upload-processor', () => ({
+  prepare_upload_html: vi.fn(() => Promise.resolve({ 
+    compressed: 'compressed-data', 
+    metadata: { contentType: 'text/html' } 
+  }))
+}))
+
+vi.mock('@/utils/numbers', () => ({
+  SIZE: {
+    MAX: 10,
+    MID: 5
+  }
+}))
+
+// Create a test class that uses the Cloud mixin
+class TestCloudClass extends Cloud(Storage) {
+  constructor(itemid) {
+    super(itemid)
+  }
+}
 
 describe('@/persistance/Cloud', () => {
-  let cloud
-  let mock_firebase
+  let cloud_instance
+  let mock_navigator
 
   beforeEach(() => {
-    mock_firebase = {
-      collection: vi.fn().mockReturnThis(),
-      doc: vi.fn().mockReturnThis(),
-      get: vi.fn().mockResolvedValue({ exists: true, data: () => ({}) }),
-      set: vi.fn().mockResolvedValue(true)
-    }
+    // Clear all mocks
+    vi.clearAllMocks()
+    
+    // Mock navigator.onLine
+    mock_navigator = { onLine: true }
+    Object.defineProperty(window, 'navigator', {
+      value: mock_navigator,
+      writable: true
+    })
 
-    vi.spyOn(firebase, 'collection').mockImplementation(() => mock_firebase)
-    cloud = new Cloud('test_collection')
+    // Mock localStorage.me
+    Object.defineProperty(window, 'localStorage', {
+      value: { me: '/+1234567890' },
+      writable: true
+    })
+
+    cloud_instance = new TestCloudClass('/+1234567890/posters/1234567890')
   })
 
-  describe('Basic Operations', () => {
-    it('initializes with collection', () => {
-      expect(cloud.collection).toBe('test_collection')
+  describe('Cloud Mixin', () => {
+    it('adds cloud functionality to base class', () => {
+      expect(cloud_instance).toBeInstanceOf(Storage)
+      expect(typeof cloud_instance.to_network).toBe('function')
+      expect(typeof cloud_instance.save).toBe('function')
+      expect(typeof cloud_instance.delete).toBe('function')
+      expect(typeof cloud_instance.optimize).toBe('function')
     })
 
-    it('connects to firebase', () => {
-      expect(firebase.collection).toHaveBeenCalledWith('test_collection')
-    })
-  })
-
-  describe('Data Operations', () => {
-    it('stores data', async () => {
-      const test_data = { id: 'test', content: 'test content' }
-      await cloud.store(test_data)
-      expect(mock_firebase.set).toHaveBeenCalled()
-    })
-
-    it('retrieves data', async () => {
-      const test_data = { id: 'test', content: 'test content' }
-      mock_firebase.get.mockResolvedValueOnce({
-        exists: true,
-        data: () => test_data
-      })
-      const result = await cloud.get('test')
-      expect(result).toEqual(test_data)
+    it('initializes with itemid', () => {
+      expect(cloud_instance.id).toBe('/+1234567890/posters/1234567890')
+      expect(cloud_instance.type).toBe('posters')
     })
   })
 
-  describe('Error Handling', () => {
-    it('handles storage errors', async () => {
-      mock_firebase.set.mockRejectedValueOnce(new Error('Storage failed'))
-      await expect(cloud.store({})).rejects.toThrow('Storage failed')
+  describe('to_network method', () => {
+    it('uploads to network when online and user exists', async () => {
+      const mock_items = { outerHTML: '<div>test</div>' }
+      
+      await cloud_instance.to_network(mock_items)
+      
+      const { upload } = await import('@/utils/serverless')
+      expect(upload).toHaveBeenCalledWith(
+        'test-filename.html.gz',
+        'compressed-data',
+        { contentType: 'text/html' }
+      )
     })
 
-    it('handles retrieval errors', async () => {
-      mock_firebase.get.mockRejectedValueOnce(new Error('Retrieval failed'))
-      await expect(cloud.get('test')).rejects.toThrow('Retrieval failed')
+    it('queues for later when offline', async () => {
+      mock_navigator.onLine = false
+      const mock_items = { outerHTML: '<div>test</div>' }
+      
+      await cloud_instance.to_network(mock_items)
+      
+      const { set } = await import('idb-keyval')
+      expect(set).toHaveBeenCalledWith(
+        'sync:offline',
+        [{ id: '/+1234567890/posters/1234567890', action: 'save' }]
+      )
+    })
+  })
+
+  describe('save method', () => {
+    it('saves items and uploads to network', async () => {
+      const mock_element = {
+        outerHTML: '<div>test content</div>'
+      }
+      
+      vi.spyOn(document, 'querySelector').mockReturnValue(mock_element)
+      
+      await cloud_instance.save()
+      
+      const { upload } = await import('@/utils/serverless')
+      expect(upload).toHaveBeenCalled()
+    })
+
+    it('does nothing when no items provided', async () => {
+      vi.spyOn(document, 'querySelector').mockReturnValue(null)
+      
+      await cloud_instance.save()
+      
+      const { upload } = await import('@/utils/serverless')
+      expect(upload).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('delete method', () => {
+    it('deletes from network when online', async () => {
+      await cloud_instance.delete()
+      
+      const { remove } = await import('@/utils/serverless')
+      expect(remove).toHaveBeenCalledWith('test-filename.html.gz')
+    })
+
+    it('queues for later when offline', async () => {
+      mock_navigator.onLine = false
+      
+      await cloud_instance.delete()
+      
+      const { set } = await import('idb-keyval')
+      expect(set).toHaveBeenCalledWith(
+        'sync:offline',
+        [{ id: '/+1234567890/posters/1234567890', action: 'delete' }]
+      )
+    })
+  })
+
+  describe('optimize method', () => {
+    it('optimizes directory when items exceed max size', async () => {
+      const mock_directory = {
+        items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+      }
+      
+      const { load_directory_from_network } = await import('@/persistance/Directory')
+      load_directory_from_network.mockResolvedValue(mock_directory)
+      
+      await cloud_instance.optimize()
+      
+      const { move } = await import('@/utils/serverless')
+      expect(move).toHaveBeenCalled()
+    })
+
+    it('does nothing when items are within limits', async () => {
+      const mock_directory = {
+        items: ['1', '2', '3']
+      }
+      
+      const { load_directory_from_network } = await import('@/persistance/Directory')
+      load_directory_from_network.mockResolvedValue(mock_directory)
+      
+      await cloud_instance.optimize()
+      
+      const { move } = await import('@/utils/serverless')
+      expect(move).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('sync_later function', () => {
+    it('adds new sync action to offline queue', async () => {
+      await sync_later('/+1234567890/test', 'save')
+      
+      const { set } = await import('idb-keyval')
+      expect(set).toHaveBeenCalledWith(
+        'sync:offline',
+        [{ id: '/+1234567890/test', action: 'save' }]
+      )
+    })
+
+    it('does not add duplicate sync actions', async () => {
+      const existing_offline = [{ id: '/+1234567890/test', action: 'save' }]
+      const { get } = await import('idb-keyval')
+      get.mockResolvedValue(existing_offline)
+      
+      await sync_later('/+1234567890/test', 'save')
+      
+      const { set } = await import('idb-keyval')
+      expect(set).not.toHaveBeenCalled()
     })
   })
 })

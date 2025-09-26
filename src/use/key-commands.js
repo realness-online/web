@@ -88,9 +88,9 @@ export const use_key_commands = () => {
    * @param {string} context
    */
   const add_context = context => {
-    if (!active_contexts.value.includes(context)) {
+    if (!active_contexts.value.includes(context)) 
       active_contexts.value.push(context)
-    }
+    
   }
 
   /**
@@ -107,18 +107,17 @@ export const use_key_commands = () => {
    * @param {...any} args
    */
   const execute_command = (command, ...args) => {
-    if (is_input_focused.value) {
+    if (is_input_focused.value) 
       return
-    }
 
     const handler_config = command_handlers.get(command)
     if (
       handler_config &&
       (handler_config.context === 'global' ||
         active_contexts.value.includes(handler_config.context))
-    ) {
+    ) 
       handler_config.handler(...args)
-    }
+    
   }
 
   /**
@@ -140,7 +139,7 @@ export const use_key_commands = () => {
             key: normalize_key_for_platform(key),
             command: typeof command === 'string' ? command : command[0],
             parameters: typeof command === 'string' ? {} : command[1] || {},
-            context: context
+            context
           })
         })
       }
@@ -185,13 +184,13 @@ export const use_key_commands = () => {
    */
   const load_keymap = () => {
     const stored = localStorage.getItem('realness_keymap')
-    if (stored) {
+    if (stored) 
       try {
         keymap.value = JSON.parse(stored)
       } catch (e) {
         console.warn('Failed to load keymap from storage:', e)
       }
-    }
+    
   }
 
   /**
@@ -205,17 +204,13 @@ export const use_key_commands = () => {
    * Validate current keymap
    * @returns {Object} Validation results
    */
-  const validate_current_keymap = () => {
-    return validate_keymap_runtime(keymap.value)
-  }
+  const validate_current_keymap = () => validate_keymap_runtime(keymap.value)
 
   /**
    * Get keymap statistics
    * @returns {Object} Statistics object
    */
-  const get_statistics = () => {
-    return get_keymap_stats(keymap.value)
-  }
+  const get_statistics = () => get_keymap_stats(keymap.value)
 
   return {
     active_contexts,

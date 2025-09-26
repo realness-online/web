@@ -33,14 +33,14 @@ const init_tracer = async () => {
 }
 
 const make_trace = async message => {
-  const image_data = message.data.image_data
+  const { image_data } = message.data
 
   // Verify image data is valid
-  if (image_data.data.length !== image_data.width * image_data.height * 4) {
+  if (image_data.data.length !== image_data.width * image_data.height * 4) 
     throw new Error(
       `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * 4}`
     )
-  }
+  
   converter.init(image_data)
 
   // Start the processing loop
@@ -54,13 +54,13 @@ const make_trace = async message => {
         progress
       })
 
-      if (result === 'complete') {
+      if (result === 'complete') 
         self.postMessage({
           type: 'complete',
           width: image_data.width,
           height: image_data.height
         })
-      } else if (result) {
+       else if (result) {
         const path_data = JSON.parse(result)
         self.postMessage({
           type: 'path',
@@ -68,15 +68,15 @@ const make_trace = async message => {
         })
         // Schedule next tick
         setTimeout(process, 1)
-      } else if (progress < 100) {
+      } else if (progress < 100) 
         setTimeout(process, 3)
-      } else {
+       else 
         self.postMessage({
           type: 'complete',
           width: image_data.width,
           height: image_data.height
         })
-      }
+      
     } catch (error) {
       console.error('Error in processing loop:', error)
       self.postMessage({
@@ -106,7 +106,7 @@ const route_message = async message => {
 }
 
 // Initialize on worker start
-let init_promise = init_tracer().catch(error => {
+const init_promise = init_tracer().catch(error => {
   console.error('Failed to initialize converter:', error)
   self.postMessage({ error: 'Failed to initialize converter' })
 })

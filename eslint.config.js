@@ -39,7 +39,7 @@ export default [
       parser: vue_parser
     },
     rules: {
-      ...pluginVue.configs['vue3-recommended'].rules
+      ...pluginVue.configs['flat/recommended'].rules
     }
   },
   {
@@ -176,7 +176,7 @@ export default [
       'vue/require-name-property': 'error',
 
       'vue/prefer-true-attribute-shorthand': 'error',
-      'vue/no-ref-object-destructure': 'error',
+      'vue/no-ref-object-reactivity-loss': 'error',
       'vue/define-emits-declaration': ['error', 'runtime'],
       'vue/valid-define-emits': 'error',
       'vue/no-unused-refs': 'error',
@@ -230,7 +230,7 @@ export default [
       'vue/no-use-v-if-with-v-for': 'error',
       'vue/valid-v-for': 'error',
       'vue/component-api-style': ['error', ['script-setup']],
-      'vue/no-setup-props-destructure': 'error'
+      'vue/no-setup-props-reactivity-loss': 'error'
     }
   },
   {

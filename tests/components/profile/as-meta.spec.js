@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_meta from '@/components/profile/as-meta'
-describe('@/compontent/profile/as-meta.vue', () => {
+describe('@/component/profile/as-meta.vue', () => {
   let wrapper
   const person = {
     id: '/+14151234356',

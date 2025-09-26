@@ -133,9 +133,8 @@ export const use = () => {
 
   const click = () => {
     // Toggle aspect ratio if shift is held
-    if (magic_keys.shift.value) {
+    if (magic_keys.shift.value) 
       aspect_toggle.value = !aspect_toggle.value
-    }
 
     // Always toggle menu
     menu.value = !menu.value
@@ -215,9 +214,9 @@ export const use = () => {
     if (event.touches.length === 2) {
       touch_start_distance = touch_dist(event.touches)
       touch_start_scale = viewbox_transform.value.scale
-    } else if (event.touches.length === 1) {
+    } else if (event.touches.length === 1) 
       down(event.touches[0])
-    }
+    
   }
 
   const touch_move = event => {

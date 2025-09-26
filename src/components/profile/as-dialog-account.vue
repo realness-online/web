@@ -24,9 +24,9 @@
   watch(
     () => route.hash,
     new_hash => {
-      if (new_hash === '#account' && form.value) {
+      if (new_hash === '#account' && form.value) 
         form.value.showModal()
-      }
+      
     },
     { immediate: true }
   )
@@ -36,9 +36,9 @@
     if (my?.first_name) first_name.value = my.first_name
 
     // Check if we should show dialog on mount (e.g., if URL has #account)
-    if (route.hash === '#account' && form.value) {
+    if (route.hash === '#account' && form.value) 
       form.value.showModal()
-    }
+    
   })
 </script>
 

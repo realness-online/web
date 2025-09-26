@@ -56,10 +56,10 @@
             if (!groups[context][current_row]) groups[context][current_row] = []
 
             const cmd_obj = {
-              key: key,
-              command: command,
+              key,
+              command,
               description: get_command_description(command),
-              context: context
+              context
             }
             groups[context][current_row].push(cmd_obj)
           }
@@ -198,8 +198,6 @@
       }
     }
 
-
-
     @media (max-width: pad-begins) {
       grid-template-columns: 1fr;
       gap: base-line;
@@ -214,7 +212,6 @@
 
       }
     }
-
 
     & > section:first-child {
       menu {

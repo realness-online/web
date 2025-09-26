@@ -1,11 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`@/compontent/profile/as-figure.vue > Renders > Render a person's profile info 1`] = `
+exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile info 1`] = `
 <figure
   class="profile"
   relations="[object Object],[object Object],[object Object]"
 >
-  <anonymous-stub
+  <icon-stub
     name="silhouette"
   />
   <figcaption>

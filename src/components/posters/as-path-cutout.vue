@@ -3,7 +3,7 @@
     ref,
     watchEffect as watch_effect,
     onMounted as mounted,
-    inject,
+    inject
   } from 'vue'
 
   const props = defineProps({
@@ -50,9 +50,9 @@
   })
 
   watch_effect(() => {
-    if (props.cutout && typeof props.cutout.getAttribute === 'function') {
+    if (props.cutout && typeof props.cutout.getAttribute === 'function') 
       d.value = props.cutout.getAttribute('d')
-    }
+    
   })
   watch_effect(() => {
     if (vector.value?.optimized) transform.value = undefined

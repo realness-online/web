@@ -59,8 +59,8 @@
     if (textarea) {
       const start = textarea.selectionStart
       const end = textarea.selectionEnd
-      const value = textarea.value
-      textarea.value = value.substring(0, start) + '\n' + value.substring(end)
+      const { value } = textarea
+      textarea.value = `${value.substring(0, start)  }\n${  value.substring(end)}`
       textarea.selectionStart = textarea.selectionEnd = start + 1
       adjust_height({ target: textarea })
     }

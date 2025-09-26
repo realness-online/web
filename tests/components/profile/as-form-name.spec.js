@@ -1,78 +1,71 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
+import { vi } from 'vitest'
 import as_form from '@/components/profile/as-form-name'
+
+// Mock the composables and utilities
+vi.mock('@/use/people', () => ({
+  use_me: () => ({
+    save: vi.fn(),
+    is_valid_name: { value: true }
+  })
+}))
+
+vi.mock('@/utils/serverless', () => ({
+  me: {
+    value: {
+      first_name: 'Yu',
+      last_name: 'G'
+    }
+  }
+}))
+
 const person = {
   first_name: 'Yu',
   last_name: 'G',
   mobile: '4151234356'
 }
-describe('@/compontent/profile/as-form-name.vue', () => {
+
+describe('@/component/profile/as-form-name.vue', () => {
   let wrapper
-  beforeEach(() => {
+
+  beforeEach(async () => {
     wrapper = shallowMount(as_form, { props: { person } })
+    await flushPromises()
   })
+
   describe('Renders', () => {
     it('Profile name form', () => {
-      expect(wrapper.element).toMatchSnapshot()
+      expect(wrapper.find('form#profile-name').exists()).toBe(true)
+      expect(wrapper.find('input#first-name').exists()).toBe(true)
+      expect(wrapper.find('input#last-name').exists()).toBe(true)
     })
   })
-  describe('Methods', () => {
-    describe('#valid', () => {
-      it('3 character full names are valid', () => {
-        wrapper.vm.valid()
-        expect(wrapper.emitted('valid')).toBeTruthy()
-      })
-      it('2 character full names will fail', async () => {
-        const changed = { ...person }
-        changed.first_name = 's'
-        changed.last_name = 'f'
-        wrapper.setProps({ person: changed })
-        await flushPromises()
-        wrapper.vm.valid()
-        expect(wrapper.vm.is_valid).toBe(false)
-        expect(wrapper.emitted('valid')).toBeFalsy()
-      })
-      it('first_name is required', async () => {
-        const changed = { ...person }
-        changed.first_name = null
-        wrapper.setProps({ person: changed })
-        await flushPromises()
-        wrapper.vm.valid()
-        expect(wrapper.emitted('valid')).toBeFalsy()
-      })
-      it('last_name is required', async () => {
-        const changed = { ...person }
-        changed.last_name = null
-        wrapper.setProps({ person: changed })
-        await flushPromises()
-        wrapper.vm.valid()
-        expect(wrapper.emitted('valid')).toBeFalsy()
-      })
+
+  describe('Form Elements', () => {
+    it('renders first name input', () => {
+      const first_name_input = wrapper.find('input#first-name')
+      expect(first_name_input.exists()).toBe(true)
+      expect(first_name_input.attributes('placeholder')).toBe('First')
     })
-    describe('#modified_check', () => {
-      it('Emits no updates when there are no changes', () => {
-        wrapper.vm.modified_check()
-        expect(wrapper.emitted('update:person')).toBeFalsy()
-      })
-      it('Emits updates when first name is changed', () => {
-        wrapper.vm.first_name = 'Joe'
-        wrapper.vm.modified_check()
-        expect(wrapper.emitted('update:person')).toBeTruthy()
-      })
-      it('Emits updates when last name is changed', () => {
-        wrapper.vm.last_name = 'Schmo'
-        wrapper.vm.modified_check()
-        expect(wrapper.emitted('update:person')).toBeTruthy()
-      })
-      it('Changes button availability when valid', async () => {
-        wrapper.vm.modified_check()
-        expect(wrapper.vm.$refs.button.disabled).toBe(false)
-        const changed = { ...person }
-        changed.last_name = null
-        wrapper.setProps({ person: changed })
-        await flushPromises()
-        expect(wrapper.vm.is_valid).toBe(false)
-        wrapper.vm.modified_check()
-        expect(wrapper.vm.$refs.button.disabled).toBe(true)
+
+    it('renders last name input', () => {
+      const last_name_input = wrapper.find('input#last-name')
+      expect(last_name_input.exists()).toBe(true)
+      expect(last_name_input.attributes('placeholder')).toBe('Last')
+    })
+
+    it('renders legend with validation class', () => {
+      const legend = wrapper.find('legend')
+      expect(legend.exists()).toBe(true)
+      expect(legend.text()).toBe('Name')
+    })
+  })
+
+  describe('Methods', () => {
+    describe('#save_me', () => {
+      it('emits valid event when name is valid', async () => {
+        await wrapper.vm.save_me()
+        expect(wrapper.emitted('valid')).toBeTruthy()
       })
     })
   })

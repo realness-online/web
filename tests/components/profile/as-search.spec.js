@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import as_search from '@/components/profile/as-search'
-describe('@/compontent/profile/as-search.vue', () => {
+describe('@/component/profile/as-search.vue', () => {
   let wrapper
   beforeEach(() => {
     wrapper = shallowMount(as_search)

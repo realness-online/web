@@ -1,75 +1,53 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`@/views/Navigation > Renders > renders navigation component 1`] = `
-<div
-  data-v-app=""
+<section
+  class="page"
+  id="navigation"
 >
-  
-  <section
-    class="page"
-    id="navigation"
-  >
-    <header>
-      <router-link-stub
-        id="settings"
-        tabindex="-1"
-        to="/settings"
-      />
-    </header>
-    <nav>
-      <router-link-stub
-        class="black"
-        tabindex="-1"
-        to="/statements"
-      />
-      <router-link-stub
-        class="green"
-        tabindex="-1"
-        to="/events"
-      />
-      <router-link-stub
-        class="green"
-        tabindex="-1"
-        to="/posters"
-      />
-      <router-link-stub
-        class="blue"
-        tabindex="-1"
-        to="/phonebook"
-      />
-      <router-link-stub
-        class="blue"
-        tabindex="-1"
-        to="/thoughts"
-      />
-      <!--v-if-->
-      <as-textarea-stub
-        class="red"
-      />
-    </nav>
-    <footer>
-      <button>
-        1.7.0
-      </button>
-      <a
-        id="camera"
-      >
-        <anonymous-stub
-          name="camera"
-        />
-      </a>
-      <router-link-stub
-        tabindex="-1"
-        to="/about"
-      />
-    </footer>
-  </section>
-  <aside>
-    <input
-      accept="image/jpeg,image/png"
-      type="file"
+  <nav>
+    <router-link-stub
+      class="black"
+      tabindex="-1"
+      to="/statements"
     />
-  </aside>
-  
-</div>
+    <router-link-stub
+      class="green"
+      tabindex="-1"
+      to="/events"
+    />
+    <router-link-stub
+      class="green"
+      tabindex="-1"
+      to="/posters"
+    />
+    <router-link-stub
+      class="blue"
+      tabindex="-1"
+      to="/phonebook"
+    />
+    <router-link-stub
+      class="blue"
+      tabindex="-1"
+      to="/thoughts"
+    />
+    <as-textarea-stub
+      class="red"
+    />
+  </nav>
+  <footer>
+    <a
+      id="camera"
+      tabindex="3"
+    >
+      <icon-stub
+        name="camera"
+      />
+    </a>
+    <router-link-stub
+      tabindex="-1"
+      to="/about"
+    />
+  </footer>
+</section>
 `;
