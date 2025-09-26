@@ -1,22 +1,21 @@
-<script>
+<script setup>
   import { as_author } from '@/utils/itemid'
   import { as_phone_number } from '@/use/people'
   import icon from '@/components/icon'
-  export default {
-    components: {
-      icon
-    },
-    props: {
-      itemid: {
-        type: String,
-        required: true
-      }
-    },
-    methods: {
-      open_sms_app() {
-        window.open(`sms:${as_phone_number(as_author(this.itemid))}`, '_self')
-      }
+
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true
     }
+  })
+
+  defineOptions({
+    name: 'ProfileMessenger'
+  })
+
+  const open_sms_app = () => {
+    window.open(`sms:${as_phone_number(as_author(props.itemid))}`, '_self')
   }
 </script>
 

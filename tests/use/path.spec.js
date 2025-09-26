@@ -2,9 +2,8 @@ import { useActiveElement } from '@vueuse/core'
 import {
   itemprop_query,
   create_path_element,
-  fill_opacity,
-  stroke_opacity,
-  opacity
+  use,
+  change_by
 } from '@/use/path'
 
 describe('@/use/path.js', () => {
@@ -20,18 +19,20 @@ describe('@/use/path.js', () => {
         '<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { fill_opacity } = use()
       expect(active.value.style.fillOpacity).toBe('0.025')
-      fill_opacity() // default is more by 0.025
-      expect(active.value.style.fillOpacity).toBe('0.05')
+      fill_opacity(change_by) // use the default change_by constant
+      expect(parseFloat(active.value.style.fillOpacity)).toBeCloseTo(0.105, 2)
     })
     it('Decreases fill opacity', () => {
       window.document.body.innerHTML =
         '<path id="test" tabindex="0" itemprop="bold" style="fill-opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { fill_opacity } = use()
       expect(active.value.style.fillOpacity).toBe('0.5')
-      fill_opacity(-0.025)
-      expect(active.value.style.fillOpacity).toBe('0.475')
+      fill_opacity(-change_by)
+      expect(active.value.style.fillOpacity).toBe('0.42') // 0.5 - 0.08
     })
   })
 
@@ -41,18 +42,20 @@ describe('@/use/path.js', () => {
         '<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { stroke_opacity } = use()
       expect(active.value.style.strokeOpacity).toBe('0.025')
-      stroke_opacity() // default is more by 0.025
-      expect(active.value.style.strokeOpacity).toBe('0.05')
+      stroke_opacity(change_by)
+      expect(parseFloat(active.value.style.strokeOpacity)).toBeCloseTo(0.105, 2)
     })
     it('Decreases stroke opacity', () => {
       window.document.body.innerHTML =
         '<path id="test" tabindex="0" itemprop="bold" style="stroke-opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { stroke_opacity } = use()
       expect(active.value.style.strokeOpacity).toBe('0.5')
-      stroke_opacity(-0.025)
-      expect(active.value.style.strokeOpacity).toBe('0.475')
+      stroke_opacity(-change_by)
+      expect(active.value.style.strokeOpacity).toBe('0.42') // 0.5 - 0.08
     })
   })
 
@@ -62,18 +65,20 @@ describe('@/use/path.js', () => {
         '<path id="test" tabindex="0" itemprop="bold" style="opacity:0.025;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { opacity } = use()
       expect(active.value.style.opacity).toBe('0.025')
-      opacity(0.025) // default is more by 0.025
-      expect(active.value.style.opacity).toBe('0.05')
+      opacity(change_by)
+      expect(parseFloat(active.value.style.opacity)).toBeCloseTo(0.105, 2)
     })
     it('Decreases opacity', () => {
       window.document.body.innerHTML =
         '<path id="test" tabindex="0" itemprop="bold" style="opacity:0.5;"/>'
       itemprop_query('bold').focus()
       const active = useActiveElement()
+      const { opacity } = use()
       expect(active.value.style.opacity).toBe('0.5')
-      opacity(-0.025)
-      expect(active.value.style.opacity).toBe('0.475')
+      opacity(-change_by)
+      expect(active.value.style.opacity).toBe('0.42') // 0.5 - 0.08
     })
   })
 })

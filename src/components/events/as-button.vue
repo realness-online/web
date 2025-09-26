@@ -1,67 +1,92 @@
-<script>
+<script setup>
   import icons from '/icons.svg'
   import { list } from '@/utils/itemid'
-  export default {
-    props: {
-      itemid: {
-        type: String,
-        required: true
-      }
+  import { ref, computed, onMounted } from 'vue'
+
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true
     },
-    emits: ['picker'],
-    data() {
-      return {
-        accept: true,
-        events: []
-      }
-    },
-    computed: {
-      date_picker_icon() {
-        return `${icons}#date-picker`
-      },
-      day() {
-        const event = this.events.find(event => event.url === this.itemid)
-        if (event) {
-          const when = new Date(parseInt(event.id))
-          return when.toLocaleString('en-US', { day: 'numeric' })
-        }
-        return new Date().toLocaleString('en-US', { day: 'numeric' })
-      },
-      month() {
-        const event = this.events.find(event => event.url === this.itemid)
-        if (event) {
-          const when = new Date(parseInt(event.id))
-          return when.toLocaleString('en-US', { month: 'long' })
-        }
-        return new Date().toLocaleString('en-US', { month: 'long' })
-      },
-      has_event() {
-        const exists = this.events.some(event => event.url === this.itemid)
-        return exists ? 'has-event' : null
-      }
-    },
-    async created() {
-      this.events = await list(`${localStorage.me}/events`)
-    },
-    methods: {
-      on_click() {
-        this.$emit('picker', {
-          picker: true,
-          itemid: this.itemid
-        })
-      }
+    event: {
+      type: Object,
+      required: false
     }
+  })
+
+  const emit = defineEmits(['picker', 'click'])
+
+  const accept = ref(true)
+  const events = ref([])
+
+  const date_picker_icon = computed(() => `${icons}#date-picker`)
+
+  const day = computed(() => {
+    // If event prop is provided, use it directly
+    if (props.event) {
+      const when = new Date(props.event.date || props.event.id)
+      return when.toLocaleString('en-US', { day: 'numeric' })
+    }
+
+    const found_event = events.value.find(event => event.url === props.itemid)
+    if (found_event) {
+      const when = new Date(parseInt(found_event.id))
+      return when.toLocaleString('en-US', { day: 'numeric' })
+    }
+    return new Date().toLocaleString('en-US', { day: 'numeric' })
+  })
+
+  const month = computed(() => {
+    // If event prop is provided, use it directly
+    if (props.event) {
+      const when = new Date(props.event.date || props.event.id)
+      return when.toLocaleString('en-US', { month: 'long' })
+    }
+
+    const found_event = events.value.find(event => event.url === props.itemid)
+    if (found_event) {
+      const when = new Date(parseInt(found_event.id))
+      return when.toLocaleString('en-US', { month: 'long' })
+    }
+    return new Date().toLocaleString('en-US', { month: 'long' })
+  })
+
+  const has_event = computed(() => {
+    if (props.event) return 'has-event'
+    const exists = events.value.some(event => event.url === props.itemid)
+    return exists ? 'has-event' : null
+  })
+
+  const event_title = computed(() => {
+    if (props.event) return props.event.title
+    const found_event = events.value.find(event => event.url === props.itemid)
+    return found_event?.title || ''
+  })
+
+  onMounted(async () => {
+    if (localStorage.me) 
+      events.value = await list(`${localStorage.me}/events`)
+    
+  })
+
+  const on_click = () => {
+    emit('picker', {
+      picker: true,
+      itemid: props.itemid
+    })
+    emit('click')
   }
 </script>
 
 <template>
-  <a class="event" @click="on_click">
+  <button class="event" @click="on_click">
     <svg viewBox="0 0 150 150" :class="has_event" class="icon">
       <use :href="date_picker_icon" />
       <text class="month" x="57" y="24" text-anchor="middle">{{ month }}</text>
       <text x="57" y="84" text-anchor="middle">{{ day }}</text>
     </svg>
-  </a>
+    <span v-if="event_title" class="event-title">{{ event_title }}</span>
+  </button>
 </template>
 
 <style lang="stylus">

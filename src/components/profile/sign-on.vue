@@ -1,10 +1,14 @@
-<script>
-  export default {
-    methods: {
-      sign_on() {
-        this.$router.push({ path: '/sign-on' })
-      }
-    }
+<script setup>
+  import { useRouter } from 'vue-router'
+
+  defineOptions({
+    name: 'SignOn'
+  })
+
+  const router = useRouter()
+
+  const sign_on = () => {
+    router.push({ path: '/sign-on' })
   }
 </script>
 

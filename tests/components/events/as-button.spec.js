@@ -15,7 +15,10 @@ describe('@/components/events/as-button', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     wrapper = shallowMount(AsButton, {
-      props: { event: mock_event }
+      props: {
+        itemid: 'test-itemid',
+        event: mock_event
+      }
     })
   })
 

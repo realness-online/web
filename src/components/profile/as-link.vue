@@ -1,35 +1,29 @@
-<script>
+<script setup>
   import icon from '@/components/Icon'
   import { load, as_author } from '@/utils/itemid'
   import as_svg from '@/components/posters/as-svg'
   import as_address from '@/components/profile/as-address'
-  export default {
-    components: {
-      icon,
-      'as-avatar': as_svg,
-      'as-address': as_address
-    },
-    props: {
-      itemid: {
-        type: String,
-        required: true
-      }
-    },
-    data() {
-      return {
-        person: null
-      }
-    },
-    computed: {
-      author() {
-        return as_author(this.itemid)
-      }
-    },
-    async created() {
-      if (!this.author) return
-      this.person = await load(this.author)
+  import { ref, computed, onMounted } from 'vue'
+
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true
     }
-  }
+  })
+
+  defineOptions({
+    name: 'ProfileLink'
+  })
+
+  const person = ref(null)
+
+  const author = computed(() => as_author(props.itemid))
+
+  onMounted(async () => {
+    if (!author.value) return
+    person.value = await load(author.value)
+  })
 </script>
 
 <template>
