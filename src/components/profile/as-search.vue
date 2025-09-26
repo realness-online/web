@@ -1,24 +1,21 @@
-<script>
+<script setup>
   import icon from '@/components/icon'
-  export default {
-    components: {
-      icon
-    },
-    data() {
-      return {
-        searching: false,
-        query: ''
-      }
-    },
-    methods: {
-      search_mode() {
-        this.searching = true
-      },
-      view_friends_mode() {
-        this.query = ''
-        this.searching = false
-      }
-    }
+  import { ref } from 'vue'
+
+  defineOptions({
+    name: 'ProfileSearch'
+  })
+
+  const searching = ref(false)
+  const query = ref('')
+
+  const search_mode = () => {
+    searching.value = true
+  }
+
+  const view_friends_mode = () => {
+    query.value = ''
+    searching.value = false
   }
 </script>
 
