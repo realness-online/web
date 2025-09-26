@@ -1,22 +1,21 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`@/views/PhoneBook > Renders > renders phone book view 1`] = `
+exports[`Relations > renders relations view 1`] = `
 <section
   class="page"
-  id="directory"
+  id="relations"
 >
   <header>
-    <anonymous-stub />
+    <icon-stub
+      name="nothin"
+    />
     <router-link-stub
-      to="/relations"
+      to="/phonebook"
     />
   </header>
   <h1>
-    Phonebook
+    Relations
   </h1>
-  <icon-stub
-    name="working"
-  />
   <nav
     class="profile-list"
   >
@@ -27,6 +26,5 @@ exports[`@/views/PhoneBook > Renders > renders phone book view 1`] = `
     />
     
   </nav>
-  <!--v-if-->
 </section>
 `;

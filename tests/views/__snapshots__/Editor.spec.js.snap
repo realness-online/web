@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/views/Editor > renders editor component 1`] = `
+<section
+  class="page"
+  id="editor"
+>
+  <header>
+    <a>
+      <icon-stub
+        name="remove"
+      />
+    </a>
+    <a>
+      <icon-stub
+        name="finished"
+      />
+    </a>
+  </header>
+  <figure>
+    <as-svg-stub
+      as_stroke="false"
+      itemid="/+14151234356/posters/123"
+      optimize="true"
+      slice="true"
+      tabable="true"
+      tabindex="-1"
+      toggle_aspect="true"
+    />
+  </figure>
+  <!--v-if-->
+</section>
+`;

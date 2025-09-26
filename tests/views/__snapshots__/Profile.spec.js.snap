@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Profile > renders profile view 1`] = `
+<section
+  class="page"
+  id="profile"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+    <anonymous-stub />
+  </header>
+  <div>
+    <!--v-if-->
+    <!--v-if-->
+  </div>
+  <!--v-if-->
+  <as-days-stub
+    events=""
+    paginate="true"
+    posters=""
+    statements=""
+    working="false"
+  />
+</section>
+`;

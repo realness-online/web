@@ -1,0 +1,22 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Sign-on > initial render > renders sign-on component 1`] = `
+<section
+  class="page"
+  id="sign-on"
+>
+  <header>
+    <as-figure-stub
+      editable="false"
+      person="[object Object]"
+    />
+    <anonymous-stub />
+  </header>
+  <as-form-mobile-stub />
+  <footer>
+    <button>
+      Wipe
+    </button>
+  </footer>
+</section>
+`;

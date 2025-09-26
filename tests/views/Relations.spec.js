@@ -1,37 +1,60 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import Relations from '@/views/Relations.vue'
-import { create_person } from '@/use/person'
+
+// Mock localStorage
+Object.defineProperty(window, 'localStorage', {
+  value: {
+    me: '/+14151234356'
+  }
+})
+
+// Mock people composable
+vi.mock('@/use/people', () => ({
+  use_me: () => ({
+    relations: { value: [] }
+  }),
+  use: () => ({
+    people: { value: [] },
+    load_people: vi.fn()
+  }),
+  is_person: (maybe) => {
+    if (typeof maybe !== 'object') return false
+    if (maybe.type !== 'person') return false
+    if (!maybe.id) return false
+    return true
+  }
+}))
+
+// Mock serverless utils
+vi.mock('@/utils/serverless', () => ({
+  current_user: { value: null }
+}))
 
 describe('Relations', () => {
-  const mock_store = {
-    state: {
-      me: create_person(),
-      relations: []
-    },
-    dispatch: vi.fn()
-  }
+  let wrapper
 
-  const mount_relations = () =>
-    shallowMount(Relations, {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    wrapper = shallowMount(Relations, {
       global: {
-        mocks: {
-          $store: mock_store
+        stubs: {
+          'icon': true,
+          'as-figure': true,
+          'router-link': true
         }
       }
     })
-
-  describe('component', () => {
-    it('renders relations view', () => {
-      const wrapper = mount_relations()
-      expect(wrapper.exists()).toBe(true)
-    })
   })
 
-  describe('store interactions', () => {
-    it('dispatches load action', () => {
-      mount_relations()
-      expect(mock_store.dispatch).toHaveBeenCalledWith('load_relations')
+  it('renders relations view', () => {
+    expect(wrapper.element).toMatchSnapshot()
+  })
+
+  describe('Component Structure', () => {
+    it('renders with correct structure', () => {
+      expect(wrapper.find('section#relations').exists()).toBe(true)
+      expect(wrapper.find('header').exists()).toBe(true)
     })
   })
 })
