@@ -29,6 +29,8 @@ We need to temporarily store the image we're creating and should consider upload
 
 we then need a way to monitor posters that have vtracer work remaining.
 
+**Key Learning**: The `Large` class expects to find a DOM element with the `itemid` attribute when saving. The `as-gradients` component shows that gradients are data objects (not DOM elements) that get converted to SVG gradient elements during rendering. The proper approach is to let the existing rendering system handle the DOM creation, then save from there.
+
 ### Cutouts Storage Architecture
 
 We want to store poster from `/users/{phone}/posters/{created_at}.html` to `/users/{phone}/posters/{created_at}/index.html` thereby creating a folder in which we can store the cutouts and on the client the image itself.
@@ -39,6 +41,31 @@ We want the filesystem approach to mirror on the client and really need to think
 
 We'll load the core poster first (`index.html`) and then load trace segments on-demand. we can be aware of our network latency and toggle between auto loading traces and waiting for the user to click on them. maybe we wait and make people click so that their is this event calendar vibe to viewing posters.
 
-### Randoms
+### Sync Issues Analysis
 
 We have an issue with statements not being available on devices where they are created - we need to explore how statement syncing works
+
+**Critical Sync Issues Identified:**
+
+1. **Hash Comparison Logic Flaw**: The sync mechanism compares server metadata hash with local DOM hash. If server file is missing/corrupted, `index_hash` becomes `undefined`, causing silent sync failures.
+
+2. **Server File Check Failure**: When `metadata(path)` throws `storage/object-not-found`, the sync index gets `DOES_NOT_EXIST` but hash comparison doesn't handle this properly.
+
+3. **8-Hour Sync Throttle**: `i_am_fresh()` prevents sync if less than 8 hours since last sync, potentially causing long delays.
+
+4. **Visibility State Requirement**: Sync only runs when `document.visibilityState === 'visible'`, failing for background devices.
+
+**Most Likely Cause of 9-Month Gap:**
+- Device A uploads statements successfully
+- Device B tries to sync but server file is missing/corrupted
+- `metadata()` call fails with `storage/object-not-found`
+- Hash comparison `undefined !== hash` triggers sync
+- `load_from_network()` returns `null` (no server file)
+- Sync appears successful but gets no new data
+- Device B never receives statements
+
+**Debugging Steps:**
+- Check `localStorage.sync_time` and `sync:index`
+- Verify server file existence with `get_metadata(path)`
+- Test hash comparison logic manually
+- Force re-sync by clearing sync index and throttle
