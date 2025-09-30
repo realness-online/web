@@ -135,6 +135,8 @@ export const use = () => {
     progress.value = 0
 
     let image_data
+    let exif = {}
+
     if (image.type === 'image/svg+xml') image_data = await rasterize_svg(image)
     else {
       const image_url = URL.createObjectURL(image)
@@ -144,10 +146,15 @@ export const use = () => {
       const bitmap = await createImageBitmap(img)
       image_data = resize_image(bitmap)
       URL.revokeObjectURL(image_url)
-    }
 
-    const tags = await ExifReader.load(image, { expanded: true })
-    const exif = exif_logger(tags)
+      try {
+        const tags = await ExifReader.load(image, { expanded: true })
+        exif = exif_logger(tags)
+      } catch (error) {
+        console.warn('Failed to parse EXIF data:', error.message)
+        exif = {}
+      }
+    }
 
     vectorizer.value.postMessage({
       route: 'make:vector',
