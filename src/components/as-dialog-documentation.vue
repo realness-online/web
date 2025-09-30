@@ -25,9 +25,7 @@
   // Scroll to section
   const scroll_to_section = id => {
     const element = document.getElementById(id)
-    if (element) 
-      element.scrollIntoView({ behavior: 'smooth' })
-    
+    if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
 
   // Generate TOC from markdown headings
@@ -56,9 +54,9 @@
   }
   const load_markdown_content = async filename => {
     const response = await fetch(`/src/content/${filename}`)
-    if (!response.ok) 
+    if (!response.ok)
       throw new Error(`Failed to load ${filename}: ${response.status}`)
-    
+
     const content = await response.text()
 
     // Update current file

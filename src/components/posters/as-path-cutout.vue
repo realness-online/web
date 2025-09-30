@@ -52,7 +52,6 @@
   watch_effect(() => {
     if (props.cutout && typeof props.cutout.getAttribute === 'function')
       d.value = props.cutout.getAttribute('d')
-
   })
   watch_effect(() => {
     if (vector.value?.optimized) transform.value = undefined
@@ -74,13 +73,17 @@
 
 <style>
   path[itemprop='cutout'] {
-    transition: filter ease-in 0.66s, fill-opacity ease-in 0.66s;
+    transition:
+      filter ease-in 0.66s,
+      fill-opacity ease-in 0.66s;
     animation-play-state: paused;
     &:focus {
       outline: none;
     }
     &:hover {
-      transition: filter ease-in 0.66s, fill-opacity ease-in 0.66s;
+      transition:
+        filter ease-in 0.66s,
+        fill-opacity ease-in 0.66s;
       filter: brightness(1.3) saturate(1.3);
       fill-opacity: 0.75;
       animation: auto-hide ease-in-out 1.66s 0.66s forwards;

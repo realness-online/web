@@ -67,7 +67,7 @@ describe('Sync Statements', () => {
       // Setup: No server metadata (index_hash = undefined)
       get.mockResolvedValue({}) // Empty sync index
       create_hash.mockResolvedValue('local-hash-123')
-      
+
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // Returns empty array (no data)
         save: vi.fn(),
@@ -106,10 +106,10 @@ describe('Sync Statements', () => {
       // Setup: Server file doesn't exist
       metadata.mockRejectedValue({ code: 'storage/object-not-found' })
       get.mockResolvedValue({}) // Empty sync index
-      
+
       // Test fresh_metadata behavior
       const result = await fresh_metadata(mock_itemid)
-      
+
       // Should handle the error gracefully
       expect(metadata).toHaveBeenCalled()
       // The function should not throw but handle the missing file
@@ -117,16 +117,16 @@ describe('Sync Statements', () => {
 
     it('should reproduce the 9-month gap scenario', async () => {
       // Scenario: Device A uploads, Device B tries to sync but server file is missing
-      
+
       // Step 1: Device A successfully uploads (simulate this worked)
       const device_a_hash = 'server-hash-abc'
       metadata.mockResolvedValue({ customMetadata: { hash: device_a_hash } })
-      
+
       // Step 2: Device B tries to sync but server file is now missing
       metadata.mockRejectedValue({ code: 'storage/object-not-found' })
       get.mockResolvedValue({}) // No sync index on Device B
       create_hash.mockResolvedValue('local-hash-xyz')
-      
+
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // No data because server file missing
         save: vi.fn(),
@@ -137,12 +137,16 @@ describe('Sync Statements', () => {
       // Simulate Device B sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
-      
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
+
       if (!elements || !elements.outerHTML) {
-        throw new Error('No local elements found - this would cause sync to return early')
+        throw new Error(
+          'No local elements found - this would cause sync to return early'
+        )
       }
-      
+
       const hash = await create_hash(elements.outerHTML)
 
       // The bug: index_hash is undefined, hash comparison triggers sync
@@ -158,7 +162,7 @@ describe('Sync Statements', () => {
       // Verify the bug: sync ran but got no statements
       expect(mock_statement.sync).toHaveBeenCalled()
       expect(statements.value.length).toBe(0)
-      
+
       // This represents the 9-month gap - Device B never gets the statements
       // even though sync appeared to work
     })
@@ -175,7 +179,7 @@ describe('Sync Statements', () => {
 
       for (const scenario of error_scenarios) {
         metadata.mockRejectedValue(scenario)
-        
+
         try {
           await fresh_metadata(mock_itemid)
         } catch (error) {
@@ -194,9 +198,9 @@ describe('Sync Statements', () => {
       const mock_metadata = { customMetadata: { hash: 'test-hash' } }
       metadata.mockResolvedValue(mock_metadata)
       get.mockResolvedValue({})
-      
+
       const result = await fresh_metadata(mock_itemid)
-      
+
       expect(result).toEqual(mock_metadata)
       expect(set).toHaveBeenCalledWith('sync:index', {
         [mock_itemid]: mock_metadata
@@ -209,13 +213,17 @@ describe('Sync Statements', () => {
       // Test the i_am_fresh logic
       const now = Date.now()
       const eight_hours = 8 * 60 * 60 * 1000
-      
+
       // Fresh sync (less than 8 hours ago)
-      localStorage.getItem = vi.fn().mockReturnValue(new Date(now - 1000).toISOString())
+      localStorage.getItem = vi
+        .fn()
+        .mockReturnValue(new Date(now - 1000).toISOString())
       // Should return true (fresh)
-      
+
       // Stale sync (more than 8 hours ago)
-      localStorage.getItem = vi.fn().mockReturnValue(new Date(now - eight_hours - 1000).toISOString())
+      localStorage.getItem = vi
+        .fn()
+        .mockReturnValue(new Date(now - eight_hours - 1000).toISOString())
       // Should return false (not fresh)
     })
   })
@@ -224,23 +232,23 @@ describe('Sync Statements', () => {
     it('should only sync when document is visible', () => {
       // Test visibility state requirement
       const originalVisibilityState = document.visibilityState
-      
+
       Object.defineProperty(document, 'visibilityState', {
         value: 'hidden',
         writable: true
       })
-      
+
       // Sync should not run when hidden
       expect(document.visibilityState).toBe('hidden')
-      
+
       Object.defineProperty(document, 'visibilityState', {
         value: 'visible',
         writable: true
       })
-      
+
       // Sync should run when visible
       expect(document.visibilityState).toBe('visible')
-      
+
       // Restore original
       Object.defineProperty(document, 'visibilityState', {
         value: originalVisibilityState,
@@ -252,18 +260,26 @@ describe('Sync Statements', () => {
   describe('Production Bug Scenarios', () => {
     it('should reproduce the 9-month gap: server file exists but sync fails', async () => {
       // Scenario: Server file exists, but sync mechanism fails to load it
-      
+
       // Setup: Server file exists with statements
       const server_statements = [
-        { id: '/+14151234356/statements/1234567890', statement: 'Test statement 1' },
-        { id: '/+14151234356/statements/1234567891', statement: 'Test statement 2' }
+        {
+          id: '/+14151234356/statements/1234567890',
+          statement: 'Test statement 1'
+        },
+        {
+          id: '/+14151234356/statements/1234567891',
+          statement: 'Test statement 2'
+        }
       ]
-      
+
       // Mock successful server metadata
-      metadata.mockResolvedValue({ customMetadata: { hash: 'server-hash-abc' } })
+      metadata.mockResolvedValue({
+        customMetadata: { hash: 'server-hash-abc' }
+      })
       get.mockResolvedValue({}) // No local sync index
       create_hash.mockResolvedValue('local-hash-xyz')
-      
+
       // Mock Statement.sync to return empty (simulating load_from_network failure)
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // Returns empty despite server having data
@@ -275,7 +291,9 @@ describe('Sync Statements', () => {
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
       const hash = await create_hash(elements.outerHTML)
 
       // Hash mismatch triggers sync
@@ -295,15 +313,15 @@ describe('Sync Statements', () => {
 
     it('should reproduce the 9-month gap: authentication expires during sync', async () => {
       // Scenario: Device starts sync but auth expires mid-process
-      
+
       // Setup: Initial auth works, then fails
       metadata
         .mockResolvedValueOnce({ customMetadata: { hash: 'server-hash' } }) // First call succeeds
         .mockRejectedValueOnce({ code: 'storage/unauthorized' }) // Second call fails
-      
+
       get.mockResolvedValue({})
       create_hash.mockResolvedValue('local-hash')
-      
+
       const mock_statement = {
         sync: vi.fn().mockRejectedValue({ code: 'storage/unauthorized' }), // Sync fails due to auth
         save: vi.fn(),
@@ -314,7 +332,9 @@ describe('Sync Statements', () => {
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
       const hash = await create_hash(elements.outerHTML)
 
       // Hash mismatch triggers sync
@@ -331,14 +351,14 @@ describe('Sync Statements', () => {
 
     it('should reproduce the 9-month gap: network timeout during load_from_network', async () => {
       // Scenario: load_from_network times out silently
-      
+
       // Mock fetch to simulate timeout
       global.fetch = vi.fn().mockRejectedValue(new Error('Network timeout'))
-      
+
       metadata.mockResolvedValue({ customMetadata: { hash: 'server-hash' } })
       get.mockResolvedValue({})
       create_hash.mockResolvedValue('local-hash')
-      
+
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // Empty due to network timeout
         save: vi.fn(),
@@ -349,14 +369,16 @@ describe('Sync Statements', () => {
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
       const hash = await create_hash(elements.outerHTML)
 
       // Hash mismatch triggers sync
       if (index_hash !== hash) {
         const statements = { value: [] }
         statements.value = await persistance.sync()
-        
+
         // Bug: Network timeout causes empty result
         expect(statements.value.length).toBe(0)
       }
@@ -364,14 +386,14 @@ describe('Sync Statements', () => {
 
     it('should reproduce the 9-month gap: corrupted sync index', async () => {
       // Scenario: Sync index gets corrupted, causing hash mismatches
-      
+
       // Setup: Corrupted sync index
       const corrupted_index = {
         [mock_itemid]: { customMetadata: { hash: 'corrupted-hash' } }
       }
       get.mockResolvedValue(corrupted_index)
       create_hash.mockResolvedValue('actual-hash')
-      
+
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // Empty because hash mismatch
         save: vi.fn(),
@@ -382,7 +404,9 @@ describe('Sync Statements', () => {
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
       const hash = await create_hash(elements.outerHTML)
 
       // Hash mismatch triggers sync
@@ -402,16 +426,21 @@ describe('Sync Statements', () => {
 
     it('should reproduce the 9-month gap: browser storage quota exceeded', async () => {
       // Scenario: Browser storage quota exceeded, causing silent failures
-      
+
       // Mock storage quota exceeded
       set.mockRejectedValue(new Error('QuotaExceededError'))
       get.mockResolvedValue({})
       create_hash.mockResolvedValue('local-hash')
-      
+
       const mock_statement = {
-        sync: vi.fn().mockResolvedValue([
-          { id: '/+14151234356/statements/1234567890', statement: 'Test statement' }
-        ]), // Returns data
+        sync: vi
+          .fn()
+          .mockResolvedValue([
+            {
+              id: '/+14151234356/statements/1234567890',
+              statement: 'Test statement'
+            }
+          ]), // Returns data
         save: vi.fn().mockRejectedValue(new Error('QuotaExceededError')), // Save fails
         optimize: vi.fn()
       }
@@ -420,14 +449,16 @@ describe('Sync Statements', () => {
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
-      const elements = mock_sync_element.value.querySelector(`[itemid="${mock_itemid}"]`)
+      const elements = mock_sync_element.value.querySelector(
+        `[itemid="${mock_itemid}"]`
+      )
       const hash = await create_hash(elements.outerHTML)
 
       // Hash mismatch triggers sync
       if (index_hash !== hash) {
         const statements = { value: [] }
         statements.value = await persistance.sync()
-        
+
         if (statements.value.length) {
           try {
             await persistance.save(elements)

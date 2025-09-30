@@ -73,9 +73,9 @@ describe('App.vue', () => {
       global: {
         stubs: {
           'router-view': true,
-          'sync': true,
+          sync: true,
           'fps-component': true,
-          'viewbox': true,
+          viewbox: true,
           'dialog-preferences': true,
           'dialog-documentation': true
         }

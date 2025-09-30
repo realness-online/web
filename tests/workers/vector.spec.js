@@ -3,7 +3,7 @@ import * as vector from '@/workers/vector'
 
 // Mock potrace
 vi.mock('@/potrace/index.js', () => ({
-  as_paths: vi.fn().mockReturnValue({ 
+  as_paths: vi.fn().mockReturnValue({
     paths: ['<svg><rect width="100" height="100"/></svg>'],
     width: 333,
     height: 444,
@@ -57,7 +57,9 @@ const poster_html = '<svg><rect width="100" height="100"/></svg>' // Mock HTML
 const mock_image = {
   width: MOCK_DIMENSIONS.DEFAULT_WIDTH,
   height: MOCK_DIMENSIONS.DEFAULT_HEIGHT,
-  data: new Uint8ClampedArray(MOCK_DIMENSIONS.DEFAULT_WIDTH * MOCK_DIMENSIONS.DEFAULT_HEIGHT * 4),
+  data: new Uint8ClampedArray(
+    MOCK_DIMENSIONS.DEFAULT_WIDTH * MOCK_DIMENSIONS.DEFAULT_HEIGHT * 4
+  ),
   bitmap: {
     width: MOCK_DIMENSIONS.DEFAULT_WIDTH,
     height: MOCK_DIMENSIONS.DEFAULT_HEIGHT,
@@ -83,12 +85,14 @@ describe('vector worker', () => {
 
   beforeEach(async () => {
     const potrace_module = await import('@/potrace/index.js')
-    as_paths_spy = vi.spyOn(potrace_module, 'as_paths').mockImplementation((image_data) => ({
-      paths: ['<svg><rect width="100" height="100"/></svg>'],
-      width: image_data.width,
-      height: image_data.height,
-      dark: true
-    }))
+    as_paths_spy = vi
+      .spyOn(potrace_module, 'as_paths')
+      .mockImplementation(image_data => ({
+        paths: ['<svg><rect width="100" height="100"/></svg>'],
+        width: image_data.width,
+        height: image_data.height,
+        dark: true
+      }))
 
     postMessage_spy = vi
       .spyOn(global, 'postMessage')

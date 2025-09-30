@@ -18,7 +18,7 @@ vi.mock('@/use/people', () => ({
     people: { value: [] },
     load_people: vi.fn()
   }),
-  is_person: (maybe) => {
+  is_person: maybe => {
     if (typeof maybe !== 'object') return false
     if (maybe.type !== 'person') return false
     if (!maybe.id) return false
@@ -39,7 +39,7 @@ describe('Relations', () => {
     wrapper = shallowMount(Relations, {
       global: {
         stubs: {
-          'icon': true,
+          icon: true,
           'as-figure': true,
           'router-link': true
         }

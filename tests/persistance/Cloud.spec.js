@@ -27,10 +27,12 @@ vi.mock('@/persistance/Directory', () => ({
 }))
 
 vi.mock('@/utils/upload-processor', () => ({
-  prepare_upload_html: vi.fn(() => Promise.resolve({ 
-    compressed: 'compressed-data', 
-    metadata: { contentType: 'text/html' } 
-  }))
+  prepare_upload_html: vi.fn(() =>
+    Promise.resolve({
+      compressed: 'compressed-data',
+      metadata: { contentType: 'text/html' }
+    })
+  )
 }))
 
 vi.mock('@/utils/numbers', () => ({
@@ -54,7 +56,7 @@ describe('@/persistance/Cloud', () => {
   beforeEach(() => {
     // Clear all mocks
     vi.clearAllMocks()
-    
+
     // Mock navigator.onLine
     mock_navigator = { onLine: true }
     Object.defineProperty(window, 'navigator', {
@@ -89,9 +91,9 @@ describe('@/persistance/Cloud', () => {
   describe('to_network method', () => {
     it('uploads to network when online and user exists', async () => {
       const mock_items = { outerHTML: '<div>test</div>' }
-      
+
       await cloud_instance.to_network(mock_items)
-      
+
       const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalledWith(
         'test-filename.html.gz',
@@ -103,14 +105,13 @@ describe('@/persistance/Cloud', () => {
     it('queues for later when offline', async () => {
       mock_navigator.onLine = false
       const mock_items = { outerHTML: '<div>test</div>' }
-      
+
       await cloud_instance.to_network(mock_items)
-      
+
       const { set } = await import('idb-keyval')
-      expect(set).toHaveBeenCalledWith(
-        'sync:offline',
-        [{ id: '/+1234567890/posters/1234567890', action: 'save' }]
-      )
+      expect(set).toHaveBeenCalledWith('sync:offline', [
+        { id: '/+1234567890/posters/1234567890', action: 'save' }
+      ])
     })
   })
 
@@ -119,20 +120,20 @@ describe('@/persistance/Cloud', () => {
       const mock_element = {
         outerHTML: '<div>test content</div>'
       }
-      
+
       vi.spyOn(document, 'querySelector').mockReturnValue(mock_element)
-      
+
       await cloud_instance.save()
-      
+
       const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalled()
     })
 
     it('does nothing when no items provided', async () => {
       vi.spyOn(document, 'querySelector').mockReturnValue(null)
-      
+
       await cloud_instance.save()
-      
+
       const { upload } = await import('@/utils/serverless')
       expect(upload).not.toHaveBeenCalled()
     })
@@ -141,21 +142,20 @@ describe('@/persistance/Cloud', () => {
   describe('delete method', () => {
     it('deletes from network when online', async () => {
       await cloud_instance.delete()
-      
+
       const { remove } = await import('@/utils/serverless')
       expect(remove).toHaveBeenCalledWith('test-filename.html.gz')
     })
 
     it('queues for later when offline', async () => {
       mock_navigator.onLine = false
-      
+
       await cloud_instance.delete()
-      
+
       const { set } = await import('idb-keyval')
-      expect(set).toHaveBeenCalledWith(
-        'sync:offline',
-        [{ id: '/+1234567890/posters/1234567890', action: 'delete' }]
-      )
+      expect(set).toHaveBeenCalledWith('sync:offline', [
+        { id: '/+1234567890/posters/1234567890', action: 'delete' }
+      ])
     })
   })
 
@@ -164,12 +164,14 @@ describe('@/persistance/Cloud', () => {
       const mock_directory = {
         items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
       }
-      
-      const { load_directory_from_network } = await import('@/persistance/Directory')
+
+      const { load_directory_from_network } = await import(
+        '@/persistance/Directory'
+      )
       load_directory_from_network.mockResolvedValue(mock_directory)
-      
+
       await cloud_instance.optimize()
-      
+
       const { move } = await import('@/utils/serverless')
       expect(move).toHaveBeenCalled()
     })
@@ -178,12 +180,14 @@ describe('@/persistance/Cloud', () => {
       const mock_directory = {
         items: ['1', '2', '3']
       }
-      
-      const { load_directory_from_network } = await import('@/persistance/Directory')
+
+      const { load_directory_from_network } = await import(
+        '@/persistance/Directory'
+      )
       load_directory_from_network.mockResolvedValue(mock_directory)
-      
+
       await cloud_instance.optimize()
-      
+
       const { move } = await import('@/utils/serverless')
       expect(move).not.toHaveBeenCalled()
     })
@@ -192,21 +196,20 @@ describe('@/persistance/Cloud', () => {
   describe('sync_later function', () => {
     it('adds new sync action to offline queue', async () => {
       await sync_later('/+1234567890/test', 'save')
-      
+
       const { set } = await import('idb-keyval')
-      expect(set).toHaveBeenCalledWith(
-        'sync:offline',
-        [{ id: '/+1234567890/test', action: 'save' }]
-      )
+      expect(set).toHaveBeenCalledWith('sync:offline', [
+        { id: '/+1234567890/test', action: 'save' }
+      ])
     })
 
     it('does not add duplicate sync actions', async () => {
       const existing_offline = [{ id: '/+1234567890/test', action: 'save' }]
       const { get } = await import('idb-keyval')
       get.mockResolvedValue(existing_offline)
-      
+
       await sync_later('/+1234567890/test', 'save')
-      
+
       const { set } = await import('idb-keyval')
       expect(set).not.toHaveBeenCalled()
     })

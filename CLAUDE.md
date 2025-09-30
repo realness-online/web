@@ -18,6 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Realness is a client-first social network application that prioritizes privacy and user control:
 
 ### Core Philosophy
+
 - **Client-only data processing**: Full functionality without server-side tracking
 - **HTML as database**: Uses semantic HTML with microdata for structured content
 - **Edge-first approach**: localStorage for small data, IndexedDB for large data
@@ -26,29 +27,34 @@ Realness is a client-first social network application that prioritizes privacy a
 ### Key Technical Patterns
 
 **Data Layer**:
+
 - Uses `src/types.js` for comprehensive type definitions via JSDoc
 - Item IDs follow pattern: `/${Author}/${Type}/${Created}` (see `src/utils/itemid.js`)
 - Persistence layer in `src/persistance/` handles localStorage, IndexedDB, and Cloud storage
 - Data synchronization through `src/use/sync.js`
 
 **UI Architecture**:
+
 - Vue 3 SPA with Vue Router
 - Component-based architecture with semantic HTML elements
 - Stylus for CSS preprocessing with element-based inheritance over classes
 - PWA with service workers for offline functionality
 
 **Image Processing**:
+
 - Custom potrace implementation in `src/potrace/` for vector tracing
 - WASM module for performance-critical operations
 - Five-layer poster generation system (background, light, regular, medium, bold)
 - Color extraction and gradient generation
 
 **Workers**:
+
 - Service worker for PWA functionality
 - Web workers for image processing (`src/workers/`)
 - Compression/decompression utilities
 
 ### Code Style Requirements
+
 - Use snake_case for variables and functions (per `.cursorrules`)
 - No semicolons
 - Modern JavaScript features preferred
@@ -59,12 +65,14 @@ Realness is a client-first social network application that prioritizes privacy a
 - Brief, direct code without unnecessary explanations
 
 ### Testing
+
 - Vitest for unit testing with happy-dom environment
 - Coverage targets: 80% lines, branches, statements, functions
 - Comprehensive mocks in `tests/mocks/` for browser APIs
 - Test files follow `*.spec.js` pattern
 
 ### Firebase Integration
+
 - Authentication via phone numbers only
 - Cloud Storage for user-generated content
 - Client-side compression before upload

@@ -248,9 +248,9 @@ export const validate_keymap_runtime = (keymap = default_keymap) => {
     // Check for duplicate keys within context
     const context_keys = new Set()
     Object.entries(context.bindings || {}).forEach(([key, command]) => {
-      if (context_keys.has(key)) 
+      if (context_keys.has(key))
         errors.push(`Duplicate key '${key}' in ${context_name} context`)
-      
+
       context_keys.add(key)
 
       // Track used commands
@@ -258,20 +258,18 @@ export const validate_keymap_runtime = (keymap = default_keymap) => {
       used_commands.add(command_str)
 
       // Track key usage across contexts
-      if (!used_keys.has(key)) 
-        used_keys.set(key, [])
-      
+      if (!used_keys.has(key)) used_keys.set(key, [])
+
       used_keys.get(key).push(context_name)
     })
   })
 
   // Check for conflicting keys across contexts
   used_keys.forEach((contexts, key) => {
-    if (contexts.length > 1) 
+    if (contexts.length > 1)
       warnings.push(
         `Key '${key}' used in multiple contexts: ${contexts.join(', ')}`
       )
-    
   })
 
   return {
@@ -323,9 +321,7 @@ export const get_keymap_stats = (keymap = default_keymap) => {
 export const get_command_description = (command, keymap = default_keymap) => {
   for (const context_config of keymap) {
     const descriptions = context_config.descriptions || {}
-    if (descriptions[command]) 
-      return descriptions[command]
-    
+    if (descriptions[command]) return descriptions[command]
   }
   return command
 }

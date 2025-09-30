@@ -1,29 +1,27 @@
 import css_var from '@/utils/css-var'
-import {
-  rgb_to_hex,
-  hsl_to_hex,
-  hsl_to_oklch
-} from '@/utils/color-converters'
+import { rgb_to_hex, hsl_to_hex, hsl_to_oklch } from '@/utils/color-converters'
 
 export const to_hex = (color = '', green, blue) => {
   // Handle individual RGB values
-  if (typeof color === 'number' && typeof green === 'number' && typeof blue === 'number') 
+  if (
+    typeof color === 'number' &&
+    typeof green === 'number' &&
+    typeof blue === 'number'
+  )
     return rgb_to_hex(color, green, blue)
-  
+
   // Handle string inputs
-  if (typeof color !== 'string') 
+  if (typeof color !== 'string')
     throw `Provided color is unrecognized — ${color}`
-  
+
   if (color.length === 0) color = '--black-dark'
   if (color.startsWith('--')) color = css_var(color).trim()
   if (color.startsWith('#')) return color
-  
+
   let hex
-  if (color.startsWith('rgb')) 
-    hex = rgb_to_hex(color)
-   else if (color.startsWith('hsl')) 
-    hex = hsl_to_hex(color)
-   else {
+  if (color.startsWith('rgb')) hex = rgb_to_hex(color)
+  else if (color.startsWith('hsl')) hex = hsl_to_hex(color)
+  else {
     // Try to parse as individual RGB values
     const parts = color.toString().split(',')
     if (parts.length === 3) {
@@ -31,11 +29,9 @@ export const to_hex = (color = '', green, blue) => {
       const g = parseInt(parts[1].trim())
       const b = parseInt(parts[2].trim())
       hex = rgb_to_hex(r, g, b)
-    } else 
-      throw `Provided color is unrecognized — ${color}`
-    
+    } else throw `Provided color is unrecognized — ${color}`
   }
-  
+
   if (hex && hex.length === 9) return hex.slice(0, -2)
   else if (hex && hex.length === 7) return hex
   throw `Provided color is unrecognized — ${color}`

@@ -34,14 +34,14 @@
   watch(
     new_vector,
     vector => {
-      if (vector) 
-        provide('new-poster', true)
-      
+      if (vector) provide('new-poster', true)
     },
     { immediate: true }
   )
 
-  const is_processing = computed(() => !new_vector.value && progress.value < 100)
+  const is_processing = computed(
+    () => !new_vector.value && progress.value < 100
+  )
 
   const progress_text = computed(() => {
     if (!is_processing.value) return ''

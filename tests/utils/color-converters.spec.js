@@ -38,8 +38,12 @@ describe('rgb_to_hex', () => {
   })
 
   it('throws error for invalid values', () => {
-    expect(() => rgb_to_hex(256, 0, 0)).toThrow('Expected three numbers below 256')
-    expect(() => rgb_to_hex('invalid')).toThrow('Invalid or unsupported color format')
+    expect(() => rgb_to_hex(256, 0, 0)).toThrow(
+      'Expected three numbers below 256'
+    )
+    expect(() => rgb_to_hex('invalid')).toThrow(
+      'Invalid or unsupported color format'
+    )
   })
 })
 
@@ -111,12 +115,12 @@ describe('extract_color_palette', () => {
     // Create a simple 2x2 red image
     const image_data = new ImageData(2, 2)
     const pixels = image_data.data
-    
+
     // Fill with red pixels
     for (let i = 0; i < pixels.length; i += 4) {
-      pixels[i] = 255     // R
-      pixels[i + 1] = 0   // G
-      pixels[i + 2] = 0   // B
+      pixels[i] = 255 // R
+      pixels[i + 1] = 0 // G
+      pixels[i + 2] = 0 // B
       pixels[i + 3] = 255 // A
     }
 
@@ -128,13 +132,13 @@ describe('extract_color_palette', () => {
   it('handles transparent pixels', () => {
     const image_data = new ImageData(2, 2)
     const pixels = image_data.data
-    
+
     // Fill with transparent pixels
     for (let i = 0; i < pixels.length; i += 4) {
-      pixels[i] = 255     // R
-      pixels[i + 1] = 0   // G
-      pixels[i + 2] = 0   // B
-      pixels[i + 3] = 0   // A (transparent)
+      pixels[i] = 255 // R
+      pixels[i + 1] = 0 // G
+      pixels[i + 2] = 0 // B
+      pixels[i + 3] = 0 // A (transparent)
     }
 
     const palette = extract_color_palette(image_data)
@@ -144,7 +148,7 @@ describe('extract_color_palette', () => {
   it('handles mixed colors', () => {
     const image_data = new ImageData(4, 4)
     const pixels = image_data.data
-    
+
     // Create a pattern with red and blue pixels
     for (let i = 0; i < pixels.length; i += 4) {
       const pixel_index = i / 4
@@ -173,10 +177,10 @@ describe('color conversion roundtrip', () => {
     const original_rgb = { r: 255, g: 128, b: 64 }
     const hsl = rgb_to_hsl(original_rgb.r, original_rgb.g, original_rgb.b)
     const hex = hsl_to_hex(hsl.h, hsl.s, hsl.l)
-    
+
     // Convert back to RGB for comparison
     const converted_rgb = hex_to_rgb(hex)
-    
+
     // Allow for small rounding differences
     expect(Math.abs(converted_rgb.r - original_rgb.r)).toBeLessThan(2)
     expect(Math.abs(converted_rgb.g - original_rgb.g)).toBeLessThan(2)
@@ -185,11 +189,13 @@ describe('color conversion roundtrip', () => {
 })
 
 // Helper function for tests
-const hex_to_rgb = (hex) => {
+const hex_to_rgb = hex => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      }
+    : null
 }

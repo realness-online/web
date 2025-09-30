@@ -6,9 +6,13 @@ describe('Directory validation', () => {
     it('validates correct directory ids', () => {
       // Valid itemids with trailing slash should be valid directory ids
       expect(is_directory_id('/+16282281824/posters/1737178477987/')).toBe(true)
-      expect(is_directory_id('/+16282281824/statements/1737178477987/')).toBe(true)
+      expect(is_directory_id('/+16282281824/statements/1737178477987/')).toBe(
+        true
+      )
       expect(is_directory_id('/+16282281824/events/1737178477987/')).toBe(true)
-      expect(is_directory_id('/+16282281824/relations/1737178477987/')).toBe(true)
+      expect(is_directory_id('/+16282281824/relations/1737178477987/')).toBe(
+        true
+      )
       expect(is_directory_id('/+16282281824/me/1737178477987/')).toBe(true)
     })
 

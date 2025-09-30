@@ -7,7 +7,7 @@
  * Convert RGB values to hex string
  * Replaces rgb-hex package functionality
  * @param {number|string} red - Red value (0-255) or CSS rgb/rgba string
- * @param {number} green - Green value (0-255) 
+ * @param {number} green - Green value (0-255)
  * @param {number} blue - Blue value (0-255)
  * @param {number} alpha - Alpha value (0-1 or 0-100%)
  * @returns {string} Hex color string
@@ -17,34 +17,33 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
 
   if (typeof red === 'string' && !green) {
     const parsed = parse_css_rgb_string(red)
-    if (!parsed) 
-      throw new TypeError('Invalid or unsupported color format.')
-    
+    if (!parsed) throw new TypeError('Invalid or unsupported color format.')
+
     is_percent = false
     ;[red, green, blue, alpha] = parsed
-  } else if (alpha !== undefined) 
-    alpha = Number.parseFloat(alpha)
+  } else if (alpha !== undefined) alpha = Number.parseFloat(alpha)
 
-  if (typeof red !== 'number' ||
+  if (
+    typeof red !== 'number' ||
     typeof green !== 'number' ||
     typeof blue !== 'number' ||
     red > 255 ||
     green > 255 ||
     blue > 255
-  ) 
+  )
     throw new TypeError('Expected three numbers below 256')
 
   if (typeof alpha === 'number') {
-    if (!is_percent && alpha >= 0 && alpha <= 1) 
-      alpha = Math.round(255 * alpha)
-     else if (is_percent && alpha >= 0 && alpha <= 100) 
-      alpha = Math.round(255 * alpha / 100)
-     else 
-      throw new TypeError(`Expected alpha value (${alpha}) as a fraction or percentage`)
-    
-    alpha = (alpha | 1 << 8).toString(16).slice(1)
-  } else 
-    alpha = ''
+    if (!is_percent && alpha >= 0 && alpha <= 1) alpha = Math.round(255 * alpha)
+    else if (is_percent && alpha >= 0 && alpha <= 100)
+      alpha = Math.round((255 * alpha) / 100)
+    else
+      throw new TypeError(
+        `Expected alpha value (${alpha}) as a fraction or percentage`
+      )
+
+    alpha = (alpha | (1 << 8)).toString(16).slice(1)
+  } else alpha = ''
 
   return to_hex(red, green, blue, alpha)
 }
@@ -73,9 +72,7 @@ export const hsl_to_hex = (hue, saturation, lightness) => {
   const rgb = hsl_to_rgb(hue, saturation, lightness)
 
   // Convert each value to 2 character hex value
-  return `#${  rgb
-    .map(n => (256 + n).toString(16).substr(-2))
-    .join('')}`
+  return `#${rgb.map(n => (256 + n).toString(16).substr(-2)).join('')}`
 }
 
 /**
@@ -87,23 +84,35 @@ export const hsl_to_hex = (hue, saturation, lightness) => {
  */
 const hsl_to_rgb = (h, s, l) => {
   const c = (1 - Math.abs(2 * l - 1)) * s
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
   const m = l - c / 2
 
   let r, g, b
 
   if (0 <= h && h < 60) {
-    r = c; g = x; b = 0
+    r = c
+    g = x
+    b = 0
   } else if (60 <= h && h < 120) {
-    r = x; g = c; b = 0
+    r = x
+    g = c
+    b = 0
   } else if (120 <= h && h < 180) {
-    r = 0; g = c; b = x
+    r = 0
+    g = c
+    b = x
   } else if (180 <= h && h < 240) {
-    r = 0; g = x; b = c
+    r = 0
+    g = x
+    b = c
   } else if (240 <= h && h < 300) {
-    r = x; g = 0; b = c
+    r = x
+    g = 0
+    b = c
   } else if (300 <= h && h < 360) {
-    r = c; g = 0; b = x
+    r = c
+    g = 0
+    b = x
   }
 
   return [
@@ -116,7 +125,7 @@ const hsl_to_rgb = (h, s, l) => {
 /**
  * Convert RGB to HSL
  * @param {number} r - Red (0-255)
- * @param {number} g - Green (0-255) 
+ * @param {number} g - Green (0-255)
  * @param {number} b - Blue (0-255)
  * @returns {object} HSL object with h, s, l properties
  */
@@ -168,7 +177,7 @@ export const rgb_to_hsl = (r, g, b) => {
 export const hsl_to_oklch = (h, s, l) => {
   // First convert HSL to RGB
   const rgb = hsl_to_rgb(h, s / 100, l / 100)
-  
+
   // Convert RGB to linear RGB
   const linear_rgb = rgb.map(val => {
     val = val / 255
@@ -185,14 +194,17 @@ export const hsl_to_oklch = (h, s, l) => {
   const m_cubed = Math.cbrt(m_oklab)
   const s_cubed = Math.cbrt(s_oklab)
 
-  const l_oklab_final = 0.2104542553 * l_cubed + 0.7936177850 * m_cubed - 0.0040720468 * s_cubed
-  const a_oklab = 1.9779984951 * l_cubed - 2.4285922050 * m_cubed + 0.4505937099 * s_cubed
-  const b_oklab = 0.0259040371 * l_cubed + 0.7827717662 * m_cubed - 0.8086757660 * s_cubed
+  const l_oklab_final =
+    0.2104542553 * l_cubed + 0.793617785 * m_cubed - 0.0040720468 * s_cubed
+  const a_oklab =
+    1.9779984951 * l_cubed - 2.428592205 * m_cubed + 0.4505937099 * s_cubed
+  const b_oklab =
+    0.0259040371 * l_cubed + 0.7827717662 * m_cubed - 0.808675766 * s_cubed
 
   // Convert OKLab to OKLCH
   const l_oklch = l_oklab_final
   const c_oklch = Math.sqrt(a_oklab * a_oklab + b_oklab * b_oklab)
-  const h_oklch = Math.atan2(b_oklab, a_oklab) * 180 / Math.PI
+  const h_oklch = (Math.atan2(b_oklab, a_oklab) * 180) / Math.PI
 
   return {
     l: l_oklch,
@@ -207,26 +219,26 @@ export const hsl_to_oklch = (h, s, l) => {
  * @param {ImageData} image_data - Image data from canvas
  * @returns {object} Color palette object
  */
-export const extract_color_palette = (image_data) => {
+export const extract_color_palette = image_data => {
   const pixels = image_data.data
   const { width } = image_data
   const { height } = image_data
-  
+
   // Sample pixels (every 4th pixel for performance, but ensure we get some pixels)
   const sample_size = Math.max(1, Math.floor(Math.min(width, height) / 4))
   const colors = []
-  
-  for (let y = 0; y < height; y += sample_size) 
+
+  for (let y = 0; y < height; y += sample_size)
     for (let x = 0; x < width; x += sample_size) {
       const index = (y * width + x) * 4
       const r = pixels[index]
       const g = pixels[index + 1]
       const b = pixels[index + 2]
       const a = pixels[index + 3]
-      
-      if (a > 128)  // Skip transparent pixels
+
+      if (a > 128)
+        // Skip transparent pixels
         colors.push({ r, g, b })
-      
     }
 
   // Group similar colors and find most prominent
@@ -245,18 +257,21 @@ export const extract_color_palette = (image_data) => {
 
 // Helper functions
 
-const to_hex = (red, green, blue, alpha) => `#${  ((blue | green << 8 | red << 16) | 1 << 24).toString(16).slice(1)  }${alpha}`
+const to_hex = (red, green, blue, alpha) =>
+  `#${(blue | (green << 8) | (red << 16) | (1 << 24)).toString(16).slice(1)}${alpha}`
 
-const parse_css_rgb_string = (input) => {
-  const parts = input.replace(/rgba?\(([^)]+)\)/, '$1').split(/[,\s/]+/).filter(Boolean)
-  if (parts.length < 3) 
-    return
+const parse_css_rgb_string = input => {
+  const parts = input
+    .replace(/rgba?\(([^)]+)\)/, '$1')
+    .split(/[,\s/]+/)
+    .filter(Boolean)
+  if (parts.length < 3) return
 
   const parse_value = (value, max) => {
     value = value.trim()
-    if (value.endsWith('%')) 
-      return Math.min(Number.parseFloat(value) * max / 100, max)
-    
+    if (value.endsWith('%'))
+      return Math.min((Number.parseFloat(value) * max) / 100, max)
+
     return Math.min(Number.parseFloat(value), max)
   }
 
@@ -265,28 +280,27 @@ const parse_css_rgb_string = (input) => {
   const blue = parse_value(parts[2], 255)
   let alpha
 
-  if (parts.length === 4) 
-    alpha = parse_value(parts[3], 1)
+  if (parts.length === 4) alpha = parse_value(parts[3], 1)
 
   return [red, green, blue, alpha]
 }
 
-const cycle_hue = (val) => {
+const cycle_hue = val => {
   val = clamp(val, -1e7, 1e7)
-  while (val < 0)  val += 360 
-  while (val > 359)  val -= 360 
+  while (val < 0) val += 360
+  while (val > 359) val -= 360
   return val
 }
 
-const clamp = (val, min, max) => val < min ? min : val > max ? max : val
+const clamp = (val, min, max) => (val < min ? min : val > max ? max : val)
 
-const group_similar_colors = (colors) => {
+const group_similar_colors = colors => {
   const groups = []
   const threshold = 10 // Lower threshold for exact color matching in tests
 
   for (const color of colors) {
     let found_group = false
-    
+
     for (const group of groups) {
       const distance = color_distance(color, group.color)
       if (distance < threshold) {
@@ -295,13 +309,12 @@ const group_similar_colors = (colors) => {
         break
       }
     }
-    
-    if (!found_group) 
+
+    if (!found_group)
       groups.push({
         color: rgb_to_hex(color.r, color.g, color.b),
         count: 1
       })
-    
   }
 
   return groups

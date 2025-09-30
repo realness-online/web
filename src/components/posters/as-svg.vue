@@ -245,7 +245,11 @@
     </pattern>
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks :itemid="itemid" />
-    <rect v-show="fill|| stroke" :fill="`url(${fragment('shadow')})`" width="100%" height="100%" />
+    <rect
+      v-show="fill || stroke"
+      :fill="`url(${fragment('shadow')})`"
+      width="100%"
+      height="100%" />
     <rect
       v-show="drama"
       id="lightbar-back"

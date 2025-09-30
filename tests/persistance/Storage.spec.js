@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Storage, Poster, Me, Relation, Statement, Event, Offline, History } from '@/persistance/Storage'
+import {
+  Storage,
+  Poster,
+  Me,
+  Relation,
+  Statement,
+  Event,
+  Offline,
+  History
+} from '@/persistance/Storage'
 
 // Mock dependencies
 vi.mock('@/utils/itemid', () => ({
@@ -29,7 +38,9 @@ vi.mock('@/persistance/Directory', () => ({
 }))
 
 vi.mock('@/utils/upload-processor', () => ({
-  prepare_upload_html: vi.fn(() => Promise.resolve({ compressed: 'test', metadata: {} }))
+  prepare_upload_html: vi.fn(() =>
+    Promise.resolve({ compressed: 'test', metadata: {} })
+  )
 }))
 
 describe('@/persistance/Storage', () => {
@@ -167,7 +178,7 @@ describe('@/persistance/Storage', () => {
       // Mock get to return the outerHTML
       const { get } = await import('idb-keyval')
       get.mockResolvedValue('<div>test content</div>')
-      
+
       // Mock document.createElement
       const mock_element = {
         innerHTML: '',
@@ -177,10 +188,13 @@ describe('@/persistance/Storage', () => {
         }
       }
       vi.spyOn(document, 'createElement').mockReturnValue(mock_element)
-      
+
       await offline.save()
-      
-      expect(mock_element.firstElementChild.setAttribute).toHaveBeenCalledWith('itemid', '/+1234567890/posters/1234567890')
+
+      expect(mock_element.firstElementChild.setAttribute).toHaveBeenCalledWith(
+        'itemid',
+        '/+1234567890/posters/1234567890'
+      )
     })
   })
 
@@ -198,9 +212,9 @@ describe('@/persistance/Storage', () => {
 
     it('has save method for uploading', async () => {
       const mock_items = { outerHTML: '<div>test</div>' }
-      
+
       await history.save(mock_items)
-      
+
       // Should call upload if online and user exists
       const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalled()
