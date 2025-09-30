@@ -3,7 +3,11 @@ import as_background from '@/components/posters/as-background'
 describe('@/components/posters/as-background.vue', () => {
   describe('Renders', () => {
     it('a new background for a poster without one', () => {
-      const wrapper = shallowMount(as_background)
+      const wrapper = shallowMount(as_background, {
+        props: {
+          fill: '#ffffff'
+        }
+      })
       expect(wrapper.element).toMatchSnapshot()
     })
   })

@@ -31,7 +31,10 @@ describe('@/components/posters/as-path.vue', () => {
       const wrapper = shallowMount(as_path, {
         props: {
           itemprop: 'regular',
-          path: mock_path_element
+          path: mock_path_element,
+          fill: '#ffffff',
+          stroke: '#000000',
+          id: 'test-path'
         }
       })
       expect(wrapper.element).toMatchSnapshot()

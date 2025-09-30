@@ -433,14 +433,12 @@ describe('Sync Statements', () => {
       create_hash.mockResolvedValue('local-hash')
 
       const mock_statement = {
-        sync: vi
-          .fn()
-          .mockResolvedValue([
-            {
-              id: '/+14151234356/statements/1234567890',
-              statement: 'Test statement'
-            }
-          ]), // Returns data
+        sync: vi.fn().mockResolvedValue([
+          {
+            id: '/+14151234356/statements/1234567890',
+            statement: 'Test statement'
+          }
+        ]), // Returns data
         save: vi.fn().mockRejectedValue(new Error('QuotaExceededError')), // Save fails
         optimize: vi.fn()
       }

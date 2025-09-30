@@ -99,7 +99,9 @@ describe('App.vue', () => {
     it('renders image picker input', () => {
       const image_picker = wrapper.find('input[type="file"]')
       expect(image_picker.exists()).toBe(true)
-      expect(image_picker.attributes('accept')).toBe('image/jpeg,image/png')
+      expect(image_picker.attributes('accept')).toBe(
+        'image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml'
+      )
       expect(image_picker.classes()).toContain('poster')
       expect(image_picker.classes()).toContain('picker')
     })
