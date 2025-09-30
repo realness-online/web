@@ -38,6 +38,7 @@ import './mocks/browser/createrange'
 import './mocks/browser/fetch'
 import './mocks/browser/scrollIntoView'
 import './mocks/browser/worker'
+import './mocks/browser/svg'
 
 // Import default mocks
 import './mocks/default'

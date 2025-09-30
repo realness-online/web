@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import { ref } from 'vue'
 import Editor from '@/views/Editor'
 
 // Mock vue-router
@@ -23,10 +24,10 @@ Object.defineProperty(window, 'localStorage', {
 // Mock vectorize composable
 vi.mock('@/use/vectorize', () => ({
   use: () => ({
-    new_vector: { value: null },
-    new_gradients: { value: null },
-    new_cutouts: { value: null },
-    progress: { value: 0 }
+    new_vector: ref(null),
+    new_gradients: ref(null),
+    new_cutouts: ref(null),
+    progress: ref(0)
   })
 }))
 

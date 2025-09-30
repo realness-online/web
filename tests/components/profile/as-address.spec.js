@@ -1,17 +1,16 @@
 import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
+import { ref } from 'vue'
 import as_address from '@/components/profile/as-address'
 
 // Mock the use_me composable
 vi.mock('@/use/people', () => ({
   use_me: () => ({
-    me: {
-      value: {
-        id: '/+14151234356',
-        first_name: 'Scott',
-        last_name: 'Fryxell'
-      }
-    }
+    me: ref({
+      id: '/+14151234356',
+      first_name: 'Scott',
+      last_name: 'Fryxell'
+    })
   })
 }))
 
