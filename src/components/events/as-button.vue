@@ -64,9 +64,7 @@
   })
 
   onMounted(async () => {
-    if (localStorage.me) 
-      events.value = await list(`${localStorage.me}/events`)
-    
+    if (localStorage.me) events.value = await list(`${localStorage.me}/events`)
   })
 
   const on_click = () => {

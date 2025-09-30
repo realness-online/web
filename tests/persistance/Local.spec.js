@@ -29,14 +29,17 @@ describe('@/persistance/Local', () => {
       const mock_element = {
         outerHTML: '<div>test content</div>'
       }
-      
+
       // Mock document.querySelector to return our mock element
       global.document = {
         querySelector: vi.fn().mockReturnValue(mock_element)
       }
-      
+
       local.save()
-      expect(mock_storage.setItem).toHaveBeenCalledWith('test_collection', '<div>test content</div>')
+      expect(mock_storage.setItem).toHaveBeenCalledWith(
+        'test_collection',
+        '<div>test content</div>'
+      )
     })
 
     it('handles missing DOM element', () => {
@@ -44,7 +47,7 @@ describe('@/persistance/Local', () => {
       global.document = {
         querySelector: vi.fn().mockReturnValue(null)
       }
-      
+
       local.save()
       expect(mock_storage.setItem).not.toHaveBeenCalled()
     })
@@ -55,14 +58,14 @@ describe('@/persistance/Local', () => {
       mock_storage.setItem.mockImplementation(() => {
         throw new Error('Storage full')
       })
-      
+
       const mock_element = {
         outerHTML: '<div>test content</div>'
       }
       global.document = {
         querySelector: vi.fn().mockReturnValue(mock_element)
       }
-      
+
       expect(() => local.save()).toThrow('Storage full')
     })
   })

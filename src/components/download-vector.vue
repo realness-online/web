@@ -33,7 +33,7 @@
     content.value = `data:application/octet-stream,${encodeURIComponent(svg.outerHTML)}`
   }
 
-  const adobe = (svg) => {
+  const adobe = svg => {
     const convert = svg.querySelectorAll('[stop-color]')
     convert.forEach(element => {
       const hsla = element.getAttribute('stop-color')

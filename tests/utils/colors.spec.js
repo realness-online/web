@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { 
-  to_hex, 
-  to_hex_number, 
-  to_hsla, 
-  to_complimentary_hsl, 
+import {
+  to_hex,
+  to_hex_number,
+  to_hsla,
+  to_complimentary_hsl,
   luminosity,
   rgba_to_hsla,
   hsla_to_color,
@@ -12,7 +12,7 @@ import {
 
 // Mock dependencies
 vi.mock('@/utils/css-var', () => ({
-  default: vi.fn((var_name) => {
+  default: vi.fn(var_name => {
     const css_vars = {
       '--black-dark': '#000000',
       '--white': '#ffffff',

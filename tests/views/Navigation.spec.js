@@ -19,7 +19,7 @@ describe('@/views/Navigation', () => {
       global: {
         stubs: {
           'router-link': true,
-          'icon': true,
+          icon: true,
           'statement-as-textarea': {
             template: '<div class="red"></div>',
             emits: ['toggle-keyboard']
@@ -46,15 +46,27 @@ describe('@/views/Navigation', () => {
     it('renders router links for navigation', () => {
       const router_links = wrapper.findAll('router-link-stub')
       expect(router_links.length).toBeGreaterThan(0)
-      
+
       // Check for specific routes
-      const statements_link = router_links.find(link => link.attributes('to') === '/statements')
-      const events_link = router_links.find(link => link.attributes('to') === '/events')
-      const posters_link = router_links.find(link => link.attributes('to') === '/posters')
-      const phonebook_link = router_links.find(link => link.attributes('to') === '/phonebook')
-      const thoughts_link = router_links.find(link => link.attributes('to') === '/thoughts')
-      const about_link = router_links.find(link => link.attributes('to') === '/about')
-      
+      const statements_link = router_links.find(
+        link => link.attributes('to') === '/statements'
+      )
+      const events_link = router_links.find(
+        link => link.attributes('to') === '/events'
+      )
+      const posters_link = router_links.find(
+        link => link.attributes('to') === '/posters'
+      )
+      const phonebook_link = router_links.find(
+        link => link.attributes('to') === '/phonebook'
+      )
+      const thoughts_link = router_links.find(
+        link => link.attributes('to') === '/thoughts'
+      )
+      const about_link = router_links.find(
+        link => link.attributes('to') === '/about'
+      )
+
       expect(statements_link).toBeTruthy()
       expect(events_link).toBeTruthy()
       expect(posters_link).toBeTruthy()
@@ -108,10 +120,10 @@ describe('@/views/Navigation', () => {
   describe('Toggle Keyboard Functionality', () => {
     it('toggles posting state', async () => {
       expect(wrapper.vm.posting).toBe(false)
-      
+
       await wrapper.vm.toggle_keyboard()
       expect(wrapper.vm.posting).toBe(true)
-      
+
       await wrapper.vm.toggle_keyboard()
       expect(wrapper.vm.posting).toBe(false)
     })
@@ -119,7 +131,7 @@ describe('@/views/Navigation', () => {
     it('handles toggle-keyboard event from textarea', async () => {
       const textarea = wrapper.find('as-textarea-stub')
       await textarea.trigger('toggle-keyboard')
-      
+
       expect(wrapper.vm.posting).toBe(true)
     })
   })
@@ -128,14 +140,14 @@ describe('@/views/Navigation', () => {
     it('calls open_camera when camera button is clicked', async () => {
       const camera_button = wrapper.find('#camera')
       await camera_button.trigger('click')
-      
+
       expect(mock_open_camera).toHaveBeenCalled()
     })
 
     it('calls open_camera when camera button keydown enter', async () => {
       const camera_button = wrapper.find('#camera')
       await camera_button.trigger('keydown.enter')
-      
+
       expect(mock_open_camera).toHaveBeenCalled()
     })
   })
@@ -147,7 +159,7 @@ describe('@/views/Navigation', () => {
       const posters_link = wrapper.find('router-link-stub[to="/posters"]')
       const phonebook_link = wrapper.find('router-link-stub[to="/phonebook"]')
       const thoughts_link = wrapper.find('router-link-stub[to="/thoughts"]')
-      
+
       expect(statements_link.classes()).toContain('black')
       expect(events_link.classes()).toContain('green')
       expect(posters_link.classes()).toContain('green')

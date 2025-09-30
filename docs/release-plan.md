@@ -56,6 +56,7 @@ We have an issue with statements not being available on devices where they are c
 4. **Visibility State Requirement**: Sync only runs when `document.visibilityState === 'visible'`, failing for background devices.
 
 **Most Likely Cause of 9-Month Gap:**
+
 - Device A uploads statements successfully
 - Device B tries to sync but server file is missing/corrupted
 - `metadata()` call fails with `storage/object-not-found`
@@ -65,6 +66,7 @@ We have an issue with statements not being available on devices where they are c
 - Device B never receives statements
 
 **Debugging Steps:**
+
 - Check `localStorage.sync_time` and `sync:index`
 - Verify server file existence with `get_metadata(path)`
 - Test hash comparison logic manually

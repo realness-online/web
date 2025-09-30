@@ -31,9 +31,8 @@
 
   const avatar_click = () => {
     // If we're on the sign-on page, go to home with account dialog fragment
-    if (route.path === '/sign-on') 
-      router.push('/#account')
-     else {
+    if (route.path === '/sign-on') router.push('/#account')
+    else {
       // Default behavior - go to person's profile
       const route_path = { path: props.person.id }
       router.push(route_path)

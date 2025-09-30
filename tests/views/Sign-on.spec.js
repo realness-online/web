@@ -33,7 +33,7 @@ vi.mock('@/use/people', () => ({
     is_valid_name: { value: false }
   }),
   default_person: { id: '/+14151234356', type: 'person' },
-  is_person: (maybe) => {
+  is_person: maybe => {
     if (typeof maybe !== 'object') return false
     if (maybe.type !== 'person') return false
     if (!maybe.id) return false

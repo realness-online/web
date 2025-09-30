@@ -33,7 +33,7 @@ export const use = () => {
       for await (const [name, handle] of source_dir.entries())
         if (
           handle.kind === 'file' &&
-          name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+          name.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i)
         ) {
           image_count++
         }
@@ -47,7 +47,8 @@ export const use = () => {
 
       for await (const [name, handle] of source_dir.entries()) {
         if (handle.kind !== 'file') continue
-        if (!name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) continue
+        if (!name.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i))
+          continue
 
         progress.value.current_file = name
         console.info(`🖼️ Processing file: ${name}`)

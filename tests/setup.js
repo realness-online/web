@@ -82,7 +82,7 @@ Object.defineProperty(window, 'localStorage', {
 })
 
 // Mock IntersectionObserver for components that use it
-global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
+global.IntersectionObserver = vi.fn().mockImplementation(callback => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
@@ -92,7 +92,7 @@ global.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
 }))
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation((callback) => ({
+global.ResizeObserver = vi.fn().mockImplementation(callback => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn()

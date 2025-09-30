@@ -101,9 +101,16 @@ export const use = () => {
   const listener = () => {
     const [image] = image_picker.value.files
     if (image === undefined) return
-    const is_image = ['image/jpeg', 'image/png'].some(
-      type => image.type === type
-    )
+    const is_image = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
+      'image/avif',
+      'image/svg+xml'
+    ].some(type => image.type === type)
     if (is_image) {
       vectorize(image)
       image_picker.value.value = ''
@@ -127,28 +134,63 @@ export const use = () => {
     working.value = true
     progress.value = 0
 
+    let image_data
+    if (image.type === 'image/svg+xml') image_data = await rasterize_svg(image)
+    else {
+      const image_url = URL.createObjectURL(image)
+      const img = new Image()
+      img.src = image_url
+      await new Promise(resolve => (img.onload = resolve))
+      const bitmap = await createImageBitmap(img)
+      image_data = resize_image(bitmap)
+      URL.revokeObjectURL(image_url)
+    }
+
     const tags = await ExifReader.load(image, { expanded: true })
     const exif = exif_logger(tags)
 
-    // Create ImageBitmap and resize once
-    const array_buffer = await image.arrayBuffer()
-    const blob = new Blob([array_buffer])
-    const image_bitmap = await createImageBitmap(blob)
-    const resized_image_data = resize_image(image_bitmap)
-
-    // Send resized image data to workers
     vectorizer.value.postMessage({
       route: 'make:vector',
-      image_data: resized_image_data,
+      image_data,
       exif
     })
     gradienter.value.postMessage({
       route: 'make:gradient',
-      image_data: resized_image_data
+      image_data
     })
     tracer.value.postMessage({
       route: 'make:trace',
-      image_data: resized_image_data
+      image_data
+    })
+  }
+
+  /**
+   * @param {File} svg_file
+   * @returns {ImageData}
+   */
+  const rasterize_svg = async svg_file => {
+    const svg_text = await svg_file.text()
+    const svg_blob = new Blob([svg_text], { type: 'image/svg+xml' })
+    const svg_url = URL.createObjectURL(svg_blob)
+
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = async () => {
+        const canvas = new OffscreenCanvas(
+          img.width || 1000,
+          img.height || 1000
+        )
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })
+        ctx.drawImage(img, 0, 0)
+        const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(svg_url)
+        resolve(resize_image(await createImageBitmap(canvas)))
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(svg_url)
+        reject(new Error('Failed to load SVG'))
+      }
+      img.src = svg_url
     })
   }
 

@@ -37,7 +37,7 @@ describe('@/views/Events', () => {
           'logo-as-link': true,
           'as-days': true,
           'as-figure': true,
-          'icon': true,
+          icon: true,
           'router-link': true
         }
       }

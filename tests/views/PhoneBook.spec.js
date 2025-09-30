@@ -19,7 +19,7 @@ vi.mock('@/use/people', () => ({
     load_phonebook: vi.fn(),
     working: { value: false }
   }),
-  is_person: (maybe) => {
+  is_person: maybe => {
     if (typeof maybe !== 'object') return false
     if (maybe.type !== 'person') return false
     if (!maybe.id) return false
@@ -41,7 +41,7 @@ describe('@/views/PhoneBook', () => {
     wrapper = shallowMount(PhoneBook, {
       global: {
         stubs: {
-          'icon': true,
+          icon: true,
           'logo-as-link': true,
           'as-figure': true,
           'sign-on': true,

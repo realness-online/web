@@ -141,7 +141,7 @@
       class="poster picker"
       v-vectorizer
       type="file"
-      accept="image/jpeg,image/png" />
+      accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml" />
   </main>
 </template>
 

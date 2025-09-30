@@ -26,7 +26,7 @@ vi.mock('@/use/people', () => ({
   use_me: () => ({
     relations: []
   }),
-  is_person: (maybe) => {
+  is_person: maybe => {
     if (typeof maybe !== 'object') return false
     if (maybe.type !== 'person') return false
     if (!maybe.id) return false
@@ -51,7 +51,7 @@ describe('@/component/profile/as-figure.vue', () => {
       global: {
         stubs: {
           'as-svg': true,
-          'icon': true,
+          icon: true,
           'profile-as-meta': true,
           'as-relationship-options': true,
           'as-address': true,

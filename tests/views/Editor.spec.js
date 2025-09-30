@@ -38,7 +38,7 @@ describe('@/views/Editor', () => {
     wrapper = shallowMount(Editor, {
       global: {
         stubs: {
-          'icon': true,
+          icon: true,
           'as-svg': true
         }
       }

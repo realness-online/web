@@ -46,7 +46,7 @@ describe('@/component/profile/as-address.vue', () => {
     it('does not show avatar when not provided', async () => {
       const person_without_avatar = { ...person }
       delete person_without_avatar.avatar
-      
+
       await wrapper.setProps({ person: person_without_avatar })
       expect(wrapper.find('link[itemprop="avatar"]').exists()).toBe(false)
     })

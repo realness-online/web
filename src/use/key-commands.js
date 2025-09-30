@@ -88,9 +88,8 @@ export const use_key_commands = () => {
    * @param {string} context
    */
   const add_context = context => {
-    if (!active_contexts.value.includes(context)) 
+    if (!active_contexts.value.includes(context))
       active_contexts.value.push(context)
-    
   }
 
   /**
@@ -107,17 +106,15 @@ export const use_key_commands = () => {
    * @param {...any} args
    */
   const execute_command = (command, ...args) => {
-    if (is_input_focused.value) 
-      return
+    if (is_input_focused.value) return
 
     const handler_config = command_handlers.get(command)
     if (
       handler_config &&
       (handler_config.context === 'global' ||
         active_contexts.value.includes(handler_config.context))
-    ) 
+    )
       handler_config.handler(...args)
-    
   }
 
   /**
@@ -184,13 +181,12 @@ export const use_key_commands = () => {
    */
   const load_keymap = () => {
     const stored = localStorage.getItem('realness_keymap')
-    if (stored) 
+    if (stored)
       try {
         keymap.value = JSON.parse(stored)
       } catch (e) {
         console.warn('Failed to load keymap from storage:', e)
       }
-    
   }
 
   /**

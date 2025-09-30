@@ -24,7 +24,7 @@ vi.mock('@/use/people', () => ({
     load_person: vi.fn()
   }),
   from_e64: vi.fn().mockReturnValue('/+14151234356'),
-  is_person: (maybe) => {
+  is_person: maybe => {
     if (typeof maybe !== 'object') return false
     if (maybe.type !== 'person') return false
     if (!maybe.id) return false
@@ -71,7 +71,7 @@ describe('Profile', () => {
           'as-messenger': true,
           'as-article': true,
           'as-figure': true,
-          'icon': true,
+          icon: true,
           'router-link': true
         }
       }

@@ -70,7 +70,7 @@ describe('@/views/Posters', () => {
     wrapper = shallowMount(Posters, {
       global: {
         stubs: {
-          'icon': true,
+          icon: true,
           'as-figure': true,
           'as-svg': true,
           'as-menu-author': true,

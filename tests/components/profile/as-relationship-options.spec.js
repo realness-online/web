@@ -67,7 +67,7 @@ describe('@/component/profile/as-relationship-options.vue', () => {
         first_name: 'Unknown',
         last_name: 'Person'
       }
-      
+
       await wrapper.setProps({ person: non_relation_person })
       expect(wrapper.find('a.status').classes()).not.toContain('relation')
     })
