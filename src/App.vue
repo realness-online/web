@@ -2,7 +2,7 @@
   import sync from '@/components/sync'
   import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
-  import fps_component from '@/components/fps'
+  import FpsComponent from '@/components/fps'
   import Viewbox from '@/components/viewbox'
   import {
     ref,
