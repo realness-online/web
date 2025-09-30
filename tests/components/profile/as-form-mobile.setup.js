@@ -31,7 +31,7 @@ vi.mock('libphonenumber-js', () => {
     AsYouType: vi.fn().mockImplementation(() => ({
       input: vi.fn(() => '1 (415) 123-4356')
     })),
-    parseNumber: vi.fn((number_string) => {
+    parseNumber: vi.fn(number_string => {
       // Extract just digits from the input
       const digits = number_string?.replace(/\D/g, '')
       // Return phone number if valid (has digits), otherwise empty
