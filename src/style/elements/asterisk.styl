@@ -8,7 +8,7 @@
   user-select: none
 
 [outline],
-[outline] *
+[outline] *:not(svg):not(svg *)
   outline: 0.15vmin dashed black
 
 html *
@@ -38,7 +38,7 @@ html *
     transition-property: opacity,  display;
     transition-duration: 0.66s;
     transition-behavior: allow-discrete;
-    transition-delay: 0;
+
     opacity: 1;
   }
 }

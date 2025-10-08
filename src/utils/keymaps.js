@@ -1,6 +1,6 @@
 /**
- * @typedef {import('../types.js').Key_Binding} Key_Binding
- * @typedef {import('../types.js').Keymap_Context} Keymap_Context
+ * @typedef {import('@/types.js').Key_Binding} Key_Binding
+ * @typedef {import('@/types.js').Keymap_Context} Keymap_Context
  */
 
 /**
@@ -22,7 +22,7 @@ export const default_keymap = [
       'Tab Row': '',
       I: 'pref::Toggle_Info',
       O: 'pref::Toggle_Storytelling',
-      P: 'ui::Toggle_Fullscreen',
+      P: 'ui::Toggle_Presentation',
 
       'Home Row': '',
       A: 'pref::Toggle_Animate',
@@ -42,7 +42,7 @@ export const default_keymap = [
       '/': 'ui::Show_Documentation'
     },
     descriptions: {
-      'ui::Toggle_Fullscreen': 'Toggle fullscreen mode',
+      'ui::Toggle_Presentation': 'Toggle presentation mode',
       'ui::Open_Settings': 'Open application settings',
       'ui::Show_Documentation': 'Show application documentation',
       'pref::Toggle_Fill': 'Toggle fill gradient on posters',

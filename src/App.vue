@@ -78,7 +78,7 @@
       preferences_dialog.value.settings.close()
     else preferences_dialog.value?.show()
   })
-  register('ui::Toggle_Fullscreen', () =>
+  register('ui::Toggle_Presentation', () =>
     !document.fullscreenElement
       ? document.documentElement.requestFullscreen()
       : document.exitFullscreen()

@@ -258,11 +258,10 @@
       height="100%" />
     <g :id="query('cutouts')" v-show="cutout_visible" style="fill-opacity: 0.5">
       <as-path-cutout
-        v-for="(cutout, index) in vector.cutout"
+        v-for="(cut, index) in vector.cutout"
         :key="`cutout-${index}`"
-        :cutout="cutout"
+        :cutout="cut"
         :index="index"
-        :class="{ hovered: hovered_cutout === index }"
         @focus="focus_cutout"
         @touchstart="cutout_start"
         @touchend="cutout_end" />
