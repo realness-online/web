@@ -73,37 +73,29 @@
 
 <style>
   path[itemprop='cutout'] {
-    transition:
-      filter ease-in 0.66s,
-      fill-opacity ease-in 0.66s;
+    filter: brightness(1) saturate(1);
     animation-play-state: paused;
+    will-change: fill-opacity;
+    transition:
+      fill-opacity ease-out 0.8s;
     &:focus {
       outline: none;
     }
     &:hover {
-      transition:
-        filter ease-in 0.66s,
-        fill-opacity ease-in 0.66s;
-      filter: brightness(1.3) saturate(1.3);
+      animation: fade-back ease-out 0.4s 1s forwards;
+      animation-iteration-count: 1;
       fill-opacity: 0.75;
-      animation: auto-hide ease-in-out 1.66s 0.66s forwards;
-      animation-play-state: running;
     }
     &:active {
-      filter: brightness(1.6) saturate(1.4);
-      animation: boost ease-out 1s forwards;
+      filter: brightness(1.1) saturate(1.1);
+      opacity: 0.9;
     }
   }
-  @keyframes boost {
+  @keyframes fade-back {
     to {
-      filter: brightness(1.6) saturate(1.6);
-      fill-opacity: 0.99;
-    }
-  }
-  @keyframes auto-hide {
-    to {
-      filter: brightness(1) saturate(1);
       fill-opacity: 0.5;
     }
   }
+
+
 </style>

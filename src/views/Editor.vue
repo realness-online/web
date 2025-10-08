@@ -50,7 +50,7 @@
 </script>
 
 <template>
-  <section id="editor" class="page">
+  <section id="editor" class="page" outline>
     <header ref="header">
       <a @click="back"><icon name="remove" /></a>
       <a @click="save"><icon name="finished" /></a>
