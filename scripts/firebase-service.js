@@ -58,23 +58,37 @@ export const upload_to_firebase = async files => {
     console.info(chalk.bold('\nStarting uploads:'))
     console.info(chalk.dim('Files to process: ') + chalk.green(files.length))
 
+    const BATCH_SIZE = 13
     let successful = 0
     let failed = 0
 
-    /* eslint-disable no-await-in-loop */
-    for (const { compressed_path, metadata_path, upload_path } of files) {
-      try {
-        const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
-        await bucket.upload(compressed_path, {
-          metadata,
-          destination: upload_path
-        })
+    const upload_file = async ({
+      compressed_path,
+      metadata_path,
+      upload_path
+    }) => {
+      const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
+      await bucket.upload(compressed_path, {
+        metadata,
+        destination: upload_path
+      })
+    }
 
-        successful++
-      } catch (error) {
-        failed++
-        console.error(chalk.red('✗ Upload failed:'), error)
-      }
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE)
+
+      const results = await Promise.allSettled(
+        batch.map(file => upload_file(file))
+      )
+
+      results.forEach(result => {
+        if (result.status === 'fulfilled') successful++
+        else {
+          failed++
+          console.error(chalk.red('✗ Upload failed:'), result.reason)
+        }
+      })
 
       const total = successful + failed
       const PERCENT = 100
@@ -111,22 +125,35 @@ export const cleanup_old_posters = async () => {
 
     console.info(chalk.dim('Found users: ') + chalk.green(phones.size))
 
+    const BATCH_SIZE = 13
     let deleted_users = 0
     let failed = 0
 
-    /* eslint-disable no-await-in-loop */
-    for (const phone of phones)
-      try {
-        const prefix = `people/${phone}/posters/`
-        console.info(chalk.dim('Deleting: ') + prefix)
-        await bucket.deleteFiles({ prefix })
-        deleted_users++
-        console.info(chalk.green('✓ Deleted'))
-      } catch (error) {
-        failed++
-        console.error(chalk.red('✗ Failed:'), error)
-      }
+    const delete_user_posters = async phone => {
+      const prefix = `people/${phone}/posters/`
+      console.info(chalk.dim('Deleting: ') + prefix)
+      await bucket.deleteFiles({ prefix })
+      console.info(chalk.green('✓ Deleted'))
+    }
 
+    const phones_array = Array.from(phones)
+
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < phones_array.length; i += BATCH_SIZE) {
+      const batch = phones_array.slice(i, i + BATCH_SIZE)
+
+      const results = await Promise.allSettled(
+        batch.map(phone => delete_user_posters(phone))
+      )
+
+      results.forEach(result => {
+        if (result.status === 'fulfilled') deleted_users++
+        else {
+          failed++
+          console.error(chalk.red('✗ Failed:'), result.reason)
+        }
+      })
+    }
     /* eslint-enable no-await-in-loop */
 
     console.timeEnd('Cleanup old posters')
