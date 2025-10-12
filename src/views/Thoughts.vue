@@ -76,8 +76,7 @@
     id="thoughts"
     ref="thoughts"
     class="page"
-    :class="{ storytelling: storytelling }"
-    outline>
+    :class="{ storytelling: storytelling }">
     <header>
       <icon name="nothing" />
       <logo-as-link tabindex="-1" />

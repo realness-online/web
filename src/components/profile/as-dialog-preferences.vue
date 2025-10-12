@@ -160,10 +160,18 @@
     left: base-line;
     z-index: 1000;
     svg.gear.icon {
-      width: base-line * 0.95;
-      height: base-line * 0.95;
+      width: base-line;
+      height: base-line;
       fill: black;
+      stroke: blue;
+      stroke-width: 0.25px;
     }
+  }
+
+  :fullscreen a#toggle-preferences {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   dialog#preferences {

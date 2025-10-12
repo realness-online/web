@@ -15,25 +15,10 @@
     nextTick as tick
   } from 'vue'
   const props = defineProps({
-    slice: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
     itemid: {
       type: String,
       required: true,
       validate: is_vector_id
-    },
-    working: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    immediate: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   })
   const emit = defineEmits({

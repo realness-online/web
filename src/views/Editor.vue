@@ -85,6 +85,11 @@
       left: 0;
       right: 0;
       padding: base-line;
+      :fullscreen & {
+        opacity: 0
+        visibility: hidden
+        pointer-events: none
+      }
       @media (min-width: pad-begins){
         padding: (base-line * 2) base-line base-line base-line;
       }
