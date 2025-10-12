@@ -21,14 +21,10 @@ const get_poster_files = async (dir_path, files = []) => {
     for (const entry of entries) {
       const full_path = join(dir_path, entry.name)
 
-      if (entry.isDirectory()) {
-        await get_poster_files(full_path, files)
-      } else if (entry.name.endsWith('.html') && entry.name !== 'index.html') {
-        // Found a poster: +phone/posters/{created_at}.html
+      if (entry.isDirectory()) await get_poster_files(full_path, files)
+      else if (entry.name.endsWith('.html') && entry.name !== 'index.html') {
         const path_parts = full_path.split('/')
-        if (path_parts.includes('posters')) {
-          files.push(full_path)
-        }
+        if (path_parts.includes('posters')) files.push(full_path)
       }
     }
     /* eslint-enable no-await-in-loop */
@@ -42,9 +38,6 @@ const get_poster_files = async (dir_path, files = []) => {
 
 const reorganize_poster = async file_path => {
   try {
-    console.info(chalk.cyan('\nReorganizing: ') + chalk.dim(file_path))
-
-    // Read the file content
     const content = await readFile(file_path, 'utf-8')
 
     // Extract parts: storage/people/+phone/posters/{created_at}.html
@@ -57,35 +50,11 @@ const reorganize_poster = async file_path => {
     const new_dir = join(...dir_parts, created_at)
     const new_path = join(new_dir, 'index.html')
 
-    console.info(chalk.dim('Creating: ') + new_path)
-
-    // Create directory
     await ensure_dir(new_dir)
 
-    // Write to new location
     await writeFile(new_path, content)
-    console.info(chalk.green('✓ Created new file'))
 
-    // Also copy metadata if it exists
-    const old_metadata = `${file_path}.metadata.json`
-    const new_metadata = `${new_path}.metadata.json`
-
-    try {
-      const metadata = await readFile(old_metadata, 'utf-8')
-      await writeFile(new_metadata, metadata)
-      console.info(chalk.green('✓ Copied metadata'))
-    } catch (e) {
-      console.info(chalk.yellow('⚠ No metadata found'))
-    }
-
-    // Delete old file and metadata
     await rm(file_path)
-    try {
-      await rm(old_metadata)
-    } catch (e) {
-      // Metadata might not exist
-    }
-    console.info(chalk.green('✓ Deleted old file'))
 
     return { success: true, old_path: file_path, new_path }
   } catch (error) {
@@ -96,6 +65,7 @@ const reorganize_poster = async file_path => {
 
 const main = async () => {
   try {
+    console.time('Reorganization')
     console.info(chalk.bold('Starting poster reorganization'))
     console.info(chalk.dim('Converting single-file to folder structure\n'))
     console.info(chalk.dim('Source directory: ') + chalk.cyan(PEOPLE_DIR))
@@ -108,7 +78,6 @@ const main = async () => {
 
     if (poster_files.length === 0) {
       console.info(chalk.yellow('No poster files found!'))
-      console.info(chalk.dim('Have you run download-files.js yet?'))
       return
     }
 
@@ -154,7 +123,9 @@ const main = async () => {
     console.info(
       chalk.dim('\nNext step: ') + chalk.cyan('node scripts/compress-files.js')
     )
+    console.timeEnd('Reorganization')
   } catch (error) {
+    console.timeEnd('Reorganization')
     console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)
   }

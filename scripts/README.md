@@ -60,14 +60,10 @@ node scripts/upload-compressed.js
 - **`reorganize-posters.js`** - Convert single-file to folder structure locally
 - **`compress-files.js`** - Compress HTML files with metadata
 - **`upload-compressed.js`** - Upload compressed files to Firebase
-- **`migrate-posters.js`** - All-in-one migration (no local files, use with caution)
 
 ### Utilities
 
 - **`firebase-service.js`** - Shared Firebase operations
-- **`firebase-uploader.js`** - Firebase upload utilities
-- **`node-upload-processor.js`** - HTML compression and hashing
-- **`decompress-files.js`** - Decompress local files
 
 ## Security
 

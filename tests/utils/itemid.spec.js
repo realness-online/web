@@ -198,4 +198,47 @@ describe('@/utils/itemid', () => {
       })
     })
   })
+
+  describe('archive path resolution', () => {
+    it('returns null for poster in current items', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_archive('/+16282281824/posters/1737178477999')
+      expect(result).toBe(null)
+    })
+
+    it('returns correct path for archived poster', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_archive('/+16282281824/posters/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519'
+      )
+    })
+
+    it('returns correct path for archive folder itself', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_archive('/+16282281824/posters/1712335058767')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1712335058767'
+      )
+    })
+
+    it('returns correct path for newest archived poster', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_archive('/+16282281824/posters/1720060222368')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1720060222368'
+      )
+    })
+
+    it('returns null for poster older than any archive', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_archive('/+16282281824/posters/1000000000000')
+      expect(result).toBe(null)
+    })
+  })
 })

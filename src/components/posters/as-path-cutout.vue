@@ -76,8 +76,7 @@
     filter: brightness(1) saturate(1);
     animation-play-state: paused;
     will-change: fill-opacity;
-    transition:
-      fill-opacity ease-out 0.8s;
+    transition: fill-opacity ease-out 0.8s;
     &:focus {
       outline: none;
     }
@@ -96,6 +95,4 @@
       fill-opacity: 0.5;
     }
   }
-
-
 </style>

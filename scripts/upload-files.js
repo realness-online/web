@@ -1,7 +1,7 @@
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 import chalk from 'chalk'
-import { upload_to_firebase } from './firebase-service.js'
+import { upload_to_firebase, cleanup_old_posters } from './firebase-service.js'
 
 const DATA_DIR = 'storage'
 const COMPRESSED_DIR = join(DATA_DIR, 'compressed')
@@ -42,9 +42,19 @@ const main = async () => {
       return
     }
 
+    // Cleanup old posters first
+    console.info(chalk.bold('\nCleaning up old poster files...'))
+    const { deleted, failed } = await cleanup_old_posters()
+
+    console.info(chalk.dim('Users cleaned: ') + chalk.green(deleted))
+    console.info(
+      chalk.dim('Failed: ') +
+        (failed > 0 ? chalk.red(failed) : chalk.green('0'))
+    )
+
     await upload_to_firebase(files)
 
-    console.info(chalk.green.bold('\nUpload process completed'))
+    console.info(chalk.green.bold('\nMigration completed successfully'))
   } catch (error) {
     console.error(chalk.red.bold('\nScript failed:'), error)
     process.exit(1)
