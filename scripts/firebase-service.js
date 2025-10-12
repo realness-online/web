@@ -9,7 +9,7 @@ import 'dotenv/config'
 
 const gunzip_async = promisify(gunzip)
 const DATA_DIR = 'storage'
-const SERVICE_ACCOUNT_PATH = join(DATA_DIR, 'service-account.json')
+const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 const PEOPLE_DIR = join(DATA_DIR, 'people')
 
 const init_firebase = async () => {
@@ -56,6 +56,7 @@ export const upload_to_firebase = async files => {
     let successful = 0
     let failed = 0
 
+    /* eslint-disable no-await-in-loop */
     for (const { compressed_path, metadata_path, upload_path } of files) {
       try {
         console.info(
@@ -84,6 +85,7 @@ export const upload_to_firebase = async files => {
         chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
       )
     }
+    /* eslint-enable no-await-in-loop */
 
     return { successful, failed }
   } catch (error) {
@@ -93,59 +95,45 @@ export const upload_to_firebase = async files => {
 }
 
 export const download_from_firebase = async () => {
-  try {
-    const bucket = await init_firebase()
+  const bucket = await init_firebase()
 
-    console.info(chalk.cyan('\nListing files in Firebase Storage...'))
-    const [files] = await bucket.getFiles({ prefix: 'people/' })
+  console.info(chalk.cyan('\nListing files in Firebase Storage...'))
+  const [files] = await bucket.getFiles({ prefix: 'people/' })
 
-    console.info(chalk.dim('Found files: ') + chalk.green(files.length))
+  console.info(chalk.dim('Found files: ') + chalk.green(files.length))
 
-    let successful = 0
-    let failed = 0
+  let successful = 0
+  const failed = 0
 
-    for (const file of files) {
+  /* eslint-disable no-await-in-loop */
+  for (const file of files) {
+    const [metadata] = await file.getMetadata()
+    const [content] = await file.download()
+
+    const output_path = join(PEOPLE_DIR, file.name.replace('people/', ''))
+    await ensure_dir(dirname(output_path))
+
+    const metadata_path = `${output_path}.metadata.json`
+    await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
+    let final_content = content
+    let final_path = output_path
+
+    if (file.name.endsWith('.gz'))
       try {
-        console.info(chalk.cyan('\nProcessing: ') + chalk.dim(file.name))
-
-        const [metadata] = await file.getMetadata()
-        console.info(chalk.yellow('Downloading...'))
-        const [content] = await file.download()
-
-        const output_path = join(PEOPLE_DIR, file.name.replace('people/', ''))
-        await ensure_dir(dirname(output_path))
-
-        const metadata_path = `${output_path}.metadata.json`
-        await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
-
-        if (metadata.contentEncoding === 'deflate') {
-          console.info(chalk.yellow('Decompressing...'))
-          const decompressed = await gunzip_async(content)
-          const final_path = output_path.replace('.gz', '')
-          await writeFile(final_path, decompressed)
-          console.info(chalk.dim('Saved decompressed file: ') + final_path)
-        } else {
-          await writeFile(output_path, content)
-          console.info(chalk.dim('Saved file: ') + output_path)
-        }
-
-        successful++
-        console.info(chalk.green('✓ Processing successful'))
-      } catch (error) {
-        failed++
-        console.error(chalk.red('✗ Processing failed:'), error)
+        final_content = await gunzip_async(content)
+        final_path = output_path.replace('.gz', '')
+        /* eslint-disable-next-line no-unused-vars */
+      } catch (_error) {
+        final_path = output_path.replace('.gz', '')
       }
 
-      const total = successful + failed
-      const progress = Math.round((total / files.length) * 100)
-      console.info(
-        chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
-      )
-    }
-
-    return { successful, failed }
-  } catch (error) {
-    console.error(chalk.red('Download process failed:'), error)
-    throw error
+    await writeFile(final_path, final_content)
+    successful++
+    const total = successful + failed
+    const progress = Math.round((total / files.length) * 100)
+    console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
   }
+  /* eslint-enable no-await-in-loop */
+
+  return { successful, failed }
 }

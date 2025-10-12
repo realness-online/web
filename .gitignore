@@ -52,6 +52,8 @@ docs/generated/
 
 .env
 
+# Service account credentials
+service-account.json
 
 # Rust build directory
 /target/
