@@ -7,7 +7,7 @@ import { PERCENT } from '@/utils/numbers'
 import 'dotenv/config'
 
 const DATA_DIR = 'storage'
-const SERVICE_ACCOUNT_PATH = join(DATA_DIR, 'service-account.json')
+const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 
 const init_firebase = async () => {
   try {

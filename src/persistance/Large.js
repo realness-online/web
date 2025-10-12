@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Id} Id */
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
-import { as_created_at } from '@/utils/itemid'
+import { as_created_at, as_archive } from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
 
 /**
@@ -14,6 +14,22 @@ export const Large = superclass =>
   class extends superclass {
     constructor(...args) {
       super(...args)
+    }
+
+    /**
+     * Get storage path for large files (uses folder structure)
+     * @returns {Promise<string>}
+     */
+    async get_storage_path() {
+      let filename = this.id
+      if (this.id.startsWith('/+')) filename = `people${this.id}`
+
+      // Check if this item is in an archive
+      const archive = await as_archive(this.id)
+      if (archive) return `${archive}/index.html.gz`
+
+      // Large files use folder structure
+      return `${filename}/index.html.gz`
     }
 
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {

@@ -26,7 +26,11 @@ export const Cloud = superclass =>
 
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
-        const path = await as_filename(this.id)
+        // Use custom path if available (Large files use folder structure)
+        const path =
+          typeof this['get_storage_path'] === 'function'
+            ? await this['get_storage_path']()
+            : await as_filename(this.id)
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
         const directory = await as_directory(this.id)
@@ -49,7 +53,10 @@ export const Cloud = superclass =>
     async delete() {
       console.info('request:delete', this.id)
       if (navigator.onLine && current_user.value) {
-        const path = await as_filename(this.id)
+        const path =
+          typeof this['get_storage_path'] === 'function'
+            ? await this['get_storage_path']()
+            : await as_filename(this.id)
         await remove(path)
       } else await sync_later(this.id, 'delete')
 
