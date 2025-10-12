@@ -1,13 +1,10 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
-import { gunzip } from 'node:zlib'
-import { promisify } from 'node:util'
 import chalk from 'chalk'
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import 'dotenv/config'
 
-const gunzip_async = promisify(gunzip)
 const DATA_DIR = 'storage'
 const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 const PEOPLE_DIR = join(DATA_DIR, 'people')
@@ -80,7 +77,8 @@ export const upload_to_firebase = async files => {
       }
 
       const total = successful + failed
-      const progress = Math.round((total / files.length) * 100)
+      const PERCENT = 100
+      const progress = Math.round((total / files.length) * PERCENT)
       console.info(
         chalk.dim(`Progress: ${progress}% (${total}/${files.length})`)
       )
@@ -102,11 +100,11 @@ export const download_from_firebase = async () => {
 
   console.info(chalk.dim('Found files: ') + chalk.green(files.length))
 
+  const BATCH_SIZE = 10
   let successful = 0
-  const failed = 0
+  let failed = 0
 
-  /* eslint-disable no-await-in-loop */
-  for (const file of files) {
+  const process_file = async file => {
     const [metadata] = await file.getMetadata()
     const [content] = await file.download()
 
@@ -115,22 +113,34 @@ export const download_from_firebase = async () => {
 
     const metadata_path = `${output_path}.metadata.json`
     await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
-    let final_content = content
-    let final_path = output_path
 
-    if (file.name.endsWith('.gz'))
-      try {
-        final_content = await gunzip_async(content)
-        final_path = output_path.replace('.gz', '')
-        /* eslint-disable-next-line no-unused-vars */
-      } catch (_error) {
-        final_path = output_path.replace('.gz', '')
+    // Firebase Storage auto-decompresses .gz files on download
+    const final_path = file.name.endsWith('.gz')
+      ? output_path.replace('.gz', '')
+      : output_path
+
+    await writeFile(final_path, content)
+  }
+
+  /* eslint-disable no-await-in-loop */
+  for (let i = 0; i < files.length; i += BATCH_SIZE) {
+    const batch = files.slice(i, i + BATCH_SIZE)
+
+    const results = await Promise.allSettled(
+      batch.map(file => process_file(file))
+    )
+
+    results.forEach(result => {
+      if (result.status === 'fulfilled') successful++
+      else {
+        failed++
+        console.error(chalk.red('✗ Failed:'), result.reason)
       }
+    })
 
-    await writeFile(final_path, final_content)
-    successful++
     const total = successful + failed
-    const progress = Math.round((total / files.length) * 100)
+    const PERCENT = 100
+    const progress = Math.round((total / files.length) * PERCENT)
     console.info(chalk.dim(`Progress: ${progress}% (${total}/${files.length})`))
   }
   /* eslint-enable no-await-in-loop */
