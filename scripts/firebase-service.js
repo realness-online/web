@@ -12,7 +12,11 @@ const DATA_DIR = 'storage'
 const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 const PEOPLE_DIR = join(DATA_DIR, 'people')
 
+let cached_bucket = null
+
 const init_firebase = async () => {
+  if (cached_bucket) return cached_bucket
+
   try {
     console.info(chalk.dim('Initializing Firebase...'))
     const service_account = JSON.parse(
@@ -29,9 +33,9 @@ const init_firebase = async () => {
       storageBucket: process.env.VITE_STORAGE_BUCKET
     })
 
-    const bucket = getStorage().bucket()
+    cached_bucket = getStorage().bucket()
     console.info(chalk.green('✓ Firebase initialized'))
-    return bucket
+    return cached_bucket
   } catch (error) {
     console.error(chalk.red('Firebase initialization failed:'), error)
     throw error
@@ -60,21 +64,13 @@ export const upload_to_firebase = async files => {
     /* eslint-disable no-await-in-loop */
     for (const { compressed_path, metadata_path, upload_path } of files) {
       try {
-        console.info(
-          chalk.cyan('\nReading metadata for: ') + chalk.dim(compressed_path)
-        )
         const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
-
-        console.info(chalk.dim('Destination: ') + upload_path)
-
-        console.info(chalk.yellow('Uploading...'))
         await bucket.upload(compressed_path, {
           metadata,
           destination: upload_path
         })
 
         successful++
-        console.info(chalk.green('✓ Upload successful'))
       } catch (error) {
         failed++
         console.error(chalk.red('✗ Upload failed:'), error)
@@ -98,6 +94,50 @@ export const upload_to_firebase = async files => {
   }
 }
 
+export const cleanup_old_posters = async () => {
+  console.time('Cleanup old posters')
+  try {
+    const bucket = await init_firebase()
+
+    console.info(chalk.cyan('\nListing users...'))
+    const [files] = await bucket.getFiles({ prefix: 'people/' })
+
+    // Get unique phone numbers
+    const phones = new Set()
+    files.forEach(file => {
+      const parts = file.name.split('/')
+      if (parts.length >= 2) phones.add(parts[1])
+    })
+
+    console.info(chalk.dim('Found users: ') + chalk.green(phones.size))
+
+    let deleted_users = 0
+    let failed = 0
+
+    /* eslint-disable no-await-in-loop */
+    for (const phone of phones)
+      try {
+        const prefix = `people/${phone}/posters/`
+        console.info(chalk.dim('Deleting: ') + prefix)
+        await bucket.deleteFiles({ prefix })
+        deleted_users++
+        console.info(chalk.green('✓ Deleted'))
+      } catch (error) {
+        failed++
+        console.error(chalk.red('✗ Failed:'), error)
+      }
+
+    /* eslint-enable no-await-in-loop */
+
+    console.timeEnd('Cleanup old posters')
+    return { deleted: deleted_users, failed }
+  } catch (error) {
+    console.timeEnd('Cleanup old posters')
+    console.error(chalk.red.bold('Cleanup process failed:'), error)
+    throw error
+  }
+}
+
 export const download_from_firebase = async () => {
   console.time('Download from Firebase')
   const bucket = await init_firebase()
@@ -112,14 +152,10 @@ export const download_from_firebase = async () => {
   let failed = 0
 
   const process_file = async file => {
-    const [metadata] = await file.getMetadata()
     const [content] = await file.download()
 
     const output_path = join(PEOPLE_DIR, file.name.replace('people/', ''))
     await ensure_dir(dirname(output_path))
-
-    const metadata_path = `${output_path}.metadata.json`
-    await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
     let final_content = content
     let final_path = output_path
