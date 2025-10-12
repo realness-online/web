@@ -3,6 +3,7 @@
   import StatementAsTextarea from '@/components/statements/as-textarea'
   import { ref } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
+  import AccountDialog from '@/components/profile/as-dialog-account'
   const { open_camera } = use_vectorize()
   const posting = ref(false)
   const toggle_keyboard = () => {
@@ -12,7 +13,11 @@
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <nav>
+    <header>
+      <account-dialog />
+      <router-link id="about" to="/about" tabindex="-1">?</router-link>
+    </header>
+    <nav ref="nav">
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
       </router-link>
@@ -20,7 +25,7 @@
         Events
       </router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
-        Posters
+        Postersyes
       </router-link>
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook
@@ -38,12 +43,12 @@
         @keydown.enter="open_camera">
         <icon name="camera" />
       </a>
-      <router-link to="/about" tabindex="-1">?</router-link>
     </footer>
   </section>
 </template>
 
 <style lang="stylus">
+
   section#navigation.page {
     display: flex;
     align-items: center;
@@ -58,15 +63,22 @@
       max-width: none;
     }
     & > header {
-      opacity: 0.66;
-      position: fixed;
-      bottom: 0;
-      left: 0;
+      padding: 0;
+      :fullscreen & {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
       @media (min-width: pad-begins) {
         top: env(safe-area-inset-top) !important;
       }
       &:hover, &:active {
         opacity: 1;
+      }
+      & > a#about {
+        position: fixed;
+        top: inset(top,  base-line);
+        right: base-line;
       }
     }
     &.posting {
@@ -140,11 +152,7 @@
       }
     }
     & > footer {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      align-items: center;
-      padding: 0 base-line;
+      padding: 0;
       & > a {
         margin: 0;
         padding: 0;

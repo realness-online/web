@@ -14,21 +14,15 @@
     dialog.value.showModal()
   }
 
-  const close_modal = () => {
-    dialog.value.close()
-  }
-
   const handle_click = event => {
     if (event.target === dialog.value) dialog.value.close()
   }
 
-  // Scroll to section
   const scroll_to_section = id => {
     const element = document.getElementById(id)
     if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Generate TOC from markdown headings
   const generate_toc_from_markdown = content => {
     const lines = content.split('\n')
     const toc = []
@@ -59,16 +53,12 @@
 
     const content = await response.text()
 
-    // Update current file
     current_file.value = filename.replace('.md', '')
 
-    // Generate TOC
     toc_items.value = generate_toc_from_markdown(content)
 
-    // Configure marked with GitHub-style heading IDs
     marked.use(gfmHeadingId())
 
-    // Render markdown content and sanitize
     const rendered = await marked.parse(content)
     const sanitized = DOMPurify.sanitize(rendered)
 
@@ -77,15 +67,14 @@
 
   mounted(() => load_markdown_content('documentation.md'))
 
-  // Expose show method for external use
   defineExpose({ show: show_modal })
 </script>
 
 <template>
   <dialog ref="dialog" class="documentation" @click="handle_click">
     <header>
-      <h1>Documentation</h1>
-      <h2>Realness.<span>online</span></h2>
+      <h1>Realness.<span>online</span></h1>
+      <h2>Documentation</h2>
     </header>
     <article>
       <nav v-if="toc_items.length > 0" class="toc">
@@ -104,20 +93,21 @@
 </template>
 
 <style lang="stylus">
-  dialog.documentation
-    &> header {
+  dialog.documentation {
+    & > header {
       h1 {
-        text-align: center
+        margin-top: base-line* 2;
+        margin-right: base-line;
+        text-align: center;
+        color: blue;
+        span {
+          font-size: smaller;
+          color: green;
+        }
       }
       h2 {
-        margin-right:base-line
-        text-align: center
-        color: blue
-
-        span {
-          font-size:smaller
-          color:green
-        }
+        text-align: center;
+        color: red;
       }
     }
     & > article {
@@ -272,4 +262,5 @@
         }
       }
     }
+  }
 </style>

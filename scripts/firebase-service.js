@@ -1,10 +1,13 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
+import { inflate } from 'node:zlib'
+import { promisify } from 'node:util'
 import chalk from 'chalk'
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import 'dotenv/config'
 
+const inflate_async = promisify(inflate)
 const DATA_DIR = 'storage'
 const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 const PEOPLE_DIR = join(DATA_DIR, 'people')
@@ -44,6 +47,7 @@ const ensure_dir = async dir_path => {
 }
 
 export const upload_to_firebase = async files => {
+  console.time('Upload to Firebase')
   try {
     const bucket = await init_firebase()
 
@@ -85,14 +89,17 @@ export const upload_to_firebase = async files => {
     }
     /* eslint-enable no-await-in-loop */
 
+    console.timeEnd('Upload to Firebase')
     return { successful, failed }
   } catch (error) {
+    console.timeEnd('Upload to Firebase')
     console.error(chalk.red.bold('Upload process failed:'), error)
     throw error
   }
 }
 
 export const download_from_firebase = async () => {
+  console.time('Download from Firebase')
   const bucket = await init_firebase()
 
   console.info(chalk.cyan('\nListing files in Firebase Storage...'))
@@ -100,7 +107,7 @@ export const download_from_firebase = async () => {
 
   console.info(chalk.dim('Found files: ') + chalk.green(files.length))
 
-  const BATCH_SIZE = 10
+  const BATCH_SIZE = 13
   let successful = 0
   let failed = 0
 
@@ -114,12 +121,15 @@ export const download_from_firebase = async () => {
     const metadata_path = `${output_path}.metadata.json`
     await writeFile(metadata_path, JSON.stringify(metadata, null, 2))
 
-    // Firebase Storage auto-decompresses .gz files on download
-    const final_path = file.name.endsWith('.gz')
-      ? output_path.replace('.gz', '')
-      : output_path
+    let final_content = content
+    let final_path = output_path
 
-    await writeFile(final_path, content)
+    if (file.name.endsWith('.gz')) {
+      final_path = output_path.replace('.gz', '')
+      final_content = await inflate_async(content)
+    }
+
+    await writeFile(final_path, final_content)
   }
 
   /* eslint-disable no-await-in-loop */
@@ -145,5 +155,6 @@ export const download_from_firebase = async () => {
   }
   /* eslint-enable no-await-in-loop */
 
+  console.timeEnd('Download from Firebase')
   return { successful, failed }
 }
