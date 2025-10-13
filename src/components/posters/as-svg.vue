@@ -119,25 +119,11 @@
     return width > height
   })
   const { optimize: run_optimize } = use_optimizer(vector)
-  const new_poster = inject('new-poster', false)
-  const { new_vector } = use_vectorize()
 
   provide('vector', vector)
 
-  if (new_poster) {
-    vector.value = new_vector.value
-    working.value = false
-    watch_effect(() => {
-      if (new_vector.value?.cutout)
-        vector.value.cutout = new_vector.value.cutout
-    })
-    watch_effect(() => {
-      if (new_vector.value?.completed && !vector.value.optimized) run_optimize()
-    })
-  }
-
   mounted(() => {
-    if (!props.sync_poster && !new_poster)
+    if (!props.sync_poster)
       use_intersect(
         trigger,
         ([{ isIntersecting }]) => {
@@ -156,9 +142,7 @@
     }
   })
 
-  const background_visible = computed(
-    () => vector.value?.background && background.value
-  )
+  const background_visible = computed(() => background.value)
   const light_visible = computed(() => vector.value?.light && light.value)
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)

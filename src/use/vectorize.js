@@ -173,7 +173,7 @@ export const use = () => {
 
   /**
    * @param {File} svg_file
-   * @returns {ImageData}
+   * @returns {Promise<ImageData>}
    */
   const rasterize_svg = async svg_file => {
     const svg_text = await svg_file.text()
@@ -216,7 +216,7 @@ export const use = () => {
    */
   const vectorized = response => {
     const { vector } = response.data
-    vector.id = as_new_itemid
+    vector.id = as_new_itemid.value
     vector.type = 'posters'
     vector.light = make_path(vector.light)
     vector.regular = make_path(vector.regular)
@@ -278,6 +278,12 @@ export const use = () => {
       router.push({ path: `/posters/${created_at}/editor` })
     }
   })
+  const reset = () => {
+    new_vector.value = null
+    new_gradients.value = null
+    progress.value = 0
+  }
+
   dismount(() => {
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
@@ -296,6 +302,7 @@ export const use = () => {
     new_vector,
     new_gradients,
     mount_workers,
-    progress
+    progress,
+    reset
   }
 }
