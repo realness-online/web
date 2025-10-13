@@ -270,11 +270,7 @@
     }
   }
 
-  .download {
-    display: inline-block;
-    width: base-line * .75;
-    height: base-line * .75;
-  }
+
   a {
     color: green;
     border-color: green;

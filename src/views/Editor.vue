@@ -1,9 +1,10 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsSvg from '@/components/posters/as-svg'
+  import AsSvgNew from '@/components/posters/as-svg-new'
   import { Poster } from '@/persistance/Storage'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
-  import { provide, ref, watch, computed } from 'vue'
+  import { ref, watch, computed } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
 
   const route = use_route()
@@ -13,28 +14,29 @@
   )
   const figure = ref(null)
 
+  const { new_vector, new_gradients, new_cutouts, progress, reset } =
+    use_vectorize()
+
   const back = () => {
     const me = localStorage.me.substring(2)
     const { id } = route.params
-    new_gradients.value = null
-    if (new_vector.value) {
-      new_vector.value = null
+    reset()
+    if (is_new_poster.value) {
       router.back()
     } else router.replace({ path: '/posters', hash: `#${me}-posters-${id}` })
   }
 
   const save = async () => {
     await new Poster(itemid).save()
-    if (new_gradients.value) new_gradients.value = null
     back()
   }
 
-  const { new_vector, new_gradients, new_cutouts, progress } = use_vectorize()
+  const is_new_poster = ref(false)
 
   watch(
     new_vector,
     vector => {
-      if (vector) provide('new-poster', true)
+      if (vector) is_new_poster.value = true
     },
     { immediate: true }
   )
@@ -57,7 +59,9 @@
     </header>
 
     <figure ref="figure">
+      <as-svg-new v-if="is_new_poster" :itemid="itemid" />
       <as-svg
+        v-else
         :itemid="itemid"
         :optimize="true"
         :slice="true"

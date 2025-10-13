@@ -65,6 +65,7 @@
 </template>
 
 <style lang="stylus">
-  a.download.working
-    animation-name: working
+  a.download.working {
+    animation-name: working;
+  }
 </style>

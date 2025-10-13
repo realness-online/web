@@ -104,7 +104,7 @@ describe('@/persistance/Cloud', () => {
 
     it('uses get_storage_path when available', async () => {
       cloud_instance.get_storage_path = vi.fn(() =>
-        Promise.resolve('people/+1234567890/posters/1234567890/index.html.gz')
+        Promise.resolve('people/+1234567890/posters/1234567890.html.gz')
       )
       const mock_items = { outerHTML: '<div>test</div>' }
 
@@ -113,7 +113,7 @@ describe('@/persistance/Cloud', () => {
       const { upload } = await import('@/utils/serverless')
       expect(cloud_instance.get_storage_path).toHaveBeenCalled()
       expect(upload).toHaveBeenCalledWith(
-        'people/+1234567890/posters/1234567890/index.html.gz',
+        'people/+1234567890/posters/1234567890.html.gz',
         'compressed-data',
         { contentType: 'text/html' }
       )
@@ -166,7 +166,7 @@ describe('@/persistance/Cloud', () => {
 
     it('uses get_storage_path when available', async () => {
       cloud_instance.get_storage_path = vi.fn(() =>
-        Promise.resolve('people/+1234567890/posters/1234567890/index.html.gz')
+        Promise.resolve('people/+1234567890/posters/1234567890.html.gz')
       )
 
       await cloud_instance.delete()
@@ -174,7 +174,7 @@ describe('@/persistance/Cloud', () => {
       const { remove } = await import('@/utils/serverless')
       expect(cloud_instance.get_storage_path).toHaveBeenCalled()
       expect(remove).toHaveBeenCalledWith(
-        'people/+1234567890/posters/1234567890/index.html.gz'
+        'people/+1234567890/posters/1234567890.html.gz'
       )
     })
 
