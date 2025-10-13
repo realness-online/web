@@ -68,9 +68,18 @@ export const upload_to_firebase = async files => {
       upload_path
     }) => {
       const metadata = JSON.parse(await readFile(metadata_path, 'utf-8'))
-      await bucket.upload(compressed_path, {
-        metadata,
-        destination: upload_path
+      const compressed_data = await readFile(compressed_path)
+
+      const file = bucket.file(upload_path)
+      await file.save(compressed_data, {
+        metadata: {
+          contentType: metadata.contentType,
+          contentEncoding: metadata.contentEncoding,
+          cacheControl: metadata.cacheControl,
+          contentLanguage: metadata.contentLanguage,
+          contentDisposition: metadata.contentDisposition,
+          metadata: metadata.customMetadata
+        }
       })
     }
 
