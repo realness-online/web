@@ -1,17 +1,16 @@
-import {
-  ref,
-  computed,
-  watchEffect as watch_effect,
-  onUnmounted as dismount,
-  inject
-} from 'vue'
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
+
+import { ref, computed, onUnmounted as dismount, inject } from 'vue'
 import { create_path_element } from '@/use/path'
-import { is_vector } from '@/use/poster'
-import { as_created_at } from '@/utils/itemid'
-import { useRouter as use_router } from 'vue-router'
 import { to_kb } from '@/utils/numbers'
 import { IMAGE } from '@/utils/numbers'
+import { as_query_id } from '@/utils/itemid'
 import ExifReader from 'exifreader'
+import { useRouter as use_router } from 'vue-router'
+import * as Queue from '@/persistance/Queue'
+import { Poster } from '@/persistance/Storage'
+import { del } from 'idb-keyval'
 
 /**
  * @typedef {Object} VectorResponse
@@ -22,6 +21,66 @@ import ExifReader from 'exifreader'
 const new_vector = ref(null)
 const new_gradients = ref(null)
 const progress = ref(0)
+const current_item_id = ref(null)
+const source_image_url = ref(null)
+
+// Queue state
+const queue_items = ref(/** @type {QueueItem[]} */ ([]))
+const current_processing = ref(/** @type {QueueItem | null} */ (null))
+const is_processing = ref(false)
+const completed_posters = ref(/** @type {Id[]} */ ([]))
+
+/**
+ * @param {ImageBitmap} image
+ * @param {number} [target_size=IMAGE.TARGET_SIZE]
+ * @returns {ImageData}
+ */
+export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
+  let new_width = image.width
+  let new_height = image.height
+
+  if (image.width > image.height) {
+    new_height = target_size
+    new_width = Math.round((target_size * image.width) / image.height)
+  } else {
+    new_width = target_size
+    new_height = Math.round((target_size * image.height) / image.width)
+  }
+
+  const canvas = new OffscreenCanvas(new_width, new_height)
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  ctx.drawImage(image, 0, 0, new_width, new_height)
+  return ctx.getImageData(0, 0, new_width, new_height)
+}
+
+/**
+ * Resize image file to blob for storage
+ * @param {File} file
+ * @returns {Promise<Blob>}
+ */
+const resize_to_blob = async file => {
+  const url = URL.createObjectURL(file)
+  const img = new Image()
+  img.src = url
+  await new Promise(resolve => (img.onload = resolve))
+
+  const bitmap = await createImageBitmap(img)
+  const image_data = resize_image(bitmap)
+
+  const canvas = new OffscreenCanvas(image_data.width, image_data.height)
+  const ctx = canvas.getContext('2d')
+  ctx.putImageData(image_data, 0, 0)
+  URL.revokeObjectURL(url)
+
+  return canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
+}
+
+/**
+ * Load existing queue items
+ */
+const load_queue = async () => {
+  queue_items.value = await Queue.get_all()
+}
 
 export const use = () => {
   const router = use_router()
@@ -36,12 +95,9 @@ export const use = () => {
     return true
   })
 
-  const as_new_itemid = computed(
-    () => `${localStorage.me}/posters/${Date.now()}`
-  )
-
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
+    image_picker.value.setAttribute('multiple', '')
     image_picker.value.click()
   }
   const open_selfie_camera = () => {
@@ -76,43 +132,138 @@ export const use = () => {
   }
 
   /**
-   * @param {ImageBitmap} image
-   * @param {number} [target_size=IMAGE.TARGET_SIZE]
-   * @returns {ImageData}
+   * Add files to processing queue
+   * @param {File[]} files
+   * @returns {Promise<void>}
    */
-  const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
-    let new_width = image.width
-    let new_height = image.height
+  const add_to_queue = async files => {
+    for (const file of files) {
+      const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
+      const resized_blob = await resize_to_blob(file)
 
-    if (image.width > image.height) {
-      new_height = target_size
-      new_width = Math.round((target_size * image.width) / image.height)
-    } else {
-      new_width = target_size
-      new_height = Math.round((target_size * image.height) / image.width)
+      const item = /** @type {QueueItem} */ ({
+        id,
+        resized_blob,
+        status: 'pending',
+        progress: 0
+      })
+
+      await Queue.add(item)
+      queue_items.value.push(item)
     }
 
-    const canvas = new OffscreenCanvas(new_width, new_height)
-    const ctx = canvas.getContext('2d', { willReadFrequently: true })
-    ctx.drawImage(image, 0, 0, new_width, new_height)
-    return ctx.getImageData(0, 0, new_width, new_height)
+    if (!is_processing.value) process_queue()
   }
 
-  const listener = () => {
-    const [image] = image_picker.value.files
-    if (image === undefined) return
-    const is_image = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/bmp',
-      'image/tiff',
-      'image/avif',
-      'image/svg+xml'
-    ].some(type => image.type === type)
-    if (is_image) {
-      vectorize(image)
+  const process_queue = async () => {
+    if (is_processing.value) return
+
+    const next = await Queue.get_next()
+    if (!next) {
+      is_processing.value = false
+      current_processing.value = null
+      return
+    }
+
+    is_processing.value = true
+    current_processing.value = next
+
+    await Queue.update(next.id, { status: 'processing' })
+    const index = queue_items.value.findIndex(item => item.id === next.id)
+    if (index !== -1) queue_items.value[index].status = 'processing'
+
+    await vectorize(next.resized_blob, next.id)
+  }
+
+  /**
+   * Update queue item with SVG HTML
+   * @param {Id} id
+   * @param {string} svg_html
+   */
+  const update_svg_html = async (id, svg_html) => {
+    await Queue.update(id, { svg_html })
+
+    const index = queue_items.value.findIndex(item => item.id === id)
+    if (index !== -1) queue_items.value[index].svg_html = svg_html
+  }
+
+  /**
+   * Update queue item progress
+   * @param {Id} id
+   * @param {number} progress_value
+   */
+  const update_progress = async (id, progress_value) => {
+    await Queue.update(id, { progress: progress_value })
+
+    const index = queue_items.value.findIndex(item => item.id === id)
+    if (index !== -1) queue_items.value[index].progress = progress_value
+  }
+
+  /**
+   * Complete processing for item
+   * @param {Id} id
+   * @param {Object} vector - The vector data with DOM elements
+   */
+  const complete_item = async (id, vector) => {
+    if (!vector) return
+
+    // Get the rendered SVG element from the DOM (following existing pattern from optimize.js)
+    const element = document.getElementById(as_query_id(id))
+    if (!element) {
+      console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
+      return
+    }
+
+    // Auto-save poster with the rendered SVG element
+    await new Poster(id).save(element)
+
+    // Clear directory cache so it will be rebuilt with the new poster
+    const directory_path = `${localStorage.me}/posters/`
+    await del(directory_path)
+
+    completed_posters.value.push(id)
+
+    await Queue.remove(id)
+    queue_items.value = queue_items.value.filter(item => item.id !== id)
+
+    is_processing.value = false
+    current_processing.value = null
+
+    reset()
+
+    process_queue()
+  }
+
+  /**
+   * Initialize processing queue
+   */
+  const init_processing_queue = () => {
+    load_queue()
+
+    // Start processing if items exist
+    if (queue_items.value.length > 0 && !is_processing.value) process_queue()
+  }
+
+  const listener = async () => {
+    const files = Array.from(image_picker.value.files)
+    if (files.length === 0) return
+
+    const image_files = files.filter(file =>
+      [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/bmp',
+        'image/tiff',
+        'image/avif',
+        'image/svg+xml'
+      ].some(type => file.type === type)
+    )
+
+    if (image_files.length > 0) {
+      await add_to_queue(image_files)
+      router.push('/posters')
       image_picker.value.value = ''
     }
   }
@@ -128,14 +279,21 @@ export const use = () => {
   }
 
   /**
-   * @param {File} image
+   * @param {File|Blob} image
+   * @param {string} [itemid]
    */
-  const vectorize = async image => {
+  const vectorize = async (image, itemid = null) => {
     working.value = true
     progress.value = 0
+    current_item_id.value = itemid
 
     let image_data
     let exif = {}
+
+    const is_pre_resized = image instanceof Blob && !(image instanceof File)
+
+    if (source_image_url.value) URL.revokeObjectURL(source_image_url.value)
+    source_image_url.value = URL.createObjectURL(image)
 
     if (image.type === 'image/svg+xml') image_data = await rasterize_svg(image)
     else {
@@ -144,16 +302,24 @@ export const use = () => {
       img.src = image_url
       await new Promise(resolve => (img.onload = resolve))
       const bitmap = await createImageBitmap(img)
-      image_data = resize_image(bitmap)
+
+      if (is_pre_resized) {
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })
+        ctx.drawImage(bitmap, 0, 0)
+        image_data = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+      } else image_data = resize_image(bitmap)
+
       URL.revokeObjectURL(image_url)
 
-      try {
-        const tags = await ExifReader.load(image, { expanded: true })
-        exif = exif_logger(tags)
-      } catch (error) {
-        console.warn('Failed to parse EXIF data:', error.message)
-        exif = {}
-      }
+      if (!is_pre_resized)
+        try {
+          const tags = await ExifReader.load(image, { expanded: true })
+          exif = exif_logger(tags)
+        } catch (error) {
+          console.warn('Failed to parse EXIF data:', error.message)
+          exif = {}
+        }
     }
 
     vectorizer.value.postMessage({
@@ -172,7 +338,7 @@ export const use = () => {
   }
 
   /**
-   * @param {File} svg_file
+   * @param {File|Blob} svg_file
    * @returns {Promise<ImageData>}
    */
   const rasterize_svg = async svg_file => {
@@ -216,15 +382,22 @@ export const use = () => {
    */
   const vectorized = response => {
     const { vector } = response.data
-    vector.id = as_new_itemid.value
+    vector.id = current_item_id.value
     vector.type = 'posters'
     vector.light = make_path(vector.light)
     vector.regular = make_path(vector.regular)
     vector.medium = make_path(vector.medium)
     vector.bold = make_path(vector.bold)
     new_vector.value = vector
+
+    if (current_item_id.value) update_progress(current_item_id.value, 50)
   }
-  const gradientized = message => (new_gradients.value = message.data.gradients)
+
+  const gradientized = message => {
+    new_gradients.value = message.data.gradients
+
+    if (current_item_id.value) update_progress(current_item_id.value, 60)
+  }
 
   /**
    * Handles messages from the tracer worker
@@ -238,20 +411,26 @@ export const use = () => {
     switch (message.data.type) {
       case 'progress':
         progress.value = message.data.progress
+        if (current_item_id.value)
+          update_progress(current_item_id.value, message.data.progress)
+
         break
       case 'path':
         if (!new_vector.value.cutout) new_vector.value.cutout = []
-        new_vector.value.cutout.push(
-          make_cutout_path({
-            ...message.data.path,
-            progress: progress.value
-          })
-        )
+        const cutout_path = make_cutout_path({
+          ...message.data.path,
+          progress: progress.value
+        })
+        new_vector.value.cutout.push(cutout_path)
         break
       case 'complete':
         console.log('Tracer complete:', message.data)
         if (new_vector.value && !new_vector.value.optimized)
           new_vector.value.completed = true
+
+        if (current_item_id.value && new_gradients.value && new_vector.value)
+          complete_item(current_item_id.value, new_vector.value)
+
         break
       case 'error':
         console.error('Tracer error:', message.error)
@@ -268,20 +447,15 @@ export const use = () => {
     tracer.value.addEventListener('message', traced)
   }
 
-  watch_effect(() => {
-    if (
-      new_gradients.value &&
-      new_vector.value &&
-      is_vector(new_vector.value)
-    ) {
-      const created_at = as_created_at(new_vector.value.id)
-      router.push({ path: `/posters/${created_at}/editor` })
-    }
-  })
   const reset = () => {
+    if (source_image_url.value) {
+      URL.revokeObjectURL(source_image_url.value)
+      source_image_url.value = null
+    }
     new_vector.value = null
     new_gradients.value = null
     progress.value = 0
+    current_item_id.value = null
   }
 
   dismount(() => {
@@ -298,11 +472,20 @@ export const use = () => {
     vVectorizer,
     vectorize,
     vectorizer,
+    gradienter,
+    tracer,
     working,
     new_vector,
     new_gradients,
+    source_image_url,
     mount_workers,
     progress,
-    reset
+    reset,
+    queue_items: computed(() => queue_items.value),
+    current_processing: computed(() => current_processing.value),
+    is_processing: computed(() => is_processing.value),
+    completed_posters: computed(() => completed_posters.value),
+    add_to_queue,
+    init_processing_queue
   }
 }

@@ -1,17 +1,18 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
-  import { onMounted as mounted, ref, nextTick as tick } from 'vue'
+  import { onMounted as mounted, ref, watch, nextTick as tick } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsSvg from '@/components/posters/as-svg'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
+  import AsSvgProcessing from '@/components/posters/as-svg-processing'
   import LogoAsLink from '@/components/logo-as-link'
   import { as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
   import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
   import { use_posters } from '@/use/poster'
-  import { use as directory_processor } from '@/use/directory-processor'
+  import { use as use_directory } from '@/use/directory-processor'
   import { use_keymap } from '@/use/key-commands'
 
   console.time('views:Posters')
@@ -21,11 +22,19 @@
     for_person: posters_for_person,
     poster_shown
   } = use_posters()
-  const { can_add, select_photo, working } = use_vectorize()
-  const { process_directory, progress, completed_poster } =
-    directory_processor()
+
+  const { can_add, select_photo, queue_items, completed_posters } = use_vectorize()
+  const { process_directory, progress, completed_poster } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
+
+  watch(completed_posters, (new_completed, old_completed) => {
+    const newly_added = new_completed.filter(id => !old_completed?.includes(id))
+    newly_added.forEach(id => {
+      if (!posters.value.find(p => p.id === id))
+        posters.value.unshift({ id, type: 'posters' })
+    })
+  })
 
   /**
    * @param {Id} id
@@ -33,22 +42,18 @@
   const remove_poster = async id => {
     poster_to_remove.value = await load(id)
     await tick()
-    delete_dialog.value.setAttribute('open', '')
+    delete_dialog.value.showModal()
   }
 
-  const confirmed_remove = async () => {
-    delete_dialog.value.removeAttribute('open')
+  const confirmed_remove = () => {
+    delete_dialog.value.close()
     posters.value = posters.value.filter(
       item => poster_to_remove.value.id !== item.id
     )
     const poster = new Poster(poster_to_remove.value.id)
-    await poster.delete()
+    poster.delete()
   }
-
-  const cancel_remove = () => {
-    delete_dialog.value.removeAttribute('open')
-  }
-
+  const cancel_remove = () =>  delete_dialog.value.close()
   /**
    * @param {Id} itemid
    */
@@ -57,7 +62,6 @@
       if (poster.menu) poster.menu = false
     })
     const poster = posters.value.find(poster => poster.id === itemid)
-
     if (poster) poster.menu = !poster.menu
   }
   const picker = itemid => {
@@ -73,15 +77,14 @@
   register('poster::Create_New', () => {
     if (can_add.value) select_photo()
   })
+  register('poster::View', () => console.log('TODO: View poster full screen'))
   register('poster::Search', () => console.log('TODO: Search posters'))
   register('poster::Download', () => console.log('TODO: Download poster'))
   register('poster::Copy', () => console.log('TODO: Copy poster'))
   register('poster::Remove', () => console.log('TODO: Remove poster'))
-  register('poster::OpenEditor', () => console.log('TODO: Open poster editor'))
 
   mounted(async () => {
     await posters_for_person({ id: localStorage.me })
-    working.value = false
     console.timeEnd('views:Posters')
   })
 </script>
@@ -116,8 +119,12 @@
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>
-    <icon v-if="working" name="working" />
-    <article v-else>
+    <article>
+      <as-svg-processing
+        v-for="item in queue_items"
+        :key="item.id"
+        :queue_item="item" />
+
       <as-figure
         v-for="poster in posters"
         :key="poster.id"
@@ -150,31 +157,41 @@
 </template>
 
 <style lang="stylus">
-  section#posters
-    svg, a
-      color: green
-      fill: green
-    & > header
-      justify-content: space-between
-    & > footer
-      border-radius: base-line
-      padding: base-line * 0.5
-      background-color: black-transparent
-      position: fixed
-      bottom: base-line * 0.5
-      left: s('calc( 50% - %s)', (base-line * 1.75) )
-      z-index: 4
-      @media (min-width: typing-begins)
-        visibility: hidden
-    & > h1
-      @media (prefers-color-scheme: dark)
-        color: green
-    & > article
-      standard-grid: gentle
-      grid-gap: 0
-      padding-bottom: base-line * 3
-      @media (max-width: pad-begins)
-        margin-top: base-line
-      & > figure.poster.selecting-event > svg:not(.background)
-        opacity: 0.1
+  section#posters {
+    svg, a {
+      color: green;
+      fill: green;
+    }
+    & > header {
+      justify-content: space-between;
+    }
+    & > footer {
+      border-radius: base-line;
+      padding: base-line * 0.5;
+      background-color: black-transparent;
+      position: fixed;
+      bottom: base-line * 0.5;
+      left: s('calc( 50% - %s)', (base-line * 1.75) );
+      z-index: 4;
+      @media (min-width: typing-begins) {
+        visibility: hidden;
+      }
+    }
+    & > h1 {
+      @media (prefers-color-scheme: dark) {
+        color: green;
+      }
+    }
+    & > article {
+      standard-grid: gentle;
+      grid-gap: 0;
+      padding-bottom: base-line * 3;
+      @media (max-width: pad-begins) {
+        margin-top: base-line;
+      }
+      & > figure.poster.selecting-event > svg:not(.background) {
+        opacity: 0.1;
+      }
+    }
+  }
 </style>

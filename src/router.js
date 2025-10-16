@@ -8,13 +8,11 @@ import Profile from '@/views/Profile'
 import Relations from '@/views/Relations'
 import PhoneBook from '@/views/PhoneBook'
 import Sign_on from '@/views/Sign-on'
-import Editor from '@/views/Editor'
 import About from '@/views/About'
 
 const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
-  { path: '/posters/:id/editor', component: Editor },
   { path: '/thoughts', component: Thoughts },
   { path: '/sign-on', component: Sign_on },
   { path: '/events', component: Events },

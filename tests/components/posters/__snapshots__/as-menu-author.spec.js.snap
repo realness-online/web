@@ -5,10 +5,6 @@ exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a po
   <as-button-stub
     itemid="/+14151234356/posters/1737178477987"
   />
-  <router-link-stub
-    class="gear"
-    to="/posters/1737178477987/editor"
-  />
   <a
     class="remove"
   >

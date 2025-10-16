@@ -25,7 +25,7 @@
         Events
       </router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
-        Postersyes
+        Posters
       </router-link>
       <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook

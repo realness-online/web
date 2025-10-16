@@ -33,7 +33,7 @@ export class Storage {
     this.type = as_type(itemid)
   }
 
-  save(_items) {}
+  save(items) {}
   delete() {}
   sync() {}
   optimize() {}
