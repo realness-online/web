@@ -97,31 +97,13 @@ export const default_keymap = [
     context: 'Poster_Menu',
     use_key_equivalents: true,
     bindings: {
-      enter: 'poster::Open_Editor',
       delete: 'poster::Remove',
       backspace: 'poster::Remove',
       'ctrl-d': 'poster::Download'
     },
     descriptions: {
-      'poster::Open_Editor': 'Open poster editor',
       'poster::Remove': 'Remove poster',
       'poster::Download': 'Download poster'
-    }
-  },
-  {
-    context: 'Poster_Editor',
-    use_key_equivalents: true,
-    bindings: {
-      escape: 'editor::Cancel',
-      'ctrl-s': 'editor::Save',
-      'ctrl-enter': 'editor::Save&Close',
-      'ctrl-shift-enter': 'editor::Save&New'
-    },
-    descriptions: {
-      'editor::Cancel': 'Cancel editing',
-      'editor::Save': 'Save poster',
-      'editor::Save&Close': 'Save and close',
-      'editor::Save&New': 'Save and create new'
     }
   },
 

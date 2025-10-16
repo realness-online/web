@@ -33,8 +33,9 @@
   const status = ref(null)
   const router = use_router()
 
-  const { vVectorizer, image_picker, mount_workers } = use_vectorize()
+  const { vVectorizer, image_picker, mount_workers, vectorize, reset, new_vector, init_processing_queue } = use_vectorize()
   provide('image-picker', image_picker)
+  provide('new_vector', new_vector)
 
   const documentation = ref(null)
   provide('documentation', documentation)
@@ -121,6 +122,9 @@
     window.addEventListener('offline', offline)
     await init_serverless()
     mount_workers()
+
+    // Initialize processing queue
+    init_processing_queue()
   })
   dismount(() => {
     window.removeEventListener('online', online)
