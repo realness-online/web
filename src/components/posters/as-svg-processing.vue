@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, computed, onMounted as mounted, inject } from 'vue'
+  import { ref, computed, onMounted as mounted, inject, watchEffect as watch } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
 
   const props = defineProps({
@@ -21,19 +21,17 @@
     return '1 / 1' // fallback to square
   })
 
+  watch(() => {
+    if (new_vector.value) {
+      image_width.value = new_vector.value.width
+      image_height.value = new_vector.value.height
+    }
+  })
+
   mounted(() => {
     const { queue_item } = props
-    if (queue_item?.resized_blob) {
+    if (queue_item?.resized_blob)
       thumbnail_url.value = URL.createObjectURL(queue_item.resized_blob)
-
-      // Get image dimensions
-      const img = new Image()
-      img.onload = () => {
-        image_width.value = img.naturalWidth
-        image_height.value = img.naturalHeight
-      }
-      img.src = thumbnail_url.value
-    }
   })
 
 </script>
@@ -42,8 +40,7 @@
   <figure
     class="poster processing"
     :style="{ aspectRatio: aspect_ratio }">
-    <img v-if="thumbnail_url" :src="thumbnail_url" />
-
+    <img v-if="thumbnail_url" :src="thumbnail_url" :width="`${image_width}px`" :height="`${image_height}px`" />
     <as-svg
       v-if="is_processing && new_vector"
       :itemid="queue_item.id"
@@ -69,8 +66,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.3;
-      filter: grayscale(1);
+      opacity: 0.66;
+      z-index: 1;
+      filter: grayscale(0.66);
     }
     & > svg {
       position: absolute;
@@ -78,6 +76,7 @@
       left: 0;
       width: 100%;
       height: 100%;
+      z-index: 2;
       color: var(--green);
     }
     & > figcaption {
@@ -85,6 +84,7 @@
       bottom: 0;
       left: 0;
       right: 0;
+      z-index: 3;
       padding: calc(var(--base-line) * 0.5);
       background: rgba(0, 0, 0, 0.8);
       display: flex;

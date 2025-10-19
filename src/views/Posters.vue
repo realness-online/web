@@ -36,6 +36,20 @@
     })
   })
 
+   watch(queue_items, async (new_queue, old_queue) => {
+    if (old_queue && new_queue.length < old_queue.length) {
+      posters.value = []
+      await posters_for_person({
+        id: localStorage.me,
+        type: 'person',
+        name: '',
+        avatar: '',
+        viewed: [],
+        visited: ''
+      })
+    }
+  }, { deep: true })
+
   /**
    * @param {Id} id
    */
@@ -84,7 +98,14 @@
   register('poster::Remove', () => console.log('TODO: Remove poster'))
 
   mounted(async () => {
-    await posters_for_person({ id: localStorage.me })
+    await posters_for_person({
+      id: localStorage.me,
+      type: 'person',
+      name: '',
+      avatar: '',
+      viewed: [],
+      visited: ''
+    })
     console.timeEnd('views:Posters')
   })
 </script>

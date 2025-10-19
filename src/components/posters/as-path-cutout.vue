@@ -14,21 +14,10 @@
     index: {
       type: Number,
       required: true
-    },
-    tabindex: {
-      type: Number,
-      required: false
-    },
-    hovered: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   })
 
   defineEmits(['focus', 'touchstart', 'touchend'])
-
-  const new_poster = ref(inject('new-poster', false))
   const vector = inject('vector', ref(null))
 
   const path = ref(null)
