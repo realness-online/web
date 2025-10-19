@@ -1,5 +1,11 @@
 <script setup>
-  import { ref, computed, onMounted as mounted, inject, watchEffect as watch } from 'vue'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    inject,
+    watchEffect as watch
+  } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
 
   const props = defineProps({
@@ -13,7 +19,9 @@
   const image_width = ref(0)
   const image_height = ref(0)
   const new_vector = inject('new_vector', ref(null))
-  const progress_percent = computed(() => Math.round(props.queue_item.progress || 0))
+  const progress_percent = computed(() =>
+    Math.round(props.queue_item.progress || 0)
+  )
   const is_processing = computed(() => props.queue_item.status === 'processing')
   const aspect_ratio = computed(() => {
     if (image_width.value && image_height.value)
@@ -33,14 +41,15 @@
     if (queue_item?.resized_blob)
       thumbnail_url.value = URL.createObjectURL(queue_item.resized_blob)
   })
-
 </script>
 
 <template>
-  <figure
-    class="poster processing"
-    :style="{ aspectRatio: aspect_ratio }">
-    <img v-if="thumbnail_url" :src="thumbnail_url" :width="`${image_width}px`" :height="`${image_height}px`" />
+  <figure class="poster processing" :style="{ aspectRatio: aspect_ratio }">
+    <img
+      v-if="thumbnail_url"
+      :src="thumbnail_url"
+      :width="`${image_width}px`"
+      :height="`${image_height}px`" />
     <as-svg
       v-if="is_processing && new_vector"
       :itemid="queue_item.id"
@@ -102,4 +111,3 @@
     }
   }
 </style>
-

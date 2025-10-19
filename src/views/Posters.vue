@@ -23,7 +23,8 @@
     poster_shown
   } = use_posters()
 
-  const { can_add, select_photo, queue_items, completed_posters } = use_vectorize()
+  const { can_add, select_photo, queue_items, completed_posters } =
+    use_vectorize()
   const { process_directory, progress, completed_poster } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
@@ -36,19 +37,23 @@
     })
   })
 
-   watch(queue_items, async (new_queue, old_queue) => {
-    if (old_queue && new_queue.length < old_queue.length) {
-      posters.value = []
-      await posters_for_person({
-        id: localStorage.me,
-        type: 'person',
-        name: '',
-        avatar: '',
-        viewed: [],
-        visited: ''
-      })
-    }
-  }, { deep: true })
+  watch(
+    queue_items,
+    async (new_queue, old_queue) => {
+      if (old_queue && new_queue.length < old_queue.length) {
+        posters.value = []
+        await posters_for_person({
+          id: localStorage.me,
+          type: 'person',
+          name: '',
+          avatar: '',
+          viewed: [],
+          visited: ''
+        })
+      }
+    },
+    { deep: true }
+  )
 
   /**
    * @param {Id} id
@@ -67,7 +72,7 @@
     const poster = new Poster(poster_to_remove.value.id)
     poster.delete()
   }
-  const cancel_remove = () =>  delete_dialog.value.close()
+  const cancel_remove = () => delete_dialog.value.close()
   /**
    * @param {Id} itemid
    */

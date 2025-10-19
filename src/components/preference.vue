@@ -23,7 +23,11 @@
     <div>
       <h4>{{ name }}</h4>
       <label class="switch">
-        <input v-model="preference" :name="name" type="checkbox" @click="toggle" />
+        <input
+          v-model="preference"
+          :name="name"
+          type="checkbox"
+          @click="toggle" />
         <span class="slider"></span>
       </label>
     </div>

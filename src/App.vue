@@ -33,7 +33,15 @@
   const status = ref(null)
   const router = use_router()
 
-  const { vVectorizer, image_picker, mount_workers, vectorize, reset, new_vector, init_processing_queue } = use_vectorize()
+  const {
+    vVectorizer,
+    image_picker,
+    mount_workers,
+    vectorize,
+    reset,
+    new_vector,
+    init_processing_queue
+  } = use_vectorize()
   provide('image-picker', image_picker)
   provide('new_vector', new_vector)
 
