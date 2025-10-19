@@ -9,13 +9,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { readFile, stat } from 'node:fs/promises'
 import { join, extname } from 'node:path'
-import {
-  load_item,
-  load_html,
-  upload,
-  remove,
-  directory
-} from '../src/utils/host.js'
+import { load_item, upload, remove, directory } from '../src/utils/host.js'
 import { is_itemid } from '../src/utils/itemid.js'
 
 const PORT = process.env.LOCAL_SERVER_PORT || 3000
@@ -83,21 +77,44 @@ const handle_http_request = async (req, res) => {
     // API endpoints
     if (pathname.startsWith('/api/')) {
       const itemid = pathname.replace('/api/', '')
+      console.log(`API request for itemid: ${itemid}`)
 
       if (req.method === 'GET') {
-        const html = await load_html(itemid)
-        if (!html) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' })
-          res.end('Not found')
-          return
+        // Serve static files directly instead of using client-side persistence
+        let file_path = join(STORAGE_PATH, 'compressed', itemid)
+
+        // Add .html.gz extension
+        if (!file_path.endsWith('.html.gz')) {
+          if (file_path.endsWith('/')) {
+            file_path = file_path.slice(0, -1) + '.html.gz'
+          } else {
+            file_path += '.html.gz'
+          }
         }
 
-        res.writeHead(200, {
-          'Content-Type': 'text/html',
-          'Cache-Control': 'public, max-age=3600'
-        })
-        res.end(html)
-        return
+        console.log(`Looking for file: ${file_path}`)
+
+        try {
+          const compressed_data = await readFile(file_path)
+          const { inflate } = await import('node:zlib')
+          const { promisify } = await import('node:util')
+          const inflate_async = promisify(inflate)
+          const html_data = await inflate_async(compressed_data)
+
+          res.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'public, max-age=3600'
+          })
+          res.end(html_data)
+          return
+        } catch (error) {
+          if (error.code === 'ENOENT') {
+            res.writeHead(404, { 'Content-Type': 'text/plain' })
+            res.end('Not found')
+            return
+          }
+          throw error
+        }
       }
     }
 

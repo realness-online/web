@@ -46,7 +46,7 @@
     "storage:download": "node scripts/download-files.js",
     "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm",
     "server:start": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"./loader.mjs\", pathToFileURL(\"./\"));' scripts/unified-server.js",
-    "server:sync": "node scripts/sync-firebase.js",
+    "server:sync": "node scripts/sync-firebase.js"
   },
   "dependencies": {
     "@vueuse/core": "13.3.0",
