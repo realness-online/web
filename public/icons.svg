@@ -304,5 +304,5 @@
     <animate attributeName="opacity" values="0;0.5;0" dur="5s" repeatCount="indefinite" />
   </rect>
   <rect width="100%" height="100%" fill="url(#realness-pattern)" />
-  <use href="#realness" viewBox="0 0 192 192" x="4" y="4" preserveAspectRatio="xMidYMid meet" />
+  <use href="#realness" viewBox="0 0 1 1" preserveAspectRatio="xMidYMid meet" />
 </svg>
