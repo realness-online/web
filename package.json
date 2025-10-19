@@ -46,7 +46,10 @@
     "storage:decompress": "node scripts/decompress-files.js",
     "storage:upload": "node scripts/upload-compressed.js",
     "storage:download": "node scripts/firebase-downloader.js",
-    "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm"
+    "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm",
+    "server:start": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"./loader.mjs\", pathToFileURL(\"./\"));' scripts/unified-server.js",
+    "server:sync": "node scripts/sync-firebase.js",
+    "mcp:start": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"./loader.mjs\", pathToFileURL(\"./\"));' scripts/mcp-server.js"
   },
   "dependencies": {
     "@vueuse/core": "13.3.0",
@@ -63,6 +66,7 @@
     "vue-router": "4.5.1"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.1",
     "@rollup/plugin-alias": "5.1.1",
     "@rollup/plugin-commonjs": "28.0.3",
     "@rollup/plugin-node-resolve": "16.0.1",

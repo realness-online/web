@@ -3,7 +3,7 @@
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
-import { has_archive, has_history, types } from '@/types'
+import { has_archive, has_history, types } from '@/types.js'
 
 import { get, set } from 'idb-keyval'
 import get_item from '@/utils/item'
