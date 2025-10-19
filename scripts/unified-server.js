@@ -84,13 +84,10 @@ const handle_http_request = async (req, res) => {
         let file_path = join(STORAGE_PATH, 'compressed', itemid)
 
         // Add .html.gz extension
-        if (!file_path.endsWith('.html.gz')) {
-          if (file_path.endsWith('/')) {
-            file_path = file_path.slice(0, -1) + '.html.gz'
-          } else {
-            file_path += '.html.gz'
-          }
-        }
+        if (!file_path.endsWith('.html.gz'))
+          if (file_path.endsWith('/'))
+            file_path = `${file_path.slice(0, -1)}.html.gz`
+          else file_path += '.html.gz'
 
         console.log(`Looking for file: ${file_path}`)
 
