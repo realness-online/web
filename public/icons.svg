@@ -264,6 +264,7 @@
       viewBox="0 0 206 206">
       <use href="#realness" width="192" height="192" />
     </pattern>
+
     <pattern id="light-screen-tone" x="-201.833" y="575.5" width="9" height="9" patternUnits="userSpaceOnUse"
       viewBox="0 -9 9 9">
       <path d="M9-7.875C9-7.254,8.496-6.75,7.875-6.75S6.75-7.254,6.75-7.875S7.254-9,7.875-9S9-8.496,9-7.875z"
@@ -293,16 +294,20 @@
       <circle fill="url(#medium-screen-tone)" cx="158.167" cy="72.5" r="72" />
       <polygon id="triangle" fill="url(#dense-screen-tone)" points="348.432,163.662 255.256,27.481 170.144,163.662 " />
     </g>
+    <pattern id="realness-animated-pattern" width="100%" height="100%">
+      <rect width="100%" height="100%" fill="url(#light-screen-tone)">
+        <animate attributeName="opacity" values="0;0.5;0" dur="13s" repeatCount="indefinite" />
+      </rect>
+      <rect width="100%" height="100%" fill="url(#medium-screen-tone)">
+        <animate attributeName="opacity" values="0;0.5;0" dur="8s" repeatCount="indefinite" />
+      </rect>
+      <rect width="100%" height="100%" fill="url(#dense-screen-tone)">
+        <animate attributeName="opacity" values="0;0.5;0" dur="5s" repeatCount="indefinite" />
+      </rect>
+      <rect width="100%" height="100%" fill="url(#realness-pattern)" />
+    </pattern>
   </defs>
-  <rect width="100%" height="100%" fill="url(#light-screen-tone)">
-    <animate attributeName="opacity" values="0;0.5;0" dur="13s" repeatCount="indefinite" />
-  </rect>
-  <rect width="100%" height="100%" fill="url(#medium-screen-tone)">
-    <animate attributeName="opacity" values="0;0.5;0" dur="8s" repeatCount="indefinite" />
-  </rect>
-  <rect width="100%" height="100%" fill="url(#dense-screen-tone)">
-    <animate attributeName="opacity" values="0;0.5;0" dur="5s" repeatCount="indefinite" />
-  </rect>
-  <rect width="100%" height="100%" fill="url(#realness-pattern)" />
+
+  <rect id="realness-extra" width="100%" height="100%" fill="url(#realness-animated-pattern)" />
   <use href="#realness" viewBox="0 0 1 1" preserveAspectRatio="xMidYMid meet" />
 </svg>

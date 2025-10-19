@@ -18,8 +18,8 @@
     avatar: is_vector_id
   })
   const { register } = use_keymap('Poster_Menu')
-  register('poster::Remove', () =>  emit('remove', props.poster.id))
-  register('poster::Make_Avatar', () =>  emit('avatar', props.poster.id))
+  register('poster::Remove', () => emit('remove', props.poster.id))
+  register('poster::Make_Avatar', () => emit('avatar', props.poster.id))
 </script>
 
 <template>

@@ -17,4 +17,3 @@ export function resolve(specifier, context, defaultResolve) {
   }
   return defaultResolve(specifier, context)
 }
-
