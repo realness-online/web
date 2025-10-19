@@ -64,7 +64,8 @@ const make_trace = async message => {
         const path_data = JSON.parse(result)
         self.postMessage({
           type: 'path',
-          path: path_data
+          path: path_data,
+          progress
         })
         // Schedule next tick
         setTimeout(process, 1)

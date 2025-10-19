@@ -1,7 +1,13 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
 
-import { ref, computed, onUnmounted as dismount, inject } from 'vue'
+import {
+  ref,
+  computed,
+  onUnmounted as dismount,
+  inject,
+  nextTick as tick
+} from 'vue'
 import { create_path_element } from '@/use/path'
 import { to_kb } from '@/utils/numbers'
 import { IMAGE } from '@/utils/numbers'
@@ -10,7 +16,7 @@ import ExifReader from 'exifreader'
 import { useRouter as use_router } from 'vue-router'
 import * as Queue from '@/persistance/Queue'
 import { Poster } from '@/persistance/Storage'
-import { del } from 'idb-keyval'
+import { use as use_optimizer } from '@/use/optimize'
 
 /**
  * @typedef {Object} VectorResponse
@@ -89,7 +95,7 @@ export const use = () => {
   const vectorizer = ref(null)
   const gradienter = ref(null)
   const tracer = ref(null)
-
+  const optimizer = ref(null)
   const can_add = computed(() => {
     if (working.value || new_vector.value) return false
     return true
@@ -118,6 +124,7 @@ export const use = () => {
     const path = create_path_element()
     path.setAttribute('d', path_data.d)
     path.setAttribute('fill-opacity', '0.5')
+    path.setAttribute('data-progress', path_data.progress)
     path.dataset.transform = 'true'
 
     path.setAttribute(
@@ -207,19 +214,15 @@ export const use = () => {
   const complete_item = async (id, vector) => {
     if (!vector) return
 
-    // Get the rendered SVG element from the DOM (following existing pattern from optimize.js)
+    await tick()
     const element = document.getElementById(as_query_id(id))
     if (!element) {
       console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
       return
     }
 
-    // Auto-save poster with the rendered SVG element
-    await new Poster(id).save(element)
-
-    // Clear directory cache so it will be rebuilt with the new poster
-    const directory_path = `${localStorage.me}/posters/`
-    await del(directory_path)
+    optimize_vector(element)
+    new Poster(id).save(element)
 
     completed_posters.value.push(id)
 
@@ -239,8 +242,6 @@ export const use = () => {
    */
   const init_processing_queue = () => {
     load_queue()
-
-    // Start processing if items exist
     if (queue_items.value.length > 0 && !is_processing.value) process_queue()
   }
 
@@ -413,18 +414,16 @@ export const use = () => {
         progress.value = message.data.progress
         if (current_item_id.value)
           update_progress(current_item_id.value, message.data.progress)
-
         break
       case 'path':
         if (!new_vector.value.cutout) new_vector.value.cutout = []
         const cutout_path = make_cutout_path({
           ...message.data.path,
-          progress: progress.value
+          progress: message.data.progress
         })
         new_vector.value.cutout.push(cutout_path)
         break
       case 'complete':
-        console.log('Tracer complete:', message.data)
         if (new_vector.value && !new_vector.value.optimized)
           new_vector.value.completed = true
 

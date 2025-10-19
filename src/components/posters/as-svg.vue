@@ -8,12 +8,11 @@
   import AsAnimation from '@/components/posters/as-animation'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
-    watchEffect as watch_effect,
+    watchEffect as watch,
     onMounted as mounted,
     ref,
-    inject,
+
     computed,
-    nextTick as tick,
     provide
   } from 'vue'
   import { use as use_vectorize } from '@/use/vectorize'
@@ -48,31 +47,6 @@
       required: false,
       default: null,
       validator: is_vector
-    },
-    optimize: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    toggle_aspect: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
-    slice: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
-    tabable: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    as_stroke: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   })
   const emit = defineEmits({
@@ -118,7 +92,6 @@
     const height = parseInt(numbers[3])
     return width > height
   })
-  const { optimize: run_optimize } = use_optimizer(vector)
 
   provide('vector', vector)
 
@@ -134,7 +107,7 @@
     else console.log('Skipping intersection observer setup')
   })
 
-  watch_effect(() => {
+  watch(() => {
     if (props.sync_poster) {
       vector.value = props.sync_poster
       working.value = false
