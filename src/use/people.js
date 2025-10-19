@@ -5,8 +5,12 @@ import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistance/Storage'
 
+// Check if we're in a browser environment
+const is_browser =
+  typeof window !== 'undefined' && typeof localStorage !== 'undefined'
+
 export const default_person = {
-  id: localStorage.me,
+  id: is_browser ? localStorage.me : null,
   type: 'person'
 }
 const relations = ref(undefined)
@@ -80,9 +84,11 @@ export const use = () => {
   }
 }
 export const use_me = () => {
-  list(`${localStorage.me}/relations`).then(list => {
-    relations.value = list
-  })
+  if (is_browser)
+    list(`${localStorage.me}/relations`).then(list => {
+      relations.value = list
+    })
+
   const save = async () => {
     await tick()
     new Me().save()
@@ -111,6 +117,7 @@ export const use_me = () => {
   }
 }
 export const get_my_itemid = type => {
+  if (!is_browser) return null
   if (type) return `${localStorage.me}/${type}`
   return localStorage.me
 }
