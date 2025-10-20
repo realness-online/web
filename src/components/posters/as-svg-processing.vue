@@ -46,8 +46,7 @@
       v-if="is_currently_processing && new_vector"
       :itemid="queue_item.id"
       :sync_poster="new_vector"
-      :width="`${image_width}px`"
-      :height="`${image_height}px`" />
+      :viewBox="`0 0 ${image_width} ${image_height}`" />
 
     <figcaption>
       <span>{{ status_text }}</span>
@@ -76,8 +75,9 @@
       grid-area: overlay;
       opacity: 0.66;
       filter: grayscale(1);
-      width: auto;
-      height: auto;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     & > svg {

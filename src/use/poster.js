@@ -25,7 +25,6 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-import { storytelling } from '@/utils/preference'
 
 export const use = () => {
   const { props, emit } = current_instance()
@@ -36,13 +35,10 @@ export const use = () => {
   const menu = ref(false)
   const { get_active_path } = use_path()
 
-  // Add magic keys for shift detection
   const magic_keys = useMagicKeys()
 
-  // Add state for aspect ratio toggle
   const aspect_toggle = ref(false)
 
-  // Pan and zoom state
   const is_hovered = ref(false)
   const storage_key = computed(() => `viewbox-${props.itemid}`)
   const viewbox_transform = use_storage(storage_key, {
@@ -51,17 +47,14 @@ export const use = () => {
     scale: 1
   })
 
-  // Pointer tracking
   const { x, y, pressure } = use_pointer({ target: vector_element })
 
-  // Original viewBox values
   const original_viewbox = computed(() => {
     if (!vector.value) return { x: 0, y: 0, width: 16, height: 16 }
     const [x, y, width, height] = vector.value.viewbox.split(' ').map(Number)
     return { x, y, width, height }
   })
 
-  // Computed viewBox with transforms
   const dynamic_viewbox = computed(() => {
     const { x, y, width, height } = original_viewbox.value
     const { x: dx, y: dy, scale } = viewbox_transform.value
@@ -99,7 +92,6 @@ export const use = () => {
 
   const path = computed(() => {
     if (working.value || vector) return null
-    // then always return a list
     if (Array.isArray(vector.value.path)) return vector.value.path
     return [vector.value.path]
   })
@@ -114,10 +106,11 @@ export const use = () => {
     return -1
   })
 
-  const focusable = computed(() => {
-    if (!props.tabable) return 0
-    return undefined
-  })
+  const focusable = computed(
+    () =>
+      // if (!props.tabable) return 0
+      -1
+  )
 
   const query = add => {
     if (!vector.value) return add
@@ -132,10 +125,7 @@ export const use = () => {
   }
 
   const click = () => {
-    // Toggle aspect ratio if shift is held
     if (magic_keys.shift.value) aspect_toggle.value = !aspect_toggle.value
-
-    // Always toggle menu
     menu.value = !menu.value
     emit('click', menu.value)
   }
@@ -290,10 +280,12 @@ export const use_posters = () => {
   const for_person = async person => {
     const directory = await as_directory(`${person.id}/posters`)
     directory.items.forEach(created_at => {
-      posters.value.push({
-        id: `${person.id}/posters/${created_at}`,
-        type: 'posters'
-      })
+      const poster_id = `${person.id}/posters/${created_at}`
+      if (!posters.value.find(p => p.id === poster_id))
+        posters.value.push({
+          id: poster_id,
+          type: 'posters'
+        })
     })
     person.viewed = ['index']
     authors.value.push(person)
