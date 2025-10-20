@@ -87,6 +87,11 @@
     position: relative
     overflow: hidden
     grid-row-start: span 2
+    scroll-margin: 50vh
+    scroll-snap-align: center
+    &:focus
+      outline: 2px solid var(--blue)
+      outline-offset: 2px
     @media (orientation: landscape), (min-width: page-width)
       &.landscape
         grid-column-start: span 2

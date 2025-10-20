@@ -1,10 +1,5 @@
 <script setup>
-  import {
-    ref,
-    computed,
-    onMounted as mounted,
-    inject
-  } from 'vue'
+  import { ref, computed, onMounted as mounted, inject } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
 
   const props = defineProps({
@@ -18,8 +13,10 @@
   const new_vector = inject('new_vector', ref(null))
   const current_processing = inject('current_processing', ref(null))
   const is_processing = computed(() => props.queue_item.status === 'processing')
-  const is_currently_processing = computed(() =>
-    is_processing.value && current_processing.value?.id === props.queue_item.id
+  const is_currently_processing = computed(
+    () =>
+      is_processing.value &&
+      current_processing.value?.id === props.queue_item.id
   )
   const image_width = computed(() => props.queue_item.width || 0)
   const image_height = computed(() => props.queue_item.height || 0)

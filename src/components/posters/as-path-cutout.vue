@@ -52,6 +52,7 @@
     ref="path"
     :d="d"
     itemprop="cutout"
+    tabindex="-1"
     :fill="fill"
     :transform="transform"
     :data-progress="data_progress"
@@ -59,29 +60,3 @@
     @touchstart.passive="$emit('touchstart', $event, props.index)"
     @touchend.passive="$emit('touchend', $event)" />
 </template>
-
-<style>
-  path[itemprop='cutout'] {
-    filter: brightness(1) saturate(1);
-    animation-play-state: paused;
-    will-change: fill-opacity;
-    transition: fill-opacity ease-out 0.8s;
-    &:focus {
-      outline: none;
-    }
-    &:hover {
-      animation: fade-back ease-out 0.4s 1s forwards;
-      animation-iteration-count: 1;
-      fill-opacity: 0.75;
-    }
-    &:active {
-      filter: brightness(1.1) saturate(1.1);
-      opacity: 0.9;
-    }
-  }
-  @keyframes fade-back {
-    to {
-      fill-opacity: 0.5;
-    }
-  }
-</style>
