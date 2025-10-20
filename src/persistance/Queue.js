@@ -40,7 +40,6 @@ export const get_next = async () => {
     const item = await get(key)
     if (item?.status === 'pending') return item
   }
-
   return null
 }
 

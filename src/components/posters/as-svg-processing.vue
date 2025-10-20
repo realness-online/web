@@ -16,13 +16,20 @@
 
   const thumbnail_url = ref('')
   const new_vector = inject('new_vector', ref(null))
+  const current_processing = inject('current_processing', ref(null))
   const is_processing = computed(() => props.queue_item.status === 'processing')
+  const is_currently_processing = computed(() =>
+    is_processing.value && current_processing.value?.id === props.queue_item.id
+  )
   const image_width = computed(() => props.queue_item.width || 0)
   const image_height = computed(() => props.queue_item.height || 0)
   const landscape = computed(() => {
     if (!image_width.value || !image_height.value) return false
     return image_width.value > image_height.value
   })
+  const status_text = computed(() =>
+    is_currently_processing.value ? 'Processing...' : 'Waiting...'
+  )
 
   mounted(() => {
     const { queue_item } = props
@@ -39,14 +46,14 @@
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
     <as-svg
-      v-if="is_processing && new_vector"
+      v-if="is_currently_processing && new_vector"
       :itemid="queue_item.id"
       :sync_poster="new_vector"
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
 
     <figcaption>
-      <span>Processing...</span>
+      <span>{{ status_text }}</span>
     </figcaption>
   </figure>
 </template>

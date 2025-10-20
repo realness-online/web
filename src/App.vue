@@ -40,10 +40,12 @@
     vectorize,
     reset,
     new_vector,
+    current_processing,
     init_processing_queue
   } = use_vectorize()
   provide('image-picker', image_picker)
   provide('new_vector', new_vector)
+  provide('current_processing', current_processing)
 
   const documentation = ref(null)
   provide('documentation', documentation)
