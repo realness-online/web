@@ -3,7 +3,6 @@
   import { onMounted as mounted, ref, watch, nextTick as tick } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
-  import AsSvg from '@/components/posters/as-svg'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
   import LogoAsLink from '@/components/logo-as-link'
@@ -28,39 +27,12 @@
     can_add,
     select_photo,
     queue_items,
-    completed_posters,
     init_processing_queue,
     mount_workers
   } = use_vectorize()
-  const { process_directory, progress, completed_poster } = use_directory()
+  const { process_directory } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
-
-  watch(completed_posters, (new_completed, old_completed) => {
-    const newly_added = new_completed.filter(id => !old_completed?.includes(id))
-    newly_added.forEach(id => {
-      if (!posters.value.find(p => p.id === id))
-        posters.value.unshift({ id, type: 'posters' })
-    })
-  })
-
-  watch(
-    queue_items,
-    async (new_queue, old_queue) => {
-      if (old_queue && new_queue.length < old_queue.length) {
-        posters.value = []
-        await posters_for_person({
-          id: localStorage.me,
-          type: 'person',
-          name: '',
-          avatar: '',
-          viewed: [],
-          visited: ''
-        })
-      }
-    },
-    { deep: true }
-  )
 
   /**
    * @param {Id} id
@@ -100,14 +72,26 @@
 
   const { register } = use_keymap('Posters')
 
+  const handle_focus = event => {
+    if (!storytelling.value) return
+
+    const focused_poster = event.target.closest('figure.poster')
+    if (focused_poster)
+      /** @type {HTMLElement} */ (focused_poster).scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      })
+  }
+
   register('poster::Create_New', () => {
     if (can_add.value) select_photo()
   })
-  register('poster::View', () => console.log('TODO: View poster full screen'))
-  register('poster::Search', () => console.log('TODO: Search posters'))
-  register('poster::Download', () => console.log('TODO: Download poster'))
-  register('poster::Copy', () => console.log('TODO: Copy poster'))
-  register('poster::Remove', () => console.log('TODO: Remove poster'))
+  register('poster::View', () => console.info('TODO: View poster full screen'))
+  register('poster::Search', () => console.info('TODO: Search posters'))
+  register('poster::Download', () => console.info('TODO: Download poster'))
+  register('poster::Copy', () => console.info('TODO: Copy poster'))
+  register('poster::Remove', () => console.info('TODO: Remove poster'))
 
   mounted(async () => {
     await posters_for_person({
@@ -116,12 +100,29 @@
       name: '',
       avatar: '',
       viewed: [],
-      visited: ''
+      visited: null
     })
     mount_workers()
     await init_processing_queue()
     console.timeEnd('views:Posters')
   })
+  watch(
+    queue_items,
+    async (new_queue, old_queue) => {
+      if (old_queue && new_queue.length < old_queue.length)
+        await posters_for_person({
+          id: localStorage.me,
+          type: 'person',
+          name: '',
+          avatar: '',
+          viewed: [],
+          visited: null
+        })
+
+    },
+    { deep: true }
+  )
+
 </script>
 
 <template>
@@ -154,7 +155,7 @@
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>
-    <article>
+    <article @focusin="handle_focus">
       <as-svg-processing
         v-for="item in queue_items"
         :key="item.id"
@@ -177,18 +178,7 @@
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
-    <footer v-if="progress.processing" class="progress">
-      <meter :value="progress.current" :max="progress.total" />
-      <span>{{ progress.current }} / {{ progress.total }}</span>
 
-      <div class="preview">
-        <as-svg
-          v-if="completed_poster"
-          :vector="completed_poster"
-          class="preview-poster" />
-        <span>{{ progress.current_file }}</span>
-      </div>
-    </footer>
   </section>
 </template>
 
@@ -239,8 +229,10 @@
         padding: base-line;
         scroll-behavior: smooth;
         height: 80vh;
+        scroll-snap-type: x mandatory;
         & > figure.poster {
           flex-shrink: 0;
+          scroll-snap-align: center;
         }
       }
     }

@@ -64,7 +64,7 @@
 
 <template>
   <figure ref="poster" class="poster" :class="{ landscape }">
-    <as-svg :itemid="itemid" @click="vector_click" @show="on_show" />
+    <as-svg :itemid="itemid" @click="vector_click" @show="on_show" :focusable="false" />
     <figcaption>
       <slot v-if="menu">
         <menu>
@@ -81,7 +81,7 @@
 
 <style lang="stylus">
   figure.poster
-    outline: 1px solid var(--red);
+    min-width: 512px;
     min-height: 512px;
     border-radius: round((base-line * .03), 2)
     position: relative
@@ -90,8 +90,7 @@
     scroll-margin: 50vh
     scroll-snap-align: center
     &:focus
-      outline: 2px solid var(--blue)
-      outline-offset: 2px
+      animation: focus-fade 1.2s ease-in-out
     @media (orientation: landscape), (min-width: page-width)
       &.landscape
         grid-column-start: span 2
@@ -141,4 +140,12 @@
             & > time
               color: blue
               line-height: 1
+
+  @keyframes focus-fade
+    0%
+      opacity: 1
+    50%
+      opacity: 0.5
+    100%
+      opacity: 1
 </style>

@@ -14,8 +14,6 @@
     computed,
     provide
   } from 'vue'
-  import { use as use_vectorize } from '@/use/vectorize'
-  import { use as use_optimizer } from '@/use/optimize'
   import {
     use as use_poster,
     is_vector,
@@ -76,8 +74,7 @@
     touch_end,
     focus_cutout,
     cutout_start,
-    cutout_end,
-    hovered_cutout
+    cutout_end
   } = use_poster()
 
   const trigger = ref(null)
@@ -255,5 +252,6 @@
     & rect#lightbar-front {
       pointer-events: none;
     }
+
   }
 </style>
