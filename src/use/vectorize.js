@@ -12,12 +12,11 @@ import { create_path_element } from '@/use/path'
 import { to_kb } from '@/utils/numbers'
 import { IMAGE } from '@/utils/numbers'
 import { as_query_id } from '@/utils/itemid'
+import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 import { useRouter as use_router } from 'vue-router'
 import * as Queue from '@/persistance/Queue'
 import { Poster } from '@/persistance/Storage'
-import { use as use_optimizer } from '@/use/optimize'
-
 /**
  * @typedef {Object} VectorResponse
  * @property {Object} data
@@ -207,37 +206,6 @@ export const use = () => {
   }
 
   /**
-   * Complete processing for item
-   * @param {Id} id
-   * @param {Object} vector - The vector data with DOM elements
-   */
-  const complete_item = async (id, vector) => {
-    if (!vector) return
-
-    await tick()
-    const element = document.getElementById(as_query_id(id))
-    if (!element) {
-      console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
-      return
-    }
-
-    optimize_vector(element)
-    new Poster(id).save(element)
-
-    completed_posters.value.push(id)
-
-    await Queue.remove(id)
-    queue_items.value = queue_items.value.filter(item => item.id !== id)
-
-    is_processing.value = false
-    current_processing.value = null
-
-    reset()
-
-    process_queue()
-  }
-
-  /**
    * Initialize processing queue
    */
   const init_processing_queue = () => {
@@ -408,7 +376,7 @@ export const use = () => {
    * When tracing completes, we convert these objects to SVG path elements to maintain
    * consistency with the main paths (light, regular, medium, bold) and enable SVGO optimization.
    */
-  const traced = message => {
+  const traced = async message => {
     switch (message.data.type) {
       case 'progress':
         progress.value = message.data.progress
@@ -427,8 +395,16 @@ export const use = () => {
         if (new_vector.value && !new_vector.value.optimized)
           new_vector.value.completed = true
 
-        if (current_item_id.value && new_gradients.value && new_vector.value)
-          complete_item(current_item_id.value, new_vector.value)
+        if (current_item_id.value && new_gradients.value && new_vector.value) {
+          await tick()
+          const element = document.getElementById(
+            as_query_id(current_item_id.value)
+          )
+          optimizer.value.postMessage({
+            route: 'optimize:vector',
+            vector: element.outerHTML
+          })
+        }
 
         break
       case 'error':
@@ -437,13 +413,49 @@ export const use = () => {
     }
   }
 
+  const optimized = async message => {
+    const id = current_item_id.value
+    const optimized = get_item(message.data.vector)
+    const element = document.getElementById(as_query_id(id))
+
+    if (!element) {
+      console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
+      return
+    }
+
+    new_vector.value.light = optimized.light
+    new_vector.value.regular = optimized.regular
+    new_vector.value.medium = optimized.medium
+    new_vector.value.bold = optimized.bold
+    new_vector.value.cutout = optimized.cutout
+    new_vector.value.optimized = true
+    optimizer.value.removeEventListener('message', optimized)
+
+    await tick()
+    new Poster(id).save(element)
+
+    completed_posters.value.push(id)
+
+    await Queue.remove(id)
+    queue_items.value = queue_items.value.filter(item => item.id !== id)
+
+    is_processing.value = false
+    current_processing.value = null
+
+    reset()
+
+    process_queue()
+  }
+
   const mount_workers = () => {
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/vector.worker.js')
     tracer.value = new Worker('/tracer.worker.js')
+    optimizer.value = new Worker('/vector.worker.js')
     vectorizer.value.addEventListener('message', vectorized)
     gradienter.value.addEventListener('message', gradientized)
     tracer.value.addEventListener('message', traced)
+    optimizer.value.addEventListener('message', optimized)
   }
 
   const reset = () => {
@@ -461,6 +473,7 @@ export const use = () => {
     if (vectorizer.value) vectorizer.value.terminate()
     if (gradienter.value) gradienter.value.terminate()
     if (tracer.value) tracer.value.terminate()
+    if (optimizer.value) optimizer.value.terminate()
   })
   return {
     can_add,
