@@ -14,6 +14,7 @@
   import { use_posters } from '@/use/poster'
   import { use as use_directory } from '@/use/directory-processor'
   import { use_keymap } from '@/use/key-commands'
+  import { storytelling } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -23,8 +24,14 @@
     poster_shown
   } = use_posters()
 
-  const { can_add, select_photo, queue_items, completed_posters, init_processing_queue, mount_workers } =
-    use_vectorize()
+  const {
+    can_add,
+    select_photo,
+    queue_items,
+    completed_posters,
+    init_processing_queue,
+    mount_workers
+  } = use_vectorize()
   const { process_directory, progress, completed_poster } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
@@ -136,7 +143,7 @@
       <footer></footer>
     </article>
   </dialog>
-  <section id="posters" class="page">
+  <section id="posters" class="page" :class="{ storytelling: storytelling }">
     <header>
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
@@ -157,6 +164,7 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
+        tabindex="0"
         :class="{
           'selecting-event': poster.picker,
           'fill-screen': poster.menu
@@ -214,11 +222,26 @@
       standard-grid: gentle;
       grid-gap: 0;
       padding-bottom: base-line * 3;
+      scroll-behavior: smooth;
       @media (max-width: pad-begins) {
         margin-top: base-line;
       }
       & > figure.poster.selecting-event > svg:not(.background) {
         opacity: 0.1;
+      }
+    }
+    &.storytelling {
+      & > article {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: base-line;
+        padding: base-line;
+        scroll-behavior: smooth;
+        height: 80vh;
+        & > figure.poster {
+          flex-shrink: 0;
+        }
       }
     }
   }
