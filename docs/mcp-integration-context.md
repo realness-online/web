@@ -2,81 +2,61 @@
 
 ## Overview
 
-- **Goal:** Make Realness's main products—Thoughts (posters and statements)—available via MCP (Multi Cursor Protocol).
-- **Motivation:** Enable designers and developers to export/import Thoughts to local tools (file system, Blender, Illustrator, etc.) and facilitate real-time or on-demand data exchange.
+- **Goal:** Make Realness's Thoughts available to LLM's via MCP (Model Context Protocal).
+
+- **Motivation:** Share Thoughts with LLMs so AI can export posters in multiple formats for Blender, Illustrator, Procreate, etc.
 
 ## Data Model
 
-- **Thoughts:** Unified concept aggregating posters (SVG-based) and statements (text/content).
+- **Thoughts:** a 13 minute window of context. Maybe with a Poster, Events, Statements or the full soup.
 - **Structure:**
-  - `id` (itemid)
-  - `type` (poster or statement)
   - `microdata` (HTML/DOM structure, itemid, itemtype, itemprop)
-  - `content` (SVG for posters, text for statements)
-  - `metadata` (timestamps, author, EXIF/location, etc.)
 - **Source:**
   - <a href="src/components/as-days.vue">as-days.vue</a> and as_thoughts utility provide the iterable, normalized structure for Thoughts.
   - <a href="src/utils/item.js">item.js</a> and <a href="src/utils/itemid.js">itemid.js</a> handle extraction, validation, and microdata parsing.
 
-## Export/Integration Requirements
+## Current Implementation (Local Filesystem)
 
-- **Canonical export format:**
-  - JSON object containing all relevant fields (see above).
-  - Preserve microdata and metadata for downstream use.
-- **MCP Bridge:**
-  - Utility/module in Realness to send (and eventually receive) Thoughts over MCP.
-  - Extensible for future use cases (e.g., Blender scene generation, Illustrator import).
-- **UI/Trigger:**
-  - Export action (button/menu) to trigger MCP export of Thoughts.
+### MCP Server with Local Filesystem Access
 
-## WebRTC Focus
+- **Server:** `scripts/server.js` provides both HTTP API and MCP server functionality
+- **Storage:** Files stored in `storage/people/` directory HTML files
+- **MCP Tools Available:**
+  - `get_thoughts_html` - Get HTML for Thoughts view with all thoughts from all users
+  - `get_thought` - Get complete Thought with metadata
+  - `list_thoughts` - List all Thoughts for a person
+  - `export_thought` - Export Thought in canonical JSON format
+  - `read_item` - Load item by ID
+  - `write_item` - Save item with HTML content
+  - `list_items` - List items in directory
+  - `delete_item` - Remove item
 
-- **Purpose:**
-  - Use WebRTC as the transport layer for peer-to-peer communication between Realness (PWA) and local applications (Cursor, plugins, etc.).
-  - Enable real-time or on-demand export/import of Thoughts.
-- **Considerations:**
-  - Define signaling and message format for WebRTC/MCP.
-  - Ensure data integrity and type safety (leverage existing item.js/itemid.js logic).
+### Development Workflow
 
-## Progress So Far
+1. **Start Server:** `npm run server:start` - runs both HTTP API and MCP server
+2. **Sync Data:** `npm run server:sync` - sync with Firebase
+3. **Use MCP Tools:** Connect MCP client to access Thoughts programmatically
 
-### ✅ Step 1: WebRTC Peer Connection Setup
+## Future: WebRTC PWA Integration
 
-- **Connection Dialog:** Created <a href="src/components/connection/as-dialog-connection.vue">as-dialog-connection.vue</a>
-  - Supports two modes: Shared Account (`realness-{phone_number}`) and Local Only (`realness-local`)
-  - Displays connection info with room ID, ICE servers, and MCP capabilities
-  - Copy-to-clipboard functionality for connection info
-- **Key Command Integration:** Added `ui::Show_Connection` command bound to `U` key
-  - Integrated into <a href="src/App.vue">App.vue</a> following existing dialog patterns
-  - Added to <a href="src/utils/keymaps.js">keymaps.js</a> Global context
-- **UI/UX:** Follows established patterns with semantic HTML and element-based CSS inheritance
+- **Purpose:** Enable non-technical users to share Thoughts outside the local filesystem
+- **Architecture:** WebRTC peer-to-peer communication between Realness PWA and local applications
+- **Benefits:** Elegant solution for sharing Thoughts without requiring technical setup
 
-### 🔄 Step 2: Signaling Protocol (Next)
+### Planned Components
 
-- **Status:** Ready to implement
-- **Requirements:**
-  - Define signaling mechanism for peer connection setup
-  - Handle offer/answer exchange
-  - Manage connection state for same-device communication
+- **Connection Dialog:** `as-dialog-connection.vue` for establishing P2P connections
+- **Export UI:** Button/menu to trigger Thought export from PWA
+- **Real-time Sync:** Live data exchange between web app and local tools
 
-## Example Export Payload
+### Implementation Status
 
-```json
-{
-  "id": "/+123456/posters/789",
-  "type": "poster",
-  "microdata": "<svg ... itemid='/+123456/posters/789' ...>...</svg>",
-  "svg": "<svg ...>...</svg>",
-  "metadata": {
-    "exif": { "location": "..." },
-    "created": 1234567890
-  }
-}
-```
+- **Step 1:** WebRTC Peer Connection Setup (planned)
+- **Step 2:** Signaling Protocol (planned)
+- **Step 3:** Data Channel for MCP Transport (planned)
+- **Step 4:** PWA Integration (planned)
 
-## Next Steps
+## Current Status
 
-- **Step 2:** Implement WebRTC signaling protocol
-- **Step 3:** Create data channel for MCP message transport
-- **Step 4:** Implement MCP server functionality in Realness
-- **Step 5:** Define MCP tools for exporting Thoughts
+✅ **Local filesystem MCP integration is complete and functional**
+🔄 **WebRTC PWA integration is planned for future development**
