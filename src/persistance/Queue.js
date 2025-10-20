@@ -9,6 +9,8 @@ import { get, set, del, keys } from 'idb-keyval'
  * @property {'pending' | 'processing' | 'complete' | 'error'} status
  * @property {string} [svg_html]
  * @property {number} progress
+ * @property {number} width
+ * @property {number} height
  */
 
 /**

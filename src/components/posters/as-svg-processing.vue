@@ -3,8 +3,7 @@
     ref,
     computed,
     onMounted as mounted,
-    inject,
-    watchEffect as watch
+    inject
   } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
 
@@ -16,20 +15,13 @@
   })
 
   const thumbnail_url = ref('')
-  const image_width = ref(0)
-  const image_height = ref(0)
   const new_vector = inject('new_vector', ref(null))
   const progress_percent = computed(() =>
     Math.round(props.queue_item.progress || 0)
   )
   const is_processing = computed(() => props.queue_item.status === 'processing')
-
-  watch(() => {
-    if (new_vector.value) {
-      image_width.value = new_vector.value.width
-      image_height.value = new_vector.value.height
-    }
-  })
+  const image_width = computed(() => props.queue_item.width || 0)
+  const image_height = computed(() => props.queue_item.height || 0)
 
   mounted(() => {
     const { queue_item } = props
@@ -48,7 +40,9 @@
     <as-svg
       v-if="is_processing && new_vector"
       :itemid="queue_item.id"
-      :sync_poster="new_vector" />
+      :sync_poster="new_vector"
+      :width="`${image_width}px`"
+      :height="`${image_height}px`" />
 
     <figcaption>
       <progress :value="progress_percent" max="100"></progress>
@@ -59,35 +53,32 @@
 
 <style lang="stylus">
   figure.poster.processing {
-    position: relative;
-    overflow: hidden;
+    display: grid;
+    grid-template-areas: "overlay";
+    grid-template-rows: auto;
+    grid-template-columns: auto;
     border-radius: calc(var(--base-line) * 0.25);
     background: var(--black-background);
+    width: fit-content;
+    height: fit-content;
+
     & > img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      grid-area: overlay;
       opacity: 0.66;
-      z-index: 1;
       filter: grayscale(1);
+      width: auto;
+      height: auto;
     }
+
     & > svg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
+      grid-area: overlay;
       color: var(--green);
+      pointer-events: none;
     }
+
     & > figcaption {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      grid-area: overlay;
+      align-self: end;
       z-index: 3;
       padding: calc(var(--base-line) * 0.5);
       background: rgba(0, 0, 0, 0.8);
@@ -95,11 +86,13 @@
       align-items: center;
       gap: calc(var(--base-line) * 0.5);
     }
+
     & > figcaption progress {
       flex: 1;
       height: calc(var(--base-line) * 0.5);
       accent-color: var(--green);
     }
+
     & > figcaption span {
       font-size: smaller;
       color: var(--green);

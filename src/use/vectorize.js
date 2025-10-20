@@ -61,7 +61,7 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
 /**
  * Resize image file to blob for storage
  * @param {File} file
- * @returns {Promise<Blob>}
+ * @returns {Promise<{blob: Blob, width: number, height: number}>}
  */
 const resize_to_blob = async file => {
   const url = URL.createObjectURL(file)
@@ -77,7 +77,12 @@ const resize_to_blob = async file => {
   ctx.putImageData(image_data, 0, 0)
   URL.revokeObjectURL(url)
 
-  return canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
+  const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
+  return {
+    blob,
+    width: image_data.width,
+    height: image_data.height
+  }
 }
 
 /**
@@ -145,13 +150,15 @@ export const use = () => {
   const add_to_queue = async files => {
     for (const file of files) {
       const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
-      const resized_blob = await resize_to_blob(file)
+      const { blob: resized_blob, width, height } = await resize_to_blob(file)
 
       const item = /** @type {QueueItem} */ ({
         id,
         resized_blob,
         status: 'pending',
-        progress: 0
+        progress: 0,
+        width,
+        height
       })
 
       await Queue.add(item)
@@ -357,6 +364,14 @@ export const use = () => {
     vector.regular = make_path(vector.regular)
     vector.medium = make_path(vector.medium)
     vector.bold = make_path(vector.bold)
+
+    // Set correct dimensions from current processing item
+    if (current_processing.value) {
+      vector.width = current_processing.value.width
+      vector.height = current_processing.value.height
+      vector.viewbox = `0 0 ${vector.width} ${vector.height}`
+    }
+
     new_vector.value = vector
 
     if (current_item_id.value) update_progress(current_item_id.value, 50)
@@ -384,6 +399,7 @@ export const use = () => {
           update_progress(current_item_id.value, message.data.progress)
         break
       case 'path':
+        if (!new_vector.value) return
         if (!new_vector.value.cutout) new_vector.value.cutout = []
         const cutout_path = make_cutout_path({
           ...message.data.path,
