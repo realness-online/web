@@ -5,9 +5,11 @@ import {
 } from '@/wasm/tracer.js'
 
 let converter
-let initialized = false
+let _initialized = false
+let is_processing = false
 
-const deg2rad = deg => (deg / 180) * Math.PI
+const DEGREES_IN_CIRCLE = 180
+const deg2rad = deg => (deg / DEGREES_IN_CIRCLE) * Math.PI
 
 const init_tracer = async () => {
   const response = await fetch('/wasm/tracer_bg.wasm')
@@ -18,7 +20,7 @@ const init_tracer = async () => {
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
-    corner_threshold: deg2rad(18),
+    corner_threshold: deg2rad(18), // Magic number from tracer config
     length_threshold: 61,
     max_iterations: 10,
     splice_threshold: deg2rad(2),
@@ -29,64 +31,76 @@ const init_tracer = async () => {
   }
 
   converter = ColorImageConverter.new_with_string(JSON.stringify(params))
-  initialized = true
+  _initialized = true
 }
 
-const make_trace = async message => {
+const make_trace = message => {
   const { image_data } = message.data
 
+  // Stop any ongoing processing
+  is_processing = false
+
   // Verify image data is valid
-  if (image_data.data.length !== image_data.width * image_data.height * 4)
+  const BYTES_PER_PIXEL = 4
+  if (
+    image_data.data.length !==
+    image_data.width * image_data.height * BYTES_PER_PIXEL
+  )
     throw new Error(
-      `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * 4}`
+      `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * BYTES_PER_PIXEL}`
     )
 
+  // Initialize converter with new image data
   converter.init(image_data)
 
   // Start the processing loop
-  const process = () => {
+  is_processing = true
+  const process_chunk = () => {
+    if (!is_processing) return
+
     try {
-      const result = converter.tick()
-      const progress = converter.progress()
+      // Process up to 10 ticks per chunk to avoid blocking
+      for (let i = 0; i < 10 && is_processing; i++) {
+        const result = converter.tick()
+        const progress = converter.progress()
 
-      self.postMessage({
-        type: 'progress',
-        progress
-      })
-
-      if (result === 'complete')
         self.postMessage({
-          type: 'complete',
-          width: image_data.width,
-          height: image_data.height
-        })
-      else if (result) {
-        const path_data = JSON.parse(result)
-        self.postMessage({
-          type: 'path',
-          path: path_data,
+          type: 'progress',
           progress
         })
-        // Schedule next tick
-        setTimeout(process, 1)
-      } else if (progress < 100) setTimeout(process, 3)
-      else
-        self.postMessage({
-          type: 'complete',
-          width: image_data.width,
-          height: image_data.height
-        })
+
+        if (result === 'complete') {
+          self.postMessage({
+            type: 'complete',
+            width: image_data.width,
+            height: image_data.height
+          })
+          is_processing = false
+          return
+        } else if (result) {
+          const path_data = JSON.parse(result)
+          self.postMessage({
+            type: 'path',
+            path: path_data,
+            progress
+          })
+        }
+      }
+
+      // If still processing, schedule next chunk
+      if (is_processing) setTimeout(process_chunk, 0)
     } catch (error) {
       console.error('Error in processing loop:', error)
       self.postMessage({
         type: 'error',
         error: error.message
       })
+      is_processing = false
     }
   }
 
   // Start processing
-  process()
+  process_chunk()
   return {} // Return empty object to satisfy type
 }
 
