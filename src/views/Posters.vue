@@ -23,7 +23,7 @@
     poster_shown
   } = use_posters()
 
-  const { can_add, select_photo, queue_items, completed_posters } =
+  const { can_add, select_photo, queue_items, completed_posters, init_processing_queue, mount_workers } =
     use_vectorize()
   const { process_directory, progress, completed_poster } = use_directory()
   const poster_to_remove = ref(null)
@@ -111,6 +111,8 @@
       viewed: [],
       visited: ''
     })
+    mount_workers()
+    await init_processing_queue()
     console.timeEnd('views:Posters')
   })
 </script>

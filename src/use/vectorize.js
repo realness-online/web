@@ -11,6 +11,7 @@ import {
 import { create_path_element } from '@/use/path'
 import { to_kb } from '@/utils/numbers'
 import { IMAGE } from '@/utils/numbers'
+import { mutex } from '@/utils/algorithms'
 import { as_query_id } from '@/utils/itemid'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
@@ -165,27 +166,34 @@ export const use = () => {
       queue_items.value.push(item)
     }
 
-    if (!is_processing.value) process_queue()
+    process_queue()
   }
 
   const process_queue = async () => {
-    if (is_processing.value) return
+    console.log('process_queue called, acquiring mutex...')
+    await mutex.lock()
+    console.log('Mutex acquired, getting next item...')
 
-    const next = await Queue.get_next()
-    if (!next) {
-      is_processing.value = false
-      current_processing.value = null
-      return
+    try {
+      const next = await Queue.get_next()
+      console.log('Next item:', next?.id || 'none')
+      if (!next) {
+        is_processing.value = false
+        current_processing.value = null
+        return
+      }
+
+      is_processing.value = true
+      current_processing.value = next
+
+      await Queue.update(next.id, { status: 'processing' })
+      const index = queue_items.value.findIndex(item => item.id === next.id)
+      if (index !== -1) queue_items.value[index].status = 'processing'
+
+      await vectorize(next.resized_blob, next.id)
+    } finally {
+      mutex.unlock()
     }
-
-    is_processing.value = true
-    current_processing.value = next
-
-    await Queue.update(next.id, { status: 'processing' })
-    const index = queue_items.value.findIndex(item => item.id === next.id)
-    if (index !== -1) queue_items.value[index].status = 'processing'
-
-    await vectorize(next.resized_blob, next.id)
   }
 
   /**
@@ -215,9 +223,23 @@ export const use = () => {
   /**
    * Initialize processing queue
    */
-  const init_processing_queue = () => {
-    load_queue()
-    if (queue_items.value.length > 0 && !is_processing.value) process_queue()
+  const init_processing_queue = async () => {
+    await load_queue()
+
+    // Reset any 'processing' items back to 'pending' (they were interrupted)
+    console.log('Checking queue items for processing status...')
+    for (const item of queue_items.value) {
+      console.log(`Item ${item.id} has status: ${item.status}`)
+      if (item.status === 'processing') {
+        console.log('Resetting processing item to pending:', item.id)
+        await Queue.update(item.id, { status: 'pending' })
+        item.status = 'pending'
+      }
+    }
+
+    if (queue_items.value.length > 0) {
+      process_queue()
+    }
   }
 
   const listener = async () => {
@@ -464,6 +486,12 @@ export const use = () => {
   }
 
   const mount_workers = () => {
+    // Clean up existing workers first
+    if (vectorizer.value) vectorizer.value.terminate()
+    if (gradienter.value) gradienter.value.terminate()
+    if (tracer.value) tracer.value.terminate()
+    if (optimizer.value) optimizer.value.terminate()
+
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/vector.worker.js')
     tracer.value = new Worker('/tracer.worker.js')
