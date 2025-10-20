@@ -40,6 +40,11 @@ const make_trace = message => {
   // Stop any ongoing processing
   is_processing = false
 
+  // Clean up existing converter
+  if (converter) {
+    converter.free()
+  }
+
   // Verify image data is valid
   const BYTES_PER_PIXEL = 4
   if (
@@ -49,6 +54,21 @@ const make_trace = message => {
     throw new Error(
       `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * BYTES_PER_PIXEL}`
     )
+
+  // Create fresh converter instance for this trace
+  const params = {
+    mode: 'polygon',
+    hierarchical: 'cutout',
+    corner_threshold: deg2rad(18), // Magic number from tracer config
+    length_threshold: 61,
+    max_iterations: 10,
+    splice_threshold: deg2rad(2),
+    filter_speckle: 54,
+    color_precision: 0,
+    layer_difference: 13,
+    path_precision: 3
+  }
+  converter = ColorImageConverter.new_with_string(JSON.stringify(params))
 
   // Initialize converter with new image data
   converter.init(image_data)
@@ -63,11 +83,6 @@ const make_trace = message => {
       for (let i = 0; i < 10 && is_processing; i++) {
         const result = converter.tick()
         const progress = converter.progress()
-
-        self.postMessage({
-          type: 'progress',
-          progress
-        })
 
         if (result === 'complete') {
           self.postMessage({
@@ -132,5 +147,12 @@ self.addEventListener('message', async event => {
   } catch (error) {
     console.error('Error in message handler:', error)
     self.postMessage({ error: error.message })
+  }
+})
+
+// Clean up converter when worker is terminated
+self.addEventListener('beforeunload', () => {
+  if (converter) {
+    converter.free()
   }
 })
