@@ -16,12 +16,13 @@
 
   const thumbnail_url = ref('')
   const new_vector = inject('new_vector', ref(null))
-  const progress_percent = computed(() =>
-    Math.round(props.queue_item.progress || 0)
-  )
   const is_processing = computed(() => props.queue_item.status === 'processing')
   const image_width = computed(() => props.queue_item.width || 0)
   const image_height = computed(() => props.queue_item.height || 0)
+  const landscape = computed(() => {
+    if (!image_width.value || !image_height.value) return false
+    return image_width.value > image_height.value
+  })
 
   mounted(() => {
     const { queue_item } = props
@@ -31,7 +32,7 @@
 </script>
 
 <template>
-  <figure class="poster processing">
+  <figure class="poster processing" :class="{ landscape }">
     <img
       v-if="thumbnail_url"
       :src="thumbnail_url"
@@ -45,8 +46,7 @@
       :height="`${image_height}px`" />
 
     <figcaption>
-      <progress :value="progress_percent" max="100"></progress>
-      <span>{{ progress_percent }}%</span>
+      <span>Processing...</span>
     </figcaption>
   </figure>
 </template>
@@ -61,7 +61,13 @@
     background: var(--black-background);
     width: fit-content;
     height: fit-content;
-
+    grid-row-start: span 2;
+    outline: 1px solid var(--green);
+    @media (orientation: landscape), (min-width: page-width) {
+      &.landscape {
+        grid-column-start: span 2;
+      }
+    }
     & > img {
       grid-area: overlay;
       opacity: 0.66;
@@ -84,13 +90,7 @@
       background: rgba(0, 0, 0, 0.8);
       display: flex;
       align-items: center;
-      gap: calc(var(--base-line) * 0.5);
-    }
-
-    & > figcaption progress {
-      flex: 1;
-      height: calc(var(--base-line) * 0.5);
-      accent-color: var(--green);
+      justify-content: center;
     }
 
     & > figcaption span {
