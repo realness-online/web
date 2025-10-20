@@ -28,11 +28,7 @@ This document describes how to set up and use the local filesystem server for of
    npm run server:sync
    ```
 
-5. **Start MCP server (for tool integration):**
-
-   ```bash
-   npm run mcp:start
-   ```
+5. **MCP tools are integrated** - The MCP server runs automatically with the HTTP server
 
 ## Architecture
 
@@ -62,10 +58,7 @@ The MCP server provides tools for both Realness items and Obsidian notes:
 
 ### Obsidian Tools
 
-- `read_note` - Read markdown note
-- `search_notes` - Search across vault
-- `list_notes` - List notes in directory
-- `query_graph` - Find note connections
+_Note: Obsidian tools are not yet implemented in the current version_
 
 ## File Structure
 
