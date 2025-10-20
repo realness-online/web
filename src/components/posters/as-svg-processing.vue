@@ -23,11 +23,6 @@
     Math.round(props.queue_item.progress || 0)
   )
   const is_processing = computed(() => props.queue_item.status === 'processing')
-  const aspect_ratio = computed(() => {
-    if (image_width.value && image_height.value)
-      return `${image_width.value} / ${image_height.value}`
-    return '1 / 1' // fallback to square
-  })
 
   watch(() => {
     if (new_vector.value) {
@@ -44,7 +39,7 @@
 </script>
 
 <template>
-  <figure class="poster processing" :style="{ aspectRatio: aspect_ratio }">
+  <figure class="poster processing">
     <img
       v-if="thumbnail_url"
       :src="thumbnail_url"
@@ -77,7 +72,7 @@
       object-fit: cover;
       opacity: 0.66;
       z-index: 1;
-      filter: grayscale(0.66);
+      filter: grayscale(1);
     }
     & > svg {
       position: absolute;
