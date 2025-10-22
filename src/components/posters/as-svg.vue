@@ -31,7 +31,8 @@
     light,
     cutout,
     fill,
-    stroke
+    stroke,
+    grid_overlay
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -98,9 +99,13 @@
         ([{ isIntersecting }]) => {
           if (isIntersecting) show()
         },
-        { rootMargin: '1024px' }
+        { rootMargin: '3200px 3200px 3200px 3200px' }
       )
-    else console.log('Skipping intersection observer setup')
+    else {
+      vector.value = props.sync_poster
+      working.value = false
+      emit('show', vector.value)
+    }
   })
 
   watch(() => {
@@ -226,6 +231,14 @@
       width="100%"
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
+
+    <!-- Grid overlay -->
+    <g v-if="grid_overlay" class="grid-overlay">
+      <rect width="1" height="0.33" />
+      <rect width="1" height="0.33" y="0.33" rx="0.011" />
+      <rect width="1" height="0.33" y="0.66" rx="0.011" />
+      <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" fill="orange" />
+    </g>
   </svg>
 </template>
 
@@ -251,6 +264,23 @@
     & rect#lightbar-back,
     & rect#lightbar-front {
       pointer-events: none;
+    }
+
+    & .grid-overlay {
+      pointer-events: none;
+      opacity: 0.3;
+      mix-blend-mode: overlay;
+
+      rect {
+        stroke-width: 0.001;
+        stroke: white;
+        fill: none;
+      }
+
+      rect:focus {
+        fill: blue;
+        outline: none;
+      }
     }
 
   }

@@ -152,7 +152,7 @@ export const use = () => {
         if (isIntersecting) intersecting.value = true
         else intersecting.value = false
       },
-      { rootMargin: '0%' }
+      { rootMargin: '2400px' }
     )
     emit('show', vector.value)
   }

@@ -1,34 +1,19 @@
 <script setup>
   import { computed } from 'vue'
-  import { useStorage as use_storage } from '@vueuse/core'
 
-  const props = defineProps({
-    itemid: {
-      type: String,
-      required: false,
-      default: null
-    }
-  })
+  import {
+    animate,
+    animation_speed
+  } from '@/utils/preference'
 
-  // Get viewBox transform from localStorage
-  const storage_key = computed(() =>
-    props.itemid ? `viewbox-${props.itemid}` : 'viewbox-current'
-  )
-  const viewbox_transform = use_storage(storage_key, {
-    x: 0,
-    y: 0,
-    scale: 1
-  })
-
-  // Format coordinates for display - much more concise
-  const formatted_coords = computed(() => {
-    const { x, y, scale } = viewbox_transform.value
-    return `${Math.round(x)},${Math.round(y)} ${scale.toFixed(1)}x`
+  const animation_status = computed(() => {
+    if (!animate.value) return 'off'
+    return `anim:${animation_speed.value}`
   })
 </script>
 
 <template>
-  <span id="viewbox">{{ formatted_coords }}</span>
+  <span id="viewbox">{{ animation_status }}</span>
 </template>
 
 <style lang="stylus">

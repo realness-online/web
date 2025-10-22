@@ -38,7 +38,8 @@
 </template>
 
 <style lang="stylus">
-  section#posters > article > figure.poster > figcaption > menu > a {
+  section#posters > article > figure.poster > figcaption > menu > a,
+  section#posters > article > figure.poster > figcaption > menu > button {
     standard-shadow: boop;
     &.avatar {
       top: base-line;

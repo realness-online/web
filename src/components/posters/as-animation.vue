@@ -3,7 +3,10 @@
   import { is_vector_id } from '@/use/poster'
   /** @typedef {import('@/types').Id} Id */
 
-  import { stroke } from '@/utils/preference'
+  import {
+    stroke
+  } from '@/utils/preference'
+
   const props = defineProps({
     id: {
       type: String,
@@ -12,8 +15,16 @@
       validator: is_vector_id
     }
   })
+
   /** @param {string} add */
   const fragment = add => `${as_fragment_id(props.id)}-${add}`
+
+  /** @param {number} base_duration */
+  const duration = base_duration => `${base_duration}s`
+
+  const static_stroke_opacity = '0.90'
+  const static_fill_opacity = '0.90'
+  const static_stroke_width = '0.33'
 </script>
 
 <template>
@@ -23,57 +34,58 @@
         :href="fragment('light')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="5s"
-        values="0.9;0.1;0.9" />
+        :dur="duration(5)"
+        begin="0s"
+        :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
         :href="fragment('regular')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="8s"
-        values="0.9;0.1;0.9" />
+        :dur="duration(8)"
+        :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="13s"
-        values="0.9;0.1;0.9" />
+        :dur="duration(13)"
+        :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        dur="11s"
-        values="0.9;0.1;0.9" />
+        :dur="duration(11)"
+        :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
 
       <animate
         :href="fragment('light')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        dur="10s"
-        values="0.33;0.1;0.45;0.33" />
+        :dur="duration(10)"
+        :values="`${static_stroke_width};0.1;0.45;${static_stroke_width}`" />
       <animate
         :href="fragment('regular')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        dur="14s"
-        values="0.33;0.66;0.1;0.33" />
+        :dur="duration(14)"
+        :values="`${static_stroke_width};0.66;0.1;${static_stroke_width}`" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        dur="8s"
-        values="0.33;0.1;0.77;0.1;0.33" />
+        :dur="duration(8)"
+        :values="`${static_stroke_width};0.1;0.77;0.1;${static_stroke_width}`" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        dur="10s"
-        values="0.33;0.1;0.66;0.1;0.33" />
+        :dur="duration(10)"
+        :values="`${static_stroke_width};0.1;0.66;0.1;${static_stroke_width}`" />
 
       <animate
         :href="fragment('light')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        dur="8s"
+        :dur="duration(8)"
         values="0;-24"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -81,7 +93,7 @@
         :href="fragment('regular')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        dur="12s"
+        :dur="duration(12)"
         values="0;-34"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -89,7 +101,7 @@
         :href="fragment('medium')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        dur="6s"
+        :dur="duration(6)"
         values="0;-44"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -97,7 +109,7 @@
         :href="fragment('bold')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        dur="8s"
+        :dur="duration(8)"
         values="0;-56"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -107,152 +119,152 @@
       :href="fragment('light')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="12s"
-      values="0.9;0.75;0.9;0.21;0.9" />
+      :dur="duration(12)"
+      :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.21;${static_fill_opacity}`" />
     <animate
       :href="fragment('medium')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="24s"
-      values="0.9;0.6;0.9;0.5;0.9" />
+      :dur="duration(24)"
+      :values="`${static_fill_opacity};0.6;${static_fill_opacity};0.5;${static_fill_opacity}`" />
     <animate
       :href="fragment('bold')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="16s"
-      values="0.9;0.75;0.9;0.6;0.8;0.9;" />
+      :dur="duration(16)"
+      :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.6;0.8;${static_fill_opacity};`" />
 
     <animate
       :href="fragment('radial-background')"
       attributeName="cx"
       repeatCount="indefinite"
-      dur="68s"
+      :dur="duration(68)"
       values="0%;150%;-50%;200%;0%" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
-      dur="110s"
+      :dur="duration(110)"
       values="0%;200%;-25%;150%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="110s"
+      :dur="duration(110)"
       values="0%;-50%;150%;200%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="172s"
+      :dur="duration(172)"
       values="0%;250%;-75%;175%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="68s"
+      :dur="duration(68)"
       values="0%;200%;-100%;300%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="110s"
+      :dur="duration(110)"
       values="0%;-50%;200%;150%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="68s"
+      :dur="duration(68)"
       values="0%;175%;-75%;225%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="110s"
+      :dur="duration(110)"
       values="0%;300%;-100%;200%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="68s"
+      :dur="duration(68)"
       values="0%;-100%;200%;300%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="110s"
+      :dur="duration(110)"
       values="0%;250%;-150%;175%;0%" />
 
     <animate
       :href="fragment('radial')"
       attributeName="cx"
       repeatCount="indefinite"
-      dur="84s"
+      :dur="duration(84)"
       values="0%;200%;-100%;250%;0%" />
     <animate
       :href="fragment('radial')"
       attributeName="cy"
       repeatCount="indefinite"
-      dur="134s"
+      :dur="duration(134)"
       values="0%;-75%;300%;150%;0%" />
 
     <animate
       :href="fragment('vertical-background')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="76s"
+      :dur="duration(76)"
       values="0%;300%;-150%;200%;0%" />
     <animate
       :href="fragment('vertical-background')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="122s"
+      :dur="duration(122)"
       values="0%;175%;-100%;250%;0%" />
 
     <animate
       :href="fragment('horizontal-light')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="94s"
+      :dur="duration(94)"
       values="0%;-100%;250%;300%;0%" />
     <animate
       :href="fragment('horizontal-light')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="146s"
+      :dur="duration(146)"
       values="0%;300%;-200%;175%;0%" />
 
     <animate
       :href="fragment('horizontal-medium')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="58s"
+      :dur="duration(58)"
       values="0%;225%;-125%;275%;0%" />
     <animate
       :href="fragment('horizontal-medium')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="102s"
+      :dur="duration(102)"
       values="0%;-150%;250%;200%;0%" />
 
     <animate
       :href="fragment('horizontal-bold')"
       attributeName="x1"
       repeatCount="indefinite"
-      dur="72s"
+      :dur="duration(72)"
       values="0%;350%;-200%;300%;0%" />
     <animate
       :href="fragment('horizontal-bold')"
       attributeName="y1"
       repeatCount="indefinite"
-      dur="116s"
+      :dur="duration(116)"
       values="0%;275%;-175%;225%;0%" />
 
     <animate
       href="#lightbar-back"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="3s"
+      :dur="duration(3)"
       values="1;0.66;1"
       keyTimes="0;0.33;1"
       keySplines="0.4 0 0.6 1" />
@@ -260,14 +272,14 @@
       href="#lightbar-front"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      dur="5s"
+      :dur="duration(5)"
       values="1;0.66;1"
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
   </g>
 </template>
 
-<style>
+<style lang="stylus">
   svg.animate {
     & path[itemprop] {
       stroke-dashoffset: 0;
@@ -287,14 +299,16 @@
     & path[itemprop='cutout'] {
       filter: brightness(1) saturate(1);
       animation-play-state: paused;
-      will-change: fill-opacity;
-      transition: fill-opacity ease-out 0.8s;
+      transition: fill-opacity ease-in-out 0.8s;
+      // Only use will-change when hovering to reduce scroll performance impact
       &:focus {
         outline: none;
       }
       &:hover {
+        will-change: fill-opacity;
         animation: fade-back ease-out 0.4s 1s forwards;
         animation-iteration-count: 1;
+        animation-delay: 1s;
         fill-opacity: 0.75;
       }
       &:active {
@@ -302,10 +316,13 @@
         opacity: 0.9;
       }
     }
-    @keyframes fade-back {
-      to {
-        fill-opacity: 0.5;
-      }
+  }
+
+  @keyframes fade-back {
+    to {
+      fill-opacity: 0.5;
     }
   }
+
 </style>
+

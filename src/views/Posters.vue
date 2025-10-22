@@ -225,14 +225,17 @@
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
-        gap: base-line;
-        padding: base-line;
+        gap: 0;
         scroll-behavior: smooth;
         height: 80vh;
         scroll-snap-type: x mandatory;
         & > figure.poster {
+          height: 100%;
           flex-shrink: 0;
           scroll-snap-align: center;
+          &.landscape {
+            min-width: 100vh;
+          }
         }
       }
     }
