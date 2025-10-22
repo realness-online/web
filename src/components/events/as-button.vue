@@ -88,8 +88,10 @@
 </template>
 
 <style lang="stylus">
-  a.event
-    position: relative
+  button.event
+    position: absolute
+    z-index: 2;
+    border: none;
     & > svg
       width: base-line * 1.75
       height: base-line * 1.75

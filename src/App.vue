@@ -10,6 +10,7 @@
     onMounted as mounted,
     provide
   } from 'vue'
+  import { useFps } from '@vueuse/core'
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
@@ -26,12 +27,17 @@
     background,
     animate,
     info,
-    storytelling
+    storytelling,
+    grid_overlay
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
   const status = ref(null)
   const router = use_router()
+
+  // FPS tracking for adaptive animations
+  const fps = useFps()
+  provide('fps', fps)
 
   const {
     vVectorizer,
@@ -72,6 +78,7 @@
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
+  register_preference('pref::Toggle_Grid', grid_overlay)
 
   register_preference('pref::Toggle_Bold', bold)
   register_preference('pref::Toggle_Medium', medium)
@@ -183,4 +190,5 @@
       left: var(--base-line);
     }
   }
+
 </style>
