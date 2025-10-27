@@ -1,6 +1,7 @@
 <script setup>
   import { ref, computed, onMounted as mounted, inject } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
+  import AsPathCutout from '@/components/posters/as-path-cutout'
 
   const props = defineProps({
     queue_item: {
@@ -46,8 +47,15 @@
       v-if="is_currently_processing && new_vector"
       :itemid="queue_item.id"
       :sync_poster="new_vector"
-      :viewBox="`0 0 ${image_width} ${image_height}`" />
-
+      :viewBox="`0 0 ${image_width} ${image_height}`">
+      <g itemprop="new_cutouts" v-if="new_vector.cutout" :id="`${queue_item.id}-cutouts-new`" :style="{ fillOpacity: '0.5' }">
+        <as-path-cutout
+          v-for="(cut, index) in new_vector.cutout"
+          :key="`cutout-${index}`"
+          :cutout="cut"
+          :index="index" />
+      </g>
+    </as-svg>
     <figcaption>
       <span>{{ status_text }}</span>
     </figcaption>

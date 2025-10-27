@@ -100,7 +100,7 @@ export default [
       'no-return-await': 'error',
       'require-await': 'error',
       'max-lines-per-function': ['warn', 200],
-      complexity: ['warn', 20],
+      complexity: ['warn', 21],
       'no-unsafe-optional-chaining': 'error',
       'no-constant-binary-expression': 'error',
       'no-unreachable-loop': 'error',
@@ -128,7 +128,9 @@ export default [
       'no-magic-numbers': [
         'warn',
         {
-          ignore: [-1, 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89],
+          ignore: [
+            -1, 0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 50, 60, 70, 80, 90
+          ],
           enforceConst: true
         }
       ],

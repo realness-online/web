@@ -6,11 +6,12 @@
 import {
   ref,
   computed,
+  watch,
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
 import {
-  useIntersectionObserver as use_intersect,
+  useIntersectionObserver as _use_intersect,
   useStorage as use_storage,
   usePointer as use_pointer,
   useMagicKeys
@@ -25,7 +26,9 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
+import { Poster as PosterClass } from '@/persistance/Storage'
 
+export const pages = [90, 80, 70, 60, 50]
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -38,6 +41,8 @@ export const use = () => {
   const magic_keys = useMagicKeys()
 
   const aspect_toggle = ref(false)
+  const cutouts_loaded = ref(false)
+  const loading_cutouts = ref(false)
 
   const is_hovered = ref(false)
   const storage_key = computed(() => `viewbox-${props.itemid}`)
@@ -69,11 +74,11 @@ export const use = () => {
 
   // Gesture state
   let is_dragging = false
-  let start_x = 0
-  let start_y = 0
-  let start_transform = null
-  let touch_start_distance = 0
-  let touch_start_scale = 1
+  const start_x = 0
+  const start_y = 0
+  const start_transform = null
+  const touch_start_distance = 0
+  const touch_start_scale = 1
 
   const aspect_ratio = computed(() => {
     // if (storytelling.value) return 'xMidYMid meet'
@@ -124,20 +129,54 @@ export const use = () => {
     return as_fragment_id(vector.value.id)
   }
 
+  const load_additional_cutouts = async () => {
+    if (cutouts_loaded.value || loading_cutouts.value || !props.itemid) return
+
+    loading_cutouts.value = true
+    try {
+      const poster = new PosterClass(/** @type {any} */ (props.itemid))
+      const cutouts_by_bucket = await poster.load_cutouts()
+
+      const additional_cutouts = []
+
+      const sorted_buckets = Object.entries(cutouts_by_bucket).sort(
+        (a, b) => Number(a[0]) - Number(b[0])
+      )
+
+      sorted_buckets.forEach(([bucket, cutout_objects], bucket_index) => {
+        cutout_objects.forEach((cutout_obj, path_index) => {
+          const cutout_data = {
+            d: cutout_obj.d,
+            fill: cutout_obj.fill,
+            transform: cutout_obj.transform,
+            'fill-opacity': '0.5',
+            'data-progress': cutout_obj['data-progress'] || 0
+          }
+          additional_cutouts.push(cutout_data)
+        })
+      })
+      if (vector.value && additional_cutouts.length > 0) {
+        if (!vector.value.cutout) vector.value.cutout = []
+        vector.value.cutout = [...vector.value.cutout, ...additional_cutouts]
+      }
+      cutouts_loaded.value = true
+    } catch (error) {
+      console.error('Failed to load additional cutouts:', error)
+    } finally {
+      loading_cutouts.value = false
+    }
+  }
+
   const click = () => {
     if (magic_keys.shift.value) aspect_toggle.value = !aspect_toggle.value
     menu.value = !menu.value
     emit('click', menu.value)
   }
 
-  const focus = layer => {
-    get_active_path()
-    emit('focus', layer)
-  }
-
-  const focus_cutout = event => {
-    console.log('focus_cutout', event)
-  }
+  watch(intersecting, is_intersecting => {
+    if (is_intersecting && !cutouts_loaded.value && !loading_cutouts.value)
+      load_additional_cutouts()
+  })
 
   const show = async () => {
     if (!vector.value) {
@@ -146,81 +185,61 @@ export const use = () => {
     }
     await tick()
     working.value = false
-    use_intersect(
-      vector_element,
-      ([{ isIntersecting }]) => {
-        if (isIntersecting) intersecting.value = true
-        else intersecting.value = false
-      },
-      { rootMargin: '2400px' }
-    )
     emit('show', vector.value)
   }
 
+  const focus = layer => {
+    console.info('focus', layer)
+    get_active_path()
+    emit('focus', layer)
+  }
+
+  const focus_cutout = event => {
+    console.info('focus_cutout', event)
+  }
+
   const down = event => {
-    is_dragging = true
-    start_x = event.clientX
-    start_y = event.clientY
-    start_transform = { ...viewbox_transform.value }
-    is_hovered.value = true
+    console.info('down', event)
   }
 
   const move = event => {
-    if (!is_dragging) return
-
-    const delta_x = event.clientX - start_x
-    const delta_y = event.clientY - start_y
-
-    viewbox_transform.value = {
-      ...start_transform,
-      x: start_transform.x + delta_x,
-      y: start_transform.y + delta_y
-    }
+    console.info('move', event)
   }
 
   const up = () => {
     is_dragging = false
     is_hovered.value = false
+    console.info('up', is_dragging, is_hovered.value)
   }
 
-  const wheel = event => {
-    // console.log('wheel', event)
-  }
+  const wheel = _event => {}
 
   const reset = () => {
     viewbox_transform.value = { x: 0, y: 0, scale: 1 }
   }
 
   const touch_dist = touches => {
-    if (touches.length < 2) return 0
-    const dx = touches[0].clientX - touches[1].clientX
-    const dy = touches[0].clientY - touches[1].clientY
-    return Math.sqrt(dx * dx + dy * dy)
+    console.info('touch_dist', touches)
   }
 
   const touch_start = event => {
-    console.log('touch_start', event.touches)
-    if (event.touches.length === 2) {
-      touch_start_distance = touch_dist(event.touches)
-      touch_start_scale = viewbox_transform.value.scale
-    } else if (event.touches.length === 1) down(event.touches[0])
+    console.info('touch_start', event)
   }
 
   const touch_move = event => {
-    console.log('touch_move', event.touches)
+    console.info('touch_move', event)
   }
 
   const touch_end = event => {
-    console.log('touch_end', event.touches)
-    if (event.touches.length === 0) up()
+    console.info('touch_end', event)
   }
 
   const cutout_start = (event, index) => {
-    console.log('cutout_start', event.touches, index)
+    console.info('cutout_start', event, index)
   }
 
   const cutout_end = event => {
-    console.log('cutout_end', event.touches)
+    console.info('cutout_end', event)
   }
 
   return {
@@ -255,6 +274,7 @@ export const use = () => {
     start_transform,
     touch_start_distance,
     touch_start_scale,
+    pages,
     down,
     move,
     up,
@@ -266,7 +286,8 @@ export const use = () => {
     touch_end,
     cutout_start,
     cutout_end,
-    aspect_toggle
+    aspect_toggle,
+    load_additional_cutouts
   }
 }
 

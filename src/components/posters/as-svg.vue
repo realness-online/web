@@ -1,7 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
-  import AsPathCutout from '@/components/posters/as-path-cutout'
+  import AsRectCutout from '@/components/posters/as-rect-cutout'
   import AsMasks from '@/components/posters/as-masks'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
@@ -29,7 +29,6 @@
     medium,
     regular,
     light,
-    cutout,
     fill,
     stroke,
     grid_overlay
@@ -75,9 +74,10 @@
     touch_end,
     focus_cutout,
     cutout_start,
-    cutout_end
+    cutout_end,
+    pages,
+    load_additional_cutouts
   } = use_poster()
-
   const trigger = ref(null)
   const animate = computed(
     () => animate_pref.value === true && intersecting.value
@@ -105,6 +105,7 @@
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
+      load_additional_cutouts()
     }
   })
 
@@ -113,6 +114,7 @@
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
+      load_additional_cutouts()
     }
   })
 
@@ -121,7 +123,6 @@
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
-  const cutout_visible = computed(() => vector.value?.cutout && cutout.value)
 </script>
 
 <template>
@@ -201,6 +202,7 @@
         :stroke="`url(${fragment('radial-light')})`"
         @focus="focus('bold')" />
     </pattern>
+
     <as-gradients v-if="vector" :vector="vector" />
     <as-masks :itemid="itemid" />
     <rect
@@ -214,16 +216,7 @@
       fill="url(#lightbar)"
       width="100%"
       height="100%" />
-    <g :id="query('cutouts')" v-show="cutout_visible" style="fill-opacity: 0.5">
-      <as-path-cutout
-        v-for="(cut, index) in vector.cutout"
-        :key="`cutout-${index}`"
-        :cutout="cut"
-        :index="index"
-        @focus="focus_cutout"
-        @touchstart="cutout_start"
-        @touchend="cutout_end" />
-    </g>
+
     <rect
       v-show="drama"
       id="lightbar-front"
@@ -231,18 +224,33 @@
       width="100%"
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
-
-    <!-- Grid overlay -->
+    <slot>
+      <as-rect-cutout
+        v-for="(page) in pages"
+        :key="page"
+        :page="page"
+        @focus="focus_cutout"
+        @touchstart="cutout_start"
+        @touchend="cutout_end" />
+    </slot>
     <g v-if="grid_overlay" class="grid-overlay">
-      <rect width="1" height="0.33" />
-      <rect width="1" height="0.33" y="0.33" rx="0.011" />
-      <rect width="1" height="0.33" y="0.66" rx="0.011" />
-      <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" fill="orange" />
+      <rect width="1.00" height="0.33" />
+      <rect width="1.00" height="0.33" y="0.33" rx="0.011" />
+      <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
+      <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
     </g>
   </svg>
 </template>
 
 <style>
+  @keyframes cutout-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
   /* aspect-ratio: 2.76 / 1 // also film  28 years later used*/
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 1.618 / 1 // golden-ratio */
@@ -265,23 +273,20 @@
     & rect#lightbar-front {
       pointer-events: none;
     }
-
     & .grid-overlay {
       pointer-events: none;
-      opacity: 0.3;
+      opacity: 1;
       mix-blend-mode: overlay;
-
-      rect {
-        stroke-width: 0.001;
+      & rect {
+        stroke-width: 1.001;
         stroke: white;
         fill: none;
+        &:focus {
+          fill: blue;
+          outline: none;
+        }
       }
 
-      rect:focus {
-        fill: blue;
-        outline: none;
-      }
     }
-
   }
 </style>
