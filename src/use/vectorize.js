@@ -1,5 +1,10 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
+/**
+ * @typedef {Object} VectorResponse
+ * @property {Object} data
+ * @property {Object} data.vector
+ */
 
 import {
   ref,
@@ -18,11 +23,6 @@ import ExifReader from 'exifreader'
 import { useRouter as use_router } from 'vue-router'
 import * as Queue from '@/persistance/Queue'
 import { Poster } from '@/persistance/Storage'
-/**
- * @typedef {Object} VectorResponse
- * @property {Object} data
- * @property {Object} data.vector
- */
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
@@ -161,7 +161,7 @@ export const use = () => {
         width,
         height
       })
-
+      //eslint-disable-next-line no-await-in-loop
       await Queue.add(item)
       queue_items.value.push(item)
     }
@@ -170,9 +170,7 @@ export const use = () => {
   }
 
   const process_queue = async () => {
-    console.log('process_queue called, acquiring mutex...')
     await mutex.lock()
-    console.log('Mutex acquired, getting next item...')
 
     try {
       const next = await Queue.get_next()
@@ -197,18 +195,6 @@ export const use = () => {
   }
 
   /**
-   * Update queue item with SVG HTML
-   * @param {Id} id
-   * @param {string} svg_html
-   */
-  const update_svg_html = async (id, svg_html) => {
-    await Queue.update(id, { svg_html })
-
-    const index = queue_items.value.findIndex(item => item.id === id)
-    if (index !== -1) queue_items.value[index].svg_html = svg_html
-  }
-
-  /**
    * Update queue item progress
    * @param {Id} id
    * @param {number} progress_value
@@ -220,26 +206,15 @@ export const use = () => {
     if (index !== -1) queue_items.value[index].progress = progress_value
   }
 
-  /**
-   * Initialize processing queue
-   */
   const init_processing_queue = async () => {
     await load_queue()
-
-    // Reset any 'processing' items back to 'pending' (they were interrupted)
-    console.log('Checking queue items for processing status...')
-    for (const item of queue_items.value) {
-      console.log(`Item ${item.id} has status: ${item.status}`)
+    for (const item of queue_items.value)
       if (item.status === 'processing') {
-        console.log('Resetting processing item to pending:', item.id)
         await Queue.update(item.id, { status: 'pending' })
         item.status = 'pending'
       }
-    }
 
-    if (queue_items.value.length > 0) {
-      process_queue()
-    }
+    if (queue_items.value.length > 0) process_queue()
   }
 
   const listener = async () => {
@@ -269,9 +244,8 @@ export const use = () => {
   const vVectorizer = {
     /**
      * @param {Object} input
-     * @param {Object} binding
      */
-    mounted: (input, binding) => {
+    mounted: input => {
       input.addEventListener('change', listener)
     }
   }
@@ -401,7 +375,6 @@ export const use = () => {
 
   const gradientized = message => {
     new_gradients.value = message.data.gradients
-
     if (current_item_id.value) update_progress(current_item_id.value, 60)
   }
 
@@ -470,6 +443,10 @@ export const use = () => {
     optimizer.value.removeEventListener('message', optimized)
 
     await tick()
+
+    const cutouts_in_dom = element.querySelectorAll('[itemprop="cutout"]')
+    console.log('[vectorize] Cutouts:', cutouts_in_dom.length)
+
     new Poster(id).save(element)
 
     completed_posters.value.push(id)

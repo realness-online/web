@@ -21,6 +21,15 @@
  */
 
 /**
+ * @typedef {Object} Cutout
+ * @property {string} d - SVG path data
+ * @property {string} fill - Fill color
+ * @property {string|null|undefined} transform - SVG transform attribute
+ * @property {string} [fill-opacity] - Fill opacity
+ * @property {number} [data-progress] - Progress bucket value
+ */
+
+/**
  * @typedef {Object} Poster
  * @property {Id} id
  * @property {Rect} background
