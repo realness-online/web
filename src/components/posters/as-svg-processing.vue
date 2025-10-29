@@ -45,6 +45,44 @@
       :src="thumbnail_url"
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
+    <svg style="display: none" v-if="new_vector?.cutouts">
+      <symbol
+        :id="`${queue_item.id}-sediment`"
+        itemscope
+        itemtype="/cutouts"
+        :viewBox="`0 0 ${image_width} ${image_height}`"
+        :itemid="`${queue_item.id}-sediment`"
+        v-html="new_vector.cutouts.sediment.innerHTML" />
+      <symbol
+        :id="`${queue_item.id}-sand`"
+        itemscope
+        itemtype="/cutouts"
+        :viewBox="`0 0 ${image_width} ${image_height}`"
+        :itemid="`${queue_item.id}-sand`"
+        v-html="new_vector.cutouts.sand.innerHTML" />
+      <symbol
+        :id="`${queue_item.id}-gravel`"
+        itemscope
+        itemtype="/cutouts"
+        :itemid="`${queue_item.id}-gravel`"
+        :viewBox="`0 0 ${image_width} ${image_height}`"
+        v-html="new_vector.cutouts.gravel.innerHTML" />
+      <symbol
+        :id="`${queue_item.id}-rock`"
+        itemscope
+        itemtype="/cutouts"
+        :itemid="`${queue_item.id}-rock`"
+        :viewBox="`0 0 ${image_width} ${image_height}`"
+        v-html="new_vector.cutouts.rock.innerHTML" />
+      <symbol
+        :id="`${queue_item.id}-boulder`"
+        itemscope
+        itemtype="/cutouts"
+        :viewBox="`0 0 ${image_width} ${image_height}`"
+        :itemid="`${queue_item.id}-boulder`"
+        v-html="new_vector.cutouts.boulder.innerHTML" />
+    </svg>
+
     <as-svg
       v-if="is_currently_processing && new_vector"
       :itemid="queue_item.id"
@@ -79,44 +117,6 @@
           :href="`#${queue_item.id}-boulder`"
           :viewBox="`0 0 ${image_width} ${image_height}`" />
       </g>
-
-      <defs v-if="new_vector?.cutouts">
-        <symbol
-          :id="`${queue_item.id}-sediment`"
-          itemscope
-          itemtype="/cutouts"
-          :viewBox="`0 0 ${image_width} ${image_height}`"
-          :itemid="`${queue_item.id}-sediment`"
-          v-html="new_vector.cutouts.sediment.innerHTML" />
-        <symbol
-          :id="`${queue_item.id}-sand`"
-          itemscope
-          itemtype="/cutouts"
-          :viewBox="`0 0 ${image_width} ${image_height}`"
-          :itemid="`${queue_item.id}-sand`"
-          v-html="new_vector.cutouts.sand.innerHTML" />
-        <symbol
-          :id="`${queue_item.id}-gravel`"
-          itemscope
-          itemtype="/cutouts"
-          :itemid="`${queue_item.id}-gravel`"
-          :viewBox="`0 0 ${image_width} ${image_height}`"
-          v-html="new_vector.cutouts.gravel.innerHTML" />
-        <symbol
-          :id="`${queue_item.id}-rock`"
-          itemscope
-          itemtype="/cutouts"
-          :itemid="`${queue_item.id}-rock`"
-          :viewBox="`0 0 ${image_width} ${image_height}`"
-          v-html="new_vector.cutouts.rock.innerHTML" />
-        <symbol
-          :id="`${queue_item.id}-boulder`"
-          itemscope
-          itemtype="/cutouts"
-          :viewBox="`0 0 ${image_width} ${image_height}`"
-          :itemid="`${queue_item.id}-boulder`"
-          v-html="new_vector.cutouts.boulder.innerHTML" />
-      </defs>
     </as-svg>
 
     <figcaption>

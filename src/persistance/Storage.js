@@ -46,6 +46,11 @@ export class Poster extends Large(Cloud(Storage)) {}
 /**
  * @extends {Storage}
  */
+export class Cutout extends Large(Cloud(Storage)) {}
+
+/**
+ * @extends {Storage}
+ */
 export class Me extends Cloud(Local(Storage)) {
   constructor() {
     super(localStorage.me)

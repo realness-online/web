@@ -22,7 +22,7 @@ import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 import { useRouter as use_router } from 'vue-router'
 import * as Queue from '@/persistance/Queue'
-import { Poster } from '@/persistance/Storage'
+import { Poster, Cutout } from '@/persistance/Storage'
 import { size } from '@/utils/image'
 
 const new_vector = ref(null)
@@ -485,7 +485,12 @@ export const use = () => {
       }
     })
     console.log('sorted poster', new_vector.value)
-    // // new Poster(id).save(element)
+    // new Poster(id).save(element)
+    // new Cutout(`${id}-sediment`).save()
+    // new Cutout(`${id}-sand`).save()
+    // new Cutout(`${id}-gravel`).save()
+    // new Cutout(`${id}-rock`).save()
+    // new Cutout(`${id}-boulder`).save()
 
     // completed_posters.value.push(id)
 
