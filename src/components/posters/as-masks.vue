@@ -21,7 +21,7 @@
       maskUnits="userSpaceOnUse"
       maskContentUnits="userSpaceOnUse">
       <pattern
-        id="pattern"
+        :id="query('pattern-mask-nested')"
         x="0"
         y="0"
         width=".0133"
@@ -34,7 +34,7 @@
           stroke="white"
           :fill="as_url('horizontal-background')" />
       </pattern>
-      <rect width="100%" height="100%" fill="url(#pattern)" />
+      <rect width="100%" height="100%" :fill="as_url('pattern-mask-nested')" />
     </mask>
     <mask
       :id="query('horizontal-mask')"

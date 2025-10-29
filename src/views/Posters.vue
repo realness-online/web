@@ -30,6 +30,7 @@
     init_processing_queue,
     mount_workers
   } = use_vectorize()
+
   const { process_directory } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
@@ -51,7 +52,9 @@
     const poster = new Poster(poster_to_remove.value.id)
     poster.delete()
   }
+
   const cancel_remove = () => delete_dialog.value.close()
+
   /**
    * @param {Id} itemid
    */
@@ -62,10 +65,12 @@
     const poster = posters.value.find(poster => poster.id === itemid)
     if (poster) poster.menu = !poster.menu
   }
+
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
   }
+
   const dialog_click = event => {
     if (event.target === delete_dialog.value) delete_dialog.value.close()
   }
@@ -87,11 +92,6 @@
   register('poster::Create_New', () => {
     if (can_add.value) select_photo()
   })
-  register('poster::View', () => console.info('TODO: View poster full screen'))
-  register('poster::Search', () => console.info('TODO: Search posters'))
-  register('poster::Download', () => console.info('TODO: Download poster'))
-  register('poster::Copy', () => console.info('TODO: Copy poster'))
-  register('poster::Remove', () => console.info('TODO: Remove poster'))
 
   mounted(async () => {
     await posters_for_person({
@@ -106,6 +106,7 @@
     await init_processing_queue()
     console.timeEnd('views:Posters')
   })
+
   watch(
     queue_items,
     async (new_queue, old_queue) => {
@@ -118,11 +119,9 @@
           viewed: [],
           visited: null
         })
-
     },
     { deep: true }
   )
-
 </script>
 
 <template>
@@ -178,7 +177,6 @@
           @picker="picker(poster.id)" />
       </as-figure>
     </article>
-
   </section>
 </template>
 

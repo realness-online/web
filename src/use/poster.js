@@ -28,7 +28,7 @@ import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { Poster as PosterClass } from '@/persistance/Storage'
 
-export const pages = [90, 80, 70, 60, 50]
+export const geology_layers = ['sediment', 'sand', 'gravel', 'rock', 'boulder']
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -129,54 +129,11 @@ export const use = () => {
     return as_fragment_id(vector.value.id)
   }
 
-  const load_additional_cutouts = async () => {
-    if (cutouts_loaded.value || loading_cutouts.value || !props.itemid) return
-
-    loading_cutouts.value = true
-    try {
-      const poster = new PosterClass(/** @type {any} */ (props.itemid))
-      const cutouts_by_bucket = await poster.load_cutouts()
-
-      const additional_cutouts = []
-
-      const sorted_buckets = Object.entries(cutouts_by_bucket).sort(
-        (a, b) => Number(a[0]) - Number(b[0])
-      )
-
-      sorted_buckets.forEach(([bucket, cutout_objects], bucket_index) => {
-        cutout_objects.forEach((cutout_obj, path_index) => {
-          const cutout_data = {
-            d: cutout_obj.d,
-            fill: cutout_obj.fill,
-            transform: cutout_obj.transform,
-            'fill-opacity': '0.5',
-            'data-progress': cutout_obj['data-progress'] || 0
-          }
-          additional_cutouts.push(cutout_data)
-        })
-      })
-      if (vector.value && additional_cutouts.length > 0) {
-        if (!vector.value.cutout) vector.value.cutout = []
-        vector.value.cutout = [...vector.value.cutout, ...additional_cutouts]
-      }
-      cutouts_loaded.value = true
-    } catch (error) {
-      console.error('Failed to load additional cutouts:', error)
-    } finally {
-      loading_cutouts.value = false
-    }
-  }
-
   const click = () => {
     if (magic_keys.shift.value) aspect_toggle.value = !aspect_toggle.value
     menu.value = !menu.value
     emit('click', menu.value)
   }
-
-  watch(intersecting, is_intersecting => {
-    if (is_intersecting && !cutouts_loaded.value && !loading_cutouts.value)
-      load_additional_cutouts()
-  })
 
   const show = async () => {
     if (!vector.value) {
@@ -274,7 +231,7 @@ export const use = () => {
     start_transform,
     touch_start_distance,
     touch_start_scale,
-    pages,
+    geology_layers,
     down,
     move,
     up,
@@ -286,8 +243,7 @@ export const use = () => {
     touch_end,
     cutout_start,
     cutout_end,
-    aspect_toggle,
-    load_additional_cutouts
+    aspect_toggle
   }
 }
 
@@ -384,7 +340,7 @@ const load_archive_posters = async (author_id, archive_id) => {
 }
 
 /**
- * @param {string} itemid
+ * @param {Id} itemid
  * @returns {boolean}
  */
 export const is_vector_id = itemid => {

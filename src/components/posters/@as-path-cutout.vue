@@ -1,9 +1,5 @@
 <script setup>
-  import {
-    ref,
-    inject,
-    computed
-  } from 'vue'
+  import { ref, inject, computed } from 'vue'
 
   /**
    * @typedef {import('@/types').Cutout} Cutout
@@ -17,7 +13,11 @@
         if (!value || typeof value !== 'object') return false
         if (typeof value.d !== 'string') return false
         if (typeof value.fill !== 'string') return false
-        if (value.transform !== null && value.transform !== undefined && typeof value.transform !== 'string') {
+        if (
+          value.transform !== null &&
+          value.transform !== undefined &&
+          typeof value.transform !== 'string'
+        ) {
           console.warn('Cutout transform must be a string, null, or undefined')
           return false
         }
@@ -59,4 +59,3 @@
     :transform="transform"
     :data-progress="data_progress" />
 </template>
-

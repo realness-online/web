@@ -3,9 +3,7 @@
   import { is_vector_id } from '@/use/poster'
   /** @typedef {import('@/types').Id} Id */
 
-  import {
-    stroke
-  } from '@/utils/preference'
+  import { stroke } from '@/utils/preference'
 
   const props = defineProps({
     id: {
@@ -323,6 +321,4 @@
       fill-opacity: 0.5;
     }
   }
-
 </style>
-
