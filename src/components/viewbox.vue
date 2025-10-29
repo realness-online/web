@@ -1,10 +1,7 @@
 <script setup>
   import { computed } from 'vue'
 
-  import {
-    animate,
-    animation_speed
-  } from '@/utils/preference'
+  import { animate, animation_speed } from '@/utils/preference'
 
   const animation_status = computed(() => {
     if (!animate.value) return 'off'

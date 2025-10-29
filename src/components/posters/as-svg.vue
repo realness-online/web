@@ -1,7 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
   import AsPath from '@/components/posters/as-path'
-  import AsRectCutout from '@/components/posters/as-rect-cutout'
   import AsMasks from '@/components/posters/as-masks'
   import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
@@ -56,7 +55,6 @@
     fragment,
     viewbox,
     aspect_ratio,
-    click,
     working,
     show,
     focusable,
@@ -66,18 +64,9 @@
     intersecting,
     is_hovered,
     dynamic_viewbox,
-    focus,
-    wheel,
-    reset,
-    touch_start,
-    touch_move,
-    touch_end,
-    focus_cutout,
-    cutout_start,
-    cutout_end,
-    pages,
-    load_additional_cutouts
+    focus
   } = use_poster()
+
   const trigger = ref(null)
   const animate = computed(
     () => animate_pref.value === true && intersecting.value
@@ -94,18 +83,13 @@
 
   mounted(() => {
     if (!props.sync_poster)
-      use_intersect(
-        trigger,
-        ([{ isIntersecting }]) => {
-          if (isIntersecting) show()
-        },
-        { rootMargin: '3200px 3200px 3200px 3200px' }
-      )
+      use_intersect(trigger, ([{ isIntersecting }]) => {
+        if (isIntersecting) show()
+      })
     else {
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
-      load_additional_cutouts()
     }
   })
 
@@ -114,7 +98,6 @@
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
-      load_additional_cutouts()
     }
   })
 
@@ -137,74 +120,7 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :class="{ animate, landscape, hovered: is_hovered }"
-    @click="click"
-    @dblclick="reset"
-    @wheel.passive="wheel"
-    @touchstart.passive="touch_start"
-    @touchmove.passive="touch_move"
-    @touchend.passive="touch_end">
-    <pattern
-      :id="query('shadow')"
-      :width="vector.width"
-      :height="vector.height"
-      :viewBox="viewbox"
-      patternUnits="userSpaceOnUse"
-      :preserveAspectRatio="aspect_ratio">
-      <as-background
-        v-show="background_visible"
-        :id="query('background')"
-        :rect="vector.background"
-        :width="vector.width"
-        :height="vector.height"
-        :tabindex="tabindex"
-        fill-opacity="1"
-        :fill="`url(${fragment('radial-background')})`"
-        @focus="focus('background')" />
-      <as-path
-        v-show="light_visible"
-        :id="query('light')"
-        itemprop="light"
-        :path="vector.light"
-        :tabindex="tabindex"
-        :mask="`url(${fragment('horizontal-mask')})`"
-        :fill="`url(${fragment('vertical-light')})`"
-        :stroke="`url(${fragment('horizontal-medium')})`"
-        @focus="focus('light')" />
-      <as-path
-        v-show="regular_visible"
-        :id="query('regular')"
-        itemprop="regular"
-        :path="vector.regular"
-        :tabindex="tabindex"
-        :mask="`url(${fragment('radial-mask')})`"
-        :fill="`url(${fragment('horizontal-regular')})`"
-        :stroke="`url(${fragment('vertical-bold')})`"
-        @focus="focus('regular')" />
-      <as-path
-        v-show="medium_visible"
-        :id="query('medium')"
-        itemprop="medium"
-        :path="vector.medium"
-        :tabindex="tabindex"
-        :mask="`url(${fragment('vertical-mask')})`"
-        :fill="`url(${fragment('vertical-medium')})`"
-        :stroke="`url(${fragment('vertical-background')})`"
-        @focus="focus('medium')" />
-      <as-path
-        v-show="bold_visible"
-        :id="query('bold')"
-        itemprop="bold"
-        :tabindex="tabindex"
-        :path="vector.bold"
-        :mask="`url(${fragment('horizontal-mask')})`"
-        :fill="`url(${fragment('vertical-bold')})`"
-        :stroke="`url(${fragment('radial-light')})`"
-        @focus="focus('bold')" />
-    </pattern>
-
-    <as-gradients v-if="vector" :vector="vector" />
-    <as-masks :itemid="itemid" />
+    :class="{ animate, landscape, hovered: is_hovered }">
     <rect
       v-show="fill || stroke"
       :fill="`url(${fragment('shadow')})`"
@@ -225,20 +141,88 @@
       height="100%" />
     <as-animation v-if="animate" :id="vector.id" />
     <slot>
-      <as-rect-cutout
-        v-for="(page) in pages"
-        :key="page"
-        :page="page"
-        @focus="focus_cutout"
-        @touchstart="cutout_start"
-        @touchend="cutout_end" />
+      <g v-if="vector.geology">
+        <use
+          v-for="geology in Object.keys(vector.geology)"
+          :key="`use-${geology}`"
+          :href="`#${fragment(geology)}`" />
+      </g>
     </slot>
-    <g v-if="grid_overlay" class="grid-overlay">
-      <rect width="1.00" height="0.33" />
-      <rect width="1.00" height="0.33" y="0.33" rx="0.011" />
-      <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
-      <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
-    </g>
+    <defs>
+      <g>
+        <meta itemprop="geology" content="sediment" />
+        <meta itemprop="geology" content="sand" />
+        <meta itemprop="geology" content="gravel" />
+        <meta itemprop="geology" content="rock" />
+        <meta itemprop="geology" content="boulder" />
+      </g>
+      <symbol id="grid-overlay" viewBox="0 0 1 1">
+        <rect width="1.00" height="0.33" />
+        <rect width="1.00" height="0.33" y="0.33" rx="0.011" />
+        <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
+        <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
+      </symbol>
+      <pattern
+        :id="query('shadow')"
+        :width="vector.width"
+        :height="vector.height"
+        :viewBox="viewbox"
+        patternUnits="userSpaceOnUse"
+        :preserveAspectRatio="aspect_ratio">
+        <as-background
+          v-show="background_visible"
+          :id="query('background')"
+          :rect="vector.background"
+          :width="vector.width"
+          :height="vector.height"
+          :tabindex="tabindex"
+          fill-opacity="1"
+          :fill="`url(${fragment('radial-background')})`"
+          @focus="focus('background')" />
+        <as-path
+          v-show="light_visible"
+          :id="query('light')"
+          itemprop="light"
+          :path="vector.light"
+          :tabindex="tabindex"
+          :mask="`url(${fragment('horizontal-mask')})`"
+          :fill="`url(${fragment('vertical-light')})`"
+          :stroke="`url(${fragment('horizontal-medium')})`"
+          @focus="focus('light')" />
+        <as-path
+          v-show="regular_visible"
+          :id="query('regular')"
+          itemprop="regular"
+          :path="vector.regular"
+          :tabindex="tabindex"
+          :mask="`url(${fragment('radial-mask')})`"
+          :fill="`url(${fragment('horizontal-regular')})`"
+          :stroke="`url(${fragment('vertical-bold')})`"
+          @focus="focus('regular')" />
+        <as-path
+          v-show="medium_visible"
+          :id="query('medium')"
+          itemprop="medium"
+          :path="vector.medium"
+          :tabindex="tabindex"
+          :mask="`url(${fragment('vertical-mask')})`"
+          :fill="`url(${fragment('vertical-medium')})`"
+          :stroke="`url(${fragment('vertical-background')})`"
+          @focus="focus('medium')" />
+        <as-path
+          v-show="bold_visible"
+          :id="query('bold')"
+          itemprop="bold"
+          :tabindex="tabindex"
+          :path="vector.bold"
+          :mask="`url(${fragment('horizontal-mask')})`"
+          :fill="`url(${fragment('vertical-bold')})`"
+          :stroke="`url(${fragment('radial-light')})`"
+          @focus="focus('bold')" />
+      </pattern>
+      <as-gradients v-if="vector" :vector="vector" />
+      <as-masks :itemid="itemid" />
+    </defs>
   </svg>
 </template>
 
@@ -286,7 +270,6 @@
           outline: none;
         }
       }
-
     }
   }
 </style>

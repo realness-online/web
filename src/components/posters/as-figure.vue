@@ -64,7 +64,11 @@
 
 <template>
   <figure ref="poster" class="poster" :class="{ landscape }" outline>
-    <as-svg :itemid="itemid" @click="vector_click" @show="on_show" :focusable="false" />
+    <as-svg
+      :itemid="itemid"
+      @click="vector_click"
+      @show="on_show"
+      :focusable="false" />
     <figcaption>
       <slot v-if="menu">
         <menu>

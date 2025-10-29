@@ -60,4 +60,3 @@
     @touchstart.passive="$emit('touchstart', $event, props.index)"
     @touchend.passive="$emit('touchend', $event)" />
 </template>
-

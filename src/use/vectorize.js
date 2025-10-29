@@ -17,12 +17,13 @@ import { create_path_element } from '@/use/path'
 import { to_kb } from '@/utils/numbers'
 import { IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
-import { as_query_id } from '@/utils/itemid'
+import { as_query_id, as_fragment_id } from '@/utils/itemid'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 import { useRouter as use_router } from 'vue-router'
 import * as Queue from '@/persistance/Queue'
 import { Poster } from '@/persistance/Storage'
+import { size } from '@/utils/image'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
@@ -425,7 +426,7 @@ export const use = () => {
   }
 
   const optimized = async message => {
-    const id = current_item_id.value
+    const id = /** @type {Id} */ (current_item_id.value)
     const optimized = get_item(message.data.vector)
     const element = document.getElementById(as_query_id(id))
 
@@ -439,27 +440,64 @@ export const use = () => {
     new_vector.value.medium = optimized.medium
     new_vector.value.bold = optimized.bold
     new_vector.value.cutout = optimized.cutout
+    new_vector.value.cutouts = {
+      sediment: [],
+      sand: [],
+      gravel: [],
+      rock: [],
+      boulder: []
+    }
     new_vector.value.optimized = true
     optimizer.value.removeEventListener('message', optimized)
-
     await tick()
 
-    const cutouts_in_dom = element.querySelectorAll('[itemprop="cutout"]')
-    console.log('[vectorize] Cutouts:', cutouts_in_dom.length)
+    const { cutouts, cutout } = new_vector.value
+    cutout.forEach(cutout => {
+      cutout.removeAttribute('itemprop')
+      cutout.removeAttribute('tabindex')
+      const progress = parseInt(cutout.getAttribute('data-progress') || 0)
 
-    new Poster(id).save(element)
+      if (progress < 60) cutouts.sediment.push(cutout)
+      else if (progress < 70) cutouts.sand.push(cutout)
+      else if (progress < 80) cutouts.gravel.push(cutout)
+      else if (progress < 90) cutouts.rock.push(cutout)
+      else cutouts.boulder.push(cutout)
+    })
+    new_vector.value.cutout = undefined
 
-    completed_posters.value.push(id)
+    Object.keys(cutouts).forEach(size => {
+      if (cutouts[size].length > 0) {
+        const symbol = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'symbol'
+        )
 
-    await Queue.remove(id)
-    queue_items.value = queue_items.value.filter(item => item.id !== id)
+        symbol.setAttribute(
+          'viewBox',
+          `0 0 ${new_vector.value.width} ${new_vector.value.height}`
+        )
 
-    is_processing.value = false
-    current_processing.value = null
+        cutouts[size].forEach(cutout => {
+          symbol.appendChild(cutout)
+        })
 
-    reset()
+        cutouts[size] = symbol
+      }
+    })
+    console.log('sorted poster', new_vector.value)
+    // // new Poster(id).save(element)
 
-    process_queue()
+    // completed_posters.value.push(id)
+
+    // await Queue.remove(id)
+    // queue_items.value = queue_items.value.filter(item => item.id !== id)
+
+    // is_processing.value = false
+    // current_processing.value = null
+
+    // reset()
+
+    // process_queue()
   }
 
   const mount_workers = () => {
