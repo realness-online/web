@@ -27,8 +27,7 @@
     can_add,
     select_photo,
     queue_items,
-    init_processing_queue,
-    mount_workers
+    init_processing_queue
   } = use_vectorize()
 
   const { process_directory } = use_directory()
@@ -95,7 +94,6 @@
 
   mounted(async () => {
     await posters_for_person({ id: localStorage.me })
-    mount_workers()
     await init_processing_queue()
     console.timeEnd('views:Posters')
   })
@@ -140,7 +138,7 @@
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>
-    <article @focusin="handle_focus">
+    <article @focusin="handle_focus" >
       <as-svg-processing
         v-for="item in queue_items"
         :key="item.id"

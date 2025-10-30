@@ -23,7 +23,7 @@ class Directory {
   archive = []
 
   /**
-   * @type {Id[]}
+   * @type {Created[]}
    */
   items = []
 
@@ -85,7 +85,7 @@ export const build_local_directory = async itemid => {
   everything?.forEach(itemid => {
     if (as_directory_id(/** @type {Id} */ (itemid)) === path) {
       const id = as_created_at(/** @type {Id} */ (itemid))
-      if (id) directory.items.push(/** @type {Id} */ (id))
+      if (id) directory.items.push(id)
     }
   })
   return directory
@@ -108,7 +108,7 @@ export const load_directory_from_network = async itemid => {
     if (archive) firebase_path += `${archive}/`
     const folder = await directory(firebase_path)
     folder?.items?.forEach(item =>
-      meta.items.push(/** @type {Id} */ (item.name.split('.')[0]))
+      meta.items.push(parseInt(item.name.split('.')[0]))
     )
     folder?.prefixes?.forEach(prefix =>
       meta.archive.push(parseInt(prefix.name))
@@ -127,6 +127,7 @@ export const as_directory = async itemid => {
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) return cached
+
   let directory = await build_local_directory(itemid)
   if (navigator.onLine)
     try {
