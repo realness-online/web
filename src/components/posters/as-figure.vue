@@ -30,6 +30,13 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
+  const show_symbols = ref({
+    boulder: false,
+    rock: false,
+    gravel: false,
+    sand: false,
+    sediment: false
+  })
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -48,6 +55,18 @@
     vector.value = shown_vector
     await tick()
     emit('show', vector.value)
+
+    // Stagger symbol loading so layers appear one after another (largest first)
+    const sequence = [
+      ['boulder', 0],
+      ['rock', 120],
+      ['gravel', 240],
+      ['sand', 360],
+      ['sediment', 480]
+    ]
+    sequence.forEach(([layer, delay]) =>
+      setTimeout(() => (show_symbols.value[layer] = true), delay)
+    )
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
@@ -83,11 +102,11 @@
       @show="on_show"
       :focusable="false" />
     <svg v-if="vector" v-show="false">
-      <as-symbol :itemid="`${itemid}-sediment`" />
-      <as-symbol :itemid="`${itemid}-sand`" />
-      <as-symbol :itemid="`${itemid}-gravel`" />
-      <as-symbol :itemid="`${itemid}-rock`" />
-      <as-symbol :itemid="`${itemid}-boulder`" />
+      <as-symbol v-if="show_symbols.boulder" :itemid="`${itemid}-boulder`" />
+      <as-symbol v-if="show_symbols.rock" :itemid="`${itemid}-rock`" />
+      <as-symbol v-if="show_symbols.gravel" :itemid="`${itemid}-gravel`" />
+      <as-symbol v-if="show_symbols.sand" :itemid="`${itemid}-sand`" />
+      <as-symbol v-if="show_symbols.sediment" :itemid="`${itemid}-sediment`" />
     </svg>
   </figure>
 </template>

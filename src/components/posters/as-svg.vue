@@ -227,6 +227,14 @@
       opacity: 1;
     }
   }
+  @keyframes cutout-fade-seq {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.5;
+    }
+  }
   /* aspect-ratio: 2.76 / 1 // also film  28 years later used*/
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 1.618 / 1 // golden-ratio */
@@ -259,21 +267,42 @@
     & use[itemprop='gravel'],
     & use[itemprop='rock'],
     & use[itemprop='boulder'] {
-      opacity: 0.5;
+      opacity: 0;
       filter: saturate(100%) brightness(100%);
       transition: opacity 0.5s ease, filter 0.5s ease;
-
+      animation-name: cutout-fade-seq;
+      animation-duration: 0.6s;
+      animation-timing-function: ease;
+      animation-fill-mode: both;
       &:hover {
-        opacity: 0.75;
-        filter: saturate(130%) brightness(110%);
+        opacity: 0.66ha;
       }
       &:active {
-        opacity: 1;
-        filter: saturate(150%) brightness(115%);
+        opacity: 0.66;
+        filter: saturate(105%) brightness(105%);
       }
       &:focus {
-        opacity: 1;
+        opacity: 0.9;
         filter: saturate(160%) brightness(120%);
+      }
+    }
+
+    /* Staggered appearance: largest first */
+    & use[itemprop='boulder'] { animation-delay: 0s }
+    & use[itemprop='rock'] { animation-delay: 0.08s }
+    & use[itemprop='gravel'] { animation-delay: 0.16s }
+    & use[itemprop='sand'] { animation-delay: 0.24s }
+    & use[itemprop='sediment'] { animation-delay: 0.32s }
+
+    /* Accessibility: no motion */
+    @media (prefers-reduced-motion: reduce) {
+      & use[itemprop='sediment'],
+      & use[itemprop='sand'],
+      & use[itemprop='gravel'],
+      & use[itemprop='rock'],
+      & use[itemprop='boulder'] {
+        animation: none !important;
+        opacity: 0.5;
       }
     }
 
