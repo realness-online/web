@@ -1,18 +1,23 @@
 <script setup>
   import NameAsForm from '@/components/profile/as-form-name'
   import CallToAction from '@/components/call-to-action'
-  import { ref, onMounted as mounted, inject, watch } from 'vue'
-  import SignOn from '@/components/profile/sign-on'
+  import AsSignOn from '@/components/profile/as-sign-on'
+  import { ref, onMounted as mounted, watch } from 'vue'
   import { current_user, sign_off } from '@/utils/serverless'
   import { load } from '@/utils/itemid'
-  import Icon from '@/components/icon'
   import { useRoute as use_route } from 'vue-router'
 
   const form = ref(null)
   const first_name = ref('You')
   const route = use_route()
+  const show_sign_in = ref(false)
+  const is_mobile_form_visible = ref(false)
 
-  const show_form = () => form.value.showModal()
+  const show_form = () => {
+    show_sign_in.value = false
+    is_mobile_form_visible.value = false
+    form.value.showModal()
+  }
   const dialog_click = event => {
     if (event.target === form.value) form.value.close()
   }
@@ -20,32 +25,56 @@
     form.value.close()
   }
 
+  const signed_in = () => {
+    show_sign_in.value = false
+    close_settings()
+  }
+
+  const on_showing_mobile = visible => {
+    is_mobile_form_visible.value = visible
+  }
+
+  const on_close = () => {
+    show_sign_in.value = false
+    is_mobile_form_visible.value = false
+  }
+
   // Watch for hash changes to show dialog
   watch(
     () => route.hash,
     new_hash => {
-      if (new_hash === '#account' && form.value) form.value.showModal()
+      if (new_hash === '#account' && form.value) {
+        show_sign_in.value = false
+        is_mobile_form_visible.value = false
+        form.value.showModal()
+      }
     },
     { immediate: true }
   )
 
   mounted(async () => {
     const my = await load(localStorage.me)
-    if (my?.first_name) first_name.value = my.first_name
+    const maybe_name = my && my['first_name']
+    if (maybe_name) first_name.value = maybe_name
 
     // Check if we should show dialog on mount (e.g., if URL has #account)
-    if (route.hash === '#account' && form.value) form.value.showModal()
+    if (route.hash === '#account' && form.value) {
+      show_sign_in.value = false
+      is_mobile_form_visible.value = false
+      form.value.showModal()
+    }
   })
 </script>
 
 <template>
   <a id="toggle-account" @click="show_form">{{ first_name }}</a>
-  <dialog id="account" ref="form" @click="dialog_click">
+  <dialog id="account" ref="form" @click="dialog_click" @close="on_close">
     <name-as-form />
-    <call-to-action />
+    <call-to-action v-if="!show_sign_in" />
+    <as-sign-on v-else @signed_in="signed_in" @showing_mobile="on_showing_mobile" />
     <menu>
       <button v-if="current_user" @click="sign_off">Sign off</button>
-      <sign-on v-else />
+      <button v-else-if="!is_mobile_form_visible" @click="show_sign_in = true">Sign in</button>
     </menu>
   </dialog>
 </template>

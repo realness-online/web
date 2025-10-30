@@ -9,12 +9,23 @@ dialog {
   border-radius: base-line * 0.5;
   color: var(--text-color);
   background-color: var(--black-background);
+  opacity: 0;
+  transition: opacity 120ms ease;
   &:focus {
     outline: none;
   }
   &::backdrop {
-    backdrop-filter: blur(base-line * 0.25 );
+    background-color: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transition: opacity 120ms ease;
   }
+  &[open] {
+    opacity: 1;
+  }
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
 }
 
 dialog.confirm {
