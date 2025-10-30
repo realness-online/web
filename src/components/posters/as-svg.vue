@@ -133,7 +133,6 @@
       height="133%" />
 
     <slot>
-
       <use itemprop="boulder" :href="`#${vector.id}-boulder`" />
       <use itemprop="rock" :href="`#${vector.id}-rock`" />
       <use itemprop="gravel" :href="`#${vector.id}-gravel`" />
@@ -219,15 +218,7 @@
 </template>
 
 <style>
-  @keyframes cutout-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @keyframes cutout-fade-seq {
+  @keyframes cutout-fade {
     from {
       opacity: 0;
     }
@@ -271,14 +262,14 @@
       filter: saturate(100%) brightness(100%);
       will-change: opacity, filter;
       transition: filter 0.35s ease-out;
-      animation-name: cutout-fade-seq;
+      animation-name: cutout-fade;
       animation-duration: 0.9s;
       animation-timing-function: cubic-bezier(.22,.61,.36,1);
       animation-fill-mode: both;
       animation-iteration-count: 1;
 
       &:hover {
-        transition: filter 0.66s ease;
+        transition: filter 0.33s ease;
         filter: saturate(120%) brightness(113%);
       }
       &:active {
@@ -290,11 +281,11 @@
     }
 
     /* Staggered appearance: largest first */
-    & use[itemprop='boulder'] { animation-delay: 0s }
-    & use[itemprop='rock'] { animation-delay: 0.250s }
-    & use[itemprop='gravel'] { animation-delay: 0.500s }
-    & use[itemprop='sand'] { animation-delay: 0.750s }
-    & use[itemprop='sediment'] { animation-delay: 1.000s }
+    & use[itemprop='boulder'] { animation-delay: 0.12s }
+    & use[itemprop='rock'] { animation-delay: 0.24s }
+    & use[itemprop='gravel'] { animation-delay: 0.36s }
+    & use[itemprop='sand'] { animation-delay: 0.48s }
+    & use[itemprop='sediment'] { animation-delay: 0.60s }
 
     /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {

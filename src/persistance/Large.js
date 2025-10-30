@@ -39,14 +39,20 @@ export const Large = superclass =>
       }
       await set(this.id, items.outerHTML)
       const path = as_directory_id(this.id)
-      await del(path)
+      const directory = await get(path)
+      if (directory && directory.items) {
+        const created_at = as_created_at(this.id)
+        if (created_at && !directory.items.includes(created_at)) {
+          directory.items.push(created_at)
+          await set(path, directory)
+        }
+      }
       if (super.save) await super.save(items)
     }
     async delete() {
       const path = as_directory_id(this.id)
       const directory = await get(path)
       await del(this.id)
-      await del(path)
       if (directory?.items) {
         directory.items = directory.items.filter(
           id => parseInt(id) !== as_created_at(this.id)
