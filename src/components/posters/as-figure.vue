@@ -83,11 +83,11 @@
       @show="on_show"
       :focusable="false" />
     <svg v-if="vector" v-show="false">
-      <as-symbol v-if="vector.sediment" :itemid="`${itemid}-sediment`" />
-      <as-symbol v-if="vector.sand" :itemid="`${itemid}-sand`" />
-      <as-symbol v-if="vector.gravel" :itemid="`${itemid}-gravel`" />
-      <as-symbol v-if="vector.rock" :itemid="`${itemid}-rock`" />
-      <as-symbol v-if="vector.boulder" :itemid="`${itemid}-boulder`" />
+      <as-symbol :itemid="`${itemid}-sediment`" />
+      <as-symbol :itemid="`${itemid}-sand`" />
+      <as-symbol :itemid="`${itemid}-gravel`" />
+      <as-symbol :itemid="`${itemid}-rock`" />
+      <as-symbol :itemid="`${itemid}-boulder`" />
     </svg>
   </figure>
 </template>

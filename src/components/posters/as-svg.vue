@@ -133,11 +133,12 @@
       height="133%" />
 
     <slot>
-      <use itemprop="sediment" :href="`#${vector.id}-sediment`" style="opacity: 0.5" />
-      <use itemprop="sand" :href="`#${vector.id}-sand`" style="opacity: 0.5" />
-      <use itemprop="gravel" :href="`#${vector.id}-gravel`" style="opacity: 0.5" />
-      <use itemprop="rock" :href="`#${vector.id}-rock`" style="opacity: 0.5" />
-      <use itemprop="boulder" :href="`#${vector.id}-boulder`" style="opacity: 0.5" />
+
+      <use itemprop="boulder" :href="`#${vector.id}-boulder`" />
+      <use itemprop="rock" :href="`#${vector.id}-rock`" />
+      <use itemprop="gravel" :href="`#${vector.id}-gravel`" />
+      <use itemprop="sand" :href="`#${vector.id}-sand`" />
+      <use itemprop="sediment" :href="`#${vector.id}-sediment`" />
     </slot>
     <rect
       v-show="drama"
@@ -259,15 +260,20 @@
     & use[itemprop='rock'],
     & use[itemprop='boulder'] {
       opacity: 0.5;
+      filter: saturate(100%) brightness(100%);
+      transition: opacity 0.5s ease, filter 0.5s ease;
 
       &:hover {
         opacity: 0.75;
+        filter: saturate(130%) brightness(110%);
       }
       &:active {
-        opacity: 0.75;
+        opacity: 1;
+        filter: saturate(150%) brightness(115%);
       }
       &:focus {
         opacity: 1;
+        filter: saturate(160%) brightness(120%);
       }
     }
 

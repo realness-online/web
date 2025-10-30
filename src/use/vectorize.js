@@ -481,16 +481,22 @@ export const use = () => {
           symbol.appendChild(cutout)
         })
 
+        // ensure saved symbol is self-described and queryable by storage
+        symbol.setAttribute('id', `${id}-${size}`)
+        symbol.setAttribute('itemid', `${id}-${size}`)
+        symbol.setAttribute('itemscope', '')
+        symbol.setAttribute('itemtype', '/cutouts')
+
         cutouts[size] = symbol
       }
     })
     console.log('sorted poster', new_vector.value)
     new Poster(id).save(element)
-    new Cutout(`${id}-sediment`).save()
-    new Cutout(`${id}-sand`).save()
-    new Cutout(`${id}-gravel`).save()
-    new Cutout(`${id}-rock`).save()
-    new Cutout(`${id}-boulder`).save()
+    new Cutout(`${id}-sediment`).save(cutouts.sediment)
+    new Cutout(`${id}-sand`).save(cutouts.sand)
+    new Cutout(`${id}-gravel`).save(cutouts.gravel)
+    new Cutout(`${id}-rock`).save(cutouts.rock)
+    new Cutout(`${id}-boulder`).save(cutouts.boulder)
 
     completed_posters.value.push(id)
 

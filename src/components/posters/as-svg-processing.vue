@@ -134,7 +134,7 @@
     }
     & > img {
       grid-area: overlay;
-      opacity: 0.66;
+      opacity: 0.33;
       filter: grayscale(0.5);
       width: 100%;
       height: 100%;
