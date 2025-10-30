@@ -278,10 +278,11 @@
       animation-iteration-count: 1;
 
       &:hover {
-        filter: saturate(120%) brightness(108%);
+        transition: filter 0.66s ease;
+        filter: saturate(120%) brightness(113%);
       }
       &:active {
-        filter: saturate(166%) brightness(122%);
+        filter: saturate(166%) brightness(130%);
       }
       &:focus {
         filter: saturate(150%) brightness(118%);
@@ -290,10 +291,10 @@
 
     /* Staggered appearance: largest first */
     & use[itemprop='boulder'] { animation-delay: 0s }
-    & use[itemprop='rock'] { animation-delay: 0.12s }
-    & use[itemprop='gravel'] { animation-delay: 0.24s }
-    & use[itemprop='sand'] { animation-delay: 0.36s }
-    & use[itemprop='sediment'] { animation-delay: 0.48s }
+    & use[itemprop='rock'] { animation-delay: 0.250s }
+    & use[itemprop='gravel'] { animation-delay: 0.500s }
+    & use[itemprop='sand'] { animation-delay: 0.750s }
+    & use[itemprop='sediment'] { animation-delay: 1.000s }
 
     /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {
