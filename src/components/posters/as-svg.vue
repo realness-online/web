@@ -269,30 +269,31 @@
     & use[itemprop='boulder'] {
       opacity: 0;
       filter: saturate(100%) brightness(100%);
-      transition: opacity 0.5s ease, filter 0.5s ease;
+      will-change: opacity, filter;
+      transition: filter 0.35s ease-out;
       animation-name: cutout-fade-seq;
-      animation-duration: 0.6s;
-      animation-timing-function: ease;
+      animation-duration: 0.9s;
+      animation-timing-function: cubic-bezier(.22,.61,.36,1);
       animation-fill-mode: both;
+      animation-iteration-count: 1;
+
       &:hover {
-        opacity: 0.66ha;
+        filter: saturate(120%) brightness(108%);
       }
       &:active {
-        opacity: 0.66;
-        filter: saturate(105%) brightness(105%);
+        filter: saturate(166%) brightness(122%);
       }
       &:focus {
-        opacity: 0.9;
-        filter: saturate(160%) brightness(120%);
+        filter: saturate(150%) brightness(118%);
       }
     }
 
     /* Staggered appearance: largest first */
     & use[itemprop='boulder'] { animation-delay: 0s }
-    & use[itemprop='rock'] { animation-delay: 0.08s }
-    & use[itemprop='gravel'] { animation-delay: 0.16s }
-    & use[itemprop='sand'] { animation-delay: 0.24s }
-    & use[itemprop='sediment'] { animation-delay: 0.32s }
+    & use[itemprop='rock'] { animation-delay: 0.12s }
+    & use[itemprop='gravel'] { animation-delay: 0.24s }
+    & use[itemprop='sand'] { animation-delay: 0.36s }
+    & use[itemprop='sediment'] { animation-delay: 0.48s }
 
     /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {
