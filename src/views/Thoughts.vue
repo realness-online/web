@@ -40,8 +40,8 @@
     await Promise.all(
       people.value.map(async relation => {
         await Promise.all([
-          statements_for_person(relation),
-          posters_for_person(relation)
+          statements_for_person({ id: relation.id }),
+          posters_for_person({ id: relation.id })
         ])
       })
     )

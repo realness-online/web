@@ -485,24 +485,24 @@ export const use = () => {
       }
     })
     console.log('sorted poster', new_vector.value)
-    // new Poster(id).save(element)
-    // new Cutout(`${id}-sediment`).save()
-    // new Cutout(`${id}-sand`).save()
-    // new Cutout(`${id}-gravel`).save()
-    // new Cutout(`${id}-rock`).save()
-    // new Cutout(`${id}-boulder`).save()
+    new Poster(id).save(element)
+    new Cutout(`${id}-sediment`).save()
+    new Cutout(`${id}-sand`).save()
+    new Cutout(`${id}-gravel`).save()
+    new Cutout(`${id}-rock`).save()
+    new Cutout(`${id}-boulder`).save()
 
-    // completed_posters.value.push(id)
+    completed_posters.value.push(id)
 
-    // await Queue.remove(id)
-    // queue_items.value = queue_items.value.filter(item => item.id !== id)
+    await Queue.remove(id)
+    queue_items.value = queue_items.value.filter(item => item.id !== id)
 
-    // is_processing.value = false
-    // current_processing.value = null
+    is_processing.value = false
+    current_processing.value = null
 
-    // reset()
+    reset()
 
-    // process_queue()
+    process_queue()
   }
 
   const mount_workers = () => {

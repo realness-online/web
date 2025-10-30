@@ -29,8 +29,7 @@
     regular,
     light,
     fill,
-    stroke,
-    grid_overlay
+    stroke
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -130,32 +129,23 @@
       v-show="drama"
       id="lightbar-back"
       fill="url(#lightbar)"
-      width="100%"
-      height="100%" />
+      width="111%"
+      height="133%" />
 
+    <slot>
+      <use itemprop="sediment" :href="`#${vector.id}-sediment`" style="opacity: 0.5" />
+      <use itemprop="sand" :href="`#${vector.id}-sand`" style="opacity: 0.5" />
+      <use itemprop="gravel" :href="`#${vector.id}-gravel`" style="opacity: 0.5" />
+      <use itemprop="rock" :href="`#${vector.id}-rock`" style="opacity: 0.5" />
+      <use itemprop="boulder" :href="`#${vector.id}-boulder`" style="opacity: 0.5" />
+    </slot>
     <rect
       v-show="drama"
       id="lightbar-front"
       fill="url(#lightbar)"
-      width="100%"
-      height="100%" />
-    <as-animation v-if="animate" :id="vector.id" />
-    <slot>
-      <g v-if="vector.geology">
-        <use
-          v-for="geology in Object.keys(vector.geology)"
-          :key="`use-${geology}`"
-          :href="`#${fragment(geology)}`" />
-      </g>
-    </slot>
+      width="222%"
+      height="200%" />
     <defs>
-      <g>
-        <meta itemprop="geology" content="sediment" />
-        <meta itemprop="geology" content="sand" />
-        <meta itemprop="geology" content="gravel" />
-        <meta itemprop="geology" content="rock" />
-        <meta itemprop="geology" content="boulder" />
-      </g>
       <symbol id="grid-overlay" viewBox="0 0 1 1">
         <rect width="1.00" height="0.33" />
         <rect width="1.00" height="0.33" y="0.33" rx="0.011" />
@@ -223,6 +213,7 @@
       <as-gradients v-if="vector" :vector="vector" />
       <as-masks :itemid="itemid" />
     </defs>
+  <as-animation v-if="animate" :id="vector.id" />
   </svg>
 </template>
 
@@ -256,20 +247,29 @@
     & rect#lightbar-back,
     & rect#lightbar-front {
       pointer-events: none;
-    }
-    & .grid-overlay {
-      pointer-events: none;
-      opacity: 1;
-      mix-blend-mode: overlay;
-      & rect {
-        stroke-width: 1.001;
-        stroke: white;
-        fill: none;
-        &:focus {
-          fill: blue;
-          outline: none;
-        }
+      transition: opacity 0.75s ease, display 1.66s ease;
+      transition-behavior: allow-discrete;
+      @starting-style {
+        opacity: 0;
       }
     }
+    & use[itemprop='sediment'],
+    & use[itemprop='sand'],
+    & use[itemprop='gravel'],
+    & use[itemprop='rock'],
+    & use[itemprop='boulder'] {
+      opacity: 0.5;
+
+      &:hover {
+        opacity: 0.75;
+      }
+      &:active {
+        opacity: 0.75;
+      }
+      &:focus {
+        opacity: 1;
+      }
+    }
+
   }
 </style>

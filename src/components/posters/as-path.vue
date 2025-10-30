@@ -46,15 +46,11 @@
   })
   defineEmits(['focus'])
   const new_poster = ref(inject('new-poster', false))
-  const wants_both = computed(() => {
+  const show_stroke = computed(() => {
     if (new_poster.value) return false
-    return stroke_pref.value && fill_pref.value
+    return stroke_pref.value
   })
-  const just_stroke = computed(() => {
-    if (new_poster.value) return false
-    return !fill_pref.value && stroke_pref.value
-  })
-  const just_fill = computed(() => {
+  const show_fill = computed(() => {
     if (new_poster.value) return true
     return fill_pref.value
   })
@@ -85,18 +81,19 @@
     :d="d"
     :mask="props.mask"
     :itemprop="props.itemprop"
-    :fill="wants_both || just_fill ? fill : 'none'"
-    :fill-opacity="wants_both || just_fill ? '0.90' : undefined"
-    :fill-rule="wants_both || just_fill ? 'evenodd' : undefined"
-    :stroke="wants_both || just_stroke ? stroke : 'none'"
-    :stroke-opacity="wants_both || just_stroke ? stroke_opacity : undefined"
-    :stroke-width="wants_both || just_stroke ? stroke_width : undefined" />
+    :fill="show_fill ? fill : 'none'"
+    :fill-opacity="show_fill ? '0.90' : undefined"
+    :fill-rule="show_fill ? 'evenodd' : undefined"
+    :stroke="stroke"
+    :stroke-opacity="show_stroke ? stroke_opacity : '0'"
+    :stroke-width="stroke_width" />
 </template>
 
 <style>
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
+    transition: stroke-opacity 0.15s ease;
     &:focus {
       outline: none;
     }

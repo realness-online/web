@@ -47,6 +47,10 @@
  */
 
 /**
+ * @typedef {Object} PersonQuery
+ * @property {Id} id
+ */
+/**
  * @typedef {Object} Relation
  * @property {Id} id
  * @property {string} type

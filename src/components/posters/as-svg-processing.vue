@@ -45,6 +45,32 @@
       :src="thumbnail_url"
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
+
+    <as-svg
+      v-if="is_currently_processing && new_vector"
+      :itemid="queue_item.id"
+      :sync_poster="new_vector"
+      :viewBox="`0 0 ${image_width} ${image_height}`">
+      <g
+        itemprop="new_cutouts"
+        v-if="new_vector.cutout"
+        :id="`${queue_item.id}-cutouts-new`"
+        :style="{ fillOpacity: '0.5' }">
+        <as-path-cutout
+          v-for="(cut, index) in new_vector.cutout"
+          :key="`cutout-${index}`"
+          :cutout="cut"
+          :index="index" />
+      </g>
+
+      <g v-if="new_vector.cutouts" style="opacity: 0.5">
+        <use itemprop="sediment" :href="`#${queue_item.id}-sediment`" />
+        <use itemprop="sand" :href="`#${queue_item.id}-sand`" />
+        <use itemprop="gravel" :href="`#${queue_item.id}-gravel`" />
+        <use itemprop="rock" :href="`#${queue_item.id}-rock`" />
+        <use itemprop="boulder" :href="`#${queue_item.id}-boulder`" />
+      </g>
+    </as-svg>
     <svg style="display: none" v-if="new_vector?.cutouts">
       <symbol
         :id="`${queue_item.id}-sediment`"
@@ -83,42 +109,6 @@
         v-html="new_vector.cutouts.boulder.innerHTML" />
     </svg>
 
-    <as-svg
-      v-if="is_currently_processing && new_vector"
-      :itemid="queue_item.id"
-      :sync_poster="new_vector"
-      :viewBox="`0 0 ${image_width} ${image_height}`">
-      <g
-        itemprop="new_cutouts"
-        v-if="new_vector.cutout"
-        :id="`${queue_item.id}-cutouts-new`"
-        :style="{ fillOpacity: '0.5' }">
-        <as-path-cutout
-          v-for="(cut, index) in new_vector.cutout"
-          :key="`cutout-${index}`"
-          :cutout="cut"
-          :index="index" />
-      </g>
-      <use
-        v-if="new_vector.cutouts"
-        :href="`#${queue_item.id}-sand`"
-        :viewBox="`0 0 ${image_width} ${image_height}`" />
-      <g v-if="new_vector.cutouts">
-        <use
-          :href="`#${queue_item.id}-sediment`"
-          :viewBox="`0 0 ${image_width} ${image_height}`" />
-        <use
-          :href="`#${queue_item.id}-gravel`"
-          :viewBox="`0 0 ${image_width} ${image_height}`" />
-        <use
-          :href="`#${queue_item.id}-rock`"
-          :viewBox="`0 0 ${image_width} ${image_height}`" />
-        <use
-          :href="`#${queue_item.id}-boulder`"
-          :viewBox="`0 0 ${image_width} ${image_height}`" />
-      </g>
-    </as-svg>
-
     <figcaption>
       <span>{{ status_text }}</span>
     </figcaption>
@@ -145,7 +135,7 @@
     & > img {
       grid-area: overlay;
       opacity: 0.66;
-      filter: grayscale(1);
+      filter: grayscale(0.5);
       width: 100%;
       height: 100%;
       object-fit: cover;
