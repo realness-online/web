@@ -3,6 +3,7 @@
   import AsMessenger from '@/components/profile/as-messenger'
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
+  import AsSymbol from '@/components/posters/as-symbol'
   import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
@@ -38,6 +39,7 @@
   })
   const query_id = computed(() => as_query_id(props.itemid))
   const posted_at = computed(() => as_time(as_created_at(props.itemid)))
+
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)
@@ -63,13 +65,8 @@
 </script>
 
 <template>
-  <figure ref="poster" class="poster" :class="{ landscape }" outline>
-    <as-svg
-      :itemid="itemid"
-      @click="vector_click"
-      @show="on_show"
-      :focusable="false" />
-    <figcaption>
+  <figure ref="poster" class="poster" :class="{ landscape }">
+    <figcaption v-if="!menu">
       <slot v-if="menu">
         <menu>
           <as-link :itemid="itemid">
@@ -80,6 +77,18 @@
         </menu>
       </slot>
     </figcaption>
+    <as-svg
+      :itemid="itemid"
+      @click="vector_click"
+      @show="on_show"
+      :focusable="false" />
+    <svg v-if="vector" v-show="false">
+      <as-symbol v-if="vector.sediment" :itemid="`${itemid}-sediment`" />
+      <as-symbol v-if="vector.sand" :itemid="`${itemid}-sand`" />
+      <as-symbol v-if="vector.gravel" :itemid="`${itemid}-gravel`" />
+      <as-symbol v-if="vector.rock" :itemid="`${itemid}-rock`" />
+      <as-symbol v-if="vector.boulder" :itemid="`${itemid}-boulder`" />
+    </svg>
   </figure>
 </template>
 

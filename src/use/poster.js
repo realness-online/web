@@ -1,5 +1,6 @@
 /** @typedef {import('@/types').Poster} Poster */
 /** @typedef {import('@/types').Relation} Relation */
+/** @typedef {import('@/types').PersonQuery} PersonQuery */
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Id} Id */
 
@@ -252,20 +253,29 @@ export const use_posters = () => {
   const authors = ref([])
 
   /**
-   * @param {Relation} person
+   * @param {PersonQuery} query
    */
-  const for_person = async person => {
-    const directory = await as_directory(`${person.id}/posters`)
+  const for_person = async query => {
+    const directory = await as_directory(`${query.id}/posters`)
     directory.items.forEach(created_at => {
-      const poster_id = `${person.id}/posters/${created_at}`
+      const poster_id = `${query.id}/posters/${created_at}`
       if (!posters.value.find(p => p.id === poster_id))
         posters.value.push({
           id: poster_id,
           type: 'posters'
         })
     })
-    person.viewed = ['index']
-    authors.value.push(person)
+    const existing_author = authors.value.find(a => a.id === query.id)
+    if (existing_author) existing_author.viewed = ['index']
+    else
+      authors.value.push({
+        id: query.id,
+        type: 'person',
+        name: '',
+        avatar: '',
+        viewed: ['index'],
+        visited: null
+      })
     posters.value.sort(recent_item_first)
   }
 

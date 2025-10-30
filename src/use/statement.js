@@ -1,4 +1,5 @@
 /** @typedef {import('@/types').Type} Type */
+/** @typedef {import('@/types').PersonQuery} PersonQuery */
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
 import { as_directory } from '@/persistance/Directory'
@@ -43,14 +44,23 @@ export const use = () => {
     }
   }
 
-  const for_person = async person => {
-    const statement_id = `${person.id}/statements`
+  /**
+   * @param {PersonQuery} query
+   */
+  const for_person = async query => {
+    const statement_id = `${query.id}/statements`
     const their_statements = await list(statement_id)
     if (statements.value)
       statements.value = [...statements.value, ...their_statements]
     else statements.value = their_statements
-    person.viewed = ['index']
-    authors.value.push(person)
+    const existing_author = authors.value.find(a => a.id === query.id)
+    if (existing_author) existing_author.viewed = ['index']
+    else
+      authors.value.push({
+        id: query.id,
+        type: 'person',
+        viewed: ['index']
+      })
   }
 
   const save = async statement => {

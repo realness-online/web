@@ -94,14 +94,7 @@
   })
 
   mounted(async () => {
-    await posters_for_person({
-      id: localStorage.me,
-      type: 'person',
-      name: '',
-      avatar: '',
-      viewed: [],
-      visited: null
-    })
+    await posters_for_person({ id: localStorage.me })
     mount_workers()
     await init_processing_queue()
     console.timeEnd('views:Posters')
@@ -111,14 +104,7 @@
     queue_items,
     async (new_queue, old_queue) => {
       if (old_queue && new_queue.length < old_queue.length)
-        await posters_for_person({
-          id: localStorage.me,
-          type: 'person',
-          name: '',
-          avatar: '',
-          viewed: [],
-          visited: null
-        })
+        await posters_for_person({ id: localStorage.me })
     },
     { deep: true }
   )
