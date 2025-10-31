@@ -3,7 +3,7 @@
   import { ref, computed, onMounted as mounted, inject } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
-  import { symbolName } from 'typescript'
+  import { as_query_id as query } from '@/utils/itemid'
 
   const props = defineProps({
     queue_item: {
@@ -64,44 +64,44 @@
       </g>
 
       <g v-if="new_vector.cutouts" style="opacity: 0.5">
-        <use itemprop="sediment" :href="`#${queue_item.id}-sediment`" />
-        <use itemprop="sand" :href="`#${queue_item.id}-sand`" />
-        <use itemprop="gravel" :href="`#${queue_item.id}-gravel`" />
-        <use itemprop="rock" :href="`#${queue_item.id}-rock`" />
-        <use itemprop="boulder" :href="`#${queue_item.id}-boulder`" />
+        <use itemprop="sediment" :href="`#${query(queue_item.id)}-sediment`" />
+        <use itemprop="sand" :href="`#${query(queue_item.id)}-sand`" />
+        <use itemprop="gravel" :href="`#${query(queue_item.id)}-gravel`" />
+        <use itemprop="rock" :href="`#${query(queue_item.id)}-rock`" />
+        <use itemprop="boulder" :href="`#${query(queue_item.id)}-boulder`" />
       </g>
     </as-svg>
     <svg style="display: none" v-if="new_vector?.cutouts">
       <symbol
-        :id="`${queue_item.id}-sediment`"
+        :id="`${query(queue_item.id)}-sediment`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         :itemid="`${queue_item.id}-sediment`"
         v-html="new_vector.cutouts.sediment.innerHTML" />
       <symbol
-        :id="`${queue_item.id}-sand`"
+        :id="`${query(queue_item.id)}-sand`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         :itemid="`${queue_item.id}-sand`"
         v-html="new_vector.cutouts.sand.innerHTML" />
       <symbol
-        :id="`${queue_item.id}-gravel`"
+        :id="`${query(queue_item.id)}-gravel`"
         itemscope
         itemtype="/cutouts"
         :itemid="`${queue_item.id}-gravel`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector.cutouts.gravel.innerHTML" />
       <symbol
-        :id="`${queue_item.id}-rock`"
+        :id="`${query(queue_item.id)}-rock`"
         itemscope
         itemtype="/cutouts"
         :itemid="`${queue_item.id}-rock`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector.cutouts.rock.innerHTML" />
       <symbol
-        :id="`${queue_item.id}-boulder`"
+        :id="`${query(queue_item.id)}-boulder`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"

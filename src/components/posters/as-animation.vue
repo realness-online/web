@@ -15,7 +15,7 @@
   })
 
   /** @param {string} add */
-  const fragment = add => `${as_fragment_id(props.id)}-${add}`
+  const fragment = add => `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
   /** @param {number} base_duration */
   const duration = base_duration => `${base_duration}s`
@@ -273,6 +273,47 @@
       :dur="duration(5)"
       values="1;0.66;1"
       keyTimes="0;0.66;1"
+      keySplines="0.4 0 0.6 1" />
+
+    <animate
+      :href="fragment('boulder-use')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      :dur="duration(18)"
+      values="0.5;0.66;0.5"
+      keyTimes="0;0.5;1"
+      keySplines="0.4 0 0.6 1" />
+    <animate
+      :href="fragment('rock-use')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      :dur="duration(22)"
+      values="0.5;0.66;0.5"
+      keyTimes="0;0.5;1"
+      keySplines="0.4 0 0.6 1" />
+    <animate
+      :href="fragment('gravel-use')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      :dur="duration(16)"
+      values="0.5;0.66;0.5"
+      keyTimes="0;0.5;1"
+      keySplines="0.4 0 0.6 1" />
+    <animate
+      :href="fragment('sand-use')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      :dur="duration(10)"
+      values="0.5;0.66;0.5"
+      keyTimes="0;0.5;1"
+      keySplines="0.4 0 0.6 1" />
+    <animate
+      :href="fragment('sediment-use')"
+      attributeName="fill-opacity"
+      repeatCount="indefinite"
+      :dur="duration(8)"
+      values="0.5;0.66;0.5"
+      keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
   </g>
 </template>
