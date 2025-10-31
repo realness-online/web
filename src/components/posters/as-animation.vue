@@ -262,7 +262,7 @@
       href="#lightbar-back"
       attributeName="fill-opacity"
       repeatCount="indefinite"
-      :dur="duration(3)"
+      :dur="duration(5)"
       values="1;0.66;1"
       keyTimes="0;0.33;1"
       keySplines="0.4 0 0.6 1" />
@@ -277,42 +277,42 @@
 
     <animate
       :href="fragment('boulder-use')"
-      attributeName="fill-opacity"
+      attributeName="filter"
       repeatCount="indefinite"
-      :dur="duration(18)"
-      values="0.5;0.66;0.5"
+      :dur="duration(8)"
+      values="brightness(100%);brightness(110%);brightness(100%)"
       keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
     <animate
       :href="fragment('rock-use')"
-      attributeName="fill-opacity"
+      attributeName="filter"
       repeatCount="indefinite"
-      :dur="duration(22)"
-      values="0.5;0.66;0.5"
+      :dur="duration(13)"
+      values="brightness(100%);brightness(110%);brightness(100%)"
       keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
     <animate
       :href="fragment('gravel-use')"
-      attributeName="fill-opacity"
+      attributeName="filter"
       repeatCount="indefinite"
-      :dur="duration(16)"
-      values="0.5;0.66;0.5"
+      :dur="duration(5)"
+      values="brightness(100%);brightness(110%);brightness(100%)"
       keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
     <animate
       :href="fragment('sand-use')"
-      attributeName="fill-opacity"
+      attributeName="filter"
       repeatCount="indefinite"
-      :dur="duration(10)"
-      values="0.5;0.66;0.5"
+      :dur="duration(3)"
+      values="brightness(100%);brightness(110%);brightness(100%)"
       keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
     <animate
       :href="fragment('sediment-use')"
-      attributeName="fill-opacity"
+      attributeName="filter"
       repeatCount="indefinite"
-      :dur="duration(8)"
-      values="0.5;0.66;0.5"
+      :dur="duration(2)"
+      values="brightness(100%);brightness(103%);brightness(100%)"
       keyTimes="0;0.5;1"
       keySplines="0.4 0 0.6 1" />
   </g>
