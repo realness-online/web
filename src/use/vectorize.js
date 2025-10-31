@@ -482,7 +482,7 @@ export const use = () => {
         })
 
         // ensure saved symbol is self-described and queryable by storage
-        symbol.setAttribute('id', `${id}-${size}`)
+        symbol.setAttribute('id', `${as_query_id(id)}-${size}`)
         symbol.setAttribute('itemid', `${id}-${size}`)
         symbol.setAttribute('itemscope', '')
         symbol.setAttribute('itemtype', '/cutouts')

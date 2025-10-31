@@ -8,10 +8,12 @@
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
+  import { cutout } from '@/utils/preference'
   import {
     ref,
     computed,
     watchEffect as watch_effect,
+    watch,
     onUpdated as updated,
     nextTick as tick
   } from 'vue'
@@ -30,13 +32,20 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
-  const show_symbols = ref({
+  const symbol_loaded = ref({
     boulder: false,
     rock: false,
     gravel: false,
     sand: false,
     sediment: false
   })
+  const show_symbols = computed(() => ({
+    boulder: cutout.value && symbol_loaded.value.boulder,
+    rock: cutout.value && symbol_loaded.value.rock,
+    gravel: cutout.value && symbol_loaded.value.gravel,
+    sand: cutout.value && symbol_loaded.value.sand,
+    sediment: cutout.value && symbol_loaded.value.sediment
+  }))
   const landscape = computed(() => {
     if (!vector.value) return false
     const numbers = vector.value.viewbox.split(' ')
@@ -51,11 +60,8 @@
     menu.value = !menu.value
     emit('vector-click', menu.value)
   }
-  const on_show = async shown_vector => {
-    vector.value = shown_vector
-    await tick()
-    emit('show', vector.value)
-
+  const load_symbols = () => {
+    if (!cutout.value || !vector.value) return
     // Stagger symbol loading so layers appear one after another (largest first)
     const sequence = [
       ['boulder', 0],
@@ -65,14 +71,33 @@
       ['sediment', 480]
     ]
     sequence.forEach(([layer, delay]) =>
-      setTimeout(() => (show_symbols.value[layer] = true), delay)
+      setTimeout(() => (symbol_loaded.value[layer] = true), delay)
     )
+  }
+  const on_show = async shown_vector => {
+    vector.value = shown_vector
+    await tick()
+    emit('show', vector.value)
+    load_symbols()
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
       const author_id = as_author(props.itemid)
       if (author_id) person.value = await load(author_id)
     }
+  })
+  watch(cutout, new_value => {
+    if (!new_value)
+      symbol_loaded.value = {
+        boulder: false,
+        rock: false,
+        gravel: false,
+        sand: false,
+        sediment: false
+      }
+     else if (vector.value)
+      load_symbols()
+
   })
   updated(() => {
     const fragment = window.location.hash.substring(1)
@@ -101,12 +126,12 @@
       @click="vector_click"
       @show="on_show"
       :focusable="false" />
-    <svg v-if="vector" v-show="false">
-      <as-symbol v-if="show_symbols.boulder" :itemid="`${itemid}-boulder`" />
-      <as-symbol v-if="show_symbols.rock" :itemid="`${itemid}-rock`" />
-      <as-symbol v-if="show_symbols.gravel" :itemid="`${itemid}-gravel`" />
-      <as-symbol v-if="show_symbols.sand" :itemid="`${itemid}-sand`" />
-      <as-symbol v-if="show_symbols.sediment" :itemid="`${itemid}-sediment`" />
+    <svg v-if="vector && cutout" v-show="false">
+      <as-symbol :itemid="`${itemid}-boulder`" />
+      <as-symbol :itemid="`${itemid}-rock`" />
+      <as-symbol :itemid="`${itemid}-gravel`" />
+      <as-symbol :itemid="`${itemid}-sand`" />
+      <as-symbol :itemid="`${itemid}-sediment`" />
     </svg>
   </figure>
 </template>

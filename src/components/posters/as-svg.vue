@@ -83,9 +83,13 @@
   mounted(() => {
     if (!props.sync_poster)
       use_intersect(trigger, ([{ isIntersecting }]) => {
-        if (isIntersecting) show()
+        if (isIntersecting) {
+          intersecting.value = true
+          show()
+        }
       })
     else {
+      intersecting.value = true
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
@@ -94,6 +98,7 @@
 
   watch(() => {
     if (props.sync_poster) {
+      intersecting.value = true
       vector.value = props.sync_poster
       working.value = false
       emit('show', vector.value)
@@ -133,11 +138,11 @@
       height="133%" />
 
     <slot>
-      <use itemprop="boulder" :href="`#${vector.id}-boulder`" />
-      <use itemprop="rock" :href="`#${vector.id}-rock`" />
-      <use itemprop="gravel" :href="`#${vector.id}-gravel`" />
-      <use itemprop="sand" :href="`#${vector.id}-sand`" />
-      <use itemprop="sediment" :href="`#${vector.id}-sediment`" />
+      <use :id="query('boulder-use')" itemprop="boulder" :href="fragment('boulder')" />
+      <use :id="query('rock-use')" itemprop="rock" :href="fragment('rock')" />
+      <use :id="query('gravel-use')" itemprop="gravel" :href="fragment('gravel')" />
+      <use :id="query('sand-use')" itemprop="sand" :href="fragment('sand')" />
+      <use :id="query('sediment-use')" itemprop="sediment" :href="fragment('sediment')" />
     </slot>
     <rect
       v-show="drama"
@@ -213,7 +218,7 @@
       <as-gradients v-if="vector" :vector="vector" />
       <as-masks :itemid="itemid" />
     </defs>
-  <as-animation v-if="animate" :id="vector.id" />
+    <as-animation v-if="animate && vector" :id="itemid" />
   </svg>
 </template>
 
