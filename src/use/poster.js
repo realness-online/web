@@ -28,7 +28,7 @@ import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { Poster as PosterClass } from '@/persistance/Storage'
-import { slice as slice_preference } from '@/utils/preference'
+import { slice as slice_preference, storytelling } from '@/utils/preference'
 
 export const geology_layers = ['sediment', 'sand', 'gravel', 'rock', 'boulder']
 export const use = () => {
@@ -85,6 +85,21 @@ export const use = () => {
   const aspect_ratio = computed(() => {
     if (slice_preference.value) return 'xMidYMid slice'
     return 'xMidYMid meet'
+  })
+
+  const should_ken_burns = computed(() => {
+    const result = storytelling.value && slice_preference.value
+    console.log('[ken-burns]', {
+      storytelling: storytelling.value,
+      slice: slice_preference.value,
+      landscape: landscape.value,
+      should_animate: result
+    })
+    return result
+  })
+
+  const ken_burns_axis = computed(() => {
+    return landscape.value ? 'y' : 'x'
   })
 
   const landscape = computed(() => {
@@ -243,7 +258,9 @@ export const use = () => {
     touch_end,
     cutout_start,
     cutout_end,
-    aspect_toggle
+    aspect_toggle,
+    should_ken_burns,
+    ken_burns_axis
   }
 }
 
