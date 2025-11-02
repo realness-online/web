@@ -61,11 +61,13 @@ export const default_keymap = [
       B: 'pref::Toggle_Sediment',
 
       ',': 'ui::Open_Settings',
+      '.': 'ui::Open_Account',
       '?': 'ui::Show_Documentation'
     },
     descriptions: {
       'ui::Toggle_Presentation': 'Toggle presentation mode',
       'ui::Open_Settings': 'Open application settings',
+      'ui::Open_Account': 'Open account dialog',
       'ui::Show_Documentation': 'Show application documentation',
       'pref::Toggle_Fill': 'Toggle fill gradient on posters',
       'pref::Toggle_Stroke': 'Toggle stroke outline on posters',

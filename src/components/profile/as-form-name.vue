@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <form id="profile-name">
+  <form id="profile-name" v-if="me">
     <fieldset id="name">
       <legend :class="{ valid: is_valid_name }">Name</legend>
       <input
