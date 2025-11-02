@@ -91,8 +91,6 @@ export const use = () => {
     () => storytelling.value && slice_preference.value
   )
 
-  const ken_burns_axis = computed(() => (landscape.value ? 'y' : 'x'))
-
   const ken_burns_range = computed(() => {
     if (!vector_element.value || !vector.value) return 5
 
@@ -271,7 +269,6 @@ export const use = () => {
     cutout_end,
     aspect_toggle,
     should_ken_burns,
-    ken_burns_axis,
     ken_burns_range
   }
 }

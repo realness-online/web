@@ -71,7 +71,6 @@
     dynamic_viewbox,
     focus,
     should_ken_burns,
-    ken_burns_axis,
     ken_burns_range
   } = use_poster()
 
@@ -157,10 +156,7 @@
     <g
       class="ken-burns-content"
       :style="{ '--ken-burns-range': `${ken_burns_range}%` }"
-      :class="{
-        'ken-burns-x': should_ken_burns && ken_burns_axis === 'x',
-        'ken-burns-y': should_ken_burns && ken_burns_axis === 'y'
-      }">
+      :class="{ 'ken-burns': should_ken_burns }">
       <rect
         v-show="fill || stroke"
         :fill="`url(${fragment('shadow')})`"
@@ -296,7 +292,7 @@
     }
   }
 
-  @keyframes ken-burns-y {
+  @keyframes ken-burns {
     0% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
     }
@@ -305,18 +301,6 @@
     }
     100% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
-    }
-  }
-
-  @keyframes ken-burns-x {
-    0% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
-    }
-    50% {
-      transform: translateX(var(--ken-burns-range));
-    }
-    100% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
     }
   }
 
@@ -338,14 +322,9 @@
     &:active {
       cursor: grabbing;
     }
-    & g.ken-burns-content {
+    & g.ken-burns-content.ken-burns {
       transform-origin: center center;
-      &.ken-burns-y {
-        animation: ken-burns-y 20s ease-in-out infinite;
-      }
-      &.ken-burns-x {
-        animation: ken-burns-x 20s ease-in-out infinite;
-      }
+      animation: ken-burns 20s ease-in-out infinite;
     }
     & rect#lightbar-back,
     & rect#lightbar-front,
