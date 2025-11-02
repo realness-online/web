@@ -35,9 +35,7 @@
     rock,
     gravel,
     sand,
-    sediment,
-    storytelling,
-    slice
+    sediment
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
