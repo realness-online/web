@@ -4,6 +4,21 @@
  */
 
 /**
+ * Keymap Key Notation:
+ *
+ * - Letters: 'z' (lowercase), 'Z' (uppercase with shift) - case sensitive
+ * - Number row: '1' '2' '3' etc - only triggers from main keyboard number row
+ * - Numpad: '#1' '#2' '#3' etc - only triggers from numpad keys
+ * - Special: 'Enter', 'Escape', 'Space', 'ArrowUp', etc - standard key names
+ * - Combos: 'ctrl-s', 'ctrl-shift-s' - modifier combinations (lowercase, dash-separated)
+ *
+ * Examples:
+ *   z: 'action'         -> lowercase z only
+ *   Z: 'action'         -> shift+z only
+ *   1: 'action'         -> number row 1 only
+ *   #1: 'action'        -> numpad 1 only
+ *   'ctrl-s': 'action'  -> ctrl+s combo
+ *
  * @type {Keymap_Context[]}
  */
 export const default_keymap = [
@@ -20,26 +35,33 @@ export const default_keymap = [
       0: 'nav::Go_Home',
 
       'Tab Row': '',
-      I: 'pref::Toggle_Info',
-      O: 'pref::Toggle_Storytelling',
-      P: 'ui::Toggle_Presentation',
+      i: 'pref::Toggle_Info',
+      o: 'pref::Toggle_Storytelling',
+      p: 'ui::Toggle_Presentation',
 
       'Home Row': '',
-      A: 'pref::Toggle_Animate',
-      S: 'pref::Toggle_Stroke',
-      D: 'pref::Toggle_Drama',
-      F: 'pref::Toggle_Fill',
-      G: 'pref::Toggle_Cutout',
+      a: 'pref::Toggle_Animate',
+      s: 'pref::Toggle_Stroke',
+      d: 'pref::Toggle_Drama',
+      f: 'pref::Toggle_Fill',
+      g: 'pref::Toggle_Cutout',
 
       'Shift Row': '',
-      Z: 'pref::Toggle_Bold',
-      X: 'pref::Toggle_Medium',
-      C: 'pref::Toggle_Regular',
-      V: 'pref::Toggle_Light',
-      B: 'pref::Toggle_Background',
+      z: 'pref::Toggle_Bold',
+      x: 'pref::Toggle_Medium',
+      c: 'pref::Toggle_Regular',
+      v: 'pref::Toggle_Light',
+      b: 'pref::Toggle_Background',
 
-      '.': 'ui::Open_Settings',
-      '/': 'ui::Show_Documentation'
+      'Geology Layers (Uppercase)': '',
+      Z: 'pref::Toggle_Boulder',
+      X: 'pref::Toggle_Rock',
+      C: 'pref::Toggle_Gravel',
+      V: 'pref::Toggle_Sand',
+      B: 'pref::Toggle_Sediment',
+
+      ',': 'ui::Open_Settings',
+      '?': 'ui::Show_Documentation'
     },
     descriptions: {
       'ui::Toggle_Presentation': 'Toggle presentation mode',
@@ -51,12 +73,17 @@ export const default_keymap = [
       'pref::Toggle_Background': 'Toggle background fill on posters',
       'pref::Toggle_Drama': 'Toggle dynamic lighting on posters',
       'pref::Toggle_Animate': 'Toggle poster animation',
-      'pref::Toggle_Info': 'Toggle FPS and viewbox display',
+      'pref::Toggle_Info': 'Toggle FPS and animation info',
       'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view',
       'pref::Toggle_Bold': 'Toggle bold layer visibility',
       'pref::Toggle_Medium': 'Toggle medium layer visibility',
       'pref::Toggle_Regular': 'Toggle regular layer visibility',
       'pref::Toggle_Light': 'Toggle light layer visibility',
+      'pref::Toggle_Boulder': 'Toggle boulder visibility',
+      'pref::Toggle_Rock': 'Toggle rock visibility',
+      'pref::Toggle_Gravel': 'Toggle gravel visibility',
+      'pref::Toggle_Sand': 'Toggle sand visibility',
+      'pref::Toggle_Sediment': 'Toggle sediment visibility',
       'nav::Go_Home': 'To home',
       'nav::Go_Statements': 'To statements',
       'nav::Go_Events': 'To events',

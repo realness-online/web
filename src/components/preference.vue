@@ -15,7 +15,28 @@
     }
   })
   const preference = preferences[props.name]
-  const toggle = () => (preference.value = !preference.value)
+  const toggle = () => {
+    const new_state = !preference.value
+    preference.value = new_state
+
+    // Special logic: when turning cutout ON, enable all geology layers
+    if (props.name === 'cutout' && new_state) {
+      preferences.boulder.value = true
+      preferences.rock.value = true
+      preferences.gravel.value = true
+      preferences.sand.value = true
+      preferences.sediment.value = true
+    }
+
+    // Special logic: when turning fill ON, enable all shadow layers
+    if (props.name === 'fill' && new_state) {
+      preferences.bold.value = true
+      preferences.medium.value = true
+      preferences.regular.value = true
+      preferences.light.value = true
+      preferences.background.value = true
+    }
+  }
 </script>
 
 <template>

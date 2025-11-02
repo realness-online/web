@@ -100,7 +100,13 @@
         <preference
           name="stroke"
           title="Outline your graphic with a stroke in relevant color" />
-        <preference name="cutout" title="Display coutouts of the poster" />
+        <preference name="cutout" title="Display cutouts of the poster">
+          <preference name="boulder" />
+          <preference name="rock" />
+          <preference name="gravel" />
+          <preference name="sand" />
+          <preference name="sediment" />
+        </preference>
         <preference name="drama" title="Dynamic lighting" />
         <preference
           name="adobe"
@@ -183,7 +189,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: base-line * 2;
-      max-height: 70vh;
+
       overflow-y: auto;
       padding: 0 base-line;
     }

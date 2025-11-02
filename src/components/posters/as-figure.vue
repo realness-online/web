@@ -8,7 +8,14 @@
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
-  import { cutout } from '@/utils/preference'
+  import {
+    cutout,
+    boulder,
+    rock,
+    gravel,
+    sand,
+    sediment
+  } from '@/utils/preference'
   import {
     ref,
     computed,
@@ -40,11 +47,11 @@
     sediment: false
   })
   const show_symbols = computed(() => ({
-    boulder: cutout.value && symbol_loaded.value.boulder,
-    rock: cutout.value && symbol_loaded.value.rock,
-    gravel: cutout.value && symbol_loaded.value.gravel,
-    sand: cutout.value && symbol_loaded.value.sand,
-    sediment: cutout.value && symbol_loaded.value.sediment
+    boulder: cutout.value && boulder.value && symbol_loaded.value.boulder,
+    rock: cutout.value && rock.value && symbol_loaded.value.rock,
+    gravel: cutout.value && gravel.value && symbol_loaded.value.gravel,
+    sand: cutout.value && sand.value && symbol_loaded.value.sand,
+    sediment: cutout.value && sediment.value && symbol_loaded.value.sediment
   }))
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -95,9 +102,7 @@
         sand: false,
         sediment: false
       }
-     else if (vector.value)
-      load_symbols()
-
+    else if (vector.value) load_symbols()
   })
   updated(() => {
     const fragment = window.location.hash.substring(1)
@@ -126,19 +131,19 @@
       @click="vector_click"
       @show="on_show"
       :focusable="false" />
-    <svg v-if="vector && cutout" v-show="false">
-      <as-symbol :itemid="`${itemid}-boulder`" />
-      <as-symbol :itemid="`${itemid}-rock`" />
-      <as-symbol :itemid="`${itemid}-gravel`" />
-      <as-symbol :itemid="`${itemid}-sand`" />
-      <as-symbol :itemid="`${itemid}-sediment`" />
+    <svg v-if="vector" style="display: none">
+      <as-symbol v-if="cutout && boulder" :itemid="`${itemid}-boulder`" />
+      <as-symbol v-if="cutout && rock" :itemid="`${itemid}-rock`" />
+      <as-symbol v-if="cutout && gravel" :itemid="`${itemid}-gravel`" />
+      <as-symbol v-if="cutout && sand" :itemid="`${itemid}-sand`" />
+      <as-symbol v-if="cutout && sediment" :itemid="`${itemid}-sediment`" />
     </svg>
   </figure>
 </template>
 
 <style lang="stylus">
   figure.poster {
-    min-width: 512px;
+
     min-height: 512px;
     border-radius: round((base-line * .03), 2);
     position: relative;
