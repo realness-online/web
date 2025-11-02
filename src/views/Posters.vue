@@ -23,12 +23,8 @@
     poster_shown
   } = use_posters()
 
-  const {
-    can_add,
-    select_photo,
-    queue_items,
-    init_processing_queue
-  } = use_vectorize()
+  const { can_add, select_photo, queue_items, init_processing_queue } =
+    use_vectorize()
 
   const { process_directory } = use_directory()
   const poster_to_remove = ref(null)
@@ -138,7 +134,7 @@
       <logo-as-link tabindex="-1" />
     </header>
     <h1>Posters</h1>
-    <article @focusin="handle_focus" >
+    <article @focusin="handle_focus">
       <as-svg-processing
         v-for="item in queue_items"
         :key="item.id"
@@ -210,14 +206,12 @@
         gap: 0;
         scroll-behavior: smooth;
         height: 80vh;
-        scroll-snap-type: x mandatory;
+        scroll-snap-type: x proximity;
         & > figure.poster {
           height: 100%;
           flex-shrink: 0;
           scroll-snap-align: center;
-          &.landscape {
-            min-width: 100vh;
-          }
+          min-width: 100vw;
         }
       }
     }
