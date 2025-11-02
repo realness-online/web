@@ -23,6 +23,8 @@
     } else {
       console.log('[preferences] opening')
       settings.value.showModal()
+      // Focus the dialog itself to prevent inputs from getting focus
+      settings.value.focus()
     }
   }
 

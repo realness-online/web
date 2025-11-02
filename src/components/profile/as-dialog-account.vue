@@ -21,6 +21,8 @@
       show_sign_in.value = false
       is_mobile_form_visible.value = false
       form.value.showModal()
+      // Focus the dialog itself to prevent inputs from getting focus
+      form.value.focus()
     }
   }
   const dialog_click = event => {
@@ -52,6 +54,8 @@
         show_sign_in.value = false
         is_mobile_form_visible.value = false
         form.value.showModal()
+        // Focus the dialog itself to prevent inputs from getting focus
+        form.value.focus()
       }
     },
     { immediate: true }
@@ -63,6 +67,8 @@
       show_sign_in.value = false
       is_mobile_form_visible.value = false
       form.value.showModal()
+      // Focus the dialog itself to prevent inputs from getting focus
+      form.value.focus()
     }
   })
 
