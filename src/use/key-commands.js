@@ -41,8 +41,8 @@ export const use_key_commands = () => {
     const active = document.activeElement
     if (!active) return false
 
-    // If focus is on BODY, allow key commands
-    if (active.tagName === 'BODY') return false
+    // If focus is on BODY or DIALOG, allow key commands
+    if (active.tagName === 'BODY' || active.tagName === 'DIALOG') return false
 
     const input_tags = ['INPUT', 'TEXTAREA', 'SELECT']
     const is_input = input_tags.includes(active.tagName)

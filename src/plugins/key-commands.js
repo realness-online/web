@@ -34,6 +34,21 @@ export const key_commands_plugin = {
       if (key.length === 1 && /[a-zA-Z]/.test(key)) {
         return `Key${key.toUpperCase()}`
       }
+      // Punctuation and symbols mapping
+      const punctuation_map = {
+        ',': 'Comma',
+        '.': 'Period',
+        '/': 'Slash',
+        ';': 'Semicolon',
+        "'": 'Quote',
+        '[': 'BracketLeft',
+        ']': 'BracketRight',
+        '\\': 'Backslash',
+        '`': 'Backquote',
+        '-': 'Minus',
+        '=': 'Equal'
+      }
+      if (punctuation_map[key]) return punctuation_map[key]
       // Keep everything else as-is
       return key
     }
@@ -110,6 +125,7 @@ export const key_commands_plugin = {
       { immediate: true }
     )
 
-    document.addEventListener('keydown', handle_keydown)
+    // Use window with capture phase to intercept events even from modal dialogs
+    window.addEventListener('keydown', handle_keydown, true)
   }
 }

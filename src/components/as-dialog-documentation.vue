@@ -11,7 +11,12 @@
   const current_file = ref('documentation')
 
   const show_modal = () => {
-    dialog.value.showModal()
+    if (!dialog.value) return
+    if (dialog.value.open) {
+      dialog.value.close()
+    } else {
+      dialog.value.showModal()
+    }
   }
 
   const handle_click = event => {

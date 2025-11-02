@@ -14,9 +14,14 @@
   const is_mobile_form_visible = ref(false)
 
   const show_form = () => {
-    show_sign_in.value = false
-    is_mobile_form_visible.value = false
-    form.value.showModal()
+    if (!form.value) return
+    if (form.value.open) {
+      form.value.close()
+    } else {
+      show_sign_in.value = false
+      is_mobile_form_visible.value = false
+      form.value.showModal()
+    }
   }
   const dialog_click = event => {
     if (event.target === form.value) form.value.close()
@@ -53,10 +58,6 @@
   )
 
   mounted(async () => {
-    const my = await load(localStorage.me)
-    const maybe_name = my && my['first_name']
-    if (maybe_name) first_name.value = maybe_name
-
     // Check if we should show dialog on mount (e.g., if URL has #account)
     if (route.hash === '#account' && form.value) {
       show_sign_in.value = false
@@ -64,6 +65,8 @@
       form.value.showModal()
     }
   })
+
+  defineExpose({ show: show_form })
 </script>
 
 <template>
@@ -71,16 +74,26 @@
   <dialog id="account" ref="form" @click="dialog_click" @close="on_close">
     <name-as-form />
     <call-to-action v-if="!show_sign_in" />
-    <as-sign-on v-else @signed_in="signed_in" @showing_mobile="on_showing_mobile" />
+    <as-sign-on
+      v-else
+      @signed_in="signed_in"
+      @showing_mobile="on_showing_mobile" />
     <menu>
       <button v-if="current_user" @click="sign_off">Sign off</button>
-      <button v-else-if="!is_mobile_form_visible" @click="show_sign_in = true">Sign in</button>
+      <button v-else-if="!is_mobile_form_visible" @click="show_sign_in = true">
+        Sign in
+      </button>
     </menu>
   </dialog>
 </template>
 
 <style lang="stylus">
   a#toggle-account {
+    display: none;
+  }
+
+  #navigation a#toggle-account {
+    display: block;
     position: fixed;
     top: inset(top,  base-line);
     left: base-line;

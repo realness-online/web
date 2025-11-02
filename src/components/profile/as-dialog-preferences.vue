@@ -11,7 +11,19 @@
   const settings = ref(null)
 
   const show_settings = () => {
-    settings.value.showModal()
+    console.log('[preferences] show_settings called')
+    if (!settings.value) {
+      console.log('[preferences] settings.value is null')
+      return
+    }
+    console.log('[preferences] settings.value.open:', settings.value.open)
+    if (settings.value.open) {
+      console.log('[preferences] closing')
+      settings.value.close()
+    } else {
+      console.log('[preferences] opening')
+      settings.value.showModal()
+    }
   }
 
   const handle_click = event => {

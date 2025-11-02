@@ -2,6 +2,7 @@
   import sync from '@/components/sync'
   import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
+  import DialogAccount from '@/components/profile/as-dialog-account.vue'
   import FpsComponent from '@/components/fps'
   import Viewbox from '@/components/viewbox'
   import {
@@ -62,6 +63,7 @@
   provide('documentation', documentation)
 
   const preferences_dialog = ref(null)
+  const account_dialog = ref(null)
   const { register, register_preference } = use_keymap('Global')
 
   register('pref::Toggle_Fill', () => {
@@ -108,14 +110,15 @@
 
   register('ui::Show_Documentation', () => {
     console.log('ui::Show_Documentation')
-    if (documentation.value?.dialog?.open) documentation.value.dialog.close()
-    else documentation.value?.show()
+    documentation.value?.show()
   })
   register('ui::Open_Settings', () => {
     console.log('ui::Open_Settings')
-    if (preferences_dialog.value?.settings?.open)
-      preferences_dialog.value.settings.close()
-    else preferences_dialog.value?.show()
+    preferences_dialog.value?.show()
+  })
+  register('ui::Open_Account', () => {
+    console.log('ui::Open_Account')
+    account_dialog.value?.show()
   })
   register('ui::Toggle_Presentation', () =>
     !document.fullscreenElement
@@ -178,6 +181,7 @@
     <viewbox v-if="info" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
+    <dialog-account ref="account_dialog" />
     <input
       ref="image_picker"
       class="poster picker"
