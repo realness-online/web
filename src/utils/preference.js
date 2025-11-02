@@ -13,6 +13,12 @@ export const regular = storage('regular', true)
 export const light = storage('light', true)
 export const background = storage('background', true)
 
+export const boulder = storage('boulder', true)
+export const rock = storage('rock', true)
+export const gravel = storage('gravel', true)
+export const sand = storage('sand', true)
+export const sediment = storage('sediment', true)
+
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
 

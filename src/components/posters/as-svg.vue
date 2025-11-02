@@ -29,7 +29,13 @@
     regular,
     light,
     fill,
-    stroke
+    stroke,
+    cutout,
+    boulder,
+    rock,
+    gravel,
+    sand,
+    sediment
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -110,6 +116,22 @@
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
+
+  const boulder_visible = computed(
+    () => cutout.value && boulder.value && vector.value?.boulder
+  )
+  const rock_visible = computed(
+    () => cutout.value && rock.value && vector.value?.rock
+  )
+  const gravel_visible = computed(
+    () => cutout.value && gravel.value && vector.value?.gravel
+  )
+  const sand_visible = computed(
+    () => cutout.value && sand.value && vector.value?.sand
+  )
+  const sediment_visible = computed(
+    () => cutout.value && sediment.value && vector.value?.sediment
+  )
 </script>
 
 <template>
@@ -137,13 +159,40 @@
       width="111%"
       height="133%" />
 
-    <slot>
-      <use :id="query('boulder-use')" itemprop="boulder" :href="fragment('boulder')" />
-      <use :id="query('rock-use')" itemprop="rock" :href="fragment('rock')" />
-      <use :id="query('gravel-use')" itemprop="gravel" :href="fragment('gravel')" />
-      <use :id="query('sand-use')" itemprop="sand" :href="fragment('sand')" />
-      <use :id="query('sediment-use')" itemprop="sediment" :href="fragment('sediment')" />
-    </slot>
+    <g class="cutouts">
+      <slot>
+        <use
+          v-if="boulder_visible"
+          :key="`${itemid}-boulder-use`"
+          :id="query('boulder-use')"
+          itemprop="boulder"
+          :href="fragment('boulder')" />
+        <use
+          v-if="rock_visible"
+          :key="`${itemid}-rock-use`"
+          :id="query('rock-use')"
+          itemprop="rock"
+          :href="fragment('rock')" />
+        <use
+          v-if="gravel_visible"
+          :key="`${itemid}-gravel-use`"
+          :id="query('gravel-use')"
+          itemprop="gravel"
+          :href="fragment('gravel')" />
+        <use
+          v-if="sand_visible"
+          :key="`${itemid}-sand-use`"
+          :id="query('sand-use')"
+          itemprop="sand"
+          :href="fragment('sand')" />
+        <use
+          v-if="sediment_visible"
+          :key="`${itemid}-sediment-use`"
+          :id="query('sediment-use')"
+          itemprop="sediment"
+          :href="fragment('sediment')" />
+      </slot>
+    </g>
     <rect
       v-show="drama"
       id="lightbar-front"
@@ -250,9 +299,14 @@
       cursor: grabbing;
     }
     & rect#lightbar-back,
-    & rect#lightbar-front {
+    & rect#lightbar-front,
+    & > rect:first-of-type,
+    & pattern path[itemprop],
+    & pattern rect[itemprop='background'] {
       pointer-events: none;
-      transition: opacity 0.75s ease, display 1.66s ease;
+      transition:
+        opacity 0.75s ease,
+        display 1.66s ease;
       transition-behavior: allow-discrete;
       @starting-style {
         opacity: 0;
@@ -266,12 +320,19 @@
       opacity: 0;
       filter: saturate(100%) brightness(100%);
       will-change: opacity, filter;
-      transition: filter 0.35s ease-out;
+      transition:
+        filter 0.35s ease-out,
+        opacity 0.75s ease,
+        display 1.66s ease;
+      transition-behavior: allow-discrete;
       animation-name: cutout-fade;
       animation-duration: 0.9s;
-      animation-timing-function: cubic-bezier(.22,.61,.36,1);
+      animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
       animation-fill-mode: both;
       animation-iteration-count: 1;
+      @starting-style {
+        opacity: 0;
+      }
 
       &:hover {
         transition: filter 0.33s ease;
@@ -286,11 +347,21 @@
     }
 
     /* Staggered appearance: largest first */
-    & use[itemprop='boulder'] { animation-delay: 0.12s }
-    & use[itemprop='rock'] { animation-delay: 0.24s }
-    & use[itemprop='gravel'] { animation-delay: 0.36s }
-    & use[itemprop='sand'] { animation-delay: 0.48s }
-    & use[itemprop='sediment'] { animation-delay: 0.60s }
+    & use[itemprop='boulder'] {
+      animation-delay: 0.12s;
+    }
+    & use[itemprop='rock'] {
+      animation-delay: 0.24s;
+    }
+    & use[itemprop='gravel'] {
+      animation-delay: 0.36s;
+    }
+    & use[itemprop='sand'] {
+      animation-delay: 0.48s;
+    }
+    & use[itemprop='sediment'] {
+      animation-delay: 0.6s;
+    }
 
     /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {
@@ -303,6 +374,5 @@
         opacity: 0.5;
       }
     }
-
   }
 </style>

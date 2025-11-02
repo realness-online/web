@@ -25,6 +25,11 @@
     regular,
     light,
     background,
+    boulder,
+    rock,
+    gravel,
+    sand,
+    sediment,
     animate,
     info,
     storytelling,
@@ -72,7 +77,17 @@
   })
 
   register_preference('pref::Toggle_Stroke', stroke)
-  register_preference('pref::Toggle_Cutout', cutout)
+  register('pref::Toggle_Cutout', () => {
+    const new_state = !cutout.value
+    cutout.value = new_state
+    if (new_state) {
+      boulder.value = true
+      rock.value = true
+      gravel.value = true
+      sand.value = true
+      sediment.value = true
+    }
+  })
   register_preference('pref::Toggle_Background', background)
   register_preference('pref::Toggle_Drama', drama)
   register_preference('pref::Toggle_Animate', animate)
@@ -84,6 +99,12 @@
   register_preference('pref::Toggle_Medium', medium)
   register_preference('pref::Toggle_Regular', regular)
   register_preference('pref::Toggle_Light', light)
+
+  register_preference('pref::Toggle_Boulder', boulder)
+  register_preference('pref::Toggle_Rock', rock)
+  register_preference('pref::Toggle_Gravel', gravel)
+  register_preference('pref::Toggle_Sand', sand)
+  register_preference('pref::Toggle_Sediment', sediment)
 
   register('ui::Show_Documentation', () => {
     console.log('ui::Show_Documentation')

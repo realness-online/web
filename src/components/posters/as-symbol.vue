@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted, watch } from 'vue'
   import { load } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -12,19 +12,34 @@
   })
 
   const element = ref(null)
+  const symbol_content = ref('')
+  const symbol_id = ref('')
+  const symbol_viewbox = ref('')
 
-  mounted(async () => {
-    await load(props.itemid) // make sure it cached
+  const load_symbol = async () => {
+    await load(props.itemid)
     const html_string = await get(props.itemid)
     if (!html_string) return
 
     const fragment = hydrate(html_string)
     if (!fragment) return
     const loaded = fragment.querySelector(`[itemid="${props.itemid}"]`)
-    if (loaded && element.value) element.value.outerHTML = loaded.outerHTML
-  })
+    if (loaded) {
+      symbol_content.value = loaded.innerHTML
+      symbol_id.value = loaded.id || props.itemid
+      symbol_viewbox.value = loaded.getAttribute('viewBox') || ''
+    }
+  }
+
+  mounted(load_symbol)
+  watch(() => props.itemid, load_symbol)
 </script>
 
 <template>
-  <symbol ref="element" />
+  <symbol
+    ref="element"
+    :id="symbol_id"
+    v-bind:viewBox="symbol_viewbox || undefined"
+    :itemid="itemid"
+    v-html="symbol_content" />
 </template>

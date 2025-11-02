@@ -3,7 +3,7 @@
   import { is_vector_id } from '@/use/poster'
   /** @typedef {import('@/types').Id} Id */
 
-  import { stroke } from '@/utils/preference'
+  import { stroke, drama } from '@/utils/preference'
 
   const props = defineProps({
     id: {
@@ -15,7 +15,8 @@
   })
 
   /** @param {string} add */
-  const fragment = add => `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
+  const fragment = add =>
+    `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
   /** @param {number} base_duration */
   const duration = base_duration => `${base_duration}s`
@@ -275,46 +276,48 @@
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
 
-    <animate
-      :href="fragment('boulder-use')"
-      attributeName="filter"
-      repeatCount="indefinite"
-      :dur="duration(8)"
-      values="brightness(100%);brightness(110%);brightness(100%)"
-      keyTimes="0;0.5;1"
-      keySplines="0.4 0 0.6 1" />
-    <animate
-      :href="fragment('rock-use')"
-      attributeName="filter"
-      repeatCount="indefinite"
-      :dur="duration(13)"
-      values="brightness(100%);brightness(110%);brightness(100%)"
-      keyTimes="0;0.5;1"
-      keySplines="0.4 0 0.6 1" />
-    <animate
-      :href="fragment('gravel-use')"
-      attributeName="filter"
-      repeatCount="indefinite"
-      :dur="duration(5)"
-      values="brightness(100%);brightness(110%);brightness(100%)"
-      keyTimes="0;0.5;1"
-      keySplines="0.4 0 0.6 1" />
-    <animate
-      :href="fragment('sand-use')"
-      attributeName="filter"
-      repeatCount="indefinite"
-      :dur="duration(3)"
-      values="brightness(100%);brightness(110%);brightness(100%)"
-      keyTimes="0;0.5;1"
-      keySplines="0.4 0 0.6 1" />
-    <animate
-      :href="fragment('sediment-use')"
-      attributeName="filter"
-      repeatCount="indefinite"
-      :dur="duration(2)"
-      values="brightness(100%);brightness(103%);brightness(100%)"
-      keyTimes="0;0.5;1"
-      keySplines="0.4 0 0.6 1" />
+    <g v-if="drama" class="geology">
+      <animate
+        :href="fragment('boulder-use')"
+        attributeName="filter"
+        repeatCount="indefinite"
+        :dur="duration(8)"
+        values="brightness(100%);brightness(110%);brightness(100%)"
+        keyTimes="0;0.5;1"
+        keySplines="0.4 0 0.6 1" />
+      <animate
+        :href="fragment('rock-use')"
+        attributeName="filter"
+        repeatCount="indefinite"
+        :dur="duration(13)"
+        values="brightness(100%);brightness(110%);brightness(100%)"
+        keyTimes="0;0.5;1"
+        keySplines="0.4 0 0.6 1" />
+      <animate
+        :href="fragment('gravel-use')"
+        attributeName="filter"
+        repeatCount="indefinite"
+        :dur="duration(5)"
+        values="brightness(100%);brightness(110%);brightness(100%)"
+        keyTimes="0;0.5;1"
+        keySplines="0.4 0 0.6 1" />
+      <animate
+        :href="fragment('sand-use')"
+        attributeName="filter"
+        repeatCount="indefinite"
+        :dur="duration(3)"
+        values="brightness(100%);brightness(110%);brightness(100%)"
+        keyTimes="0;0.5;1"
+        keySplines="0.4 0 0.6 1" />
+      <animate
+        :href="fragment('sediment-use')"
+        attributeName="filter"
+        repeatCount="indefinite"
+        :dur="duration(2)"
+        values="brightness(100%);brightness(103%);brightness(100%)"
+        keyTimes="0;0.5;1"
+        keySplines="0.4 0 0.6 1" />
+    </g>
   </g>
 </template>
 
