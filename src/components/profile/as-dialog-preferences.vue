@@ -103,6 +103,10 @@
       </header>
       <menu>
         <preference name="animate" title="Animate posters" />
+        <preference
+          name="slice"
+          title="Slice poster aspect ratio"
+          subtitle="Use 'slice' instead of 'meet' to fill the container" />
         <preference name="fill" title="Use a gradient to fill up your poster">
           <preference name="bold" />
           <preference name="medium" />

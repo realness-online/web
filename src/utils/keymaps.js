@@ -37,6 +37,7 @@ export const default_keymap = [
       'Tab Row': '',
       i: 'pref::Toggle_Info',
       o: 'pref::Toggle_Storytelling',
+      O: 'pref::Toggle_Slice',
       p: 'ui::Toggle_Presentation',
 
       'Home Row': '',
@@ -77,6 +78,7 @@ export const default_keymap = [
       'pref::Toggle_Animate': 'Toggle poster animation',
       'pref::Toggle_Info': 'Toggle FPS and animation info',
       'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view',
+      'pref::Toggle_Slice': 'Toggle poster aspect ratio (meet/slice)',
       'pref::Toggle_Bold': 'Toggle bold layer visibility',
       'pref::Toggle_Medium': 'Toggle medium layer visibility',
       'pref::Toggle_Regular': 'Toggle regular layer visibility',

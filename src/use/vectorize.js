@@ -94,6 +94,71 @@ const load_queue = async () => {
   queue_items.value = await Queue.get_all()
 }
 
+/**
+ * Sort cutout elements into geology layers based on progress
+ * @param {Object} vector - Vector object with cutout array
+ * @param {Id} id - Poster itemid
+ * @returns {Object} Cutouts organized by layer with symbol elements
+ */
+const sort_cutouts_into_layers = (vector, id) => {
+  const cutouts = {
+    sediment: [],
+    sand: [],
+    gravel: [],
+    rock: [],
+    boulder: []
+  }
+
+  vector.cutout.forEach(cutout => {
+    cutout.removeAttribute('itemprop')
+    cutout.removeAttribute('tabindex')
+    const progress = parseInt(cutout.getAttribute('data-progress') || 0)
+
+    if (progress < 60) cutouts.sediment.push(cutout)
+    else if (progress < 70) cutouts.sand.push(cutout)
+    else if (progress < 80) cutouts.gravel.push(cutout)
+    else if (progress < 90) cutouts.rock.push(cutout)
+    else cutouts.boulder.push(cutout)
+  })
+
+  // Convert arrays to symbol elements
+  Object.keys(cutouts).forEach(layer => {
+    if (cutouts[layer].length > 0) {
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+
+      symbol.setAttribute('viewBox', `0 0 ${vector.width} ${vector.height}`)
+      cutouts[layer].forEach(cutout => symbol.appendChild(cutout))
+
+      symbol.setAttribute('id', `${as_query_id(id)}-${layer}`)
+      symbol.setAttribute('itemid', `${id}-${layer}`)
+      symbol.setAttribute('itemscope', '')
+      symbol.setAttribute('itemtype', '/cutouts')
+
+      cutouts[layer] = symbol
+    }
+  })
+
+  return cutouts
+}
+
+/**
+ * Save poster and cutout symbols
+ * @param {Id} id - Poster itemid
+ * @param {Element} poster_element - Poster SVG element
+ * @param {Object} cutouts - Cutout symbols by layer
+ */
+const save_poster_and_symbols = async (id, poster_element, cutouts) => {
+  await new Poster(id).save(poster_element)
+  await new Cutout(`${id}-sediment`).save(cutouts.sediment)
+  await new Cutout(`${id}-sand`).save(cutouts.sand)
+  await new Cutout(`${id}-gravel`).save(cutouts.gravel)
+  await new Cutout(`${id}-rock`).save(cutouts.rock)
+  await new Cutout(`${id}-boulder`).save(cutouts.boulder)
+}
+
 export const use = () => {
   const router = use_router()
   const image_picker = inject('image-picker', ref(null))
@@ -427,7 +492,7 @@ export const use = () => {
 
   const optimized = async message => {
     const id = /** @type {Id} */ (current_item_id.value)
-    const optimized = get_item(message.data.vector)
+    const optimized_data = get_item(message.data.vector)
     const element = document.getElementById(as_query_id(id))
 
     if (!element) {
@@ -435,11 +500,11 @@ export const use = () => {
       return
     }
 
-    new_vector.value.light = optimized.light
-    new_vector.value.regular = optimized.regular
-    new_vector.value.medium = optimized.medium
-    new_vector.value.bold = optimized.bold
-    new_vector.value.cutout = optimized.cutout
+    new_vector.value.light = optimized_data.light
+    new_vector.value.regular = optimized_data.regular
+    new_vector.value.medium = optimized_data.medium
+    new_vector.value.bold = optimized_data.bold
+    new_vector.value.cutout = optimized_data.cutout
     new_vector.value.cutouts = {
       sediment: [],
       sand: [],
@@ -451,52 +516,11 @@ export const use = () => {
     optimizer.value.removeEventListener('message', optimized)
     await tick()
 
-    const { cutouts, cutout } = new_vector.value
-    cutout.forEach(cutout => {
-      cutout.removeAttribute('itemprop')
-      cutout.removeAttribute('tabindex')
-      const progress = parseInt(cutout.getAttribute('data-progress') || 0)
-
-      if (progress < 60) cutouts.sediment.push(cutout)
-      else if (progress < 70) cutouts.sand.push(cutout)
-      else if (progress < 80) cutouts.gravel.push(cutout)
-      else if (progress < 90) cutouts.rock.push(cutout)
-      else cutouts.boulder.push(cutout)
-    })
+    const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
 
-    Object.keys(cutouts).forEach(size => {
-      if (cutouts[size].length > 0) {
-        const symbol = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          'symbol'
-        )
-
-        symbol.setAttribute(
-          'viewBox',
-          `0 0 ${new_vector.value.width} ${new_vector.value.height}`
-        )
-
-        cutouts[size].forEach(cutout => {
-          symbol.appendChild(cutout)
-        })
-
-        // ensure saved symbol is self-described and queryable by storage
-        symbol.setAttribute('id', `${as_query_id(id)}-${size}`)
-        symbol.setAttribute('itemid', `${id}-${size}`)
-        symbol.setAttribute('itemscope', '')
-        symbol.setAttribute('itemtype', '/cutouts')
-
-        cutouts[size] = symbol
-      }
-    })
     console.log('sorted poster', new_vector.value)
-    new Poster(id).save(element)
-    new Cutout(`${id}-sediment`).save(cutouts.sediment)
-    new Cutout(`${id}-sand`).save(cutouts.sand)
-    new Cutout(`${id}-gravel`).save(cutouts.gravel)
-    new Cutout(`${id}-rock`).save(cutouts.rock)
-    new Cutout(`${id}-boulder`).save(cutouts.boulder)
+    await save_poster_and_symbols(id, element, cutouts)
 
     completed_posters.value.push(id)
 
