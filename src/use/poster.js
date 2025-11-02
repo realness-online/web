@@ -87,19 +87,30 @@ export const use = () => {
     return 'xMidYMid meet'
   })
 
-  const should_ken_burns = computed(() => {
-    const result = storytelling.value && slice_preference.value
-    console.log('[ken-burns]', {
-      storytelling: storytelling.value,
-      slice: slice_preference.value,
-      landscape: landscape.value,
-      should_animate: result
-    })
-    return result
-  })
+  const should_ken_burns = computed(
+    () => storytelling.value && slice_preference.value
+  )
 
-  const ken_burns_axis = computed(() => {
-    return landscape.value ? 'y' : 'x'
+  const ken_burns_axis = computed(() => (landscape.value ? 'y' : 'x'))
+
+  const ken_burns_range = computed(() => {
+    if (!vector_element.value || !vector.value) return 5
+
+    const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
+    const content_width = viewbox_parts[2]
+    const content_height = viewbox_parts[3]
+    const content_aspect = content_width / content_height
+
+    const container_rect = vector_element.value.getBoundingClientRect()
+    const container_aspect = container_rect.width / container_rect.height
+
+    if (content_aspect < container_aspect) {
+      const scale_ratio = container_aspect / content_aspect
+      return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
+    } else {
+      const scale_ratio = content_aspect / container_aspect
+      return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
+    }
   })
 
   const landscape = computed(() => {
@@ -260,7 +271,8 @@ export const use = () => {
     cutout_end,
     aspect_toggle,
     should_ken_burns,
-    ken_burns_axis
+    ken_burns_axis,
+    ken_burns_range
   }
 }
 

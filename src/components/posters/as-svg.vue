@@ -73,7 +73,8 @@
     dynamic_viewbox,
     focus,
     should_ken_burns,
-    ken_burns_axis
+    ken_burns_axis,
+    ken_burns_range
   } = use_poster()
 
   const trigger = ref(null)
@@ -150,10 +151,6 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :data-storytelling="storytelling"
-    :data-slice="slice"
-    :data-landscape="landscape"
-    :data-ken-burns="should_ken_burns"
     :class="{
       animate,
       landscape,
@@ -161,6 +158,7 @@
     }">
     <g
       class="ken-burns-content"
+      :style="{ '--ken-burns-range': `${ken_burns_range}%` }"
       :class="{
         'ken-burns-x': should_ken_burns && ken_burns_axis === 'x',
         'ken-burns-y': should_ken_burns && ken_burns_axis === 'y'
@@ -302,25 +300,25 @@
 
   @keyframes ken-burns-y {
     0% {
-      transform: translateY(-5%);
+      transform: translateY(calc(var(--ken-burns-range) * -1));
     }
     50% {
-      transform: translateY(5%);
+      transform: translateY(var(--ken-burns-range));
     }
     100% {
-      transform: translateY(-5%);
+      transform: translateY(calc(var(--ken-burns-range) * -1));
     }
   }
 
   @keyframes ken-burns-x {
     0% {
-      transform: translateX(-5%);
+      transform: translateX(calc(var(--ken-burns-range) * -1));
     }
     50% {
-      transform: translateX(5%);
+      transform: translateX(var(--ken-burns-range));
     }
     100% {
-      transform: translateX(-5%);
+      transform: translateX(calc(var(--ken-burns-range) * -1));
     }
   }
 
