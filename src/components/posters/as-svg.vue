@@ -35,7 +35,9 @@
     rock,
     gravel,
     sand,
-    sediment
+    sediment,
+    storytelling,
+    slice
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -69,7 +71,9 @@
     intersecting,
     is_hovered,
     dynamic_viewbox,
-    focus
+    focus,
+    should_ken_burns,
+    ken_burns_axis
   } = use_poster()
 
   const trigger = ref(null)
@@ -146,59 +150,74 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :class="{ animate, landscape, hovered: is_hovered }">
-    <rect
-      v-show="fill || stroke"
-      :fill="`url(${fragment('shadow')})`"
-      width="100%"
-      height="100%" />
-    <rect
-      v-show="drama"
-      id="lightbar-back"
-      fill="url(#lightbar)"
-      width="111%"
-      height="133%" />
+    :data-storytelling="storytelling"
+    :data-slice="slice"
+    :data-landscape="landscape"
+    :data-ken-burns="should_ken_burns"
+    :class="{
+      animate,
+      landscape,
+      hovered: is_hovered
+    }">
+    <g
+      class="ken-burns-content"
+      :class="{
+        'ken-burns-x': should_ken_burns && ken_burns_axis === 'x',
+        'ken-burns-y': should_ken_burns && ken_burns_axis === 'y'
+      }">
+      <rect
+        v-show="fill || stroke"
+        :fill="`url(${fragment('shadow')})`"
+        width="100%"
+        height="100%" />
+      <rect
+        v-show="drama"
+        id="lightbar-back"
+        fill="url(#lightbar)"
+        width="111%"
+        height="133%" />
 
-    <g class="cutouts">
-      <slot>
-        <use
-          v-if="boulder_visible"
-          :key="`${itemid}-boulder-use`"
-          :id="query('boulder-use')"
-          itemprop="boulder"
-          :href="fragment('boulder')" />
-        <use
-          v-if="rock_visible"
-          :key="`${itemid}-rock-use`"
-          :id="query('rock-use')"
-          itemprop="rock"
-          :href="fragment('rock')" />
-        <use
-          v-if="gravel_visible"
-          :key="`${itemid}-gravel-use`"
-          :id="query('gravel-use')"
-          itemprop="gravel"
-          :href="fragment('gravel')" />
-        <use
-          v-if="sand_visible"
-          :key="`${itemid}-sand-use`"
-          :id="query('sand-use')"
-          itemprop="sand"
-          :href="fragment('sand')" />
-        <use
-          v-if="sediment_visible"
-          :key="`${itemid}-sediment-use`"
-          :id="query('sediment-use')"
-          itemprop="sediment"
-          :href="fragment('sediment')" />
-      </slot>
+      <g class="cutouts">
+        <slot>
+          <use
+            v-if="boulder_visible"
+            :key="`${itemid}-boulder-use`"
+            :id="query('boulder-use')"
+            itemprop="boulder"
+            :href="fragment('boulder')" />
+          <use
+            v-if="rock_visible"
+            :key="`${itemid}-rock-use`"
+            :id="query('rock-use')"
+            itemprop="rock"
+            :href="fragment('rock')" />
+          <use
+            v-if="gravel_visible"
+            :key="`${itemid}-gravel-use`"
+            :id="query('gravel-use')"
+            itemprop="gravel"
+            :href="fragment('gravel')" />
+          <use
+            v-if="sand_visible"
+            :key="`${itemid}-sand-use`"
+            :id="query('sand-use')"
+            itemprop="sand"
+            :href="fragment('sand')" />
+          <use
+            v-if="sediment_visible"
+            :key="`${itemid}-sediment-use`"
+            :id="query('sediment-use')"
+            itemprop="sediment"
+            :href="fragment('sediment')" />
+        </slot>
+      </g>
+      <rect
+        v-show="drama"
+        id="lightbar-front"
+        fill="url(#lightbar)"
+        width="222%"
+        height="200%" />
     </g>
-    <rect
-      v-show="drama"
-      id="lightbar-front"
-      fill="url(#lightbar)"
-      width="222%"
-      height="200%" />
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">
         <rect width="1.00" height="0.33" />
@@ -280,6 +299,31 @@
       opacity: 0.5;
     }
   }
+
+  @keyframes ken-burns-y {
+    0% {
+      transform: translateY(-5%);
+    }
+    50% {
+      transform: translateY(5%);
+    }
+    100% {
+      transform: translateY(-5%);
+    }
+  }
+
+  @keyframes ken-burns-x {
+    0% {
+      transform: translateX(-5%);
+    }
+    50% {
+      transform: translateX(5%);
+    }
+    100% {
+      transform: translateX(-5%);
+    }
+  }
+
   /* aspect-ratio: 2.76 / 1 // also film  28 years later used*/
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 1.618 / 1 // golden-ratio */
@@ -297,6 +341,15 @@
     contain: layout;
     &:active {
       cursor: grabbing;
+    }
+    & g.ken-burns-content {
+      transform-origin: center center;
+      &.ken-burns-y {
+        animation: ken-burns-y 20s ease-in-out infinite;
+      }
+      &.ken-burns-x {
+        animation: ken-burns-x 20s ease-in-out infinite;
+      }
     }
     & rect#lightbar-back,
     & rect#lightbar-front,
