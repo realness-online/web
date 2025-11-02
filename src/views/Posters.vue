@@ -188,6 +188,7 @@
     }
     & > article {
       standard-grid: gentle;
+      grid-auto-flow: row;
       grid-gap: 0;
       padding-bottom: base-line * 3;
       scroll-behavior: smooth;

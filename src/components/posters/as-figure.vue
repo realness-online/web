@@ -143,7 +143,6 @@
 
 <style lang="stylus">
   figure.poster {
-
     min-height: 512px;
     border-radius: round((base-line * .03), 2);
     position: relative;
@@ -157,6 +156,9 @@
     @media (orientation: landscape), (min-width: page-width) {
       &.landscape {
         grid-column-start: span 2;
+        + .landscape {
+          grid-column-start: span 3;
+        }
         &.new {
           grid-column-start: span 3;
         }

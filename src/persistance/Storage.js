@@ -11,9 +11,11 @@ import {
   as_filename,
   as_created_at,
   as_query_id,
-  is_itemid
+  is_itemid,
+  load_from_network
 } from '@/utils/itemid'
 import { prepare_upload_html } from '@/utils/upload-processor'
+import { del, get } from 'idb-keyval'
 
 /**
  * @interface
@@ -46,7 +48,18 @@ export class Poster extends Large(Cloud(Storage)) {}
 /**
  * @extends {Storage}
  */
-export class Cutout extends Large(Cloud(Storage)) {}
+export class Cutout extends Large(Cloud(Storage)) {
+  async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+    await super.save(items)
+
+    // After successful network save, prefetch from network to populate HTTP cache
+    // then remove from IndexedDB to rely on HTTP caching instead
+    if (navigator.onLine && current_user.value) {
+      await load_from_network(this.id)
+      await del(this.id)
+    }
+  }
+}
 
 /**
  * @extends {Storage}

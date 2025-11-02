@@ -34,6 +34,7 @@
     animate,
     info,
     storytelling,
+    slice,
     grid_overlay
   } from '@/utils/preference'
 
@@ -95,6 +96,7 @@
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
+  register_preference('pref::Toggle_Slice', slice)
   register_preference('pref::Toggle_Grid', grid_overlay)
 
   register_preference('pref::Toggle_Bold', bold)
