@@ -46,6 +46,10 @@ export const use = () => {
   const cutouts_loaded = ref(false)
   const loading_cutouts = ref(false)
 
+  const ken_burns_position = ref(
+    ['top', 'middle', 'bottom'][Math.floor(Math.random() * 3)]
+  )
+
   const is_hovered = ref(false)
   const storage_key = computed(() => `viewbox-${props.itemid}`)
   const viewbox_transform = use_storage(storage_key, {
@@ -269,7 +273,8 @@ export const use = () => {
     cutout_end,
     aspect_toggle,
     should_ken_burns,
-    ken_burns_range
+    ken_burns_range,
+    ken_burns_position
   }
 }
 

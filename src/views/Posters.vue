@@ -131,9 +131,10 @@
       <a v-if="can_add" hidden tabindex="-1" @click="process_directory">
         <icon name="picker" />
       </a>
+      <h1>Posters</h1>
       <logo-as-link tabindex="-1" />
     </header>
-    <h1>Posters</h1>
+
     <article @focusin="handle_focus">
       <as-svg-processing
         v-for="item in queue_items"
@@ -168,6 +169,12 @@
     }
     & > header {
       justify-content: space-between;
+      margin-top: base-line
+      & > h1 {
+        @media (prefers-color-scheme: dark) {
+          color: green;
+        }
+      }
     }
     & > footer {
       border-radius: base-line;
@@ -181,11 +188,7 @@
         visibility: hidden;
       }
     }
-    & > h1 {
-      @media (prefers-color-scheme: dark) {
-        color: green;
-      }
-    }
+
     & > article {
       standard-grid: gentle;
       grid-auto-flow: row;
@@ -200,13 +203,18 @@
       }
     }
     &.storytelling {
+      & header {
+        display:none;
+      }
       & > article {
+        padding-bottom: 0
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
         gap: 0;
         scroll-behavior: smooth;
-        height: 80vh;
+        height: 100vh;
+
         scroll-snap-type: x proximity;
         & > figure.poster {
           height: 100%;

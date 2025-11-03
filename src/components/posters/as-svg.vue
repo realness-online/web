@@ -9,6 +9,7 @@
   import {
     watchEffect as watch,
     onMounted as mounted,
+    onUnmounted as unmounted,
     ref,
     computed,
     provide
@@ -35,7 +36,9 @@
     rock,
     gravel,
     sand,
-    sediment
+    sediment,
+    slice,
+    storytelling
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -71,7 +74,8 @@
     dynamic_viewbox,
     focus,
     should_ken_burns,
-    ken_burns_range
+    ken_burns_range,
+    ken_burns_position
   } = use_poster()
 
   const trigger = ref(null)
@@ -134,6 +138,26 @@
   const sediment_visible = computed(
     () => cutout.value && sediment.value && vector.value?.sediment
   )
+
+  const hide_cursor = computed(() => slice.value && storytelling.value)
+
+  const ken_burns_ready = ref(false)
+  let ken_burns_timer = null
+
+  const ken_burns_class = computed(() => {
+    if (!should_ken_burns.value || !ken_burns_ready.value) return ''
+    return `ken-burns-${ken_burns_position.value}`
+  })
+
+  watch(() => {
+    if (should_ken_burns.value && !ken_burns_ready.value)
+      ken_burns_ready.value = true
+    else if (!should_ken_burns.value) ken_burns_ready.value = false
+  })
+
+  unmounted(() => {
+    if (ken_burns_timer) clearTimeout(ken_burns_timer)
+  })
 </script>
 
 <template>
@@ -151,12 +175,13 @@
     :class="{
       animate,
       landscape,
-      hovered: is_hovered
+      hovered: is_hovered,
+      'hide-cursor': hide_cursor
     }">
     <g
       class="ken-burns-content"
       :style="{ '--ken-burns-range': `${ken_burns_range}%` }"
-      :class="{ 'ken-burns': should_ken_burns }">
+      :class="ken_burns_class">
       <rect
         v-show="fill || stroke"
         :fill="`url(${fragment('shadow')})`"
@@ -292,7 +317,7 @@
     }
   }
 
-  @keyframes ken-burns {
+  @keyframes ken-burns-top {
     0% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
     }
@@ -301,6 +326,30 @@
     }
     100% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
+    }
+  }
+
+  @keyframes ken-burns-middle {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(var(--ken-burns-range));
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ken-burns-bottom {
+    0% {
+      transform: translateY(var(--ken-burns-range));
+    }
+    50% {
+      transform: translateY(calc(var(--ken-burns-range) * -1));
+    }
+    100% {
+      transform: translateY(var(--ken-burns-range));
     }
   }
 
@@ -319,12 +368,23 @@
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
+    &.hide-cursor {
+      cursor: none;
+    }
     &:active {
       cursor: grabbing;
     }
-    & g.ken-burns-content.ken-burns {
+    & g.ken-burns-content {
       transform-origin: center center;
-      animation: ken-burns 20s ease-in-out infinite;
+      &.ken-burns-top {
+        animation: ken-burns-top 20s ease-in-out infinite;
+      }
+      &.ken-burns-middle {
+        animation: ken-burns-middle 20s ease-in-out infinite;
+      }
+      &.ken-burns-bottom {
+        animation: ken-burns-bottom 20s ease-in-out infinite;
+      }
     }
     & rect#lightbar-back,
     & rect#lightbar-front,
