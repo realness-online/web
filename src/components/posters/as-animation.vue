@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, watchEffect, onMounted } from 'vue'
+  import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
   import { as_fragment_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   /** @typedef {import('@/types').Id} Id */
@@ -28,6 +28,51 @@
 
   const animation_group = ref(null)
 
+  let last_key_time = 0
+  let key_press_count = 0
+  let last_key = null
+  let last_had_shift = false
+  const momentum_reset_delay = 500 // Reset counter after 500ms of no presses
+
+  /**
+   * @param {KeyboardEvent} event
+   */
+  const handle_keydown = event => {
+    if (!animation_group.value) return
+
+    const svg_element = animation_group.value.closest('svg')
+    if (!svg_element) return
+
+    const is_arrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight'
+    if (!is_arrow) return
+
+    event.preventDefault()
+
+    const now = Date.now()
+    const same_key = event.key === last_key && event.shiftKey === last_had_shift
+
+    // Reset counter if too much time passed or different key/modifier combo
+    if (now - last_key_time > momentum_reset_delay || !same_key) {
+      key_press_count = 0
+    }
+
+    key_press_count++
+    last_key_time = now
+    last_key = event.key
+    last_had_shift = event.shiftKey
+
+    // Base step increases with momentum
+    const base_step = event.shiftKey ? 10 : 0.5
+    const momentum_multiplier = Math.min(key_press_count * 0.5, 5) // Cap at 5x
+    const step = base_step * (1 + momentum_multiplier)
+
+    const current_time = svg_element.getCurrentTime()
+    const direction = event.key === 'ArrowRight' ? 1 : -1
+    const new_time = Math.max(0, current_time + step * direction)
+
+    svg_element.setCurrentTime(new_time)
+  }
+
   onMounted(() => {
     watchEffect(() => {
       if (!animation_group.value) return
@@ -41,6 +86,12 @@
         svg_element.pauseAnimations()
       }
     })
+
+    window.addEventListener('keydown', handle_keydown)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handle_keydown)
   })
 </script>
 
