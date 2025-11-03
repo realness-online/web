@@ -32,7 +32,9 @@
   let key_press_count = 0
   let last_key = null
   let last_had_shift = false
-  const momentum_reset_delay = 500 // Reset counter after 500ms of no presses
+  let is_processing = false
+  const momentum_reset_delay = 500 // Reset counter after 1.33s of no presses
+  const throttle_delay = 64 // ~3 per second, prevent event backlog
 
   /**
    * @param {KeyboardEvent} event
@@ -47,6 +49,13 @@
     if (!is_arrow) return
 
     event.preventDefault()
+
+    // Throttle to prevent backlog
+    if (is_processing) return
+    is_processing = true
+    setTimeout(() => {
+      is_processing = false
+    }, throttle_delay)
 
     const now = Date.now()
     const same_key = event.key === last_key && event.shiftKey === last_had_shift
@@ -64,7 +73,7 @@
     // Base step increases with momentum
     const base_step = event.shiftKey ? 10 : 0.5
     const momentum_multiplier = Math.min(key_press_count * 0.5, 5) // Cap at 5x
-    const step = base_step * (1 + momentum_multiplier)
+    const step = Math.min(base_step * (1 + momentum_multiplier), 40) // Max 40s per step
 
     const current_time = svg_element.getCurrentTime()
     const direction = event.key === 'ArrowRight' ? 1 : -1

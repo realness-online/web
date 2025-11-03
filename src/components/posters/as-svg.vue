@@ -318,13 +318,13 @@
 
   @keyframes ken-burns-top {
     0% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
+      transform: translateY(0);
     }
     50% {
       transform: translateY(var(--ken-burns-range));
     }
     100% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
+      transform: translateY(0);
     }
   }
 
@@ -342,13 +342,13 @@
 
   @keyframes ken-burns-bottom {
     0% {
-      transform: translateY(var(--ken-burns-range));
+      transform: translateY(0);
     }
     50% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
     }
     100% {
-      transform: translateY(var(--ken-burns-range));
+      transform: translateY(0);
     }
   }
 
