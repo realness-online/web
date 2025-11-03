@@ -179,7 +179,6 @@
       'hide-cursor': hide_cursor
     }">
     <g
-      class="ken-burns-content"
       :style="{ '--ken-burns-range': `${ken_burns_range}%` }"
       :class="ken_burns_class">
       <rect
@@ -303,7 +302,7 @@
       <as-gradients v-if="vector" :vector="vector" />
       <as-masks :itemid="itemid" />
     </defs>
-    <as-animation v-if="animate && vector" :id="itemid" />
+    <as-animation v-if="vector" :id="itemid" />
   </svg>
 </template>
 
@@ -363,8 +362,7 @@
     min-height: 512px;
     height: 100%;
     width: 100%;
-    outline: none;
-    cursor: grab;
+    cursor: pointer;
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
@@ -374,7 +372,9 @@
     &:active {
       cursor: grabbing;
     }
-    & g.ken-burns-content {
+
+    & > g {
+      cursor: none;
       transform-origin: center center;
       &.ken-burns-top {
         animation: ken-burns-top 20s ease-in-out infinite;
@@ -405,19 +405,15 @@
     & use[itemprop='gravel'],
     & use[itemprop='rock'],
     & use[itemprop='boulder'] {
-      opacity: 0;
+      opacity: 0.5;
       filter: saturate(100%) brightness(100%);
-      will-change: opacity, filter;
+      will-change: opacity, filter, display;
       transition:
-        filter 0.35s ease-out,
-        opacity 0.75s ease,
-        display 1.66s ease;
+        filter 0.66s ease-out,
+        opacity 1.66s ease-out,
+        display 1.66s ease-out;
       transition-behavior: allow-discrete;
-      animation-name: cutout-fade;
-      animation-duration: 0.9s;
-      animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
-      animation-fill-mode: both;
-      animation-iteration-count: 1;
+
       @starting-style {
         opacity: 0;
       }
@@ -427,28 +423,12 @@
         filter: saturate(120%) brightness(113%);
       }
       &:active {
+        cursor: grabbing;
         filter: saturate(166%) brightness(130%);
       }
       &:focus {
         filter: saturate(150%) brightness(118%);
       }
-    }
-
-    /* Staggered appearance: largest first */
-    & use[itemprop='boulder'] {
-      animation-delay: 0.12s;
-    }
-    & use[itemprop='rock'] {
-      animation-delay: 0.24s;
-    }
-    & use[itemprop='gravel'] {
-      animation-delay: 0.36s;
-    }
-    & use[itemprop='sand'] {
-      animation-delay: 0.48s;
-    }
-    & use[itemprop='sediment'] {
-      animation-delay: 0.6s;
     }
 
     /* Accessibility: no motion */
