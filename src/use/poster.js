@@ -109,10 +109,10 @@ export const use = () => {
     if (content_aspect < container_aspect) {
       const scale_ratio = container_aspect / content_aspect
       return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
-    } else {
+    } 
       const scale_ratio = content_aspect / container_aspect
       return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
-    }
+    
   })
 
   const landscape = computed(() => {

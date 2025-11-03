@@ -294,7 +294,6 @@
     }
   }
 
-
   a {
     color: green;
     border-color: green;

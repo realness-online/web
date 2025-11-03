@@ -75,18 +75,23 @@
 </script>
 
 <template>
-  <path
-    :id="props.id"
-    ref="path"
-    :d="d"
-    :mask="props.mask"
-    :itemprop="props.itemprop"
-    :fill="show_fill ? fill : 'none'"
-    :fill-opacity="show_fill ? '0.90' : undefined"
-    :fill-rule="show_fill ? 'evenodd' : undefined"
-    :stroke="stroke"
-    :stroke-opacity="show_stroke ? stroke_opacity : '0'"
-    :stroke-width="stroke_width" />
+  <g>
+    <path
+      :id="props.id"
+      ref="path"
+      :d="d"
+      :mask="props.mask"
+      :itemprop="props.itemprop"
+      :fill="show_fill ? fill : 'none'"
+      :fill-opacity="show_fill ? '0.90' : undefined"
+      :fill-rule="show_fill ? 'evenodd' : undefined" />
+    <use
+      :href="`#${props.id}`"
+      fill="none"
+      :stroke="stroke"
+      :stroke-opacity="show_stroke ? stroke_opacity : '0'"
+      :stroke-width="stroke_width" />
+  </g>
 </template>
 
 <style>
@@ -100,5 +105,10 @@
     &:active {
       fill-opacity: 0.99;
     }
+  }
+  use {
+    stroke-miterlimit: 3.14;
+    stroke-linecap: round;
+    transition: stroke-opacity 0.15s ease;
   }
 </style>
