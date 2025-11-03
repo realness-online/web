@@ -380,54 +380,6 @@
       values="1;0.66;1"
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
-
-    <g v-if="drama" class="geology">
-      <animate
-        :href="fragment('boulder-use')"
-        attributeName="filter"
-        repeatCount="indefinite"
-        :dur="duration(8)"
-        begin="0s"
-        values="brightness(100%);brightness(110%);brightness(100%)"
-        keyTimes="0;0.5;1"
-        keySplines="0.4 0 0.6 1" />
-      <animate
-        :href="fragment('rock-use')"
-        attributeName="filter"
-        repeatCount="indefinite"
-        :dur="duration(13)"
-        begin="0s"
-        values="brightness(100%);brightness(110%);brightness(100%)"
-        keyTimes="0;0.5;1"
-        keySplines="0.4 0 0.6 1" />
-      <animate
-        :href="fragment('gravel-use')"
-        attributeName="filter"
-        repeatCount="indefinite"
-        :dur="duration(5)"
-        begin="0s"
-        values="brightness(100%);brightness(110%);brightness(100%)"
-        keyTimes="0;0.5;1"
-        keySplines="0.4 0 0.6 1" />
-      <animate
-        :href="fragment('sand-use')"
-        attributeName="filter"
-        repeatCount="indefinite"
-        :dur="duration(3)"
-        begin="0s"
-        values="brightness(100%);brightness(110%);brightness(100%)"
-        keyTimes="0;0.5;1"
-        keySplines="0.4 0 0.6 1" />
-      <animate
-        :href="fragment('sediment-use')"
-        attributeName="filter"
-        repeatCount="indefinite"
-        :dur="duration(2)"
-        begin="0s"
-        values="brightness(100%);brightness(103%);brightness(100%)"
-        keyTimes="0;0.5;1"
-        keySplines="0.4 0 0.6 1" />
-    </g>
   </g>
 </template>
 

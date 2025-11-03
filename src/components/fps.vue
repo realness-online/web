@@ -1,7 +1,6 @@
 <script setup>
-  import { ref, onMounted, onUnmounted } from 'vue'
+  import { ref, onMounted as mounted, onUnmounted as unmounted } from 'vue'
   import { useFps } from '@vueuse/core'
-  import { animate } from '@/utils/preference'
 
   const fps = useFps()
   const animation_time = ref(0)
@@ -18,11 +17,11 @@
     frame_id = requestAnimationFrame(update_animation_time)
   }
 
-  onMounted(() => {
+  mounted(() => {
     update_animation_time()
   })
 
-  onUnmounted(() => {
+  unmounted(() => {
     if (frame_id) cancelAnimationFrame(frame_id)
   })
 </script>
