@@ -1,10 +1,39 @@
 <script setup>
+  import { ref, onMounted, onUnmounted } from 'vue'
   import { useFps } from '@vueuse/core'
+  import { animate } from '@/utils/preference'
+
   const fps = useFps()
+  const animation_time = ref(0)
+  const max_cycle_time = 172 // Longest animation cycle in seconds
+
+  let frame_id = null
+
+  const update_animation_time = () => {
+    const svg_element = document.querySelector('svg[itemtype="/posters"]')
+    if (svg_element) {
+      const current = svg_element.getCurrentTime()
+      animation_time.value = current % max_cycle_time
+    }
+    frame_id = requestAnimationFrame(update_animation_time)
+  }
+
+  onMounted(() => {
+    update_animation_time()
+  })
+
+  onUnmounted(() => {
+    if (frame_id) cancelAnimationFrame(frame_id)
+  })
 </script>
 
 <template>
-  <span id="fps">{{ fps }}fps</span>
+  <span id="fps">
+    {{ fps }}fps
+    <span class="time">
+      {{ animation_time.toFixed(0) }}s / {{ max_cycle_time }}s
+    </span>
+  </span>
 </template>
 
 <style lang="stylus">
@@ -19,4 +48,11 @@
     font-size: base-line
     text-shadow: -0.66px -0.66px .51px blue
     z-index: 1000
+    display: flex
+    flex-direction: column
+    gap: base-line * .25
+
+    .time
+      color: cyan
+      font-size: base-line * .5
 </style>
