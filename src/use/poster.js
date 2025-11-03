@@ -96,7 +96,7 @@ export const use = () => {
   )
 
   const ken_burns_range = computed(() => {
-    if (!vector_element.value || !vector.value) return 5
+    if (!vector_element.value || !vector.value) return 0
 
     const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
     const content_width = viewbox_parts[2]
@@ -106,13 +106,20 @@ export const use = () => {
     const container_rect = vector_element.value.getBoundingClientRect()
     const container_aspect = container_rect.width / container_rect.height
 
+    // In slice mode, content scales to cover container
+    // If content is wider than container: scales to fit height, crops width (no vertical pan room)
+    // If content is taller than container: scales to fit width, crops height (vertical pan room!)
     if (content_aspect < container_aspect) {
-      const scale_ratio = container_aspect / content_aspect
-      return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
-    } 
-      const scale_ratio = content_aspect / container_aspect
-      return ((scale_ratio - 1) / (2 * scale_ratio)) * 100
-    
+      // Content is portrait-ish relative to container
+      // Content scales to container width, height extends beyond
+      const scale = container_rect.width / content_width
+      const scaled_height = content_height * scale
+      const overflow = scaled_height - container_rect.height
+      const pan_range = (overflow / 2 / container_rect.height) * 100
+      return Math.max(0, pan_range)
+    }
+
+    return 0
   })
 
   const landscape = computed(() => {
