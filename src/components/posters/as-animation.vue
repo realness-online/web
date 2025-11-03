@@ -1,9 +1,10 @@
 <script setup>
+  import { ref, watchEffect, onMounted } from 'vue'
   import { as_fragment_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   /** @typedef {import('@/types').Id} Id */
 
-  import { stroke, drama } from '@/utils/preference'
+  import { animate, stroke, drama } from '@/utils/preference'
 
   const props = defineProps({
     id: {
@@ -24,10 +25,27 @@
   const static_stroke_opacity = '0.90'
   const static_fill_opacity = '0.90'
   const static_stroke_width = '0.33'
+
+  const animation_group = ref(null)
+
+  onMounted(() => {
+    watchEffect(() => {
+      if (!animation_group.value) return
+
+      const svg_element = animation_group.value.closest('svg')
+      if (!svg_element) return
+
+      if (animate.value) {
+        svg_element.unpauseAnimations()
+      } else {
+        svg_element.pauseAnimations()
+      }
+    })
+  })
 </script>
 
 <template>
-  <g itemprop="animation">
+  <g ref="animation_group" itemprop="animation">
     <g v-if="stroke" class="stroke">
       <animate
         :href="fragment('light')"
@@ -41,18 +59,21 @@
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(8)"
+        begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(13)"
+        begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(11)"
+        begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
 
       <animate
@@ -60,24 +81,28 @@
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(10)"
+        begin="0s"
         :values="`${static_stroke_width};0.1;0.45;${static_stroke_width}`" />
       <animate
         :href="fragment('regular')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(14)"
+        begin="0s"
         :values="`${static_stroke_width};0.66;0.1;${static_stroke_width}`" />
       <animate
         :href="fragment('medium')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(8)"
+        begin="0s"
         :values="`${static_stroke_width};0.1;0.77;0.1;${static_stroke_width}`" />
       <animate
         :href="fragment('bold')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(10)"
+        begin="0s"
         :values="`${static_stroke_width};0.1;0.66;0.1;${static_stroke_width}`" />
 
       <animate
@@ -85,6 +110,7 @@
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(8)"
+        begin="0s"
         values="0;-24"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -93,6 +119,7 @@
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(12)"
+        begin="0s"
         values="0;-34"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -101,6 +128,7 @@
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(6)"
+        begin="0s"
         values="0;-44"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -109,6 +137,7 @@
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(8)"
+        begin="0s"
         values="0;-56"
         keyTimes="0;1"
         keySplines="0.4 0 0.6 1" />
@@ -119,18 +148,21 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       :dur="duration(12)"
+      begin="0s"
       :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.21;${static_fill_opacity}`" />
     <animate
       :href="fragment('medium')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       :dur="duration(24)"
+      begin="0s"
       :values="`${static_fill_opacity};0.6;${static_fill_opacity};0.5;${static_fill_opacity}`" />
     <animate
       :href="fragment('bold')"
       attributeName="fill-opacity"
       repeatCount="indefinite"
       :dur="duration(16)"
+      begin="0s"
       :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.6;0.8;${static_fill_opacity};`" />
 
     <animate
@@ -138,60 +170,70 @@
       attributeName="cx"
       repeatCount="indefinite"
       :dur="duration(68)"
+      begin="0s"
       values="0%;150%;-50%;200%;0%" />
     <animate
       :href="fragment('radial-background')"
       attributeName="cy"
       repeatCount="indefinite"
       :dur="duration(110)"
+      begin="0s"
       values="0%;200%;-25%;150%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(110)"
+      begin="0s"
       values="0%;-50%;150%;200%;0%" />
     <animate
       :href="fragment('vertical-light')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(172)"
+      begin="0s"
       values="0%;250%;-75%;175%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(68)"
+      begin="0s"
       values="0%;200%;-100%;300%;0%" />
     <animate
       :href="fragment('horizontal-regular')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(110)"
+      begin="0s"
       values="0%;-50%;200%;150%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(68)"
+      begin="0s"
       values="0%;175%;-75%;225%;0%" />
     <animate
       :href="fragment('vertical-medium')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(110)"
+      begin="0s"
       values="0%;300%;-100%;200%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(68)"
+      begin="0s"
       values="0%;-100%;200%;300%;0%" />
     <animate
       :href="fragment('vertical-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(110)"
+      begin="indefinite"
       values="0%;250%;-150%;175%;0%" />
 
     <animate
@@ -199,12 +241,14 @@
       attributeName="cx"
       repeatCount="indefinite"
       :dur="duration(84)"
+      begin="0s"
       values="0%;200%;-100%;250%;0%" />
     <animate
       :href="fragment('radial')"
       attributeName="cy"
       repeatCount="indefinite"
       :dur="duration(134)"
+      begin="0s"
       values="0%;-75%;300%;150%;0%" />
 
     <animate
@@ -212,12 +256,14 @@
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(76)"
+      begin="0s"
       values="0%;300%;-150%;200%;0%" />
     <animate
       :href="fragment('vertical-background')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(122)"
+      begin="0s"
       values="0%;175%;-100%;250%;0%" />
 
     <animate
@@ -225,12 +271,14 @@
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(94)"
+      begin="0s"
       values="0%;-100%;250%;300%;0%" />
     <animate
       :href="fragment('horizontal-light')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(146)"
+      begin="0s"
       values="0%;300%;-200%;175%;0%" />
 
     <animate
@@ -238,12 +286,14 @@
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(58)"
+      begin="0s"
       values="0%;225%;-125%;275%;0%" />
     <animate
       :href="fragment('horizontal-medium')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(102)"
+      begin="0s"
       values="0%;-150%;250%;200%;0%" />
 
     <animate
@@ -251,12 +301,14 @@
       attributeName="x1"
       repeatCount="indefinite"
       :dur="duration(72)"
+      begin="0s"
       values="0%;350%;-200%;300%;0%" />
     <animate
       :href="fragment('horizontal-bold')"
       attributeName="y1"
       repeatCount="indefinite"
       :dur="duration(116)"
+      begin="0s"
       values="0%;275%;-175%;225%;0%" />
 
     <animate
@@ -264,6 +316,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       :dur="duration(5)"
+      begin="0s"
       values="1;0.66;1"
       keyTimes="0;0.33;1"
       keySplines="0.4 0 0.6 1" />
@@ -272,6 +325,7 @@
       attributeName="fill-opacity"
       repeatCount="indefinite"
       :dur="duration(5)"
+      begin="0s"
       values="1;0.66;1"
       keyTimes="0;0.66;1"
       keySplines="0.4 0 0.6 1" />
@@ -282,6 +336,7 @@
         attributeName="filter"
         repeatCount="indefinite"
         :dur="duration(8)"
+        begin="0s"
         values="brightness(100%);brightness(110%);brightness(100%)"
         keyTimes="0;0.5;1"
         keySplines="0.4 0 0.6 1" />
@@ -290,6 +345,7 @@
         attributeName="filter"
         repeatCount="indefinite"
         :dur="duration(13)"
+        begin="0s"
         values="brightness(100%);brightness(110%);brightness(100%)"
         keyTimes="0;0.5;1"
         keySplines="0.4 0 0.6 1" />
@@ -298,6 +354,7 @@
         attributeName="filter"
         repeatCount="indefinite"
         :dur="duration(5)"
+        begin="0s"
         values="brightness(100%);brightness(110%);brightness(100%)"
         keyTimes="0;0.5;1"
         keySplines="0.4 0 0.6 1" />
@@ -306,6 +363,7 @@
         attributeName="filter"
         repeatCount="indefinite"
         :dur="duration(3)"
+        begin="0s"
         values="brightness(100%);brightness(110%);brightness(100%)"
         keyTimes="0;0.5;1"
         keySplines="0.4 0 0.6 1" />
@@ -314,6 +372,7 @@
         attributeName="filter"
         repeatCount="indefinite"
         :dur="duration(2)"
+        begin="0s"
         values="brightness(100%);brightness(103%);brightness(100%)"
         keyTimes="0;0.5;1"
         keySplines="0.4 0 0.6 1" />
@@ -322,7 +381,16 @@
 </template>
 
 <style lang="stylus">
+  g[itemprop='animation'] {
+    & animate {
+      animation-play-state: paused;
+    }
+  }
+
   svg.animate {
+    & g[itemprop='animation'] animate {
+      animation-play-state: running;
+    }
     & path[itemprop] {
       stroke-dashoffset: 0;
     }

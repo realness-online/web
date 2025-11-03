@@ -13,7 +13,7 @@
   import { use_posters } from '@/use/poster'
   import { use as use_directory } from '@/use/directory-processor'
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling } from '@/utils/preference'
+  import { storytelling, slice } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -123,7 +123,10 @@
       <footer></footer>
     </article>
   </dialog>
-  <section id="posters" class="page" :class="{ storytelling: storytelling }">
+  <section
+    id="posters"
+    class="page"
+    :class="{ storytelling: storytelling, slice: slice }">
     <header>
       <a v-if="can_add" tabindex="-1" @click="select_photo">
         <icon name="add" />
@@ -192,7 +195,7 @@
     & > article {
       standard-grid: gentle;
       grid-auto-flow: row;
-      grid-gap: 0;
+      grid-gap: base-line;
       padding-bottom: base-line * 3;
       scroll-behavior: smooth;
       @media (max-width: pad-begins) {
@@ -201,6 +204,9 @@
       & > figure.poster.selecting-event > svg:not(.background) {
         opacity: 0.1;
       }
+    }
+    &.slice > article {
+      grid-gap: 0;
     }
     &.storytelling {
       & header {
@@ -211,7 +217,7 @@
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
-        gap: 0;
+        gap: base-line;
         scroll-behavior: smooth;
         height: 100vh;
 
