@@ -12,11 +12,11 @@
 
   const show_modal = () => {
     if (!dialog.value) return
-    if (dialog.value.open) {
+    if (dialog.value.open) 
       dialog.value.close()
-    } else {
+     else 
       dialog.value.showModal()
-    }
+    
   }
 
   const handle_click = event => {

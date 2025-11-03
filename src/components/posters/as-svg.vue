@@ -142,7 +142,7 @@
   const hide_cursor = computed(() => slice.value && storytelling.value)
 
   const ken_burns_ready = ref(false)
-  let ken_burns_timer = null
+  const ken_burns_timer = null
 
   const ken_burns_class = computed(() => {
     if (!should_ken_burns.value || !ken_burns_ready.value) return ''

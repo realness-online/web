@@ -38,11 +38,11 @@ const generate_thoughts_html = async () => {
       // Get posters for this person
       try {
         const posters_dir = await directory(`${author_id}/posters/`)
-        if (posters_dir && posters_dir.items) {
+        if (posters_dir && posters_dir.items) 
           for (const poster_id of posters_dir.items) {
             const full_id = `${author_id}/posters/${poster_id}`
             const item = await load_item(full_id)
-            if (item) {
+            if (item) 
               all_thoughts.push({
                 id: full_id,
                 type: 'poster',
@@ -50,9 +50,9 @@ const generate_thoughts_html = async () => {
                 created_at: as_created_at(full_id),
                 content: item
               })
-            }
+            
           }
-        }
+        
       } catch (error) {
         // Directory might not exist
       }
@@ -60,11 +60,11 @@ const generate_thoughts_html = async () => {
       // Get statements for this person
       try {
         const statements_dir = await directory(`${author_id}/statements/`)
-        if (statements_dir && statements_dir.items) {
+        if (statements_dir && statements_dir.items) 
           for (const statement_id of statements_dir.items) {
             const full_id = `${author_id}/statements/${statement_id}`
             const item = await load_item(full_id)
-            if (item) {
+            if (item) 
               all_thoughts.push({
                 id: full_id,
                 type: 'statement',
@@ -72,9 +72,9 @@ const generate_thoughts_html = async () => {
                 created_at: as_created_at(full_id),
                 content: item
               })
-            }
+            
           }
-        }
+        
       } catch (error) {
         // Directory might not exist
       }
@@ -492,11 +492,11 @@ mcp_server.setRequestHandler(CallToolRequestSchema, async request => {
         // Get posters
         try {
           const posters_dir = await directory(`${author_id}/posters/`)
-          if (posters_dir && posters_dir.items) {
+          if (posters_dir && posters_dir.items) 
             for (const poster_id of posters_dir.items) {
               const full_id = `${author_id}/posters/${poster_id}`
               const item = await load_item(full_id)
-              if (item) {
+              if (item) 
                 thoughts.push({
                   id: full_id,
                   type: 'poster',
@@ -504,9 +504,9 @@ mcp_server.setRequestHandler(CallToolRequestSchema, async request => {
                   created_at: as_created_at(full_id),
                   content: item
                 })
-              }
+              
             }
-          }
+          
         } catch (error) {
           // Directory might not exist
         }
@@ -514,11 +514,11 @@ mcp_server.setRequestHandler(CallToolRequestSchema, async request => {
         // Get statements
         try {
           const statements_dir = await directory(`${author_id}/statements/`)
-          if (statements_dir && statements_dir.items) {
+          if (statements_dir && statements_dir.items) 
             for (const statement_id of statements_dir.items) {
               const full_id = `${author_id}/statements/${statement_id}`
               const item = await load_item(full_id)
-              if (item) {
+              if (item) 
                 thoughts.push({
                   id: full_id,
                   type: 'statement',
@@ -526,9 +526,9 @@ mcp_server.setRequestHandler(CallToolRequestSchema, async request => {
                   created_at: as_created_at(full_id),
                   content: item
                 })
-              }
+              
             }
-          }
+          
         } catch (error) {
           // Directory might not exist
         }
