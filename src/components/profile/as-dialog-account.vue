@@ -15,9 +15,8 @@
 
   const show_form = () => {
     if (!form.value) return
-    if (form.value.open) 
-      form.value.close()
-     else {
+    if (form.value.open) form.value.close()
+    else {
       show_sign_in.value = false
       is_mobile_form_visible.value = false
       form.value.showModal()

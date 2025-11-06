@@ -27,13 +27,13 @@ export const key_commands_plugin = {
         key.length === 2 &&
         key[1] >= '0' &&
         key[1] <= '9'
-      ) 
+      )
         return `Numpad${key[1]}`
-      
+
       // Letters 'a'-'z' or 'A'-'Z' -> 'KeyA'-'KeyZ'
-      if (key.length === 1 && /[a-zA-Z]/.test(key)) 
+      if (key.length === 1 && /[a-zA-Z]/.test(key))
         return `Key${key.toUpperCase()}`
-      
+
       // Punctuation and symbols mapping
       const punctuation_map = {
         ',': 'Comma',
@@ -66,8 +66,7 @@ export const key_commands_plugin = {
       const command = available.find(cmd => {
         // For shifted symbols (? ! @ # $ % etc), match event.key directly
         const shifted_symbols = '!@#$%^&*()_+{}|:"<>?~'
-        if (shifted_symbols.includes(cmd.key)) 
-          return cmd.key === event.key
+        if (shifted_symbols.includes(cmd.key)) return cmd.key === event.key
 
         const translated = translate_key(cmd.key)
 
