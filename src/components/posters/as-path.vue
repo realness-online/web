@@ -86,6 +86,7 @@
       :fill-opacity="show_fill ? '0.90' : undefined"
       :fill-rule="show_fill ? 'evenodd' : undefined" />
     <use
+      v-if="show_stroke"
       :href="`#${props.id}`"
       fill="none"
       :stroke="stroke"
