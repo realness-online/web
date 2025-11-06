@@ -46,9 +46,13 @@ export const use = () => {
   const cutouts_loaded = ref(false)
   const loading_cutouts = ref(false)
 
-  const ken_burns_position = ref(
+  const ken_burns_vertical_position = ref(
     ['top', 'middle', 'bottom'][Math.floor(Math.random() * 3)]
   )
+  const ken_burns_horizontal_position = ref(
+    ['left', 'center', 'right'][Math.floor(Math.random() * 3)]
+  )
+  const ken_burns_axis = ref('y')
 
   const is_hovered = ref(false)
   const storage_key = computed(() => `viewbox-${props.itemid}`)
@@ -106,20 +110,47 @@ export const use = () => {
     const container_rect = vector_element.value.getBoundingClientRect()
     const container_aspect = container_rect.width / container_rect.height
 
-    // In slice mode, content scales to cover container
-    // If content is wider than container: scales to fit height, crops width (no vertical pan room)
-    // If content is taller than container: scales to fit width, crops height (vertical pan room!)
-    if (content_aspect < container_aspect) {
-      // Content is portrait-ish relative to container
-      // Content scales to container width, height extends beyond
-      const scale = container_rect.width / content_width
-      const scaled_height = content_height * scale
-      const overflow = scaled_height - container_rect.height
-      const pan_range = (overflow / 2 / container_rect.height) * 100
-      return Math.max(0, pan_range)
-    }
+    // Vertical panning: available when content is taller than container
+    const vertical_range = (() => {
+      if (content_aspect < container_aspect) {
+        const scale = container_rect.width / content_width
+        const scaled_height = content_height * scale
+        const overflow = scaled_height - container_rect.height
+        const pan_range = (overflow / 2 / scaled_height) * 100
+        return Math.max(0, pan_range)
+      }
+      return 0
+    })()
 
+    // Horizontal panning: available when content is wider than container
+    const horizontal_range = (() => {
+      if (content_aspect > container_aspect) {
+        const scale = container_rect.height / content_height
+        const scaled_width = content_width * scale
+        const overflow = scaled_width - container_rect.width
+        const pan_range = (overflow / 2 / scaled_width) * 100
+        return Math.max(0, pan_range)
+      }
+      return 0
+    })()
+
+    // Choose axis with available range
+    if (vertical_range > 0) {
+      ken_burns_axis.value = 'y'
+      return vertical_range
+    }
+    if (horizontal_range > 0) {
+      ken_burns_axis.value = 'x'
+      return horizontal_range
+    }
     return 0
+  })
+
+  const ken_burns_position = computed(() => {
+    if (ken_burns_axis.value === 'x') {
+      return ken_burns_horizontal_position.value
+    }
+    return ken_burns_vertical_position.value
   })
 
   const landscape = computed(() => {
@@ -281,7 +312,8 @@ export const use = () => {
     aspect_toggle,
     should_ken_burns,
     ken_burns_range,
-    ken_burns_position
+    ken_burns_position,
+    ken_burns_axis
   }
 }
 

@@ -1,10 +1,14 @@
 <script setup>
-  import { ref, watchEffect, onMounted, onUnmounted } from 'vue'
+  /** @typedef {import('@/types').Id} Id */
+  import {
+    ref,
+    watchEffect,
+    onMounted as mounted,
+    onUnmounted as unmounted
+  } from 'vue'
   import { as_fragment_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
-  /** @typedef {import('@/types').Id} Id */
-
-  import { animate, stroke, drama } from '@/utils/preference'
+  import { animate, stroke } from '@/utils/preference'
 
   const props = defineProps({
     id: {
@@ -33,8 +37,8 @@
   let last_key = null
   let last_had_shift = false
   let is_processing = false
-  const momentum_reset_delay = 500 // Reset counter after 1.33s of no presses
-  const throttle_delay = 64 // ~3 per second, prevent event backlog
+  const momentum_reset_delay = 500
+  const throttle_delay = 64
 
   /**
    * @param {KeyboardEvent} event
@@ -50,7 +54,6 @@
 
     event.preventDefault()
 
-    // Throttle to prevent backlog
     if (is_processing) return
     is_processing = true
     setTimeout(() => {
@@ -60,10 +63,8 @@
     const now = Date.now()
     const same_key = event.key === last_key && event.shiftKey === last_had_shift
 
-    // Reset counter if too much time passed or different key/modifier combo
-    if (now - last_key_time > momentum_reset_delay || !same_key) {
+    if (now - last_key_time > momentum_reset_delay || !same_key)
       key_press_count = 0
-    }
 
     key_press_count++
     last_key_time = now
@@ -82,24 +83,21 @@
     svg_element.setCurrentTime(new_time)
   }
 
-  onMounted(() => {
-    watchEffect(() => {
-      if (!animation_group.value) return
+  watchEffect(() => {
+    if (!animation_group.value) return
 
-      const svg_element = animation_group.value.closest('svg')
-      if (!svg_element) return
+    const svg_element = animation_group.value.closest('svg')
+    if (!svg_element) return
 
-      if (animate.value) {
-        svg_element.unpauseAnimations()
-      } else {
-        svg_element.pauseAnimations()
-      }
-    })
+    if (animate.value) svg_element.unpauseAnimations()
+    else svg_element.pauseAnimations()
+  })
 
+  mounted(() => {
     window.addEventListener('keydown', handle_keydown)
   })
 
-  onUnmounted(() => {
+  unmounted(() => {
     window.removeEventListener('keydown', handle_keydown)
   })
 </script>
@@ -422,7 +420,6 @@
       filter: brightness(1) saturate(1);
       animation-play-state: paused;
       transition: fill-opacity ease-in-out 0.8s;
-      // Only use will-change when hovering to reduce scroll performance impact
       &:focus {
         outline: none;
       }
