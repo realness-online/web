@@ -5,6 +5,7 @@ import { as_query_id } from '@/utils/itemid'
 export const use = (vector, on_complete) => {
   const optimizer = ref(null)
   const optimize = () => {
+    if (optimizer.value) optimizer.value.terminate()
     optimizer.value = new Worker('/vector.worker.js')
     optimizer.value.addEventListener('message', optimized)
     tick().then(() => {

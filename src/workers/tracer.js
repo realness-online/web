@@ -38,13 +38,13 @@ const make_trace = message => {
   console.time('make:trace')
   const { image_data } = message.data
 
-  // Stop any ongoing processing
   is_processing = false
 
-  // Clean up existing converter
-  if (converter) converter.free()
+  if (converter) {
+    converter.free()
+    converter = null
+  }
 
-  // Verify image data is valid
   const BYTES_PER_PIXEL = 4
   if (
     image_data.data.length !==
@@ -54,7 +54,6 @@ const make_trace = message => {
       `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * BYTES_PER_PIXEL}`
     )
 
-  // Create fresh converter instance for this trace
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
@@ -67,24 +66,23 @@ const make_trace = message => {
     layer_difference: 13,
     path_precision: 3
   }
-  converter = ColorImageConverter.new_with_string(JSON.stringify(params))
 
-  // Initialize converter with new image data
+  converter = ColorImageConverter.new_with_string(JSON.stringify(params))
   converter.init(image_data)
 
-  // Start the processing loop
   is_processing = true
   const process_chunk = () => {
     if (!is_processing) return
 
     try {
-      // Process up to 10 ticks per chunk to avoid blocking
       for (let i = 0; i < 10 && is_processing; i++) {
         const result = converter.tick()
         const progress = converter.progress()
 
         if (result === 'complete') {
           console.timeEnd('make:trace')
+          converter.free()
+          converter = null
           self.postMessage({
             type: 'complete',
             width: image_data.width,
@@ -115,9 +113,8 @@ const make_trace = message => {
     }
   }
 
-  // Start processing
   process_chunk()
-  return {} // Return empty object to satisfy type
+  return {}
 }
 
 const route_message = async message => {
@@ -134,7 +131,6 @@ const route_message = async message => {
   return reply
 }
 
-// Initialize on worker start
 const init_promise = init_tracer().catch(error => {
   console.error('Failed to initialize converter:', error)
   self.postMessage({ error: 'Failed to initialize converter' })
@@ -151,7 +147,6 @@ self.addEventListener('message', async event => {
   }
 })
 
-// Clean up converter when worker is terminated
 self.addEventListener('beforeunload', () => {
   if (converter) converter.free()
 })

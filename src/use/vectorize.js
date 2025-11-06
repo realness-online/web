@@ -73,6 +73,7 @@ const resize_to_blob = async file => {
 
   const bitmap = await createImageBitmap(img)
   const image_data = resize_image(bitmap)
+  bitmap.close()
 
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)
   const ctx = canvas.getContext('2d')
@@ -167,17 +168,41 @@ export const use = () => {
   const gradienter = ref(null)
   const tracer = ref(null)
   const optimizer = ref(null)
+  const is_mounted = ref(true)
+  const workers_mounted = ref(false)
   const can_add = computed(() => {
     if (working.value || new_vector.value) return false
     return true
   })
 
+  /**
+   * Clean up blob references in queue item to release memory
+   * @param {QueueItem} item
+   */
+  const cleanup_queue_item = item => {
+    if (item?.resized_blob) item.resized_blob = null
+  }
+
   const mount_workers = () => {
+    if (workers_mounted.value) return
+
     // Clean up existing workers first
-    if (vectorizer.value) vectorizer.value.terminate()
-    if (gradienter.value) gradienter.value.terminate()
-    if (tracer.value) tracer.value.terminate()
-    if (optimizer.value) optimizer.value.terminate()
+    if (vectorizer.value) {
+      vectorizer.value.removeEventListener('message', vectorized)
+      vectorizer.value.terminate()
+    }
+    if (gradienter.value) {
+      gradienter.value.removeEventListener('message', gradientized)
+      gradienter.value.terminate()
+    }
+    if (tracer.value) {
+      tracer.value.removeEventListener('message', traced)
+      tracer.value.terminate()
+    }
+    if (optimizer.value) {
+      optimizer.value.removeEventListener('message', optimized)
+      optimizer.value.terminate()
+    }
 
     vectorizer.value = new Worker('/vector.worker.js')
     gradienter.value = new Worker('/vector.worker.js')
@@ -187,6 +212,35 @@ export const use = () => {
     gradienter.value.addEventListener('message', gradientized)
     tracer.value.addEventListener('message', traced)
     optimizer.value.addEventListener('message', optimized)
+
+    workers_mounted.value = true
+  }
+
+  const unmount_workers = () => {
+    if (!workers_mounted.value) return
+
+    if (vectorizer.value) {
+      vectorizer.value.removeEventListener('message', vectorized)
+      vectorizer.value.terminate()
+      vectorizer.value = null
+    }
+    if (gradienter.value) {
+      gradienter.value.removeEventListener('message', gradientized)
+      gradienter.value.terminate()
+      gradienter.value = null
+    }
+    if (tracer.value) {
+      tracer.value.removeEventListener('message', traced)
+      tracer.value.terminate()
+      tracer.value = null
+    }
+    if (optimizer.value) {
+      optimizer.value.removeEventListener('message', optimized)
+      optimizer.value.terminate()
+      optimizer.value = null
+    }
+
+    workers_mounted.value = false
   }
 
   const select_photo = () => {
@@ -232,6 +286,8 @@ export const use = () => {
    * @returns {Promise<void>}
    */
   const add_to_queue = async files => {
+    mount_workers()
+
     for (const file of files) {
       const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
       const { blob: resized_blob, width, height } = await resize_to_blob(file)
@@ -261,6 +317,7 @@ export const use = () => {
       if (!next) {
         is_processing.value = false
         current_processing.value = null
+        unmount_workers()
         return
       }
 
@@ -297,7 +354,10 @@ export const use = () => {
         item.status = 'pending'
       }
 
-    if (queue_items.value.length > 0) process_queue()
+    if (queue_items.value.length > 0) {
+      mount_workers()
+      process_queue()
+    }
   }
 
   const listener = async () => {
@@ -338,6 +398,8 @@ export const use = () => {
    * @param {string} [itemid]
    */
   const vectorize = async (image, itemid = null) => {
+    if (!vectorizer.value) mount_workers()
+
     working.value = true
     progress.value = 0
     current_item_id.value = itemid
@@ -365,6 +427,7 @@ export const use = () => {
         image_data = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
       } else image_data = resize_image(bitmap)
 
+      bitmap.close()
       URL.revokeObjectURL(image_url)
 
       if (!is_pre_resized)
@@ -410,9 +473,11 @@ export const use = () => {
         )
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
         ctx.drawImage(img, 0, 0)
-        const image_data = ctx.getImageData(0, 0, canvas.width, canvas.height)
         URL.revokeObjectURL(svg_url)
-        resolve(resize_image(await createImageBitmap(canvas)))
+        const bitmap = await createImageBitmap(canvas)
+        const resized_image_data = resize_image(bitmap)
+        bitmap.close()
+        resolve(resized_image_data)
       }
       img.onerror = () => {
         URL.revokeObjectURL(svg_url)
@@ -436,6 +501,7 @@ export const use = () => {
    * @param {VectorResponse} response
    */
   const vectorized = response => {
+    if (!is_mounted.value) return
     const { vector } = response.data
     vector.id = current_item_id.value
     vector.type = 'posters'
@@ -457,6 +523,7 @@ export const use = () => {
   }
 
   const gradientized = message => {
+    if (!is_mounted.value) return
     new_gradients.value = message.data.gradients
     if (current_item_id.value) update_progress(current_item_id.value, 60)
   }
@@ -470,6 +537,7 @@ export const use = () => {
    * consistency with the main paths (light, regular, medium, bold) and enable SVGO optimization.
    */
   const traced = async message => {
+    if (!is_mounted.value) return
     switch (message.data.type) {
       case 'progress':
         progress.value = message.data.progress
@@ -508,13 +576,28 @@ export const use = () => {
   }
 
   const optimized = async message => {
+    if (!is_mounted.value) return
+    console.log('optimized handler started')
     const id = /** @type {Id} */ (current_item_id.value)
     const optimized_data = get_item(message.data.vector)
+    console.log('got optimized_data', optimized_data)
     const element = document.getElementById(as_query_id(id))
+    console.log('found element?', !!element, as_query_id(id))
 
     if (!element) {
       console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
       return
+    }
+
+    // Clear ALL old path references to prevent memory leak
+    // The old paths become detached when replaced by optimized versions
+    new_vector.value.light = null
+    new_vector.value.regular = null
+    new_vector.value.medium = null
+    new_vector.value.bold = null
+    if (new_vector.value.cutout) {
+      new_vector.value.cutout.length = 0
+      new_vector.value.cutout = null
     }
 
     new_vector.value.light = optimized_data.light
@@ -530,16 +613,22 @@ export const use = () => {
       boulder: []
     }
     new_vector.value.optimized = true
-    optimizer.value.removeEventListener('message', optimized)
+    console.log('about to tick')
     await tick()
+    console.log('tick complete, sorting cutouts')
 
     const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
 
     console.log('sorted poster', new_vector.value)
+    console.log('about to save')
     await save_poster_and_symbols(id, element, cutouts)
+    console.log('saved')
 
     completed_posters.value.push(id)
+
+    const item_to_remove = queue_items.value.find(item => item.id === id)
+    if (item_to_remove) cleanup_queue_item(item_to_remove)
 
     await Queue.remove(id)
     queue_items.value = queue_items.value.filter(item => item.id !== id)
@@ -552,13 +641,26 @@ export const use = () => {
     process_queue()
   }
 
-  // Initialize workers immediately
-  mount_workers()
-
   const reset = () => {
     if (source_image_url.value) {
       URL.revokeObjectURL(source_image_url.value)
       source_image_url.value = null
+    }
+    if (new_vector.value) {
+      new_vector.value.light = null
+      new_vector.value.regular = null
+      new_vector.value.medium = null
+      new_vector.value.bold = null
+      if (new_vector.value.cutout) {
+        new_vector.value.cutout.length = 0
+        new_vector.value.cutout = null
+      }
+      if (new_vector.value.cutouts) {
+        Object.keys(new_vector.value.cutouts).forEach(key => {
+          new_vector.value.cutouts[key] = null
+        })
+        new_vector.value.cutouts = null
+      }
     }
     new_vector.value = null
     new_gradients.value = null
@@ -567,10 +669,8 @@ export const use = () => {
   }
 
   dismount(() => {
-    if (vectorizer.value) vectorizer.value.terminate()
-    if (gradienter.value) gradienter.value.terminate()
-    if (tracer.value) tracer.value.terminate()
-    if (optimizer.value) optimizer.value.terminate()
+    is_mounted.value = false
+    unmount_workers()
   })
   return {
     can_add,

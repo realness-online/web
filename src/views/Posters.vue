@@ -1,6 +1,12 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
-  import { onMounted as mounted, ref, watch, nextTick as tick } from 'vue'
+  import {
+    onMounted as mounted,
+    ref,
+    watch,
+    nextTick as tick,
+    inject
+  } from 'vue'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
@@ -8,7 +14,6 @@
   import LogoAsLink from '@/components/logo-as-link'
   import { as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
-  import { use as use_vectorize } from '@/use/vectorize'
   import { Poster } from '@/persistance/Storage'
   import { use_posters } from '@/use/poster'
   import { use as use_directory } from '@/use/directory-processor'
@@ -23,8 +28,10 @@
     poster_shown
   } = use_posters()
 
-  const { can_add, select_photo, queue_items, init_processing_queue } =
-    use_vectorize()
+  const select_photo = inject('select_photo')
+  const can_add = inject('can_add')
+  const init_processing_queue = inject('init_processing_queue')
+  const queue_items = inject('queue_items')
 
   const { process_directory } = use_directory()
   const poster_to_remove = ref(null)
@@ -128,11 +135,8 @@
     class="page"
     :class="{ storytelling: storytelling, slice: slice }">
     <header>
-      <a v-if="can_add" tabindex="-1" @click="select_photo">
+      <a tabindex="-1" @click="select_photo">
         <icon name="add" />
-      </a>
-      <a v-if="can_add" hidden tabindex="-1" @click="process_directory">
-        <icon name="picker" />
       </a>
       <h1>Posters</h1>
       <logo-as-link tabindex="-1" />

@@ -12,11 +12,8 @@
 
   const show_modal = () => {
     if (!dialog.value) return
-    if (dialog.value.open) 
-      dialog.value.close()
-     else 
-      dialog.value.showModal()
-    
+    if (dialog.value.open) dialog.value.close()
+    else dialog.value.showModal()
   }
 
   const handle_click = event => {

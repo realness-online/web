@@ -87,9 +87,6 @@ export const key_commands_plugin = {
         // Block if modifier keys are pressed (ctrl/alt/meta block everything)
         if (event.ctrlKey || event.altKey || event.metaKey) return
 
-        console.log(
-          `[key-commands] "${event.key}" (code: ${event.code}) -> ${command.command}`
-        )
         event.preventDefault()
         key_commands.execute_command(command.command, command.parameters)
       }

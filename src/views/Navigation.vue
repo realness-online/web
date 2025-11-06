@@ -1,10 +1,10 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { ref } from 'vue'
-  import { use as use_vectorize } from '@/use/vectorize'
+  import { ref, inject } from 'vue'
   import AccountDialog from '@/components/profile/as-dialog-account'
-  const { open_camera } = use_vectorize()
+
+  const open_camera = inject('open_camera')
   const posting = ref(false)
   const toggle_keyboard = () => {
     posting.value = !posting.value
