@@ -190,8 +190,10 @@
         v-show="drama"
         id="lightbar-back"
         fill="url(#lightbar)"
-        width="111%"
-        height="133%" />
+        x="-11%"
+        y="0"
+        width="200%"
+        height="200%" />
 
       <g class="cutouts">
         <slot>
@@ -231,7 +233,9 @@
         v-show="drama"
         id="lightbar-front"
         fill="url(#lightbar)"
-        width="222%"
+        x="-61%"
+        y="0"
+        width="200%"
         height="200%" />
     </g>
     <defs>

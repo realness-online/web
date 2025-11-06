@@ -172,6 +172,23 @@ export const use = () => {
     return true
   })
 
+  const mount_workers = () => {
+    // Clean up existing workers first
+    if (vectorizer.value) vectorizer.value.terminate()
+    if (gradienter.value) gradienter.value.terminate()
+    if (tracer.value) tracer.value.terminate()
+    if (optimizer.value) optimizer.value.terminate()
+
+    vectorizer.value = new Worker('/vector.worker.js')
+    gradienter.value = new Worker('/vector.worker.js')
+    tracer.value = new Worker('/tracer.worker.js')
+    optimizer.value = new Worker('/vector.worker.js')
+    vectorizer.value.addEventListener('message', vectorized)
+    gradienter.value.addEventListener('message', gradientized)
+    tracer.value.addEventListener('message', traced)
+    optimizer.value.addEventListener('message', optimized)
+  }
+
   const select_photo = () => {
     image_picker.value.removeAttribute('capture')
     image_picker.value.setAttribute('multiple', '')
@@ -535,22 +552,8 @@ export const use = () => {
     process_queue()
   }
 
-  const mount_workers = () => {
-    // Clean up existing workers first
-    if (vectorizer.value) vectorizer.value.terminate()
-    if (gradienter.value) gradienter.value.terminate()
-    if (tracer.value) tracer.value.terminate()
-    if (optimizer.value) optimizer.value.terminate()
-
-    vectorizer.value = new Worker('/vector.worker.js')
-    gradienter.value = new Worker('/vector.worker.js')
-    tracer.value = new Worker('/tracer.worker.js')
-    optimizer.value = new Worker('/vector.worker.js')
-    vectorizer.value.addEventListener('message', vectorized)
-    gradienter.value.addEventListener('message', gradientized)
-    tracer.value.addEventListener('message', traced)
-    optimizer.value.addEventListener('message', optimized)
-  }
+  // Initialize workers immediately
+  mount_workers()
 
   const reset = () => {
     if (source_image_url.value) {

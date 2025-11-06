@@ -89,16 +89,20 @@
       :href="`#${props.id}`"
       fill="none"
       :stroke="stroke"
-      :stroke-opacity="show_stroke ? stroke_opacity : '0'"
+      :stroke-opacity="stroke_opacity"
       :stroke-width="stroke_width" />
   </g>
 </template>
 
 <style>
+  use[fill='none'] {
+    stroke-miterlimit: 3.14;
+    stroke-linecap: round;
+    transition: stroke-opacity 1.5s ease;
+  }
   path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-    transition: stroke-opacity 0.15s ease;
     &:focus {
       outline: none;
     }

@@ -23,10 +23,8 @@ export const sediment = storage('sediment', true)
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
 
-// Animation preferences
-export const animation_speed = storage('animation_speed', 'normal')
+export const animation_speed = storage('animation_speed', 'normal') //fast normal slow very_slow glacial
 
-// Grid overlay preference
 export const grid_overlay = storage('grid_overlay', false)
 
 // export const adobe = storage('adobe', false)
