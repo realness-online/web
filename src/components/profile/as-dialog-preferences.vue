@@ -11,19 +11,12 @@
   const settings = ref(null)
 
   const show_settings = () => {
-    console.log('[preferences] show_settings called')
-    if (!settings.value) {
-      console.log('[preferences] settings.value is null')
-      return
-    }
-    console.log('[preferences] settings.value.open:', settings.value.open)
-    if (settings.value.open) {
-      console.log('[preferences] closing')
+    if (!settings.value)  return;
+
+    if (settings.value.open)
       settings.value.close()
-    } else {
-      console.log('[preferences] opening')
+     else {
       settings.value.showModal()
-      // Focus the dialog itself to prevent inputs from getting focus
       settings.value.focus()
     }
   }
@@ -47,11 +40,9 @@
     keymap.forEach(context_config => {
       const context = context_config.context || 'Global'
 
-      // Only include contexts that are currently active
       if (context === 'Global' || active_contexts.includes(context)) {
         if (!groups[context]) groups[context] = {}
 
-        // Use getOwnPropertyNames to preserve the order properties were defined
         const keys = Object.getOwnPropertyNames(context_config.bindings || {})
         let current_row = 'Number Row' // Default to Number Row
 
@@ -84,7 +75,6 @@
     return groups
   })
 
-  // Expose show method for external use
   defineExpose({ show: show_settings })
 </script>
 

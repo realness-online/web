@@ -49,16 +49,22 @@
   const {
     vVectorizer,
     image_picker,
-    mount_workers,
-    vectorize,
-    reset,
     new_vector,
     current_processing,
-    init_processing_queue
+    open_camera,
+    select_photo,
+    can_add,
+    init_processing_queue,
+    queue_items
   } = use_vectorize()
   provide('image-picker', image_picker)
   provide('new_vector', new_vector)
   provide('current_processing', current_processing)
+  provide('open_camera', open_camera)
+  provide('select_photo', select_photo)
+  provide('can_add', can_add)
+  provide('init_processing_queue', init_processing_queue)
+  provide('queue_items', queue_items)
 
   const documentation = ref(null)
   provide('documentation', documentation)
@@ -164,10 +170,6 @@
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     await init_serverless()
-    mount_workers()
-
-    // Initialize processing queue
-    init_processing_queue()
   })
   dismount(() => {
     window.removeEventListener('online', online)
