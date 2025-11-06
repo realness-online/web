@@ -1,6 +1,12 @@
 <script setup>
   /* eslint-disable vue/no-v-html */
-  import { ref, computed, onMounted as mounted, inject } from 'vue'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onUnmounted as unmounted,
+    inject
+  } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
   import { as_query_id as query } from '@/utils/itemid'
@@ -35,6 +41,10 @@
     const { queue_item } = props
     if (queue_item?.resized_blob)
       thumbnail_url.value = URL.createObjectURL(queue_item.resized_blob)
+  })
+
+  unmounted(() => {
+    if (thumbnail_url.value) URL.revokeObjectURL(thumbnail_url.value)
   })
 </script>
 

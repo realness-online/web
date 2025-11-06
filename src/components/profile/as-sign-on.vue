@@ -38,7 +38,8 @@
 
   const clean = async () => {
     for (const key in localStorage)
-      if (Object.prototype.hasOwnProperty.call(localStorage, key)) localStorage.removeItem(key)
+      if (Object.prototype.hasOwnProperty.call(localStorage, key))
+        localStorage.removeItem(key)
     localStorage.me = '/+'
     await clear()
     window.location.href = '/'
@@ -67,7 +68,6 @@
       <button @click="clean">Wipe</button>
     </footer>
   </section>
-
 </template>
 
 <style lang="stylus">
@@ -93,4 +93,3 @@
 
   }
 </style>
-
