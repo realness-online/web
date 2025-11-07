@@ -122,6 +122,7 @@
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
+  const drama_visible = computed(() => drama.value)
 
   const boulder_visible = computed(
     () => cutout.value && boulder.value && vector.value?.boulder
@@ -187,13 +188,13 @@
         width="100%"
         height="100%" />
       <rect
-        v-show="drama"
         id="lightbar-back"
         fill="url(#lightbar)"
         x="-11%"
         y="0"
         width="200%"
-        height="200%" />
+        height="200%"
+        :style="{ opacity: drama_visible ? 1 : 0, visibility: drama_visible ? 'visible' : 'hidden' }" />
 
       <g class="cutouts">
         <slot>
@@ -230,13 +231,13 @@
         </slot>
       </g>
       <rect
-        v-show="drama"
         id="lightbar-front"
         fill="url(#lightbar)"
         x="-61%"
         y="0"
         width="200%"
-        height="200%" />
+        height="200%"
+        :style="{ opacity: drama_visible ? 1 : 0, visibility: drama_visible ? 'visible' : 'hidden' }" />
     </g>
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">
@@ -253,51 +254,51 @@
         patternUnits="userSpaceOnUse"
         :preserveAspectRatio="aspect_ratio">
         <as-background
-          v-show="background_visible"
           :id="query('background')"
           :rect="vector.background"
           :width="vector.width"
           :height="vector.height"
           :tabindex="tabindex"
+          :visible="background_visible"
           fill-opacity="1"
           :fill="`url(${fragment('radial-background')})`"
           @focus="focus('background')" />
         <as-path
-          v-show="light_visible"
           :id="query('light')"
           itemprop="light"
           :path="vector.light"
           :tabindex="tabindex"
+          :visible="light_visible"
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-light')})`"
           :stroke="`url(${fragment('horizontal-medium')})`"
           @focus="focus('light')" />
         <as-path
-          v-show="regular_visible"
           :id="query('regular')"
           itemprop="regular"
           :path="vector.regular"
           :tabindex="tabindex"
+          :visible="regular_visible"
           :mask="`url(${fragment('radial-mask')})`"
           :fill="`url(${fragment('horizontal-regular')})`"
           :stroke="`url(${fragment('vertical-bold')})`"
           @focus="focus('regular')" />
         <as-path
-          v-show="medium_visible"
           :id="query('medium')"
           itemprop="medium"
           :path="vector.medium"
           :tabindex="tabindex"
+          :visible="medium_visible"
           :mask="`url(${fragment('vertical-mask')})`"
           :fill="`url(${fragment('vertical-medium')})`"
           :stroke="`url(${fragment('vertical-background')})`"
           @focus="focus('medium')" />
         <as-path
-          v-show="bold_visible"
           :id="query('bold')"
           itemprop="bold"
           :tabindex="tabindex"
           :path="vector.bold"
+          :visible="bold_visible"
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-bold')})`"
           :stroke="`url(${fragment('radial-light')})`"
@@ -398,8 +399,7 @@
       pointer-events: none;
       transition:
         opacity 0.75s ease,
-        display 1.66s ease;
-      transition-behavior: allow-discrete;
+        visibility 0.75s ease;
       @starting-style {
         opacity: 0;
       }

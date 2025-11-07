@@ -42,6 +42,11 @@
     stroke: {
       type: String,
       required: true
+    },
+    visible: {
+      type: Boolean,
+      required: false,
+      default: true
     }
   })
   defineEmits(['focus'])
@@ -72,16 +77,21 @@
     if (path.value) path_length.value = path.value.getTotalLength()
   })
   watch_effect(() => (d.value = props.path?.getAttribute('d')))
+  const group_style = computed(() => ({
+    opacity: props.visible ? 1 : 0,
+    visibility: props.visible ? 'visible' : 'hidden'
+  }))
 </script>
 
 <template>
-  <g>
+  <g :style="group_style">
     <path
       :id="props.id"
       ref="path"
       :d="d"
       :mask="props.mask"
       :itemprop="props.itemprop"
+      :tabindex="props.tabindex"
       :fill="show_fill ? fill : 'none'"
       :fill-opacity="show_fill ? '0.90' : undefined"
       :fill-rule="show_fill ? 'evenodd' : undefined" />
@@ -115,6 +125,14 @@
     }
     &:active {
       fill-opacity: 0.99;
+    }
+  }
+  g {
+    transition:
+      opacity 0.75s ease,
+      visibility 0.75s ease;
+    @starting-style {
+      opacity: 0;
     }
   }
 </style>
