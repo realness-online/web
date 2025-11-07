@@ -86,12 +86,12 @@
       :fill-opacity="show_fill ? '0.90' : undefined"
       :fill-rule="show_fill ? 'evenodd' : undefined" />
     <use
-      v-if="show_stroke"
       :href="`#${props.id}`"
       fill="none"
       :stroke="stroke"
       :stroke-opacity="stroke_opacity"
-      :stroke-width="stroke_width" />
+      :stroke-width="stroke_width"
+      :style="{ opacity: show_stroke ? 1 : 0, visibility: show_stroke ? 'visible' : 'hidden' }" />
   </g>
 </template>
 
@@ -99,7 +99,13 @@
   use[fill='none'] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
-    transition: stroke-opacity 1.5s ease;
+    transition:
+      opacity 0.75s ease,
+      visibility 0.75s ease,
+      stroke-opacity 0.75s ease;
+    @starting-style {
+      opacity: 0;
+    }
   }
   path[itemprop] {
     stroke-miterlimit: 3.14;
@@ -110,10 +116,5 @@
     &:active {
       fill-opacity: 0.99;
     }
-  }
-  use {
-    stroke-miterlimit: 3.14;
-    stroke-linecap: round;
-    transition: stroke-opacity 0.15s ease;
   }
 </style>
