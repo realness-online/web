@@ -21,6 +21,8 @@
     stroke,
     cutout,
     drama,
+    drama_back,
+    drama_front,
     bold,
     medium,
     regular,
@@ -98,7 +100,28 @@
     }
   })
   register_preference('pref::Toggle_Background', background)
-  register_preference('pref::Toggle_Drama', drama)
+  register('pref::Toggle_Drama', () => {
+    const new_state = !drama.value
+    drama.value = new_state
+    drama_back.value = new_state
+    drama_front.value = new_state
+  })
+  register('pref::Cycle_Drama', () => {
+    if (!drama_back.value && !drama_front.value) {
+      drama_back.value = true
+      drama_front.value = false
+    } else if (drama_back.value && !drama_front.value) {
+      drama_back.value = false
+      drama_front.value = true
+    } else if (!drama_back.value && drama_front.value) {
+      drama_back.value = true
+      drama_front.value = true
+    } else {
+      drama_back.value = false
+      drama_front.value = false
+    }
+    drama.value = drama_back.value || drama_front.value
+  })
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
@@ -160,6 +183,15 @@
     status.value = 'offline'
   }
   mounted(async () => {
+    // Initialize drama_back and drama_front from existing drama preference if not set
+    // This handles migration for users who already have drama enabled
+    const has_drama_back = localStorage.getItem('drama_back') !== null
+    const has_drama_front = localStorage.getItem('drama_front') !== null
+    if (!has_drama_back && !has_drama_front && drama.value) {
+      drama_back.value = true
+      drama_front.value = true
+    }
+
     const is_standalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator['standalone'] || // for iOS

@@ -23,7 +23,8 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
-    drama,
+    drama_back,
+    drama_front,
     background,
     bold,
     medium,
@@ -122,7 +123,8 @@
   const regular_visible = computed(() => vector.value?.regular && regular.value)
   const medium_visible = computed(() => vector.value?.medium && medium.value)
   const bold_visible = computed(() => vector.value?.bold && bold.value)
-  const drama_visible = computed(() => drama.value)
+  const drama_back_visible = computed(() => drama_back.value)
+  const drama_front_visible = computed(() => drama_front.value)
 
   const boulder_visible = computed(
     () => cutout.value && boulder.value && vector.value?.boulder
@@ -198,7 +200,7 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{ opacity: drama_visible ? 1 : 0, visibility: drama_visible ? 'visible' : 'hidden' }" />
+        :style="{ opacity: drama_back_visible ? 1 : 0, visibility: drama_back_visible ? 'visible' : 'hidden' }" />
 
       <g class="cutouts">
         <slot>
@@ -261,7 +263,7 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{ opacity: drama_visible ? 1 : 0, visibility: drama_visible ? 'visible' : 'hidden' }" />
+        :style="{ opacity: drama_front_visible ? 1 : 0, visibility: drama_front_visible ? 'visible' : 'hidden' }" />
     </g>
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">

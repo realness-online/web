@@ -44,6 +44,7 @@ export const default_keymap = [
       a: 'pref::Toggle_Animate',
       s: 'pref::Toggle_Stroke',
       d: 'pref::Toggle_Drama',
+      D: 'pref::Cycle_Drama',
       f: 'pref::Toggle_Fill',
       g: 'pref::Toggle_Cutout',
 
@@ -75,6 +76,7 @@ export const default_keymap = [
       'pref::Toggle_Cutout': 'Toggle cutout display on posters',
       'pref::Toggle_Background': 'Toggle background fill on posters',
       'pref::Toggle_Drama': 'Toggle dynamic lighting on posters',
+      'pref::Cycle_Drama': 'Cycle through individual drama light settings',
       'pref::Toggle_Animate': 'Toggle poster animation',
       'pref::Toggle_Info': 'Toggle FPS and animation info',
       'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view',
