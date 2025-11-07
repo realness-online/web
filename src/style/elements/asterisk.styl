@@ -13,12 +13,6 @@
   outline: 0.15vmin dashed black
 
 html *:not(dialog):not(dialog *)
-  transition-timing-function: ease
-  transition-duration: 0.5s, 0s, 0.25s // first two durations accomodate hidden attribute transition
-  transition-property: opacity, visibility, border, margin, padding, width, height, fill, stroke, opacity, fill-opacity
-  animation-duration: 0.5s
-  animation-fill-mode: forwards
-  animation-timing-function: ease
   scroll-behavior: smooth
   :focus
     outline: none
@@ -28,20 +22,3 @@ html *:not(dialog):not(dialog *)
   visibility: hidden
   transition-delay: 0s, 0.5s
 
-*:not(dialog):not(dialog *) {
-  &[style*="display: none"] {
-    transition-property: opacity,  display;
-    transition-duration: 0.66s;
-    transition-behavior: allow-discrete;
-    transition-delay: 0;
-    opacity: 0;
-
-  }
-  &:not([style*="display: none"]) {
-    transition-property: opacity,  display;
-    transition-duration: 0.66s;
-    transition-behavior: allow-discrete;
-
-    opacity: 1;
-  }
-}
