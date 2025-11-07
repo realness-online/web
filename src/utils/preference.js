@@ -2,6 +2,8 @@ import { useStorage as storage } from '@vueuse/core'
 
 export const animate = storage('animate', false)
 export const drama = storage('drama', false)
+export const drama_back = storage('drama_back', false)
+export const drama_front = storage('drama_front', false)
 export const slice = storage('slice', false)
 
 export const fill = storage('fill', true)
