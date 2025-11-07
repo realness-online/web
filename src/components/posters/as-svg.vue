@@ -140,6 +140,10 @@
     () => cutout.value && sediment.value && vector.value?.sediment
   )
 
+  const shadow_layer_displayed = computed(
+    () => fill.value || stroke.value
+  )
+
   const hide_cursor = computed(() => slice.value && storytelling.value)
 
   const ken_burns_ready = ref(false)
@@ -199,35 +203,55 @@
       <g class="cutouts">
         <slot>
           <use
-            v-if="boulder_visible"
+            v-if="intersecting"
             :key="`${itemid}-boulder-use`"
             :id="query('boulder-use')"
             itemprop="boulder"
-            :href="fragment('boulder')" />
+            :href="fragment('boulder')"
+            :style="{
+              opacity: boulder_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              visibility: boulder_visible ? 'visible' : 'hidden'
+            }" />
           <use
-            v-if="rock_visible"
+            v-if="intersecting"
             :key="`${itemid}-rock-use`"
             :id="query('rock-use')"
             itemprop="rock"
-            :href="fragment('rock')" />
+            :href="fragment('rock')"
+            :style="{
+              opacity: rock_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              visibility: rock_visible ? 'visible' : 'hidden'
+            }" />
           <use
-            v-if="gravel_visible"
+            v-if="intersecting"
             :key="`${itemid}-gravel-use`"
             :id="query('gravel-use')"
             itemprop="gravel"
-            :href="fragment('gravel')" />
+            :href="fragment('gravel')"
+            :style="{
+              opacity: gravel_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              visibility: gravel_visible ? 'visible' : 'hidden'
+            }" />
           <use
-            v-if="sand_visible"
+            v-if="intersecting"
             :key="`${itemid}-sand-use`"
             :id="query('sand-use')"
             itemprop="sand"
-            :href="fragment('sand')" />
+            :href="fragment('sand')"
+            :style="{
+              opacity: sand_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              visibility: sand_visible ? 'visible' : 'hidden'
+            }" />
           <use
-            v-if="sediment_visible"
+            v-if="intersecting"
             :key="`${itemid}-sediment-use`"
             :id="query('sediment-use')"
             itemprop="sediment"
-            :href="fragment('sediment')" />
+            :href="fragment('sediment')"
+            :style="{
+              opacity: sediment_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              visibility: sediment_visible ? 'visible' : 'hidden'
+            }" />
         </slot>
       </g>
       <rect
