@@ -280,6 +280,56 @@ export const use = () => {
     return path
   }
 
+  const clone_tracer_path = path_data => ({
+    ...path_data,
+    color: { ...path_data.color },
+    offset: { ...path_data.offset }
+  })
+  /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
+  const pending_tracer_paths = []
+  let tracer_complete_pending = false
+
+  const clear_tracer_pending = () => {
+    pending_tracer_paths.length = 0
+    tracer_complete_pending = false
+  }
+
+  const add_cutout_path = (path_data, progress_value) => {
+    if (!new_vector.value.cutout) new_vector.value.cutout = []
+    const cutout_path = make_cutout_path({
+      ...path_data,
+      progress: progress_value
+    })
+    new_vector.value.cutout.push(cutout_path)
+  }
+
+  const flush_pending_tracer_paths = () => {
+    if (!new_vector.value || pending_tracer_paths.length === 0) return
+    const pending_paths = pending_tracer_paths.splice(
+      0,
+      pending_tracer_paths.length
+    )
+    pending_paths.forEach(({ path, progress }) =>
+      add_cutout_path(path, progress)
+    )
+  }
+
+  const handle_tracer_complete = async () => {
+    if (new_vector.value && !new_vector.value.optimized)
+      new_vector.value.completed = true
+
+    if (current_item_id.value && new_gradients.value && new_vector.value) {
+      await tick()
+      const element = document.getElementById(
+        as_query_id(current_item_id.value)
+      )
+      optimizer.value.postMessage({
+        route: 'optimize:vector',
+        vector: element.outerHTML
+      })
+    }
+  }
+
   /**
    * Add files to processing queue
    * @param {File[]} files
@@ -403,6 +453,7 @@ export const use = () => {
     working.value = true
     progress.value = 0
     current_item_id.value = itemid
+    clear_tracer_pending()
 
     let image_data
     let exif = {}
@@ -500,7 +551,7 @@ export const use = () => {
   /**
    * @param {VectorResponse} response
    */
-  const vectorized = response => {
+  const vectorized = async response => {
     if (!is_mounted.value) return
     const { vector } = response.data
     vector.id = current_item_id.value
@@ -518,6 +569,11 @@ export const use = () => {
     }
 
     new_vector.value = vector
+    flush_pending_tracer_paths()
+    if (tracer_complete_pending) {
+      tracer_complete_pending = false
+      await handle_tracer_complete()
+    }
 
     if (current_item_id.value) update_progress(current_item_id.value, 50)
   }
@@ -545,29 +601,21 @@ export const use = () => {
           update_progress(current_item_id.value, message.data.progress)
         break
       case 'path':
-        if (!new_vector.value) return
-        if (!new_vector.value.cutout) new_vector.value.cutout = []
-        const cutout_path = make_cutout_path({
-          ...message.data.path,
-          progress: message.data.progress
-        })
-        new_vector.value.cutout.push(cutout_path)
+        if (!new_vector.value) {
+          pending_tracer_paths.push({
+            path: clone_tracer_path(message.data.path),
+            progress: message.data.progress
+          })
+          break
+        }
+        add_cutout_path(message.data.path, message.data.progress)
         break
       case 'complete':
-        if (new_vector.value && !new_vector.value.optimized)
-          new_vector.value.completed = true
-
-        if (current_item_id.value && new_gradients.value && new_vector.value) {
-          await tick()
-          const element = document.getElementById(
-            as_query_id(current_item_id.value)
-          )
-          optimizer.value.postMessage({
-            route: 'optimize:vector',
-            vector: element.outerHTML
-          })
+        if (!new_vector.value) {
+          tracer_complete_pending = true
+          break
         }
-
+        await handle_tracer_complete()
         break
       case 'error':
         console.error('Tracer error:', message.error)
@@ -662,6 +710,7 @@ export const use = () => {
         new_vector.value.cutouts = null
       }
     }
+    clear_tracer_pending()
     new_vector.value = null
     new_gradients.value = null
     progress.value = 0
