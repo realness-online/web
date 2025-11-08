@@ -1,6 +1,7 @@
 <script setup>
   import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted, computed } from 'vue'
+  import { fill as fill_pref, cutout as cutout_pref, stroke as stroke_pref } from '@/utils/preference'
   const props = defineProps({
     tabable: {
       type: Boolean,
@@ -24,11 +25,15 @@
     }
   })
   const { tabindex } = use_poster(props)
-  const fill = ref(null)
+  const fill_value = ref(null)
   mounted(() => {
-    fill.value = props.fill
-    if (props.rect?.style.fill) fill.value = props.rect?.style.fill
-    if (props.rect?.fill) fill.value = props.rect?.fill
+    fill_value.value = props.fill
+    if (props.rect?.style.fill) fill_value.value = props.rect?.style.fill
+    if (props.rect?.fill) fill_value.value = props.rect?.fill
+  })
+  const background_fill = computed(() => {
+    if (!fill_pref.value && !cutout_pref.value && stroke_pref.value) return '#808080'
+    return fill_value.value
   })
   const style = computed(() => ({
     opacity: props.visible ? 1 : 0,
@@ -39,7 +44,7 @@
 <template>
   <rect
     itemprop="background"
-    :fill="fill"
+    :fill="background_fill"
     width="100%"
     height="100%"
     :tabindex="tabindex"
