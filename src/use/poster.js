@@ -7,6 +7,7 @@
 import {
   ref,
   computed,
+  watch,
   onMounted as mounted,
   onUnmounted as unmounted,
   getCurrentInstance as current_instance,
@@ -65,7 +66,7 @@ export const use = () => {
 
   const { x, y, pressure } = use_pointer({ target: vector_element })
 
-  const orientation_signal = ref(0)
+  const ken_burns_signal = ref(0)
   let orientation_media = null
 
   const original_viewbox = computed(() => {
@@ -104,7 +105,7 @@ export const use = () => {
   )
 
   const ken_burns_range = computed(() => {
-    orientation_signal.value
+    ken_burns_signal.value
     if (!vector_element.value || !vector.value) return 0
 
     const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
@@ -157,8 +158,8 @@ export const use = () => {
     return ken_burns_vertical_position.value
   })
 
-  const track_orientation = () => {
-    orientation_signal.value += 1
+  const bump_ken_burns = () => {
+    ken_burns_signal.value += 1
   }
 
   const landscape = computed(() => {
@@ -212,8 +213,8 @@ export const use = () => {
   mounted(() => {
     if (!window?.matchMedia) return
     orientation_media = window.matchMedia('(orientation: portrait)')
-    orientation_media.addEventListener('change', track_orientation)
-    track_orientation()
+    orientation_media.addEventListener('change', bump_ken_burns)
+    bump_ken_burns()
   })
 
   const show = async () => {
@@ -280,9 +281,14 @@ export const use = () => {
     console.info('cutout_end', event)
   }
 
+  watch(
+    () => storytelling.value,
+    () => bump_ken_burns()
+  )
+
   unmounted(() => {
     if (orientation_media)
-      orientation_media.removeEventListener('change', track_orientation)
+      orientation_media.removeEventListener('change', bump_ken_burns)
   })
 
   return {
