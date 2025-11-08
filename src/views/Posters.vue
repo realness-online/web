@@ -224,13 +224,15 @@
         gap: base-line;
         scroll-behavior: smooth;
         height: 100vh;
-
         scroll-snap-type: x proximity;
         & > figure.poster {
           height: 100%;
           flex-shrink: 0;
           scroll-snap-align: center;
           min-width: 100vw;
+          @media (max-aspect-ratio: 1 / 1) {
+            max-width: 100vw;
+          }
         }
       }
     }
