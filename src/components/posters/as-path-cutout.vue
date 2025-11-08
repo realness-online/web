@@ -17,7 +17,6 @@
     }
   })
 
-  defineEmits(['focus', 'touchstart', 'touchend'])
   const vector = inject('vector', ref(null))
 
   const path = ref(null)
@@ -55,8 +54,5 @@
     tabindex="-1"
     :fill="fill"
     :transform="transform"
-    :data-progress="data_progress"
-    @focus="$emit('focus', 'cutout')"
-    @touchstart.passive="$emit('touchstart', $event, props.index)"
-    @touchend.passive="$emit('touchend', $event)" />
+    :data-progress="data_progress" />
 </template>

@@ -467,18 +467,13 @@
     height: 100%;
     width: 100%;
     cursor: pointer;
-    transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
     &.hide-cursor {
       cursor: none;
     }
-    &:active {
-      cursor: grabbing;
-    }
 
     & > g {
-      cursor: none;
       transform-origin: center center;
       &.ken-burns-top {
         animation: ken-burns-top 20s ease-in-out infinite;
@@ -490,13 +485,13 @@
         animation: ken-burns-bottom 20s ease-in-out infinite;
       }
       &.ken-burns-left {
-        animation: ken-burns-left 20s ease-in-out infinite;
+        animation: ken-burns-left 30s ease-in-out infinite;
       }
       &.ken-burns-center {
-        animation: ken-burns-center 20s ease-in-out infinite;
+        animation: ken-burns-center 30s ease-in-out infinite;
       }
       &.ken-burns-right {
-        animation: ken-burns-right 20s ease-in-out infinite;
+        animation: ken-burns-right 30s ease-in-out;
       }
     }
     & rect#lightbar-back,
@@ -521,7 +516,7 @@
       filter: saturate(100%) brightness(100%);
       will-change: opacity, filter, display;
       transition:
-        filter 0.66s ease-out,
+        filter 0.44s ease-in-out,
         opacity 1.66s ease-out,
         display 1.66s ease-out;
       transition-behavior: allow-discrete;
@@ -532,10 +527,10 @@
 
       &:hover {
         transition: filter 0.33s ease;
-        filter: saturate(120%) brightness(113%);
+        filter: saturate(113%) brightness(108%);
       }
       &:active {
-        cursor: grabbing;
+        /* cursor: grabbing; */
         filter: saturate(166%) brightness(130%);
       }
       &:focus {
