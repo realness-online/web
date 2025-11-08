@@ -7,7 +7,8 @@
 import {
   ref,
   computed,
-  watch,
+  onMounted as mounted,
+  onUnmounted as unmounted,
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
@@ -64,6 +65,9 @@ export const use = () => {
 
   const { x, y, pressure } = use_pointer({ target: vector_element })
 
+  const orientation_signal = ref(0)
+  let orientation_media = null
+
   const original_viewbox = computed(() => {
     if (!vector.value) return { x: 0, y: 0, width: 16, height: 16 }
     const [x, y, width, height] = vector.value.viewbox.split(' ').map(Number)
@@ -100,6 +104,7 @@ export const use = () => {
   )
 
   const ken_burns_range = computed(() => {
+    orientation_signal.value
     if (!vector_element.value || !vector.value) return 0
 
     const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
@@ -147,11 +152,14 @@ export const use = () => {
   })
 
   const ken_burns_position = computed(() => {
-    if (ken_burns_axis.value === 'x') {
-      return ken_burns_horizontal_position.value
-    }
+    if (ken_burns_axis.value === 'x') return ken_burns_horizontal_position.value
+
     return ken_burns_vertical_position.value
   })
+
+  const track_orientation = () => {
+    orientation_signal.value += 1
+  }
 
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -200,6 +208,13 @@ export const use = () => {
     menu.value = !menu.value
     emit('click', menu.value)
   }
+
+  mounted(() => {
+    if (!window?.matchMedia) return
+    orientation_media = window.matchMedia('(orientation: portrait)')
+    orientation_media.addEventListener('change', track_orientation)
+    track_orientation()
+  })
 
   const show = async () => {
     if (!vector.value) {
@@ -264,6 +279,11 @@ export const use = () => {
   const cutout_end = event => {
     console.info('cutout_end', event)
   }
+
+  unmounted(() => {
+    if (orientation_media)
+      orientation_media.removeEventListener('change', track_orientation)
+  })
 
   return {
     vector,
