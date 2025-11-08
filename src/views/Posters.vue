@@ -230,6 +230,7 @@
           flex-shrink: 0;
           scroll-snap-align: center;
           min-width: 100vw;
+          animation: none;
           @media (max-aspect-ratio: 1 / 1) {
             max-width: 100vw;
           }
