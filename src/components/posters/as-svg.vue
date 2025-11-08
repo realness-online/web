@@ -350,13 +350,19 @@
 
   @keyframes ken-burns-top {
     0% {
+      transform: translateY(calc(var(--ken-burns-range) * -1));
+    }
+    25% {
       transform: translateY(0);
     }
     50% {
       transform: translateY(var(--ken-burns-range));
     }
-    100% {
+    75% {
       transform: translateY(0);
+    }
+    100% {
+      transform: translateY(calc(var(--ken-burns-range) * -1));
     }
   }
 
@@ -364,8 +370,14 @@
     0% {
       transform: translateY(0);
     }
-    50% {
+    25% {
       transform: translateY(var(--ken-burns-range));
+    }
+    50% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateY(calc(var(--ken-burns-range) * -1));
     }
     100% {
       transform: translateY(0);
@@ -374,13 +386,73 @@
 
   @keyframes ken-burns-bottom {
     0% {
+      transform: translateY(var(--ken-burns-range));
+    }
+    25% {
       transform: translateY(0);
     }
     50% {
       transform: translateY(calc(var(--ken-burns-range) * -1));
     }
-    100% {
+    75% {
       transform: translateY(0);
+    }
+    100% {
+      transform: translateY(var(--ken-burns-range));
+    }
+  }
+
+  @keyframes ken-burns-left {
+    0% {
+      transform: translateX(var(--ken-burns-range));
+    }
+    25% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(calc(var(--ken-burns-range) * -1));
+    }
+    75% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(var(--ken-burns-range));
+    }
+  }
+
+  @keyframes ken-burns-center {
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(var(--ken-burns-range));
+    }
+    50% {
+      transform: translateX(0);
+    }
+    75% {
+      transform: translateX(calc(var(--ken-burns-range) * -1));
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes ken-burns-right {
+    0% {
+      transform: translateX(calc(var(--ken-burns-range) * -1));
+    }
+    25% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(var(--ken-burns-range));
+    }
+    75% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(var(--ken-burns-range) * -1));
     }
   }
 
@@ -416,6 +488,15 @@
       }
       &.ken-burns-bottom {
         animation: ken-burns-bottom 20s ease-in-out infinite;
+      }
+      &.ken-burns-left {
+        animation: ken-burns-left 20s ease-in-out infinite;
+      }
+      &.ken-burns-center {
+        animation: ken-burns-center 20s ease-in-out infinite;
+      }
+      &.ken-burns-right {
+        animation: ken-burns-right 20s ease-in-out infinite;
       }
     }
     & rect#lightbar-back,
