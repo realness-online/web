@@ -211,7 +211,7 @@
             itemprop="boulder"
             :href="fragment('boulder')"
             :style="{
-              opacity: boulder_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              opacity: boulder_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
               visibility: boulder_visible ? 'visible' : 'hidden'
             }" />
           <use
@@ -221,7 +221,7 @@
             itemprop="rock"
             :href="fragment('rock')"
             :style="{
-              opacity: rock_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              opacity: rock_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
               visibility: rock_visible ? 'visible' : 'hidden'
             }" />
           <use
@@ -231,7 +231,7 @@
             itemprop="gravel"
             :href="fragment('gravel')"
             :style="{
-              opacity: gravel_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              opacity: gravel_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
               visibility: gravel_visible ? 'visible' : 'hidden'
             }" />
           <use
@@ -241,7 +241,7 @@
             itemprop="sand"
             :href="fragment('sand')"
             :style="{
-              opacity: sand_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              opacity: sand_visible ? (shadow_layer_displayed ? 0.55 : 1) : 0,
               visibility: sand_visible ? 'visible' : 'hidden'
             }" />
           <use
@@ -295,6 +295,7 @@
           :path="vector.light"
           :tabindex="tabindex"
           :visible="light_visible"
+
           :mask="`url(${fragment('horizontal-mask')})`"
           :fill="`url(${fragment('vertical-light')})`"
           :stroke="`url(${fragment('horizontal-medium')})`"

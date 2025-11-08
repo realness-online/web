@@ -15,9 +15,9 @@
   const { new_gradients: gradients } = use_vectorize()
   const background = 81
   const light = 60
-  const regular = 50
-  const medium = 33
-  const bold = 18
+  const regular = 44
+  const medium = 20
+  const bold = 10
   const query = add => {
     if (!props.vector) return add
     if (add) return `${as_query_id(props.vector.id)}-${add}`
