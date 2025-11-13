@@ -72,10 +72,10 @@
     // Stagger symbol loading so layers appear one after another (largest first)
     const sequence = [
       ['boulder', 0],
-      ['rock', 120],
-      ['gravel', 240],
-      ['sand', 360],
-      ['sediment', 480]
+      ['rock', 20],
+      ['gravel', 40],
+      ['sand', 60],
+      ['sediment', 80]
     ]
     sequence.forEach(([layer, delay]) =>
       setTimeout(() => (symbol_loaded.value[layer] = true), delay)
