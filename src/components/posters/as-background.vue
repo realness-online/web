@@ -56,8 +56,8 @@
     outline: none
     stroke: none
     transition:
-      opacity 0.75s ease,
-      visibility 0.75s ease
+      opacity 0.2s ease,
+      visibility 0.2s ease
     @starting-style
       opacity: 0
     &:focus

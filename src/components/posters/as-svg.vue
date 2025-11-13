@@ -501,8 +501,8 @@
     & pattern rect[itemprop='background'] {
       pointer-events: none;
       transition:
-        opacity 0.75s ease,
-        visibility 0.75s ease;
+        opacity 0.2s ease,
+        visibility 0.2s ease;
       @starting-style {
         opacity: 0;
       }
@@ -517,8 +517,8 @@
       will-change: opacity, filter, display;
       transition:
         filter 0.44s ease-in-out,
-        opacity 1.66s ease-out,
-        display 1.66s ease-out;
+        opacity 0.44s ease-out,
+        display 0.44s ease-out;
       transition-behavior: allow-discrete;
 
       @starting-style {

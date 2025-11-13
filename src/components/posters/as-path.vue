@@ -110,9 +110,9 @@
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
     transition:
-      opacity 0.75s ease,
-      visibility 0.75s ease,
-      stroke-opacity 0.75s ease;
+      opacity 0.2s ease,
+      visibility 0.2s ease,
+      stroke-opacity 0.2s ease;
     @starting-style {
       opacity: 0;
     }
@@ -129,8 +129,8 @@
   }
   g {
     transition:
-      opacity 0.75s ease,
-      visibility 0.75s ease;
+      opacity 0.2s ease,
+      visibility 0.2s ease;
     @starting-style {
       opacity: 0;
     }
