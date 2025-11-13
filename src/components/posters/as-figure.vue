@@ -62,30 +62,18 @@
   })
   const query_id = computed(() => as_query_id(props.itemid))
   const posted_at = computed(() => as_time(as_created_at(props.itemid)))
-
+  const shown = ref(false)
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)
   }
-  const load_symbols = () => {
-    if (!cutout.value || !vector.value) return
-    // Stagger symbol loading so layers appear one after another (largest first)
-    const sequence = [
-      ['boulder', 0],
-      ['rock', 20],
-      ['gravel', 40],
-      ['sand', 60],
-      ['sediment', 80]
-    ]
-    sequence.forEach(([layer, delay]) =>
-      setTimeout(() => (symbol_loaded.value[layer] = true), delay)
-    )
-  }
+
   const on_show = async shown_vector => {
     vector.value = shown_vector
     await tick()
     emit('show', vector.value)
-    load_symbols()
+    shown.value = true
+
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
@@ -156,12 +144,17 @@
     @media (orientation: landscape), (min-width: page-width) {
       &.landscape {
         grid-column-start: span 2;
-        + .landscape {
-          grid-column-start: span 3;
-        }
+        grid-row-start: auto;
+        width: 100%;
+        min-height: auto;
         &.new {
-          grid-column-start: span 3;
+          grid-column-start: span 2;
         }
+      }
+    }
+    @media (min-width: pad-begins) {
+      &.landscape + .landscape {
+        grid-column-start: span 3;
       }
     }
     @media (min-width: pad-begins){
@@ -228,3 +221,4 @@
     }
   }
 </style>
+
