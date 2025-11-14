@@ -103,7 +103,7 @@
 </script>
 
 <template>
-  <animate ref="animation_group" itemprop="animation">
+  <animate ref="animation_group" itemprop="timeline">
     <animate v-if="stroke" class="stroke animation" id="stroke-animation">
       <animate
         :href="fragment('light')"
