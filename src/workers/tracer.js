@@ -75,6 +75,7 @@ const make_trace = message => {
   converter.init(image_data)
 
   is_processing = true
+  let last_reported_progress = -1
   const process_chunk = () => {
     if (!is_processing) return
 
@@ -101,7 +102,17 @@ const make_trace = message => {
             path: path_data,
             progress
           })
+          last_reported_progress = progress
         }
+      }
+
+      const current_progress = converter.progress()
+      if (current_progress !== last_reported_progress) {
+        self.postMessage({
+          type: 'progress',
+          progress: current_progress
+        })
+        last_reported_progress = current_progress
       }
 
       // If still processing, schedule next chunk

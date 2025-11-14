@@ -88,8 +88,6 @@ impl ColorImageConverter {
         let width = image_data.width() as usize;
         let height = image_data.height() as usize;
 
-        web_sys::console::log_1(&format!("Rust init - width: {}, height: {}", width, height).into());
-
         let data = image_data.data();
 
         let mut image = ColorImage {
