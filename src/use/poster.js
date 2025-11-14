@@ -30,7 +30,11 @@ import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { Poster as PosterClass } from '@/persistance/Storage'
-import { slice as slice_preference, storytelling } from '@/utils/preference'
+import {
+  slice as slice_preference,
+  storytelling,
+  slice_alignment
+} from '@/utils/preference'
 
 export const geology_layers = ['sediment', 'sand', 'gravel', 'rock', 'boulder']
 export const use = () => {
@@ -96,7 +100,13 @@ export const use = () => {
   const touch_start_scale = 1
 
   const aspect_ratio = computed(() => {
-    if (slice_preference.value) return 'xMidYMid slice'
+    if (slice_preference.value) {
+      const alignment = slice_alignment.value || 'ymid'
+      let y_align = 'Mid'
+      if (alignment === 'ymin') y_align = 'Min'
+      else if (alignment === 'ymax') y_align = 'Max'
+      return `xMidY${y_align} slice`
+    }
     return 'xMidYMid meet'
   })
 

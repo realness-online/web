@@ -68,6 +68,17 @@
     if (poster) poster.menu = !poster.menu
   }
 
+  /**
+   * @param {Id} itemid
+   */
+  const focus_poster = itemid => {
+    const svg_element = document.querySelector(`svg[itemid="${itemid}"]`)
+    if (!svg_element) return
+    const poster_element = svg_element.closest('figure.poster')
+    if (!poster_element) return
+    /** @type {HTMLElement} */ (poster_element).focus()
+  }
+
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
@@ -83,12 +94,19 @@
     if (!storytelling.value) return
 
     const focused_poster = event.target.closest('figure.poster')
-    if (focused_poster)
-      /** @type {HTMLElement} */ (focused_poster).scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      })
+    if (!focused_poster) return
+    const article = /** @type {HTMLElement} */ (focused_poster).closest('article')
+    if (!article) return
+
+    // In storytelling mode, only scroll horizontally
+    const poster_rect = /** @type {HTMLElement} */ (focused_poster).getBoundingClientRect()
+    const article_rect = article.getBoundingClientRect()
+    const scroll_left = article.scrollLeft + (poster_rect.left - article_rect.left - article_rect.width / 2 + poster_rect.width / 2)
+
+    article.scrollTo({
+      left: scroll_left,
+      behavior: 'smooth'
+    })
   }
 
   register('poster::Create_New', () => {
@@ -99,6 +117,9 @@
     await posters_for_person({ id: localStorage.me })
     await init_processing_queue()
     console.timeEnd('views:Posters')
+    await tick()
+    const first_poster = document.querySelector('figure.poster[tabindex="0"]')
+    if (first_poster) /** @type {HTMLElement} */ (first_poster).focus()
   })
 
   watch(
@@ -157,7 +178,7 @@
           'selecting-event': poster.picker,
           'fill-screen': poster.menu
         }"
-        @click="toggle_menu(poster.id)"
+        @click="focus_poster(poster.id); toggle_menu(poster.id)"
         @show="poster_shown">
         <as-author-menu
           :poster="poster"
@@ -236,6 +257,7 @@
           display: flex;
           align-items: center;
           justify-content: center;
+          overflow: hidden;
           @media (max-aspect-ratio: 1 / 1) {
             max-width: 100vw;
           }
