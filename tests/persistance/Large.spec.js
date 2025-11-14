@@ -43,15 +43,15 @@ describe('@/persistance/Large', () => {
   })
 
   describe('get_storage_path', () => {
-    it('returns flat path for regular poster', async () => {
+    it('returns folder path for regular poster', async () => {
       const large = new TestLargeClass('/+1234567890/posters/1737178477999')
 
       const path = await large.get_storage_path()
 
-      expect(path).toBe('people/+1234567890/posters/1737178477999.html.gz')
+      expect(path).toBe('people/+1234567890/posters/1737178477999/index.html.gz')
     })
 
-    it('returns flat path for archived poster', async () => {
+    it('returns folder path for archived poster', async () => {
       const { as_archive } = await import('@/utils/itemid')
       as_archive.mockResolvedValue(
         'people/+1234567890/posters/1234567890/1234567891'
@@ -62,11 +62,11 @@ describe('@/persistance/Large', () => {
       const path = await large.get_storage_path()
 
       expect(path).toBe(
-        'people/+1234567890/posters/1234567890/1234567891.html.gz'
+        'people/+1234567890/posters/1234567890/1234567891/index.html.gz'
       )
     })
 
-    it('returns flat path for archive folder itself', async () => {
+    it('returns folder path for archive folder itself', async () => {
       const { as_archive } = await import('@/utils/itemid')
       as_archive.mockResolvedValue(
         'people/+1234567890/posters/1234567890/1234567890'
@@ -77,7 +77,7 @@ describe('@/persistance/Large', () => {
       const path = await large.get_storage_path()
 
       expect(path).toBe(
-        'people/+1234567890/posters/1234567890/1234567890.html.gz'
+        'people/+1234567890/posters/1234567890/1234567890/index.html.gz'
       )
     })
   })

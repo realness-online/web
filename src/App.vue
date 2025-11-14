@@ -7,11 +7,12 @@
   import Viewbox from '@/components/viewbox'
   import {
     ref,
+    watch,
     onUnmounted as dismount,
     onMounted as mounted,
     provide
   } from 'vue'
-  import { useFps } from '@vueuse/core'
+  import { useFps, useMagicKeys } from '@vueuse/core'
   import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
@@ -37,7 +38,8 @@
     info,
     storytelling,
     slice,
-    grid_overlay
+    grid_overlay,
+    aspect_ratio_mode
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -74,6 +76,7 @@
   const preferences_dialog = ref(null)
   const account_dialog = ref(null)
   const { register, register_preference } = use_keymap('Global')
+  const magic_keys = useMagicKeys()
 
   register('pref::Toggle_Fill', () => {
     const new_state = !fill.value
@@ -126,7 +129,29 @@
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Slice', slice)
+  register('pref::Cycle_Aspect_Ratio', () => {
+    const aspect_ratios = ['auto', '16/9', '1/1', '1.618/1', '2.35/1', '2.76/1']
+    const current = aspect_ratio_mode.value || 'auto'
+    const current_index = aspect_ratios.indexOf(current)
+    const is_reverse = magic_keys.shift.value
+    const next_index = is_reverse
+      ? (current_index - 1 + aspect_ratios.length) % aspect_ratios.length
+      : (current_index + 1) % aspect_ratios.length
+    aspect_ratio_mode.value = aspect_ratios[next_index]
+    document.documentElement.style.setProperty(
+      '--poster-aspect-ratio',
+      aspect_ratio_mode.value === 'auto' ? 'auto' : aspect_ratio_mode.value
+    )
+  })
   register_preference('pref::Toggle_Grid', grid_overlay)
+
+  // Watch aspect_ratio_mode and update CSS variable
+  watch(aspect_ratio_mode, new_value => {
+    document.documentElement.style.setProperty(
+      '--poster-aspect-ratio',
+      new_value === 'auto' ? 'auto' : new_value
+    )
+  })
 
   register_preference('pref::Toggle_Bold', bold)
   register_preference('pref::Toggle_Medium', medium)
@@ -191,6 +216,13 @@
       drama_back.value = true
       drama_front.value = true
     }
+
+    // Initialize aspect ratio CSS variable
+    const aspect_ratio = aspect_ratio_mode.value || 'auto'
+    document.documentElement.style.setProperty(
+      '--poster-aspect-ratio',
+      aspect_ratio === 'auto' ? 'auto' : aspect_ratio
+    )
 
     const is_standalone =
       window.matchMedia('(display-mode: standalone)').matches ||

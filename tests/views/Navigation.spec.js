@@ -17,6 +17,9 @@ describe('@/views/Navigation', () => {
     vi.clearAllMocks()
     wrapper = shallowMount(Navigation, {
       global: {
+        provide: {
+          'open_camera': mock_open_camera
+        },
         stubs: {
           'router-link': true,
           icon: true,
@@ -101,12 +104,18 @@ describe('@/views/Navigation', () => {
     })
 
     it('hides router links when posting', async () => {
+      // First check links exist when not posting
+      const initial_links_count = wrapper.findAll('router-link-stub').length
+      expect(initial_links_count).toBeGreaterThan(0)
+
+      // Set posting to true
       wrapper.vm.posting = true
       await wrapper.vm.$nextTick()
+
+      // Most links should be hidden when posting (v-if="!posting"), but about link remains
       const router_links = wrapper.findAll('router-link-stub')
-      router_links.forEach(link => {
-        expect(link.attributes('v-if')).toBe('!posting')
-      })
+      expect(router_links.length).toBe(1) // Only the about link
+      expect(router_links[0].attributes('id')).toBe('about')
     })
 
     it('hides footer when posting', async () => {

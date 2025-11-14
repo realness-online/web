@@ -20,9 +20,8 @@ exports[`Relations > renders relations view 1`] = `
     class="profile-list"
   >
     
-    <as-figure-stub
-      editable="false"
-      person=""
+    <div
+      class="profile-stub"
     />
     
   </nav>

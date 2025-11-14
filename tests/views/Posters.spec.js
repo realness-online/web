@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import { ref } from 'vue'
 import Posters from '@/views/Posters'
 
 const MOCK_YEAR = 2020
@@ -21,7 +22,11 @@ vi.mock('@/use/key-commands', () => ({
 // Mock poster composable
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
-    posters: { value: [] },
+    posters: { value: [{
+      id: '/+14151234356/posters/1234567890',
+      type: 'poster',
+      viewbox: '0 0 100 100'
+    }] },
     for_person: vi.fn(),
     poster_shown: vi.fn()
   }),
@@ -69,12 +74,22 @@ describe('@/views/Posters', () => {
     vi.clearAllMocks()
     wrapper = shallowMount(Posters, {
       global: {
+        provide: {
+          select_photo: vi.fn(),
+          can_add: ref(true),
+          init_processing_queue: vi.fn(() => Promise.resolve()),
+          queue_items: ref([])
+        },
         stubs: {
           icon: true,
-          'as-figure': true,
+          'as-figure': {
+            template: '<div class="poster-stub"></div>',
+            props: ['itemid']
+          },
           'as-svg': true,
           'as-menu-author': true,
-          'logo-as-link': true
+          'logo-as-link': true,
+          'as-svg-processing': true
         }
       }
     })

@@ -18,25 +18,23 @@ exports[`@/views/Posters > Rendering > renders posters view 1`] = `
           name="add"
         />
       </a>
-      <a
-        hidden=""
-        tabindex="-1"
-      >
-        <icon-stub
-          name="picker"
-        />
-      </a>
+      <h1>
+        Posters
+      </h1>
       <anonymous-stub
         tabindex="-1"
       />
     </header>
-    <h1>
-      Posters
-    </h1>
-    <icon-stub
-      name="working"
-    />
-    <!--v-if-->
+    <article>
+      
+      
+      
+      <div
+        class="poster-stub"
+        tabindex="0"
+      />
+      
+    </article>
   </section>
   
 </div>

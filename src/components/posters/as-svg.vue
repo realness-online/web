@@ -39,7 +39,8 @@
     sand,
     sediment,
     slice,
-    storytelling
+    storytelling,
+    aspect_ratio_mode
   } from '@/utils/preference'
   const props = defineProps({
     itemid: {
@@ -179,6 +180,7 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
+    :style="slice && aspect_ratio_mode !== 'auto' ? { aspectRatio: aspect_ratio_mode } : {}"
     :class="{
       animate,
       landscape,

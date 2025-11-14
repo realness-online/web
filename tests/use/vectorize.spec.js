@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 
 // Create image_picker ref before any imports
 const image_picker_ref = ref({
@@ -90,7 +91,7 @@ global.Image = class {
   }
 }
 global.createImageBitmap = vi.fn(() =>
-  Promise.resolve({ width: 1000, height: 1000 })
+  Promise.resolve({ width: 1000, height: 1000, close: vi.fn() })
 )
 global.OffscreenCanvas = class {
   constructor(width, height) {
@@ -109,6 +110,19 @@ global.OffscreenCanvas = class {
   }
 }
 
+// Helper to test composables in proper Vue context
+function with_setup(composable) {
+  let result
+  const app = defineComponent({
+    setup() {
+      result = composable()
+      return () => {}
+    }
+  })
+  mount(app)
+  return result
+}
+
 describe('vectorize composable', () => {
   let vectorize_instance
 
@@ -122,7 +136,7 @@ describe('vectorize composable', () => {
       removeAttribute: vi.fn()
     }
 
-    vectorize_instance = use()
+    vectorize_instance = with_setup(() => use())
   })
 
   describe('initialization', () => {
@@ -150,6 +164,7 @@ describe('vectorize composable', () => {
     it('select_photo removes capture attribute', () => {
       const mock_picker = {
         removeAttribute: vi.fn(),
+        setAttribute: vi.fn(),
         click: vi.fn()
       }
       vectorize_instance.image_picker.value = mock_picker
@@ -252,7 +267,7 @@ describe('vectorize composable', () => {
 
       vectorize_instance.mount_workers()
 
-      expect(global.Worker).toHaveBeenCalledTimes(3)
+      expect(global.Worker).toHaveBeenCalledTimes(4)
       expect(global.Worker).toHaveBeenCalledWith('/vector.worker.js')
       expect(global.Worker).toHaveBeenCalledWith('/tracer.worker.js')
 

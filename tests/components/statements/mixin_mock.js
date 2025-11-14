@@ -2,6 +2,7 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'VectorMock',
+  template: '<div></div>',
   data() {
     return {
       observer: null

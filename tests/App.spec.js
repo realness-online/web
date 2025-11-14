@@ -6,7 +6,9 @@ import App from '@/App.vue'
 const mock_image_picker = { value: null }
 vi.mock('@/use/vectorize', () => ({
   use: () => ({
-    vVectorizer: vi.fn(),
+    vVectorizer: {
+      mounted: vi.fn()
+    },
     image_picker: mock_image_picker,
     mount_workers: vi.fn()
   })
@@ -28,14 +30,24 @@ vi.mock('@/utils/preference', () => ({
   stroke: { value: false },
   cutout: { value: false },
   drama: { value: false },
+  drama_back: { value: false },
+  drama_front: { value: false },
+  slice: { value: false },
   bold: { value: false },
   medium: { value: false },
   regular: { value: false },
   light: { value: false },
   background: { value: false },
+  boulder: { value: false },
+  rock: { value: false },
+  gravel: { value: false },
+  sand: { value: false },
+  sediment: { value: false },
   animate: { value: false },
   info: { value: false },
-  storytelling: { value: false }
+  storytelling: { value: false },
+  animation_speed: { value: 'normal' },
+  grid_overlay: { value: false }
 }))
 
 describe('App.vue', () => {
@@ -70,14 +82,10 @@ describe('App.vue', () => {
     })
 
     wrapper = shallowMount(App, {
+      shallow: true,
       global: {
         stubs: {
-          'router-view': true,
-          sync: true,
-          'fps-component': true,
-          viewbox: true,
-          'dialog-preferences': true,
-          'dialog-documentation': true
+          sync: { template: '<div></div>', emits: ['active'] }
         }
       }
     })

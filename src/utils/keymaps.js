@@ -38,6 +38,8 @@ export const default_keymap = [
       i: 'pref::Toggle_Info',
       o: 'pref::Toggle_Storytelling',
       O: 'pref::Toggle_Slice',
+      r: 'pref::Cycle_Aspect_Ratio',
+      R: 'pref::Cycle_Aspect_Ratio',
       p: 'ui::Toggle_Presentation',
 
       'Home Row': '',
@@ -81,6 +83,7 @@ export const default_keymap = [
       'pref::Toggle_Info': 'Toggle FPS and animation info',
       'pref::Toggle_Storytelling': 'Toggle storytelling (side-scroll) view',
       'pref::Toggle_Slice': 'Toggle poster aspect ratio (meet/slice)',
+      'pref::Cycle_Aspect_Ratio': 'Cycle through poster aspect ratio modes',
       'pref::Toggle_Bold': 'Toggle bold layer visibility',
       'pref::Toggle_Medium': 'Toggle medium layer visibility',
       'pref::Toggle_Regular': 'Toggle regular layer visibility',

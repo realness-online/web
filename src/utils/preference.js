@@ -29,6 +29,8 @@ export const animation_speed = storage('animation_speed', 'normal') //fast norma
 
 export const grid_overlay = storage('grid_overlay', false)
 
+export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
+
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)
 // export const filesystem = storage('filesystem', false)

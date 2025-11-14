@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 import {
   use,
   as_thoughts,
@@ -59,12 +60,25 @@ vi.mock('@/utils/numbers', () => ({
   }
 }))
 
+// Helper to test composables in proper Vue context
+function with_setup(composable) {
+  let result
+  const app = defineComponent({
+    setup() {
+      result = composable()
+      return () => {}
+    }
+  })
+  mount(app)
+  return result
+}
+
 describe('statement composable', () => {
   let statement_instance
 
   beforeEach(() => {
     vi.clearAllMocks()
-    statement_instance = use()
+    statement_instance = with_setup(() => use())
   })
 
   describe('initialization', () => {
@@ -100,14 +114,19 @@ describe('statement composable', () => {
       const person = { id: '/+1234', type: 'person' }
       await statement_instance.for_person(person)
 
-      expect(person.viewed).toEqual(['index'])
+      const author = statement_instance.authors.value.find(a => a.id === person.id)
+      expect(author.viewed).toEqual(['index'])
     })
 
     it('adds person to authors', async () => {
       const person = { id: '/+1234', type: 'person' }
       await statement_instance.for_person(person)
 
-      expect(statement_instance.authors.value).toContainEqual(person)
+      expect(statement_instance.authors.value).toContainEqual({
+        id: '/+1234',
+        type: 'person',
+        viewed: ['index']
+      })
     })
 
     it('appends to existing statements', async () => {
