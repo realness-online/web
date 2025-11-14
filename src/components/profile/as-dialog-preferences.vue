@@ -14,11 +14,10 @@
   const aspect_ratio_display = computed(() => aspect_ratio_mode.value || 'auto')
 
   const show_settings = () => {
-    if (!settings.value)  return;
+    if (!settings.value) return
 
-    if (settings.value.open)
-      settings.value.close()
-     else {
+    if (settings.value.open) settings.value.close()
+    else {
       settings.value.showModal()
       settings.value.focus()
     }

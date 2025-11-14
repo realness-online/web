@@ -48,7 +48,9 @@ describe('@/persistance/Large', () => {
 
       const path = await large.get_storage_path()
 
-      expect(path).toBe('people/+1234567890/posters/1737178477999/index.html.gz')
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999/index.html.gz'
+      )
     })
 
     it('returns folder path for archived poster', async () => {

@@ -15,11 +15,15 @@ Object.defineProperty(window, 'localStorage', {
 // Mock people composable
 vi.mock('@/use/people', () => ({
   use: () => ({
-    phonebook: { value: [{
-      id: '/+14151234567',
-      type: 'person',
-      name: { given: 'Test', family: 'User' }
-    }] },
+    phonebook: {
+      value: [
+        {
+          id: '/+14151234567',
+          type: 'person',
+          name: { given: 'Test', family: 'User' }
+        }
+      ]
+    },
     load_phonebook: vi.fn(),
     working: { value: false }
   }),

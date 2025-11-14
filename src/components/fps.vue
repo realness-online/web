@@ -1,7 +1,17 @@
 <script setup>
-  import { ref, computed, onMounted as mounted, onUnmounted as unmounted } from 'vue'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onUnmounted as unmounted
+  } from 'vue'
   import { useFps } from '@vueuse/core'
-  import { animate, animation_speed, aspect_ratio_mode, slice } from '@/utils/preference'
+  import {
+    animate,
+    animation_speed,
+    aspect_ratio_mode,
+    slice
+  } from '@/utils/preference'
 
   const fps = useFps()
 
@@ -27,7 +37,7 @@
     '--fps-color': fps_color.value
   }))
 
-const animation_time = ref(0)
+  const animation_time = ref(0)
   const max_cycle_time = 172 // Longest animation cycle in seconds
 
   let frame_id = null
@@ -52,7 +62,9 @@ const animation_time = ref(0)
 
 <template>
   <aside id="fps" :style="fps_style">
-    <meter :value="fps" :min="0" :max="60" :optimum="60" :low="24" :high="55">{{ fps }}fps</meter>
+    <meter :value="fps" :min="0" :max="60" :optimum="60" :low="24" :high="55">
+      {{ fps }}fps
+    </meter>
     <meter :value="animation_time" :min="0" :max="max_cycle_time">
       {{ animation_time.toFixed(0) }}s / {{ max_cycle_time }}s
     </meter>

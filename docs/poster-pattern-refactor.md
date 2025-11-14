@@ -1,142 +1,140 @@
-# Poster Pattern Refactor Plan
+# Poster Animation Override System
 
-## Goal
+## Problem
 
-The pattern markup of our as-svg.vue is stored as a standalone asset, similar to cutouts.
+When saving a poster, we save all path data which can be quite large (50-200KB). When modifying style properties (stroke, width, color), we're writing 99% unchanged data. This creates inefficiency:
 
-## Architecture Decision
+- Large files saved frequently for small changes
+- Duplication of path data across saves
+- Difficult to add audio/animation timing to poster sequences
 
-This keeps `as-svg.vue` focused on rendering the poster structure while patterns are managed as separate components
+## Solution: Animation File as Override Instructions
 
-Patterns are item and microdata aware - they use `itemscope`, `itemtype="/patterns"`, and `itemid` attributes (like `itemid="${id}-shadow"`), matching the same pattern used by cutouts and posters for structured data.
+Use `as-animation.vue` as the small, frequently-changing override file. It contains:
 
-**Key Learnings:**
+- Style overrides (stroke, fill, width, opacity)
+- Animation timing
+- Audio synchronization
+- All instructions for modifying the base poster
 
-- Separate components for processing vs. saved: `as-pattern-processing.vue` and `as-pattern.vue`
-- No injection dependencies
-- Use composables to manage pattern state and loading
-- `as-pattern-processing.vue` uses hydration (works with vector props during processing)
-- `as-pattern.vue` uses composable to load HTML string, renders directly in template (no DOM injection)
-- No querySelector guards - assume data exists and handle errors at higher level
-- Render pattern element directly in SVG template (not in `<defs>`, not via DOM manipulation)
+Base posters remain immutable; animation/override file is applied at render time.
 
-## Memory Considerations
+## Architecture
 
-- **Avoid loading data into memory unnecessarily** - Load HTML string via composable, render with v-html (like `as-symbol`), don't extract paths/elements into JavaScript objects.
-- **Pattern HTML contains everything needed** - No need to parse and extract individual path elements when the HTML can be rendered directly.
-- **Only use vector props during processing** - When creating new posters, vector paths are needed for reactive updates. When loading saved posters, use composable to load HTML string and render it.
+### File Structure
 
-## Tasks
+- **Base Poster:** `{author}/posters/{created_at}` - Large immutable SVG with all path data (saved once)
+- **Animation/Override:** `{author}/posters/{created_at}-animation` - Small HTML from `as-animation.vue` (saved frequently)
 
-### 1. **audit-current-usage**
+### Storage Class
 
-- Catalog the props/helpers in `as-svg.vue`, `as-figure.vue`, and `as-svg-processing.vue`.
-- Capture how `use/poster.js` prepares poster state.
-- Review `use/vectorize.js` saving logic to see what DOM fragments are persisted
+Create `Animation` class in `src/persistance/Storage.js`:
 
-### 2. **design-pattern-architecture**
+- Extends `Large(Cloud(Local(Storage)))`
+- Uses `text/html` content type
 
-- Use fragment identifiers (globally unique) for gradients/masks references.
-- Specify a `Pattern` persistence helper mirroring the existing `Cutout` class.
-- Patterns use microdata attributes: `itemscope`, `itemtype="/patterns"`, and `itemid="${id}-shadow"`.
-- Remove `<g>` wrapper from `as-path.vue` - paths render directly with visibility styles.
+### Animation Itemid Pattern
 
-### 3. **refactor-components-to-symbols**
+- Animation itemid: `{itemid}-animation`
+- Example: `/+1234/posters/1000-animation`
+- References the poster itemid it overrides
 
-**CRITICAL: SVG Fragment Reference Limitation**
+## HTML/Microdata Structure
 
-- SVG fragment references (`url(#id)`) only work within the same SVG document.
-- Patterns CANNOT be in a separate hidden SVG and referenced from `as-svg.vue`.
-- Patterns must be in the same SVG document where they're referenced.
-- **Solution**: Patterns are rendered directly in the SVG template (not in `<defs>`), using composables to manage state and loading.
+The `as-animation.vue` component renders as HTML with microdata:
 
-**Component Split:**
+- `itemscope`, `itemtype="/animations"`, `itemid="{itemid}-animation"`
+- Style overrides in `itemprop="overrides"` with nested `itemprop` for each path/cutout
+- Animation elements (existing SVG animate elements)
+- Audio reference in `itemprop="audio"`
+- Sync points in `itemprop="sync-points"` list
 
-- Create `as-pattern-processing.vue` - renders patterns during creation/processing
+## Implementation Plan
 
-  - Takes `vector` prop (required) for reactive rendering
-  - Takes optional `itemid` prop
-  - No injection dependency - explicit props only
-  - Uses hydration when needed (for processing vector data)
-  - Used during processing phase when vector data is available
+### 1. Save Animation File Separately
 
-- Refactor `as-pattern.vue` - loads saved patterns from storage
-  - Takes `itemid` prop (required)
-  - Uses composable to load HTML string from storage
-  - Renders pattern element directly in template using v-html (no DOM injection)
-  - No injection, no hydration, no querySelector, no guards - composable handles loading
-  - Used when displaying saved posters
+Similar to how cutouts are saved, extract and save the `as-animation` component element separately:
 
-**Implementation:**
+- In `save_poster_and_symbols()` function, also save animation: `await new Animation(\`${id}-animation\`).save(animation_element)`
+- Animation element is extracted from the poster SVG before saving
 
-- **During processing**: Pattern component renders directly in `as-svg` template (not in `<defs>`)
-- **When loading saved**: Pattern component renders directly in `as-svg` template using composable-loaded HTML
-- Pattern components render `<pattern>` element directly - no wrappers, no `<defs>`
-- Update `as-svg.vue` to render pattern component directly in SVG (same document for fragment references)
+### 2. Load Animation in `as-figure.vue`
 
-### 4. **persist-pattern-storage**
+Load animation file and inject animate elements directly:
 
-- Introduce a `Pattern` storage class (extending the same mixins as `Cutout`).
-- In `use/vectorize.js`, extract the `<pattern>` node from the SVG (not from `<defs>`, not from a separate hidden SVG), save it through the new storage class.
-- Pattern elements have `itemscope`, `itemtype="/patterns"`, and `itemid="${id}-shadow"` attributes for microdata.
-- **Keep the original pattern ID** (`${as_query_id(id)}-shadow`) - don't change it when saving.
-- Paths stay in the pattern - they are NOT extracted to poster HTML (unlike initial approach).
-- **Extend pattern composable to handle loading**:
-  - Add pattern HTML loading logic to `use/pattern.js` composable
-  - Composable provides reactive `pattern_html` ref that loads from storage when `itemid` is provided
-  - Composable handles `load(itemid)` then `get(itemid)` internally
-- **Pattern component renders via composable**:
-  - In `as-pattern.vue`, when `itemid` is provided:
-    - Use composable to get `pattern_html` ref
-    - Render `<pattern>` element directly in template with `v-html="pattern_html"`
-    - **NO DOM manipulation, NO injection** - just render in template
-    - Pattern HTML contains everything needed - composable loads it, component renders it
-  - In `as-pattern-processing.vue`, when `vector` prop is provided:
-    - Uses hydration when processing vector data (similar to how cutouts work during processing)
-    - Renders reactively using `as-path` components with vector paths
-- This uses Vue's reactive system instead of DOM manipulation - composable manages state, component renders it.
+- Add component that loads animation file (similar to `as-symbol` for cutouts)
+- Extract animate elements from loaded animation file
+- Inject animate elements directly into SVG (no `<g>` wrapper needed)
+- Animate elements can be placed anywhere in SVG tree - they reference targets via `href`
 
-### 5. **handle-timing-and-validation**
+### 3. Inject Animation Elements in `as-svg.vue`
 
-- Add `v-if` guards in `as-pattern-processing.vue` for undefined paths (`vector?.background`, `vector?.light`, etc.).
-- Add `v-if` guards in `as-svg-processing.vue` for undefined cutouts (`new_vector.cutouts?.sediment`, etc.).
-- In `as-pattern.vue`, add `v-if` guard for `pattern_html` to ensure HTML is loaded before rendering.
-- In `as-svg.vue`, when setting `sync_poster`:
-  - Set `vector.value` first.
-  - Use `tick()` (imported as `nextTick as tick` from 'vue') to wait for reactive updates.
-  - Validate with `is_vector()` after tick before emitting 'show' and setting `working = false`.
-- This ensures vector is fully populated before validation and rendering.
+Instead of using `<use>` reference:
 
-### 6. **extend-pattern-composable**
+- Loaded animate elements are injected directly into the SVG
+- Can be placed in `<defs>` or directly in the main content
+- No wrapper `<g>` needed - animate elements work independently
+- Each animate element references its target via `href` attribute
 
-- **Extend `use/pattern.js` composable to handle loading saved patterns**:
-  - Add `pattern_html` ref that loads HTML string from storage
-  - When `itemid` is provided (and no `vector`), composable loads pattern HTML using `load(itemid)` then `get(itemid)`
-  - Composable handles loading state internally
-  - Returns `pattern_html` ref for component to use
-- **Update `as-pattern.vue` to use composable**:
-  - Use composable's `pattern_html` ref
-  - Render `<pattern>` element directly in template with `v-html="pattern_html"`
-  - No DOM manipulation, no injection - just reactive rendering
-- `as-pattern-processing.vue` handles the processing case separately with vector props and hydration.
-- This eliminates the need to extract paths into memory when loading saved posters.
+### 4. Apply Overrides in `as-path.vue`
 
-### 7. **regression-checks**
+- Inject animation overrides via Vue `inject()`
+- Merge override values with base props
+- Use computed properties for effective values
 
-- Run lint/type checks on modified files.
-- Manually process an image to ensure:
-  - The pattern saves alongside cutouts.
-  - Processing posters render using the shared context.
-  - Saved posters reload the cached pattern without prop plumbing.
-  - Vector validation passes after reactive updates complete.
+### 5. Use Override Values in Animation Component
 
-## Common Pitfalls to Avoid
+- Inject animation data and overrides
+- Use override values or fallback to defaults
+- Apply in template for animation attributes
 
-1. **SVG Fragment References**: Cannot reference patterns across separate SVG elements. Must be in same SVG document.
-2. **Component Split**: Don't try to handle both processing and saved cases in one component - split into `as-pattern-processing.vue` and `as-pattern.vue`.
-3. **Injection Dependencies**: Don't rely on Vue injection for vector/new_vector - use explicit props. Injection is unstable and makes debugging harder.
-4. **Over-Engineering Loading**: Use composable to manage loading - don't use hydration/querySelector/guards in `as-pattern.vue`. Composable handles loading, component just renders. `as-pattern-processing.vue` may use hydration for processing vector data, but `as-pattern.vue` should not.
-5. **No DOM Manipulation**: Don't use DOM injection or manipulation - render pattern element directly in template using composable-provided HTML string with v-html.
-6. **No `<defs>` Section**: Patterns render directly in SVG template (not in `<defs>`), but still in same SVG document for fragment references to work.
-7. **Type Assertions**: Use destructured type assertions to satisfy linter: `const { itemid } = /** @type {{ itemid: Id }} */ (props)`
-8. **Timing**: Patterns must exist in DOM before they can be referenced - Vue's reactivity ensures pattern renders when composable loads the HTML.
+## Data Flow
+
+1. **Poster Created** → Large immutable SVG saved (`{itemid}`)
+2. **Style/Animation Changes** → Small animation file saved (`{itemid}-animation`)
+3. **Rendering** → `as-figure.vue` loads animation file, provides to children
+4. **Override Application** → Components merge animation overrides with base props
+5. **Animation** → `as-animation.vue` uses override values or defaults
+
+## File Size Comparison
+
+**Before (full poster save):**
+
+- ~50-200KB with all path data
+- Saved every style change
+
+**After (animation override):**
+
+- Base poster: ~50-200KB (saved once, immutable)
+- Animation: ~1-5KB HTML (saved frequently)
+
+**Savings:** ~95% reduction in frequently-saved data
+
+## Benefits
+
+- **Efficiency:** Small files for frequent changes
+- **Immutability:** Base posters never change (caching/CDN friendly)
+- **Simplicity:** Uses existing `as-animation.vue` component
+- **Self-contained:** Animation file contains all override instructions
+- **Microdata:** Follows existing HTML/microdata pattern
+- **Backwards compatible:** Poster works without animation file
+
+## Key Insight
+
+The `as-animation.vue` component is already the "script" - it contains all the instructions for how to modify the base poster. By saving it separately (similar to how cutouts are saved), we get:
+
+- Small, frequently-changing file (just instructions)
+- Large, immutable file (path data)
+- Clean separation of concerns
+- Consistent pattern with cutout storage
+
+## Pattern Consistency
+
+This follows the same pattern as cutouts:
+
+- Cutouts: `{itemid}-boulder`, `{itemid}-rock`, etc. → loaded with `as-symbol` → referenced with `<use>`
+- Animation: `{itemid}-animation` → loaded with animation component → referenced with `<use>`
+- Both use `Large(Cloud(Local(Storage)))` storage pattern
+- Both are extracted from poster before saving base poster
+- Both are loaded into hidden SVG in `as-figure.vue`
+- Both are referenced via `<use>` elements in `as-svg.vue`

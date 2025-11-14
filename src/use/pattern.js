@@ -4,13 +4,7 @@
 import { computed, inject, getCurrentInstance as current_instance } from 'vue'
 import { as_query_id, as_fragment_id } from '@/utils/itemid'
 import { use as use_poster } from '@/use/poster'
-import {
-  background,
-  light,
-  regular,
-  medium,
-  bold
-} from '@/utils/preference'
+import { background, light, regular, medium, bold } from '@/utils/preference'
 
 /**
  * @param {Object} [options]
@@ -85,4 +79,3 @@ export const use = (options = {}) => {
     bold_visible
   }
 }
-
