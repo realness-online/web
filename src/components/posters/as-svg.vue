@@ -62,12 +62,10 @@
   const {
     query,
     fragment,
-    viewbox,
     aspect_ratio,
     working,
     show,
     focusable,
-    tabindex,
     vector,
     vector_element,
     intersecting,
