@@ -66,19 +66,54 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
  * @returns {Promise<{blob: Blob, width: number, height: number}>}
  */
 const resize_to_blob = async file => {
-  const url = URL.createObjectURL(file)
-  const img = new Image()
-  img.src = url
-  await new Promise(resolve => (img.onload = resolve))
+  const needs_image_fallback =
+    file.type === 'image/tiff' ||
+    file.type === 'image/bmp' ||
+    file.type === 'image/avif' ||
+    file.name.toLowerCase().endsWith('.tif') ||
+    file.name.toLowerCase().endsWith('.tiff') ||
+    file.name.toLowerCase().endsWith('.bmp') ||
+    file.name.toLowerCase().endsWith('.avif')
 
-  const bitmap = await createImageBitmap(img)
+  let bitmap
+  let url
+
+  if (needs_image_fallback) {
+    url = URL.createObjectURL(file)
+    const img = new Image()
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error(`Failed to decode image: ${file.name}`))
+      }
+      img.src = url
+    })
+
+    try {
+      bitmap = await createImageBitmap(img)
+    } catch (error) {
+      URL.revokeObjectURL(url)
+      throw new Error(`Failed to process image (${file.name}): ${error.message}`)
+    }
+    URL.revokeObjectURL(url)
+  } else {
+    try {
+      bitmap = await createImageBitmap(file)
+    } catch (error) {
+      throw new Error(
+        `File too large for browser to process (${file.name}): ${error.message}. Try resizing the image first or using a smaller file.`
+      )
+    }
+  }
+
   const image_data = resize_image(bitmap)
   bitmap.close()
 
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)
   const ctx = canvas.getContext('2d')
   ctx.putImageData(image_data, 0, 0)
-  URL.revokeObjectURL(url)
 
   const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
   return {
@@ -338,21 +373,49 @@ export const use = () => {
   const add_to_queue = async files => {
     mount_workers()
 
-    for (const file of files) {
-      const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
-      const { blob: resized_blob, width, height } = await resize_to_blob(file)
+    const max_size = 200 * 1024 * 1024
+    const too_large_files = []
 
-      const item = /** @type {QueueItem} */ ({
-        id,
-        resized_blob,
-        status: 'pending',
-        progress: 0,
-        width,
-        height
-      })
-      //eslint-disable-next-line no-await-in-loop
-      await Queue.add(item)
-      queue_items.value.push(item)
+    for (const file of files) {
+      if (file.size > max_size) {
+        too_large_files.push({
+          name: file.name,
+          size: (file.size / 1024 / 1024).toFixed(2)
+        })
+        continue
+      }
+
+      const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
+
+      try {
+        const { blob: resized_blob, width, height } = await resize_to_blob(file)
+
+        const item = /** @type {QueueItem} */ ({
+          id,
+          resized_blob,
+          status: 'pending',
+          progress: 0,
+          width,
+          height
+        })
+        //eslint-disable-next-line no-await-in-loop
+        await Queue.add(item)
+        queue_items.value.push(item)
+      } catch (error) {
+        console.error(
+          `Failed to add ${file.name || 'file'} to queue:`,
+          error.message
+        )
+      }
+    }
+
+    if (too_large_files.length > 0) {
+      const file_list = too_large_files
+        .map(f => `  - ${f.name} (${f.size}MB)`)
+        .join('\n')
+      console.error(
+        `Files skipped (exceed 200MB browser limit):\n${file_list}\n\nPlease resize these images before uploading.`
+      )
     }
 
     process_queue()
@@ -363,11 +426,11 @@ export const use = () => {
 
     try {
       const next = await Queue.get_next()
-      console.log('Next item:', next?.id || 'none')
       if (!next) {
         is_processing.value = false
         current_processing.value = null
         unmount_workers()
+        mutex.unlock()
         return
       }
 
@@ -379,8 +442,25 @@ export const use = () => {
       if (index !== -1) queue_items.value[index].status = 'processing'
 
       await vectorize(next.resized_blob, next.id)
-    } finally {
       mutex.unlock()
+    } catch (error) {
+      console.error('Error processing queue item:', error)
+      if (current_processing.value) {
+        await Queue.update(current_processing.value.id, { status: 'error' })
+        const error_index = queue_items.value.findIndex(
+          item => item.id === current_processing.value.id
+        )
+        if (error_index !== -1)
+          queue_items.value[error_index] = {
+            ...queue_items.value[error_index],
+            status: 'error'
+          }
+        current_processing.value = null
+      }
+      is_processing.value = false
+      reset()
+      mutex.unlock()
+      process_queue()
     }
   }
 
@@ -389,11 +469,11 @@ export const use = () => {
    * @param {Id} id
    * @param {number} progress_value
    */
-  const update_progress = async (id, progress_value) => {
-    await Queue.update(id, { progress: progress_value })
-
+  const update_progress = (id, progress_value) => {
     const index = queue_items.value.findIndex(item => item.id === id)
-    if (index !== -1) queue_items.value[index].progress = progress_value
+    if (index !== -1) {
+      queue_items.value[index] = { ...queue_items.value[index], progress: progress_value }
+    }
   }
 
   const init_processing_queue = async () => {
@@ -411,6 +491,7 @@ export const use = () => {
   }
 
   const listener = async () => {
+    if (!image_picker.value?.files) return
     const files = Array.from(image_picker.value.files)
     if (files.length === 0) return
 
@@ -430,7 +511,7 @@ export const use = () => {
     if (image_files.length > 0) {
       await add_to_queue(image_files)
       router.push('/posters')
-      image_picker.value.value = ''
+      if (image_picker.value) image_picker.value.value = ''
     }
   }
 
@@ -574,14 +655,11 @@ export const use = () => {
       tracer_complete_pending = false
       await handle_tracer_complete()
     }
-
-    if (current_item_id.value) update_progress(current_item_id.value, 50)
   }
 
   const gradientized = message => {
     if (!is_mounted.value) return
     new_gradients.value = message.data.gradients
-    if (current_item_id.value) update_progress(current_item_id.value, 60)
   }
 
   /**
@@ -601,6 +679,11 @@ export const use = () => {
           update_progress(current_item_id.value, message.data.progress)
         break
       case 'path':
+        if (message.data.progress !== undefined) {
+          progress.value = message.data.progress
+          if (current_item_id.value)
+            update_progress(current_item_id.value, message.data.progress)
+        }
         if (!new_vector.value) {
           pending_tracer_paths.push({
             path: clone_tracer_path(message.data.path),
@@ -625,12 +708,9 @@ export const use = () => {
 
   const optimized = async message => {
     if (!is_mounted.value) return
-    console.log('optimized handler started')
     const id = /** @type {Id} */ (current_item_id.value)
     const optimized_data = get_item(message.data.vector)
-    console.log('got optimized_data', optimized_data)
     const element = document.getElementById(as_query_id(id))
-    console.log('found element?', !!element, as_query_id(id))
 
     if (!element) {
       console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
@@ -661,17 +741,12 @@ export const use = () => {
       boulder: []
     }
     new_vector.value.optimized = true
-    console.log('about to tick')
     await tick()
-    console.log('tick complete, sorting cutouts')
 
     const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
 
-    console.log('sorted poster', new_vector.value)
-    console.log('about to save')
     await save_poster_and_symbols(id, element, cutouts)
-    console.log('saved')
 
     completed_posters.value.push(id)
 

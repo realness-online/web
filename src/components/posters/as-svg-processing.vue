@@ -33,9 +33,7 @@
     if (!image_width.value || !image_height.value) return false
     return image_width.value > image_height.value
   })
-  const status_text = computed(() =>
-    is_currently_processing.value ? 'Processing...' : 'Waiting...'
-  )
+  const progress_value = computed(() => props.queue_item.progress || 0)
 
   mounted(() => {
     const { queue_item } = props
@@ -120,7 +118,14 @@
     </svg>
 
     <figcaption>
-      <span>{{ status_text }}</span>
+      <meter
+        :value="progress_value || 0"
+        min="0"
+        max="100"
+        low="0"
+        high="100"
+        optimum="100"
+        aria-label="Poster creation progress" />
     </figcaption>
   </figure>
 </template>
@@ -164,13 +169,46 @@
       padding: calc(var(--base-line) * 0.5);
       background: rgba(0, 0, 0, 0.8);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: calc(var(--base-line) * 0.25);
     }
 
     & > figcaption span {
       font-size: smaller;
       color: var(--green);
+    }
+
+    & > figcaption meter {
+      display: block;
+      width: 100%;
+      height: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+
+      &::-webkit-meter-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+      }
+
+      &::-webkit-meter-optimum-value {
+        background: var(--green);
+        border-radius: 6px;
+        transition: width 0.2s linear;
+      }
+
+      &::-moz-meter-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+      }
+
+      &::-moz-meter-optimum::-moz-meter-bar {
+        background: var(--green);
+        border-radius: 6px;
+      }
     }
   }
 </style>
