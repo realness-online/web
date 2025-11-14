@@ -14,7 +14,9 @@
     rock,
     gravel,
     sand,
-    sediment
+    sediment,
+    slice,
+    aspect_ratio_mode
   } from '@/utils/preference'
   import {
     ref,
@@ -60,6 +62,8 @@
     const height = parseInt(numbers[3])
     return width > height
   })
+
+  const has_aspect_ratio = computed(() => slice.value && aspect_ratio_mode.value !== 'auto')
   const query_id = computed(() => as_query_id(props.itemid))
   const posted_at = computed(() => as_time(as_created_at(props.itemid)))
   const shown = ref(false)
@@ -73,7 +77,6 @@
     await tick()
     emit('show', vector.value)
     shown.value = true
-
   }
   watch_effect(async () => {
     if (menu.value && !person.value) {
@@ -102,7 +105,11 @@
 </script>
 
 <template>
-  <figure ref="poster" class="poster" :class="{ landscape }">
+  <figure
+    ref="poster"
+    class="poster"
+    :class="{ landscape, 'aspect-constrained': has_aspect_ratio }"
+    :data-itemid="itemid">
     <figcaption v-if="!menu">
       <slot v-if="menu">
         <menu>
@@ -138,6 +145,10 @@
     grid-row-start: span 2;
     scroll-margin: 50vh;
     scroll-snap-align: center;
+    &.aspect-constrained {
+      grid-column-start: span 3;
+      grid-row-start: auto;
+    }
     &:focus {
       animation: focus-fade 1.2s ease-in-out;
     }
@@ -149,6 +160,9 @@
         min-height: auto;
         &.new {
           grid-column-start: span 2;
+        }
+        &.aspect-constrained {
+          grid-column-start: span 3;
         }
       }
     }
@@ -221,4 +235,3 @@
     }
   }
 </style>
-
