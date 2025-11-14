@@ -9,6 +9,10 @@ let _initialized = false
 let is_processing = false
 
 const DEGREES_IN_CIRCLE = 180
+const CORNER_DEG = 30
+const SPLICE_DEG = 5
+const CHUNK_ITER = 10
+
 const deg2rad = deg => (deg / DEGREES_IN_CIRCLE) * Math.PI
 
 const init_tracer = async () => {
@@ -20,10 +24,10 @@ const init_tracer = async () => {
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
-    corner_threshold: deg2rad(18), // Magic number from tracer config
+    corner_threshold: deg2rad(CORNER_DEG), // Softer edges - higher threshold allows more rounded corners
     length_threshold: 61,
     max_iterations: 10,
-    splice_threshold: deg2rad(2),
+    splice_threshold: deg2rad(SPLICE_DEG), // More path smoothing for softer edges
     filter_speckle: 54,
     color_precision: 0,
     layer_difference: 13,
@@ -57,10 +61,10 @@ const make_trace = message => {
   const params = {
     mode: 'polygon',
     hierarchical: 'cutout',
-    corner_threshold: deg2rad(18), // Magic number from tracer config
+    corner_threshold: deg2rad(CORNER_DEG), // Softer edges - higher threshold allows more rounded corners
     length_threshold: 61,
     max_iterations: 10,
-    splice_threshold: deg2rad(2),
+    splice_threshold: deg2rad(SPLICE_DEG), // More path smoothing for softer edges
     filter_speckle: 54,
     color_precision: 0,
     layer_difference: 13,
@@ -75,7 +79,7 @@ const make_trace = message => {
     if (!is_processing) return
 
     try {
-      for (let i = 0; i < 10 && is_processing; i++) {
+      for (let i = 0; i < CHUNK_ITER && is_processing; i++) {
         const result = converter.tick()
         const progress = converter.progress()
 
