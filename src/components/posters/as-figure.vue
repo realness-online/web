@@ -48,22 +48,7 @@
     sand: false,
     sediment: false
   })
-  const show_symbols = computed(() => ({
-    boulder: cutout.value && boulder.value && symbol_loaded.value.boulder,
-    rock: cutout.value && rock.value && symbol_loaded.value.rock,
-    gravel: cutout.value && gravel.value && symbol_loaded.value.gravel,
-    sand: cutout.value && sand.value && symbol_loaded.value.sand,
-    sediment: cutout.value && sediment.value && symbol_loaded.value.sediment
-  }))
-  const landscape = computed(() => {
-    if (!vector.value) return false
-    const numbers = vector.value.viewbox.split(' ')
-    const width = parseInt(numbers[2])
-    const height = parseInt(numbers[3])
-    return width > height
-  })
 
-  const has_aspect_ratio = computed(() => slice.value && aspect_ratio_mode.value !== 'auto')
   const query_id = computed(() => as_query_id(props.itemid))
   const posted_at = computed(() => as_time(as_created_at(props.itemid)))
   const shown = ref(false)
@@ -132,7 +117,7 @@
       @click="vector_click"
       @show="on_show"
       :focusable="false" />
-    <svg v-if="vector" style="display: none">
+    <svg v-if="shown" style="display: none">
       <as-symbol v-if="cutout && boulder" :itemid="`${itemid}-boulder`" />
       <as-symbol v-if="cutout && rock" :itemid="`${itemid}-rock`" />
       <as-symbol v-if="cutout && gravel" :itemid="`${itemid}-gravel`" />
