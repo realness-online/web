@@ -1,0 +1,118 @@
+<script setup>
+  import { computed } from 'vue'
+  import AsPath from '@/components/posters/as-path'
+  import AsBackground from '@/components/posters/as-background'
+  import { use as use_pattern } from '@/use/pattern'
+  import { use as use_poster } from '@/use/poster'
+  import { is_vector, is_vector_id } from '@/use/poster'
+
+  const props = defineProps({
+    vector: {
+      type: Object,
+      required: false,
+      default: null,
+      validator: is_vector
+    },
+    itemid: {
+      type: String,
+      required: false,
+      default: null,
+      validator: is_vector_id
+    }
+  })
+
+  const emit = defineEmits({
+    focus: Function
+  })
+
+  // Only pass options if props are explicitly provided (for overrides)
+  const options = computed(() => ({
+    vector: props.vector || undefined,
+    itemid: props.itemid || undefined
+  }))
+
+  const {
+    query,
+    fragment,
+    width,
+    height,
+    viewbox,
+    aspect_ratio,
+    tabindex,
+    vector,
+    background_visible,
+    light_visible,
+    regular_visible,
+    medium_visible,
+    bold_visible
+  } = use_pattern(options.value)
+
+  const { focus } = use_poster()
+
+  const handle_focus = layer => {
+    focus(layer)
+    emit('focus', layer)
+  }
+</script>
+
+<template>
+  <pattern
+    :id="query('shadow')"
+    :width="width"
+    :height="height"
+    :viewBox="viewbox"
+    patternUnits="userSpaceOnUse"
+    :preserveAspectRatio="aspect_ratio">
+    <as-background
+      :id="query('background')"
+      :rect="vector.background"
+      :width="width"
+      :height="height"
+      :tabindex="tabindex"
+      :visible="background_visible"
+      fill-opacity="1"
+      :fill="`url(${fragment('radial-background')})`"
+      @focus="handle_focus('background')" />
+    <as-path
+      :id="query('light')"
+      itemprop="light"
+      :path="vector.light"
+      :tabindex="tabindex"
+      :visible="light_visible"
+      :mask="`url(${fragment('horizontal-mask')})`"
+      :fill="`url(${fragment('vertical-light')})`"
+      :stroke="`url(${fragment('horizontal-medium')})`"
+      @focus="handle_focus('light')" />
+    <as-path
+      :id="query('regular')"
+      itemprop="regular"
+      :path="vector.regular"
+      :tabindex="tabindex"
+      :visible="regular_visible"
+      :mask="`url(${fragment('radial-mask')})`"
+      :fill="`url(${fragment('horizontal-regular')})`"
+      :stroke="`url(${fragment('vertical-bold')})`"
+      @focus="handle_focus('regular')" />
+    <as-path
+      :id="query('medium')"
+      itemprop="medium"
+      :path="vector.medium"
+      :tabindex="tabindex"
+      :visible="medium_visible"
+      :mask="`url(${fragment('vertical-mask')})`"
+      :fill="`url(${fragment('vertical-medium')})`"
+      :stroke="`url(${fragment('vertical-background')})`"
+      @focus="handle_focus('medium')" />
+    <as-path
+      :id="query('bold')"
+      itemprop="bold"
+      :tabindex="tabindex"
+      :path="vector.bold"
+      :visible="bold_visible"
+      :mask="`url(${fragment('horizontal-mask')})`"
+      :fill="`url(${fragment('vertical-bold')})`"
+      :stroke="`url(${fragment('radial-light')})`"
+      @focus="handle_focus('bold')" />
+  </pattern>
+</template>
+

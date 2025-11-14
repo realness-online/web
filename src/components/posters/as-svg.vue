@@ -1,8 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
-  import AsPath from '@/components/posters/as-path'
+  import AsPattern from '@/components/posters/as-pattern'
   import AsMasks from '@/components/posters/as-masks'
-  import AsBackground from '@/components/posters/as-background'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
@@ -119,11 +118,6 @@
     }
   })
 
-  const background_visible = computed(() => background.value)
-  const light_visible = computed(() => vector.value?.light && light.value)
-  const regular_visible = computed(() => vector.value?.regular && regular.value)
-  const medium_visible = computed(() => vector.value?.medium && medium.value)
-  const bold_visible = computed(() => vector.value?.bold && bold.value)
   const drama_back_visible = computed(() => drama_back.value)
   const drama_front_visible = computed(() => drama_front.value)
 
@@ -274,65 +268,7 @@
         <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
         <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
       </symbol>
-      <pattern
-        :id="query('shadow')"
-        :width="vector.width"
-        :height="vector.height"
-        :viewBox="viewbox"
-        patternUnits="userSpaceOnUse"
-        :preserveAspectRatio="aspect_ratio">
-        <as-background
-          :id="query('background')"
-          :rect="vector.background"
-          :width="vector.width"
-          :height="vector.height"
-          :tabindex="tabindex"
-          :visible="background_visible"
-          fill-opacity="1"
-          :fill="`url(${fragment('radial-background')})`"
-          @focus="focus('background')" />
-        <as-path
-          :id="query('light')"
-          itemprop="light"
-          :path="vector.light"
-          :tabindex="tabindex"
-          :visible="light_visible"
-
-          :mask="`url(${fragment('horizontal-mask')})`"
-          :fill="`url(${fragment('vertical-light')})`"
-          :stroke="`url(${fragment('horizontal-medium')})`"
-          @focus="focus('light')" />
-        <as-path
-          :id="query('regular')"
-          itemprop="regular"
-          :path="vector.regular"
-          :tabindex="tabindex"
-          :visible="regular_visible"
-          :mask="`url(${fragment('radial-mask')})`"
-          :fill="`url(${fragment('horizontal-regular')})`"
-          :stroke="`url(${fragment('vertical-bold')})`"
-          @focus="focus('regular')" />
-        <as-path
-          :id="query('medium')"
-          itemprop="medium"
-          :path="vector.medium"
-          :tabindex="tabindex"
-          :visible="medium_visible"
-          :mask="`url(${fragment('vertical-mask')})`"
-          :fill="`url(${fragment('vertical-medium')})`"
-          :stroke="`url(${fragment('vertical-background')})`"
-          @focus="focus('medium')" />
-        <as-path
-          :id="query('bold')"
-          itemprop="bold"
-          :tabindex="tabindex"
-          :path="vector.bold"
-          :visible="bold_visible"
-          :mask="`url(${fragment('horizontal-mask')})`"
-          :fill="`url(${fragment('vertical-bold')})`"
-          :stroke="`url(${fragment('radial-light')})`"
-          @focus="focus('bold')" />
-      </pattern>
+      <as-pattern v-if="vector" @focus="focus" />
       <as-gradients v-if="vector" :vector="vector" />
       <as-masks :itemid="itemid" />
     </defs>
