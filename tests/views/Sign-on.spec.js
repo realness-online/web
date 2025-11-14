@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import { ref } from 'vue'
 import Sign_on from '@/views/Sign-on.vue'
 
 // Mock localStorage
@@ -27,19 +28,27 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 // Mock people composable
-vi.mock('@/use/people', () => ({
-  use_me: () => ({
-    me: { value: null },
-    is_valid_name: { value: false }
-  }),
-  default_person: { id: '/+14151234356', type: 'person' },
-  is_person: maybe => {
-    if (typeof maybe !== 'object') return false
-    if (maybe.type !== 'person') return false
-    if (!maybe.id) return false
-    return true
+vi.mock('@/use/people', () => {
+  const { ref } = require('vue')
+  return {
+    use_me: () => ({
+      me: ref({
+        id: '/+14151234356',
+        type: 'person',
+        name: { given: 'Test', family: 'User' }
+      }),
+      is_valid_name: ref(false),
+      relations: ref([])
+    }),
+    default_person: { id: '/+14151234356', type: 'person' },
+    is_person: maybe => {
+      if (typeof maybe !== 'object') return false
+      if (maybe.type !== 'person') return false
+      if (!maybe.id) return false
+      return true
+    }
   }
-}))
+})
 
 // Mock vue-router
 vi.mock('vue-router', () => ({
@@ -57,7 +66,10 @@ describe('Sign-on', () => {
       global: {
         stubs: {
           'logo-as-link': true,
-          'profile-as-figure': true,
+          'profile-as-figure': {
+            template: '<div class="profile-stub"></div>',
+            props: ['person', 'editable']
+          },
           'mobile-as-form': true,
           'name-as-form': true
         }

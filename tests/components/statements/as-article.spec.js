@@ -42,29 +42,29 @@ describe('@/components/statements/as-article.vue', () => {
     describe('#has_focus', () => {
       it('Sets focus to true', () => {
         expect(wrapper.vm.focused).toBe(false)
-        wrapper.vm.has_focus()
+        wrapper.vm.has_focus(statement)
         expect(wrapper.vm.focused).toBe(true)
       })
       it('Emits focused event', () => {
-        wrapper.vm.has_focus()
+        wrapper.vm.has_focus(statement)
         expect(wrapper.emitted('focused')).toBeTruthy()
       })
     })
     describe('#has_blurred', () => {
       it('Sets focus to false', () => {
         wrapper.vm.focused = true
-        wrapper.vm.has_blurred()
+        wrapper.vm.has_blurred(statement)
         expect(wrapper.vm.focused).toBe(false)
       })
       it('Emits blurred event', async () => {
         vi.useFakeTimers()
-        await wrapper.vm.has_blurred()
+        await wrapper.vm.has_blurred(statement)
         await wrapper.vm.$nextTick()
         vi.runAllTimers()
         expect(wrapper.emitted('blurred')).toBeTruthy()
       })
       it('Only emits blurred event whenb focused is lost', async () => {
-        await wrapper.vm.has_blurred()
+        await wrapper.vm.has_blurred(statement)
         await wrapper.vm.$nextTick()
         wrapper.vm.focused = true
         vi.runAllTimers()

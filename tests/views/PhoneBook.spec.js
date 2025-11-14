@@ -15,9 +15,16 @@ Object.defineProperty(window, 'localStorage', {
 // Mock people composable
 vi.mock('@/use/people', () => ({
   use: () => ({
-    phonebook: { value: [] },
+    phonebook: { value: [{
+      id: '/+14151234567',
+      type: 'person',
+      name: { given: 'Test', family: 'User' }
+    }] },
     load_phonebook: vi.fn(),
     working: { value: false }
+  }),
+  use_me: () => ({
+    relations: { value: [] }
   }),
   is_person: maybe => {
     if (typeof maybe !== 'object') return false
@@ -43,7 +50,10 @@ describe('@/views/PhoneBook', () => {
         stubs: {
           icon: true,
           'logo-as-link': true,
-          'as-figure': true,
+          'as-figure': {
+            template: '<div class="profile-stub"></div>',
+            props: ['person']
+          },
           'sign-on': true,
           'router-link': true
         }

@@ -45,7 +45,7 @@
       <h4>{{ name }}</h4>
       <label class="switch">
         <input
-          v-model="preference"
+          :checked="preference"
           :name="name"
           type="checkbox"
           @click="toggle" />

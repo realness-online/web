@@ -5,10 +5,13 @@
   import { ref, computed, inject, onMounted as mounted } from 'vue'
   import { get_file_system } from '@/utils/file'
   import { get_command_description } from '@/utils/keymaps'
+  import { aspect_ratio_mode } from '@/utils/preference'
 
   const key_commands = inject('key-commands')
   const set_posters_folder = () => get_file_system()
   const settings = ref(null)
+
+  const aspect_ratio_display = computed(() => aspect_ratio_mode.value || 'auto')
 
   const show_settings = () => {
     if (!settings.value)  return;
@@ -96,7 +99,12 @@
         <preference
           name="slice"
           title="Slice poster aspect ratio"
-          subtitle="Use 'slice' instead of 'meet' to fill the container" />
+          subtitle="Use 'slice' instead of 'meet' to fill the container">
+          <div class="aspect-ratio-info">
+            <p>Current: {{ aspect_ratio_display }}</p>
+            <p class="subtitle">Press 'r' to cycle, 'shift+r' to reverse</p>
+          </div>
+        </preference>
         <preference name="fill" title="Use a gradient to fill up your poster">
           <preference name="bold" />
           <preference name="medium" />
@@ -291,5 +299,17 @@
   h1, svg.icon {
     color: red;
     fill: red;
+  }
+
+  .aspect-ratio-info {
+    margin-top: base-line * 0.5;
+    p {
+      margin: base-line * 0.25 0;
+      font-size: smaller;
+      &.subtitle {
+        color: var(--white-text);
+        opacity: 0.75;
+      }
+    }
   }
 </style>

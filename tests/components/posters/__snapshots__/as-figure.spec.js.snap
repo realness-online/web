@@ -5,17 +5,14 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
   class="poster"
   new_poster="[object Object]"
 >
-  <as-svg-stub
-    as_stroke="false"
-    itemid="/+14151234356/posters/1737178477987"
-    optimize="false"
-    slice="true"
-    tabable="false"
-    toggle_aspect="true"
-  />
   <figcaption>
     <!--v-if-->
   </figcaption>
+  <as-svg-stub
+    focusable="false"
+    itemid="/+14151234356/posters/1737178477987"
+  />
+  <!--v-if-->
 </figure>
 `;
 
@@ -23,16 +20,13 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
 <figure
   class="poster"
 >
-  <as-svg-stub
-    as_stroke="false"
-    itemid="/+14151234356/posters/1737178477987"
-    optimize="false"
-    slice="true"
-    tabable="false"
-    toggle_aspect="true"
-  />
   <figcaption>
     <!--v-if-->
   </figcaption>
+  <as-svg-stub
+    focusable="false"
+    itemid="/+14151234356/posters/1737178477987"
+  />
+  <!--v-if-->
 </figure>
 `;

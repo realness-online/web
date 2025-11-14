@@ -12,10 +12,18 @@ Object.defineProperty(window, 'localStorage', {
 // Mock people composable
 vi.mock('@/use/people', () => ({
   use_me: () => ({
-    relations: { value: [] }
+    relations: { value: [{
+      id: '/+14151234567',
+      type: 'person',
+      name: { given: 'Test', family: 'User' }
+    }] }
   }),
   use: () => ({
-    people: { value: [] },
+    people: { value: [{
+      id: '/+14151234567',
+      type: 'person',
+      name: { given: 'Test', family: 'User' }
+    }] },
     load_people: vi.fn()
   }),
   is_person: maybe => {
@@ -40,7 +48,10 @@ describe('Relations', () => {
       global: {
         stubs: {
           icon: true,
-          'as-figure': true,
+          'as-figure': {
+            template: '<div class="profile-stub"></div>',
+            props: ['person']
+          },
           'router-link': true
         }
       }

@@ -4,6 +4,7 @@ exports[`@/components/posters/as-background.vue > Renders > a new background for
 <rect
   height="100%"
   itemprop="background"
+  style="opacity: 1; visibility: visible;"
   tabindex="-1"
   width="100%"
 />
