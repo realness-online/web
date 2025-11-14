@@ -130,7 +130,7 @@
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Slice', slice)
   register('pref::Cycle_Aspect_Ratio', () => {
-    const aspect_ratios = ['auto', '1/1', '16/9', '1.618/1', '2.35/1', '2.76/1']
+    const aspect_ratios = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
     const current = aspect_ratio_mode.value || 'auto'
     const current_index = aspect_ratios.indexOf(current)
     const is_reverse = magic_keys.shift.value
