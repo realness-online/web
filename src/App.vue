@@ -4,7 +4,6 @@
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
   import DialogAccount from '@/components/profile/as-dialog-account.vue'
   import FpsComponent from '@/components/fps'
-  import Viewbox from '@/components/viewbox'
   import {
     ref,
     watch,
@@ -39,7 +38,8 @@
     storytelling,
     slice,
     grid_overlay,
-    aspect_ratio_mode
+    aspect_ratio_mode,
+    slice_alignment
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -130,7 +130,7 @@
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Slice', slice)
   register('pref::Cycle_Aspect_Ratio', () => {
-    const aspect_ratios = ['auto', '16/9', '1/1', '1.618/1', '2.35/1', '2.76/1']
+    const aspect_ratios = ['auto', '1/1', '16/9', '1.618/1', '2.35/1', '2.76/1']
     const current = aspect_ratio_mode.value || 'auto'
     const current_index = aspect_ratios.indexOf(current)
     const is_reverse = magic_keys.shift.value
@@ -142,6 +142,16 @@
       '--poster-aspect-ratio',
       aspect_ratio_mode.value === 'auto' ? 'auto' : aspect_ratio_mode.value
     )
+  })
+  register('pref::Slice_Alignment_Up', () => {
+    const current = slice_alignment.value || 'ymid'
+    if (current === 'ymid') slice_alignment.value = 'ymin'
+    else if (current === 'ymax') slice_alignment.value = 'ymid'
+  })
+  register('pref::Slice_Alignment_Down', () => {
+    const current = slice_alignment.value || 'ymid'
+    if (current === 'ymid') slice_alignment.value = 'ymax'
+    else if (current === 'ymin') slice_alignment.value = 'ymid'
   })
   register_preference('pref::Toggle_Grid', grid_overlay)
 
@@ -246,7 +256,6 @@
     <router-view />
     <sync @active="sync_active" />
     <fps-component v-if="info" />
-    <viewbox v-if="info" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
     <dialog-account ref="account_dialog" />

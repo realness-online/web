@@ -471,9 +471,12 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
+    transition: transform 0.5s ease-in-out;
+    max-height: 100%;
     &[style*='aspect-ratio'] {
       height: auto;
       min-height: 0;
+      max-height: 100%;
     }
     &.hide-cursor {
       cursor: none;

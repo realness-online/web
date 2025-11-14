@@ -67,9 +67,16 @@
   const query_id = computed(() => as_query_id(props.itemid))
   const posted_at = computed(() => as_time(as_created_at(props.itemid)))
   const shown = ref(false)
+  const has_been_focused = ref(false)
   const vector_click = () => {
     menu.value = !menu.value
     emit('vector-click', menu.value)
+  }
+  const handle_focus = () => {
+    if (!has_been_focused.value) {
+      has_been_focused.value = true
+      if (poster.value) poster.value.setAttribute('data-has-been-focused', 'true')
+    }
   }
 
   const on_show = async shown_vector => {
@@ -97,7 +104,7 @@
   })
   updated(() => {
     const fragment = window.location.hash.substring(1)
-    if (query_id.value === fragment) {
+    if (query_id.value === fragment && poster.value) {
       poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
       window.location.hash = ''
     }
@@ -108,8 +115,7 @@
   <figure
     ref="poster"
     class="poster"
-    :class="{ landscape, 'aspect-constrained': has_aspect_ratio }"
-    :data-itemid="itemid">
+    @focus="handle_focus">
     <figcaption v-if="!menu">
       <slot v-if="menu">
         <menu>
@@ -145,15 +151,15 @@
     grid-row-start: span 2;
     scroll-margin: 50vh;
     scroll-snap-align: center;
-    &.aspect-constrained {
+    &:has(svg[style*='aspect-ratio']) {
       grid-column-start: span 3;
       grid-row-start: auto;
     }
-    &:focus {
+    &:focus:not([data-has-been-focused="true"]) {
       animation: focus-fade 1.2s ease-in-out;
     }
     @media (orientation: landscape), (min-width: page-width) {
-      &.landscape {
+      &:has(svg.landscape) {
         grid-column-start: span 2;
         grid-row-start: auto;
         width: 100%;
@@ -161,18 +167,18 @@
         &.new {
           grid-column-start: span 2;
         }
-        &.aspect-constrained {
+        &:has(svg[style*='aspect-ratio']) {
           grid-column-start: span 3;
         }
       }
     }
     @media (min-width: pad-begins) {
-      &.landscape + .landscape {
+      &:has(svg.landscape) + &:has(svg.landscape) {
         grid-column-start: span 3;
       }
     }
     @media (min-width: pad-begins){
-      &.new:not(.landscape) {
+      &.new:not(:has(svg.landscape)) {
         grid-column: 2;
         grid-row: 2;
       }
