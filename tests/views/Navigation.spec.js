@@ -18,7 +18,7 @@ describe('@/views/Navigation', () => {
     wrapper = shallowMount(Navigation, {
       global: {
         provide: {
-          'open_camera': mock_open_camera
+          open_camera: mock_open_camera
         },
         stubs: {
           'router-link': true,

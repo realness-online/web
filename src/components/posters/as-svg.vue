@@ -135,9 +135,7 @@
     () => cutout.value && sediment.value && vector.value?.sediment
   )
 
-  const shadow_layer_displayed = computed(
-    () => fill.value || stroke.value
-  )
+  const shadow_layer_displayed = computed(() => fill.value || stroke.value)
 
   const hide_cursor = computed(() => slice.value && storytelling.value)
 
@@ -172,7 +170,11 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :style="slice && aspect_ratio_mode !== 'auto' ? { aspectRatio: aspect_ratio_mode } : {}"
+    :style="
+      slice && aspect_ratio_mode !== 'auto'
+        ? { aspectRatio: aspect_ratio_mode }
+        : {}
+    "
     :class="{
       animate,
       landscape,
@@ -194,7 +196,10 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{ opacity: drama_back_visible ? 1 : 0, visibility: drama_back_visible ? 'visible' : 'hidden' }" />
+        :style="{
+          opacity: drama_back_visible ? 1 : 0,
+          visibility: drama_back_visible ? 'visible' : 'hidden'
+        }" />
 
       <g class="cutouts">
         <slot>
@@ -245,7 +250,11 @@
             itemprop="sediment"
             :href="fragment('sediment')"
             :style="{
-              opacity: sediment_visible ? (shadow_layer_displayed ? 0.5 : 1) : 0,
+              opacity: sediment_visible
+                ? shadow_layer_displayed
+                  ? 0.5
+                  : 1
+                : 0,
               visibility: sediment_visible ? 'visible' : 'hidden'
             }" />
         </slot>
@@ -257,7 +266,10 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{ opacity: drama_front_visible ? 1 : 0, visibility: drama_front_visible ? 'visible' : 'hidden' }" />
+        :style="{
+          opacity: drama_front_visible ? 1 : 0,
+          visibility: drama_front_visible ? 'visible' : 'hidden'
+        }" />
     </g>
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">

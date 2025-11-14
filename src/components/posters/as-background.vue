@@ -1,7 +1,11 @@
 <script setup>
   import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted, computed } from 'vue'
-  import { fill as fill_pref, cutout as cutout_pref, stroke as stroke_pref } from '@/utils/preference'
+  import {
+    fill as fill_pref,
+    cutout as cutout_pref,
+    stroke as stroke_pref
+  } from '@/utils/preference'
   const props = defineProps({
     tabable: {
       type: Boolean,
@@ -32,7 +36,8 @@
     if (props.rect?.fill) fill_value.value = props.rect?.fill
   })
   const background_fill = computed(() => {
-    if (!fill_pref.value && !cutout_pref.value && stroke_pref.value) return '#808080'
+    if (!fill_pref.value && !cutout_pref.value && stroke_pref.value)
+      return '#808080'
     return fill_value.value
   })
   const style = computed(() => ({

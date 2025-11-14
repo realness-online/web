@@ -1,6 +1,15 @@
 <script setup>
-  import { ref, computed, onMounted as mounted, onUnmounted as unmounted } from 'vue'
-  import { animate, animation_speed, aspect_ratio_mode } from '@/utils/preference'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onUnmounted as unmounted
+  } from 'vue'
+  import {
+    animate,
+    animation_speed,
+    aspect_ratio_mode
+  } from '@/utils/preference'
 
   const animation_status = computed(() => {
     if (!animate.value) return 'off'
@@ -38,9 +47,7 @@
     <span class="time">
       {{ animation_time.toFixed(0) }}s / {{ max_cycle_time }}s
     </span>
-    <span class="aspect">
-      aspect: {{ aspect_ratio }}
-    </span>
+    <span class="aspect"> aspect: {{ aspect_ratio }} </span>
   </span>
 </template>
 

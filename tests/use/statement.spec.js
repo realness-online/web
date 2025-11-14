@@ -114,7 +114,9 @@ describe('statement composable', () => {
       const person = { id: '/+1234', type: 'person' }
       await statement_instance.for_person(person)
 
-      const author = statement_instance.authors.value.find(a => a.id === person.id)
+      const author = statement_instance.authors.value.find(
+        a => a.id === person.id
+      )
       expect(author.viewed).toEqual(['index'])
     })
 

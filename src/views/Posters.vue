@@ -79,6 +79,14 @@
     /** @type {HTMLElement} */ (poster_element).focus()
   }
 
+  /**
+   * @param {Id} itemid
+   */
+  const handle_poster_click = itemid => {
+    focus_poster(itemid)
+    toggle_menu(itemid)
+  }
+
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
     poster.picker = !poster.picker
@@ -95,13 +103,22 @@
 
     const focused_poster = event.target.closest('figure.poster')
     if (!focused_poster) return
-    const article = /** @type {HTMLElement} */ (focused_poster).closest('article')
+    const article = /** @type {HTMLElement} */ (focused_poster).closest(
+      'article'
+    )
     if (!article) return
 
     // In storytelling mode, only scroll horizontally
-    const poster_rect = /** @type {HTMLElement} */ (focused_poster).getBoundingClientRect()
+    const poster_rect = /** @type {HTMLElement} */ (
+      focused_poster
+    ).getBoundingClientRect()
     const article_rect = article.getBoundingClientRect()
-    const scroll_left = article.scrollLeft + (poster_rect.left - article_rect.left - article_rect.width / 2 + poster_rect.width / 2)
+    const scroll_left =
+      article.scrollLeft +
+      (poster_rect.left -
+        article_rect.left -
+        article_rect.width / 2 +
+        poster_rect.width / 2)
 
     article.scrollTo({
       left: scroll_left,
@@ -178,7 +195,7 @@
           'selecting-event': poster.picker,
           'fill-screen': poster.menu
         }"
-        @click="focus_poster(poster.id); toggle_menu(poster.id)"
+        @click="handle_poster_click(poster.id)"
         @show="poster_shown">
         <as-author-menu
           :poster="poster"

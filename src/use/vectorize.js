@@ -95,7 +95,9 @@ const resize_to_blob = async file => {
       bitmap = await createImageBitmap(img)
     } catch (error) {
       URL.revokeObjectURL(url)
-      throw new Error(`Failed to process image (${file.name}): ${error.message}`)
+      throw new Error(
+        `Failed to process image (${file.name}): ${error.message}`
+      )
     }
     URL.revokeObjectURL(url)
   } else {
@@ -472,7 +474,10 @@ export const use = () => {
   const update_progress = (id, progress_value) => {
     const index = queue_items.value.findIndex(item => item.id === id)
     if (index !== -1) {
-      queue_items.value[index] = { ...queue_items.value[index], progress: progress_value }
+      queue_items.value[index] = {
+        ...queue_items.value[index],
+        progress: progress_value
+      }
     }
   }
 

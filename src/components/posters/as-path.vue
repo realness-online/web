@@ -101,7 +101,10 @@
       :stroke="stroke"
       :stroke-opacity="stroke_opacity"
       :stroke-width="stroke_width"
-      :style="{ opacity: show_stroke ? 1 : 0, visibility: show_stroke ? 'visible' : 'hidden' }" />
+      :style="{
+        opacity: show_stroke ? 1 : 0,
+        visibility: show_stroke ? 'visible' : 'hidden'
+      }" />
   </g>
 </template>
 

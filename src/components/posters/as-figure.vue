@@ -60,7 +60,8 @@
   const handle_focus = () => {
     if (!has_been_focused.value) {
       has_been_focused.value = true
-      if (poster.value) poster.value.setAttribute('data-has-been-focused', 'true')
+      if (poster.value)
+        poster.value.setAttribute('data-has-been-focused', 'true')
     }
   }
 
@@ -97,10 +98,7 @@
 </script>
 
 <template>
-  <figure
-    ref="poster"
-    class="poster"
-    @focus="handle_focus">
+  <figure ref="poster" class="poster" @focus="handle_focus">
     <figcaption v-if="!menu">
       <slot v-if="menu">
         <menu>

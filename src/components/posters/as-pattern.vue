@@ -115,4 +115,3 @@
       @focus="handle_focus('bold')" />
   </pattern>
 </template>
-

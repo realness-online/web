@@ -12,18 +12,26 @@ Object.defineProperty(window, 'localStorage', {
 // Mock people composable
 vi.mock('@/use/people', () => ({
   use_me: () => ({
-    relations: { value: [{
-      id: '/+14151234567',
-      type: 'person',
-      name: { given: 'Test', family: 'User' }
-    }] }
+    relations: {
+      value: [
+        {
+          id: '/+14151234567',
+          type: 'person',
+          name: { given: 'Test', family: 'User' }
+        }
+      ]
+    }
   }),
   use: () => ({
-    people: { value: [{
-      id: '/+14151234567',
-      type: 'person',
-      name: { given: 'Test', family: 'User' }
-    }] },
+    people: {
+      value: [
+        {
+          id: '/+14151234567',
+          type: 'person',
+          name: { given: 'Test', family: 'User' }
+        }
+      ]
+    },
     load_people: vi.fn()
   }),
   is_person: maybe => {

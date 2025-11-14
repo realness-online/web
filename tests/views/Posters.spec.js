@@ -22,11 +22,15 @@ vi.mock('@/use/key-commands', () => ({
 // Mock poster composable
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
-    posters: { value: [{
-      id: '/+14151234356/posters/1234567890',
-      type: 'poster',
-      viewbox: '0 0 100 100'
-    }] },
+    posters: {
+      value: [
+        {
+          id: '/+14151234356/posters/1234567890',
+          type: 'poster',
+          viewbox: '0 0 100 100'
+        }
+      ]
+    },
     for_person: vi.fn(),
     poster_shown: vi.fn()
   }),
