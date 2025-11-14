@@ -18,7 +18,7 @@
   import { use_posters } from '@/use/poster'
   import { use as use_directory } from '@/use/directory-processor'
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, slice } from '@/utils/preference'
+  import { storytelling, slice, aspect_ratio_mode } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -225,12 +225,17 @@
         scroll-behavior: smooth;
         height: 100vh;
         scroll-snap-type: x proximity;
+        align-items: center;
+        justify-content: start;
         & > figure.poster {
           height: 100%;
           flex-shrink: 0;
           scroll-snap-align: center;
           min-width: 100vw;
           animation: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           @media (max-aspect-ratio: 1 / 1) {
             max-width: 100vw;
           }

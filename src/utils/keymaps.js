@@ -37,7 +37,7 @@ export const default_keymap = [
       'Tab Row': '',
       i: 'pref::Toggle_Info',
       o: 'pref::Toggle_Storytelling',
-      O: 'pref::Toggle_Slice',
+      e: 'pref::Toggle_Slice',
       r: 'pref::Cycle_Aspect_Ratio',
       R: 'pref::Cycle_Aspect_Ratio',
       p: 'ui::Toggle_Presentation',
