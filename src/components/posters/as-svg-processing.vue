@@ -117,7 +117,6 @@
         v-html="new_vector.cutouts.boulder.innerHTML" />
     </svg>
 
-
   </figure>
 </template>
 

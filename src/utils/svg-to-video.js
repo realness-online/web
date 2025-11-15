@@ -1,6 +1,24 @@
 /** @typedef {import('@/types').Id} Id */
 
 /**
+ * Calculates animation duration based on animation speed preference
+ * @param {string} animation_speed - Animation speed: 'fast', 'normal', 'slow', 'very_slow', 'glacial'
+ * @returns {number} Duration in seconds
+ */
+const get_animation_duration = animation_speed => {
+  const base_duration = 172 // Longest animation cycle in seconds
+  const speed_multipliers = {
+    fast: 0.5,
+    normal: 1,
+    slow: 2,
+    very_slow: 4,
+    glacial: 8
+  }
+  const multiplier = speed_multipliers[animation_speed] || 1
+  return base_duration * multiplier
+}
+
+/**
  * Renders an SVG animation to a video element at 24fps
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
@@ -192,7 +210,8 @@ export const download_video = (blob, filename = 'animation.webm') => {
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
- * @param {number} [options.max_duration=172] - Maximum animation duration in seconds
+ * @param {number} [options.max_duration] - Maximum animation duration in seconds (calculated from animation_speed if not provided)
+ * @param {string} [options.animation_speed='normal'] - Animation speed preference
  * @param {number} [options.width] - Canvas width (defaults to SVG viewBox width)
  * @param {number} [options.height] - Canvas height (defaults to SVG viewBox height)
  * @param {Function} [options.on_progress] - Progress callback (frame, total_frames)
@@ -200,10 +219,16 @@ export const download_video = (blob, filename = 'animation.webm') => {
  */
 export const render_svg_to_video_blob = async (
   svg_element,
-  { fps = 24, max_duration = 172, width, height, on_progress } = {}
+  { fps = 24, max_duration, animation_speed = 'normal', width, height, on_progress } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
+
+  // Ensure animations are enabled
+  svg_element.unpauseAnimations()
+
+  // Calculate duration from animation_speed if not provided
+  const duration = max_duration || get_animation_duration(animation_speed)
 
   const viewbox = svg_element.viewBox.baseVal
   const canvas_width = width || viewbox.width || svg_element.clientWidth
@@ -215,7 +240,7 @@ export const render_svg_to_video_blob = async (
   const ctx = canvas.getContext('2d')
 
   const frame_duration = 1000 / fps
-  const total_frames = Math.ceil(max_duration * fps)
+  const total_frames = Math.ceil(duration * fps)
 
   const stream = canvas.captureStream(fps)
 
@@ -280,7 +305,7 @@ export const render_svg_to_video_blob = async (
     if (on_progress) on_progress(current_frame + 1, total_frames)
 
     current_frame++
-    current_time = (current_frame / fps) % max_duration
+    current_time = (current_frame / fps) % duration
 
     if (current_frame < total_frames) {
       setTimeout(capture_frame, frame_duration)
