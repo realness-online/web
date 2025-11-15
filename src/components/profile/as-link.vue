@@ -1,8 +1,8 @@
 <script setup>
   import icon from '@/components/Icon'
   import { load, as_author } from '@/utils/itemid'
-  import as_svg from '@/components/posters/as-svg'
-  import as_address from '@/components/profile/as-address'
+  import AsAvatar from '@/components/posters/as-svg'
+  import AsAddress from '@/components/profile/as-address'
   import { ref, computed, onMounted } from 'vue'
 
   const props = defineProps({

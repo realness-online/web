@@ -59,5 +59,6 @@ const create_worker_config = filename => ({
 export default [
   create_worker_config('vector'),
   create_worker_config('compressor'),
-  create_worker_config('tracer')
+  create_worker_config('tracer'),
+  create_worker_config('video-frame')
 ]

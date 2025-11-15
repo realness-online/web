@@ -55,9 +55,7 @@ export const render_svg_to_video = async (
     'video/webm;codecs=vp8',
     'video/webm'
   ]
-  let mime_type = mime_types.find(type =>
-    MediaRecorder.isTypeSupported(type)
-  )
+  let mime_type = mime_types.find(type => MediaRecorder.isTypeSupported(type))
   if (!mime_type) mime_type = 'video/webm'
 
   const media_recorder = new MediaRecorder(stream, {
@@ -113,11 +111,8 @@ export const render_svg_to_video = async (
     current_frame++
     current_time = (current_frame / fps) % max_duration
 
-    if (current_frame < total_frames) {
-      setTimeout(capture_frame, frame_duration)
-    } else {
-      media_recorder.stop()
-    }
+    if (current_frame < total_frames) setTimeout(capture_frame, frame_duration)
+    else media_recorder.stop()
   }
 
   capture_frame()
@@ -181,9 +176,7 @@ export const render_svg_to_canvas = async (
     current_frame++
     current_time = (current_frame / fps) % max_duration
 
-    if (current_frame < total_frames) {
-      setTimeout(capture_frame, frame_duration)
-    }
+    if (current_frame < total_frames) setTimeout(capture_frame, frame_duration)
   }
 
   capture_frame()
@@ -206,7 +199,7 @@ export const download_video = (blob, filename = 'animation.webm') => {
 }
 
 /**
- * Renders an SVG animation to a video blob at 24fps for download
+ * Renders an SVG animation to a video blob at 24fps for download using parallel workers
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
@@ -219,7 +212,14 @@ export const download_video = (blob, filename = 'animation.webm') => {
  */
 export const render_svg_to_video_blob = async (
   svg_element,
-  { fps = 24, max_duration, animation_speed = 'normal', width, height, on_progress } = {}
+  {
+    fps = 24,
+    max_duration,
+    animation_speed = 'normal',
+    width,
+    height,
+    on_progress
+  } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
@@ -234,13 +234,39 @@ export const render_svg_to_video_blob = async (
   const canvas_width = width || viewbox.width || svg_element.clientWidth
   const canvas_height = height || viewbox.height || svg_element.clientHeight
 
+  const total_frames = Math.ceil(duration * fps)
+
+  console.log('[Video] Starting video render', {
+    duration,
+    fps,
+    total_frames,
+    canvas_width,
+    canvas_height,
+    animation_speed
+  })
+
+  // Create worker pool based on available cores
+  const available_cores = navigator.hardwareConcurrency || 4
+  const worker_count = Math.min(available_cores, total_frames)
+  const frames_per_worker = Math.ceil(total_frames / worker_count)
+
+  console.log('[Video] Worker pool configuration', {
+    available_cores,
+    worker_count,
+    frames_per_worker,
+    total_frames
+  })
+
+  // Serialize base SVG once for workers to use
+  const base_svg_string = new XMLSerializer().serializeToString(svg_element)
+
+  const render_start = performance.now()
+
+  // Create canvas and MediaRecorder
   const canvas = document.createElement('canvas')
   canvas.width = canvas_width
   canvas.height = canvas_height
   const ctx = canvas.getContext('2d')
-
-  const frame_duration = 1000 / fps
-  const total_frames = Math.ceil(duration * fps)
 
   const stream = canvas.captureStream(fps)
 
@@ -250,9 +276,7 @@ export const render_svg_to_video_blob = async (
     'video/webm;codecs=vp8',
     'video/webm'
   ]
-  let mime_type = mime_types.find(type =>
-    MediaRecorder.isTypeSupported(type)
-  )
+  let mime_type = mime_types.find(type => MediaRecorder.isTypeSupported(type))
   if (!mime_type) mime_type = 'video/webm'
 
   const media_recorder = new MediaRecorder(stream, {
@@ -274,48 +298,161 @@ export const render_svg_to_video_blob = async (
   })
 
   media_recorder.start()
+  console.log('[Video] MediaRecorder started with mime type:', mime_type)
 
-  let current_frame = 0
-  let current_time = 0
+  // Create workers and distribute frame SVG strings
+  const workers = []
+  const frame_promises = []
 
-  const capture_frame = async () => {
-    svg_element.setCurrentTime(current_time)
+  console.log('[Video] Initializing workers...')
+  console.log('[Video] About to create', worker_count, 'workers')
+  const worker_init_start = performance.now()
 
-    // Wait for SVG to update after setCurrentTime
-    await new Promise(resolve => requestAnimationFrame(resolve))
-    await new Promise(resolve => requestAnimationFrame(resolve))
+  for (let i = 0; i < worker_count; i++) {
+    console.log(`[Video] Creating worker ${i + 1} of ${worker_count}...`)
+    const start_frame = i * frames_per_worker
+    const end_frame = Math.min(start_frame + frames_per_worker, total_frames)
 
-    // Serialize SVG at current animation state
-    const svg_data = new XMLSerializer().serializeToString(svg_element)
-    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
+    if (start_frame >= total_frames) break
 
-    const img = new Image()
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = svg_url
+    let worker
+    try {
+      console.log(
+        `[Video] Attempting to create worker ${i + 1} with path: /video-frame.worker.js`
+      )
+      worker = new Worker('/video-frame.worker.js')
+      console.log(
+        `[Video] ✓ Worker ${i + 1}/${worker_count} created successfully (frames ${start_frame}-${end_frame - 1})`
+      )
+
+      // Verify worker is ready
+      worker.addEventListener('error', e => {
+        console.error(`[Video] Worker ${i + 1} load error:`, e)
+      })
+    } catch (error) {
+      console.error(`[Video] ✗ Failed to create worker ${i + 1}:`, error)
+      console.error(`[Video] Error details:`, {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+      throw error
+    }
+
+    const worker_promise = new Promise((resolve, reject) => {
+      const worker_start = performance.now()
+
+      worker.onmessage = event => {
+        const worker_time = performance.now() - worker_start
+        const frame_count = event.data.frames?.length || 0
+        console.log(
+          `[Video] Worker ${i + 1} completed: ${frame_count} frames in ${worker_time.toFixed(0)}ms`
+        )
+        resolve(event.data.frames)
+        worker.terminate()
+      }
+
+      worker.onerror = error => {
+        console.error(`[Video] Worker ${i + 1} error:`, error)
+        console.error(`[Video] Worker ${i + 1} error details:`, {
+          message: error.message,
+          filename: error.filename,
+          lineno: error.lineno,
+          colno: error.colno
+        })
+        reject(error)
+      }
+
+      worker.onmessageerror = error => {
+        console.error(`[Video] Worker ${i + 1} message error:`, error)
+        reject(error)
+      }
     })
 
-    ctx.clearRect(0, 0, canvas_width, canvas_height)
-    ctx.drawImage(img, 0, 0, canvas_width, canvas_height)
+    console.log(
+      `[Video] Sending frames ${start_frame}-${end_frame - 1} to worker ${i + 1}`
+    )
 
-    URL.revokeObjectURL(svg_url)
+    worker.postMessage({
+      route: 'prepare_and_render:frames',
+      svg_string: base_svg_string,
+      start_frame,
+      end_frame,
+      fps,
+      duration,
+      canvas_width,
+      canvas_height
+    })
 
-    if (on_progress) on_progress(current_frame + 1, total_frames)
+    console.log(
+      `[Video] Message sent to worker ${i + 1}, waiting for response...`
+    )
 
-    current_frame++
-    current_time = (current_frame / fps) % duration
-
-    if (current_frame < total_frames) {
-      setTimeout(capture_frame, frame_duration)
-    } else {
-      media_recorder.stop()
-    }
+    workers.push(worker)
+    frame_promises.push(worker_promise)
   }
 
-  capture_frame()
+  const worker_init_time = performance.now() - worker_init_start
+  console.log(
+    `[Video] All ${worker_count} workers initialized in ${worker_init_time.toFixed(0)}ms`
+  )
 
-  return recording_promise
+  // Wait for all workers to complete
+  console.log('[Video] Waiting for workers to complete rendering...')
+  const all_frames = await Promise.all(frame_promises)
+  const render_time = performance.now() - render_start
+  console.log(
+    `[Video] All workers completed: ${all_frames.flat().length} frames rendered in ${render_time.toFixed(0)}ms`
+  )
+
+  // Flatten and sort frames by index
+  const sorted_frames = all_frames
+    .flat()
+    .sort((a, b) => a.frame_index - b.frame_index)
+
+  // Feed frames to MediaRecorder in order
+  console.log('[Video] Feeding frames to MediaRecorder...')
+  const encoding_start = performance.now()
+  let frames_encoded = 0
+
+  for (const frame_data of sorted_frames) {
+    ctx.clearRect(0, 0, canvas_width, canvas_height)
+    ctx.drawImage(frame_data.image_bitmap, 0, 0)
+
+    // Close ImageBitmap to free memory
+    frame_data.image_bitmap.close()
+
+    frames_encoded++
+    if (frames_encoded % 50 === 0 || frames_encoded === sorted_frames.length) {
+      const encoding_progress = (frames_encoded / sorted_frames.length) * 100
+      console.log(
+        `[Video] Encoding: ${frames_encoded}/${sorted_frames.length} frames (${encoding_progress.toFixed(1)}%)`
+      )
+    }
+
+    if (on_progress) {
+      const prep_progress = total_frames
+      const render_progress = frame_data.frame_index + 1
+      on_progress(prep_progress + render_progress, total_frames * 2)
+    }
+
+    // Small delay to allow MediaRecorder to capture
+    await new Promise(resolve => requestAnimationFrame(resolve))
+  }
+
+  const encoding_time = performance.now() - encoding_start
+  console.log(
+    `[Video] Encoding complete: ${frames_encoded} frames in ${encoding_time.toFixed(0)}ms`
+  )
+
+  media_recorder.stop()
+  console.log('[Video] MediaRecorder stopped, waiting for final blob...')
+
+  const blob = await recording_promise
+  const total_time = performance.now() - render_start
+  console.log(
+    `[Video] Video render complete: ${(blob.size / 1024 / 1024).toFixed(2)}MB in ${total_time.toFixed(0)}ms`
+  )
+
+  return blob
 }
-

@@ -9,6 +9,8 @@
     download_video
   } from '@/utils/svg-to-video'
   import { animation_speed } from '@/utils/preference'
+  import { to_hsla } from '@/utils/colors'
+  import css_var from '@/utils/css-var'
 
   const props = defineProps({
     itemid: {
@@ -44,6 +46,26 @@
   const icon_rotation = computed(() => {
     if (!working.value || total_frames.value === 0) return 0
     return (computed_progress.value / 100) * 360
+  })
+
+  const icon_color = computed(() => {
+    if (!working.value || total_frames.value === 0) {
+      return 'inherit'
+    }
+
+    // Get current color from CSS variable or computed style
+    const current_color = css_var('--green') || 'hsla(136, 47%, 57%, 0.75)'
+    const hsl = to_hsla(current_color)
+
+    // Interpolate hue through color wheel (0-360 degrees)
+    // Start at current hue, travel through the wheel based on progress
+    const start_hue = hsl.h
+    const progress_ratio = computed_progress.value / 100
+    const hue_shift = progress_ratio * 360
+    const new_hue = (start_hue + hue_shift) % 360
+
+    // Keep saturation and lightness constant, maintain alpha
+    return `hsla(${Math.round(new_hue)}, ${hsl.s}%, ${hsl.l}%, ${hsl.a})`
   })
 
   const download = async () => {
@@ -109,7 +131,10 @@
     :data-state="state">
     <icon
       name="download"
-      :style="{ transform: `rotate(${icon_rotation}deg)` }" />
+      :style="{
+        transform: `rotate(${icon_rotation}deg)`,
+        color: icon_color
+      }" />
   </button>
 </template>
 

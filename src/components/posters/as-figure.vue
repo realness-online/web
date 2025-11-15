@@ -113,13 +113,13 @@
         …
       </button>
       <menu v-if="menu">
-        <as-link :itemid="itemid">
-          <time>{{ posted_at }}</time>
-        </as-link>
-        <as-download :itemid="itemid" />
+          <as-link :itemid="itemid">
+            <time>{{ posted_at }}</time>
+          </as-link>
+          <as-download :itemid="itemid" />
         <as-download-video :itemid="itemid" />
-        <as-messenger v-if="current_user" :itemid="itemid" />
-      </menu>
+          <as-messenger v-if="current_user" :itemid="itemid" />
+        </menu>
     </figcaption>
     <as-svg
       :itemid="itemid"
@@ -197,51 +197,56 @@
       z-index: 2;
 
       button {
-        background: none;
-        border: none;
-        padding: base-line * 0.25;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: base-line * 0.25;
+        padding: base-line * 0.25 base-line * 0.5;
         cursor: pointer;
         color: inherit;
         font-size: larger;
         line-height: 1;
         opacity: 0.7;
+        min-width: base-line * 1.5;
+        text-align: center;
 
         &:hover {
           opacity: 1;
+          background: rgba(0, 0, 0, 0.5);
         }
 
         &:focus {
           outline: 0.25px solid currentColor;
           outline-offset: base-line * 0.25;
+          opacity: 1;
         }
       }
 
       menu {
-        height: 0;
-        & > a {
-          z-index: 2;
-          position: absolute;
-        &.download {
-            bottom: base-line;
-            right: base-line;
-          }
-          &.profile {
-            animation-name: fade-in;
-            animation-duration: 0.01s;
-            padding: base-line * .33;
-            background: black-transparent;
-            border-radius: base-line * .25;
-            standard-shadow: boop;
-            top: base-line;
-            left: base-line;
-            & > address {
-              & > h3:first-of-type {
-                margin-right: base-line * .333;
-              }
-              & > h3,
-              & > time {
-                color: blue;
-                line-height: 1;
+      height: 0;
+      & > a {
+        z-index: 2;
+        position: absolute;
+      &.download {
+          bottom: base-line;
+          right: base-line;
+        }
+        &.profile {
+          animation-name: fade-in;
+          animation-duration: 0.01s;
+          padding: base-line * .33;
+          background: black-transparent;
+          border-radius: base-line * .25;
+          standard-shadow: boop;
+          top: base-line;
+          left: base-line;
+          & > address {
+            & > h3:first-of-type {
+              margin-right: base-line * .333;
+            }
+            & > h3,
+            & > time {
+              color: blue;
+              line-height: 1;
               }
             }
           }
