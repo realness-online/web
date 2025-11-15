@@ -246,6 +246,9 @@
       & > figure.poster.selecting-event > svg:not(.background) {
         opacity: 0.1;
       }
+      & > figure.poster.processing.currently_processing {
+        grid-column: 1 / -1;
+      }
     }
     &.slice > article {
       grid-gap: 0;

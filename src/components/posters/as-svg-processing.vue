@@ -47,7 +47,7 @@
 </script>
 
 <template>
-  <figure class="poster processing" :class="{ landscape }">
+  <figure class="poster processing" :class="{ landscape, currently_processing: is_currently_processing }">
     <img
       v-if="thumbnail_url"
       :src="thumbnail_url"
@@ -117,16 +117,7 @@
         v-html="new_vector.cutouts.boulder.innerHTML" />
     </svg>
 
-    <figcaption>
-      <meter
-        :value="progress_value || 0"
-        min="0"
-        max="100"
-        low="0"
-        high="100"
-        optimum="100"
-        aria-label="Poster creation progress" />
-    </figcaption>
+
   </figure>
 </template>
 
@@ -184,6 +175,8 @@
       display: block;
       width: 100%;
       height: 12px;
+      -webkit-appearance: none;
+      appearance: none;
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 6px;
       background: rgba(0, 0, 0, 0.3);
