@@ -8,7 +8,7 @@
   } from 'vue'
   import { as_fragment_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
-  import { animate, stroke } from '@/utils/preference'
+  import { animate, stroke, animation_speed } from '@/utils/preference'
 
   const props = defineProps({
     id: {
@@ -23,8 +23,22 @@
   const fragment = add =>
     `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
-  /** @param {number} base_duration */
-  const duration = base_duration => `${base_duration}s`
+  /**
+   * Calculates duration based on animation speed preference
+   * @param {number} base_duration - Base duration in seconds
+   * @returns {string} Duration string with speed multiplier applied
+   */
+  const duration = base_duration => {
+    const speed_multipliers = {
+      fast: 0.5,
+      normal: 1,
+      slow: 2,
+      very_slow: 4,
+      glacial: 8
+    }
+    const multiplier = speed_multipliers[animation_speed.value] || 1
+    return `${base_duration * multiplier}s`
+  }
 
   const static_stroke_opacity = '0.90'
   const static_fill_opacity = '0.90'

@@ -8,6 +8,7 @@
     render_svg_to_video_blob,
     download_video
   } from '@/utils/svg-to-video'
+  import { animation_speed } from '@/utils/preference'
 
   const props = defineProps({
     itemid: {
@@ -34,11 +35,15 @@
 
   const state_message = computed(() => {
     if (!working.value) return 'Download video'
-    if (state.value === 'rendering')
-      return `Rendering frames: ${progress.value}/${total_frames.value} (${computed_progress.value}%)`
+    if (state.value === 'rendering') return 'Rendering video...'
     if (state.value === 'encoding') return 'Encoding video...'
     if (state.value === 'downloading') return 'Downloading...'
     return 'Preparing...'
+  })
+
+  const icon_rotation = computed(() => {
+    if (!working.value || total_frames.value === 0) return 0
+    return (computed_progress.value / 100) * 360
   })
 
   const download = async () => {
@@ -50,9 +55,12 @@
     state.value = 'rendering'
 
     try {
+      // Ensure animations are enabled for video
+      svg.unpauseAnimations()
+
       const blob = await render_svg_to_video_blob(svg, {
         fps: 24,
-        max_duration: 172,
+        animation_speed: animation_speed.value,
         on_progress: (frame, total) => {
           progress.value = frame
           total_frames.value = total
@@ -99,8 +107,9 @@
     :disabled="working"
     :aria-label="state_message"
     :data-state="state">
-    <icon name="download" />
-    <output>{{ state_message }}</output>
+    <icon
+      name="download"
+      :style="{ transform: `rotate(${icon_rotation}deg)` }" />
   </button>
 </template>
 
@@ -130,11 +139,8 @@
       color: red
     }
 
-    output {
-      font-size: smaller
-      opacity: 0.8
-      margin-left: calc(var(--base-line) * 0.25)
-      white-space: nowrap
+    icon {
+      transition: transform 0.1s linear
     }
   }
 </style>
