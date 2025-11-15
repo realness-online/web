@@ -1,4 +1,34 @@
 /** @typedef {import('@/types').Id} Id */
+import { nextTick } from 'vue'
+import {
+  Output,
+  MovOutputFormat,
+  BufferTarget,
+  StreamTarget,
+  CanvasSource
+} from 'mediabunny'
+
+/**
+ * @typedef {Object} VideoEncoderConfig
+ * @property {string} codec - Codec string (e.g., 'vp09.00.10.08', 'vp8')
+ * @property {number} width - Video width in pixels
+ * @property {number} height - Video height in pixels
+ * @property {number} bitrate - Bitrate in bits per second
+ * @property {number} framerate - Frame rate in frames per second
+ */
+
+/**
+ * @typedef {Object} EncodedVideoChunk
+ * @property {Uint8Array} data - Encoded video data
+ * @property {number} timestamp - Timestamp in microseconds
+ * @property {string} type - Chunk type ('key' or 'delta')
+ * @property {number} duration - Duration in microseconds
+ */
+
+/**
+ * @typedef {typeof globalThis.VideoEncoder} VideoEncoder
+ * @typedef {typeof globalThis.VideoFrame} VideoFrame
+ */
 
 /**
  * Calculates animation duration based on animation speed preference
@@ -6,7 +36,7 @@
  * @returns {number} Duration in seconds
  */
 const get_animation_duration = animation_speed => {
-  const base_duration = 172 // Longest animation cycle in seconds
+  const base_duration = 172
   const speed_multipliers = {
     fast: 0.5,
     normal: 1,
@@ -49,7 +79,6 @@ export const render_svg_to_video = async (
 
   const stream = canvas.captureStream(fps)
 
-  // Try to find supported mime type
   const mime_types = [
     'video/webm;codecs=vp9',
     'video/webm;codecs=vp8',
@@ -87,11 +116,8 @@ export const render_svg_to_video = async (
   const capture_frame = async () => {
     svg_element.setCurrentTime(current_time)
 
-    // Wait for SVG to update after setCurrentTime
-    await new Promise(resolve => requestAnimationFrame(resolve))
     await new Promise(resolve => requestAnimationFrame(resolve))
 
-    // Serialize SVG at current animation state
     const svg_data = new XMLSerializer().serializeToString(svg_element)
     const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
     const svg_url = URL.createObjectURL(svg_blob)
@@ -150,11 +176,9 @@ export const render_svg_to_canvas = async (
   const capture_frame = async () => {
     svg_element.setCurrentTime(current_time)
 
-    // Wait for SVG to update after setCurrentTime
     await new Promise(resolve => requestAnimationFrame(resolve))
     await new Promise(resolve => requestAnimationFrame(resolve))
 
-    // Serialize SVG at current animation state
     const svg_data = new XMLSerializer().serializeToString(svg_element)
     const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
     const svg_url = URL.createObjectURL(svg_blob)
@@ -187,7 +211,9 @@ export const render_svg_to_canvas = async (
  * @param {Blob} blob - Video blob to download
  * @param {string} filename - Filename for the download
  */
-export const download_video = (blob, filename = 'animation.webm') => {
+export const download_video = (blob, filename = 'animation.mov') => {
+  if (!blob) return
+
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -208,7 +234,8 @@ export const download_video = (blob, filename = 'animation.webm') => {
  * @param {number} [options.width] - Canvas width (defaults to SVG viewBox width)
  * @param {number} [options.height] - Canvas height (defaults to SVG viewBox height)
  * @param {Function} [options.on_progress] - Progress callback (frame, total_frames)
- * @returns {Promise<Blob>} Video blob ready for download
+ * @param {string} [options.suggested_filename] - Suggested filename for File System Access API
+ * @returns {Promise<Blob|null>} Video blob ready for download, or null if saved via File System Access API
  */
 export const render_svg_to_video_blob = async (
   svg_element,
@@ -218,25 +245,71 @@ export const render_svg_to_video_blob = async (
     animation_speed = 'normal',
     width,
     height,
-    on_progress
+    on_progress,
+    suggested_filename
   } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
 
-  // Ensure animations are enabled
-  svg_element.unpauseAnimations()
+  svg_element.pauseAnimations()
 
-  // Calculate duration from animation_speed if not provided
   const duration = max_duration || get_animation_duration(animation_speed)
 
+  let file_handle = null
+  let writable_stream = null
+  const use_file_system_api = 'showSaveFilePicker' in window
+
+  if (use_file_system_api && suggested_filename) {
+    console.info(
+      '[Video] File System Access API detected - attempting direct file write'
+    )
+    try {
+      file_handle = await /** @type {any} */ (window).showSaveFilePicker({
+        suggestedName: suggested_filename,
+        types: [
+          {
+            description: 'QuickTime Video',
+            accept: { 'video/quicktime': ['.mov'] }
+          }
+        ]
+      })
+      writable_stream = await file_handle.createWritable()
+      console.info(
+        '[Video] Using File System Access API - writing directly to disk (memory efficient)'
+      )
+    } catch (error) {
+      if (error.name === 'AbortError')
+        console.info(
+          '[Video] File System Access API cancelled by user - falling back to memory buffer'
+        )
+      else
+        console.warn(
+          '[Video] File System Access API error, using memory buffer:',
+          error
+        )
+      file_handle = null
+      writable_stream = null
+    }
+  } else if (!use_file_system_api)
+    console.info(
+      '[Video] File System Access API not supported - using memory buffer (Blob download)'
+    )
+  else if (!suggested_filename)
+    console.info(
+      '[Video] No suggested filename provided - using memory buffer (Blob download)'
+    )
+
   const viewbox = svg_element.viewBox.baseVal
-  const canvas_width = width || viewbox.width || svg_element.clientWidth
-  const canvas_height = height || viewbox.height || svg_element.clientHeight
+  let canvas_width = width || viewbox.width || svg_element.clientWidth
+  let canvas_height = height || viewbox.height || svg_element.clientHeight
+
+  canvas_width = canvas_width + (canvas_width % 2)
+  canvas_height = canvas_height + (canvas_height % 2)
 
   const total_frames = Math.ceil(duration * fps)
 
-  console.log('[Video] Starting video render', {
+  console.info('[Video] Starting video render', {
     duration,
     fps,
     total_frames,
@@ -245,213 +318,137 @@ export const render_svg_to_video_blob = async (
     animation_speed
   })
 
-  // Create worker pool based on available cores
-  const available_cores = navigator.hardwareConcurrency || 4
-  const worker_count = Math.min(available_cores, total_frames)
-  const frames_per_worker = Math.ceil(total_frames / worker_count)
-
-  console.log('[Video] Worker pool configuration', {
-    available_cores,
-    worker_count,
-    frames_per_worker,
-    total_frames
-  })
-
-  // Serialize base SVG once for workers to use
-  const base_svg_string = new XMLSerializer().serializeToString(svg_element)
-
   const render_start = performance.now()
 
-  // Create canvas and MediaRecorder
   const canvas = document.createElement('canvas')
   canvas.width = canvas_width
   canvas.height = canvas_height
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d', { willReadFrequently: false })
 
-  const stream = canvas.captureStream(fps)
+  const target = writable_stream
+    ? new StreamTarget(writable_stream, {
+        chunked: true,
+        chunkSize: 2 * 1024 * 1024
+      })
+    : new BufferTarget()
 
-  // Try to find supported mime type
-  const mime_types = [
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm'
-  ]
-  let mime_type = mime_types.find(type => MediaRecorder.isTypeSupported(type))
-  if (!mime_type) mime_type = 'video/webm'
-
-  const media_recorder = new MediaRecorder(stream, {
-    mimeType: mime_type,
-    videoBitsPerSecond: 2500000
+  const output = new Output({
+    format: new MovOutputFormat(),
+    target
   })
 
-  const chunks = []
-  media_recorder.ondataavailable = event => {
-    if (event.data.size > 0) chunks.push(event.data)
+  let canvas_source = null
+  try {
+    canvas_source = new CanvasSource(canvas, {
+      codec: 'avc',
+      bitrate: 2500000,
+      keyFrameInterval: 1.25,
+      latencyMode: 'quality'
+    })
+  } catch {
+    throw new Error('H.264 codec not supported - required for MOV format')
   }
 
-  const recording_promise = new Promise((resolve, reject) => {
-    media_recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' })
-      resolve(blob)
-    }
-    media_recorder.onerror = reject
+  output.addVideoTrack(canvas_source, {
+    frameRate: fps,
+    maximumPacketCount: total_frames
   })
 
-  media_recorder.start()
-  console.log('[Video] MediaRecorder started with mime type:', mime_type)
+  await output.start()
 
-  // Create workers and distribute frame SVG strings
-  const workers = []
-  const frame_promises = []
+  for (let current_frame = 0; current_frame < total_frames; current_frame++) {
+    const current_time = current_frame / fps
 
-  console.log('[Video] Initializing workers...')
-  console.log('[Video] About to create', worker_count, 'workers')
-  const worker_init_start = performance.now()
+    if (current_frame % 100 === 0)
+      console.info(
+        `[Video] Capturing frame ${current_frame}, time: ${current_time.toFixed(3)}s`
+      )
 
-  for (let i = 0; i < worker_count; i++) {
-    console.log(`[Video] Creating worker ${i + 1} of ${worker_count}...`)
-    const start_frame = i * frames_per_worker
-    const end_frame = Math.min(start_frame + frames_per_worker, total_frames)
+    svg_element.setCurrentTime(current_time)
 
-    if (start_frame >= total_frames) break
+    await nextTick()
+    await nextTick()
 
-    let worker
+    const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+    svg_clone.setAttribute('width', String(canvas_width))
+    svg_clone.setAttribute('height', String(canvas_height))
+
+    const figure = svg_element.closest('figure.poster')
+    if (figure) {
+      const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+      if (hidden_svg) {
+        const symbols = hidden_svg.querySelectorAll('symbol')
+        symbols.forEach(symbol => {
+          const symbol_clone = symbol.cloneNode(true)
+          svg_clone.appendChild(symbol_clone)
+        })
+      }
+    }
+
+    const svg_data = new XMLSerializer().serializeToString(svg_clone)
+    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
+    const svg_url = URL.createObjectURL(svg_blob)
+
+    const img = new Image()
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+      img.src = svg_url
+    })
+
+    ctx.clearRect(0, 0, canvas_width, canvas_height)
+    ctx.drawImage(img, 0, 0, canvas_width, canvas_height)
+
+    URL.revokeObjectURL(svg_url)
+    img.src = ''
+    img.onload = null
+    img.onerror = null
+
+    const timestamp = current_frame / fps
+    const frame_duration = 1 / fps
+
     try {
-      console.log(
-        `[Video] Attempting to create worker ${i + 1} with path: /video-frame.worker.js`
-      )
-      worker = new Worker('/video-frame.worker.js')
-      console.log(
-        `[Video] ✓ Worker ${i + 1}/${worker_count} created successfully (frames ${start_frame}-${end_frame - 1})`
-      )
-
-      // Verify worker is ready
-      worker.addEventListener('error', e => {
-        console.error(`[Video] Worker ${i + 1} load error:`, e)
-      })
+      await canvas_source.add(timestamp, frame_duration)
+      if (current_frame % 100 === 0)
+        console.info(`[Video] Frame ${current_frame} added successfully`)
     } catch (error) {
-      console.error(`[Video] ✗ Failed to create worker ${i + 1}:`, error)
-      console.error(`[Video] Error details:`, {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      })
+      console.error(`[Video] Error adding frame ${current_frame}:`, error)
+      canvas_source.close()
       throw error
     }
 
-    const worker_promise = new Promise((resolve, reject) => {
-      const worker_start = performance.now()
+    if (on_progress) on_progress(current_frame + 1, total_frames)
 
-      worker.onmessage = event => {
-        const worker_time = performance.now() - worker_start
-        const frame_count = event.data.frames?.length || 0
-        console.log(
-          `[Video] Worker ${i + 1} completed: ${frame_count} frames in ${worker_time.toFixed(0)}ms`
-        )
-        resolve(event.data.frames)
-        worker.terminate()
-      }
-
-      worker.onerror = error => {
-        console.error(`[Video] Worker ${i + 1} error:`, error)
-        console.error(`[Video] Worker ${i + 1} error details:`, {
-          message: error.message,
-          filename: error.filename,
-          lineno: error.lineno,
-          colno: error.colno
-        })
-        reject(error)
-      }
-
-      worker.onmessageerror = error => {
-        console.error(`[Video] Worker ${i + 1} message error:`, error)
-        reject(error)
-      }
-    })
-
-    console.log(
-      `[Video] Sending frames ${start_frame}-${end_frame - 1} to worker ${i + 1}`
-    )
-
-    worker.postMessage({
-      route: 'prepare_and_render:frames',
-      svg_string: base_svg_string,
-      start_frame,
-      end_frame,
-      fps,
-      duration,
-      canvas_width,
-      canvas_height
-    })
-
-    console.log(
-      `[Video] Message sent to worker ${i + 1}, waiting for response...`
-    )
-
-    workers.push(worker)
-    frame_promises.push(worker_promise)
-  }
-
-  const worker_init_time = performance.now() - worker_init_start
-  console.log(
-    `[Video] All ${worker_count} workers initialized in ${worker_init_time.toFixed(0)}ms`
-  )
-
-  // Wait for all workers to complete
-  console.log('[Video] Waiting for workers to complete rendering...')
-  const all_frames = await Promise.all(frame_promises)
-  const render_time = performance.now() - render_start
-  console.log(
-    `[Video] All workers completed: ${all_frames.flat().length} frames rendered in ${render_time.toFixed(0)}ms`
-  )
-
-  // Flatten and sort frames by index
-  const sorted_frames = all_frames
-    .flat()
-    .sort((a, b) => a.frame_index - b.frame_index)
-
-  // Feed frames to MediaRecorder in order
-  console.log('[Video] Feeding frames to MediaRecorder...')
-  const encoding_start = performance.now()
-  let frames_encoded = 0
-
-  for (const frame_data of sorted_frames) {
-    ctx.clearRect(0, 0, canvas_width, canvas_height)
-    ctx.drawImage(frame_data.image_bitmap, 0, 0)
-
-    // Close ImageBitmap to free memory
-    frame_data.image_bitmap.close()
-
-    frames_encoded++
-    if (frames_encoded % 50 === 0 || frames_encoded === sorted_frames.length) {
-      const encoding_progress = (frames_encoded / sorted_frames.length) * 100
-      console.log(
-        `[Video] Encoding: ${frames_encoded}/${sorted_frames.length} frames (${encoding_progress.toFixed(1)}%)`
+    if (current_frame % 50 === 0 || current_frame === total_frames - 1) {
+      const progress = ((current_frame + 1) / total_frames) * 100
+      console.info(
+        `[Video] Frame ${current_frame + 1}/${total_frames} (${progress.toFixed(1)}%)`
       )
     }
-
-    if (on_progress) {
-      const prep_progress = total_frames
-      const render_progress = frame_data.frame_index + 1
-      on_progress(prep_progress + render_progress, total_frames * 2)
-    }
-
-    // Small delay to allow MediaRecorder to capture
-    await new Promise(resolve => requestAnimationFrame(resolve))
   }
 
-  const encoding_time = performance.now() - encoding_start
-  console.log(
-    `[Video] Encoding complete: ${frames_encoded} frames in ${encoding_time.toFixed(0)}ms`
-  )
+  console.info(`[Video] All frames captured: ${total_frames}/${total_frames}`)
 
-  media_recorder.stop()
-  console.log('[Video] MediaRecorder stopped, waiting for final blob...')
+  canvas_source.close()
 
-  const blob = await recording_promise
+  await output.finalize()
+
   const total_time = performance.now() - render_start
-  console.log(
-    `[Video] Video render complete: ${(blob.size / 1024 / 1024).toFixed(2)}MB in ${total_time.toFixed(0)}ms`
+
+  if (writable_stream && file_handle) {
+    console.info(
+      `[Video] Video saved directly to file via File System Access API in ${total_time.toFixed(0)}ms (memory efficient)`
+    )
+    return null
+  }
+
+  const buffer_target = /** @type {BufferTarget} */ (output.target)
+  if (!buffer_target.buffer) throw new Error('Output buffer is null')
+  const blob = new Blob([buffer_target.buffer], { type: 'video/quicktime' })
+
+  const bytes_per_mb = 1024 * 1024
+  console.info(
+    `[Video] Video render complete: ${(blob.size / bytes_per_mb).toFixed(2)}MB blob created in ${total_time.toFixed(0)}ms (using memory buffer)`
   )
 
   return blob

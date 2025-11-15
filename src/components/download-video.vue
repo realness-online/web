@@ -72,6 +72,23 @@
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) return
 
+    // Find the figure element containing the SVG
+    const figure = svg.closest('figure.poster')
+    if (!figure) return
+
+    // Get rendered dimensions from figure to calculate aspect ratio
+    const rect = figure.getBoundingClientRect()
+    const aspect_ratio = rect.width / rect.height
+
+    // Set smallest side to 1080px, scale other side proportionally
+    const target_smallest_side = 1080
+    const video_width = aspect_ratio >= 1
+      ? Math.round(target_smallest_side * aspect_ratio)
+      : target_smallest_side
+    const video_height = aspect_ratio >= 1
+      ? target_smallest_side
+      : Math.round(target_smallest_side / aspect_ratio)
+
     working.value = true
     progress.value = 0
     state.value = 'rendering'
@@ -83,6 +100,9 @@
       const blob = await render_svg_to_video_blob(svg, {
         fps: 24,
         animation_speed: animation_speed.value,
+        width: video_width,
+        height: video_height,
+        suggested_filename: file_name.value,
         on_progress: (frame, total) => {
           progress.value = frame
           total_frames.value = total
@@ -112,7 +132,7 @@
     const author_id = `/${info[1]}`
     const time = as_day_and_time(Number(info[3]))
     const creator = await load(author_id)
-    const facts = `${time}.webm`
+    const facts = `${time}.mov`
     if (creator?.first_name)
       return `${creator.first_name}_${creator.last_name}_${facts}`
     return facts
