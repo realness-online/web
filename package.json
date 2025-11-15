@@ -57,6 +57,7 @@
     "firebase": "11.9.1",
     "idb-keyval": "6.2.2",
     "libphonenumber-js": "1.12.9",
+    "linkedom": "^0.16.8",
     "marked": "15.0.6",
     "marked-gfm-heading-id": "4.1.2",
     "vue": "3.5.16",
