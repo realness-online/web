@@ -145,6 +145,10 @@
           name="storytelling"
           title="Storytelling (side-scroll) view"
           subtitle="Show content in a horizontal, story-like format. Portraits animate up/down." />
+        <preference
+          name="show_menu"
+          title="Show menu indicator"
+          subtitle="Display '...' button on posters to access download options. Press 'm' to toggle." />
       </menu>
     </section>
 

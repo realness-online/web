@@ -1,0 +1,141 @@
+<script setup>
+  import { as_day_and_time } from '@/utils/date'
+  import { load, as_query_id } from '@/utils/itemid'
+  import { is_vector_id } from '@/use/poster'
+  import icon from '@/components/icon'
+  import { ref, computed, onMounted } from 'vue'
+  import {
+    render_svg_to_video_blob,
+    download_video
+  } from '@/utils/svg-to-video'
+
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    }
+  })
+
+  defineOptions({
+    name: 'DownloadVideo'
+  })
+
+  const file_name = ref(null)
+  const working = ref(false)
+  const progress = ref(0)
+  const total_frames = ref(0)
+  const state = ref('idle')
+
+  const computed_progress = computed(() => {
+    if (total_frames.value === 0) return 0
+    return Math.round((progress.value / total_frames.value) * 100)
+  })
+
+  const state_message = computed(() => {
+    if (!working.value) return 'Download video'
+    if (state.value === 'rendering')
+      return `Rendering frames: ${progress.value}/${total_frames.value} (${computed_progress.value}%)`
+    if (state.value === 'encoding') return 'Encoding video...'
+    if (state.value === 'downloading') return 'Downloading...'
+    return 'Preparing...'
+  })
+
+  const download = async () => {
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    working.value = true
+    progress.value = 0
+    state.value = 'rendering'
+
+    try {
+      const blob = await render_svg_to_video_blob(svg, {
+        fps: 24,
+        max_duration: 172,
+        on_progress: (frame, total) => {
+          progress.value = frame
+          total_frames.value = total
+        }
+      })
+
+      state.value = 'encoding'
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      state.value = 'downloading'
+      download_video(blob, file_name.value)
+
+      await new Promise(resolve => setTimeout(resolve, 200))
+    } catch (error) {
+      console.error('Failed to render video:', error)
+      state.value = 'error'
+    } finally {
+      working.value = false
+      progress.value = 0
+      total_frames.value = 0
+      state.value = 'idle'
+    }
+  }
+
+  const get_video_name = async () => {
+    const info = props.itemid.split('/')
+    const author_id = `/${info[1]}`
+    const time = as_day_and_time(Number(info[3]))
+    const creator = await load(author_id)
+    const facts = `${time}.webm`
+    if (creator?.first_name)
+      return `${creator.first_name}_${creator.last_name}_${facts}`
+    return facts
+  }
+
+  onMounted(async () => {
+    file_name.value = await get_video_name()
+  })
+</script>
+
+<template>
+  <button
+    @click="download"
+    :disabled="working"
+    :aria-label="state_message"
+    :data-state="state">
+    <icon name="download" />
+    <output>{{ state_message }}</output>
+  </button>
+</template>
+
+<style lang="stylus">
+  button[data-state] {
+    background: none
+    border: none
+    padding: 0
+    cursor: pointer
+    color: inherit
+    display: inline-flex
+    align-items: center
+    gap: calc(var(--base-line) * 0.25)
+
+    &:disabled {
+      opacity: 0.5
+      cursor: not-allowed
+    }
+
+    &[data-state="rendering"],
+    &[data-state="encoding"],
+    &[data-state="downloading"] {
+      animation-name: working
+    }
+
+    &[data-state="error"] {
+      color: red
+    }
+
+    output {
+      font-size: smaller
+      opacity: 0.8
+      margin-left: calc(var(--base-line) * 0.25)
+      white-space: nowrap
+    }
+  }
+</style>
+

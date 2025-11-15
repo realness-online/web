@@ -39,7 +39,8 @@
     slice,
     grid_overlay,
     aspect_ratio_mode,
-    slice_alignment
+    slice_alignment,
+    show_menu
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -154,6 +155,11 @@
     else if (current === 'ymin') slice_alignment.value = 'ymid'
   })
   register_preference('pref::Toggle_Grid', grid_overlay)
+  register('pref::Toggle_Show_Menu', () => {
+    console.log('[Menu] Toggling show_menu, current value:', show_menu.value)
+    show_menu.value = !show_menu.value
+    console.log('[Menu] New show_menu value:', show_menu.value)
+  })
 
   // Watch aspect_ratio_mode and update CSS variable
   watch(aspect_ratio_mode, new_value => {

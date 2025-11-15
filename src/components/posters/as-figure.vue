@@ -1,5 +1,6 @@
 <script setup>
   import AsDownload from '@/components/download-vector'
+  import AsDownloadVideo from '@/components/download-video'
   import AsMessenger from '@/components/profile/as-messenger'
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
@@ -16,7 +17,8 @@
     sand,
     sediment,
     slice,
-    aspect_ratio_mode
+    aspect_ratio_mode,
+    show_menu
   } from '@/utils/preference'
   import {
     ref,
@@ -88,6 +90,10 @@
       }
     else if (vector.value) load_symbols()
   })
+
+  watch_effect(() => {
+    console.log('[Menu] show_menu preference changed:', show_menu.value, 'for poster:', props.itemid)
+  })
   updated(() => {
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment && poster.value) {
@@ -99,16 +105,21 @@
 
 <template>
   <figure ref="poster" class="poster" @focus="handle_focus">
-    <figcaption v-if="!menu">
-      <slot v-if="menu">
-        <menu>
-          <as-link :itemid="itemid">
-            <time>{{ posted_at }}</time>
-          </as-link>
-          <as-download :itemid="itemid" />
-          <as-messenger v-if="current_user" :itemid="itemid" />
-        </menu>
-      </slot>
+    <figcaption>
+      <button
+        v-if="show_menu && !menu"
+        @click="vector_click"
+        aria-label="Show menu">
+        …
+      </button>
+      <menu v-if="menu">
+        <as-link :itemid="itemid">
+          <time>{{ posted_at }}</time>
+        </as-link>
+        <as-download :itemid="itemid" />
+        <as-download-video :itemid="itemid" />
+        <as-messenger v-if="current_user" :itemid="itemid" />
+      </menu>
     </figcaption>
     <as-svg
       :itemid="itemid"
@@ -179,32 +190,59 @@
         max-width: round(base-line * 6);
       }
     }
-    & > figcaption > menu {
-      height: 0;
-      & > a {
-        z-index: 2;
-        position: absolute;
-      &.download {
-          bottom: base-line;
-          right: base-line;
+    & > figcaption {
+      position: absolute;
+      top: base-line;
+      right: base-line;
+      z-index: 2;
+
+      button {
+        background: none;
+        border: none;
+        padding: base-line * 0.25;
+        cursor: pointer;
+        color: inherit;
+        font-size: larger;
+        line-height: 1;
+        opacity: 0.7;
+
+        &:hover {
+          opacity: 1;
         }
-        &.profile {
-          animation-name: fade-in;
-          animation-duration: 0.01s;
-          padding: base-line * .33;
-          background: black-transparent;
-          border-radius: base-line * .25;
-          standard-shadow: boop;
-          top: base-line;
-          left: base-line;
-          & > address {
-            & > h3:first-of-type {
-              margin-right: base-line * .333;
-            }
-            & > h3,
-            & > time {
-              color: blue;
-              line-height: 1;
+
+        &:focus {
+          outline: 0.25px solid currentColor;
+          outline-offset: base-line * 0.25;
+        }
+      }
+
+      menu {
+        height: 0;
+        & > a {
+          z-index: 2;
+          position: absolute;
+        &.download {
+            bottom: base-line;
+            right: base-line;
+          }
+          &.profile {
+            animation-name: fade-in;
+            animation-duration: 0.01s;
+            padding: base-line * .33;
+            background: black-transparent;
+            border-radius: base-line * .25;
+            standard-shadow: boop;
+            top: base-line;
+            left: base-line;
+            & > address {
+              & > h3:first-of-type {
+                margin-right: base-line * .333;
+              }
+              & > h3,
+              & > time {
+                color: blue;
+                line-height: 1;
+              }
             }
           }
         }
