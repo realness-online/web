@@ -1,6 +1,5 @@
 <script setup>
   import Icon from '@/components/icon'
-  import AsPattern from '@/components/posters/as-pattern'
   import AsMasks from '@/components/posters/as-masks'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
@@ -24,11 +23,6 @@
     animate as animate_pref,
     drama_back,
     drama_front,
-    background,
-    bold,
-    medium,
-    regular,
-    light,
     fill,
     stroke,
     cutout,
@@ -201,8 +195,8 @@
           visibility: drama_back_visible ? 'visible' : 'hidden'
         }" />
 
-      <g class="cutouts">
-        <slot>
+      <slot>
+        <g class="cutouts">
           <use
             v-if="intersecting"
             :key="`${itemid}-boulder-use`"
@@ -257,8 +251,9 @@
                 : 0,
               visibility: sediment_visible ? 'visible' : 'hidden'
             }" />
-        </slot>
-      </g>
+        </g>
+      </slot>
+
       <rect
         id="lightbar-front"
         fill="url(#lightbar)"
@@ -278,7 +273,6 @@
         <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
         <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
       </symbol>
-      <as-pattern v-if="vector" @focus="focus" />
       <as-gradients v-if="vector" :vector="vector" />
       <as-masks :itemid="itemid" />
     </defs>

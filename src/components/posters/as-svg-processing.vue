@@ -9,6 +9,7 @@
   } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
+  import AsPattern from '@/components/posters/as-pattern'
   import { as_query_id as query } from '@/utils/itemid'
 
   const props = defineProps({
@@ -33,7 +34,6 @@
     if (!image_width.value || !image_height.value) return false
     return image_width.value > image_height.value
   })
-  const progress_value = computed(() => props.queue_item.progress || 0)
 
   mounted(() => {
     const { queue_item } = props
@@ -59,6 +59,7 @@
       :itemid="queue_item.id"
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`">
+      <as-pattern />
       <g
         itemprop="new_cutouts"
         v-if="new_vector.cutout"

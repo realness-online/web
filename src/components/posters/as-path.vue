@@ -77,14 +77,9 @@
     if (path.value) path_length.value = path.value.getTotalLength()
   })
   watch_effect(() => (d.value = props.path?.getAttribute('d')))
-  const group_style = computed(() => ({
-    opacity: props.visible ? 1 : 0,
-    visibility: props.visible ? 'visible' : 'hidden'
-  }))
 </script>
 
 <template>
-  <g :style="group_style">
     <path
       :id="props.id"
       ref="path"
@@ -105,7 +100,6 @@
         opacity: show_stroke ? 1 : 0,
         visibility: show_stroke ? 'visible' : 'hidden'
       }" />
-  </g>
 </template>
 
 <style>

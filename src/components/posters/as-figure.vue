@@ -5,6 +5,7 @@
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
   import AsSymbol from '@/components/posters/as-symbol'
+  import AsPattern from '@/components/posters/as-pattern'
   import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
@@ -16,8 +17,6 @@
     gravel,
     sand,
     sediment,
-    slice,
-    aspect_ratio_mode,
     show_menu
   } from '@/utils/preference'
   import {
@@ -88,7 +87,6 @@
         sand: false,
         sediment: false
       }
-    else if (vector.value) load_symbols()
   })
 
   watch_effect(() => {
@@ -113,13 +111,13 @@
         …
       </button>
       <menu v-if="menu">
-          <as-link :itemid="itemid">
-            <time>{{ posted_at }}</time>
-          </as-link>
-          <as-download :itemid="itemid" />
+        <as-link :itemid="itemid">
+          <time>{{ posted_at }}</time>
+        </as-link>
+        <as-download :itemid="itemid" />
         <as-download-video :itemid="itemid" />
-          <as-messenger v-if="current_user" :itemid="itemid" />
-        </menu>
+        <as-messenger v-if="current_user" :itemid="itemid" />
+      </menu>
     </figcaption>
     <as-svg
       :itemid="itemid"
@@ -127,6 +125,7 @@
       @show="on_show"
       :focusable="false" />
     <svg v-if="shown" style="display: none">
+      <as-pattern />
       <as-symbol v-if="cutout && boulder" :itemid="`${itemid}-boulder`" />
       <as-symbol v-if="cutout && rock" :itemid="`${itemid}-rock`" />
       <as-symbol v-if="cutout && gravel" :itemid="`${itemid}-gravel`" />

@@ -34,7 +34,11 @@ export class Storage {
     this.type = as_type(itemid)
   }
 
-  save(_items) {}
+  /**
+   * @param {Element | {outerHTML: string}} items
+   */
+  // eslint-disable-next-line no-unused-vars
+  save(items) {}
   delete() {}
   sync() {}
   optimize() {}
@@ -43,23 +47,32 @@ export class Storage {
 /**
  * @extends {Storage}
  */
-export class Poster extends Large(Cloud(Storage)) {}
-
-/**
- * @extends {Storage}
- */
-export class Cutout extends Large(Cloud(Storage)) {
+class Cached_Storage extends Large(Cloud(Storage)) {
   async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-    await super.save(items)
+    super.save(items)
 
-    // After successful network save, prefetch from network to populate HTTP cache
-    // then remove from IndexedDB to rely on HTTP caching instead
     if (navigator.onLine && current_user.value) {
+      // After successful network save, prefetch from network to populate HTTP cache
       await load_from_network(this.id)
       await del(this.id)
     }
   }
 }
+
+/**
+ * @extends {Storage}
+ */
+export class Poster extends Large(Cloud(Storage)) {}
+
+/**
+ * @extends {Cached_Storage}
+ */
+export class Cutout extends Cached_Storage {}
+
+/**
+ * @extends {Cached_Storage}
+ */
+export class Shadow extends Cached_Storage {}
 
 /**
  * @extends {Storage}
