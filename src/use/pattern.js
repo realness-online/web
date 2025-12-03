@@ -5,6 +5,7 @@ import { computed, inject, getCurrentInstance as current_instance } from 'vue'
 import { as_query_id, as_fragment_id } from '@/utils/itemid'
 import { use as use_poster } from '@/use/poster'
 import { background, light, regular, medium, bold } from '@/utils/preference'
+import { make_item } from '@/utils/item'
 
 /**
  * @param {Object} [options]
@@ -18,15 +19,27 @@ export const use = (options = {}) => {
   const injected_vector = inject('vector', null)
   const poster_composable = use_poster()
 
-  // Resolve vector: options override > props > injection > use_poster
   const vector = computed(() => {
     if (options.vector) return options.vector
     if (props.vector) return props.vector
     if (injected_vector?.value) return injected_vector.value
-    return poster_composable.vector.value
+    if (poster_composable.vector.value) return poster_composable.vector.value
+
+    const itemid = options.itemid || props.itemid
+    if (itemid) {
+      const pattern_id = `${as_query_id(/** @type {Id} */ (itemid))}-shadow`
+      const pattern_element = document.getElementById(pattern_id)
+      if (pattern_element) {
+        console.info(
+          '[Pattern] Loaded vector from pattern element:',
+          pattern_id
+        )
+        return make_item(pattern_element)
+      }
+    }
+    return null
   })
 
-  // Resolve itemid: options override > props > from vector
   const itemid = computed(() => {
     if (options.itemid) return options.itemid
     if (props.itemid) return props.itemid

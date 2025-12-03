@@ -1,35 +1,12 @@
 <script setup>
-  import { computed } from 'vue'
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import { use as use_pattern } from '@/use/pattern'
   import { use as use_poster } from '@/use/poster'
-  import { is_vector, is_vector_id } from '@/use/poster'
-
-  const props = defineProps({
-    vector: {
-      type: Object,
-      required: false,
-      default: null,
-      validator: is_vector
-    },
-    itemid: {
-      type: String,
-      required: false,
-      default: null,
-      validator: is_vector_id
-    }
-  })
 
   const emit = defineEmits({
     focus: Function
   })
-
-  // Only pass options if props are explicitly provided (for overrides)
-  const options = computed(() => ({
-    vector: props.vector || undefined,
-    itemid: props.itemid || undefined
-  }))
 
   const {
     query,
@@ -45,7 +22,7 @@
     regular_visible,
     medium_visible,
     bold_visible
-  } = use_pattern(options.value)
+  } = use_pattern()
 
   const { focus } = use_poster()
 

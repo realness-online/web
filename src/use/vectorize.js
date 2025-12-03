@@ -13,17 +13,16 @@ import {
   inject,
   nextTick as tick
 } from 'vue'
+import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
-import { to_kb } from '@/utils/numbers'
-import { IMAGE } from '@/utils/numbers'
+import { to_kb, IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
-import { as_query_id, as_fragment_id } from '@/utils/itemid'
+import { as_query_id } from '@/utils/itemid'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
-import { useRouter as use_router } from 'vue-router'
+
 import * as Queue from '@/persistance/Queue'
-import { Poster, Cutout } from '@/persistance/Storage'
-import { size } from '@/utils/image'
+import { Poster, Cutout, Shadow } from '@/persistance/Storage'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
@@ -100,7 +99,7 @@ const resize_to_blob = async file => {
       )
     }
     URL.revokeObjectURL(url)
-  } else {
+  } else
     try {
       bitmap = await createImageBitmap(file)
     } catch (error) {
@@ -108,7 +107,6 @@ const resize_to_blob = async file => {
         `File too large for browser to process (${file.name}): ${error.message}. Try resizing the image first or using a smaller file.`
       )
     }
-  }
 
   const image_data = resize_image(bitmap)
   bitmap.close()
@@ -185,16 +183,20 @@ const sort_cutouts_into_layers = (vector, id) => {
 /**
  * Save poster and cutout symbols
  * @param {Id} id - Poster itemid
- * @param {Element} poster_element - Poster SVG element
+ * @param {Element} poster - Poster SVG element
+ * @param {Element} pattern - Pattern element
  * @param {Object} cutouts - Cutout symbols by layer
  */
-const save_poster_and_symbols = async (id, poster_element, cutouts) => {
-  await new Poster(id).save(poster_element)
-  await new Cutout(`${id}-sediment`).save(cutouts.sediment)
-  await new Cutout(`${id}-sand`).save(cutouts.sand)
-  await new Cutout(`${id}-gravel`).save(cutouts.gravel)
-  await new Cutout(`${id}-rock`).save(cutouts.rock)
-  await new Cutout(`${id}-boulder`).save(cutouts.boulder)
+const save_poster = async (id, poster, pattern, cutouts) => {
+  new Poster(id).save(poster)
+  await Promise.all([
+    new Shadow(`${id}-shadow`).save(pattern),
+    new Cutout(`${id}-sediment`).save(cutouts.sediment),
+    new Cutout(`${id}-sand`).save(cutouts.sand),
+    new Cutout(`${id}-gravel`).save(cutouts.gravel),
+    new Cutout(`${id}-rock`).save(cutouts.rock),
+    new Cutout(`${id}-boulder`).save(cutouts.boulder)
+  ])
 }
 
 export const use = () => {
@@ -473,12 +475,11 @@ export const use = () => {
    */
   const update_progress = (id, progress_value) => {
     const index = queue_items.value.findIndex(item => item.id === id)
-    if (index !== -1) {
+    if (index !== -1)
       queue_items.value[index] = {
         ...queue_items.value[index],
         progress: progress_value
       }
-    }
   }
 
   const init_processing_queue = async () => {
@@ -718,7 +719,9 @@ export const use = () => {
     const element = document.getElementById(as_query_id(id))
 
     if (!element) {
-      console.warn(`Could not find SVG element with id: ${as_query_id(id)}`)
+      console.warn(
+        `[Vectorize] Could not find SVG element with id: ${as_query_id(id)}`
+      )
       return
     }
 
@@ -747,11 +750,18 @@ export const use = () => {
     }
     new_vector.value.optimized = true
     await tick()
-
     const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
 
-    await save_poster_and_symbols(id, element, cutouts)
+    const pattern_element = document.getElementById(`${as_query_id(id)}-shadow`)
+    console.info('[Vectorize] About to save poster:', {
+      id,
+      element,
+      cutouts,
+      vector: new_vector.value,
+      pattern_element
+    })
+    await save_poster(id, element, pattern_element, cutouts)
 
     completed_posters.value.push(id)
 
