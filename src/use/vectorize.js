@@ -188,7 +188,6 @@ const sort_cutouts_into_layers = (vector, id) => {
  * @param {Object} cutouts - Cutout symbols by layer
  */
 const save_poster = async (id, poster, pattern, cutouts) => {
-  new Poster(id).save(poster)
   await Promise.all([
     new Shadow(`${id}-shadow`).save(pattern),
     new Cutout(`${id}-sediment`).save(cutouts.sediment),
@@ -197,6 +196,7 @@ const save_poster = async (id, poster, pattern, cutouts) => {
     new Cutout(`${id}-rock`).save(cutouts.rock),
     new Cutout(`${id}-boulder`).save(cutouts.boulder)
   ])
+  new Poster(id).save(poster)
 }
 
 export const use = () => {
@@ -725,16 +725,7 @@ export const use = () => {
       return
     }
 
-    // Clear ALL old path references to prevent memory leak
-    // The old paths become detached when replaced by optimized versions
-    new_vector.value.light = null
-    new_vector.value.regular = null
-    new_vector.value.medium = null
-    new_vector.value.bold = null
-    if (new_vector.value.cutout) {
-      new_vector.value.cutout.length = 0
-      new_vector.value.cutout = null
-    }
+    clear_vector_paths()
 
     new_vector.value.light = optimized_data.light
     new_vector.value.regular = optimized_data.regular
@@ -753,15 +744,9 @@ export const use = () => {
     const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
 
-    const pattern_element = document.getElementById(`${as_query_id(id)}-shadow`)
-    console.info('[Vectorize] About to save poster:', {
-      id,
-      element,
-      cutouts,
-      vector: new_vector.value,
-      pattern_element
-    })
-    await save_poster(id, element, pattern_element, cutouts)
+    const pattern = document.getElementById(`${as_query_id(id)}-shadow`)
+
+    await save_poster(id, element, pattern, cutouts)
 
     completed_posters.value.push(id)
 
@@ -779,27 +764,42 @@ export const use = () => {
     process_queue()
   }
 
-  const reset = () => {
+  /**
+   * Clear vector path references to prevent memory leaks
+   * The old paths become detached when replaced by optimized versions
+   */
+  const clear_vector_paths = () => {
+    if (!new_vector.value) return
+    new_vector.value.light = null
+    new_vector.value.regular = null
+    new_vector.value.medium = null
+    new_vector.value.bold = null
+    if (new_vector.value.cutout) {
+      new_vector.value.cutout.length = 0
+      new_vector.value.cutout = null
+    }
+    if (new_vector.value.cutouts) {
+      Object.keys(new_vector.value.cutouts).forEach(key => {
+        new_vector.value.cutouts[key] = null
+      })
+      new_vector.value.cutouts = null
+    }
+  }
+
+  /**
+   * Clean up memory references to prevent leaks
+   * Revokes object URLs and nullifies vector path references
+   */
+  const cleanup_memory_references = () => {
     if (source_image_url.value) {
       URL.revokeObjectURL(source_image_url.value)
       source_image_url.value = null
     }
-    if (new_vector.value) {
-      new_vector.value.light = null
-      new_vector.value.regular = null
-      new_vector.value.medium = null
-      new_vector.value.bold = null
-      if (new_vector.value.cutout) {
-        new_vector.value.cutout.length = 0
-        new_vector.value.cutout = null
-      }
-      if (new_vector.value.cutouts) {
-        Object.keys(new_vector.value.cutouts).forEach(key => {
-          new_vector.value.cutouts[key] = null
-        })
-        new_vector.value.cutouts = null
-      }
-    }
+    clear_vector_paths()
+  }
+
+  const reset = () => {
+    cleanup_memory_references()
     clear_tracer_pending()
     new_vector.value = null
     new_gradients.value = null

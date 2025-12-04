@@ -1,8 +1,17 @@
 <script setup>
+  /* eslint-disable vue/no-unused-properties */
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import { use as use_pattern } from '@/use/pattern'
-  import { use as use_poster } from '@/use/poster'
+import { use as use_pattern } from '@/use/pattern'
+import { use as use_poster } from '@/use/poster'
+
+  defineProps({
+    itemid: {
+      type: String,
+      required: false,
+      default: null
+    }
+  })
 
   const emit = defineEmits({
     focus: Function
@@ -34,6 +43,7 @@
 
 <template>
   <pattern
+    v-if="vector"
     :id="query('shadow')"
     :width="width"
     :height="height"
