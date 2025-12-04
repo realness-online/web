@@ -110,6 +110,8 @@ export const use = () => {
     return 'xMidYMid meet'
   })
 
+  const itemid = computed(() => props.itemid)
+
   const should_ken_burns = computed(
     () => storytelling.value && slice_preference.value
   )
@@ -311,6 +313,7 @@ export const use = () => {
     fragment,
     landscape,
     aspect_ratio,
+    itemid,
     path,
     viewbox,
     working,
