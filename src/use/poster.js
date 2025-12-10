@@ -488,6 +488,7 @@ export const is_vector = vector => {
 }
 
 export const is_rect = rect => {
+  if (rect === null || rect === undefined) return true
   if (typeof rect !== 'object') return false
   if (rect instanceof SVGRectElement) return true
   return false
