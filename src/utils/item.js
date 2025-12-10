@@ -1,4 +1,4 @@
-/** @typedef {import('@/types').Item_Id} Item_Id */
+/** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
 
 import { as_type } from '@/utils/itemid'
@@ -14,32 +14,45 @@ export function hydrate(item_as_string = '') {
 }
 
 /**
- * @param {DocumentFragment} elements
- * @param {Item_Id} itemid
- * @returns {Object | null}
+ * @param {DocumentFragment | string} elements
+ * @param {Id} itemid
+ * @returns {Item | null}
  */
 export const get_item = (elements, itemid) => {
   if (!elements) return null
-  if (typeof elements === 'string') elements = hydrate(elements)
-  let main_element = elements.querySelector(`[itemid="${itemid}"]`)
-  if (!main_element) main_element = elements.querySelector('[itemid]')
+  const fragment = typeof elements === 'string' ? hydrate(elements) : elements
+  console.log('[get_item] fragment', fragment)
+  let main_element = fragment.querySelector(`[itemid="${itemid}"]`)
+  if (!main_element) main_element = fragment.querySelector('[itemid]')
   if (!main_element) return null
   return make_item(main_element)
 }
+/**
+ * @param {Element} element
+ * @returns {Item}
+ */
 export const make_item = element => ({
   ...get_meta(element),
   ...get_itemprops(element)
 })
+/**
+ * @param {Element} item
+ * @returns {{id?: string, type?: string}}
+ */
 export const get_meta = item => {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')
   if (type) type = type.substring(1)
-  if (id && !type) type = as_type(id)
+  if (id && !type) type = as_type(/** @type {import('@/types').Id} */ (id))
   if (id) meta.id = id
   if (type) meta.type = type
   return meta
 }
+/**
+ * @param {Element} item
+ * @returns {Object}
+ */
 export const get_itemprops = item => {
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
@@ -66,6 +79,10 @@ export const get_itemprops = item => {
   }
   return props
 }
+/**
+ * @param {Element} element
+ * @returns {string | Element | undefined}
+ */
 export const itemprop_value = element => {
   if (element.hasAttribute('content')) return element.getAttribute('content')
   if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
@@ -101,7 +118,7 @@ export const itemprop_value = element => {
     case 'defs':
       return element.innerHTML
     case 'object':
-      return element.data
+      return /** @type {HTMLObjectElement} */ (element).data
     default:
       return element.textContent.trim()
   }

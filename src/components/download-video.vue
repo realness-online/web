@@ -49,9 +49,7 @@
   })
 
   const icon_color = computed(() => {
-    if (!working.value || total_frames.value === 0) {
-      return 'inherit'
-    }
+    if (!working.value || total_frames.value === 0) return 'inherit'
 
     // Get current color from CSS variable or computed style
     const current_color = css_var('--green') || 'hsla(136, 47%, 57%, 0.75)'
@@ -82,12 +80,14 @@
 
     // Set smallest side to 1080px, scale other side proportionally
     const target_smallest_side = 1080
-    const video_width = aspect_ratio >= 1
-      ? Math.round(target_smallest_side * aspect_ratio)
-      : target_smallest_side
-    const video_height = aspect_ratio >= 1
-      ? target_smallest_side
-      : Math.round(target_smallest_side / aspect_ratio)
+    const video_width =
+      aspect_ratio >= 1
+        ? Math.round(target_smallest_side * aspect_ratio)
+        : target_smallest_side
+    const video_height =
+      aspect_ratio >= 1
+        ? target_smallest_side
+        : Math.round(target_smallest_side / aspect_ratio)
 
     working.value = true
     progress.value = 0
@@ -189,4 +189,3 @@
     }
   }
 </style>
-

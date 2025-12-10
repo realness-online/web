@@ -7,6 +7,7 @@ Save rendering progress to IndexedDB so renders can be resumed if interrupted (p
 ## Storage Structure
 
 ### Job Metadata
+
 ```javascript
 {
   job_id: string,           // Unique ID: `${itemid}-${fps}-${duration}-${width}x${height}`
@@ -24,12 +25,14 @@ Save rendering progress to IndexedDB so renders can be resumed if interrupted (p
 ```
 
 ### Frame Data
+
 - Key: `video:frame:${job_id}:${frame_index}`
 - Value: `ImageData` or `Blob` (PNG/JPEG encoded frame)
 
 ## Implementation
 
 ### 1. Create Job ID Function
+
 ```javascript
 const get_job_id = (itemid, fps, duration, width, height) => {
   return `${itemid}-${fps}-${duration}-${width}x${height}`
@@ -37,8 +40,9 @@ const get_job_id = (itemid, fps, duration, width, height) => {
 ```
 
 ### 2. Check for Existing Progress
+
 ```javascript
-const check_existing_progress = async (job_id) => {
+const check_existing_progress = async job_id => {
   const metadata = await get(`video:job:${job_id}`)
   if (!metadata) return null
 
@@ -58,6 +62,7 @@ const check_existing_progress = async (job_id) => {
 ```
 
 ### 3. Save Frame as It's Rendered
+
 ```javascript
 // After rendering frame to canvas
 const image_data = ctx.getImageData(0, 0, canvas_width, canvas_height)
@@ -70,11 +75,14 @@ await set(`video:job:${job_id}`, metadata)
 ```
 
 ### 4. Resume from Saved Frames
+
 ```javascript
 // On start
 const existing = await check_existing_progress(job_id)
 if (existing && existing.saved_frames.length > 0) {
-  console.log(`[Video] Resuming: ${existing.saved_frames.length}/${total_frames} frames already rendered`)
+  console.log(
+    `[Video] Resuming: ${existing.saved_frames.length}/${total_frames} frames already rendered`
+  )
 
   // Load saved frames
   for (const frame_index of existing.saved_frames) {
@@ -89,6 +97,7 @@ if (existing && existing.saved_frames.length > 0) {
 ```
 
 ### 5. Cleanup After Completion
+
 ```javascript
 // After video is complete
 for (let i = 0; i < total_frames; i++) {
@@ -100,10 +109,12 @@ await del(`video:job:${job_id}`)
 ## Storage Considerations
 
 **ImageData Size:**
+
 - 623x512 pixels × 4 bytes = ~1.3MB per frame
 - 4128 frames × 1.3MB = ~5.4GB total
 
 **Options:**
+
 1. **Save as PNG/JPEG Blobs** - Compress frames (smaller, but slower)
 2. **Save every N frames** - Only save keyframes, re-render in between
 3. **Save to disk** - Use File System Access API if available
@@ -129,4 +140,3 @@ await del(`video:job:${job_id}`)
 - Memory usage (loading saved frames)
 - Cleanup needed for old/incomplete jobs
 - Versioning if render params change
-

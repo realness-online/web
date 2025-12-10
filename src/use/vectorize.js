@@ -187,16 +187,17 @@ const sort_cutouts_into_layers = (vector, id) => {
  * @param {Element} pattern - Pattern element
  * @param {Object} cutouts - Cutout symbols by layer
  */
-const save_poster = async (id, poster, pattern, cutouts) => {
+const save_poster = async id => {
+  await tick()
   await Promise.all([
-    new Shadow(`${id}-shadow`).save(pattern),
-    new Cutout(`${id}-sediment`).save(cutouts.sediment),
-    new Cutout(`${id}-sand`).save(cutouts.sand),
-    new Cutout(`${id}-gravel`).save(cutouts.gravel),
-    new Cutout(`${id}-rock`).save(cutouts.rock),
-    new Cutout(`${id}-boulder`).save(cutouts.boulder)
+    new Shadow(`${id}-shadow`).save(),
+    new Cutout(`${id}-sediment`).save(),
+    new Cutout(`${id}-sand`).save(),
+    new Cutout(`${id}-gravel`).save(),
+    new Cutout(`${id}-rock`).save(),
+    new Cutout(`${id}-boulder`).save()
   ])
-  new Poster(id).save(poster)
+  new Poster(id).save()
 }
 
 export const use = () => {
@@ -641,6 +642,7 @@ export const use = () => {
   const vectorized = async response => {
     if (!is_mounted.value) return
     const { vector } = response.data
+
     vector.id = current_item_id.value
     vector.type = 'posters'
     vector.light = make_path(vector.light)
@@ -648,7 +650,6 @@ export const use = () => {
     vector.medium = make_path(vector.medium)
     vector.bold = make_path(vector.bold)
 
-    // Set correct dimensions from current processing item
     if (current_processing.value) {
       vector.width = current_processing.value.width
       vector.height = current_processing.value.height
@@ -656,11 +657,15 @@ export const use = () => {
     }
 
     new_vector.value = vector
+
     flush_pending_tracer_paths()
     if (tracer_complete_pending) {
       tracer_complete_pending = false
       await handle_tracer_complete()
     }
+    await tick()
+    console.log('new_vector', new_vector.value)
+    debugger
   }
 
   const gradientized = message => {
@@ -715,7 +720,9 @@ export const use = () => {
   const optimized = async message => {
     if (!is_mounted.value) return
     const id = /** @type {Id} */ (current_item_id.value)
-    const optimized_data = get_item(message.data.vector)
+    const optimized_data = get_item(message.data.vector, id)
+    console.log('optimized_data', optimized_data)
+
     const element = document.getElementById(as_query_id(id))
 
     if (!element) {
@@ -743,10 +750,9 @@ export const use = () => {
     await tick()
     const cutouts = sort_cutouts_into_layers(new_vector.value, id)
     new_vector.value.cutout = undefined
+    new_vector.value.cutouts = cutouts
 
-    const pattern = document.getElementById(`${as_query_id(id)}-shadow`)
-
-    await save_poster(id, element, pattern, cutouts)
+    await save_poster(id)
 
     completed_posters.value.push(id)
 

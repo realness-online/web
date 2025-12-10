@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import pluginVue from 'eslint-plugin-vue'
 import vitest from '@vitest/eslint-plugin'
 import compat from 'eslint-plugin-compat'
@@ -100,7 +101,7 @@ export default [
       'no-return-await': 'error',
       'require-await': 'error',
       'max-lines-per-function': ['warn', 200],
-      complexity: ['warn', 21],
+      complexity: ['warn', 30],
       'no-unsafe-optional-chaining': 'error',
       'no-constant-binary-expression': 'error',
       'no-unreachable-loop': 'error',

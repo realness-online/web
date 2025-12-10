@@ -33,6 +33,8 @@ export const Large = superclass =>
     }
 
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+      console.log('save', this.id, items)
+      debugger
       if (!items) {
         console.info(`Unable to find ${this.id}`)
         return

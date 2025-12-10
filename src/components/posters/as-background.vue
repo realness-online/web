@@ -7,11 +7,6 @@
     stroke as stroke_pref
   } from '@/utils/preference'
   const props = defineProps({
-    tabable: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
     fill: {
       type: String,
       required: true,

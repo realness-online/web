@@ -80,26 +80,26 @@
 </script>
 
 <template>
-    <path
-      :id="props.id"
-      ref="path"
-      :d="d"
-      :mask="props.mask"
-      :itemprop="props.itemprop"
-      :tabindex="props.tabindex"
-      :fill="show_fill ? fill : 'none'"
-      :fill-opacity="show_fill ? '0.90' : undefined"
-      :fill-rule="show_fill ? 'evenodd' : undefined" />
-    <use
-      :href="`#${props.id}`"
-      fill="none"
-      :stroke="stroke"
-      :stroke-opacity="stroke_opacity"
-      :stroke-width="stroke_width"
-      :style="{
-        opacity: show_stroke ? 1 : 0,
-        visibility: show_stroke ? 'visible' : 'hidden'
-      }" />
+  <path
+    :id="props.id"
+    ref="path"
+    :d="d"
+    :mask="props.mask"
+    :itemprop="props.itemprop"
+    :tabindex="props.tabindex"
+    :fill="show_fill ? fill : 'none'"
+    :fill-opacity="show_fill ? '0.90' : undefined"
+    :fill-rule="show_fill ? 'evenodd' : undefined" />
+  <use
+    :href="`#${props.id}`"
+    fill="none"
+    :stroke="stroke"
+    :stroke-opacity="stroke_opacity"
+    :stroke-width="stroke_width"
+    :style="{
+      opacity: show_stroke ? 1 : 0,
+      visibility: show_stroke ? 'visible' : 'hidden'
+    }" />
 </template>
 
 <style>
