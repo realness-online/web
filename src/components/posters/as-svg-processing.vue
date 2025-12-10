@@ -31,7 +31,10 @@
       current_processing.value?.id === props.queue_item.id
   )
   const show_processing_svg = computed(
-    () => is_currently_processing.value && new_vector.value
+    () => is_currently_processing.value && new_vector.value && !new_vector.value.optimized
+  )
+  const show_save_svg = computed(
+    () => is_currently_processing.value && new_vector.value?.optimized
   )
   const image_width = computed(() => props.queue_item.width || 0)
   const image_height = computed(() => props.queue_item.height || 0)
@@ -114,6 +117,13 @@
           :index="index" />
       </g>
     </as-svg>
+
+    <as-svg
+      v-if="show_save_svg"
+      :itemid="queue_itemid"
+      :sync_poster="new_vector"
+      :viewBox="`0 0 ${image_width} ${image_height}`" />
+
     <svg style="display: none">
       <as-pattern />
       <symbol
