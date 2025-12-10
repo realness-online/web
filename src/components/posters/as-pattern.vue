@@ -35,7 +35,7 @@
 </script>
 
 <template>
-  <pattern
+  <symbol
     :id="query('shadow')"
     :itemid="`${itemid}/shadow`"
     itemscope
@@ -100,5 +100,5 @@
       :fill="`url(${fragment('vertical-bold')})`"
       :stroke="`url(${fragment('radial-light')})`"
       @focus="handle_focus('bold')" />
-  </pattern>
+  </symbol>
 </template>
