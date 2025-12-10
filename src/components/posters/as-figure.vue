@@ -75,7 +75,7 @@
     vector.value = shown_vector
 
     if (!shown_vector.regular) {
-      const pattern = await load(/** @type {Id} */ (`${props.itemid}-shadow`))
+      const pattern = await load(/** @type {Id} */ (`${props.itemid}/shadow`))
       if (pattern) {
         const pattern_data = /** @type {Poster} */ (
           /** @type {unknown} */ (pattern)
@@ -155,11 +155,11 @@
       :focusable="false" />
     <svg v-if="shown" style="display: none">
       <as-pattern />
-      <as-symbol v-if="cutout && boulder" :itemid="`${itemid}-boulder`" />
-      <as-symbol v-if="cutout && rock" :itemid="`${itemid}-rock`" />
-      <as-symbol v-if="cutout && gravel" :itemid="`${itemid}-gravel`" />
-      <as-symbol v-if="cutout && sand" :itemid="`${itemid}-sand`" />
-      <as-symbol v-if="cutout && sediment" :itemid="`${itemid}-sediment`" />
+      <as-symbol v-if="cutout && boulder" :itemid="`${itemid}/boulder`" />
+      <as-symbol v-if="cutout && rock" :itemid="`${itemid}/rock`" />
+      <as-symbol v-if="cutout && gravel" :itemid="`${itemid}/gravel`" />
+      <as-symbol v-if="cutout && sand" :itemid="`${itemid}/sand`" />
+      <as-symbol v-if="cutout && sediment" :itemid="`${itemid}/sediment`" />
     </svg>
   </figure>
 </template>

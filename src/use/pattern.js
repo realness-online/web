@@ -36,7 +36,7 @@ export const use = () => {
   watch(() => {
     const id = vector_id.value
     if (id && !loaded_vector.value && !active_vector.value?.regular) {
-      const pattern_id = /** @type {Id} */ (`${id}-shadow`)
+      const pattern_id = /** @type {Id} */ (`${id}/shadow`)
       Promise.all([load(id), load(pattern_id)]).then(([poster, pattern]) => {
         if (poster) {
           const poster_with_pattern = /** @type {Poster} */ (
@@ -109,6 +109,7 @@ export const use = () => {
     aspect_ratio: aspect_ratio || computed(() => 'xMidYMid meet'),
     tabindex: tabindex || computed(() => -1),
     vector: final_vector,
+    itemid: computed(() => itemid?.value || vector_id.value || ''),
     background_visible,
     light_visible,
     regular_visible,

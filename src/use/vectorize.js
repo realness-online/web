@@ -190,12 +190,12 @@ const sort_cutouts_into_layers = (vector, id) => {
 const save_poster = async id => {
   await tick()
   await Promise.all([
-    new Shadow(`${id}-shadow`).save(),
-    new Cutout(`${id}-sediment`).save(),
-    new Cutout(`${id}-sand`).save(),
-    new Cutout(`${id}-gravel`).save(),
-    new Cutout(`${id}-rock`).save(),
-    new Cutout(`${id}-boulder`).save()
+    new Shadow(`${id}/shadow`).save(),
+    new Cutout(`${id}/sediment`).save(),
+    new Cutout(`${id}/sand`).save(),
+    new Cutout(`${id}/gravel`).save(),
+    new Cutout(`${id}/rock`).save(),
+    new Cutout(`${id}/boulder`).save()
   ])
   new Poster(id).save()
 }
@@ -397,6 +397,7 @@ export const use = () => {
 
         const item = /** @type {QueueItem} */ ({
           id,
+          itemid: id,
           resized_blob,
           status: 'pending',
           progress: 0,
@@ -665,7 +666,6 @@ export const use = () => {
     }
     await tick()
     console.log('new_vector', new_vector.value)
-    debugger
   }
 
   const gradientized = message => {

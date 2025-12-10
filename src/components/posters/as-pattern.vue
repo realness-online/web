@@ -18,6 +18,7 @@
     aspect_ratio,
     tabindex,
     vector,
+    itemid,
     background_visible,
     light_visible,
     regular_visible,
@@ -36,7 +37,7 @@
 <template>
   <pattern
     :id="query('shadow')"
-    :itemid="query('shadow')"
+    :itemid="`${itemid}/shadow`"
     itemscope
     itemtype="/shadows"
     v-if="vector && vector.light && vector.regular && vector.medium && vector.bold"

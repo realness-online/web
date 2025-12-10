@@ -51,6 +51,7 @@
   })
 
   const fragment = suffix => `${as_fragment_id(props.queue_item.id)}-${suffix}`
+  const queue_itemid = computed(() => props.queue_item.itemid || props.queue_item.id)
 </script>
 
 <template>
@@ -65,7 +66,7 @@
 
     <as-svg
       v-if="show_processing_svg"
-      :itemid="queue_item.id"
+      :itemid="queue_itemid"
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`">
 
@@ -117,38 +118,38 @@
       <as-pattern />
       <symbol
         :id="`${query(queue_item.id)}-sediment`"
+        :itemid="`${queue_itemid}/sediment`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        :itemid="`${queue_item.id}-sediment`"
         v-html="new_vector?.cutouts?.sediment?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-sand`"
+        :itemid="`${queue_itemid}/sand`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        :itemid="`${queue_item.id}-sand`"
         v-html="new_vector?.cutouts?.sand?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-gravel`"
+        :itemid="`${queue_itemid}/gravel`"
         itemscope
         itemtype="/cutouts"
-        :itemid="`${queue_item.id}-gravel`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.gravel?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-rock`"
+        :itemid="`${queue_itemid}/rock`"
         itemscope
         itemtype="/cutouts"
-        :itemid="`${queue_item.id}-rock`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.rock?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-boulder`"
+        :itemid="`${queue_itemid}/boulder`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        :itemid="`${queue_item.id}-boulder`"
         v-html="new_vector?.cutouts?.boulder?.innerHTML" />
     </svg>
   </figure>
