@@ -80,6 +80,12 @@
     return width > height
   })
 
+  const valid_vector = computed(() => {
+    if (!vector.value) return null
+    if (is_vector(vector.value)) return vector.value
+    return null
+  })
+
   provide('vector', vector)
 
   mounted(() => {
@@ -288,7 +294,7 @@
         <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
         <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
       </symbol>
-      <as-gradients v-if="vector" :vector="vector" />
+      <as-gradients v-if="valid_vector" :vector="valid_vector" />
       <as-masks :itemid="itemid" />
     </defs>
     <as-animation v-if="vector" :id="itemid" />
