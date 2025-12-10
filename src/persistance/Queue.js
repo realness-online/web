@@ -5,6 +5,7 @@ import { get, set, del, keys } from 'idb-keyval'
 /**
  * @typedef {Object} QueueItem
  * @property {Id} id
+ * @property {Id} itemid
  * @property {Blob} resized_blob
  * @property {'pending' | 'processing' | 'complete' | 'error'} status
  * @property {string} [svg_html]

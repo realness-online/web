@@ -61,13 +61,10 @@
     show,
     focusable,
     vector,
-    vector_element,
     intersecting,
     is_hovered,
     dynamic_viewbox,
-    focus,
     should_ken_burns,
-    ken_burns_range,
     ken_burns_position
   } = use_poster()
 
@@ -94,6 +91,7 @@
         }
       })
     else {
+      console.log('sync_poster is true', props.sync_poster)
       intersecting.value = true
       vector.value = props.sync_poster
       working.value = false
@@ -198,13 +196,10 @@
       <slot>
         <g class="cutouts">
           <use
-            :key="`${itemid}-shadow-rect`"
             itemprop="shadow"
             :href="fragment('shadow-rect')" />
           <use
             v-if="intersecting"
-            :key="`${itemid}-boulder-use`"
-            :id="query('boulder-use')"
             itemprop="boulder"
             :href="fragment('boulder')"
             :style="{
@@ -213,8 +208,6 @@
             }" />
           <use
             v-if="intersecting"
-            :key="`${itemid}-rock-use`"
-            :id="query('rock-use')"
             itemprop="rock"
             :href="fragment('rock')"
             :style="{
@@ -223,8 +216,6 @@
             }" />
           <use
             v-if="intersecting"
-            :key="`${itemid}-gravel-use`"
-            :id="query('gravel-use')"
             itemprop="gravel"
             :href="fragment('gravel')"
             :style="{
@@ -233,8 +224,6 @@
             }" />
           <use
             v-if="intersecting"
-            :key="`${itemid}-sand-use`"
-            :id="query('sand-use')"
             itemprop="sand"
             :href="fragment('sand')"
             :style="{
@@ -243,8 +232,6 @@
             }" />
           <use
             v-if="intersecting"
-            :key="`${itemid}-sediment-use`"
-            :id="query('sediment-use')"
             itemprop="sediment"
             :href="fragment('sediment')"
             :style="{
