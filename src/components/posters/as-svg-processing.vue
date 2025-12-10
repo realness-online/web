@@ -9,7 +9,7 @@
   } from 'vue'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
-  import AsPattern from '@/components/posters/as-pattern'
+  import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import { as_query_id as query, as_fragment_id } from '@/utils/itemid'
@@ -125,7 +125,7 @@
       :viewBox="`0 0 ${image_width} ${image_height}`" />
 
     <svg style="display: none">
-      <as-pattern />
+      <as-symbol-shadow />
       <symbol
         :id="`${query(queue_item.id)}-sediment`"
         :itemid="`${queue_itemid}/sediment`"

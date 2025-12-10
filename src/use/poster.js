@@ -29,7 +29,6 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-import { Poster as PosterClass } from '@/persistance/Storage'
 import {
   slice as slice_preference,
   storytelling,
@@ -49,9 +48,6 @@ export const use = () => {
   const magic_keys = useMagicKeys()
 
   const aspect_toggle = ref(false)
-  const cutouts_loaded = ref(false)
-  const loading_cutouts = ref(false)
-
   const ken_burns_vertical_position = ref(
     ['top', 'middle', 'bottom'][Math.floor(Math.random() * 3)]
   )
@@ -476,7 +472,6 @@ export const is_vector = vector => {
   if (vector.path) return false
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
-  if (!vector.regular) return false // the only required path
 
   if (vector.gradients) {
     if (!vector.gradients.width) return false

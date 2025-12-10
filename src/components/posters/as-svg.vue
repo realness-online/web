@@ -139,9 +139,7 @@
   const ken_burns_ready = ref(false)
   const ken_burns_timer = null
 
-  const OPACITY_WITH_SHADOW = 0.6
-  const OPACITY_SAND_WITH_SHADOW = 0.55
-  const OPACITY_SEDIMENT_WITH_SHADOW = 0.5
+  const OPACITY_HALF = 0.5
   const OPACITY_FULL = 1
   const OPACITY_HIDDEN = 0
 
@@ -167,7 +165,7 @@
     if (!boulder_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value
-      ? OPACITY_WITH_SHADOW
+      ? OPACITY_HALF
       : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
@@ -176,7 +174,7 @@
     if (!rock_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value
-      ? OPACITY_WITH_SHADOW
+      ? OPACITY_HALF
       : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
@@ -185,7 +183,7 @@
     if (!gravel_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value
-      ? OPACITY_WITH_SHADOW
+      ? OPACITY_HALF
       : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
@@ -194,7 +192,7 @@
     if (!sand_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value
-      ? OPACITY_SAND_WITH_SHADOW
+      ? OPACITY_HALF
       : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
@@ -203,7 +201,7 @@
     if (!sediment_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value
-      ? OPACITY_SEDIMENT_WITH_SHADOW
+      ? OPACITY_HALF
       : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })

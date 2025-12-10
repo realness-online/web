@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
 import { ref } from 'vue'
-import as_pattern from '@/components/posters/as-pattern'
+import as_symbol_shadow from '@/components/posters/as-symbol-shadow'
 
 // Mock path element
 const mock_path_element = {
@@ -68,26 +68,26 @@ vi.mock('@/components/posters/as-path', () => ({
   }
 }))
 
-describe('@/components/posters/as-pattern.vue', () => {
+describe('@/components/posters/as-symbol-shadow.vue', () => {
   describe('Renders', () => {
-    it('a pattern element with correct attributes', () => {
-      const wrapper = shallowMount(as_pattern, {
+    it('a symbol element with correct attributes', () => {
+      const wrapper = shallowMount(as_symbol_shadow, {
         props: {
           vector: mock_vector
         }
       })
-      const pattern = wrapper.find('pattern')
-      expect(pattern.exists()).toBe(true)
-      expect(pattern.attributes('id')).toContain(mock_vector.id)
-      expect(pattern.attributes('width')).toBe('800')
-      expect(pattern.attributes('height')).toBe('600')
-      expect(pattern.attributes('viewbox')).toBe('0 0 800 600')
-      expect(pattern.attributes('patternunits')).toBe('userSpaceOnUse')
-      expect(pattern.attributes('preserveaspectratio')).toBe('xMidYMid meet')
+      const symbol = wrapper.find('symbol')
+      expect(symbol.exists()).toBe(true)
+      expect(symbol.attributes('id')).toContain(mock_vector.id)
+      expect(symbol.attributes('width')).toBe('800')
+      expect(symbol.attributes('height')).toBe('600')
+      expect(symbol.attributes('viewbox')).toBe('0 0 800 600')
+      expect(symbol.attributes('patternunits')).toBe('userSpaceOnUse')
+      expect(symbol.attributes('preserveaspectratio')).toBe('xMidYMid meet')
     })
 
     it('renders as-background component', () => {
-      const wrapper = shallowMount(as_pattern, {
+      const wrapper = shallowMount(as_symbol_shadow, {
         props: {
           vector: mock_vector
         }
@@ -97,7 +97,7 @@ describe('@/components/posters/as-pattern.vue', () => {
     })
 
     it('renders all four as-path components', () => {
-      const wrapper = shallowMount(as_pattern, {
+      const wrapper = shallowMount(as_symbol_shadow, {
         props: {
           vector: mock_vector
         }
@@ -107,25 +107,25 @@ describe('@/components/posters/as-pattern.vue', () => {
     })
 
     it('works without vector prop (uses injection)', () => {
-      const wrapper = shallowMount(as_pattern)
-      const pattern = wrapper.find('pattern')
-      expect(pattern.exists()).toBe(true)
+      const wrapper = shallowMount(as_symbol_shadow)
+      const symbol = wrapper.find('symbol')
+      expect(symbol.exists()).toBe(true)
     })
 
     it('works with itemid prop', () => {
-      const wrapper = shallowMount(as_pattern, {
+      const wrapper = shallowMount(as_symbol_shadow, {
         props: {
           itemid: '/+14151234356/posters/2000'
         }
       })
-      const pattern = wrapper.find('pattern')
-      expect(pattern.exists()).toBe(true)
+      const symbol = wrapper.find('symbol')
+      expect(symbol.exists()).toBe(true)
     })
   })
 
   describe('Focus handling', () => {
     it('handles focus events', () => {
-      const wrapper = shallowMount(as_pattern, {
+      const wrapper = shallowMount(as_symbol_shadow, {
         props: {
           vector: mock_vector
         }

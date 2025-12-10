@@ -5,7 +5,7 @@
   import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
   import AsSymbol from '@/components/posters/as-symbol'
-  import AsPattern from '@/components/posters/as-pattern'
+  import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
@@ -146,7 +146,7 @@
       @show="on_show"
       :focusable="false" />
     <svg v-if="shown" style="display: none">
-      <as-pattern />
+      <as-symbol-shadow />
       <as-symbol v-if="cutout && boulder" :itemid="`${itemid}/boulder`" />
       <as-symbol v-if="cutout && rock" :itemid="`${itemid}/rock`" />
       <as-symbol v-if="cutout && gravel" :itemid="`${itemid}/gravel`" />
