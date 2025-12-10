@@ -3,7 +3,8 @@
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import { use as use_pattern } from '@/use/pattern'
-  import { use as use_poster } from '@/use/poster'
+  import { use as use_poster, is_rect } from '@/use/poster'
+  import { computed } from 'vue'
 
   const emit = defineEmits({
     focus: Function
@@ -28,6 +29,12 @@
 
   const { focus } = use_poster()
 
+  const valid_rect = computed(() => {
+    if (!vector.value?.background) return null
+    if (is_rect(vector.value.background)) return vector.value.background
+    return null
+  })
+
   const handle_focus = layer => {
     focus(layer)
     emit('focus', layer)
@@ -48,7 +55,7 @@
     :preserveAspectRatio="aspect_ratio">
     <as-background
       :id="query('background')"
-      :rect="vector.background"
+      :rect="valid_rect"
       :width="width"
       :height="height"
       :tabindex="tabindex"
