@@ -173,14 +173,8 @@
       hovered: is_hovered,
       'hide-cursor': hide_cursor
     }">
-    <g
->
-      <rect
-        v-show="fill || stroke"
-        :fill="`url(${fragment('shadow')})`"
-        :id="query('shadow-rect')"
-        width="100%"
-        height="100%" />
+    <g>
+      <use itemprop="shadow" :href="fragment('shadow')" />
       <rect
         id="lightbar-back"
         fill="url(#lightbar)"
@@ -195,9 +189,6 @@
 
       <slot>
         <g class="cutouts">
-          <use
-            itemprop="shadow"
-            :href="fragment('shadow-rect')" />
           <use
             v-if="intersecting"
             itemprop="boulder"
