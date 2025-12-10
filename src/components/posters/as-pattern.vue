@@ -1,17 +1,9 @@
 <script setup>
-  /* eslint-disable vue/no-unused-properties */
+
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-import { use as use_pattern } from '@/use/pattern'
-import { use as use_poster } from '@/use/poster'
-
-  defineProps({
-    itemid: {
-      type: String,
-      required: false,
-      default: null
-    }
-  })
+  import { use as use_pattern } from '@/use/pattern'
+  import { use as use_poster } from '@/use/poster'
 
   const emit = defineEmits({
     focus: Function
@@ -43,8 +35,11 @@ import { use as use_poster } from '@/use/poster'
 
 <template>
   <pattern
-    v-if="vector"
     :id="query('shadow')"
+    :itemid="query('shadow')"
+    itemscope
+    itemtype="/shadows"
+    v-if="vector && vector.light && vector.regular && vector.medium && vector.bold"
     :width="width"
     :height="height"
     :viewBox="viewbox"
@@ -61,6 +56,7 @@ import { use as use_poster } from '@/use/poster'
       :fill="`url(${fragment('radial-background')})`"
       @focus="handle_focus('background')" />
     <as-path
+      v-if="vector.light"
       :id="query('light')"
       itemprop="light"
       :path="vector.light"
@@ -71,6 +67,7 @@ import { use as use_poster } from '@/use/poster'
       :stroke="`url(${fragment('horizontal-medium')})`"
       @focus="handle_focus('light')" />
     <as-path
+      v-if="vector.regular"
       :id="query('regular')"
       itemprop="regular"
       :path="vector.regular"
@@ -81,6 +78,7 @@ import { use as use_poster } from '@/use/poster'
       :stroke="`url(${fragment('vertical-bold')})`"
       @focus="handle_focus('regular')" />
     <as-path
+      v-if="vector.medium"
       :id="query('medium')"
       itemprop="medium"
       :path="vector.medium"
@@ -91,6 +89,7 @@ import { use as use_poster } from '@/use/poster'
       :stroke="`url(${fragment('vertical-background')})`"
       @focus="handle_focus('medium')" />
     <as-path
+      v-if="vector.bold"
       :id="query('bold')"
       itemprop="bold"
       :tabindex="tabindex"

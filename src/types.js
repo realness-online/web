@@ -4,7 +4,9 @@
 /** @typedef {string} Author */
 /** @typedef {number} Created */
 
-/** @typedef {`${Author}/${Type}/${Created}`} Id */
+/**
+ * @typedef {`${Author}/${Type}/${Created}` | `${Author}/${Type}/${Created}-shadow` | `${Author}/${Type}/${Created}-sediment` | `${Author}/${Type}/${Created}-sand` | `${Author}/${Type}/${Created}-gravel` | `${Author}/${Type}/${Created}-rock` | `${Author}/${Type}/${Created}-boulder`} Id
+ */
 
 /**
  * @typedef {Object} rgba_color

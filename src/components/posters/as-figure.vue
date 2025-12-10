@@ -6,6 +6,8 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsSymbol from '@/components/posters/as-symbol'
   import AsPattern from '@/components/posters/as-pattern'
+  /** @typedef {import('@/types').Id} Id */
+  /** @typedef {import('@/types').Poster} Poster */
   import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
@@ -25,7 +27,8 @@
     watchEffect as watch_effect,
     watch,
     onUpdated as updated,
-    nextTick as tick
+    nextTick as tick,
+    provide
   } from 'vue'
   const props = defineProps({
     itemid: {
@@ -67,11 +70,32 @@
   }
 
   const on_show = async shown_vector => {
+    if (!shown_vector) return
+
     vector.value = shown_vector
+
+    if (!shown_vector.regular) {
+      const pattern = await load(/** @type {Id} */ (`${props.itemid}-shadow`))
+      if (pattern) {
+        const pattern_data = /** @type {Poster} */ (
+          /** @type {unknown} */ (pattern)
+        )
+        vector.value.light = pattern_data.light
+        vector.value.regular = pattern_data.regular
+        vector.value.medium = pattern_data.medium
+        vector.value.bold = pattern_data.bold
+        vector.value.background = pattern_data.background
+      }
+    }
+
     await tick()
-    emit('show', vector.value)
-    shown.value = true
+    if (vector.value && vector.value.regular) {
+      emit('show', vector.value)
+      shown.value = true
+    }
   }
+
+  provide('vector', vector)
   watch_effect(async () => {
     if (menu.value && !person.value) {
       const author_id = as_author(props.itemid)
@@ -90,7 +114,12 @@
   })
 
   watch_effect(() => {
-    console.log('[Menu] show_menu preference changed:', show_menu.value, 'for poster:', props.itemid)
+    console.log(
+      '[Menu] show_menu preference changed:',
+      show_menu.value,
+      'for poster:',
+      props.itemid
+    )
   })
   updated(() => {
     const fragment = window.location.hash.substring(1)
@@ -125,7 +154,7 @@
       @show="on_show"
       :focusable="false" />
     <svg v-if="shown" style="display: none">
-      <as-pattern :itemid="`${itemid}-shadow`" />
+      <as-pattern />
       <as-symbol v-if="cutout && boulder" :itemid="`${itemid}-boulder`" />
       <as-symbol v-if="cutout && rock" :itemid="`${itemid}-rock`" />
       <as-symbol v-if="cutout && gravel" :itemid="`${itemid}-gravel`" />

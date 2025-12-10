@@ -176,11 +176,11 @@
       'hide-cursor': hide_cursor
     }">
     <g
-      :style="{ '--ken-burns-range': `${ken_burns_range}%` }"
-      :class="ken_burns_class">
+>
       <rect
         v-show="fill || stroke"
         :fill="`url(${fragment('shadow')})`"
+        :id="query('shadow-rect')"
         width="100%"
         height="100%" />
       <rect
@@ -197,6 +197,10 @@
 
       <slot>
         <g class="cutouts">
+          <use
+            :key="`${itemid}-shadow-rect`"
+            itemprop="shadow"
+            :href="fragment('shadow-rect')" />
           <use
             v-if="intersecting"
             :key="`${itemid}-boulder-use`"

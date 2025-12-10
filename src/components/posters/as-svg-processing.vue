@@ -10,7 +10,9 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
   import AsPattern from '@/components/posters/as-pattern'
-  import { as_query_id as query } from '@/utils/itemid'
+  import AsPath from '@/components/posters/as-path'
+  import AsBackground from '@/components/posters/as-background'
+  import { as_query_id as query, as_fragment_id } from '@/utils/itemid'
 
   const props = defineProps({
     queue_item: {
@@ -28,6 +30,9 @@
       is_processing.value &&
       current_processing.value?.id === props.queue_item.id
   )
+  const show_processing_svg = computed(
+    () => is_currently_processing.value && new_vector.value
+  )
   const image_width = computed(() => props.queue_item.width || 0)
   const image_height = computed(() => props.queue_item.height || 0)
   const landscape = computed(() => {
@@ -44,10 +49,14 @@
   unmounted(() => {
     if (thumbnail_url.value) URL.revokeObjectURL(thumbnail_url.value)
   })
+
+  const fragment = suffix => `${as_fragment_id(props.queue_item.id)}-${suffix}`
 </script>
 
 <template>
-  <figure class="poster processing" :class="{ landscape, currently_processing: is_currently_processing }">
+  <figure
+    class="poster processing"
+    :class="{ landscape, currently_processing: is_currently_processing }">
     <img
       v-if="thumbnail_url"
       :src="thumbnail_url"
@@ -55,69 +64,93 @@
       :height="`${image_height}px`" />
 
     <as-svg
-      v-if="is_currently_processing && new_vector"
+      v-if="show_processing_svg"
       :itemid="queue_item.id"
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`">
-      <as-pattern />
-      <g
-        itemprop="new_cutouts"
-        v-if="new_vector.cutout"
-        :id="`${queue_item.id}-cutouts-new`"
-        :style="{ fillOpacity: '0.5' }">
+
+      <as-background
+        :id="`${query(queue_item.id)}-background`"
+        :rect="new_vector.background"
+        :fill="`url(${fragment('radial-background')})`" />
+      <as-path
+        v-if="new_vector.light"
+        :id="`${query(queue_item.id)}-light`"
+        itemprop="light"
+        :path="new_vector.light"
+        :mask="`url(${fragment('horizontal-mask')})`"
+        :fill="`url(${fragment('vertical-light')})`"
+        :stroke="`url(${fragment('horizontal-medium')})`" />
+      <as-path
+        v-if="new_vector.regular"
+        :id="`${query(queue_item.id)}-regular`"
+        itemprop="regular"
+        :path="new_vector.regular"
+        :mask="`url(${fragment('radial-mask')})`"
+        :fill="`url(${fragment('horizontal-regular')})`"
+        :stroke="`url(${fragment('vertical-bold')})`" />
+      <as-path
+        v-if="new_vector.medium"
+        :id="`${query(queue_item.id)}-medium`"
+        itemprop="medium"
+        :path="new_vector.medium"
+        :mask="`url(${fragment('vertical-mask')})`"
+        :fill="`url(${fragment('vertical-medium')})`"
+        :stroke="`url(${fragment('vertical-background')})`" />
+      <as-path
+        v-if="new_vector.bold"
+        :id="`${query(queue_item.id)}-bold`"
+        itemprop="bold"
+        :path="new_vector.bold"
+        :mask="`url(${fragment('horizontal-mask')})`"
+        :fill="`url(${fragment('vertical-bold')})`"
+        :stroke="`url(${fragment('radial-light')})`" />
+      <g itemprop="new_cutouts" v-if="new_vector.cutout" fill-opacity="0.5">
         <as-path-cutout
           v-for="(cut, index) in new_vector.cutout"
           :key="`cutout-${index}`"
           :cutout="cut"
           :index="index" />
       </g>
-
-      <g v-if="new_vector.cutouts" style="opacity: 0.5">
-        <use itemprop="sediment" :href="`#${query(queue_item.id)}-sediment`" />
-        <use itemprop="sand" :href="`#${query(queue_item.id)}-sand`" />
-        <use itemprop="gravel" :href="`#${query(queue_item.id)}-gravel`" />
-        <use itemprop="rock" :href="`#${query(queue_item.id)}-rock`" />
-        <use itemprop="boulder" :href="`#${query(queue_item.id)}-boulder`" />
-      </g>
     </as-svg>
-    <svg style="display: none" v-if="new_vector?.cutouts">
+    <svg style="display: none">
+      <as-pattern />
       <symbol
         :id="`${query(queue_item.id)}-sediment`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         :itemid="`${queue_item.id}-sediment`"
-        v-html="new_vector.cutouts.sediment.innerHTML" />
+        v-html="new_vector?.cutouts?.sediment?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-sand`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         :itemid="`${queue_item.id}-sand`"
-        v-html="new_vector.cutouts.sand.innerHTML" />
+        v-html="new_vector?.cutouts?.sand?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-gravel`"
         itemscope
         itemtype="/cutouts"
         :itemid="`${queue_item.id}-gravel`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        v-html="new_vector.cutouts.gravel.innerHTML" />
+        v-html="new_vector?.cutouts?.gravel?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-rock`"
         itemscope
         itemtype="/cutouts"
         :itemid="`${queue_item.id}-rock`"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        v-html="new_vector.cutouts.rock.innerHTML" />
+        v-html="new_vector?.cutouts?.rock?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-boulder`"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         :itemid="`${queue_item.id}-boulder`"
-        v-html="new_vector.cutouts.boulder.innerHTML" />
+        v-html="new_vector?.cutouts?.boulder?.innerHTML" />
     </svg>
-
   </figure>
 </template>
 

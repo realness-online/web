@@ -25,7 +25,9 @@ const prepare_and_render_frames = async message => {
 
   const batch_start = performance.now()
   const total_frames = end_frame - start_frame
-  console.log(`[Worker] Starting batch: frames ${start_frame}-${end_frame - 1} (${total_frames} frames)`)
+  console.log(
+    `[Worker] Starting batch: frames ${start_frame}-${end_frame - 1} (${total_frames} frames)`
+  )
 
   // Parse base SVG once - we'll modify it for each frame
   const { document: base_document } = parseHTML(svg_string)
@@ -47,7 +49,7 @@ const prepare_and_render_frames = async message => {
       const dur = parseFloat(dur_str.replace('s', ''))
       const values_str = anim.getAttribute('values')
       const attribute_name = anim.getAttribute('attributeName')
-      let href = anim.getAttribute('href') || anim.getAttribute('xlink:href')
+      const href = anim.getAttribute('href') || anim.getAttribute('xlink:href')
 
       if (!values_str || !attribute_name || !href) return
 
@@ -65,7 +67,7 @@ const prepare_and_render_frames = async message => {
         values.length - 2
       )
       const next_index = value_index + 1
-      const local_progress = (progress * (values.length - 1)) - value_index
+      const local_progress = progress * (values.length - 1) - value_index
 
       const current_value = values[value_index]
       const next_value = values[next_index]
@@ -74,11 +76,14 @@ const prepare_and_render_frames = async message => {
         const current_num = parseFloat(current_value)
         const next_num = parseFloat(next_value)
         if (!isNaN(current_num) && !isNaN(next_num)) {
-          const interpolated = current_num + (next_num - current_num) * local_progress
+          const interpolated =
+            current_num + (next_num - current_num) * local_progress
           target.setAttribute(attribute_name, interpolated.toString())
-        } else {
-          target.setAttribute(attribute_name, local_progress < 0.5 ? current_value : next_value)
-        }
+        } else
+          target.setAttribute(
+            attribute_name,
+            local_progress < 0.5 ? current_value : next_value
+          )
       }
     })
 
@@ -86,20 +91,23 @@ const prepare_and_render_frames = async message => {
     let animated_svg = svg_element.outerHTML
 
     // Ensure proper SVG namespace
-    if (!animated_svg.includes('xmlns=')) {
-      animated_svg = animated_svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
-    }
+    if (!animated_svg.includes('xmlns='))
+      animated_svg = animated_svg.replace(
+        '<svg',
+        '<svg xmlns="http://www.w3.org/2000/svg"'
+      )
 
     // Ensure viewBox or width/height for proper sizing
-    if (!animated_svg.includes('viewBox') && !animated_svg.includes('width=')) {
+    if (!animated_svg.includes('viewBox') && !animated_svg.includes('width='))
       animated_svg = animated_svg.replace(
         '<svg',
         `<svg width="${canvas_width}" height="${canvas_height}"`
       )
-    }
 
     // Most efficient: Direct createImageBitmap with SVG blob
-    const svg_blob = new Blob([animated_svg], { type: 'image/svg+xml;charset=utf-8' })
+    const svg_blob = new Blob([animated_svg], {
+      type: 'image/svg+xml;charset=utf-8'
+    })
 
     let image_bitmap
     try {
@@ -126,12 +134,16 @@ const prepare_and_render_frames = async message => {
 
     if ((frame - start_frame + 1) % 50 === 0 || frame === end_frame - 1) {
       const progress = ((frame - start_frame + 1) / total_frames) * 100
-      console.log(`[Worker] Progress: ${frame - start_frame + 1}/${total_frames} frames (${progress.toFixed(1)}%)`)
+      console.log(
+        `[Worker] Progress: ${frame - start_frame + 1}/${total_frames} frames (${progress.toFixed(1)}%)`
+      )
     }
   }
 
   const batch_time = performance.now() - batch_start
-  console.log(`[Worker] Batch complete: ${total_frames} frames in ${batch_time.toFixed(0)}ms (${(total_frames / (batch_time / 1000)).toFixed(1)} fps)`)
+  console.log(
+    `[Worker] Batch complete: ${total_frames} frames in ${batch_time.toFixed(0)}ms (${(total_frames / (batch_time / 1000)).toFixed(1)} fps)`
+  )
 
   return { frames }
 }
@@ -160,10 +172,13 @@ self.addEventListener('message', async event => {
 
   const reply = await route_message(event)
 
-  console.log('[Worker] Sending reply with', reply.frames?.length || 0, 'frames')
+  console.log(
+    '[Worker] Sending reply with',
+    reply.frames?.length || 0,
+    'frames'
+  )
 
   self.postMessage(reply, {
     transfer: reply.frames?.map(f => f.image_bitmap) || []
   })
 })
-
