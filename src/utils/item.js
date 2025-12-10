@@ -21,7 +21,6 @@ export function hydrate(item_as_string = '') {
 export const get_item = (elements, itemid) => {
   if (!elements) return null
   const fragment = typeof elements === 'string' ? hydrate(elements) : elements
-  console.log('[get_item] fragment', fragment)
   let main_element = fragment.querySelector(`[itemid="${itemid}"]`)
   if (!main_element) main_element = fragment.querySelector('[itemid]')
   if (!main_element) return null

@@ -91,7 +91,6 @@
         }
       })
     else {
-      console.log('sync_poster is true', props.sync_poster)
       intersecting.value = true
       vector.value = props.sync_poster
       working.value = false
@@ -134,9 +133,73 @@
   const ken_burns_ready = ref(false)
   const ken_burns_timer = null
 
-  const ken_burns_class = computed(() => {
-    if (!should_ken_burns.value || !ken_burns_ready.value) return ''
-    return `ken-burns-${ken_burns_position.value}`
+  const OPACITY_WITH_SHADOW = 0.6
+  const OPACITY_SAND_WITH_SHADOW = 0.55
+  const OPACITY_SEDIMENT_WITH_SHADOW = 0.5
+  const OPACITY_FULL = 1
+  const OPACITY_HIDDEN = 0
+
+  const svg_style = computed(() => {
+    if (slice.value && aspect_ratio_mode.value !== 'auto')
+      return { aspectRatio: aspect_ratio_mode.value }
+    return {}
+  })
+
+  const lightbar_back_style = computed(() => {
+    if (!drama_back_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    return { opacity: OPACITY_FULL, visibility: 'visible' }
+  })
+
+  const lightbar_front_style = computed(() => {
+    if (!drama_front_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    return { opacity: OPACITY_FULL, visibility: 'visible' }
+  })
+
+  const boulder_style = computed(() => {
+    if (!boulder_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    const opacity = shadow_layer_displayed.value
+      ? OPACITY_WITH_SHADOW
+      : OPACITY_FULL
+    return { opacity, visibility: 'visible' }
+  })
+
+  const rock_style = computed(() => {
+    if (!rock_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    const opacity = shadow_layer_displayed.value
+      ? OPACITY_WITH_SHADOW
+      : OPACITY_FULL
+    return { opacity, visibility: 'visible' }
+  })
+
+  const gravel_style = computed(() => {
+    if (!gravel_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    const opacity = shadow_layer_displayed.value
+      ? OPACITY_WITH_SHADOW
+      : OPACITY_FULL
+    return { opacity, visibility: 'visible' }
+  })
+
+  const sand_style = computed(() => {
+    if (!sand_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    const opacity = shadow_layer_displayed.value
+      ? OPACITY_SAND_WITH_SHADOW
+      : OPACITY_FULL
+    return { opacity, visibility: 'visible' }
+  })
+
+  const sediment_style = computed(() => {
+    if (!sediment_visible.value)
+      return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+    const opacity = shadow_layer_displayed.value
+      ? OPACITY_SEDIMENT_WITH_SHADOW
+      : OPACITY_FULL
+    return { opacity, visibility: 'visible' }
   })
 
   watch(() => {
@@ -154,7 +217,6 @@
   <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
     v-else
-    ref="vector_element"
     :id="query()"
     itemscope
     itemtype="/posters"
@@ -162,11 +224,7 @@
     :viewBox="dynamic_viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :style="
-      slice && aspect_ratio_mode !== 'auto'
-        ? { aspectRatio: aspect_ratio_mode }
-        : {}
-    "
+    :style="svg_style"
     :class="{
       animate,
       landscape,
@@ -182,10 +240,7 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{
-          opacity: drama_back_visible ? 1 : 0,
-          visibility: drama_back_visible ? 'visible' : 'hidden'
-        }" />
+        :style="lightbar_back_style" />
 
       <slot>
         <g class="cutouts">
@@ -193,46 +248,27 @@
             v-if="intersecting"
             itemprop="boulder"
             :href="fragment('boulder')"
-            :style="{
-              opacity: boulder_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
-              visibility: boulder_visible ? 'visible' : 'hidden'
-            }" />
+            :style="boulder_style" />
           <use
             v-if="intersecting"
             itemprop="rock"
             :href="fragment('rock')"
-            :style="{
-              opacity: rock_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
-              visibility: rock_visible ? 'visible' : 'hidden'
-            }" />
+            :style="rock_style" />
           <use
             v-if="intersecting"
             itemprop="gravel"
             :href="fragment('gravel')"
-            :style="{
-              opacity: gravel_visible ? (shadow_layer_displayed ? 0.6 : 1) : 0,
-              visibility: gravel_visible ? 'visible' : 'hidden'
-            }" />
+            :style="gravel_style" />
           <use
             v-if="intersecting"
             itemprop="sand"
             :href="fragment('sand')"
-            :style="{
-              opacity: sand_visible ? (shadow_layer_displayed ? 0.55 : 1) : 0,
-              visibility: sand_visible ? 'visible' : 'hidden'
-            }" />
+            :style="sand_style" />
           <use
             v-if="intersecting"
             itemprop="sediment"
             :href="fragment('sediment')"
-            :style="{
-              opacity: sediment_visible
-                ? shadow_layer_displayed
-                  ? 0.5
-                  : 1
-                : 0,
-              visibility: sediment_visible ? 'visible' : 'hidden'
-            }" />
+            :style="sediment_style" />
         </g>
       </slot>
 
@@ -243,10 +279,7 @@
         y="0"
         width="200%"
         height="200%"
-        :style="{
-          opacity: drama_front_visible ? 1 : 0,
-          visibility: drama_front_visible ? 'visible' : 'hidden'
-        }" />
+        :style="lightbar_front_style" />
     </g>
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">

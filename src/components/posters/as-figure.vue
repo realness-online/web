@@ -113,14 +113,6 @@
       }
   })
 
-  watch_effect(() => {
-    console.log(
-      '[Menu] show_menu preference changed:',
-      show_menu.value,
-      'for poster:',
-      props.itemid
-    )
-  })
   updated(() => {
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment && poster.value) {

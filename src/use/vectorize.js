@@ -665,7 +665,6 @@ export const use = () => {
       await handle_tracer_complete()
     }
     await tick()
-    console.log('new_vector', new_vector.value)
   }
 
   const gradientized = message => {
@@ -721,7 +720,6 @@ export const use = () => {
     if (!is_mounted.value) return
     const id = /** @type {Id} */ (current_item_id.value)
     const optimized_data = get_item(message.data.vector, id)
-    console.log('optimized_data', optimized_data)
 
     const element = document.getElementById(as_query_id(id))
 
