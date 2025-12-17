@@ -40,22 +40,6 @@ const reorganize_poster = async file_path => {
   try {
     const content = await readFile(file_path, 'utf-8')
 
-    // Extract parts: storage/people/+phone/posters/{created_at}.html
-    const parts = file_path.split('/')
-    const file_name = parts[parts.length - 1]
-    const created_at = file_name.replace('.html', '')
-
-    // Build new path: storage/people/+phone/posters/{created_at}/index.html
-    const dir_parts = parts.slice(0, -1)
-    const new_dir = join(...dir_parts, created_at)
-    const new_path = join(new_dir, 'index.html')
-
-    await ensure_dir(new_dir)
-
-    await writeFile(new_path, content)
-
-    await rm(file_path)
-
     return { success: true, old_path: file_path, new_path }
   } catch (error) {
     console.error(chalk.red('✗ Reorganization failed:'), error)
