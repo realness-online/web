@@ -44,7 +44,7 @@ const main = async () => {
 
     // Cleanup old posters first
     console.info(chalk.bold('\nCleaning up old poster files...'))
-    const { deleted, failed } = await cleanup_old_posters()
+    const { deleted, failed } = await cleanup_old_posters('development')
 
     console.info(chalk.dim('Users cleaned: ') + chalk.green(deleted))
     console.info(
@@ -52,7 +52,7 @@ const main = async () => {
         (failed > 0 ? chalk.red(failed) : chalk.green('0'))
     )
 
-    await upload_to_firebase(files)
+    await upload_to_firebase(files, 'development')
 
     console.info(chalk.green.bold('\nMigration completed successfully'))
   } catch (error) {

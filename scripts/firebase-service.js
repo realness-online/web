@@ -3,39 +3,47 @@ import { join, dirname } from 'node:path'
 import { inflate } from 'node:zlib'
 import { promisify } from 'node:util'
 import chalk from 'chalk'
-import { initializeApp, cert } from 'firebase-admin/app'
+import { initializeApp, cert, getApp } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import 'dotenv/config'
 
 const inflate_async = promisify(inflate)
 const DATA_DIR = 'storage'
-const SERVICE_ACCOUNT_PATH = join('scripts', 'service-account.json')
 const PEOPLE_DIR = join(DATA_DIR, 'people')
 
-let cached_bucket = null
+const cached_buckets = {}
 
-const init_firebase = async () => {
-  if (cached_bucket) return cached_bucket
+const init_firebase = async (environment = 'development') => {
+  if (cached_buckets[environment]) return cached_buckets[environment]
 
   try {
-    console.info(chalk.dim('Initializing Firebase...'))
+    console.info(chalk.dim(`Initializing Firebase (${environment})...`))
+    const service_account_path = join(
+      'scripts',
+      `service-account-${environment}.json`
+    )
     const service_account = JSON.parse(
-      await readFile(SERVICE_ACCOUNT_PATH, 'utf-8')
+      await readFile(service_account_path, 'utf-8')
     )
 
-    console.info(
-      chalk.dim('Storage bucket: ') +
-        chalk.cyan(process.env.VITE_STORAGE_BUCKET)
+    if (cached_buckets[environment]) return cached_buckets[environment]
+
+    const storage_bucket = `${service_account.project_id}.appspot.com`
+
+    console.info(chalk.dim('Storage bucket: ') + chalk.cyan(storage_bucket))
+
+    initializeApp(
+      {
+        credential: cert(service_account),
+        storageBucket: storage_bucket
+      },
+      environment
     )
 
-    initializeApp({
-      credential: cert(service_account),
-      storageBucket: process.env.VITE_STORAGE_BUCKET
-    })
-
-    cached_bucket = getStorage().bucket()
+    const app = getApp(environment)
+    cached_buckets[environment] = getStorage(app).bucket()
     console.info(chalk.green('✓ Firebase initialized'))
-    return cached_bucket
+    return cached_buckets[environment]
   } catch (error) {
     console.error(chalk.red('Firebase initialization failed:'), error)
     throw error
@@ -50,10 +58,13 @@ const ensure_dir = async dir_path => {
   }
 }
 
-export const upload_to_firebase = async files => {
+export const upload_to_firebase = async (
+  files,
+  environment = 'development'
+) => {
   console.time('Upload to Firebase')
   try {
-    const bucket = await init_firebase()
+    const bucket = await init_firebase(environment)
 
     console.info(chalk.bold('\nStarting uploads:'))
     console.info(chalk.dim('Files to process: ') + chalk.green(files.length))
@@ -117,10 +128,10 @@ export const upload_to_firebase = async files => {
   }
 }
 
-export const cleanup_old_posters = async () => {
+export const cleanup_old_posters = async (environment = 'development') => {
   console.time('Cleanup old posters')
   try {
-    const bucket = await init_firebase()
+    const bucket = await init_firebase(environment)
 
     console.info(chalk.cyan('\nListing users...'))
     const [files] = await bucket.getFiles({ prefix: 'people/' })
@@ -174,9 +185,9 @@ export const cleanup_old_posters = async () => {
   }
 }
 
-export const download_from_firebase = async () => {
+export const download_from_firebase = async (environment = 'production') => {
   console.time('Download from Firebase')
-  const bucket = await init_firebase()
+  const bucket = await init_firebase(environment)
 
   console.info(chalk.cyan('\nListing files in Firebase Storage...'))
   const [files] = await bucket.getFiles({ prefix: 'people/' })
