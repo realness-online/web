@@ -28,8 +28,8 @@
           >Documentation <span>{{ version }}</span></a
         >
       </nav>
-      <figure class="hero">
-        <figcaption>
+      <section class="hero">
+        <header>
           <h1>Realness</h1>
           <h3>online</h3>
           <p>Install Realness on your home screen</p>
@@ -41,15 +41,15 @@
             Once you save your creations, they will integrate into any workflow
             that uses SVG.
           </p>
-        </figcaption>
+        </header>
         <as-figure v-if="posters.length" :itemid="posters[0]?.id" />
-      </figure>
+      </section>
     </header>
     <article class="designers">
       <header><h2>Artists</h2></header>
-      <figure>
+      <section>
         <as-figure v-if="posters.length" :itemid="posters[1]?.id" />
-        <figcaption>
+        <header>
           <h2>We call them <strong>Posters</strong></h2>
           <p>
             Take a picture from your phone, and Realness creates a vector
@@ -70,8 +70,8 @@
             Animators, Designers, Hand coders —
             <strong>Realness</strong> was built for you.
           </h4>
-        </figcaption>
-      </figure>
+        </header>
+      </section>
       <ol>
         <li>
           <icon name="finished" />
@@ -130,9 +130,9 @@
     </article>
     <article class="networks">
       <header><h2>Churches, Punks, and Veterans</h2></header>
-      <figure>
+      <section>
         <as-figure v-if="posters.length" :itemid="posters[2]?.id" />
-        <figcaption>
+        <header>
           <h2>Shared values</h2>
           <p>
             You can create your own social network with realness. Use it with
@@ -155,8 +155,8 @@
             online
           </p>
           <h4>Let's be fun again</h4>
-        </figcaption>
-      </figure>
+        </header>
+      </section>
       <ol>
         <li>
           <icon name="finished" />
@@ -211,10 +211,10 @@
     </article>
     <article class="developers">
       <header><h2>Developers</h2></header>
-      <figure>
+      <section>
         <as-figure v-if="posters.length" :itemid="posters[3]?.id" />
 
-        <figcaption>
+        <header>
           <h2>HTML is Our Database</h2>
 
           <p>
@@ -263,8 +263,8 @@
             of all my feelings and nerd problems. My resume is on there.
           </p>
           <h4>Cyber the App Store</h4>
-        </figcaption>
-      </figure>
+        </header>
+      </section>
       <ol>
         <li>
           <icon name="finished"></icon>
@@ -330,8 +330,8 @@
       </ol>
     </article>
     <call-to-action />
-    <figure>
-      <figcaption>
+    <section>
+      <header>
         <h2>Gallery</h2>
         <preference name="fill" />
         <preference name="stroke" />
@@ -341,9 +341,9 @@
         <preference
           name="info"
           title="Show frames per second and viewbox info" />
-      </figcaption>
+      </header>
       <as-figure v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
-    </figure>
+    </section>
     <footer>
       <logo-as-link />
       <call-to-action />
@@ -372,11 +372,12 @@
           color: green
         svg.icon
           fill: blue
-      & > figure
+      & > section.hero
         @media (min-width: pad-begins)
           display: flex
           justify-content: space-around
-        & > figcaption
+          align-items: stretch
+        & > header
           padding: base-line
           @media (min-width: pad-begins)
             margin-top: base-line * 2
@@ -397,14 +398,21 @@
           & > p
             margin-top: base-line
             text-align: center;
-        & > img
-          transition: transform 2s
-          transform-style: preserve-3d
-          // transform: rotateY( 180deg )
-          display: block
-          border-radius: base-line
+        & > figure.poster
           @media (min-width: pad-begins)
             width: 50dvw
+            height: 100%
+          &:has(svg.landscape)
+            @media (min-width: pad-begins)
+              height: 100%
+          & > svg
+            transition: transform 2s
+            transform-style: preserve-3d
+            // transform: rotateY( 180deg )
+            display: block
+            border-radius: base-line
+            width: 100%
+            height: 100%
     & > menu
       border-radius: base-line
       display: flex
@@ -453,16 +461,23 @@
           max-width: base-line * 22
           text-align: center
           color: red
-      & > figure
-        & > svg
-          border-radius: base-line * 0.33
-          height: inherit
+      & > section
         @media (min-width: pad-begins)
           padding: base-line
           display: flex
-          & > img
+          align-items: stretch
+        & > figure.poster
+          @media (min-width: pad-begins)
             width: 40dvw
-        & > figcaption
+            height: 100%
+          &:has(svg.landscape)
+            @media (min-width: pad-begins)
+              height: 100%
+          & > svg
+            border-radius: base-line * 0.33
+            width: 100%
+            height: 100%
+        & > header
           display: flex
           flex-direction: column
           @media (min-width: pad-begins)
@@ -497,11 +512,11 @@
           p
             margin-left: base-line * 2
             margin-bottom: 0
-    & > figure
+    & > section
       padding: base-line
       // min-height: 100vh
       standard-grid: gentle
-      & > figcaption
+      & > header
         width:100%
       & > svg
         border-radius: base-line * 0.21
