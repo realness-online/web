@@ -147,11 +147,11 @@
       :focusable="false" />
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
-      <as-symbol v-if="cutout && boulder" :itemid="`${itemid}/boulder`" />
-      <as-symbol v-if="cutout && rock" :itemid="`${itemid}/rock`" />
-      <as-symbol v-if="cutout && gravel" :itemid="`${itemid}/gravel`" />
-      <as-symbol v-if="cutout && sand" :itemid="`${itemid}/sand`" />
-      <as-symbol v-if="cutout && sediment" :itemid="`${itemid}/sediment`" />
+      <as-symbol v-if="cutout && boulder && vector?.boulder" :itemid="`${itemid}/boulder`" />
+      <as-symbol v-if="cutout && rock && vector?.rock" :itemid="`${itemid}/rock`" />
+      <as-symbol v-if="cutout && gravel && vector?.gravel" :itemid="`${itemid}/gravel`" />
+      <as-symbol v-if="cutout && sand && vector?.sand" :itemid="`${itemid}/sand`" />
+      <as-symbol v-if="cutout && sediment && vector?.sediment" :itemid="`${itemid}/sediment`" />
     </svg>
   </figure>
 </template>
