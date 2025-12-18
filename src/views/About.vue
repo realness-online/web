@@ -1,6 +1,6 @@
 <script setup>
   import { onMounted as mounted, inject } from 'vue'
-  import AsSvg from '@/components/posters/as-svg'
+  import AsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import CallToAction from '@/components/call-to-action'
@@ -42,13 +42,13 @@
             that uses SVG.
           </p>
         </figcaption>
-        <as-svg v-if="posters.length" :itemid="posters[0]?.id" />
+        <as-figure v-if="posters.length" :itemid="posters[0]?.id" />
       </figure>
     </header>
     <article class="designers">
       <header><h2>Artists</h2></header>
       <figure>
-        <as-svg v-if="posters.length" :itemid="posters[1]?.id" />
+        <as-figure v-if="posters.length" :itemid="posters[1]?.id" />
         <figcaption>
           <h2>We call them <strong>Posters</strong></h2>
           <p>
@@ -131,7 +131,7 @@
     <article class="networks">
       <header><h2>Churches, Punks, and Veterans</h2></header>
       <figure>
-        <as-svg v-if="posters.length" :itemid="posters[2]?.id" />
+        <as-figure v-if="posters.length" :itemid="posters[2]?.id" />
         <figcaption>
           <h2>Shared values</h2>
           <p>
@@ -212,7 +212,7 @@
     <article class="developers">
       <header><h2>Developers</h2></header>
       <figure>
-        <as-svg v-if="posters.length" :itemid="posters[3]?.id" />
+        <as-figure v-if="posters.length" :itemid="posters[3]?.id" />
 
         <figcaption>
           <h2>HTML is Our Database</h2>
@@ -342,7 +342,7 @@
           name="info"
           title="Show frames per second and viewbox info" />
       </figcaption>
-      <as-svg v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
+      <as-figure v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
     </figure>
     <footer>
       <logo-as-link />
