@@ -83,3 +83,5 @@ vtracer/
 docs/keymap.md
 docs/keymap.schema.json
 docs/keymap.ref.json
+scripts/service-account*
+
