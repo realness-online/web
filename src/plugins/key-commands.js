@@ -56,9 +56,10 @@ export const key_commands_plugin = {
     // Handle single keys with native keyboard events
     // This gives us proper case sensitivity and physical key location
     const handle_keydown = event => {
-      // Skip if focus is on input
+      // Check input focus synchronously and update reactive state
+      const is_input = key_commands.check_input_focus()
       key_commands.update_input_focus()
-      if (key_commands.is_input_focused?.value) return
+      if (is_input) return
 
       const available = key_commands.get_available_commands.value
 

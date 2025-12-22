@@ -1,5 +1,6 @@
-import { readdir } from 'fs/promises'
+import { readdir, access } from 'fs/promises'
 import { join } from 'path'
+import { constants } from 'fs'
 import chalk from 'chalk'
 import { upload_to_firebase, cleanup_old_posters } from './firebase-service.js'
 
@@ -35,6 +36,19 @@ const main = async () => {
     console.info(chalk.dim('Data directory: ') + chalk.cyan(DATA_DIR))
     console.info(chalk.dim('Source directory: ') + chalk.cyan(COMPRESSED_DIR))
 
+    try {
+      await access(COMPRESSED_DIR, constants.F_OK)
+    } catch {
+      console.error(
+        chalk.red.bold('\nError: ') +
+          chalk.yellow('Compressed directory does not exist.\n') +
+          chalk.dim('Run ') +
+          chalk.cyan('npm run storage:compress') +
+          chalk.dim(' first to create compressed files.')
+      )
+      process.exit(1)
+    }
+
     const files = await get_compressed_files(COMPRESSED_DIR)
 
     if (files.length === 0) {
@@ -42,15 +56,13 @@ const main = async () => {
       return
     }
 
-    // Cleanup old posters first
-    console.info(chalk.bold('\nCleaning up old poster files...'))
+    // Cleanup old files first
+    console.info(chalk.bold('\nCleaning up old files...'))
     const { deleted, failed } = await cleanup_old_posters('development')
 
-    console.info(chalk.dim('Users cleaned: ') + chalk.green(deleted))
-    console.info(
-      chalk.dim('Failed: ') +
-        (failed > 0 ? chalk.red(failed) : chalk.green('0'))
-    )
+    if (failed > 0) {
+      console.info(chalk.dim('Failed: ') + chalk.red(failed))
+    }
 
     await upload_to_firebase(files, 'development')
 

@@ -342,7 +342,10 @@
           name="info"
           title="Show frames per second and viewbox info" />
       </header>
-      <as-figure v-for="poster in posters" :key="poster.id" :itemid="poster.id" />
+      <as-figure
+        v-for="poster in posters"
+        :key="poster.id"
+        :itemid="poster.id" />
     </section>
     <footer>
       <logo-as-link />

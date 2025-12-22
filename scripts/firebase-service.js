@@ -129,57 +129,18 @@ export const upload_to_firebase = async (
 }
 
 export const cleanup_old_posters = async (environment = 'development') => {
-  console.time('Cleanup old posters')
+  console.time('Cleanup old files')
   try {
     const bucket = await init_firebase(environment)
 
-    console.info(chalk.cyan('\nListing users...'))
-    const [files] = await bucket.getFiles({ prefix: 'people/' })
+    console.info(chalk.cyan('\nDeleting all files under people/...'))
+    await bucket.deleteFiles({ prefix: 'people/' })
+    console.info(chalk.green('✓ All files deleted'))
 
-    // Get unique phone numbers
-    const phones = new Set()
-    files.forEach(file => {
-      const parts = file.name.split('/')
-      if (parts.length >= 2) phones.add(parts[1])
-    })
-
-    console.info(chalk.dim('Found users: ') + chalk.green(phones.size))
-
-    const BATCH_SIZE = 13
-    let deleted_users = 0
-    let failed = 0
-
-    const delete_user_posters = async phone => {
-      const prefix = `people/${phone}/posters/`
-      console.info(chalk.dim('Deleting: ') + prefix)
-      await bucket.deleteFiles({ prefix })
-      console.info(chalk.green('✓ Deleted'))
-    }
-
-    const phones_array = Array.from(phones)
-
-    /* eslint-disable no-await-in-loop */
-    for (let i = 0; i < phones_array.length; i += BATCH_SIZE) {
-      const batch = phones_array.slice(i, i + BATCH_SIZE)
-
-      const results = await Promise.allSettled(
-        batch.map(phone => delete_user_posters(phone))
-      )
-
-      results.forEach(result => {
-        if (result.status === 'fulfilled') deleted_users++
-        else {
-          failed++
-          console.error(chalk.red('✗ Failed:'), result.reason)
-        }
-      })
-    }
-    /* eslint-enable no-await-in-loop */
-
-    console.timeEnd('Cleanup old posters')
-    return { deleted: deleted_users, failed }
+    console.timeEnd('Cleanup old files')
+    return { deleted: 1, failed: 0 }
   } catch (error) {
-    console.timeEnd('Cleanup old posters')
+    console.timeEnd('Cleanup old files')
     console.error(chalk.red.bold('Cleanup process failed:'), error)
     throw error
   }

@@ -1,5 +1,4 @@
 <script setup>
-
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import { use as use_pattern } from '@/use/pattern'
@@ -47,7 +46,9 @@
     :itemid="`${itemid}/shadow`"
     itemscope
     itemtype="/shadows"
-    v-if="vector && vector.light && vector.regular && vector.medium && vector.bold"
+    v-if="
+      vector && vector.light && vector.regular && vector.medium && vector.bold
+    "
     :width="width"
     :height="height"
     :viewBox="viewbox"

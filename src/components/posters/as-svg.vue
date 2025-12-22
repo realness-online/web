@@ -164,45 +164,35 @@
   const boulder_style = computed(() => {
     if (!boulder_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
-    const opacity = shadow_layer_displayed.value
-      ? OPACITY_HALF
-      : OPACITY_FULL
+    const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 
   const rock_style = computed(() => {
     if (!rock_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
-    const opacity = shadow_layer_displayed.value
-      ? OPACITY_HALF
-      : OPACITY_FULL
+    const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 
   const gravel_style = computed(() => {
     if (!gravel_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
-    const opacity = shadow_layer_displayed.value
-      ? OPACITY_HALF
-      : OPACITY_FULL
+    const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 
   const sand_style = computed(() => {
     if (!sand_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
-    const opacity = shadow_layer_displayed.value
-      ? OPACITY_HALF
-      : OPACITY_FULL
+    const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 
   const sediment_style = computed(() => {
     if (!sediment_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
-    const opacity = shadow_layer_displayed.value
-      ? OPACITY_HALF
-      : OPACITY_FULL
+    const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 

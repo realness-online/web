@@ -76,7 +76,8 @@
     if (!svg_element) return
     const poster_element = svg_element.closest('figure.poster')
     if (!poster_element) return
-    /** @type {HTMLElement} */ ;(poster_element).focus()
+    /** @type {HTMLElement} */
+    poster_element.focus()
   }
 
   /**
