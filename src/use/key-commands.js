@@ -226,7 +226,9 @@ export const use_key_commands = () => {
     save_keymap,
     validate_current_keymap,
     get_statistics,
-    update_input_focus
+    update_input_focus,
+    check_input_focus,
+    is_input_focused
   }
 }
 

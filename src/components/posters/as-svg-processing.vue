@@ -31,7 +31,10 @@
       current_processing.value?.id === props.queue_item.id
   )
   const show_processing_svg = computed(
-    () => is_currently_processing.value && new_vector.value && !new_vector.value.optimized
+    () =>
+      is_currently_processing.value &&
+      new_vector.value &&
+      !new_vector.value.optimized
   )
   const show_save_svg = computed(
     () => is_currently_processing.value && new_vector.value?.optimized
@@ -54,7 +57,9 @@
   })
 
   const fragment = suffix => `${as_fragment_id(props.queue_item.id)}-${suffix}`
-  const queue_itemid = computed(() => props.queue_item.itemid || props.queue_item.id)
+  const queue_itemid = computed(
+    () => props.queue_item.itemid || props.queue_item.id
+  )
 </script>
 
 <template>
@@ -72,7 +77,6 @@
       :itemid="queue_itemid"
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`">
-
       <as-background
         :id="`${query(queue_item.id)}-background`"
         :rect="new_vector.background"
