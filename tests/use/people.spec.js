@@ -31,8 +31,7 @@ vi.mock('@/utils/serverless', () => ({
   current_user: ref({ uid: 'test-user' }),
   me: ref({
     id: '/+14151234356',
-    first_name: 'Scott',
-    last_name: 'Fryxell',
+    name: 'Scott Fryxell',
     type: 'person'
   }),
   directory: vi.fn(() =>
@@ -94,8 +93,7 @@ describe('people composable', () => {
       const { me } = use_me()
       expect(me.value).toEqual({
         id: '/+14151234356',
-        first_name: 'Scott',
-        last_name: 'Fryxell',
+        name: 'Scott Fryxell',
         type: 'person'
       })
     })

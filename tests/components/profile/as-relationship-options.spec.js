@@ -9,13 +9,11 @@ vi.mock('@/use/people', () => ({
       value: [
         {
           id: '/+16282281824',
-          first_name: 'Scott',
-          last_name: 'Fryxell'
+          name: 'Scott Fryxell'
         },
         {
           id: '/+6336661624',
-          first_name: 'Katie',
-          last_name: 'Caffey'
+          name: 'Katie Caffey'
         }
       ]
     }
@@ -33,8 +31,7 @@ describe('@/component/profile/as-relationship-options.vue', () => {
   let wrapper
   const person = {
     id: '/+16282281824',
-    first_name: 'Scott',
-    last_name: 'Fryxell'
+    name: 'Scott Fryxell'
   }
 
   beforeEach(() => {
@@ -64,8 +61,7 @@ describe('@/component/profile/as-relationship-options.vue', () => {
     it('Shows relation status correctly for non-relationship', async () => {
       const non_relation_person = {
         id: '/+14156661266',
-        first_name: 'Unknown',
-        last_name: 'Person'
+        name: 'Unknown Person'
       }
 
       await wrapper.setProps({ person: non_relation_person })

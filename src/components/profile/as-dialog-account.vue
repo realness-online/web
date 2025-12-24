@@ -8,7 +8,7 @@
   import { useRoute as use_route } from 'vue-router'
 
   const form = ref(null)
-  const first_name = ref('You')
+  const name = ref('You')
   const route = use_route()
   const show_sign_in = ref(false)
   const is_mobile_form_visible = ref(false)
@@ -75,7 +75,7 @@
 </script>
 
 <template>
-  <a id="toggle-account" @click="show_form">{{ first_name }}</a>
+  <a id="toggle-account" @click="show_form">{{ name }}</a>
   <dialog id="account" ref="form" @click="dialog_click" @close="on_close">
     <name-as-form />
     <call-to-action v-if="!show_sign_in" />

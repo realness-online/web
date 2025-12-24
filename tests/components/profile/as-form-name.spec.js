@@ -13,15 +13,13 @@ vi.mock('@/use/people', () => ({
 vi.mock('@/utils/serverless', () => ({
   me: {
     value: {
-      first_name: 'Yu',
-      last_name: 'G'
+      name: 'Yu G'
     }
   }
 }))
 
 const person = {
-  first_name: 'Yu',
-  last_name: 'G',
+  name: 'Yu G',
   mobile: '4151234356'
 }
 
@@ -36,22 +34,15 @@ describe('@/component/profile/as-form-name.vue', () => {
   describe('Renders', () => {
     it('Profile name form', () => {
       expect(wrapper.find('form#profile-name').exists()).toBe(true)
-      expect(wrapper.find('input#first-name').exists()).toBe(true)
-      expect(wrapper.find('input#last-name').exists()).toBe(true)
+      expect(wrapper.find('input#name').exists()).toBe(true)
     })
   })
 
   describe('Form Elements', () => {
-    it('renders first name input', () => {
-      const first_name_input = wrapper.find('input#first-name')
-      expect(first_name_input.exists()).toBe(true)
-      expect(first_name_input.attributes('placeholder')).toBe('First')
-    })
-
-    it('renders last name input', () => {
-      const last_name_input = wrapper.find('input#last-name')
-      expect(last_name_input.exists()).toBe(true)
-      expect(last_name_input.attributes('placeholder')).toBe('Last')
+    it('renders name input', () => {
+      const name_input = wrapper.find('input#name')
+      expect(name_input.exists()).toBe(true)
+      expect(name_input.attributes('placeholder')).toBe('Name')
     })
 
     it('renders legend with validation class', () => {

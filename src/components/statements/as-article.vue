@@ -99,8 +99,7 @@
         <icon v-else name="silhouette" />
       </router-link>
       <address>
-        <span>{{ author.first_name }}</span>
-        <span>{{ author.last_name }}</span>
+        <span>{{ author.name }}</span>
         <time>{{ thought_starts_at }}</time>
       </address>
       <menu>

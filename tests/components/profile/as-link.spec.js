@@ -5,8 +5,7 @@ import as_link from '@/components/profile/as-link'
 // Mock the imports that the component uses
 vi.mock('@/utils/itemid', () => ({
   load: vi.fn().mockResolvedValue({
-    first_name: 'John',
-    last_name: 'Doe',
+    name: 'John Doe',
     avatar: '/test-avatar'
   }),
   as_author: vi.fn().mockReturnValue('/+16282281824')

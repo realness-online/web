@@ -39,8 +39,7 @@ describe('@/component/profile/as-figure.vue', () => {
   beforeEach(() => {
     get.mockImplementation(() => Promise.resolve({}))
     person = {
-      first_name: 'Scott',
-      last_name: 'Fryxell',
+      name: 'Scott Fryxell',
       id: '/+16282281823',
       type: 'person'
     }
