@@ -2,12 +2,21 @@
   import Icon from '@/components/icon'
   import { auth, Recaptcha, sign_in } from '@/utils/serverless'
   import { as_phone_number, use_me } from '@/use/people'
+  import {
+    countries,
+    default_country,
+    phone_code,
+    valid_phone,
+    parse_phone,
+    as_you_type,
+    format_phone
+  } from '@/utils/phone'
   import { onMounted as mounted, ref, computed, nextTick as tick } from 'vue'
+
   const emit = defineEmits(['signed-on'])
   const { me } = use_me()
-  const validator = ref(null)
   const mobile = ref(null)
-  const mobile_number = ref()
+  const mobile_number = ref('')
   const working = ref(true)
   const disabled_sign_in = ref(true)
   const code = ref(null)
@@ -16,34 +25,45 @@
   const show_authorize = ref(false)
   const show_captcha = ref(false)
   const hide_captcha = ref(false)
-  const country_code = ref('US')
+  const country_code = ref(default_country)
   const show_code = ref(false)
-  const show_mobile_input = computed(() => {
-    if (working.value) return false
-    return true
+  const show_countries = ref(false)
+
+  const country = computed(() =>
+    countries.find(c => c.code === country_code.value)
+  )
+
+  const show_mobile_input = computed(() => !working.value && !show_code.value)
+
+  const full_phone = computed(() => {
+    const code = phone_code(country_code.value)
+    return `+${code}${mobile_number.value}`
   })
+
   const mobile_display = computed(() => {
-    if (mobile_number.value)
-      return new validator.value.AsYouType(country_code.value).input(
-        mobile_number.value
-      )
+    if (mobile_number.value) {
+      const formatted = format_phone(full_phone.value)
+      return formatted || mobile_number.value
+    }
     return 'Mobile'
   })
-  const validate_mobile_number = () => {
-    let is_valid = false
-    if (!validator.value) return false
 
-    if (mobile_number.value)
-      is_valid = validator.value.parseNumber(
-        mobile_number.value,
-        country_code.value
-      ).phone
+  const placeholder = computed(() =>
+    country_code.value === default_country ? '(555) 555-5555' : null
+  )
+
+  const validate_mobile_number = () => {
+    const is_valid =
+      !!mobile_number.value &&
+      valid_phone(full_phone.value, country_code.value)
     disabled_sign_in.value = !is_valid
     return is_valid
   }
+
   const disable_input = () => {
-    mobile.value.disabled = true
+    if (mobile.value) mobile.value.disabled = true
   }
+
   const begin_authorization = async () => {
     working.value = true
     disable_input()
@@ -56,59 +76,62 @@
     })
     human.value.verify()
   }
+
   const text_human_verify_code = async () => {
     working.value = false
     show_code.value = true
     hide_captcha.value = true
     await tick()
-    authorizer.value = await sign_in(
-      auth.value,
-      `+${mobile_number.value}`,
-      human.value
-    )
-    document.querySelector('#verification-code').scrollIntoView(false)
-    document.querySelector('#verification-code').focus()
+    authorizer.value = await sign_in(auth.value, full_phone.value, human.value)
+    const verifier = document.querySelector('#verification-code')
+    if (verifier) {
+      verifier.scrollIntoView(false)
+      verifier.focus()
+    }
   }
+
   const sign_in_with_code = async () => {
     working.value = true
     disable_input()
     show_code.value = false
-    try {
-      await authorizer.value.confirm(code.value)
-      emit('signed-on')
-    } catch (e) {
-      if (e.code === 'auth/invalid-verification-code') {
-        mobile.value.disabled = false
-        show_code.value = true
-      }
-    }
+    await authorizer.value.confirm(code.value)
+    emit('signed-on')
   }
 
   const mobile_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
   }
+
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const phone_number = validator.value.parseNumber(
-      past_text,
-      country_code.value
-    ).phone
-    if (phone_number) {
-      mobile_number.value = phone_number
-      return validate_mobile_number()
+    const parsed = parse_phone(past_text, country_code.value)
+    if (parsed?.nationalNumber) {
+      mobile_number.value = parsed.nationalNumber
+      validate_mobile_number()
     }
-    return false
   }
+
+  const handle_input = () => {
+    if (mobile_number.value) {
+      const formatter = new as_you_type(country_code.value)
+      const formatted = formatter.input(mobile_number.value)
+      mobile_number.value = formatted
+    }
+    validate_mobile_number()
+  }
+
   const code_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
     const button = document.querySelector('#submit-verification')
     const input = document.querySelector('#verification-code')
-    if (input.value.length === 5) button.disabled = false
+    if (input.value.length === 5 && button) button.disabled = false
   }
-  mounted(async () => {
-    validator.value = await import('libphonenumber-js')
+
+  mounted(() => {
     working.value = false
-    mobile_number.value = as_phone_number(me.value.id)
+    if (me.value?.id)
+      mobile_number.value = as_phone_number(me.value.id)
+
     show_authorize.value = true
     validate_mobile_number()
   })
@@ -120,15 +143,34 @@
       <legend :class="{ valid: validate_mobile_number() }">
         {{ mobile_display }}
       </legend>
-      <input
-        id="mobile"
-        ref="mobile"
-        v-model="mobile_number"
-        type="tel"
-        placeholder="1 (555) 555-5555"
-        @keypress="mobile_keypress"
-        @keyup="validate_mobile_number"
-        @paste.prevent="mobile_paste" />
+      <label for="mobile">
+        <button
+          type="button"
+          id="country-toggle"
+          @click="show_countries = !show_countries">
+          {{ country?.emoji }} +{{ phone_code(country_code) }}
+        </button>
+        <input
+          id="mobile"
+          ref="mobile"
+          v-model="mobile_number"
+          type="tel"
+          :placeholder="placeholder"
+          @keypress="mobile_keypress"
+          @keyup="validate_mobile_number"
+          @input="handle_input"
+          @paste.prevent="mobile_paste" />
+      </label>
+      <select
+        v-if="show_countries"
+        id="country"
+        v-model="country_code"
+        @change="show_countries = false"
+        size="8">
+        <option v-for="c in countries" :key="c.code" :value="c.code">
+          {{ c.emoji }} {{ c.name }} +{{ c.phone }}
+        </option>
+      </select>
     </fieldset>
     <fieldset
       v-if="show_captcha"
@@ -164,21 +206,59 @@
 </template>
 
 <style lang="stylus">
-  form#profile-mobile
-    animation-name: slide-in-left
-    svg.remove
+  form#profile-mobile {
+    animation-name: slide-in-left;
+    svg.remove {
       fill: red
-    fieldset
-      margin-bottom: base-line
-      &#captcha.hide
-        display: none
-    input#mobile
-      min-width: (40% - base-line * 2)
-      margin-right: base-line
-    button#sign-out
-      border: none
-      padding: 0
-    menu
-      display: flex
-      justify-content: flex-end
+    }
+    fieldset {
+      margin-bottom: base-line;
+      &#captcha.hide {
+        display: none;
+      }
+      &#phone {
+        position: relative;
+        label[for=mobile] {
+          display: flex;
+          align-items: center;
+          button#country-toggle {
+            border: none;
+            padding: 0;
+            margin-right: (base-line * 0.5);
+            cursor: pointer;
+            white-space: nowrap;
+            opacity: 0.7;
+            &:hover {
+              opacity: 1;
+            }
+            &:focus {
+              opacity: 1;
+            }
+          }
+          input#mobile {
+            flex: 1;
+          }
+        }
+        select#country {
+          max-height: 200px;
+          overflow-y: auto;
+          z-index: 10;
+          standard-border: black;
+          background-color: white;
+          @media (prefers-color-scheme: dark){
+            background-color: black;
+            standard-border: red;
+          }
+        }
+      }
+    }
+    button#sign-out {
+      border: none;
+      padding: 0;
+    }
+    menu {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
 </style>
