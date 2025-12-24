@@ -96,17 +96,10 @@ export const use_me = () => {
   const is_valid_name = computed(async () => {
     await tick()
     if (!current_user.value) return false
-    let length = 0
     if (!me.value) return false
-
-    if (me.value.first_name) length = me.value.first_name.length
-    else return false // first name is required
-
-    if (me.value.last_name) length += me.value.last_name.length
-    else return false // last name is required
-
-    if (length > 2) return true
-    return false // full name is at least 3 characters
+    if (!me.value.name) return false
+    if (me.value.name.length < 3) return false
+    return true
   })
 
   return {

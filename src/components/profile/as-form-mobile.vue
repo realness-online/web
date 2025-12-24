@@ -155,6 +155,7 @@
           ref="mobile"
           v-model="mobile_number"
           type="tel"
+          autocomplete="tel"
           :placeholder="placeholder"
           @keypress="mobile_keypress"
           @keyup="validate_mobile_number"
@@ -165,6 +166,7 @@
         v-if="show_countries"
         id="country"
         v-model="country_code"
+        autocomplete="country"
         @change="show_countries = false"
         size="8">
         <option v-for="c in countries" :key="c.code" :value="c.code">
@@ -206,59 +208,66 @@
 </template>
 
 <style lang="stylus">
-  form#profile-mobile {
-    animation-name: slide-in-left;
-    svg.remove {
+  form#profile-mobile
+    animation-name: slide-in-left
+    svg.remove
       fill: red
-    }
-    fieldset {
-      margin-bottom: base-line;
-      &#captcha.hide {
-        display: none;
-      }
-      &#phone {
-        position: relative;
-        label[for=mobile] {
-          display: flex;
-          align-items: center;
-          button#country-toggle {
-            border: none;
-            padding: 0;
-            margin-right: (base-line * 0.5);
-            cursor: pointer;
-            white-space: nowrap;
-            opacity: 0.7;
-            &:hover {
-              opacity: 1;
-            }
-            &:focus {
-              opacity: 1;
-            }
-          }
-          input#mobile {
-            flex: 1;
-          }
-        }
-        select#country {
-          max-height: 200px;
-          overflow-y: auto;
-          z-index: 10;
-          standard-border: black;
-          background-color: white;
-          @media (prefers-color-scheme: dark){
-            background-color: black;
-            standard-border: red;
-          }
-        }
-      }
-    }
-    button#sign-out {
-      border: none;
-      padding: 0;
-    }
-    menu {
-      display: flex;
-      justify-content: flex-end;
-    }
-  }
+    fieldset
+      margin-bottom: base-line
+      &#captcha.hide
+        display: none
+      &#phone
+        position: relative
+
+        label[for=mobile]
+          display: flex
+          align-items: center
+
+          button#country-toggle
+            border: none
+            padding: 0
+            margin-right: (base-line * 0.5)
+            cursor: pointer
+            white-space: nowrap
+            opacity: 0.7
+
+            &:hover
+              opacity: 1
+
+            &:focus
+              opacity: 1
+
+          input#mobile
+            flex: 1
+
+        select#country
+          position: absolute
+          top: 100%
+          left: 0
+          right: 0
+          max-height: 200px
+          overflow-y: auto
+          z-index: 100
+          border: 1px solid black
+          background-color: white
+          padding: (base-line * 0.25)
+          margin-top: (base-line * 0.25)
+
+          @media (prefers-color-scheme: dark)
+            background-color: black
+            border-color: red
+
+          option
+            padding: (base-line * 0.25)
+            cursor: pointer
+
+            &:hover
+              background-color: green
+              color: white
+    button#sign-out
+      border: none
+      padding: 0
+    menu
+      display: flex
+      justify-content: flex-end
 </style>

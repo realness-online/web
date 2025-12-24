@@ -4,8 +4,7 @@ describe('@/component/profile/as-meta.vue', () => {
   let wrapper
   const person = {
     id: '/+14151234356',
-    first_name: 'Scott',
-    last_name: 'Fryxell',
+    name: 'Scott Fryxell',
     mobile: '4151234356',
     avatar: 'avatars/5553338945763'
   }

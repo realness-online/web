@@ -6,8 +6,7 @@ vi.mock('@/use/people', () => ({
     me: {
       value: {
         id: '/+14151234356',
-        first_name: 'Scott',
-        last_name: 'Fryxell'
+        name: 'Scott Fryxell'
       }
     }
   }),
@@ -53,7 +52,6 @@ vi.mock('libphonenumber-js', () => {
 
 export const person = {
   id: '/+14151234356',
-  first_name: 'Scott',
-  last_name: 'Fryxell',
+  name: 'Scott Fryxell',
   mobile: '4151234356'
 }

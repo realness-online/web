@@ -8,16 +8,14 @@ vi.mock('@/use/people', () => ({
   use_me: () => ({
     me: ref({
       id: '/+14151234356',
-      first_name: 'Scott',
-      last_name: 'Fryxell'
+      name: 'Scott Fryxell'
     })
   })
 }))
 
 const person = {
   id: '/+14151234356',
-  first_name: 'Scott',
-  last_name: 'Fryxell',
+  name: 'Scott Fryxell',
   mobile: '4151234356',
   avatar: 'avatars/5553338945763'
 }
@@ -32,8 +30,7 @@ describe('@/component/profile/as-address.vue', () => {
   describe('Renders', () => {
     it('A person as an address element', () => {
       expect(wrapper.find('address[itemscope]').exists()).toBe(true)
-      expect(wrapper.find('h3[itemprop="first_name"]').text()).toBe('Scott')
-      expect(wrapper.find('h3[itemprop="last_name"]').text()).toBe('Fryxell')
+      expect(wrapper.find('h3[itemprop="name"]').text()).toBe('Scott Fryxell')
     })
 
     it('renders address element with person data', () => {
@@ -71,8 +68,7 @@ describe('@/component/profile/as-address.vue', () => {
   describe('Computed Properties', () => {
     it('uses person data correctly', () => {
       expect(wrapper.find('address').attributes('itemid')).toBe('/+14151234356')
-      expect(wrapper.find('h3[itemprop="first_name"]').text()).toBe('Scott')
-      expect(wrapper.find('h3[itemprop="last_name"]').text()).toBe('Fryxell')
+      expect(wrapper.find('h3[itemprop="name"]').text()).toBe('Scott Fryxell')
     })
   })
 })

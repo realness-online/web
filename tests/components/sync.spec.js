@@ -97,8 +97,7 @@ describe('@/components/sync', () => {
   beforeEach(async () => {
     setup_current_user()
     person = {
-      first_name: 'Scott',
-      last_name: 'Fryxell',
+      name: 'Scott Fryxell',
       id: '/+16282281824',
       avatar: '/+16282281824/avatars/1578929551564',
       visited: '2020-03-03T17:37:22.943Z'
@@ -256,8 +255,7 @@ describe('@/use/sync', () => {
   beforeEach(() => {
     setup_current_user()
     person = {
-      first_name: 'Scott',
-      last_name: 'Fryxell',
+      name: 'Scott Fryxell',
       id: '/+14151234356',
       avatar: '/+14151234356/avatars/1578929551564',
       visited: '2021-02-04T18:30:01.038Z'

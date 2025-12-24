@@ -17,15 +17,11 @@
     <fieldset id="name">
       <legend :class="{ valid: is_valid_name }">Name</legend>
       <input
-        id="first-name"
-        v-model="me.first_name"
+        id="name"
+        v-model="me.name"
         type="text"
-        placeholder="First" />
-      <input
-        id="last-name"
-        v-model="me.last_name"
-        type="text"
-        placeholder="Last" />
+        autocomplete="name"
+        placeholder="Name" />
     </fieldset>
   </form>
 </template>
@@ -37,11 +33,8 @@
       animation-name: slide-out-right
     fieldset
       margin-bottom: base-line
-    input#first-name
-      width: 40%
-      margin-right: base-line
-    input#last-name
-      width: 40%
+    input#name
+      width: 100%
     menu
       display: flex
       justify-content: end

@@ -48,8 +48,10 @@
     const time = as_day_and_time(Number(info[3]))
     const creator = await load(author_id)
     const facts = `${time}.svg`
-    if (creator?.first_name)
-      return `${creator.first_name}_${creator.last_name}_${facts}`
+    if (creator?.name) {
+      const safe_name = creator.name.replace(/\s+/g, '_')
+      return `${safe_name}_${facts}`
+    }
     return facts
   }
 

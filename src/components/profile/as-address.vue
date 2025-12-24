@@ -22,8 +22,7 @@
 
 <template>
   <address itemscope itemtype="/person" :itemid="person.id">
-    <h3 itemprop="first_name">{{ person.first_name }}</h3>
-    <h3 itemprop="last_name">{{ person.last_name }}</h3>
+    <h3 itemprop="name">{{ person.name }}</h3>
     <slot />
     <link
       v-if="person.avatar"
