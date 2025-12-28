@@ -5,20 +5,10 @@
 
 /** @typedef {import('@/types').Available_Command} Available_Command */
 
-import {
-  ref,
-  reactive,
-  computed,
-  watch,
-  inject,
-  onMounted,
-  onUnmounted
-} from 'vue'
-import { useMagicKeys } from '@vueuse/core'
+import { ref, reactive, computed, inject, onMounted, onUnmounted } from 'vue'
 import {
   default_keymap,
   normalize_key_for_platform,
-  parse_key_combination,
   validate_keymap_runtime,
   get_keymap_stats
 } from '@/utils/keymaps'
@@ -34,7 +24,6 @@ export const use_key_commands = () => {
   const active_contexts = ref(['Global'])
   const command_handlers = reactive(new Map())
   const keymap = ref([...default_keymap])
-  const magic_keys = useMagicKeys()
   const is_input_focused = ref(false)
 
   const check_input_focus = () => {

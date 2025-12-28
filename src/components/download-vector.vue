@@ -20,7 +20,6 @@
   })
 
   const content = ref(null)
-  const vector = ref({})
   const file_name = ref(null)
   const working = ref(false)
 

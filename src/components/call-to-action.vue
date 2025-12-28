@@ -2,7 +2,10 @@
   <div class="call to action">
     <h3>
       Support
-      <a href="https://patreon.com/scottfryxell" target="_blank">
+      <a
+        href="https://patreon.com/scottfryxell"
+        target="_blank"
+        rel="noopener noreferrer">
         <h1>Realness</h1>
         <h3>online</h3>
       </a>

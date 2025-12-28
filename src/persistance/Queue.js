@@ -72,13 +72,10 @@ export const get_all = async () => {
     String(key).startsWith('queue:posters:')
   )
 
-  const items = []
-  for (const key of queue_keys) {
-    const item = await get(key)
-    if (item) items.push(item)
-  }
+  const items = await Promise.all(queue_keys.map(key => get(key)))
+  const valid_items = items.filter(item => item !== null)
 
-  return items.sort((a, b) => {
+  return valid_items.sort((a, b) => {
     const a_time = parseInt(a.id.split('/').pop())
     const b_time = parseInt(b.id.split('/').pop())
     return a_time - b_time
@@ -89,4 +86,4 @@ export const get_all = async () => {
  * @param {Id} id
  * @returns {Promise<QueueItem | null>}
  */
-export const get_item = async id => await get(queue_key(id))
+export const get_item = async id => get(queue_key(id))

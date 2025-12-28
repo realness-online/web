@@ -19,7 +19,8 @@ export default [
       'public/**/*.js',
       'tracer/**',
       '**/docs/generated/**',
-      '**/tests/**'
+      '**/tests/**',
+      'artifacts/**'
     ]
   },
   {
@@ -56,7 +57,8 @@ export default [
         defineEmits: 'readonly',
         defineExpose: 'readonly',
         withDefaults: 'readonly',
-        process: 'readonly'
+        process: 'readonly',
+        workbox: 'readonly'
       }
     }
   },

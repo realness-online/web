@@ -34,9 +34,8 @@ export const use = () => {
         if (
           handle.kind === 'file' &&
           name.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i)
-        ) {
+        )
           image_count++
-        }
 
       progress.value.total = image_count
       console.info(`📂 Found ${image_count} images to process`)

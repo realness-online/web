@@ -156,9 +156,7 @@
   })
   register_preference('pref::Toggle_Grid', grid_overlay)
   register('pref::Toggle_Show_Menu', () => {
-    console.log('[Menu] Toggling show_menu, current value:', show_menu.value)
     show_menu.value = !show_menu.value
-    console.log('[Menu] New show_menu value:', show_menu.value)
   })
 
   // Watch aspect_ratio_mode and update CSS variable
@@ -181,15 +179,12 @@
   register_preference('pref::Toggle_Sediment', sediment)
 
   register('ui::Show_Documentation', () => {
-    console.log('ui::Show_Documentation')
     documentation.value?.show()
   })
   register('ui::Open_Settings', () => {
-    console.log('ui::Open_Settings')
     preferences_dialog.value?.show()
   })
   register('ui::Open_Account', () => {
-    console.log('ui::Open_Account')
     account_dialog.value?.show()
   })
   register('ui::Toggle_Presentation', () =>

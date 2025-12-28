@@ -60,10 +60,7 @@ export const is_use = path => {
   if (path instanceof SVGUseElement) return true
   return false
 }
-export const is_url_query = query => {
-  console.log('is_url_query', query)
-  return true
-}
+export const is_url_query = _query => true
 export const settings_query = name => {
   const settings = document.querySelector('[itemscope][itemtype=/settings]')
   return settings.querySelector(`[itemprop="${name}"]`)

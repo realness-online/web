@@ -64,8 +64,7 @@
     intersecting,
     is_hovered,
     dynamic_viewbox,
-    should_ken_burns,
-    ken_burns_position
+    should_ken_burns
   } = use_poster()
 
   const trigger = ref(null)

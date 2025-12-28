@@ -30,10 +30,10 @@
   }
   const { register } = use_keymap('Events')
 
-  register('events::New_Event', () => console.log('TODO: Create new event'))
-  register('events::Search', () => console.log('TODO: Search events'))
-  register('events::Open_Event', () => console.log('TODO: Open event'))
-  register('events::Remove_Event', () => console.log('TODO: Remove event'))
+  register('events::New_Event', () => {})
+  register('events::Search', () => {})
+  register('events::Open_Event', () => {})
+  register('events::Remove_Event', () => {})
 
   mounted(async () => {
     events.value = await get_upcoming_events()

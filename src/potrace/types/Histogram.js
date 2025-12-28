@@ -343,10 +343,10 @@ class Histogram {
       if (most_pixels_per_level < data[i]) most_pixels_per_level = data[i]
     }
 
-    mean_value = all_pixel_values_combined / pixels_total
-    pixels_per_level_mean = pixels_total / (level_max - level_min)
-    pixels_per_level_median = pixels_total / unique_values
-    median_pixel_index = Math.floor(pixels_total / 2)
+    const mean_value = all_pixel_values_combined / pixels_total
+    const pixels_per_level_mean = pixels_total / (level_max - level_min)
+    const pixels_per_level_median = pixels_total / unique_values
+    const median_pixel_index = Math.floor(pixels_total / 2)
 
     // Finding median and standard deviation
     for (let i = 0; i < COLOR_DEPTH; i++) {

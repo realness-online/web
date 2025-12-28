@@ -15,13 +15,18 @@
   console.time('views:Statements')
   const working = ref(true)
   const router = use_router()
-  const { my_statements, statements, thought_shown, authors } = use_statements()
+  const {
+    my_statements,
+    statements,
+    thought_shown,
+    authors: _authors
+  } = use_statements()
   const home = () => router.push({ path: '/' })
 
   const { register } = use_keymap('Statements')
 
-  register('statement::Save', () => console.log('TODO: Save statement'))
-  register('statement::Cancel', () => console.log('TODO: Cancel editing'))
+  register('statement::Save', () => {})
+  register('statement::Cancel', () => {})
 
   mounted(() => {
     const last_editable = my_statements.value.length - 1

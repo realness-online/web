@@ -56,11 +56,11 @@
         y="138" />
     </pattern>
     <radialGradient id="l" cx="50%" cy="200%" fy="0" r="201%">
-      <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
-      <stop offset="10%" style="stop-color: #000; stop-opacity: 0.1" />
-      <stop offset="30%" style="stop-color: #000; stop-opacity: 0.3" />
-      <stop offset="90%" style="stop-color: #000; stop-opacity: 0.55" />
-      <stop offset="100%" style="stop-color: #000; stop-opacity: 0.6" />
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.1" />
+      <stop offset="10%" stop-color="#000" stop-opacity="0.1" />
+      <stop offset="30%" stop-color="#000" stop-opacity="0.3" />
+      <stop offset="90%" stop-color="#000" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#000" stop-opacity="0.6" />
     </radialGradient>
     <rect id="bgRect" fill="#39466b" width="100%" height="100%" />
     <rect id="gradientRect" fill="url(#l)" width="100%" height="100%" />

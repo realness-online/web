@@ -117,8 +117,7 @@ export const use = () => {
     if (!vector_element.value || !vector.value) return 0
 
     const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
-    const content_width = viewbox_parts[2]
-    const content_height = viewbox_parts[3]
+    const [, , content_width, content_height] = viewbox_parts
     const content_aspect = content_width / content_height
 
     const container_rect = vector_element.value.getBoundingClientRect()
@@ -500,11 +499,11 @@ export const is_url_query = query => {
 }
 export const set_vector_dimensions = (props, item) => {
   props.viewbox = item.getAttribute('viewBox')
-  const dimensions = props.viewbox.split(' ')
+  const [, , default_width, default_height] = props.viewbox.split(' ')
   let width = item.getAttribute('width')
   let height = item.getAttribute('height')
-  if (!width) width = dimensions[2]
-  if (!height) height = dimensions[3]
+  if (!width) width = default_width
+  if (!height) height = default_height
   props.width = width
   props.height = height
 }

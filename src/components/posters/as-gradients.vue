@@ -61,22 +61,22 @@
 
 <template>
   <radialGradient id="lightbar" cx="50%" cy="200%" fy="0" r="401%">
-    <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
-    <stop offset="2%" style="stop-color: #fff; stop-opacity: 0.09" />
-    <stop offset="5%" style="stop-color: #fff; stop-opacity: 0.07" />
-    <stop offset="8%" style="stop-color: #000; stop-opacity: 0.08" />
-    <stop offset="12%" style="stop-color: #000; stop-opacity: 0.12" />
-    <stop offset="18%" style="stop-color: #000; stop-opacity: 0.18" />
-    <stop offset="25%" style="stop-color: #000; stop-opacity: 0.25" />
-    <stop offset="35%" style="stop-color: #000; stop-opacity: 0.35" />
-    <stop offset="45%" style="stop-color: #000; stop-opacity: 0.42" />
-    <stop offset="55%" style="stop-color: #000; stop-opacity: 0.48" />
-    <stop offset="65%" style="stop-color: #000; stop-opacity: 0.52" />
-    <stop offset="75%" style="stop-color: #000; stop-opacity: 0.54" />
-    <stop offset="85%" style="stop-color: #000; stop-opacity: 0.56" />
-    <stop offset="92%" style="stop-color: #000; stop-opacity: 0.58" />
-    <stop offset="96%" style="stop-color: #000; stop-opacity: 0.59" />
-    <stop offset="100%" style="stop-color: #000; stop-opacity: 0.6" />
+    <stop offset="0%" stop-color="#fff" stop-opacity="0.1" />
+    <stop offset="2%" stop-color="#fff" stop-opacity="0.09" />
+    <stop offset="5%" stop-color="#fff" stop-opacity="0.07" />
+    <stop offset="8%" stop-color="#000" stop-opacity="0.08" />
+    <stop offset="12%" stop-color="#000" stop-opacity="0.12" />
+    <stop offset="18%" stop-color="#000" stop-opacity="0.18" />
+    <stop offset="25%" stop-color="#000" stop-opacity="0.25" />
+    <stop offset="35%" stop-color="#000" stop-opacity="0.35" />
+    <stop offset="45%" stop-color="#000" stop-opacity="0.42" />
+    <stop offset="55%" stop-color="#000" stop-opacity="0.48" />
+    <stop offset="65%" stop-color="#000" stop-opacity="0.52" />
+    <stop offset="75%" stop-color="#000" stop-opacity="0.54" />
+    <stop offset="85%" stop-color="#000" stop-opacity="0.56" />
+    <stop offset="92%" stop-color="#000" stop-opacity="0.58" />
+    <stop offset="96%" stop-color="#000" stop-opacity="0.59" />
+    <stop offset="100%" stop-color="#000" stop-opacity="0.6" />
   </radialGradient>
   <g class="radial">
     <radialGradient :id="query('radial')" gradientUnits="userSpaceOnUse">

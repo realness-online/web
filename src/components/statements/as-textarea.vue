@@ -1,6 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { ref, nextTick as tick, inject, onMounted, onUnmounted } from 'vue'
+  import { ref, nextTick as tick } from 'vue'
   import { use } from '@/use/statement'
   import { use_keymap } from '@/use/key-commands'
 

@@ -14,16 +14,17 @@ export const to_hex = (color = '', green, blue) => {
   if (typeof color !== 'string')
     throw `Provided color is unrecognized — ${color}`
 
-  if (color.length === 0) color = '--black-dark'
-  if (color.startsWith('--')) color = css_var(color).trim()
-  if (color.startsWith('#')) return color
+  let color_value = color
+  if (color_value.length === 0) color_value = '--black-dark'
+  if (color_value.startsWith('--')) color_value = css_var(color_value).trim()
+  if (color_value.startsWith('#')) return color_value
 
   let hex
-  if (color.startsWith('rgb')) hex = rgb_to_hex(color)
-  else if (color.startsWith('hsl')) hex = hsl_to_hex(color)
+  if (color_value.startsWith('rgb')) hex = rgb_to_hex(color_value)
+  else if (color_value.startsWith('hsl')) hex = hsl_to_hex(color_value)
   else {
     // Try to parse as individual RGB values
-    const parts = color.toString().split(',')
+    const parts = color_value.toString().split(',')
     if (parts.length === 3) {
       const r = parseInt(parts[0].trim())
       const g = parseInt(parts[1].trim())
@@ -47,11 +48,11 @@ export const to_hsla = (color = '') => {
   let r = 0
   let g = 0
   let b = 0
-  if (H.length == 4) {
+  if (H.length === 4) {
     r = `0x${H[1]}${H[1]}`
     g = `0x${H[2]}${H[2]}`
     b = `0x${H[3]}${H[3]}`
-  } else if (H.length == 7) {
+  } else if (H.length === 7) {
     // todo accomidate hex with alpha
     r = `0x${H[1]}${H[2]}`
     g = `0x${H[3]}${H[4]}`
@@ -74,22 +75,22 @@ export const luminosity = (color, change_by) => {
 
 export const rgba_to_hsla = ({ r, g, b, a }) => {
   // Then to HSL
-  r /= 255
-  g /= 255
-  b /= 255
-  a /= 255
-  a = a.toFixed(2)
-  const cmin = Math.min(r, g, b)
-  const cmax = Math.max(r, g, b)
+  const red = r / 255
+  const green = g / 255
+  const blue = b / 255
+  const alpha_normalized = a / 255
+  const alpha = alpha_normalized.toFixed(2)
+  const cmin = Math.min(red, green, blue)
+  const cmax = Math.max(red, green, blue)
   const delta = cmax - cmin
   let h = 0
   let s = 0
   let l = 0
 
-  if (delta == 0) h = 0
-  else if (cmax == r) h = ((g - b) / delta) % 6
-  else if (cmax == g) h = (b - r) / delta + 2
-  else h = (r - g) / delta + 4
+  if (delta === 0) h = 0
+  else if (cmax === red) h = ((green - blue) / delta) % 6
+  else if (cmax === green) h = (blue - red) / delta + 2
+  else h = (red - green) / delta + 4
 
   h = Math.round(h * 60)
 
@@ -98,7 +99,7 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
   l = (cmax + cmin) / 2
   l = +(l * 100).toFixed(2)
 
-  s = delta == 0 ? 0 : delta / (1 + Math.abs(2 * l - 1))
+  s = delta === 0 ? 0 : delta / (1 + Math.abs(2 * l - 1))
   s = Math.abs(s)
 
   s = (s * 10000).toFixed(2)
@@ -106,7 +107,7 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
   s = Math.round(s)
   l = Math.round(l)
 
-  return color_to_hsla({ h, s, l, a })
+  return color_to_hsla({ h, s, l, a: alpha })
 }
 export const hsla_to_color = hsla => {
   let color = hsla.substring(5, hsla.length - 1)

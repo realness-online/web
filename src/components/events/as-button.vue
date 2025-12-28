@@ -16,7 +16,6 @@
 
   const emit = defineEmits(['picker', 'click'])
 
-  const accept = ref(true)
   const events = ref([])
 
   const date_picker_icon = computed(() => `${icons}#date-picker`)

@@ -31,12 +31,13 @@ const get_attr_regexp = attr_name => {
  */
 export const set_html_attr = (html, attr_name, value) => {
   const attr = ` ${attr_name}="${value}"`
+  let result = html
 
-  if (html.indexOf(` ${attr_name}="`) === -1)
-    html = html.replace(/<[a-z]+/i, beginning => beginning + attr)
-  else html = html.replace(get_attr_regexp(attr_name), attr)
+  if (result.indexOf(` ${attr_name}="`) === -1)
+    result = result.replace(/<[a-z]+/i, beginning => beginning + attr)
+  else result = result.replace(get_attr_regexp(attr_name), attr)
 
-  return html
+  return result
 }
 
 /**
@@ -53,8 +54,11 @@ const fixed = number => number.toFixed(3).replace('.000', '')
  * @param {number} n - The divisor
  * @returns {number} The positive modulo result
  */
-export const mod = (a, n) =>
-  a >= n ? a % n : a >= 0 ? a : n - 1 - ((-1 - a) % n)
+export const mod = (a, n) => {
+  if (a >= n) return a % n
+  if (a >= 0) return a
+  return n - 1 - ((-1 - a) % n)
+}
 
 /**
  * Calculates the cross product of two 2D vectors
@@ -78,7 +82,11 @@ export const cyclic = (a, b, c) => (a <= c ? a <= b && b < c : a <= b || b < c)
  * @param {number} i - The number to check
  * @returns {-1 | 0 | 1} The sign indicator
  */
-export const sign = i => (i > 0 ? 1 : i < 0 ? -1 : 0)
+export const sign = i => {
+  if (i > 0) return 1
+  if (i < 0) return -1
+  return 0
+}
 
 /**
  * Calculates the quadratic form for curve optimization
@@ -254,24 +262,22 @@ export const bezier = (t, p0, p1, p2, p3) => {
  * @returns {number} Parameter value t at intersection, or -1 if no intersection
  */
 export const tangent = (p0, p1, p2, p3, q0, q1) => {
-  let A, B, C, a, b, c, d, s, r1, r2
+  const A = cprod(p0, p1, q0, q1)
+  const B = cprod(p1, p2, q0, q1)
+  const C = cprod(p2, p3, q0, q1)
 
-  A = cprod(p0, p1, q0, q1)
-  B = cprod(p1, p2, q0, q1)
-  C = cprod(p2, p3, q0, q1)
+  const a = A - 2 * B + C
+  const b = -2 * A + 2 * B
+  const c = A
 
-  a = A - 2 * B + C
-  b = -2 * A + 2 * B
-  c = A
-
-  d = b * b - 4 * a * c
+  const d = b * b - 4 * a * c
 
   if (a === 0 || d < 0) return -1.0
 
-  s = Math.sqrt(d)
+  const s = Math.sqrt(d)
 
-  r1 = (-b + s) / (2 * a)
-  r2 = (-b - s) / (2 * a)
+  const r1 = (-b + s) / (2 * a)
+  const r2 = (-b - s) / (2 * a)
 
   if (r1 >= 0 && r1 <= 1) return r1
   if (r2 >= 0 && r2 <= 1) return r2

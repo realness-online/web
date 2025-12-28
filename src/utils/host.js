@@ -15,7 +15,7 @@ import {
 import { join, dirname } from 'node:path'
 import { gzip, gunzip } from 'node:zlib'
 import { promisify } from 'node:util'
-import { as_filename, as_path_parts, as_type } from '@/utils/itemid'
+import { as_filename, as_path_parts } from '@/utils/itemid'
 import { get_item } from '@/utils/item'
 
 const gzip_async = promisify(gzip)
