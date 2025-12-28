@@ -1,6 +1,5 @@
 <script setup>
-  import Icon from '@/components/icon'
-  import { ref, computed, onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted } from 'vue'
   import { marked } from 'marked'
   import { gfmHeadingId } from 'marked-gfm-heading-id'
   import DOMPurify from 'dompurify'
@@ -29,7 +28,7 @@
     const lines = content.split('\n')
     const toc = []
 
-    lines.forEach((line, index) => {
+    lines.forEach(line => {
       const heading_match = line.match(/^(#{2,6})\s+(.+)$/)
       if (heading_match) {
         const level = heading_match[1].length

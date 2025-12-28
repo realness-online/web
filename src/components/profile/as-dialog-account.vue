@@ -4,7 +4,6 @@
   import AsSignOn from '@/components/profile/as-sign-on'
   import { ref, onMounted as mounted, watch } from 'vue'
   import { current_user, sign_off } from '@/utils/serverless'
-  import { load } from '@/utils/itemid'
   import { useRoute as use_route } from 'vue-router'
 
   const form = ref(null)
@@ -60,7 +59,7 @@
     { immediate: true }
   )
 
-  mounted(async () => {
+  mounted(() => {
     // Check if we should show dialog on mount (e.g., if URL has #account)
     if (route.hash === '#account' && form.value) {
       show_sign_in.value = false

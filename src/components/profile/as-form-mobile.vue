@@ -54,8 +54,7 @@
 
   const validate_mobile_number = () => {
     const is_valid =
-      !!mobile_number.value &&
-      valid_phone(full_phone.value, country_code.value)
+      !!mobile_number.value && valid_phone(full_phone.value, country_code.value)
     disabled_sign_in.value = !is_valid
     return is_valid
   }
@@ -129,8 +128,7 @@
 
   mounted(() => {
     working.value = false
-    if (me.value?.id)
-      mobile_number.value = as_phone_number(me.value.id)
+    if (me.value?.id) mobile_number.value = as_phone_number(me.value.id)
 
     show_authorize.value = true
     validate_mobile_number()

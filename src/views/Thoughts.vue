@@ -50,19 +50,9 @@
   // Use keymap context with automatic lifecycle management
   const { register } = use_keymap('Thoughts')
 
-  register('ui::ToggleFullscreen', () => fullscreen())
-  register('thoughts::Search', () => {
-    // TODO: Implement search functionality
-    console.log('Search thoughts')
-  })
-  register('thoughts::NewThought', () => {
-    // TODO: Implement new thought creation
-    console.log('Create new thought')
-  })
-  register('thoughts::ClearSearch', () => {
-    // TODO: Clear search
-    console.log('Clear search')
-  })
+  register('thoughts::Search', () => {})
+  register('thoughts::NewThought', () => {})
+  register('thoughts::ClearSearch', () => {})
 
   mounted(async () => {
     await fill_thoughts()

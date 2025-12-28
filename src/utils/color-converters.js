@@ -14,38 +14,41 @@
  */
 export const rgb_to_hex = (red, green, blue, alpha) => {
   let is_percent = (red + (alpha || '')).toString().includes('%')
+  let r = red
+  let g = green
+  let b = blue
+  let a = alpha
 
   if (typeof red === 'string' && !green) {
     const parsed = parse_css_rgb_string(red)
     if (!parsed) throw new TypeError('Invalid or unsupported color format.')
 
     is_percent = false
-    ;[red, green, blue, alpha] = parsed
-  } else if (alpha !== undefined) alpha = Number.parseFloat(alpha)
+    ;[r, g, b, a] = parsed
+  } else if (a !== undefined) a = Number.parseFloat(a)
 
   if (
-    typeof red !== 'number' ||
-    typeof green !== 'number' ||
-    typeof blue !== 'number' ||
-    red > 255 ||
-    green > 255 ||
-    blue > 255
+    typeof r !== 'number' ||
+    typeof g !== 'number' ||
+    typeof b !== 'number' ||
+    r > 255 ||
+    g > 255 ||
+    b > 255
   )
     throw new TypeError('Expected three numbers below 256')
 
-  if (typeof alpha === 'number') {
-    if (!is_percent && alpha >= 0 && alpha <= 1) alpha = Math.round(255 * alpha)
-    else if (is_percent && alpha >= 0 && alpha <= 100)
-      alpha = Math.round((255 * alpha) / 100)
+  if (typeof a === 'number') {
+    if (!is_percent && a >= 0 && a <= 1) a = Math.round(255 * a)
+    else if (is_percent && a >= 0 && a <= 100) a = Math.round((255 * a) / 100)
     else
       throw new TypeError(
-        `Expected alpha value (${alpha}) as a fraction or percentage`
+        `Expected alpha value (${a}) as a fraction or percentage`
       )
 
-    alpha = (alpha | (1 << 8)).toString(16).slice(1)
-  } else alpha = ''
+    a = (a | (1 << 8)).toString(16).slice(1)
+  } else a = ''
 
-  return to_hex(red, green, blue, alpha)
+  return to_hex(r, g, b, a)
 }
 
 /**
@@ -58,18 +61,18 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
  */
 export const hsl_to_hex = (hue, saturation, lightness) => {
   // Resolve degrees to 0 - 359 range
-  hue = cycle_hue(hue)
+  const h = cycle_hue(hue)
 
   // Enforce constraints
-  saturation = clamp(saturation, 0, 100)
-  lightness = clamp(lightness, 0, 100)
+  const s_clamped = clamp(saturation, 0, 100)
+  const l_clamped = clamp(lightness, 0, 100)
 
   // Convert to 0 to 1 range
-  saturation /= 100
-  lightness /= 100
+  const s = s_clamped / 100
+  const l = l_clamped / 100
 
   // Convert HSL to RGB
-  const rgb = hsl_to_rgb(hue, saturation, lightness)
+  const rgb = hsl_to_rgb(h, s, l)
 
   // Convert each value to 2 character hex value
   return `#${rgb.map(n => (256 + n).toString(16).substr(-2)).join('')}`
@@ -129,31 +132,31 @@ const hsl_to_rgb = (h, s, l) => {
  * @param {number} b - Blue (0-255)
  * @returns {object} HSL object with h, s, l properties
  */
-export const rgb_to_hsl = (r, g, b) => {
-  r /= 255
-  g /= 255
-  b /= 255
+export const rgba_to_hsla = (r, g, b, a) => {
+  const red = r / 255
+  const green = g / 255
+  const blue = b / 255
 
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const diff = max - min
+  const cmax = Math.max(red, green, blue)
+  const cmin = Math.min(red, green, blue)
+  const diff = cmax - cmin
 
   let h = 0
   let s = 0
-  const l = (max + min) / 2
+  const l = (cmax + cmin) / 2
 
   if (diff !== 0) {
-    s = l > 0.5 ? diff / (2 - max - min) : diff / (max + min)
+    s = l > 0.5 ? diff / (2 - cmax - cmin) : diff / (cmax + cmin)
 
-    switch (max) {
-      case r:
-        h = (g - b) / diff + (g < b ? 6 : 0)
+    switch (cmax) {
+      case red:
+        h = (green - blue) / diff + (green < blue ? 6 : 0)
         break
-      case g:
-        h = (b - r) / diff + 2
+      case green:
+        h = (blue - red) / diff + 2
         break
-      case b:
-        h = (r - g) / diff + 4
+      case blue:
+        h = (red - green) / diff + 4
         break
     }
     h /= 6
@@ -180,8 +183,10 @@ export const hsl_to_oklch = (h, s, l) => {
 
   // Convert RGB to linear RGB
   const linear_rgb = rgb.map(val => {
-    val = val / 255
-    return val <= 0.04045 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4)
+    const normalized = val / 255
+    return normalized <= 0.04045
+      ? normalized / 12.92
+      : Math.pow((normalized + 0.055) / 1.055, 2.4)
   })
 
   // Convert linear RGB to OKLab
@@ -268,11 +273,11 @@ const parse_css_rgb_string = input => {
   if (parts.length < 3) return
 
   const parse_value = (value, max) => {
-    value = value.trim()
-    if (value.endsWith('%'))
-      return Math.min((Number.parseFloat(value) * max) / 100, max)
+    const trimmed = value.trim()
+    if (trimmed.endsWith('%'))
+      return Math.min((Number.parseFloat(trimmed) * max) / 100, max)
 
-    return Math.min(Number.parseFloat(value), max)
+    return Math.min(Number.parseFloat(trimmed), max)
   }
 
   const red = parse_value(parts[0], 255)
@@ -286,13 +291,17 @@ const parse_css_rgb_string = input => {
 }
 
 const cycle_hue = val => {
-  val = clamp(val, -1e7, 1e7)
-  while (val < 0) val += 360
-  while (val > 359) val -= 360
-  return val
+  let result = clamp(val, -1e7, 1e7)
+  while (result < 0) result += 360
+  while (result > 359) result -= 360
+  return result
 }
 
-const clamp = (val, min, max) => (val < min ? min : val > max ? max : val)
+const clamp = (val, min, max) => {
+  if (val < min) return min
+  if (val > max) return max
+  return val
+}
 
 const group_similar_colors = colors => {
   const groups = []

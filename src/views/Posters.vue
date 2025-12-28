@@ -16,9 +16,9 @@
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistance/Storage'
   import { use_posters } from '@/use/poster'
-  import { use as use_directory } from '@/use/directory-processor'
+
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, slice, aspect_ratio_mode } from '@/utils/preference'
+  import { storytelling, slice } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -33,7 +33,6 @@
   const init_processing_queue = inject('init_processing_queue')
   const queue_items = inject('queue_items')
 
-  const { process_directory } = use_directory()
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
 

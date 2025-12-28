@@ -268,7 +268,7 @@ export const validate_keymap_runtime = (keymap = default_keymap) => {
   const used_commands = new Set()
   const used_keys = new Map()
 
-  keymap.forEach((context, index) => {
+  keymap.forEach(context => {
     const context_name = context.context || 'Global'
 
     // Check for duplicate keys within context
@@ -328,7 +328,7 @@ export const get_keymap_stats = (keymap = default_keymap) => {
     const binding_count = Object.keys(context_config.bindings || {}).length
     stats.total_bindings += binding_count
 
-    Object.entries(context_config.bindings || {}).forEach(([key, command]) => {
+    Object.entries(context_config.bindings || {}).forEach(([, command]) => {
       const command_str = Array.isArray(command) ? command[0] : command
       commands_set.add(command_str)
     })

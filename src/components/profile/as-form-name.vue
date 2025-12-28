@@ -1,15 +1,7 @@
 <script setup>
-  import { ref } from 'vue'
   import { me } from '@/utils/serverless'
   import { use_me } from '@/use/people'
-  const emit = defineEmits(['valid'])
-  const { save, is_valid_name } = use_me()
-  const save_me = async () => {
-    if (is_valid_name.value) {
-      await save()
-      emit('valid')
-    }
-  }
+  const { is_valid_name } = use_me()
 </script>
 
 <template>

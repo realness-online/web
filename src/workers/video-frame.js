@@ -23,12 +23,6 @@ const prepare_and_render_frames = async message => {
     duration
   } = message.data
 
-  const batch_start = performance.now()
-  const total_frames = end_frame - start_frame
-  console.log(
-    `[Worker] Starting batch: frames ${start_frame}-${end_frame - 1} (${total_frames} frames)`
-  )
-
   // Parse base SVG once - we'll modify it for each frame
   const { document: base_document } = parseHTML(svg_string)
   const base_svg_template = base_document.documentElement.outerHTML
@@ -117,7 +111,7 @@ const prepare_and_render_frames = async message => {
         resizeHeight: canvas_height,
         resizeQuality: 'high'
       })
-    } catch (error) {
+    } catch {
       // Fallback: createImageBitmap without resize, then draw to canvas
       const temp_bitmap = await createImageBitmap(svg_blob)
       const canvas = new OffscreenCanvas(canvas_width, canvas_height)
@@ -131,19 +125,7 @@ const prepare_and_render_frames = async message => {
       frame_index: frame,
       image_bitmap
     })
-
-    if ((frame - start_frame + 1) % 50 === 0 || frame === end_frame - 1) {
-      const progress = ((frame - start_frame + 1) / total_frames) * 100
-      console.log(
-        `[Worker] Progress: ${frame - start_frame + 1}/${total_frames} frames (${progress.toFixed(1)}%)`
-      )
-    }
   }
-
-  const batch_time = performance.now() - batch_start
-  console.log(
-    `[Worker] Batch complete: ${total_frames} frames in ${batch_time.toFixed(0)}ms (${(total_frames / (batch_time / 1000)).toFixed(1)} fps)`
-  )
 
   return { frames }
 }
@@ -163,20 +145,7 @@ const route_message = async message => {
 }
 
 self.addEventListener('message', async event => {
-  console.log('[Worker] Received message:', event.data.route, {
-    start_frame: event.data.start_frame,
-    end_frame: event.data.end_frame,
-    frame_count: event.data.end_frame - event.data.start_frame,
-    canvas_size: `${event.data.canvas_width}x${event.data.canvas_height}`
-  })
-
   const reply = await route_message(event)
-
-  console.log(
-    '[Worker] Sending reply with',
-    reply.frames?.length || 0,
-    'frames'
-  )
 
   self.postMessage(reply, {
     transfer: reply.frames?.map(f => f.image_bitmap) || []

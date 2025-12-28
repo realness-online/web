@@ -44,12 +44,12 @@ export function is_today(a_date) {
   return false
 }
 export function is_same_day(d1, d2) {
-  d1 = new Date(d1)
-  d2 = new Date(d2)
+  const date1 = new Date(d1)
+  const date2 = new Date(d2)
   return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getDate() === d2.getDate() &&
-    d1.getMonth() === d2.getMonth()
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth()
   )
 }
 export function is_fresh(date = 0) {
@@ -77,8 +77,8 @@ export function as_day_time_year(date) {
   return as_time(date, format_as_day_time_year)
 }
 export function day_name(date) {
-  date = new Date(date)
-  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+  const d = new Date(date)
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
 }
 export function id_as_day(itemid) {
   return day_name(as_created_at(itemid))

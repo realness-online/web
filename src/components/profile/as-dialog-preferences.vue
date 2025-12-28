@@ -2,16 +2,15 @@
   /** @typedef {import('@/types').Available_Command} Available_Command */
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
-  import { ref, computed, inject, onMounted as mounted } from 'vue'
+  import { ref, computed, inject } from 'vue'
   import { get_file_system } from '@/utils/file'
   import { get_command_description } from '@/utils/keymaps'
-  import { aspect_ratio_mode } from '@/utils/preference'
 
   const key_commands = inject('key-commands')
   const set_posters_folder = () => get_file_system()
   const settings = ref(null)
 
-  const aspect_ratio_display = computed(() => aspect_ratio_mode.value || 'auto')
+  const aspect_ratio_display = computed(() => 'auto')
 
   const show_settings = () => {
     if (!settings.value) return
@@ -26,10 +25,6 @@
   const handle_click = event => {
     if (event.target === settings.value) settings.value.close()
   }
-
-  const available_commands = computed(
-    () => key_commands.get_available_commands.value
-  )
 
   // Group commands by keyboard rows
   const commands_by_context = computed(() => {

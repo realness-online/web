@@ -107,12 +107,8 @@ export const key_commands_plugin = {
             const normalized = cmd.key.toLowerCase()
             if (magic_keys[normalized]) {
               const unwatch = watch(magic_keys[normalized], is_pressed => {
-                if (is_pressed) {
-                  console.log(
-                    `[key-commands] combo "${cmd.key}" -> ${cmd.command}`
-                  )
+                if (is_pressed)
                   key_commands.execute_command(cmd.command, cmd.parameters)
-                }
               })
               unwatch_functions.push(unwatch)
             }

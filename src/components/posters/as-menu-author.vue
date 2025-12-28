@@ -6,7 +6,7 @@
   import AsDownload from '@/components/download-vector'
   import { is_vector_id } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
-  defineProps({
+  const props = defineProps({
     poster: {
       type: Object,
       required: true

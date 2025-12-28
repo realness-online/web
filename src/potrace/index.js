@@ -586,16 +586,16 @@ class Potrace {
         k = j + 1 - i + n
       }
 
-      px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
-      py = (pt[i].y + pt[j].y) / 2.0 - pt[0].y
-      ey = pt[j].x - pt[i].x
-      ex = -(pt[j].y - pt[i].y)
+      const px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
+      const py = (pt[i].y + pt[j].y) / 2.0 - pt[0].y
+      const ey = pt[j].x - pt[i].x
+      const ex = -(pt[j].y - pt[i].y)
 
-      a = (x2 - 2 * x * px) / k + px * px
-      b = (xy - x * py - y * px) / k + px * py
-      c = (y2 - 2 * y * py) / k + py * py
+      const a = (x2 - 2 * x * px) / k + px * px
+      const b = (xy - x * py - y * px) / k + px * py
+      const c = (y2 - 2 * y * py) / k + py * py
 
-      s = ex * ex * a + 2 * ex * ey * b + ey * ey * c
+      const s = ex * ex * a + 2 * ex * ey * b + ey * ey * c
 
       return Math.sqrt(s)
     }
@@ -636,7 +636,7 @@ class Potrace {
       i = clip0[i]
     }
     seg0[j] = n
-    m = j
+    const m = j
 
     i = n
     for (j = m; j > 0; j--) {
@@ -1020,7 +1020,7 @@ class Potrace {
 
     area = 0.0
     areac[0] = 0.0
-    p0 = curve.vertex[0]
+    const p0 = curve.vertex[0]
     for (i = 0; i < m; i++) {
       i1 = utils.mod(i + 1, m)
       if (curve.tag[i1] == 'CURVE') {
@@ -1069,8 +1069,8 @@ class Potrace {
         }
       }
     }
-    om = len[m]
-    ocurve = new Curve(om)
+    const om = len[m]
+    const ocurve = new Curve(om)
 
     j = m
     for (i = om - 1; i >= 0; i--) {
@@ -1142,28 +1142,17 @@ class Potrace {
     let area
     let alpha
     let d
-    let d1
-    let d2
-    let p0
     let p1
     let p2
     let p3
-    let pt
-    let A
-    let R
-    let A1
-    let A2
-    let A3
-    let A4
-    let s
     let t
 
     if (i == j) return 1
 
-    k = i
-    i1 = utils.mod(i + 1, m)
-    k1 = utils.mod(k + 1, m)
-    conv = convc[k1]
+    const k = i
+    const i1 = utils.mod(i + 1, m)
+    const k1 = utils.mod(k + 1, m)
+    const conv = convc[k1]
     if (conv === 0) return 1
 
     d = utils.ddist(vertex[i], vertex[i1])
@@ -1195,22 +1184,22 @@ class Potrace {
     area -= utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
     if (i >= j) area += areac[m]
 
-    A1 = utils.dpara(p0, p1, p2)
-    A2 = utils.dpara(p0, p1, p3)
-    A3 = utils.dpara(p0, p2, p3)
+    const A1 = utils.dpara(p0, p1, p2)
+    const A2 = utils.dpara(p0, p1, p3)
+    const A3 = utils.dpara(p0, p2, p3)
 
-    A4 = A1 + A3 - A2
+    const A4 = A1 + A3 - A2
 
     if (A2 == A1) return 1
 
     t = A3 / (A3 - A4)
-    s = A2 / (A2 - A1)
-    A = (A2 * t) / 2.0
+    const s = A2 / (A2 - A1)
+    const A = (A2 * t) / 2.0
 
     if (A === 0.0) return 1
 
-    R = area / A
-    alpha = 2 - Math.sqrt(4 - R / 0.3)
+    const R = area / A
+    const alpha = 2 - Math.sqrt(4 - R / 0.3)
 
     res.c[0] = utils.interval(t * alpha, p0, p1)
     res.c[1] = utils.interval(s * alpha, p3, p2)

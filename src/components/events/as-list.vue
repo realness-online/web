@@ -1,5 +1,6 @@
 <script>
   export default {
+    name: 'EventsList',
     props: {
       events: {
         type: Array,

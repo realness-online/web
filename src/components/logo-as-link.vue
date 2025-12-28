@@ -1,6 +1,7 @@
 <script>
   import icon from '@/components/icon'
   export default {
+    name: 'LogoAsLink',
     components: { icon }
   }
 </script>

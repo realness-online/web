@@ -55,7 +55,7 @@ const make_trace = message => {
     image_data.width * image_data.height * BYTES_PER_PIXEL
   )
     throw new Error(
-      `Invalid image data size: ${image_data.data.length} != ${image_data.width * image_data.height * BYTES_PER_PIXEL}`
+      `Invalid image data size: ${image_data.data.length} !== ${image_data.width * image_data.height * BYTES_PER_PIXEL}`
     )
 
   const params = {

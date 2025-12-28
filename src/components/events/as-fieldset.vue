@@ -1,7 +1,7 @@
 <script setup>
   import icon from '@/components/icon'
   import { list } from '@/utils/itemid'
-  import events_list from '@/components/events/as-list'
+
   import { Event } from '@/persistance/Storage'
   import { ref, computed, onMounted, nextTick } from 'vue'
 

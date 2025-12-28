@@ -1,15 +1,15 @@
 import { change_by } from '@/use/path'
 export function change(opacity = 0.025, resolution = change_by) {
-  opacity = parseFloat(opacity)
+  let value = parseFloat(opacity)
 
-  opacity = opacity * 10000
-  opacity = Math.round(opacity)
-  opacity = opacity / 10000
+  value = value * 10000
+  value = Math.round(value)
+  value = value / 10000
 
-  opacity += resolution
+  value += resolution
 
-  if (opacity > 1) opacity = 0.9
-  else if (opacity < 0) opacity = 0.025
+  if (value > 1) value = 0.9
+  else if (value < 0) value = 0.025
 
-  return opacity
+  return value
 }
