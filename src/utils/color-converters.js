@@ -3,13 +3,81 @@
  * Replaces external dependencies: rgb-hex, hsl-to-hex, culori, node-vibrant
  */
 
+// sRGB to linear RGB conversion constants
+const SRGB_THRESHOLD = 0.04045
+const SRGB_LOW_SLOPE = 12.92
+const SRGB_OFFSET = 0.055
+const SRGB_DIVISOR = 1.055
+const SRGB_GAMMA = 2.4
+
+// Color space constants
+const RGB_MAX = 255
+const PERCENTAGE_MAX = 100
+const HUE_MAX_DEGREES = 359
+const HUE_FULL_CIRCLE = 360
+const HEX_BASE = 16
+const HEX_BYTE_SHIFT = 256
+const HEX_ALPHA_OFFSET = -2
+const HALF_LIGHTNESS = 0.5
+const HUE_WRAP_DIVISOR = 6
+const HUE_OFFSET_GREEN = 2
+const HUE_OFFSET_BLUE = 4
+const RGBA_INDEX_GREEN = 1
+const RGBA_INDEX_BLUE = 2
+const RGBA_INDEX_ALPHA = 3
+const HUE_60 = 60
+const HUE_120 = 120
+const HUE_180 = 180
+const HUE_240 = 240
+const HUE_300 = 300
+const RGBA_COMPONENTS = 4
+const ALPHA_THRESHOLD = 128
+const HEX_SHIFT_GREEN = 8
+const HEX_SHIFT_RED = 16
+const HEX_SHIFT_ALPHA = 24
+const HUE_CLAMP_MIN = -1e7
+const HUE_CLAMP_MAX = 1e7
+const PI_DEGREES = 180
+const ALPHA_OPAQUE = 1
+
+// Color palette indices
+const PALETTE_VIBRANT = 0
+const PALETTE_MUTED = 1
+const PALETTE_DARK_VIBRANT = 2
+const PALETTE_LIGHT_VIBRANT = 3
+const PALETTE_DARK_MUTED = 4
+const PALETTE_LIGHT_MUTED = 5
+
+// OKLab color space transformation matrix coefficients
+// Matrix M1: RGB to LMS
+const OKLAB_M1_LR = 0.4122214708
+const OKLAB_M1_LG = 0.5363325363
+const OKLAB_M1_LB = 0.0514459929
+const OKLAB_M1_MR = 0.2119034982
+const OKLAB_M1_MG = 0.6806995451
+const OKLAB_M1_MB = 0.1073969566
+const OKLAB_M1_SR = 0.0883024619
+const OKLAB_M1_SG = 0.2817188376
+const OKLAB_M1_SB = 0.6299787005
+
+// Matrix M2: LMS to Lab
+const OKLAB_M2_LL = 0.2104542553
+const OKLAB_M2_LM = 0.793617785
+const OKLAB_M2_LS = -0.0040720468
+const OKLAB_M2_AL = 1.9779984951
+const OKLAB_M2_AM = -2.428592205
+const OKLAB_M2_AS = 0.4505937099
+const OKLAB_M2_BL = 0.0259040371
+const OKLAB_M2_BM = 0.7827717662
+const OKLAB_M2_BS = -0.808675766
+
 /**
  * Convert RGB values to hex string
  * Replaces rgb-hex package functionality
  * @param {number|string} red - Red value (0-255) or CSS rgb/rgba string
- * @param {number} green - Green value (0-255)
- * @param {number} blue - Blue value (0-255)
- * @param {number} alpha - Alpha value (0-1 or 0-100%)
+ * @param {number} [green] - Green value (0-255)
+ * @param {number} [blue] - Blue value (0-255)
+ * @param {number} [alpha] - Alpha value (0-1 or 0-100%)
  * @returns {string} Hex color string
  */
 export const rgb_to_hex = (red, green, blue, alpha) => {
@@ -31,21 +99,24 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
     typeof r !== 'number' ||
     typeof g !== 'number' ||
     typeof b !== 'number' ||
-    r > 255 ||
-    g > 255 ||
-    b > 255
+    r > RGB_MAX ||
+    g > RGB_MAX ||
+    b > RGB_MAX
   )
     throw new TypeError('Expected three numbers below 256')
 
   if (typeof a === 'number') {
-    if (!is_percent && a >= 0 && a <= 1) a = Math.round(255 * a)
-    else if (is_percent && a >= 0 && a <= 100) a = Math.round((255 * a) / 100)
+    if (!is_percent && a >= 0 && a <= ALPHA_OPAQUE) a = Math.round(RGB_MAX * a)
+    else if (is_percent && a >= 0 && a <= PERCENTAGE_MAX)
+      a = Math.round((RGB_MAX * a) / PERCENTAGE_MAX)
     else
       throw new TypeError(
         `Expected alpha value (${a}) as a fraction or percentage`
       )
 
-    a = (a | (1 << 8)).toString(16).slice(1)
+    a = (a | (ALPHA_OPAQUE << HEX_SHIFT_GREEN))
+      .toString(HEX_BASE)
+      .slice(ALPHA_OPAQUE)
   } else a = ''
 
   return to_hex(r, g, b, a)
@@ -54,28 +125,38 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
 /**
  * Convert HSL values to hex string
  * Replaces hsl-to-hex package functionality
- * @param {number} hue - Hue in degrees (0-359)
- * @param {number} saturation - Saturation percentage (0-100)
- * @param {number} lightness - Lightness percentage (0-100)
+ * @param {number|string} hue - Hue in degrees (0-359) or CSS hsl/hsla string
+ * @param {number} [saturation] - Saturation percentage (0-100)
+ * @param {number} [lightness] - Lightness percentage (0-100)
  * @returns {string} Hex color string
  */
 export const hsl_to_hex = (hue, saturation, lightness) => {
+  let h = hue
+  let s = saturation
+  let l = lightness
+
+  if (typeof hue === 'string' && !saturation) {
+    const parsed = parse_css_hsl_string(hue)
+    if (!parsed) throw new TypeError('Invalid or unsupported color format.')
+    ;[h, s, l] = parsed
+  }
+
   // Resolve degrees to 0 - 359 range
-  const h = cycle_hue(hue)
+  h = cycle_hue(h)
 
   // Enforce constraints
-  const s_clamped = clamp(saturation, 0, 100)
-  const l_clamped = clamp(lightness, 0, 100)
+  const s_clamped = clamp(s, 0, PERCENTAGE_MAX)
+  const l_clamped = clamp(l, 0, PERCENTAGE_MAX)
 
   // Convert to 0 to 1 range
-  const s = s_clamped / 100
-  const l = l_clamped / 100
+  const s_normalized = s_clamped / PERCENTAGE_MAX
+  const l_normalized = l_clamped / PERCENTAGE_MAX
 
   // Convert HSL to RGB
-  const rgb = hsl_to_rgb(h, s, l)
+  const rgb = hsl_to_rgb(h, s_normalized, l_normalized)
 
   // Convert each value to 2 character hex value
-  return `#${rgb.map(n => (256 + n).toString(16).substr(-2)).join('')}`
+  return `#${rgb.map(n => (HEX_BYTE_SHIFT + n).toString(HEX_BASE).substr(HEX_ALPHA_OFFSET)).join('')}`
 }
 
 /**
@@ -92,36 +173,36 @@ const hsl_to_rgb = (h, s, l) => {
 
   let r, g, b
 
-  if (0 <= h && h < 60) {
+  if (0 <= h && h < HUE_60) {
     r = c
     g = x
     b = 0
-  } else if (60 <= h && h < 120) {
+  } else if (HUE_60 <= h && h < HUE_120) {
     r = x
     g = c
     b = 0
-  } else if (120 <= h && h < 180) {
+  } else if (HUE_120 <= h && h < HUE_180) {
     r = 0
     g = c
     b = x
-  } else if (180 <= h && h < 240) {
+  } else if (HUE_180 <= h && h < HUE_240) {
     r = 0
     g = x
     b = c
-  } else if (240 <= h && h < 300) {
+  } else if (HUE_240 <= h && h < HUE_300) {
     r = x
     g = 0
     b = c
-  } else if (300 <= h && h < 360) {
+  } else if (HUE_300 <= h && h < HUE_FULL_CIRCLE) {
     r = c
     g = 0
     b = x
   }
 
   return [
-    Math.round((r + m) * 255),
-    Math.round((g + m) * 255),
-    Math.round((b + m) * 255)
+    Math.round((r + m) * RGB_MAX),
+    Math.round((g + m) * RGB_MAX),
+    Math.round((b + m) * RGB_MAX)
   ]
 }
 
@@ -132,10 +213,10 @@ const hsl_to_rgb = (h, s, l) => {
  * @param {number} b - Blue (0-255)
  * @returns {object} HSL object with h, s, l properties
  */
-export const rgba_to_hsla = (r, g, b, a) => {
-  const red = r / 255
-  const green = g / 255
-  const blue = b / 255
+export const rgba_to_hsla = (r, g, b, _a) => {
+  const red = r / RGB_MAX
+  const green = g / RGB_MAX
+  const blue = b / RGB_MAX
 
   const cmax = Math.max(red, green, blue)
   const cmin = Math.min(red, green, blue)
@@ -146,26 +227,26 @@ export const rgba_to_hsla = (r, g, b, a) => {
   const l = (cmax + cmin) / 2
 
   if (diff !== 0) {
-    s = l > 0.5 ? diff / (2 - cmax - cmin) : diff / (cmax + cmin)
+    s = l > HALF_LIGHTNESS ? diff / (2 - cmax - cmin) : diff / (cmax + cmin)
 
     switch (cmax) {
       case red:
-        h = (green - blue) / diff + (green < blue ? 6 : 0)
+        h = (green - blue) / diff + (green < blue ? HUE_WRAP_DIVISOR : 0)
         break
       case green:
-        h = (blue - red) / diff + 2
+        h = (blue - red) / diff + HUE_OFFSET_GREEN
         break
       case blue:
-        h = (red - green) / diff + 4
+        h = (red - green) / diff + HUE_OFFSET_BLUE
         break
     }
-    h /= 6
+    h /= HUE_WRAP_DIVISOR
   }
 
   return {
-    h: h * 360,
-    s: s * 100,
-    l: l * 100
+    h: h * HUE_FULL_CIRCLE,
+    s: s * PERCENTAGE_MAX,
+    l: l * PERCENTAGE_MAX
   }
 }
 
@@ -179,42 +260,42 @@ export const rgba_to_hsla = (r, g, b, a) => {
  */
 export const hsl_to_oklch = (h, s, l) => {
   // First convert HSL to RGB
-  const rgb = hsl_to_rgb(h, s / 100, l / 100)
+  const rgb = hsl_to_rgb(h, s / PERCENTAGE_MAX, l / PERCENTAGE_MAX)
 
   // Convert RGB to linear RGB
   const linear_rgb = rgb.map(val => {
-    const normalized = val / 255
-    return normalized <= 0.04045
-      ? normalized / 12.92
-      : Math.pow((normalized + 0.055) / 1.055, 2.4)
+    const normalized = val / RGB_MAX
+    return normalized <= SRGB_THRESHOLD
+      ? normalized / SRGB_LOW_SLOPE
+      : Math.pow((normalized + SRGB_OFFSET) / SRGB_DIVISOR, SRGB_GAMMA)
   })
 
   // Convert linear RGB to OKLab
   const [lr, lg, lb] = linear_rgb
-  const l_oklab = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb
-  const m_oklab = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb
-  const s_oklab = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb
+  const l_oklab = OKLAB_M1_LR * lr + OKLAB_M1_LG * lg + OKLAB_M1_LB * lb
+  const m_oklab = OKLAB_M1_MR * lr + OKLAB_M1_MG * lg + OKLAB_M1_MB * lb
+  const s_oklab = OKLAB_M1_SR * lr + OKLAB_M1_SG * lg + OKLAB_M1_SB * lb
 
   const l_cubed = Math.cbrt(l_oklab)
   const m_cubed = Math.cbrt(m_oklab)
   const s_cubed = Math.cbrt(s_oklab)
 
   const l_oklab_final =
-    0.2104542553 * l_cubed + 0.793617785 * m_cubed - 0.0040720468 * s_cubed
+    OKLAB_M2_LL * l_cubed + OKLAB_M2_LM * m_cubed + OKLAB_M2_LS * s_cubed
   const a_oklab =
-    1.9779984951 * l_cubed - 2.428592205 * m_cubed + 0.4505937099 * s_cubed
+    OKLAB_M2_AL * l_cubed + OKLAB_M2_AM * m_cubed + OKLAB_M2_AS * s_cubed
   const b_oklab =
-    0.0259040371 * l_cubed + 0.7827717662 * m_cubed - 0.808675766 * s_cubed
+    OKLAB_M2_BL * l_cubed + OKLAB_M2_BM * m_cubed + OKLAB_M2_BS * s_cubed
 
   // Convert OKLab to OKLCH
   const l_oklch = l_oklab_final
   const c_oklch = Math.sqrt(a_oklab * a_oklab + b_oklab * b_oklab)
-  const h_oklch = (Math.atan2(b_oklab, a_oklab) * 180) / Math.PI
+  const h_oklch = (Math.atan2(b_oklab, a_oklab) * PI_DEGREES) / Math.PI
 
   return {
     l: l_oklch,
     c: c_oklch,
-    h: h_oklch < 0 ? h_oklch + 360 : h_oklch
+    h: h_oklch < 0 ? h_oklch + HUE_FULL_CIRCLE : h_oklch
   }
 }
 
@@ -230,18 +311,21 @@ export const extract_color_palette = image_data => {
   const { height } = image_data
 
   // Sample pixels (every 4th pixel for performance, but ensure we get some pixels)
-  const sample_size = Math.max(1, Math.floor(Math.min(width, height) / 4))
+  const sample_size = Math.max(
+    ALPHA_OPAQUE,
+    Math.floor(Math.min(width, height) / RGBA_COMPONENTS)
+  )
   const colors = []
 
   for (let y = 0; y < height; y += sample_size)
     for (let x = 0; x < width; x += sample_size) {
-      const index = (y * width + x) * 4
+      const index = (y * width + x) * RGBA_COMPONENTS
       const r = pixels[index]
-      const g = pixels[index + 1]
-      const b = pixels[index + 2]
-      const a = pixels[index + 3]
+      const g = pixels[index + RGBA_INDEX_GREEN]
+      const b = pixels[index + RGBA_INDEX_BLUE]
+      const a = pixels[index + RGBA_INDEX_ALPHA]
 
-      if (a > 128)
+      if (a > ALPHA_THRESHOLD)
         // Skip transparent pixels
         colors.push({ r, g, b })
     }
@@ -251,19 +335,19 @@ export const extract_color_palette = image_data => {
   const sorted_groups = color_groups.sort((a, b) => b.count - a.count)
 
   return {
-    vibrant: sorted_groups[0]?.color || '#000000',
-    muted: sorted_groups[1]?.color || '#666666',
-    dark_vibrant: sorted_groups[2]?.color || '#333333',
-    light_vibrant: sorted_groups[3]?.color || '#cccccc',
-    dark_muted: sorted_groups[4]?.color || '#444444',
-    light_muted: sorted_groups[5]?.color || '#aaaaaa'
+    vibrant: sorted_groups[PALETTE_VIBRANT]?.color || '#000000',
+    muted: sorted_groups[PALETTE_MUTED]?.color || '#666666',
+    dark_vibrant: sorted_groups[PALETTE_DARK_VIBRANT]?.color || '#333333',
+    light_vibrant: sorted_groups[PALETTE_LIGHT_VIBRANT]?.color || '#cccccc',
+    dark_muted: sorted_groups[PALETTE_DARK_MUTED]?.color || '#444444',
+    light_muted: sorted_groups[PALETTE_LIGHT_MUTED]?.color || '#aaaaaa'
   }
 }
 
 // Helper functions
 
 const to_hex = (red, green, blue, alpha) =>
-  `#${(blue | (green << 8) | (red << 16) | (1 << 24)).toString(16).slice(1)}${alpha}`
+  `#${(blue | (green << HEX_SHIFT_GREEN) | (red << HEX_SHIFT_RED) | (ALPHA_OPAQUE << HEX_SHIFT_ALPHA)).toString(HEX_BASE).slice(ALPHA_OPAQUE)}${alpha}`
 
 const parse_css_rgb_string = input => {
   const parts = input
@@ -275,25 +359,48 @@ const parse_css_rgb_string = input => {
   const parse_value = (value, max) => {
     const trimmed = value.trim()
     if (trimmed.endsWith('%'))
-      return Math.min((Number.parseFloat(trimmed) * max) / 100, max)
+      return Math.min((Number.parseFloat(trimmed) * max) / PERCENTAGE_MAX, max)
 
     return Math.min(Number.parseFloat(trimmed), max)
   }
 
-  const red = parse_value(parts[0], 255)
-  const green = parse_value(parts[1], 255)
-  const blue = parse_value(parts[2], 255)
+  const red = parse_value(parts[0], RGB_MAX)
+  const green = parse_value(parts[1], RGB_MAX)
+  const blue = parse_value(parts[2], RGB_MAX)
   let alpha
 
-  if (parts.length === 4) alpha = parse_value(parts[3], 1)
+  if (parts.length === RGBA_COMPONENTS)
+    alpha = parse_value(parts[3], ALPHA_OPAQUE)
 
   return [red, green, blue, alpha]
 }
 
+const parse_css_hsl_string = input => {
+  const parts = input
+    .replace(/hsla?\(([^)]+)\)/, '$1')
+    .split(/[,\s/]+/)
+    .filter(Boolean)
+  if (parts.length < 3) return
+
+  const parse_value = (value, max) => {
+    const trimmed = value.trim()
+    if (trimmed.endsWith('%'))
+      return Math.min((Number.parseFloat(trimmed) * max) / PERCENTAGE_MAX, max)
+
+    return Math.min(Number.parseFloat(trimmed), max)
+  }
+
+  const hue = Number.parseFloat(parts[0])
+  const saturation = parse_value(parts[1], PERCENTAGE_MAX)
+  const lightness = parse_value(parts[2], PERCENTAGE_MAX)
+
+  return [hue, saturation, lightness]
+}
+
 const cycle_hue = val => {
-  let result = clamp(val, -1e7, 1e7)
-  while (result < 0) result += 360
-  while (result > 359) result -= 360
+  let result = clamp(val, HUE_CLAMP_MIN, HUE_CLAMP_MAX)
+  while (result < 0) result += HUE_FULL_CIRCLE
+  while (result > HUE_MAX_DEGREES) result -= HUE_FULL_CIRCLE
   return result
 }
 

@@ -8,6 +8,16 @@ import {
   CanvasSource
 } from 'mediabunny'
 
+// Video encoding constants
+const DEFAULT_FPS = 24
+const MAX_DURATION_SECONDS = 172
+const MS_PER_SECOND = 1000
+const PERCENTAGE_MULTIPLIER = 100
+const BYTES_PER_KB = 1024
+const CHUNK_SIZE_MB = 2
+const LOG_INTERVAL_FRAMES = 100
+const PROGRESS_LOG_INTERVAL = 50
+
 /**
  * @typedef {Object} VideoEncoderConfig
  * @property {string} codec - Codec string (e.g., 'vp09.00.10.08', 'vp8')
@@ -49,6 +59,171 @@ const get_animation_duration = animation_speed => {
 }
 
 /**
+ * Setup File System Access API for direct file writing
+ * @param {string|undefined} suggested_filename - Suggested filename
+ * @returns {Promise<{file_handle: any, writable_stream: any}>}
+ */
+const setup_file_system_api = async suggested_filename => {
+  const use_file_system_api = 'showSaveFilePicker' in window
+
+  if (!use_file_system_api) {
+    console.info(
+      '[Video] File System Access API not supported - using memory buffer (Blob download)'
+    )
+    return { file_handle: null, writable_stream: null }
+  }
+
+  if (!suggested_filename) {
+    console.info(
+      '[Video] No suggested filename provided - using memory buffer (Blob download)'
+    )
+    return { file_handle: null, writable_stream: null }
+  }
+
+  console.info(
+    '[Video] File System Access API detected - attempting direct file write'
+  )
+
+  try {
+    const file_handle = await /** @type {any} */ (window).showSaveFilePicker({
+      suggestedName: suggested_filename,
+      types: [
+        {
+          description: 'QuickTime Video',
+          accept: { 'video/quicktime': ['.mov'] }
+        }
+      ]
+    })
+    const writable_stream = await file_handle.createWritable()
+    console.info(
+      '[Video] Using File System Access API - writing directly to disk (memory efficient)'
+    )
+    return { file_handle, writable_stream }
+  } catch (error) {
+    if (error.name === 'AbortError')
+      console.info(
+        '[Video] File System Access API cancelled by user - falling back to memory buffer'
+      )
+    else
+      console.warn(
+        '[Video] File System Access API error, using memory buffer:',
+        error
+      )
+    return { file_handle: null, writable_stream: null }
+  }
+}
+
+/**
+ * Setup canvas and video encoder
+ * @param {number} canvas_width - Canvas width
+ * @param {number} canvas_height - Canvas height
+ * @param {number} fps - Frames per second
+ * @param {number} total_frames - Total number of frames
+ * @param {any} writable_stream - Optional writable stream for File System API
+ * @returns {{canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, output: any, canvas_source: any}}
+ */
+const setup_canvas_and_encoder = (
+  canvas_width,
+  canvas_height,
+  fps,
+  total_frames,
+  writable_stream
+) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas_width
+  canvas.height = canvas_height
+  const ctx = canvas.getContext('2d', { willReadFrequently: false })
+
+  const target = writable_stream
+    ? new StreamTarget(writable_stream, {
+        chunked: true,
+        chunkSize: CHUNK_SIZE_MB * BYTES_PER_KB * BYTES_PER_KB
+      })
+    : new BufferTarget()
+
+  const output = new Output({
+    format: new MovOutputFormat(),
+    target
+  })
+
+  let canvas_source = null
+  try {
+    canvas_source = new CanvasSource(canvas, {
+      codec: 'avc',
+      bitrate: 2500000,
+      keyFrameInterval: 1.25,
+      latencyMode: 'quality'
+    })
+  } catch {
+    throw new Error('H.264 codec not supported - required for MOV format')
+  }
+
+  output.addVideoTrack(canvas_source, {
+    frameRate: fps,
+    maximumPacketCount: total_frames
+  })
+
+  return { canvas, ctx, output, canvas_source }
+}
+
+/**
+ * Capture a single SVG frame to canvas
+ * @param {SVGSVGElement} svg_element - SVG element to capture
+ * @param {CanvasRenderingContext2D} ctx - Canvas context
+ * @param {number} canvas_width - Canvas width
+ * @param {number} canvas_height - Canvas height
+ * @param {number} current_time - Current animation time
+ * @returns {Promise<void>}
+ */
+const capture_svg_frame = async (
+  svg_element,
+  ctx,
+  canvas_width,
+  canvas_height,
+  current_time
+) => {
+  svg_element.setCurrentTime(current_time)
+
+  await nextTick()
+  await nextTick()
+
+  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+  svg_clone.setAttribute('width', String(canvas_width))
+  svg_clone.setAttribute('height', String(canvas_height))
+
+  const figure = svg_element.closest('figure.poster')
+  if (figure) {
+    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+    if (hidden_svg) {
+      const symbols = hidden_svg.querySelectorAll('symbol')
+      symbols.forEach(symbol => {
+        const symbol_clone = symbol.cloneNode(true)
+        svg_clone.appendChild(symbol_clone)
+      })
+    }
+  }
+
+  const svg_data = new XMLSerializer().serializeToString(svg_clone)
+  const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
+  const svg_url = URL.createObjectURL(svg_blob)
+
+  const img = new Image()
+  await new Promise((resolve, reject) => {
+    img.onload = resolve
+    img.onerror = reject
+    img.src = svg_url
+  })
+
+  ctx.clearRect(0, 0, canvas_width, canvas_height)
+  ctx.drawImage(img, 0, 0, canvas_width, canvas_height)
+
+  URL.revokeObjectURL(svg_url)
+  img.src = ''
+  img.onload = null
+  img.onerror = null
+}
+
+/**
  * Renders an SVG animation to a video element at 24fps
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
@@ -58,9 +233,9 @@ const get_animation_duration = animation_speed => {
  * @param {number} [options.height] - Canvas height (defaults to SVG viewBox height)
  * @returns {Promise<HTMLVideoElement>} Video element with the rendered animation
  */
-export const render_svg_to_video = async (
+export const render_svg_to_video = (
   svg_element,
-  { fps = 24, max_duration = 172, width, height } = {}
+  { fps = DEFAULT_FPS, max_duration = MAX_DURATION_SECONDS, width, height } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
@@ -74,7 +249,7 @@ export const render_svg_to_video = async (
   canvas.height = canvas_height
   const ctx = canvas.getContext('2d')
 
-  const frame_duration = 1000 / fps
+  const frame_duration = MS_PER_SECOND / fps
   const total_frames = Math.ceil(max_duration * fps)
 
   const stream = canvas.captureStream(fps)
@@ -116,7 +291,9 @@ export const render_svg_to_video = async (
   const capture_frame = async () => {
     svg_element.setCurrentTime(current_time)
 
-    await new Promise(resolve => requestAnimationFrame(resolve))
+    await new Promise(resolve => {
+      requestAnimationFrame(resolve)
+    })
 
     const svg_data = new XMLSerializer().serializeToString(svg_element)
     const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
@@ -135,6 +312,7 @@ export const render_svg_to_video = async (
     URL.revokeObjectURL(svg_url)
 
     current_frame++
+    // eslint-disable-next-line require-atomic-updates
     current_time = (current_frame / fps) % max_duration
 
     if (current_frame < total_frames) setTimeout(capture_frame, frame_duration)
@@ -156,10 +334,10 @@ export const render_svg_to_video = async (
  * @param {Function} [options.on_frame] - Callback called for each frame
  * @returns {Promise<void>}
  */
-export const render_svg_to_canvas = async (
+export const render_svg_to_canvas = (
   svg_element,
   canvas,
-  { fps = 24, max_duration = 172, on_frame } = {}
+  { fps = DEFAULT_FPS, max_duration = MAX_DURATION_SECONDS, on_frame } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
@@ -167,7 +345,7 @@ export const render_svg_to_canvas = async (
     throw new Error('Canvas must be an HTMLCanvasElement')
 
   const ctx = canvas.getContext('2d')
-  const frame_duration = 1000 / fps
+  const frame_duration = MS_PER_SECOND / fps
   const total_frames = Math.ceil(max_duration * fps)
 
   let current_frame = 0
@@ -176,8 +354,12 @@ export const render_svg_to_canvas = async (
   const capture_frame = async () => {
     svg_element.setCurrentTime(current_time)
 
-    await new Promise(resolve => requestAnimationFrame(resolve))
-    await new Promise(resolve => requestAnimationFrame(resolve))
+    await new Promise(resolve => {
+      requestAnimationFrame(resolve)
+    })
+    await new Promise(resolve => {
+      requestAnimationFrame(resolve)
+    })
 
     const svg_data = new XMLSerializer().serializeToString(svg_element)
     const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
@@ -198,6 +380,7 @@ export const render_svg_to_canvas = async (
     if (on_frame) on_frame(current_frame, current_time)
 
     current_frame++
+    // eslint-disable-next-line require-atomic-updates
     current_time = (current_frame / fps) % max_duration
 
     if (current_frame < total_frames) setTimeout(capture_frame, frame_duration)
@@ -240,7 +423,7 @@ export const download_video = (blob, filename = 'animation.mov') => {
 export const render_svg_to_video_blob = async (
   svg_element,
   {
-    fps = 24,
+    fps = DEFAULT_FPS,
     max_duration,
     animation_speed = 'normal',
     width,
@@ -255,50 +438,8 @@ export const render_svg_to_video_blob = async (
   svg_element.pauseAnimations()
 
   const duration = max_duration || get_animation_duration(animation_speed)
-
-  let file_handle = null
-  let writable_stream = null
-  const use_file_system_api = 'showSaveFilePicker' in window
-
-  if (use_file_system_api && suggested_filename) {
-    console.info(
-      '[Video] File System Access API detected - attempting direct file write'
-    )
-    try {
-      file_handle = await /** @type {any} */ (window).showSaveFilePicker({
-        suggestedName: suggested_filename,
-        types: [
-          {
-            description: 'QuickTime Video',
-            accept: { 'video/quicktime': ['.mov'] }
-          }
-        ]
-      })
-      writable_stream = await file_handle.createWritable()
-      console.info(
-        '[Video] Using File System Access API - writing directly to disk (memory efficient)'
-      )
-    } catch (error) {
-      if (error.name === 'AbortError')
-        console.info(
-          '[Video] File System Access API cancelled by user - falling back to memory buffer'
-        )
-      else
-        console.warn(
-          '[Video] File System Access API error, using memory buffer:',
-          error
-        )
-      file_handle = null
-      writable_stream = null
-    }
-  } else if (!use_file_system_api)
-    console.info(
-      '[Video] File System Access API not supported - using memory buffer (Blob download)'
-    )
-  else if (!suggested_filename)
-    console.info(
-      '[Video] No suggested filename provided - using memory buffer (Blob download)'
-    )
+  const { file_handle, writable_stream } =
+    await setup_file_system_api(suggested_filename)
 
   const viewbox = svg_element.viewBox.baseVal
   let canvas_width = width || viewbox.width || svg_element.clientWidth
@@ -320,96 +461,40 @@ export const render_svg_to_video_blob = async (
 
   const render_start = performance.now()
 
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas_width
-  canvas.height = canvas_height
-  const ctx = canvas.getContext('2d', { willReadFrequently: false })
-
-  const target = writable_stream
-    ? new StreamTarget(writable_stream, {
-        chunked: true,
-        chunkSize: 2 * 1024 * 1024
-      })
-    : new BufferTarget()
-
-  const output = new Output({
-    format: new MovOutputFormat(),
-    target
-  })
-
-  let canvas_source = null
-  try {
-    canvas_source = new CanvasSource(canvas, {
-      codec: 'avc',
-      bitrate: 2500000,
-      keyFrameInterval: 1.25,
-      latencyMode: 'quality'
-    })
-  } catch {
-    throw new Error('H.264 codec not supported - required for MOV format')
-  }
-
-  output.addVideoTrack(canvas_source, {
-    frameRate: fps,
-    maximumPacketCount: total_frames
-  })
+  const { ctx, output, canvas_source } = setup_canvas_and_encoder(
+    canvas_width,
+    canvas_height,
+    fps,
+    total_frames,
+    writable_stream
+  )
 
   await output.start()
 
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
     const current_time = current_frame / fps
 
-    if (current_frame % 100 === 0)
+    if (current_frame % LOG_INTERVAL_FRAMES === 0)
       console.info(
         `[Video] Capturing frame ${current_frame}, time: ${current_time.toFixed(3)}s`
       )
 
-    svg_element.setCurrentTime(current_time)
-
-    await nextTick()
-    await nextTick()
-
-    const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
-    svg_clone.setAttribute('width', String(canvas_width))
-    svg_clone.setAttribute('height', String(canvas_height))
-
-    const figure = svg_element.closest('figure.poster')
-    if (figure) {
-      const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-      if (hidden_svg) {
-        const symbols = hidden_svg.querySelectorAll('symbol')
-        symbols.forEach(symbol => {
-          const symbol_clone = symbol.cloneNode(true)
-          svg_clone.appendChild(symbol_clone)
-        })
-      }
-    }
-
-    const svg_data = new XMLSerializer().serializeToString(svg_clone)
-    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
-
-    const img = new Image()
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = svg_url
-    })
-
-    ctx.clearRect(0, 0, canvas_width, canvas_height)
-    ctx.drawImage(img, 0, 0, canvas_width, canvas_height)
-
-    URL.revokeObjectURL(svg_url)
-    img.src = ''
-    img.onload = null
-    img.onerror = null
+    // eslint-disable-next-line no-await-in-loop
+    await capture_svg_frame(
+      svg_element,
+      ctx,
+      canvas_width,
+      canvas_height,
+      current_time
+    )
 
     const timestamp = current_frame / fps
     const frame_duration = 1 / fps
 
     try {
+      // eslint-disable-next-line no-await-in-loop
       await canvas_source.add(timestamp, frame_duration)
-      if (current_frame % 100 === 0)
+      if (current_frame % LOG_INTERVAL_FRAMES === 0)
         console.info(`[Video] Frame ${current_frame} added successfully`)
     } catch (error) {
       console.error(`[Video] Error adding frame ${current_frame}:`, error)
@@ -419,8 +504,12 @@ export const render_svg_to_video_blob = async (
 
     if (on_progress) on_progress(current_frame + 1, total_frames)
 
-    if (current_frame % 50 === 0 || current_frame === total_frames - 1) {
-      const progress = ((current_frame + 1) / total_frames) * 100
+    if (
+      current_frame % PROGRESS_LOG_INTERVAL === 0 ||
+      current_frame === total_frames - 1
+    ) {
+      const progress =
+        ((current_frame + 1) / total_frames) * PERCENTAGE_MULTIPLIER
       console.info(
         `[Video] Frame ${current_frame + 1}/${total_frames} (${progress.toFixed(1)}%)`
       )
@@ -446,7 +535,7 @@ export const render_svg_to_video_blob = async (
   if (!buffer_target.buffer) throw new Error('Output buffer is null')
   const blob = new Blob([buffer_target.buffer], { type: 'video/quicktime' })
 
-  const bytes_per_mb = 1024 * 1024
+  const bytes_per_mb = BYTES_PER_KB * BYTES_PER_KB
   console.info(
     `[Video] Video render complete: ${(blob.size / bytes_per_mb).toFixed(2)}MB blob created in ${total_time.toFixed(0)}ms (using memory buffer)`
   )

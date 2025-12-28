@@ -1,4 +1,5 @@
 <script setup>
+  /* eslint-disable vue/no-v-html */
   import { ref, onMounted as mounted } from 'vue'
   import { marked } from 'marked'
   import { gfmHeadingId } from 'marked-gfm-heading-id'
@@ -88,6 +89,7 @@
           {{ item.title }}
         </a>
       </nav>
+      <!-- Markdown content sanitized with DOMPurify before rendering -->
       <section class="content" v-html="rendered_content" />
     </article>
   </dialog>

@@ -18,7 +18,7 @@ class Directory {
   types = [] // at the root of the directory folders are types in our vocabulary
 
   /**
-   * @type {(Created|Directory)[]}
+   * @type {Created[]}
    */
   archive = []
 

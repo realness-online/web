@@ -8,6 +8,8 @@
   const { save } = use()
   const statement_text = ref(null)
 
+  const SCROLL_DELAY_MS = 100
+
   const focused = async () => {
     emit('toggle-keyboard')
     const textarea = document.querySelector('textarea#wat')
@@ -23,7 +25,7 @@
         block: 'center',
         inline: 'center'
       })
-    }, 100)
+    }, SCROLL_DELAY_MS)
   }
 
   const prepare_statement = async () => {

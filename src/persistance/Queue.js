@@ -37,7 +37,9 @@ export const get_next = async () => {
     String(key).startsWith('queue:posters:')
   )
 
+  // Sequential check required: return first pending item found
   for (const key of queue_keys) {
+    // eslint-disable-next-line no-await-in-loop
     const item = await get(key)
     if (item?.status === 'pending') return item
   }
@@ -86,4 +88,4 @@ export const get_all = async () => {
  * @param {Id} id
  * @returns {Promise<QueueItem | null>}
  */
-export const get_item = async id => get(queue_key(id))
+export const get_item = id => get(queue_key(id))

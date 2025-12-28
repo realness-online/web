@@ -32,10 +32,12 @@
     return tonight
   })
 
+  const SINGLE_DIGIT_MAX = 9
+
   const event_time = computed(() => {
     if (!main_event.value) return ''
     let minutes = main_event.value.getMinutes()
-    minutes = minutes > 9 ? minutes : `0${minutes}`
+    minutes = minutes > SINGLE_DIGIT_MAX ? minutes : `0${minutes}`
     const time_value = `${main_event.value.getHours()}:${minutes}`
     return time_value
   })
@@ -45,8 +47,8 @@
     const year = main_event.value.getFullYear()
     let month = main_event.value.getMonth() + 1
     let day_val = main_event.value.getDate()
-    if (month <= 9) month = `0${month}`
-    if (day_val <= 9) day_val = `0${day_val}`
+    if (month <= SINGLE_DIGIT_MAX) month = `0${month}`
+    if (day_val <= SINGLE_DIGIT_MAX) day_val = `0${day_val}`
     const day_value = `${year}-${month}-${day_val}`
     return day_value
   })

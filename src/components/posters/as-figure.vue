@@ -1,4 +1,5 @@
 <script setup>
+  /* eslint-disable vue/no-static-inline-styles */
   import AsDownload from '@/components/download-vector'
   import AsDownloadVideo from '@/components/download-video'
   import AsMessenger from '@/components/profile/as-messenger'
@@ -99,6 +100,8 @@
   watch_effect(async () => {
     if (menu.value && !person.value) {
       const author_id = as_author(props.itemid)
+      // False positive: sequential assignment after async load
+      // eslint-disable-next-line require-atomic-updates
       if (author_id) person.value = await load(author_id)
     }
   })
@@ -145,6 +148,7 @@
       @click="vector_click"
       @show="on_show"
       :focusable="false" />
+    <!-- Hidden SVG defs container, not user-facing style -->
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol

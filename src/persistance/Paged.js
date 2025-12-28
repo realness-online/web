@@ -63,28 +63,30 @@ export const Paged = superclass =>
         div.setAttribute('itemid', this.id)
         div.appendChild(offload)
         const me = from_e64(current_user.value.phoneNumber)
+        /** @type {Id} */
         const id = `${me}/${this.type}/${oldest.getTime()}`
 
         const history = new History(id)
         const success = await history.save(div)
-        if (success) await this.save(current)
+        if (success) await this.save(/** @type {Element} */ (current))
         if (elements_as_kilobytes(current) > SIZE.MAX) await this.optimize()
       }
     }
 
     async sync() {
       let oldest_at = 0 // the larger the number the more recent it is
-      let cloud = await load_from_network(this.id)
-      if (cloud) cloud = type_as_list(cloud).sort(recent_item_first)
-      else cloud = []
+      const cloud_item = await load_from_network(this.id)
+      /** @type {Item[]} */
+      let cloud = []
+      if (cloud_item) cloud = type_as_list(cloud_item).sort(recent_item_first)
       if (cloud.length > 0) {
         const oldest_id = cloud[cloud.length - 1].id
         oldest_at = as_created_at(oldest_id)
       }
 
-      let local = await list(this.id)
-      local.sort(recent_item_first)
-      local = local.filter(local_item => {
+      const local_items = await list(this.id)
+      /** @type {Item[]} */
+      const local = local_items.sort(recent_item_first).filter(local_item => {
         const created_at = as_created_at(local_item.id)
         if (oldest_at > created_at) return false // local older items are ignored, have been optimized away
         return !cloud.some(
@@ -94,12 +96,18 @@ export const Paged = superclass =>
         )
       })
 
-      let offline = localStorage.getItem(`/+/${this.type}`)
-      offline = type_as_list(get_item(offline))
+      const offline_html = localStorage.getItem(`/+/${this.type}`)
+      /** @type {Id} */
+      const offline_id = `/+/${this.type}`
+      const offline_item = get_item(offline_html, offline_id)
+      /** @type {Item[]} */
+      const offline = type_as_list(offline_item)
       offline.forEach(item => {
         // convert id's to current id
         const me = from_e64(current_user.value.phoneNumber)
-        item.id = `${me}/${this.type}/${as_created_at(item.id)}`
+        /** @type {Id} */
+        const new_id = `${me}/${this.type}/${as_created_at(item.id)}`
+        item.id = new_id
       })
 
       // three distinct lists are recombined into a single synced list

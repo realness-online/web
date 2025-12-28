@@ -14,6 +14,11 @@ class Path {
   len = 0
 
   /**
+   * @type {'+' | '-'} Sign indicating whether path is black or white
+   */
+  sign = '+'
+
+  /**
    * @type {Object} Curve data for the path
    */
   curve = {}
@@ -26,12 +31,12 @@ class Path {
   /**
    * @type {number} Minimum X coordinate of the path's bounding box
    */
-  min_x = 100000
+  min_x = Number.MAX_SAFE_INTEGER
 
   /**
    * @type {number} Minimum Y coordinate of the path's bounding box
    */
-  min_y = 100000
+  min_y = Number.MAX_SAFE_INTEGER
 
   /**
    * @type {number} Maximum X coordinate of the path's bounding box

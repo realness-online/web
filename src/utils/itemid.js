@@ -20,7 +20,11 @@ export const as_filename = async itemid => {
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `people${itemid}`
 
-  if (has_archive.includes(as_type(itemid))) {
+  const item_type = as_type(itemid)
+  if (
+    item_type &&
+    has_archive.includes(/** @type {typeof has_archive[number]} */ (item_type))
+  ) {
     const archive = await as_archive(itemid)
     if (archive) return `${archive}.html.gz`
     return `${filename}.html.gz`
@@ -31,7 +35,7 @@ export const as_filename = async itemid => {
 
 /**
  * @param {Id} itemid
- * @returns {Promise<string | null>}
+ * @returns {Promise<Item | null>}
  */
 export const load_from_network = async itemid => {
   const url = await as_download_url(itemid)
@@ -50,7 +54,7 @@ export const load_from_network = async itemid => {
 
     if (!html) return null
     await set(itemid, html)
-    return get_item(html)
+    return get_item(html, itemid)
   }
   return null
 }
@@ -63,12 +67,12 @@ export const load_from_network = async itemid => {
 export const load = async (itemid, me = localStorage.me) => {
   let item
   if (~itemid.indexOf(me)) {
-    item = localStorage.getItem(itemid)
-    if (item) return get_item(item)
-    else if (as_type(itemid) === 'relations') return []
+    const item_html = localStorage.getItem(itemid)
+    if (item_html) return get_item(item_html, itemid)
+    else if (as_type(itemid) === 'relations') return null
   }
   const result = await get(itemid)
-  item = get_item(result)
+  item = get_item(result, itemid)
   if (item) return item
   try {
     item = await load_from_network(itemid)
@@ -83,7 +87,7 @@ export const load = async (itemid, me = localStorage.me) => {
 /**
  * @param {Id} itemid
  * @param {Author} me
- * @returns {Promise<Type[]>}
+ * @returns {Promise<Item[]>}
  */
 export const list = async (itemid, me = localStorage.me) => {
   try {
@@ -118,7 +122,7 @@ export const as_download_url = async itemid => {
 /**
  * Splits an item ID path into its constituent parts
  * @param {Id} itemid - The full item path (e.g. '/+123456/statements/789')
- * @returns {[Author] | [Author, Type] | [Author, Type, Created]} Array of path parts where:
+ * @returns {string[]} Array of path parts where:
  *   [0] = author ID (e.g. '+123456')
  *   [1] = item type (e.g. 'statements', 'events', 'posters', etc.)
  *   [2] = created_at timestamp (if applicable)
@@ -174,7 +178,8 @@ export const as_author = itemid => {
  */
 export const as_type = itemid => {
   const path = as_path_parts(itemid)
-  if (path[1]) return path[1]
+  if (path[1] && types.includes(/** @type {Type} */ (path[1])))
+    return /** @type {Type} */ (path[1])
   if (itemid.startsWith('/+')) return 'person'
   return null
 }
@@ -185,10 +190,13 @@ export const as_type = itemid => {
  */
 export const as_created_at = itemid => {
   const path = as_path_parts(itemid)
-  /** @type {1 | 2 | 3 | 4} */
   const path_length = path.length
-  if (path_length === 3) return parseInt(path[2])
-  if (path_length === 4) return parseInt(path[3])
+  const PATH_WITH_TYPE = 3
+  const PATH_WITH_TYPE_AND_CREATED = 4
+  if (path_length === PATH_WITH_TYPE && path[2])
+    return /** @type {Created} */ (parseInt(path[2]))
+  if (path_length === PATH_WITH_TYPE_AND_CREATED && path[3])
+    return /** @type {Created} */ (parseInt(path[3]))
   return null
 }
 
@@ -208,7 +216,7 @@ export const as_fragment_id = itemid => `#${as_query_id(itemid)}`
 
 /**
  * @param {Item} item
- * @returns {Type[]}
+ * @returns {Item[]}
  */
 export const type_as_list = item => {
   // Returns a list even if loading the item fails
@@ -226,7 +234,15 @@ export const type_as_list = item => {
  */
 export const is_history = itemid => {
   const parts = as_path_parts(itemid)
-  if (has_history.includes(as_type(itemid)) && parts.length === 3) return true
+  const item_type = as_type(itemid)
+  if (
+    item_type &&
+    has_history.includes(
+      /** @type {typeof has_history[number]} */ (item_type)
+    ) &&
+    parts.length === 3
+  )
+    return true
   return false
 }
 
@@ -281,7 +297,7 @@ export const is_itemid = id => {
   if (!author.startsWith('+')) return false
 
   // Validate type against the Type typedef from types.js
-  if (!types.includes(type)) return false
+  if (!types.includes(/** @type {Type} */ (type))) return false
 
   // Large files require timestamps
   const requires_timestamp = ['posters']

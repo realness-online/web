@@ -1,4 +1,5 @@
 <script setup>
+  /* eslint-disable vue/no-v-html */
   import { ref, onMounted as mounted, watch } from 'vue'
   import { load } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
@@ -36,6 +37,7 @@
 </script>
 
 <template>
+  <!-- SVG content from app's own IndexedDB storage, trusted source -->
   <symbol
     ref="element"
     :id="symbol_id"

@@ -6,6 +6,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import copy from 'rollup-plugin-copy'
 
+const MIN_SIZE_BYTES = 1000
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const create_worker_config = filename => ({
@@ -48,7 +49,7 @@ const create_worker_config = filename => ({
     analyzer({
       summaryOnly: true,
       limit: 10,
-      filter: ({ size }) => size > 1000
+      filter: ({ size }) => size > MIN_SIZE_BYTES
     })
   ],
   watch: {
