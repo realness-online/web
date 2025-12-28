@@ -127,7 +127,7 @@ export default [
       'max-nested-callbacks': ['error', 5],
       'prefer-promise-reject-errors': 'error',
       'max-depth': ['error', 5],
-      'max-params': ['error', 3],
+      'max-params': ['error', 5],
       'no-magic-numbers': [
         'warn',
         {

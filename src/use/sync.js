@@ -180,9 +180,12 @@ export const sync_offline_actions = async () => {
   // Handle offline queue (includes both anonymous and logged-in statements)
   const offline = await get('sync:offline')
   if (offline) {
+    // Sequential processing required: operations must complete before starting next
     while (offline.length) {
       const item = offline.pop()
+      // eslint-disable-next-line no-await-in-loop
       if (item.action === 'save') await new Offline(item.id).save()
+      // eslint-disable-next-line no-await-in-loop
       else if (item.action === 'delete') await new Offline(item.id).delete()
       else console.info('weird:unknown-offline-action', item.action, item.id)
     }

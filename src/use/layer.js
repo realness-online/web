@@ -8,28 +8,42 @@ export const use = () => {
   const { get_active_path } = use_path()
   const fill_opacity = change_by => {
     const layer = get_active_layer()
-    layer.style.fillOpacity = change(layer.style.fillOpacity, change_by)
+    if (layer)
+      layer.style.fillOpacity = String(
+        change(parseFloat(layer.style.fillOpacity), change_by)
+      )
   }
   const stroke_opacity = change_by => {
     const layer = get_active_layer()
-    layer.style.strokeOpacity = change(layer.style.strokeOpacity, change_by)
+    if (layer)
+      layer.style.strokeOpacity = String(
+        change(parseFloat(layer.style.strokeOpacity), change_by)
+      )
   }
   const opacity = change_by => {
     const layer = get_active_layer()
-    layer.style.opacity = change(layer.style.opacity, change_by)
+    if (layer)
+      layer.style.opacity = String(
+        change(parseFloat(layer.style.opacity), change_by)
+      )
   }
 
   const get_active_layer = () => {
     const path = get_active_path()
+    if (!path) return null
 
     const layer_name = path.getAttribute('itemprop')
     if (layer_name) {
       selected_layer.value = layer_name
-      const layer = settings_query(layer_name)
-      if (as_stroke.value) opacity_percentage.value = layer.style.strokeOpacity
-      else opacity_percentage.value = layer.style.fillOpacity
+      const layer = /** @type {HTMLElement} */ (settings_query(layer_name))
+      if (layer) 
+        if (as_stroke.value)
+          opacity_percentage.value = layer.style.strokeOpacity
+        else opacity_percentage.value = layer.style.fillOpacity
+      
       return layer
     }
+    return null
   }
 
   mounted(() => {
@@ -39,9 +53,13 @@ export const use = () => {
   })
 
   whenever(opacity_percentage, () => {
-    const layer = settings_query(selected_layer.value)
-    if (as_stroke.value) layer.style.strokeOpacity = opacity_percentage.value
-    else layer.style.fillOpacity = opacity_percentage.value
+    const layer = /** @type {HTMLElement} */ (
+      settings_query(selected_layer.value)
+    )
+    if (layer) 
+      if (as_stroke.value) layer.style.strokeOpacity = opacity_percentage.value
+      else layer.style.fillOpacity = opacity_percentage.value
+    
   })
 
   return {

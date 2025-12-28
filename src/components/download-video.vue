@@ -19,6 +19,8 @@
       validator: is_vector_id
     }
   })
+  const PERCENTAGE_MAX = 100
+  const HUE_FULL_CIRCLE = 360
 
   defineOptions({
     name: 'DownloadVideo'
@@ -32,7 +34,7 @@
 
   const computed_progress = computed(() => {
     if (total_frames.value === 0) return 0
-    return Math.round((progress.value / total_frames.value) * 100)
+    return Math.round((progress.value / total_frames.value) * PERCENTAGE_MAX)
   })
 
   const state_message = computed(() => {
@@ -45,7 +47,7 @@
 
   const icon_rotation = computed(() => {
     if (!working.value || total_frames.value === 0) return 0
-    return (computed_progress.value / 100) * 360
+    return (computed_progress.value / PERCENTAGE_MAX) * HUE_FULL_CIRCLE
   })
 
   const icon_color = computed(() => {
@@ -58,9 +60,9 @@
     // Interpolate hue through color wheel (0-360 degrees)
     // Start at current hue, travel through the wheel based on progress
     const start_hue = hsl.h
-    const progress_ratio = computed_progress.value / 100
-    const hue_shift = progress_ratio * 360
-    const new_hue = (start_hue + hue_shift) % 360
+    const progress_ratio = computed_progress.value / PERCENTAGE_MAX
+    const hue_shift = progress_ratio * HUE_FULL_CIRCLE
+    const new_hue = (start_hue + hue_shift) % HUE_FULL_CIRCLE
 
     // Keep saturation and lightness constant, maintain alpha
     return `hsla(${Math.round(new_hue)}, ${hsl.s}%, ${hsl.l}%, ${hsl.a})`
@@ -110,12 +112,9 @@
       })
 
       state.value = 'encoding'
-      await new Promise(resolve => setTimeout(resolve, 100))
 
       state.value = 'downloading'
       download_video(blob, file_name.value)
-
-      await new Promise(resolve => setTimeout(resolve, 200))
     } catch (error) {
       console.error('Failed to render video:', error)
       state.value = 'error'

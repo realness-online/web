@@ -13,6 +13,10 @@
     slice
   } from '@/utils/preference'
 
+  const FPS_GOOD_THRESHOLD = 51
+  const FPS_MIN_ACCEPTABLE = 24
+  const FPS_ACCEPTABLE = 50
+
   const fps = useFps()
 
   const animation_status = computed(() => {
@@ -23,9 +27,9 @@
   const aspect_ratio = computed(() => aspect_ratio_mode.value || 'auto')
 
   const fps_color = computed(() => {
-    if (fps.value >= 51) return 'green'
-    if (fps.value < 24) return 'red'
-    if (fps.value < 50) return 'orange'
+    if (fps.value >= FPS_GOOD_THRESHOLD) return 'green'
+    if (fps.value < FPS_MIN_ACCEPTABLE) return 'red'
+    if (fps.value < FPS_ACCEPTABLE) return 'orange'
     return 'green'
   })
 

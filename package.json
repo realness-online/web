@@ -41,6 +41,7 @@
     "test:ui": "vitest --ui",
     "test:keymaps": "node test-keymap-build.js",
     "type": "tsc --pretty",
+    "pre-commit": "npm run lint && npm run type && npm run test",
     "storage:compress": "node scripts/compress-files.js",
     "storage:upload": "node scripts/upload-files.js",
     "storage:download": "node scripts/download-files.js",

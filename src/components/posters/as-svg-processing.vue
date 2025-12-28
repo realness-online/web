@@ -1,5 +1,6 @@
 <script setup>
   /* eslint-disable vue/no-v-html */
+  /* eslint-disable vue/no-static-inline-styles */
   import {
     ref,
     computed,
@@ -128,6 +129,7 @@
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`" />
 
+    <!-- Hidden SVG defs container, not user-facing style -->
     <svg style="display: none">
       <as-symbol-shadow />
       <symbol

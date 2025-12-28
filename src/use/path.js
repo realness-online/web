@@ -21,27 +21,36 @@ const as_stroke = ref(false)
 export const use = () => {
   const fill_opacity = change_by => {
     const path = get_active_path()
-    path.style.fillOpacity = change(path.style.fillOpacity, change_by)
+    if (path)
+      path.style.fillOpacity = String(
+        change(parseFloat(path.style.fillOpacity), change_by)
+      )
   }
 
   const stroke_opacity = change_by => {
     const path = get_active_path()
-    path.style.strokeOpacity = change(path.style.strokeOpacity, change_by)
+    if (path)
+      path.style.strokeOpacity = String(
+        change(parseFloat(path.style.strokeOpacity), change_by)
+      )
   }
 
   const opacity = change_by => {
     const path = get_active_path()
-    path.style.opacity = change(path.style.opacity, change_by)
+    if (path)
+      path.style.opacity = String(
+        change(parseFloat(path.style.opacity), change_by)
+      )
   }
 
   const get_active_path = () => {
-    let path = active_element().value
+    let path = /** @type {HTMLElement} */ (active_element().value)
     if (!is_path(path)) {
-      const { href } = active_element().value
-      if (href) {
-        const id = href.baseVal.slice(1)
+      const active = /** @type {SVGUseElement} */ (active_element().value)
+      if (active.href) {
+        const id = active.href.baseVal.slice(1)
         const symbol = document.getElementById(id)
-        path = symbol.firstChild
+        path = /** @type {HTMLElement} */ (symbol?.firstChild)
       }
     }
     const path_name = path?.getAttribute('itemprop')
@@ -60,9 +69,13 @@ export const use = () => {
   })
 
   whenever(opacity_percentage, () => {
-    const path = itemprop_query(selected_path.value)
-    if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
-    else path.style.fillOpacity = opacity_percentage.value
+    const path = /** @type {HTMLElement} */ (
+      itemprop_query(selected_path.value)
+    )
+    if (path) 
+      if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
+      else path.style.fillOpacity = opacity_percentage.value
+    
   })
 
   return {

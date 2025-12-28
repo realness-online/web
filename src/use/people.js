@@ -1,4 +1,5 @@
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
 import { ref, computed, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'

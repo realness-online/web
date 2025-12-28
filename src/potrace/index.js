@@ -8,6 +8,16 @@ import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
 import Histogram from '@/potrace/types/Histogram'
 
+// Potrace algorithm constants
+const ALPHA_SCALE_FACTOR = 0.75
+const MIN_ALPHA_THRESHOLD = 0.55
+const PENALTY_RATIO = 0.3
+const CURVATURE_THRESHOLD = -0.5
+const CURVATURE_SCALE = 0.75
+const TANGENT_PRECISION = -0.999847695156
+const POSTERIZE_BRIGHTNESS_THRESHOLD = 200
+const POSTERIZE_STEP_SCALE = 0.1
+
 /** @typedef {'spread' | 'dominant' | 'median' | 'mean'} FillStrategy */
 
 /**
@@ -91,7 +101,8 @@ export const as_paths = (image_data, options = {}) => {
  */
 export const as_path_element = (image_data, options = {}) => {
   const potrace = new Potrace(options)
-  return potrace.get_path_tag(image_data)
+  potrace.load_image(image_data)
+  return potrace.get_path_tag()
 }
 
 /**
@@ -102,7 +113,8 @@ export const as_path_element = (image_data, options = {}) => {
  */
 export const as_path_elements = (image_data, options = {}) => {
   const potrace = new Potrace(options)
-  return potrace.path_tags(image_data)
+  potrace.load_image(image_data)
+  return potrace.path_tags()
 }
 
 /**
@@ -124,7 +136,11 @@ class Potrace {
   static FILL_DOMINANT = /** @type {FillStrategy} */ ('dominant')
   static FILL_MEDIAN = /** @type {FillStrategy} */ ('median')
   static FILL_MEAN = /** @type {FillStrategy} */ ('mean')
+
+  /** @type {'auto'} */
   static RANGES_AUTO = 'auto'
+
+  /** @type {'equal'} */
   static RANGES_EQUAL = 'equal'
 
   /** @typedef {'black' | 'white' | 'left' | 'right' | 'minority' | 'majority'} TurnPolicy */
@@ -199,9 +215,7 @@ class Potrace {
    */
   #find_next(black_map, point) {
     let i = black_map.point_to_index(point)
-    while (i < black_map.size && black_map.data[i] !== 1) {
-      i++
-    }
+    while (i < black_map.size && black_map.data[i] !== 1) i++
     return i < black_map.size && black_map.index_to_point(i)
   }
 
@@ -556,14 +570,6 @@ class Potrace {
       let x2
       let y2
       let k
-      let a
-      let b
-      let c
-      let s
-      let px
-      let py
-      let ex
-      let ey
       let r = 0
       if (j >= n) {
         j -= n
@@ -602,7 +608,6 @@ class Potrace {
 
     let i
     let j
-    let m
     let k
     const n = path.len
     const pen = []
@@ -683,16 +688,8 @@ class Potrace {
     const pointslope = (path, i, j, ctr, dir) => {
       const n = path.len
       const { sums } = path
-      let x
-      let y
-      let x2
-      let xy
-      let y2
-      let k
       let a
-      let b
       let c
-      let lambda2
       let l
       let r = 0
 
@@ -713,21 +710,21 @@ class Potrace {
         r += 1
       }
 
-      x = sums[j + 1].x - sums[i].x + r * sums[n].x
-      y = sums[j + 1].y - sums[i].y + r * sums[n].y
-      x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
-      xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
-      y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
-      k = j + 1 - i + r * n
+      const x = sums[j + 1].x - sums[i].x + r * sums[n].x
+      const y = sums[j + 1].y - sums[i].y + r * sums[n].y
+      const x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
+      const xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
+      const y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
+      const k = j + 1 - i + r * n
 
       ctr.x = x / k
       ctr.y = y / k
 
       a = (x2 - (x * x) / k) / k
-      b = (xy - (x * y) / k) / k
+      const b = (xy - (x * y) / k) / k
       c = (y2 - (y * y) / k) / k
 
-      lambda2 = (a + c + Math.sqrt((a - c) * (a - c) + 4 * b * b)) / 2
+      const lambda2 = (a + c + Math.sqrt((a - c) * (a - c) + 4 * b * b)) / 2
 
       a -= lambda2
       c -= lambda2
@@ -945,7 +942,7 @@ class Potrace {
           utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
         dd = Math.abs(dd)
         alpha = dd > 1 ? 1 - 1.0 / dd : 0
-        alpha = alpha / 0.75
+        alpha = alpha / ALPHA_SCALE_FACTOR
       } else alpha = 4 / 3.0
 
       curve.alpha0[j] = alpha
@@ -955,7 +952,7 @@ class Potrace {
         curve.c[3 * j + 1] = curve.vertex[j]
         curve.c[3 * j + 2] = p4
       } else {
-        if (alpha < 0.55) alpha = 0.55
+        if (alpha < MIN_ALPHA_THRESHOLD) alpha = MIN_ALPHA_THRESHOLD
         else if (alpha > 1) alpha = 1
 
         p2 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[i], curve.vertex[j])
@@ -1020,13 +1017,13 @@ class Potrace {
 
     area = 0.0
     areac[0] = 0.0
-    const p0 = curve.vertex[0]
+    p0 = curve.vertex[0]
     for (i = 0; i < m; i++) {
       i1 = utils.mod(i + 1, m)
       if (curve.tag[i1] == 'CURVE') {
         alpha = curve.alpha[i1]
         area +=
-          (0.3 *
+          (PENALTY_RATIO *
             alpha *
             (4 - alpha) *
             utils.dpara(curve.c[i * 3 + 2], vert[i1], curve.c[i1 * 3 + 2])) /
@@ -1069,8 +1066,8 @@ class Potrace {
         }
       }
     }
-    const om = len[m]
-    const ocurve = new Curve(om)
+    om = len[m]
+    ocurve = new Curve(om)
 
     j = m
     for (i = om - 1; i >= 0; i--) {
@@ -1142,17 +1139,21 @@ class Potrace {
     let area
     let alpha
     let d
+    let d1
+    let d2
+    let p0
     let p1
     let p2
     let p3
+    let pt
     let t
 
     if (i == j) return 1
 
-    const k = i
-    const i1 = utils.mod(i + 1, m)
-    const k1 = utils.mod(k + 1, m)
-    const conv = convc[k1]
+    k = i
+    i1 = utils.mod(i + 1, m)
+    k1 = utils.mod(k + 1, m)
+    conv = convc[k1]
     if (conv === 0) return 1
 
     d = utils.ddist(vertex[i], vertex[i1])
@@ -1199,7 +1200,7 @@ class Potrace {
     if (A === 0.0) return 1
 
     const R = area / A
-    const alpha = 2 - Math.sqrt(4 - R / 0.3)
+    alpha = 2 - Math.sqrt(4 - R / PENALTY_RATIO)
 
     res.c[0] = utils.interval(t * alpha, p0, p1)
     res.c[1] = utils.interval(s * alpha, p3, p2)
@@ -1215,7 +1216,7 @@ class Potrace {
     for (k = utils.mod(i + 1, m); k != j; k = k1) {
       k1 = utils.mod(k + 1, m)
       t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
-      if (t < -0.5) return 1
+      if (t < CURVATURE_THRESHOLD) return 1
 
       pt = utils.bezier(t, p0, p1, p2, p3)
       d = utils.ddist(vertex[k], vertex[k1])
@@ -1236,7 +1237,7 @@ class Potrace {
     for (k = i; k != j; k = k1) {
       k1 = utils.mod(k + 1, m)
       t = utils.tangent(p0, p1, p2, p3, curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-      if (t < -0.5) return 1
+      if (t < CURVATURE_THRESHOLD) return 1
 
       pt = utils.bezier(t, p0, p1, p2, p3)
       d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
@@ -1244,7 +1245,7 @@ class Potrace {
 
       d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
       d2 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
-      d2 *= 0.75 * curve.alpha[k1]
+      d2 *= CURVATURE_SCALE * curve.alpha[k1]
       if (d2 < 0) {
         d1 = -d1
         d2 = -d2
@@ -1660,7 +1661,6 @@ class Potrace {
     let i = steps - 1
 
     while (i >= 0) {
-      const factor = i / (steps - 1)
       const threshold = Math.min(colorsToThreshold, (i + 1) * stepSize)
       const finalThreshold = blackOnWhite ? threshold : 255 - threshold
       i--
@@ -1912,6 +1912,14 @@ class Potrace {
         fillOpacity: calculatedOpacity.toFixed(3)
       }
     })
+  }
+
+  /**
+   * Loads and processes image data for tracing
+   * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+   */
+  load_image(image_data) {
+    this.#load_image(image_data)
   }
 
   /**

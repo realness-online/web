@@ -17,7 +17,7 @@
       <account-dialog />
       <router-link id="about" to="/about" tabindex="-1">?</router-link>
     </header>
-    <nav ref="nav">
+    <nav>
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
         Statements
       </router-link>

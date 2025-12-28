@@ -1,19 +1,14 @@
 <script setup>
-  import { ref, watch, onMounted as mounted } from 'vue'
+  import { watch, onMounted as mounted, toRef } from 'vue'
   import { use_me } from '@/use/people'
   const props = defineProps({
     person: {
       type: Object,
       required: true
-    },
-    editable: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   })
   const { me } = use_me()
-  const person = ref(props.person)
+  const person = toRef(props, 'person')
   mounted(() => {
     if (me.value.id === person.value.id) person.value = me.value
   })

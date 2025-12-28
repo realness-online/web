@@ -83,8 +83,10 @@ export function day_name(date) {
 export function id_as_day(itemid) {
   return day_name(as_created_at(itemid))
 }
+const MS_PER_MINUTE = 60000
+
 export const format_time_remaining = time_ms => {
-  const minutes = Math.floor(time_ms / 60000)
+  const minutes = Math.floor(time_ms / MS_PER_MINUTE)
   const hours = Math.floor(minutes / 60)
   const remaining_minutes = minutes % 60
 

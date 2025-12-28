@@ -3,6 +3,10 @@ import { rgba_to_hsla } from '@/utils/colors'
 import { to_kb } from '@/utils/numbers'
 import { optimize } from 'svgo/browser'
 
+const RGBA_COMPONENTS = 4
+const PERCENTAGE_MAX = 100
+const SCALE_PRECISION = 100
+
 export const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
@@ -41,7 +45,8 @@ export const svgo_options = {
   ]
 }
 
-export const get_average_color = (canvas, x, y, width, height) => {
+export const get_average_color = (canvas, region) => {
+  const { x, y, width, height } = region
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   const image_data = ctx.getImageData(x, y, width, height)
   const { data } = image_data
@@ -50,9 +55,9 @@ export const get_average_color = (canvas, x, y, width, height) => {
     g = 0,
     b = 0,
     a = 0
-  const pixel_count = data.length / 4
+  const pixel_count = data.length / RGBA_COMPONENTS
 
-  for (let i = 0; i < data.length; i += 4) {
+  for (let i = 0; i < data.length; i += RGBA_COMPONENTS) {
     r += data[i]
     g += data[i + 1]
     b += data[i + 2]
@@ -74,13 +79,12 @@ export const as_gradient = (canvas, height = false) => {
   const stops = []
 
   for (let i = 0; i < direction; i += chunk) {
-    const color = get_average_color(
-      canvas,
-      height ? 0 : i,
-      height ? i : 0,
-      height ? opposite : chunk,
-      height ? chunk : opposite
-    )
+    const color = get_average_color(canvas, {
+      x: height ? 0 : i,
+      y: height ? i : 0,
+      width: height ? opposite : chunk,
+      height: height ? chunk : opposite
+    })
     stops.push({
       color: rgba_to_hsla(color),
       offset: scale(i, 0, direction)
@@ -98,7 +102,12 @@ export const as_radial_gradient = canvas => {
   const stops = []
 
   for (let i = 0; i < box_size; i += chunk) {
-    const color = get_average_color(canvas, i, 0, chunk, box_size)
+    const color = get_average_color(canvas, {
+      x: i,
+      y: 0,
+      width: chunk,
+      height: box_size
+    })
     stops.push({
       color: rgba_to_hsla(color),
       offset: scale(i, 0, box_size)
@@ -112,7 +121,7 @@ export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number = parseFloat(pair.number)
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
-  if (pair.unit === '%') return length * (number / 100)
+  if (pair.unit === '%') return length * (number / PERCENTAGE_MAX)
   return number
 }
 export const scale = (value, min, max) => {
@@ -120,7 +129,9 @@ export const scale = (value, min, max) => {
   const new_max = 100
   const percent = (value - min) / (max - min)
   const scale = percent * (new_max - new_min) + new_min
-  return Math.round((scale + Number.EPSILON) * 100) / 100
+  return (
+    Math.round((scale + Number.EPSILON) * SCALE_PRECISION) / SCALE_PRECISION
+  )
 }
 export const is_stop = stop => {
   if (!stop.percentage) return false
@@ -128,7 +139,7 @@ export const is_stop = stop => {
   return true
 }
 
-export const make_vector = async message => {
+export const make_vector = message => {
   console.time('make:vector')
   const { image_data } = message.data
 
@@ -148,7 +159,7 @@ export const make_vector = async message => {
   return { vector }
 }
 
-export const make_gradient = async message => {
+export const make_gradient = message => {
   console.time('make:gradient')
   const { image_data } = message.data
 

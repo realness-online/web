@@ -17,13 +17,15 @@ export const use = (vector, on_complete) => {
     })
   }
   const optimized = message => {
-    const optimized = get_item(message.data.vector)
-    vector.value.light = optimized.light
-    vector.value.regular = optimized.regular
-    vector.value.medium = optimized.medium
-    vector.value.bold = optimized.bold
-    vector.value.cutout = optimized.cutout
-    vector.value.optimized = true
+    const optimized_item = get_item(message.data.vector, vector.value.id)
+    if (optimized_item) {
+      vector.value.light = optimized_item.light
+      vector.value.regular = optimized_item.regular
+      vector.value.medium = optimized_item.medium
+      vector.value.bold = optimized_item.bold
+      vector.value.cutout = optimized_item.cutout
+      vector.value.optimized = true
+    }
     optimizer.value.removeEventListener('message', optimized)
 
     if (on_complete) on_complete()

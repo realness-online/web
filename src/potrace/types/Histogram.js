@@ -197,17 +197,17 @@ class Histogram {
    * @returns {number[]}
    */
   multilevel_thresholding(amount, level_min, level_max) {
-    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
-    amount = Math.min(level_max - level_min - 2, ~~amount)
+    const [min, max] = normalize_min_max(level_min, level_max)
+    const threshold_amount = Math.min(max - min - 2, ~~amount)
 
-    if (amount < 1) return []
+    if (threshold_amount < 1) return []
     if (!this.lookup_table_h) this.thresholding_build_lookup_table()
 
     const stack = [
       {
-        starting_point: level_min || 0,
+        starting_point: min || 0,
         prev_variance: 0,
-        indexes: new Array(amount),
+        indexes: new Array(threshold_amount),
         depth: 0,
         max_sig: 0,
         color_stops: null
@@ -220,12 +220,16 @@ class Histogram {
       const current = stack.pop()
       const { starting_point, prev_variance, indexes, depth } = current
 
-      for (let i = starting_point + 1; i < level_max - amount + depth; i++) {
+      for (
+        let i = starting_point + 1;
+        i < max - threshold_amount + depth;
+        i++
+      ) {
         const variance =
           prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
         indexes[depth] = i
 
-        if (depth + 1 < amount)
+        if (depth + 1 < threshold_amount)
           stack.push({
             starting_point: i,
             prev_variance: variance,
@@ -236,7 +240,7 @@ class Histogram {
           })
         else {
           const total_variance =
-            variance + this.lookup_table_h[index(i + 1, level_max)]
+            variance + this.lookup_table_h[index(i + 1, max)]
           if (total_variance > best_result.max_sig) {
             best_result.max_sig = total_variance
             best_result.color_stops = indexes.slice()
@@ -269,20 +273,20 @@ class Histogram {
    * @returns {number}
    */
   get_dominant_color(level_min, level_max, tolerance) {
-    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
-    tolerance = tolerance || 1
+    const [min, max] = normalize_min_max(level_min, level_max)
+    const tol = tolerance || 1
 
     const colors = this.data
     let dominant_index = -1
     let dominant_value = -1
     let tmp
 
-    if (level_min === level_max) return colors[level_min] ? level_min : -1
+    if (min === max) return colors[min] ? min : -1
 
-    for (let i = level_min; i <= level_max; i++) {
+    for (let i = min; i <= max; i++) {
       tmp = 0
 
-      for (let j = ~~(tolerance / -2); j < tolerance; j++)
+      for (let j = ~~(tol / -2); j < tol; j++)
         tmp += utils.between(i + j, 0, COLOR_RANGE_END) ? colors[i + j] : 0
 
       const summ_is_bigger = tmp > dominant_value
@@ -313,20 +317,16 @@ class Histogram {
    * @returns {{levels: {mean: (number|*), median: *, stdDev: number, unique: number}, pixelsPerLevel: {mean: (number|*), median: (number|*), peak: number}, pixels: number}}
    */
   get_stats(level_min, level_max, refresh) {
-    ;[level_min, level_max] = normalize_min_max(level_min, level_max)
+    const [min, max] = normalize_min_max(level_min, level_max)
 
-    if (!refresh && this.cached_stats[`${level_min}-${level_max}`])
-      return this.cached_stats[`${level_min}-${level_max}`]
+    if (!refresh && this.cached_stats[`${min}-${max}`])
+      return this.cached_stats[`${min}-${max}`]
 
     const { data } = this
     const sorted_indexes = this.get_sorted_indexes()
 
     let pixels_total = 0
     let median_value = null
-    let mean_value
-    let median_pixel_index
-    let pixels_per_level_mean
-    let pixels_per_level_median
     let tmp_sum_of_deviations = 0
     let tmp_pixels_iterated = 0
     let all_pixel_values_combined = 0
@@ -334,7 +334,7 @@ class Histogram {
     let most_pixels_per_level = 0
 
     // Finding number of pixels and mean
-    for (let i = level_min; i <= level_max; i++) {
+    for (let i = min; i <= max; i++) {
       pixels_total += data[i]
       all_pixel_values_combined += data[i] * i
 
@@ -344,7 +344,7 @@ class Histogram {
     }
 
     const mean_value = all_pixel_values_combined / pixels_total
-    const pixels_per_level_mean = pixels_total / (level_max - level_min)
+    const pixels_per_level_mean = pixels_total / (max - min)
     const pixels_per_level_median = pixels_total / unique_values
     const median_pixel_index = Math.floor(pixels_total / 2)
 
@@ -353,7 +353,7 @@ class Histogram {
       const tmp_pixel_value = sorted_indexes[i]
       const tmp_pixels = data[tmp_pixel_value]
 
-      if (tmp_pixel_value < level_min || tmp_pixel_value > level_max) continue
+      if (tmp_pixel_value < min || tmp_pixel_value > max) continue
 
       tmp_pixels_iterated += tmp_pixels
       tmp_sum_of_deviations +=
@@ -363,7 +363,7 @@ class Histogram {
         median_value = tmp_pixel_value
     }
 
-    return (this.cached_stats[`${level_min}-${level_max}`] = {
+    return (this.cached_stats[`${min}-${max}`] = {
       levels: {
         mean: mean_value,
         median: median_value,
@@ -402,20 +402,19 @@ const index = (x, y) => COLOR_DEPTH * x + y
  * @private
  */
 const normalize_min_max = (level_min, level_max) => {
-  level_min =
+  const min =
     typeof level_min === 'number'
       ? utils.clamp(Math.round(level_min), 0, COLOR_RANGE_END)
       : 0
 
-  level_max =
+  const max =
     typeof level_max === 'number'
       ? utils.clamp(Math.round(level_max), 0, COLOR_RANGE_END)
       : COLOR_RANGE_END
 
-  if (level_min > level_max)
-    throw new Error(`Invalid range "${level_min}...${level_max}"`)
+  if (min > max) throw new Error(`Invalid range "${min}...${max}"`)
 
-  return [level_min, level_max]
+  return [min, max]
 }
 
 export default Histogram

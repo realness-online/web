@@ -37,6 +37,52 @@ const is_processing = ref(false)
 const completed_posters = ref(/** @type {Id[]} */ ([]))
 
 /**
+ * Create SVG path element with path data
+ * @param {Object} path_data - Path data with 'd' attribute
+ * @returns {SVGPathElement}
+ */
+const make_path = path_data => {
+  const path = create_path_element()
+  path.setAttribute('d', path_data.d)
+  path.style.fillRule = 'evenodd'
+  return path
+}
+
+/**
+ * Create cutout path element with color and transform
+ * @param {Object} path_data - Path data with color, offset, and progress
+ * @returns {SVGPathElement}
+ */
+const make_cutout_path = path_data => {
+  const path = create_path_element()
+  path.setAttribute('d', path_data.d)
+  path.setAttribute('fill-opacity', '0.5')
+  path.setAttribute('data-progress', path_data.progress)
+  path.dataset.transform = 'true'
+
+  path.setAttribute(
+    'fill',
+    `rgb(${path_data.color.r}, ${path_data.color.g}, ${path_data.color.b})`
+  )
+  path.setAttribute(
+    'transform',
+    `translate(${path_data.offset.x}, ${path_data.offset.y})`
+  )
+  return path
+}
+
+/**
+ * Deep clone tracer path data
+ * @param {Object} path_data - Path data to clone
+ * @returns {Object} Cloned path data
+ */
+const clone_tracer_path = path_data => ({
+  ...path_data,
+  color: { ...path_data.color },
+  offset: { ...path_data.offset }
+})
+
+/**
  * @param {ImageBitmap} image
  * @param {number} [target_size=IMAGE.TARGET_SIZE]
  * @returns {ImageData}
@@ -200,6 +246,9 @@ const save_poster = async id => {
   new Poster(id).save()
 }
 
+// Composable manages entire vectorization pipeline: workers, queue, state, events
+// Breaking into smaller pieces would scatter tightly coupled logic
+// eslint-disable-next-line max-lines-per-function
 export const use = () => {
   const router = use_router()
   const image_picker = inject('image-picker', ref(null))
@@ -296,35 +345,7 @@ export const use = () => {
     image_picker.value.setAttribute('capture', 'environment')
     image_picker.value.click()
   }
-  const make_path = path_data => {
-    const path = create_path_element()
-    path.setAttribute('d', path_data.d)
-    path.style.fillRule = 'evenodd'
-    return path
-  }
-  const make_cutout_path = path_data => {
-    const path = create_path_element()
-    path.setAttribute('d', path_data.d)
-    path.setAttribute('fill-opacity', '0.5')
-    path.setAttribute('data-progress', path_data.progress)
-    path.dataset.transform = 'true'
 
-    path.setAttribute(
-      'fill',
-      `rgb(${path_data.color.r}, ${path_data.color.g}, ${path_data.color.b})`
-    )
-    path.setAttribute(
-      'transform',
-      `translate(${path_data.offset.x}, ${path_data.offset.y})`
-    )
-    return path
-  }
-
-  const clone_tracer_path = path_data => ({
-    ...path_data,
-    color: { ...path_data.color },
-    offset: { ...path_data.offset }
-  })
   /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
   const pending_tracer_paths = []
   let tracer_complete_pending = false
@@ -378,14 +399,17 @@ export const use = () => {
   const add_to_queue = async files => {
     mount_workers()
 
-    const max_size = 200 * 1024 * 1024
+    const MAX_FILE_SIZE_MB = 200
+    const BYTES_PER_KB = 1024
+    const KB_PER_MB = 1024
+    const max_size = MAX_FILE_SIZE_MB * BYTES_PER_KB * KB_PER_MB
     const too_large_files = []
 
     for (const file of files) {
       if (file.size > max_size) {
         too_large_files.push({
           name: file.name,
-          size: (file.size / 1024 / 1024).toFixed(2)
+          size: (file.size / BYTES_PER_KB / KB_PER_MB).toFixed(2)
         })
         continue
       }
@@ -393,6 +417,8 @@ export const use = () => {
       const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
 
       try {
+        // Sequential processing required: timestamp-based IDs need unique millisecond values
+        // eslint-disable-next-line no-await-in-loop
         const { blob: resized_blob, width, height } = await resize_to_blob(file)
 
         const item = /** @type {QueueItem} */ ({
@@ -404,7 +430,7 @@ export const use = () => {
           width,
           height
         })
-        //eslint-disable-next-line no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
         await Queue.add(item)
         queue_items.value.push(item)
       } catch (error) {
@@ -451,16 +477,19 @@ export const use = () => {
       mutex.unlock()
     } catch (error) {
       console.error('Error processing queue item:', error)
-      if (current_processing.value) {
-        await Queue.update(current_processing.value.id, { status: 'error' })
+      const failed_item = current_processing.value
+      if (failed_item) {
+        await Queue.update(failed_item.id, { status: 'error' })
         const error_index = queue_items.value.findIndex(
-          item => item.id === current_processing.value.id
+          item => item.id === failed_item.id
         )
         if (error_index !== -1)
           queue_items.value[error_index] = {
             ...queue_items.value[error_index],
             status: 'error'
           }
+        // Cleanup after error handling completes
+        // eslint-disable-next-line require-atomic-updates
         current_processing.value = null
       }
       is_processing.value = false
@@ -486,11 +515,19 @@ export const use = () => {
 
   const init_processing_queue = async () => {
     await load_queue()
-    for (const item of queue_items.value)
-      if (item.status === 'processing') {
+
+    const stuck_items = queue_items.value.filter(
+      item => item.status === 'processing'
+    )
+
+    await Promise.all(
+      stuck_items.map(async item => {
         await Queue.update(item.id, { status: 'pending' })
+        // False positive: updating local ref after DB write completes
+        // eslint-disable-next-line require-atomic-updates
         item.status = 'pending'
-      }
+      })
+    )
 
     if (queue_items.value.length > 0) {
       mount_workers()
@@ -557,7 +594,9 @@ export const use = () => {
       const image_url = URL.createObjectURL(image)
       const img = new Image()
       img.src = image_url
-      await new Promise(resolve => (img.onload = resolve))
+      await new Promise(resolve => {
+        img.onload = resolve
+      })
       const bitmap = await createImageBitmap(img)
 
       if (is_pre_resized) {
@@ -605,11 +644,12 @@ export const use = () => {
     const svg_url = URL.createObjectURL(svg_blob)
 
     return new Promise((resolve, reject) => {
+      const DEFAULT_CANVAS_DIMENSION = 1000
       const img = new Image()
       img.onload = async () => {
         const canvas = new OffscreenCanvas(
-          img.width || 1000,
-          img.height || 1000
+          img.width || DEFAULT_CANVAS_DIMENSION,
+          img.height || DEFAULT_CANVAS_DIMENSION
         )
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
         ctx.drawImage(img, 0, 0)

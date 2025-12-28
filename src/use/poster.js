@@ -36,6 +36,13 @@ import {
 } from '@/utils/preference'
 
 export const geology_layers = ['sediment', 'sand', 'gravel', 'rock', 'boulder']
+
+// Pan range calculation constants
+const PERCENTAGE_MAX = 100
+const HALF_DIVISOR = 2
+
+// Composable manages poster display, editing, layers, SVG manipulation, and animations
+// eslint-disable-next-line max-lines-per-function
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -129,7 +136,8 @@ export const use = () => {
         const scale = container_rect.width / content_width
         const scaled_height = content_height * scale
         const overflow = scaled_height - container_rect.height
-        const pan_range = (overflow / 2 / scaled_height) * 100
+        const pan_range =
+          (overflow / HALF_DIVISOR / scaled_height) * PERCENTAGE_MAX
         return Math.max(0, pan_range)
       }
       return 0
@@ -141,7 +149,8 @@ export const use = () => {
         const scale = container_rect.height / content_height
         const scaled_width = content_width * scale
         const overflow = scaled_width - container_rect.width
-        const pan_range = (overflow / 2 / scaled_width) * 100
+        const pan_range =
+          (overflow / HALF_DIVISOR / scaled_width) * PERCENTAGE_MAX
         return Math.max(0, pan_range)
       }
       return 0

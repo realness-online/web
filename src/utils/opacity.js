@@ -1,15 +1,20 @@
 import { change_by } from '@/use/path'
-export function change(opacity = 0.025, resolution = change_by) {
+
+const DEFAULT_OPACITY = 0.025
+const OPACITY_PRECISION = 10000
+const MAX_OPACITY = 0.9
+
+export function change(opacity = DEFAULT_OPACITY, resolution = change_by) {
   let value = parseFloat(opacity)
 
-  value = value * 10000
+  value = value * OPACITY_PRECISION
   value = Math.round(value)
-  value = value / 10000
+  value = value / OPACITY_PRECISION
 
   value += resolution
 
-  if (value > 1) value = 0.9
-  else if (value < 0) value = 0.025
+  if (value > 1) value = MAX_OPACITY
+  else if (value < 0) value = DEFAULT_OPACITY
 
   return value
 }

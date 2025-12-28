@@ -1,5 +1,7 @@
 import { parseHTML } from 'linkedom'
 
+const HALFWAY_POINT = 0.5
+
 /**
  * Prepares and renders frames from base SVG using linkedom
  * @param {Object} message - Worker message
@@ -76,7 +78,7 @@ const prepare_and_render_frames = async message => {
         } else
           target.setAttribute(
             attribute_name,
-            local_progress < 0.5 ? current_value : next_value
+            local_progress < HALFWAY_POINT ? current_value : next_value
           )
       }
     })
@@ -106,6 +108,7 @@ const prepare_and_render_frames = async message => {
     let image_bitmap
     try {
       // Direct path: createImageBitmap with resize options (single operation)
+      // eslint-disable-next-line no-await-in-loop
       image_bitmap = await createImageBitmap(svg_blob, {
         resizeWidth: canvas_width,
         resizeHeight: canvas_height,
@@ -113,11 +116,13 @@ const prepare_and_render_frames = async message => {
       })
     } catch {
       // Fallback: createImageBitmap without resize, then draw to canvas
+      // eslint-disable-next-line no-await-in-loop
       const temp_bitmap = await createImageBitmap(svg_blob)
       const canvas = new OffscreenCanvas(canvas_width, canvas_height)
       const ctx = canvas.getContext('2d')
       ctx.drawImage(temp_bitmap, 0, 0, canvas_width, canvas_height)
       temp_bitmap.close()
+      // eslint-disable-next-line no-await-in-loop
       image_bitmap = await createImageBitmap(canvas)
     }
 

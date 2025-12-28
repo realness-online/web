@@ -1,8 +1,8 @@
-/* eslint-disable no-magic-numbers */
 export const KB = 1024
 export const MB = KB * KB
 export const PERCENT = 100
 export const OPEN_ANGLE = 60 // ASCII 60
+export const MS_PER_SECOND = 1000
 
 export const CACHE_TIME = {
   THREE_MINUTES: 3 * 60, // 180 seconds
@@ -13,11 +13,11 @@ export const CACHE_TIME = {
 }
 
 export const JS_TIME = {
-  THREE_MINUTES: 3 * 60 * 1000, // 180000 ms
-  FIVE_MINUTES: 5 * 60 * 1000, // 300000 ms
-  THIRTEEN_MINUTES: 13 * 60 * 1000, // 780000 ms
-  ONE_HOUR: 60 * 60 * 1000, // 3600000 ms
-  EIGHT_HOURS: 8 * 60 * 60 * 1000 // 28800000 ms
+  THREE_MINUTES: 3 * 60 * MS_PER_SECOND, // 180000 ms
+  FIVE_MINUTES: 5 * 60 * MS_PER_SECOND, // 300000 ms
+  THIRTEEN_MINUTES: 13 * 60 * MS_PER_SECOND, // 780000 ms
+  ONE_HOUR: 60 * 60 * MS_PER_SECOND, // 3600000 ms
+  EIGHT_HOURS: 8 * 60 * 60 * MS_PER_SECOND // 28800000 ms
 }
 
 // Storage size thresholds in KB
@@ -30,7 +30,6 @@ export const SIZE = {
 export const IMAGE = {
   TARGET_SIZE: 512 // Default size for image processing
 }
-/* eslint-enable no-magic-numbers */
 
 export const format_bytes = bytes => {
   if (bytes < KB) return `${bytes} B`

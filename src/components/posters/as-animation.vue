@@ -44,6 +44,12 @@
   const static_fill_opacity = '0.90'
   const static_stroke_width = '0.33'
 
+  const MAX_STEP_SIZE = 40
+  const MAX_MOMENTUM_MULTIPLIER = 5
+  const STEP_SIZE_SHIFT = 10
+  const STEP_SIZE_DEFAULT = 0.5
+  const MOMENTUM_FACTOR = 0.5
+
   const animation_group = ref(null)
 
   let last_key_time = 0
@@ -86,9 +92,9 @@
     last_had_shift = event.shiftKey
 
     // Base step increases with momentum
-    const base_step = event.shiftKey ? 10 : 0.5
-    const momentum_multiplier = Math.min(key_press_count * 0.5, 5) // Cap at 5x
-    const step = Math.min(base_step * (1 + momentum_multiplier), 40) // Max 40s per step
+    const base_step = event.shiftKey ? STEP_SIZE_SHIFT : STEP_SIZE_DEFAULT
+    const momentum_multiplier = Math.min(key_press_count * MOMENTUM_FACTOR, MAX_MOMENTUM_MULTIPLIER)
+    const step = Math.min(base_step * (1 + momentum_multiplier), MAX_STEP_SIZE)
 
     const current_time = svg_element.getCurrentTime()
     const direction = event.key === 'ArrowRight' ? 1 : -1

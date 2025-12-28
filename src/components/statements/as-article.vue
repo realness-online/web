@@ -83,11 +83,13 @@
     emit('focused', statement)
   }
 
+  const BLUR_DELAY_MS = 750
+
   const has_blurred = statement => {
     focused.value = false
     setTimeout(() => {
       if (!focused.value) emit('blurred', statement)
-    }, 750)
+    }, BLUR_DELAY_MS)
   }
 </script>
 

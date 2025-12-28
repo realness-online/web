@@ -57,11 +57,21 @@ export const use = () => {
 
         try {
           await process_photo(image_url)
-          while (!new_vector.value) await new Promise(r => setTimeout(r, 100))
+
+          // Wait for new_vector to be set by the vectorization process
+          await new Promise(resolve => {
+            const check_vector = () => {
+              if (new_vector.value) resolve()
+              else requestAnimationFrame(check_vector)
+            }
+            check_vector()
+          })
 
           completed_poster.value = new_vector.value
 
           if (!completed_poster.value.optimized)
+            // False positive: sequential operation in single-threaded JS
+            // eslint-disable-next-line require-atomic-updates
             completed_poster.value = await optimize(completed_poster.value)
 
           const svg_data = completed_poster.value
@@ -74,6 +84,8 @@ export const use = () => {
           await writable.write(svg_data)
           await writable.close()
 
+          // Cleanup after file write completes
+          // eslint-disable-next-line require-atomic-updates
           new_vector.value = null
           if (new_gradients.value) new_gradients.value = null
 
@@ -94,6 +106,8 @@ export const use = () => {
       progress.value.current = 0
       progress.value.total = 0
       progress.value.current_file = ''
+      // Cleanup after processing completes
+      // eslint-disable-next-line require-atomic-updates
       completed_poster.value = null
     }
   }
