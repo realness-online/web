@@ -368,7 +368,7 @@ export const use_posters = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
-    const directory = await as_directory(`${query.id}/posters`)
+    const directory = await as_directory(/** @type {Id} */ (`${query.id}/posters`))
     directory.items.forEach(created_at => {
       const poster_id = `${query.id}/posters/${created_at}`
       if (!posters.value.find(p => p.id === poster_id))
@@ -416,7 +416,7 @@ export const use_posters = () => {
     )
     if (!next_archive) return
 
-    const new_posters = await load_archive_posters(author_id, next_archive)
+    const new_posters = await load_archive_posters(author_id, /** @type {number} */ (Number(next_archive)))
     posters.value.push(...new_posters)
     posters.value.sort(recent_item_first)
     author.viewed.push(next_archive)
@@ -439,13 +439,13 @@ export const is_focus = layer => path_names.some(name => name === layer)
  * @returns {Promise<string|null>}
  */
 const get_next_unviewed_archive = async (author_id, viewed) => {
-  const directory = await as_directory(`${author_id}/posters`)
+  const directory = await as_directory(/** @type {Id} */ (`${author_id}/posters`))
   if (!directory?.archive || !Array.isArray(directory.archive)) return null
 
   const unviewed = directory.archive.filter(
-    archive => !viewed.includes(archive)
+    archive => !viewed.includes(String(archive))
   )
-  return unviewed.pop() || null
+  return String(unviewed.pop() || '') || null
 }
 
 /**
@@ -454,11 +454,21 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
  * @returns {Promise<Poster[]>}
  */
 const load_archive_posters = async (author_id, archive_id) => {
-  const archive = await as_directory(`${author_id}/posters/${archive_id}/`)
-  return archive.items.map(created_at => ({
-    id: `${author_id}/posters/${created_at}`,
-    type: 'posters'
-  }))
+  const archive = await as_directory(/** @type {Id} */ (`${author_id}/posters/${archive_id}/`))
+  return /** @type {Poster[]} */ (archive.items.map(created_at => ({
+    id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
+    type: 'posters',
+    background: '',
+    light: '',
+    regular: '',
+    medium: '',
+    bold: '',
+    cutout: [],
+    width: 0,
+    height: 0,
+    viewbox: '',
+    optimized: false
+  })))
 }
 
 /**
@@ -477,16 +487,18 @@ export const is_vector_id = itemid => {
 export const is_vector = vector => {
   if (!vector || typeof vector !== 'object') return false
   if (!is_vector_id(vector.id)) return false
-  if (vector.path) return false
+  if (/** @type {any} */ (vector).path) return false
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
 
-  if (vector.gradients) {
-    if (!vector.gradients.width) return false
-    if (!vector.gradients.height) return false
-    if (!vector.gradients.radial) return false
+  const gradients = /** @type {any} */ (vector).gradients
+  if (gradients) {
+    if (!gradients.width) return false
+    if (!gradients.height) return false
+    if (!gradients.radial) return false
   }
-  if (vector.type === 'posters') return true
+  const type = /** @type {any} */ (vector).type
+  if (type === 'posters') return true
   return false
 }
 

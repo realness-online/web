@@ -1,7 +1,4 @@
-/**
- * @typedef {import('@/potrace/types/Point').default} Point
- * A 2D point with x and y coordinates
- */
+import Point from '@/potrace/types/Point'
 
 // Mathematical constants
 const RGBA_COMPONENTS = 4

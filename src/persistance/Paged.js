@@ -1,5 +1,7 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 /** @typedef {import('@/persistance/Storage').Storage} Storage */
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
 import { History } from '@/persistance/Storage'
 import { from_e64 } from '@/use/people'
 import { current_user } from '@/utils/serverless'
@@ -97,9 +99,11 @@ export const Paged = superclass =>
       })
 
       const offline_html = localStorage.getItem(`/+/${this.type}`)
-      /** @type {Id} */
       const offline_id = `/+/${this.type}`
-      const offline_item = get_item(offline_html, offline_id)
+      const offline_item = get_item(
+        offline_html,
+        /** @type {Id} */ (offline_id)
+      )
       /** @type {Item[]} */
       const offline = type_as_list(offline_item)
       offline.forEach(item => {

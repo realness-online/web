@@ -61,7 +61,7 @@ export const use = () => {
     if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
       await tick()
-      await new Me().save()
+      await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
     }
   }
 
@@ -117,7 +117,8 @@ export const use = () => {
     if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
     const hash = await create_hash(elements.outerHTML)
     if (index_hash !== hash) {
-      statements.value = await persistance.sync()
+      const synced = await persistance.sync()
+      statements.value = synced || []
       if (statements.value.length) {
         await tick()
         await persistance.save(elements)
@@ -131,17 +132,18 @@ export const use = () => {
    * @returns {Promise<void>}
    */
   const sync_events = async () => {
-    const events = new Event()
+    const event_storage = new Event()
     const itemid = get_my_itemid('events')
     const index_hash = await get_index_hash(itemid)
     const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
     if (!elements) return
     const hash = await create_hash(elements.outerHTML)
     if (index_hash !== hash) {
-      events.value = await events.sync()
+      const synced_events = await event_storage.sync()
+      events.value = synced_events || []
       if (events.value.length) {
         await tick()
-        await events.save(elements)
+        await event_storage.save(elements)
         localStorage.removeItem('/+/events')
       }
     }
@@ -150,7 +152,7 @@ export const use = () => {
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
-    relations.value = await load(`${localStorage.me}/relations`)
+    relations.value = await load(/** @type {Id} */ (`${localStorage.me}/relations`))
   })
 
   dismount(() => {
@@ -193,7 +195,7 @@ export const sync_offline_actions = async () => {
   }
 
   // Handle anonymous posters using the same Offline mechanism
-  const offline_posters = await build_local_directory('/+/posters/')
+  const offline_posters = await build_local_directory(/** @type {Id} */ ('/+/posters/'))
   if (offline_posters?.items?.length) {
     await Promise.all(
       offline_posters.items.map(async created_at => {

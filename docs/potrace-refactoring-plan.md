@@ -258,34 +258,82 @@ if (!other_condition) return
 
 ---
 
-### Phase 3: Structural (High Risk - Future)
+### Phase 3: Structural (High Risk)
 
 **Goal:** Reorganize into maintainable architecture.
 
-This phase would involve deeper restructuring and should only be attempted after Phase 1 and 2 are complete and stable.
+**Status:** Partially complete - extracted preprocessing, tracing, and SVG generation.
 
 #### 3.1 Pipeline Architecture
 
 ```
 ImageData
-  → Threshold/Bitmap
-  → Path Tracing
-  → Curve Smoothing
-  → Optimization
-  → SVG Generation
+  → Threshold/Bitmap (✓ extracted)
+  → Path Tracing (✓ extracted)
+  → Curve Smoothing (remains in main class)
+  → Optimization (remains in main class)
+  → SVG Generation (✓ extracted)
 ```
 
-#### 3.2 Separate Concerns
+#### 3.2 Modules Created
 
-- `potrace/bitmap.js` - Image thresholding and preprocessing
-- `potrace/tracer.js` - Boundary tracing
-- `potrace/smoother.js` - Curve smoothing
-- `potrace/optimizer.js` - Path optimization
-- `potrace/svg-generator.js` - SVG output
+- [x] `potrace/bitmap-processor.js` - Image preprocessing and thresholding
 
-#### 3.3 Immutable Operations
+  - `image_data_to_luminance()` - Converts ImageData to grayscale bitmap
+  - `calculate_threshold()` - Determines threshold value (auto or manual)
+  - `apply_threshold()` - Creates binary bitmap
+  - `preprocess_image()` - Complete preprocessing pipeline
 
-Where possible, avoid mutation and return new data structures.
+- [x] `potrace/tracer.js` - Boundary tracing and path detection
+
+  - `find_next_point()` - Finds next unprocessed pixel
+  - `get_majority()` - Determines majority pixel in neighborhood
+  - `should_turn_right()` - Turn policy decision logic
+  - `trace_path()` - Traces single path boundary
+  - `xor_path()` - Marks path as processed
+  - `trace_all_paths()` - Main tracing pipeline
+
+- [x] `potrace/svg-generator.js` - SVG output generation
+
+  - `generate_path_tag()` - Creates SVG path element
+  - `generate_path_data()` - Creates path data objects
+
+- [ ] `potrace/smoother.js` - Curve smoothing (deferred - too tightly coupled)
+- [ ] `potrace/optimizer.js` - Path optimization (deferred - too tightly coupled)
+
+**Deliverables:**
+
+- [x] Bitmap preprocessing extracted and integrated
+- [x] Path tracing extracted and integrated
+- [x] SVG generation extracted
+- [x] Main Potrace class updated to use new modules
+- [x] All tests still pass
+- [ ] Curve smoothing/optimization extraction (deferred - high complexity, low benefit)
+
+**Success Criteria:**
+
+- [x] Tests still pass
+- [x] Algorithm produces identical output
+- [x] Zero ESLint errors in new modules
+- [x] Main class reduced in size (~150 lines removed)
+- [x] Clear separation between preprocessing, tracing, and output
+
+#### 3.3 Architectural Notes
+
+The curve smoothing and optimization phases (`#calc_sums`, `#calc_lon`, `#best_polygon`, `#adjust_vertices`, `#smooth`, `#opti_curve`, `#opti_penalty`) remain in the main Potrace class. These methods are:
+
+- Highly interdependent
+- Rely heavily on shared state
+- Core algorithm implementation (from original C code)
+- Well-documented after Phase 2
+
+Extracting them would require:
+
+- Significant refactoring of the algorithm itself
+- Risk of introducing bugs in mathematical calculations
+- Marginal readability benefit given current documentation
+
+**Decision:** Keep core algorithm methods in main class, focus extraction on I/O boundaries (preprocessing, tracing, output).
 
 ---
 

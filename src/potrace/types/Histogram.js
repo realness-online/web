@@ -60,7 +60,6 @@ class Histogram {
    * Creates a typed array based on image size
    * @param {number} image_size - Size of the image
    * @returns {Uint8Array|Uint16Array|Uint32Array} - Appropriate typed array for the image size
-   * @private
    */
   #create_array(image_size) {
     let array_type
@@ -76,7 +75,6 @@ class Histogram {
    * Collects pixel values from ImageData
    * @param {ImageData} source - Source image data
    * @param {string} mode - Color mode to use (r, g, b, or luminance)
-   * @private
    */
   #collect_values_image_data(source, mode) {
     const pixel_data = source.data
@@ -105,7 +103,6 @@ class Histogram {
   /**
    * Collects color values from a Bitmap instance
    * @param {Bitmap} source - Source bitmap
-   * @private
    */
   #collect_values_bitmap(source) {
     const data = this.#create_array(source.size)
@@ -119,11 +116,10 @@ class Histogram {
 
   /**
    * Gets array of color indexes in ascending order
-   * @param {boolean} refresh - Whether to refresh the cached sorted indexes
+   * @param {boolean} [refresh=false] - Whether to refresh the cached sorted indexes
    * @returns {Array} Array of sorted color indexes
-   * @private
    */
-  get_sorted_indexes(refresh) {
+  get_sorted_indexes(refresh = false) {
     if (!refresh && this.sorted_indexes) return this.sorted_indexes
 
     const { data } = this
@@ -147,7 +143,6 @@ class Histogram {
    * Builds lookup table H from lookup tables P and S
    * See {@link http://www.iis.sinica.edu.tw/page/jise/2001/200109_01.pdf|this paper} for more details
    * @returns {Float64Array} Lookup table H
-   * @private
    */
   thresholding_build_lookup_table() {
     const { p, s, h } = Histogram.SHARED_ARRAYS
@@ -261,8 +256,8 @@ class Histogram {
   /**
    * Automatically finds threshold value using Algorithm For Multilevel Thresholding
    *
-   * @param {number} [levelMin]
-   * @param {number} [levelMax]
+   * @param {number} [level_min]
+   * @param {number} [level_max]
    * @returns {null|number}
    */
   auto_threshold(level_min, level_max) {
@@ -317,9 +312,9 @@ class Histogram {
    *
    * If no pixels colors from specified range present on the image - most values will be NaN
    *
-   * @param {Number} [levelMin=0] - histogram segment start
-   * @param {Number} [levelMax=255] - histogram segment end
-   * @param {Boolean} [refresh=false] - if cached result can be returned
+   * @param {number} [level_min=0] - histogram segment start
+   * @param {number} [level_max=255] - histogram segment end
+   * @param {boolean} [refresh=false] - if cached result can be returned
    * @returns {{levels: {mean: (number|*), median: *, stdDev: number, unique: number}, pixelsPerLevel: {mean: (number|*), median: (number|*), peak: number}, pixels: number}}
    */
   get_stats(level_min, level_max, refresh) {
@@ -329,7 +324,7 @@ class Histogram {
       return this.cached_stats[`${min}-${max}`]
 
     const { data } = this
-    const sorted_indexes = this.get_sorted_indexes()
+    const sorted_indexes = this.get_sorted_indexes(false)
 
     let pixels_total = 0
     let median_value = null
@@ -373,10 +368,10 @@ class Histogram {
       levels: {
         mean: mean_value,
         median: median_value,
-        std_dev: Math.sqrt(tmp_sum_of_deviations / pixels_total),
+        stdDev: Math.sqrt(tmp_sum_of_deviations / pixels_total),
         unique: unique_values
       },
-      pixels_per_level: {
+      pixelsPerLevel: {
         mean: pixels_per_level_mean,
         median: pixels_per_level_median,
         peak: most_pixels_per_level

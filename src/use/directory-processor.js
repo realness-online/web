@@ -69,10 +69,18 @@ export const use = () => {
 
           completed_poster.value = new_vector.value
 
-          if (!completed_poster.value.optimized)
-            // False positive: sequential operation in single-threaded JS
-            // eslint-disable-next-line require-atomic-updates
-            completed_poster.value = await optimize(completed_poster.value)
+          if (!completed_poster.value.optimized) {
+            const { optimize: optimize_poster, vector: vector_ref } = use_optimizer(completed_poster)
+            optimize_poster()
+            await new Promise(resolve => {
+              const check_optimized = () => {
+                if (vector_ref.value.optimized) resolve()
+                else requestAnimationFrame(check_optimized)
+              }
+              check_optimized()
+            })
+            completed_poster.value = vector_ref.value
+          }
 
           const svg_data = completed_poster.value
           const poster_name = name.replace(/\.[^/.]+$/, '.svg')
