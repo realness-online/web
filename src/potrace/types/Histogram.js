@@ -9,8 +9,14 @@
 
 import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
+
+// Constants
 const COLOR_DEPTH = 256
 const COLOR_RANGE_END = COLOR_DEPTH - 1
+const RGBA_COMPONENTS = 4
+const BIT_SHIFT_8 = 8
+const BIT_SHIFT_16 = 16
+const INDEX_OFFSET = -2
 
 /**
  * 1D Histogram
@@ -57,12 +63,10 @@ class Histogram {
    * @private
    */
   #create_array(image_size) {
-    const array_type =
-      image_size <= Math.pow(2, 8)
-        ? Uint8Array
-        : image_size <= Math.pow(2, 16)
-          ? Uint16Array
-          : Uint32Array
+    let array_type
+    if (image_size <= Math.pow(2, BIT_SHIFT_8)) array_type = Uint8Array
+    else if (image_size <= Math.pow(2, BIT_SHIFT_16)) array_type = Uint16Array
+    else array_type = Uint32Array
 
     this.pixels = image_size
     return (this.data = new array_type(COLOR_DEPTH))
@@ -82,19 +86,17 @@ class Histogram {
 
     for (let y = 0; y < height; y++)
       for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4
-        const val =
-          mode === Histogram.MODE_R
-            ? pixel_data[idx]
-            : mode === Histogram.MODE_G
-              ? pixel_data[idx + 1]
-              : mode === Histogram.MODE_B
-                ? pixel_data[idx + 2]
-                : utils.luminance(
-                    pixel_data[idx],
-                    pixel_data[idx + 1],
-                    pixel_data[idx + 2]
-                  )
+        const idx = (y * width + x) * RGBA_COMPONENTS
+        let val
+        if (mode === Histogram.MODE_R) val = pixel_data[idx]
+        else if (mode === Histogram.MODE_G) val = pixel_data[idx + 1]
+        else if (mode === Histogram.MODE_B) val = pixel_data[idx + 2]
+        else
+          val = utils.luminance(
+            pixel_data[idx],
+            pixel_data[idx + 1],
+            pixel_data[idx + 2]
+          )
 
         data[val]++
       }
@@ -131,7 +133,11 @@ class Histogram {
     for (let i = 0; i < COLOR_DEPTH; i++) indexes[i] = i
 
     // Use regular function for better performance in sort
-    indexes.sort((a, b) => (data[a] > data[b] ? 1 : data[a] < data[b] ? -1 : 0))
+    indexes.sort((a, b) => {
+      if (data[a] > data[b]) return 1
+      if (data[a] < data[b]) return -1
+      return 0
+    })
 
     this.sorted_indexes = indexes.slice() // Create a copy to preserve the shared array
     return this.sorted_indexes
@@ -286,7 +292,7 @@ class Histogram {
     for (let i = min; i <= max; i++) {
       tmp = 0
 
-      for (let j = ~~(tol / -2); j < tol; j++)
+      for (let j = ~~(tol / INDEX_OFFSET); j < tol; j++)
         tmp += utils.between(i + j, 0, COLOR_RANGE_END) ? colors[i + j] : 0
 
       const summ_is_bigger = tmp > dominant_value

@@ -5,6 +5,11 @@
 
 import Point from '@/potrace/types/Point'
 
+// Mathematical constants
+const RGBA_COMPONENTS = 4
+const MATRIX_DIMENSION = 3
+const TWO = 2
+
 const attr_regexps = {}
 
 /**
@@ -99,8 +104,8 @@ export const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
   let sum = 0
 
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++) sum += v[i] * Q.at(i, j) * v[j]
+  for (let i = 0; i < MATRIX_DIMENSION; i++)
+    for (let j = 0; j < MATRIX_DIMENSION; j++) sum += v[i] * Q.at(i, j) * v[j]
 
   return sum
 }
@@ -177,8 +182,16 @@ export const iprod1 = (p0, p1, p2, p3) => {
 export const ddist = (p, q) =>
   Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y))
 
+// Luminance calculation using ITU-R BT.709 standard coefficients
+const LUMINANCE_RED_COEFFICIENT = 0.2126
+const LUMINANCE_GREEN_COEFFICIENT = 0.7153
+const LUMINANCE_BLUE_COEFFICIENT = 0.0721
 export const luminance = (r, g, b) =>
-  Math.round(0.2126 * r + 0.7153 * g + 0.0721 * b)
+  Math.round(
+    LUMINANCE_RED_COEFFICIENT * r +
+      LUMINANCE_GREEN_COEFFICIENT * g +
+      LUMINANCE_BLUE_COEFFICIENT * b
+  )
 
 export const between = (val, min, max) => val >= min && val <= max
 
@@ -253,31 +266,33 @@ export const bezier = (t, p0, p1, p2, p3) => {
 
 /**
  * Finds the parameter value where a line intersects a Bézier curve
- * @param {Point} p0 - Bézier curve start point
- * @param {Point} p1 - First control point
- * @param {Point} p2 - Second control point
- * @param {Point} p3 - Bézier curve end point
- * @param {Point} q0 - First point defining the line
- * @param {Point} q1 - Second point defining the line
+ * @param {Object} bezier - Bézier curve control points
+ * @param {Point} bezier.p0 - Bézier curve start point
+ * @param {Point} bezier.p1 - First control point
+ * @param {Point} bezier.p2 - Second control point
+ * @param {Point} bezier.p3 - Bézier curve end point
+ * @param {Object} line - Line defining points
+ * @param {Point} line.q0 - First point defining the line
+ * @param {Point} line.q1 - Second point defining the line
  * @returns {number} Parameter value t at intersection, or -1 if no intersection
  */
-export const tangent = (p0, p1, p2, p3, q0, q1) => {
+export const tangent = ({ p0, p1, p2, p3 }, { q0, q1 }) => {
   const A = cprod(p0, p1, q0, q1)
   const B = cprod(p1, p2, q0, q1)
   const C = cprod(p2, p3, q0, q1)
 
-  const a = A - 2 * B + C
-  const b = -2 * A + 2 * B
+  const a = A - TWO * B + C
+  const b = -TWO * A + TWO * B
   const c = A
 
-  const d = b * b - 4 * a * c
+  const d = b * b - RGBA_COMPONENTS * a * c
 
   if (a === 0 || d < 0) return -1.0
 
   const s = Math.sqrt(d)
 
-  const r1 = (-b + s) / (2 * a)
-  const r2 = (-b - s) / (2 * a)
+  const r1 = (-b + s) / (TWO * a)
+  const r2 = (-b - s) / (TWO * a)
 
   if (r1 >= 0 && r1 <= 1) return r1
   if (r2 >= 0 && r2 <= 1) return r2

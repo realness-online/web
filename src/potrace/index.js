@@ -1,3 +1,7 @@
+/**
+ * Potrace bitmap-to-vector tracing algorithm
+ * Port of the C Potrace algorithm
+ */
 import Curve from '@/potrace/types/Curve'
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
@@ -8,15 +12,38 @@ import utils from '@/potrace/utils'
 import Bitmap from '@/potrace/types/Bitmap'
 import Histogram from '@/potrace/types/Histogram'
 
-// Potrace algorithm constants
-const ALPHA_SCALE_FACTOR = 0.75
-const MIN_ALPHA_THRESHOLD = 0.55
-const PENALTY_RATIO = 0.3
-const CURVATURE_THRESHOLD = -0.5
-const CURVATURE_SCALE = 0.75
-const TANGENT_PRECISION = -0.999847695156
+// Potrace algorithm constants with explanations
+
+// RGB color space
+const RGB_MAX = 255
+const RGBA_COMPONENTS = 4
+
+// Geometric calculations
+const HALF = 0.5
+
+// Tangent angle threshold for detecting near-parallel lines
+// cos(angle) ≈ -1 means angle ≈ 180° (parallel but opposite direction)
+const TANGENT_PARALLEL_THRESHOLD = -0.999847695156
+
+// Corner detection parameters
+const ALPHA_SCALE_FACTOR = 0.75 // Default alpha scaling for corner detection
+const MIN_ALPHA_THRESHOLD = 0.55 // Minimum threshold for corner detection
+
+// Curve optimization parameters
+const CURVATURE_THRESHOLD = -0.5 // Threshold for determining curve direction
+const CURVATURE_SCALE = 0.75 // Scaling factor for curvature calculations
+const PENALTY_RATIO = 0.3 // Penalty weight for curve optimization
+
+// Posterization thresholds
 const POSTERIZE_BRIGHTNESS_THRESHOLD = 200
 const POSTERIZE_STEP_SCALE = 0.1
+
+// Other thresholds
+const ALPHA_TRANSPARENCY_THRESHOLD = 128
+const LARGE_NUMBER = 10000000 // Used for infinity approximation
+const POSTERIZE_LEVEL_STEP = 25
+const COLOR_SPACE_SIZE = 256
+const MIN_RANGE_COUNT = 10
 
 /** @typedef {'spread' | 'dominant' | 'median' | 'mean'} FillStrategy */
 
@@ -83,41 +110,6 @@ const POSTERIZE_STEP_SCALE = 0.1
  */
 
 /**
- * Converts an image into SVG paths
- * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
- * @param {PotraceOptions} [options={}] - Potrace options
- * @returns {ProcessedPaths} Object containing width, height, dark flag and paths
- */
-export const as_paths = (image_data, options = {}) => {
-  const potrace = new Potrace(options)
-  return potrace.create_paths(image_data)
-}
-
-/**
- * Converts an image into single path element
- * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
- * @param {PotraceOptions} [options={}] - Potrace options
- * @returns {string} SVG path data
- */
-export const as_path_element = (image_data, options = {}) => {
-  const potrace = new Potrace(options)
-  potrace.load_image(image_data)
-  return potrace.get_path_tag()
-}
-
-/**
- * Converts an image into path elements
- * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
- * @param {PotraceOptions} [options={}] - Potrace options
- * @returns {string[]} SVG path elements
- */
-export const as_path_elements = (image_data, options = {}) => {
-  const potrace = new Potrace(options)
-  potrace.load_image(image_data)
-  return potrace.path_tags()
-}
-
-/**
  * Potrace class for converting bitmap images to vector graphics
  * @class
  */
@@ -163,9 +155,6 @@ class Potrace {
 
   /** @type {Path[]} */
   #pathlist = []
-
-  /** @type {string|null} */
-  #image_loading_identifier = null
 
   /** @type {boolean} */
   #image_loaded = false
@@ -357,7 +346,8 @@ class Potrace {
   #bitmap_to_pathlist() {
     const threshold =
       this.#params.threshold === Potrace.THRESHOLD_AUTO
-        ? this.#luminance_data.histogram().auto_threshold() || 128
+        ? this.#luminance_data.histogram().auto_threshold() ||
+          ALPHA_TRANSPARENCY_THRESHOLD
         : this.#params.threshold
 
     const black_on_white = this.#params.blackOnWhite
@@ -395,24 +385,24 @@ class Potrace {
    */
   #calc_sums = path => {
     let i
-    let x
-    let y
+    let relative_x
+    let relative_y
     path.x0 = path.pt[0].x
     path.y0 = path.pt[0].y
 
     path.sums = []
-    const s = path.sums
-    s.push(new Sum(0, 0, 0, 0, 0))
+    const running_sums = path.sums
+    running_sums.push(new Sum(0, 0, 0, 0, 0))
     for (i = 0; i < path.len; i++) {
-      x = path.pt[i].x - path.x0
-      y = path.pt[i].y - path.y0
-      s.push(
+      relative_x = path.pt[i].x - path.x0
+      relative_y = path.pt[i].y - path.y0
+      running_sums.push(
         new Sum(
-          s[i].x + x,
-          s[i].y + y,
-          s[i].xy + x * y,
-          s[i].x2 + x * x,
-          s[i].y2 + y * y
+          running_sums[i].x + relative_x,
+          running_sums[i].y + relative_y,
+          running_sums[i].xy + relative_x * relative_y,
+          running_sums[i].x2 + relative_x * relative_x,
+          running_sums[i].y2 + relative_y * relative_y
         )
       )
     }
@@ -424,6 +414,8 @@ class Potrace {
    * @param {Path} path - Path to calculate sequences for
    * @returns {void}
    */
+  // Complex algorithm: inherent to Potrace's longest polygon calculation
+  // eslint-disable-next-line complexity
   #calc_lon = path => {
     const n = path.len
     const { pt } = path
@@ -438,18 +430,18 @@ class Potrace {
     const cur = new Point()
     const off = new Point()
     const dk = new Point()
-    let foundk
+    let found_pivot
 
     let i
     let j
-    let k1
-    let a
-    let b
-    let c
-    let d
+    let prev_vertex
+    let constraint0_cross_cur
+    let constraint0_cross_dk
+    let constraint1_cross_cur
+    let constraint1_cross_dk
     let k = 0
     for (i = n - 1; i >= 0; i--) {
-      if (pt[i].x != pt[k].x && pt[i].y != pt[k].y) k = i + 1
+      if (pt[i].x !== pt[k].x && pt[i].y !== pt[k].y) k = i + 1
 
       nc[i] = k
     }
@@ -469,19 +461,19 @@ class Potrace {
       constraint[1].y = 0
 
       k = nc[i]
-      k1 = i
+      prev_vertex = i
       while (1) {
-        foundk = 0
+        found_pivot = 0
         dir =
           (3 +
-            3 * utils.sign(pt[k].x - pt[k1].x) +
-            utils.sign(pt[k].y - pt[k1].y)) /
+            3 * utils.sign(pt[k].x - pt[prev_vertex].x) +
+            utils.sign(pt[k].y - pt[prev_vertex].y)) /
           2
         ct[dir]++
 
         if (ct[0] && ct[1] && ct[2] && ct[3]) {
-          pivk[i] = k1
-          foundk = 1
+          pivk[i] = prev_vertex
+          found_pivot = 1
           break
         }
 
@@ -509,28 +501,33 @@ class Potrace {
             constraint[1].y = off.y
           }
         }
-        k1 = k
-        k = nc[k1]
-        if (!utils.cyclic(k, i, k1)) break
+        prev_vertex = k
+        k = nc[prev_vertex]
+        if (!utils.cyclic(k, i, prev_vertex)) break
       }
-      if (foundk === 0) {
-        dk.x = utils.sign(pt[k].x - pt[k1].x)
-        dk.y = utils.sign(pt[k].y - pt[k1].y)
-        cur.x = pt[k1].x - pt[i].x
-        cur.y = pt[k1].y - pt[i].y
+      if (found_pivot === 0) {
+        dk.x = utils.sign(pt[k].x - pt[prev_vertex].x)
+        dk.y = utils.sign(pt[k].y - pt[prev_vertex].y)
+        cur.x = pt[prev_vertex].x - pt[i].x
+        cur.y = pt[prev_vertex].y - pt[i].y
 
-        a = utils.xprod(constraint[0], cur)
-        b = utils.xprod(constraint[0], dk)
-        c = utils.xprod(constraint[1], cur)
-        d = utils.xprod(constraint[1], dk)
+        constraint0_cross_cur = utils.xprod(constraint[0], cur)
+        constraint0_cross_dk = utils.xprod(constraint[0], dk)
+        constraint1_cross_cur = utils.xprod(constraint[1], cur)
+        constraint1_cross_dk = utils.xprod(constraint[1], dk)
 
-        j = 10000000
+        j = LARGE_NUMBER
 
-        if (b < 0) j = Math.floor(a / -b)
+        if (constraint0_cross_dk < 0)
+          j = Math.floor(constraint0_cross_cur / -constraint0_cross_dk)
 
-        if (d > 0) j = Math.min(j, Math.floor(-c / d))
+        if (constraint1_cross_dk > 0)
+          j = Math.min(
+            j,
+            Math.floor(-constraint1_cross_cur / constraint1_cross_dk)
+          )
 
-        pivk[i] = utils.mod(k1 + j, n)
+        pivk[i] = utils.mod(prev_vertex + j, n)
       }
     }
 
@@ -564,32 +561,33 @@ class Potrace {
       const n = path.len
       const { pt } = path
       const { sums } = path
-      let x
-      let y
-      let xy
-      let x2
-      let y2
-      let k
-      let r = 0
-      if (j >= n) {
-        j -= n
-        r = 1
+      let sum_x
+      let sum_y
+      let sum_xy
+      let sum_x2
+      let sum_y2
+      let segment_length
+      let wrap_count = 0
+      let j_norm = j
+      if (j_norm >= n) {
+        j_norm -= n
+        wrap_count = 1
       }
 
-      if (r === 0) {
-        x = sums[j + 1].x - sums[i].x
-        y = sums[j + 1].y - sums[i].y
-        x2 = sums[j + 1].x2 - sums[i].x2
-        xy = sums[j + 1].xy - sums[i].xy
-        y2 = sums[j + 1].y2 - sums[i].y2
-        k = j + 1 - i
+      if (wrap_count === 0) {
+        sum_x = sums[j + 1].x - sums[i].x
+        sum_y = sums[j + 1].y - sums[i].y
+        sum_x2 = sums[j + 1].x2 - sums[i].x2
+        sum_xy = sums[j + 1].xy - sums[i].xy
+        sum_y2 = sums[j + 1].y2 - sums[i].y2
+        segment_length = j + 1 - i
       } else {
-        x = sums[j + 1].x - sums[i].x + sums[n].x
-        y = sums[j + 1].y - sums[i].y + sums[n].y
-        x2 = sums[j + 1].x2 - sums[i].x2 + sums[n].x2
-        xy = sums[j + 1].xy - sums[i].xy + sums[n].xy
-        y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
-        k = j + 1 - i + n
+        sum_x = sums[j + 1].x - sums[i].x + sums[n].x
+        sum_y = sums[j + 1].y - sums[i].y + sums[n].y
+        sum_x2 = sums[j + 1].x2 - sums[i].x2 + sums[n].x2
+        sum_xy = sums[j + 1].xy - sums[i].xy + sums[n].xy
+        sum_y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
+        segment_length = j + 1 - i + n
       }
 
       const px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
@@ -597,13 +595,15 @@ class Potrace {
       const ey = pt[j].x - pt[i].x
       const ex = -(pt[j].y - pt[i].y)
 
-      const a = (x2 - 2 * x * px) / k + px * px
-      const b = (xy - x * py - y * px) / k + px * py
-      const c = (y2 - 2 * y * py) / k + py * py
+      const var_xx = (sum_x2 - 2 * sum_x * px) / segment_length + px * px
+      const var_xy =
+        (sum_xy - sum_x * py - sum_y * px) / segment_length + px * py
+      const var_yy = (sum_y2 - 2 * sum_y * py) / segment_length + py * py
 
-      const s = ex * ex * a + 2 * ex * ey * b + ey * ey * c
+      const weighted_sum =
+        ex * ex * var_xx + 2 * ex * ey * var_xy + ey * ey * var_yy
 
-      return Math.sqrt(s)
+      return Math.sqrt(weighted_sum)
     }
 
     let i
@@ -616,16 +616,16 @@ class Potrace {
     const clip1 = []
     const seg0 = []
     const seg1 = []
-    let thispen
-    let best
-    let c
+    let current_penalty
+    let best_penalty
+    let clip_value
 
     for (i = 0; i < n; i++) {
-      c = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
-      if (c == i) c = utils.mod(i + 1, n)
+      clip_value = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
+      if (clip_value === i) clip_value = utils.mod(i + 1, n)
 
-      if (c < i) clip0[i] = n
-      else clip0[i] = c
+      if (clip_value < i) clip0[i] = n
+      else clip0[i] = clip_value
     }
 
     j = 1
@@ -653,15 +653,15 @@ class Potrace {
     pen[0] = 0
     for (j = 1; j <= m; j++)
       for (i = seg1[j]; i <= seg0[j]; i++) {
-        best = -1
+        best_penalty = -1
         for (k = seg0[j - 1]; k >= clip1[i]; k--) {
-          thispen = penalty3(path, k, i) + pen[k]
-          if (best < 0 || thispen < best) {
+          current_penalty = penalty3(path, k, i) + pen[k]
+          if (best_penalty < 0 || current_penalty < best_penalty) {
             prev[i] = k
-            best = thispen
+            best_penalty = current_penalty
           }
         }
-        pen[i] = best
+        pen[i] = best_penalty
       }
 
     path.m = m
@@ -671,6 +671,193 @@ class Potrace {
       i = prev[i]
       path.po[j] = i
     }
+  }
+
+  /**
+   * Calculates point slope and direction for a path segment
+   * @private
+   * @param {Path} path - Path containing the segment
+   * @param {number} i - Start index
+   * @param {number} j - End index
+   * @param {Point} ctr - Center point output
+   * @param {Point} dir - Direction output
+   */
+  #calc_point_slope(path, i, j, ctr, dir) {
+    const n = path.len
+    const { sums } = path
+    let cov_xx
+    let cov_yy
+    let length
+    let wrap_count = 0
+    let j_norm = j
+    let i_norm = i
+
+    // Normalize indices to path length
+    while (j_norm >= n) {
+      j_norm -= n
+      wrap_count += 1
+    }
+    while (i_norm >= n) {
+      i_norm -= n
+      wrap_count -= 1
+    }
+    while (j_norm < 0) {
+      j_norm += n
+      wrap_count -= 1
+    }
+    while (i_norm < 0) {
+      i_norm += n
+      wrap_count += 1
+    }
+
+    // Calculate sums for the segment
+    const x = sums[j_norm + 1].x - sums[i_norm].x + wrap_count * sums[n].x
+    const y = sums[j_norm + 1].y - sums[i_norm].y + wrap_count * sums[n].y
+    const x2 = sums[j_norm + 1].x2 - sums[i_norm].x2 + wrap_count * sums[n].x2
+    const xy = sums[j_norm + 1].xy - sums[i_norm].xy + wrap_count * sums[n].xy
+    const y2 = sums[j_norm + 1].y2 - sums[i_norm].y2 + wrap_count * sums[n].y2
+    const segment_length = j_norm + 1 - i_norm + wrap_count * n
+
+    // Calculate center point
+    ctr.x = x / segment_length
+    ctr.y = y / segment_length
+
+    // Calculate covariance matrix
+    cov_xx = (x2 - (x * x) / segment_length) / segment_length
+    const cov_xy = (xy - (x * y) / segment_length) / segment_length
+    cov_yy = (y2 - (y * y) / segment_length) / segment_length
+
+    // Calculate eigenvalue
+    const lambda2 =
+      (cov_xx +
+        cov_yy +
+        Math.sqrt(
+          (cov_xx - cov_yy) * (cov_xx - cov_yy) +
+            RGBA_COMPONENTS * cov_xy * cov_xy
+        )) /
+      2
+
+    cov_xx -= lambda2
+    cov_yy -= lambda2
+
+    // Calculate direction from eigenvector
+    if (Math.abs(cov_xx) >= Math.abs(cov_yy)) {
+      length = Math.sqrt(cov_xx * cov_xx + cov_xy * cov_xy)
+      if (length !== 0) {
+        dir.x = -cov_xy / length
+        dir.y = cov_xx / length
+      }
+    } else {
+      length = Math.sqrt(cov_yy * cov_yy + cov_xy * cov_xy)
+      if (length !== 0) {
+        dir.x = -cov_yy / length
+        dir.y = cov_xy / length
+      }
+    }
+    if (length === 0) dir.x = dir.y = 0
+  }
+
+  /**
+   * Builds quadratic forms for path segments
+   * @private
+   * @param {number} m - Number of segments
+   * @param {Point[]} ctr - Center points
+   * @param {Point[]} dir - Direction vectors
+   * @returns {Quad[]} Array of quadratic forms
+   */
+  #build_quadratic_forms(m, ctr, dir) {
+    const q = []
+    const normal_form = []
+
+    for (let i = 0; i < m; i++) {
+      q[i] = new Quad()
+      const dir_length_squared = dir[i].x * dir[i].x + dir[i].y * dir[i].y
+
+      if (dir_length_squared === 0.0)
+        for (let j = 0; j < 3; j++)
+          for (let k = 0; k < 3; k++) q[i].data[j * 3 + k] = 0
+      else {
+        normal_form[0] = dir[i].y
+        normal_form[1] = -dir[i].x
+        normal_form[2] = -normal_form[1] * ctr[i].y - normal_form[0] * ctr[i].x
+        for (let row = 0; row < 3; row++)
+          for (let col = 0; col < 3; col++)
+            q[i].data[row * 3 + col] =
+              (normal_form[row] * normal_form[col]) / dir_length_squared
+      }
+    }
+
+    return q
+  }
+
+  /**
+   * Optimizes a single vertex position
+   * @private
+   * @param {Quad} Q - Combined quadratic form
+   * @param {Point} s - Original vertex position
+   * @returns {Point} Optimized position
+   */
+  #optimize_vertex(Q, s) {
+    const candidate = new Point()
+
+    // Try to solve for optimal position
+    const det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
+    if (det !== 0.0) {
+      candidate.x = (-Q.at(0, 2) * Q.at(1, 1) + Q.at(1, 2) * Q.at(0, 1)) / det
+      candidate.y = (Q.at(0, 2) * Q.at(1, 0) - Q.at(1, 2) * Q.at(0, 0)) / det
+
+      const dx = Math.abs(candidate.x - s.x)
+      const dy = Math.abs(candidate.y - s.y)
+      if (dx <= HALF && dy <= HALF) return candidate
+    }
+
+    // Find minimum by trying candidate positions
+    let min_error = utils.quadform(Q, s)
+    let best_x = s.x
+    let best_y = s.y
+
+    // Try positions along horizontal constraints
+    if (Q.at(0, 0) !== 0.0)
+      for (let offset = 0; offset < 2; offset++) {
+        candidate.y = s.y - HALF + offset
+        candidate.x = -(Q.at(0, 1) * candidate.y + Q.at(0, 2)) / Q.at(0, 0)
+        const dx = Math.abs(candidate.x - s.x)
+        const error = utils.quadform(Q, candidate)
+        if (dx <= HALF && error < min_error) {
+          min_error = error
+          best_x = candidate.x
+          best_y = candidate.y
+        }
+      }
+
+    // Try positions along vertical constraints
+    if (Q.at(1, 1) !== 0.0)
+      for (let offset = 0; offset < 2; offset++) {
+        candidate.x = s.x - HALF + offset
+        candidate.y = -(Q.at(1, 0) * candidate.x + Q.at(1, 2)) / Q.at(1, 1)
+        const dy = Math.abs(candidate.y - s.y)
+        const error = utils.quadform(Q, candidate)
+        if (dy <= HALF && error < min_error) {
+          min_error = error
+          best_x = candidate.x
+          best_y = candidate.y
+        }
+      }
+
+    // Try corner positions
+    for (let x_offset = 0; x_offset < 2; x_offset++)
+      for (let y_offset = 0; y_offset < 2; y_offset++) {
+        candidate.x = s.x - HALF + x_offset
+        candidate.y = s.y - HALF + y_offset
+        const error = utils.quadform(Q, candidate)
+        if (error < min_error) {
+          min_error = error
+          best_x = candidate.x
+          best_y = candidate.y
+        }
+      }
+
+    return new Point(best_x, best_y)
   }
 
   /**
@@ -685,66 +872,6 @@ class Potrace {
    * 3. Optimizing the path for smoother curves
    */
   #adjust_vertices = path => {
-    const pointslope = (path, i, j, ctr, dir) => {
-      const n = path.len
-      const { sums } = path
-      let a
-      let c
-      let l
-      let r = 0
-
-      while (j >= n) {
-        j -= n
-        r += 1
-      }
-      while (i >= n) {
-        i -= n
-        r -= 1
-      }
-      while (j < 0) {
-        j += n
-        r -= 1
-      }
-      while (i < 0) {
-        i += n
-        r += 1
-      }
-
-      const x = sums[j + 1].x - sums[i].x + r * sums[n].x
-      const y = sums[j + 1].y - sums[i].y + r * sums[n].y
-      const x2 = sums[j + 1].x2 - sums[i].x2 + r * sums[n].x2
-      const xy = sums[j + 1].xy - sums[i].xy + r * sums[n].xy
-      const y2 = sums[j + 1].y2 - sums[i].y2 + sums[n].y2
-      const k = j + 1 - i + r * n
-
-      ctr.x = x / k
-      ctr.y = y / k
-
-      a = (x2 - (x * x) / k) / k
-      const b = (xy - (x * y) / k) / k
-      c = (y2 - (y * y) / k) / k
-
-      const lambda2 = (a + c + Math.sqrt((a - c) * (a - c) + 4 * b * b)) / 2
-
-      a -= lambda2
-      c -= lambda2
-
-      if (Math.abs(a) >= Math.abs(c)) {
-        l = Math.sqrt(a * a + b * b)
-        if (l !== 0) {
-          dir.x = -b / l
-          dir.y = a / l
-        }
-      } else {
-        l = Math.sqrt(c * c + b * b)
-        if (l !== 0) {
-          dir.x = -c / l
-          dir.y = b / l
-        }
-      }
-      if (l === 0) dir.x = dir.y = 0
-    }
-
     const { m } = path
     const { po } = path
     const n = path.len
@@ -753,133 +880,62 @@ class Potrace {
     const { y0 } = path
     const ctr = []
     const dir = []
-    const q = []
-    const v = []
-    let d
-    let i
-    let j
-    let k
-    let l
-    const s = new Point()
+    const regularization_vector = []
 
     path.curve = new Curve(m)
 
-    for (i = 0; i < m; i++) {
-      j = utils.mod(i + 1, m)
+    // Phase 1: Calculate slope and direction for each segment
+    for (let i = 0; i < m; i++) {
+      let j = utils.mod(i + 1, m)
       j = utils.mod(j - po[i], n) + po[i]
       ctr[i] = new Point()
       dir[i] = new Point()
-      pointslope(path, po[i], j, ctr[i], dir[i])
+      this.#calc_point_slope(path, po[i], j, ctr[i], dir[i])
     }
 
-    for (i = 0; i < m; i++) {
-      q[i] = new Quad()
-      d = dir[i].x * dir[i].x + dir[i].y * dir[i].y
-      if (d === 0.0)
-        for (j = 0; j < 3; j++) for (k = 0; k < 3; k++) q[i].data[j * 3 + k] = 0
-      else {
-        v[0] = dir[i].y
-        v[1] = -dir[i].x
-        v[2] = -v[1] * ctr[i].y - v[0] * ctr[i].x
-        for (l = 0; l < 3; l++)
-          for (k = 0; k < 3; k++) q[i].data[l * 3 + k] = (v[l] * v[k]) / d
-      }
-    }
+    // Phase 2: Build quadratic forms
+    const q = this.#build_quadratic_forms(m, ctr, dir)
 
-    let Q
-    let w
-    let dx
-    let dy
-    let det
-    let min
-    let cand
-    let xmin
-    let ymin
-    let z
-    for (i = 0; i < m; i++) {
-      Q = new Quad()
-      w = new Point()
+    // Phase 3: Optimize each vertex position
+    for (let i = 0; i < m; i++) {
+      const Q = new Quad()
+      const original_vertex = new Point(pt[po[i]].x - x0, pt[po[i]].y - y0)
+      const prev_i = utils.mod(i - 1, m)
 
-      s.x = pt[po[i]].x - x0
-      s.y = pt[po[i]].y - y0
+      // Combine adjacent quadratic forms
+      for (let row = 0; row < 3; row++)
+        for (let col = 0; col < 3; col++)
+          Q.data[row * 3 + col] = q[prev_i].at(row, col) + q[i].at(row, col)
 
-      j = utils.mod(i - 1, m)
+      // Handle singular matrix by adding regularization
+      while (true) {
+        const det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
+        if (det !== 0.0) break
 
-      for (l = 0; l < 3; l++)
-        for (k = 0; k < 3; k++)
-          Q.data[l * 3 + k] = q[j].at(l, k) + q[i].at(l, k)
-
-      while (1) {
-        det = Q.at(0, 0) * Q.at(1, 1) - Q.at(0, 1) * Q.at(1, 0)
-        if (det !== 0.0) {
-          w.x = (-Q.at(0, 2) * Q.at(1, 1) + Q.at(1, 2) * Q.at(0, 1)) / det
-          w.y = (Q.at(0, 2) * Q.at(1, 0) - Q.at(1, 2) * Q.at(0, 0)) / det
-          break
-        }
-
+        // Add regularization term
         if (Q.at(0, 0) > Q.at(1, 1)) {
-          v[0] = -Q.at(0, 1)
-          v[1] = Q.at(0, 0)
+          regularization_vector[0] = -Q.at(0, 1)
+          regularization_vector[1] = Q.at(0, 0)
+        } else if (Q.at(1, 1)) {
+          regularization_vector[0] = -Q.at(1, 1)
+          regularization_vector[1] = Q.at(1, 0)
         }
-        if (Q.at(1, 1)) {
-          v[0] = -Q.at(1, 1)
-          v[1] = Q.at(1, 0)
-        }
-        d = v[0] * v[0] + v[1] * v[1]
-        v[2] = -v[1] * s.y - v[0] * s.x
-        for (l = 0; l < 3; l++)
-          for (k = 0; k < 3; k++) Q.data[l * 3 + k] += (v[l] * v[k]) / d
+        const vector_length_squared =
+          regularization_vector[0] * regularization_vector[0] +
+          regularization_vector[1] * regularization_vector[1]
+        regularization_vector[2] =
+          -regularization_vector[1] * original_vertex.y -
+          regularization_vector[0] * original_vertex.x
+        for (let row = 0; row < 3; row++)
+          for (let col = 0; col < 3; col++)
+            Q.data[row * 3 + col] +=
+              (regularization_vector[row] * regularization_vector[col]) /
+              vector_length_squared
       }
-      dx = Math.abs(w.x - s.x)
-      dy = Math.abs(w.y - s.y)
-      if (dx <= 0.5 && dy <= 0.5) {
-        path.curve.vertex[i] = new Point(w.x + x0, w.y + y0)
-        continue
-      }
 
-      min = utils.quadform(Q, s)
-      xmin = s.x
-      ymin = s.y
-
-      if (Q.at(0, 0) !== 0.0)
-        for (z = 0; z < 2; z++) {
-          w.y = s.y - 0.5 + z
-          w.x = -(Q.at(0, 1) * w.y + Q.at(0, 2)) / Q.at(0, 0)
-          dx = Math.abs(w.x - s.x)
-          cand = utils.quadform(Q, w)
-          if (dx <= 0.5 && cand < min) {
-            min = cand
-            xmin = w.x
-            ymin = w.y
-          }
-        }
-
-      if (Q.at(1, 1) !== 0.0)
-        for (z = 0; z < 2; z++) {
-          w.x = s.x - 0.5 + z
-          w.y = -(Q.at(1, 0) * w.x + Q.at(1, 2)) / Q.at(1, 1)
-          dy = Math.abs(w.y - s.y)
-          cand = utils.quadform(Q, w)
-          if (dy <= 0.5 && cand < min) {
-            min = cand
-            xmin = w.x
-            ymin = w.y
-          }
-        }
-
-      for (l = 0; l < 2; l++)
-        for (k = 0; k < 2; k++) {
-          w.x = s.x - 0.5 + l
-          w.y = s.y - 0.5 + k
-          cand = utils.quadform(Q, w)
-          if (cand < min) {
-            min = cand
-            xmin = w.x
-            ymin = w.y
-          }
-        }
-
-      path.curve.vertex[i] = new Point(xmin + x0, ymin + y0)
+      // Find optimal vertex position
+      const optimized = this.#optimize_vertex(Q, original_vertex)
+      path.curve.vertex[i] = new Point(optimized.x + x0, optimized.y + y0)
     }
   }
 
@@ -894,15 +950,15 @@ class Potrace {
   #reverse = path => {
     const { curve } = path
     const m = curve.n
-    const v = curve.vertex
-    let i
-    let j
-    let tmp
+    const vertices = curve.vertex
+    let start
+    let end
+    let temp
 
-    for (i = 0, j = m - 1; i < j; i++, j--) {
-      tmp = v[i]
-      v[i] = v[j]
-      v[j] = tmp
+    for (start = 0, end = m - 1; start < end; start++, end--) {
+      temp = vertices[start]
+      vertices[start] = vertices[end]
+      vertices[end] = temp
     }
   }
 
@@ -924,46 +980,58 @@ class Potrace {
     let i
     let j
     let k
-    let dd
+    let parallel_distance
     let denom
     let alpha
-    let p2
-    let p3
-    let p4
+    let control_point_0
+    let control_point_1
+    let control_point_2
 
     for (i = 0; i < m; i++) {
       j = utils.mod(i + 1, m)
       k = utils.mod(i + 2, m)
-      p4 = utils.interval(1 / 2.0, curve.vertex[k], curve.vertex[j])
+      control_point_2 = utils.interval(
+        1 / 2.0,
+        curve.vertex[k],
+        curve.vertex[j]
+      )
 
       denom = utils.ddenom(curve.vertex[i], curve.vertex[k])
       if (denom !== 0.0) {
-        dd =
+        parallel_distance =
           utils.dpara(curve.vertex[i], curve.vertex[j], curve.vertex[k]) / denom
-        dd = Math.abs(dd)
-        alpha = dd > 1 ? 1 - 1.0 / dd : 0
+        parallel_distance = Math.abs(parallel_distance)
+        alpha = parallel_distance > 1 ? 1 - 1.0 / parallel_distance : 0
         alpha = alpha / ALPHA_SCALE_FACTOR
-      } else alpha = 4 / 3.0
+      } else alpha = RGBA_COMPONENTS / 3.0
 
       curve.alpha0[j] = alpha
 
       if (alpha >= this.#params.alphaMax) {
         curve.tag[j] = 'CORNER'
         curve.c[3 * j + 1] = curve.vertex[j]
-        curve.c[3 * j + 2] = p4
+        curve.c[3 * j + 2] = control_point_2
       } else {
         if (alpha < MIN_ALPHA_THRESHOLD) alpha = MIN_ALPHA_THRESHOLD
         else if (alpha > 1) alpha = 1
 
-        p2 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[i], curve.vertex[j])
-        p3 = utils.interval(0.5 + 0.5 * alpha, curve.vertex[k], curve.vertex[j])
+        control_point_0 = utils.interval(
+          HALF + HALF * alpha,
+          curve.vertex[i],
+          curve.vertex[j]
+        )
+        control_point_1 = utils.interval(
+          HALF + HALF * alpha,
+          curve.vertex[k],
+          curve.vertex[j]
+        )
         curve.tag[j] = 'CURVE'
-        curve.c[3 * j + 0] = p2
-        curve.c[3 * j + 1] = p3
-        curve.c[3 * j + 2] = p4
+        curve.c[3 * j + 0] = control_point_0
+        curve.c[3 * j + 1] = control_point_1
+        curve.c[3 * j + 2] = control_point_2
       }
       curve.alpha[j] = alpha
-      curve.beta[j] = 0.5
+      curve.beta[j] = HALF
     }
     curve.alpha_curve = 1
   }
@@ -988,49 +1056,53 @@ class Potrace {
     const pen = []
     const len = []
     const opt = []
-    let om
+    let optimized_segment_count
     let i
     let j
-    let r
-    let o = new Opti()
+    let should_reject
+    let current_optimization = new Opti()
     let p0
-    let i1
+    let next_i
     let area
     let alpha
-    let ocurve
-    const s = []
-    const t = []
+    let optimized_curve
+    const s_params = []
+    const t_params = []
 
-    const convc = []
-    const areac = []
+    const convexity_array = []
+    const cumulative_area = []
 
     for (i = 0; i < m; i++)
-      if (curve.tag[i] == 'CURVE')
-        convc[i] = utils.sign(
+      if (curve.tag[i] === 'CURVE')
+        convexity_array[i] = utils.sign(
           utils.dpara(
             vert[utils.mod(i - 1, m)],
             vert[i],
             vert[utils.mod(i + 1, m)]
           )
         )
-      else convc[i] = 0
+      else convexity_array[i] = 0
 
     area = 0.0
-    areac[0] = 0.0
-    p0 = curve.vertex[0]
+    cumulative_area[0] = 0.0
+    ;[p0] = curve.vertex
     for (i = 0; i < m; i++) {
-      i1 = utils.mod(i + 1, m)
-      if (curve.tag[i1] == 'CURVE') {
-        alpha = curve.alpha[i1]
+      next_i = utils.mod(i + 1, m)
+      if (curve.tag[next_i] === 'CURVE') {
+        alpha = curve.alpha[next_i]
         area +=
           (PENALTY_RATIO *
             alpha *
-            (4 - alpha) *
-            utils.dpara(curve.c[i * 3 + 2], vert[i1], curve.c[i1 * 3 + 2])) /
+            (RGBA_COMPONENTS - alpha) *
+            utils.dpara(
+              curve.c[i * 3 + 2],
+              vert[next_i],
+              curve.c[next_i * 3 + 2]
+            )) /
           2
-        area += utils.dpara(p0, curve.c[i * 3 + 2], curve.c[i1 * 3 + 2]) / 2
+        area += utils.dpara(p0, curve.c[i * 3 + 2], curve.c[next_i * 3 + 2]) / 2
       }
-      areac[i + 1] = area
+      cumulative_area[i + 1] = area
     }
 
     pt[0] = -1
@@ -1043,69 +1115,76 @@ class Potrace {
       len[j] = len[j - 1] + 1
 
       for (i = j - 2; i >= 0; i--) {
-        r = this.#opti_penalty(
+        should_reject = this.#opti_penalty({
           path,
           i,
-          utils.mod(j, m),
-          o,
-          this.#params.optTolerance,
-          convc,
-          areac
-        )
-        if (r) break
+          j: utils.mod(j, m),
+          res: current_optimization,
+          opttolerance: this.#params.optTolerance,
+          convc: convexity_array,
+          areac: cumulative_area
+        })
+        if (should_reject) break
 
         if (
           len[j] > len[i] + 1 ||
-          (len[j] == len[i] + 1 && pen[j] > pen[i] + o.pen)
+          (len[j] === len[i] + 1 && pen[j] > pen[i] + current_optimization.pen)
         ) {
           pt[j] = i
-          pen[j] = pen[i] + o.pen
+          pen[j] = pen[i] + current_optimization.pen
           len[j] = len[i] + 1
-          opt[j] = o
-          o = new Opti()
+          opt[j] = current_optimization
+          current_optimization = new Opti()
         }
       }
     }
-    om = len[m]
-    ocurve = new Curve(om)
+    optimized_segment_count = len[m]
+    optimized_curve = new Curve(optimized_segment_count)
 
     j = m
-    for (i = om - 1; i >= 0; i--) {
-      if (pt[j] == j - 1) {
-        ocurve.tag[i] = curve.tag[utils.mod(j, m)]
-        ocurve.c[i * 3 + 0] = curve.c[utils.mod(j, m) * 3 + 0]
-        ocurve.c[i * 3 + 1] = curve.c[utils.mod(j, m) * 3 + 1]
-        ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
-        ocurve.vertex[i] = curve.vertex[utils.mod(j, m)]
-        ocurve.alpha[i] = curve.alpha[utils.mod(j, m)]
-        ocurve.alpha0[i] = curve.alpha0[utils.mod(j, m)]
-        ocurve.beta[i] = curve.beta[utils.mod(j, m)]
-        s[i] = t[i] = 1.0
+    for (i = optimized_segment_count - 1; i >= 0; i--) {
+      if (pt[j] === j - 1) {
+        const j_mod = utils.mod(j, m)
+        optimized_curve.tag[i] = curve.tag[j_mod]
+        const [c0, c1, c2] = [
+          curve.c[j_mod * 3 + 0],
+          curve.c[j_mod * 3 + 1],
+          curve.c[j_mod * 3 + 2]
+        ]
+        optimized_curve.c[i * 3 + 0] = c0
+        optimized_curve.c[i * 3 + 1] = c1
+        optimized_curve.c[i * 3 + 2] = c2
+        optimized_curve.vertex[i] = curve.vertex[utils.mod(j, m)]
+        optimized_curve.alpha[i] = curve.alpha[utils.mod(j, m)]
+        optimized_curve.alpha0[i] = curve.alpha0[utils.mod(j, m)]
+        optimized_curve.beta[i] = curve.beta[utils.mod(j, m)]
+        s_params[i] = t_params[i] = 1.0
       } else {
-        ocurve.tag[i] = 'CURVE'
-        ocurve.c[i * 3 + 0] = opt[j].c[0]
-        ocurve.c[i * 3 + 1] = opt[j].c[1]
-        ocurve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
-        ocurve.vertex[i] = utils.interval(
+        optimized_curve.tag[i] = 'CURVE'
+        const [c0, c1] = opt[j].c
+        optimized_curve.c[i * 3 + 0] = c0
+        optimized_curve.c[i * 3 + 1] = c1
+        optimized_curve.c[i * 3 + 2] = curve.c[utils.mod(j, m) * 3 + 2]
+        optimized_curve.vertex[i] = utils.interval(
           opt[j].s,
           curve.c[utils.mod(j, m) * 3 + 2],
           vert[utils.mod(j, m)]
         )
-        ocurve.alpha[i] = opt[j].alpha
-        ocurve.alpha0[i] = opt[j].alpha
-        s[i] = opt[j].s
-        t[i] = opt[j].t
+        optimized_curve.alpha[i] = opt[j].alpha
+        optimized_curve.alpha0[i] = opt[j].alpha
+        s_params[i] = opt[j].s
+        t_params[i] = opt[j].t
       }
       j = pt[j]
     }
 
-    for (i = 0; i < om; i++) {
-      i1 = utils.mod(i + 1, om)
-      ocurve.beta[i] = s[i] / (s[i] + t[i1])
+    for (i = 0; i < optimized_segment_count; i++) {
+      next_i = utils.mod(i + 1, optimized_segment_count)
+      optimized_curve.beta[i] = s_params[i] / (s_params[i] + t_params[next_i])
     }
 
-    ocurve.alpha_curve = 1
-    path.curve = ocurve
+    optimized_curve.alpha_curve = 1
+    path.curve = optimized_curve
   }
 
   /**
@@ -1127,132 +1206,160 @@ class Potrace {
    * 3. Distribution of control points
    * Returns 1 if the optimization would create an invalid curve.
    */
-  #opti_penalty(path, i, j, res, opttolerance, convc, areac) {
+  #opti_penalty({ path, i, j, res, opttolerance, convc, areac }) {
     const m = path.curve.n
     const { curve } = path
     const { vertex } = curve
     let k
-    let k1
+    let next_k
     let k2
-    let conv
+    let convexity_sign
     let i1
     let area
     let alpha
-    let d
-    let d1
-    let d2
-    let p0
-    let p1
-    let p2
-    let p3
-    let pt
-    let t
+    let distance
+    let perpendicular_distance
+    let perpendicular_distance_vertex
+    let bezier_point
+    let tangent_param
 
-    if (i == j) return 1
+    if (i === j) return 1
 
     k = i
     i1 = utils.mod(i + 1, m)
-    k1 = utils.mod(k + 1, m)
-    conv = convc[k1]
-    if (conv === 0) return 1
+    next_k = utils.mod(k + 1, m)
+    convexity_sign = convc[next_k]
+    if (convexity_sign === 0) return 1
 
-    d = utils.ddist(vertex[i], vertex[i1])
-    for (k = k1; k != j; k = k1) {
-      k1 = utils.mod(k + 1, m)
+    distance = utils.ddist(vertex[i], vertex[i1])
+    for (k = next_k; k !== j; k = next_k) {
+      next_k = utils.mod(k + 1, m)
       k2 = utils.mod(k + 2, m)
-      if (convc[k1] != conv) return 1
+      if (convc[next_k] !== convexity_sign) return 1
 
       if (
         utils.sign(
-          utils.cprod(vertex[i], vertex[i1], vertex[k1], vertex[k2])
-        ) != conv
+          utils.cprod(vertex[i], vertex[i1], vertex[next_k], vertex[k2])
+        ) !== convexity_sign
       )
         return 1
 
       if (
-        utils.iprod1(vertex[i], vertex[i1], vertex[k1], vertex[k2]) <
-        d * utils.ddist(vertex[k1], vertex[k2]) * -0.999847695156
+        utils.iprod1(vertex[i], vertex[i1], vertex[next_k], vertex[k2]) <
+        distance *
+          utils.ddist(vertex[next_k], vertex[k2]) *
+          TANGENT_PARALLEL_THRESHOLD
       )
         return 1
     }
 
-    p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
-    p1 = vertex[utils.mod(i + 1, m)].copy()
-    p2 = vertex[utils.mod(j, m)].copy()
-    p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
+    const bezier_p0 = curve.c[utils.mod(i, m) * 3 + 2].copy()
+    let bezier_p1 = vertex[utils.mod(i + 1, m)].copy()
+    let bezier_p2 = vertex[utils.mod(j, m)].copy()
+    const bezier_p3 = curve.c[utils.mod(j, m) * 3 + 2].copy()
 
     area = areac[j] - areac[i]
     area -= utils.dpara(vertex[0], curve.c[i * 3 + 2], curve.c[j * 3 + 2]) / 2
     if (i >= j) area += areac[m]
 
-    const A1 = utils.dpara(p0, p1, p2)
-    const A2 = utils.dpara(p0, p1, p3)
-    const A3 = utils.dpara(p0, p2, p3)
+    const A1 = utils.dpara(bezier_p0, bezier_p1, bezier_p2)
+    const A2 = utils.dpara(bezier_p0, bezier_p1, bezier_p3)
+    const A3 = utils.dpara(bezier_p0, bezier_p2, bezier_p3)
 
     const A4 = A1 + A3 - A2
 
-    if (A2 == A1) return 1
+    if (A2 === A1) return 1
 
-    t = A3 / (A3 - A4)
+    tangent_param = A3 / (A3 - A4)
     const s = A2 / (A2 - A1)
-    const A = (A2 * t) / 2.0
+    const A = (A2 * tangent_param) / 2.0
 
     if (A === 0.0) return 1
 
     const R = area / A
-    alpha = 2 - Math.sqrt(4 - R / PENALTY_RATIO)
+    alpha = 2 - Math.sqrt(RGBA_COMPONENTS - R / PENALTY_RATIO)
 
-    res.c[0] = utils.interval(t * alpha, p0, p1)
-    res.c[1] = utils.interval(s * alpha, p3, p2)
+    res.c[0] = utils.interval(tangent_param * alpha, bezier_p0, bezier_p1)
+    res.c[1] = utils.interval(s * alpha, bezier_p3, bezier_p2)
     res.alpha = alpha
-    res.t = t
+    res.t = tangent_param
     res.s = s
 
-    p1 = res.c[0].copy()
-    p2 = res.c[1].copy()
+    bezier_p1 = res.c[0].copy()
+    bezier_p2 = res.c[1].copy()
 
     res.pen = 0
 
-    for (k = utils.mod(i + 1, m); k != j; k = k1) {
-      k1 = utils.mod(k + 1, m)
-      t = utils.tangent(p0, p1, p2, p3, vertex[k], vertex[k1])
-      if (t < CURVATURE_THRESHOLD) return 1
+    for (k = utils.mod(i + 1, m); k !== j; k = next_k) {
+      next_k = utils.mod(k + 1, m)
+      tangent_param = utils.tangent(
+        { p0: bezier_p0, p1: bezier_p1, p2: bezier_p2, p3: bezier_p3 },
+        { q0: vertex[k], q1: vertex[next_k] }
+      )
+      if (tangent_param < CURVATURE_THRESHOLD) return 1
 
-      pt = utils.bezier(t, p0, p1, p2, p3)
-      d = utils.ddist(vertex[k], vertex[k1])
-      if (d === 0.0) return 1
+      bezier_point = utils.bezier(
+        tangent_param,
+        bezier_p0,
+        bezier_p1,
+        bezier_p2,
+        bezier_p3
+      )
+      distance = utils.ddist(vertex[k], vertex[next_k])
+      if (distance === 0.0) return 1
 
-      d1 = utils.dpara(vertex[k], vertex[k1], pt) / d
-      if (Math.abs(d1) > opttolerance) return 1
+      perpendicular_distance =
+        utils.dpara(vertex[k], vertex[next_k], bezier_point) / distance
+      if (Math.abs(perpendicular_distance) > opttolerance) return 1
 
       if (
-        utils.iprod(vertex[k], vertex[k1], pt) < 0 ||
-        utils.iprod(vertex[k1], vertex[k], pt) < 0
+        utils.iprod(vertex[k], vertex[next_k], bezier_point) < 0 ||
+        utils.iprod(vertex[next_k], vertex[k], bezier_point) < 0
       )
         return 1
 
-      res.pen += d1 * d1
+      res.pen += perpendicular_distance * perpendicular_distance
     }
 
-    for (k = i; k != j; k = k1) {
-      k1 = utils.mod(k + 1, m)
-      t = utils.tangent(p0, p1, p2, p3, curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-      if (t < CURVATURE_THRESHOLD) return 1
+    for (k = i; k !== j; k = next_k) {
+      next_k = utils.mod(k + 1, m)
+      tangent_param = utils.tangent(
+        { p0: bezier_p0, p1: bezier_p1, p2: bezier_p2, p3: bezier_p3 },
+        { q0: curve.c[k * 3 + 2], q1: curve.c[next_k * 3 + 2] }
+      )
+      if (tangent_param < CURVATURE_THRESHOLD) return 1
 
-      pt = utils.bezier(t, p0, p1, p2, p3)
-      d = utils.ddist(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2])
-      if (d === 0.0) return 1
+      bezier_point = utils.bezier(
+        tangent_param,
+        bezier_p0,
+        bezier_p1,
+        bezier_p2,
+        bezier_p3
+      )
+      distance = utils.ddist(curve.c[k * 3 + 2], curve.c[next_k * 3 + 2])
+      if (distance === 0.0) return 1
 
-      d1 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], pt) / d
-      d2 = utils.dpara(curve.c[k * 3 + 2], curve.c[k1 * 3 + 2], vertex[k1]) / d
-      d2 *= CURVATURE_SCALE * curve.alpha[k1]
-      if (d2 < 0) {
-        d1 = -d1
-        d2 = -d2
+      perpendicular_distance =
+        utils.dpara(curve.c[k * 3 + 2], curve.c[next_k * 3 + 2], bezier_point) /
+        distance
+      perpendicular_distance_vertex =
+        utils.dpara(
+          curve.c[k * 3 + 2],
+          curve.c[next_k * 3 + 2],
+          vertex[next_k]
+        ) / distance
+      perpendicular_distance_vertex *= CURVATURE_SCALE * curve.alpha[next_k]
+      if (perpendicular_distance_vertex < 0) {
+        perpendicular_distance = -perpendicular_distance
+        perpendicular_distance_vertex = -perpendicular_distance_vertex
       }
-      if (d1 < d2 - opttolerance) return 1
+      if (perpendicular_distance < perpendicular_distance_vertex - opttolerance)
+        return 1
 
-      if (d1 < d2) res.pen += (d1 - d2) * (d1 - d2)
+      if (perpendicular_distance < perpendicular_distance_vertex)
+        res.pen +=
+          (perpendicular_distance - perpendicular_distance_vertex) *
+          (perpendicular_distance - perpendicular_distance_vertex)
     }
 
     return 0
@@ -1314,20 +1421,21 @@ class Potrace {
 
     if (
       params &&
-      params.threshold != null &&
+      params.threshold !== null &&
       params.threshold !== Potrace.THRESHOLD_AUTO
     )
       if (
         typeof params.threshold !== 'number' ||
-        !utils.between(params.threshold, 0, 255)
+        !utils.between(params.threshold, 0, RGB_MAX)
       )
         throw new Error(
-          'Bad threshold value. Expected to be an integer in range 0..255'
+          `Bad threshold value. Expected to be an integer in range 0..${RGB_MAX}`
         )
 
     if (
       params &&
-      params.optCurve != null &&
+      params.optCurve !== null &&
+      params.optCurve !== undefined &&
       typeof params.optCurve !== 'boolean'
     )
       throw new Error("'optCurve' must be Boolean")
@@ -1344,13 +1452,13 @@ class Potrace {
     const pixels = image_data.data
     const bitmap = new Bitmap(image_data.width, image_data.height)
 
-    for (let i = 0; i < pixels.length; i += 4) {
-      const opacity = pixels[i + 3] / 255
-      const r = 255 + (pixels[i + 0] - 255) * opacity
-      const g = 255 + (pixels[i + 1] - 255) * opacity
-      const b = 255 + (pixels[i + 2] - 255) * opacity
+    for (let i = 0; i < pixels.length; i += RGBA_COMPONENTS) {
+      const opacity = pixels[i + 3] / RGB_MAX
+      const r = RGB_MAX + (pixels[i + 0] - RGB_MAX) * opacity
+      const g = RGB_MAX + (pixels[i + 1] - RGB_MAX) * opacity
+      const b = RGB_MAX + (pixels[i + 2] - RGB_MAX) * opacity
 
-      bitmap.data[i / 4] = utils.luminance(r, g, b)
+      bitmap.data[i / RGBA_COMPONENTS] = utils.luminance(r, g, b)
     }
 
     this.#luminance_data = bitmap
@@ -1365,10 +1473,7 @@ class Potrace {
    * Resets loading state, processes image data, and sets loaded flags.
    */
   #load_image(image_data) {
-    this.#image_loading_identifier = {}
     this.#image_loaded = false
-
-    this.#image_loading_identifier = null
     this.#image_loaded = true
     this.#process_loaded_image(image_data)
   }
@@ -1402,7 +1507,7 @@ class Potrace {
       this.#params.steps &&
       !Array.isArray(this.#params.steps) &&
       (!utils.is_number(this.#params.steps) ||
-        !utils.between(this.#params.steps, 1, 255))
+        !utils.between(this.#params.steps, 1, RGB_MAX))
     )
       throw new Error("Bad 'steps' value")
 
@@ -1424,36 +1529,47 @@ class Potrace {
     const { blackOnWhite } = this.#params
     const lastColorStop = ranges[ranges.length - 1]
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
-    const lastRangeTo = blackOnWhite ? lastColorStop.value : 255
+    const lastRangeTo = blackOnWhite ? lastColorStop.value : RGB_MAX
 
     if (
-      lastRangeTo - lastRangeFrom > 25 &&
+      lastRangeTo - lastRangeFrom > POSTERIZE_LEVEL_STEP &&
       lastColorStop.colorIntensity !== 1
     ) {
       const histogram = this.#get_image_histogram()
       const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
 
-      const newColorStop =
-        levels.mean + levels.stdDev <= 25
-          ? levels.mean + levels.stdDev
-          : levels.mean - levels.stdDev <= 25
-            ? levels.mean - levels.stdDev
-            : 25
+      let newColorStop
+      if (levels.mean + levels.stdDev <= POSTERIZE_LEVEL_STEP)
+        newColorStop = levels.mean + levels.stdDev
+      else if (levels.mean - levels.stdDev <= POSTERIZE_LEVEL_STEP)
+        newColorStop = levels.mean - levels.stdDev
+      else newColorStop = POSTERIZE_LEVEL_STEP
 
       const newStats = blackOnWhite
         ? histogram.get_stats(0, newColorStop)
-        : histogram.get_stats(newColorStop, 255)
+        : histogram.get_stats(newColorStop, RGB_MAX)
       const color = newStats.levels.mean
 
       ranges.push({
-        value: Math.abs((blackOnWhite ? 0 : 255) - newColorStop),
+        value: Math.abs((blackOnWhite ? 0 : RGB_MAX) - newColorStop),
         colorIntensity: isNaN(color)
           ? 0
-          : (blackOnWhite ? 255 - color : color) / 255
+          : (blackOnWhite ? RGB_MAX - color : color) / RGB_MAX
       })
     }
 
     return ranges
+  }
+
+  /**
+   * Calculates color intensity value for a single color
+   * @private
+   * @param {number} color - Color value
+   * @param {boolean} blackOnWhite - Whether to invert the color
+   * @returns {number} Normalized color intensity (0-1)
+   */
+  #calc_color_intensity_value(color, blackOnWhite) {
+    return (blackOnWhite ? RGB_MAX - color : color) / RGB_MAX
   }
 
   /**
@@ -1476,16 +1592,15 @@ class Potrace {
         ? this.#get_image_histogram()
         : null
     const fullRange = Math.abs(
-      this.#params.threshold - (blackOnWhite ? 0 : 255)
+      this.#params.threshold - (blackOnWhite ? 0 : RGB_MAX)
     )
 
     return colorStops.map((threshold, index) => {
-      const nextValue =
-        index + 1 === colorStops.length
-          ? blackOnWhite
-            ? -1
-            : 256
-          : colorStops[index + 1]
+      let nextValue
+      if (index + 1 === colorStops.length)
+        nextValue = blackOnWhite ? -1 : COLOR_SPACE_SIZE
+      else nextValue = colorStops[index + 1]
+
       const rangeStart = Math.round(blackOnWhite ? nextValue + 1 : threshold)
       const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
       const factor = index / (colorStops.length - 1)
@@ -1506,7 +1621,7 @@ class Potrace {
             (blackOnWhite ? rangeStart : rangeEnd) +
             (blackOnWhite ? 1 : -1) *
               intervalSize *
-              Math.max(0.5, fullRange / 255) *
+              Math.max(HALF, fullRange / RGB_MAX) *
               factor
           break
         case Potrace.FILL_DOMINANT:
@@ -1530,18 +1645,20 @@ class Potrace {
           ? utils.clamp(
               color,
               rangeStart,
-              rangeEnd - Math.round(intervalSize * 0.1)
+              rangeEnd - Math.round(intervalSize * POSTERIZE_STEP_SCALE)
             )
           : utils.clamp(
               color,
-              rangeStart + Math.round(intervalSize * 0.1),
+              rangeStart + Math.round(intervalSize * POSTERIZE_STEP_SCALE),
               rangeEnd
             )
 
       return {
         value: threshold,
         colorIntensity:
-          color === -1 ? 0 : (blackOnWhite ? 255 - color : color) / 255
+          color === -1
+            ? 0
+            : this.#calc_color_intensity_value(color, blackOnWhite)
       }
     })
   }
@@ -1585,7 +1702,7 @@ class Potrace {
     const lookingForDarkPixels = this.#params.blackOnWhite
 
     steps.forEach(item => {
-      if (colorStops.indexOf(item) === -1 && utils.between(item, 0, 255))
+      if (colorStops.indexOf(item) === -1 && utils.between(item, 0, RGB_MAX))
         colorStops.push(item)
     })
 
@@ -1628,7 +1745,7 @@ class Potrace {
 
       colorStops = this.#params.blackOnWhite
         ? histogram.multilevel_thresholding(steps - 1, 0, threshold)
-        : histogram.multilevel_thresholding(steps - 1, threshold, 255)
+        : histogram.multilevel_thresholding(steps - 1, threshold, RGB_MAX)
 
       if (this.#params.blackOnWhite) colorStops.push(threshold)
       else colorStops.unshift(threshold)
@@ -1653,7 +1770,7 @@ class Potrace {
     const { blackOnWhite } = this.#params
     const colorsToThreshold = blackOnWhite
       ? this.#param_threshold()
-      : 255 - this.#param_threshold()
+      : RGB_MAX - this.#param_threshold()
     const steps = this.#param_steps()
 
     const stepSize = colorsToThreshold / steps
@@ -1662,7 +1779,7 @@ class Potrace {
 
     while (i >= 0) {
       const threshold = Math.min(colorsToThreshold, (i + 1) * stepSize)
-      const finalThreshold = blackOnWhite ? threshold : 255 - threshold
+      const finalThreshold = blackOnWhite ? threshold : RGB_MAX - threshold
       i--
 
       colorStops.push(finalThreshold)
@@ -1692,30 +1809,30 @@ class Potrace {
       steps === Potrace.STEPS_AUTO &&
       this.#params.threshold === Potrace.THRESHOLD_AUTO
     )
-      return 4
+      return RGBA_COMPONENTS
 
     const { blackOnWhite } = this.#params
     const colorsCount = blackOnWhite
       ? this.#param_threshold()
-      : 255 - this.#param_threshold()
+      : RGB_MAX - this.#param_threshold()
 
-    return steps === Potrace.STEPS_AUTO
-      ? colorsCount > 200
-        ? 4
-        : 3
-      : Math.min(colorsCount, Math.max(2, steps))
+    if (steps === Potrace.STEPS_AUTO) {
+      if (colorsCount > POSTERIZE_BRIGHTNESS_THRESHOLD) return RGBA_COMPONENTS
+      return 3
+    }
+    return Math.min(colorsCount, Math.max(2, steps))
   }
 
   /**
    * Gets valid threshold parameter considering auto-threshold
    * @private
-   * @returns {number} Calculated threshold value between 0 and 255
+   * @returns {number} Calculated threshold value between 0 and RGB_MAX
    * @description
    * Determines the appropriate threshold by:
    * 1. Using cached value if available
    * 2. Using specified threshold if not auto
    * 3. Calculating optimal threshold using multilevel thresholding
-   * 4. Defaulting to 128 if calculation fails
+   * 4. Defaulting to ALPHA_TRANSPARENCY_THRESHOLD if calculation fails
    */
   #param_threshold() {
     if (this.#calculated_threshold !== null) return this.#calculated_threshold
@@ -1729,29 +1846,20 @@ class Potrace {
     this.#calculated_threshold = this.#params.blackOnWhite
       ? twoThresholds[1]
       : twoThresholds[0]
-    this.#calculated_threshold = this.#calculated_threshold || 128
+    this.#calculated_threshold =
+      this.#calculated_threshold || ALPHA_TRANSPARENCY_THRESHOLD
 
     return this.#calculated_threshold
   }
 
   /**
    * Gets path tag for SVG output
-   * @param {string} [fillColor] - Override fill color (any valid CSS color)
    * @returns {string} SVG path tag
    * @throws {Error} If image not loaded
    * @description
    * Generates an SVG path tag for the processed image.
-   * If fillColor is provided, it overrides the default fill color.
-   * If fillColor is not provided, it uses the color specified in the parameters.
-   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
-   * Throws an error if the image is not loaded.
    */
-  get_path_tag(fillColor) {
-    fillColor = arguments.length === 0 ? this.#params.color : fillColor
-
-    if (fillColor === Potrace.COLOR_AUTO)
-      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
-
+  get_path_tag() {
     if (!this.#image_loaded) throw new Error('Image should be loaded first')
 
     if (!this.#processed) {
@@ -1786,7 +1894,8 @@ class Potrace {
     let ranges = this.#get_ranges()
     const { blackOnWhite } = this.#params
 
-    if (ranges.length >= 10) ranges = this.#add_extra_color_stop(ranges)
+    if (ranges.length >= MIN_RANGE_COUNT)
+      ranges = this.#add_extra_color_stop(ranges)
 
     this.#set_parameters({ blackOnWhite })
 
@@ -1814,7 +1923,7 @@ class Potrace {
 
       this.#set_parameters({ threshold: colorStop.value })
 
-      let element = noFillColor ? this.get_path_tag('') : this.get_path_tag()
+      let element = this.get_path_tag()
       element = utils.set_html_attr(
         element,
         'fill-opacity',
@@ -1825,7 +1934,7 @@ class Potrace {
         calculatedOpacity === 0 || element.indexOf(' d=""') !== -1
 
       const c = Math.round(
-        Math.abs((blackOnWhite ? 255 : 0) - 255 * thisLayerOpacity)
+        Math.abs((blackOnWhite ? RGB_MAX : 0) - RGB_MAX * thisLayerOpacity)
       )
       element = utils.set_html_attr(element, 'fill', `rgb(${c}, ${c}, ${c})`)
 
@@ -1846,10 +1955,12 @@ class Potrace {
    * Throws an error if the image is not loaded.
    */
   get_path_data(fillColor) {
-    fillColor = arguments.length === 0 ? this.#params.color : fillColor
+    const fill = arguments.length === 0 ? this.#params.color : fillColor
 
-    if (fillColor === Potrace.COLOR_AUTO)
-      fillColor = this.#params.blackOnWhite ? 'black' : 'white'
+    let resolved_fill
+    if (fill === Potrace.COLOR_AUTO)
+      resolved_fill = this.#params.blackOnWhite ? 'black' : 'white'
+    else resolved_fill = fill
 
     if (!this.#image_loaded) throw new Error('Image should be loaded first')
 
@@ -1859,13 +1970,10 @@ class Potrace {
       this.#processed = true
     }
 
-    let tag = ''
-
-    this.#pathlist.forEach(path => {
-      tag += utils.render_curve(path.curve, 1)
-    })
-
-    return tag
+    return this.#pathlist.map(path => ({
+      d: utils.render_curve(path.curve, 1),
+      fillOpacity: resolved_fill
+    }))
   }
 
   /**
@@ -1940,6 +2048,41 @@ class Potrace {
     const paths = this.as_curves()
     return { width, height, dark, paths }
   }
+}
+
+/**
+ * Converts an image into SVG paths
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {ProcessedPaths} Object containing width, height, dark flag and paths
+ */
+export const as_paths = (image_data, options = {}) => {
+  const potrace = new Potrace(options)
+  return potrace.create_paths(image_data)
+}
+
+/**
+ * Converts an image into single path element
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {string} SVG path data
+ */
+export const as_path_element = (image_data, options = {}) => {
+  const potrace = new Potrace(options)
+  potrace.load_image(image_data)
+  return potrace.get_path_tag()
+}
+
+/**
+ * Converts an image into path elements
+ * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
+ * @param {PotraceOptions} [options={}] - Potrace options
+ * @returns {string[]} SVG path elements
+ */
+export const as_path_elements = (image_data, options = {}) => {
+  const potrace = new Potrace(options)
+  potrace.load_image(image_data)
+  return potrace.path_tags()
 }
 
 export default {
