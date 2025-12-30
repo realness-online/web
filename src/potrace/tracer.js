@@ -4,8 +4,7 @@
  */
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
-
-/** @typedef {InstanceType<typeof import('@/potrace/types/Bitmap').default>} Bitmap */
+import Bitmap from '@/potrace/types/Bitmap' // eslint-disable-line no-unused-vars
 
 /**
  * Finds the next unprocessed point in the bitmap

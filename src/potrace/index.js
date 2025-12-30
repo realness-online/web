@@ -15,9 +15,8 @@ import {
   apply_threshold
 } from '@/potrace/bitmap-processor'
 import { trace_all_paths } from '@/potrace/tracer'
-
-/** @typedef {InstanceType<typeof import('@/potrace/types/Path').default>} Path */
-/** @typedef {InstanceType<typeof import('@/potrace/types/Bitmap').default>} Bitmap */
+import Path from '@/potrace/types/Path' // eslint-disable-line no-unused-vars
+import Bitmap from '@/potrace/types/Bitmap' // eslint-disable-line no-unused-vars
 
 // Potrace algorithm constants with explanations
 
