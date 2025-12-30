@@ -5,6 +5,11 @@
     person: {
       type: Object,
       required: true
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   })
   const { me } = use_me()

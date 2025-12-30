@@ -9,7 +9,7 @@ exports[`Profile > renders profile view 1`] = `
     <icon-stub
       name="nothing"
     />
-    <anonymous-stub />
+    <logo-as-link-stub />
   </header>
   <div>
     <!--v-if-->

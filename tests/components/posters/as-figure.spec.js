@@ -23,9 +23,9 @@ describe('@/component/posters/as-figure.vue', () => {
     })
   })
   describe('Computed', () => {
-    describe('.landscape', () => {
-      it('Returns landscape orientation', () => {
-        expect(wrapper.vm.landscape).toBeDefined()
+    describe('.query_id', () => {
+      it('Returns query id', () => {
+        expect(wrapper.vm.query_id).toBeDefined()
       })
     })
   })

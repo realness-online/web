@@ -85,7 +85,15 @@ describe('@/persistance/Large', () => {
   })
 
   describe('save method', () => {
-    it('saves to idb-keyval and deletes directory cache', async () => {
+    it('saves to idb-keyval and updates directory', async () => {
+      const { get, set } = await import('idb-keyval')
+      const { as_created_at } = await import('@/utils/itemid')
+
+      as_created_at.mockReturnValue(1737178477999)
+      get.mockResolvedValue({
+        items: [1737178477888]
+      })
+
       const large = new TestLargeClass('/+1234567890/posters/1737178477999')
       const mock_element = {
         outerHTML: '<svg>test</svg>'
@@ -95,12 +103,14 @@ describe('@/persistance/Large', () => {
 
       await large.save()
 
-      const { set, del } = await import('idb-keyval')
       expect(set).toHaveBeenCalledWith(
         '/+1234567890/posters/1737178477999',
         '<svg>test</svg>'
       )
-      expect(del).toHaveBeenCalled()
+      expect(set).toHaveBeenCalledWith(
+        expect.stringContaining('/index/'),
+        { items: [1737178477888, 1737178477999] }
+      )
     })
 
     it('does nothing when element not found', async () => {

@@ -1,9 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`@/components/posters/as-path.vue > Renders > a path from one provided 1`] = `
-<g
-  style="opacity: 1; visibility: visible;"
+<div
+  data-v-app=""
 >
+  
   <path
     d="M0,0 L100,100"
     fill-opacity="0.90"
@@ -19,5 +20,6 @@ exports[`@/components/posters/as-path.vue > Renders > a path from one provided 1
     stroke-width="0.33"
     style="opacity: 1; visibility: visible;"
   />
-</g>
+  
+</div>
 `;

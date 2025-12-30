@@ -123,7 +123,7 @@
     if (!event.key.match(/^\d$/)) event.preventDefault()
     const button = document.querySelector('#submit-verification')
     const input = document.querySelector('#verification-code')
-    if (input.value.length === 5 && button) button.disabled = false
+    if (input && input.value.length === 5 && button) button.disabled = false
   }
 
   mounted(() => {

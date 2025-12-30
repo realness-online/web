@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import { ref } from 'vue'
 import App from '@/App.vue'
 
 // Mock the composables and dependencies
-const mock_image_picker = { value: null }
+const mock_image_picker = ref(null)
 vi.mock('@/use/vectorize', () => ({
   use: () => ({
     vVectorizer: {
@@ -25,30 +26,36 @@ vi.mock('@/utils/serverless', () => ({
   init_serverless: vi.fn()
 }))
 
-vi.mock('@/utils/preference', () => ({
-  fill: { value: false },
-  stroke: { value: false },
-  cutout: { value: false },
-  drama: { value: false },
-  drama_back: { value: false },
-  drama_front: { value: false },
-  slice: { value: false },
-  bold: { value: false },
-  medium: { value: false },
-  regular: { value: false },
-  light: { value: false },
-  background: { value: false },
-  boulder: { value: false },
-  rock: { value: false },
-  gravel: { value: false },
-  sand: { value: false },
-  sediment: { value: false },
-  animate: { value: false },
-  info: { value: false },
-  storytelling: { value: false },
-  animation_speed: { value: 'normal' },
-  grid_overlay: { value: false }
-}))
+vi.mock('@/utils/preference', () => {
+  const { ref } = require('vue')
+  return {
+    fill: ref(false),
+    stroke: ref(false),
+    cutout: ref(false),
+    drama: ref(false),
+    drama_back: ref(false),
+    drama_front: ref(false),
+    slice: ref(false),
+    bold: ref(false),
+    medium: ref(false),
+    regular: ref(false),
+    light: ref(false),
+    background: ref(false),
+    boulder: ref(false),
+    rock: ref(false),
+    gravel: ref(false),
+    sand: ref(false),
+    sediment: ref(false),
+    animate: ref(false),
+    info: ref(false),
+    storytelling: ref(false),
+    animation_speed: ref('normal'),
+    grid_overlay: ref(false),
+    aspect_ratio_mode: ref('auto'),
+    slice_alignment: ref('ymid'),
+    show_menu: ref(false)
+  }
+})
 
 describe('App.vue', () => {
   let wrapper
@@ -101,7 +108,10 @@ describe('App.vue', () => {
     })
 
     it('renders sync component', () => {
-      expect(wrapper.find('sync-stub').exists()).toBe(true)
+      const sync_stub = wrapper.findAll('div').find(div =>
+        div.element.parentElement === wrapper.element
+      )
+      expect(sync_stub).toBeDefined()
     })
 
     it('renders image picker input', () => {

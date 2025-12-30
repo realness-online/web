@@ -127,6 +127,11 @@ describe('Sync Statements', () => {
       get.mockResolvedValue({}) // No sync index on Device B
       create_hash.mockResolvedValue('local-hash-xyz')
 
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
+
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([]), // No data because server file missing
         save: vi.fn(),
@@ -288,6 +293,11 @@ describe('Sync Statements', () => {
       }
       Statement.mockImplementation(() => mock_statement)
 
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
+
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
@@ -329,6 +339,11 @@ describe('Sync Statements', () => {
       }
       Statement.mockImplementation(() => mock_statement)
 
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
+
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
@@ -366,6 +381,11 @@ describe('Sync Statements', () => {
       }
       Statement.mockImplementation(() => mock_statement)
 
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
+
       // Simulate sync attempt
       const persistance = new Statement()
       const index_hash = await get_index_hash(mock_itemid)
@@ -400,6 +420,11 @@ describe('Sync Statements', () => {
         optimize: vi.fn()
       }
       Statement.mockImplementation(() => mock_statement)
+
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
       const persistance = new Statement()
@@ -443,6 +468,11 @@ describe('Sync Statements', () => {
         optimize: vi.fn()
       }
       Statement.mockImplementation(() => mock_statement)
+
+      // Ensure mock_sync_element returns elements for this test
+      mock_sync_element.value.querySelector = vi
+        .fn()
+        .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
       const persistance = new Statement()

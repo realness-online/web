@@ -26,15 +26,41 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 vi.mock('libphonenumber-js', () => {
+  const create_parsed_phone = (number_string, country) => {
+    const digits = number_string?.replace(/\D/g, '')
+    const is_valid = digits && digits.length >= 10
+    return is_valid
+      ? {
+          isValid: () => true,
+          nationalNumber: digits.slice(-10),
+          phone: digits
+        }
+      : null
+  }
+
   const mock_fns = {
     AsYouType: vi.fn().mockImplementation(() => ({
       input: vi.fn(() => '1 (415) 123-4356')
     })),
     parseNumber: vi.fn(number_string => {
-      // Extract just digits from the input
       const digits = number_string?.replace(/\D/g, '')
-      // Return phone number if valid (has digits), otherwise empty
       return { phone: digits && digits.length >= 10 ? digits : '' }
+    }),
+    parsePhoneNumberFromString: vi.fn((number_string, options) =>
+      create_parsed_phone(number_string, options?.defaultCountry)
+    ),
+    findPhoneNumbersInText: vi.fn(text => {
+      const digits = text?.replace(/\D/g, '')
+      if (digits && digits.length >= 10) {
+        return [
+          {
+            number: {
+              number: `+${digits}`
+            }
+          }
+        ]
+      }
+      return []
     }),
     // Add Vue internal props to prevent errors
     __v_isShallow: undefined,
