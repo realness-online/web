@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`potrace/index > golden file tests > produces consistent output for simple square > paths 1`] = `
+[
+  {
+    "d": "M3,3L3,7L7,7L7,3L3,3Z",
+    "fillOpacity": "1",
+  },
+]
+`;
+
+exports[`potrace/index > golden file tests > produces consistent output for simple square > result 1`] = `
+{
+  "dark": false,
+  "height": 10,
+  "paths": [
+    {
+      "d": "M3,3L3,7L7,7L7,3L3,3Z",
+      "fillOpacity": "1",
+    },
+  ],
+  "width": 10,
+}
+`;
