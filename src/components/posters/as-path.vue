@@ -42,6 +42,11 @@
     stroke: {
       type: String,
       required: true
+    },
+    visible: {
+      type: Boolean,
+      required: false,
+      default: true
     }
   })
   defineEmits(['focus'])
@@ -61,6 +66,10 @@
   const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.33')
   const path_length = ref(0)
+  const path_style = computed(() => ({
+    opacity: props.visible ? 1 : 0,
+    visibility: props.visible ? 'visible' : 'hidden'
+  }))
 
   mounted(async () => {
     fill.value = props.fill
@@ -84,7 +93,8 @@
     :tabindex="props.tabindex"
     :fill="show_fill ? fill : 'none'"
     :fill-opacity="show_fill ? '0.90' : undefined"
-    :fill-rule="show_fill ? 'evenodd' : undefined" />
+    :fill-rule="show_fill ? 'evenodd' : undefined"
+    :style="path_style" />
   <use
     :href="`#${props.id}`"
     fill="none"
@@ -92,8 +102,8 @@
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
     :style="{
-      opacity: show_stroke ? 1 : 0,
-      visibility: show_stroke ? 'visible' : 'hidden'
+      opacity: show_stroke && props.visible ? 1 : 0,
+      visibility: show_stroke && props.visible ? 'visible' : 'hidden'
     }" />
 </template>
 

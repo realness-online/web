@@ -12,6 +12,7 @@ exports[`@/components/posters/as-path.vue > Renders > a path from one provided 1
     id="test-path"
     itemprop="regular"
     mask=""
+    style="opacity: 1; visibility: visible;"
   />
   <use
     fill="none"

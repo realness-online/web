@@ -104,7 +104,7 @@ export const url = async itemid => {
  * @returns {Promise<Object | null>}
  */
 export const directory = async itemid => {
-  const [author, type, _created = null, archive = null] = as_path_parts(itemid)
+  const [author, type, , archive = null] = as_path_parts(itemid)
   let dir_path = join(PEOPLE_PATH, author, type)
 
   if (archive) dir_path = join(dir_path, archive)

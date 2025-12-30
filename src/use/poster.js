@@ -14,7 +14,6 @@ import {
   nextTick as tick
 } from 'vue'
 import {
-  useIntersectionObserver as _use_intersect,
   useStorage as use_storage,
   usePointer as use_pointer,
   useMagicKeys

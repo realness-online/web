@@ -18,8 +18,7 @@
   const {
     my_statements,
     statements,
-    thought_shown,
-    authors: _authors
+    thought_shown
   } = use_statements()
   const home = () => router.push({ path: '/' })
 
