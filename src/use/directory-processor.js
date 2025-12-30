@@ -1,6 +1,7 @@
 import { use as use_vectorize } from '@/use/vectorize'
 import { use as use_optimizer } from '@/use/optimize'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { count_image_files, is_image_file, poster_filename } from '@/utils/image-files'
 
 export const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
@@ -27,26 +28,15 @@ export const use = () => {
         id: 'source-images'
       })
 
-      // Count total image files
-      let image_count = 0
-      for await (const [name, handle] of source_dir.entries())
-        if (
-          handle.kind === 'file' &&
-          name.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i)
-        )
-          image_count++
-
-      progress.value.total = image_count
-      console.info(`📂 Found ${image_count} images to process`)
+      progress.value.total = await count_image_files(source_dir.entries())
+      console.info(`📂 Found ${progress.value.total} images to process`)
 
       const posters_dir = await source_dir.getDirectoryHandle('posters', {
         create: true
       })
 
       for await (const [name, handle] of source_dir.entries()) {
-        if (handle.kind !== 'file') continue
-        if (!name.match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i))
-          continue
+        if (handle.kind !== 'file' || !is_image_file(name)) continue
 
         progress.value.current_file = name
         console.info(`🖼️ Processing file: ${name}`)
@@ -58,32 +48,40 @@ export const use = () => {
           await process_photo(image_url)
 
           // Wait for new_vector to be set by the vectorization process
-          await new Promise(resolve => {
-            const check_vector = () => {
-              if (new_vector.value) resolve()
-              else requestAnimationFrame(check_vector)
-            }
-            check_vector()
-          })
+          if (!new_vector.value)
+            await new Promise(resolve => {
+              const stop = watch(new_vector, () => {
+                if (new_vector.value) {
+                  stop()
+                  resolve()
+                }
+              })
+            })
 
           completed_poster.value = new_vector.value
 
           if (!completed_poster.value.optimized) {
             const { optimize: optimize_poster, vector: vector_ref } = use_optimizer(completed_poster)
             optimize_poster()
-            await new Promise(resolve => {
-              const check_optimized = () => {
-                if (vector_ref.value.optimized) resolve()
-                else requestAnimationFrame(check_optimized)
-              }
-              check_optimized()
-            })
+            if (!vector_ref.value.optimized)
+              await new Promise(resolve => {
+                const stop = watch(
+                  () => vector_ref.value?.optimized,
+                  optimized => {
+                    if (optimized) {
+                      stop()
+                      resolve()
+                    }
+                  }
+                )
+              })
+
             // eslint-disable-next-line require-atomic-updates
             completed_poster.value = vector_ref.value
           }
 
-          const svg_data = completed_poster.value
-          const poster_name = name.replace(/\.[^/.]+$/, '.svg')
+          const svg_data = completed_poster.value.toString()
+          const poster_name = poster_filename(name)
           const poster_file = await posters_dir.getFileHandle(poster_name, {
             create: true
           })
@@ -110,11 +108,13 @@ export const use = () => {
     } catch (error) {
       console.error('❌ Directory processing failed:', error)
     } finally {
-      progress.value.processing = false
-      progress.value.current = 0
-      progress.value.total = 0
-      progress.value.current_file = ''
-      // Cleanup after processing completes
+      // eslint-disable-next-line require-atomic-updates
+      progress.value = {
+        total: 0,
+        current: 0,
+        processing: false,
+        current_file: ''
+      }
       // eslint-disable-next-line require-atomic-updates
       completed_poster.value = null
     }
