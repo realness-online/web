@@ -5,7 +5,7 @@
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
 
-/** @typedef {import('@/potrace/types/Bitmap')} Bitmap */
+/** @typedef {InstanceType<typeof import('@/potrace/types/Bitmap').default>} Bitmap */
 
 /**
  * Finds the next unprocessed point in the bitmap

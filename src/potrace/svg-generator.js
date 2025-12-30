@@ -4,7 +4,7 @@
  */
 import utils from '@/potrace/utils'
 
-/** @typedef {import('@/potrace/types/Path')} Path */
+/** @typedef {InstanceType<typeof import('@/potrace/types/Path').default>} Path */
 
 /**
  * @typedef {Object} PathData

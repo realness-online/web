@@ -2,38 +2,394 @@
 > @realness.online/web@2.0.0 type
 > tsc --pretty
 
-[96msrc/utils/date.js[0m:[93m77[0m:[93m24[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ weekday: "long"; day: string; month: string; hour: string; minute: string; hour12: boolean; }' is not assignable to parameter of type 'DateTimeFormatOptions'.
-  Types of property 'month' are incompatible.
-    Type 'string' is not assignable to type '"numeric" | "long" | "2-digit" | "short" | "narrow"'.
+[96msrc/potrace/index.js[0m:[93m216[0m:[93m7[0m - [91merror[0m[90m TS2345: [0mArgument of type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")' is not assignable to parameter of type 'Bitmap'.
+  Type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")' is missing the following properties from type 'Bitmap': #histogram, width, height, size, and 8 more.
 
-[7m77[0m   return as_time(date, format_as_day_and_time)
-[7m  [0m [91m                       ~~~~~~~~~~~~~~~~~~~~~~[0m
+[7m216[0m       this.#luminance_data,
+[7m   [0m [91m      ~~~~~~~~~~~~~~~~~~~~[0m
 
-[96msrc/utils/date.js[0m:[93m81[0m:[93m24[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ weekday: "long"; day: string; month: string; year: string; hour: string; minute: string; hour12: boolean; }' is not assignable to parameter of type 'DateTimeFormatOptions'.
-  Types of property 'year' are incompatible.
-    Type 'string' is not assignable to type '"numeric" | "2-digit"'.
+[96msrc/potrace/index.js[0m:[93m220[0m:[93m7[0m - [91merror[0m[90m TS2345: [0mArgument of type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")' is not assignable to parameter of type 'Bitmap'.
+  Type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")' is missing the following properties from type 'Bitmap': #histogram, width, height, size, and 8 more.
 
-[7m81[0m   return as_time(date, format_as_day_time_year)
-[7m  [0m [91m                       ~~~~~~~~~~~~~~~~~~~~~~~[0m
+[7m220[0m       this.#luminance_data,
+[7m   [0m [91m      ~~~~~~~~~~~~~~~~~~~~[0m
 
-[96msrc/utils/serverless.js[0m:[93m80[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+[96msrc/potrace/index.js[0m:[93m225[0m:[93m5[0m - [91merror[0m[90m TS2322: [0mType 'Path[]' is not assignable to type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")[]'.
+  Property 'Path' is missing in type 'Path' but required in type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
 
-[7m80[0m     await upload(await as_filename(new_location), compressed, metadata)
-[7m  [0m [91m                                   ~~~~~~~~~~~~[0m
+[7m225[0m     this.#pathlist = trace_all_paths(
+[7m   [0m [91m    ~~~~~~~~~~~~~~[0m
 
-[96msrc/utils/serverless.js[0m:[93m84[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+  [96msrc/potrace/types/Path.js[0m:[93m82[0m:[93m1[0m
+    [7m82[0m export default Path
+    [7m  [0m [96m~~~~~~~~~~~~~~~~~~~[0m
+    'Path' is declared here.
 
-[7m84[0m     await remove(await as_filename(old_location))
-[7m  [0m [91m                                   ~~~~~~~~~~~~[0m
+[96msrc/potrace/index.js[0m:[93m226[0m:[93m7[0m - [91merror[0m[90m TS2345: [0mArgument of type 'Bitmap' is not assignable to parameter of type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+  Property 'Bitmap' is missing in type 'Bitmap' but required in type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
 
-[96msrc/utils/serverless.js[0m:[93m91[0m:[93m40[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+[7m226[0m       black_map,
+[7m   [0m [91m      ~~~~~~~~~[0m
 
-[7m91[0m         await remove(await as_filename(new_location))
-[7m  [0m [91m                                       ~~~~~~~~~~~~[0m
+  [96msrc/potrace/types/Bitmap.js[0m:[93m125[0m:[93m1[0m
+    [7m125[0m export default Bitmap
+    [7m   [0m [96m~~~~~~~~~~~~~~~~~~~~~[0m
+    'Bitmap' is declared here.
+
+[96msrc/potrace/index.js[0m:[93m248[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'x0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m248[0m     path.x0 = path.points[0].x
+[7m   [0m [91m         ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m248[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m248[0m     path.x0 = path.points[0].x
+[7m   [0m [91m                   ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m249[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'y0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m249[0m     path.y0 = path.points[0].y
+[7m   [0m [91m         ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m249[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m249[0m     path.y0 = path.points[0].y
+[7m   [0m [91m                   ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m251[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'sums' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m251[0m     path.sums = []
+[7m   [0m [91m         ~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m252[0m:[93m31[0m - [91merror[0m[90m TS2339: [0mProperty 'sums' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m252[0m     const running_sums = path.sums
+[7m   [0m [91m                              ~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m254[0m:[93m26[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m254[0m     for (i = 0; i < path.len; i++) {
+[7m   [0m [91m                         ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m255[0m:[93m25[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m255[0m       relative_x = path.points[i].x - path.x0
+[7m   [0m [91m                        ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m255[0m:[93m44[0m - [91merror[0m[90m TS2339: [0mProperty 'x0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m255[0m       relative_x = path.points[i].x - path.x0
+[7m   [0m [91m                                           ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m256[0m:[93m25[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m256[0m       relative_y = path.points[i].y - path.y0
+[7m   [0m [91m                        ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m256[0m:[93m44[0m - [91merror[0m[90m TS2339: [0mProperty 'y0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m256[0m       relative_y = path.points[i].y - path.y0
+[7m   [0m [91m                                           ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m276[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m276[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m277[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m277[0m     const { points } = path
+[7m   [0m [91m            ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m308[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m308[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m309[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m309[0m     const { points } = path
+[7m   [0m [91m            ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m452[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m452[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m453[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m453[0m     path.longest_straight_seq = []
+[7m   [0m [91m         ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m456[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m456[0m     path.longest_straight_seq[n - 1] = j
+[7m   [0m [91m         ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m461[0m:[93m12[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m461[0m       path.longest_straight_seq[i] = j
+[7m   [0m [91m           ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m466[0m:[93m49[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m466[0m       utils.cyclic(utils.mod(i + 1, n), j, path.longest_straight_seq[i]);
+[7m   [0m [91m                                                ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m469[0m:[93m12[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m469[0m       path.longest_straight_seq[i] = j
+[7m   [0m [91m           ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m537[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m537[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m550[0m:[93m14[0m - [91merror[0m[90m TS2339: [0mProperty 'longest_straight_seq' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m550[0m         path.longest_straight_seq[utils.mod(i - 1, n)] - 1,
+[7m   [0m [91m             ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m595[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'm' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m595[0m     path.m = m
+[7m   [0m [91m         ~[0m
+
+[96msrc/potrace/index.js[0m:[93m596[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'optimal_vertices' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m596[0m     path.optimal_vertices = []
+[7m   [0m [91m         ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m600[0m:[93m12[0m - [91merror[0m[90m TS2339: [0mProperty 'optimal_vertices' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m600[0m       path.optimal_vertices[j] = i
+[7m   [0m [91m           ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m613[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m613[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m614[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'sums' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m614[0m     const { sums } = path
+[7m   [0m [91m            ~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m799[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'm' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m799[0m     const { m } = path
+[7m   [0m [91m            ~[0m
+
+[96msrc/potrace/index.js[0m:[93m800[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'optimal_vertices' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m800[0m     const { optimal_vertices } = path
+[7m   [0m [91m            ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m801[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'len' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m801[0m     const n = path.len
+[7m   [0m [91m                   ~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m802[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'points' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m802[0m     const { points } = path
+[7m   [0m [91m            ~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m803[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'x0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m803[0m     const { x0 } = path
+[7m   [0m [91m            ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m804[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'y0' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m804[0m     const { y0 } = path
+[7m   [0m [91m            ~~[0m
+
+[96msrc/potrace/index.js[0m:[93m809[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m809[0m     path.curve = new Curve(m)
+[7m   [0m [91m         ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m865[0m:[93m12[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m865[0m       path.curve.vertex[i] = new Point(optimized.x + x0, optimized.y + y0)
+[7m   [0m [91m           ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m877[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m877[0m     const { curve } = path
+[7m   [0m [91m            ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m902[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m902[0m     const m = path.curve.n
+[7m   [0m [91m                   ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m903[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m903[0m     const { curve } = path
+[7m   [0m [91m            ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m976[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m976[0m     const { curve } = path
+[7m   [0m [91m            ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1108[0m:[93m10[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1108[0m     path.curve = optimized_curve
+[7m    [0m [91m         ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1131[0m:[93m20[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1131[0m     const m = path.curve.n
+[7m    [0m [91m                   ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1132[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1132[0m     const { curve } = path
+[7m    [0m [91m            ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1307[0m:[93m16[0m - [91merror[0m[90m TS2339: [0mProperty 'sign' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1307[0m       if (path.sign === '-') this.#reverse(path)
+[7m    [0m [91m               ~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1368[0m:[93m5[0m - [91merror[0m[90m TS2741: [0mProperty 'Bitmap' is missing in type 'Bitmap' but required in type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1368[0m     this.#luminance_data = image_data_to_luminance(image_data)
+[7m    [0m [91m    ~~~~~~~~~~~~~~~~~~~~[0m
+
+  [96msrc/potrace/types/Bitmap.js[0m:[93m125[0m:[93m1[0m
+    [7m125[0m export default Bitmap
+    [7m   [0m [96m~~~~~~~~~~~~~~~~~~~~~[0m
+    'Bitmap' is declared here.
+
+[96msrc/potrace/index.js[0m:[93m1576[0m:[93m31[0m - [91merror[0m[90m TS2339: [0mProperty 'histogram' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1576[0m     if (!this.#luminance_data.histogram()) {
+[7m    [0m [91m                              ~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1578[0m:[93m28[0m - [91merror[0m[90m TS2339: [0mProperty 'set_histogram' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1578[0m       this.#luminance_data.set_histogram(histogram)
+[7m    [0m [91m                           ~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1580[0m:[93m33[0m - [91merror[0m[90m TS2339: [0mProperty 'histogram' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1580[0m     return this.#luminance_data.histogram()
+[7m    [0m [91m                                ~~~~~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1775[0m:[93m38[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1775[0m       tag += utils.render_curve(path.curve, 1)
+[7m    [0m [91m                                     ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1862[0m:[93m63[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m1862[0m     return this.#pathlist.map(path => utils.render_curve(path.curve, 1)).join('')
+[7m    [0m [91m                                                              ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1936[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'width' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1936[0m     const { width } = this.#luminance_data
+[7m    [0m [91m            ~~~~~[0m
+
+[96msrc/potrace/index.js[0m:[93m1937[0m:[93m13[0m - [91merror[0m[90m TS2339: [0mProperty 'height' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m1937[0m     const { height } = this.#luminance_data
+[7m    [0m [91m            ~~~~~~[0m
+
+[96msrc/potrace/svg-generator.js[0m:[93m24[0m:[93m36[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m24[0m     tag += utils.render_curve(path.curve, 1)
+[7m  [0m [91m                                   ~~~~~[0m
+
+[96msrc/potrace/svg-generator.js[0m:[93m39[0m:[93m32[0m - [91merror[0m[90m TS2339: [0mProperty 'curve' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Path")'.
+
+[7m39[0m     d: utils.render_curve(path.curve, 1),
+[7m  [0m [91m                               ~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m17[0m:[93m21[0m - [91merror[0m[90m TS2339: [0mProperty 'point_to_index' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m17[0m   let i = black_map.point_to_index(start_point)
+[7m  [0m [91m                    ~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m18[0m:[93m24[0m - [91merror[0m[90m TS2339: [0mProperty 'size' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m18[0m   while (i < black_map.size && black_map.data[i] !== 1) i++
+[7m  [0m [91m                       ~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m18[0m:[93m42[0m - [91merror[0m[90m TS2339: [0mProperty 'data' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m18[0m   while (i < black_map.size && black_map.data[i] !== 1) i++
+[7m  [0m [91m                                         ~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m19[0m:[93m24[0m - [91merror[0m[90m TS2339: [0mProperty 'size' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m19[0m   return i < black_map.size && black_map.index_to_point(i)
+[7m  [0m [91m                       ~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m19[0m:[93m42[0m - [91merror[0m[90m TS2339: [0mProperty 'index_to_point' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m19[0m   return i < black_map.size && black_map.index_to_point(i)
+[7m  [0m [91m                                         ~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m34[0m:[93m23[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m34[0m       ct += black_map.get_value_at(x + a, y + i - 1) ? 1 : -1
+[7m  [0m [91m                      ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m35[0m:[93m23[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m35[0m       ct += black_map.get_value_at(x + i - 1, y + a - 1) ? 1 : -1
+[7m  [0m [91m                      ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m36[0m:[93m23[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m36[0m       ct += black_map.get_value_at(x + a - 1, y - i) ? 1 : -1
+[7m  [0m [91m                      ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m37[0m:[93m23[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m37[0m       ct += black_map.get_value_at(x - i, y + a) ? 1 : -1
+[7m  [0m [91m                      ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m78[0m:[93m25[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m78[0m   path.sign = black_map.get_value_at(start_point.x, start_point.y) ? '+' : '-'
+[7m  [0m [91m                        ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m94[0m:[93m25[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m94[0m     const l = black_map.get_value_at(
+[7m  [0m [91m                        ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m98[0m:[93m25[0m - [91merror[0m[90m TS2339: [0mProperty 'get_value_at' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m98[0m     const r = black_map.get_value_at(
+[7m  [0m [91m                        ~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m138[0m:[93m32[0m - [91merror[0m[90m TS2339: [0mProperty 'point_to_index' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m138[0m         const indx = black_map.point_to_index(j, min_y)
+[7m   [0m [91m                               ~~~~~~~~~~~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m139[0m:[93m19[0m - [91merror[0m[90m TS2339: [0mProperty 'data' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m139[0m         black_map.data[indx] = black_map.data[indx] ? 0 : 1
+[7m   [0m [91m                  ~~~~[0m
+
+[96msrc/potrace/tracer.js[0m:[93m139[0m:[93m42[0m - [91merror[0m[90m TS2339: [0mProperty 'data' does not exist on type 'typeof import("/Users/scott/GitHub/realness/web/src/potrace/types/Bitmap")'.
+
+[7m139[0m         black_map.data[indx] = black_map.data[indx] ? 0 : 1
+[7m   [0m [91m                                         ~~~~[0m
 
 
-Found 5 errors in 2 files.
+Found 73 errors in 3 files.
 
 Errors  Files
-     2  src/utils/date.js[90m:77[0m
-     3  src/utils/serverless.js[90m:80[0m
+    56  src/potrace/index.js[90m:216[0m
+     2  src/potrace/svg-generator.js[90m:24[0m
+    15  src/potrace/tracer.js[90m:17[0m
