@@ -15,7 +15,7 @@ const HALFWAY_POINT = 0.5
  * @param {number} message.data.duration - Animation duration in seconds
  * @returns {Promise<Object>} Object with frames array of ImageBitmaps
  */
-const prepare_and_render_frames = async message => {
+export const prepare_and_render_frames = async message => {
   const {
     svg_string,
     canvas_width,
@@ -136,7 +136,7 @@ const prepare_and_render_frames = async message => {
   return { frames }
 }
 
-const route_message = async message => {
+export const route_message = async message => {
   const { route } = message.data
   let reply = {}
 

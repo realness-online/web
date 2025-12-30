@@ -7,7 +7,7 @@ exports[`@/views/Posters > Rendering > renders posters view 1`] = `
   
   <!--v-if-->
   <section
-    class="page"
+    class="page storytelling slice"
     id="posters"
   >
     <header>
