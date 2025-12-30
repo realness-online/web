@@ -47,6 +47,36 @@ class Path {
    * @type {number} Maximum Y coordinate of the path's bounding box
    */
   max_y = -1
+
+  /**
+   * @type {number} [x0] - Origin X coordinate for relative calculations
+   */
+  x0
+
+  /**
+   * @type {number} [y0] - Origin Y coordinate for relative calculations
+   */
+  y0
+
+  /**
+   * @type {Array} [sums] - Running sums for optimization calculations
+   */
+  sums
+
+  /**
+   * @type {number[]} [longest_straight_seq] - Longest straight sequence indices
+   */
+  longest_straight_seq
+
+  /**
+   * @type {number} [m] - Number of optimal vertices
+   */
+  m
+
+  /**
+   * @type {number[]} [optimal_vertices] - Optimal vertex indices
+   */
+  optimal_vertices
 }
 
 export default Path

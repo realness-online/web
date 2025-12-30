@@ -1,3 +1,4 @@
+/** @typedef {import('@/types').Poster} Poster */
 import { ref, nextTick as tick, onUnmounted as dismount } from 'vue'
 import get_item from '@/utils/item'
 import { as_query_id } from '@/utils/itemid'

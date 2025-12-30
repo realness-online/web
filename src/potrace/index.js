@@ -4,13 +4,19 @@
  */
 import Curve from '@/potrace/types/Curve'
 import Point from '@/potrace/types/Point'
-import Path from '@/potrace/types/Path'
 import Quad from '@/potrace/types/Quad'
 import Sum from '@/potrace/types/Sum'
 import Opti from '@/potrace/types/Opti'
 import utils from '@/potrace/utils'
-import Bitmap from '@/potrace/types/Bitmap'
 import Histogram from '@/potrace/types/Histogram'
+import Path from '@/potrace/types/Path'
+import Bitmap from '@/potrace/types/Bitmap'
+import {
+  image_data_to_luminance,
+  calculate_threshold,
+  apply_threshold
+} from '@/potrace/bitmap-processor'
+import { trace_all_paths } from '@/potrace/tracer'
 
 // Potrace algorithm constants with explanations
 
@@ -150,7 +156,7 @@ class Potrace {
   /** @type {string[]} */
   static supported_turn_policy_values = Object.values(Potrace.turn_policy)
 
-  /** @type {import('./types/Bitmap')|null} */
+  /** @type {Bitmap|null} */
   #luminance_data = null
 
   /** @type {Path[]} */
@@ -194,146 +200,7 @@ class Potrace {
   }
 
   /**
-   * Finds the next point to process in the bitmap
-   * @param {Bitmap} black_map - Binary bitmap representation of the image
-   * @param {Point} point - Current point coordinates
-   * @returns {Point|false} Next point to process or false if no more points found
-   * @description
-   * Scans the bitmap from the current point to find the next unprocessed pixel.
-   * Used during path tracing to find starting points for new paths.
-   */
-  #find_next(black_map, point) {
-    let i = black_map.point_to_index(point)
-    while (i < black_map.size && black_map.data[i] !== 1) i++
-    return i < black_map.size && black_map.index_to_point(i)
-  }
-
-  /**
-   * Determines majority pixel value in local neighborhood
-   * @param {Bitmap} black_map - Binary bitmap data
-   * @param {number} x - X coordinate of center pixel
-   * @param {number} y - Y coordinate of center pixel
-   * @returns {0|1} Majority value (0 or 1) in the neighborhood
-   * @description
-   * Examines increasingly larger neighborhoods around the point (x,y)
-   * to determine whether black or white pixels are in majority.
-   * Used for resolving ambiguous cases in path tracing.
-   */
-  #get_majority(black_map, x, y) {
-    let ct
-    for (let i = 2; i < 5; i++) {
-      ct = 0
-      for (let a = -i + 1; a <= i - 1; a++) {
-        ct += black_map.get_value_at(x + a, y + i - 1) ? 1 : -1
-        ct += black_map.get_value_at(x + i - 1, y + a - 1) ? 1 : -1
-        ct += black_map.get_value_at(x + a - 1, y - i) ? 1 : -1
-        ct += black_map.get_value_at(x - i, y + a) ? 1 : -1
-      }
-      if (ct > 0) return 1
-      if (ct < 0) return 0
-    }
-    return 0
-  }
-
-  /**
-   * Traces a complete path from a starting point
-   * @param {Bitmap} black_map - Binary bitmap data
-   * @param {Point} point - Starting point coordinates
-   * @returns {Path} Complete traced path
-   * @description
-   * Implements the main path tracing algorithm:
-   * 1. Starts from given point and follows the edge
-   * 2. Uses turnPolicy to resolve ambiguous cases
-   * 3. Tracks path direction and area
-   * 4. Returns when path closes back to starting point
-   */
-  #find_path(black_map, point) {
-    const path = new Path()
-    let { x } = point
-    let { y } = point
-    let dir_x = 0
-    let dir_y = 1
-
-    path.sign = black_map.get_value_at(point.x, point.y) ? '+' : '-'
-
-    while (true) {
-      path.points.push(new Point(x, y))
-      path.max_x = Math.max(path.max_x, x)
-      path.min_x = Math.min(path.min_x, x)
-      path.max_y = Math.max(path.max_y, y)
-      path.min_y = Math.min(path.min_y, y)
-      path.len++
-
-      x += dir_x
-      y += dir_y
-      path.area -= x * dir_y
-
-      if (x === point.x && y === point.y) break
-
-      const l = black_map.get_value_at(
-        x + (dir_x + dir_y - 1) / 2,
-        y + (dir_y - dir_x - 1) / 2
-      )
-      const r = black_map.get_value_at(
-        x + (dir_x - dir_y - 1) / 2,
-        y + (dir_y + dir_x - 1) / 2
-      )
-
-      if (r && !l)
-        if (
-          this.#params.turnPolicy === Potrace.turn_policy.right ||
-          (this.#params.turnPolicy === Potrace.turn_policy.black &&
-            path.sign === '+') ||
-          (this.#params.turnPolicy === Potrace.turn_policy.white &&
-            path.sign === '-') ||
-          (this.#params.turnPolicy === Potrace.turn_policy.majority &&
-            this.#get_majority(black_map, x, y)) ||
-          (this.#params.turnPolicy === Potrace.turn_policy.minority &&
-            !this.#get_majority(black_map, x, y))
-        ) {
-          ;[dir_x, dir_y] = [-dir_y, dir_x]
-        } else {
-          ;[dir_x, dir_y] = [dir_y, -dir_x]
-        }
-      else if (r) {
-        ;[dir_x, dir_y] = [-dir_y, dir_x]
-      } else if (!l) {
-        ;[dir_x, dir_y] = [dir_y, -dir_x]
-      }
-    }
-    return path
-  }
-
-  /**
-   * @private
-   * @param {Bitmap} black_map - Binary bitmap data
-   * @param {Path} path - Path to XOR
-   * @returns {void}
-   */
-  #xor_path(black_map, path) {
-    let y1 = path.points[0].y
-    const { len } = path
-
-    for (let i = 1; i < len; i++) {
-      const { x } = path.points[i]
-      const { y } = path.points[i]
-
-      if (y !== y1) {
-        const min_y = Math.min(y1, y)
-        const { max_x } = path
-
-        for (let j = x; j < max_x; j++) {
-          const indx = black_map.point_to_index(j, min_y)
-          black_map.data[indx] = black_map.data[indx] ? 0 : 1
-        }
-        y1 = y
-      }
-    }
-  }
-
-  /**
    * Converts bitmap data to vector paths
-   * @private
    * @returns {void}
    * @throws {Error} If image is not loaded
    * @description
@@ -344,35 +211,25 @@ class Potrace {
    * 4. Stores resulting paths in pathlist
    */
   #bitmap_to_pathlist() {
-    const threshold =
-      this.#params.threshold === Potrace.THRESHOLD_AUTO
-        ? this.#luminance_data.histogram().auto_threshold() ||
-          ALPHA_TRANSPARENCY_THRESHOLD
-        : this.#params.threshold
+    const threshold = calculate_threshold(
+      this.#luminance_data,
+      this.#params.threshold
+    )
+    const black_map = apply_threshold(
+      this.#luminance_data,
+      threshold,
+      this.#params.blackOnWhite
+    )
 
-    const black_on_white = this.#params.blackOnWhite
-    const black_map = this.#luminance_data.copy(lum => {
-      const past_the_threshold = black_on_white
-        ? lum > threshold
-        : lum < threshold
-      return past_the_threshold ? 0 : 1
-    })
-
-    let current_point = new Point(0, 0)
-    this.#pathlist = []
-
-    // Main loop
-    while ((current_point = this.#find_next(black_map, current_point))) {
-      const path = this.#find_path(black_map, current_point)
-      this.#xor_path(black_map, path)
-
-      if (path.area > this.#params.turdSize) this.#pathlist.push(path)
-    }
+    this.#pathlist = trace_all_paths(
+      black_map,
+      this.#params.turnPolicy,
+      this.#params.turdSize
+    )
   }
 
   /**
    * Calculates sums for path optimization
-   * @private
    * @param {Path} path - Path to calculate sums for
    * @returns {void}
    * @description
@@ -411,7 +268,6 @@ class Potrace {
   /**
    * Initializes next candidate vertices for path optimization
    * Finds the next vertex that differs from current in position
-   * @private
    * @param {Path} path - Path to process
    * @returns {number[]} Array of next candidate indices
    */
@@ -432,7 +288,6 @@ class Potrace {
 
   /**
    * Calculates longest sequences for path optimization
-   * @private
    * @param {Path} path - Path to calculate sequences for
    * @returns {void}
    */
@@ -444,7 +299,6 @@ class Potrace {
 
   /**
    * Finds pivot vertices for polygon optimization
-   * @private
    * @param {Path} path - Path to process
    * @param {number[]} next_candidates - Array of next candidate indices
    * @returns {number[]} Array of pivot vertex indices
@@ -589,7 +443,6 @@ class Potrace {
 
   /**
    * Computes longest straight sequences from pivot vertices
-   * @private
    * @param {Path} path - Path to update
    * @param {number[]} pivot_vertices - Array of pivot vertex indices
    * @returns {void}
@@ -617,7 +470,6 @@ class Potrace {
 
   /**
    * Determines optimal polygon for path
-   * @private
    * @param {Path} path - Path to optimize
    * @returns {void}
    * @description
@@ -750,7 +602,6 @@ class Potrace {
 
   /**
    * Calculates point slope and direction for a path segment
-   * @private
    * @param {Path} path - Path containing the segment
    * @param {number} i - Start index
    * @param {number} j - End index
@@ -834,7 +685,6 @@ class Potrace {
 
   /**
    * Builds quadratic forms for path segments
-   * @private
    * @param {number} m - Number of segments
    * @param {Point[]} ctr - Center points
    * @param {Point[]} dir - Direction vectors
@@ -867,7 +717,6 @@ class Potrace {
 
   /**
    * Optimizes a single vertex position
-   * @private
    * @param {Quad} Q - Combined quadratic form
    * @param {Point} s - Original vertex position
    * @returns {Point} Optimized position
@@ -937,7 +786,6 @@ class Potrace {
 
   /**
    * Adjusts vertices of the path
-   * @private
    * @param {Path} path - Path to adjust
    * @returns {void}
    * @description
@@ -1019,7 +867,6 @@ class Potrace {
 
   /**
    * Reverses path direction
-   * @private
    * @param {Path} path - Path to reverse
    * @returns {void}
    * @description
@@ -1042,7 +889,6 @@ class Potrace {
 
   /**
    * Smooths path curves
-   * @private
    * @param {Path} path - Path to smooth
    * @returns {void}
    * @description
@@ -1116,7 +962,6 @@ class Potrace {
 
   /**
    * Optimizes path curves
-   * @private
    * @param {Path} path - Path to optimize
    * @returns {void}
    * @throws {Error} If path is invalid
@@ -1267,14 +1112,14 @@ class Potrace {
 
   /**
    * Calculates penalty for curve optimization
-   * @private
-   * @param {Path} path - Path to calculate penalty for
-   * @param {number} i - Start vertex index
-   * @param {number} j - End vertex index
-   * @param {Opti} res - Result object to store optimization data
-   * @param {number} opttolerance - Optimization tolerance threshold
-   * @param {number[]} convc - Array of convexity values for each vertex
-   * @param {number[]} areac - Array of cumulative areas
+   * @param {Object} params - Parameters object
+   * @param {Path} params.path - Path to calculate penalty for
+   * @param {number} params.i - Start vertex index
+   * @param {number} params.j - End vertex index
+   * @param {Opti} params.res - Result object to store optimization data
+   * @param {number} params.opttolerance - Optimization tolerance threshold
+   * @param {number[]} params.convc - Array of convexity values for each vertex
+   * @param {number[]} params.areac - Array of cumulative areas
    * @returns {0|1} 0 if optimization is possible, 1 if optimization should be rejected
    * @description
    * Calculates a penalty value for a potential curve optimization between vertices i and j.
@@ -1445,7 +1290,6 @@ class Potrace {
 
   /**
    * Processes bitmap into vector paths
-   * @private
    * @returns {void}
    * @throws {Error} If image is not loaded
    * @description
@@ -1475,7 +1319,6 @@ class Potrace {
 
   /**
    * Validates parameters against constraints
-   * @private
    * @param {Partial<PotraceOptions>} params - Parameters to validate
    * @throws {Error} If parameters are invalid with specific reason
    * @returns {void}
@@ -1522,26 +1365,12 @@ class Potrace {
   }
 
   /**
-   * @private
    * @param {ImageData} image_data - Canvas ImageData object containing the image pixels
    * @returns {void}
    * @description Processes raw image data into a bitmap by converting RGB values to luminance
    */
   #process_loaded_image(image_data) {
-    // Process pixels directly from ImageData without canvas operations
-    const pixels = image_data.data
-    const bitmap = new Bitmap(image_data.width, image_data.height)
-
-    for (let i = 0; i < pixels.length; i += RGBA_COMPONENTS) {
-      const opacity = pixels[i + 3] / RGB_MAX
-      const r = RGB_MAX + (pixels[i + 0] - RGB_MAX) * opacity
-      const g = RGB_MAX + (pixels[i + 1] - RGB_MAX) * opacity
-      const b = RGB_MAX + (pixels[i + 2] - RGB_MAX) * opacity
-
-      bitmap.data[i / RGBA_COMPONENTS] = utils.luminance(r, g, b)
-    }
-
-    this.#luminance_data = bitmap
+    this.#luminance_data = image_data_to_luminance(image_data)
     this.#image_loaded = true
   }
 
@@ -1559,7 +1388,6 @@ class Potrace {
   }
 
   /**
-   * @private
    * @param {PotraceOptions} newParams - New parameters to validate and set
    * @throws {Error} If parameters are invalid
    * @returns {void}
@@ -1596,7 +1424,6 @@ class Potrace {
 
   /**
    * Adds an extra color stop for better gradient transitions
-   * @private
    * @param {Array<{value: number, colorIntensity: number}>} ranges - Current color ranges
    * @returns {Array<{value: number, colorIntensity: number}>} Modified color ranges with extra stop
    * @description
@@ -1645,7 +1472,6 @@ class Potrace {
 
   /**
    * Calculates color intensity value for a single color
-   * @private
    * @param {number} color - Color value
    * @param {boolean} blackOnWhite - Whether to invert the color
    * @returns {number} Normalized color intensity (0-1)
@@ -1656,7 +1482,6 @@ class Potrace {
 
   /**
    * Calculates color intensity values for threshold ranges
-   * @private
    * @param {number[]} colorStops - Array of threshold values
    * @returns {Array<{value: number, colorIntensity: number}>} Color stops with calculated intensities
    * @description
@@ -1673,8 +1498,9 @@ class Potrace {
       colorSelectionStrat !== Potrace.FILL_SPREAD
         ? this.#get_image_histogram()
         : null
+    const threshold_value = this.#param_threshold()
     const fullRange = Math.abs(
-      this.#params.threshold - (blackOnWhite ? 0 : RGB_MAX)
+      threshold_value - (blackOnWhite ? 0 : RGB_MAX)
     )
 
     return colorStops.map((threshold, index) => {
@@ -1746,8 +1572,7 @@ class Potrace {
   }
 
   /**
-   * @private
-   * @returns {import('./types/Histogram')} Image histogram
+   * @returns {Histogram} Image histogram
    * @description
    * Retrieves the image histogram. If it doesn't exist, creates and initializes it.
    */
@@ -1762,7 +1587,6 @@ class Potrace {
 
   /**
    * Gets ranges for posterization
-   * @private
    * @returns {Array<Object>} Color ranges
    * @description
    * Determines the color ranges for posterization based on the specified parameters.
@@ -1807,7 +1631,6 @@ class Potrace {
 
   /**
    * Gets auto-calculated ranges for color posterization
-   * @private
    * @returns {Array<{value: number, colorIntensity: number}>} Array of color ranges with thresholds and intensities
    * @description
    * Calculates optimal color ranges for posterization by:
@@ -1818,6 +1641,7 @@ class Potrace {
   #get_ranges_auto() {
     const histogram = this.#get_image_histogram()
     const steps = this.#param_steps(true)
+    if (typeof steps !== 'number') return this.#calc_color_intensity([])
     let colorStops
 
     if (this.#params.threshold === Potrace.THRESHOLD_AUTO)
@@ -1840,7 +1664,6 @@ class Potrace {
 
   /**
    * Gets equally distributed ranges for color posterization
-   * @private
    * @returns {Array<{value: number, colorIntensity: number}>} Array of evenly spaced color ranges
    * @description
    * Creates color ranges by:
@@ -1854,6 +1677,7 @@ class Potrace {
       ? this.#param_threshold()
       : RGB_MAX - this.#param_threshold()
     const steps = this.#param_steps()
+    if (typeof steps !== 'number') return this.#calc_color_intensity([])
 
     const stepSize = colorsToThreshold / steps
     const colorStops = []
@@ -1872,7 +1696,6 @@ class Potrace {
 
   /**
    * Validates and processes step parameters
-   * @private
    * @param {boolean} [count=false] - Whether to return the count instead of steps
    * @returns {number|number[]} Processed steps value or count
    * @description
@@ -1902,12 +1725,12 @@ class Potrace {
       if (colorsCount > POSTERIZE_BRIGHTNESS_THRESHOLD) return RGBA_COMPONENTS
       return 3
     }
+    if (typeof steps !== 'number') return RGBA_COMPONENTS
     return Math.min(colorsCount, Math.max(2, steps))
   }
 
   /**
    * Gets valid threshold parameter considering auto-threshold
-   * @private
    * @returns {number} Calculated threshold value between 0 and RGB_MAX
    * @description
    * Determines the appropriate threshold by:
@@ -1920,6 +1743,7 @@ class Potrace {
     if (this.#calculated_threshold !== null) return this.#calculated_threshold
 
     if (this.#params.threshold !== Potrace.THRESHOLD_AUTO) {
+      if (typeof this.#params.threshold !== 'number') return ALPHA_TRANSPARENCY_THRESHOLD
       this.#calculated_threshold = this.#params.threshold
       return this.#calculated_threshold
     }
@@ -2051,10 +1875,7 @@ class Potrace {
       this.#processed = true
     }
 
-    return this.#pathlist.map(path => ({
-      d: utils.render_curve(path.curve, 1),
-      fillOpacity: resolved_fill
-    }))
+    return this.#pathlist.map(path => utils.render_curve(path.curve, 1)).join('')
   }
 
   /**
@@ -2074,33 +1895,38 @@ class Potrace {
 
     let actualPrevLayersOpacity = 0
 
-    return ranges.map(colorStop => {
-      const thisLayerOpacity = colorStop.colorIntensity
+    return ranges
+      .map(colorStop => {
+        const thisLayerOpacity = colorStop.colorIntensity
 
-      if (thisLayerOpacity === 0) return ''
+        if (thisLayerOpacity === 0) return null
 
-      let calculatedOpacity =
-        !actualPrevLayersOpacity || thisLayerOpacity === 1
-          ? thisLayerOpacity
-          : (actualPrevLayersOpacity - thisLayerOpacity) /
-            (actualPrevLayersOpacity - 1)
+        let calculatedOpacity =
+          !actualPrevLayersOpacity || thisLayerOpacity === 1
+            ? thisLayerOpacity
+            : (actualPrevLayersOpacity - thisLayerOpacity) /
+              (actualPrevLayersOpacity - 1)
 
-      calculatedOpacity = utils.clamp(
-        parseFloat(calculatedOpacity.toFixed(3)),
-        0,
-        1
-      )
-      actualPrevLayersOpacity =
-        actualPrevLayersOpacity +
-        (1 - actualPrevLayersOpacity) * calculatedOpacity
+        calculatedOpacity = utils.clamp(
+          parseFloat(calculatedOpacity.toFixed(3)),
+          0,
+          1
+        )
+        actualPrevLayersOpacity =
+          actualPrevLayersOpacity +
+          (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-      this.#set_parameters({ threshold: colorStop.value })
+        this.#set_parameters({ threshold: colorStop.value })
 
-      return {
-        d: this.get_path_data(),
-        fillOpacity: calculatedOpacity.toFixed(3)
-      }
-    })
+        const path_data = this.get_path_tag()
+        const d_match = path_data.match(/d="([^"]+)"/)
+        const d = d_match ? d_match[1] : ''
+        return {
+          d,
+          fillOpacity: calculatedOpacity.toFixed(3)
+        }
+      })
+      .filter(item => item !== null)
   }
 
   /**
@@ -2125,7 +1951,7 @@ class Potrace {
     this.#load_image(image_data)
     const { width } = this.#luminance_data
     const { height } = this.#luminance_data
-    const dark = !this.#params.black_on_white
+    const dark = !this.#params.blackOnWhite
     const paths = this.as_curves()
     return { width, height, dark, paths }
   }

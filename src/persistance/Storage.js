@@ -35,7 +35,7 @@ export class Storage {
   }
 
   /**
-   * @param {Element | {outerHTML: string}} items
+   * @param {Element | {outerHTML: string}} [items]
    */
   // eslint-disable-next-line no-unused-vars
   save(items) {}

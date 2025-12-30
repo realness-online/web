@@ -26,19 +26,19 @@ export const use = () => {
     )
     const author_oldest = author_statements[author_statements.length - 1]
     if (oldest.id === author_oldest.id) {
-      author = authors.value.find(relation => relation.id === author)
-      if (!author) return
-      const directory = await as_directory(`${author.id}/statements`)
+      const author_obj = authors.value.find(relation => relation.id === author)
+      if (!author_obj) return
+      const directory = await as_directory(/** @type {Id} */ (`${author_obj.id}/statements`))
       if (!directory) return
       let history = directory.items
       history.sort(recent_number_first)
       history = history.filter(
-        page => !author.viewed.some(viewed => viewed === page)
+        page => !author_obj.viewed.some(viewed => viewed === page)
       )
       const next = history.shift()
       if (next) {
-        const next_statements = await list(`${author.id}/statements/${next}`)
-        author.viewed.push(next)
+        const next_statements = await list(/** @type {Id} */ (`${author_obj.id}/statements/${next}`))
+        author_obj.viewed.push(next)
         statements.value = [...statements.value, ...next_statements]
       }
     }
@@ -48,7 +48,7 @@ export const use = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
-    const statement_id = `${query.id}/statements`
+    const statement_id = /** @type {Id} */ (`${query.id}/statements`)
     const their_statements = await list(statement_id)
     if (statements.value)
       statements.value = [...statements.value, ...their_statements]
@@ -72,11 +72,11 @@ export const use = () => {
     if (!statement || links.some(link => statement.includes(link))) return
     my_statements.value.push(post)
     await tick()
-    await new Statement().save()
+    await new Statement().save(document.querySelector(`[itemid="${localStorage.me}/statements"]`))
   }
 
   mounted(async () => {
-    my_statements.value = await list(`${localStorage.me}/statements`)
+    my_statements.value = await list(/** @type {Id} */ (`${localStorage.me}/statements`))
     authors.value.push({
       id: localStorage.me,
       type: 'person',

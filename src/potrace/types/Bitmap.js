@@ -75,12 +75,15 @@ class Bitmap {
    * @returns {number} Linear index in the bitmap array, -1 if coordinates are out of bounds
    */
   point_to_index = (point_or_x, y) => {
-    let _x = point_or_x
-    let _y = y
+    let _x
+    let _y
 
     if (point_or_x instanceof Point) {
       _x = point_or_x.x
       _y = point_or_x.y
+    } else {
+      _x = point_or_x
+      _y = y
     }
 
     if (!utils.between(_x, 0, this.width) || !utils.between(_y, 0, this.height))
@@ -106,7 +109,7 @@ class Bitmap {
 
   /**
    * Sets the histogram for this bitmap
-   * @param {Histogram} histogram - Histogram instance
+   * @param {import('./Histogram').default} histogram - Histogram instance
    */
   set_histogram = histogram => {
     this.#histogram = histogram
@@ -114,7 +117,7 @@ class Bitmap {
 
   /**
    * Gets the histogram of the bitmap's pixel values
-   * @returns {Histogram|null} Histogram instance for this bitmap
+   * @returns {import('./Histogram').default|null} Histogram instance for this bitmap
    */
   histogram = () => this.#histogram
 }
