@@ -25,9 +25,11 @@ describe('optimize composable', () => {
   let vector_ref
   let optimize_instance
   let mock_worker
+  let console_warn_spy
 
   beforeEach(() => {
     vi.clearAllMocks()
+    console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     // Create a mock vector
     vector_ref = ref({
@@ -216,5 +218,9 @@ describe('optimize composable', () => {
       optimize_instance.optimize()
       expect(mock_worker).toBeDefined()
     })
+  })
+
+  afterEach(() => {
+    if (console_warn_spy) console_warn_spy.mockRestore()
   })
 })

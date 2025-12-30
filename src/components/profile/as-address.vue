@@ -1,23 +1,17 @@
 <script setup>
-  import { watch, onMounted as mounted, toRef } from 'vue'
+  import { computed } from 'vue'
   import { use_me } from '@/use/people'
   const props = defineProps({
     person: {
       type: Object,
       required: true
-    },
-    editable: {
-      type: Boolean,
-      required: false,
-      default: false
     }
   })
   const { me } = use_me()
-  const person = toRef(props, 'person')
-  mounted(() => {
-    if (me.value.id === person.value.id) person.value = me.value
+  const person = computed(() => {
+    if (me.value && me.value.id === props.person.id) return me.value
+    return props.person
   })
-  watch(me, () => (person.value = me.value))
 </script>
 
 <template>

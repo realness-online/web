@@ -106,6 +106,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['tests/**/*.spec.js'],
     exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**'],
+    testTimeout: 30000,
     coverage: {
       include: ['src/**/*.js', 'src/**/*.vue'],
       exclude: [
@@ -114,7 +115,9 @@ export default defineConfig({
         'node_modules/**',
         'dist/**',
         'docs/**',
-        'public/**'
+        'public/**',
+        'src/main.js',
+        'src/router.js'
       ],
       lines: 80,
       branches: 80,

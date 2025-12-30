@@ -251,9 +251,12 @@ describe('key-commands composable', () => {
     })
 
     it('load_keymap handles invalid JSON gracefully', () => {
+      const console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       localStorageMock.getItem.mockReturnValue('invalid json')
 
       expect(() => key_commands.load_keymap()).not.toThrow()
+
+      console_warn_spy.mockRestore()
     })
   })
 

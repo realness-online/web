@@ -499,9 +499,6 @@ class Potrace {
     if (path.sums.length < path.len + 1) return
     if (!path.points || path.points.length === 0) return
 
-    const sums_len = path.sums.length
-    const points_len = path.points.length
-
     const penalty3 = (path, i, j) => {
       const n = path.len
       const { points } = path
