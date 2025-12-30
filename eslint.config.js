@@ -20,7 +20,8 @@ export default [
       'tracer/**',
       '**/docs/generated/**',
       '**/tests/**',
-      'artifacts/**'
+      'artifacts/**',
+      'src/wasm/tracer.js'
     ]
   },
   {

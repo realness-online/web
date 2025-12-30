@@ -1,13 +1,16 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-const mock_converter = {
-  free: vi.fn(),
-  init: vi.fn(),
-  tick: vi.fn(),
-  progress: vi.fn()
-}
+const { mock_converter } = vi.hoisted(() => ({
+  mock_converter: {
+    free: vi.fn(),
+    init: vi.fn(),
+    tick: vi.fn(),
+    progress: vi.fn()
+  }
+}))
 
 vi.mock('@/wasm/tracer.js', () => ({
+  default: vi.fn(() => Promise.resolve()),
   initSync: vi.fn(),
   ColorImageConverter: {
     new_with_string: vi.fn(() => mock_converter)
@@ -44,7 +47,8 @@ class MockResponse {
   }
 }
 
-vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new MockResponse())))
+const mock_fetch = vi.fn(() => Promise.resolve(new MockResponse()))
+global.fetch = mock_fetch
 
 global.self = {
   postMessage: vi.fn(),
@@ -88,7 +92,7 @@ describe('tracer worker', () => {
       callbacks.forEach(fn => fn())
     }
 
-    global.fetch.mockResolvedValue(new MockResponse())
+    mock_fetch.mockResolvedValue(new MockResponse())
 
     mock_converter.tick.mockReturnValue(null)
     mock_converter.progress.mockReturnValue(0)

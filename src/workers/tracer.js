@@ -1,5 +1,4 @@
-import {
-  initSync,
+import init_tracer_wasm, {
   ColorImageConverter,
   init_panic_hook
 } from '@/wasm/tracer.js'
@@ -15,9 +14,7 @@ const CHUNK_ITER = 10
 const deg2rad = deg => (deg / DEGREES_IN_CIRCLE) * Math.PI
 
 const init_tracer = async () => {
-  const response = await fetch('/wasm/tracer_bg.wasm')
-  const wasm_bytes = await response.arrayBuffer()
-  initSync({ module: wasm_bytes })
+  await init_tracer_wasm('/wasm/tracer_bg.wasm')
   init_panic_hook()
 
   const params = {

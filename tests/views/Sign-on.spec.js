@@ -121,7 +121,7 @@ describe('Sign-on', () => {
     })
 
     it('renders wipe button when cleanable', async () => {
-      wrapper.vm.cleanable = true
+      wrapper.vm.index_db_keys = ['key1', 'key2']
       await wrapper.vm.$nextTick()
       const wipe_button = wrapper.find('footer button')
       expect(wipe_button.exists()).toBe(true)
