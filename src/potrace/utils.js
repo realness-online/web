@@ -3,8 +3,6 @@
  * A 2D point with x and y coordinates
  */
 
-import Point from '@/potrace/types/Point'
-
 // Mathematical constants
 const RGBA_COMPONENTS = 4
 const MATRIX_DIMENSION = 3
@@ -138,11 +136,26 @@ export const dorth_infinity = (p0, p2) => {
   return r
 }
 
+/**
+ * Calculates denominator for path tangent calculations
+ * @param {Point} p0 - First point
+ * @param {Point} p2 - Second point
+ * @returns {number} Denominator value
+ */
 export const ddenom = (p0, p2) => {
   const r = dorth_infinity(p0, p2)
   return r.y * (p2.x - p0.x) - r.x * (p2.y - p0.y)
 }
 
+/**
+ * Calculates the signed area/perpendicular distance between points
+ * Returns the cross product of vectors (p0→p1) and (p0→p2)
+ * Used to determine if points form a left turn (positive) or right turn (negative)
+ * @param {Point} p0 - Origin point
+ * @param {Point} p1 - Second point
+ * @param {Point} p2 - Third point
+ * @returns {number} Signed area (positive = counterclockwise, negative = clockwise)
+ */
 export const dpara = (p0, p1, p2) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
@@ -152,6 +165,15 @@ export const dpara = (p0, p1, p2) => {
   return x1 * y2 - x2 * y1
 }
 
+/**
+ * Calculates cross product of two line segments
+ * Returns cross product of vectors (p0→p1) and (p2→p3)
+ * @param {Point} p0 - Start of first vector
+ * @param {Point} p1 - End of first vector
+ * @param {Point} p2 - Start of second vector
+ * @param {Point} p3 - End of second vector
+ * @returns {number} Cross product value
+ */
 export const cprod = (p0, p1, p2, p3) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
@@ -161,6 +183,14 @@ export const cprod = (p0, p1, p2, p3) => {
   return x1 * y2 - x2 * y1
 }
 
+/**
+ * Calculates dot product (inner product) of vectors from p0
+ * Returns dot product of vectors (p0→p1) and (p0→p2)
+ * @param {Point} p0 - Origin point
+ * @param {Point} p1 - End of first vector
+ * @param {Point} p2 - End of second vector
+ * @returns {number} Dot product value
+ */
 export const iprod = (p0, p1, p2) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
@@ -170,6 +200,15 @@ export const iprod = (p0, p1, p2) => {
   return x1 * x2 + y1 * y2
 }
 
+/**
+ * Calculates dot product of two line segments
+ * Returns dot product of vectors (p0→p1) and (p2→p3)
+ * @param {Point} p0 - Start of first vector
+ * @param {Point} p1 - End of first vector
+ * @param {Point} p2 - Start of second vector
+ * @param {Point} p3 - End of second vector
+ * @returns {number} Dot product value
+ */
 export const iprod1 = (p0, p1, p2, p3) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
@@ -179,6 +218,12 @@ export const iprod1 = (p0, p1, p2, p3) => {
   return x1 * x2 + y1 * y2
 }
 
+/**
+ * Calculates Euclidean distance between two points
+ * @param {Point} p - First point
+ * @param {Point} q - Second point
+ * @returns {number} Distance between points
+ */
 export const ddist = (p, q) =>
   Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y))
 

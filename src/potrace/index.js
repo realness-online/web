@@ -257,7 +257,7 @@ class Potrace {
     path.sign = black_map.get_value_at(point.x, point.y) ? '+' : '-'
 
     while (true) {
-      path.pt.push(new Point(x, y))
+      path.points.push(new Point(x, y))
       path.max_x = Math.max(path.max_x, x)
       path.min_x = Math.min(path.min_x, x)
       path.max_y = Math.max(path.max_y, y)
@@ -311,12 +311,12 @@ class Potrace {
    * @returns {void}
    */
   #xor_path(black_map, path) {
-    let y1 = path.pt[0].y
+    let y1 = path.points[0].y
     const { len } = path
 
     for (let i = 1; i < len; i++) {
-      const { x } = path.pt[i]
-      const { y } = path.pt[i]
+      const { x } = path.points[i]
+      const { y } = path.points[i]
 
       if (y !== y1) {
         const min_y = Math.min(y1, y)
@@ -387,15 +387,15 @@ class Potrace {
     let i
     let relative_x
     let relative_y
-    path.x0 = path.pt[0].x
-    path.y0 = path.pt[0].y
+    path.x0 = path.points[0].x
+    path.y0 = path.points[0].y
 
     path.sums = []
     const running_sums = path.sums
     running_sums.push(new Sum(0, 0, 0, 0, 0))
     for (i = 0; i < path.len; i++) {
-      relative_x = path.pt[i].x - path.x0
-      relative_y = path.pt[i].y - path.y0
+      relative_x = path.points[i].x - path.x0
+      relative_y = path.points[i].y - path.y0
       running_sums.push(
         new Sum(
           running_sums[i].x + relative_x,
@@ -409,112 +409,165 @@ class Potrace {
   }
 
   /**
+   * Initializes next candidate vertices for path optimization
+   * Finds the next vertex that differs from current in position
+   * @private
+   * @param {Path} path - Path to process
+   * @returns {number[]} Array of next candidate indices
+   */
+  #initialize_next_candidates(path) {
+    const n = path.len
+    const { points } = path
+    const next_candidates = []
+    let k = 0
+
+    for (let i = n - 1; i >= 0; i--) {
+      if (points[i].x !== points[k].x && points[i].y !== points[k].y) k = i + 1
+
+      next_candidates[i] = k
+    }
+
+    return next_candidates
+  }
+
+  /**
    * Calculates longest sequences for path optimization
    * @private
    * @param {Path} path - Path to calculate sequences for
    * @returns {void}
    */
-  // Complex algorithm: inherent to Potrace's longest polygon calculation
-  // eslint-disable-next-line complexity
   #calc_lon = path => {
+    const next_candidates = this.#initialize_next_candidates(path)
+    const pivot_vertices = this.#find_pivot_vertices(path, next_candidates)
+    this.#compute_longest_sequences(path, pivot_vertices)
+  }
+
+  /**
+   * Finds pivot vertices for polygon optimization
+   * @private
+   * @param {Path} path - Path to process
+   * @param {number[]} next_candidates - Array of next candidate indices
+   * @returns {number[]} Array of pivot vertex indices
+   */
+  #find_pivot_vertices(path, next_candidates) {
     const n = path.len
-    const { pt } = path
-    let dir
-    const pivk = []
-    const nc = []
-    const ct = []
-
-    path.lon = []
-
+    const { points } = path
+    const pivot_vertices = []
+    const direction_counts = []
     const constraint = [new Point(), new Point()]
-    const cur = new Point()
-    const off = new Point()
-    const dk = new Point()
-    let found_pivot
+    const current_point = new Point()
+    const offset_point = new Point()
+    const direction_delta = new Point()
 
     let i
     let j
+    let dir
     let prev_vertex
+    let found_pivot
     let constraint0_cross_cur
     let constraint0_cross_dk
     let constraint1_cross_cur
     let constraint1_cross_dk
-    let k = 0
-    for (i = n - 1; i >= 0; i--) {
-      if (pt[i].x !== pt[k].x && pt[i].y !== pt[k].y) k = i + 1
-
-      nc[i] = k
-    }
+    let k
 
     for (i = n - 1; i >= 0; i--) {
-      ct[0] = ct[1] = ct[2] = ct[3] = 0
+      direction_counts[0] =
+        direction_counts[1] =
+        direction_counts[2] =
+        direction_counts[3] =
+          0
       dir =
         (3 +
-          3 * (pt[utils.mod(i + 1, n)].x - pt[i].x) +
-          (pt[utils.mod(i + 1, n)].y - pt[i].y)) /
+          3 * (points[utils.mod(i + 1, n)].x - points[i].x) +
+          (points[utils.mod(i + 1, n)].y - points[i].y)) /
         2
-      ct[dir]++
+      direction_counts[dir]++
 
       constraint[0].x = 0
       constraint[0].y = 0
       constraint[1].x = 0
       constraint[1].y = 0
 
-      k = nc[i]
+      k = next_candidates[i]
       prev_vertex = i
-      while (1) {
+      while (true) {
         found_pivot = 0
         dir =
           (3 +
-            3 * utils.sign(pt[k].x - pt[prev_vertex].x) +
-            utils.sign(pt[k].y - pt[prev_vertex].y)) /
+            3 * utils.sign(points[k].x - points[prev_vertex].x) +
+            utils.sign(points[k].y - points[prev_vertex].y)) /
           2
-        ct[dir]++
+        direction_counts[dir]++
 
-        if (ct[0] && ct[1] && ct[2] && ct[3]) {
-          pivk[i] = prev_vertex
+        if (
+          direction_counts[0] &&
+          direction_counts[1] &&
+          direction_counts[2] &&
+          direction_counts[3]
+        ) {
+          pivot_vertices[i] = prev_vertex
           found_pivot = 1
           break
         }
 
-        cur.x = pt[k].x - pt[i].x
-        cur.y = pt[k].y - pt[i].y
+        current_point.x = points[k].x - points[i].x
+        current_point.y = points[k].y - points[i].y
 
         if (
-          utils.xprod(constraint[0], cur) < 0 ||
-          utils.xprod(constraint[1], cur) > 0
+          utils.xprod(constraint[0], current_point) < 0 ||
+          utils.xprod(constraint[1], current_point) > 0
         )
           break
 
-        if (Math.abs(cur.x) <= 1 && Math.abs(cur.y) <= 1) {
-        } else {
-          off.x = cur.x + (cur.y >= 0 && (cur.y > 0 || cur.x < 0) ? 1 : -1)
-          off.y = cur.y + (cur.x <= 0 && (cur.x < 0 || cur.y < 0) ? 1 : -1)
-          if (utils.xprod(constraint[0], off) >= 0) {
-            constraint[0].x = off.x
-            constraint[0].y = off.y
+        // Skip if point is within unit square
+        if (Math.abs(current_point.x) > 1 || Math.abs(current_point.y) > 1) {
+          offset_point.x =
+            current_point.x +
+            (current_point.y >= 0 &&
+            (current_point.y > 0 || current_point.x < 0)
+              ? 1
+              : -1)
+          offset_point.y =
+            current_point.y +
+            (current_point.x <= 0 &&
+            (current_point.x < 0 || current_point.y < 0)
+              ? 1
+              : -1)
+          if (utils.xprod(constraint[0], offset_point) >= 0) {
+            constraint[0].x = offset_point.x
+            constraint[0].y = offset_point.y
           }
-          off.x = cur.x + (cur.y <= 0 && (cur.y < 0 || cur.x < 0) ? 1 : -1)
-          off.y = cur.y + (cur.x >= 0 && (cur.x > 0 || cur.y < 0) ? 1 : -1)
-          if (utils.xprod(constraint[1], off) <= 0) {
-            constraint[1].x = off.x
-            constraint[1].y = off.y
+          offset_point.x =
+            current_point.x +
+            (current_point.y <= 0 &&
+            (current_point.y < 0 || current_point.x < 0)
+              ? 1
+              : -1)
+          offset_point.y =
+            current_point.y +
+            (current_point.x >= 0 &&
+            (current_point.x > 0 || current_point.y < 0)
+              ? 1
+              : -1)
+          if (utils.xprod(constraint[1], offset_point) <= 0) {
+            constraint[1].x = offset_point.x
+            constraint[1].y = offset_point.y
           }
         }
         prev_vertex = k
-        k = nc[prev_vertex]
+        k = next_candidates[prev_vertex]
         if (!utils.cyclic(k, i, prev_vertex)) break
       }
       if (found_pivot === 0) {
-        dk.x = utils.sign(pt[k].x - pt[prev_vertex].x)
-        dk.y = utils.sign(pt[k].y - pt[prev_vertex].y)
-        cur.x = pt[prev_vertex].x - pt[i].x
-        cur.y = pt[prev_vertex].y - pt[i].y
+        direction_delta.x = utils.sign(points[k].x - points[prev_vertex].x)
+        direction_delta.y = utils.sign(points[k].y - points[prev_vertex].y)
+        current_point.x = points[prev_vertex].x - points[i].x
+        current_point.y = points[prev_vertex].y - points[i].y
 
-        constraint0_cross_cur = utils.xprod(constraint[0], cur)
-        constraint0_cross_dk = utils.xprod(constraint[0], dk)
-        constraint1_cross_cur = utils.xprod(constraint[1], cur)
-        constraint1_cross_dk = utils.xprod(constraint[1], dk)
+        constraint0_cross_cur = utils.xprod(constraint[0], current_point)
+        constraint0_cross_dk = utils.xprod(constraint[0], direction_delta)
+        constraint1_cross_cur = utils.xprod(constraint[1], current_point)
+        constraint1_cross_dk = utils.xprod(constraint[1], direction_delta)
 
         j = LARGE_NUMBER
 
@@ -527,20 +580,39 @@ class Potrace {
             Math.floor(-constraint1_cross_cur / constraint1_cross_dk)
           )
 
-        pivk[i] = utils.mod(prev_vertex + j, n)
+        pivot_vertices[i] = utils.mod(prev_vertex + j, n)
       }
     }
 
-    j = pivk[n - 1]
-    path.lon[n - 1] = j
-    for (i = n - 2; i >= 0; i--) {
-      if (utils.cyclic(i + 1, pivk[i], j)) j = pivk[i]
+    return pivot_vertices
+  }
 
-      path.lon[i] = j
+  /**
+   * Computes longest straight sequences from pivot vertices
+   * @private
+   * @param {Path} path - Path to update
+   * @param {number[]} pivot_vertices - Array of pivot vertex indices
+   * @returns {void}
+   */
+  #compute_longest_sequences(path, pivot_vertices) {
+    const n = path.len
+    path.longest_straight_seq = []
+
+    let j = pivot_vertices[n - 1]
+    path.longest_straight_seq[n - 1] = j
+
+    for (let i = n - 2; i >= 0; i--) {
+      if (utils.cyclic(i + 1, pivot_vertices[i], j)) j = pivot_vertices[i]
+
+      path.longest_straight_seq[i] = j
     }
 
-    for (i = n - 1; utils.cyclic(utils.mod(i + 1, n), j, path.lon[i]); i--)
-      path.lon[i] = j
+    for (
+      let i = n - 1;
+      utils.cyclic(utils.mod(i + 1, n), j, path.longest_straight_seq[i]);
+      i--
+    )
+      path.longest_straight_seq[i] = j
   }
 
   /**
@@ -559,7 +631,7 @@ class Potrace {
   #best_polygon = path => {
     const penalty3 = (path, i, j) => {
       const n = path.len
-      const { pt } = path
+      const { points } = path
       const { sums } = path
       let sum_x
       let sum_y
@@ -590,10 +662,10 @@ class Potrace {
         segment_length = j + 1 - i + n
       }
 
-      const px = (pt[i].x + pt[j].x) / 2.0 - pt[0].x
-      const py = (pt[i].y + pt[j].y) / 2.0 - pt[0].y
-      const ey = pt[j].x - pt[i].x
-      const ex = -(pt[j].y - pt[i].y)
+      const px = (points[i].x + points[j].x) / 2.0 - points[0].x
+      const py = (points[i].y + points[j].y) / 2.0 - points[0].y
+      const ey = points[j].x - points[i].x
+      const ex = -(points[j].y - points[i].y)
 
       const var_xx = (sum_x2 - 2 * sum_x * px) / segment_length + px * px
       const var_xy =
@@ -621,7 +693,10 @@ class Potrace {
     let clip_value
 
     for (i = 0; i < n; i++) {
-      clip_value = utils.mod(path.lon[utils.mod(i - 1, n)] - 1, n)
+      clip_value = utils.mod(
+        path.longest_straight_seq[utils.mod(i - 1, n)] - 1,
+        n
+      )
       if (clip_value === i) clip_value = utils.mod(i + 1, n)
 
       if (clip_value < i) clip0[i] = n
@@ -665,11 +740,11 @@ class Potrace {
       }
 
     path.m = m
-    path.po = []
+    path.optimal_vertices = []
 
     for (i = n, j = m - 1; i > 0; j--) {
       i = prev[i]
-      path.po[j] = i
+      path.optimal_vertices[j] = i
     }
   }
 
@@ -873,9 +948,9 @@ class Potrace {
    */
   #adjust_vertices = path => {
     const { m } = path
-    const { po } = path
+    const { optimal_vertices } = path
     const n = path.len
-    const { pt } = path
+    const { points } = path
     const { x0 } = path
     const { y0 } = path
     const ctr = []
@@ -887,10 +962,10 @@ class Potrace {
     // Phase 1: Calculate slope and direction for each segment
     for (let i = 0; i < m; i++) {
       let j = utils.mod(i + 1, m)
-      j = utils.mod(j - po[i], n) + po[i]
+      j = utils.mod(j - optimal_vertices[i], n) + optimal_vertices[i]
       ctr[i] = new Point()
       dir[i] = new Point()
-      this.#calc_point_slope(path, po[i], j, ctr[i], dir[i])
+      this.#calc_point_slope(path, optimal_vertices[i], j, ctr[i], dir[i])
     }
 
     // Phase 2: Build quadratic forms
@@ -899,7 +974,10 @@ class Potrace {
     // Phase 3: Optimize each vertex position
     for (let i = 0; i < m; i++) {
       const Q = new Quad()
-      const original_vertex = new Point(pt[po[i]].x - x0, pt[po[i]].y - y0)
+      const original_vertex = new Point(
+        points[optimal_vertices[i]].x - x0,
+        points[optimal_vertices[i]].y - y0
+      )
       const prev_i = utils.mod(i - 1, m)
 
       // Combine adjacent quadratic forms
@@ -1052,7 +1130,7 @@ class Potrace {
     const { curve } = path
     const m = curve.n
     const vert = curve.vertex
-    const pt = []
+    const previous = []
     const pen = []
     const len = []
     const opt = []
@@ -1105,12 +1183,12 @@ class Potrace {
       cumulative_area[i + 1] = area
     }
 
-    pt[0] = -1
+    previous[0] = -1
     pen[0] = 0
     len[0] = 0
 
     for (j = 1; j <= m; j++) {
-      pt[j] = j - 1
+      previous[j] = j - 1
       pen[j] = pen[j - 1]
       len[j] = len[j - 1] + 1
 
@@ -1130,7 +1208,7 @@ class Potrace {
           len[j] > len[i] + 1 ||
           (len[j] === len[i] + 1 && pen[j] > pen[i] + current_optimization.pen)
         ) {
-          pt[j] = i
+          previous[j] = i
           pen[j] = pen[i] + current_optimization.pen
           len[j] = len[i] + 1
           opt[j] = current_optimization
@@ -1143,7 +1221,7 @@ class Potrace {
 
     j = m
     for (i = optimized_segment_count - 1; i >= 0; i--) {
-      if (pt[j] === j - 1) {
+      if (previous[j] === j - 1) {
         const j_mod = utils.mod(j, m)
         optimized_curve.tag[i] = curve.tag[j_mod]
         const [c0, c1, c2] = [
@@ -1175,7 +1253,7 @@ class Potrace {
         s_params[i] = opt[j].s
         t_params[i] = opt[j].t
       }
-      j = pt[j]
+      j = previous[j]
     }
 
     for (i = 0; i < optimized_segment_count; i++) {
@@ -1409,19 +1487,21 @@ class Potrace {
    * 3. OptCurve is a boolean
    */
   #validate_parameters(params) {
+    if (!params) return
+
+    // Validate turnPolicy
     if (
-      params &&
       params.turnPolicy &&
       Potrace.supported_turn_policy_values.indexOf(params.turnPolicy) === -1
     ) {
       const goodVals = `'${Potrace.supported_turn_policy_values.join("', '")}'`
-
       throw new Error(`Bad turnPolicy value. Allowed values are: ${goodVals}`)
     }
 
+    // Validate threshold
     if (
-      params &&
       params.threshold !== null &&
+      params.threshold !== undefined &&
       params.threshold !== Potrace.THRESHOLD_AUTO
     )
       if (
@@ -1432,8 +1512,8 @@ class Potrace {
           `Bad threshold value. Expected to be an integer in range 0..${RGB_MAX}`
         )
 
+    // Validate optCurve
     if (
-      params &&
       params.optCurve !== null &&
       params.optCurve !== undefined &&
       typeof params.optCurve !== 'boolean'
@@ -1491,17 +1571,17 @@ class Potrace {
   #set_parameters(newParams) {
     this.#validate_parameters(newParams)
 
-    for (const key in this.#params)
-      if (this.#params.hasOwnProperty(key) && newParams.hasOwnProperty(key)) {
-        const tmpOldVal = this.#params[key]
-        this.#params[key] = newParams[key]
+    for (const key in this.#params) {
+      if (!this.#params.hasOwnProperty(key)) continue
+      if (!newParams.hasOwnProperty(key)) continue
 
-        if (
-          tmpOldVal !== this.#params[key] &&
-          ['color', 'background'].indexOf(key) === -1
-        )
-          this.#processed = false
-      }
+      const tmpOldVal = this.#params[key]
+      this.#params[key] = newParams[key]
+
+      const isNonVisualParam = ['color', 'background'].indexOf(key) === -1
+      if (tmpOldVal !== this.#params[key] && isNonVisualParam)
+        this.#processed = false
+    }
 
     if (
       this.#params.steps &&
@@ -1531,32 +1611,34 @@ class Potrace {
     const lastRangeFrom = blackOnWhite ? 0 : lastColorStop.value
     const lastRangeTo = blackOnWhite ? lastColorStop.value : RGB_MAX
 
+    // Early return if range is too small or already at max intensity
     if (
-      lastRangeTo - lastRangeFrom > POSTERIZE_LEVEL_STEP &&
-      lastColorStop.colorIntensity !== 1
-    ) {
-      const histogram = this.#get_image_histogram()
-      const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
+      lastRangeTo - lastRangeFrom <= POSTERIZE_LEVEL_STEP ||
+      lastColorStop.colorIntensity === 1
+    )
+      return ranges
 
-      let newColorStop
-      if (levels.mean + levels.stdDev <= POSTERIZE_LEVEL_STEP)
-        newColorStop = levels.mean + levels.stdDev
-      else if (levels.mean - levels.stdDev <= POSTERIZE_LEVEL_STEP)
-        newColorStop = levels.mean - levels.stdDev
-      else newColorStop = POSTERIZE_LEVEL_STEP
+    const histogram = this.#get_image_histogram()
+    const { levels } = histogram.get_stats(lastRangeFrom, lastRangeTo)
 
-      const newStats = blackOnWhite
-        ? histogram.get_stats(0, newColorStop)
-        : histogram.get_stats(newColorStop, RGB_MAX)
-      const color = newStats.levels.mean
+    let newColorStop
+    if (levels.mean + levels.stdDev <= POSTERIZE_LEVEL_STEP)
+      newColorStop = levels.mean + levels.stdDev
+    else if (levels.mean - levels.stdDev <= POSTERIZE_LEVEL_STEP)
+      newColorStop = levels.mean - levels.stdDev
+    else newColorStop = POSTERIZE_LEVEL_STEP
 
-      ranges.push({
-        value: Math.abs((blackOnWhite ? 0 : RGB_MAX) - newColorStop),
-        colorIntensity: isNaN(color)
-          ? 0
-          : (blackOnWhite ? RGB_MAX - color : color) / RGB_MAX
-      })
-    }
+    const newStats = blackOnWhite
+      ? histogram.get_stats(0, newColorStop)
+      : histogram.get_stats(newColorStop, RGB_MAX)
+    const color = newStats.levels.mean
+
+    ranges.push({
+      value: Math.abs((blackOnWhite ? 0 : RGB_MAX) - newColorStop),
+      colorIntensity: isNaN(color)
+        ? 0
+        : (blackOnWhite ? RGB_MAX - color : color) / RGB_MAX
+    })
 
     return ranges
   }
@@ -1881,7 +1963,6 @@ class Potrace {
 
   /**
    * Generates SVG path tags for each color level
-   * @param {boolean} [noFillColor=false] - Whether to skip fill color attributes
    * @returns {string[]} Array of SVG path tags with opacity and color
    * @description
    * Creates path tags by:
@@ -1890,7 +1971,7 @@ class Potrace {
    * 3. Generating path data for each threshold
    * 4. Adding fill and opacity attributes
    */
-  path_tags(noFillColor) {
+  path_tags() {
     let ranges = this.#get_ranges()
     const { blackOnWhite } = this.#params
 

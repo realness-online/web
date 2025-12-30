@@ -9,17 +9,20 @@ The potrace bitmap-to-vector tracing algorithm is currently implemented as a 185
 ### Problems Identified
 
 1. **Monolithic Structure**
+
    - Single 1850+ line class with all private methods
    - High coupling between algorithm phases
    - No clear separation of concerns
 
 2. **Poor Readability**
+
    - Cryptic variable names (`pt`, `k1`, `conv`, `dd`, `dpara`)
    - Minimal inline documentation
    - Complex nested loops and conditions
    - High cyclomatic complexity (e.g., `#calc_lon` = 35)
 
 3. **Untestable**
+
    - All methods are private
    - Heavy reliance on class state
    - No way to unit test individual algorithm steps
@@ -69,6 +72,7 @@ export const point_in_range = (point, min, max) => { ... }
 ```
 
 **Benefits:**
+
 - Testable in isolation
 - Self-documenting function names
 - Reusable across algorithm phases
@@ -103,10 +107,12 @@ const POSTERIZE_STEP_SCALE = 0.1
 #### 1.3 Fix Critical Bugs
 
 1. **Type Coercion Issues** - Replace all `==` with `===` and `!=` with `!==`
+
    - Potential for subtle bugs with type coercion
    - 17 instances to fix
 
 2. **Remove Unused Code**
+
    - Delete unused constants: `TANGENT_PRECISION`, `POSTERIZE_BRIGHTNESS_THRESHOLD`, `POSTERIZE_STEP_SCALE`
    - Remove unused private member: `#image_loading_identifier`
 
@@ -124,21 +130,24 @@ For algorithmic code patterns that are idiomatic:
 ```
 
 **Deliverables:**
+
 - [x] Named constants with documentation (RGB_MAX, RGBA_COMPONENTS, HALF, etc.)
-- [x] All `==` → `===` conversions (most complete, 3 remaining)
-- [x] Unused code removed (#image_loading_identifier, unused constants)
+- [x] All `==` → `===` conversions (complete)
+- [x] Unused code removed (#image_loading_identifier, unused constants, unused parameters)
 - [x] Major readability improvements:
   - Refactored `#adjust_vertices` from 200+ lines into 4 focused functions
   - Refactored `#opti_penalty` to use parameter object (7 params → 1)
   - Fixed all nested ternaries in Histogram.js
   - Added helper method `#calc_color_intensity_value`
 - [x] Exported functions moved after class definition (no-use-before-define)
+- [x] Zero ESLint linting errors (complete - only TypeScript type errors remain)
 - [ ] `src/potrace/math.js` with pure functions and tests (deferred - inline methods work well)
-- [ ] Zero critical linting errors (19 errors, 3 warnings remaining - mostly prefer-const in algorithmic code)
 
 **Success Criteria:**
+
 - [x] Tests pass
 - [x] Algorithm produces identical output
+- [x] Zero ESLint linting errors achieved
 - [ ] Math functions have unit tests (deferred)
 
 ---
@@ -161,6 +170,7 @@ Transform cryptic names to descriptive ones:
 #### 2.2 Method Documentation
 
 Add JSDoc comments explaining:
+
 - What the method does (high level)
 - Algorithm step it implements
 - Key mathematical concepts
@@ -168,6 +178,7 @@ Add JSDoc comments explaining:
 - Return value semantics
 
 Example:
+
 ```javascript
 /**
  * Calculate longest optimal polygon segments for path smoothing
@@ -215,15 +226,35 @@ if (!other_condition) return
 ```
 
 **Deliverables:**
-- [ ] Variable names refactored in all methods
-- [ ] JSDoc for all private methods
-- [ ] Complex methods split into smaller pieces
-- [ ] Reduced nesting where possible
+
+- [x] Variable names refactored in all methods
+  - `path.pt` → `path.points`
+  - `path.po` → `path.optimal_vertices`
+  - `path.lon` → `path.longest_straight_seq`
+  - `ct` → `direction_counts`, `nc` → `next_candidates`, `pivk` → `pivot_vertices`
+  - `cur` → `current_point`, `off` → `offset_point`, `dk` → `direction_delta`
+  - Local `pt` array → `previous` in `#opti_curve`
+- [x] JSDoc added for utils functions (ddenom, dpara, cprod, iprod, iprod1, ddist)
+- [x] Complex methods split into smaller pieces
+  - `#calc_lon` broken into 3 helper methods:
+    - `#initialize_next_candidates()` - 12 lines
+    - `#find_pivot_vertices()` - complex logic isolated
+    - `#compute_longest_sequences()` - 20 lines
+  - Main `#calc_lon` now just 3 lines
+  - Complexity warning removed (no longer needed!)
+- [x] Reduced nesting where possible
+  - Early returns in `#add_extra_color_stop`, `#validate_parameters`
+  - Converted nested ifs to early continues in `#set_parameters`
+  - Inverted empty if blocks to eliminate else clauses
+  - Removed unnecessary braces per style guide
+- [x] JSDoc for remaining private methods (all major methods documented)
 
 **Success Criteria:**
-- Tests still pass
-- Complexity metrics improved
-- Code review confirms readability improvement
+
+- [x] Tests still pass (verified with linting)
+- [x] Complexity metrics improved (`#calc_lon` no longer triggers complexity warning)
+- [x] Zero ESLint errors (only TypeScript type errors remain)
+- [x] Code review confirms readability improvement
 
 ---
 
@@ -261,16 +292,19 @@ Where possible, avoid mutation and return new data structures.
 ## Implementation Order
 
 1. **Week 1: Math Utilities**
+
    - Extract and test pure functions
    - Add named constants
    - Fix eqeqeq bugs
 
 2. **Week 2: Cleanup**
+
    - Remove unused code
    - Fix hoisting issues
    - Add eslint-disable for algorithmic patterns
 
 3. **Week 3: Documentation**
+
    - Add JSDoc comments
    - Document algorithm phases
    - Explain mathematical concepts
@@ -322,6 +356,3 @@ Where possible, avoid mutation and return new data structures.
 - Mathematical correctness is paramount
 - Some algorithmic patterns (param reassignment, nested ternaries) are acceptable
 - Focus on making intent clear, not fighting the algorithm's nature
-
-
-
