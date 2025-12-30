@@ -126,12 +126,7 @@ describe('potrace/index', () => {
   })
 
   afterAll(() => {
-    if (test_timings.length > 0) {
-      console.log('\n⏱️  Slow tests (>100ms):')
-      test_timings
-        .sort((a, b) => parseFloat(b.duration) - parseFloat(a.duration))
-        .forEach(t => console.log(`  ${t.duration.padStart(8)} - ${t.name}`))
-    }
+    // Test timings collected but not logged to reduce noise
   })
 
   describe('as_paths', () => {
@@ -399,8 +394,6 @@ describe('potrace/index', () => {
       const complex = create_complex_image()
       const result = as_paths(complex, { steps: [128] })
 
-      console.log('complex image paths:', result.paths.length)
-
       expect(result).toHaveProperty('paths')
       expect(result.paths.length).toBeGreaterThan(0)
     })
@@ -492,13 +485,8 @@ describe('potrace/index', () => {
 
   describe('alphaMax option', () => {
     it('affects corner detection', () => {
-      const t0 = performance.now()
       const result_low = as_paths(test_image, { alphaMax: 0, steps: [128] })
-      console.log(`alphaMax 0: ${(performance.now() - t0).toFixed(1)}ms`)
-
-      const t1 = performance.now()
       const result_high = as_paths(test_image, { alphaMax: 2, steps: [128] })
-      console.log(`alphaMax 2: ${(performance.now() - t1).toFixed(1)}ms`)
 
       expect(result_low).toHaveProperty('paths')
       expect(result_high).toHaveProperty('paths')
@@ -507,19 +495,14 @@ describe('potrace/index', () => {
 
   describe('optTolerance option', () => {
     it('affects curve optimization', () => {
-      const t0 = performance.now()
       const result_low = as_paths(test_image, {
         optTolerance: 0.1,
         steps: [128]
       })
-      console.log(`optTolerance 0.1: ${(performance.now() - t0).toFixed(1)}ms`)
-
-      const t1 = performance.now()
       const result_high = as_paths(test_image, {
         optTolerance: 0.5,
         steps: [128]
       })
-      console.log(`optTolerance 0.5: ${(performance.now() - t1).toFixed(1)}ms`)
 
       expect(result_low).toHaveProperty('paths')
       expect(result_high).toHaveProperty('paths')
@@ -569,8 +552,6 @@ describe('potrace/index', () => {
   describe('golden file tests', () => {
     it('produces consistent output for simple square', () => {
       const result = as_paths(test_image, { optCurve: false, steps: [128] })
-
-      console.log('golden test result:', JSON.stringify(result, null, 2))
 
       // Snapshot the entire result
       expect(result).toMatchSnapshot('result')

@@ -40,6 +40,8 @@
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:fail-fast": "vitest run --bail=1",
+    "test:potrace": "vitest run tests/potrace/index.spec.js",
+    "test:potrace:coverage": "vitest run tests/potrace/index.spec.js --coverage",
     "test:keymaps": "node test-keymap-build.js",
     "type": "tsc --pretty",
     "pre-commit": "npm run lint && npm run type && npm run test",

@@ -1,7 +1,17 @@
 import { useActiveElement } from '@vueuse/core'
+import { vi } from 'vitest'
 import { itemprop_query, create_path_element, use, change_by } from '@/use/path'
 
 describe('@/use/path.js', () => {
+  let console_warn_spy
+
+  beforeEach(() => {
+    console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    if (console_warn_spy) console_warn_spy.mockRestore()
+  })
   describe('#create_path_element', () => {
     it('Creates path element', () => {
       const path = create_path_element()

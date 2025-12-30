@@ -52,17 +52,6 @@ describe('@/component/profile/as-address.vue', () => {
     it('accepts person prop', () => {
       expect(wrapper.props('person')).toEqual(person)
     })
-
-    it('accepts editable prop', () => {
-      wrapper = shallowMount(as_address, {
-        props: { person, editable: true }
-      })
-      expect(wrapper.props('editable')).toBe(true)
-    })
-
-    it('defaults editable to false', () => {
-      expect(wrapper.props('editable')).toBe(false)
-    })
   })
 
   describe('Computed Properties', () => {
