@@ -89,7 +89,7 @@
 
   const picker = itemid => {
     const poster = posters.value.find(poster => poster.id === itemid)
-    poster.picker = !poster.picker
+    if (poster) poster.picker = !poster.picker
   }
 
   const dialog_click = event => {

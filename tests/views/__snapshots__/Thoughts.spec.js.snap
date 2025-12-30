@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Thoughts > Rendering > renders thoughts view 1`] = `
+<section
+  class="page"
+  id="thoughts"
+>
+  <header>
+    <icon-stub
+      name="nothing"
+    />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
+  </header>
+  <h1>
+    Thoughts
+  </h1>
+  <div
+    class="as-days-stub"
+  >
+    
+    
+    
+    <as-article-stub
+      editable="false"
+      statements=""
+      verbose="true"
+    />
+    
+    
+    
+  </div>
+</section>
+`;

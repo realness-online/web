@@ -36,7 +36,7 @@ const init_tracer = async () => {
   converter = ColorImageConverter.new_with_string(JSON.stringify(params))
 }
 
-const make_trace = message => {
+export const make_trace = message => {
   console.time('make:trace')
   const { image_data } = message.data
 
@@ -130,7 +130,7 @@ const make_trace = message => {
   return {}
 }
 
-const route_message = async message => {
+export const route_message = async message => {
   const { route } = message.data
   let reply = {}
 
