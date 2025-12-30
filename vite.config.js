@@ -117,7 +117,8 @@ export default defineConfig({
         'docs/**',
         'public/**',
         'src/main.js',
-        'src/router.js'
+        'src/router.js',
+        'src/wasm/**'
       ],
       lines: 80,
       branches: 80,
