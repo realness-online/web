@@ -16,8 +16,8 @@ import {
 } from '@/potrace/bitmap-processor'
 import { trace_all_paths } from '@/potrace/tracer'
 
-/** @typedef {import('@/potrace/types/Path')} Path */
-/** @typedef {import('@/potrace/types/Bitmap')} Bitmap */
+/** @typedef {InstanceType<typeof import('@/potrace/types/Path').default>} Path */
+/** @typedef {InstanceType<typeof import('@/potrace/types/Bitmap').default>} Bitmap */
 
 // Potrace algorithm constants with explanations
 
