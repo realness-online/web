@@ -1,5 +1,6 @@
 /** @typedef {import('@/types').Type} Type */
 /** @typedef {import('@/types').PersonQuery} PersonQuery */
+/** @typedef {import('@/types').Id} Id */
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
 import { as_directory } from '@/persistance/Directory'
@@ -20,7 +21,7 @@ export const use = () => {
    */
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
-    let author = as_author(oldest.id)
+    const author = as_author(oldest.id)
     const author_statements = statements.value.filter(
       statement => author === as_author(statement.id)
     )

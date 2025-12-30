@@ -1,4 +1,5 @@
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Poster} PosterType */
 /** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
 /**
  * @typedef {Object} VectorResponse
@@ -229,19 +230,16 @@ const sort_cutouts_into_layers = (vector, id) => {
 /**
  * Save poster and cutout symbols
  * @param {Id} id - Poster itemid
- * @param {Element} poster - Poster SVG element
- * @param {Element} pattern - Pattern element
- * @param {Object} cutouts - Cutout symbols by layer
  */
 const save_poster = async id => {
   await tick()
   await Promise.all([
-    new Shadow(`${id}/shadow`).save(),
-    new Cutout(`${id}/sediment`).save(),
-    new Cutout(`${id}/sand`).save(),
-    new Cutout(`${id}/gravel`).save(),
-    new Cutout(`${id}/rock`).save(),
-    new Cutout(`${id}/boulder`).save()
+    new Shadow(/** @type {Id} */ (`${id}/shadow`)).save(),
+    new Cutout(/** @type {Id} */ (`${id}/sediment`)).save(),
+    new Cutout(/** @type {Id} */ (`${id}/sand`)).save(),
+    new Cutout(/** @type {Id} */ (`${id}/gravel`)).save(),
+    new Cutout(/** @type {Id} */ (`${id}/rock`)).save(),
+    new Cutout(/** @type {Id} */ (`${id}/boulder`)).save()
   ])
   new Poster(id).save()
 }
@@ -772,23 +770,18 @@ export const use = () => {
 
     clear_vector_paths()
 
-    new_vector.value.light = optimized_data.light
-    new_vector.value.regular = optimized_data.regular
-    new_vector.value.medium = optimized_data.medium
-    new_vector.value.bold = optimized_data.bold
-    new_vector.value.cutout = optimized_data.cutout
-    new_vector.value.cutouts = {
-      sediment: [],
-      sand: [],
-      gravel: [],
-      rock: [],
-      boulder: []
-    }
-    new_vector.value.optimized = true
+    const poster = /** @type {PosterType} */ (new_vector.value)
+    const optimized_poster = /** @type {PosterType} */ (/** @type {unknown} */ (optimized_data))
+    poster.light = optimized_poster.light
+    poster.regular = optimized_poster.regular
+    poster.medium = optimized_poster.medium
+    poster.bold = optimized_poster.bold
+    poster.cutout = optimized_poster.cutout
+    poster.optimized = true
     await tick()
-    const cutouts = sort_cutouts_into_layers(new_vector.value, id)
-    new_vector.value.cutout = undefined
-    new_vector.value.cutouts = cutouts
+    const cutouts = sort_cutouts_into_layers(poster, id)
+    poster.cutout = undefined
+    poster.cutouts = cutouts
 
     await save_poster(id)
 

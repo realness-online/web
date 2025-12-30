@@ -192,7 +192,7 @@ export const load_item = async itemid => {
     const compressed_data = await readFile(file_path)
     const html_data = await gunzip_async(compressed_data)
     const html_string = html_data.toString('utf-8')
-    return get_item(html_string)
+    return get_item(html_string, itemid)
   } catch (error) {
     if (error.code === 'ENOENT') return null
     throw error

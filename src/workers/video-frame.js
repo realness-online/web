@@ -5,6 +5,7 @@ const HALFWAY_POINT = 0.5
 /**
  * Prepares and renders frames from base SVG using linkedom
  * @param {Object} message - Worker message
+ * @param {Object} message.data - Message data
  * @param {string} message.data.svg_string - Base SVG string
  * @param {number} message.data.canvas_width - Canvas width
  * @param {number} message.data.canvas_height - Canvas height

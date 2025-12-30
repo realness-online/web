@@ -5,7 +5,7 @@ const OPACITY_PRECISION = 10000
 const MAX_OPACITY = 0.9
 
 export function change(opacity = DEFAULT_OPACITY, resolution = change_by) {
-  let value = parseFloat(opacity)
+  let value = typeof opacity === 'string' ? parseFloat(opacity) : opacity
 
   value = value * OPACITY_PRECISION
   value = Math.round(value)

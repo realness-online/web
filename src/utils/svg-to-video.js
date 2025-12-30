@@ -387,6 +387,7 @@ export const render_svg_to_canvas = (
   }
 
   capture_frame()
+  return Promise.resolve()
 }
 
 /**

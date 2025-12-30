@@ -69,8 +69,8 @@ export const should_turn_right = (turn_policy, path_sign, black_map, x, y) => {
  */
 export const trace_path = (black_map, start_point, turn_policy) => {
   const path = new Path()
-  let x = start_point.x
-  let y = start_point.y
+  let { x } = start_point
+  let { y } = start_point
   let dir_x = 0
   let dir_y = 1
 
@@ -99,13 +99,13 @@ export const trace_path = (black_map, start_point, turn_policy) => {
       y + (dir_y + dir_x - 1) / 2
     )
 
-    if (r && !l) {
+    if (r && !l) 
       if (should_turn_right(turn_policy, path.sign, black_map, x, y)) {
         ;[dir_x, dir_y] = [-dir_y, dir_x]
       } else {
         ;[dir_x, dir_y] = [dir_y, -dir_x]
       }
-    } else if (r) {
+     else if (r) {
       ;[dir_x, dir_y] = [-dir_y, dir_x]
     } else if (!l) {
       ;[dir_x, dir_y] = [dir_y, -dir_x]

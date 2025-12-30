@@ -1,8 +1,8 @@
 import { as_created_at } from '@/utils/itemid'
-const this_year = Date.parse(new Date().getFullYear())
+const this_year = Date.parse(String(new Date().getFullYear()))
 const format_as_time = {
-  hour: 'numeric',
-  minute: 'numeric',
+  hour: /** @type {'numeric'} */ ('numeric'),
+  minute: /** @type {'numeric'} */ ('numeric'),
   hour12: true
 }
 const format_as_day = {
@@ -17,20 +17,20 @@ const format_as_day_and_year = {
   year: 'numeric'
 }
 const format_as_day_and_time = {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  hour: 'numeric',
-  minute: 'numeric',
+  weekday: /** @type {'long'} */ ('long'),
+  day: /** @type {'numeric'} */ ('numeric'),
+  month: /** @type {'long'} */ ('long'),
+  hour: /** @type {'numeric'} */ ('numeric'),
+  minute: /** @type {'numeric'} */ ('numeric'),
   hour12: true
 }
 const format_as_day_time_year = {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
+  weekday: /** @type {'long'} */ ('long'),
+  day: /** @type {'numeric'} */ ('numeric'),
+  month: /** @type {'long'} */ ('long'),
+  year: /** @type {'numeric'} */ ('numeric'),
+  hour: /** @type {'numeric'} */ ('numeric'),
+  minute: /** @type {'numeric'} */ ('numeric'),
   hour12: true
 }
 
@@ -58,14 +58,18 @@ export function is_fresh(date = 0) {
   if (new Date(date) > expires) return true
   return false
 }
+/**
+ * @param {string|Date} date
+ * @param {Intl.DateTimeFormatOptions} [format]
+ */
 export function as_time(date, format = format_as_time) {
   const time = new Date(date)
   return time.toLocaleString('en-US', format) // TODO: get country code from browser
 }
 export function as_day(date) {
   let day
-  if (Date.parse(date) < this_year) day = as_time(date, format_as_day_and_year)
-  else day = as_time(date, format_as_day)
+  if (Date.parse(date) < this_year) day = as_time(date, /** @type {Intl.DateTimeFormatOptions} */ (format_as_day_and_year))
+  else day = as_time(date, /** @type {Intl.DateTimeFormatOptions} */ (format_as_day))
   if (is_same_day(date, new Date())) day = 'Today'
   return day
 }
