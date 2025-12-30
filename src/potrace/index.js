@@ -9,14 +9,15 @@ import Sum from '@/potrace/types/Sum'
 import Opti from '@/potrace/types/Opti'
 import utils from '@/potrace/utils'
 import Histogram from '@/potrace/types/Histogram'
-import Path from '@/potrace/types/Path'
-import Bitmap from '@/potrace/types/Bitmap'
 import {
   image_data_to_luminance,
   calculate_threshold,
   apply_threshold
 } from '@/potrace/bitmap-processor'
 import { trace_all_paths } from '@/potrace/tracer'
+
+/** @typedef {import('@/potrace/types/Path')} Path */
+/** @typedef {import('@/potrace/types/Bitmap')} Bitmap */
 
 // Potrace algorithm constants with explanations
 
@@ -979,16 +980,13 @@ class Potrace {
     const pen = []
     const len = []
     const opt = []
-    let optimized_segment_count
     let i
     let j
     let should_reject
     let current_optimization = new Opti()
-    let p0
     let next_i
     let area
     let alpha
-    let optimized_curve
     const s_params = []
     const t_params = []
 
@@ -1008,7 +1006,7 @@ class Potrace {
 
     area = 0.0
     cumulative_area[0] = 0.0
-    ;[p0] = curve.vertex
+    const [p0] = curve.vertex
     for (i = 0; i < m; i++) {
       next_i = utils.mod(i + 1, m)
       if (curve.tag[next_i] === 'CURVE') {
@@ -1061,8 +1059,8 @@ class Potrace {
         }
       }
     }
-    optimized_segment_count = len[m]
-    optimized_curve = new Curve(optimized_segment_count)
+    const optimized_segment_count = len[m]
+    const optimized_curve = new Curve(optimized_segment_count)
 
     j = m
     for (i = optimized_segment_count - 1; i >= 0; i--) {
@@ -1136,10 +1134,7 @@ class Potrace {
     let k
     let next_k
     let k2
-    let convexity_sign
-    let i1
     let area
-    let alpha
     let distance
     let perpendicular_distance
     let perpendicular_distance_vertex
@@ -1149,9 +1144,9 @@ class Potrace {
     if (i === j) return 1
 
     k = i
-    i1 = utils.mod(i + 1, m)
+    const i1 = utils.mod(i + 1, m)
     next_k = utils.mod(k + 1, m)
-    convexity_sign = convc[next_k]
+    const convexity_sign = convc[next_k]
     if (convexity_sign === 0) return 1
 
     distance = utils.ddist(vertex[i], vertex[i1])
@@ -1200,7 +1195,7 @@ class Potrace {
     if (A === 0.0) return 1
 
     const R = area / A
-    alpha = 2 - Math.sqrt(RGBA_COMPONENTS - R / PENALTY_RATIO)
+    const alpha = 2 - Math.sqrt(RGBA_COMPONENTS - R / PENALTY_RATIO)
 
     res.c[0] = utils.interval(tangent_param * alpha, bezier_p0, bezier_p1)
     res.c[1] = utils.interval(s * alpha, bezier_p3, bezier_p2)
@@ -1849,24 +1844,13 @@ class Potrace {
 
   /**
    * Gets path data for SVG output
-   * @param {string} [fillColor] - Override fill color (any valid CSS color)
    * @returns {string} SVG path data string
    * @throws {Error} If image not loaded
    * @description
    * Generates SVG path data for the processed image.
-   * If fillColor is provided, it overrides the default fill color.
-   * If fillColor is not provided, it uses the color specified in the parameters.
-   * If the color is set to Potrace.COLOR_AUTO, it automatically determines the fill color based on the blackOnWhite parameter.
    * Throws an error if the image is not loaded.
    */
-  get_path_data(fillColor) {
-    const fill = arguments.length === 0 ? this.#params.color : fillColor
-
-    let resolved_fill
-    if (fill === Potrace.COLOR_AUTO)
-      resolved_fill = this.#params.blackOnWhite ? 'black' : 'white'
-    else resolved_fill = fill
-
+  get_path_data() {
     if (!this.#image_loaded) throw new Error('Image should be loaded first')
 
     if (!this.#processed) {
