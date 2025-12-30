@@ -3,8 +3,7 @@
  * Converts traced paths to SVG format
  */
 import utils from '@/potrace/utils'
-
-/** @typedef {InstanceType<typeof import('@/potrace/types/Path').default>} Path */
+import Path from '@/potrace/types/Path' // eslint-disable-line no-unused-vars
 
 /**
  * @typedef {Object} PathData
