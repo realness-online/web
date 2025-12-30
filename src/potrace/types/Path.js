@@ -26,7 +26,7 @@ class Path {
   /**
    * @type {Array} Array of points defining the path
    */
-  pt = []
+  points = []
 
   /**
    * @type {number} Minimum X coordinate of the path's bounding box
