@@ -23,7 +23,7 @@ vi.mock('vue', async importOriginal => {
   }
 })
 
-import { use } from '@/use/vectorize'
+import { use, resize_image } from '@/use/vectorize'
 
 // Mock dependencies
 vi.mock('@/use/path', () => ({
@@ -342,6 +342,144 @@ describe('vectorize composable', () => {
       const gradients = [{ color: 'red' }, { color: 'blue' }]
       vectorize_instance.new_gradients.value = gradients
       expect(vectorize_instance.new_gradients.value).toEqual(gradients)
+    })
+  })
+
+  describe('resize_image', () => {
+    let mock_get_image_data
+    let original_offscreen_canvas
+    let mock_context
+
+    beforeEach(() => {
+      original_offscreen_canvas = global.OffscreenCanvas
+
+      mock_get_image_data = vi.fn((x, y, width, height) => ({
+        data: new Uint8ClampedArray(width * height * 4),
+        width,
+        height
+      }))
+
+      mock_context = {
+        drawImage: vi.fn(),
+        getImageData: mock_get_image_data
+      }
+
+      global.OffscreenCanvas = class {
+        constructor(width, height) {
+          this.width = width
+          this.height = height
+        }
+        getContext() {
+          return mock_context
+        }
+      }
+    })
+
+    afterEach(() => {
+      global.OffscreenCanvas = original_offscreen_canvas
+    })
+
+    it('resizes landscape image correctly', () => {
+      const mock_image = {
+        width: 2000,
+        height: 1000
+      }
+
+      const image_data = resize_image(mock_image, 512)
+
+      expect(image_data.width).toBe(1024)
+      expect(image_data.height).toBe(512)
+      expect(mock_get_image_data).toHaveBeenCalledWith(0, 0, 1024, 512)
+    })
+
+    it('resizes portrait image correctly', () => {
+      const mock_image = {
+        width: 1000,
+        height: 2000
+      }
+
+      const image_data = resize_image(mock_image, 512)
+
+      expect(image_data.width).toBe(512)
+      expect(image_data.height).toBe(1024)
+      expect(mock_get_image_data).toHaveBeenCalledWith(0, 0, 512, 1024)
+    })
+
+    it('resizes square image correctly', () => {
+      const mock_image = {
+        width: 1000,
+        height: 1000
+      }
+
+      const image_data = resize_image(mock_image, 512)
+
+      expect(image_data.width).toBe(512)
+      expect(image_data.height).toBe(512)
+      expect(mock_get_image_data).toHaveBeenCalledWith(0, 0, 512, 512)
+    })
+
+    it('uses default target size when not provided', () => {
+      const mock_image = {
+        width: 1000,
+        height: 500
+      }
+
+      const image_data = resize_image(mock_image)
+
+      expect(image_data.height).toBe(512)
+      expect(mock_get_image_data).toHaveBeenCalledWith(0, 0, 1024, 512)
+    })
+
+    it('maintains aspect ratio', () => {
+      const mock_image = {
+        width: 4000,
+        height: 2000
+      }
+
+      const image_data = resize_image(mock_image, 512)
+      const aspect_ratio = image_data.width / image_data.height
+      const original_aspect_ratio = mock_image.width / mock_image.height
+
+      expect(aspect_ratio).toBeCloseTo(original_aspect_ratio, 2)
+    })
+  })
+
+  describe('queue management', () => {
+    it('queue_items computed returns current queue items', () => {
+      expect(vectorize_instance.queue_items.value).toEqual([])
+    })
+
+    it('current_processing computed returns current processing item', () => {
+      expect(vectorize_instance.current_processing.value).toBe(null)
+    })
+
+    it('is_processing computed returns processing state', () => {
+      expect(vectorize_instance.is_processing.value).toBe(false)
+    })
+
+    it('completed_posters computed returns completed posters list', () => {
+      expect(vectorize_instance.completed_posters.value).toEqual([])
+    })
+  })
+
+  describe('add_to_queue', () => {
+    beforeEach(() => {
+      global.Worker = vi.fn(() => ({
+        addEventListener: vi.fn(),
+        postMessage: vi.fn(),
+        terminate: vi.fn()
+      }))
+      vectorize_instance.mount_workers()
+    })
+
+    it('add_to_queue is a function', () => {
+      expect(vectorize_instance.add_to_queue).toBeTypeOf('function')
+    })
+  })
+
+  describe('init_processing_queue', () => {
+    it('init_processing_queue is a function', () => {
+      expect(vectorize_instance.init_processing_queue).toBeTypeOf('function')
     })
   })
 })
