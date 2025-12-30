@@ -1,4 +1,5 @@
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { Local } from '@/persistance/Local'
@@ -40,7 +41,12 @@ export class Storage {
   // eslint-disable-next-line no-unused-vars
   save(items) {}
   delete() {}
-  sync() {}
+  /**
+   * @returns {Promise<Item[]>}
+   */
+  sync() {
+    return Promise.resolve([])
+  }
   optimize() {}
 }
 

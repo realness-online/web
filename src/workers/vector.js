@@ -1,3 +1,4 @@
+/** @typedef {import('@/potrace/index.js').FillStrategy} FillStrategy */
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/utils/colors'
 import { to_kb } from '@/utils/numbers'
@@ -11,8 +12,8 @@ export const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
   blackOnWhite: true,
-  fillStrategy: 'dominant',
-  rangeDistribution: 'auto',
+  fillStrategy: /** @type {FillStrategy} */ ('dominant'),
+  rangeDistribution: /** @type {'auto'|'equal'} */ ('auto'),
   steps: 4
   // threshold: 255
 }
@@ -119,7 +120,7 @@ export const as_radial_gradient = canvas => {
 
 export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
-  const number = parseFloat(pair.number)
+  const number = typeof pair.number === 'string' ? parseFloat(pair.number) : pair.number
   if (number === 0) throw new Error('Expected a fidelity greater than 0.')
   if (pair.unit === '%') return length * (number / PERCENTAGE_MAX)
   return number
@@ -182,7 +183,7 @@ export const optimize_vector = message => {
   console.time('optimize:vector')
   console.group('Optimizer')
   console.info(`before: ${to_kb(message.data.vector)}kb`)
-  const optimized = optimize(message.data.vector, svgo_options)
+  const optimized = optimize(message.data.vector, /** @type {any} */ (svgo_options))
   console.info(`after: ${to_kb(optimized.data)}kb`)
   console.groupEnd()
   console.timeEnd('optimize:vector')

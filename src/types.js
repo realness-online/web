@@ -40,6 +40,7 @@
  * @property {Path} medium
  * @property {Path} bold
  * @property {Path[] | Path} cutout
+ * @property {Object.<string, SVGSymbolElement>} [cutouts] - Cutouts organized by layer
  * @property {number} width
  * @property {number} height
  * @property {string} viewbox
@@ -83,10 +84,10 @@ export const types = [
 /** @typedef {typeof types[number]} Type */
 
 /** @type {readonly ['posters']} */
-export const has_archive = /** @type {readonly ['posters']} */ (types.slice(0, 1))
+export const has_archive = /** @type {readonly ['posters']} */ (/** @type {unknown} */ (types.slice(0, 1)))
 
 /** @type {readonly ['statements', 'events']} */
-export const has_history = /** @type {readonly ['statements', 'events']} */ (types.slice(1, 3))
+export const has_history = /** @type {readonly ['statements', 'events']} */ (/** @type {unknown} */ (types.slice(1, 3)))
 
 /**
  * @typedef {Object} Available_Command

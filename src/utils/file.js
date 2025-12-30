@@ -1,8 +1,9 @@
 import { MB } from '@/utils/numbers'
 
+const win = /** @type {any} */ (window)
 const request_file_system =
-  window.requestFileSystem || window.webkitRequestFileSystem
-const storage_type = window.PERSISTENT // or window.TEMPORARY
+  win.requestFileSystem || win.webkitRequestFileSystem
+const storage_type = win.PERSISTENT // or win.TEMPORARY
 const file_size = MB // 1MB
 
 const on_init = fs =>
@@ -11,7 +12,7 @@ const on_error = error => console.error('filesystem error: ', error)
 
 const root_directory = async directory => {
   console.info('Directory created: ', directory.fullPath, directory)
-  const directoryHandle = await window.showDirectoryPicker()
+  const directoryHandle = await win.showDirectoryPicker()
 
   for await (const entry of directoryHandle.values())
     console.info(entry.kind, entry.name)

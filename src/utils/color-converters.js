@@ -81,7 +81,7 @@ const OKLAB_M2_BS = -0.808675766
  * @returns {string} Hex color string
  */
 export const rgb_to_hex = (red, green, blue, alpha) => {
-  let is_percent = (red + (alpha || '')).toString().includes('%')
+  let is_percent = (String(red) + String(alpha || '')).includes('%')
   let r = red
   let g = green
   let b = blue
@@ -93,7 +93,7 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
 
     is_percent = false
     ;[r, g, b, a] = parsed
-  } else if (a !== undefined) a = Number.parseFloat(a)
+  } else if (a !== undefined && typeof a === 'string') a = Number.parseFloat(a)
 
   if (
     typeof r !== 'number' ||
@@ -105,6 +105,7 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
   )
     throw new TypeError('Expected three numbers below 256')
 
+  let alpha_string = ''
   if (typeof a === 'number') {
     if (!is_percent && a >= 0 && a <= ALPHA_OPAQUE) a = Math.round(RGB_MAX * a)
     else if (is_percent && a >= 0 && a <= PERCENTAGE_MAX)
@@ -114,12 +115,13 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
         `Expected alpha value (${a}) as a fraction or percentage`
       )
 
-    a = (a | (ALPHA_OPAQUE << HEX_SHIFT_GREEN))
+    const alpha_hex = (a | (ALPHA_OPAQUE << HEX_SHIFT_GREEN))
       .toString(HEX_BASE)
       .slice(ALPHA_OPAQUE)
-  } else a = ''
+    alpha_string = alpha_hex
+  }
 
-  return to_hex(r, g, b, a)
+  return to_hex(r, g, b, alpha_string)
 }
 
 /**
@@ -153,7 +155,8 @@ export const hsl_to_hex = (hue, saturation, lightness) => {
   const l_normalized = l_clamped / PERCENTAGE_MAX
 
   // Convert HSL to RGB
-  const rgb = hsl_to_rgb(h, s_normalized, l_normalized)
+  const h_num = typeof h === 'number' ? h : Number(h)
+  const rgb = hsl_to_rgb(h_num, s_normalized, l_normalized)
 
   // Convert each value to 2 character hex value
   return `#${rgb.map(n => (HEX_BYTE_SHIFT + n).toString(HEX_BASE).substr(HEX_ALPHA_OFFSET)).join('')}`
@@ -346,6 +349,12 @@ export const extract_color_palette = image_data => {
 
 // Helper functions
 
+/**
+ * @param {number} red
+ * @param {number} green
+ * @param {number} blue
+ * @param {string} alpha
+ */
 const to_hex = (red, green, blue, alpha) =>
   `#${(blue | (green << HEX_SHIFT_GREEN) | (red << HEX_SHIFT_RED) | (ALPHA_OPAQUE << HEX_SHIFT_ALPHA)).toString(HEX_BASE).slice(ALPHA_OPAQUE)}${alpha}`
 

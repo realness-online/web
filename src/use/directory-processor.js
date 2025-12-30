@@ -22,7 +22,7 @@ export const use = () => {
 
       console.info('🗂️ Starting directory processing...')
 
-      const source_dir = await window.showDirectoryPicker({
+      const source_dir = await /** @type {any} */ (window).showDirectoryPicker({
         mode: 'read',
         startIn: 'pictures',
         id: 'source-images'

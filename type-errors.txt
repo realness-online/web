@@ -1,0 +1,39 @@
+
+> @realness.online/web@2.0.0 type
+> tsc --pretty
+
+[96msrc/utils/date.js[0m:[93m77[0m:[93m24[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ weekday: "long"; day: string; month: string; hour: string; minute: string; hour12: boolean; }' is not assignable to parameter of type 'DateTimeFormatOptions'.
+  Types of property 'month' are incompatible.
+    Type 'string' is not assignable to type '"numeric" | "long" | "2-digit" | "short" | "narrow"'.
+
+[7m77[0m   return as_time(date, format_as_day_and_time)
+[7m  [0m [91m                       ~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/utils/date.js[0m:[93m81[0m:[93m24[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ weekday: "long"; day: string; month: string; year: string; hour: string; minute: string; hour12: boolean; }' is not assignable to parameter of type 'DateTimeFormatOptions'.
+  Types of property 'year' are incompatible.
+    Type 'string' is not assignable to type '"numeric" | "2-digit"'.
+
+[7m81[0m   return as_time(date, format_as_day_time_year)
+[7m  [0m [91m                       ~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/utils/serverless.js[0m:[93m80[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+
+[7m80[0m     await upload(await as_filename(new_location), compressed, metadata)
+[7m  [0m [91m                                   ~~~~~~~~~~~~[0m
+
+[96msrc/utils/serverless.js[0m:[93m84[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+
+[7m84[0m     await remove(await as_filename(old_location))
+[7m  [0m [91m                                   ~~~~~~~~~~~~[0m
+
+[96msrc/utils/serverless.js[0m:[93m91[0m:[93m40[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string' is not assignable to parameter of type 'Id'.
+
+[7m91[0m         await remove(await as_filename(new_location))
+[7m  [0m [91m                                       ~~~~~~~~~~~~[0m
+
+
+Found 5 errors in 2 files.
+
+Errors  Files
+     2  src/utils/date.js[90m:77[0m
+     3  src/utils/serverless.js[90m:80[0m
