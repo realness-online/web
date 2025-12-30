@@ -42,7 +42,7 @@ const completed_posters = ref(/** @type {Id[]} */ ([]))
  * @param {Object} path_data - Path data with 'd' attribute
  * @returns {SVGPathElement}
  */
-const make_path = path_data => {
+export const make_path = path_data => {
   const path = create_path_element()
   path.setAttribute('d', path_data.d)
   path.style.fillRule = 'evenodd'
@@ -54,7 +54,7 @@ const make_path = path_data => {
  * @param {Object} path_data - Path data with color, offset, and progress
  * @returns {SVGPathElement}
  */
-const make_cutout_path = path_data => {
+export const make_cutout_path = path_data => {
   const path = create_path_element()
   path.setAttribute('d', path_data.d)
   path.setAttribute('fill-opacity', '0.5')
@@ -77,7 +77,7 @@ const make_cutout_path = path_data => {
  * @param {Object} path_data - Path data to clone
  * @returns {Object} Cloned path data
  */
-const clone_tracer_path = path_data => ({
+export const clone_tracer_path = path_data => ({
   ...path_data,
   color: { ...path_data.color },
   offset: { ...path_data.offset }
@@ -111,7 +111,7 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
  * @param {File} file
  * @returns {Promise<{blob: Blob, width: number, height: number}>}
  */
-const resize_to_blob = async file => {
+export const resize_to_blob = async file => {
   const needs_image_fallback =
     file.type === 'image/tiff' ||
     file.type === 'image/bmp' ||
@@ -183,7 +183,7 @@ const load_queue = async () => {
  * @param {Id} id - Poster itemid
  * @returns {Object} Cutouts organized by layer with symbol elements
  */
-const sort_cutouts_into_layers = (vector, id) => {
+export const sort_cutouts_into_layers = (vector, id) => {
   const cutouts = {
     sediment: [],
     sand: [],
@@ -231,7 +231,7 @@ const sort_cutouts_into_layers = (vector, id) => {
  * Save poster and cutout symbols
  * @param {Id} id - Poster itemid
  */
-const save_poster = async id => {
+export const save_poster = async id => {
   await tick()
   await Promise.all([
     new Shadow(/** @type {Id} */ (`${id}/shadow`)).save(),
@@ -871,6 +871,7 @@ export const use = () => {
     is_processing: computed(() => is_processing.value),
     completed_posters: computed(() => completed_posters.value),
     add_to_queue,
-    init_processing_queue
+    init_processing_queue,
+    cleanup_queue_item
   }
 }
