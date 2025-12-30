@@ -491,13 +491,13 @@ export const is_vector = vector => {
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
 
-  const gradients = /** @type {any} */ (vector).gradients
+  const { gradients } = /** @type {any} */ (vector)
   if (gradients) {
     if (!gradients.width) return false
     if (!gradients.height) return false
     if (!gradients.radial) return false
   }
-  const type = /** @type {any} */ (vector).type
+  const { type } = /** @type {any} */ (vector)
   if (type === 'posters') return true
   return false
 }

@@ -4,7 +4,8 @@
  */
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
-import Bitmap from '@/potrace/types/Bitmap'
+
+/** @typedef {import('@/potrace/types/Bitmap')} Bitmap */
 
 /**
  * Finds the next unprocessed point in the bitmap
@@ -99,7 +100,7 @@ export const trace_path = (black_map, start_point, turn_policy) => {
       y + (dir_y + dir_x - 1) / 2
     )
 
-    if (r && !l) 
+    if (r && !l)
       if (should_turn_right(turn_policy, path.sign, black_map, x, y)) {
         ;[dir_x, dir_y] = [-dir_y, dir_x]
       } else {

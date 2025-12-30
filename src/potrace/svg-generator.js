@@ -3,7 +3,8 @@
  * Converts traced paths to SVG format
  */
 import utils from '@/potrace/utils'
-import Path from '@/potrace/types/Path'
+
+/** @typedef {import('@/potrace/types/Path')} Path */
 
 /**
  * @typedef {Object} PathData

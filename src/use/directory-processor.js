@@ -4,7 +4,6 @@ import { ref } from 'vue'
 
 export const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
-  const { optimize } = use_optimizer()
   const progress = ref({
     total: 0,
     current: 0,
@@ -79,6 +78,7 @@ export const use = () => {
               }
               check_optimized()
             })
+            // eslint-disable-next-line require-atomic-updates
             completed_poster.value = vector_ref.value
           }
 
