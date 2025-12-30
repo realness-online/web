@@ -5,7 +5,6 @@ import {
 } from '@/wasm/tracer.js'
 
 let converter
-let _initialized = false
 let is_processing = false
 
 const DEGREES_IN_CIRCLE = 180
@@ -35,7 +34,6 @@ const init_tracer = async () => {
   }
 
   converter = ColorImageConverter.new_with_string(JSON.stringify(params))
-  _initialized = true
 }
 
 const make_trace = message => {
