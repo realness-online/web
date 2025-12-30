@@ -6,7 +6,7 @@ exports[`@/views/Events > Rendering > renders events component 1`] = `
   id="events"
 >
   <header>
-    <anonymous-stub />
+    <logo-as-link-stub />
     <icon-stub
       name="nothing"
     />

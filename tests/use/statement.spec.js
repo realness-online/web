@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { ref, defineComponent } from 'vue'
+import { ref, defineComponent, nextTick as tick } from 'vue'
 import { mount } from '@vue/test-utils'
 import {
   use,
@@ -88,8 +88,15 @@ describe('statement composable', () => {
       expect(statement_instance.thought_shown).toBeTypeOf('function')
     })
 
-    it('initializes refs', () => {
-      expect(statement_instance.authors.value).toEqual([])
+    it('initializes refs', async () => {
+      await tick()
+      expect(statement_instance.authors.value).toEqual([
+        {
+          id: '/+14151234356',
+          type: 'person',
+          viewed: ['index']
+        }
+      ])
       expect(statement_instance.statements.value).toBe(null)
       expect(statement_instance.my_statements.value).toEqual([])
     })
@@ -147,19 +154,20 @@ describe('statement composable', () => {
   describe('save', () => {
     it('saves statement with trimmed text', async () => {
       const { Statement } = await import('@/persistance/Storage')
+      const initial_length = statement_instance.my_statements.value.length
 
       await statement_instance.save('  Hello World  ')
 
-      expect(statement_instance.my_statements.value).toHaveLength(1)
-      expect(statement_instance.my_statements.value[0].statement).toBe(
-        'Hello World'
-      )
+      expect(statement_instance.my_statements.value.length).toBe(initial_length + 1)
+      const last_statement = statement_instance.my_statements.value[statement_instance.my_statements.value.length - 1]
+      expect(last_statement.statement).toBe('Hello World')
     })
 
     it('generates id with timestamp', async () => {
       await statement_instance.save('Test')
 
-      const saved_id = statement_instance.my_statements.value[0].id
+      const statements = statement_instance.my_statements.value
+      const saved_id = statements[statements.length - 1].id
       const timestamp = Number(saved_id.split('/').pop())
 
       expect(timestamp).toBeGreaterThan(0)

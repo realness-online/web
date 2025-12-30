@@ -96,9 +96,10 @@ describe('@/utils/colors', () => {
 
     it('handles HSL input', () => {
       const result = to_hsla('hsl(60, 100%, 50%)')
-      // The function currently returns a hex string for HSL input (bug in implementation)
-      expect(typeof result).toBe('string')
-      expect(result).toMatch(/^#[0-9a-f]{6}$/i)
+      expect(result).toHaveProperty('h')
+      expect(result).toHaveProperty('s')
+      expect(result).toHaveProperty('l')
+      expect(result).toHaveProperty('a')
     })
 
     it('handles RGB input', () => {

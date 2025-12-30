@@ -21,7 +21,7 @@ exports[`@/views/Posters > Rendering > renders posters view 1`] = `
       <h1>
         Posters
       </h1>
-      <anonymous-stub
+      <logo-as-link-stub
         tabindex="-1"
       />
     </header>

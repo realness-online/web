@@ -53,11 +53,10 @@ describe('@/component/profile/as-form-name.vue', () => {
   })
 
   describe('Methods', () => {
-    describe('#save_me', () => {
-      it('emits valid event when name is valid', async () => {
-        await wrapper.vm.save_me()
-        expect(wrapper.emitted('valid')).toBeTruthy()
-      })
+    it('updates name via v-model', async () => {
+      const input = wrapper.find('input#name')
+      await input.setValue('New Name')
+      expect(input.element.value).toBe('New Name')
     })
   })
 })

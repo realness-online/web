@@ -7,7 +7,7 @@ exports[`@/views/PhoneBook > Renders > renders phone book view 1`] = `
 >
   <as-dialog-account-stub />
   <header>
-    <anonymous-stub />
+    <logo-as-link-stub />
     <router-link-stub
       to="/relations"
     />

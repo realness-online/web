@@ -10,7 +10,7 @@ exports[`Sign-on > initial render > renders sign-on component 1`] = `
       editable="false"
       person="[object Object]"
     />
-    <anonymous-stub />
+    <logo-as-link-stub />
   </header>
   <as-form-mobile-stub />
   <footer>

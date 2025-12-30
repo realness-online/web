@@ -50,7 +50,13 @@ vi.mock('@/use/poster', () => ({
     focus: vi.fn()
   })),
   is_vector: vi.fn(() => true),
-  is_vector_id: vi.fn(() => true)
+  is_vector_id: vi.fn(() => true),
+  is_rect: vi.fn(rect => {
+    if (rect === null || rect === undefined) return true
+    if (typeof rect !== 'object') return false
+    if (rect instanceof SVGRectElement) return true
+    return false
+  })
 }))
 
 // Mock child components
@@ -92,7 +98,7 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
           vector: mock_vector
         }
       })
-      const background = wrapper.find('rect[itemprop="background"]')
+      const background = wrapper.findComponent({ name: 'AsBackground' })
       expect(background.exists()).toBe(true)
     })
 
@@ -102,8 +108,8 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
           vector: mock_vector
         }
       })
-      const paths = wrapper.findAll('path')
-      expect(paths.length).toBeGreaterThanOrEqual(4)
+      const path_components = wrapper.findAllComponents({ name: 'AsPath' })
+      expect(path_components.length).toBeGreaterThanOrEqual(4)
     })
 
     it('works without vector prop (uses injection)', () => {

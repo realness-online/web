@@ -241,6 +241,19 @@ class Potrace {
    * the squared distance between the curve and the original path points.
    */
   #calc_sums = path => {
+    if (
+      !path.points ||
+      path.points.length === 0 ||
+      !path.points[0] ||
+      path.len === 0
+    ) {
+      path.sums = []
+      return
+    }
+
+    // Ensure path.len matches points.length
+    if (path.len > path.points.length) path.len = path.points.length
+
     let i
     let relative_x
     let relative_y
@@ -251,6 +264,7 @@ class Potrace {
     const running_sums = path.sums
     running_sums.push(new Sum(0, 0, 0, 0, 0))
     for (i = 0; i < path.len; i++) {
+      if (!path.points[i]) break
       relative_x = path.points[i].x - path.x0
       relative_y = path.points[i].y - path.y0
       running_sums.push(
@@ -481,10 +495,23 @@ class Potrace {
    * number of vertices used.
    */
   #best_polygon = path => {
+    if (!path.sums || path.sums.length === 0 || path.len === 0) return
+    if (path.sums.length < path.len + 1) return
+    if (!path.points || path.points.length === 0) return
+
+    const sums_len = path.sums.length
+    const points_len = path.points.length
+
     const penalty3 = (path, i, j) => {
       const n = path.len
       const { points } = path
       const { sums } = path
+
+      // Validate base indices (i must be valid, j can wrap)
+      if (i < 0 || i >= n || i >= points.length || !points[i] || !points[0])
+        return LARGE_NUMBER
+      if (i >= sums.length) return LARGE_NUMBER
+
       let sum_x
       let sum_y
       let sum_xy
@@ -498,7 +525,13 @@ class Potrace {
         wrap_count = 1
       }
 
+      // Validate j (can wrap, so use j_norm for points, but j+1 for sums)
+      const j_point = j_norm
+      if (j_point < 0 || j_point >= points.length || !points[j_point])
+        return LARGE_NUMBER
+
       if (wrap_count === 0) {
+        if (j + 1 >= sums.length) return LARGE_NUMBER
         sum_x = sums[j + 1].x - sums[i].x
         sum_y = sums[j + 1].y - sums[i].y
         sum_x2 = sums[j + 1].x2 - sums[i].x2
@@ -506,6 +539,7 @@ class Potrace {
         sum_y2 = sums[j + 1].y2 - sums[i].y2
         segment_length = j + 1 - i
       } else {
+        if (j + 1 >= sums.length || n >= sums.length) return LARGE_NUMBER
         sum_x = sums[j + 1].x - sums[i].x + sums[n].x
         sum_y = sums[j + 1].y - sums[i].y + sums[n].y
         sum_x2 = sums[j + 1].x2 - sums[i].x2 + sums[n].x2
@@ -514,10 +548,10 @@ class Potrace {
         segment_length = j + 1 - i + n
       }
 
-      const px = (points[i].x + points[j].x) / 2.0 - points[0].x
-      const py = (points[i].y + points[j].y) / 2.0 - points[0].y
-      const ey = points[j].x - points[i].x
-      const ex = -(points[j].y - points[i].y)
+      const px = (points[i].x + points[j_point].x) / 2.0 - points[0].x
+      const py = (points[i].y + points[j_point].y) / 2.0 - points[0].y
+      const ey = points[j_point].x - points[i].x
+      const ex = -(points[j_point].y - points[i].y)
 
       const var_xx = (sum_x2 - 2 * sum_x * px) / segment_length + px * px
       const var_xy =
@@ -1298,6 +1332,8 @@ class Potrace {
   #process_path() {
     for (let i = 0; i < this.#pathlist.length; i++) {
       const path = this.#pathlist[i]
+      if (!path.points || path.points.length === 0 || path.len === 0) continue
+
       this.#calc_sums(path)
       this.#calc_lon(path)
       this.#best_polygon(path)
@@ -1408,6 +1444,7 @@ class Potrace {
     if (
       this.#params.steps &&
       !Array.isArray(this.#params.steps) &&
+      this.#params.steps !== Potrace.STEPS_AUTO &&
       (!utils.is_number(this.#params.steps) ||
         !utils.between(this.#params.steps, 1, RGB_MAX))
     )
@@ -1493,9 +1530,7 @@ class Potrace {
         ? this.#get_image_histogram()
         : null
     const threshold_value = this.#param_threshold()
-    const fullRange = Math.abs(
-      threshold_value - (blackOnWhite ? 0 : RGB_MAX)
-    )
+    const fullRange = Math.abs(threshold_value - (blackOnWhite ? 0 : RGB_MAX))
 
     return colorStops.map((threshold, index) => {
       let nextValue
@@ -1737,7 +1772,8 @@ class Potrace {
     if (this.#calculated_threshold !== null) return this.#calculated_threshold
 
     if (this.#params.threshold !== Potrace.THRESHOLD_AUTO) {
-      if (typeof this.#params.threshold !== 'number') return ALPHA_TRANSPARENCY_THRESHOLD
+      if (typeof this.#params.threshold !== 'number')
+        return ALPHA_TRANSPARENCY_THRESHOLD
       this.#calculated_threshold = this.#params.threshold
       return this.#calculated_threshold
     }
@@ -1858,7 +1894,9 @@ class Potrace {
       this.#processed = true
     }
 
-    return this.#pathlist.map(path => utils.render_curve(path.curve, 1)).join('')
+    return this.#pathlist
+      .map(path => utils.render_curve(path.curve, 1))
+      .join('')
   }
 
   /**
