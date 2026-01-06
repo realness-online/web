@@ -22,6 +22,7 @@ export const count_image_files = async entries => {
  */
 export const poster_filename = filename => {
   const has_extension = filename.includes('.')
-  return has_extension ? filename.replace(/\.[^/.]+$/, '.svg') : `${filename}.svg`
+  return has_extension
+    ? filename.replace(/\.[^/.]+$/, '.svg')
+    : `${filename}.svg`
 }
-

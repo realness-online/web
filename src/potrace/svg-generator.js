@@ -34,8 +34,8 @@ export const generate_path_tag = pathlist => {
  * @param {string} fill_opacity - Fill opacity value
  * @returns {PathData[]} Array of path data objects
  */
-export const generate_path_data = (pathlist, fill_opacity) => pathlist.map(path => ({
+export const generate_path_data = (pathlist, fill_opacity) =>
+  pathlist.map(path => ({
     d: utils.render_curve(path.curve, 1),
     fillOpacity: fill_opacity
   }))
-

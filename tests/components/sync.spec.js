@@ -200,7 +200,10 @@ describe('@/components/sync', () => {
       })
 
       it('Processes anonymous statements from sync:offline queue', async () => {
-        Object.defineProperty(navigator, 'onLine', { value: true, writable: true })
+        Object.defineProperty(navigator, 'onLine', {
+          value: true,
+          writable: true
+        })
 
         const anonymous_statement = {
           id: '/+/statements/123',
@@ -217,7 +220,10 @@ describe('@/components/sync', () => {
       })
 
       it('Migrates anonymous posters using Offline class', async () => {
-        Object.defineProperty(navigator, 'onLine', { value: true, writable: true })
+        Object.defineProperty(navigator, 'onLine', {
+          value: true,
+          writable: true
+        })
 
         const created_at = Date.now()
         const anonymous_poster = '<svg>Test poster</svg>'

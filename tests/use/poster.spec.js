@@ -339,4 +339,3 @@ describe('poster utils', () => {
     })
   })
 })
-

@@ -397,10 +397,9 @@ describe('vectorize composable', () => {
       expect(
         vectorize_instance.gradienter.value.addEventListener
       ).toHaveBeenCalledWith('message', expect.any(Function))
-      expect(vectorize_instance.tracer.value.addEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function)
-      )
+      expect(
+        vectorize_instance.tracer.value.addEventListener
+      ).toHaveBeenCalledWith('message', expect.any(Function))
     })
   })
 
@@ -506,7 +505,7 @@ describe('vectorize composable', () => {
 
     afterEach(() => {
       if (original_offscreen_canvas) {
-      global.OffscreenCanvas = original_offscreen_canvas
+        global.OffscreenCanvas = original_offscreen_canvas
       }
     })
 
@@ -674,7 +673,9 @@ describe('vectorize composable', () => {
       const max_size = 200 * 1024 * 1024
       Object.defineProperty(large_file, 'size', { value: max_size + 1 })
 
-      const console_error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       await vectorize_instance.add_to_queue([large_file])
 

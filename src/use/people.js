@@ -34,7 +34,8 @@ export const use = () => {
   /**
    * @param {Id[]} ids
    */
-  const load_people = ids => Promise.all(ids.map(id => load_person(/** @type {Item} */ ({ id }))))
+  const load_people = ids =>
+    Promise.all(ids.map(id => load_person(/** @type {Item} */ ({ id }))))
 
   const load_phonebook = async () => {
     if (!current_user.value) return
@@ -53,7 +54,9 @@ export const use = () => {
       const loaded_people = await Promise.all(
         people.prefixes.map(async phone_number => {
           try {
-            const person = await load(/** @type {Id} */ (from_e64(phone_number.name)))
+            const person = await load(
+              /** @type {Id} */ (from_e64(phone_number.name))
+            )
             return person || null
           } catch (err) {
             console.error('Failed to load person:', phone_number.name, err)

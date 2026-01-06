@@ -46,7 +46,9 @@ export const use = () => {
   const get_active_path = () => {
     let path = /** @type {HTMLElement} */ (active_element().value)
     if (!is_path(path)) {
-      const active = /** @type {SVGUseElement} */ (/** @type {unknown} */ (active_element().value))
+      const active = /** @type {SVGUseElement} */ (
+        /** @type {unknown} */ (active_element().value)
+      )
       if (active.href) {
         const id = active.href.baseVal.slice(1)
         const symbol = document.getElementById(id)
@@ -75,7 +77,6 @@ export const use = () => {
     if (path)
       if (as_stroke.value) path.style.strokeOpacity = opacity_percentage.value
       else path.style.fillOpacity = opacity_percentage.value
-
   })
 
   return {

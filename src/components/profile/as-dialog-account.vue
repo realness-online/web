@@ -19,7 +19,6 @@
       show_sign_in.value = false
       is_mobile_form_visible.value = false
       form.value.showModal()
-      // Focus the dialog itself to prevent inputs from getting focus
       form.value.focus()
     }
   }
@@ -44,7 +43,6 @@
     is_mobile_form_visible.value = false
   }
 
-  // Watch for hash changes to show dialog
   watch(
     () => route.hash,
     new_hash => {
@@ -52,7 +50,6 @@
         show_sign_in.value = false
         is_mobile_form_visible.value = false
         form.value.showModal()
-        // Focus the dialog itself to prevent inputs from getting focus
         form.value.focus()
       }
     },
@@ -60,12 +57,10 @@
   )
 
   mounted(() => {
-    // Check if we should show dialog on mount (e.g., if URL has #account)
     if (route.hash === '#account' && form.value) {
       show_sign_in.value = false
       is_mobile_form_visible.value = false
       form.value.showModal()
-      // Focus the dialog itself to prevent inputs from getting focus
       form.value.focus()
     }
   })
@@ -76,7 +71,7 @@
 <template>
   <a id="toggle-account" @click="show_form">{{ name }}</a>
   <dialog id="account" ref="form" @click="dialog_click" @close="on_close">
-    <name-as-form />
+    <name-as-form v-if="current_user && !show_sign_in" />
     <call-to-action v-if="!show_sign_in" />
     <as-sign-on
       v-else

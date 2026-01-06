@@ -94,7 +94,8 @@ describe('Statements', () => {
           icon: true,
           'logo-as-link': true,
           'as-days': {
-            template: '<div class="as-days-stub"><slot :thoughts="mockThoughts" /></div>',
+            template:
+              '<div class="as-days-stub"><slot :thoughts="mockThoughts" /></div>',
             props: ['itemid', 'paginate', 'statements'],
             setup() {
               const mockThoughts = [
@@ -147,8 +148,14 @@ describe('Statements', () => {
 
   describe('Functionality', () => {
     it('registers key commands on mount', () => {
-      expect(mock_register).toHaveBeenCalledWith('statement::Save', expect.any(Function))
-      expect(mock_register).toHaveBeenCalledWith('statement::Cancel', expect.any(Function))
+      expect(mock_register).toHaveBeenCalledWith(
+        'statement::Save',
+        expect.any(Function)
+      )
+      expect(mock_register).toHaveBeenCalledWith(
+        'statement::Cancel',
+        expect.any(Function)
+      )
     })
 
     it('sets statements to last editable on mount', async () => {
@@ -156,7 +163,9 @@ describe('Statements', () => {
       await new Promise(resolve => setTimeout(resolve, 10))
       expect(mock_statements.value.length).toBe(1)
       const last_index = mock_my_statements.value.length - 1
-      expect(mock_statements.value[0].id).toBe(mock_my_statements.value[last_index].id)
+      expect(mock_statements.value[0].id).toBe(
+        mock_my_statements.value[last_index].id
+      )
     })
 
     it('sets working to false after mount', async () => {
@@ -201,8 +210,9 @@ describe('Statements', () => {
     })
 
     it('adds signed-in class when current_user exists', () => {
-      expect(wrapper.find('section#statements').classes()).toContain('signed-in')
+      expect(wrapper.find('section#statements').classes()).toContain(
+        'signed-in'
+      )
     })
   })
 })
-

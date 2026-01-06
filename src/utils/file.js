@@ -1,8 +1,7 @@
 import { MB } from '@/utils/numbers'
 
 const win = /** @type {any} */ (window)
-const request_file_system =
-  win.requestFileSystem || win.webkitRequestFileSystem
+const request_file_system = win.requestFileSystem || win.webkitRequestFileSystem
 const storage_type = win.PERSISTENT // or win.TEMPORARY
 const file_size = MB // 1MB
 

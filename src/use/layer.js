@@ -36,11 +36,11 @@ export const use = () => {
     if (layer_name) {
       selected_layer.value = layer_name
       const layer = /** @type {HTMLElement} */ (settings_query(layer_name))
-      if (layer) 
+      if (layer)
         if (as_stroke.value)
           opacity_percentage.value = layer.style.strokeOpacity
         else opacity_percentage.value = layer.style.fillOpacity
-      
+
       return layer
     }
     return null
@@ -56,10 +56,9 @@ export const use = () => {
     const layer = /** @type {HTMLElement} */ (
       settings_query(selected_layer.value)
     )
-    if (layer) 
+    if (layer)
       if (as_stroke.value) layer.style.strokeOpacity = opacity_percentage.value
       else layer.style.fillOpacity = opacity_percentage.value
-    
   })
 
   return {

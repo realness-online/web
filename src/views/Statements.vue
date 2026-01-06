@@ -15,11 +15,7 @@
   console.time('views:Statements')
   const working = ref(true)
   const router = use_router()
-  const {
-    my_statements,
-    statements,
-    thought_shown
-  } = use_statements()
+  const { my_statements, statements, thought_shown } = use_statements()
   const home = () => router.push({ path: '/' })
 
   const { register } = use_keymap('Statements')

@@ -105,7 +105,7 @@ export const trace_path = (black_map, start_point, turn_policy) => {
       } else {
         ;[dir_x, dir_y] = [dir_y, -dir_x]
       }
-     else if (r) {
+    else if (r) {
       ;[dir_x, dir_y] = [-dir_y, dir_x]
     } else if (!l) {
       ;[dir_x, dir_y] = [dir_y, -dir_x]
@@ -165,4 +165,3 @@ export const trace_all_paths = (black_map, turn_policy, turd_size) => {
 
   return paths
 }
-

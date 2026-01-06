@@ -216,7 +216,7 @@ export const sort_cutouts_into_layers = (vector, id) => {
       cutouts[layer].forEach(cutout => symbol.appendChild(cutout))
 
       symbol.setAttribute('id', `${as_query_id(id)}-${layer}`)
-      symbol.setAttribute('itemid', `${id}-${layer}`)
+      symbol.setAttribute('itemid', `${id}/${layer}`)
       symbol.setAttribute('itemscope', '')
       symbol.setAttribute('itemtype', '/cutouts')
 
@@ -771,7 +771,9 @@ export const use = () => {
     clear_vector_paths()
 
     const poster = /** @type {PosterType} */ (new_vector.value)
-    const optimized_poster = /** @type {PosterType} */ (/** @type {unknown} */ (optimized_data))
+    const optimized_poster = /** @type {PosterType} */ (
+      /** @type {unknown} */ (optimized_data)
+    )
     poster.light = optimized_poster.light
     poster.regular = optimized_poster.regular
     poster.medium = optimized_poster.medium

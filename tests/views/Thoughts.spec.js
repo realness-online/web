@@ -146,9 +146,18 @@ describe('Thoughts', () => {
 
   describe('Functionality', () => {
     it('registers key commands on mount', () => {
-      expect(mock_register).toHaveBeenCalledWith('thoughts::Search', expect.any(Function))
-      expect(mock_register).toHaveBeenCalledWith('thoughts::NewThought', expect.any(Function))
-      expect(mock_register).toHaveBeenCalledWith('thoughts::ClearSearch', expect.any(Function))
+      expect(mock_register).toHaveBeenCalledWith(
+        'thoughts::Search',
+        expect.any(Function)
+      )
+      expect(mock_register).toHaveBeenCalledWith(
+        'thoughts::NewThought',
+        expect.any(Function)
+      )
+      expect(mock_register).toHaveBeenCalledWith(
+        'thoughts::ClearSearch',
+        expect.any(Function)
+      )
     })
 
     it('fills thoughts with relations on mount', async () => {
@@ -174,8 +183,9 @@ describe('Thoughts', () => {
       const { storytelling } = await import('@/utils/preference')
       storytelling.value = true
       await wrapper.vm.$nextTick()
-      expect(wrapper.find('section#thoughts').classes()).toContain('storytelling')
+      expect(wrapper.find('section#thoughts').classes()).toContain(
+        'storytelling'
+      )
     })
   })
 })
-

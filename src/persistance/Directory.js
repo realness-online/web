@@ -97,8 +97,7 @@ export const build_local_directory = async itemid => {
  */
 export const load_directory_from_network = async itemid => {
   if (navigator.onLine) {
-    const [author, type, , archive = null] =
-      as_path_parts(itemid)
+    const [author, type, , archive = null] = as_path_parts(itemid)
 
     const path = as_directory_id(itemid)
 

@@ -18,9 +18,9 @@ vi.mock('@/utils/keymaps', () => ({
       bindings: {
         'cmd+s': 'file::save',
         escape: 'modal::close',
-        'a': 'action::test',
-        'A': 'action::test_upper',
-        '1': 'nav::go_home',
+        a: 'action::test',
+        A: 'action::test_upper',
+        1: 'nav::go_home',
         '#1': 'nav::numpad_home',
         '!': 'action::exclamation'
       }
@@ -513,4 +513,3 @@ describe('key-commands plugin', () => {
     })
   })
 })
-

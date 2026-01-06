@@ -63,7 +63,7 @@
     vector,
     intersecting,
     is_hovered,
-    dynamic_viewbox,
+    viewbox,
     should_ken_burns
   } = use_poster()
 
@@ -214,7 +214,7 @@
     itemscope
     itemtype="/posters"
     :itemid="itemid"
-    :viewBox="dynamic_viewbox"
+    :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
     :style="svg_style"

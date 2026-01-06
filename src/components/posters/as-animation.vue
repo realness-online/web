@@ -93,7 +93,10 @@
 
     // Base step increases with momentum
     const base_step = event.shiftKey ? STEP_SIZE_SHIFT : STEP_SIZE_DEFAULT
-    const momentum_multiplier = Math.min(key_press_count * MOMENTUM_FACTOR, MAX_MOMENTUM_MULTIPLIER)
+    const momentum_multiplier = Math.min(
+      key_press_count * MOMENTUM_FACTOR,
+      MAX_MOMENTUM_MULTIPLIER
+    )
     const step = Math.min(base_step * (1 + momentum_multiplier), MAX_STEP_SIZE)
 
     const current_time = svg_element.getCurrentTime()

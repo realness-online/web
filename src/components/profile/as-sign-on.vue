@@ -13,10 +13,12 @@
     name: 'AsSignOn'
   })
 
-  const { is_valid_name } = use_me()
+  const { is_valid_name, save } = use_me()
   const nameless = ref(false)
   const index_db_keys = ref([])
+  const working = ref(false)
   const cleanable = computed(() => {
+    if (working.value) return false
     if (current_user.value) return false
     if (localStorage.me && localStorage.me.length > 2) return true
     if (localStorage.length > 2) return true
@@ -26,14 +28,16 @@
 
   const signed_on = async () => {
     const my_profile = await load(localStorage.me)
-    if (my_profile) emit('signed_in')
-    else nameless.value = true
+    if (my_profile) {
+      const valid = await is_valid_name.value
+      if (valid) emit('signed_in')
+      else nameless.value = true
+    } else nameless.value = true
   }
 
-  const new_person = () => {
-    // Defer routing decisions to parent context if needed
-    // For now, reveal the name form inline
-    nameless.value = true
+  const name_valid = async () => {
+    await save()
+    emit('signed_in')
   }
 
   const clean = async () => {
@@ -50,7 +54,6 @@
     if (current_user.value && !valid) nameless.value = true
   })
 
-  // Inform parent whether the mobile form is currently shown
   watch_effect(() => {
     emit('showing_mobile', !nameless.value)
   })
@@ -62,8 +65,11 @@
 
 <template>
   <section id="sign-on">
-    <name-as-form v-if="nameless" @valid="new_person" />
-    <mobile-as-form v-else @signed-on="signed_on" />
+    <name-as-form v-if="nameless && current_user" @valid="name_valid" />
+    <mobile-as-form
+      v-else-if="!nameless || !current_user"
+      @signed-on="signed_on"
+      @working="working = $event" />
     <footer v-if="cleanable">
       <button @click="clean">Wipe</button>
     </footer>
@@ -86,8 +92,8 @@
       transition-duration: 0.33s;
       transition-timing-function: ease;
       &:hover {
-        opacity: 1
-        border: 2px solid red
+        opacity: 1;
+        border: 2px solid red;
       }
     }
 

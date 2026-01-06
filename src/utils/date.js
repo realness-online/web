@@ -68,8 +68,16 @@ export function as_time(date, format = format_as_time) {
 }
 export function as_day(date) {
   let day
-  if (Date.parse(date) < this_year) day = as_time(date, /** @type {Intl.DateTimeFormatOptions} */ (format_as_day_and_year))
-  else day = as_time(date, /** @type {Intl.DateTimeFormatOptions} */ (format_as_day))
+  if (Date.parse(date) < this_year)
+    day = as_time(
+      date,
+      /** @type {Intl.DateTimeFormatOptions} */ (format_as_day_and_year)
+    )
+  else
+    day = as_time(
+      date,
+      /** @type {Intl.DateTimeFormatOptions} */ (format_as_day)
+    )
   if (is_same_day(date, new Date())) day = 'Today'
   return day
 }
