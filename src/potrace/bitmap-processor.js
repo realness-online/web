@@ -43,9 +43,9 @@ export const image_data_to_luminance = image_data => {
  * @returns {number} Threshold value (0-255)
  */
 export const calculate_threshold = (bitmap, threshold_option) => {
-  if (threshold_option === 'auto' || threshold_option === -1) 
+  if (threshold_option === 'auto' || threshold_option === -1)
     return bitmap.histogram().auto_threshold() || ALPHA_TRANSPARENCY_THRESHOLD
-  
+
   return threshold_option
 }
 
@@ -56,8 +56,11 @@ export const calculate_threshold = (bitmap, threshold_option) => {
  * @param {boolean} black_on_white - If true, pixels above threshold are white (0)
  * @returns {Bitmap} Binary bitmap (0 = white, 1 = black)
  */
-export const apply_threshold = (luminance_bitmap, threshold, black_on_white) => luminance_bitmap.copy(lum => {
-    const past_the_threshold = black_on_white ? lum > threshold : lum < threshold
+export const apply_threshold = (luminance_bitmap, threshold, black_on_white) =>
+  luminance_bitmap.copy(lum => {
+    const past_the_threshold = black_on_white
+      ? lum > threshold
+      : lum < threshold
     return past_the_threshold ? 0 : 1
   })
 
@@ -78,4 +81,3 @@ export const preprocess_image = (image_data, options) => {
 
   return { luminance, binary, threshold }
 }
-

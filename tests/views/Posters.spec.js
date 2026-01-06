@@ -193,16 +193,28 @@ describe('@/views/Posters', () => {
     })
 
     it('toggles menu for poster', async () => {
-      const poster1 = { id: '/+14151234356/posters/1', menu: false, type: 'posters' }
-      const poster2 = { id: '/+14151234356/posters/2', menu: true, type: 'posters' }
+      const poster1 = {
+        id: '/+14151234356/posters/1',
+        menu: false,
+        type: 'posters'
+      }
+      const poster2 = {
+        id: '/+14151234356/posters/2',
+        menu: true,
+        type: 'posters'
+      }
       wrapper.vm.posters.value = [poster1, poster2]
 
       wrapper.vm.toggle_menu('/+14151234356/posters/1')
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const found1 = wrapper.vm.posters.value.find(p => p.id === '/+14151234356/posters/1')
-      const found2 = wrapper.vm.posters.value.find(p => p.id === '/+14151234356/posters/2')
+      const found1 = wrapper.vm.posters.value.find(
+        p => p.id === '/+14151234356/posters/1'
+      )
+      const found2 = wrapper.vm.posters.value.find(
+        p => p.id === '/+14151234356/posters/2'
+      )
       expect(found1).toBeTruthy()
       expect(found1.menu).toBe(true)
       expect(found2).toBeTruthy()
@@ -225,7 +237,11 @@ describe('@/views/Posters', () => {
     })
 
     it('handles poster click', async () => {
-      const poster = { id: '/+14151234356/posters/1', menu: false, type: 'posters' }
+      const poster = {
+        id: '/+14151234356/posters/1',
+        menu: false,
+        type: 'posters'
+      }
       wrapper.vm.posters.value = [poster]
 
       const mock_svg = document.createElement('svg')
@@ -239,7 +255,9 @@ describe('@/views/Posters', () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const found = wrapper.vm.posters.value.find(p => p.id === '/+14151234356/posters/1')
+      const found = wrapper.vm.posters.value.find(
+        p => p.id === '/+14151234356/posters/1'
+      )
       expect(found).toBeTruthy()
       expect(found.menu).toBe(true)
 
@@ -247,13 +265,19 @@ describe('@/views/Posters', () => {
     })
 
     it('toggles picker for poster', async () => {
-      const poster = { id: '/+14151234356/posters/1', picker: false, type: 'posters' }
+      const poster = {
+        id: '/+14151234356/posters/1',
+        picker: false,
+        type: 'posters'
+      }
       wrapper.vm.posters.value = [poster]
 
       wrapper.vm.picker('/+14151234356/posters/1')
       await wrapper.vm.$nextTick()
 
-      const found = wrapper.vm.posters.value.find(p => p.id === '/+14151234356/posters/1')
+      const found = wrapper.vm.posters.value.find(
+        p => p.id === '/+14151234356/posters/1'
+      )
       expect(found).toBeTruthy()
       expect(found).toHaveProperty('picker')
       expect(found.picker).toBe(true)

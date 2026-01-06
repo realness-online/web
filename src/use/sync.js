@@ -61,7 +61,9 @@ export const use = () => {
     if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
       me.value.visited = new Date().toISOString()
       await tick()
-      await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
+      await new Me().save(
+        document.querySelector(`[itemid="${localStorage.me}"]`)
+      )
     }
   }
 
@@ -152,7 +154,9 @@ export const use = () => {
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
-    relations.value = await load(/** @type {Id} */ (`${localStorage.me}/relations`))
+    relations.value = await load(
+      /** @type {Id} */ (`${localStorage.me}/relations`)
+    )
   })
 
   dismount(() => {
@@ -195,7 +199,9 @@ export const sync_offline_actions = async () => {
   }
 
   // Handle anonymous posters using the same Offline mechanism
-  const offline_posters = await build_local_directory(/** @type {Id} */ ('/+/posters/'))
+  const offline_posters = await build_local_directory(
+    /** @type {Id} */ ('/+/posters/')
+  )
   if (offline_posters?.items?.length) {
     await Promise.all(
       offline_posters.items.map(async created_at => {

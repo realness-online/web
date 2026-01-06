@@ -22,15 +22,17 @@ vi.mock('@/use/vectorize', () => ({
 vi.mock('@/use/optimize', () => ({
   use: vi.fn(passed_vector => {
     return {
-    optimize: mock_optimize,
+      optimize: mock_optimize,
       vector: passed_vector || mock_vector_ref
     }
   })
-  }))
+}))
 
 vi.mock('@/utils/image-files', () => ({
   count_image_files: vi.fn(),
-  is_image_file: vi.fn(name => /\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i.test(name)),
+  is_image_file: vi.fn(name =>
+    /\.(jpg|jpeg|png|gif|webp|bmp|tiff|avif|svg)$/i.test(name)
+  ),
   poster_filename: vi.fn(name => name.replace(/\.[^.]+$/, '.svg'))
 }))
 
@@ -186,15 +188,20 @@ describe('directory-processor composable', () => {
 
     it('counts image files and sets total progress', async () => {
       await processor.process_directory()
-      expect(mock_count_image_files).toHaveBeenCalledWith(mock_dir_handle.entries())
+      expect(mock_count_image_files).toHaveBeenCalledWith(
+        mock_dir_handle.entries()
+      )
       expect(mock_writable.write).toHaveBeenCalledTimes(2)
     })
 
     it('gets or creates posters directory', async () => {
       await processor.process_directory()
-      expect(mock_dir_handle.getDirectoryHandle).toHaveBeenCalledWith('posters', {
-        create: true
-      })
+      expect(mock_dir_handle.getDirectoryHandle).toHaveBeenCalledWith(
+        'posters',
+        {
+          create: true
+        }
+      )
     })
 
     it('processes image files and skips non-image files', async () => {
@@ -285,9 +292,12 @@ describe('directory-processor composable', () => {
       })
 
       await processor.process_directory()
-      expect(mock_posters_dir.getFileHandle).toHaveBeenCalledWith('image1.svg', {
-        create: true
-      })
+      expect(mock_posters_dir.getFileHandle).toHaveBeenCalledWith(
+        'image1.svg',
+        {
+          create: true
+        }
+      )
       expect(mock_file_handle.createWritable).toHaveBeenCalled()
       expect(mock_writable.write).toHaveBeenCalledWith(svg_content)
       expect(mock_writable.close).toHaveBeenCalled()
@@ -321,7 +331,9 @@ describe('directory-processor composable', () => {
     it('handles errors during file processing gracefully', async () => {
       const error = new Error('Processing failed')
       mock_process_photo.mockRejectedValue(error)
-      const console_error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       await processor.process_directory()
       expect(console_error).toHaveBeenCalledWith(
@@ -356,7 +368,9 @@ describe('directory-processor composable', () => {
 
     it('handles directory picker cancellation', async () => {
       mock_show_directory_picker.mockRejectedValue(new Error('User cancelled'))
-      const console_error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       await processor.process_directory()
       expect(console_error).toHaveBeenCalledWith(

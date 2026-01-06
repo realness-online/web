@@ -1,7 +1,11 @@
 import { use as use_vectorize } from '@/use/vectorize'
 import { use as use_optimizer } from '@/use/optimize'
 import { ref, watch } from 'vue'
-import { count_image_files, is_image_file, poster_filename } from '@/utils/image-files'
+import {
+  count_image_files,
+  is_image_file,
+  poster_filename
+} from '@/utils/image-files'
 
 export const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
@@ -61,7 +65,8 @@ export const use = () => {
           completed_poster.value = new_vector.value
 
           if (!completed_poster.value.optimized) {
-            const { optimize: optimize_poster, vector: vector_ref } = use_optimizer(completed_poster)
+            const { optimize: optimize_poster, vector: vector_ref } =
+              use_optimizer(completed_poster)
             optimize_poster()
             if (!vector_ref.value.optimized)
               await new Promise(resolve => {

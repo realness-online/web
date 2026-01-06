@@ -26,7 +26,9 @@ describe('video-frame worker', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    postMessage_spy = vi.spyOn(global, 'postMessage').mockImplementation(() => {})
+    postMessage_spy = vi
+      .spyOn(global, 'postMessage')
+      .mockImplementation(() => {})
 
     const mock_image_bitmap = {
       close: vi.fn()
@@ -303,9 +305,11 @@ describe('video-frame worker', () => {
       const message = { data: { route: 'unknown:route' } }
       const result = await video_frame.route_message(message)
 
-      expect(console_warn_spy).toHaveBeenCalledWith('unknown route', 'unknown:route')
+      expect(console_warn_spy).toHaveBeenCalledWith(
+        'unknown route',
+        'unknown:route'
+      )
       expect(result).toEqual({})
     })
   })
 })
-

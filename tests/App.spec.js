@@ -108,9 +108,9 @@ describe('App.vue', () => {
     })
 
     it('renders sync component', () => {
-      const sync_stub = wrapper.findAll('div').find(div =>
-        div.element.parentElement === wrapper.element
-      )
+      const sync_stub = wrapper
+        .findAll('div')
+        .find(div => div.element.parentElement === wrapper.element)
       expect(sync_stub).toBeDefined()
     })
 

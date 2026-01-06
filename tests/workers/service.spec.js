@@ -92,4 +92,3 @@ describe('service worker', () => {
     expect(mock_self.__precacheManifest).toEqual(['existing-item'])
   })
 })
-

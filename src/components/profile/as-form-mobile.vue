@@ -11,9 +11,15 @@
     as_you_type,
     format_phone
   } from '@/utils/phone'
-  import { onMounted as mounted, ref, computed, nextTick as tick } from 'vue'
+  import {
+    onMounted as mounted,
+    ref,
+    computed,
+    nextTick as tick,
+    watchEffect as watch_effect
+  } from 'vue'
 
-  const emit = defineEmits(['signed-on'])
+  const emit = defineEmits(['signed-on', 'working'])
   const { me } = use_me()
   const mobile = ref(null)
   const mobile_number = ref('')
@@ -64,12 +70,13 @@
   }
 
   const begin_authorization = async () => {
-    working.value = true
     disable_input()
     show_authorize.value = false
     show_captcha.value = true
     await tick()
-    human.value = new Recaptcha(auth.value, 'captcha', {
+    const captcha_element = document.getElementById('captcha')
+    working.value = true
+    human.value = new Recaptcha(auth.value, captcha_element, {
       size: 'invisible',
       callback: text_human_verify_code
     })
@@ -126,6 +133,10 @@
     if (input && input.value.length === 5 && button) button.disabled = false
   }
 
+  watch_effect(() => {
+    emit('working', working.value)
+  })
+
   mounted(() => {
     working.value = false
     if (me.value?.id) mobile_number.value = as_phone_number(me.value.id)
@@ -172,11 +183,8 @@
         </option>
       </select>
     </fieldset>
-    <fieldset
-      v-if="show_captcha"
-      id="captcha"
-      :class="{ hide: hide_captcha }" />
-    <fieldset v-if="show_code">
+    <fieldset id="captcha" hidden />
+    <fieldset v-if="show_code && !working">
       <input
         id="verification-code"
         v-model="code"

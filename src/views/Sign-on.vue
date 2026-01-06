@@ -40,9 +40,11 @@
   const signed_on = async () => {
     const my_profile = await load(localStorage.me)
     if (my_profile) router.push({ path: '/' })
-    else nameless.value = true
+    else new_person()
   }
-  const new_person = () => router.push({ path: '/phonebook' })
+  const new_person = () => {
+    router.push({ path: '/phonebook' })
+  }
   mounted(async () => {
     if (current_user.value) router.push({ path: '/' })
     index_db_keys.value = await keys()
@@ -63,7 +65,7 @@
       </profile-as-figure>
       <logo-as-link />
     </header>
-    <name-as-form v-if="nameless" @valid="new_person" />
+    <name-as-form v-if="nameless && current_user" />
     <mobile-as-form v-else @signed-on="signed_on" />
     <footer>
       <button v-if="cleanable" @click="clean">Wipe</button>

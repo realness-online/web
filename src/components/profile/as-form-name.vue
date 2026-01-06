@@ -1,7 +1,15 @@
 <script setup>
   import { me } from '@/utils/serverless'
   import { use_me } from '@/use/people'
+  import { watchEffect as watch_effect } from 'vue'
+
+  const emit = defineEmits(['valid'])
   const { is_valid_name } = use_me()
+
+  watch_effect(async () => {
+    const valid = await is_valid_name.value
+    if (valid) emit('valid')
+  })
 </script>
 
 <template>

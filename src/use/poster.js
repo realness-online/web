@@ -13,11 +13,7 @@ import {
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
-import {
-  useStorage as use_storage,
-  usePointer as use_pointer,
-  useMagicKeys
-} from '@vueuse/core'
+import { usePointer as use_pointer, useMagicKeys } from '@vueuse/core'
 import {
   as_query_id,
   as_fragment_id,
@@ -63,12 +59,6 @@ export const use = () => {
   const ken_burns_axis = ref('y')
 
   const is_hovered = ref(false)
-  const storage_key = computed(() => `viewbox-${props.itemid}`)
-  const viewbox_transform = use_storage(storage_key, {
-    x: 0,
-    y: 0,
-    scale: 1
-  })
 
   const { x, y, pressure } = use_pointer({ target: vector_element })
 
@@ -79,18 +69,6 @@ export const use = () => {
     if (!vector.value) return { x: 0, y: 0, width: 16, height: 16 }
     const [x, y, width, height] = vector.value.viewbox.split(' ').map(Number)
     return { x, y, width, height }
-  })
-
-  const dynamic_viewbox = computed(() => {
-    const { x, y, width, height } = original_viewbox.value
-    const { x: dx, y: dy, scale } = viewbox_transform.value
-
-    const new_width = width / scale
-    const new_height = height / scale
-    const new_x = x + dx / scale
-    const new_y = y + dy / scale
-
-    return `${new_x} ${new_y} ${new_width} ${new_height}`
   })
 
   // Gesture state
@@ -268,9 +246,7 @@ export const use = () => {
 
   const wheel = _event => {}
 
-  const reset = () => {
-    viewbox_transform.value = { x: 0, y: 0, scale: 1 }
-  }
+  const reset = () => {}
 
   const touch_dist = touches => {
     console.info('touch_dist', touches)
@@ -326,13 +302,10 @@ export const use = () => {
     tabindex,
     focusable,
     is_hovered,
-    storage_key,
-    viewbox_transform,
     x,
     y,
     pressure,
     original_viewbox,
-    dynamic_viewbox,
     is_dragging,
     start_x,
     start_y,
@@ -367,7 +340,9 @@ export const use_posters = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
-    const directory = await as_directory(/** @type {Id} */ (`${query.id}/posters`))
+    const directory = await as_directory(
+      /** @type {Id} */ (`${query.id}/posters`)
+    )
     directory.items.forEach(created_at => {
       const poster_id = `${query.id}/posters/${created_at}`
       if (!posters.value.find(p => p.id === poster_id))
@@ -415,7 +390,10 @@ export const use_posters = () => {
     )
     if (!next_archive) return
 
-    const new_posters = await load_archive_posters(author_id, /** @type {number} */ (Number(next_archive)))
+    const new_posters = await load_archive_posters(
+      author_id,
+      /** @type {number} */ (Number(next_archive))
+    )
     posters.value.push(...new_posters)
     posters.value.sort(recent_item_first)
     author.viewed.push(next_archive)
@@ -438,7 +416,9 @@ export const is_focus = layer => path_names.some(name => name === layer)
  * @returns {Promise<string|null>}
  */
 const get_next_unviewed_archive = async (author_id, viewed) => {
-  const directory = await as_directory(/** @type {Id} */ (`${author_id}/posters`))
+  const directory = await as_directory(
+    /** @type {Id} */ (`${author_id}/posters`)
+  )
   if (!directory?.archive || !Array.isArray(directory.archive)) return null
 
   const unviewed = directory.archive.filter(
@@ -453,21 +433,25 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
  * @returns {Promise<Poster[]>}
  */
 const load_archive_posters = async (author_id, archive_id) => {
-  const archive = await as_directory(/** @type {Id} */ (`${author_id}/posters/${archive_id}/`))
-  return /** @type {Poster[]} */ (archive.items.map(created_at => ({
-    id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
-    type: 'posters',
-    background: '',
-    light: '',
-    regular: '',
-    medium: '',
-    bold: '',
-    cutout: [],
-    width: 0,
-    height: 0,
-    viewbox: '',
-    optimized: false
-  })))
+  const archive = await as_directory(
+    /** @type {Id} */ (`${author_id}/posters/${archive_id}/`)
+  )
+  return /** @type {Poster[]} */ (
+    archive.items.map(created_at => ({
+      id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
+      type: 'posters',
+      background: '',
+      light: '',
+      regular: '',
+      medium: '',
+      bold: '',
+      cutout: [],
+      width: 0,
+      height: 0,
+      viewbox: '',
+      optimized: false
+    }))
+  )
 }
 
 /**

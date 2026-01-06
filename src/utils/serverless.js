@@ -82,7 +82,11 @@ export const move = async (type, id, archive_id) => {
   const { compressed, metadata } = await prepare_upload_html(html)
   try {
     // Step 1: Upload to new location
-    await upload(await as_filename(/** @type {Id} */ (new_location)), compressed, metadata)
+    await upload(
+      await as_filename(/** @type {Id} */ (new_location)),
+      compressed,
+      metadata
+    )
     upload_successful = true
 
     // Step 2: Only remove old file if upload was successful

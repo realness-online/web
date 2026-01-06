@@ -6,7 +6,7 @@ import { Local } from '@/persistance/Local'
 import { Large } from '@/persistance/Large'
 import { Cloud } from '@/persistance/Cloud'
 import { Paged } from '@/persistance/Paged'
-import { current_user, upload } from '@/utils/serverless'
+import { current_user, upload, me } from '@/utils/serverless'
 import {
   as_type,
   as_filename,
@@ -38,7 +38,7 @@ export class Storage {
   /**
    * @param {Element | {outerHTML: string}} [items]
    */
-   
+
   save(items) {}
   delete() {}
   /**
@@ -86,6 +86,14 @@ export class Shadow extends Cached_Storage {}
 export class Me extends Cloud(Local(Storage)) {
   constructor() {
     super(localStorage.me)
+  }
+
+  async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+    if (!current_user.value) return
+    if (!me.value) return
+    if (!me.value.name || me.value.name.length < 3) return
+    if (!me.value.visited) return
+    await super.save(items)
   }
 }
 

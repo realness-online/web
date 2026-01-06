@@ -29,7 +29,9 @@ export const use = () => {
     if (oldest.id === author_oldest.id) {
       const author_obj = authors.value.find(relation => relation.id === author)
       if (!author_obj) return
-      const directory = await as_directory(/** @type {Id} */ (`${author_obj.id}/statements`))
+      const directory = await as_directory(
+        /** @type {Id} */ (`${author_obj.id}/statements`)
+      )
       if (!directory) return
       let history = directory.items
       history.sort(recent_number_first)
@@ -38,7 +40,9 @@ export const use = () => {
       )
       const next = history.shift()
       if (next) {
-        const next_statements = await list(/** @type {Id} */ (`${author_obj.id}/statements/${next}`))
+        const next_statements = await list(
+          /** @type {Id} */ (`${author_obj.id}/statements/${next}`)
+        )
         author_obj.viewed.push(next)
         statements.value = [...statements.value, ...next_statements]
       }
@@ -73,11 +77,15 @@ export const use = () => {
     if (!statement || links.some(link => statement.includes(link))) return
     my_statements.value.push(post)
     await tick()
-    await new Statement().save(document.querySelector(`[itemid="${localStorage.me}/statements"]`))
+    await new Statement().save(
+      document.querySelector(`[itemid="${localStorage.me}/statements"]`)
+    )
   }
 
   mounted(async () => {
-    my_statements.value = await list(/** @type {Id} */ (`${localStorage.me}/statements`))
+    my_statements.value = await list(
+      /** @type {Id} */ (`${localStorage.me}/statements`)
+    )
     authors.value.push({
       id: localStorage.me,
       type: 'person',

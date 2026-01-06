@@ -18,7 +18,9 @@ export const use = (vector, on_complete) => {
     })
   }
   const optimized = message => {
-    const optimized_item = /** @type {PosterType} */ (/** @type {unknown} */ (get_item(message.data.vector, vector.value.id)))
+    const optimized_item = /** @type {PosterType} */ (
+      /** @type {unknown} */ (get_item(message.data.vector, vector.value.id))
+    )
     if (optimized_item) {
       const poster = /** @type {PosterType} */ (vector.value)
       poster.light = optimized_item.light

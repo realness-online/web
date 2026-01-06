@@ -158,8 +158,13 @@ describe('statement composable', () => {
 
       await statement_instance.save('  Hello World  ')
 
-      expect(statement_instance.my_statements.value.length).toBe(initial_length + 1)
-      const last_statement = statement_instance.my_statements.value[statement_instance.my_statements.value.length - 1]
+      expect(statement_instance.my_statements.value.length).toBe(
+        initial_length + 1
+      )
+      const last_statement =
+        statement_instance.my_statements.value[
+          statement_instance.my_statements.value.length - 1
+        ]
       expect(last_statement.statement).toBe('Hello World')
     })
 

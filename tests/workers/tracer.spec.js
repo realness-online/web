@@ -75,7 +75,9 @@ describe('tracer worker', () => {
       .mockImplementation(() => {})
     console_error_spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    postMessage_spy = vi.spyOn(global.self, 'postMessage').mockImplementation(() => {})
+    postMessage_spy = vi
+      .spyOn(global.self, 'postMessage')
+      .mockImplementation(() => {})
 
     const timeout_callbacks = []
     let timeout_id = 1
@@ -115,7 +117,9 @@ describe('tracer worker', () => {
 
       const message = { data: { image_data: invalid_image_data } }
 
-      expect(() => tracer.make_trace(message)).toThrow('Invalid image data size')
+      expect(() => tracer.make_trace(message)).toThrow(
+        'Invalid image data size'
+      )
     })
 
     it('initializes converter with valid image data', () => {
@@ -262,9 +266,11 @@ describe('tracer worker', () => {
       const message = { data: { route: 'unknown:route' } }
       const result = await tracer.route_message(message)
 
-      expect(console_warn_spy).toHaveBeenCalledWith('unknown route', 'unknown:route')
+      expect(console_warn_spy).toHaveBeenCalledWith(
+        'unknown route',
+        'unknown:route'
+      )
       expect(result).toEqual({})
     })
   })
 })
-

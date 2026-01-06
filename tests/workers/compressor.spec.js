@@ -31,7 +31,9 @@ describe('compressor worker', () => {
       .mockImplementation(() => {})
     console_info_spy = vi.spyOn(console, 'info').mockImplementation(() => {})
     console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    postMessage_spy = vi.spyOn(global, 'postMessage').mockImplementation(() => {})
+    postMessage_spy = vi
+      .spyOn(global, 'postMessage')
+      .mockImplementation(() => {})
   })
 
   describe('compress_html', () => {
@@ -43,10 +45,9 @@ describe('compressor worker', () => {
       const message = { data: { html: mock_html } }
       const result = compressor.compress_html(message)
 
-      expect(pako.deflate).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-        { level: 9 }
-      )
+      expect(pako.deflate).toHaveBeenCalledWith(expect.any(Uint8Array), {
+        level: 9
+      })
       expect(result).toHaveProperty('blob')
       expect(result.blob).toBeInstanceOf(Blob)
       expect(console_time_spy).toHaveBeenCalledWith('compress:html')
@@ -128,10 +129,12 @@ describe('compressor worker', () => {
       const message = { data: { route: 'unknown:route' } }
       const result = compressor.route_message(message)
 
-      expect(console_warn_spy).toHaveBeenCalledWith('unknown route', 'unknown:route')
+      expect(console_warn_spy).toHaveBeenCalledWith(
+        'unknown route',
+        'unknown:route'
+      )
       expect(result).toHaveProperty('error')
       expect(result.error).toBe('Unknown route: unknown:route')
     })
   })
 })
-

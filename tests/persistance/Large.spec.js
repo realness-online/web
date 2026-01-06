@@ -107,10 +107,9 @@ describe('@/persistance/Large', () => {
         '/+1234567890/posters/1737178477999',
         '<svg>test</svg>'
       )
-      expect(set).toHaveBeenCalledWith(
-        expect.stringContaining('/index/'),
-        { items: [1737178477888, 1737178477999] }
-      )
+      expect(set).toHaveBeenCalledWith(expect.stringContaining('/index/'), {
+        items: [1737178477888, 1737178477999]
+      })
     })
 
     it('does nothing when element not found', async () => {
