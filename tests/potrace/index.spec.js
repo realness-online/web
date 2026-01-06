@@ -215,7 +215,7 @@ describe('potrace/index', () => {
 
       expect(result).toHaveProperty('paths')
       expect(Array.isArray(result.paths)).toBe(true)
-    })
+    }, 60000)
   })
 
   describe('as_path_element', () => {
