@@ -2,7 +2,6 @@
   import sync from '@/components/sync'
   import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
   import DialogDocumentation from '@/components/as-dialog-documentation.vue'
-  import DialogAccount from '@/components/profile/as-dialog-account.vue'
   import FpsComponent from '@/components/fps'
   import {
     ref,
@@ -47,7 +46,6 @@
   const status = ref(null)
   const router = use_router()
 
-  // FPS tracking for adaptive animations
   const fps = useFps()
   provide('fps', fps)
 
@@ -219,8 +217,6 @@
     status.value = 'offline'
   }
   mounted(async () => {
-    // Initialize drama_back and drama_front from existing drama preference if not set
-    // This handles migration for users who already have drama enabled
     const has_drama_back = localStorage.getItem('drama_back') !== null
     const has_drama_front = localStorage.getItem('drama_front') !== null
     if (!has_drama_back && !has_drama_front && drama.value) {
@@ -228,7 +224,6 @@
       drama_front.value = true
     }
 
-    // Initialize aspect ratio CSS variable
     const aspect_ratio = aspect_ratio_mode.value || 'auto'
     document.documentElement.style.setProperty(
       '--poster-aspect-ratio',
@@ -259,7 +254,6 @@
     <fps-component v-if="info" />
     <dialog-preferences ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
-    <dialog-account ref="account_dialog" />
     <input
       ref="image_picker"
       class="poster picker"

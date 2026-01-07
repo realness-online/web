@@ -1,7 +1,7 @@
 <script setup>
   import MobileAsForm from '@/components/profile/as-form-mobile'
   import NameAsForm from '@/components/profile/as-form-name'
-  import { load } from '@/utils/itemid'
+  import { load, load_from_network } from '@/utils/itemid'
   import { use_me } from '@/use/people'
   import { current_user } from '@/utils/serverless'
   import { keys, clear } from 'idb-keyval'
@@ -27,7 +27,10 @@
   })
 
   const signed_on = async () => {
-    const my_profile = await load(localStorage.me)
+    const network_profile = await load_from_network(localStorage.me)
+    const local_profile = await load(localStorage.me)
+
+    const my_profile = network_profile || local_profile
     if (my_profile) {
       const valid = await is_valid_name.value
       if (valid) emit('signed_in')
