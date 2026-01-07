@@ -7,7 +7,7 @@
   import { useRoute as use_route } from 'vue-router'
 
   const form = ref(null)
-  const name = ref('You')
+  const name = ref('account')
   const route = use_route()
   const show_sign_in = ref(false)
   const is_mobile_form_visible = ref(false)
@@ -87,10 +87,6 @@
 </template>
 
 <style lang="stylus">
-  a#toggle-account {
-    display: none;
-  }
-
   #navigation a#toggle-account {
     display: block;
     position: fixed;
