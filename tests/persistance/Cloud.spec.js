@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Cloud, sync_later } from '@/persistance/Cloud'
 import { Storage } from '@/persistance/Storage'
 
-// Mock dependencies
 vi.mock('@/utils/serverless', () => ({
   current_user: { value: { uid: 'test-user' } },
   upload: vi.fn(() => Promise.resolve()),
@@ -42,7 +41,6 @@ vi.mock('@/utils/numbers', () => ({
   }
 }))
 
-// Create a test class that uses the Cloud mixin
 class TestCloudClass extends Cloud(Storage) {
   constructor(itemid) {
     super(itemid)
@@ -54,17 +52,14 @@ describe('@/persistance/Cloud', () => {
   let mock_navigator
 
   beforeEach(() => {
-    // Clear all mocks
     vi.clearAllMocks()
 
-    // Mock navigator.onLine
     mock_navigator = { onLine: true }
     Object.defineProperty(window, 'navigator', {
       value: mock_navigator,
       writable: true
     })
 
-    // Mock localStorage.me
     Object.defineProperty(window, 'localStorage', {
       value: { me: '/+1234567890' },
       writable: true

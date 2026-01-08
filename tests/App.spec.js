@@ -27,7 +27,6 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 vi.mock('@/utils/preference', () => {
-  const { ref } = require('vue')
   return {
     fill: ref(false),
     stroke: ref(false),

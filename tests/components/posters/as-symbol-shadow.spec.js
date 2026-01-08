@@ -36,12 +36,25 @@ vi.mock('@/use/pattern', () => ({
     aspect_ratio: ref('xMidYMid meet'),
     tabindex: ref(-1),
     vector: ref(mock_vector),
+    itemid: ref(mock_vector.id),
     background_visible: ref(true),
     light_visible: ref(true),
     regular_visible: ref(true),
     medium_visible: ref(true),
     bold_visible: ref(true)
   }))
+}))
+
+// Mock itemid utilities
+vi.mock('@/utils/itemid', () => ({
+  as_layer_id: vi.fn((poster_id, layer) => {
+    if (!poster_id || typeof poster_id !== 'string') return ''
+    const parts = poster_id.split('/')
+    const author = parts[1]
+    const created = parts[3]
+    const layer_type = layer === 'shadow' ? 'shadows' : layer
+    return `/${author}/${layer_type}/${created}`
+  })
 }))
 
 // Mock poster composable

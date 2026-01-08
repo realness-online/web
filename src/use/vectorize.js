@@ -18,7 +18,7 @@ import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
 import { to_kb, IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
-import { as_query_id } from '@/utils/itemid'
+import { as_query_id, as_layer_id } from '@/utils/itemid'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 
@@ -216,7 +216,7 @@ export const sort_cutouts_into_layers = (vector, id) => {
       cutouts[layer].forEach(cutout => symbol.appendChild(cutout))
 
       symbol.setAttribute('id', `${as_query_id(id)}-${layer}`)
-      symbol.setAttribute('itemid', `${id}/${layer}`)
+      symbol.setAttribute('itemid', as_layer_id(id, layer))
       symbol.setAttribute('itemscope', '')
       symbol.setAttribute('itemtype', '/cutouts')
 
@@ -234,12 +234,12 @@ export const sort_cutouts_into_layers = (vector, id) => {
 export const save_poster = async id => {
   await tick()
   await Promise.all([
-    new Shadow(/** @type {Id} */ (`${id}/shadow`)).save(),
-    new Cutout(/** @type {Id} */ (`${id}/sediment`)).save(),
-    new Cutout(/** @type {Id} */ (`${id}/sand`)).save(),
-    new Cutout(/** @type {Id} */ (`${id}/gravel`)).save(),
-    new Cutout(/** @type {Id} */ (`${id}/rock`)).save(),
-    new Cutout(/** @type {Id} */ (`${id}/boulder`)).save()
+    new Shadow(as_layer_id(id, 'shadow')).save(),
+    new Cutout(as_layer_id(id, 'sediment')).save(),
+    new Cutout(as_layer_id(id, 'sand')).save(),
+    new Cutout(as_layer_id(id, 'gravel')).save(),
+    new Cutout(as_layer_id(id, 'rock')).save(),
+    new Cutout(as_layer_id(id, 'boulder')).save()
   ])
   new Poster(id).save()
 }

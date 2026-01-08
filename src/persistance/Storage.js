@@ -53,7 +53,7 @@ export class Storage {
 /**
  * @extends {Storage}
  */
-class Cached_Storage extends Large(Cloud(Storage)) {
+class Cached extends Large(Cloud(Storage)) {
   async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
     super.save(items)
 
@@ -71,14 +71,14 @@ class Cached_Storage extends Large(Cloud(Storage)) {
 export class Poster extends Large(Cloud(Storage)) {}
 
 /**
- * @extends {Cached_Storage}
+ * @extends {Cached}
  */
-export class Cutout extends Cached_Storage {}
+export class Cutout extends Cached {}
 
 /**
- * @extends {Cached_Storage}
+ * @extends {Cached}
  */
-export class Shadow extends Cached_Storage {}
+export class Shadow extends Cached {}
 
 /**
  * @extends {Storage}

@@ -4,14 +4,26 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename } from '@/utils/itemid'
+import { as_filename, as_type } from '@/utils/itemid'
+import { mutex } from '@/utils/algorithms'
 import {
   load_directory_from_network,
   as_directory
 } from '@/persistance/Directory'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
-const networkable = ['person', 'statements', 'posters', 'events']
+const networkable = [
+  'person',
+  'statements',
+  'posters',
+  'events',
+  'shadows',
+  'sediments',
+  'sands',
+  'gravels',
+  'rocks',
+  'boulders'
+]
 
 /**
  * @template {new (...args: any[]) => Storage} T
@@ -46,7 +58,8 @@ export const Cloud = superclass =>
       console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
-      if (networkable.includes(this.type))
+      const item_type = this.type || as_type(this.id)
+      if (networkable.includes(item_type))
         await this.to_network(items.outerHTML)
     }
 
@@ -97,10 +110,12 @@ export const Cloud = superclass =>
 export default Cloud
 
 export async function sync_later(id, action) {
+  await mutex.lock()
   const offline = (await get('sync:offline')) || []
   const exists = offline.some(item => item.id === id && item.action === action)
   if (!exists) {
     offline.push({ id, action })
     await set('sync:offline', offline)
   }
+  mutex.unlock()
 }

@@ -13,7 +13,11 @@
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
-  import { as_query_id as query, as_fragment_id } from '@/utils/itemid'
+  import {
+    as_query_id as query,
+    as_fragment_id,
+    as_layer_id
+  } from '@/utils/itemid'
 
   const props = defineProps({
     queue_item: {
@@ -134,35 +138,35 @@
       <as-symbol-shadow />
       <symbol
         :id="`${query(queue_item.id)}-sediment`"
-        :itemid="`${queue_itemid}/sediment`"
+        :itemid="as_layer_id(queue_itemid, 'sediment')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.sediment?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-sand`"
-        :itemid="`${queue_itemid}/sand`"
+        :itemid="as_layer_id(queue_itemid, 'sand')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.sand?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-gravel`"
-        :itemid="`${queue_itemid}/gravel`"
+        :itemid="as_layer_id(queue_itemid, 'gravel')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.gravel?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-rock`"
-        :itemid="`${queue_itemid}/rock`"
+        :itemid="as_layer_id(queue_itemid, 'rock')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.rock?.innerHTML" />
       <symbol
         :id="`${query(queue_item.id)}-boulder`"
-        :itemid="`${queue_itemid}/boulder`"
+        :itemid="as_layer_id(queue_itemid, 'boulder')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"

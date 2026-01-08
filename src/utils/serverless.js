@@ -18,7 +18,7 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import { load } from '@/utils/itemid'
+import { load_from_network, load } from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
 import { get, set } from 'idb-keyval'
@@ -131,8 +131,12 @@ export const init_serverless = () => {
       current_user.value = user
       localStorage.me = from_e64(current_user.value.phoneNumber)
       me.value.id = localStorage.me
-      const maybe_me = await load(localStorage.me)
-      if (maybe_me) me.value = maybe_me
+      const maybe_me = await load_from_network(localStorage.me)
+      if (maybe_me) {
+        me.value = maybe_me
+        const html = await get(localStorage.me)
+        if (html) localStorage.setItem(localStorage.me, html)
+      }
     } else current_user.value = null
   })
 }

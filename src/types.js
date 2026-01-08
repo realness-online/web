@@ -5,7 +5,7 @@
 /** @typedef {number} Created */
 
 /**
- * @typedef {`${Author}/${Type}/${Created}` | `${Author}/${Type}/${Created}/shadow` | `${Author}/${Type}/${Created}/sediment` | `${Author}/${Type}/${Created}/sand` | `${Author}/${Type}/${Created}/gravel` | `${Author}/${Type}/${Created}/rock` | `${Author}/${Type}/${Created}/boulder`} Id
+ * @typedef {`${Author}/${Type}/${Created}` | `${Author}/shadows/${Created}` | `${Author}/sediments/${Created}` | `${Author}/sands/${Created}` | `${Author}/gravels/${Created}` | `${Author}/rocks/${Created}` | `${Author}/boulders/${Created}`} Id
  */
 
 /**
@@ -71,14 +71,20 @@
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
  */
 
-/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me', 'person']} */
+/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me', 'person', 'shadows', 'sediments', 'sands', 'gravels', 'rocks', 'boulders']} */
 export const types = [
   'posters',
   'statements',
   'events',
   'relations',
   'me',
-  'person'
+  'person',
+  'shadows',
+  'sediments',
+  'sands',
+  'gravels',
+  'rocks',
+  'boulders'
 ]
 
 /** @typedef {typeof types[number]} Type */
