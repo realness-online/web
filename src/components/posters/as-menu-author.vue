@@ -6,6 +6,7 @@
   import AsDownload from '@/components/download-vector'
   import { is_vector_id } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
+  import { current_user } from '@/utils/serverless'
   const props = defineProps({
     poster: {
       type: Object,
@@ -32,7 +33,7 @@
     <a class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
-    <toggle-avatar :itemid="poster.id" />
+    <toggle-avatar v-if="current_user" :itemid="poster.id" />
     <as-download :itemid="poster.id" />
   </menu>
 </template>

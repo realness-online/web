@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Id} Id */
 
 import { computed, inject, ref, watchEffect as watch } from 'vue'
-import { as_query_id, as_fragment_id, load } from '@/utils/itemid'
+import { as_query_id, as_fragment_id, load, as_layer_id } from '@/utils/itemid'
 import { use as use_poster } from '@/use/poster'
 import { background, light, regular, medium, bold } from '@/utils/preference'
 
@@ -36,7 +36,7 @@ export const use = () => {
   watch(() => {
     const id = vector_id.value
     if (id && !loaded_vector.value && !active_vector.value?.regular) {
-      const pattern_id = /** @type {Id} */ (`${id}/shadow`)
+      const pattern_id = as_layer_id(id, 'shadow')
       Promise.all([load(id), load(pattern_id)]).then(([poster, pattern]) => {
         if (poster) {
           const poster_with_pattern = /** @type {Poster} */ (

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { ref, defineComponent } from 'vue'
+import { ref, defineComponent, provide, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { use } from '@/use/pattern'
 
@@ -19,7 +19,6 @@ vi.mock('@/utils/itemid', () => ({
 }))
 
 const mock_use_poster = vi.hoisted(() => {
-  const { ref } = require('vue')
   return vi.fn(() => ({
     vector: ref(null),
     aspect_ratio: ref('xMidYMid meet'),
@@ -105,7 +104,6 @@ describe('pattern composable', () => {
       })
       const injected_vector = ref(mock_vector)
       let pattern_result
-      const { provide, inject } = require('vue')
       const app = defineComponent({
         setup() {
           provide('vector', injected_vector)
@@ -114,7 +112,6 @@ describe('pattern composable', () => {
         }
       })
       mount(app)
-      const { nextTick } = require('vue')
       await nextTick()
       // Injection works but requires proper Vue context setup
       // This test verifies the composable can access injected values
@@ -132,14 +129,12 @@ describe('pattern composable', () => {
       let pattern_result
       const app = defineComponent({
         setup() {
-          const { provide } = require('vue')
           provide('new_vector', injected_new_vector)
           pattern_result = use()
           return () => null
         }
       })
       mount(app)
-      const { nextTick } = require('vue')
       await nextTick()
       // Injection works but requires proper Vue context setup
       // This test verifies the composable can access injected values

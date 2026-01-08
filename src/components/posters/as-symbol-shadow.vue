@@ -4,6 +4,7 @@
   import { use as use_pattern } from '@/use/pattern'
   import { use as use_poster, is_rect } from '@/use/poster'
   import { computed } from 'vue'
+  import { as_layer_id } from '@/utils/itemid'
 
   const emit = defineEmits({
     focus: Function
@@ -43,7 +44,7 @@
 <template>
   <symbol
     :id="query('shadow')"
-    :itemid="`${itemid}/shadow`"
+    :itemid="as_layer_id(itemid, 'shadow')"
     itemscope
     itemtype="/shadows"
     v-if="

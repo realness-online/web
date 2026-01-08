@@ -9,7 +9,13 @@
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
-  import { as_query_id, as_author, load, as_created_at } from '@/utils/itemid'
+  import {
+    as_query_id,
+    as_author,
+    load,
+    as_created_at,
+    as_layer_id
+  } from '@/utils/itemid'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
@@ -76,7 +82,7 @@
     vector.value = shown_vector
 
     if (!shown_vector.regular) {
-      const pattern = await load(/** @type {Id} */ (`${props.itemid}/shadow`))
+      const pattern = await load(as_layer_id(props.itemid, 'shadow'))
       if (pattern) {
         const pattern_data = /** @type {Poster} */ (
           /** @type {unknown} */ (pattern)
@@ -153,19 +159,19 @@
       <as-symbol-shadow />
       <as-symbol
         v-if="cutout && boulder && vector?.boulder"
-        :itemid="`${itemid}/boulder`" />
+        :itemid="as_layer_id(itemid, 'boulder')" />
       <as-symbol
         v-if="cutout && rock && vector?.rock"
-        :itemid="`${itemid}/rock`" />
+        :itemid="as_layer_id(itemid, 'rock')" />
       <as-symbol
         v-if="cutout && gravel && vector?.gravel"
-        :itemid="`${itemid}/gravel`" />
+        :itemid="as_layer_id(itemid, 'gravel')" />
       <as-symbol
         v-if="cutout && sand && vector?.sand"
-        :itemid="`${itemid}/sand`" />
+        :itemid="as_layer_id(itemid, 'sand')" />
       <as-symbol
         v-if="cutout && sediment && vector?.sediment"
-        :itemid="`${itemid}/sediment`" />
+        :itemid="as_layer_id(itemid, 'sediment')" />
     </svg>
   </figure>
 </template>

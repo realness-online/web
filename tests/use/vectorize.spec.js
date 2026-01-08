@@ -55,7 +55,16 @@ vi.mock('@/utils/itemid', () => ({
     const parts = id.split('/')
     return parts[parts.length - 1]
   }),
-  as_query_id: vi.fn(id => id.replace(/\//g, '-'))
+  as_query_id: vi.fn(id => id.replace(/\//g, '-')),
+  as_layer_id: vi.fn((poster_id, layer) => {
+    if (!poster_id || typeof poster_id !== 'string') return ''
+    const parts = poster_id.split('/')
+    const author = parts[1]
+    const created = parts[3]
+    if (!author || !created) return ''
+    const layer_type = layer === 'shadow' ? 'shadows' : `${layer}s`
+    return `/${author}/${layer_type}/${created}`
+  })
 }))
 
 vi.mock('vue-router', () => ({
@@ -1214,12 +1223,24 @@ describe('vectorize composable', () => {
 
       await save_poster(id)
 
-      expect(mock_shadow_constructor).toHaveBeenCalledWith(`${id}/shadow`)
-      expect(mock_cutout_constructor).toHaveBeenCalledWith(`${id}/sediment`)
-      expect(mock_cutout_constructor).toHaveBeenCalledWith(`${id}/sand`)
-      expect(mock_cutout_constructor).toHaveBeenCalledWith(`${id}/gravel`)
-      expect(mock_cutout_constructor).toHaveBeenCalledWith(`${id}/rock`)
-      expect(mock_cutout_constructor).toHaveBeenCalledWith(`${id}/boulder`)
+      expect(mock_shadow_constructor).toHaveBeenCalledWith(
+        '/user/shadows/1234567890'
+      )
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/sediments/1234567890'
+      )
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/sands/1234567890'
+      )
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/gravels/1234567890'
+      )
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/rocks/1234567890'
+      )
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/boulders/1234567890'
+      )
     })
 
     it('saves poster after cutouts', async () => {

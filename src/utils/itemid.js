@@ -132,6 +132,7 @@ export const as_download_url = async itemid => {
  * as_path_parts('/+123456/statements/789/') // ['+123456', 'statements', null, '789']
  */
 export const as_path_parts = itemid => {
+  if (!itemid || typeof itemid !== 'string') return []
   const path = itemid.split('/')
   if (path[0].length === 0) path.shift()
   if (itemid.endsWith('/')) {
@@ -308,4 +309,19 @@ export const is_itemid = id => {
   }
 
   return true
+}
+
+/**
+ * Constructs a layer ID (shadow or cutout) from a poster ID
+ * @param {Id} poster_id - Poster itemid (e.g., '/+123456/posters/789')
+ * @param {string} layer - Layer name ('shadow', 'sediment', 'sand', 'gravel', 'rock', 'boulder')
+ * @returns {Id} Layer itemid (e.g., '/+123456/shadows/789')
+ */
+export const as_layer_id = (poster_id, layer) => {
+  if (!poster_id || typeof poster_id !== 'string') return /** @type {Id} */ ('')
+  const path = as_path_parts(poster_id)
+  const [author, , created] = path
+  if (!author || !created) return /** @type {Id} */ ('')
+  const layer_type = layer === 'shadow' ? 'shadows' : `${layer}s`
+  return /** @type {Id} */ (`/${author}/${layer_type}/${created}`)
 }

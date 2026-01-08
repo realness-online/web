@@ -35,7 +35,7 @@ export const use = () => {
    * @returns {Promise<void>}
    */
   const play = async () => {
-    if (!current_user.value) return // Do nothing until there is a person
+    if (!current_user.value) return
     if (document.visibilityState !== 'visible') return
     await sync_offline_actions()
     if (!navigator.onLine || !current_user.value) return
