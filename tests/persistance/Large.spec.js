@@ -47,10 +47,14 @@ vi.mock('@/utils/itemid', () => ({
     const parts = id.split('/').filter(p => p)
     if (parts.length !== 3) return null
     const type = parts[1]
-    if (type === 'shadows') return 'shadow'
-    if (type === 'rocks') return 'rock'
-    if (type === 'boulders') return 'boulder'
-    const layer_types = ['sediment', 'sand', 'gravel']
+    const layer_types = [
+      'shadows',
+      'sediment',
+      'sand',
+      'gravel',
+      'rocks',
+      'boulders'
+    ]
     if (layer_types.includes(type)) return type
     return null
   })
@@ -118,7 +122,7 @@ describe('@/persistance/Large', () => {
       const path = await large.get_storage_path()
 
       expect(path).toBe(
-        'people/+1234567890/posters/1737178477999-shadow.html.gz'
+        'people/+1234567890/posters/1737178477999-shadows.html.gz'
       )
     })
 
@@ -167,7 +171,9 @@ describe('@/persistance/Large', () => {
 
       const path = await large.get_storage_path()
 
-      expect(path).toBe('people/+1234567890/posters/1737178477999-rock.html.gz')
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999-rocks.html.gz'
+      )
     })
 
     it('returns path with suffix for boulder layer', async () => {
@@ -179,7 +185,7 @@ describe('@/persistance/Large', () => {
       const path = await large.get_storage_path()
 
       expect(path).toBe(
-        'people/+1234567890/posters/1737178477999-boulder.html.gz'
+        'people/+1234567890/posters/1737178477999-boulders.html.gz'
       )
     })
 
@@ -194,7 +200,7 @@ describe('@/persistance/Large', () => {
       const path = await large.get_storage_path()
 
       expect(path).toBe(
-        'people/+1234567890/posters/1234567890/1234567891-shadow.html.gz'
+        'people/+1234567890/posters/1234567890/1234567891-shadows.html.gz'
       )
     })
   })

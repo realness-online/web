@@ -53,8 +53,8 @@
   const vector = ref(null)
   const person = ref(null)
   const symbol_loaded = ref({
-    boulder: false,
-    rock: false,
+    boulders: false,
+    rocks: false,
     gravel: false,
     sand: false,
     sediment: false
@@ -114,8 +114,8 @@
   watch(cutout, new_value => {
     if (!new_value)
       symbol_loaded.value = {
-        boulder: false,
-        rock: false,
+        boulders: false,
+        rocks: false,
         gravel: false,
         sand: false,
         sediment: false
@@ -157,10 +157,10 @@
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol
-        v-if="cutout && boulder && vector?.boulder"
+        v-if="cutout && boulder && vector?.boulders"
         :itemid="as_layer_id(itemid, 'boulders')" />
       <as-symbol
-        v-if="cutout && rock && vector?.rock"
+        v-if="cutout && rock && vector?.rocks"
         :itemid="as_layer_id(itemid, 'rocks')" />
       <as-symbol
         v-if="cutout && gravel && vector?.gravel"

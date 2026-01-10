@@ -116,10 +116,10 @@
   const drama_front_visible = computed(() => drama_front.value)
 
   const boulder_visible = computed(
-    () => cutout.value && boulder.value && vector.value?.boulder
+    () => cutout.value && boulder.value && vector.value?.boulders
   )
   const rock_visible = computed(
-    () => cutout.value && rock.value && vector.value?.rock
+    () => cutout.value && rock.value && vector.value?.rocks
   )
   const gravel_visible = computed(
     () => cutout.value && gravel.value && vector.value?.gravel

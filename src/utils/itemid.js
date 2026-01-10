@@ -331,7 +331,7 @@ export const is_itemid = id => {
 /**
  * Constructs a layer ID (shadow or cutout) from a poster ID
  * @param {Id} poster_id - Poster itemid (e.g., '/+123456/posters/789')
- * @param {string} layer - Layer name ('shadow', 'sediment', 'sand', 'gravel', 'rock', 'boulder')
+ * @param {string} layer - Layer name ('shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders')
  * @returns {Id} Layer itemid (e.g., '/+123456/shadows/789')
  */
 export const as_layer_id = (poster_id, layer) => {
@@ -369,7 +369,7 @@ export const as_poster_id = layer_id => {
 /**
  * Gets the layer name from a layer ID
  * @param {Id} layer_id - Layer itemid (e.g., '/+123456/shadows/789')
- * @returns {string | null} Layer name ('shadow', 'sediment', etc.) or null
+ * @returns {string | null} Layer name ('shadows', 'sediment', etc.) or null
  */
 export const as_layer_name = layer_id => {
   if (!layer_id || typeof layer_id !== 'string') return null
@@ -387,8 +387,5 @@ export const as_layer_name = layer_id => {
   ]
   if (!layer_types.includes(type)) return null
 
-  if (type === 'shadows') return 'shadow'
-  if (type === 'rocks') return 'rock'
-  if (type === 'boulders') return 'boulder'
   return type
 }

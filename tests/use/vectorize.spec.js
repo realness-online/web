@@ -917,8 +917,8 @@ describe('vectorize composable', () => {
       expect(result.sediment.tagName).toBe('symbol')
       expect(result.sand.tagName).toBe('symbol')
       expect(result.gravel.tagName).toBe('symbol')
-      expect(result.rock.tagName).toBe('symbol')
-      expect(result.boulder.tagName).toBe('symbol')
+      expect(result.rocks.tagName).toBe('symbol')
+      expect(result.boulders.tagName).toBe('symbol')
     })
 
     it('handles empty cutout array', () => {
@@ -933,8 +933,8 @@ describe('vectorize composable', () => {
       expect(result.sediment).toEqual([])
       expect(result.sand).toEqual([])
       expect(result.gravel).toEqual([])
-      expect(result.rock).toEqual([])
-      expect(result.boulder).toEqual([])
+      expect(result.rocks).toEqual([])
+      expect(result.boulders).toEqual([])
     })
 
     it('handles cutouts with missing progress attribute', () => {
@@ -1057,8 +1057,8 @@ describe('vectorize composable', () => {
       expect(result.sediment.querySelector('path')).toBe(cutout_59)
       expect(result.sand.querySelector('path')).toBe(cutout_60)
       expect(result.gravel.querySelector('path')).toBe(cutout_70)
-      expect(result.rock.querySelector('path')).toBe(cutout_80)
-      expect(result.boulder.querySelector('path')).toBe(cutout_90)
+      expect(result.rocks.querySelector('path')).toBe(cutout_80)
+      expect(result.boulders.querySelector('path')).toBe(cutout_90)
     })
   })
 
