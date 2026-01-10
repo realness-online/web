@@ -7,6 +7,7 @@ exports[`@/components/posters/as-path.vue > Renders > a path from one provided 1
   
   <path
     d="M0,0 L100,100"
+    fill="#ffffff"
     fill-opacity="0.90"
     fill-rule="evenodd"
     id="test-path"

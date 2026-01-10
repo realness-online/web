@@ -215,8 +215,9 @@ export const sort_cutouts_into_layers = (vector, id) => {
       symbol.setAttribute('viewBox', `0 0 ${vector.width} ${vector.height}`)
       cutouts[layer].forEach(cutout => symbol.appendChild(cutout))
 
-      symbol.setAttribute('id', `${as_query_id(id)}-${layer}`)
-      symbol.setAttribute('itemid', as_layer_id(id, layer))
+      const layer_id = as_layer_id(id, layer)
+      symbol.setAttribute('id', as_query_id(layer_id))
+      symbol.setAttribute('itemid', layer_id)
       symbol.setAttribute('itemscope', '')
       symbol.setAttribute('itemtype', '/cutouts')
 
@@ -234,12 +235,12 @@ export const sort_cutouts_into_layers = (vector, id) => {
 export const save_poster = async id => {
   await tick()
   await Promise.all([
-    new Shadow(as_layer_id(id, 'shadow')).save(),
+    new Shadow(as_layer_id(id, 'shadows')).save(),
     new Cutout(as_layer_id(id, 'sediment')).save(),
     new Cutout(as_layer_id(id, 'sand')).save(),
     new Cutout(as_layer_id(id, 'gravel')).save(),
-    new Cutout(as_layer_id(id, 'rock')).save(),
-    new Cutout(as_layer_id(id, 'boulder')).save()
+    new Cutout(as_layer_id(id, 'rocks')).save(),
+    new Cutout(as_layer_id(id, 'boulders')).save()
   ])
   new Poster(id).save()
 }

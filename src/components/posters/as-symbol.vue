@@ -37,7 +37,6 @@
 </script>
 
 <template>
-  <!-- SVG content from app's own IndexedDB storage, trusted source -->
   <symbol
     ref="element"
     :id="symbol_id"

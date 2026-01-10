@@ -36,7 +36,7 @@ export const use = () => {
   watch(() => {
     const id = vector_id.value
     if (id && !loaded_vector.value && !active_vector.value?.regular) {
-      const pattern_id = as_layer_id(id, 'shadow')
+      const pattern_id = as_layer_id(id, 'shadows')
       Promise.all([load(id), load(pattern_id)]).then(([poster, pattern]) => {
         if (poster) {
           const poster_with_pattern = /** @type {Poster} */ (

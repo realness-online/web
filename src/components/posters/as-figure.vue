@@ -82,7 +82,7 @@
     vector.value = shown_vector
 
     if (!shown_vector.regular) {
-      const pattern = await load(as_layer_id(props.itemid, 'shadow'))
+      const pattern = await load(as_layer_id(props.itemid, 'shadows'))
       if (pattern) {
         const pattern_data = /** @type {Poster} */ (
           /** @type {unknown} */ (pattern)
@@ -154,15 +154,14 @@
       @click="vector_click"
       @show="on_show"
       :focusable="false" />
-    <!-- Hidden SVG defs container, not user-facing style -->
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol
         v-if="cutout && boulder && vector?.boulder"
-        :itemid="as_layer_id(itemid, 'boulder')" />
+        :itemid="as_layer_id(itemid, 'boulders')" />
       <as-symbol
         v-if="cutout && rock && vector?.rock"
-        :itemid="as_layer_id(itemid, 'rock')" />
+        :itemid="as_layer_id(itemid, 'rocks')" />
       <as-symbol
         v-if="cutout && gravel && vector?.gravel"
         :itemid="as_layer_id(itemid, 'gravel')" />

@@ -4,7 +4,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename, as_type } from '@/utils/itemid'
+import { as_filename, as_type, as_path_parts } from '@/utils/itemid'
+import { has_archive } from '@/types'
 import { mutex } from '@/utils/algorithms'
 import {
   load_directory_from_network,
@@ -18,9 +19,9 @@ const networkable = [
   'posters',
   'events',
   'shadows',
-  'sediments',
-  'sands',
-  'gravels',
+  'sediment',
+  'sand',
+  'gravel',
   'rocks',
   'boulders'
 ]
@@ -83,6 +84,15 @@ export const Cloud = superclass =>
     async optimize() {
       if (super.optimize) await super.optimize()
 
+      const item_type = this.type || as_type(this.id)
+      if (
+        !item_type ||
+        !has_archive.includes(
+          /** @type {typeof has_archive[number]} */ (item_type)
+        )
+      )
+        return
+
       const directory_list = await load_directory_from_network(this.id)
       if (!directory_list?.items) return
       const { items } = directory_list
@@ -92,11 +102,35 @@ export const Cloud = superclass =>
         const archive_directory = sorted_items[index]
         const archive = []
         const to_archive = sorted_items.splice(-SIZE.MID)
-        const moves = to_archive.map(oldest =>
-          move(this.type, oldest, archive_directory).then(
-            success => success && archive.push(oldest)
-          )
-        )
+        const path = as_path_parts(this.id)
+        const [author] = path
+
+        const moves = to_archive.flatMap(timestamp => {
+          const poster_move = move(
+            item_type,
+            timestamp,
+            archive_directory,
+            `/${author}`
+          ).then(success => success && archive.push(timestamp))
+
+          if (item_type === 'posters' && author) {
+            const component_types = [
+              'shadows',
+              'sediment',
+              'sand',
+              'gravel',
+              'rocks',
+              'boulders'
+            ]
+            const component_moves = component_types.map(component_type =>
+              move(component_type, timestamp, archive_directory, `/${author}`)
+            )
+            return [poster_move, ...component_moves]
+          }
+
+          return [poster_move]
+        })
+
         await Promise.all(moves)
 
         const check_directory = await load_directory_from_network(this.id)

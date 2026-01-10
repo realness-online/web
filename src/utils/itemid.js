@@ -17,6 +17,23 @@ import { as_directory } from '@/persistance/Directory'
  * @returns {Promise<string>}
  */
 export const as_filename = async itemid => {
+  const poster_id = as_poster_id(itemid)
+  if (poster_id) {
+    let poster_filename = poster_id
+    if (poster_id.startsWith('/+')) poster_filename = `people${poster_id}`
+
+    const layer_name = as_layer_name(itemid)
+    const archive = await as_archive(poster_id)
+
+    if (archive) {
+      const suffix = layer_name ? `-${layer_name}` : ''
+      return `${archive}${suffix}.html.gz`
+    }
+
+    const suffix = layer_name ? `-${layer_name}` : ''
+    return `${poster_filename}${suffix}.html.gz`
+  }
+
   let filename = itemid
   if (itemid.startsWith('/+')) filename = `people${itemid}`
 
@@ -322,6 +339,56 @@ export const as_layer_id = (poster_id, layer) => {
   const path = as_path_parts(poster_id)
   const [author, , created] = path
   if (!author || !created) return /** @type {Id} */ ('')
-  const layer_type = layer === 'shadow' ? 'shadows' : `${layer}s`
-  return /** @type {Id} */ (`/${author}/${layer_type}/${created}`)
+  return /** @type {Id} */ (`/${author}/${layer}/${created}`)
+}
+
+/**
+ * Gets the poster ID from a layer ID (reverse of as_layer_id)
+ * @param {Id} layer_id - Layer itemid (e.g., '/+123456/shadows/789')
+ * @returns {Id | null} Poster itemid (e.g., '/+123456/posters/789') or null if not a layer
+ */
+export const as_poster_id = layer_id => {
+  if (!layer_id || typeof layer_id !== 'string') return null
+  const path = as_path_parts(layer_id)
+  const [author, type, created] = path
+  if (!author || !created) return null
+
+  const layer_types = [
+    'shadows',
+    'sediment',
+    'sand',
+    'gravel',
+    'rocks',
+    'boulders'
+  ]
+  if (!layer_types.includes(type)) return null
+
+  return /** @type {Id} */ (`/${author}/posters/${created}`)
+}
+
+/**
+ * Gets the layer name from a layer ID
+ * @param {Id} layer_id - Layer itemid (e.g., '/+123456/shadows/789')
+ * @returns {string | null} Layer name ('shadow', 'sediment', etc.) or null
+ */
+export const as_layer_name = layer_id => {
+  if (!layer_id || typeof layer_id !== 'string') return null
+  const path = as_path_parts(layer_id)
+  const [, type] = path
+  if (!type) return null
+
+  const layer_types = [
+    'shadows',
+    'sediment',
+    'sand',
+    'gravel',
+    'rocks',
+    'boulders'
+  ]
+  if (!layer_types.includes(type)) return null
+
+  if (type === 'shadows') return 'shadow'
+  if (type === 'rocks') return 'rock'
+  if (type === 'boulders') return 'boulder'
+  return type
 }

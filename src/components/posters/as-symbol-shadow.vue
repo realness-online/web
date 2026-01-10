@@ -4,15 +4,13 @@
   import { use as use_pattern } from '@/use/pattern'
   import { use as use_poster, is_rect } from '@/use/poster'
   import { computed } from 'vue'
-  import { as_layer_id } from '@/utils/itemid'
+  import { as_layer_id, as_query_id } from '@/utils/itemid'
 
   const emit = defineEmits({
     focus: Function
   })
 
   const {
-    query,
-    fragment,
     width,
     height,
     viewbox,
@@ -24,10 +22,21 @@
     light_visible,
     regular_visible,
     medium_visible,
-    bold_visible
+    bold_visible,
+    fragment: pattern_fragment
   } = use_pattern()
 
   const { focus } = use_poster()
+
+  const layer_id = computed(() => as_layer_id(itemid.value, 'shadows'))
+
+  const query = add => {
+    if (!layer_id.value) return add || ''
+    if (add) return `${as_query_id(layer_id.value)}-${add}`
+    return as_query_id(layer_id.value)
+  }
+
+  const gradient_fragment = add => pattern_fragment(add)
 
   const valid_rect = computed(() => {
     if (!vector.value?.background) return null
@@ -43,8 +52,8 @@
 
 <template>
   <symbol
-    :id="query('shadow')"
-    :itemid="as_layer_id(itemid, 'shadow')"
+    :id="query()"
+    :itemid="as_layer_id(itemid, 'shadows')"
     itemscope
     itemtype="/shadows"
     v-if="
@@ -63,7 +72,7 @@
       :tabindex="tabindex"
       :visible="background_visible"
       fill-opacity="1"
-      :fill="`url(${fragment('radial-background')})`"
+      :fill="`url(${gradient_fragment('radial-background')})`"
       @focus="handle_focus('background')" />
     <as-path
       v-if="vector.light"
@@ -72,9 +81,9 @@
       :path="vector.light"
       :tabindex="tabindex"
       :visible="light_visible"
-      :mask="`url(${fragment('horizontal-mask')})`"
-      :fill="`url(${fragment('vertical-light')})`"
-      :stroke="`url(${fragment('horizontal-medium')})`"
+      :mask="`url(${gradient_fragment('horizontal-mask')})`"
+      :fill="`url(${gradient_fragment('vertical-light')})`"
+      :stroke="`url(${gradient_fragment('horizontal-medium')})`"
       @focus="handle_focus('light')" />
     <as-path
       v-if="vector.regular"
@@ -83,9 +92,9 @@
       :path="vector.regular"
       :tabindex="tabindex"
       :visible="regular_visible"
-      :mask="`url(${fragment('radial-mask')})`"
-      :fill="`url(${fragment('horizontal-regular')})`"
-      :stroke="`url(${fragment('vertical-bold')})`"
+      :mask="`url(${gradient_fragment('radial-mask')})`"
+      :fill="`url(${gradient_fragment('horizontal-regular')})`"
+      :stroke="`url(${gradient_fragment('vertical-bold')})`"
       @focus="handle_focus('regular')" />
     <as-path
       v-if="vector.medium"
@@ -94,9 +103,9 @@
       :path="vector.medium"
       :tabindex="tabindex"
       :visible="medium_visible"
-      :mask="`url(${fragment('vertical-mask')})`"
-      :fill="`url(${fragment('vertical-medium')})`"
-      :stroke="`url(${fragment('vertical-background')})`"
+      :mask="`url(${gradient_fragment('vertical-mask')})`"
+      :fill="`url(${gradient_fragment('vertical-medium')})`"
+      :stroke="`url(${gradient_fragment('vertical-background')})`"
       @focus="handle_focus('medium')" />
     <as-path
       v-if="vector.bold"
@@ -105,9 +114,9 @@
       :tabindex="tabindex"
       :path="vector.bold"
       :visible="bold_visible"
-      :mask="`url(${fragment('horizontal-mask')})`"
-      :fill="`url(${fragment('vertical-bold')})`"
-      :stroke="`url(${fragment('radial-light')})`"
+      :mask="`url(${gradient_fragment('horizontal-mask')})`"
+      :fill="`url(${gradient_fragment('vertical-bold')})`"
+      :stroke="`url(${gradient_fragment('radial-light')})`"
       @focus="handle_focus('bold')" />
   </symbol>
 </template>

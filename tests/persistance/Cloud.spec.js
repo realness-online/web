@@ -10,8 +10,43 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 vi.mock('@/utils/itemid', () => ({
-  as_filename: vi.fn(() => 'test-filename.html.gz'),
-  as_type: vi.fn(() => 'posters')
+  as_filename: vi.fn(id => {
+    const parts = id.split('/').filter(p => p)
+    if (parts.length >= 3) {
+      const type = parts[1]
+      const timestamp = parts[2]
+      const component_types = [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]
+      if (component_types.includes(type)) {
+        let layer_name = type
+        if (type === 'shadows') layer_name = 'shadow'
+        else if (type === 'rocks') layer_name = 'rock'
+        else if (type === 'boulders') layer_name = 'boulder'
+        if (parts.length === 4) {
+          return `people/${parts[0]}/posters/${parts[3]}/${timestamp}-${layer_name}.html.gz`
+        }
+        return `people/${parts[0]}/posters/${timestamp}-${layer_name}.html.gz`
+      }
+      if (type === 'posters') {
+        if (parts.length === 4) {
+          return `people/${parts[0]}/posters/${parts[3]}/${timestamp}.html.gz`
+        }
+        return `people/${parts[0]}/posters/${timestamp}.html.gz`
+      }
+    }
+    return 'test-filename.html.gz'
+  }),
+  as_type: vi.fn(() => 'posters'),
+  as_path_parts: vi.fn(id => {
+    const parts = id.split('/').filter(p => p)
+    return parts
+  })
 }))
 
 vi.mock('idb-keyval', () => ({
@@ -91,7 +126,7 @@ describe('@/persistance/Cloud', () => {
 
       const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalledWith(
-        'test-filename.html.gz',
+        'people/+1234567890/posters/1234567890.html.gz',
         'compressed-data',
         { contentType: 'text/html' }
       )
@@ -156,7 +191,9 @@ describe('@/persistance/Cloud', () => {
       await cloud_instance.delete()
 
       const { remove } = await import('@/utils/serverless')
-      expect(remove).toHaveBeenCalledWith('test-filename.html.gz')
+      expect(remove).toHaveBeenCalledWith(
+        'people/+1234567890/posters/1234567890.html.gz'
+      )
     })
 
     it('uses get_storage_path when available', async () => {
@@ -200,6 +237,23 @@ describe('@/persistance/Cloud', () => {
 
       const { move } = await import('@/utils/serverless')
       expect(move).toHaveBeenCalled()
+
+      const component_types = [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]
+      component_types.forEach(component_type => {
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          expect.any(String),
+          expect.any(String),
+          expect.any(String)
+        )
+      })
     })
 
     it('does nothing when items are within limits', async () => {

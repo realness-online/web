@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { is_directory_id } from '@/persistance/Directory'
+import { is_directory_id, as_directory_id } from '@/persistance/Directory'
 
 describe('Directory validation', () => {
   describe('is_directory_id', () => {
@@ -46,6 +46,55 @@ describe('Directory validation', () => {
       expect(
         is_directory_id('/+16282281824/posters/1737178477987/extra/')
       ).toBe(false)
+    })
+  })
+
+  describe('as_directory_id', () => {
+    it('normalizes root directories to /author/type/ format', () => {
+      const expected = '/+14156667777/posters/'
+
+      // Directory path already in correct format
+      expect(as_directory_id('/+14156667777/posters/')).toBe(expected)
+
+      // Directory path with index segment (should normalize to root)
+      expect(as_directory_id('/+14156667777/posters/index/')).toBe(expected)
+
+      // Individual item id (should normalize to its directory)
+      expect(as_directory_id('/+14156667777/posters/1737178477987')).toBe(
+        expected
+      )
+    })
+
+    it('normalizes archive directories correctly', () => {
+      // Archive directory path (ends with /)
+      expect(as_directory_id('/+14156667777/posters/1737178477987/')).toBe(
+        '/+14156667777/posters/1737178477987/'
+      )
+
+      // Regular item (not in archive) should normalize to root
+      expect(as_directory_id('/+14156667777/posters/1737178477987')).toBe(
+        '/+14156667777/posters/'
+      )
+    })
+
+    it('ensures consistent normalization across different input formats', () => {
+      const poster_item = '/+14156667777/posters/1737178477987'
+      const poster_directory = '/+14156667777/posters/'
+      const poster_index = '/+14156667777/posters/index/'
+
+      // All should normalize to the same root directory
+      expect(as_directory_id(poster_item)).toBe(poster_directory)
+      expect(as_directory_id(poster_directory)).toBe(poster_directory)
+      expect(as_directory_id(poster_index)).toBe(poster_directory)
+    })
+
+    it('handles different types consistently', () => {
+      expect(as_directory_id('/+14156667777/statements/1234567890')).toBe(
+        '/+14156667777/statements/'
+      )
+      expect(as_directory_id('/+14156667777/events/1234567890')).toBe(
+        '/+14156667777/events/'
+      )
     })
   })
 })

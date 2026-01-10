@@ -69,9 +69,14 @@ export const is_directory = maybe =>
  * @returns {string}
  */
 export const as_directory_id = itemid => {
-  const [author, type] = as_path_parts(itemid)
-  if (itemid?.endsWith('/')) return itemid
-  return `/${author}/${type}/index/` // Trailing slash indicates directory
+  const parts = as_path_parts(itemid)
+  const [author, type, , archive] = parts
+
+  // Archive is only valid if it's a numeric timestamp, not 'index'
+  if (archive && archive !== 'index') return `/${author}/${type}/${archive}/`
+  // For root directories (no archive or 'index'), always use /author/type/ format
+  // This normalizes both "/author/type/" and "/author/type/itemid" to the same directory
+  return `/${author}/${type}/`
 }
 
 /**
@@ -106,9 +111,17 @@ export const load_directory_from_network = async itemid => {
     let firebase_path = `people/${author}/${type}/`
     if (archive) firebase_path += `${archive}/`
     const folder = await directory(firebase_path)
-    folder?.items?.forEach(item =>
-      meta.items.push(parseInt(item.name.split('.')[0]))
-    )
+    const seen_timestamps = new Set()
+    folder?.items?.forEach(item => {
+      const [filename] = item.name.split('.')
+      // For posters directory, filter out layer files (they have -layer suffix)
+      if (type === 'posters' && filename.includes('-')) return
+      const timestamp = parseInt(filename)
+      if (!seen_timestamps.has(timestamp)) {
+        seen_timestamps.add(timestamp)
+        meta.items.push(timestamp)
+      }
+    })
     folder?.prefixes?.forEach(prefix =>
       meta.archive.push(parseInt(prefix.name))
     )

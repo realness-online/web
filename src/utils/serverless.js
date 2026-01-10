@@ -68,43 +68,55 @@ export const remove = async (/** @type {string} */ path) => {
   }
 }
 
-export const move = async (type, id, archive_id) => {
-  let upload_successful = false
-  const local_id = `${localStorage.me}/${type}/${id}`
-  const old_location = `${localStorage.me}/${type}/${id}`
-  const new_location = `${localStorage.me}/${type}/${archive_id}/${id}`
+export const move = async (type, id, archive_id, author = localStorage.me) => {
+  const component_types = [
+    'shadows',
+    'sediment',
+    'sand',
+    'gravel',
+    'rocks',
+    'boulders'
+  ]
+  const is_component = component_types.includes(type)
+
+  let old_location, new_location
+  if (is_component) {
+    old_location = /** @type {Id} */ (`${author}/${type}/${id}`)
+    new_location = /** @type {Id} */ (`${author}/${type}/${archive_id}/${id}`)
+  } else {
+    old_location = /** @type {Id} */ (`${author}/${type}/${id}`)
+    new_location = /** @type {Id} */ (`${author}/${type}/${archive_id}/${id}`)
+  }
+  const local_id = old_location
+
   let html = await get(local_id)
   if (!html) {
-    // if it isn't found loocally we need to download it
-    html = await load(/** @type {Id} */ (local_id))
+    html = await load(old_location)
+    if (!html) return false
     html = await get(local_id)
+    if (!html) return false
   }
+
+  let upload_successful = false
   const { compressed, metadata } = await prepare_upload_html(html)
   try {
-    // Step 1: Upload to new location
-    await upload(
-      await as_filename(/** @type {Id} */ (new_location)),
-      compressed,
-      metadata
-    )
+    await upload(await as_filename(new_location), compressed, metadata)
     upload_successful = true
 
-    // Step 2: Only remove old file if upload was successful
-    await remove(await as_filename(/** @type {Id} */ (old_location)))
+    await remove(await as_filename(old_location))
     console.info(`Moved ${old_location} to ${new_location}`)
     return true
   } catch (error) {
-    // Step 3: Cleanup if upload succeeded but remove failed
     if (upload_successful)
       try {
-        await remove(await as_filename(/** @type {Id} */ (new_location)))
+        await remove(await as_filename(new_location))
         await set(old_location, html)
         console.info(`Rolled back upload of ${new_location}`)
       } catch (cleanup_error) {
         console.error(`Failed to cleanup ${new_location}`, cleanup_error)
       }
 
-    console.error(`Failed to move poster ${old_location}`, error)
+    console.error(`Failed to move ${type} ${old_location}`, error)
     return false
   }
 }
