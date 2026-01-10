@@ -27,8 +27,8 @@
     regular,
     light,
     background,
-    boulder,
-    rock,
+    boulders,
+    rocks,
     gravel,
     sand,
     sediment,
@@ -94,8 +94,8 @@
     const new_state = !cutout.value
     cutout.value = new_state
     if (new_state) {
-      boulder.value = true
-      rock.value = true
+      boulders.value = true
+      rocks.value = true
       gravel.value = true
       sand.value = true
       sediment.value = true
@@ -170,8 +170,8 @@
   register_preference('pref::Toggle_Regular', regular)
   register_preference('pref::Toggle_Light', light)
 
-  register_preference('pref::Toggle_Boulder', boulder)
-  register_preference('pref::Toggle_Rock', rock)
+  register_preference('pref::Toggle_Boulders', boulders)
+  register_preference('pref::Toggle_Rocks', rocks)
   register_preference('pref::Toggle_Gravel', gravel)
   register_preference('pref::Toggle_Sand', sand)
   register_preference('pref::Toggle_Sediment', sediment)

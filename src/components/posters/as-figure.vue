@@ -12,17 +12,20 @@
   import {
     as_query_id,
     as_author,
+    load_from_network,
     load,
     as_created_at,
     as_layer_id
   } from '@/utils/itemid'
+  import { get_item } from '@/utils/item'
+  import { get } from 'idb-keyval'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
   import {
     cutout,
-    boulder,
-    rock,
+    boulders,
+    rocks,
     gravel,
     sand,
     sediment,
@@ -82,16 +85,24 @@
     vector.value = shown_vector
 
     if (!shown_vector.regular) {
-      const pattern = await load(as_layer_id(props.itemid, 'shadows'))
-      if (pattern) {
-        const pattern_data = /** @type {Poster} */ (
-          /** @type {unknown} */ (pattern)
-        )
-        vector.value.light = pattern_data.light
-        vector.value.regular = pattern_data.regular
-        vector.value.medium = pattern_data.medium
-        vector.value.bold = pattern_data.bold
-        vector.value.background = pattern_data.background
+      const shadow_id = as_layer_id(props.itemid, 'shadows')
+      let html_string = await get(shadow_id)
+      if (!html_string) {
+        await load_from_network(shadow_id)
+        html_string = await get(shadow_id)
+      }
+      if (html_string) {
+        const pattern = get_item(html_string, shadow_id)
+        if (pattern) {
+          const pattern_data = /** @type {Poster} */ (
+            /** @type {unknown} */ (pattern)
+          )
+          vector.value.light = pattern_data.light
+          vector.value.regular = pattern_data.regular
+          vector.value.medium = pattern_data.medium
+          vector.value.bold = pattern_data.bold
+          vector.value.background = pattern_data.background
+        }
       }
     }
 
@@ -157,10 +168,10 @@
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol
-        v-if="cutout && boulder && vector?.boulders"
+        v-if="cutout && boulders && vector?.boulders"
         :itemid="as_layer_id(itemid, 'boulders')" />
       <as-symbol
-        v-if="cutout && rock && vector?.rocks"
+        v-if="cutout && rocks && vector?.rocks"
         :itemid="as_layer_id(itemid, 'rocks')" />
       <as-symbol
         v-if="cutout && gravel && vector?.gravel"
