@@ -111,8 +111,8 @@
           name="stroke"
           title="Outline your graphic with a stroke in relevant color" />
         <preference name="cutout" title="Display cutouts of the poster">
-          <preference name="boulder" />
-          <preference name="rock" />
+          <preference name="boulders" />
+          <preference name="rocks" />
           <preference name="gravel" />
           <preference name="sand" />
           <preference name="sediment" />

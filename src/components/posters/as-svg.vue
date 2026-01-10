@@ -26,8 +26,8 @@
     fill,
     stroke,
     cutout,
-    boulder,
-    rock,
+    boulders,
+    rocks,
     gravel,
     sand,
     sediment,
@@ -115,11 +115,11 @@
   const drama_back_visible = computed(() => drama_back.value)
   const drama_front_visible = computed(() => drama_front.value)
 
-  const boulder_visible = computed(
-    () => cutout.value && boulder.value && vector.value?.boulders
+  const boulders_visible = computed(
+    () => cutout.value && boulders.value && vector.value?.boulders
   )
-  const rock_visible = computed(
-    () => cutout.value && rock.value && vector.value?.rocks
+  const rocks_visible = computed(
+    () => cutout.value && rocks.value && vector.value?.rocks
   )
   const gravel_visible = computed(
     () => cutout.value && gravel.value && vector.value?.gravel
@@ -160,15 +160,15 @@
     return { opacity: OPACITY_FULL, visibility: 'visible' }
   })
 
-  const boulder_style = computed(() => {
-    if (!boulder_visible.value)
+  const boulders_style = computed(() => {
+    if (!boulders_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
   })
 
-  const rock_style = computed(() => {
-    if (!rock_visible.value)
+  const rocks_style = computed(() => {
+    if (!rocks_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     const opacity = shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL
     return { opacity, visibility: 'visible' }
@@ -204,7 +204,7 @@
     return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
   })
 
-  const boulder_fragment = computed(() => {
+  const boulders_fragment = computed(() => {
     if (!props.itemid) return ''
     const layer_id = as_layer_id(
       /** @type {import('@/types').Id} */ (props.itemid),
@@ -213,7 +213,7 @@
     return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
   })
 
-  const rock_fragment = computed(() => {
+  const rocks_fragment = computed(() => {
     if (!props.itemid) return ''
     const layer_id = as_layer_id(
       /** @type {import('@/types').Id} */ (props.itemid),
@@ -293,14 +293,14 @@
         <g class="cutouts">
           <use
             v-if="intersecting"
-            itemprop="boulder"
-            :href="boulder_fragment"
-            :style="boulder_style" />
+            itemprop="boulders"
+            :href="boulders_fragment"
+            :style="boulders_style" />
           <use
             v-if="intersecting"
-            itemprop="rock"
-            :href="rock_fragment"
-            :style="rock_style" />
+            itemprop="rocks"
+            :href="rocks_fragment"
+            :style="rocks_style" />
           <use
             v-if="intersecting"
             itemprop="gravel"
@@ -521,8 +521,8 @@
     & use[itemprop='sediment'],
     & use[itemprop='sand'],
     & use[itemprop='gravel'],
-    & use[itemprop='rock'],
-    & use[itemprop='boulder'] {
+    & use[itemprop='rocks'],
+    & use[itemprop='boulders'] {
       opacity: 0.5;
       filter: saturate(100%) brightness(100%);
       will-change: opacity, filter, display;
@@ -554,8 +554,8 @@
       & use[itemprop='sediment'],
       & use[itemprop='sand'],
       & use[itemprop='gravel'],
-      & use[itemprop='rock'],
-      & use[itemprop='boulder'] {
+      & use[itemprop='rocks'],
+      & use[itemprop='boulders'] {
         animation: none !important;
         opacity: 0.5;
       }

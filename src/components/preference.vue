@@ -21,8 +21,8 @@
 
     // Special logic: when turning cutout ON, enable all geology layers
     if (props.name === 'cutout' && new_state) {
-      preferences.boulder.value = true
-      preferences.rock.value = true
+      preferences.boulders.value = true
+      preferences.rocks.value = true
       preferences.gravel.value = true
       preferences.sand.value = true
       preferences.sediment.value = true

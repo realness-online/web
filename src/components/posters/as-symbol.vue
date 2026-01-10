@@ -1,7 +1,7 @@
 <script setup>
   /* eslint-disable vue/no-v-html */
   import { ref, onMounted as mounted, watch } from 'vue'
-  import { load } from '@/utils/itemid'
+  import { load_from_network } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
   import { get } from 'idb-keyval'
 
@@ -18,9 +18,13 @@
   const symbol_viewbox = ref('')
 
   const load_symbol = async () => {
-    await load(props.itemid)
-    const html_string = await get(props.itemid)
-    if (!html_string) return
+    let html_string = await get(props.itemid)
+    if (!html_string) {
+      const item = await load_from_network(props.itemid)
+      if (!item) return
+      html_string = await get(props.itemid)
+      if (!html_string) return
+    }
 
     const fragment = hydrate(html_string)
     if (!fragment) return
