@@ -7,7 +7,7 @@
       required: true,
       validator: value =>
         typeof value === 'string' &&
-        ['sediment', 'sand', 'gravel', 'rock', 'boulder'].includes(value)
+        ['sediment', 'sand', 'gravel', 'rocks', 'boulders'].includes(value)
     }
   })
   const vector = inject('vector', ref(null))

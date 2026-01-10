@@ -267,8 +267,8 @@ describe('poster utils', () => {
         'sediment',
         'sand',
         'gravel',
-        'rock',
-        'boulder'
+        'rocks',
+        'boulders'
       ])
     })
   })

@@ -135,7 +135,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/shadows/1737178477987')
       expect(result).toBe(
-        'people/+16282281824/posters/1737178477987-shadow.html.gz'
+        'people/+16282281824/posters/1737178477987-shadows.html.gz'
       )
     })
 
@@ -162,7 +162,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/shadows/1715020920519')
       expect(result).toBe(
-        'people/+16282281824/posters/1712335058767/1715020920519-shadow.html.gz'
+        'people/+16282281824/posters/1712335058767/1715020920519-shadows.html.gz'
       )
     })
   })
@@ -314,7 +314,7 @@ describe('@/utils/itemid', () => {
 
     it('extracts layer name from shadow layer ID', () => {
       const result = as_layer_name('/+16282281824/shadows/1737178477987')
-      expect(result).toBe('shadow')
+      expect(result).toBe('shadows')
     })
 
     it('extracts layer name from sediment layer ID', () => {
@@ -325,6 +325,16 @@ describe('@/utils/itemid', () => {
     it('extracts layer name from sand layer ID', () => {
       const result = as_layer_name('/+16282281824/sand/1737178477987')
       expect(result).toBe('sand')
+    })
+
+    it('extracts layer name from rocks layer ID', () => {
+      const result = as_layer_name('/+16282281824/rocks/1737178477987')
+      expect(result).toBe('rocks')
+    })
+
+    it('extracts layer name from boulders layer ID', () => {
+      const result = as_layer_name('/+16282281824/boulders/1737178477987')
+      expect(result).toBe('boulders')
     })
 
     it('returns null for non-layer ID', () => {

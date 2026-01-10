@@ -188,8 +188,8 @@ export const sort_cutouts_into_layers = (vector, id) => {
     sediment: [],
     sand: [],
     gravel: [],
-    rock: [],
-    boulder: []
+    rocks: [],
+    boulders: []
   }
 
   vector.cutout.forEach(cutout => {
@@ -200,8 +200,8 @@ export const sort_cutouts_into_layers = (vector, id) => {
     if (progress < 60) cutouts.sediment.push(cutout)
     else if (progress < 70) cutouts.sand.push(cutout)
     else if (progress < 80) cutouts.gravel.push(cutout)
-    else if (progress < 90) cutouts.rock.push(cutout)
-    else cutouts.boulder.push(cutout)
+    else if (progress < 90) cutouts.rocks.push(cutout)
+    else cutouts.boulders.push(cutout)
   })
 
   // Convert arrays to symbol elements

@@ -162,14 +162,14 @@
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        v-html="new_vector?.cutouts?.rock?.innerHTML" />
+        v-html="new_vector?.cutouts?.rocks?.innerHTML" />
       <symbol
         :id="query(as_layer_id(queue_itemid, 'boulders'))"
         :itemid="as_layer_id(queue_itemid, 'boulders')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
-        v-html="new_vector?.cutouts?.boulder?.innerHTML" />
+        v-html="new_vector?.cutouts?.boulders?.innerHTML" />
     </svg>
   </figure>
 </template>

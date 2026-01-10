@@ -30,7 +30,13 @@ import {
   slice_alignment
 } from '@/utils/preference'
 
-export const geology_layers = ['sediment', 'sand', 'gravel', 'rock', 'boulder']
+export const geology_layers = [
+  'sediment',
+  'sand',
+  'gravel',
+  'rocks',
+  'boulders'
+]
 
 // Pan range calculation constants
 const PERCENTAGE_MAX = 100

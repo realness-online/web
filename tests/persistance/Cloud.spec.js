@@ -24,10 +24,7 @@ vi.mock('@/utils/itemid', () => ({
         'boulders'
       ]
       if (component_types.includes(type)) {
-        let layer_name = type
-        if (type === 'shadows') layer_name = 'shadow'
-        else if (type === 'rocks') layer_name = 'rock'
-        else if (type === 'boulders') layer_name = 'boulder'
+        const layer_name = type
         if (parts.length === 4) {
           return `people/${parts[0]}/posters/${parts[3]}/${timestamp}-${layer_name}.html.gz`
         }
