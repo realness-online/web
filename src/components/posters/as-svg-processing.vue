@@ -133,40 +133,39 @@
       :sync_poster="new_vector"
       :viewBox="`0 0 ${image_width} ${image_height}`" />
 
-    <!-- Hidden SVG defs container, not user-facing style -->
     <svg style="display: none">
       <as-symbol-shadow />
       <symbol
-        :id="`${query(queue_item.id)}-sediment`"
+        :id="query(as_layer_id(queue_itemid, 'sediment'))"
         :itemid="as_layer_id(queue_itemid, 'sediment')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.sediment?.innerHTML" />
       <symbol
-        :id="`${query(queue_item.id)}-sand`"
+        :id="query(as_layer_id(queue_itemid, 'sand'))"
         :itemid="as_layer_id(queue_itemid, 'sand')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.sand?.innerHTML" />
       <symbol
-        :id="`${query(queue_item.id)}-gravel`"
+        :id="query(as_layer_id(queue_itemid, 'gravel'))"
         :itemid="as_layer_id(queue_itemid, 'gravel')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.gravel?.innerHTML" />
       <symbol
-        :id="`${query(queue_item.id)}-rock`"
-        :itemid="as_layer_id(queue_itemid, 'rock')"
+        :id="query(as_layer_id(queue_itemid, 'rocks'))"
+        :itemid="as_layer_id(queue_itemid, 'rocks')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"
         v-html="new_vector?.cutouts?.rock?.innerHTML" />
       <symbol
-        :id="`${query(queue_item.id)}-boulder`"
-        :itemid="as_layer_id(queue_itemid, 'boulder')"
+        :id="query(as_layer_id(queue_itemid, 'boulders'))"
+        :itemid="as_layer_id(queue_itemid, 'boulders')"
         itemscope
         itemtype="/cutouts"
         :viewBox="`0 0 ${image_width} ${image_height}`"

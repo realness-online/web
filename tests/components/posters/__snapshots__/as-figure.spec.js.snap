@@ -13,7 +13,6 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
   />
-  <!-- Hidden SVG defs container, not user-facing style -->
   <!--v-if-->
 </figure>
 `;
@@ -30,7 +29,6 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
   />
-  <!-- Hidden SVG defs container, not user-facing style -->
   <!--v-if-->
 </figure>
 `;

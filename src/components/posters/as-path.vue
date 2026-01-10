@@ -80,7 +80,13 @@
     await tick()
     if (path.value) path_length.value = path.value.getTotalLength()
   })
-  watch_effect(() => (d.value = props.path?.getAttribute('d')))
+  watch_effect(() => {
+    d.value = props.path?.getAttribute('d')
+  })
+
+  watch_effect(() => {
+    if (props.fill && props.fill !== fill.value) fill.value = props.fill
+  })
 </script>
 
 <template>

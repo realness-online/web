@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
-import { as_filename, as_archive, is_itemid } from '@/utils/itemid'
+import {
+  as_filename,
+  as_archive,
+  is_itemid,
+  as_poster_id,
+  as_layer_name,
+  as_layer_id
+} from '@/utils/itemid'
 import { get } from 'idb-keyval'
 vi.mock('idb-keyval')
 const directory = {
@@ -122,6 +129,42 @@ describe('@/utils/itemid', () => {
       const result = await as_filename('/+16282281824/posters/1737178477987')
       expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
     })
+
+    it('generates correct path for shadow layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/shadows/1737178477987')
+      expect(result).toBe(
+        'people/+16282281824/posters/1737178477987-shadow.html.gz'
+      )
+    })
+
+    it('generates correct path for sediment layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/sediment/1737178477987')
+      expect(result).toBe(
+        'people/+16282281824/posters/1737178477987-sediment.html.gz'
+      )
+    })
+
+    it('generates correct path for sand layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/sand/1737178477987')
+      expect(result).toBe(
+        'people/+16282281824/posters/1737178477987-sand.html.gz'
+      )
+    })
+
+    it('generates correct path for archived shadow layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/shadows/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519-shadow.html.gz'
+      )
+    })
   })
 
   describe('archive detection', () => {
@@ -239,6 +282,75 @@ describe('@/utils/itemid', () => {
 
       const result = await as_archive('/+16282281824/posters/1000000000000')
       expect(result).toBe(null)
+    })
+  })
+
+  describe('layer ID conversion', () => {
+    it('extracts poster ID from shadow layer ID', () => {
+      const result = as_poster_id('/+16282281824/shadows/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('extracts poster ID from sediment layer ID', () => {
+      const result = as_poster_id('/+16282281824/sediment/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('extracts poster ID from sand layer ID', () => {
+      const result = as_poster_id('/+16282281824/sand/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('returns null for non-layer ID', () => {
+      const result = as_poster_id('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('returns null for invalid ID', () => {
+      expect(as_poster_id('')).toBeNull()
+      expect(as_poster_id(null)).toBeNull()
+      expect(as_poster_id(undefined)).toBeNull()
+    })
+
+    it('extracts layer name from shadow layer ID', () => {
+      const result = as_layer_name('/+16282281824/shadows/1737178477987')
+      expect(result).toBe('shadow')
+    })
+
+    it('extracts layer name from sediment layer ID', () => {
+      const result = as_layer_name('/+16282281824/sediment/1737178477987')
+      expect(result).toBe('sediment')
+    })
+
+    it('extracts layer name from sand layer ID', () => {
+      const result = as_layer_name('/+16282281824/sand/1737178477987')
+      expect(result).toBe('sand')
+    })
+
+    it('returns null for non-layer ID', () => {
+      const result = as_layer_name('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('constructs layer ID from poster ID', () => {
+      const result = as_layer_id(
+        '/+16282281824/posters/1737178477987',
+        'shadows'
+      )
+      expect(result).toBe('/+16282281824/shadows/1737178477987')
+    })
+
+    it('constructs sediment layer ID from poster ID', () => {
+      const result = as_layer_id(
+        '/+16282281824/posters/1737178477987',
+        'sediment'
+      )
+      expect(result).toBe('/+16282281824/sediment/1737178477987')
+    })
+
+    it('constructs sand layer ID from poster ID', () => {
+      const result = as_layer_id('/+16282281824/posters/1737178477987', 'sand')
+      expect(result).toBe('/+16282281824/sand/1737178477987')
     })
   })
 })

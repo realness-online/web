@@ -52,9 +52,15 @@ vi.mock('@/utils/itemid', () => ({
     const parts = poster_id.split('/')
     const author = parts[1]
     const created = parts[3]
-    const layer_type = layer === 'shadow' ? 'shadows' : layer
+    const layer_type = layer.endsWith('s') ? layer : `${layer}s`
     return `/${author}/${layer_type}/${created}`
-  })
+  }),
+  as_query_id: vi.fn(itemid =>
+    itemid.substring(2).replace('/', '-').replace('/', '-')
+  ),
+  as_fragment_id: vi.fn(
+    itemid => `#${itemid.substring(2).replace('/', '-').replace('/', '-')}`
+  )
 }))
 
 // Mock poster composable
@@ -97,7 +103,7 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
       })
       const symbol = wrapper.find('symbol')
       expect(symbol.exists()).toBe(true)
-      expect(symbol.attributes('id')).toContain(mock_vector.id)
+      expect(symbol.attributes('id')).toBe('14151234356-shadows-1000')
       expect(symbol.attributes('width')).toBe('800')
       expect(symbol.attributes('height')).toBe('600')
       expect(symbol.attributes('viewbox')).toBe('0 0 800 600')

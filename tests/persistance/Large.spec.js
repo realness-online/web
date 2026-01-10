@@ -27,7 +27,33 @@ vi.mock('@/utils/itemid', () => ({
   }),
   as_archive: vi.fn(() => Promise.resolve(null)),
   as_author: vi.fn(() => '/+1234567890'),
-  as_type: vi.fn(() => 'posters')
+  as_type: vi.fn(() => 'posters'),
+  as_poster_id: vi.fn(id => {
+    const layer_types = [
+      'shadows',
+      'sediment',
+      'sand',
+      'gravel',
+      'rocks',
+      'boulders'
+    ]
+    const parts = id.split('/').filter(p => p)
+    if (parts.length === 3 && layer_types.includes(parts[1])) {
+      return `/${parts[0]}/posters/${parts[2]}`
+    }
+    return null
+  }),
+  as_layer_name: vi.fn(id => {
+    const parts = id.split('/').filter(p => p)
+    if (parts.length !== 3) return null
+    const type = parts[1]
+    if (type === 'shadows') return 'shadow'
+    if (type === 'rocks') return 'rock'
+    if (type === 'boulders') return 'boulder'
+    const layer_types = ['sediment', 'sand', 'gravel']
+    if (layer_types.includes(type)) return type
+    return null
+  })
 }))
 
 // Create a test class that uses the Large mixin
@@ -80,6 +106,95 @@ describe('@/persistance/Large', () => {
 
       expect(path).toBe(
         'people/+1234567890/posters/1234567890/1234567890/index.html.gz'
+      )
+    })
+
+    it('returns path with suffix for shadow layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/shadows/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999-shadow.html.gz'
+      )
+    })
+
+    it('returns path with suffix for sediment layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/sediment/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999-sediment.html.gz'
+      )
+    })
+
+    it('returns path with suffix for sand layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/sand/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe('people/+1234567890/posters/1737178477999-sand.html.gz')
+    })
+
+    it('returns path with suffix for gravel layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/gravel/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999-gravel.html.gz'
+      )
+    })
+
+    it('returns path with suffix for rock layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/rocks/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe('people/+1234567890/posters/1737178477999-rock.html.gz')
+    })
+
+    it('returns path with suffix for boulder layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(null)
+
+      const large = new TestLargeClass('/+1234567890/boulders/1737178477999')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe(
+        'people/+1234567890/posters/1737178477999-boulder.html.gz'
+      )
+    })
+
+    it('returns path with suffix for archived shadow layer', async () => {
+      const { as_archive } = await import('@/utils/itemid')
+      as_archive.mockResolvedValue(
+        'people/+1234567890/posters/1234567890/1234567891'
+      )
+
+      const large = new TestLargeClass('/+1234567890/shadows/1234567891')
+
+      const path = await large.get_storage_path()
+
+      expect(path).toBe(
+        'people/+1234567890/posters/1234567890/1234567891-shadow.html.gz'
       )
     })
   })

@@ -35,6 +35,7 @@
     storytelling,
     aspect_ratio_mode
   } from '@/utils/preference'
+  import { as_layer_id, as_fragment_id } from '@/utils/itemid'
   const props = defineProps({
     itemid: {
       type: String,
@@ -55,7 +56,6 @@
   })
   const {
     query,
-    fragment,
     aspect_ratio,
     working,
     show,
@@ -195,6 +195,60 @@
     return { opacity, visibility: 'visible' }
   })
 
+  const shadow_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'shadows'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
+  const boulder_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'boulders'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
+  const rock_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'rocks'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
+  const gravel_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'gravel'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
+  const sand_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'sand'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
+  const sediment_fragment = computed(() => {
+    if (!props.itemid) return ''
+    const layer_id = as_layer_id(
+      /** @type {import('@/types').Id} */ (props.itemid),
+      'sediment'
+    )
+    return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
+  })
+
   watch(() => {
     if (should_ken_burns.value && !ken_burns_ready.value)
       ken_burns_ready.value = true
@@ -225,7 +279,7 @@
       'hide-cursor': hide_cursor
     }">
     <g>
-      <use itemprop="shadow" :href="fragment('shadow')" />
+      <use itemprop="shadow" :href="shadow_fragment" />
       <rect
         id="lightbar-back"
         fill="url(#lightbar)"
@@ -240,27 +294,27 @@
           <use
             v-if="intersecting"
             itemprop="boulder"
-            :href="fragment('boulder')"
+            :href="boulder_fragment"
             :style="boulder_style" />
           <use
             v-if="intersecting"
             itemprop="rock"
-            :href="fragment('rock')"
+            :href="rock_fragment"
             :style="rock_style" />
           <use
             v-if="intersecting"
             itemprop="gravel"
-            :href="fragment('gravel')"
+            :href="gravel_fragment"
             :style="gravel_style" />
           <use
             v-if="intersecting"
             itemprop="sand"
-            :href="fragment('sand')"
+            :href="sand_fragment"
             :style="sand_style" />
           <use
             v-if="intersecting"
             itemprop="sediment"
-            :href="fragment('sediment')"
+            :href="sediment_fragment"
             :style="sediment_style" />
         </g>
       </slot>

@@ -62,8 +62,7 @@ vi.mock('@/utils/itemid', () => ({
     const author = parts[1]
     const created = parts[3]
     if (!author || !created) return ''
-    const layer_type = layer === 'shadow' ? 'shadows' : `${layer}s`
-    return `/${author}/${layer_type}/${created}`
+    return `/${author}/${layer}/${created}`
   })
 }))
 
@@ -1227,13 +1226,13 @@ describe('vectorize composable', () => {
         '/user/shadows/1234567890'
       )
       expect(mock_cutout_constructor).toHaveBeenCalledWith(
-        '/user/sediments/1234567890'
+        '/user/sediment/1234567890'
       )
       expect(mock_cutout_constructor).toHaveBeenCalledWith(
-        '/user/sands/1234567890'
+        '/user/sand/1234567890'
       )
       expect(mock_cutout_constructor).toHaveBeenCalledWith(
-        '/user/gravels/1234567890'
+        '/user/gravel/1234567890'
       )
       expect(mock_cutout_constructor).toHaveBeenCalledWith(
         '/user/rocks/1234567890'

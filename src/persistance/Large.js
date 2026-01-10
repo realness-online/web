@@ -2,7 +2,12 @@
 /** @typedef {import('@/types').Id} Id */
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
-import { as_created_at, as_archive } from '@/utils/itemid'
+import {
+  as_created_at,
+  as_archive,
+  as_poster_id,
+  as_layer_name
+} from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
 
 /**
@@ -21,14 +26,29 @@ export const Large = superclass =>
      * @returns {Promise<string>}
      */
     async get_storage_path() {
+      const poster_id = as_poster_id(this.id)
+      if (poster_id) {
+        let poster_filename = poster_id
+        if (poster_id.startsWith('/+')) poster_filename = `people${poster_id}`
+
+        const layer_name = as_layer_name(this.id)
+        const archive = await as_archive(poster_id)
+
+        if (archive) {
+          const suffix = layer_name ? `-${layer_name}` : ''
+          return `${archive}${suffix}.html.gz`
+        }
+
+        const suffix = layer_name ? `-${layer_name}` : ''
+        return `${poster_filename}${suffix}.html.gz`
+      }
+
       let filename = this.id
       if (this.id.startsWith('/+')) filename = `people${this.id}`
 
-      // Check if this item is in an archive
       const archive = await as_archive(this.id)
       if (archive) return `${archive}/index.html.gz`
 
-      // Large files use folder structure
       return `${filename}/index.html.gz`
     }
 
