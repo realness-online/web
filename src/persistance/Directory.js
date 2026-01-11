@@ -4,7 +4,7 @@
 
 import { as_path_parts, as_created_at, is_itemid } from '@/utils/itemid'
 import { get, set, keys } from 'idb-keyval'
-import { directory } from '@/utils/serverless'
+import { directory, current_user } from '@/utils/serverless'
 
 /**
  * @implements {Directory}
@@ -101,7 +101,7 @@ export const build_local_directory = async itemid => {
  * @returns {Promise<Directory | null>}
  */
 export const load_directory_from_network = async itemid => {
-  if (navigator.onLine) {
+  if (navigator.onLine && current_user.value) {
     const [author, type, , archive = null] = as_path_parts(itemid)
 
     const path = as_directory_id(itemid)
@@ -141,7 +141,7 @@ export const as_directory = async itemid => {
   if (cached) return cached
 
   let directory = await build_local_directory(itemid)
-  if (navigator.onLine)
+  if (navigator.onLine && current_user.value)
     try {
       directory = await load_directory_from_network(itemid)
     } catch (e) {

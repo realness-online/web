@@ -1,35 +1,33 @@
 <script setup>
   /* eslint-disable vue/no-static-inline-styles */
-  import AsDownload from '@/components/download-vector'
-  import AsDownloadVideo from '@/components/download-video'
-  import AsMessenger from '@/components/profile/as-messenger'
-  import AsLink from '@/components/profile/as-link'
   import AsSvg from '@/components/posters/as-svg'
   import AsSymbol from '@/components/posters/as-symbol'
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
+  import Icon from '@/components/icon'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   import {
     as_query_id,
     as_author,
-    load_from_network,
+    load_from_cache,
     load,
-    as_created_at,
     as_layer_id
   } from '@/utils/itemid'
   import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
-  import { is_vector, is_vector_id, is_click } from '@/use/poster'
-  import { as_time } from '@/utils/date'
-  import { current_user } from '@/utils/serverless'
+  import {
+    is_vector,
+    is_vector_id,
+    is_click,
+    geology_layers
+  } from '@/use/poster'
   import {
     cutout,
     boulders,
     rocks,
     gravel,
     sand,
-    sediment,
-    show_menu
+    sediment
   } from '@/utils/preference'
   import {
     ref,
@@ -45,13 +43,16 @@
       type: String,
       required: true,
       validate: is_vector_id
+    },
+    menu: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits({
     'vector-click': is_click,
     show: is_vector
   })
-  const menu = ref(false)
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
@@ -63,63 +64,69 @@
     sediment: false
   })
 
-  const query_id = computed(() => as_query_id(props.itemid))
-  const posted_at = computed(() => as_time(as_created_at(props.itemid)))
+  const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const shown = ref(false)
-  const has_been_focused = ref(false)
-  const vector_click = () => {
-    menu.value = !menu.value
-    emit('vector-click', menu.value)
-  }
-  const handle_focus = () => {
-    if (!has_been_focused.value) {
-      has_been_focused.value = true
-      if (poster.value)
-        poster.value.setAttribute('data-has-been-focused', 'true')
-    }
-  }
+  const working = ref(true)
 
   const on_show = async shown_vector => {
     if (!shown_vector) return
 
+    working.value = true
     vector.value = shown_vector
 
     if (!shown_vector.regular) {
-      const shadow_id = as_layer_id(props.itemid, 'shadows')
+      const shadow_id = as_layer_id(/** @type {Id} */ (props.itemid), 'shadows')
       let html_string = await get(shadow_id)
+      let pattern = null
       if (!html_string) {
-        await load_from_network(shadow_id)
-        html_string = await get(shadow_id)
+        const { item, html } = await load_from_cache(shadow_id)
+        if (html) html_string = html
+        if (item) pattern = item
       }
-      if (html_string) {
-        const pattern = get_item(html_string, shadow_id)
-        if (pattern) {
-          const pattern_data = /** @type {Poster} */ (
-            /** @type {unknown} */ (pattern)
-          )
-          vector.value.light = pattern_data.light
-          vector.value.regular = pattern_data.regular
-          vector.value.medium = pattern_data.medium
-          vector.value.bold = pattern_data.bold
-          vector.value.background = pattern_data.background
+      if (!pattern && html_string) pattern = get_item(html_string, shadow_id)
+
+      if (pattern) {
+        const pattern_data = /** @type {Poster} */ (
+          /** @type {unknown} */ (pattern)
+        )
+        vector.value.light = pattern_data.light
+        vector.value.regular = pattern_data.regular
+        vector.value.medium = pattern_data.medium
+        vector.value.bold = pattern_data.bold
+        vector.value.background = pattern_data.background
+      }
+    }
+
+    if (!vector.value.cutouts) {
+      vector.value.cutouts = {}
+      const cutout_promises = geology_layers.map(async layer => {
+        const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
+        const html_string = await get(layer_id)
+        if (html_string) {
+          vector.value.cutouts[layer] = true
+          return
         }
-      }
+        const { html } = await load_from_cache(layer_id)
+        if (html) vector.value.cutouts[layer] = true
+      })
+      await Promise.all(cutout_promises)
     }
 
     await tick()
     if (vector.value && vector.value.regular) {
       emit('show', vector.value)
       shown.value = true
+      working.value = false
     }
   }
 
   provide('vector', vector)
   watch_effect(async () => {
-    if (menu.value && !person.value) {
-      const author_id = as_author(props.itemid)
+    if (props.menu && !person.value) {
+      const author_id = as_author(/** @type {Id} */ (props.itemid))
       // False positive: sequential assignment after async load
       // eslint-disable-next-line require-atomic-updates
-      if (author_id) person.value = await load(author_id)
+      if (author_id) person.value = await load(/** @type {Id} */ (author_id))
     }
   })
   watch(cutout, new_value => {
@@ -143,44 +150,28 @@
 </script>
 
 <template>
-  <figure ref="poster" class="poster" @focus="handle_focus">
+  <figure ref="poster" class="poster">
     <figcaption>
-      <button
-        v-if="show_menu && !menu"
-        @click="vector_click"
-        aria-label="Show menu">
-        …
-      </button>
-      <menu v-if="menu">
-        <as-link :itemid="itemid">
-          <time>{{ posted_at }}</time>
-        </as-link>
-        <as-download :itemid="itemid" />
-        <as-download-video :itemid="itemid" />
-        <as-messenger v-if="current_user" :itemid="itemid" />
-      </menu>
+      <slot v-if="menu" />
     </figcaption>
-    <as-svg
-      :itemid="itemid"
-      @click="vector_click"
-      @show="on_show"
-      :focusable="false" />
+    <as-svg :itemid="itemid" @show="on_show" :focusable="false" />
+    <icon v-if="working" name="working" />
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol
-        v-if="cutout && boulders && vector?.boulders"
+        v-if="cutout && boulders && vector?.cutouts?.boulders"
         :itemid="as_layer_id(itemid, 'boulders')" />
       <as-symbol
-        v-if="cutout && rocks && vector?.rocks"
+        v-if="cutout && rocks && vector?.cutouts?.rocks"
         :itemid="as_layer_id(itemid, 'rocks')" />
       <as-symbol
-        v-if="cutout && gravel && vector?.gravel"
+        v-if="cutout && gravel && vector?.cutouts?.gravel"
         :itemid="as_layer_id(itemid, 'gravel')" />
       <as-symbol
-        v-if="cutout && sand && vector?.sand"
+        v-if="cutout && sand && vector?.cutouts?.sand"
         :itemid="as_layer_id(itemid, 'sand')" />
       <as-symbol
-        v-if="cutout && sediment && vector?.sediment"
+        v-if="cutout && sediment && vector?.cutouts?.sediment"
         :itemid="as_layer_id(itemid, 'sediment')" />
     </svg>
   </figure>
@@ -199,7 +190,9 @@
       grid-column-start: span 3;
       grid-row-start: auto;
     }
-    &:focus:not([data-has-been-focused="true"]) {
+    &:focus {
+      outline: 0.25px solid red;
+      outline-offset: base-line * 0.25;
       animation: focus-fade 1.2s ease-in-out;
     }
     @media (orientation: landscape), (min-width: page-width) {
@@ -240,8 +233,16 @@
         max-width: round(base-line * 6);
       }
     }
-    & > figcaption {
+    svg.icon.working {
       position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      width: round(base-line * 6);
+      height: round(base-line * 6);
+    }
+    & > figcaption {
       top: base-line;
       right: base-line;
       z-index: 2;

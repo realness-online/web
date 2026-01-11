@@ -13,7 +13,7 @@ import {
   as_created_at,
   as_query_id,
   is_itemid,
-  load_from_network
+  load_from_cache
 } from '@/utils/itemid'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { del, get } from 'idb-keyval'
@@ -59,7 +59,8 @@ class Cached extends Large(Cloud(Storage)) {
 
     if (navigator.onLine && current_user.value) {
       // After successful network save, prefetch from network to populate HTTP cache
-      await load_from_network(this.id)
+      // without storing to IndexedDB
+      await load_from_cache(this.id)
       await del(this.id)
     }
   }

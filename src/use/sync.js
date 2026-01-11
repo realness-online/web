@@ -37,10 +37,13 @@ export const use = () => {
   const play = async () => {
     if (!current_user.value) return
     if (document.visibilityState !== 'visible') return
+    if (navigator.onLine && current_user.value) emit('active', true)
     await sync_offline_actions()
-    if (!navigator.onLine || !current_user.value) return
+    if (!navigator.onLine || !current_user.value) {
+      emit('active', false)
+      return
+    }
     if (!i_am_fresh()) {
-      emit('active', true)
       localStorage.sync_time = new Date().toISOString()
       await prune()
       await sync_me()
@@ -48,7 +51,8 @@ export const use = () => {
       await sync_events()
       await sync_posters_directory()
       emit('active', false)
-    }
+    } else emit('active', false)
+
     await visit()
   }
 

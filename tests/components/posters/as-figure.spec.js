@@ -38,13 +38,4 @@ describe('@/component/posters/as-figure.vue', () => {
       })
     })
   })
-  describe('Methods', () => {
-    describe('#vector_click', () => {
-      it('Toggles the menu when clicked', () => {
-        const initial_menu = wrapper.vm.menu
-        wrapper.vm.vector_click()
-        expect(wrapper.vm.menu).toBe(!initial_menu)
-      })
-    })
-  })
 })

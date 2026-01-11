@@ -190,6 +190,7 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
+        :menu="poster.menu"
         tabindex="0"
         :class="{
           'selecting-event': poster.picker,

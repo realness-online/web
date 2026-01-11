@@ -62,7 +62,6 @@
     :width="width"
     :height="height"
     :viewBox="viewbox"
-    patternUnits="userSpaceOnUse"
     :preserveAspectRatio="aspect_ratio">
     <as-background
       :id="query('background')"
