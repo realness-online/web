@@ -39,6 +39,14 @@ The navigation provides quick access to all major sections of the app. You'll fi
 
 All navigation works offline, with camera access for poster creation and local statement storage. There's no tracking or analytics - everything stays on your device.
 
+**Sync Indicator**: The app displays a border around the main interface to show sync status:
+
+- **Green pulsing border** - Active syncing in progress. This includes uploading posters from local storage to the network, syncing statements, events, user profile, and other content
+- **Yellow border** - Device is offline
+- **No border** - Normal operation, online and not currently syncing
+
+The sync indicator appears automatically during all background sync operations, ensuring you can see when content is being synchronized across your devices.
+
 ---
 
 ## Posters

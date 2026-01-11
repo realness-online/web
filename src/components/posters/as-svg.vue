@@ -139,7 +139,8 @@
     const layers = {}
     geology_layers.forEach(layer => {
       const pref = layer_preferences[layer]
-      const visible = cutout.value && pref.value && vector.value?.[layer]
+      const visible =
+        cutout.value && pref.value && vector.value?.cutouts?.[layer]
       const fragment = props.itemid
         ? as_fragment_id(
             as_layer_id(
@@ -434,8 +435,8 @@
     & rect#lightbar-back,
     & rect#lightbar-front,
     & > rect:first-of-type,
-    & pattern path[itemprop],
-    & pattern rect[itemprop='background'] {
+    & symbol path[itemprop],
+    & symbol rect[itemprop='background'] {
       pointer-events: none;
       transition:
         opacity 0.2s ease,

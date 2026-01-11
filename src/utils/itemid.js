@@ -77,6 +77,34 @@ export const load_from_network = async itemid => {
 }
 
 /**
+ * Loads from network HTTP cache without storing to IndexedDB
+ * Used for shadow/cutout types that should rely on HTTP cache when online/signed in
+ * @param {Id} itemid
+ * @returns {Promise<{item: Item | null, html: string | null}>}
+ */
+export const load_from_cache = async itemid => {
+  const url = await as_download_url(itemid)
+
+  if (url) {
+    const response = await fetch(url)
+
+    // Check Content-Encoding header
+    const content_encoding = response.headers.get('Content-Encoding')
+    const compressed_html = await response.arrayBuffer()
+    let html = null
+    // If no content encoding or 'identity', data is already decompressed
+    if (!content_encoding || content_encoding === 'identity')
+      html = new TextDecoder().decode(compressed_html)
+    else html = await decompress_html(compressed_html)
+
+    if (!html) return { item: null, html: null }
+    const item = get_item(html, itemid)
+    return { item, html }
+  }
+  return { item: null, html: null }
+}
+
+/**
  * @param {Id} itemid
  * @param {Author} me
  * @returns {Promise<Item | null>}
@@ -122,12 +150,13 @@ export const list = async (itemid, me = localStorage.me) => {
  */
 export const as_download_url = async itemid => {
   if (itemid.startsWith('/+/')) return null
+  const index = (await get('sync:index')) || {}
+  if (index[itemid] === DOES_NOT_EXIST) return null
   try {
     return await url(await as_filename(itemid))
   } catch (e) {
     if (e.code === 'storage/object-not-found') {
       console.warn(itemid, '=>', await as_filename(itemid))
-      const index = (await get('sync:index')) || {}
       index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)
       return null

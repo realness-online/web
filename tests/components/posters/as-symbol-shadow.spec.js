@@ -107,7 +107,6 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
       expect(symbol.attributes('width')).toBe('800')
       expect(symbol.attributes('height')).toBe('600')
       expect(symbol.attributes('viewbox')).toBe('0 0 800 600')
-      expect(symbol.attributes('patternunits')).toBe('userSpaceOnUse')
       expect(symbol.attributes('preserveaspectratio')).toBe('xMidYMid meet')
     })
 
