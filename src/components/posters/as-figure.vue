@@ -151,9 +151,6 @@
 
 <template>
   <figure ref="poster" class="poster">
-    <figcaption>
-      <slot v-if="menu" />
-    </figcaption>
     <as-svg :itemid="itemid" @show="on_show" :focusable="false" />
     <icon v-if="working" name="working" />
     <svg v-if="shown" style="display: none">
@@ -174,6 +171,9 @@
         v-if="cutout && sediment && vector?.cutouts?.sediment"
         :itemid="as_layer_id(itemid, 'sediment')" />
     </svg>
+    <figcaption>
+      <slot v-if="menu" />
+    </figcaption>
   </figure>
 </template>
 
@@ -181,8 +181,6 @@
   figure.poster {
     min-height: 512px;
     border-radius: round((base-line * .03), 2);
-    position: relative;
-    overflow: hidden;
     grid-row-start: span 2;
     scroll-margin: 50vh;
     scroll-snap-align: center;
@@ -243,63 +241,61 @@
       height: round(base-line * 6);
     }
     & > figcaption {
-      top: base-line;
-      right: base-line;
-      z-index: 2;
-
-      button {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: base-line * 0.25;
-        padding: base-line * 0.25 base-line * 0.5;
-        cursor: pointer;
-        color: inherit;
-        font-size: larger;
-        line-height: 1;
-        opacity: 0.7;
-        min-width: base-line * 1.5;
-        text-align: center;
-
-        &:hover {
-          opacity: 1;
-          background: rgba(0, 0, 0, 0.5);
-        }
-
-        &:focus {
-          outline: 0.25px solid currentColor;
-          outline-offset: base-line * 0.25;
-          opacity: 1;
-        }
-      }
 
       menu {
-      height: 0;
-      & > a {
-        z-index: 2;
-        position: absolute;
-      &.download {
-          bottom: base-line;
-          right: base-line;
-        }
-        &.profile {
-          animation-name: fade-in;
-          animation-duration: 0.01s;
-          padding: base-line * .33;
-          background: black-transparent;
-          border-radius: base-line * .25;
-          standard-shadow: boop;
-          top: base-line;
-          left: base-line;
-          & > address {
-            & > h3:first-of-type {
-              margin-right: base-line * .333;
-            }
-            & > h3,
-            & > time {
-              color: blue;
-              line-height: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: base-line;
+        padding: base-line;
+        height: auto;
+        & > a {
+          z-index: 2;
+          position: relative;
+          &.profile {
+            animation-name: fade-in;
+            animation-duration: 0.01s;
+            padding: base-line * .33;
+            background: black-transparent;
+            border-radius: base-line * .25;
+            standard-shadow: boop;
+            position: absolute;
+            top: base-line;
+            left: base-line;
+            & > address {
+              & > h3:first-of-type {
+                margin-right: base-line * .333;
+              }
+              & > h3,
+              & > time {
+                color: blue;
+                line-height: 1;
               }
             }
+          }
+        }
+        & > button {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: base-line * 0.25;
+          padding: base-line * 0.25 base-line * 0.5;
+          cursor: pointer;
+          color: inherit;
+          font-size: larger;
+          line-height: 1;
+          opacity: 0.7;
+          min-width: base-line * 1.5;
+          text-align: center;
+
+          &:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.5);
+          }
+
+          &:focus {
+            outline: 0.25px solid currentColor;
+            outline-offset: base-line * 0.25;
+            opacity: 1;
           }
         }
       }
