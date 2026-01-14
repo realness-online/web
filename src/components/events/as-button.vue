@@ -88,8 +88,6 @@
 
 <style lang="stylus">
   button.event
-    position: absolute
-    z-index: 2;
     border: none;
     & > svg
       width: base-line * 1.75

@@ -41,28 +41,22 @@
 <style lang="stylus">
   section#posters > article > figure.poster > figcaption > menu > a,
   section#posters > article > figure.poster > figcaption > menu > button {
-
     &.avatar {
       standard-shadow: boop;
-      top: base-line;
-      right: base-line;
       &.selected & > svg {
         fill: red;
       }
     }
     &.remove {
       standard-shadow: boop;
-      bottom: base-line;
-      left: base-line;
     }
     &.save {
       standard-shadow: boop;
-      bottom: base-line;
-      right: base-line;
     }
     &.event {
-      top: base-line;
-      left: base-line;
+       &.selected & > svg {
+        fill: red;
+      }
     }
     & > svg {
       fill: green;
