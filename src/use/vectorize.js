@@ -18,7 +18,8 @@ import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
 import { to_kb, IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
-import { as_query_id, as_layer_id } from '@/utils/itemid'
+import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
+import { as_directory_id } from '@/persistance/Directory'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 
@@ -231,18 +232,89 @@ export const sort_cutouts_into_layers = (vector, id) => {
 /**
  * Save poster and cutout symbols
  * @param {Id} id - Poster itemid
+ * @param {Element} [element] - Optional DOM element to save
+ * @param {Object.<string, SVGSymbolElement>} [cutouts] - Optional cutout symbols by layer
  */
-export const save_poster = async id => {
+export const save_poster = async (id, element = null, cutouts = null) => {
   await tick()
-  await Promise.all([
-    new Shadow(as_layer_id(id, 'shadows')).save(),
-    new Cutout(as_layer_id(id, 'sediment')).save(),
-    new Cutout(as_layer_id(id, 'sand')).save(),
-    new Cutout(as_layer_id(id, 'gravel')).save(),
-    new Cutout(as_layer_id(id, 'rocks')).save(),
-    new Cutout(as_layer_id(id, 'boulders')).save()
-  ])
-  new Poster(id).save()
+  const poster_element = element || document.querySelector(`[itemid="${id}"]`)
+
+  if (!poster_element) {
+    console.warn(`[save_poster] Could not find element for ${id}`)
+    return
+  }
+
+  const geology_layers = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
+  const shadow_id = as_layer_id(id, 'shadows')
+
+  const find_layer_element = layer_id => {
+    if (layer_id === shadow_id) {
+      const shadow_element = poster_element.querySelector(
+        `[itemid="${shadow_id}"]`
+      )
+      if (shadow_element) return shadow_element
+      const global_shadow = document.querySelector(`[itemid="${shadow_id}"]`)
+      if (global_shadow) return global_shadow
+    }
+
+    const [, , layer_name] = layer_id.split('/')
+
+    if (cutouts && cutouts[layer_name]) {
+      const symbol = cutouts[layer_name]
+      if (symbol && symbol.outerHTML) return symbol
+    }
+
+    const layer_element = poster_element.querySelector(`[itemid="${layer_id}"]`)
+    if (layer_element) return layer_element
+
+    const global_element = document.querySelector(`[itemid="${layer_id}"]`)
+    if (global_element) return global_element
+
+    if (cutouts && cutouts[layer_name]) return cutouts[layer_name]
+
+    return null
+  }
+
+  const created_at = as_created_at(id)
+  if (created_at) {
+    const path = as_directory_id(id)
+    const { get, set } = await import('idb-keyval')
+    const directory = await get(path)
+    if (directory && directory.items) {
+      if (!directory.items.includes(created_at)) {
+        directory.items.push(created_at)
+        await set(path, directory)
+      }
+    } else {
+      const new_directory = {
+        id: path,
+        types: [],
+        archive: [],
+        items: [created_at]
+      }
+      await set(path, new_directory)
+    }
+  }
+
+  const save_promises = []
+
+  const shadow_el = find_layer_element(shadow_id)
+  if (shadow_el) save_promises.push(new Shadow(shadow_id).save(shadow_el))
+  else
+    console.warn(`[save_poster] Could not find shadow element for ${shadow_id}`)
+
+  geology_layers.forEach(layer => {
+    const layer_id = as_layer_id(id, layer)
+    const layer_el = find_layer_element(layer_id)
+    if (layer_el) save_promises.push(new Cutout(layer_id).save(layer_el))
+    else
+      console.warn(
+        `[save_poster] Could not find cutout element for ${layer_id}`
+      )
+  })
+
+  await Promise.all(save_promises)
+  await new Poster(id).save(poster_element)
 }
 
 // Composable manages entire vectorization pipeline: workers, queue, state, events
@@ -760,15 +832,6 @@ export const use = () => {
     const id = /** @type {Id} */ (current_item_id.value)
     const optimized_data = get_item(message.data.vector, id)
 
-    const element = document.getElementById(as_query_id(id))
-
-    if (!element) {
-      console.warn(
-        `[Vectorize] Could not find SVG element with id: ${as_query_id(id)}`
-      )
-      return
-    }
-
     clear_vector_paths()
 
     const poster = /** @type {PosterType} */ (new_vector.value)
@@ -786,7 +849,8 @@ export const use = () => {
     poster.cutout = undefined
     poster.cutouts = cutouts
 
-    await save_poster(id)
+    const element = document.querySelector(`svg[itemid="${id}"]`)
+    await save_poster(id, element, cutouts)
 
     completed_posters.value.push(id)
 

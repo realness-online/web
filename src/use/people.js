@@ -95,10 +95,9 @@ export const use_me = () => {
 
   const save = async () => {
     await tick()
-    new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
+    await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
   }
-  const is_valid_name = computed(async () => {
-    await tick()
+  const is_valid_name = computed(() => {
     if (!current_user.value) return false
     if (!me.value) return false
     if (!me.value.name) return false

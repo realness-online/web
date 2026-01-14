@@ -83,7 +83,6 @@ export const Cloud = superclass =>
      */
     async optimize() {
       if (super.optimize) await super.optimize()
-
       const item_type = this.type || as_type(this.id)
       if (
         !item_type ||
@@ -123,7 +122,12 @@ export const Cloud = superclass =>
               'boulders'
             ]
             const component_moves = component_types.map(component_type =>
-              move(component_type, timestamp, archive_directory, `/${author}`)
+              move(
+                component_type,
+                timestamp,
+                archive_directory,
+                `/${author}`
+              ).then(success => success && archive.push(timestamp))
             )
             return [poster_move, ...component_moves]
           }
@@ -135,12 +139,10 @@ export const Cloud = superclass =>
 
         const check_directory = await load_directory_from_network(this.id)
         const { items: check_items } = check_directory
-
         if (check_items.length > SIZE.MAX) await this.optimize()
       }
     }
   }
-
 export default Cloud
 
 export async function sync_later(id, action) {

@@ -9,26 +9,30 @@ const {
   mock_load_from_network,
   mock_keys,
   mock_clear,
-  mock_is_valid_name_promise
+  mock_is_valid_name_value
 } = vi.hoisted(() => {
-  const mock_is_valid_name_promise = { current: Promise.resolve(false) }
   return {
     mock_save: vi.fn(),
     mock_load: vi.fn(),
     mock_load_from_network: vi.fn(),
     mock_keys: vi.fn(),
     mock_clear: vi.fn(),
-    mock_is_valid_name_promise
+    mock_is_valid_name_value: { value: false }
   }
 })
 
+const mock_is_valid_name = {
+  get value() {
+    return mock_is_valid_name_value.value
+  },
+  set value(val) {
+    mock_is_valid_name_value.value = val
+  }
+}
+
 vi.mock('@/use/people', () => ({
   use_me: () => ({
-    is_valid_name: {
-      get value() {
-        return mock_is_valid_name_promise.current
-      }
-    },
+    is_valid_name: mock_is_valid_name,
     save: mock_save
   })
 }))
@@ -59,7 +63,7 @@ describe('@/components/profile/as-sign-on', () => {
     mock_keys.mockResolvedValue([])
     mock_load.mockResolvedValue(null)
     mock_load_from_network.mockResolvedValue(null)
-    mock_is_valid_name_promise.current = Promise.resolve(false)
+    mock_is_valid_name_value.value = false
     mock_current_user_ref.value = null
 
     localStorage.clear()
@@ -102,7 +106,7 @@ describe('@/components/profile/as-sign-on', () => {
     it('emits signed_in when signed_on finds valid profile with valid name', async () => {
       const profile = { id: '/+123', name: 'Test' }
       mock_load_from_network.mockResolvedValue(profile)
-      mock_is_valid_name_promise.current = Promise.resolve(true)
+      mock_is_valid_name.value = true
       localStorage.me = '/+123'
 
       await wrapper.vm.signed_on()
@@ -115,7 +119,7 @@ describe('@/components/profile/as-sign-on', () => {
     it('sets nameless when signed_on finds profile but name invalid', async () => {
       const profile = { id: '/+123' }
       mock_load_from_network.mockResolvedValue(profile)
-      mock_is_valid_name_promise.current = Promise.resolve(false)
+      mock_is_valid_name.value = false
       mock_current_user_ref.value = { uid: 'test-user' }
       localStorage.me = '/+123'
 

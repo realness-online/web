@@ -19,17 +19,78 @@
     name: 'DownloadVector'
   })
 
-  const content = ref(null)
   const file_name = ref(null)
-  const working = ref(false)
 
-  const download = () => {
-    working.value = false
+  const build_download_svg = svg_element => {
+    const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+
+    const use_elements = svg_clone.querySelectorAll('use[href]')
+    const referenced_ids = new Set()
+    use_elements.forEach(use_el => {
+      const href = use_el.getAttribute('href')
+      if (href && href.startsWith('#')) referenced_ids.add(href.substring(1))
+    })
+
+    const figure = svg_element.closest('figure.poster')
+    if (figure) {
+      const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+      if (hidden_svg) {
+        const symbols = hidden_svg.querySelectorAll('symbol')
+        let defs = svg_clone.querySelector('defs')
+        if (!defs) {
+          defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+          svg_clone.appendChild(defs)
+        }
+        symbols.forEach(symbol => {
+          const symbol_id = symbol.getAttribute('id')
+          if (symbol_id && referenced_ids.has(symbol_id)) {
+            const symbol_clone = /** @type {SVGSymbolElement} */ (
+              symbol.cloneNode(true)
+            )
+            defs.appendChild(symbol_clone)
+          }
+        })
+      }
+    }
+
+    const hidden_elements = svg_clone.querySelectorAll(
+      '[style*="visibility: hidden"]'
+    )
+    hidden_elements.forEach(el => {
+      el.remove()
+    })
+
+    const style_elements = svg_clone.querySelectorAll('[style]')
+    style_elements.forEach(el => {
+      el.removeAttribute('style')
+    })
+
+    const vue_components = svg_clone.querySelectorAll('as-animation')
+    vue_components.forEach(component => component.remove())
+
+    svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+    if (localStorage.adobe) adobe(svg_clone)
+
+    return svg_clone
+  }
+
+  const download = event => {
+    event.preventDefault()
     const svg = document.getElementById(as_query_id(props.itemid))
-    if (!svg) return
-    if (localStorage.adobe) adobe(svg)
-    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-    content.value = `data:application/octet-stream,${encodeURIComponent(svg.outerHTML)}`
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    const download_svg = build_download_svg(svg)
+    const svg_string = new XMLSerializer().serializeToString(download_svg)
+    const blob = new Blob([svg_string], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = file_name.value
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const adobe = svg => {
@@ -60,7 +121,7 @@
 </script>
 
 <template>
-  <a :href="content" :download="file_name" class="download" @click="download">
+  <a class="download" @click="download">
     <icon name="download" />
   </a>
 </template>

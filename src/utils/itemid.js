@@ -308,14 +308,24 @@ export const as_archive = async itemid => {
   const created = as_created_at(itemid)
   if (!created) return null
 
-  // If the item is newer than any current items (or is in the list), it belongs in root directory
-  if (items.map(Number).some(timestamp => created >= timestamp)) return null
+  // If items list is empty, poster belongs in root directory
+  if (items.length === 0) return null
+
+  // If the item is newer than any current items, it belongs in root directory
+  // This handles the case where layers are saved before the poster is added to directory
+  const item_timestamps = items.map(Number)
+  if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
+    return null
+
+  // If the item is already in the items list, it's a new poster and belongs in root directory
+  if (item_timestamps.includes(created)) return null
 
   // If the item is an archive timestamp itself, return its own path
   if (archive.includes(created))
     return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
 
   // Find the appropriate archive for older items
+  // Only archive if there are enough items to warrant archiving
   let closest_timestamp = null
   for (const archive_id of archive)
     if (archive_id <= created) closest_timestamp = archive_id

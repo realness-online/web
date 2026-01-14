@@ -201,13 +201,13 @@
         id="authorize"
         :disabled="disabled_sign_in"
         @click.prevent="begin_authorization">
-        Sign on
+        <icon name="silhouette" />
       </button>
       <button
         v-if="show_code"
         id="submit-verification"
         @click.prevent="sign_in_with_code">
-        Sign on
+        <icon name="silhouette" />
       </button>
     </menu>
   </form>
@@ -276,4 +276,6 @@
     menu
       display: flex
       justify-content: flex-end
+      & > button svg.silhouette
+        fill: green
 </style>

@@ -220,9 +220,172 @@ describe('@/persistance/Cloud', () => {
   })
 
   describe('optimize method', () => {
-    it('optimizes directory when items exceed max size', async () => {
+    it('moves poster and all component types together', async () => {
       const mock_directory = {
-        items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        items: [
+          '100',
+          '200',
+          '300',
+          '400',
+          '500',
+          '600',
+          '700',
+          '800',
+          '900',
+          '1000',
+          '1100',
+          '1200'
+        ]
+      }
+
+      const { load_directory_from_network } = await import(
+        '@/persistance/Directory'
+      )
+      load_directory_from_network
+        .mockResolvedValueOnce(mock_directory)
+        .mockResolvedValueOnce({
+          items: ['100', '200', '300', '400', '500', '600', '700']
+        })
+
+      const { as_path_parts } = await import('@/utils/itemid')
+      as_path_parts.mockReturnValue(['+1234567890', 'posters'])
+
+      await cloud_instance.optimize()
+
+      const { move } = await import('@/utils/serverless')
+      const component_types = [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]
+
+      // With 12 items, SIZE.MAX=10, SIZE.MID=5, it should archive 5 posters
+      // Each poster has 1 poster file + 6 component files = 7 moves
+      // Total: 5 posters × 7 moves = 35 calls
+      expect(move).toHaveBeenCalledTimes(35)
+
+      // Verify poster itself is moved (5 times, one for each archived poster)
+      expect(move).toHaveBeenCalledWith('posters', '100', '100', '/+1234567890')
+      expect(move).toHaveBeenCalledWith('posters', '200', '100', '/+1234567890')
+      expect(move).toHaveBeenCalledWith('posters', '300', '100', '/+1234567890')
+      expect(move).toHaveBeenCalledWith('posters', '400', '100', '/+1234567890')
+      expect(move).toHaveBeenCalledWith('posters', '500', '100', '/+1234567890')
+
+      // Verify all component types are moved for each poster
+      component_types.forEach(component_type => {
+        // Each component type should be called 5 times (once per archived poster)
+        const component_calls = move.mock.calls.filter(
+          call => call[0] === component_type
+        )
+        expect(component_calls).toHaveLength(5)
+
+        // Verify specific calls with correct parameters
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          '100',
+          '100',
+          '/+1234567890'
+        )
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          '200',
+          '100',
+          '/+1234567890'
+        )
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          '300',
+          '100',
+          '/+1234567890'
+        )
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          '400',
+          '100',
+          '/+1234567890'
+        )
+        expect(move).toHaveBeenCalledWith(
+          component_type,
+          '500',
+          '100',
+          '/+1234567890'
+        )
+      })
+    })
+
+    it('moves all files together for each timestamp', async () => {
+      const mock_directory = {
+        items: [
+          '1000',
+          '2000',
+          '3000',
+          '4000',
+          '5000',
+          '6000',
+          '7000',
+          '8000',
+          '9000',
+          '10000',
+          '11000',
+          '12000'
+        ]
+      }
+
+      const { load_directory_from_network } = await import(
+        '@/persistance/Directory'
+      )
+      load_directory_from_network
+        .mockResolvedValueOnce(mock_directory)
+        .mockResolvedValueOnce({
+          items: ['5000', '6000', '7000', '8000', '9000', '10000', '11000']
+        })
+
+      const { as_path_parts } = await import('@/utils/itemid')
+      as_path_parts.mockReturnValue(['+1234567890', 'posters'])
+
+      await cloud_instance.optimize()
+
+      const { move } = await import('@/utils/serverless')
+      const component_types = [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]
+
+      // For each archived timestamp, verify all 7 files are moved
+      const archived_timestamps = ['1000', '2000', '3000', '4000', '5000']
+      const archive_directory = '1000' // Oldest timestamp becomes archive directory
+
+      archived_timestamps.forEach(timestamp => {
+        // Verify poster is moved
+        expect(move).toHaveBeenCalledWith(
+          'posters',
+          timestamp,
+          archive_directory,
+          '/+1234567890'
+        )
+
+        // Verify all component types are moved
+        component_types.forEach(component_type => {
+          expect(move).toHaveBeenCalledWith(
+            component_type,
+            timestamp,
+            archive_directory,
+            '/+1234567890'
+          )
+        })
+      })
+    })
+
+    it('does nothing when items are within limits', async () => {
+      const mock_directory = {
+        items: ['1', '2', '3']
       }
 
       const { load_directory_from_network } = await import(
@@ -233,29 +396,13 @@ describe('@/persistance/Cloud', () => {
       await cloud_instance.optimize()
 
       const { move } = await import('@/utils/serverless')
-      expect(move).toHaveBeenCalled()
-
-      const component_types = [
-        'shadows',
-        'sediment',
-        'sand',
-        'gravel',
-        'rocks',
-        'boulders'
-      ]
-      component_types.forEach(component_type => {
-        expect(move).toHaveBeenCalledWith(
-          component_type,
-          expect.any(String),
-          expect.any(String),
-          expect.any(String)
-        )
-      })
+      expect(move).not.toHaveBeenCalled()
     })
 
-    it('does nothing when items are within limits', async () => {
+    it('does not optimize non-archive types', async () => {
+      cloud_instance.type = 'statements'
       const mock_directory = {
-        items: ['1', '2', '3']
+        items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
       }
 
       const { load_directory_from_network } = await import(
