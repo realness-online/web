@@ -55,7 +55,7 @@ export class Storage {
  */
 class Cached extends Large(Cloud(Storage)) {
   async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-    super.save(items)
+    await super.save(items)
 
     if (navigator.onLine && current_user.value) {
       // After successful network save, prefetch from network to populate HTTP cache

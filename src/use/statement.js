@@ -11,6 +11,7 @@ import { JS_TIME } from '@/utils/numbers'
 
 const links = ['http://', 'https://']
 const my_statements = ref([])
+let loading_promise = null
 
 export const use = () => {
   const authors = ref([])
@@ -83,9 +84,13 @@ export const use = () => {
   }
 
   mounted(async () => {
-    my_statements.value = await list(
-      /** @type {Id} */ (`${localStorage.me}/statements`)
-    )
+    const promise =
+      loading_promise ||
+      list(/** @type {Id} */ (`${localStorage.me}/statements`))
+    if (!loading_promise) loading_promise = promise
+
+    my_statements.value = await promise
+    if (loading_promise === promise) loading_promise = null
     authors.value.push({
       id: localStorage.me,
       type: 'person',

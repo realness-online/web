@@ -32,7 +32,7 @@
 
     const my_profile = network_profile || local_profile
     if (my_profile) {
-      const valid = await is_valid_name.value
+      const valid = is_valid_name.value
       if (valid) emit('signed_in')
       else nameless.value = true
     } else nameless.value = true
@@ -52,8 +52,8 @@
     window.location.href = '/'
   }
 
-  watch_effect(async () => {
-    const valid = await is_valid_name.value
+  watch_effect(() => {
+    const valid = is_valid_name.value
     if (current_user.value && !valid) nameless.value = true
   })
 

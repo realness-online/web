@@ -41,13 +41,9 @@ class Directory {
  * @returns {boolean} - True if string matches directory id pattern
  */
 export const is_directory_id = str => {
-  // Early return if not a string or doesn't end with slash
   if (typeof str !== 'string' || !str.endsWith('/')) return false
-
-  // Remove trailing slash and validate as itemid
   const base_id = str.slice(0, -1)
   if (!is_itemid(base_id)) return false
-
   return true
 }
 
@@ -71,11 +67,7 @@ export const is_directory = maybe =>
 export const as_directory_id = itemid => {
   const parts = as_path_parts(itemid)
   const [author, type, , archive] = parts
-
-  // Archive is only valid if it's a numeric timestamp, not 'index'
   if (archive && archive !== 'index') return `/${author}/${type}/${archive}/`
-  // For root directories (no archive or 'index'), always use /author/type/ format
-  // This normalizes both "/author/type/" and "/author/type/itemid" to the same directory
   return `/${author}/${type}/`
 }
 
@@ -138,7 +130,15 @@ export const load_directory_from_network = async itemid => {
 export const as_directory = async itemid => {
   const path = as_directory_id(itemid)
   const cached = await get(path)
-  if (cached) return cached
+  if (cached) {
+    const local_directory = await build_local_directory(itemid)
+    const local_items = local_directory.items || []
+    const cached_items = cached.items || []
+    const merged_items = [...new Set([...cached_items, ...local_items])]
+    if (merged_items.length !== cached_items.length)
+      return { ...cached, items: merged_items }
+    return cached
+  }
 
   let directory = await build_local_directory(itemid)
   if (navigator.onLine && current_user.value)

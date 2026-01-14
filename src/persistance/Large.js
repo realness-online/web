@@ -26,7 +26,8 @@ export const Large = superclass =>
      * @returns {Promise<string>}
      */
     async get_storage_path() {
-      const poster_id = as_poster_id(this.id)
+      let poster_id = as_poster_id(this.id)
+      if (!poster_id && this.type === 'posters') poster_id = this.id
       if (poster_id) {
         let poster_filename = poster_id
         if (poster_id.startsWith('/+')) poster_filename = `people${poster_id}`
@@ -35,12 +36,11 @@ export const Large = superclass =>
         const archive = await as_archive(poster_id)
 
         if (archive) {
-          const suffix = layer_name ? `-${layer_name}` : ''
-          return `${archive}${suffix}.html.gz`
+          if (layer_name) return `${archive}-${layer_name}.html.gz`
+          return `${archive}/index.html.gz`
         }
-
-        const suffix = layer_name ? `-${layer_name}` : ''
-        return `${poster_filename}${suffix}.html.gz`
+        if (layer_name) return `${poster_filename}-${layer_name}.html.gz`
+        return `${poster_filename}/index.html.gz`
       }
 
       let filename = this.id
@@ -60,13 +60,23 @@ export const Large = superclass =>
       await set(this.id, items.outerHTML)
       const path = as_directory_id(this.id)
       const directory = await get(path)
-      if (directory && directory.items) {
-        const created_at = as_created_at(this.id)
-        if (created_at && !directory.items.includes(created_at)) {
-          directory.items.push(created_at)
-          await set(path, directory)
+      const created_at = as_created_at(this.id)
+      if (created_at)
+        if (directory && directory.items) {
+          if (!directory.items.includes(created_at)) {
+            directory.items.push(created_at)
+            await set(path, directory)
+          }
+        } else {
+          const new_directory = {
+            id: path,
+            types: [],
+            archive: [],
+            items: [created_at]
+          }
+          await set(path, new_directory)
         }
-      }
+
       if (super.save) await super.save(items)
     }
     async delete() {

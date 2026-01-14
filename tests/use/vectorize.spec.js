@@ -56,6 +56,12 @@ vi.mock('@/utils/itemid', () => ({
     return parts[parts.length - 1]
   }),
   as_query_id: vi.fn(id => id.replace(/\//g, '-')),
+  as_path_parts: vi.fn(id => {
+    if (!id || typeof id !== 'string') return []
+    const path = id.split('/')
+    if (path[0].length === 0) path.shift()
+    return path
+  }),
   as_layer_id: vi.fn((poster_id, layer) => {
     if (!poster_id || typeof poster_id !== 'string') return ''
     const parts = poster_id.split('/')
@@ -1213,8 +1219,13 @@ describe('vectorize composable', () => {
   })
 
   describe('save_poster', () => {
+    let mock_element
+
     beforeEach(() => {
       vi.clearAllMocks()
+      mock_element = document.createElement('svg')
+      mock_element.setAttribute('itemid', '/user/posters/1234567890')
+      vi.spyOn(document, 'querySelector').mockReturnValue(mock_element)
     })
 
     it('saves shadow and all cutout layers', async () => {

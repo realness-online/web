@@ -1,16 +1,24 @@
 <script setup>
   import NameAsForm from '@/components/profile/as-form-name'
-  import CallToAction from '@/components/call-to-action'
   import AsSignOn from '@/components/profile/as-sign-on'
-  import { ref, onMounted as mounted, watch } from 'vue'
-  import { current_user, sign_off } from '@/utils/serverless'
+  import icon from '@/components/icon'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    watch,
+    watchEffect as watch_effect
+  } from 'vue'
+  import { current_user, sign_off, me } from '@/utils/serverless'
   import { useRoute as use_route } from 'vue-router'
+  import { use_me } from '@/use/people'
 
   const form = ref(null)
-  const name = ref('account')
+  const name = computed(() => me.value?.name || 'account')
   const route = use_route()
   const show_sign_in = ref(false)
   const is_mobile_form_visible = ref(false)
+  const { is_valid_name } = use_me()
 
   const show_form = () => {
     if (!form.value) return
@@ -23,15 +31,11 @@
     }
   }
   const dialog_click = event => {
-    if (event.target === form.value) form.value.close()
-  }
-  const close_settings = () => {
-    form.value.close()
+    if (event.target === form.value && is_valid_name.value) form.value.close()
   }
 
   const signed_in = () => {
     show_sign_in.value = false
-    close_settings()
   }
 
   const on_showing_mobile = visible => {
@@ -56,6 +60,21 @@
     { immediate: true }
   )
 
+  watch_effect(() => {
+    if (current_user.value && !is_valid_name.value && form.value) {
+      show_sign_in.value = false
+      is_mobile_form_visible.value = false
+      form.value.showModal()
+    }
+  })
+
+  watch_effect(() => {
+    if (current_user.value && is_valid_name.value && form.value?.open) {
+      show_sign_in.value = false
+      form.value.close()
+    }
+  })
+
   mounted(() => {
     if (route.hash === '#account' && form.value) {
       show_sign_in.value = false
@@ -63,6 +82,8 @@
       form.value.showModal()
       form.value.focus()
     }
+    if (current_user.value && !is_valid_name.value && form.value)
+      form.value.showModal()
   })
 
   defineExpose({ show: show_form })
@@ -72,17 +93,16 @@
   <a id="toggle-account" @click="show_form">{{ name }}</a>
   <dialog id="account" ref="form" @click="dialog_click" @close="on_close">
     <name-as-form v-if="current_user && !show_sign_in" />
-    <call-to-action v-if="!show_sign_in" />
     <as-sign-on
       v-else
       @signed_in="signed_in"
       @showing_mobile="on_showing_mobile" />
-    <menu>
-      <button v-if="current_user" @click="sign_off">Sign off</button>
-      <button v-else-if="!is_mobile_form_visible" @click="show_sign_in = true">
-        Sign in
+    <fieldset v-if="current_user" id="sign-off">
+      <legend>Sign off</legend>
+      <button @click="sign_off">
+        <icon name="arrow" />
       </button>
-    </menu>
+    </fieldset>
   </dialog>
 </template>
 
@@ -108,18 +128,27 @@
       top: base-line * .5;
       right: base-line * .5;
     }
-    & > menu {
+    & > fieldset#sign-off {
+      margin-top: base-line;
+      border-top: 1px solid red;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      & > a.close > svg {
-        fill: red;
+      justify-content: flex-end;
+      gap: base-line * 0.25;
+      & > legend {
+        color: red;
+        margin-right: auto;
       }
       & > button {
+        margin: base-line * 0.75;
         border-color: red;
         &:hover {
           background-color: red;
           color: white;
+        }
+        & > svg.icon {
+          width: base-line;
+          height: base-line;
         }
       }
     }
