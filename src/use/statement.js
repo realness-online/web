@@ -6,7 +6,7 @@ import { as_created_at, list, as_author } from '@/utils/itemid'
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statement } from '@/persistance/Storage'
-import { ref, onMounted as mounted, nextTick as tick } from 'vue'
+import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 
 const links = ['http://', 'https://']
@@ -14,6 +14,7 @@ const my_statements = ref([])
 let loading_promise = null
 
 export const use = () => {
+  const set_working = inject('set_working')
   const authors = ref([])
   const statements = ref(null)
 
@@ -54,6 +55,7 @@ export const use = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
+    if (set_working) set_working(true)
     const statement_id = /** @type {Id} */ (`${query.id}/statements`)
     const their_statements = await list(statement_id)
     if (statements.value)
@@ -67,6 +69,7 @@ export const use = () => {
         type: 'person',
         viewed: ['index']
       })
+    if (set_working) set_working(false)
   }
 
   const save = async statement => {

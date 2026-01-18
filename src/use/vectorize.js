@@ -323,6 +323,7 @@ export const save_poster = async (id, element = null, cutouts = null) => {
 export const use = () => {
   const router = use_router()
   const image_picker = inject('image-picker', ref(null))
+  const set_working = inject('set_working')
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
@@ -531,6 +532,7 @@ export const use = () => {
       const next = await Queue.get_next()
       if (!next) {
         is_processing.value = false
+        if (set_working) set_working(false)
         current_processing.value = null
         unmount_workers()
         mutex.unlock()
@@ -538,6 +540,7 @@ export const use = () => {
       }
 
       is_processing.value = true
+      if (set_working) set_working(true)
       current_processing.value = next
 
       await Queue.update(next.id, { status: 'processing' })
@@ -564,6 +567,7 @@ export const use = () => {
         current_processing.value = null
       }
       is_processing.value = false
+      if (set_working) set_working(false)
       reset()
       mutex.unlock()
       process_queue()
@@ -861,6 +865,7 @@ export const use = () => {
     queue_items.value = queue_items.value.filter(item => item.id !== id)
 
     is_processing.value = false
+    if (set_working) set_working(false)
     current_processing.value = null
 
     reset()

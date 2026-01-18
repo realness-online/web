@@ -3,7 +3,7 @@
   import { load, as_query_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   import icon from '@/components/icon'
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, inject, onMounted } from 'vue'
   import {
     render_svg_to_video_blob,
     download_video
@@ -31,6 +31,7 @@
   const progress = ref(0)
   const total_frames = ref(0)
   const state = ref('idle')
+  const set_working = inject('set_working')
 
   const computed_progress = computed(() => {
     if (total_frames.value === 0) return 0
@@ -92,6 +93,7 @@
         : Math.round(target_smallest_side / aspect_ratio)
 
     working.value = true
+    set_working(true)
     progress.value = 0
     state.value = 'rendering'
 
@@ -120,6 +122,7 @@
       state.value = 'error'
     } finally {
       working.value = false
+      set_working(false)
       progress.value = 0
       total_frames.value = 0
       state.value = 'idle'

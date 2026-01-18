@@ -8,6 +8,7 @@ import {
   ref,
   computed,
   watch,
+  inject,
   onMounted as mounted,
   onUnmounted as unmounted,
   getCurrentInstance as current_instance,
@@ -339,6 +340,7 @@ export const use = () => {
 }
 
 export const use_posters = () => {
+  const set_working = inject('set_working')
   const posters = ref([])
   const authors = ref([])
 
@@ -346,6 +348,7 @@ export const use_posters = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
+    if (set_working) set_working(true)
     const directory = await as_directory(
       /** @type {Id} */ (`${query.id}/posters`)
     )
@@ -369,6 +372,7 @@ export const use_posters = () => {
         visited: null
       })
     posters.value.sort(recent_item_first)
+    if (set_working) set_working(false)
   }
 
   /**

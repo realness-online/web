@@ -40,8 +40,12 @@
     stroke: white-background
 
 @keyframes pulsing
+  0%, 100%
+    opacity: 0.7
+    transform: scale(1.5)
   50%
-    border-color: black-background
+    opacity: 1
+    transform: scale(1)
 
 @keyframes press
   50%

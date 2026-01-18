@@ -9,8 +9,7 @@
     extract_all_layers
   } from '@/utils/svg-to-psd'
   import icon from '@/components/icon'
-  import { ref, onMounted, onUnmounted } from 'vue'
-
+  import { ref, inject, onMounted as on_mounted, onUnmounted as on_unmounted, h, createApp } from 'vue'
   const props = defineProps({
     itemid: {
       type: String,
@@ -24,11 +23,10 @@
   })
 
   const file_name = ref(null)
-  const downloading_psd = ref(false)
-  const downloading_pngs = ref(false)
   const menu_open = ref(false)
   const menu_ref = ref(null)
   const button_ref = ref(null)
+  const set_working = inject('set_working')
 
   const normalize_ids_for_download = svg => {
     const id_map = new Map()
@@ -252,10 +250,10 @@
     let psd_filename = filename
 
     if (!psd_buffer) {
-      downloading_psd.value = true
+      set_working(true)
       psd_filename = filename || (await get_psd_name())
       psd_buffer = await render_svg_layers_to_psd(svg_element, props.itemid)
-      downloading_psd.value = false
+      set_working(false)
     }
 
     const blob = new Blob([psd_buffer], { type: 'image/vnd.adobe.photoshop' })
@@ -273,7 +271,6 @@
     event.preventDefault()
     event.stopPropagation()
     close_menu()
-    if (downloading_psd.value) return
 
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) return
@@ -281,118 +278,237 @@
     await download_psd(svg)
   }
 
-  const download_png_handler = async event => {
+  const render_complete_poster_to_canvas = async (svg_element, width, height) => {
+    const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+
+    const hidden_elements = svg_clone.querySelectorAll(
+      '[style*="visibility: hidden"]'
+    )
+    hidden_elements.forEach(el => el.remove())
+
+    const vue_components = svg_clone.querySelectorAll('as-animation')
+    vue_components.forEach(component => component.remove())
+
+    svg_clone.setAttribute('width', String(width))
+    svg_clone.setAttribute('height', String(height))
+    svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+    const figure = svg_element.closest('figure.poster')
+    if (figure) {
+      const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+      if (hidden_svg) {
+        const symbols = hidden_svg.querySelectorAll('symbol')
+        let defs = svg_clone.querySelector('defs')
+        if (!defs) {
+          defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+          svg_clone.appendChild(defs)
+        }
+        symbols.forEach(symbol => {
+          const symbol_clone = symbol.cloneNode(true)
+          defs.appendChild(symbol_clone)
+        })
+      }
+    }
+
+    const svg_data = new XMLSerializer().serializeToString(svg_clone)
+    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
+    const svg_url = URL.createObjectURL(svg_blob)
+
+    const img = new Image()
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+      img.src = svg_url
+    })
+
+    const canvas = new OffscreenCanvas(width, height)
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0, width, height)
+    URL.revokeObjectURL(svg_url)
+
+    return canvas
+  }
+
+  const draw_icon_on_canvas = async (ctx, icon_name, x, y, size) => {
+    const container = document.createElement('div')
+    container.style.position = 'absolute'
+    container.style.left = '-9999px'
+    document.body.appendChild(container)
+
+    const app = createApp({
+      render: () => h(icon, { name: icon_name })
+    })
+    app.mount(container)
+
+    const icon_element = container.querySelector('svg.icon')
+    if (!icon_element) {
+      app.unmount()
+      document.body.removeChild(container)
+      return
+    }
+
+    icon_element.setAttribute('width', String(size))
+    icon_element.setAttribute('height', String(size))
+
+    const icon_svg_string = new XMLSerializer().serializeToString(icon_element)
+    const icon_blob = new Blob([icon_svg_string], { type: 'image/svg+xml' })
+    const icon_url = URL.createObjectURL(icon_blob)
+
+    const icon_img = new Image()
+    await new Promise((resolve, reject) => {
+      icon_img.onload = resolve
+      icon_img.onerror = reject
+      icon_img.src = icon_url
+    })
+
+    ctx.save()
+    ctx.globalAlpha = 0.7
+    ctx.drawImage(icon_img, x, y, size, size)
+    ctx.restore()
+
+    URL.revokeObjectURL(icon_url)
+    app.unmount()
+    document.body.removeChild(container)
+  }
+
+  const png_layers = async event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
-    if (downloading_pngs.value) return
 
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) return
 
-    downloading_pngs.value = true
+    set_working(true)
 
-    const layers = await extract_all_layers(svg, props.itemid)
-    const base_name = file_name.value?.replace('.svg', '') || 'layer'
+    const viewbox = svg.viewBox.baseVal
+    const aspect_ratio = viewbox.width / viewbox.height
+    const FOUR_K_WIDTH = 3840
+    const width = FOUR_K_WIDTH
+    const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
 
-    for (let i = 0; i < layers.length; i++) {
-      const layer = layers[i]
-      const canvas = new OffscreenCanvas(
-        layer.imageData.width,
-        layer.imageData.height
-      )
+    const layers = await extract_all_layers(svg, props.itemid, FOUR_K_WIDTH)
+
+    const base_name = file_name.value?.replace('.svg', '') || 'poster'
+
+    for (const layer of layers) {
+      const canvas = new OffscreenCanvas(width, height)
       const ctx = canvas.getContext('2d')
       ctx.putImageData(layer.imageData, 0, 0)
 
-      // eslint-disable-next-line no-await-in-loop
       const blob = await canvas.convertToBlob({ type: 'image/png' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${base_name}-${layer.name.toLowerCase()}.png`
+      const safe_layer_name = layer.name.toLowerCase().replace(/\s+/g, '_')
+      a.download = `${base_name}_${safe_layer_name}.png`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     }
 
-    // eslint-disable-next-line require-atomic-updates
-    downloading_pngs.value = false
+    set_working(false)
   }
 
-  onMounted(async () => {
+  const download_png_handler = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    set_working(true)
+
+    const viewbox = svg.viewBox.baseVal
+    const aspect_ratio = viewbox.width / viewbox.height
+    const FOUR_K_WIDTH = 3840
+    const width = FOUR_K_WIDTH
+    const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
+
+    const canvas = await render_complete_poster_to_canvas(svg, width, height)
+    const ctx = canvas.getContext('2d')
+
+    const icon_size = Math.round(width * 0.02)
+    const icon_padding = Math.round(width * 0.01)
+    await draw_icon_on_canvas(ctx, 'realness', icon_padding, icon_padding, icon_size)
+
+    const blob = await canvas.convertToBlob({ type: 'image/png' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const base_name = file_name.value?.replace('.svg', '') || 'poster'
+    a.download = `${base_name}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    set_working(false)
+  }
+
+  on_mounted(async () => {
     file_name.value = await get_vector_name()
     document.addEventListener('click', handle_click_outside)
   })
 
-  onUnmounted(() => {
+  on_unmounted(() => {
     document.removeEventListener('click', handle_click_outside)
   })
 </script>
 
 <template>
-  <div class="download-menu" ref="button_ref">
+  <nav ref="button_ref">
     <a
-      class="download-toggle"
       @click="toggle_menu"
-      :class="{
-        working: downloading_psd || downloading_pngs
-      }"
       title="Download"
-      :aria-label="
-        downloading_psd || downloading_pngs
-          ? 'Generating...'
-          : 'Download options'
-      ">
+      aria-label="Download options">
       <icon name="download" />
     </a>
-    <menu v-if="menu_open" ref="menu_ref" class="download-options">
+    <menu v-if="menu_open" ref="menu_ref">
       <a @click="download_svg_handler" title="Download SVG">SVG</a>
       <a
         @click="download_png_handler"
-        :class="{ working: downloading_pngs }"
         title="Download PNG"
-        :aria-label="
-          downloading_pngs ? 'Generating PNGs...' : 'Download layers as PNG'
-        ">
+        aria-label="Download full poster as PNG">
+        <icon name="add" @click="png_layers" />
         PNG
       </a>
       <a
         @click="download_psd_handler"
-        :class="{ working: downloading_psd }"
         title="Download PSD"
-        :aria-label="downloading_psd ? 'Generating PSD...' : 'Download PSD'">
+        aria-label="Download PSD">
         PSD
       </a>
     </menu>
-  </div>
+  </nav>
 </template>
 
 <style lang="stylus">
-  .download-menu {
+  nav {
     position: relative;
 
-    .download-toggle {
-      &.working {
-        animation-name: working;
-      }
+    & > a:first-child {
+      display: block;
     }
 
-    .download-options {
+    menu {
       position: absolute;
       bottom: 100%;
       right: 0;
       margin-bottom: base-line * 0.25;
       display: flex;
+      font-size: larger;
       flex-direction: column;
       gap: base-line * 0.25;
-      padding: base-line * 0.5;
+      padding: base-line * 0.25;
       background: black-transparent;
       border-radius: base-line * 0.25;
       standard-shadow: boop;
       z-index: 10;
-
-      a {
+      & > a {
+        position: relative;
         padding: base-line * 0.25 base-line * 0.5;
         border-radius: base-line * 0.125;
         white-space: nowrap;
@@ -403,8 +519,16 @@
           color: white;
         }
 
-        &.working {
-          animation-name: working;
+        & > svg.icon,
+        & > icon {
+          position: absolute;
+          top: base-line * 0.15;
+          left: base-line * 0.15;
+          width: base-line * 0.5;
+          height: base-line * 0.5;
+          cursor: pointer;
+          pointer-events: auto;
+          z-index: 1;
         }
       }
     }
