@@ -1,6 +1,6 @@
 import { use as use_vectorize } from '@/use/vectorize'
 import { use as use_optimizer } from '@/use/optimize'
-import { ref, watch } from 'vue'
+import { ref, watch, inject } from 'vue'
 import {
   count_image_files,
   is_image_file,
@@ -9,6 +9,7 @@ import {
 
 export const use = () => {
   const { new_vector, new_gradients, process_photo } = use_vectorize()
+  const set_working = inject('set_working')
   const progress = ref({
     total: 0,
     current: 0,
@@ -21,6 +22,7 @@ export const use = () => {
   const process_directory = async () => {
     try {
       progress.value.processing = true
+      if (set_working) set_working(true)
       current_preview.value = null
       completed_poster.value = null
 
@@ -122,6 +124,7 @@ export const use = () => {
       }
       // eslint-disable-next-line require-atomic-updates
       completed_poster.value = null
+      if (set_working) set_working(false)
     }
   }
 

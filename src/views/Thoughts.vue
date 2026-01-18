@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, inject, onMounted as mounted } from 'vue'
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
@@ -14,6 +14,7 @@
 
   console.time('views:Thoughts')
 
+  const set_working = inject('set_working')
   const working = ref(true)
   const thoughts = ref(null)
 
@@ -55,8 +56,10 @@
   register('thoughts::ClearSearch', () => {})
 
   mounted(async () => {
+    if (set_working) set_working(true)
     await fill_thoughts()
     working.value = false
+    if (set_working) set_working(false)
     console.timeEnd('views:Thoughts')
   })
 </script>

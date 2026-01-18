@@ -41,11 +41,11 @@ All navigation works offline, with camera access for poster creation and local s
 
 **Sync Indicator**: The app displays a border around the main interface to show sync status:
 
-- **Green pulsing border** - Active syncing in progress. This includes uploading posters from local storage to the network, syncing statements, events, user profile, and other content
+- **Green pulsing border** - Active syncing or processing in progress. This includes uploading posters from local storage to the network, syncing statements, events, user profile, downloading files (PNG, PSD, video), image processing, and other content operations
 - **Yellow border** - Device is offline
 - **No border** - Normal operation, online and not currently syncing
 
-The sync indicator appears automatically during all background sync operations, ensuring you can see when content is being synchronized across your devices.
+The sync indicator appears automatically during all background sync operations and file downloads, ensuring you can see when content is being synchronized or processed.
 
 ---
 
@@ -103,6 +103,19 @@ The animation system uses your GPU to create flowing color transitions that make
 All these elements work together to transform your photos into expressive vector graphics that maintain their quality at any size while giving you the creative tools to make them uniquely yours.
 
 All editing happens locally with vector optimization in web workers and view state persisted in localStorage. There's no server-side processing required.
+
+### Download Options
+
+Each poster includes a download menu with multiple format options. The green pulsing border indicates when downloads are in progress.
+
+**Available Formats**:
+
+- **SVG** - Vector format perfect for web, scalable to any size without quality loss. Exports the current state of all visible layers.
+- **PNG** - Full poster rendered as a single high-resolution PNG (4K width). Includes the Realness icon watermark in the corner. Great for sharing on social media or printing.
+- **PNG Layers** (icon on PNG option) - Downloads each layer as a separate PNG file. Core layers (Background, Light, Regular, Medium, Bold) and cutout layers (Sediment, Sand, Gravel, Rocks, Boulders) are exported individually. Perfect for compositing in other tools or creating custom layer arrangements.
+- **PSD** - Photoshop document with all layers organized into groups. Ready to open directly in Procreate, Affinity Designer, or Adobe Photoshop. Includes both shadow layers (organized under "Shadows" group) and cutout layers (organized under "Cutouts" group). Each layer is fully editable with proper transparency and organization.
+
+All downloads respect your current visibility settings, so hidden layers won't appear in the exported files. Downloads are rendered at 4K resolution for maximum quality.
 
 ---
 
@@ -172,7 +185,14 @@ Relations are stored locally with no server-side friend suggestions. You control
 
 ## Procreate
 
-If you want to use your poster in Procreate You'll need to convert it to PSD with Affinity Designer or Adobe Illustrator. each realness vector exports as much information as possible. There are 5 value layers and a special cutouts layer created when you do. You have access to a tremendous amount of design options. in a small file optimized from the get go to be used creatively.
+You can download posters directly as PSD files for use in Procreate. Click the download icon on any poster and select **PSD** from the menu. The PSD file includes all layers organized into groups:
+
+- **Shadows Group** - Contains Background, Light, Regular, Medium, and Bold layers
+- **Cutouts Group** - Contains Sediment, Sand, Gravel, Rocks, and Boulders layers
+
+Each layer is exported as a separate editable layer in the PSD, giving you full control in Procreate. The PSD files are optimized for creative workflows and maintain all layer structure from Realness.
+
+**Alternative Workflow**: If you prefer, you can still download as SVG and convert to PSD using Affinity Designer or Adobe Illustrator, but direct PSD download is now available for immediate use.
 
 ---
 

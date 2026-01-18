@@ -204,6 +204,13 @@
     if (active) status.value = 'working'
     else status.value = null
   }
+
+  /** @param {boolean} active */
+  const set_working = active => {
+    if (active) status.value = 'working'
+    else status.value = null
+  }
+  provide('set_working', set_working)
   const online = () => {
     document
       .querySelectorAll('[contenteditable]')
@@ -274,10 +281,27 @@
     }
     &.working {
       border-color: var(--green);
-      animation-name: pulsing;
-      animation-duration: 5s;
-      animation-delay: 200ms;
-      animation-iteration-count: infinite;
+      position: relative;
+      will-change: opacity, transform;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        border: (base-line / 16) solid var(--green);
+        border-radius: (base-line / 16);
+        pointer-events: none;
+        will-change: opacity, transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        animation-name: pulsing;
+        animation-duration: 2.33s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+      }
     }
     & > h6 {
       text-shadow: 1px 1px 1.25px var(--black-background);

@@ -3,12 +3,13 @@
   import AsDays from '@/components/as-days'
   import AsFigure from '@/components/posters/as-figure'
 
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, inject, onMounted as mounted } from 'vue'
   import { list } from '@/utils/itemid'
   import { recent_item_first } from '@/utils/sorting'
   import icon from '@/components/icon'
   import { use_keymap } from '@/use/key-commands'
 
+  const set_working = inject('set_working')
   const events = ref([])
   const working = ref(true)
 
@@ -36,8 +37,10 @@
   register('events::Remove_Event', () => {})
 
   mounted(async () => {
+    if (set_working) set_working(true)
     events.value = await get_upcoming_events()
     working.value = false
+    if (set_working) set_working(false)
     console.info('views:events', events.value.length)
   })
 </script>

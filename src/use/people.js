@@ -1,6 +1,6 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
-import { ref, computed, nextTick as tick } from 'vue'
+import { ref, computed, inject, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
@@ -17,6 +17,7 @@ export const default_person = {
 const relations = ref(undefined)
 
 export const use = () => {
+  const set_working = inject('set_working')
   const phonebook = ref([])
   const working = ref(true)
   const people = ref([])
@@ -42,12 +43,14 @@ export const use = () => {
 
     try {
       working.value = true
+      if (set_working) set_working(true)
       // Clear existing entries
       phonebook.value = []
 
       const people = await directory('/people/')
       if (!people?.prefixes?.length) {
         working.value = false
+        if (set_working) set_working(false)
         return
       }
 
@@ -76,6 +79,7 @@ export const use = () => {
       console.error('Failed to load phonebook:', err)
     } finally {
       working.value = false
+      if (set_working) set_working(false)
     }
   }
   return {
